@@ -41,6 +41,7 @@
 #include <iostream>
 #include "FreeImage.h"
 #include "dialogs/DrawingOrderDialog.h"
+#include "ui/win/dialogs/Win32ProgressBar.h"
 #else
 #include "standalone/FreeImage.h"
 #endif
@@ -979,7 +980,7 @@ void WinEditor::DoPlay(const int playMode)
    }
 }
 
-bool WinEditor::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
+bool WinEditor::LoadFile(const bool updateEditor)
 {
    const string& szInitialDir = g_app->m_settings.GetRecentDir_LoadDir();
 
@@ -992,12 +993,12 @@ bool WinEditor::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
    if (index != string::npos)
       g_app->m_settings.SetRecentDir_LoadDir(filename[0].substr(0, index), false);
 
-   LoadFileName(filename[0], updateEditor, feedback);
+   LoadFileName(filename[0], updateEditor);
 
    return true;
 }
 
-void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VPXFileFeedback* feedback)
+void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
 {
    if (m_vtable.size() == MAX_OPEN_TABLES)
    {
@@ -1015,7 +1016,12 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VP
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    PinTableWnd *const ppt = mdiTable->GetTableWnd();
-   const HRESULT hr = feedback != nullptr ? ppt->m_table->LoadGameFromFilename(filename, *feedback) : ppt->m_table->LoadGameFromFilename(filename);
+#ifndef __STANDALONE__
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+#else
+   VPXFileFeedback feedback;
+#endif
+   const HRESULT hr = ppt->m_table->LoadGameFromFilename(filename, feedback);
 
    const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
    if (hashing_error)
@@ -2220,7 +2226,8 @@ void WinEditor::SaveTable(const bool saveAs)
       SetCaption(ptCur->m_title.c_str());
    }
 
-   hr = ptCur->Save();
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   hr = ptCur->Save(feedback);
    if (hr == S_OK)
       UpdateRecentFileList(ptCur->m_filename);
 #endif
@@ -2249,7 +2256,8 @@ void WinEditor::OpenNewTable(size_t tableId)
    ppt->m_glassTopHeight = ppt->m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)
       ppt->m_rgcolorcustom[i] = RGB(0, 0, 0);
-   ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path));
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path), feedback);
    ppt->m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_NextTableID);
    m_NextTableID++;
    ppt->m_settings.SetIniPath(std::filesystem::path());

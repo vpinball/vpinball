@@ -429,10 +429,8 @@ public:
    // Transform editor window coordinates to table coordinates
    Vertex2D TransformPoint(int x, int y) const;
 
-   HRESULT Save();
-   HRESULT SaveToStorage(IStorage *pstg);
+   HRESULT Save(VPXFileFeedback &feedback);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
-   HRESULT LoadGameFromFilename(const std::filesystem::path &filename);
    HRESULT LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback);
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
 

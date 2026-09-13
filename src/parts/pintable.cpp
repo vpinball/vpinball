@@ -45,10 +45,6 @@
 #include "utils/objloader.h"
 #include "utils/ushock_output.h"
 
-#ifndef __STANDALONE__
-#include "ui/win/dialogs/Win32ProgressBar.h"
-#endif
-
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -753,7 +749,7 @@ void PinTable::SetupLookUpTables(bool isPlaying)
    }
 }
 
-HRESULT PinTable::Save()
+HRESULT PinTable::Save(VPXFileFeedback &feedback)
 {
 #ifndef __STANDALONE__
    // Get file name if needed
@@ -779,7 +775,7 @@ HRESULT PinTable::Save()
 
    RemoveInvalidReferences();
 
-   hr = SaveToStorage(pstgRoot);
+   hr = SaveToStorage(pstgRoot, feedback);
    if (SUCCEEDED(hr))
    {
       pstgRoot->Commit(STGC_DEFAULT);
@@ -802,17 +798,6 @@ HRESULT PinTable::Save()
    m_settings.Save();
 
    return S_OK;
-}
-
-HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
-{
-#ifndef __STANDALONE__
-   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
-#else
-   VPXFileFeedback feedback;
-#endif
-
-   return SaveToStorage(pstgRoot, feedback);
 }
 
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
@@ -1378,20 +1363,6 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(TLCK), m_tablelocked);
    writer.EndObject();
 #endif
-}
-
-HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename)
-{
-#ifndef __STANDALONE__
-   if (m_vpinball)
-   {
-      Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
-      return LoadGameFromFilename(filename, feedback);
-   }
-#endif
-
-   VPXFileFeedback feedback;
-   return LoadGameFromFilename(filename, feedback);
 }
 
 HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback)
