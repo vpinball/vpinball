@@ -426,8 +426,6 @@ public:
    IEditable *GetElementByName(const char *const name) const;
    void OnDelete();
 
-   void UseTool(int x, int y, int tool);
-
    // Transform editor window coordinates to table coordinates
    Vertex2D TransformPoint(int x, int y) const;
 

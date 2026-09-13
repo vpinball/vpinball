@@ -3688,36 +3688,6 @@ void PinTable::OnDelete()
 #endif
 }
 
-void PinTable::UseTool(int x, int y, int tool)
-{
-#ifndef __STANDALONE__
-   const Vertex2D v = TransformPoint(x, y);
-
-   const ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
-   IEditable * const pie = EditableRegistry::CreateAndInit(type, this, v.x, v.y);
-
-   if (pie)
-   {
-      if (auto scriptable = pie->GetIScriptable(); scriptable)
-         GetUniqueName(type, scriptable->m_wzName);
-      pie->m_desktopBackdrop = m_vpinball->m_desktopBackdropView;
-      AddPart(pie);
-      pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
-      m_vpinball->GetLayersListDialog()->Update();
-
-      if (m_tableEditor)
-         m_tableEditor->OnPartChanged(this);
-
-      BeginUndo();
-      m_undo.MarkForCreate(pie);
-      EndUndo();
-      m_tableEditor->AddMultiSel(pie->GetISelect(), false, true, false);
-   }
-
-   m_vpinball->ParseCommand(IDC_SELECT, false);
-#endif
-}
-
 Vertex2D PinTable::TransformPoint(int x, int y) const
 {
 #ifndef __STANDALONE__

@@ -1043,6 +1043,33 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
    }
 }
 
+void PinTableWnd::UseTool(int x, int y, int tool)
+{
+   const Vertex2D v = m_table->TransformPoint(x, y);
+
+   const ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
+   IEditable *const pie = EditableRegistry::CreateAndInit(type, m_table, v.x, v.y);
+
+   if (pie)
+   {
+      if (auto scriptable = pie->GetIScriptable(); scriptable)
+         m_table->GetUniqueName(type, scriptable->m_wzName);
+      pie->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
+      m_table->AddPart(pie);
+      pie->SetPartGroup(m_vpxEditor->GetLayersListDialog()->GetSelectedPartGroup());
+      m_vpxEditor->GetLayersListDialog()->Update();
+
+      OnPartChanged(m_table);
+
+      m_table->BeginUndo();
+      m_table->m_undo.MarkForCreate(pie);
+      m_table->EndUndo();
+      AddMultiSel(pie->GetISelect(), false, true, false);
+   }
+
+   m_vpxEditor->ParseCommand(IDC_SELECT, false);
+}
+
 void PinTableWnd::OnLeftButtonDown(const short x, const short y)
 {
    if ((m_vpxEditor->m_ToolCur == IDC_SELECT) || (m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY))
@@ -1051,7 +1078,7 @@ void PinTableWnd::OnLeftButtonDown(const short x, const short y)
    }
    else if (!m_table->IsLocked())
    {
-      m_table->UseTool(x, y, m_vpxEditor->m_ToolCur);
+      UseTool(x, y, m_vpxEditor->m_ToolCur);
    }
    SetFocus();
 }
