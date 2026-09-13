@@ -8,6 +8,33 @@
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/WinUIPartRegistry.h"
 
+void IWinUIPart::OnLButtonDown(int x, int y)
+{
+   m_select->m_dragging = true;
+   m_select->m_markedForUndo = false; // So we will be marked when and if we are dragged
+
+   m_select->GetPTable()->SetMouseCapture();
+
+   m_select->SetObjectPos();
+}
+
+void IWinUIPart::OnLButtonUp(int x, int y)
+{
+   m_select->m_dragging = false;
+
+#ifndef __STANDALONE__
+   ReleaseCapture();
+#endif
+
+   if (m_select->m_markedForUndo)
+   {
+      m_select->m_markedForUndo = false;
+      m_select->GetIEditable()->EndUndo();
+      if (m_select->GetPTable())
+         m_select->GetPTable()->SetDirtyDraw();
+   }
+}
+
 void IWinUIPart::DoCommand(int icmd, int x, int y)
 {
    // Commands that are handled by the table element
@@ -39,7 +66,8 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          // and table will not be unselected, because the
          // user might be drawing a box around other objects
          // to add them to the selection group
-         currentTable->OnLButtonDown(x, y); // Start the band select
+         if (const auto tablePart = WinUIPartRegistry::Create(m_editor, currentTable->GetISelect()))
+            tablePart->OnLButtonDown(x, y); // Start the band select
          return;
       }
 

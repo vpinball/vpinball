@@ -50,10 +50,6 @@ public:
    // Report a change that would need the Win32 UI to be redrawn
    virtual void SetDirtyDraw();
 
-   // Win32 editor picking
-   virtual void OnLButtonDown(int x, int y);
-   virtual void OnLButtonUp(int x, int y);
-
    virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
    virtual void SetObjectPos();
 

@@ -26,31 +26,6 @@ void ISelect::SetObjectPos()
    m_vpinball->ClearObjectPosCur();
 }
 
-void ISelect::OnLButtonDown(int x, int y)
-{
-   m_dragging = true;
-   m_markedForUndo = false; // So we will be marked when and if we are dragged
-
-   GetPTable()->SetMouseCapture();
-
-   SetObjectPos();
-}
-
-void ISelect::OnLButtonUp(int x, int y)
-{
-   m_dragging = false;
-
-#ifndef __STANDALONE__
-   ReleaseCapture();
-#endif
-
-   if (m_markedForUndo)
-   {
-      m_markedForUndo = false;
-      STOPUNDOSELECT
-   }
-}
-
 void ISelect::FlipY(const Vertex2D& pvCenter)
 {
    GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this

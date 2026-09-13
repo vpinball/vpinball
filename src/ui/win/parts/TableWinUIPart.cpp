@@ -15,6 +15,24 @@ TableWinUIPart::TableWinUIPart(PinTableWnd *editor, PinTable *table)
 {
 }
 
+void TableWinUIPart::OnLButtonDown(int x, int y)
+{
+#ifndef __STANDALONE__
+   const Vertex2D v = m_table->TransformPoint(x, y);
+
+   m_table->m_rcDragRect.left = v.x;
+   m_table->m_rcDragRect.right = v.x;
+   m_table->m_rcDragRect.top = v.y;
+   m_table->m_rcDragRect.bottom = v.y;
+
+   m_table->m_dragging = true;
+
+   m_editor->SetCapture();
+
+   m_table->SetDirtyDraw();
+#endif
+}
+
 void TableWinUIPart::DoCommand(int icmd, int x, int y)
 {
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))

@@ -374,18 +374,6 @@ const IEditable *DragPoint::GetIEditable() const
    return M_PIHDP->GetIEditable();
 }
 
-void DragPoint::OnLButtonDown(int x, int y)
-{
-   ISelect::OnLButtonDown(x, y);
-   GetPTable()->SetDirtyDraw();
-}
-
-void DragPoint::OnLButtonUp(int x, int y)
-{
-   ISelect::OnLButtonUp(x, y);
-   GetPTable()->SetDirtyDraw();
-}
-
 void DragPoint::SetObjectPos()
 {
     m_vpinball->SetObjectPosCur(m_v.x, m_v.y);
