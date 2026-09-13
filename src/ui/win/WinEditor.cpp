@@ -962,7 +962,7 @@ void WinEditor::DoPlay(const int playMode)
    SetForegroundWindow();
 
    table->SetDirtyDraw();
-   table->RefreshProperties();
+   tableEditor->RefreshProperties();
    tableEditor->BeginAutoSaveCounter();
    tableEditor->EnableWindow();
    tableEditor->SetFocus();

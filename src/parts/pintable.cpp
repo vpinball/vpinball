@@ -3658,14 +3658,6 @@ void PinTable::SetDefaultPhysics(const bool fromMouseClick)
    m_scatter = DEFAULT_TABLE_PFSCATTERANGLE;
 }
 
-void PinTable::RefreshProperties()
-{
-#ifndef __STANDALONE__
-   if (m_tableEditor)
-      m_vpinball->SetPropSel(m_tableEditor->m_vmultisel);
-#endif
-}
-
 void PinTable::OnDelete()
 {
 #ifndef __STANDALONE__

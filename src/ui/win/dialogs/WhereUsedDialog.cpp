@@ -385,7 +385,7 @@ void WhereUsedDialog::EditObject(HWND hWhereListView)
             {
                CCO(PinTable) *const pt = g_pvp->GetActiveTable();
                pt->m_tableEditor->AddMultiSel(psel, false, false, false);
-               pt->RefreshProperties();
+               pt->m_tableEditor->RefreshProperties();
             }
          }
       }

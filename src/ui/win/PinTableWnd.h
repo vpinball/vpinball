@@ -26,6 +26,7 @@ public:
    bool MultiSelIsEmpty() const;
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
+   void RefreshProperties();
 
 #ifndef __STANDALONE__
    void SetMouseCursor();
