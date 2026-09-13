@@ -85,7 +85,6 @@ class Light :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   friend class LightWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -163,6 +162,9 @@ public:
    double m_currentFilamentTemperature;
    float m_surfaceHeight;
    bool  m_lockedByLS = false;
+
+   // ISelect of the light center handle, for editor picking
+   ISelect *GetLightCenterSelect() { return &m_lightcenter; }
 
 private:
    class LightCenter final : public ISelect

@@ -441,6 +441,23 @@ void HitTarget::TransformVertices()
    }
 }
 
+void HitTarget::GetEditorWireframe(vector<Vertex2D> &edges) const
+{
+   edges.reserve(m_numIndices * 2);
+   for (unsigned i = 0; i < m_numIndices; i += 3)
+   {
+      const Vertex3Ds &A = m_hitUIVertices[m_indices[i]];
+      const Vertex3Ds &B = m_hitUIVertices[m_indices[i + 1]];
+      const Vertex3Ds &C = m_hitUIVertices[m_indices[i + 2]];
+      edges.emplace_back(A.x, A.y);
+      edges.emplace_back(B.x, B.y);
+      edges.emplace_back(B.x, B.y);
+      edges.emplace_back(C.x, C.y);
+      edges.emplace_back(C.x, C.y);
+      edges.emplace_back(A.x, A.y);
+   }
+}
+
 void HitTarget::ExportMesh(ObjLoader& loader)
 {
    const string name = MakeString(m_wzName);

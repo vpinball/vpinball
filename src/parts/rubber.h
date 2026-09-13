@@ -47,7 +47,6 @@ class Rubber :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   friend class RubberWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -125,6 +124,14 @@ public:
 
    RubberData m_d;
 
+   // Fills 'outline' with the closed 2D outline of the rubber for editor display, and optionally
+   // 'crossFlags' with one flag per curve vertex marking the ones located at a control point.
+   void GetEditorOutline(vector<Vertex2D> &outline, vector<bool> *crossFlags, const float accuracy) const;
+
+   // Fills 'edges' with pairs of 2D vertices forming the wireframe of the generated mesh for editor display.
+   // This actually regenerate the mesh
+   void GetEditorWireframe(vector<Vertex2D> &edges);
+
 private:
    void AddHitEdge(class PhysicsEngine *physics, ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI);
    void SetupHitObject(class PhysicsEngine *physics, HitObject *obj, const bool isUI);
@@ -153,7 +160,6 @@ private:
 
    void UpdateRubber(const bool updateVB, const float height);
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
-   void DrawRubberMesh(Sur * const psur);
 
    // IRubber
 public:

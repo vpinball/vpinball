@@ -174,6 +174,21 @@ void Decal::SetObjectPos()
    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
+void Decal::GetEditorQuad(Vertex2D rgv[4]) const
+{
+   const float halfwidth = m_realwidth * 0.5f;
+   const float halfheight = m_realheight * 0.5f;
+
+   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float sn = sinf(radangle);
+   const float cs = cosf(radangle);
+
+   rgv[0] = Vertex2D(m_d.m_vCenter.x + sn * halfheight - cs * halfwidth, m_d.m_vCenter.y - cs * halfheight - sn * halfwidth);
+   rgv[1] = Vertex2D(m_d.m_vCenter.x + sn * halfheight + cs * halfwidth, m_d.m_vCenter.y - cs * halfheight + sn * halfwidth);
+   rgv[2] = Vertex2D(m_d.m_vCenter.x - sn * halfheight + cs * halfwidth, m_d.m_vCenter.y + cs * halfheight + sn * halfwidth);
+   rgv[3] = Vertex2D(m_d.m_vCenter.x - sn * halfheight - cs * halfwidth, m_d.m_vCenter.y + cs * halfheight - sn * halfwidth);
+}
+
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    ISelect::Rotate(ang, pvCenter, useElementCenter);

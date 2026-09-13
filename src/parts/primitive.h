@@ -87,7 +87,6 @@ class Primitive :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   friend class PrimitiveWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -289,6 +288,15 @@ public:
 
    const Matrix3D &RecalculateMatrices();
    void TransformVertices();
+
+   // Fills 'triangles' with 3 consecutive 2D vertices per mesh triangle, in reversed winding order
+   // (for top-down editor display). TransformVertices() must have been called beforehand.
+   void GetEditorTriangles(vector<Vertex2D> &triangles) const;
+
+   // Fills 'edges' with pairs of 2D vertices forming the editor wireframe (all edges, or only the
+   // feature edges selected by m_edgeFactorUI), or 'polyline' with a simplified outline used for
+   // large meshes. TransformVertices() must have been called beforehand.
+   void GetEditorWireframe(vector<Vertex2D> &edges, vector<Vertex2D> &polyline) const;
 
    void setInPlayState(const bool newVal);
 

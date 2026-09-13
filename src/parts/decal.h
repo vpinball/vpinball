@@ -44,7 +44,6 @@ class Decal :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   friend class DecalWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -84,6 +83,9 @@ public:
    void EnsureSize();
 
    DecalData m_d;
+
+   // Computes the 4 vertices of the rotated quad of this decal for editor display
+   void GetEditorQuad(Vertex2D rgv[4]) const;
 
 private:
    void GetTextSize(int * const px, int * const py);

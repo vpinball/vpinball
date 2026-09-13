@@ -47,7 +47,6 @@ class Trigger :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   friend class TriggerWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -114,7 +113,13 @@ public:
 
    TriggerData m_d;
 
+   // Fills 'outline' with the 2D outline of wire-shaped triggers for editor display (empty for other shapes)
+   void GetWireOutline(vector<Vertex2D> &outline) const;
+
 private:
+   // Regenerates the default drag point shape centered on (x, y), releasing any previously defined
+   // drag points. Must only be called when the shape is not already defined, as existing drag
+   // points may contain user-made changes that must be kept.
    void InitShape(float x, float y);
    void GenerateMesh();
 

@@ -94,7 +94,7 @@ void LightWinUIPart::RenderOutline(Sur* const psur)
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->Polygon(vvertex);
 
-      psur->SetObject((ISelect*)&m_light->m_lightcenter);
+      psur->SetObject(m_light->GetLightCenterSelect());
       break;
    }
    }

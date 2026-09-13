@@ -74,8 +74,6 @@ class Flipper :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-   friend class FlipperWinUIPart;
-
 public:
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
@@ -168,6 +166,9 @@ public:
 
    FlipperData m_d;
 
+   // Computes the 4 tangent vertices and end center of the flipper shape (pure geometry helper)
+   void GetVertices(const float basex, const float basey, const float angle, const float baseradius, const float endradius, Vertex2D &vEndCenter, Vertex2D (&rgvTangents)[4]) const;
+
 private:
    Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
@@ -175,8 +176,6 @@ private:
    std::shared_ptr<MeshBuffer> m_meshEdgeRubberBuffer;
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;
-
-   void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
 
    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
 
