@@ -65,7 +65,6 @@ public:
 
    Surface()
    {
-      m_menuid = IDR_SURFACEMENU;
       m_d.m_collidable = true;
       m_d.m_slingshotAnimation = true;
       m_d.m_isBottomSolid = false;

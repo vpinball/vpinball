@@ -18,6 +18,7 @@ public:
    void OnLButtonUp(int x, int y) override;
    void UpdateStatusBarObjectPos() override;
 
+   int GetMenuId() const override;
    void EditMenu(Win32xx::CMenu& menu) override;
    void DoCommand(int icmd, int x, int y) override;
 

@@ -62,7 +62,6 @@ public:
 #endif
    Ramp()
    {
-      m_menuid = IDR_SURFACEMENU;
       m_d.m_collidable = true;
       m_d.m_visible = true;
       m_d.m_depthBias = 0.0f;

@@ -360,8 +360,6 @@ void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const
    m_calcHeight = 0.0f;
    m_autoTexture = true;
    m_texturecoord = 0.0f;
-
-   m_menuid = (pihdp->GetIEditable()->GetItemType() == eItemRubber) ? IDR_POINTMENU_SMOOTH : IDR_POINTMENU;
 }
 
 IEditable *DragPoint::GetIEditable()

@@ -57,7 +57,7 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Trigger() { m_menuid = IDR_SURFACEMENU; }
+   Trigger() { }
    virtual ~Trigger();
 
    BEGIN_COM_MAP(Trigger)
