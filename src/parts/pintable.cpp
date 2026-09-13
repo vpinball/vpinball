@@ -1607,14 +1607,13 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          {
             // Process unnamed parts after named parts
             std::ranges::stable_partition(parts.begin(), parts.end(), [](IEditable *p) { return p && !p->GetIScriptable()->m_wzName.empty(); });
-            for (size_t i = 0; i < parts.size(); ++i)
+            for (size_t i = 0; i < parts.size(); )
             {
                IEditable * const part = parts[i];
                if (part == nullptr)
                {
                   PLOGE << "Failed to load one of the table parts";
                   parts.erase(parts.begin() + i);
-                  --i;
                }
                else
                {
@@ -1629,6 +1628,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   }
                   AddPart(part);
                   part->Release();
+                  i++;
                }
             }
 
