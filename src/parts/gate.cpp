@@ -31,7 +31,7 @@ Gate *Gate::CopyForPlay() const
 
 void Gate::SetGateType(GateType type)
 {
-    switch (m_d.m_type)
+    switch (type)
     {
     case GateWireW:
     {
