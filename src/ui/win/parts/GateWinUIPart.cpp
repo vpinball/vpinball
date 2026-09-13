@@ -8,7 +8,7 @@
 #include "ui/win/parts/GateWinUIPart.h"
 
 GateWinUIPart::GateWinUIPart(PinTableWnd* editor, Gate* gate)
-   : m_editor(editor)
+   : IWinUIPart(editor, gate)
    , m_gate(gate)
 {
 }

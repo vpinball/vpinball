@@ -9,7 +9,7 @@
 
 
 DecalWinUIPart::DecalWinUIPart(PinTableWnd* editor, Decal* decal)
-   : m_editor(editor)
+   : IWinUIPart(editor, decal)
    , m_decal(decal)
 {
 }

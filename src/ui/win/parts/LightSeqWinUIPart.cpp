@@ -8,7 +8,7 @@
 #include "ui/win/parts/LightSeqWinUIPart.h"
 
 LightSeqWinUIPart::LightSeqWinUIPart(PinTableWnd* editor, LightSeq* lightseq)
-   : m_editor(editor)
+   : IWinUIPart(editor, lightseq)
    , m_lightseq(lightseq)
 {
 }

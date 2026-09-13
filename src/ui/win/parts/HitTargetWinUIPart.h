@@ -14,6 +14,5 @@ public:
    void UIRenderPass2(Sur* psur) override;
 
 private:
-   PinTableWnd* const m_editor;
    HitTarget* const m_hittarget;
 };

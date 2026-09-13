@@ -1,0 +1,21 @@
+#pragma once
+
+#include "ui/win/IWinUIPart.h"
+#include "ui/win/PinTableWnd.h"
+
+class PinTable;
+
+class TableWinUIPart final : public IWinUIPart
+{
+public:
+   explicit TableWinUIPart(PinTableWnd* editor, PinTable* table);
+
+   // The table itself is rendered by PinTableWnd
+   void UIRenderPass1(Sur* psur) override { }
+   void UIRenderPass2(Sur* psur) override { }
+
+   void DoCommand(int icmd, int x, int y) override;
+
+private:
+   PinTable* const m_table;
+};

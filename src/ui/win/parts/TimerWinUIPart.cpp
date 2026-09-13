@@ -8,7 +8,7 @@
 #include "ui/win/parts/TimerWinUIPart.h"
 
 TimerWinUIPart::TimerWinUIPart(PinTableWnd* editor, Timer* timer)
-   : m_editor(editor)
+   : IWinUIPart(editor, timer)
    , m_timer(timer)
 {
 }

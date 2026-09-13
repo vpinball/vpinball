@@ -639,6 +639,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/IWinUIPart.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.cpp">
       <Filter>ui\win\parts</Filter>
     </ClCompile>
@@ -694,6 +697,9 @@
       <Filter>ui\win\parts</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/SurfaceWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TableWinUIPart.cpp">
       <Filter>ui\win\parts</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TextboxWinUIPart.cpp">
@@ -1710,6 +1716,9 @@
       <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/SurfaceWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TableWinUIPart.h">
       <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TextboxWinUIPart.h">

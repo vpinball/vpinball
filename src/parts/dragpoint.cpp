@@ -425,44 +425,34 @@ void DragPoint::Uncreate()
    Release();
 }
 
-#ifndef __STANDALONE__
-void DragPoint::DoCommand(int icmd, int x, int y)
+void DragPoint::ToggleSmooth()
 {
-   ISelect::DoCommand(icmd, x, y);
-   switch (icmd)
+   STARTUNDOSELECT
+   m_smooth = !m_smooth;
+   const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)M_PIHDP->m_vdpoint.size()) % (int)M_PIHDP->m_vdpoint.size();
+   if (m_smooth && m_slingshot)
    {
-   case ID_POINTMENU_SMOOTH:
+      m_slingshot = false;
+   }
+   if (m_smooth && M_PIHDP->m_vdpoint[index2]->m_slingshot)
    {
-      STARTUNDOSELECT
-      m_smooth = !m_smooth;
-      const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)M_PIHDP->m_vdpoint.size()) % (int)M_PIHDP->m_vdpoint.size();
-      if (m_smooth && m_slingshot)
-      {
-         m_slingshot = false;
-      }
-      if (m_smooth && M_PIHDP->m_vdpoint[index2]->m_slingshot)
-      {
-         M_PIHDP->m_vdpoint[index2]->m_slingshot = false;
-      }
-      STOPUNDOSELECT
-      break;
+      M_PIHDP->m_vdpoint[index2]->m_slingshot = false;
    }
-   case ID_POINTMENU_SLINGSHOT:
-   {
-      STARTUNDOSELECT
-      m_slingshot = !m_slingshot;
-      if (m_slingshot)
-      {
-         m_smooth = false;
-         const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % M_PIHDP->m_vdpoint.size();
-         M_PIHDP->m_vdpoint[index2]->m_smooth = false;
-      }
-      STOPUNDOSELECT
-      break;
-   }
-   }
+   STOPUNDOSELECT
 }
-#endif
+
+void DragPoint::ToggleSlingshot()
+{
+   STARTUNDOSELECT
+   m_slingshot = !m_slingshot;
+   if (m_slingshot)
+   {
+      m_smooth = false;
+      const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % M_PIHDP->m_vdpoint.size();
+      M_PIHDP->m_vdpoint[index2]->m_smooth = false;
+   }
+   STOPUNDOSELECT
+}
 
 STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
 {

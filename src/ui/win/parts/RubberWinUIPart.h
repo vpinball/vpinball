@@ -13,8 +13,8 @@ public:
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;
+   void DoCommand(int icmd, int x, int y) override;
 
 private:
-   PinTableWnd* const m_editor;
    Rubber* const m_rubber;
 };

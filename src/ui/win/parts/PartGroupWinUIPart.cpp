@@ -8,7 +8,7 @@
 #include "ui/win/parts/PartGroupWinUIPart.h"
 
 PartGroupWinUIPart::PartGroupWinUIPart(PinTableWnd* editor, PartGroup* partgroup)
-   : m_editor(editor)
+   : IWinUIPart(editor, partgroup)
    , m_partgroup(partgroup)
 {
 }

@@ -15,6 +15,5 @@ public:
    void RenderBlueprint(Sur* psur, bool solid) override;
 
 private:
-   PinTableWnd* const m_editor;
    Bumper* const m_bumper;
 };

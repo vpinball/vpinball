@@ -38,10 +38,6 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
 
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
-
    IEditable *GetIEditable() final;
    const IEditable *GetIEditable() const final;
    PinTable *GetPTable() final { return GetIEditable()->GetPTable(); }
@@ -53,6 +49,9 @@ public:
 
    void Copy();
    void Paste();
+
+   void ToggleSmooth();
+   void ToggleSlingshot();
 
    BEGIN_COM_MAP(DragPoint)
       COM_INTERFACE_ENTRY(IDispatch)

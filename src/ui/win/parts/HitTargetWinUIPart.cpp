@@ -8,7 +8,7 @@
 #include "ui/win/parts/HitTargetWinUIPart.h"
 
 HitTargetWinUIPart::HitTargetWinUIPart(PinTableWnd* editor, HitTarget* hittarget)
-   : m_editor(editor)
+   : IWinUIPart(editor, hittarget)
    , m_hittarget(hittarget)
 {
 }

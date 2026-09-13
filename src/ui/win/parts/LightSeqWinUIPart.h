@@ -17,6 +17,5 @@ public:
 private:
    void RenderOutline(Sur* psur);
 
-   PinTableWnd* const m_editor;
    LightSeq* const m_lightseq;
 };

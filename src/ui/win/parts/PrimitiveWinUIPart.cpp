@@ -8,7 +8,7 @@
 #include "ui/win/parts/PrimitiveWinUIPart.h"
 
 PrimitiveWinUIPart::PrimitiveWinUIPart(PinTableWnd* editor, Primitive* primitive)
-   : m_editor(editor)
+   : IWinUIPart(editor, primitive)
    , m_primitive(primitive)
 {
 }

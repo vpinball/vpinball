@@ -3,12 +3,13 @@
 #include "core/stdafx.h"
 
 #include "parts/trigger.h"
+#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/TriggerWinUIPart.h"
 
 TriggerWinUIPart::TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger)
-   : m_editor(editor)
+   : IWinUIPart(editor, trigger)
    , m_trigger(trigger)
 {
 }
@@ -122,4 +123,60 @@ void TriggerWinUIPart::EditMenu(CMenu& menu)
    menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | MF_ENABLED);
    menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | MF_ENABLED);
    menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | MF_ENABLED);
+}
+
+void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
+{
+   IWinUIPart::DoCommand(icmd, x, y);
+
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP: m_trigger->FlipPointY(m_trigger->GetPointCenter()); break;
+
+   case ID_WALLMENU_MIRROR: m_trigger->FlipPointX(m_trigger->GetPointCenter()); break;
+
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_trigger); break;
+
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_trigger); break;
+
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_trigger); break;
+
+   case ID_WALLMENU_ADDPOINT:
+   {
+      m_trigger->BeginUndo();
+      m_trigger->MarkForUndo();
+
+      const Vertex2D v = m_trigger->m_ptable->TransformPoint(x, y);
+
+      vector<RenderVertex> vvertex;
+      m_trigger->GetRgVertex(vvertex);
+
+      int iSeg;
+      Vertex2D vOut;
+      ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
+
+      // Go through vertices (including iSeg itself) counting control points until iSeg
+      int icp = 0;
+      for (int i = 0; i < (iSeg + 1); i++)
+         if (vvertex[i].controlPoint)
+            icp++;
+
+      //if (icp == 0) // need to add point after the last point
+      //icp = m_trigger->m_vdpoint.size();
+
+      CComObject<DragPoint>* pdp;
+      CComObject<DragPoint>::CreateInstance(&pdp);
+      if (pdp)
+      {
+         pdp->AddRef();
+         pdp->Init(m_trigger, vOut.x, vOut.y, 0.f, false);
+         m_trigger->m_vdpoint.insert(m_trigger->m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      }
+
+      m_trigger->EndUndo();
+      if (m_trigger->GetPTable())
+         m_trigger->GetPTable()->SetDirtyDraw();
+   }
+   break;
+   }
 }

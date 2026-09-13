@@ -15,7 +15,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
@@ -510,71 +509,6 @@ void Trigger::PutPointCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
 }
-
-#ifndef __STANDALONE__
-void Trigger::DoCommand(int icmd, int x, int y)
-{
-   ISelect::DoCommand(icmd, x, y);
-
-   switch (icmd)
-   {
-   case ID_WALLMENU_FLIP:
-      FlipPointY(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_MIRROR:
-      FlipPointX(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_ROTATE:
-      VPX::WinUI::RotatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_SCALE:
-      VPX::WinUI::ScalePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_TRANSLATE:
-      VPX::WinUI::TranslatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_ADDPOINT:
-   {
-      STARTUNDO
-
-      const Vertex2D v = m_ptable->TransformPoint(x, y);
-
-      vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
-
-      int iSeg;
-      Vertex2D vOut;
-      ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
-
-      // Go through vertices (including iSeg itself) counting control points until iSeg
-      int icp = 0;
-      for (int i = 0; i < (iSeg + 1); i++)
-         if (vvertex[i].controlPoint)
-            icp++;
-
-      //if (icp == 0) // need to add point after the last point
-      //icp = m_vdpoint.size();
-
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y, 0.f, false);
-         m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-      }
-
-      STOPUNDO
-   }
-   break;
-   }
-}
-#endif
 
 void Trigger::FlipY(const Vertex2D& pvCenter)
 {

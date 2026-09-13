@@ -8,7 +8,7 @@
 #include "ui/win/parts/SpinnerWinUIPart.h"
 
 SpinnerWinUIPart::SpinnerWinUIPart(PinTableWnd* editor, Spinner* spinner)
-   : m_editor(editor)
+   : IWinUIPart(editor, spinner)
    , m_spinner(spinner)
 {
 }

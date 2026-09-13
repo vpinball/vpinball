@@ -1078,7 +1078,7 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
    const int maxItems = m_table->m_vcollection.size() - 1;
 
    // run through all collections and list them in the context menu
-   // the actual processing is done in ISelect::DoCommand()
+   // the actual processing is done in IWinUIPart::DoCommand()
    for (int i = maxItems; i >= 0; i--)
    {
       UINT flags = MF_POPUP | MF_UNCHECKED;
@@ -1259,7 +1259,8 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    else
       newMenu.CreatePopupMenu();
 
-   if (const auto winPart = WinUIPartRegistry::Create(this, psel))
+   const auto winPart = WinUIPartRegistry::Create(this, psel);
+   if (winPart)
       winPart->EditMenu(newMenu);
 
    if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU && menuid != IDR_POINTMENU_SMOOTH)
@@ -1323,7 +1324,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
                   // I didn't find an easy way to identify the selected menu item of a context menu
                   // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
                   // added for finding the element out of the list
-                  // the selection is done in ISelect::DoCommand()
+                  // the selection is done in IWinUIPart::DoCommand()
                   const UINT_PTR id = 0x80000000 + ((UINT_PTR)i << 16) + ID_SELECT_ELEMENT;
                   newMenu.AppendMenu(MF_STRING, id, szTemp.c_str());
                }
@@ -1341,8 +1342,8 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 
    const int icmd = newMenu.TrackPopupMenuEx(TPM_RETURNCMD, pt.x, pt.y, m_mdiTable->GetHwnd(), nullptr);
 
-   if (icmd != 0)
-      psel->DoCommand(icmd, x, y);
+   if (icmd != 0 && winPart)
+      winPart->DoCommand(icmd, x, y);
 
    newMenu.Destroy();
 

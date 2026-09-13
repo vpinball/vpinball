@@ -8,7 +8,7 @@
 #include "ui/win/parts/TextboxWinUIPart.h"
 
 TextboxWinUIPart::TextboxWinUIPart(PinTableWnd* editor, Textbox* textbox)
-   : m_editor(editor)
+   : IWinUIPart(editor, textbox)
    , m_textbox(textbox)
 {
 }

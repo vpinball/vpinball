@@ -3,12 +3,13 @@
 #include "core/stdafx.h"
 
 #include "parts/ramp.h"
+#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/RampWinUIPart.h"
 
 RampWinUIPart::RampWinUIPart(PinTableWnd* editor, Ramp* ramp)
-   : m_editor(editor)
+   : IWinUIPart(editor, ramp)
    , m_ramp(ramp)
 {
 }
@@ -132,4 +133,28 @@ void RampWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
    delete[] rgvLocal;
    delete[] pfCross;
    delete[] middlePoints;
+}
+
+void RampWinUIPart::DoCommand(int icmd, int x, int y)
+{
+   IWinUIPart::DoCommand(icmd, x, y);
+
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP: m_ramp->FlipPointY(m_ramp->GetPointCenter()); break;
+
+   case ID_WALLMENU_MIRROR: m_ramp->FlipPointX(m_ramp->GetPointCenter()); break;
+
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_ramp); break;
+
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_ramp); break;
+
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_ramp); break;
+
+   case ID_WALLMENU_ADDPOINT:
+   {
+      m_ramp->AddPoint(x, y, true);
+   }
+   break;
+   }
 }

@@ -51,68 +51,6 @@ void ISelect::OnLButtonUp(int x, int y)
    }
 }
 
-void ISelect::DoCommand(int icmd, int x, int y)
-{
-#ifndef __STANDALONE__
-   // Commands that are handled by the table element
-   if ( (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020)) // Assign to collection
-      || ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1)) // Assign to layer
-      || (icmd == ID_EDIT_DRAWINGORDER_HIT)
-      || (icmd == ID_EDIT_DRAWINGORDER_SELECT)
-      || (icmd == ID_ASSIGN_TO_CURRENT_LAYER)
-      || (icmd == IDC_COPY)
-      || (icmd == IDC_PASTE)
-      || (icmd == IDC_PASTEAT))
-   {
-      GetPTable()->DoCommand(icmd, x, y);
-      return;
-   }
-
-   IEditable * const piedit = GetIEditable();
-   if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
-   {
-      const int ksshift = GetKeyState(VK_SHIFT);
-      //const int ksctrl = GetKeyState(VK_CONTROL);
-
-      PinTable * const currentTable = GetPTable();
-      const int i = (icmd & 0x00FF0000) >> 16;
-      ISelect * const pisel = currentTable->m_allHitElements[i];
-
-      const bool add = ((ksshift & 0x80000000) != 0);
-
-      if (pisel == (ISelect *)currentTable && add)
-      {
-         // Can not include the table in multi-select
-         // and table will not be unselected, because the
-         // user might be drawing a box around other objects
-         // to add them to the selection group
-         currentTable->OnLButtonDown(x, y); // Start the band select
-         return;
-      }
-
-      currentTable->AddMultiSel(pisel, add, true, true);
-      return;
-   }
-   switch (icmd)
-   {
-   case ID_DRAWINFRONT:
-      GetPTable()->MovePartToFront(piedit);
-      break;
-   case ID_DRAWINBACK:
-      GetPTable()->MovePartToBack(piedit);
-      break;
-   case ID_SETASDEFAULT:
-      piedit->WriteRegDefaults();
-      break;
-   case ID_LOCK:
-      STARTUNDOSELECT
-      SetUILock(!IsUILocked());
-      STOPUNDOSELECT
-      break;
-   }
-#endif
-}
-
 void ISelect::FlipY(const Vertex2D& pvCenter)
 {
    GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this

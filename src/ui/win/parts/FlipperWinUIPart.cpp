@@ -8,7 +8,7 @@
 #include "ui/win/parts/FlipperWinUIPart.h"
 
 FlipperWinUIPart::FlipperWinUIPart(PinTableWnd* editor, Flipper* flipper)
-   : m_editor(editor)
+   : IWinUIPart(editor, flipper)
    , m_flipper(flipper)
 {
 }
