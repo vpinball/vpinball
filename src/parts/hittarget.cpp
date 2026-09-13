@@ -114,7 +114,7 @@ void HitTarget::SetMeshType(const TargetType type)
 
 HRESULT HitTarget::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   SetDefaults(false);
+   SetDefaults(fromMouseClick);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
    UpdateStatusBarInfo();
