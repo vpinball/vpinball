@@ -6,12 +6,25 @@
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/parts/LightWinUIPart.h"
 
 LightWinUIPart::LightWinUIPart(PinTableWnd* editor, Light* light)
    : IWinUIPart(editor, light)
    , m_light(light)
+   , m_pointParts(editor, light)
 {
+}
+
+IWinUIPart* LightWinUIPart::GetSubPart(ISelect* select)
+{
+   if (select == m_light->GetLightCenterSelect())
+   {
+      if (!m_centerPart)
+         m_centerPart = WinUIPartRegistry::Create(m_editor, select);
+      return m_centerPart.get();
+   }
+   return m_pointParts.Get(select);
 }
 
 void LightWinUIPart::UpdateStatusBarObjectPos()
@@ -41,7 +54,7 @@ void LightWinUIPart::UIRenderPass1(Sur* const psur)
 
 void LightWinUIPart::UIRenderPass2(Sur* const psur)
 {
-   bool drawDragpoints = ((m_light->m_selectstate != ISelect::SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
@@ -50,7 +63,7 @@ void LightWinUIPart::UIRenderPass2(Sur* const psur)
       for (size_t i = 0; i < m_light->m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint>* const pdp = m_light->m_vdpoint[i];
-         if (pdp->m_selectstate != ISelect::SelectState::NotSelected)
+         if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
             break;
@@ -66,7 +79,7 @@ void LightWinUIPart::UIRenderPass2(Sur* const psur)
       {
          CComObject<DragPoint>* const pdp = m_light->m_vdpoint[i];
          psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
+         psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
          psur->SetObject(pdp);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -148,6 +161,6 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_light); break;
 
-   case ID_WALLMENU_ADDPOINT: m_light->AddPoint(x, y, true); break;
+   case ID_WALLMENU_ADDPOINT: m_light->AddPoint(m_editor->TransformPoint(x, y), true); break;
    }
 }

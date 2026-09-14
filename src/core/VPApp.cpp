@@ -273,7 +273,7 @@ int VPApp::GetLogicalNumberOfProcessors() const
    return m_logicalNumberOfProcessors;
 }
 
-void VPApp::InitInstance()
+void VPApp::InitInstance(bool isPlay)
 {
    std::filesystem::path iniFileName = m_commandLineCustomSettingsFileName;
    // Define settings location and load them
@@ -328,7 +328,10 @@ void VPApp::InitInstance()
    libwinevbs_init(&callbacks);
 #endif
 
-   Logger::SetupLogger(m_settings.GetEditor_EnableLog());
+   Logger::SetupLogger(m_settings.GetGlobal_EnableLog());
+   if (isPlay && m_settings.GetGlobal_ResetLogOnPlay())
+      Logger::Truncate();
+
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_settings.GetIniPath();
    PLOGI << "Number of logical CPU cores: " << GetLogicalNumberOfProcessors();

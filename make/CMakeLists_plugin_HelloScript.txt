@@ -71,10 +71,12 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(HelloScriptPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/helloscript"
+   )
+
    add_custom_command(TARGET HelloScriptPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/helloscript/plugin.cfg" "${PLUGINS_DIR}/helloscript/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloScriptPlugin>" "${PLUGINS_DIR}/helloscript"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:HelloScriptPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")

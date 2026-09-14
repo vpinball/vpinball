@@ -79,10 +79,12 @@ if(BUILD_SHARED)
       target_link_libraries(VNIPlugin PUBLIC vni)
    endif()
 
+   set_target_properties(VNIPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/vni"
+   )
+
    add_custom_command(TARGET VNIPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/vni/plugin.cfg" "${PLUGINS_DIR}/vni/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:VNIPlugin>" "${PLUGINS_DIR}/vni"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:VNIPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

@@ -10,7 +10,6 @@
 #include "renderer/Shader.h"
 #include "renderer/Texture.h"
 #include "renderer/trace.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
@@ -1288,10 +1287,9 @@ void Ramp::Load(IObjectReader& reader)
       });
 }
 
-void Ramp::AddPoint(int x, int y, const bool smooth)
+void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
 {
    STARTUNDO
-   const Vertex2D v = m_ptable->TransformPoint(x, y);
 
    vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex);

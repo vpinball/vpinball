@@ -83,10 +83,12 @@ if(BUILD_SHARED)
       target_link_libraries(AltSoundPlugin PUBLIC altsound)
    endif()
 
+   set_target_properties(AltSoundPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/altsound"
+   )
+
    add_custom_command(TARGET AltSoundPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/altsound/plugin.cfg" "${PLUGINS_DIR}/altsound/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:AltSoundPlugin>" "${PLUGINS_DIR}/altsound"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:AltSoundPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

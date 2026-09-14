@@ -43,6 +43,8 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
 {
    //speed normal to wall
    float dot = m_d.m_vel.Dot(hitNormal);
+   if (dot < -C_LOWNORMVEL)
+      g_pplayer->m_physics->OnBallWallHit(*this, hitNormal, -dot);
 
    if (dot >= -C_LOWNORMVEL)                          // nearly receding ... make sure of conditions
    {                                                  // otherwise if clearly approaching .. process the collision
@@ -244,7 +246,10 @@ void HitBall::Collide(const CollisionEvent& coll)
 
    // send ball/ball collision event to script function
    if (dot < -0.25f) // only collisions with at least some small true impact velocity (no contacts)
+   {
       g_pplayer->m_ptable->InvokeBallBallCollisionCallback(this, pball, -dot);
+      g_pplayer->m_pininput.PlayBallBallRumble(-dot);
+   }
 
 #ifdef C_DISP_GAIN
    float edist = -C_DISP_GAIN * coll.m_hitdistance;

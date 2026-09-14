@@ -248,6 +248,7 @@ public:
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void SetDefaults(const bool fromMouseClick) = 0;
+   virtual void SetDefaultPhysics(const bool fromMouseClick) { };
    virtual void WriteRegDefaults() = 0;
 
    virtual void Save(IObjectWriter &writer, const bool saveForUndo) = 0;

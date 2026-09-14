@@ -187,10 +187,12 @@ if(BUILD_SHARED)
       target_link_libraries(B2SLegacyPlugin PUBLIC SDL3)
    endif()
 
+   set_target_properties(B2SLegacyPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/b2slegacy"
+   )
+
    add_custom_command(TARGET B2SLegacyPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/b2slegacy/plugin.cfg" "${PLUGINS_DIR}/b2slegacy/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:B2SLegacyPlugin>" "${PLUGINS_DIR}/b2slegacy"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:B2SLegacyPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

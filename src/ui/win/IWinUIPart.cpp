@@ -6,14 +6,15 @@
 #include "core/iselect.h"
 #include "parts/pintable.h"
 #include "ui/win/IWinUIPart.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
-#include "ui/win/WinUIPartRegistry.h"
+#include "ui/win/parts/TableWinUIPart.h"
 
 void IWinUIPart::OnLButtonDown(int x, int y)
 {
 #ifndef __STANDALONE__
-   m_select->m_dragging = true;
-   m_select->m_markedForUndo = false; // So we will be marked when and if we are dragged
+   m_dragging = true;
+   m_markedForUndo = false; // So we will be marked when and if we are dragged
 
    m_select->GetPTable()->SetMouseCapture();
 
@@ -24,13 +25,13 @@ void IWinUIPart::OnLButtonDown(int x, int y)
 void IWinUIPart::OnLButtonUp(int x, int y)
 {
 #ifndef __STANDALONE__
-   m_select->m_dragging = false;
+   m_dragging = false;
 
    ReleaseCapture();
 
-   if (m_select->m_markedForUndo)
+   if (m_markedForUndo)
    {
-      m_select->m_markedForUndo = false;
+      m_markedForUndo = false;
       m_select->GetIEditable()->EndUndo();
       if (m_select->GetPTable())
          m_select->GetPTable()->SetDirtyDraw();
@@ -61,8 +62,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
       || (icmd == ID_EDIT_DRAWINGORDER_HIT) || (icmd == ID_EDIT_DRAWINGORDER_SELECT) || (icmd == ID_ASSIGN_TO_CURRENT_LAYER) || (icmd == IDC_COPY) || (icmd == IDC_PASTE)
       || (icmd == IDC_PASTEAT))
    {
-      if (const auto tablePart = WinUIPartRegistry::Create(m_editor, m_select->GetPTable()->GetISelect()))
-         tablePart->DoCommand(icmd, x, y);
+      m_editor->m_tablePart.DoCommand(icmd, x, y);
       return;
    }
 
@@ -84,12 +84,11 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          // and table will not be unselected, because the
          // user might be drawing a box around other objects
          // to add them to the selection group
-         if (const auto tablePart = WinUIPartRegistry::Create(m_editor, currentTable->GetISelect()))
-            tablePart->OnLButtonDown(x, y); // Start the band select
+         m_editor->m_tablePart.OnLButtonDown(x, y); // Start the band select
          return;
       }
 
-      currentTable->AddMultiSel(pisel, add, true, true);
+      m_editor->AddMultiSel(pisel, add, true, true);
       return;
    }
    switch (icmd)

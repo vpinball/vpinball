@@ -12,7 +12,6 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/bulb.h"
 #include "utils/color.h"
@@ -892,10 +891,9 @@ void Light::PutPointCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-void Light::AddPoint(int x, int y, const bool smooth)
+void Light::AddPoint(const Vertex2D &v, const bool smooth)
 {
    STARTUNDO
-   const Vertex2D v = m_ptable->TransformPoint(x, y);
 
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);

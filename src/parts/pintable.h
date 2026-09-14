@@ -345,7 +345,6 @@ public:
    void ReImportSound(VPX::Sound *const pps, const std::filesystem::path &filename);
    bool ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename);
    void RemoveSound(VPX::Sound *const pps);
-   static bool ExportImage(const Texture *const ppi, const string &filename);
    Texture* ImportImage(const std::filesystem::path &filename, const string &imageName);
    void RemoveImage(Texture *const ppi);
 
@@ -427,22 +426,8 @@ public:
    IEditable *GetElementByName(const char *const name) const;
    void OnDelete();
 
-   void UseTool(int x, int y, int tool);
-
-   void AssignSelectionToPartGroup(PartGroup *group);
-
-   // Transform editor window coordinates to table coordinates
-   Vertex2D TransformPoint(int x, int y) const;
-
-   void ClearMultiSel(ISelect *newSel = nullptr);
-   bool MultiSelIsEmpty() const;
-   ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
-   void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
-
-   HRESULT Save();
-   HRESULT SaveToStorage(IStorage *pstg);
+   HRESULT Save(VPXFileFeedback &feedback);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
-   HRESULT LoadGameFromFilename(const std::filesystem::path &filename);
    HRESULT LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback);
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
 
@@ -526,8 +511,6 @@ public:
    CONNECTION_POINT_ENTRY(DIID_ITableEvents)
    END_CONNECTION_POINT_MAP()
 
-   void ListMaterials(HWND hwndListView);
-   int AddListMaterial(HWND hwndListView, Material *const pmat);
    void RemoveMaterial(Material *const pmat);
    void AddMaterial(Material *const pmat);
 
@@ -607,8 +590,6 @@ private:
    ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
 
 public:
-   VectorProtected<ISelect> m_vmultisel;
-
    float m_left = 0.f; // always zero for now
    float m_top = 0.f; // always zero for now
    float m_right = 0.f;
@@ -801,7 +782,6 @@ public:
    float GetPlayfieldOverridenSlope() const;
 
    const wstring& GetCollectionNameByElement(const ISelect *const element) const;
-   void RefreshProperties();
 
    void SetNotesText(const string &text)
    {

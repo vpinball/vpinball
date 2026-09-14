@@ -74,10 +74,12 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(RemoteControlPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/remote-control"
+   )
+
    add_custom_command(TARGET RemoteControlPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/remote-control/plugin.cfg" "${PLUGINS_DIR}/remote-control/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:RemoteControlPlugin>" "${PLUGINS_DIR}/remote-control"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:RemoteControlPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")

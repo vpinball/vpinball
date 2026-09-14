@@ -28,6 +28,7 @@ enum class VPinballStatus(val value: Int) {
 }
 
 enum class VPinballSettingsSection(val value: String) {
+    GLOBAL("Global"),
     STANDALONE("Standalone"),
     PLAYER("Player"),
     PLUGIN_DMDUTIL("Plugin.DMDUtil");

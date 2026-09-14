@@ -2,10 +2,8 @@
 
 #pragma once
 
-class Sur;
 class PinTable;
 class IEditable;
-struct PropertyPane;
 class WinEditor;
 
 // Warning: these are Win32 ui part id, but also used to identify table parts (see IEditable)
@@ -84,8 +82,6 @@ public:
 
    virtual void PutCenter(const Vertex2D& pv) = 0;
 
-   virtual void SetDefaultPhysics(const bool fromMouseClick) {}
-
    HRESULT Helper_GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
    HRESULT Helper_GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
 
@@ -93,9 +89,6 @@ public:
    virtual const IEditable *GetIEditable() const = 0;
 
    virtual int GetSelectLevel() const { return 1; }
-   virtual bool LoadMeshDialog() { return false; }
-   virtual void ExportMeshDialog() {}
-   virtual void AddPoint(int x, int y, const bool smooth) {}
    virtual void UpdateStatusBarInfo();
 
    virtual bool IsUILocked() const = 0;
@@ -103,18 +96,6 @@ public:
    virtual bool IsUIVisible() const = 0;
    virtual void SetUIVisible(bool visible) = 0;
    bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
-
-   enum class SelectState
-   {
-      NotSelected,
-      Selected,
-      MultiSelected
-   };
-   SelectState m_selectstate = SelectState::NotSelected;
-
-   bool m_dragging = false;
-
-   bool m_markedForUndo = false; // Flag set when dragged to enable undo
 
 protected:
    WinEditor *m_vpinball = nullptr;

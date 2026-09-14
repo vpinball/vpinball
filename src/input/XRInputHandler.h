@@ -202,11 +202,20 @@ public:
       }
    }
 
-   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) override
+   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration, const bool kickLow, const bool kickHigh) override
    {
       const float amplitude = saturate(max(lowFrequencySpeed, highFrequencySpeed));
       if (amplitude <= 0.f || ms_duration <= 0)
+      {
+         for (XrAction action : m_hapticActions)
+         {
+            XrHapticActionInfo hapticInfo { XR_TYPE_HAPTIC_ACTION_INFO };
+            hapticInfo.action = action;
+            hapticInfo.subactionPath = XR_NULL_PATH;
+            xrStopHapticFeedback(m_session, &hapticInfo);
+         }
          return;
+      }
       XrHapticVibration vibration { XR_TYPE_HAPTIC_VIBRATION };
       vibration.amplitude = amplitude;
       vibration.duration = static_cast<XrDuration>(ms_duration) * 1000000LL;

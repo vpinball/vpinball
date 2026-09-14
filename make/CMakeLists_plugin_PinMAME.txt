@@ -103,10 +103,12 @@ if(BUILD_SHARED)
       target_link_libraries(PinMAMEPlugin PUBLIC pinmame)
    endif()
 
+   set_target_properties(PinMAMEPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/pinmame"
+   )
+
    add_custom_command(TARGET PinMAMEPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pinmame/plugin.cfg" "${PLUGINS_DIR}/pinmame/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinMAMEPlugin>" "${PLUGINS_DIR}/pinmame"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinMAMEPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

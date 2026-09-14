@@ -87,10 +87,12 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(B2SPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/b2s"
+   )
+
    add_custom_command(TARGET B2SPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/b2s/plugin.cfg" "${PLUGINS_DIR}/b2s/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:B2SPlugin>" "${PLUGINS_DIR}/b2s"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:B2SPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")

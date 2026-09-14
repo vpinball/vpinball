@@ -11,6 +11,7 @@
 RubberWinUIPart::RubberWinUIPart(PinTableWnd* editor, Rubber* rubber)
    : IWinUIPart(editor, rubber)
    , m_rubber(rubber)
+   , m_pointParts(editor, rubber)
 {
 }
 
@@ -76,7 +77,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
       return;
    }
 
-   bool drawDragpoints = ((m_rubber->m_selectstate != ISelect::SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
@@ -85,7 +86,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
       for (size_t i = 0; i < m_rubber->m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint>* const pdp = m_rubber->m_vdpoint[i];
-         if (pdp->m_selectstate != ISelect::SelectState::NotSelected)
+         if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
             break;
@@ -99,7 +100,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
       {
          CComObject<DragPoint>* const pdp = m_rubber->m_vdpoint[i];
          psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+         psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(pdp);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -148,7 +149,7 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      m_rubber->AddPoint(x, y, true);
+      m_rubber->AddPoint(m_editor->TransformPoint(x, y), true);
    }
    break;
    }

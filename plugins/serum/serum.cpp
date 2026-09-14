@@ -102,42 +102,6 @@ MSGPI_BOOL_VAL_SETTING(serumPupTriggersProp, "PupTriggers", "Report colorization
 // It is part of the wire contract, so it changes in both places or neither.
 static constexpr std::string_view serumGameIdPrefix = "serum::"sv;
 
-// A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
-static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
-
-// Does this display carry the selected controller's output, directly or through
-// a chain of overrides?
-//
-// Walking the chain rather than checking one hop is what makes an alphanumeric
-// game colorizable. There the DMD comes from alphadmd, which renders it out of
-// the controller's segment displays and names one of them in overrideId -- so
-// the override is not a display, no lookup in `items` can resolve it, and only
-// its endpointId says who it belongs to. Stopping at the first hop then misses
-// anything stacked on top of that, an upscaler for instance, and Serum declines
-// to colorize a display that is plainly the controller's.
-//
-// The endpointId comparison is what the walk is for: the chain is followed
-// until it reaches a resource the controller owns, and a chain that leaves
-// `items` without reaching one is somebody else's.
-static bool IsFromController(const DisplaySrcId& src, uint32_t controllerEndpointId, const std::vector<DisplaySrcId>& items, unsigned int depth = 0)
-{
-   // A malformed graph must not hang the caller. Real chains are two or three
-   // links -- controller, colorizer, upscaler -- so this only trips on a cycle.
-   constexpr unsigned int maxOverrideDepth = 8;
-   if (depth > maxOverrideDepth)
-      return false;
-   if (src.id.endpointId == controllerEndpointId)
-      return true;
-   if (src.overrideId.id == 0)
-      return false;
-   if (src.overrideId.endpointId == controllerEndpointId)
-      return true;
-   for (const DisplaySrcId& item : items)
-      if (item.id == src.overrideId)
-         return IsFromController(item, controllerEndpointId, items, depth + 1);
-   return false;
-}
-
 // The setting names the size to skip, so every size it does not name is
 // produced. A value outside the enum degrades to "skip nothing" rather than to
 // no output at all.
@@ -245,11 +209,27 @@ public:
 private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
-      // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
+      // Only keep dmd corresponding to selected controller (or overriden from selected controller to support alphanumeric rendered DMD for example)
+      const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
+      {
+         if (src.id.endpointId == m_controllerEndpointId)
+            return true;
+         if (src.overrideId.id != 0)
+         {
+            if (src.overrideId.endpointId == m_controllerEndpointId)
+               return true;
+            for (const DisplaySrcId& item : items)
+               if (item.id == src.overrideId)
+                  return isFromController(item);
+         }
+         return false;
+      };
+
       DisplaySrcId selected { };
       for (const DisplaySrcId& item : items)
-         if (IsFromController(item, m_controllerEndpointId, items) && IsColorizableDmd(item))
-            selected = item;
+         if (isFromController(item)) // We have the colorization data for this DMD source
+            if (item.GetIdentifyFrame != nullptr && item.width >= 128) // The DMD source is supported by Serum colorizer
+               selected = item;
 
       items.clear();
       if (selected.id.id != 0)
@@ -539,33 +519,30 @@ private:
 
 static std::filesystem::path GetColorization(const std::string_view& gameId)
 {
-   VPXTableInfo tableInfo;
+   const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
+   const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
+
    VPXPluginAPI* vpxApi = nullptr;
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
-
-   const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
-   const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
-
-   // Priorities 1 and 2 are relative to the table, so they only apply in a host
-   // that has tables. Other hosts of this plugin -- PPUC drives real pinball
-   // hardware, and there are headless colorization tools -- have no VPX API at
-   // all, and must still reach the global setting below. Returning early here
-   // made GetColorization report "no colorization" for every game in those
-   // hosts, which SelectController reads as "this controller cannot be
-   // colorized", so Serum never loaded at all.
+   // Priorities 1 and 2 are relative to the table, so they only apply in a
+   // host that has tables. Other hosts -- PPUC drives real pinball hardware,
+   // and there are headless colorization tools -- have no VPX API at all and
+   // must still reach the global setting below.
    if (vpxApi != nullptr)
    {
+      VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
-      const std::filesystem::path tablePath = tableInfo.path;
+      std::filesystem::path tablePath = tableInfo.path;
 
-      // Priority 1: serum/rom/rom.cromc or .crz
+      // Priority 1: serum/rom/rom.cromc or .crz along VPX table
       if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / cromc); !path1.empty())
          return path1.parent_path().parent_path();
       else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / crz); !path2.empty())
          return path2.parent_path().parent_path();
-      // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz
+
+      // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz along VPX table
       else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / cromc); !path3.empty())
          return path3.parent_path().parent_path();
       else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / crz); !path4.empty())
@@ -580,7 +557,7 @@ static std::filesystem::path GetColorization(const std::string_view& gameId)
    return std::filesystem::path();
 }
 
-// Select the first controller exposing an identifiable DMD and a game for which we have the corresponding assets
+// Select the first controller exposing a game for which we have the corresponding assets
 static void SelectController(std::vector<ControllerDef>& items)
 {
    const unsigned int getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
@@ -588,11 +565,15 @@ static void SelectController(std::vector<ControllerDef>& items)
    msgApi->ReleaseMsgID(getDisplaySrcId);
    for (const ControllerDef& controller : items)
    {
-      const bool hasIdentifiableDmd = std::any_of(displays.begin(), displays.end(),
-         [&controller, &displays](const DisplaySrcId& display)
-         { return IsFromController(display, controller.endpointId, displays) && IsColorizableDmd(display); });
-      const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
-      if (hasIdentifiableDmd && !gameId.empty() && !GetColorization(gameId).empty())
+      // Never select our own trigger claim. It is a ControllerDef so consumers
+      // can match it by game id, but this plugin colorizes a controller and is
+      // never one itself. The claim carries the same game id as the controller
+      // it was made for, so it satisfies the test below: selecting it would
+      // tear the colorizer down and rebuild it against this endpoint, which
+      // republishes the claim, which selects it again.
+      if (controller.endpointId == endpointId)
+         continue;
+      if (const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId); !gameId.empty() && !GetColorization(gameId).empty())
       {
          items.clear();
          items.push_back(controller);

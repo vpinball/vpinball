@@ -41,6 +41,7 @@
 #include <iostream>
 #include "FreeImage.h"
 #include "dialogs/DrawingOrderDialog.h"
+#include "ui/win/dialogs/Win32ProgressBar.h"
 #else
 #include "standalone/FreeImage.h"
 #endif
@@ -500,7 +501,7 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
 
 #ifndef __STANDALONE__
    PinTable *const pt = editable->GetPTable();
-   g_pvp->SetPropSel(pt->m_vmultisel);
+   g_pvp->SetPropSel(pt->m_tableEditor->m_vmultisel);
    g_pvp->GetLayersListDialog()->Update();
 
    if (editable->GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
@@ -636,8 +637,8 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
                info.DoModal();
             }
          }
-         ptCur->ClearMultiSel(nullptr);
-         SetPropSel(ptCur->m_vmultisel);
+         ptCur->m_tableEditor->ClearMultiSel();
+         SetPropSel(ptCur->m_tableEditor->m_vmultisel);
          GetLayersListDialog()->ResetView();
          ToggleToolbar();
          SetEnableMenuItems();
@@ -907,6 +908,9 @@ void WinEditor::DoPlay(const int playMode)
       return;
    }
 
+   if (playMode == 0 && g_app->m_settings.GetGlobal_ResetLogOnPlay())
+      Logger::Truncate();
+
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
 
    // Create the player on a (shallow) copy of the table, that will be animated by the script, animations, ...
@@ -962,7 +966,7 @@ void WinEditor::DoPlay(const int playMode)
    SetForegroundWindow();
 
    table->SetDirtyDraw();
-   table->RefreshProperties();
+   tableEditor->RefreshProperties();
    tableEditor->BeginAutoSaveCounter();
    tableEditor->EnableWindow();
    tableEditor->SetFocus();
@@ -979,7 +983,7 @@ void WinEditor::DoPlay(const int playMode)
    }
 }
 
-bool WinEditor::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
+bool WinEditor::LoadFile(const bool updateEditor)
 {
    const string& szInitialDir = g_app->m_settings.GetRecentDir_LoadDir();
 
@@ -992,12 +996,12 @@ bool WinEditor::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
    if (index != string::npos)
       g_app->m_settings.SetRecentDir_LoadDir(filename[0].substr(0, index), false);
 
-   LoadFileName(filename[0], updateEditor, feedback);
+   LoadFileName(filename[0], updateEditor);
 
    return true;
 }
 
-void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VPXFileFeedback* feedback)
+void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
 {
    if (m_vtable.size() == MAX_OPEN_TABLES)
    {
@@ -1015,7 +1019,12 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VP
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    PinTableWnd *const ppt = mdiTable->GetTableWnd();
-   const HRESULT hr = feedback != nullptr ? ppt->m_table->LoadGameFromFilename(filename, *feedback) : ppt->m_table->LoadGameFromFilename(filename);
+#ifndef __STANDALONE__
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+#else
+   VPXFileFeedback feedback;
+#endif
+   const HRESULT hr = ppt->m_table->LoadGameFromFilename(filename, feedback);
 
    const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
    if (hashing_error)
@@ -1046,7 +1055,7 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VP
       g_app->m_settings.SetRecentDir_LoadDir(tablePath.string(), false);
       UpdateRecentFileList(filename);
 
-      ppt->m_table->AddMultiSel(ppt->m_table, false, true, false);
+      ppt->AddMultiSel(ppt->m_table, false, true, false);
       if (updateEditor)
       {
 #ifndef __STANDALONE__
@@ -1995,7 +2004,7 @@ void WinEditor::ToggleBackglassView()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
       // Set selection to something in the new view (unless hiding table elements)
-      ptCur->AddMultiSel((ISelect *)ptCur, false, true, false);
+      ptCur->m_tableEditor->AddMultiSel((ISelect *)ptCur, false, true, false);
 
    ToggleToolbar();
 }
@@ -2030,8 +2039,9 @@ void WinEditor::SetDefaultPhysics()
       if (answ == IDYES)
       {
          ptCur->BeginUndo();
-         for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
-            ptCur->m_vmultisel[i].SetDefaultPhysics(true);
+         for (int i = 0; i < ptCur->m_tableEditor->m_vmultisel.size(); i++)
+            if (auto editable = ptCur->m_tableEditor->m_vmultisel[i].GetIEditable(); editable)
+               editable->SetDefaultPhysics(true);
          ptCur->EndUndo();
       }
    }
@@ -2082,36 +2092,37 @@ void WinEditor::AddControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_table->m_vmultisel.empty())
+   if (!ptCur->m_vmultisel.empty())
    {
-      ISelect * const psel = ptCur->m_table->m_vmultisel.ElementAt(0);
+      ISelect *const psel = ptCur->m_vmultisel.ElementAt(0);
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
+         const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
          switch (psel->GetItemType())
          {
          case eItemRamp:
          {
-            Ramp * const pRamp = (Ramp *)psel;
-            pRamp->AddPoint(pt.x, pt.y, false);
+            Ramp *const pRamp = (Ramp *)psel;
+            pRamp->AddPoint(v, false);
             break;
          }
          case eItemLight:
          {
-            Light * const pLight = (Light *)psel;
-            pLight->AddPoint(pt.x, pt.y, false);
+            Light *const pLight = (Light *)psel;
+            pLight->AddPoint(v, false);
             break;
          }
          case eItemSurface:
          {
-            Surface * const pSurf = (Surface *)psel;
-            pSurf->AddPoint(pt.x, pt.y, false);
+            Surface *const pSurf = (Surface *)psel;
+            pSurf->AddPoint(v, false);
             break;
          }
          case eItemRubber:
          {
-            Rubber * const pRub = (Rubber *)psel;
-            pRub->AddPoint(pt.x, pt.y, false);
+            Rubber *const pRub = (Rubber *)psel;
+            pRub->AddPoint(v, false);
             break;
          }
          default:
@@ -2127,36 +2138,37 @@ void WinEditor::AddSmoothControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_table->m_vmultisel.empty())
+   if (!ptCur->m_vmultisel.empty())
    {
-      ISelect *const psel = ptCur->m_table->m_vmultisel.ElementAt(0);
+      ISelect *const psel = ptCur->m_vmultisel.ElementAt(0);
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
+         const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
          switch (psel->GetItemType())
          {
          case eItemRamp:
          {
-            Ramp * const pRamp = (Ramp *)psel;
-            pRamp->AddPoint(pt.x, pt.y, true);
+            Ramp *const pRamp = (Ramp *)psel;
+            pRamp->AddPoint(v, true);
             break;
          }
          case eItemLight:
          {
-            Light * const pLight = (Light *)psel;
-            pLight->AddPoint(pt.x, pt.y, true);
+            Light *const pLight = (Light *)psel;
+            pLight->AddPoint(v, true);
             break;
          }
          case eItemSurface:
          {
-            Surface * const pSurf = (Surface *)psel;
-            pSurf->AddPoint(pt.x, pt.y, true);
+            Surface *const pSurf = (Surface *)psel;
+            pSurf->AddPoint(v, true);
             break;
          }
          case eItemRubber:
          {
-            Rubber * const pRub = (Rubber *)psel;
-            pRub->AddPoint(pt.x, pt.y, true);
+            Rubber *const pRub = (Rubber *)psel;
+            pRub->AddPoint(v, true);
             break;
          }
          default:
@@ -2220,7 +2232,8 @@ void WinEditor::SaveTable(const bool saveAs)
       SetCaption(ptCur->m_title.c_str());
    }
 
-   hr = ptCur->Save();
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   hr = ptCur->Save(feedback);
    if (hr == S_OK)
       UpdateRecentFileList(ptCur->m_filename);
 #endif
@@ -2249,7 +2262,8 @@ void WinEditor::OpenNewTable(size_t tableId)
    ppt->m_glassTopHeight = ppt->m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)
       ppt->m_rgcolorcustom[i] = RGB(0, 0, 0);
-   ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path));
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path), feedback);
    ppt->m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_NextTableID);
    m_NextTableID++;
    ppt->m_settings.SetIniPath(std::filesystem::path());
@@ -2257,7 +2271,7 @@ void WinEditor::OpenNewTable(size_t tableId)
 
    m_vtable.push_back(mdiTable->GetTableWnd());
    AddMDIChild(mdiTable);
-   mdiTable->GetTable()->AddMultiSel(mdiTable->GetTable(), false, true, false);
+   mdiTable->GetTableWnd()->AddMultiSel(mdiTable->GetTable(), false, true, false);
    GetLayersListDialog()->ResetView();
    ToggleToolbar();
    if (m_dockNotes != nullptr)

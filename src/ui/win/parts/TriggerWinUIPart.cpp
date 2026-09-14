@@ -11,6 +11,7 @@
 TriggerWinUIPart::TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger)
    : IWinUIPart(editor, trigger)
    , m_trigger(trigger)
+   , m_pointParts(editor, trigger)
 {
 }
 
@@ -56,7 +57,7 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
 
       psur->Polygon(vvertex);
 
-      bool drawDragpoints = (m_trigger->m_selectstate != ISelect::SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
+      bool drawDragpoints = (m_selectstate != SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
       // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
       if (!drawDragpoints)
       {
@@ -64,7 +65,7 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
          for (size_t i = 0; i < m_trigger->m_vdpoint.size(); i++)
          {
             const CComObject<DragPoint>* const pdp = m_trigger->m_vdpoint[i];
-            if (pdp->m_selectstate != ISelect::SelectState::NotSelected)
+            if (m_pointParts.IsSelected(pdp))
             {
                drawDragpoints = true;
                break;
@@ -78,7 +79,7 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
          {
             CComObject<DragPoint>* const pdp = m_trigger->m_vdpoint[i];
             psur->SetFillColor(-1);
-            psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
+            psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
             psur->SetObject(pdp);
 
             psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -151,7 +152,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
       m_trigger->BeginUndo();
       m_trigger->MarkForUndo();
 
-      const Vertex2D v = m_trigger->m_ptable->TransformPoint(x, y);
+      const Vertex2D v = m_editor->TransformPoint(x, y);
 
       vector<RenderVertex> vvertex;
       m_trigger->GetRgVertex(vvertex);

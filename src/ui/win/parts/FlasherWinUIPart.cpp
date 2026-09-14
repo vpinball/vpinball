@@ -11,6 +11,7 @@
 FlasherWinUIPart::FlasherWinUIPart(PinTableWnd* editor, Flasher* flasher)
    : IWinUIPart(editor, flasher)
    , m_flasher(flasher)
+   , m_pointParts(editor, flasher)
 {
 }
 
@@ -93,13 +94,13 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool drawDragpoints = ((m_flasher->m_selectstate != ISelect::SelectState::NotSelected) || m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (const auto& pdp : m_flasher->m_vdpoint)
       {
-         if (pdp->m_selectstate != ISelect::SelectState::NotSelected)
+         if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
             break;
@@ -112,7 +113,7 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
       psur->SetFillColor(-1);
       for (const auto &pdp : m_flasher->m_vdpoint)
       {
-         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+         psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(pdp);
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -139,6 +140,6 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_flasher); break;
 
-   case ID_WALLMENU_ADDPOINT: m_flasher->AddPoint(x, y, false); break;
+   case ID_WALLMENU_ADDPOINT: m_flasher->AddPoint(m_editor->TransformPoint(x, y), false); break;
    }
 }

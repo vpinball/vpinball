@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "parts/pintable.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
@@ -383,8 +384,8 @@ void WhereUsedDialog::EditObject(HWND hWhereListView)
             if (psel != nullptr)
             {
                CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-               pt->AddMultiSel(psel, false, false, false);
-               pt->RefreshProperties();
+               pt->m_tableEditor->AddMultiSel(psel, false, false, false);
+               pt->m_tableEditor->RefreshProperties();
             }
          }
       }

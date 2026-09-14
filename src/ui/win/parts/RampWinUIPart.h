@@ -2,6 +2,7 @@
 
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
+#include "ui/win/parts/DragPointUIPartList.h"
 
 class Ramp;
 
@@ -17,6 +18,9 @@ public:
    int GetMenuId() const override { return IDR_SURFACEMENU; }
    void DoCommand(int icmd, int x, int y) override;
 
+   IWinUIPart* GetSubPart(ISelect* select) override { return m_pointParts.Get(select); }
+
 private:
    Ramp* const m_ramp;
+   DragPointUIPartList m_pointParts;
 };

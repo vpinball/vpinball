@@ -103,4 +103,5 @@ public:
 
 private:
    uint32_t m_last_hittime;
+   float m_rumblePeak = 0.f; // strongest impact of the current contact sequence, see Collide()
 };

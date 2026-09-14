@@ -83,11 +83,13 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(ScoreViewPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/scoreview"
+   )
+
    add_custom_command(TARGET ScoreViewPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/scoreview/plugin.cfg" "${PLUGINS_DIR}/scoreview/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:ScoreViewPlugin>" "${PLUGINS_DIR}/scoreview"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/scoreview/layouts" "${PLUGINS_DIR}/scoreview/layouts"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:ScoreViewPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")

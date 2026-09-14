@@ -147,6 +147,8 @@ public:
 
 Logger* Logger::m_pInstance = nullptr;
 
+static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>>* s_fileAppender = nullptr;
+
 Logger* Logger::GetInstance()
 {
    if (!m_pInstance)
@@ -170,6 +172,7 @@ void Logger::SetupLogger(const bool enable)
 #else
          static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(logPath.wstring().c_str(), 1024 * 1024 * 5, 1);
 #endif
+         s_fileAppender = &fileAppender;
          static DebugAppender debugAppender;
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
@@ -210,7 +213,6 @@ void Logger::Init()
 
 void Logger::Truncate()
 {
-   std::filesystem::path szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log");
-   std::ofstream ofs(szLogPath, std::ofstream::out | std::ofstream::trunc);
-   ofs.close();
+   if (s_fileAppender)
+      s_fileAppender->truncate();
 }

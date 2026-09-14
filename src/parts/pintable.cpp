@@ -35,7 +35,6 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 #include "ui/win/codeview.h"
-#include "ui/win/hitsur.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
@@ -44,10 +43,6 @@
 #include "utils/hash.h"
 #include "utils/objloader.h"
 #include "utils/ushock_output.h"
-
-#ifndef __STANDALONE__
-#include "ui/win/dialogs/Win32ProgressBar.h"
-#endif
 
 #include <algorithm>
 #include <fstream>
@@ -85,7 +80,6 @@ PinTable::PinTable()
    , m_undo(this)
 {
    m_renderSolid = m_settings.GetEditor_RenderSolid();
-   ClearMultiSel();
 
    SetDefaultPhysics(false);
 
@@ -162,7 +156,8 @@ void PinTable::UpdatePropertyImageList()
 {
 #ifndef __STANDALONE__
     // just update the combo boxes in the property dialog
-    g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
+    if (m_tableEditor)
+       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->m_vmultisel);
 #endif
 }
 
@@ -170,7 +165,8 @@ void PinTable::UpdatePropertyMaterialList()
 {
 #ifndef __STANDALONE__
     // just update the combo boxes in the property dialog
-    g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
+    if (m_tableEditor)
+       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->m_vmultisel);
 #endif
 }
 
@@ -382,6 +378,8 @@ void PinTable::AddPart(IEditable *const part)
    part->AddRef();
    part->m_ptable = this;
    m_vedit.push_back(part);
+   if (m_tableEditor)
+      m_tableEditor->OnPartAdded(part);
    if (auto scriptable = part->GetIScriptable(); scriptable)
    {
       assert(!scriptable->m_wzName.empty());
@@ -399,6 +397,8 @@ void PinTable::RemovePart(IEditable *const part)
    assert(it2 != m_vedit.end());
    assert(part->m_ptable == this);
    m_vedit.erase(it2);
+   if (m_tableEditor)
+      m_tableEditor->OnPartRemoved(part);
    if (auto scriptable = part->GetIScriptable(); scriptable)
    {
       assert(!part->GetIScriptable()->m_wzName.empty());
@@ -447,15 +447,15 @@ void PinTable::ReorderParts(bool isDrawingOrder)
    SetNonUndoableDirty(eSaveDirty);
    if (isDrawingOrder)
    {
-      for (int i = m_vmultisel.size() - 1; i >= 0; i--)
+      for (int i = m_tableEditor->m_vmultisel.size() - 1; i >= 0; i--)
       {
-         IEditable *const pedit = m_vmultisel[i].GetIEditable();
+         IEditable *const pedit = m_tableEditor->m_vmultisel[i].GetIEditable();
          RemoveFromVectorSingle(m_vedit, pedit);
       }
 
-      for (int i = m_vmultisel.size() - 1; i >= 0; i--)
+      for (int i = m_tableEditor->m_vmultisel.size() - 1; i >= 0; i--)
       {
-         IEditable *const pedit = m_vmultisel[i].GetIEditable();
+         IEditable *const pedit = m_tableEditor->m_vmultisel[i].GetIEditable();
          m_vedit.push_back(pedit);
       }
    }
@@ -748,7 +748,7 @@ void PinTable::SetupLookUpTables(bool isPlaying)
    }
 }
 
-HRESULT PinTable::Save()
+HRESULT PinTable::Save(VPXFileFeedback &feedback)
 {
 #ifndef __STANDALONE__
    // Get file name if needed
@@ -774,7 +774,7 @@ HRESULT PinTable::Save()
 
    RemoveInvalidReferences();
 
-   hr = SaveToStorage(pstgRoot);
+   hr = SaveToStorage(pstgRoot, feedback);
    if (SUCCEEDED(hr))
    {
       pstgRoot->Commit(STGC_DEFAULT);
@@ -797,17 +797,6 @@ HRESULT PinTable::Save()
    m_settings.Save();
 
    return S_OK;
-}
-
-HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
-{
-#ifndef __STANDALONE__
-   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
-#else
-   VPXFileFeedback feedback;
-#endif
-
-   return SaveToStorage(pstgRoot, feedback);
 }
 
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
@@ -1375,20 +1364,6 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
 #endif
 }
 
-HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename)
-{
-#ifndef __STANDALONE__
-   if (m_vpinball)
-   {
-      Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
-      return LoadGameFromFilename(filename, feedback);
-   }
-#endif
-
-   VPXFileFeedback feedback;
-   return LoadGameFromFilename(filename, feedback);
-}
-
 HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback)
 {
    if (filename.empty())
@@ -1631,14 +1606,13 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          {
             // Process unnamed parts after named parts
             std::ranges::stable_partition(parts.begin(), parts.end(), [](IEditable *p) { return p && !p->GetIScriptable()->m_wzName.empty(); });
-            for (size_t i = 0; i < parts.size(); ++i)
+            for (size_t i = 0; i < parts.size(); )
             {
                IEditable * const part = parts[i];
                if (part == nullptr)
                {
                   PLOGE << "Failed to load one of the table parts";
                   parts.erase(parts.begin() + i);
-                  --i;
                }
                else
                {
@@ -1653,6 +1627,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   }
                   AddPart(part);
                   part->Release();
+                  i++;
                }
             }
 
@@ -2712,32 +2687,6 @@ void PinTable::FireOptionEvent(OptionEventType eventType)
    FireDispID(DISPID_GameEvents_OptionEvent, &dispparams);
 }
 
-void PinTable::AssignSelectionToPartGroup(PartGroup* group)
-{
-   STARTUNDO
-   bool show = false, hide = false;
-   for (const IEditable* const e : GetParts())
-      if (e->GetPartGroup() == group && e->GetISelect())
-      {
-         show |= e->m_uiVisible;
-         hide |= !e->m_uiVisible;
-      }
-   for (int t = 0; t < m_vmultisel.size(); t++)
-   {
-      ISelect *const psel = m_vmultisel.ElementAt(t);
-      IEditable *const pedit = psel->GetIEditable();
-      pedit->SetPartGroup(group);
-      if (psel->IsUIVisible() && hide && !show)
-         psel->SetUIVisible(false);
-      else if (!psel->IsUIVisible() && show && !hide)
-         psel->SetUIVisible(true);
-   }
-   STOPUNDO
-#ifndef __STANDALONE__
-   g_pvp->GetLayersListDialog()->Update();
-#endif
-}
-
 string PinTable::GetElementName(IEditable *pedit)
 {
    if (pedit)
@@ -2756,8 +2705,8 @@ IEditable *PinTable::GetElementByName(const char * const name) const
 
 bool PinTable::FMutilSelLocked()
 {
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      if (m_vmultisel[i].IsUILocked())
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+      if (m_tableEditor->m_vmultisel[i].IsUILocked())
          return true;
 
    return false;
@@ -2767,13 +2716,13 @@ void PinTable::UpdateCollection(const int index)
 {
    if (index < m_vcollection.size())
    {
-      if (!m_vmultisel.empty())
+      if (!m_tableEditor->m_vmultisel.empty())
       {
          bool removeOnly = false;
          /* if the selection is part of the selected collection remove only these elements*/
-         for (int t = 0; t < m_vmultisel.size(); t++)
+         for (int t = 0; t < m_tableEditor->m_vmultisel.size(); t++)
          {
-            ISelect * const ptr = m_vmultisel.ElementAt(t);
+            ISelect *const ptr = m_tableEditor->m_vmultisel.ElementAt(t);
             for (int k = 0; k < m_vcollection[index].m_visel.size(); k++)
             {
                if (ptr == m_vcollection[index].m_visel.ElementAt(k))
@@ -2789,9 +2738,9 @@ void PinTable::UpdateCollection(const int index)
             return;
 
          /*selected elements are not part of the selected collection and can be added*/
-         for (int t = 0; t < m_vmultisel.size(); t++)
+         for (int t = 0; t < m_tableEditor->m_vmultisel.size(); t++)
          {
-            ISelect * const ptr = m_vmultisel.ElementAt(t);
+            ISelect *const ptr = m_tableEditor->m_vmultisel.ElementAt(t);
             m_vcollection.ElementAt(index)->m_visel.push_back(ptr);
         }
       }
@@ -2964,9 +2913,9 @@ void PinTable::LockElements()
 {
    BeginUndo();
    const bool lock = !FMutilSelLocked();
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
    {
-      ISelect * const psel = m_vmultisel.ElementAt(i);
+      ISelect *const psel = m_tableEditor->m_vmultisel.ElementAt(i);
       if (psel)
       {
          IEditable * const pedit = psel->GetIEditable();
@@ -2984,40 +2933,40 @@ void PinTable::LockElements()
 void PinTable::FlipY(const Vertex2D& pvCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].FlipY(pvCenter);
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+      m_tableEditor->m_vmultisel[i].FlipY(pvCenter);
    EndUndo();
 }
 
 void PinTable::FlipX(const Vertex2D& pvCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].FlipX(pvCenter);
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+      m_tableEditor->m_vmultisel[i].FlipX(pvCenter);
    EndUndo();
 }
 
 void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].Rotate(ang, pvCenter, useElementCenter);
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+      m_tableEditor->m_vmultisel[i].Rotate(ang, pvCenter, useElementCenter);
    EndUndo();
 }
 
 void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].Scale(scalex, scaley, pvCenter, useElementCenter);
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+      m_tableEditor->m_vmultisel[i].Scale(scalex, scaley, pvCenter, useElementCenter);
    EndUndo();
 }
 
 void PinTable::Translate(const Vertex2D &pvOffset)
 {
    BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].Translate(pvOffset);
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+      m_tableEditor->m_vmultisel[i].Translate(pvOffset);
    EndUndo();
 }
 
@@ -3028,9 +2977,9 @@ Vertex2D PinTable::GetCenter() const
    float miny = FLT_MAX;
    float maxy = -FLT_MAX;
 
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
    {
-      const ISelect * const psel = m_vmultisel.ElementAt(i);
+      const ISelect *const psel = m_tableEditor->m_vmultisel.ElementAt(i);
       const Vertex2D vCenter = psel->GetCenter();
 
       minx = min(minx, vCenter.x);
@@ -3376,7 +3325,8 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
    // update properties UI
    if (!toUserSettings)
       SetNonUndoableDirty(eSaveDirty);
-   m_vpinball->SetPropSel(m_vmultisel);
+   if (m_tableEditor)
+      m_vpinball->SetPropSel(m_tableEditor->m_vmultisel);
 }
 
 // Select file and export the point of view definition
@@ -3431,8 +3381,8 @@ void PinTable::SelectItem(IScriptable *piscript)
    {
       if (piscript == pedit->GetIScriptable())
       {
-         if (ISelect *const pisel = pedit->GetISelect(); pisel)
-            AddMultiSel(pisel, false, true, false);
+         if (ISelect *const pisel = pedit->GetISelect(); pisel && m_tableEditor)
+            m_tableEditor->AddMultiSel(pisel, false, true, false);
          break;
       }
    }
@@ -3501,8 +3451,9 @@ void PinTable::Undo()
 
 void PinTable::Uncreate(IEditable *pie)
 {
-   if (pie->GetISelect()->m_selectstate != SelectState::NotSelected)
-      AddMultiSel(pie->GetISelect(), true, true, false); // Remove the item from the multi-select list
+   IWinUIPart *const uiPart = m_tableEditor ? m_tableEditor->GetUIPart(pie->GetISelect()) : nullptr;
+   if (uiPart && uiPart->m_selectstate != IWinUIPart::SelectState::NotSelected)
+      m_tableEditor->AddMultiSel(pie->GetISelect(), true, true, false); // Remove the item from the multi-select list
 
    pie->GetISelect()->Uncreate();
    pie->Release();
@@ -3518,10 +3469,10 @@ void PinTable::Undelete(IEditable *pie)
 void PinTable::Copy(int x, int y)
 {
 #ifndef __STANDALONE__
-   if (MultiSelIsEmpty()) // Can't copy table
+   if (m_tableEditor->MultiSelIsEmpty()) // Can't copy table
       return;
 
-   if (m_vmultisel.size() == 1)
+   if (m_tableEditor->m_vmultisel.size() == 1)
    {
        // special check if the user selected a Control Point and wants to copy the coordinates
        ISelect *const pItem = m_tableEditor->HitTest(x, y);
@@ -3535,14 +3486,14 @@ void PinTable::Copy(int x, int y)
 
    vector<IStream*> vstm;
    //m_vstmclipboard
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
    {
        const HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
 
        IStream *pstm;
        CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
 
-       IEditable * const pe = m_vmultisel[i].GetIEditable();
+       IEditable *const pe = m_tableEditor->m_vmultisel[i].GetIEditable();
 
        ////////!! BUG!  With multi-select, if you have multiple dragpoints on
        //////// a surface selected, the surface will get copied multiple times
@@ -3566,7 +3517,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
    bool error = false;
    int cpasted = 0;
 
-   if (m_vmultisel.size() == 1)
+   if (m_tableEditor->m_vmultisel.size() == 1)
    {
        // User wants to paste the copied coordinates of a Control Point
        ISelect * const pItem = m_tableEditor->HitTest(x, y);
@@ -3624,7 +3575,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
             AddPart(peditNew);
 
-            AddMultiSel(peditNew->GetISelect(), (i != m_vpinball->m_vstmclipboard.size() - 1), true, false);
+            m_tableEditor->AddMultiSel(peditNew->GetISelect(), (i != m_vpinball->m_vstmclipboard.size() - 1), true, false);
             cpasted++;
          }
          else
@@ -3635,7 +3586,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
    // Center view on newly created objects, if they are off the screen
    if ((cpasted > 0) && atLocation)
-      Translate(TransformPoint(x, y) - GetCenter());
+      Translate(m_tableEditor->TransformPoint(x, y) - GetCenter());
 
    if (error)
       ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
@@ -3652,179 +3603,23 @@ void PinTable::SetDefaultPhysics(const bool fromMouseClick)
    m_scatter = DEFAULT_TABLE_PFSCATTERANGLE;
 }
 
-void PinTable::ClearMultiSel(ISelect* newSel)
-{
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].m_selectstate = SelectState::NotSelected;
-
-   //remove the clone of the multi selection in the smart browser class
-   //to sync the clone and the actual multi-selection
-   //it will be updated again on AddMultiSel() call
-   m_vmultisel.clear();
-
-   if (newSel == nullptr)
-      newSel = this;
-   m_vmultisel.push_back(newSel);
-   newSel->m_selectstate = SelectState::Selected;
-}
-
-bool PinTable::MultiSelIsEmpty() const
-{
-   // empty selection means only the table itself is selected
-   return (m_vmultisel.size() == 1 && m_vmultisel.ElementAt(0) == this);
-}
-
-// 'update' tells us whether to go ahead and change the UI
-// based on the new selection, or whether more stuff is coming
-// down the pipe (speeds up drag-selection)
-void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick)
-{
-   const int index = m_vmultisel.find(psel);
-   ISelect *piSelect = nullptr;
-   //_ASSERTE(m_vmultisel[0].m_selectstate == eSelected);
-
-   if (IsLocked())
-      return;
-
-   if (index == -1) // If we aren't selected yet, do that
-   {
-      _ASSERTE(psel->m_selectstate == SelectState::NotSelected);
-      // If we non-shift click on an element outside the multi-select group, delete the old group
-      // If the table is currently selected, deselect it - the table can not be part of a multi-select
-      if (!add || MultiSelIsEmpty())
-      {
-         ClearMultiSel(psel);
-         if (!add && !contextClick)
-         {
-            int colIndex = -1;
-            int elemIndex = -1;
-            if (GetCollectionIndex(psel, colIndex, elemIndex))
-            {
-               CComObject<Collection> *col = m_vcollection.ElementAt(colIndex);
-               if (col->m_groupElements)
-               {
-                  for (int i = 0; i < col->m_visel.size(); i++)
-                  {
-                     col->m_visel[i].m_selectstate = SelectState::MultiSelected;
-                     // current element is already in m_vmultisel. (ClearMultiSel(psel) added it)
-                     if (col->m_visel.ElementAt(i) != psel)
-                        m_vmultisel.push_back(&col->m_visel[i]);
-                  }
-               }
-            }
-         }
-      }
-      else
-      {
-         // Make this new selection the primary one for the group
-         piSelect = m_vmultisel.ElementAt(0);
-         if (piSelect != nullptr)
-            piSelect->m_selectstate = SelectState::MultiSelected;
-         m_vmultisel.insert(psel, 0);
-      }
-
-      psel->m_selectstate = SelectState::Selected;
-
-      if (update)
-         SetDirtyDraw();
-   }
-   else if (add) // Take the element off the list
-   {
-      _ASSERTE(psel->m_selectstate != SelectState::NotSelected);
-      m_vmultisel.erase(index);
-      psel->m_selectstate = SelectState::NotSelected;
-      if (m_vmultisel.empty())
-      {
-         // Have to have something selected
-         m_vmultisel.push_back((ISelect *)this);
-      }
-      // The main element might have changed
-      piSelect = m_vmultisel.ElementAt(0);
-      if (piSelect != nullptr)
-         piSelect->m_selectstate = SelectState::Selected;
-
-      if (update)
-         SetDirtyDraw();
-   }
-   else if (m_vmultisel.ElementAt(0) != psel) // Object already in list - no change to selection, only to primary
-   {
-      int colIndex = -1;
-      int elemIndex = -1;
-      if (!GetCollectionIndex(psel, colIndex, elemIndex))
-      {
-         _ASSERTE(psel->m_selectstate != SelectState::NotSelected);
-
-         // Make this new selection the primary one for the group
-         piSelect = m_vmultisel.ElementAt(0);
-         if (piSelect != nullptr)
-            piSelect->m_selectstate = SelectState::MultiSelected;
-         m_vmultisel.erase(index);
-         m_vmultisel.insert(psel, 0);
-
-         psel->m_selectstate = SelectState::Selected;
-      }
-      else
-         ClearMultiSel(psel);
-
-      if (update)
-         SetDirtyDraw();
-   }
-
-   if (update)
-   {
-#ifndef __STANDALONE__
-       m_vpinball->SetPropSel(m_vmultisel);
-#endif
-       m_vmultisel[0].UpdateStatusBarInfo();
-   }
-
-    piSelect = m_vmultisel.ElementAt(0);
-    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetIScriptable())
-    {
-        string info = piSelect->GetIEditable()->GetPathString(false);
-        if (piSelect->GetItemType() == eItemPrimitive)
-        {
-            const Primitive *const prim = (Primitive *)piSelect;
-            if (!prim->m_mesh.m_animationFrames.empty())
-                info += " (animated " + std::to_string((uint32_t)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
-        }
-#ifndef __STANDALONE__
-        m_vpinball->SetStatusBarElementInfo(info);
-        if (m_tableEditor)
-            m_tableEditor->m_pcv->SelectItem(piSelect->GetIEditable()->GetIScriptable());
-#endif
-    }
-
-#ifndef __STANDALONE__
-   if (m_vpinball->GetLayersListDialog()->IsSyncedOnSelection())
-      m_vpinball->GetLayersListDialog()->Update();
-#endif
-}
-
-void PinTable::RefreshProperties()
-{
-#ifndef __STANDALONE__
-   m_vpinball->SetPropSel(m_vmultisel);
-#endif
-}
-
 void PinTable::OnDelete()
 {
 #ifndef __STANDALONE__
    vector<ISelect*> m_vseldelete;
-   m_vseldelete.reserve(m_vmultisel.size());
+   m_vseldelete.reserve(m_tableEditor->m_vmultisel.size());
 
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
    {
       // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
-      m_vseldelete.push_back(m_vmultisel.ElementAt(i));
-      if (m_vmultisel.ElementAt(i)->GetItemType() == ItemTypeEnum::eItemPartGroup)
+      m_vseldelete.push_back(m_tableEditor->m_vmultisel.ElementAt(i));
+      if (m_tableEditor->m_vmultisel.ElementAt(i)->GetItemType() == ItemTypeEnum::eItemPartGroup)
          for (const auto part : m_vedit)
-            if (part->GetPartGroup() == m_vmultisel.ElementAt(i) && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
+            if (part->GetPartGroup() == m_tableEditor->m_vmultisel.ElementAt(i) && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
                m_vseldelete.push_back(part->GetISelect());
    }
 
-   ClearMultiSel();
+   m_tableEditor->ClearMultiSel();
 
    bool inCollection = false;
    for (size_t t = 0; t < m_vseldelete.size() && !inCollection; t++)
@@ -3856,56 +3651,12 @@ void PinTable::OnDelete()
          m_vseldelete[i]->Delete();
    m_vpinball->GetLayersListDialog()->Update();
    // update properties to show the properties of the table
-   m_vpinball->SetPropSel(m_vmultisel);
+   m_vpinball->SetPropSel(m_tableEditor->m_vmultisel);
    if (m_tableEditor)
       m_tableEditor->OnPartChanged(this);
 
    SetDirtyDraw();
 #endif
-}
-
-void PinTable::UseTool(int x, int y, int tool)
-{
-#ifndef __STANDALONE__
-   const Vertex2D v = TransformPoint(x, y);
-
-   const ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
-   IEditable * const pie = EditableRegistry::CreateAndInit(type, this, v.x, v.y);
-
-   if (pie)
-   {
-      if (auto scriptable = pie->GetIScriptable(); scriptable)
-         GetUniqueName(type, scriptable->m_wzName);
-      pie->m_desktopBackdrop = m_vpinball->m_desktopBackdropView;
-      AddPart(pie);
-      pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
-      m_vpinball->GetLayersListDialog()->Update();
-
-      if (m_tableEditor)
-         m_tableEditor->OnPartChanged(this);
-
-      BeginUndo();
-      m_undo.MarkForCreate(pie);
-      EndUndo();
-      AddMultiSel(pie->GetISelect(), false, true, false);
-   }
-
-   m_vpinball->ParseCommand(IDC_SELECT, false);
-#endif
-}
-
-Vertex2D PinTable::TransformPoint(int x, int y) const
-{
-#ifndef __STANDALONE__
-   const CRect rc = m_tableEditor->GetClientRect();
-#else
-   const CRect rc(m_left, m_top, m_right, m_bottom);
-#endif
-   const HitSur phs(m_tableEditor->GetZoom(), m_tableEditor->GetViewOffset().x, m_tableEditor->GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
-
-   const Vertex2D result = phs.ScreenToSurface(x, y);
-
-   return result;
 }
 
 HRESULT PinTable::GetTypeName(BSTR *pVal) const
@@ -4048,11 +3799,6 @@ Texture* PinTable::GetImage(const string &szName) const
    return nullptr;
 }
 
-bool PinTable::ExportImage(const Texture * const ppi, const string &filename)
-{
-   return ppi->SaveFile(filename);
-}
-
 Texture *PinTable::ImportImage(const std::filesystem::path &filename, const string &imagename)
 {
    Texture *existing = nullptr;
@@ -4092,12 +3838,6 @@ void PinTable::RemoveImage(Texture * const ppi)
    RemoveFromVectorSingle(m_vimage, ppi);
 
    delete ppi;
-}
-
-void PinTable::ListMaterials(HWND hwndListView)
-{
-   for (size_t i = 0; i < m_materials.size(); i++)
-      AddListMaterial(hwndListView, m_materials[i]);
 }
 
 bool PinTable::IsMaterialNameUnique(const string &name) const
@@ -4151,137 +3891,6 @@ void PinTable::AddMaterial(Material * const pmat)
    }
 
    m_materials.push_back(pmat);
-}
-
-int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
-{
-#ifndef __STANDALONE__
-   constexpr char usedStringYes[] = "X";
-   constexpr char usedStringNo[] = " ";
-
-   LVITEM lvitem;
-   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
-   lvitem.iItem = 0;
-   lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)pmat->m_name.c_str();
-   lvitem.lParam = (size_t)pmat;
-
-   const int index = ListView_InsertItem(hwndListView, &lvitem);
-   ListView_SetItemText_Safe(hwndListView, index, 1, usedStringNo);
-   if(pmat->m_name == m_playfieldMaterial)
-   {
-      ListView_SetItemText_Safe(hwndListView, index, 1, usedStringYes);
-   }
-   else
-   {
-      for (const auto pEdit : m_vedit)
-      {
-         bool inUse = false;
-         if (pEdit == nullptr)
-            continue;
-
-         switch (pEdit->GetItemType())
-         {
-         case eItemPrimitive:
-         {
-            const Primitive * const pPrim = (Primitive*)pEdit;
-            if (StrCompareNoCase(pPrim->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pPrim->m_d.m_szPhysicsMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemRamp:
-         {
-            const Ramp * const pRamp = (Ramp*)pEdit;
-            if (StrCompareNoCase(pRamp->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pRamp->m_d.m_szPhysicsMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemSurface:
-         {
-            const Surface * const pSurf = (Surface*)pEdit;
-            if (StrCompareNoCase(pSurf->m_d.m_szPhysicsMaterial, pmat->m_name) || StrCompareNoCase(pSurf->m_d.m_szSideMaterial, pmat->m_name) || StrCompareNoCase(pSurf->m_d.m_szTopMaterial, pmat->m_name) || StrCompareNoCase(pSurf->m_d.m_szSlingShotMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemDecal:
-         {
-            const Decal * const pDecal = (Decal*)pEdit;
-            if (StrCompareNoCase(pDecal->m_d.m_szMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemFlipper:
-         {
-            const Flipper * const pFlip = (Flipper*)pEdit;
-            if (StrCompareNoCase(pFlip->m_d.m_szRubberMaterial, pmat->m_name) || StrCompareNoCase(pFlip->m_d.m_szMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemHitTarget:
-         {
-            const HitTarget * const pHit = (HitTarget*)pEdit;
-            if (StrCompareNoCase(pHit->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pHit->m_d.m_szPhysicsMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemPlunger:
-         {
-            const Plunger * const pPlung = (Plunger*)pEdit;
-            if (StrCompareNoCase(pPlung->m_d.m_szMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemSpinner:
-         {
-            const Spinner * const pSpin = (Spinner*)pEdit;
-            if (StrCompareNoCase(pSpin->m_d.m_szMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemRubber:
-         {
-            const Rubber * const pRub = (Rubber*)pEdit;
-            if (StrCompareNoCase(pRub->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pRub->m_d.m_szPhysicsMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemBumper:
-         {
-            const Bumper * const pBump = (Bumper*)pEdit;
-            if (StrCompareNoCase(pBump->m_d.m_szCapMaterial, pmat->m_name) || StrCompareNoCase(pBump->m_d.m_szBaseMaterial, pmat->m_name) ||
-                StrCompareNoCase(pBump->m_d.m_szSkirtMaterial, pmat->m_name) || StrCompareNoCase(pBump->m_d.m_szRingMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemKicker:
-         {
-            const Kicker * const pKick = (Kicker*)pEdit;
-            if (StrCompareNoCase(pKick->m_d.m_szMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         case eItemTrigger:
-         {
-            const Trigger * const pTrig = (Trigger*)pEdit;
-            if (StrCompareNoCase(pTrig->m_d.m_szMaterial, pmat->m_name))
-               inUse = true;
-            break;
-         }
-         default:
-            break;
-         }
-
-         if (inUse)
-         {
-            ListView_SetItemText_Safe(hwndListView, index, 1, usedStringYes);
-            break;
-         }
-      }//for
-   }
-   return index;
-#else
-   return 0;
-#endif
 }
 
 void PinTable::RemoveMaterial(Material * const pmat)

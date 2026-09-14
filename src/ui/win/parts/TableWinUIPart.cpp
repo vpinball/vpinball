@@ -5,8 +5,8 @@
 #include "parts/pintable.h"
 #include "parts/PartGroup.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
-#include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/parts/TableWinUIPart.h"
 
 TableWinUIPart::TableWinUIPart(PinTableWnd *editor, PinTable *table)
@@ -17,14 +17,14 @@ TableWinUIPart::TableWinUIPart(PinTableWnd *editor, PinTable *table)
 
 void TableWinUIPart::OnLButtonDown(int x, int y)
 {
-   const Vertex2D v = m_table->TransformPoint(x, y);
+   const Vertex2D v = m_editor->TransformPoint(x, y);
 
    m_table->m_rcDragRect.left = v.x;
    m_table->m_rcDragRect.right = v.x;
    m_table->m_rcDragRect.top = v.y;
    m_table->m_rcDragRect.bottom = v.y;
 
-   m_table->m_dragging = true;
+   m_dragging = true;
 
    m_editor->SetCapture();
 
@@ -56,7 +56,7 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
          }
       }
       if (group)
-         m_table->AssignSelectionToPartGroup(group);
+         m_editor->AssignSelectionToPartGroup(group);
       return;
    }
 
@@ -64,8 +64,9 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    {
       const int i = (icmd & 0x00FF0000) >> 16;
       ISelect *const pisel = m_table->m_allHitElements[i];
-      if (const auto winPart = WinUIPartRegistry::Create(m_editor, pisel))
-         winPart->DoCommand(icmd, x, y);
+      // pisel can be the table itself, whose UI part is this part: do not recurse into our own DoCommand
+      if (IWinUIPart *const uiPart = m_editor->GetUIPart(pisel); uiPart && uiPart != this)
+         uiPart->DoCommand(icmd, x, y);
       return;
    }
 
@@ -74,12 +75,12 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_DRAWINFRONT:
    case ID_DRAWINBACK:
    {
-      for (int i = 0; i < m_table->m_vmultisel.size(); i++)
+      for (int i = 0; i < m_editor->m_vmultisel.size(); i++)
       {
-         ISelect *const psel = m_table->m_vmultisel.ElementAt(i);
+         ISelect *const psel = m_editor->m_vmultisel.ElementAt(i);
          _ASSERTE(psel != m_table); // Would make an infinite loop
-         if (const auto winPart = WinUIPartRegistry::Create(m_editor, psel))
-            winPart->DoCommand(icmd, x, y);
+         if (IWinUIPart *const uiPart = m_editor->GetUIPart(psel); uiPart && uiPart != this)
+            uiPart->DoCommand(icmd, x, y);
       }
       break;
    }

@@ -27,6 +27,8 @@ private:
    void LoadPosition();
    void SavePosition();
    void ShowWhereUsed();
+   void ListMaterials(HWND hwndListView);
+   int AddListMaterial(HWND hwndListView, Material* const pmat);
    HWND m_hMaterialList;
    CResizer m_resizer;
 

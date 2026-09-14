@@ -99,7 +99,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
          m_obj->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
          m_TimeReset = g_pplayer->m_time_msec + 100;
 
-         g_pplayer->m_pininput.PlayRumble(0.15f, 0.1f, 100);
+         g_pplayer->m_pininput.PlaySlingshotRumble();
       }
    }
 }

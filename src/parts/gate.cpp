@@ -15,7 +15,6 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
@@ -32,7 +31,7 @@ Gate *Gate::CopyForPlay() const
 
 void Gate::SetGateType(GateType type)
 {
-    switch (m_d.m_type)
+    switch (type)
     {
     case GateWireW:
     {
@@ -327,11 +326,11 @@ void Gate::Render(const unsigned int renderMask)
    || (isReflectionPass && !m_d.m_reflectionEnabled))
       return;
 
-   if (m_phitgate->m_gateMover.m_angle != m_vertexbuffer_angle)
+   if (float angle = m_phitgate ? m_phitgate->m_gateMover.m_angle : 0.f; angle != m_vertexbuffer_angle)
    {
-      m_vertexbuffer_angle = m_phitgate->m_gateMover.m_angle;
+      m_vertexbuffer_angle = angle;
 
-      const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(m_d.m_twoWay ? m_phitgate->m_gateMover.m_angle : -m_phitgate->m_gateMover.m_angle)
+      const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(m_d.m_twoWay ? angle : -angle)
                                 * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
       const Matrix3D vertMatrix = (fullMatrix
                                  * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length))

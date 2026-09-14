@@ -123,10 +123,12 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
       )
    endif()
 
+   set_target_properties(PUPPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/pup"
+   )
+
    add_custom_command(TARGET PUPPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pup/plugin.cfg" "${PLUGINS_DIR}/pup/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PUPPlugin>" "${PLUGINS_DIR}/pup"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PUPPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

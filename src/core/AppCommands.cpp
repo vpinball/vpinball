@@ -8,6 +8,7 @@
 #include "core/VPApp.h"
 #include "parts/Material.h"
 #include "parts/pintable.h"
+#include "ui/VPXFileFeedback.h"
 #include "ui/win/WinEditor.h"
 #include "utils/BiffReader.h"
 
@@ -47,7 +48,8 @@ CComObject<PinTable>* TableBasedCommand::LoadTable()
    CComObject<PinTable>* table;
    CComObject<PinTable>::CreateInstance(&table);
    table->AddRef();
-   table->LoadGameFromFilename(m_tableFilename.string());
+   VPXFileFeedback feedback;
+   table->LoadGameFromFilename(m_tableFilename.string(), feedback);
    if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName))
       table->SetSettingsFileName(m_tableIniFileName);
    return table;

@@ -11,7 +11,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
@@ -516,11 +515,10 @@ void Rubber::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool i
 
 // Ported at: VisualPinball.Engine/VPT/Mesh.cs
 
-void Rubber::AddPoint(int x, int y, const bool smooth)
+void Rubber::AddPoint(const Vertex2D &v, const bool smooth)
 {
     vector<RenderVertex> vvertex;
     GetCentralCurve(vvertex);
-    const Vertex2D v = m_ptable->TransformPoint(x, y);
     Vertex2D vOut;
     int iSeg = -1;
 

@@ -9,7 +9,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/color.h"
 
@@ -43,9 +42,9 @@ void DispReel::SetDefaults(const bool fromMouseClick)
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsDispReel_##prop() : Settings::GetDefaultPropsDispReel_##prop##_Default()
    LinkProp(m_d.m_szImage, Image);
    LinkProp(m_d.m_szSound, Sound);
-   LinkProp(m_d.m_useImageGrid, TimerEnabled);
+   LinkProp(m_d.m_useImageGrid, UseImageGrid);
    LinkProp(m_d.m_visible, Visible);
-   LinkProp(m_d.m_imagesPerGridRow, UseImageGrid);
+   LinkProp(m_d.m_imagesPerGridRow, ImagesPerRow);
    LinkProp(m_d.m_transparent, Transparent);
    LinkProp(m_d.m_reelcount, ReelCount);
    LinkProp(m_d.m_width, Width);
@@ -65,9 +64,9 @@ void DispReel::WriteRegDefaults()
 #define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsDispReel_##prop(field, false)
    LinkProp(m_d.m_szImage, Image);
    LinkProp(m_d.m_szSound, Sound);
-   LinkProp(m_d.m_useImageGrid, TimerEnabled);
+   LinkProp(m_d.m_useImageGrid, UseImageGrid);
    LinkProp(m_d.m_visible, Visible);
-   LinkProp(m_d.m_imagesPerGridRow, UseImageGrid);
+   LinkProp(m_d.m_imagesPerGridRow, ImagesPerRow);
    LinkProp(m_d.m_transparent, Transparent);
    LinkProp(m_d.m_reelcount, ReelCount);
    LinkProp(m_d.m_width, Width);

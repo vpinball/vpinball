@@ -22,6 +22,7 @@ enum VPinballStatus: CInt {
 }
 
 enum VPinballSettingsSection: String {
+    case global = "Global"
     case standalone = "Standalone"
     case player = "Player"
     case pluginDMDUtil = "Plugin.DMDUtil"
@@ -136,9 +137,6 @@ func VPinballInit(_ eventCallback: VPinballEventCallback, _ rumbleCallback: VPin
 
 @_silgen_name("VPinballLog")
 func VPinballLog(_ level: CInt, _ pMessage: UnsafePointer<CChar>)
-
-@_silgen_name("VPinballResetLog")
-func VPinballResetLog()
 
 @_silgen_name("VPinballLoadValueInt")
 func VPinballLoadValueInt(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ defaultValue: CInt) -> CInt

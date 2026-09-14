@@ -13,7 +13,7 @@ public:
    ~VPApp();
 
    void SetCommandLineCustomSettingsFileName(const std::filesystem::path& path) { m_commandLineCustomSettingsFileName = path; } // Must be defined before InitInstance() is called, otherwise it will be ignored
-   void InitInstance();
+   void InitInstance(bool isPlay = false);
 
    // overall app settings
    Settings m_settings;

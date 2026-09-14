@@ -616,7 +616,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::Print(VARIANT *pvar)
    if (g_pplayer->m_ptable->IsLocked())
       return S_OK;
 
-   if (!g_app->m_settings.GetEditor_EnableLog() || !g_app->m_settings.GetEditor_LogScriptOutput())
+   if (!g_app->m_settings.GetGlobal_EnableLog() || !g_app->m_settings.GetGlobal_LogScriptOutput())
       return S_OK;
 
    if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)

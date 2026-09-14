@@ -84,10 +84,12 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
       target_link_libraries(DOFPlugin PUBLIC dof)
    endif()
 
+   set_target_properties(DOFPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/dof"
+   )
+
    add_custom_command(TARGET DOFPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/dof/plugin.cfg" "${PLUGINS_DIR}/dof/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:DOFPlugin>" "${PLUGINS_DIR}/dof"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:DOFPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)
