@@ -117,10 +117,11 @@ public:
    ItemTypeEnum HitableGetItemType() const final { return eItemRamp; }
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
-   void AddPoint(const Vertex2D &v, const bool smooth) final;
    void UpdateStatusBarInfo() final;
 
    void WriteRegDefaults() final;
+
+   void AddPoint(const Vertex2D &v, const bool smooth);
 
    float GetSurfaceHeight(float x, float y) const;
    bool IsHabitrail() const;

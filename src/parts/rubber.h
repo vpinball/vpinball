@@ -97,8 +97,6 @@ public:
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &pvOffset) final;
-   void AddPoint(const Vertex2D &v, const bool smooth) final;
-
    Vertex2D GetCenter() const final { return GetPointCenter(); }
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
 
@@ -111,6 +109,8 @@ public:
 
    void WriteRegDefaults() final;
    void UpdateStatusBarInfo() final;
+
+   void AddPoint(const Vertex2D &v, const bool smooth);
 
 #if 0
    float GetSurfaceHeight(float x, float y) const final;
