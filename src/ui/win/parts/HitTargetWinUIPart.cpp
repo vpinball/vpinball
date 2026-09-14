@@ -32,7 +32,7 @@ void HitTargetWinUIPart::UIRenderPass2(Sur* const psur)
    if (!edges.empty())
       psur->Lines(edges.data(), (int)(edges.size() / 2));
 
-   if (m_hittarget->m_selectstate == ISelect::SelectState::NotSelected)
+   if (m_selectstate == SelectState::NotSelected)
       return;
 
    const float radangle = ANGTORAD(m_hittarget->m_d.m_rotZ - 180.0f);

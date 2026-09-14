@@ -18,7 +18,7 @@ public:
    {
    }
 
-   IWinUIPart* Get(ISelect* select)
+   IWinUIPart* Get(const ISelect* select)
    {
       Sync();
       for (const auto& part : m_parts)
@@ -27,10 +27,16 @@ public:
       return nullptr;
    }
 
-   bool IsDragging(ISelect* select)
+   bool IsDragging(const ISelect* select)
    {
       const IWinUIPart* const part = Get(select);
       return part && part->m_dragging;
+   }
+
+   bool IsSelected(const ISelect* select)
+   {
+      const IWinUIPart* const part = Get(select);
+      return part && part->m_selectstate != IWinUIPart::SelectState::NotSelected;
    }
 
 private:

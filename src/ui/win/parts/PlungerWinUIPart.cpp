@@ -32,10 +32,10 @@ void PlungerWinUIPart::UIRenderPass2(Sur* const psur)
    {
       const float park = m_plunger->m_d.m_parkPosition * m_plunger->m_d.m_stroke;
       psur->SetLineColor(RGB(0, 180, 0), false, //
-         (m_plunger->m_selectstate == ISelect::SelectState::Selected)           ? 4 //
-            : (m_plunger->m_selectstate == ISelect::SelectState::MultiSelected) ? 3 //
-            : m_plunger->IsUILocked()                                           ? 1 //
-                                                                                : 2);
+         (m_selectstate == SelectState::Selected)           ? 4 //
+            : (m_selectstate == SelectState::MultiSelected) ? 3 //
+            : m_plunger->IsUILocked()                       ? 1 //
+                                                            : 2);
       psur->Line(m_plunger->m_d.m_v.x - m_plunger->m_d.m_width, m_plunger->m_d.m_v.y - m_plunger->m_d.m_stroke + park, m_plunger->m_d.m_v.x + m_plunger->m_d.m_width, m_plunger->m_d.m_v.y - m_plunger->m_d.m_stroke + park);
    }
 

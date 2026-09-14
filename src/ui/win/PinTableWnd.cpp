@@ -729,7 +729,8 @@ void PinTableWnd::SetMouseCursor()
 void PinTableWnd::ClearMultiSel(ISelect *newSel)
 {
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].m_selectstate = ISelect::SelectState::NotSelected;
+      if (IWinUIPart *const part = GetUIPart(&m_vmultisel[i]))
+         part->m_selectstate = IWinUIPart::SelectState::NotSelected;
 
    //remove the clone of the multi selection in the smart browser class
    //to sync the clone and the actual multi-selection
@@ -739,7 +740,8 @@ void PinTableWnd::ClearMultiSel(ISelect *newSel)
    if (newSel == nullptr)
       newSel = m_table;
    m_vmultisel.push_back(newSel);
-   newSel->m_selectstate = ISelect::SelectState::Selected;
+   if (IWinUIPart *const part = GetUIPart(newSel))
+      part->m_selectstate = IWinUIPart::SelectState::Selected;
 }
 
 bool PinTableWnd::MultiSelIsEmpty() const
@@ -755,6 +757,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
 {
    const int index = m_vmultisel.find(psel);
    ISelect *piSelect = nullptr;
+   IWinUIPart *const pselPart = GetUIPart(psel);
    //_ASSERTE(m_vmultisel[0].m_selectstate == eSelected);
 
    if (m_table->IsLocked())
@@ -762,7 +765,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
 
    if (index == -1) // If we aren't selected yet, do that
    {
-      _ASSERTE(psel->m_selectstate == ISelect::SelectState::NotSelected);
+      _ASSERTE(pselPart == nullptr || pselPart->m_selectstate == IWinUIPart::SelectState::NotSelected);
       // If we non-shift click on an element outside the multi-select group, delete the old group
       // If the table is currently selected, deselect it - the table can not be part of a multi-select
       if (!add || MultiSelIsEmpty())
@@ -779,7 +782,8 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
                {
                   for (int i = 0; i < col->m_visel.size(); i++)
                   {
-                     col->m_visel[i].m_selectstate = ISelect::SelectState::MultiSelected;
+                     if (IWinUIPart *const part = GetUIPart(&col->m_visel[i]))
+                        part->m_selectstate = IWinUIPart::SelectState::MultiSelected;
                      // current element is already in m_vmultisel. (ClearMultiSel(psel) added it)
                      if (col->m_visel.ElementAt(i) != psel)
                         m_vmultisel.push_back(&col->m_visel[i]);
@@ -793,20 +797,23 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
          // Make this new selection the primary one for the group
          piSelect = m_vmultisel.ElementAt(0);
          if (piSelect != nullptr)
-            piSelect->m_selectstate = ISelect::SelectState::MultiSelected;
+            if (IWinUIPart *const part = GetUIPart(piSelect))
+               part->m_selectstate = IWinUIPart::SelectState::MultiSelected;
          m_vmultisel.insert(psel, 0);
       }
 
-      psel->m_selectstate = ISelect::SelectState::Selected;
+      if (pselPart)
+         pselPart->m_selectstate = IWinUIPart::SelectState::Selected;
 
       if (update)
          m_table->SetDirtyDraw();
    }
    else if (add) // Take the element off the list
    {
-      _ASSERTE(psel->m_selectstate != ISelect::SelectState::NotSelected);
+      _ASSERTE(pselPart == nullptr || pselPart->m_selectstate != IWinUIPart::SelectState::NotSelected);
       m_vmultisel.erase(index);
-      psel->m_selectstate = ISelect::SelectState::NotSelected;
+      if (pselPart)
+         pselPart->m_selectstate = IWinUIPart::SelectState::NotSelected;
       if (m_vmultisel.empty())
       {
          // Have to have something selected
@@ -815,7 +822,8 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
       // The main element might have changed
       piSelect = m_vmultisel.ElementAt(0);
       if (piSelect != nullptr)
-         piSelect->m_selectstate = ISelect::SelectState::Selected;
+         if (IWinUIPart *const part = GetUIPart(piSelect))
+            part->m_selectstate = IWinUIPart::SelectState::Selected;
 
       if (update)
          m_table->SetDirtyDraw();
@@ -826,16 +834,18 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
       int elemIndex = -1;
       if (!m_table->GetCollectionIndex(psel, colIndex, elemIndex))
       {
-         _ASSERTE(psel->m_selectstate != ISelect::SelectState::NotSelected);
+         _ASSERTE(pselPart == nullptr || pselPart->m_selectstate != IWinUIPart::SelectState::NotSelected);
 
          // Make this new selection the primary one for the group
          piSelect = m_vmultisel.ElementAt(0);
          if (piSelect != nullptr)
-            piSelect->m_selectstate = ISelect::SelectState::MultiSelected;
+            if (IWinUIPart *const part = GetUIPart(piSelect))
+               part->m_selectstate = IWinUIPart::SelectState::MultiSelected;
          m_vmultisel.erase(index);
          m_vmultisel.insert(psel, 0);
 
-         psel->m_selectstate = ISelect::SelectState::Selected;
+         if (pselPart)
+            pselPart->m_selectstate = IWinUIPart::SelectState::Selected;
       }
       else
          ClearMultiSel(psel);
@@ -1052,7 +1062,8 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
       {
          ISelect *const pisel2 = m_vmultisel.ElementAt(i);
          if (pisel2)
-            if (IWinUIPart *const uiPart = GetUIPart(pisel2))
+            // Skip the table's UI part: band select on empty space is handled above, a plain click must not start one
+            if (IWinUIPart *const uiPart = GetUIPart(pisel2); uiPart && uiPart != &m_tablePart)
                uiPart->OnLButtonDown(x, y);
       }
    }
@@ -1488,7 +1499,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    else
       newMenu.CreatePopupMenu();
 
-   IWinUIPart *const winPart = (psel == m_table) ? &m_tablePart : GetUIPart(psel);
+   IWinUIPart *const winPart = GetUIPart(psel);
    if (winPart)
       winPart->EditMenu(newMenu);
 
@@ -1675,9 +1686,13 @@ void PinTableWnd::OnPartRemoved(IEditable *part)
 
 IWinUIPart *PinTableWnd::GetUIPart(ISelect *select)
 {
-   // The UI part of the table itself is not stored in the map but directly owned by this editor (m_tablePart)
-   if (select == nullptr || select == m_table->GetISelect())
+   if (select == nullptr)
       return nullptr;
+#ifndef __STANDALONE__
+   // The UI part of the table itself is not stored in the map but directly owned by this editor (m_tablePart)
+   if (select == m_table)
+      return &m_tablePart;
+#endif
    auto it = m_uiParts.find(select);
    if (it != m_uiParts.end())
       return it->second.get();

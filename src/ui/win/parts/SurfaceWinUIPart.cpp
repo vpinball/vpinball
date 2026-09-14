@@ -46,7 +46,7 @@ void SurfaceWinUIPart::UIRenderPass2(Sur* const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool drawDragpoints = ((m_surface->m_selectstate != ISelect::SelectState::NotSelected) || m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
 
    if (!drawDragpoints)
    {
@@ -54,7 +54,7 @@ void SurfaceWinUIPart::UIRenderPass2(Sur* const psur)
       for (size_t i = 0; i < m_surface->m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint>* const pdp = m_surface->m_vdpoint[i];
-         if (pdp->m_selectstate != ISelect::SelectState::NotSelected)
+         if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
             break;

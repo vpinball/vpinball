@@ -35,7 +35,6 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 #include "ui/win/codeview.h"
-#include "ui/win/hitsur.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
@@ -3452,7 +3451,8 @@ void PinTable::Undo()
 
 void PinTable::Uncreate(IEditable *pie)
 {
-   if (m_tableEditor && pie->GetISelect()->m_selectstate != SelectState::NotSelected)
+   IWinUIPart *const uiPart = m_tableEditor ? m_tableEditor->GetUIPart(pie->GetISelect()) : nullptr;
+   if (uiPart && uiPart->m_selectstate != IWinUIPart::SelectState::NotSelected)
       m_tableEditor->AddMultiSel(pie->GetISelect(), true, true, false); // Remove the item from the multi-select list
 
    pie->GetISelect()->Uncreate();

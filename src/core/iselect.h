@@ -2,10 +2,8 @@
 
 #pragma once
 
-class Sur;
 class PinTable;
 class IEditable;
-struct PropertyPane;
 class WinEditor;
 
 // Warning: these are Win32 ui part id, but also used to identify table parts (see IEditable)
@@ -98,14 +96,6 @@ public:
    virtual bool IsUIVisible() const = 0;
    virtual void SetUIVisible(bool visible) = 0;
    bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
-
-   enum class SelectState
-   {
-      NotSelected,
-      Selected,
-      MultiSelected
-   };
-   SelectState m_selectstate = SelectState::NotSelected;
 
 protected:
    WinEditor *m_vpinball = nullptr;

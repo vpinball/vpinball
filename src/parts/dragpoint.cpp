@@ -283,11 +283,13 @@ void IHaveDragPoints::ClearPointsForOverwrite()
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      if (m_vdpoint[i]->m_selectstate != ISelect::SelectState::NotSelected /*GetPTable()->m_pselcur == m_vdpoint[i]*/)
+      if (PinTableWnd *const tableEditor = GetPTable()->m_tableEditor)
       {
-         //GetPTable()->SetSel(GetPTable());
-         if (PinTableWnd *const tableEditor = GetPTable()->m_tableEditor)
+         if (IWinUIPart *const part = tableEditor->GetUIPart(m_vdpoint[i]); part && part->m_selectstate != IWinUIPart::SelectState::NotSelected /*GetPTable()->m_pselcur == m_vdpoint[i]*/)
+         {
+            //GetPTable()->SetSel(GetPTable());
             tableEditor->AddMultiSel(GetPTable(), false, true, false);
+         }
       }
 
       m_vdpoint[i]->Release();

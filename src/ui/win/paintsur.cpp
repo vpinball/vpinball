@@ -297,33 +297,35 @@ void PaintSur::Image(const float x, const float y, const float x2, const float y
    StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcSrc, 0, 0, width, height, SRCCOPY);
 }
 
-void PaintSur::SetObject(ISelect * const psel)
+void PaintSur::SetObject(ISelect *const psel)
 {
    if ((m_psel != nullptr) && (psel != nullptr)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
    {
       const bool isLocked = psel->IsUILocked();
       const COLORREF selectColor = isLocked ? PaintSur::GetSelectLockedColor() : PaintSur::GetSelectColor();
+      const IWinUIPart *const uiPart = m_pTableWnd ? m_pTableWnd->GetUIPart(psel) : nullptr;
+      const IWinUIPart::SelectState selectState = uiPart ? uiPart->m_selectstate : IWinUIPart::SelectState::NotSelected;
 
       if (psel->GetItemType() == eItemDragPoint)
       {
          // DragPoint uses fill colors instead of line/border colors
-         if (psel->m_selectstate == ISelect::SelectState::Selected)
+         if (selectState == IWinUIPart::SelectState::Selected)
          {
             SetFillColor(RGB(150, 200, 255));
          }
-         else if (psel->m_selectstate == ISelect::SelectState::MultiSelected)
+         else if (selectState == IWinUIPart::SelectState::MultiSelected)
          {
             SetFillColor(RGB(200, 225, 255));
          }
       }
       else
       {
-         if (psel->m_selectstate == ISelect::SelectState::Selected)
+         if (selectState == IWinUIPart::SelectState::Selected)
          {
             SetBorderColor(selectColor, false, 4);
             SetLineColor(selectColor, false, 4);
          }
-         else if (psel->m_selectstate == ISelect::SelectState::MultiSelected)
+         else if (selectState == IWinUIPart::SelectState::MultiSelected)
          {
             SetBorderColor(selectColor, false, 3);
             SetLineColor(selectColor, false, 3);

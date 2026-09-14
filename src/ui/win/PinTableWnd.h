@@ -75,7 +75,8 @@ public:
    void OnPartAdded(IEditable *part);
    void OnPartRemoved(IEditable *part);
 
-   // Returns the UI part owned by this editor for the given select (including sub selects like drag points or light centers), nullptr if none
+   // Returns the UI part owned by this editor for the given select, i.e. an entry of m_uiParts, m_tablePart for the table itself,
+   // or a sub part of the owning part's UI part (drag points, light centers, ...). nullptr if none.
    IWinUIPart *GetUIPart(ISelect *select);
    IWinUIPart *GetUIPart(IEditable *part) { return GetUIPart(part ? part->GetISelect() : nullptr); }
 
