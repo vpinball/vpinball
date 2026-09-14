@@ -75,9 +75,8 @@ void PluginSettingsPage::BuildPage()
             if (m_player->m_scriptInterpreter && m_player->m_pluginAPI.IsScriptContributor(plugin.m_endpointId))
             {
                m_player->m_scriptInterpreter->Stop(m_player->m_ptable);
-               ULONG refCount = m_player->m_scriptInterpreter->Release();
+               m_player->m_scriptInterpreter->Dispose();
                m_player->m_scriptInterpreter = nullptr;
-               assert(refCount == 0);
                m_player->m_liveUI->PushNotification("The plugin you have disabled contributed to the script engine.\nTherefore, the script was stopped to prevent issues.", 5000);
             }
             manager.UnloadPlugin(plugin);
