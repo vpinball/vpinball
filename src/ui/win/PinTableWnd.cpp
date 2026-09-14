@@ -780,13 +780,13 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
                CComObject<Collection> *col = m_table->m_vcollection.ElementAt(colIndex);
                if (col->m_groupElements)
                {
-                  for (int i = 0; i < col->m_visel.size(); i++)
+                  for (IEditable *const part : col->GetParts())
                   {
-                     if (IWinUIPart *const part = GetUIPart(&col->m_visel[i]))
-                        part->m_selectstate = IWinUIPart::SelectState::MultiSelected;
+                     if (IWinUIPart *const uiPart = GetUIPart(part))
+                        uiPart->m_selectstate = IWinUIPart::SelectState::MultiSelected;
                      // current element is already in m_vmultisel. (ClearMultiSel(psel) added it)
-                     if (col->m_visel.ElementAt(i) != psel)
-                        m_vmultisel.push_back(&col->m_visel[i]);
+                     if (part->GetISelect() != psel)
+                        m_vmultisel.push_back(part->GetISelect());
                   }
                }
             }
@@ -1329,8 +1329,8 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
    if (m_vmultisel.size() == 1)
    {
       for (int i = maxItems; i >= 0; i--)
-         for (int t = 0; t < m_table->m_vcollection[i].m_visel.size(); t++)
-            if (psel == m_table->m_vcollection[i].m_visel.ElementAt(t))
+         for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+            if (psel == part->GetISelect())
                colSubMenu.CheckMenuItem(0x40000 + i, MF_CHECKED);
    }
    else
@@ -1342,8 +1342,8 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
          const ISelect *const iSel = m_vmultisel.ElementAt(t);
 
          for (int i = maxItems; i >= 0; i--)
-            for (int t2 = 0; t2 < m_table->m_vcollection[i].m_visel.size(); t2++)
-               if ((iSel == m_table->m_vcollection[i].m_visel.ElementAt(t2)))
+            for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+               if (iSel == part->GetISelect())
                   allIndices.push_back(i);
       }
       for (size_t i = 0; i < allIndices.size(); i++)
@@ -1371,8 +1371,8 @@ void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelectio
             if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
             {
                piedit->m_vCollection.push_back(pcol);
-               piedit->m_viCollection.push_back(pcol->m_visel.size());
-               pcol->m_visel.push_back(m_vmultisel.ElementAt(i));
+               piedit->m_viCollection.push_back(static_cast<int>(pcol->GetParts().size()));
+               pcol->AddPart(piedit);
             }
          }
       }
@@ -1400,7 +1400,7 @@ int PinTableWnd::AddListCollection(HWND hwndListView, CComObject<Collection> *pc
    lvitem.lParam = (size_t)pcol;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
-   ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->m_visel.size()).c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->GetParts().size()).c_str());
    return index;
 #else
    return 0;

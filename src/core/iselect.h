@@ -56,8 +56,6 @@ public:
    virtual HRESULT GetTypeName(BSTR *pVal) const;
    wstring GetTypeNameForType(const ItemTypeEnum type) const;
 
-   virtual IDispatch *GetIDispatch() = 0;
-   virtual const IDispatch *GetIDispatch() const = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;
@@ -81,9 +79,6 @@ public:
    }
 
    virtual void PutCenter(const Vertex2D& pv) = 0;
-
-   HRESULT Helper_GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
-   HRESULT Helper_GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
 
    virtual IEditable *GetIEditable() = 0;
    virtual const IEditable *GetIEditable() const = 0;

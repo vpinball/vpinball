@@ -16,9 +16,9 @@ Collection::Collection()
 void Collection::Save(IObjectWriter& writer, const bool saveForUndo)
 {
    writer.WriteWideString(FID(NAME), m_wzName);
-   for (int i = 0; i < m_visel.size(); ++i)
+   for (const IEditable *const part : m_parts)
    {
-      const IScriptable * const piscript = m_visel[i].GetIEditable()->GetIScriptable();
+      const IScriptable * const piscript = part->GetIScriptable();
       writer.WriteWideString(FID(ITEM), piscript->m_wzName);
    }
    writer.WriteBool(FID(EVNT), m_fireEvents);
@@ -59,10 +59,9 @@ HRESULT Collection::InitPostLoad(const PinTable *const pt)
          {
             if (piscript->m_wzName == tmp_isel_name)
             {
-               auto iselect = editable->GetISelect();
-               iselect->GetIEditable()->m_vCollection.push_back(this);
-               iselect->GetIEditable()->m_viCollection.push_back(m_visel.size());
-               m_visel.push_back(iselect);
+               editable->m_vCollection.push_back(this);
+               editable->m_viCollection.push_back((int)m_parts.size());
+               m_parts.push_back(editable);
                break; // found, continue to search next name/element
             }
          }
@@ -75,16 +74,16 @@ HRESULT Collection::InitPostLoad(const PinTable *const pt)
 
 STDMETHODIMP Collection::get_Count(LONG __RPC_FAR *plCount)
 {
-   *plCount = m_visel.size();
+   *plCount = (LONG)m_parts.size();
    return S_OK;
 }
 
 STDMETHODIMP Collection::get_Item(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp)
 {
-   if (index < 0 || index >= m_visel.size())
+   if (index < 0 || index >= (LONG)m_parts.size())
       return TYPE_E_OUTOFBOUNDS;
 
-   IDispatch * const pdisp = m_visel[index].GetIDispatch();
+   IDispatch * const pdisp = m_parts[index]->GetIScriptable()->GetIDispatch();
    return pdisp->QueryInterface(IID_IDispatch, (void **)ppidisp);
 }
 
@@ -116,11 +115,11 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
    const int cwanted = celt;
    int creturned;
 
-   if (m_index + cwanted > m_pcol->m_visel.size())
+   if (m_index + cwanted > (int)m_pcol->GetParts().size())
    {
       hr = S_FALSE;
-      last = m_pcol->m_visel.size();
-      creturned = m_pcol->m_visel.size() - m_index;
+      last = (int)m_pcol->GetParts().size();
+      creturned = (int)m_pcol->GetParts().size() - m_index;
    }
    else
    {
@@ -131,7 +130,7 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
 
    for (int i = m_index; i < last; ++i)
    {
-      IDispatch * const pdisp = m_pcol->m_visel[i].GetIDispatch();
+      IDispatch * const pdisp = m_pcol->GetParts()[i]->GetIScriptable()->GetIDispatch();
       pdisp->QueryInterface(IID_IDispatch, (void **)&pdisp);
 
       V_VT(&rgVar[i - m_index]) = VT_DISPATCH;
@@ -149,7 +148,7 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
 STDMETHODIMP OMCollectionEnum::Skip(ULONG celt)
 {
    m_index += celt;
-   return (m_index >= m_pcol->m_visel.size()) ? S_FALSE : S_OK;
+   return (m_index >= (int)m_pcol->GetParts().size()) ? S_FALSE : S_OK;
 }
 
 STDMETHODIMP OMCollectionEnum::Reset()

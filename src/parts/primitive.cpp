@@ -772,13 +772,12 @@ void Primitive::RenderSetup(Renderer *renderer)
       size_t overall_size = 0;
       bool partOfGroup = false;
       vector<Primitive *> prims;
-      for (int i = 0; i < collection->m_visel.size(); i++)
+      for (IEditable *const part : collection->GetParts())
       {
-         ISelect *const pisel = collection->m_visel.ElementAt(i);
-         if (pisel->GetItemType() != eItemPrimitive)
+         if (part->GetItemType() != eItemPrimitive)
             continue;
 
-         Primitive *const prim = (Primitive *)pisel;
+         Primitive *const prim = (Primitive *)part;
          // only support dynamic mesh primitives for now
          if (!prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
             continue;
