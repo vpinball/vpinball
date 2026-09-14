@@ -4,6 +4,9 @@
 #include "ScriptEngine.h"
 
 #include "core/ScriptInterpreter.h"
+#ifdef ENABLE_JS_SCRIPTING
+#include "core/JSScriptEngine.h"
+#endif
 
 #include <regex>
 
@@ -41,8 +44,13 @@ const char *GetScriptFileExtension(ScriptLanguage language)
 
 IScriptEngine *CreateScriptEngine(ScriptLanguage language)
 {
+#ifdef ENABLE_JS_SCRIPTING
+   if (language == ScriptLanguage::JavaScript)
+      return new JSScriptEngine();
+#else
    if (language == ScriptLanguage::JavaScript)
       PLOGE << "Table script is JavaScript but this build has no JavaScript engine, falling back to VBScript";
+#endif
    CComObject<ScriptInterpreter> *interpreter;
    CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
    interpreter->AddRef();
