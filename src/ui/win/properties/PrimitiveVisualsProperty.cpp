@@ -203,12 +203,12 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_LOAD_MESH_BUTTON:
                 PropertyDialog::StartUndo(prim);
-                prim->LoadMeshDialog();
+                LoadMeshDialog(prim);
                 PropertyDialog::EndUndo(prim);
                 break;
             case IDC_EXPORT_MESH_BUTTON:
                 PropertyDialog::StartUndo(prim);
-                prim->ExportMeshDialog();
+                ExportMeshDialog(prim);
                 PropertyDialog::EndUndo(prim);
                 break;
             case IDC_ALPHA_EDIT:
@@ -392,4 +392,107 @@ INT_PTR PrimitiveVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lP
    }
    }
    return DialogProcDefault(uMsg, wParam, lParam);
+}
+
+class MeshImportDialog final : public CDialog
+{
+public:
+   MeshImportDialog(Primitive *const prim)
+      : CDialog(IDD_MESH_IMPORT_DIALOG)
+      , m_prim(prim)
+   {
+   }
+
+protected:
+   BOOL OnInitDialog() override
+   {
+      SetDlgItemText(IDC_FILENAME_EDIT, "");
+      CheckDlgButton(IDC_CONVERT_COORD_CHECK, BST_CHECKED);
+      CheckDlgButton(IDC_REL_POSITION_RADIO, BST_CHECKED);
+      CheckDlgButton(IDC_ABS_POSITION_RADIO, BST_UNCHECKED);
+      CheckDlgButton(IDC_CENTER_MESH, BST_UNCHECKED);
+      CheckDlgButton(IDC_IMPORT_NO_FORSYTH, BST_UNCHECKED);
+      GetDlgItem(IDOK).EnableWindow(FALSE);
+      return TRUE;
+   }
+
+   void OnOK() override
+   {
+      const string filename = GetDlgItemText(IDC_FILENAME_EDIT).GetString();
+      if (filename.empty())
+      {
+         ShowError("No .obj file selected!");
+         return;
+      }
+
+      const bool convertToLeftHanded = IsDlgButtonChecked(IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
+      const bool importAbsolutePosition = IsDlgButtonChecked(IDC_ABS_POSITION_RADIO) == BST_CHECKED;
+      const bool centerMesh = IsDlgButtonChecked(IDC_CENTER_MESH) == BST_CHECKED;
+      const bool importMaterial = IsDlgButtonChecked(IDC_IMPORT_MATERIAL) == BST_CHECKED;
+      const bool importAnimation = IsDlgButtonChecked(IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
+      const bool doForsyth = IsDlgButtonChecked(IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
+
+      if (m_prim->LoadMesh(filename, convertToLeftHanded, importAbsolutePosition, centerMesh, importMaterial, importAnimation, doForsyth))
+         EndDialog(TRUE);
+      else
+         ShowError("Unable to open file!");
+   }
+
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override
+   {
+      UNREFERENCED_PARAMETER(lParam);
+      switch (LOWORD(wParam))
+      {
+      case IDC_BROWSE_BUTTON:
+      {
+         SetForegroundWindow();
+
+         const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
+
+         vector<string> szFileName;
+         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
+         {
+            SetDlgItemText(IDC_FILENAME_EDIT, szFileName[0].c_str());
+
+            const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
+            if (index != string::npos)
+            {
+               g_app->m_settings.SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
+               m_prim->m_d.m_meshFileName = szFileName[0].substr(index + 1);
+            }
+
+            GetDlgItem(IDOK).EnableWindow(TRUE);
+         }
+         return TRUE;
+      }
+      }
+      return FALSE;
+   }
+
+private:
+   Primitive *const m_prim;
+};
+
+void PrimitiveVisualsProperty::LoadMeshDialog(Primitive *const prim)
+{
+   MeshImportDialog dialog(prim);
+   dialog.DoModal(g_pvp->GetHwnd());
+}
+
+void PrimitiveVisualsProperty::ExportMeshDialog(Primitive *const prim)
+{
+   const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
+
+   vector<string> szFileName;
+   if (g_pvp->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
+   {
+      const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
+      if (index != string::npos)
+      {
+         const string newInitDir(szFileName[0].substr(0, index));
+         g_app->m_settings.SetRecentDir_ImportDir(newInitDir, false);
+      }
+
+      prim->m_mesh.SaveWavefrontObj(szFileName[0], prim->m_d.m_use3DMesh ? MakeString(prim->m_wzName) : "Primitive"s);
+   }
 }

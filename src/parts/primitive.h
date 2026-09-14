@@ -263,8 +263,8 @@ public:
 
    void WriteRegDefaults() final;
 
-   bool LoadMeshDialog();
-   void ExportMeshDialog();
+   bool LoadMesh(const string &filename, const bool convertToLeftHanded, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation,
+      const bool doForsyth);
 
 #if (GET_PLATFORM_OS_ENUM==0) // Windows
    bool IsPlayfield() const { return _wcsicmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
@@ -299,8 +299,6 @@ public:
 
    void setInPlayState(const bool newVal);
 
-   static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
    Mesh m_mesh;
 
    PrimitiveData m_d;
@@ -334,7 +332,6 @@ private:
    int m_compressedAnimationVertices = 0; // only used during loading
 #endif
 
-   bool BrowseFor3DMeshFile();
    void SetupHitObject(class PhysicsEngine *physics, HitObject *obj, const bool isUI);
    void AddHitEdge(class PhysicsEngine *physics, ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi,
       const Vertex3Ds &vj, const bool isUI);

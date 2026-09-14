@@ -4,6 +4,7 @@
 
 #include "PropertyDialog.h"
 
+class Primitive;
 class RenderProbe;
 
 class PrimitiveVisualsProperty final : public BasePropertyDialog
@@ -24,8 +25,11 @@ protected:
     void UpdateRenderProbeComboBox(const vector<RenderProbe *> &contentList, const CComboBox &combo, const string &selectName);
 
 private:
-    CButton     m_importMeshButton;
-    CButton     m_exportMeshButton;
+    void LoadMeshDialog(Primitive *prim);
+    void ExportMeshDialog(Primitive *prim);
+
+    CButton m_importMeshButton;
+    CButton m_exportMeshButton;
     ComboBox    m_imageCombo;
     ComboBox    m_normalMapCombo;
     ComboBox    m_materialCombo;
