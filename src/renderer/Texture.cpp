@@ -995,6 +995,7 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
                else
                   copy_rgba_rgb<false>(dst, src, width); // copy without alpha channel
             }
+            delete[] tmp;
 
             // Convert to a lossless webp
             auto memStream = FreeImage_OpenMemory();

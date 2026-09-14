@@ -413,6 +413,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
          break;
       }
       #undef CHANGE_TYPE
+      VariantClear(&v);
       break;
    }
 
@@ -1039,6 +1040,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
                PLOGE << "Failed to update byref COM argument after call";
                assert(false);
             }
+            VariantClear(&varValue);
             break;
          }
          case VT_DISPATCH:
