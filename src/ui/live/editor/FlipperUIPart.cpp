@@ -31,7 +31,7 @@ void FlipperUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_flipper->m_d.m_visible;
 
-   const bool isUIVisible = m_flipper->IsVisible(m_flipper);
+   const bool isUIVisible = m_flipper->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_flipper->m_d.m_visible = true;

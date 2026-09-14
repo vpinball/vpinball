@@ -77,6 +77,11 @@ bool IEditable::IsChild(const PartGroup* group) const
    return parent == group;
 }
 
+bool IEditable::IsUIVisible(const bool applyPartGroupVisibility) const
+{
+   return m_uiVisible && (!applyPartGroupVisibility || GetPartGroup() == nullptr || GetPartGroup()->IsUIVisible(true));
+}
+
 void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
 {
    switch (tag)

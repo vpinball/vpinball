@@ -2705,7 +2705,7 @@ IEditable *PinTable::GetElementByName(const char * const name) const
 bool PinTable::FMutilSelLocked()
 {
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
-      if (m_tableEditor->m_vmultisel[i].IsUILocked())
+      if (m_tableEditor->m_vmultisel[i].GetIEditable()->IsUILocked())
          return true;
 
    return false;
@@ -2921,7 +2921,7 @@ void PinTable::LockElements()
          if (pedit)
          {
             pedit->MarkForUndo();
-            pedit->m_uiLocked = lock;
+            pedit->SetUILock(lock);
          }
       }
    }
@@ -3082,7 +3082,7 @@ void PinTable::ExportTableMesh()
    loader.ExportStart(filename);
    ExportMesh(loader);
    for (const auto pedit : m_vedit)
-      if (pedit->m_uiVisible && pedit->m_desktopBackdrop == m_vpinball->m_desktopBackdropView)
+      if (pedit->IsUIVisible(false) && pedit->m_desktopBackdrop == m_vpinball->m_desktopBackdropView)
          pedit->ExportMesh(loader);
 
    loader.ExportEnd();

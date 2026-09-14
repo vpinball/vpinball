@@ -34,7 +34,7 @@ void HitTargetUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_hitTarget->m_d.m_visible;
 
-   const bool isUIVisible = m_hitTarget->IsVisible(m_hitTarget);
+   const bool isUIVisible = m_hitTarget->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_hitTarget->m_d.m_visible = true;

@@ -301,7 +301,7 @@ void PaintSur::SetObject(ISelect *const psel)
 {
    if ((m_psel != nullptr) && (psel != nullptr)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
    {
-      const bool isLocked = psel->IsUILocked();
+      const bool isLocked = psel->GetIEditable()->IsUILocked();
       const COLORREF selectColor = isLocked ? PaintSur::GetSelectLockedColor() : PaintSur::GetSelectColor();
       const IWinUIPart *const uiPart = m_pTableWnd ? m_pTableWnd->GetUIPart(psel) : nullptr;
       const IWinUIPart::SelectState selectState = uiPart ? uiPart->m_selectstate : IWinUIPart::SelectState::NotSelected;

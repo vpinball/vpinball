@@ -26,7 +26,7 @@ void LightSeqUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3
 
 void LightSeqUIPart::Render(const EditorRenderContext& ctx)
 {
-   const bool isUIVisible = m_lightSeq->IsVisible(m_lightSeq);
+   const bool isUIVisible = m_lightSeq->IsUIVisible(true);
    if (isUIVisible && ctx.IsShowInvisible())
    {
       const ImU32 color = ctx.GetColor(ctx.IsSelected());

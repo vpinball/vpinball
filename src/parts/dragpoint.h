@@ -89,11 +89,6 @@ public:
    bool m_slingshot;
    bool m_autoTexture;
 
-   bool IsUILocked() const final { return m_uiLocked; }
-   void SetUILock(bool lock) final { m_uiLocked = lock; }
-   bool IsUIVisible() const final { return m_uiVisible; }
-   void SetUIVisible(bool visible) final { m_uiVisible = visible; }
-
    bool m_uiLocked = false; // Can not be dragged in the editor
    bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 

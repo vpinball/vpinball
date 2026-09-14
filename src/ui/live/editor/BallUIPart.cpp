@@ -27,7 +27,7 @@ void BallUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_ball->m_d.m_visible;
 
-   const bool isUIVisible = m_ball->IsVisible(m_ball);
+   const bool isUIVisible = m_ball->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_ball->m_d.m_visible = true;
