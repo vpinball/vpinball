@@ -5,9 +5,9 @@
 //
 // vpmKeyDown/vpmKeyUp return true when the key was handled, call them from the table KeyDown/KeyUp handlers.
 
-import { Controller } from "controller.js";
-import { vpmTimer, vpmNudge, vpmFlips, vpmShowOptions, vpmShowHelp, vpmVol, vpmAddBall } from "core.js";
-import * as keys from "vpmkeys.js";
+import { Controller } from "./controller.js";
+import { vpmTimer, vpmNudge, vpmFlips, vpmShowOptions, vpmShowHelp, vpmVol, vpmAddBall } from "./core.js";
+import * as keys from "./vpmkeys.js";
 
 // Flipper Solenoid (GameOn)
 export const GameOnSolenoid = 31;

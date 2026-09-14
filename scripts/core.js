@@ -2,8 +2,8 @@
 //
 // Usage in a table script:
 //
-//   import { LoadVPM, SoundFX, DOFContactors } from "controller.js";
-//   import { vpmInit, vpmTimer, vpmNudge, cvpmBallStack, SolCallback, hooks, setSwitch } from "core.js";
+//   import { LoadVPM, SoundFX, DOFContactors } from "./controller.js";
+//   import { vpmInit, vpmTimer, vpmNudge, cvpmBallStack, SolCallback, hooks, setSwitch } from "./core.js";
 //   import { GameOnSolenoid, vpmKeyDown, vpmKeyUp } from "wpc.js";
 //   await LoadVPM({ gameName: "pz_f4" });
 //
@@ -17,7 +17,7 @@
 // GICallback, ...) are properties of the exported 'hooks' object. Indexed controller properties are set
 // with setSwitch(no, state) or Controller.$set("Switch", no, state).
 
-import { Controller } from "controller.js";
+import { Controller } from "./controller.js";
 
 export const VPinMAMEDriverVer = 3.61;
 export const PinMAMEInterval = -2; // controller synced timer, runs more than once a frame
