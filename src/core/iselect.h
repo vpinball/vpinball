@@ -93,8 +93,6 @@ public:
    virtual const IEditable *GetIEditable() const = 0;
 
    virtual int GetSelectLevel() const { return 1; }
-   virtual bool LoadMeshDialog() { return false; }
-   virtual void ExportMeshDialog() {}
    virtual void AddPoint(const Vertex2D &v, const bool smooth) { }
    virtual void UpdateStatusBarInfo();
 

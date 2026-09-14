@@ -263,8 +263,8 @@ public:
 
    void WriteRegDefaults() final;
 
-   bool LoadMeshDialog() final;
-   void ExportMeshDialog() final;
+   bool LoadMeshDialog();
+   void ExportMeshDialog();
 
 #if (GET_PLATFORM_OS_ENUM==0) // Windows
    bool IsPlayfield() const { return _wcsicmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
