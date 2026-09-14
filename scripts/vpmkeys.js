@@ -1,0 +1,53 @@
+// vpmkeys.js: port of VPMKeys.vbs, the key codes used by the ROM family modules (wpc.js, ...).
+// Keys mapped through the VPX key settings are read with VPXActionKey(n), the others are fixed scan codes.
+
+export const keyShowOpts = 59;   // (F1)  Show options
+export const keyShowKeys = 60;   // (F2)  Show Keys
+export const keyReset = VPXActionKey(19);        // (F3)  Reset Emulation
+export const keyFrame = 62;      // (F4)  Toggle Window Lock
+export const keyDoubleSize = 63; // (F5)  Toggle displaysize
+export const keyShowDips = 64;   // (F6)  Show Dip Switch / Options Menu
+export const keyVPMVolume = 88;  // (F12) Show input box to set VPM Volume
+export const keyAddBall = VPXActionKey(22);      // (B)     Add extra ball
+export const keyBangBack = VPXActionKey(13);     // (T)     Bang Back
+export const keyInsertCoin1 = VPXActionKey(9);   // (5)     Insert coin in slot 1
+export const keyInsertCoin2 = VPXActionKey(10);  // (4)     Insert coin in slot 2
+export const keyInsertCoin3 = VPXActionKey(11);  // (3)     Insert coin in slot 3
+export const keyInsertCoin4 = VPXActionKey(12);  // (6)     Insert coin in slot 4
+export const keySlamDoorHit = VPXActionKey(23);  // (Home)  Slam Tilt
+export const keyCoinDoor = VPXActionKey(24);     // (End)   Opening/Closing Coin Door
+export const toggleKeyCoinDoor = true;   // true: a key press flips the coin door state, false: real coin door behaviour (cabinets with a real coin door)
+export const inverseKeyCoinDoor = false; // false: original coin door (key pressed = closed), true: inverted
+export const keyCancel = VPXActionKey(25);       // (7)     Coin Door Cancel Button (WPC)
+export const keyDown = VPXActionKey(26);         // (8)     Coin Door Down Button (WPC)
+export const keyUp = VPXActionKey(27);           // (9)     Coin Door Up Button (WPC)
+export const keyEnter = VPXActionKey(28);        // (0)     Coin Door Enter Button (WPC)
+export const keyAdvance = VPXActionKey(26);      // (8)     Coin Door Advance Button
+export const keyUpDown = VPXActionKey(25);       // (7)     Coin Door Up/Down Button
+export const keyCPUDiag = VPXActionKey(27);      // (9)     CPU Diagnostic Button
+export const keySoundDiag = VPXActionKey(28);    // (0)     Sound CPU Diagnostic Button
+export const keyMasterEnter = VPXActionKey(30);  // (PgUp)  Master Enter
+export const keyHiScoreReset = VPXActionKey(29); // (6)     Reset Hiscores
+export const keySelfTest = VPXActionKey(25);     // (7)
+export const keyBlack = VPXActionKey(25);        // (7)     Sega/Data East/Stern
+export const keyGreen = VPXActionKey(26);        // (8)     Sega/Data East/Stern
+export const keyRed = VPXActionKey(27);          // (9)     Sega/Data East/Stern
+export const keyConfigurations = VPXActionKey(31); // (-)   Taito
+export const keyKPGame = VPXActionKey(29);       // (6)     Bally 6803
+export const keyKPEnter = 156;   // (NumpadEnter) see 6803.vbs for complete keypad
+export const keyUpperLeft = 30;  // (A)   Upper Left Flipper button
+export const keyUpperRight = 40; // (')   Upper Right Flipper button
+export const keyFront = 3;       // (2)   Front button (e.g. buy-in)
+export const keyRules = 19;      // (R)   Show rules
+export const keyJoyUp = 200;     // (Up arrow)
+export const keyJoyDown = 208;   // (Down arrow)
+export const keyJoyLeft = 203;   // (Left arrow)
+export const keyJoyRight = 205;  // (Right arrow)
+export const keyFire1 = 29;      // (Left CTRL)
+export const keyFire2 = 184;     // (Right Alt)
+export const keyGameSpecific1 = 16; // (Q)
+export const keyGameSpecific2 = 17; // (W)
+export const keyGameSpecific3 = 18; // (E)
+export const keyGameSpecific4 = 19; // (R)
+export const keyStagedFlipperL = StagedLeftFlipperKey;
+export const keyStagedFlipperR = StagedRightFlipperKey;
