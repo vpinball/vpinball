@@ -43,7 +43,7 @@ void SurfaceUIPart::Render(const EditorRenderContext& ctx)
       m_sideVisible = m_surface->m_d.m_sideVisible;
    }
 
-   const bool isUIVisible = m_surface->IsVisible(m_surface);
+   const bool isUIVisible = m_surface->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_sideVisible && !m_topVisible && ctx.IsShowInvisible())))
    {
       m_surface->m_d.m_topBottomVisible = true;

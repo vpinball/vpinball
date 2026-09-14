@@ -31,7 +31,7 @@ void KickerUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_kickerType = m_kicker->m_d.m_kickertype;
 
-   const bool isUIVisible = m_kicker->IsVisible(m_kicker);
+   const bool isUIVisible = m_kicker->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || m_kickerType == KickerType::KickerInvisible))
    {
       m_kicker->m_d.m_visible = true;

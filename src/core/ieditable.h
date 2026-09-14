@@ -119,10 +119,6 @@ public:
     } \
 	T *CopyForPlay() const final; \
 	HRESULT Init(const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
-	bool IsUILocked() const final { return m_uiLocked; } \
-	void SetUILock(bool lock) final { m_uiLocked = lock; } \
-	bool IsUIVisible() const final { return m_uiVisible; } \
-	void SetUIVisible(bool visible) final { m_uiVisible = visible; } \
 	PinTable *GetPTable() final { return m_ptable; } \
 	const PinTable *GetPTable() const final { return m_ptable; } \
 	void Delete() final {IEditable::Delete();} \
@@ -170,8 +166,8 @@ public:
    dst->Init(0.f, 0.f, false, true); \
    dst->m_wzName = m_wzName; \
    dst->m_desktopBackdrop = m_desktopBackdrop; \
-   dst->m_uiLocked = m_uiLocked; \
-   dst->m_uiVisible = m_uiVisible; \
+   dst->SetUILock(IsUILocked()); \
+   dst->SetUIVisible(IsUIVisible(false)); \
    dst->m_d = m_d; \
    dst->m_timerInterval = m_timerInterval; \
    dst->m_timerEnabled = m_timerEnabled;
@@ -290,6 +286,13 @@ public:
    string GetPathString(const bool isDirOnly) const;
    bool IsChild(const PartGroup* group) const;
 
+   // UI lock and visibility are part of IEditable as they are persisted in the table file, used by the different editors
+   bool IsUILocked() const { return m_uiLocked; }
+   void SetUILock(const bool lock) { m_uiLocked = lock; }
+   // UI visibility, optionally applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
+   bool IsUIVisible(const bool applyPartGroupVisibility) const;
+   void SetUIVisible(const bool visible) { m_uiVisible = visible; }
+
    HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
    HRESULT put_TimerInterval(long newVal, int *pti);
 
@@ -303,14 +306,11 @@ public:
 
    bool m_desktopBackdrop = false; // if true, the element is part of the desktop backdrop
 
-   bool m_uiLocked = false; // Can not be dragged in the editor
-
-   bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
-
 private:
    VARIANT m_uservalue;
-
    class PartGroup* m_partGroup = nullptr; // Parenting to group (or top level layers) for base transform and visibility
+   bool m_uiLocked = false; // Can not be dragged in the editor
+   bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 
 #pragma region Script events
 public:

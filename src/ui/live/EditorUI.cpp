@@ -551,12 +551,12 @@ void EditorUI::RenderUI()
             if (editable)
             {
                const PartGroup *parent = editable->GetPartGroup();
-               bool visible = editable->m_uiVisible;
+               bool visible = editable->IsUIVisible(false);
                while (parent && visible)
                {
                   if ((parent->GetPlayerModeVisibilityMask() & m_renderer->GetPlayerModeVisibilityMask()) == 0)
                      visible = false;
-                  visible &= parent->m_uiVisible;
+                  visible &= parent->IsUIVisible(false);
                   parent = parent->GetPartGroup();
                }
                if (!visible)
@@ -628,7 +628,7 @@ void EditorUI::RenderUI()
          { // Unhide all
             for (auto &part : m_editables)
                if (part->GetEditable()->GetItemType() != eItemPartGroup && part->GetEditable()->GetISelect())
-                  part->GetEditable()->m_uiVisible = true;
+                  part->GetEditable()->SetUIVisible(true);
          }
          else if (io.KeyShift)
          { // Hide unselected
@@ -636,14 +636,14 @@ void EditorUI::RenderUI()
             {
                for (auto &part : m_editables)
                   if (part->GetEditable()->GetItemType() != eItemPartGroup && part != m_selection.uiPart && part->GetEditable()->GetISelect())
-                     part->GetEditable()->m_uiVisible = false;
+                     part->GetEditable()->SetUIVisible(false);
             }
          }
          else
          { // Hide selected
             if (m_selection.type == Selection::S_EDITABLE)
             {
-               m_selection.uiPart->GetEditable()->m_uiVisible = false;
+               m_selection.uiPart->GetEditable()->SetUIVisible(false);
                m_selection = Selection();
             }
          }
@@ -898,7 +898,7 @@ void EditorUI::UpdateEditableList()
          default: uiPart = std::make_shared<BaseUIPart>(edit); break;
          }
          if (m_table->m_liveBaseTable)
-            edit->m_uiVisible = true;
+            edit->SetUIVisible(true);
          uiPart->SetOutlinerPath(edit->GetPathString(false));
          m_editables.push_back(std::move(uiPart));
          needSort = true;
@@ -1111,9 +1111,9 @@ void EditorUI::UpdateOutlinerUI()
             if (m_table->m_liveBaseTable == nullptr)
             {
                ImGui::SameLine(eyeX);
-               ImGui::PushStyleColor(ImGuiCol_Text, group->m_uiVisible ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
-               if (ImGui::SmallButton(((group->m_uiVisible ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
-                  group->m_uiVisible = !group->m_uiVisible;
+               ImGui::PushStyleColor(ImGuiCol_Text, group->IsUIVisible(false) ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
+               if (ImGui::SmallButton(((group->IsUIVisible(false) ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
+                  group->SetUIVisible(!group->IsUIVisible(false));
                ImGui::PopStyleColor();
             }
             stack.emplace_back(static_cast<PartGroup *>(edit->GetEditable()), (stack.empty() || stack.back().opened) ? opened : false);
@@ -1133,9 +1133,9 @@ void EditorUI::UpdateOutlinerUI()
                   if (editable && m_table->m_liveBaseTable == nullptr)
                   {
                      ImGui::SameLine(eyeX);
-                     ImGui::PushStyleColor(ImGuiCol_Text, editable->m_uiVisible ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
-                     if (ImGui::SmallButton(((editable->m_uiVisible ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
-                        editable->m_uiVisible = !editable->m_uiVisible;
+                     ImGui::PushStyleColor(ImGuiCol_Text, editable->IsUIVisible(false) ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
+                     if (ImGui::SmallButton(((editable->IsUIVisible(false) ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
+                        editable->SetUIVisible(!editable->IsUIVisible(false));
                      ImGui::PopStyleColor();
                   }
                }

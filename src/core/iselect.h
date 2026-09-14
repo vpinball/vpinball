@@ -86,12 +86,6 @@ public:
    virtual int GetSelectLevel() const { return 1; }
    virtual void UpdateStatusBarInfo();
 
-   virtual bool IsUILocked() const = 0;
-   virtual void SetUILock(bool lock) = 0;
-   virtual bool IsUIVisible() const = 0;
-   virtual void SetUIVisible(bool visible) = 0;
-   bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
-
 protected:
    WinEditor *m_vpinball = nullptr;
 };

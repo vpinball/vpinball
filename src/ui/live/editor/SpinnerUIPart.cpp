@@ -31,7 +31,7 @@ void SpinnerUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_spinner->m_d.m_visible;
 
-   const bool isUIVisible = m_spinner->IsVisible(m_spinner);
+   const bool isUIVisible = m_spinner->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_spinner->m_d.m_visible = true;

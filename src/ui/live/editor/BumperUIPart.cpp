@@ -45,7 +45,7 @@ void BumperUIPart::Render(const EditorRenderContext& ctx)
       m_ringVisible = m_bumper->m_d.m_ringVisible;
    }
 
-   const bool isUIVisible = m_bumper->IsVisible(m_bumper);
+   const bool isUIVisible = m_bumper->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_baseVisible && !m_capVisible && !m_skirtVisible && !m_ringVisible && ctx.IsShowInvisible())))
    {
       m_bumper->m_d.m_baseVisible = true;

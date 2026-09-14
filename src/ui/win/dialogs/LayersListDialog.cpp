@@ -427,15 +427,14 @@ void LayerTreeView::Update()
          for (auto e : m_activeTable->GetParts())
             if (e->GetPartGroup() == node.editable && e->GetISelect())
             {
-               show |= e->m_uiVisible;
-               hide |= !e->m_uiVisible;
+               show |= e->IsUIVisible(false);
+               hide |= !e->IsUIVisible(false);
             }
          state = (show && !hide) ? 1 : (!show && hide) ? 2 : 3;
       }
       else
       {
-         const ISelect* const select = node.editable->GetISelect();
-         state = (select && select->IsUIVisible()) ? 1 : (select && !select->IsUIVisible()) ? 2 : 3;
+         state = node.editable->IsUIVisible(false) ? 1 : 2;
       }
       TreeView_SetItemState(GetHwnd(), node.item, INDEXTOSTATEIMAGEMASK(state), TVIS_STATEIMAGEMASK);
       globalVisibility = globalVisibility == 3 ? 3 : globalVisibility == -1 ? state : (globalVisibility != state) ? 3 : globalVisibility;
@@ -665,8 +664,8 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
    {
       if (ht.hItem == m_hRootItem)
       {
-         bool visible = std::ranges::find_if(m_content, [](const TreeEntry& te) { return !te.editable->m_uiVisible; }) != m_content.end();
-         std::ranges::for_each(m_content, [visible](const TreeEntry& te) { te.editable->m_uiVisible = visible; });
+         bool visible = std::ranges::find_if(m_content, [](const TreeEntry& te) { return !te.editable->IsUIVisible(false); }) != m_content.end();
+         std::ranges::for_each(m_content, [visible](const TreeEntry& te) { te.editable->SetUIVisible(visible); });
       }
       else
       {
@@ -675,7 +674,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
          {
             auto selected = selectedItem->editable;
             if (selected->GetItemType() != eItemPartGroup)
-               selected->m_uiVisible = !selected->m_uiVisible;
+               selected->SetUIVisible(!selected->IsUIVisible(false));
             else
             {
                bool visible = std::ranges::find_if(m_content, 
@@ -685,7 +684,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                      while (pg != nullptr && pg != selected)
                         pg = pg->GetPartGroup();
                      if (pg == selected)
-                        return !te.editable->m_uiVisible; 
+                        return !te.editable->IsUIVisible(false); 
                      return false;
                   }) != m_content.end();
                std::ranges::for_each(m_content,
@@ -695,7 +694,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
                      while (pg != nullptr && pg != selected)
                         pg = pg->GetPartGroup();
                      if (pg == selected)
-                        te.editable->m_uiVisible = visible;
+                        te.editable->SetUIVisible(visible);
                   });
             }
          }

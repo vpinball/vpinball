@@ -317,12 +317,6 @@ public:
 
    void SetMouseCapture();
 
-   // ISelect
-   bool IsUILocked() const final { return false; }
-   void SetUILock(bool lock) final { }
-   bool IsUIVisible() const final { return true; }
-   void SetUIVisible(bool visible) final { }
-
    void SetDirtyDraw() final;
 
    bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop

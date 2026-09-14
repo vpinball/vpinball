@@ -99,7 +99,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_LOCK:
       piedit->BeginUndo();
       piedit->MarkForUndo();
-      m_select->SetUILock(!m_select->IsUILocked());
+      piedit->SetUILock(!piedit->IsUILocked());
       piedit->EndUndo();
       if (m_select->GetPTable())
          m_select->GetPTable()->SetDirtyDraw();
