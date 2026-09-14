@@ -2,6 +2,7 @@
 
 #include "PUPManager.h"
 #include "PUPScreen.h"
+#include "PUPTrigger.h"
 #include "PUPCustomPos.h"
 #include "LibAv.h"
 
@@ -108,6 +109,14 @@ void PUPManager::Start()
          return selected;
       },
       [this](const DisplaySrcId& src, const uint8_t* frame) { return ProcessDmdFrame(src, frame); });
+   m_B2SPluginEventStream->SetDmdIdentificationHandler(
+      [](bool bySerum)
+      {
+         if (bySerum)
+            LOGI("DMD frame identification provided by Serum; local matching disabled"s);
+         else
+            LOGI("DMD frame identification handled locally"s);
+      });
 }
 
 void PUPManager::Stop()
@@ -213,6 +222,20 @@ void PUPManager::LoadConfig(const string& szRomName)
       LOGI("No screens.pup file found"s);
    }
 
+   // Triggers that only a DMD frame match can fire.
+   //
+   // Counted from the parsed conditions rather than the trigger string, which
+   // is what QueueDOFEvent matches on too: a trigger may carry several
+   // conditions, so its string is not always a single "D1234". Number 0 is
+   // excluded, being PuP's own startup event -- queued below by this code
+   // rather than matched against a frame.
+   m_dmdTriggerCount = 0;
+   for (const auto& [screenNum, pScreen] : m_screenMap)
+      for (const auto& [szTrigger, triggers] : pScreen->GetTriggers())
+         for (PUPTrigger* pTrigger : triggers)
+            if (std::ranges::any_of(pTrigger->GetTriggers(), [](const PUPTrigger::PUPTriggerCondition& condition) { return condition.m_type == 'D' && condition.m_number != 0; }))
+               ++m_dmdTriggerCount;
+
    Start();
 
    // Queue initial game event
@@ -232,6 +255,9 @@ void PUPManager::Unload()
    m_screenMap.clear();
 
    m_dmd = nullptr;
+   m_dmdTriggerCount = 0;
+   m_dmdTriggerDataLoaded = false;
+   m_reportedMissingIdentification = false;
 
    UnloadFonts();
 
@@ -475,8 +501,29 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
             LOGD(buffer);
          },
          this);
-      m_dmd->Load(m_szPath.string().c_str(), "", src.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
+      m_dmdTriggerDataLoaded = m_dmd->Load(m_szPath.string().c_str(), "", src.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
       memset(m_idFrame.data(), 0, m_idFrame.size());
+   }
+
+   // Being called at all means nobody else is identifying frames for this game:
+   // the event stream skips this call entirely while Serum does, and Serum
+   // claims the game before it starts reading its colorization, so the question
+   // is settled before the first frame gets here rather than however long a
+   // load takes. So if the pack has triggers that only a frame match can fire
+   // and there is no local trigger data to match against, those triggers never
+   // fire, and the pack plays with parts of it silently missing.
+   //
+   // Worth a message because the failure is otherwise invisible: the pack
+   // loads, the screens appear, and only the media behind the missing triggers
+   // is absent. A pack built against a Serum colorization is the usual way into
+   // this, its author having had no way to declare the dependency -- the PuP
+   // editor only knows "D12345" strings.
+   if (!m_dmdTriggerDataLoaded && m_dmdTriggerCount > 0 && !m_reportedMissingIdentification)
+   {
+      m_reportedMissingIdentification = true;
+      LOGE(std::format("This PuP pack has {} DMD trigger(s) but no trigger data of its own, and no Serum colorization is identifying frames for '{}'. "
+                       "Those triggers cannot fire. Install the colorization the pack was built against, or a pupdmd trigger set for it.",
+         m_dmdTriggerCount, m_szRomName));
    }
 
    if (src.width == 128 && src.height == 32)

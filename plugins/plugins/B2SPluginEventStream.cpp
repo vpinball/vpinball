@@ -29,11 +29,16 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
         {
            const string pinmamePrefix(PMPI_GAMEID_PREFIX);
            const string b2sPrefix("b2s::");
+           // serum:: is not a controller to poll but a statement that a
+           // colorization identifies DMD frames for a game. It is kept through
+           // the filter so the change callback below can see it, and skipped
+           // everywhere a controller is actually used.
+           const string serumPrefix(serumGameIdPrefix);
            std::erase_if(controllers,
-              [this, &pinmamePrefix, &b2sPrefix](const ControllerDef& controller)
+              [this, &pinmamePrefix, &b2sPrefix, &serumPrefix](const ControllerDef& controller)
               {
                  const std::string_view gameId = controller.gameId;
-                 return !gameId.starts_with(pinmamePrefix) && !gameId.starts_with(b2sPrefix);
+                 return !gameId.starts_with(pinmamePrefix) && !gameId.starts_with(b2sPrefix) && !gameId.starts_with(serumPrefix);
               });
         },
         [this]() {
@@ -49,16 +54,31 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
                  m_pinmameEndPoint = 0;
                  const string pinmamePrefix(PMPI_GAMEID_PREFIX);
                  const string b2sPrefix("b2s::");
+                 const string serumPrefix(serumGameIdPrefix);
+                 std::string_view pinmameGame;
+                 std::string_view serumGame;
                  for (const auto& controller : controllers)
                  {
                     string gameId = controller.gameId;
                     if (m_pinmameEndPoint == 0 && gameId.starts_with(pinmamePrefix))
+                    {
                        m_pinmameEndPoint = controller.endpointId;
+                       pinmameGame = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+                    }
                     else if (m_b2sEndPoint == 0 && gameId.starts_with(b2sPrefix))
                        m_b2sEndPoint = controller.endpointId;
-                    if (m_pinmameEndPoint != 0 && m_b2sEndPoint != 0)
-                       break;
+                    else if (serumGame.empty() && gameId.starts_with(serumPrefix))
+                       serumGame = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
                  }
+                 // Both halves matter. A colorization loaded for another game
+                 // identifies nothing here, and this is re-evaluated on every
+                 // controller change rather than once, which is what makes the
+                 // load order between the two plugins stop mattering: Serum
+                 // only says so once it has read the file, which is necessarily
+                 // after both plugins saw the game appear.
+                 const bool identified = !serumGame.empty() && serumGame == pinmameGame;
+                 if (identified != m_serumIdentifiesFrames.exchange(identified))
+                    m_onDmdIdentificationChanged(identified);
               });
            OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
            if (m_pinmameEndPoint != 0)
@@ -115,6 +135,15 @@ void B2SPluginEventStream::SetDMDHandler(const std::function<DisplaySrcId(const 
    m_selectDmd = select;
    m_processDmd = process;
    OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
+}
+
+void B2SPluginEventStream::SetDmdIdentificationHandler(const std::function<void(bool)>& onChanged)
+{
+   m_onDmdIdentificationChanged = onChanged;
+   // Called straight away with the current state: the controller list is
+   // resolved during construction, so a Serum colorization that was already
+   // loaded has been noticed before an owner could have installed this.
+   m_onDmdIdentificationChanged(IsDmdIdentifiedBySerum());
 }
 
 void B2SPluginEventStream::OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData)
@@ -190,7 +219,14 @@ void B2SPluginEventStream::StatePollingThread()
       std::lock_guard lock(m_pollSrcMutex);
 
       // D: DMD frame identification
-      if (m_dmdId.id.id != 0)
+      //
+      // Skipped outright while Serum identifies frames for this game: it has
+      // already matched them to produce its colorization, and it reports what
+      // it found on "Serum"/"OnDmdTrigger:1", which OnSerumTrigger turns into
+      // the same 'D' events this block would. Running both is how a pack ends
+      // up firing every trigger twice, and it costs a second full match of
+      // every frame to do it.
+      if (m_dmdId.id.id != 0 && !m_serumIdentifiesFrames.load(std::memory_order_relaxed))
       {
          DisplayFrame dmdFrame = m_dmdId.GetIdentifyFrame(m_dmdId.callContext);
          if (dmdFrame.frame && dmdFrame.frameId != m_lastDmdFrameId)

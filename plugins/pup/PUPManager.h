@@ -132,6 +132,11 @@ private:
    const VPXPluginAPI* m_vpxApi = nullptr;
 
    std::unique_ptr<PUPDMD::DMD> m_dmd;
+   // Triggers in the loaded pack that only a DMD frame match can fire, and what
+   // is needed to report once that nothing can fire them.
+   unsigned int m_dmdTriggerCount = 0;
+   bool m_dmdTriggerDataLoaded = false;
+   bool m_reportedMissingIdentification = false;
    std::array<uint8_t, 128 * 32> m_idFrame;
    int ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame);
    
