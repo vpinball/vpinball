@@ -126,14 +126,14 @@ void LightSeq::RenderSetup(Renderer *renderer)
    else*/
       memset((void *)m_pgridData, 0, m_lightSeqGridHeight*m_lightSeqGridWidth * sizeof(short));
 
-   // get the number of elements (objects) in the collection (referenced by m_visel)
-   size = m_pcollection->m_visel.size();
+   // get the number of elements (objects) in the collection
+   size = static_cast<int>(m_pcollection->GetParts().size());
 
    // go though the collection and get the coordinates of all the lights
    for (int i = 0; i < size; ++i)
    {
       // get the type of object
-      const ItemTypeEnum type = m_pcollection->m_visel[i].GetIEditable()->GetItemType();
+      const ItemTypeEnum type = m_pcollection->GetParts()[i]->GetItemType();
       // must be a light, flasher, prim
       if (type == eItemLight || type == eItemFlasher || type == eItemPrimitive)
       {
@@ -142,7 +142,7 @@ void LightSeq::RenderSetup(Renderer *renderer)
          if (type == eItemLight)
          {
              // process a light
-             Light* const pLight = (Light*)m_pcollection->m_visel.ElementAt(i);
+             Light* const pLight = (Light*)m_pcollection->GetParts()[i];
              pLight->get_X(&x);
              pLight->get_Y(&y);
 
@@ -154,13 +154,13 @@ void LightSeq::RenderSetup(Renderer *renderer)
          }
          else if(type == eItemFlasher)
          {
-             Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(i);
+             Flasher* const pFlasher = (Flasher*)m_pcollection->GetParts()[i];
              pFlasher->get_X(&x);
              pFlasher->get_Y(&y);
          }
          else //if (type == eItemPrimitive)
          {
-             Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(i);
+             Primitive* const pPrimitive = (Primitive*)m_pcollection->GetParts()[i];
              pPrimitive->get_X(&x);
              pPrimitive->get_Y(&y);
          }
@@ -448,13 +448,13 @@ STDMETHODIMP LightSeq::StopPlay()
    // Reset lights back to original state
    if (m_pcollection != nullptr)
    {
-      const int size = m_pcollection->m_visel.size();
+      const int size = static_cast<int>(m_pcollection->GetParts().size());
       for (int i = 0; i < size; ++i)
       {
-         const ItemTypeEnum type = m_pcollection->m_visel[i].GetIEditable()->GetItemType();
+         const ItemTypeEnum type = m_pcollection->GetParts()[i]->GetItemType();
          if (type == eItemLight)
          {
-            Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
+            Light * const pLight = (Light *)m_pcollection->GetParts()[i];
             float state;
             pLight->get_State(&state);
             pLight->m_lockedByLS = false;
@@ -463,12 +463,12 @@ STDMETHODIMP LightSeq::StopPlay()
          else if (type == eItemFlasher) 
          {
              //just set not used by light sequencer to not render
-             Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(i); 
+             Flasher* const pFlasher = (Flasher*)m_pcollection->GetParts()[i]; 
              pFlasher->m_lockedByLS = false;
          }
          else if (type == eItemPrimitive) 
          {
-             Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(i);
+             Primitive* const pPrimitive = (Primitive*)m_pcollection->GetParts()[i];
              pPrimitive->m_lockedByLS = false;
          }
       }
@@ -1345,7 +1345,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
       // process the random type of effect
       case eSeqRandom: {
          // get the number of elements in this
-         const float size = (float)m_pcollection->m_visel.size();
+         const float size = static_cast<float>(m_pcollection->GetParts().size());
          // randomly pick n elements and invert their state
          for (int i = 0; i < pTracer->length; ++i)
          {
@@ -1497,7 +1497,7 @@ void LightSeq::SetAllLightsToState(const LightState State)
 {
    if (m_pcollection != nullptr)
    {
-      const int size = m_pcollection->m_visel.size();
+      const int size = static_cast<int>(m_pcollection->GetParts().size());
       for (int i = 0; i < size; ++i)
          SetElementToState(i, State);
    }
@@ -1505,25 +1505,25 @@ void LightSeq::SetAllLightsToState(const LightState State)
 
 void LightSeq::SetElementToState(const int index, const LightState State)
 {
-   if (m_pcollection->m_visel.empty())
+   if (m_pcollection->GetParts().empty())
       return;
 
-   const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
+   const ItemTypeEnum type = m_pcollection->GetParts()[index]->GetItemType();
    if (type == eItemLight)
    {
-      Light* const pLight = (Light*)m_pcollection->m_visel.ElementAt(index);
+      Light* const pLight = (Light*)m_pcollection->GetParts()[index];
       pLight->m_lockedByLS = true;
       pLight->setInPlayState((float)State);
    }
    else if (type == eItemFlasher) 
    {
-      Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
+      Flasher* const pFlasher = (Flasher*)m_pcollection->GetParts()[index];
       pFlasher->m_lockedByLS = true;
       pFlasher->setInPlayState(State != LightStateOff);
    }
    else if (type == eItemPrimitive) 
    {
-      Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
+      Primitive* const pPrimitive = (Primitive*)m_pcollection->GetParts()[index];
       pPrimitive->m_lockedByLS = true;
       pPrimitive->setInPlayState(State != LightStateOff);
    }
@@ -1553,23 +1553,23 @@ LightState LightSeq::GetElementState(const int index) const
    // just in case the element isn't a compatible object
    LightState rc = LightStateOff;
 
-   if (m_pcollection->m_visel.empty())
+   if (m_pcollection->GetParts().empty())
       return rc;
 
-   const ItemTypeEnum type = m_pcollection->m_visel[index].GetIEditable()->GetItemType();
+   const ItemTypeEnum type = m_pcollection->GetParts()[index]->GetItemType();
    if (type == eItemLight)
    {
-       const Light* const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
+       const Light* const pLight = (Light *)m_pcollection->GetParts()[index];
        rc = pLight->m_inPlayState == 0.f ? LightStateOff : (pLight->m_inPlayState == 2.f ? LightStateBlinking : LightStateOn); // backwards compatibility, 0=Off, (0..1]=On, 2=Blinking
    }
    else if (type == eItemFlasher)
    {
-       const Flasher* const pFlasher = (Flasher*)m_pcollection->m_visel.ElementAt(index);
+       const Flasher* const pFlasher = (Flasher*)m_pcollection->GetParts()[index];
        rc = pFlasher->m_inPlayState ? LightStateOn : LightStateOff;
    }
    else if (type == eItemPrimitive)
    {
-       const Primitive* const pPrimitive = (Primitive*)m_pcollection->m_visel.ElementAt(index);
+       const Primitive* const pPrimitive = (Primitive*)m_pcollection->GetParts()[index];
        rc = pPrimitive->m_inPlayState ? LightStateOn : LightStateOff;
    }
 

@@ -686,15 +686,14 @@ PinTable* PinTable::CopyForPlay()
       pcol->m_fireEvents = m_vcollection[i].m_fireEvents;
       pcol->m_stopSingleEvents = m_vcollection[i].m_stopSingleEvents;
       pcol->m_groupElements = m_vcollection[i].m_groupElements;
-      for (int j = 0; j < m_vcollection[i].m_visel.size(); ++j)
+      for (IEditable *const ed : m_vcollection[i].GetParts())
       {
-         IEditable* ed = m_vcollection[i].m_visel[j].GetIEditable();
          if (dst->m_startupToLive.find(ed) != dst->m_startupToLive.end())
          {
             auto edit_item = (IEditable *)dst->m_startupToLive[ed];
             edit_item->m_vCollection.push_back(pcol);
-            edit_item->m_viCollection.push_back(pcol->m_visel.size());
-            pcol->m_visel.push_back(edit_item->GetISelect());
+            edit_item->m_viCollection.push_back(static_cast<int>(pcol->GetParts().size()));
+            pcol->AddPart(edit_item);
          }
       }
       live_table->AddCollection(pcol);
@@ -2059,8 +2058,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                dmd->m_vCollection.insert(dmd->m_vCollection.begin(), textbox->m_vCollection.begin(), textbox->m_vCollection.end());
                for (Collection *const pcollection : textbox->m_vCollection)
                {
-                  pcollection->m_visel.find_erase(textbox->GetISelect());
-                  pcollection->m_visel.push_back(dmd);
+                  pcollection->RemovePart(textbox);
+                  pcollection->AddPart(dmd);
                }
                m_vedit[i] = dmd;
                AddPart(dmd);
@@ -2723,11 +2722,11 @@ void PinTable::UpdateCollection(const int index)
          for (int t = 0; t < m_tableEditor->m_vmultisel.size(); t++)
          {
             ISelect *const ptr = m_tableEditor->m_vmultisel.ElementAt(t);
-            for (int k = 0; k < m_vcollection[index].m_visel.size(); k++)
+            for (IEditable *const part : m_vcollection[index].GetParts())
             {
-               if (ptr == m_vcollection[index].m_visel.ElementAt(k))
+               if (ptr->GetIEditable() == part)
                {
-                  m_vcollection[index].m_visel.find_erase(ptr);
+                  m_vcollection[index].RemovePart(part);
                   removeOnly = true;
                   break;
                }
@@ -2741,7 +2740,7 @@ void PinTable::UpdateCollection(const int index)
          for (int t = 0; t < m_tableEditor->m_vmultisel.size(); t++)
          {
             ISelect *const ptr = m_tableEditor->m_vmultisel.ElementAt(t);
-            m_vcollection.ElementAt(index)->m_visel.push_back(ptr);
+            m_vcollection.ElementAt(index)->AddPart(ptr->GetIEditable());
         }
       }
    }
@@ -2751,9 +2750,9 @@ bool PinTable::GetCollectionIndex(const ISelect * const element, int &collection
 {
    for (int i = 0; i < m_vcollection.size(); i++)
    {
-      for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
+      for (int t = 0; t < static_cast<int>(m_vcollection[i].GetParts().size()); t++)
       {
-         if (element == m_vcollection[i].m_visel.ElementAt(t))
+         if (element == m_vcollection[i].GetParts()[t]->GetISelect())
          {
             collectionIndex = i;
             elementIndex = t;
@@ -2767,8 +2766,8 @@ bool PinTable::GetCollectionIndex(const ISelect * const element, int &collection
 const wstring& PinTable::GetCollectionNameByElement(const ISelect * const element) const
 {
     for (int i = 0; i < m_vcollection.size(); i++)
-        for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
-            if (element == m_vcollection[i].m_visel.ElementAt(t))
+        for (const IEditable *const part : m_vcollection[i].GetParts())
+            if (element == part->GetISelect())
                 return m_vcollection[i].m_wzName;
     static wstring emptyString;
     return emptyString;
@@ -3627,10 +3626,10 @@ void PinTable::OnDelete()
       const ISelect * const ptr = m_vseldelete[t];
       for (int i = 0; i < m_vcollection.size() && !inCollection; i++)
       {
-         for (int k = 0; k < m_vcollection[i].m_visel.size(); k++)
+         for (const IEditable *const part : m_vcollection[i].GetParts())
          {
             // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
-            if (ptr == m_vcollection[i].m_visel.ElementAt(k) || ptr->GetIEditable() == m_vcollection[i].m_visel.ElementAt(k)->GetIEditable())
+            if (ptr == part->GetISelect() || ptr->GetIEditable() == part)
             {
                inCollection = true;
                break;

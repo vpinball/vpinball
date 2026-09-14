@@ -39,8 +39,6 @@ public:
    const IEditable *GetIEditable() const final;
    PinTable *GetPTable() final { return GetIEditable()->GetPTable(); }
    const PinTable *GetPTable() const final { return GetIEditable()->GetPTable(); }
-   IDispatch *GetIDispatch() final { return (IDispatch *)this; }
-   const IDispatch *GetIDispatch() const final { return (const IDispatch *)this; }
 
    int GetSelectLevel() const final { return 2; } // So dragpoints won't be band-selected with the main objects
 
