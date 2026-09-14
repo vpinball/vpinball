@@ -44,6 +44,7 @@ private:
    {
       Unknown,
       Property,
+      IndexedProperty, // property with arguments, called like a method but with DISPATCH_PROPERTYGET
       Method
    };
    struct Member;

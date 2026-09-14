@@ -6,6 +6,7 @@
 #include "core/VPApp.h"
 #include "core/player.h"
 #include "core/ScriptGlobalTable.h"
+#include "core/DynamicScript.h"
 #include "parts/Collection.h"
 #include "parts/pintable.h"
 #include "ui/live/LiveUI.h"
@@ -186,7 +187,7 @@ static const char *const s_helperProtoScript = R"JS(
       removeEventListener(event, fn) { __vpx_off(this, event, fn); },
       $call(name, ...args) { return __vpx_call(this, name, args); },
       $get(name, ...args) { return __vpx_get(this, name, args); },
-      $set(name, value) { __vpx_set(this, name, [value]); },
+      $set(name, ...args) { __vpx_set(this, name, args); },
       [Symbol.iterator]() { return __vpx_enum(this)[Symbol.iterator](); },
       toString() { return '[VPXObject ' + __vpx_name(this) + ']'; },
       get [Symbol.toStringTag]() { return 'VPXObject'; },
@@ -693,31 +694,51 @@ void JSScriptEngine::GCMark(JSRuntime *rt, JSValueConst val, JS_MarkFunc *mark_f
       JS_MarkValue(rt, member.second.fn, mark_func);
 }
 
+// A SAFEARRAY becomes an array; a multi dimensional one an array of arrays (ChangedLamps and friends are n x 2)
 JSValue JSScriptEngine::SafeArrayToJS(SAFEARRAY *sa)
 {
    JSValue arr = JS_NewArray(m_ctx);
-   if (sa == nullptr || SafeArrayGetDim(sa) != 1)
+   if (sa == nullptr)
       return arr;
-   LONG lBound = 0, uBound = -1;
-   SafeArrayGetLBound(sa, 1, &lBound);
-   SafeArrayGetUBound(sa, 1, &uBound);
+   const UINT dims = SafeArrayGetDim(sa);
+   if (dims == 0 || dims > 4)
+      return arr;
    VARTYPE vt = VT_EMPTY;
    SafeArrayGetVartype(sa, &vt);
-   uint32_t n = 0;
-   for (LONG i = lBound; i <= uBound; i++)
+   LONG lBounds[4] = {}, uBounds[4] = {};
+   for (UINT d = 1; d <= dims; d++)
    {
-      VARIANT e;
-      VariantInit(&e);
-      if (vt == VT_VARIANT)
-         SafeArrayGetElement(sa, &i, &e);
-      else
-      {
-         V_VT(&e) = vt;
-         SafeArrayGetElement(sa, &i, &V_I4(&e)); // all union members share the same address
-      }
-      JS_SetPropertyUint32(m_ctx, arr, n++, ToJS(e));
-      VariantClear(&e);
+      SafeArrayGetLBound(sa, d, &lBounds[d - 1]);
+      SafeArrayGetUBound(sa, d, &uBounds[d - 1]);
    }
+   LONG indices[4] = {};
+   const std::function<void(JSValue, UINT)> fill = [&](JSValue target, UINT dim)
+   {
+      uint32_t n = 0;
+      for (LONG i = lBounds[dim]; i <= uBounds[dim]; i++)
+      {
+         indices[dim] = i;
+         if (dim + 1 < dims)
+         {
+            JSValue sub = JS_NewArray(m_ctx);
+            fill(sub, dim + 1);
+            JS_SetPropertyUint32(m_ctx, target, n++, sub);
+            continue;
+         }
+         VARIANT e;
+         VariantInit(&e);
+         if (vt == VT_VARIANT)
+            SafeArrayGetElement(sa, indices, &e);
+         else
+         {
+            V_VT(&e) = vt;
+            SafeArrayGetElement(sa, indices, &V_I4(&e)); // all union members share the same address
+         }
+         JS_SetPropertyUint32(m_ctx, target, n++, ToJS(e));
+         VariantClear(&e);
+      }
+   };
+   fill(arr, 0);
    return arr;
 }
 
@@ -893,14 +914,28 @@ JSScriptEngine::Member *JSScriptEngine::ResolveMember(ComObject *co, const strin
       return &it->second;
    if (co->disp == nullptr)
       return nullptr;
-   const wstring wname = MakeWString(name, CP_UTF8);
-   LPOLESTR names[1] = { const_cast<LPOLESTR>(wname.c_str()) };
+   // Pass a real BSTR: some IDispatch implementations (plugin objects) read the name through SysStringLen
+   BSTR bname = MakeWideBSTR(name, CP_UTF8);
+   LPOLESTR names[1] = { bname };
    DISPID dispid = DISPID_UNKNOWN;
-   if (FAILED(co->disp->GetIDsOfNames(IID_NULL, names, 1, LOCALE_USER_DEFAULT, &dispid)))
+   const HRESULT hr = co->disp->GetIDsOfNames(IID_NULL, names, 1, LOCALE_USER_DEFAULT, &dispid);
+   SysFreeString(bname);
+   if (FAILED(hr))
       return nullptr;
    Member &m = co->members[lowerName];
    m.dispid = dispid;
-   if (const auto it = m_memberKinds.find(MemberKindKey(co, lowerName)); it != m_memberKinds.end())
+   // Plugin objects carry static type information, no need to probe them
+   if (const DynamicDispatch *const dd = dynamic_cast<const DynamicDispatch *>(co->disp); dd != nullptr)
+   {
+      switch (dd->GetMemberKind(dispid))
+      {
+      case 1: m.kind = MemberKind::Property; break;
+      case 2: m.kind = MemberKind::IndexedProperty; break;
+      case 3: m.kind = MemberKind::Method; break;
+      default: break;
+      }
+   }
+   else if (const auto it = m_memberKinds.find(MemberKindKey(co, lowerName)); it != m_memberKinds.end())
       m.kind = it->second;
    return &m;
 }
@@ -979,12 +1014,23 @@ JSValue JSScriptEngine::InvokeFromJS(ComObject *co, const string &name, WORD fla
       }
    }
 
+   if (m->kind == MemberKind::IndexedProperty && (flags & DISPATCH_METHOD))
+      flags = DISPATCH_PROPERTYGET;
    VARIANT result;
    VariantInit(&result);
    string desc;
    HRESULT hr = InvokeCom(co->disp, m->dispid, flags, args.data(), argc, &result, desc);
    if (allowPropertyGetFallback && IsNotAPropertyGet(hr) && (flags & DISPATCH_METHOD))
+   {
+      // Not a method: a property with arguments (Collection.Item(i), VPXActionKey(n)). Remember it for the class.
       hr = InvokeCom(co->disp, m->dispid, DISPATCH_PROPERTYGET, args.data(), argc, &result, desc);
+      if (SUCCEEDED(hr))
+      {
+         m->kind = MemberKind::IndexedProperty;
+         if (co->disp)
+            m_memberKinds[MemberKindKey(co, lowerCase(name))] = MemberKind::IndexedProperty;
+      }
+   }
    for (VARIANT &a : args)
       VariantClear(&a);
    if (FAILED(hr))
@@ -1030,6 +1076,10 @@ JSValue JSScriptEngine::GetProperty(JSContext *ctx, JSValueConst obj, JSAtom ato
    const string sname(name);
    JS_FreeCString(ctx, name);
 
+   // Helper members ($call, $get, $set, ...) never go to the object
+   if (sname[0] == '$')
+      return JS_GetProperty(ctx, engine->m_helperProto, atom);
+
    if (co->disp == nullptr)
       return JS_ThrowTypeError(ctx, "VPX object '%s' was destroyed", co->name.c_str());
 
@@ -1052,7 +1102,7 @@ JSValue JSScriptEngine::GetProperty(JSContext *ctx, JSValueConst obj, JSAtom ato
       return JS_GetProperty(ctx, engine->m_helperProto, atom); // helper methods (on, off, $call, ...) or undefined
    }
 
-   if (m->kind != MemberKind::Method)
+   if (m->kind != MemberKind::Method && m->kind != MemberKind::IndexedProperty)
    {
       VARIANT result;
       VariantInit(&result);

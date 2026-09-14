@@ -5,9 +5,10 @@
 //
 //   import { LoadEM, SoundFX, DOF, DOFContactors, DOFFlippers } from "controller.js";
 //
-// SS tables load VPinMAME (or B2S.Server) together with the ROM family script:
+// SS tables import their ROM family module and load VPinMAME (or B2S.Server):
 //
-//   await LoadVPM({ gameName: "rom_name", vpmVersion: "01560000", romScript: "s11.js", scriptVersion: 3.1 });
+//   import { GameOnSolenoid, vpmKeyDown, vpmKeyUp } from "wpc.js";
+//   LoadVPM({ gameName: "rom_name", vpmVersion: "01560000" });
 //
 // EM tables call LoadEM({ gameName: "fake_rom_name" }) in the table init.
 //
@@ -40,37 +41,20 @@ export function LoadEM({ gameName = "" } = {}) {
    LoadController("EM", { gameName });
 }
 
-export async function LoadPROC(options) {
-   await loadRomScript(options);
+export function LoadPROC(options) {
    LoadController("PROC", options);
 }
 
-export async function LoadVPM(options) {
-   await loadRomScript(options);
+export function LoadVPM(options) {
    LoadController("VPM", options);
 }
 
 // Two controllers: VPM for the game and B2S.Server for the backglass/DOF (see DOFALT and SoundFXDOFALT)
-export async function LoadVPMALT(options) {
-   await loadRomScript(options);
+export function LoadVPMALT(options) {
    LoadController("VPMALT", options);
 }
 
-async function loadRomScript({ romScript }) {
-   if (!romScript)
-      return;
-   let rom;
-   try {
-      rom = await import(romScript);
-   } catch (e) {
-      MsgBox("Unable to open " + romScript + ". Ensure that it is in the Scripts folder of Visual Pinball. " + e.message);
-      throw e;
-   }
-   if (typeof rom.InitializeOptions === "function")
-      rom.InitializeOptions();
-}
-
-function loadVPinMAME({ vpmVersion = "", romScript = "", scriptVersion = 0 }) {
+function loadVPinMAME({ vpmVersion = "" }) {
    try {
       Controller = CreateObject("VPinMAME.Controller");
    } catch (e) {
@@ -79,8 +63,6 @@ function loadVPinMAME({ vpmVersion = "", romScript = "", scriptVersion = 0 }) {
    }
    if (vpmVersion > "" && Controller.Version < vpmVersion)
       MsgBox("VPinMAME ver " + vpmVersion + " required.");
-   if (typeof globalThis.VPinMAMEDriverVer !== "undefined" && globalThis.VPinMAMEDriverVer < scriptVersion)
-      MsgBox(romScript + " ver " + scriptVersion + " or higher required.");
 }
 
 function tryCreateObject(classId) {
