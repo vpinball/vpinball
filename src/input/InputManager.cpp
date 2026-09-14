@@ -1143,11 +1143,6 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
       high = 0.f;
    if (low <= 0.f && high <= 0.f)
       return;
-   // Map onto the range the motors actually render (see RUMBLE_MOTOR_FLOOR)
-   if (low > 0.f)
-      low = RUMBLE_MOTOR_FLOOR + (1.f - RUMBLE_MOTOR_FLOOR) * low;
-   if (high > 0.f)
-      high = RUMBLE_MOTOR_FLOOR + (1.f - RUMBLE_MOTOR_FLOOR) * high;
    const uint32_t now = msec();
 
    std::lock_guard<std::mutex> lock(m_rumbleMutex);
@@ -1219,37 +1214,35 @@ void InputManager::UpdateRumbleOutput(const uint32_t now)
       high = max(high, p.high);
       endMs = max(endMs, p.endMs);
    }
-   // Start kick: a step up of the mix is driven at RUMBLE_KICK_GAIN times the level for RUMBLE_KICK_MS first. It
-   // goes with every step up, not only with the start from rest, so a ball hit that follows the flipper solenoid
-   // pulse still stands out; only levels meant as a hit get it, a light touch stays light. The step is measured
-   // against the mix before any kick, otherwise a hit arriving during another event's kick would count as a
-   // step down.
+   // Start kick: a step up of the mix is flagged as a kick for RUMBLE_KICK_MS, for handlers driving motors that
+   // need it to spin up. It goes with every step up, not only with the start from rest, so a ball hit that follows
+   // the flipper solenoid pulse still stands out; only levels meant as a hit get it, a light touch stays light.
    if (low >= RUMBLE_KICK_MIN_LEVEL && low - m_rumbleMixLow >= RUMBLE_KICK_STEP)
       m_rumbleKickLowEndMs = now + RUMBLE_KICK_MS;
    else if (low < m_rumbleMixLow)
-      m_rumbleKickLowEndMs = 0; // the pulse that earned the kick is over; a weaker remainder must not be doubled
+      m_rumbleKickLowEndMs = 0; // the pulse that earned the kick is over; a weaker remainder must not be kicked
    if (high >= RUMBLE_KICK_MIN_LEVEL && high - m_rumbleMixHigh >= RUMBLE_KICK_STEP)
       m_rumbleKickHighEndMs = now + RUMBLE_KICK_MS;
    else if (high < m_rumbleMixHigh)
       m_rumbleKickHighEndMs = 0;
    m_rumbleMixLow = low;
    m_rumbleMixHigh = high;
-   if (low > 0.f && now < m_rumbleKickLowEndMs)
-      low = min(1.f, low * RUMBLE_KICK_GAIN);
-   if (high > 0.f && now < m_rumbleKickHighEndMs)
-      high = min(1.f, high * RUMBLE_KICK_GAIN);
-   if (low == m_rumbleSentLow && high == m_rumbleSentHigh && endMs == m_rumbleSentEndMs)
+   const bool kickLow = low > 0.f && now < m_rumbleKickLowEndMs;
+   const bool kickHigh = high > 0.f && now < m_rumbleKickHighEndMs;
+   if (low == m_rumbleSentLow && high == m_rumbleSentHigh && endMs == m_rumbleSentEndMs && kickLow == m_rumbleSentKickLow && kickHigh == m_rumbleSentKickHigh)
       return;
    m_rumbleSentLow = low;
    m_rumbleSentHigh = high;
    m_rumbleSentEndMs = endMs;
-   SendRumble(low, high, (endMs > now) ? static_cast<int>(endMs - now) : 0);
+   m_rumbleSentKickLow = kickLow;
+   m_rumbleSentKickHigh = kickHigh;
+   SendRumble(low, high, (endMs > now) ? static_cast<int>(endMs - now) : 0, kickLow, kickHigh);
 }
 
-void InputManager::SendRumble(const float low, const float high, const int ms_duration)
+void InputManager::SendRumble(const float low, const float high, const int ms_duration, const bool kickLow, const bool kickHigh)
 {
    for (const auto& handler : m_inputHandlers)
-      handler->PlayRumble(low, high, ms_duration);
+      handler->PlayRumble(low, high, ms_duration, kickLow, kickHigh);
 
    #if defined(__LIBVPINBALL__) && defined(__APPLE__)
       VPinballLib::VPinballLib::PlayRumble(low, high, (unsigned int)ms_duration);
