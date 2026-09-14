@@ -202,7 +202,7 @@ public:
       }
    }
 
-   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) override
+   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration, const bool kickLow, const bool kickHigh) override
    {
       const float amplitude = saturate(max(lowFrequencySpeed, highFrequencySpeed));
       if (amplitude <= 0.f || ms_duration <= 0)

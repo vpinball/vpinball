@@ -143,7 +143,7 @@ public:
    public:
       virtual ~InputHandler() = default;
       virtual void Update() = 0;
-      virtual void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) { }
+      virtual void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration, const bool kickLow, const bool kickHigh) { }
    };
 
    // Used by actions to report state changes and query if local processing should be performed
@@ -304,22 +304,20 @@ private:
    float m_rumbleSentLow = 0.f; // What the device is currently playing
    float m_rumbleSentHigh = 0.f;
    uint32_t m_rumbleSentEndMs = 0;
-   // Measured with an accelerometer on the pad: eccentric mass motors need well over 100 ms from rest to full
-   // amplitude, do not move below 0.3 and are full at about 0.86. So every level is mapped onto the usable range
-   // (RUMBLE_MOTOR_FLOOR), and a step up of the mix by RUMBLE_KICK_STEP to at least RUMBLE_KICK_MIN_LEVEL is
-   // driven at twice the mapped level (capped) for RUMBLE_KICK_MS. Lower levels are meant as a light touch.
+   bool m_rumbleSentKickLow = false;
+   bool m_rumbleSentKickHigh = false;
+   // A step up of the mix by RUMBLE_KICK_STEP to at least RUMBLE_KICK_MIN_LEVEL is flagged as a kick for
+   // RUMBLE_KICK_MS. Levels are the mix before any device mapping (see SDLInputHandler for the gamepad motor model).
    static constexpr float RUMBLE_OFF_LEVEL = 0.01f; // below this a strength setting or a pulse level counts as off
-   static constexpr float RUMBLE_MOTOR_FLOOR = 0.3f;
    static constexpr uint32_t RUMBLE_KICK_MS = 80;
-   static constexpr float RUMBLE_KICK_GAIN = 2.f;
-   static constexpr float RUMBLE_KICK_MIN_LEVEL = 0.6f; // mapped level from which a pulse gets the kick; pulses meant as a light touch stay below it
-   static constexpr float RUMBLE_KICK_STEP = 0.2f; // minimum rise of the output that triggers a kick
-   float m_rumbleMixLow = 0.f; // The mix before the kick, to tell a real step up from a kick ending
+   static constexpr float RUMBLE_KICK_MIN_LEVEL = (0.6f - 0.3f) / 0.7f; // level from which a pulse gets the kick; pulses meant as a light touch stay below it
+   static constexpr float RUMBLE_KICK_STEP = 0.2f / 0.7f; // minimum rise of the mix that triggers a kick
+   float m_rumbleMixLow = 0.f;
    float m_rumbleMixHigh = 0.f;
    uint32_t m_rumbleKickLowEndMs = 0;
    uint32_t m_rumbleKickHighEndMs = 0;
    void UpdateRumbleOutput(const uint32_t now); // m_rumbleMutex must be held
-   void SendRumble(const float low, const float high, const int ms_duration);
+   void SendRumble(const float low, const float high, const int ms_duration, const bool kickLow, const bool kickHigh);
    float m_rumbleFlipperContact = 1.f; // Strength of the rumble played on flipper/ball contact, 0 disables it
    float m_rumbleBumper = 1.f; // Strength of the bumper rumble, 0 disables it
    float m_rumbleSlingshot = 1.f; // Strength of the slingshot rumble, 0 disables it
