@@ -54,6 +54,11 @@ The version used for these libraries is defined by the SHA of the head commit in
 - Upstream: 
 - License: 
 
+### QuickJS-NG
+
+- Upstream: https://github.com/quickjs-ng/quickjs (vendored amalgamation, v0.16.2)
+- License: MIT
+
 ### PinMAME
 
 - Upstream: https://github.com/vpinball/pinmame

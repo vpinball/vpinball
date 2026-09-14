@@ -167,6 +167,28 @@ endif()
 if(BUILD_APP)
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_sources.txt")
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_app.txt")
+
+   # QuickJS-NG, embedded JavaScript engine for table scripts (single amalgamated C11 source)
+   option(ENABLE_JS_SCRIPTING "Enable JavaScript table scripts (QuickJS-NG)" ON)
+   if(ENABLE_JS_SCRIPTING)
+      add_library(quickjs STATIC third-party/include/quickjs/quickjs-amalgam.c)
+      set_target_properties(quickjs PROPERTIES C_STANDARD 11 C_EXTENSIONS ON POSITION_INDEPENDENT_CODE ON)
+      if(PLATFORM STREQUAL "windows")
+         # Same static CRT as the application (see CMakeLists_app.txt)
+         set_target_properties(quickjs PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+      endif()
+      target_include_directories(quickjs PUBLIC third-party/include/quickjs)
+      target_compile_options(quickjs PRIVATE
+         $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-w>
+         $<$<C_COMPILER_ID:MSVC>:/experimental:c11atomics>)
+      # The Windows blocks of CMakeLists_app.txt use the plain link signature, which cannot be mixed with the keyword one
+      if(PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw")
+         target_link_libraries(vpinball quickjs)
+      else()
+         target_link_libraries(vpinball PRIVATE quickjs)
+      endif()
+      target_compile_definitions(vpinball PRIVATE ENABLE_JS_SCRIPTING)
+   endif()
 endif()
 
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")
