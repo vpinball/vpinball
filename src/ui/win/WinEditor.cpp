@@ -2040,7 +2040,8 @@ void WinEditor::SetDefaultPhysics()
       {
          ptCur->BeginUndo();
          for (int i = 0; i < ptCur->m_tableEditor->m_vmultisel.size(); i++)
-            ptCur->m_tableEditor->m_vmultisel[i].SetDefaultPhysics(true);
+            if (auto editable = ptCur->m_tableEditor->m_vmultisel[i].GetIEditable(); editable)
+               editable->SetDefaultPhysics(true);
          ptCur->EndUndo();
       }
    }

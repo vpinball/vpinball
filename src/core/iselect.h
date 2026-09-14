@@ -84,8 +84,6 @@ public:
 
    virtual void PutCenter(const Vertex2D& pv) = 0;
 
-   virtual void SetDefaultPhysics(const bool fromMouseClick) {}
-
    HRESULT Helper_GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
    HRESULT Helper_GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
 
