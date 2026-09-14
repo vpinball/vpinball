@@ -210,7 +210,7 @@ private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
       // Only keep dmd corresponding to selected controller (or overriden from selected controller to support alphanumeric rendered DMD for example)
-      const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
+      const std::function<bool(const DisplaySrcId&, unsigned int)> isFromController = [&](const DisplaySrcId& src, unsigned int depth)
       {
          if (src.id.endpointId == m_controllerEndpointId)
             return true;
@@ -218,17 +218,19 @@ private:
          {
             if (src.overrideId.endpointId == m_controllerEndpointId)
                return true;
+            if (depth == 0)
+               return false;
             for (const DisplaySrcId& item : items)
                if (item.id == src.overrideId)
-                  return isFromController(item);
+                  return isFromController(item, depth - 1);
          }
          return false;
       };
 
       DisplaySrcId selected { };
       for (const DisplaySrcId& item : items)
-         if (isFromController(item)) // We have the colorization data for this DMD source
-            if (item.GetIdentifyFrame != nullptr && item.width >= 128) // The DMD source is supported by Serum colorizer
+         if (isFromController(item, 8)) // We have the colorization data for this DMD source
+            if (item.GetIdentifyFrame != nullptr && item.width >= 128) // The DMD source is supported
                selected = item;
 
       items.clear();

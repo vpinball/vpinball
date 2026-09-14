@@ -64,37 +64,29 @@ public:
 private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
-      // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
-      //
-      // The walk has to accept an override that names a resource on the
-      // controller's endpoint without finding that resource here, or an
-      // alphanumeric game is never colorized: its DMD comes from alphadmd,
-      // which renders it out of the controller's segment displays and names one
-      // of those in overrideId -- not a display, so no lookup in `items` can
-      // resolve it, and only its endpointId says who it belongs to.
+      // Only keep dmd corresponding to selected controller (or overriden from selected controller to support alphanumeric rendered DMD for example)
       const std::function<bool(const DisplaySrcId&, unsigned int)> isFromController = [&](const DisplaySrcId& src, unsigned int depth)
       {
-         // A malformed graph must not hang the caller. Real chains are two or
-         // three links, so this only trips on a cycle.
-         constexpr unsigned int maxOverrideDepth = 8;
-         if (depth > maxOverrideDepth)
-            return false;
          if (src.id.endpointId == m_controllerEndpointId)
             return true;
-         if (src.overrideId.id == 0)
-            return false;
-         if (src.overrideId.endpointId == m_controllerEndpointId)
-            return true;
-         for (const DisplaySrcId& item : items)
-            if (item.id == src.overrideId)
-               return isFromController(item, depth + 1);
+         if (src.overrideId.id != 0)
+         {
+            if (src.overrideId.endpointId == m_controllerEndpointId)
+               return true;
+            if (depth == 0)
+               return false;
+            for (const DisplaySrcId& item : items)
+               if (item.id == src.overrideId)
+                  return isFromController(item, depth - 1);
+         }
          return false;
       };
 
       DisplaySrcId selected { };
       for (const DisplaySrcId& item : items)
-         if (isFromController(item, 0) && item.GetIdentifyFrame != nullptr && item.width >= 128)
-            selected = item;
+         if (isFromController(item, 8)) // We have the colorization data for this DMD source
+            if (item.GetIdentifyFrame != nullptr && item.width >= 128) // The DMD source is supported
+               selected = item;
 
       items.clear();
       if (selected.id.id != 0)
