@@ -25,6 +25,7 @@ public:
       SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
       for (int i = 0; i < joystickCount; i++)
          OnJoystickAdded(joystickIds[i]);
+      SDL_free(joystickIds);
 
       #ifdef __ANDROID__
          OpenDeviceVibrator();
@@ -215,12 +216,14 @@ private:
    {
       int joystickCount = 0;
       SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
-      for (int i = 0; i < joystickCount; i++)
+      bool present = false;
+      for (int i = 0; i < joystickCount && !present; i++)
       {
          if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
-            return true;
+            present = true;
       }
-      return false;
+      SDL_free(joystickIds);
+      return present;
    }
 
    void OnJoystickAdded(SDL_JoystickID id)
@@ -258,6 +261,7 @@ private:
          if (string otherName = SDL_GetJoystickNameForID(joystickIds[i]); otherName == sdlJoyName)
             nameIndex++;
       }
+      SDL_free(joystickIds);
       char strGuid[33];
       SDL_GUIDToString(guid, strGuid, 33);
       const string settingId = "SDLJoy_"s + strGuid + '_' + std::to_string(idIndex);
