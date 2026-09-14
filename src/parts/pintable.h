@@ -325,7 +325,6 @@ public:
    void Copy(int x, int y);
    void Paste(const bool atLocation, const int x, const int y);
 
-   void ExportTableMesh();
    void ImportBackdropPOV(const std::filesystem::path &filename);
    void ExportBackdropPOV() const;
 

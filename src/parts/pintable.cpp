@@ -3052,44 +3052,6 @@ void PinTable::ExportMesh(ObjLoader& loader)
    loader.UpdateFaceOffset(4);
 }
 
-void PinTable::ExportTableMesh()
-{
-#ifndef __STANDALONE__
-   char szObjFileName[MAXSTRING];
-   strncpy_s(szObjFileName, std::size(szObjFileName), m_filename.string().c_str());
-   const size_t idx = m_filename.string().find_last_of('.');
-   if (idx != string::npos && idx < std::size(szObjFileName))
-      szObjFileName[idx] = '\0';
-   OPENFILENAME ofn = {};
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_app->GetInstanceHandle();
-   ofn.hwndOwner = m_vpinball->GetHwnd();
-   // TEXT
-   ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
-   ofn.lpstrFile = szObjFileName;
-   ofn.nMaxFile = std::size(szObjFileName);
-   ofn.lpstrDefExt = "obj";
-   ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-
-   const int ret = GetSaveFileName(&ofn);
-
-   // user cancelled
-   if (ret == 0)
-      return;// S_FALSE;
-   const string filename = szObjFileName;
-
-   ObjLoader loader;
-   loader.ExportStart(filename);
-   ExportMesh(loader);
-   for (const auto pedit : m_vedit)
-      if (pedit->IsUIVisible(false) && pedit->m_desktopBackdrop == m_vpinball->m_desktopBackdropView)
-         pedit->ExportMesh(loader);
-
-   loader.ExportEnd();
-   m_vpinball->MessageBox("Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
-#endif
-}
-
 // Import Point of View file. This can be either:
 // - a UI interaction from table author, loading to table **properties** after file selection,
 // - without UI interaction, triggered to load user settings preference to table **settings**.

@@ -36,6 +36,7 @@
 #include "ui/win/resource.h"
 #include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/worker.h"
+#include "utils/objloader.h"
 
 #ifndef __STANDALONE__
 #include <iostream>
@@ -779,9 +780,10 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       return true;
 
    case ID_EXPORT_TABLEMESH:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ptCur->ExportTableMesh();
+   {
+      ExportTableMesh();
       return true;
+   }
 
    case ID_IMPORT_BACKDROPPOV:
       if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
@@ -2176,6 +2178,48 @@ void WinEditor::AddSmoothControlPoint()
          }
       }
    }
+}
+
+void WinEditor::ExportTableMesh()
+{
+#ifndef __STANDALONE__
+   CComObject<PinTable> *const ptCur = GetActiveTable();
+   if (ptCur == nullptr)
+      return;
+
+   //need to get a file name
+   OPENFILENAME ofn = {};
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.hInstance = g_app->GetInstanceHandle();
+   ofn.hwndOwner = GetHwnd();
+   // TEXT
+   ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
+
+   std::filesystem::path objPath = ptCur->m_filename;
+   objPath.replace_extension(".obj");
+   char szObjFileName[MAXSTRING];
+   strncpy_s(szObjFileName, std::size(szObjFileName), objPath.string().c_str());
+   ofn.lpstrFile = szObjFileName;
+   ofn.nMaxFile = std::size(szObjFileName);
+   ofn.lpstrDefExt = "obj";
+   ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+
+   const int ret = GetSaveFileName(&ofn);
+
+   // user cancelled
+   if (ret == 0)
+      return;
+
+   ObjLoader loader;
+   loader.ExportStart(szObjFileName);
+   ptCur->ExportMesh(loader);
+   for (const auto pedit : ptCur->GetParts())
+      if (pedit->IsUIVisible(false) && pedit->m_desktopBackdrop == m_desktopBackdropView)
+         pedit->ExportMesh(loader);
+   loader.ExportEnd();
+
+   MessageBox("Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
+#endif
 }
 
 void WinEditor::SaveTable(const bool saveAs)
