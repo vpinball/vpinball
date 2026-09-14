@@ -5,11 +5,7 @@ extern "C" char** g_argv;
 extern "C" int g_argc;
 extern "C" int WinMain(void*, void*, void*, int);
 
-void OnSignalHandler(int signum)
-{
-   printf("Exiting from signal: %d\n", signum);
-   exit(-9999);
-}
+void OnSignalHandler(int signum);
 
 @interface VPXAppDelegate : NSObject <NSApplicationDelegate>
 - (void)makeWindowExit;
