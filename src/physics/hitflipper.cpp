@@ -1000,22 +1000,50 @@ void HitFlipper::Collide(const CollisionEvent& coll)
          m_flipperMover.m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide, flipperHit); // collision velocity (normal to face)
    }
 
-   const uint32_t sinceLastContact = g_pplayer->m_time_msec - m_last_hittime;
    m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
 
    // Haptics use their own trigger rather than the script event gate above: that gate counts from the last
    // contact of any kind, and a ball resting on the raised flipper touches it every few milliseconds, so the
-   // slap that follows never qualified. Contacts less than 80 ms apart form one sequence: its first contact
-   // always plays, later ones only when they exceed the strongest impact of the sequence by a unit, so a slap
-   // (collisions with rising impact) follows to its peak while a resting ball stays silent.
-   if (bnv < -0.25f)
+   // slap that follows never qualified.
+   //
+   // The impact is the impulse the flipper puts into the ball, and the physics delivers it as a run of contacts:
+   // a ball hitting a resting flipper is one contact with the full relative speed, a ball slapped or riding along
+   // the moving flipper is a dozen small ones a few milliseconds apart. The normal impact speed of a single
+   // contact therefore says little about a slap; the sum over a short window does: it follows the speed the ball
+   // leaves with far better than the strongest single contact. What is summed is the speed the ball itself brings
+   // towards the flipper face, not the speed relative to the moving face: a flipper firing at a resting ball puts
+   // everything into the contact from its own motion, and that is the solenoid the cabinet feels through the
+   // button pulse, not a ball hitting the flipper. Contacts of the last RUMBLE_WINDOW_MS are summed. The
+   // first contact of a run always plays (the ball arriving, however softly: a held ball rolling on the flipper
+   // is felt through these), later ones only when the sum exceeds what was last played by a unit, up to the
+   // saturation of the impact scale, so a hit follows to its full strength through the mixer while a resting
+   // ball stays silent.
+   const float arrival = -normal.Dot(vB); // the ball's own speed towards the face, positive when approaching
+   if (bnv < -0.25f && arrival > 0.25f)
    {
-      if (sinceLastContact > 80)
-         m_rumblePeak = 0.f;
-      if (m_rumblePeak == 0.f || -bnv > m_rumblePeak + 1.f)
+      const uint32_t now = g_pplayer->m_time_msec;
+      while (m_rumbleContactCount > 0 && now - m_rumbleContactMs[m_rumbleContactTail] > RUMBLE_WINDOW_MS)
       {
-         m_rumblePeak = -bnv;
-         g_pplayer->m_pininput.PlayFlipperContactRumble(bnv);
+         m_rumbleContactTail = (m_rumbleContactTail + 1) % RUMBLE_CONTACTS;
+         m_rumbleContactCount--;
+      }
+      const bool firstOfRun = (m_rumbleContactCount == 0);
+      if (firstOfRun)
+         m_rumblePlayed = 0.f;
+      if (m_rumbleContactCount < RUMBLE_CONTACTS)
+      {
+         const int head = (m_rumbleContactTail + m_rumbleContactCount) % RUMBLE_CONTACTS;
+         m_rumbleContactMs[head] = now;
+         m_rumbleContactImpact[head] = arrival;
+         m_rumbleContactCount++;
+      }
+      float sum = 0.f;
+      for (int i = 0; i < m_rumbleContactCount; i++)
+         sum += m_rumbleContactImpact[(m_rumbleContactTail + i) % RUMBLE_CONTACTS];
+      if (firstOfRun || (sum > m_rumblePlayed + 1.f && m_rumblePlayed < RUMBLE_FULL_IMPACT))
+      {
+         m_rumblePlayed = sum;
+         g_pplayer->m_pininput.PlayFlipperContactRumble(-sum);
       }
    }
 

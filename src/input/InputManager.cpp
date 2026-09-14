@@ -1259,17 +1259,17 @@ void InputManager::PlayFlipperContactRumble(const float normalImpactSpeed)
 
    // Impact speed summed over the contacts of a hit (see HitFlipper::Collide). Up to two units it is a light touch,
    // a held ball rolling on the flipper, and stays a faint pulse. From 2 to 5 the scale is steeper so that a ball
-   // dropping back onto the flipper reaches the kick level at 5. Above that the level rises slowly up to 30, the
-   // hardest hits (logged over 300 events: most contacts arrive at 8..20, a ball coming down a ramp at full speed
-   // at 80), so an ordinary contact stays below a slingshot and only those stand out. Both motors are driven,
+   // dropping back onto the flipper reaches the kick level at 5. Above that the level rises slowly up to 30, where
+   // only a ball arriving at full speed gets, so an ordinary contact stays below a slingshot and only those stand
+   // out. Both motors are driven,
    // since short pulses on the high frequency motor alone are barely noticeable; the small one at 0.7 of the
    // impact, like the plunger, so the click does not get sharper than the thump.
    const float s = fabsf(normalImpactSpeed);
    const float impact = clamp(s < 2.f ? s * 0.06f : s < 5.f ? 0.12f + (s - 2.f) * 0.14f : 0.54f + (s - 5.f) * (0.46f / 25.f), 0.05f, 1.f);
-   // The level saturates early, so above it the length carries the strength: the motors need about 150 ms from
-   // rest to full amplitude (measured), a 120 ms pulse is cut off before they get there. A touch stays short, a
-   // hit runs 150 ms, and the hardest ones (a ball arriving at full speed sums to 80 and more) run 250 ms like
-   // the plunger strike.
+   // The level saturates early, so above it the length carries the strength: the motors need longer than the
+   // short touch pulse to reach full amplitude, so that pulse is cut off before they get there. A touch stays
+   // short, a hit runs long enough for the motors to arrive, and the hardest ones run as long as the plunger
+   // strike.
    const int ms = s < 5.f ? 120 : 150 + static_cast<int>(100.f * clamp((s - 5.f) * (1.f / 25.f), 0.f, 1.f));
    PlayRumble(impact * 0.8f * m_rumbleFlipperContact, impact * 0.7f * m_rumbleFlipperContact, ms);
 }
