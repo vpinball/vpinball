@@ -71,10 +71,12 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(AlphaDMDPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/alphadmd"
+   )
+
    add_custom_command(TARGET AlphaDMDPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/alphadmd/plugin.cfg" "${PLUGINS_DIR}/alphadmd/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:AlphaDMDPlugin>" "${PLUGINS_DIR}/alphadmd"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:AlphaDMDPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")

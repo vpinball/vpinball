@@ -86,11 +86,13 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(InspectorPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/inspector"
+   )
+
    add_custom_command(TARGET InspectorPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/inspector/plugin.cfg" "${PLUGINS_DIR}/inspector/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:InspectorPlugin>" "${PLUGINS_DIR}/inspector"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/inspector/assets" "${PLUGINS_DIR}/inspector/assets"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:InspectorPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")

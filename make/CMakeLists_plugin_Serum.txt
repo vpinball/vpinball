@@ -79,10 +79,12 @@ if(BUILD_SHARED)
       target_link_libraries(SerumPlugin PUBLIC serum)
    endif()
 
+   set_target_properties(SerumPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/serum"
+   )
+
    add_custom_command(TARGET SerumPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/serum/plugin.cfg" "${PLUGINS_DIR}/serum/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:SerumPlugin>" "${PLUGINS_DIR}/serum"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:SerumPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

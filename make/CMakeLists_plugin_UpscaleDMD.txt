@@ -89,10 +89,12 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(UpscaleDMDPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/upscaledmd"
+   )
+
    add_custom_command(TARGET UpscaleDMDPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/upscaledmd/plugin.cfg" "${PLUGINS_DIR}/upscaledmd/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:UpscaleDMDPlugin>" "${PLUGINS_DIR}/upscaledmd"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:UpscaleDMDPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")
