@@ -41,7 +41,7 @@ void FlasherUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_flasher->m_d.m_isVisible;
 
-   const bool isUIVisible = m_flasher->IsVisible(m_flasher);
+   const bool isUIVisible = m_flasher->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_flasher->m_d.m_isVisible = true;

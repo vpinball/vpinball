@@ -27,7 +27,7 @@ void IEditable::Delete()
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
       Collection *const pcollection = m_vCollection[i];
-      pcollection->m_visel.find_erase(GetISelect());
+      pcollection->RemovePart(this);
    }
 }
 
@@ -75,6 +75,11 @@ bool IEditable::IsChild(const PartGroup* group) const
    while ((parent != group) && (parent != nullptr))
       parent = parent->GetPartGroup();
    return parent == group;
+}
+
+bool IEditable::IsUIVisible(const bool applyPartGroupVisibility) const
+{
+   return m_uiVisible && (!applyPartGroupVisibility || GetPartGroup() == nullptr || GetPartGroup()->IsUIVisible(true));
 }
 
 void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
@@ -239,7 +244,7 @@ void IEditable::Undelete()
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
       Collection *const pcollection = m_vCollection[i];
-      pcollection->m_visel.push_back(GetISelect());
+      pcollection->AddPart(this);
    }
 }
 

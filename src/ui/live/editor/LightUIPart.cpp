@@ -36,7 +36,7 @@ void LightUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_light->m_d.m_visible;
 
-   const bool isUIVisible = m_light->IsVisible(m_light);
+   const bool isUIVisible = m_light->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_light->m_d.m_visible = true;

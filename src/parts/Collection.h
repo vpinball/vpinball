@@ -1,7 +1,6 @@
 #pragma once
 
 #include "utils/eventproxy.h"
-#include "utils/vector.h"
 
 class Collection :
    public IDispatchImpl<ICollection, &IID_ICollection, &LIBID_VPinballLib>,
@@ -45,13 +44,17 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ICollectionEvents)
    END_CONNECTION_POINT_MAP()
 
-   VectorProtected<ISelect> m_visel;
+   const vector<IEditable *> &GetParts() const { return m_parts; }
+   void AddPart(IEditable *const part) { m_parts.push_back(part); }
+   void RemovePart(IEditable *const part) { std::erase(m_parts, part); }
+   void ClearParts() { m_parts.clear(); }
 
    bool m_fireEvents;
    bool m_stopSingleEvents;
    bool m_groupElements;
 
 private:
+   vector<IEditable *> m_parts;
    vector<wstring> m_tmp_isel_name;
 };
 

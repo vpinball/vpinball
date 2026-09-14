@@ -31,7 +31,7 @@ void TriggerUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_trigger->m_d.m_visible;
 
-   const bool isUIVisible = m_trigger->IsVisible(m_trigger);
+   const bool isUIVisible = m_trigger->IsUIVisible(true);
    const bool visible = m_visible && m_trigger->m_d.m_shape != TriggerShape::TriggerNone;
    if (isUIVisible && (ctx.IsSelected() || (!visible && ctx.IsShowInvisible())))
    {

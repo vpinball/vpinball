@@ -18,7 +18,7 @@ void TimerUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& r
 
 void TimerUIPart::Render(const EditorRenderContext& ctx)
 {
-   const bool isUIVisible = m_timer->IsVisible(m_timer);
+   const bool isUIVisible = m_timer->IsUIVisible(true);
    if (isUIVisible && ctx.IsShowInvisible())
    {
       const ImU32 color = ctx.GetColor(ctx.IsSelected());

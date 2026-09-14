@@ -187,10 +187,9 @@ void SearchSelectDialog::SelectElement()
            if (szType == "Collection"sv)
            {
               CComObject<Collection> *const pcol = (CComObject<Collection>*)lv.lParam;
-              if (!pcol->m_visel.empty())
+              if (!pcol->GetParts().empty())
               {
-                 ISelect *const pisel = pcol->m_visel.ElementAt(0);
-                 if (pisel)
+                 if (ISelect *const pisel = pcol->GetParts()[0]->GetISelect(); pisel)
                     m_curTable->AddMultiSel(pisel, false, true, false);
               }
            }

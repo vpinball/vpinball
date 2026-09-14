@@ -167,15 +167,7 @@ private:
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
 
-      bool IsUILocked() const override { return m_uiLocked; }
-      void SetUILock(bool lock) override { m_uiLocked = lock; }
-      bool IsUIVisible() const override { return m_uiVisible; }
-      void SetUIVisible(bool visible) override { m_uiVisible = visible; }
-
       HRESULT GetTypeName(BSTR *pVal) const override { return m_plight->GetTypeName(pVal); }
-
-      IDispatch *GetIDispatch() override { return m_plight->GetIDispatch(); }
-      const IDispatch *GetIDispatch() const override { return m_plight->GetIDispatch(); }
 
       void Delete() override { m_plight->Delete(); }
       void Uncreate() override { m_plight->Uncreate(); }
@@ -200,8 +192,6 @@ private:
 
    private:
       Light *m_plight;
-      bool m_uiLocked = false; // Can not be dragged in the editor
-      bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
    };
 
    Material *m_surfaceMaterial;

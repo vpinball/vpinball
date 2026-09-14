@@ -5,8 +5,6 @@
 
 #include "core/editablereg.h"
 #include "core/VPApp.h"
-#include "parts/Collection.h"
-#include "parts/PartGroup.h"
 #include "parts/pintable.h"
 #include "ui/win/WinEditor.h"
 
@@ -118,11 +116,4 @@ void ISelect::UpdateStatusBarInfo()
 {
    if (m_vpinball)
       m_vpinball->SetStatusBarUnitInfo(string(), false);
-}
-
-bool ISelect::IsVisible(IEditable *editable) const
-{
-   return IsUIVisible()
-      && (editable == nullptr || editable->GetPartGroup() == nullptr || editable->GetPartGroup()->GetISelect() == nullptr
-         || editable->GetPartGroup()->GetISelect()->IsVisible(editable->GetPartGroup()));
 }

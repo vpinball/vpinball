@@ -286,7 +286,7 @@ void PinTableWnd::ExportBlueprint()
 
       for (const auto &ptr : m_table->GetParts())
       {
-         if (ptr->m_uiVisible && ptr->GetISelect() && ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
+         if (ptr->IsUIVisible(false) && ptr->GetISelect() && ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
             if (IWinUIPart *const uiPart = GetUIPart(ptr))
                uiPart->RenderBlueprint(&psur, solid);
       }
@@ -354,7 +354,7 @@ void PinTableWnd::RenderTable(Sur *const psur)
 
    for (const auto &ptr : m_table->GetParts())
    {
-      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->IsUIVisible(false) && ptr->GetISelect())
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
             uiPart->UIRenderPass1(psur);
    }
@@ -393,7 +393,7 @@ void PinTableWnd::RenderTable(Sur *const psur)
 
    for (const auto &ptr : m_table->GetParts())
    {
-      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->IsUIVisible(false) && ptr->GetISelect())
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
             uiPart->UIRenderPass2(psur);
    }
@@ -780,13 +780,13 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
                CComObject<Collection> *col = m_table->m_vcollection.ElementAt(colIndex);
                if (col->m_groupElements)
                {
-                  for (int i = 0; i < col->m_visel.size(); i++)
+                  for (IEditable *const part : col->GetParts())
                   {
-                     if (IWinUIPart *const part = GetUIPart(&col->m_visel[i]))
-                        part->m_selectstate = IWinUIPart::SelectState::MultiSelected;
+                     if (IWinUIPart *const uiPart = GetUIPart(part))
+                        uiPart->m_selectstate = IWinUIPart::SelectState::MultiSelected;
                      // current element is already in m_vmultisel. (ClearMultiSel(psel) added it)
-                     if (col->m_visel.ElementAt(i) != psel)
-                        m_vmultisel.push_back(&col->m_visel[i]);
+                     if (part->GetISelect() != psel)
+                        m_vmultisel.push_back(part->GetISelect());
                   }
                }
             }
@@ -899,18 +899,18 @@ void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
    for (const IEditable *const e : m_table->GetParts())
       if (e->GetPartGroup() == group && e->GetISelect())
       {
-         show |= e->m_uiVisible;
-         hide |= !e->m_uiVisible;
+         show |= e->IsUIVisible(false);
+         hide |= !e->IsUIVisible(false);
       }
    for (int t = 0; t < m_vmultisel.size(); t++)
    {
       ISelect *const psel = m_vmultisel.ElementAt(t);
       IEditable *const pedit = psel->GetIEditable();
       pedit->SetPartGroup(group);
-      if (psel->IsUIVisible() && hide && !show)
-         psel->SetUIVisible(false);
-      else if (!psel->IsUIVisible() && show && !hide)
-         psel->SetUIVisible(true);
+      if (pedit->IsUIVisible(false) && hide && !show)
+         pedit->SetUIVisible(false);
+      else if (!pedit->IsUIVisible(false) && show && !hide)
+         pedit->SetUIVisible(true);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -982,7 +982,7 @@ void PinTableWnd::OnKeyDown(int key)
       for (int i = 0; i < m_vmultisel.size(); i++)
       {
          ISelect *const pisel = m_vmultisel.ElementAt(i);
-         if (!pisel->GetIEditable()->m_uiLocked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
+         if (!pisel->GetIEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
          {
             switch (key)
             {
@@ -1253,7 +1253,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
             {
                ISelect *const pisel = m_vmultisel.ElementAt(i);
                IWinUIPart *const uiPart = GetUIPart(pisel);
-               if (uiPart && uiPart->m_dragging && !pisel->GetIEditable()->m_uiLocked) // For drag points, follow the lock of the parent
+               if (uiPart && uiPart->m_dragging && !pisel->GetIEditable()->IsUILocked()) // For drag points, follow the lock of the parent
                {
                   if (!uiPart->m_markedForUndo)
                   {
@@ -1329,8 +1329,8 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
    if (m_vmultisel.size() == 1)
    {
       for (int i = maxItems; i >= 0; i--)
-         for (int t = 0; t < m_table->m_vcollection[i].m_visel.size(); t++)
-            if (psel == m_table->m_vcollection[i].m_visel.ElementAt(t))
+         for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+            if (psel == part->GetISelect())
                colSubMenu.CheckMenuItem(0x40000 + i, MF_CHECKED);
    }
    else
@@ -1342,8 +1342,8 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
          const ISelect *const iSel = m_vmultisel.ElementAt(t);
 
          for (int i = maxItems; i >= 0; i--)
-            for (int t2 = 0; t2 < m_table->m_vcollection[i].m_visel.size(); t2++)
-               if ((iSel == m_table->m_vcollection[i].m_visel.ElementAt(t2)))
+            for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+               if (iSel == part->GetISelect())
                   allIndices.push_back(i);
       }
       for (size_t i = 0; i < allIndices.size(); i++)
@@ -1371,8 +1371,8 @@ void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelectio
             if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
             {
                piedit->m_vCollection.push_back(pcol);
-               piedit->m_viCollection.push_back(pcol->m_visel.size());
-               pcol->m_visel.push_back(m_vmultisel.ElementAt(i));
+               piedit->m_viCollection.push_back(static_cast<int>(pcol->GetParts().size()));
+               pcol->AddPart(piedit);
             }
          }
       }
@@ -1400,7 +1400,7 @@ int PinTableWnd::AddListCollection(HWND hwndListView, CComObject<Collection> *pc
    lvitem.lParam = (size_t)pcol;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
-   ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->m_visel.size()).c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->GetParts().size()).c_str());
    return index;
 #else
    return 0;
@@ -1547,7 +1547,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       // now list all elements that are stacked at the mouse pointer
       for (size_t i = 0; i < m_table->m_allHitElements.size(); i++)
       {
-         if (!m_table->m_allHitElements[i]->GetIEditable()->m_uiVisible)
+         if (!m_table->m_allHitElements[i]->GetIEditable()->IsUIVisible(false))
             continue;
 
          ISelect *const ptr = m_table->m_allHitElements[i];
@@ -1571,7 +1571,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
             }
          }
       }
-      bool locked = psel->IsUILocked();
+      bool locked = psel->GetIEditable()->IsUILocked();
       //!! HACK
       if (psel == m_table) // multi-select case
       {

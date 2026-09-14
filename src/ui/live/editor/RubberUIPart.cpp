@@ -33,7 +33,7 @@ void RubberUIPart::Render(const EditorRenderContext& ctx)
    if (ctx.NeedsLiveTableSync())
       m_visible = m_rubber->m_d.m_visible;
 
-   const bool isUIVisible = m_rubber->IsVisible(m_rubber);
+   const bool isUIVisible = m_rubber->IsUIVisible(true);
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_rubber->m_d.m_visible = true;

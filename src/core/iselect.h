@@ -56,8 +56,6 @@ public:
    virtual HRESULT GetTypeName(BSTR *pVal) const;
    wstring GetTypeNameForType(const ItemTypeEnum type) const;
 
-   virtual IDispatch *GetIDispatch() = 0;
-   virtual const IDispatch *GetIDispatch() const = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;
@@ -82,20 +80,11 @@ public:
 
    virtual void PutCenter(const Vertex2D& pv) = 0;
 
-   HRESULT Helper_GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
-   HRESULT Helper_GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
-
    virtual IEditable *GetIEditable() = 0;
    virtual const IEditable *GetIEditable() const = 0;
 
    virtual int GetSelectLevel() const { return 1; }
    virtual void UpdateStatusBarInfo();
-
-   virtual bool IsUILocked() const = 0;
-   virtual void SetUILock(bool lock) = 0;
-   virtual bool IsUIVisible() const = 0;
-   virtual void SetUIVisible(bool visible) = 0;
-   bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
 
 protected:
    WinEditor *m_vpinball = nullptr;
