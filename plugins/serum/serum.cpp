@@ -369,9 +369,6 @@ static std::filesystem::path GetColorization(const std::string_view& gameId)
 // Select the first controller exposing a game for which we have the corresponding assets
 static void SelectController(std::vector<ControllerDef>& items)
 {
-   const unsigned int getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-   const std::vector<DisplaySrcId> displays = PinballPlugin::Controller::GetCtrlItems<DisplaySrcId>(msgApi, endpointId, getDisplaySrcId);
-   msgApi->ReleaseMsgID(getDisplaySrcId);
    for (const ControllerDef& controller : items)
    {
       if (const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId); !gameId.empty() && !GetColorization(gameId).empty())
