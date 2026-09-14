@@ -65,6 +65,9 @@ Private vpmDips
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' Assume we handle the key
+	Dim stagedFlipperL, stagedFlipperR
+	If keyStagedFlipperL & "" = "" Then stagedFlipperL = -1 Else stagedFlipperL = StagedLeftFlipperKey ' "" disables staged flipper processing
+	If keyStagedFlipperR & "" = "" Then stagedFlipperR = -1 Else stagedFlipperR = StagedRightFlipperKey
 	With Controller
 		Select Case keycode
 			Case RightFlipperKey .Switch(swLRFlip) = True : vpmKeyDown = False
@@ -79,8 +82,8 @@ Function vpmKeyDown(ByVal keycode)
 				End If
 			Case RightMagnaSave .Switch(swURFlip) = True : vpmKeyDown = False
 			Case LeftMagnaSave  .Switch(swULFlip) = True : vpmKeyDown = False
-			Case StagedLeftFlipperKey .Switch(swULFlip) = True : vpmKeyDown = False
-			Case StagedRightFlipperKey .Switch(swURFlip) = True : vpmKeyDown = False
+			Case stagedFlipperL .Switch(swULFlip) = True : vpmKeyDown = False
+			Case stagedFlipperR .Switch(swURFlip) = True : vpmKeyDown = False
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
@@ -95,6 +98,9 @@ End Function
 
 Function vpmKeyUp(ByVal keycode)
 	vpmKeyUp = True ' Assume we handle the key
+	Dim stagedFlipperL, stagedFlipperR
+	If keyStagedFlipperL & "" = "" Then stagedFlipperL = -1 Else stagedFlipperL = StagedLeftFlipperKey ' "" disables staged flipper processing
+	If keyStagedFlipperR & "" = "" Then stagedFlipperR = -1 Else stagedFlipperR = StagedRightFlipperKey
 	With Controller
 		Select Case keycode
 			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False
@@ -109,8 +115,8 @@ Function vpmKeyUp(ByVal keycode)
 				End If
 			Case RightMagnaSave .Switch(swURFlip) = False : vpmKeyUp = False
 			Case LeftMagnaSave  .Switch(swULFlip) = False : vpmKeyUp = False
-			Case StagedLeftFlipperKey .Switch(swULFlip) = False : vpmKeyUp = False
-			Case StagedRightFlipperKey .Switch(swURFlip) = False : vpmKeyUp = False
+			Case stagedFlipperL .Switch(swULFlip) = False : vpmKeyUp = False
+			Case stagedFlipperR .Switch(swURFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyEnter        .Switch(swEnter)       = False
