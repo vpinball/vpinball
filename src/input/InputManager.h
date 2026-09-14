@@ -322,7 +322,7 @@ private:
    float m_rumbleBumper = 1.f; // Strength of the bumper rumble, 0 disables it
    float m_rumbleSlingshot = 1.f; // Strength of the slingshot rumble, 0 disables it
    float m_rumblePlunger = 1.f; // Strength of the plunger rumble, 0 disables it
-   float m_rumbleFlipperButton = 1.f; // Strength of the flipper solenoid pulse, 0 disables it
+   float m_rumbleFlipperButton = 0.5f; // Strength of the flipper solenoid pulse, 0 disables it
    float m_rumbleNudge = 1.f; // Strength of the rumble played on cabinet nudge, 0 disables it
    float m_rumbleBallBall = 1.f; // Strength of the rumble played when two balls collide, 0 disables it
    int m_nudgeRumbleCooldownMs = 0; // Physics milliseconds left before another nudge rumble may be played
