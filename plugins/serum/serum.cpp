@@ -45,9 +45,6 @@ static std::unique_ptr<class SerumColorizer> colorizer;
 
 MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
 
-// A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
-static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
-
 class SerumColorizer
 {
 public:
@@ -83,22 +80,27 @@ public:
 private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
-      // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
+      // Only keep dmd corresponding to selected controller (or overriden from selected controller to support alphanumeric rendered DMD for example)
       const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
       {
          if (src.id.endpointId == m_controllerEndpointId)
             return true;
          if (src.overrideId.id != 0)
+         {
+            if (src.overrideId.endpointId == m_controllerEndpointId)
+               return true;
             for (const DisplaySrcId& item : items)
                if (item.id == src.overrideId)
                   return isFromController(item);
+         }
          return false;
       };
 
       DisplaySrcId selected { };
       for (const DisplaySrcId& item : items)
-         if (isFromController(item) && IsColorizableDmd(item))
-            selected = item;
+         if (isFromController(item)) // We have the colorization data for this DMD source
+            if (item.GetIdentifyFrame != nullptr && item.width >= 128) // The DMD source is supported by Serum colorizer
+               selected = item;
 
       items.clear();
       if (selected.id.id != 0)
@@ -330,39 +332,41 @@ private:
 
 static std::filesystem::path GetColorization(const std::string_view& gameId)
 {
-   VPXTableInfo tableInfo;
+   const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
+   const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
+
    VPXPluginAPI* vpxApi = nullptr;
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
-   if (vpxApi == nullptr)
-      return std::filesystem::path();
-   vpxApi->GetTableInfo(&tableInfo);
+   if (vpxApi != nullptr)
+   {
+      VPXTableInfo tableInfo;
+      vpxApi->GetTableInfo(&tableInfo);
+      std::filesystem::path tablePath = tableInfo.path;
 
-   std::filesystem::path tablePath = tableInfo.path;
+      // Priority 1: serum/rom/rom.cromc or .crz along VPX table
+      if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / cromc); !path1.empty())
+         return path1.parent_path().parent_path();
+      else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / crz); !path2.empty())
+         return path2.parent_path().parent_path();
 
-   const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
-   const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
+      // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz along VPX table
+      else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / cromc); !path3.empty())
+         return path3.parent_path().parent_path();
+      else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / crz); !path4.empty())
+         return path4.parent_path().parent_path();
+   }
 
-   // Priority 1: serum/rom/rom.cromc or .crz
-   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / cromc); !path1.empty())
-      return path1.parent_path().parent_path();
-   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / crz); !path2.empty())
-      return path2.parent_path().parent_path();
-   // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz
-   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / cromc); !path3.empty())
-      return path3.parent_path().parent_path();
-   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / crz); !path4.empty())
-      return path4.parent_path().parent_path();
    // Priority 3: global setting path
-   else if (std::filesystem::path serumPath = serumPathProp_Get();
+   if (std::filesystem::path serumPath = serumPathProp_Get();
       !serumPath.empty() && (!find_case_insensitive_file_path(serumPath / gameId / cromc).empty() || !find_case_insensitive_file_path(serumPath / gameId / crz).empty()))
       return serumPath;
 
    return std::filesystem::path();
 }
 
-// Select the first controller exposing an identifiable DMD and a game for which we have the corresponding assets
+// Select the first controller exposing a game for which we have the corresponding assets
 static void SelectController(std::vector<ControllerDef>& items)
 {
    const unsigned int getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
@@ -370,10 +374,7 @@ static void SelectController(std::vector<ControllerDef>& items)
    msgApi->ReleaseMsgID(getDisplaySrcId);
    for (const ControllerDef& controller : items)
    {
-      const bool hasIdentifiableDmd = std::any_of(displays.begin(), displays.end(),
-         [&controller](const DisplaySrcId& display) { return display.id.endpointId == controller.endpointId && IsColorizableDmd(display); });
-      const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
-      if (hasIdentifiableDmd && !gameId.empty() && !GetColorization(gameId).empty())
+      if (const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId); !gameId.empty() && !GetColorization(gameId).empty())
       {
          items.clear();
          items.push_back(controller);

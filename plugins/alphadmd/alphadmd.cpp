@@ -121,7 +121,7 @@ public:
       m_renderThread = std::thread(&AlphaDMDRenderer::RenderThread, this);
       m_dmdProvider.AddItem({
          .id = { { endpointId, 0 } },
-         .overrideId = overridenId,
+         .overrideId = { overridenId.endpointId, 0xFFFF },
          .width = 128,
          .height = 32,
          .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,

@@ -191,18 +191,18 @@ typedef struct DisplayFrame
 
 typedef struct DisplaySrcId
 {
-   CtlResId id;                                                             // Unique Id of the display
-   CtlResId overrideId;                                                     // If this source overrides another source, id of the overriden source, 0 otherwise
-   unsigned int width;                                                      // 
-   unsigned int height;                                                     // 
+   CtlResId id;                      // Unique Id of the display
+   CtlResId overrideId;              // Id of the display this source overrides if any, { endpoint, 0xFFFF } if overriding something else then a display, 0 if not overriding anything
+   unsigned int width;               
+   unsigned int height;              
    union {
       struct {
          uint16_t hardwareModel;
          uint16_t hardwareFamily;
       };
-      uint32_t hardware;                                                    // Hardware hint. See CTLPI_DISPLAY_HARDWARE_xxx
+      uint32_t hardware;             // Hardware hint. See CTLPI_DISPLAY_HARDWARE_xxx
    };
-   void* callContext;                                                       // Opaque pointer that must be passed to GetRenderFrame/GetIdentifyFrame calls
+   void* callContext;                // Opaque pointer that must be passed to GetRenderFrame/GetIdentifyFrame calls
 
    // Render frames, suitable for presenting to the user, but not meant to be backward compatible
    unsigned int frameFormat;                                                // See CTLPI_DISPLAY_FORMAT_xxx
