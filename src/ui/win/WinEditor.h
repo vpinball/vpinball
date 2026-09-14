@@ -77,6 +77,7 @@ private:
    void AddControlPoint();
    void AddSmoothControlPoint();
    void SaveTable(const bool saveAs);
+   void ExportTableMesh();
    void OpenNewTable(size_t tableId);
    void ProcessDeleteElement();
    void OpenRecentFile(const size_t menuId);
