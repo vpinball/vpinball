@@ -77,7 +77,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
       return;
    }
 
-   bool drawDragpoints = ((m_rubber->m_selectstate != ISelect::SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || (m_editor->m_vpxEditor->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
@@ -86,7 +86,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
       for (size_t i = 0; i < m_rubber->m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint>* const pdp = m_rubber->m_vdpoint[i];
-         if (pdp->m_selectstate != ISelect::SelectState::NotSelected)
+         if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
             break;

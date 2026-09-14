@@ -64,7 +64,8 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    {
       const int i = (icmd & 0x00FF0000) >> 16;
       ISelect *const pisel = m_table->m_allHitElements[i];
-      if (IWinUIPart *const uiPart = m_editor->GetUIPart(pisel))
+      // pisel can be the table itself, whose UI part is this part: do not recurse into our own DoCommand
+      if (IWinUIPart *const uiPart = m_editor->GetUIPart(pisel); uiPart && uiPart != this)
          uiPart->DoCommand(icmd, x, y);
       return;
    }
@@ -78,7 +79,7 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
       {
          ISelect *const psel = m_editor->m_vmultisel.ElementAt(i);
          _ASSERTE(psel != m_table); // Would make an infinite loop
-         if (IWinUIPart *const uiPart = m_editor->GetUIPart(psel))
+         if (IWinUIPart *const uiPart = m_editor->GetUIPart(psel); uiPart && uiPart != this)
             uiPart->DoCommand(icmd, x, y);
       }
       break;

@@ -24,6 +24,14 @@ public:
    ISelect* GetSelect() const { return m_select; }
    IEditable* GetEditable() const { return m_select->GetIEditable(); }
 
+   enum class SelectState
+   {
+      NotSelected,
+      Selected,
+      MultiSelected
+   };
+   SelectState m_selectstate = SelectState::NotSelected;
+
    bool m_dragging = false;
 
    bool m_markedForUndo = false; // Flag set when dragged to enable undo

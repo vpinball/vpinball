@@ -94,13 +94,13 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool drawDragpoints = ((m_flasher->m_selectstate != ISelect::SelectState::NotSelected) || m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || m_editor->m_vpxEditor->m_alwaysDrawDragPoints);
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (const auto& pdp : m_flasher->m_vdpoint)
       {
-         if (pdp->m_selectstate != ISelect::SelectState::NotSelected)
+         if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
             break;
