@@ -1522,239 +1522,76 @@ void Primitive::Load(IObjectReader& reader)
    CalculateBuiltinOriginal();
 }
 
-INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+bool Primitive::LoadMesh(const string &filename, const bool convertToLeftHanded, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial,
+   const bool importAnimation, const bool doForsyth)
 {
-#ifndef __STANDALONE__
-   static Primitive *prim = nullptr;
-   switch (uMsg)
-   {
-   case WM_INITDIALOG:
-   {
-      static constexpr char nullstring[8] = {};
-
-      prim = (Primitive*)lParam;
-      SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, nullstring);
-      CheckDlgButton(hwndDlg, IDC_CONVERT_COORD_CHECK, BST_CHECKED);
-      CheckDlgButton(hwndDlg, IDC_REL_POSITION_RADIO, BST_CHECKED);
-      CheckDlgButton(hwndDlg, IDC_ABS_POSITION_RADIO, BST_UNCHECKED);
-      CheckDlgButton(hwndDlg, IDC_CENTER_MESH, BST_UNCHECKED);
-      CheckDlgButton(hwndDlg, IDC_IMPORT_NO_FORSYTH, BST_UNCHECKED);
-      EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
-      return TRUE;
-   }
-   case WM_CLOSE:
-   {
-      prim = nullptr;
-      EndDialog(hwndDlg, FALSE);
-      break;
-   }
-   case WM_COMMAND:
-      switch (HIWORD(wParam))
-      {
-      case BN_CLICKED:
-         switch (LOWORD(wParam))
-         {
-         case IDOK:
-         {
-            char szFileName[MAXSTRING];
-            szFileName[0] = '\0';
-
-            GetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName, MAXSTRING);
-            if (szFileName[0] == '\0')
-            {
-               ShowError("No .obj file selected!");
-               break;
-            }
-            prim->m_mesh.Clear();
-            prim->m_d.m_use3DMesh = false;
-            prim->m_meshBuffer = nullptr;
-
-            constexpr bool flipTV = false;
-            const bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
-            const bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO) == BST_CHECKED;
-            const bool centerMesh = IsDlgButtonChecked(hwndDlg, IDC_CENTER_MESH) == BST_CHECKED;
-            const bool importMaterial = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_MATERIAL) == BST_CHECKED;
-            const bool importAnimation = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
-            const bool doForsyth = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
-            if (importMaterial)
-            {
-               std::filesystem::path szMatName = std::filesystem::path(szFileName).replace_extension(".mtl");
-               Material * const mat = new Material();
-               if (ObjLoader::LoadMaterial(szMatName.string(), mat))
-               {
-                  prim->GetPTable()->AddMaterial(mat);
-                  prim->m_d.m_szMaterial = mat->m_name;
-               }
-            }
-            if (prim->m_mesh.LoadWavefrontObj(szFileName, flipTV, convertToLeftHanded))
-            {
-               if (importAbsolutePosition || centerMesh)
-               {
-                  for (size_t i = 0; i < prim->m_mesh.m_vertices.size(); i++)
-                  {
-                     prim->m_mesh.m_vertices[i].x -= prim->m_mesh.middlePoint.x;
-                     prim->m_mesh.m_vertices[i].y -= prim->m_mesh.middlePoint.y;
-                     prim->m_mesh.m_vertices[i].z -= prim->m_mesh.middlePoint.z;
-                  }
-                  if (importAbsolutePosition)
-                  {
-                     prim->m_d.m_vPosition.x = prim->m_mesh.middlePoint.x;
-                     prim->m_d.m_vPosition.y = prim->m_mesh.middlePoint.y;
-                     prim->m_d.m_vPosition.z = prim->m_mesh.middlePoint.z;
-                     prim->m_d.m_vSize.x = 1.0f;
-                     prim->m_d.m_vSize.y = 1.0f;
-                     prim->m_d.m_vSize.z = 1.0f;
-                  }
-               }
-               if (importAnimation)
-               {
-                  if (prim->m_mesh.LoadAnimation(szFileName, flipTV, convertToLeftHanded))
-                  {
-                     if (centerMesh)
-                     {
-                        for (size_t t = 0; t < prim->m_mesh.m_animationFrames.size(); t++)
-                        {
-                           for (size_t i = 0; i < prim->m_mesh.m_vertices.size(); i++)
-                           {
-                              prim->m_mesh.m_animationFrames[t].m_frameVerts[i].x -= prim->m_mesh.middlePoint.x;
-                              prim->m_mesh.m_animationFrames[t].m_frameVerts[i].y -= prim->m_mesh.middlePoint.y;
-                              prim->m_mesh.m_animationFrames[t].m_frameVerts[i].z -= prim->m_mesh.middlePoint.z;
-                           }
-                        }
-                     }
-                  }
-               }
-               prim->m_d.m_use3DMesh = true;
-               if (doForsyth)
-               {
-                   unsigned int* const tmp = reorderForsyth(prim->m_mesh.m_indices, (int)prim->m_mesh.NumVertices());
-                   if (tmp != nullptr)
-                   {
-                       memcpy(prim->m_mesh.m_indices.data(), tmp, prim->m_mesh.NumIndices() * sizeof(unsigned int));
-                       delete[] tmp;
-                   }
-               }
-               prim->UpdateStatusBarInfo();
-               prim = nullptr;
-               EndDialog(hwndDlg, TRUE);
-            }
-            else
-               ShowError("Unable to open file!");
-            break;
-         }
-         case IDC_BROWSE_BUTTON:
-         {
-            if (prim == nullptr)
-               break;
-
-            SetForegroundWindow(hwndDlg);
-
-            const string& szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
-
-            vector<string> szFileName;
-            if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
-            {
-               SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName[0].c_str());
-
-               size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
-               if (index != string::npos)
-               {
-                  g_app->m_settings.SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
-                  index++;
-                  prim->m_d.m_meshFileName = szFileName[0].substr(index, szFileName[0].length() - index);
-               }
-
-               EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
-            }
-            break;
-         }
-         case IDCANCEL:
-         {
-            prim = nullptr;
-            EndDialog(hwndDlg, FALSE);
-            break;
-         }
-         }
-      }
-   }
-#endif
-   return FALSE;
-}
-
-bool Primitive::BrowseFor3DMeshFile()
-{
-#ifndef __STANDALONE__
-   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), m_vpinball->GetHwnd(), ObjImportProc, (size_t)this);
-#endif
-#if 1
-   return false;
-#else
-   char szFileName[MAXSTRING];
-   szFileName[0] = '\0';
-   string szInitialDir;
-
-   OPENFILENAME ofn = {};
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_app->GetInstanceHandle();
-   ofn.hwndOwner = m_vpinball->m_hwnd;
-   // TEXT
-   ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
-   ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = std::size(szFileName);
-   ofn.lpstrDefExt = "obj";
-   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
-   szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
-
-   ofn.lpstrInitialDir = szInitialDir.c_str();
-
-   const int ret = GetOpenFileName(&ofn);
-   if (ret == 0)
-      return false;
-
-   string filename(ofn.lpstrFile);
-   size_t index = filename.find_last_of(PATH_SEPARATOR_CHAR);
-   if (index != string::npos)
-   {
-      const string newInitDir(szFilename.substr(0, index));
-      g_app->m_settings.SetRecentDir_ImportDir(newInitDir, false);
-      index++;
-      m_d.m_meshFileName = filename.substr(index, filename.length() - index);
-   }
-
    m_mesh.Clear();
    m_d.m_use3DMesh = false;
-   SAFE_BUFFER_RELEASE(vertexBuffer);
+   m_meshBuffer = nullptr;
+   m_vertexBufferRegenerate = true;
 
-   bool flipTV = false;
-   bool convertToLeftHanded = false;
-   int ans = m_vpinball->MessageBox("Do you want to mirror the object?", "Convert coordinate system?", MB_YESNO | MB_DEFBUTTON2);
-   if (ans == IDYES)
+   constexpr bool flipTV = false;
+   if (importMaterial)
    {
-      convertToLeftHanded = true;
-   }
-   else
-   {
-      ans = m_vpinball->MessageBox("Do you want to convert texture coordinates?", "Confirm", MB_YESNO | MB_DEFBUTTON2);
-      if (ans == IDYES)
+      std::filesystem::path szMatName = std::filesystem::path(filename).replace_extension(".mtl");
+      Material *const mat = new Material();
+      if (ObjLoader::LoadMaterial(szMatName.string(), mat))
       {
-         flipTV = true;
+         GetPTable()->AddMaterial(mat);
+         m_d.m_szMaterial = mat->m_name;
       }
    }
-   if (m_mesh.LoadWavefrontObj(ofn.lpstrFile, flipTV, convertToLeftHanded))
+   if (!m_mesh.LoadWavefrontObj(filename, flipTV, convertToLeftHanded))
+      return false;
+
+   if (importAbsolutePosition || centerMesh)
    {
-      m_d.m_vPosition.x = m_mesh.middlePoint.x;
-      m_d.m_vPosition.y = m_mesh.middlePoint.y;
-      m_d.m_vPosition.z = m_mesh.middlePoint.z;
-      m_d.m_vSize.x = 1.0f;
-      m_d.m_vSize.y = 1.0f;
-      m_d.m_vSize.z = 1.0f;
-      m_d.m_use3DMesh = true;
-      UpdateStatusBarInfo();
-      return true;
+      for (size_t i = 0; i < m_mesh.m_vertices.size(); i++)
+      {
+         m_mesh.m_vertices[i].x -= m_mesh.middlePoint.x;
+         m_mesh.m_vertices[i].y -= m_mesh.middlePoint.y;
+         m_mesh.m_vertices[i].z -= m_mesh.middlePoint.z;
+      }
+      if (importAbsolutePosition)
+      {
+         m_d.m_vPosition.x = m_mesh.middlePoint.x;
+         m_d.m_vPosition.y = m_mesh.middlePoint.y;
+         m_d.m_vPosition.z = m_mesh.middlePoint.z;
+         m_d.m_vSize.x = 1.0f;
+         m_d.m_vSize.y = 1.0f;
+         m_d.m_vSize.z = 1.0f;
+      }
    }
-   return false;
-#endif
+   if (importAnimation)
+   {
+      if (m_mesh.LoadAnimation(filename.c_str(), flipTV, convertToLeftHanded))
+      {
+         if (centerMesh)
+         {
+            for (size_t t = 0; t < m_mesh.m_animationFrames.size(); t++)
+            {
+               for (size_t i = 0; i < m_mesh.m_vertices.size(); i++)
+               {
+                  m_mesh.m_animationFrames[t].m_frameVerts[i].x -= m_mesh.middlePoint.x;
+                  m_mesh.m_animationFrames[t].m_frameVerts[i].y -= m_mesh.middlePoint.y;
+                  m_mesh.m_animationFrames[t].m_frameVerts[i].z -= m_mesh.middlePoint.z;
+               }
+            }
+         }
+      }
+   }
+   m_d.m_use3DMesh = true;
+   if (doForsyth)
+   {
+      unsigned int *const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
+      if (tmp != nullptr)
+      {
+         memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
+         delete[] tmp;
+      }
+   }
+   UpdateStatusBarInfo();
+   return true;
 }
 
 //////////////////////////////
@@ -1803,36 +1640,6 @@ STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
    m_d.m_meshFileName = MakeString(newVal);
    return S_OK;
-}
-
-bool Primitive::LoadMeshDialog()
-{
-   STARTUNDO
-   const bool result = BrowseFor3DMeshFile();
-   m_vertexBufferRegenerate = true;
-   STOPUNDO
-
-   return result;
-}
-
-void Primitive::ExportMeshDialog()
-{
-#ifndef __STANDALONE__
-   const string& szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
-
-   vector<string> szFileName;
-   if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
-   {
-      const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
-      if (index != string::npos)
-      {
-         const string newInitDir(szFileName[0].substr(0, index));
-         g_app->m_settings.SetRecentDir_ImportDir(newInitDir, false);
-      }
-
-      m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? MakeString(m_wzName) : "Primitive"s);
-   }
-#endif
 }
 
 float Primitive::GetDepth(const Vertex3Ds& viewDir) const
