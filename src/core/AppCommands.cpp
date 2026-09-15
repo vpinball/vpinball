@@ -4,6 +4,7 @@
 #include "AppCommands.h"
 
 #include "extern.h"
+#include "core/ScriptEngine.h"
 #include "core/TournamentFile.h"
 #include "core/VPApp.h"
 #include "parts/Material.h"
@@ -103,7 +104,7 @@ void ExportVBSCommand::Execute()
 
    //CComObject<PinTable>* table = LoadTable();
    std::filesystem::path scriptFilename = m_tableFilename;
-   scriptFilename.replace_extension(".vbs");
+   scriptFilename.replace_extension(GetScriptFileExtension(DetectScriptLanguage(script)));
    if (std::ofstream outFile(scriptFilename, std::ios::binary); outFile)
    {
       //outFile.write(table->m_original_table_script.data(), table->m_original_table_script.size());

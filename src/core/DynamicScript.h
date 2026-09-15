@@ -27,6 +27,9 @@ public:
 
    ScriptClassDef *ResolveClass(const char * name) const;
    int ResolveMemberId(const ScriptClassDef *classDef, const char *memberName) const;
+   // How a member is called: 1 = property (an overload without argument returns a value), 2 = indexed property
+   // (returns a value, takes arguments), 3 = method, 0 = unknown member
+   int GetMemberKind(const ScriptClassDef *classDef, DISPID dispid) const;
 
    HRESULT Invoke(const ScriptClassDef * classDef, void *nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *, UINT *) const;
 
@@ -160,6 +163,8 @@ public:
    {
       return m_typeLibrary->Invoke(m_classDef, m_nativeObject, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
    }
+
+   int GetMemberKind(DISPID dispid) const { return m_typeLibrary->GetMemberKind(m_classDef, dispid); }
 
 public:
    ULONG m_refCount;
