@@ -73,6 +73,8 @@ protected:
    INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
    BOOL PreTranslateMessage(MSG& msg) override;
+   void OnOK() override;
+   void OnCancel() override;
 
 private:
    void UpdateCommands();
