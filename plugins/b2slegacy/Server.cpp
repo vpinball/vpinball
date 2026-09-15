@@ -31,6 +31,31 @@ using namespace std::string_view_literals;
 
 namespace B2SLegacy {
 
+static std::string CreateGuidString()
+{
+   std::random_device rd;
+   std::mt19937_64 gen(rd());
+   std::uniform_int_distribution<uint64_t> dist;
+
+   uint64_t hi = dist(gen);
+   uint64_t lo = dist(gen);
+
+   // Set UUID version (4) and variant bits per RFC 4122
+   hi = (hi & 0xFFFFFFFFFFFF0FFFULL) | 0x0000000000004000ULL;
+   lo = (lo & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
+
+   char buf[37];
+   std::snprintf(buf, sizeof(buf),
+      "%08llx-%04llx-%04llx-%04llx-%012llx",
+      (hi >> 32) & 0xFFFFFFFFULL,
+      (hi >> 16) & 0xFFFFULL,
+      hi & 0xFFFFULL,
+      (lo >> 48) & 0xFFFFULL,
+      lo & 0xFFFFFFFFFFFFULL);
+
+   return std::string(buf);
+}
+
 Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* serverClassDef)
    : m_msgApi(msgApi)
    , m_vpxApi(vpxApi)
@@ -67,6 +92,7 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    , m_exposedControllers(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG)
    , m_exposedStates(msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG)
 {
+   m_controllerGameId = "b2s::" + CreateGuidString();
    m_pB2SSettings = new B2SSettings(m_msgApi, endpointId);
    m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
    m_pCollectLampsData = new B2SCollectData(m_pB2SSettings->GetLampsSkipFrames());
@@ -384,31 +410,6 @@ const string& Server::GetB2SServerDirectory() const
    return m_szPath;
 }
 
-static std::string CreateGuidString()
-{
-   std::random_device rd;
-   std::mt19937_64 gen(rd());
-   std::uniform_int_distribution<uint64_t> dist;
-
-   uint64_t hi = dist(gen);
-   uint64_t lo = dist(gen);
-
-   // Set UUID version (4) and variant bits per RFC 4122
-   hi = (hi & 0xFFFFFFFFFFFF0FFFULL) | 0x0000000000004000ULL;
-   lo = (lo & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
-
-   char buf[37];
-   std::snprintf(buf, sizeof(buf),
-      "%08llx-%04llx-%04llx-%04llx-%012llx",
-      (hi >> 32) & 0xFFFFFFFFULL,
-      (hi >> 16) & 0xFFFFULL,
-      hi & 0xFFFFULL,
-      (lo >> 48) & 0xFFFFULL,
-      lo & 0xFFFFFFFFFFFFULL);
-
-   return std::string(buf);
-}
-
 const string& Server::GetB2SName() const
 {
    return m_pB2SSettings->GetB2SName();
@@ -416,12 +417,16 @@ const string& Server::GetB2SName() const
 
 void Server::SetB2SName(const string& b2sName)
 {
-   if (b2sName == m_pB2SSettings->GetB2SName())
+   string name = b2sName;
+   std::erase(name, ' ');
+   if (name == m_pB2SSettings->GetB2SName())
       return;
 
-   m_pB2SSettings->SetB2SName(b2sName);
+   m_pB2SSettings->SetB2SName(name);
+   if (!name.empty())
+      m_pB2SSettings->SetGameName(""s);
 
-   string id = trim_string(b2sName);
+   string id = name;
    if (id.empty())
       m_controllerGameId = "b2s::" + CreateGuidString();
    else
