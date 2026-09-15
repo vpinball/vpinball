@@ -94,9 +94,6 @@ public:
    // IEditable implementation
    void WriteRegDefaults() final;
 
-   // IHitable implementation
-   ItemTypeEnum HitableGetItemType() const final { return eItemBumper; }
-
    // IBumper
    STDMETHOD(get_BaseMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BaseMaterial)(/*[in]*/ BSTR newVal);

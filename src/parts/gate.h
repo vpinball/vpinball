@@ -90,7 +90,6 @@ public:
 
    void ExportMesh(ObjLoader &loader) final;
 
-   ItemTypeEnum HitableGetItemType() const final { return eItemGate; }
    void UpdateStatusBarInfo() final;
 
    void WriteRegDefaults() final;

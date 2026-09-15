@@ -147,6 +147,7 @@ public:
 
    DECLARE_REGISTRY_RESOURCEID(IDR_BALL)
 
+   // IHitable implementation
    bool PhysicUpdate(class PhysicsEngine *physics, const bool isUI) final;
 
    // ISelect implementation
@@ -156,9 +157,6 @@ public:
 
    // IEditable implementation
    void WriteRegDefaults() final;
-
-   // IHitable implementation
-   ItemTypeEnum HitableGetItemType() const final { return eItemBall; }
 
    // IBall implementation
    STDMETHOD(get_FrontDecal)(/*[out, retval]*/ BSTR *pVal);

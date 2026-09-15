@@ -114,7 +114,6 @@ public:
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 
    float GetDepth(const Vertex3Ds &viewDir) const final;
-   ItemTypeEnum HitableGetItemType() const final { return eItemRamp; }
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
    void UpdateStatusBarInfo() final;

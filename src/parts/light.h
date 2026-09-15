@@ -139,7 +139,6 @@ protected:
 
 public:
    float GetDepth(const Vertex3Ds& viewDir) const final;
-   ItemTypeEnum HitableGetItemType() const final { return eItemLight; }
 
    void WriteRegDefaults() final;
 

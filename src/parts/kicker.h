@@ -87,7 +87,6 @@ public:
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 
-   ItemTypeEnum HitableGetItemType() const final { return eItemKicker; }
    void UpdateStatusBarInfo() final;
 
    void WriteRegDefaults() final;
