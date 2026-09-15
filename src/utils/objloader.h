@@ -21,8 +21,8 @@ public:
       m_indices.clear();
    }
 
-   bool Load(const string& filename, const bool flipTv, const bool convertToLeftHanded);
-   void Save(const string& filename, const string& description, const Mesh& mesh);
+   bool Load(const string& filename, const MeshUnits units);
+   void Save(const string& filename, const string& description, const Mesh& mesh, const MeshUnits units);
    bool ExportStart(const string& filename);
    void ExportEnd()
    {
@@ -39,7 +39,7 @@ public:
    {
       fprintf_s(m_fHandle, "o %s\n", objname.c_str());
    }
-   void WriteVertexInfo(const Vertex3D_NoTex2* verts, unsigned int numVerts);
+   void WriteVertexInfo(const Vertex3D_NoTex2* verts, unsigned int numVerts, const MeshUnits units = MeshUnits::VPUnits);
    void WriteFaceInfo(const vector<WORD>& faces);
    void WriteFaceInfoLong(const vector<unsigned int>& faces);
    void WriteFaceInfoList(const WORD* faces, const unsigned int numIndices);

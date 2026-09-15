@@ -26,30 +26,55 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_MESH_IMPORT_DIALOG DIALOGEX 0, 0, 310, 133
+IDD_MESH_IMPORT_DIALOG DIALOGEX 0, 0, 404, 182
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_OVERLAPPEDWINDOW | WS_EX_APPWINDOW
 CAPTION "Wavefront OBJ Importer"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "File",IDC_STATIC,11,12,15,8
-    EDITTEXT        IDC_FILENAME_EDIT,28,10,215,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "&Browse",IDC_BROWSE_BUTTON,248,10,50,14
-    CONTROL         "Convert coordinate system",IDC_CONVERT_COORD_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,41,146,10
-    CONTROL         "Center mesh to it's midpoint",IDC_CENTER_MESH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,41,123,10
+    EDITTEXT        IDC_FILENAME_EDIT,28,10,307,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Browse",IDC_BROWSE_BUTTON,343,10,50,14
+    GROUPBOX        "Units and axes",IDC_STATIC,11,29,381,67
+    CONTROL         "VPUnits (Up -Z, Visual Pinball default)",IDC_IMPORT_VPUNITS_RADIO,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,20,41,190,10
+    LTEXT           "Recommended Blender Import/Export Transformations: Scale 0.00054, Forward -Y, Up -Z",IDC_STATIC,32,53,285,12,NOT WS_GROUP
+    CONTROL         "Meters (Up Y, Blender default)",IDC_IMPORT_METERS_RADIO,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,20,67,150,10
+    LTEXT           "Matches Blender's default Import/Export Transformations: Scale 1.0, Forward -Z, Up Y. Primitive scale stays 1.",IDC_STATIC,32,79,355,12,NOT WS_GROUP
+    GROUPBOX        "Options",IDC_STATIC,11,98,381,51
+    CONTROL         "Center mesh to it's midpoint",IDC_CENTER_MESH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,110,146,10
+    CONTROL         "Import mesh's material",IDC_IMPORT_MATERIAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,241,110,122,10
     CONTROL         "Import Animation Sequence",IDC_IMPORT_ANIM_SEQUENCE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,53,143,10
-    CONTROL         "Import mesh's material",IDC_IMPORT_MATERIAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,53,122,10
-    GROUPBOX        "Options",IDC_STATIC,15,29,279,77
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,241,122,143,10
     CONTROL         "Do not reorder/optimize data",IDC_IMPORT_NO_FORSYTH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,65,143,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,241,134,143,10
     CONTROL         "Place at primitive's position",IDC_REL_POSITION_RADIO,
-                    "Button",BS_AUTORADIOBUTTON,20,78,146,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,19,123,146,10
     CONTROL         "Place at mesh's absolute position (use mesh's midpoint)",IDC_ABS_POSITION_RADIO,
-                    "Button",BS_AUTORADIOBUTTON,20,91,272,10
-    DEFPUSHBUTTON   "&Import",IDOK,198,112,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,253,112,50,14
+                    "Button",BS_AUTORADIOBUTTON,19,136,211,10
+    DEFPUSHBUTTON   "&Import",IDOK,281,161,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,342,161,50,14
+END
+
+IDD_MESH_EXPORT_DIALOG DIALOGEX 0, 0, 404, 123
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_OVERLAPPEDWINDOW | WS_EX_APPWINDOW
+CAPTION "Wavefront OBJ Exporter"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "File",IDC_STATIC,11,12,15,8
+    EDITTEXT        IDC_FILENAME_EDIT,28,10,307,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Browse",IDC_BROWSE_BUTTON,343,10,50,14
+    GROUPBOX        "Units and axes",IDC_STATIC,11,29,381,67
+    CONTROL         "VPUnits (Up -Z, Visual Pinball default)",IDC_EXPORT_VPUNITS_RADIO,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,20,41,190,10
+    LTEXT           "Recommended Blender Import/Export Transformations: Scale 0.00054, Forward -Y, Up -Z",IDC_STATIC,32,53,285,12,NOT WS_GROUP
+    CONTROL         "Meters (Up Y, Blender default)",IDC_EXPORT_METERS_RADIO,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,20,67,150,10
+    LTEXT           "Matches Blender's default Import/Export Transformations: Scale 1.0, Forward -Z, Up Y. Primitive scale stays 1.",IDC_STATIC,32,79,355,12,NOT WS_GROUP
+    DEFPUSHBUTTON   "&Export",IDOK,281,102,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,342,102,50,14
 END
 
 IDD_DIMENSION_CALCULATOR DIALOGEX 0, 0, 516, 264
@@ -2118,9 +2143,17 @@ BEGIN
     IDD_MESH_IMPORT_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 303
+        RIGHTMARGIN, 397
         TOPMARGIN, 7
-        BOTTOMMARGIN, 126
+        BOTTOMMARGIN, 175
+    END
+
+    IDD_MESH_EXPORT_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 397
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 116
     END
 
     IDD_DIMENSION_CALCULATOR, DIALOG
@@ -3384,6 +3417,11 @@ BEGIN
 END
 
 IDD_MESH_IMPORT_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_MESH_EXPORT_DIALOG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

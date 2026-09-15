@@ -407,7 +407,8 @@ protected:
    BOOL OnInitDialog() override
    {
       SetDlgItemText(IDC_FILENAME_EDIT, "");
-      CheckDlgButton(IDC_CONVERT_COORD_CHECK, BST_CHECKED);
+      CheckDlgButton(IDC_IMPORT_VPUNITS_RADIO, BST_CHECKED);
+      CheckDlgButton(IDC_IMPORT_METERS_RADIO, BST_UNCHECKED);
       CheckDlgButton(IDC_REL_POSITION_RADIO, BST_CHECKED);
       CheckDlgButton(IDC_ABS_POSITION_RADIO, BST_UNCHECKED);
       CheckDlgButton(IDC_CENTER_MESH, BST_UNCHECKED);
@@ -425,14 +426,14 @@ protected:
          return;
       }
 
-      const bool convertToLeftHanded = IsDlgButtonChecked(IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
+      const MeshUnits units = IsDlgButtonChecked(IDC_IMPORT_METERS_RADIO) == BST_CHECKED ? MeshUnits::Meters : MeshUnits::VPUnits;
       const bool importAbsolutePosition = IsDlgButtonChecked(IDC_ABS_POSITION_RADIO) == BST_CHECKED;
       const bool centerMesh = IsDlgButtonChecked(IDC_CENTER_MESH) == BST_CHECKED;
       const bool importMaterial = IsDlgButtonChecked(IDC_IMPORT_MATERIAL) == BST_CHECKED;
       const bool importAnimation = IsDlgButtonChecked(IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
       const bool doForsyth = IsDlgButtonChecked(IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
 
-      if (m_prim->LoadMesh(filename, convertToLeftHanded, importAbsolutePosition, centerMesh, importMaterial, importAnimation, doForsyth))
+      if (m_prim->LoadMesh(filename, units, importAbsolutePosition, centerMesh, importMaterial, importAnimation, doForsyth))
          EndDialog(TRUE);
       else
          ShowError("Unable to open file!");
@@ -479,20 +480,73 @@ void PrimitiveVisualsProperty::LoadMeshDialog(Primitive *const prim)
    dialog.DoModal(g_pvp->GetHwnd());
 }
 
-void PrimitiveVisualsProperty::ExportMeshDialog(Primitive *const prim)
+class MeshExportDialog final : public CDialog
 {
-   const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
-
-   vector<string> szFileName;
-   if (g_pvp->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
+public:
+   MeshExportDialog(Primitive *const prim)
+      : CDialog(IDD_MESH_EXPORT_DIALOG)
+      , m_prim(prim)
    {
-      const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
-      if (index != string::npos)
+   }
+
+protected:
+   BOOL OnInitDialog() override
+   {
+      SetDlgItemText(IDC_FILENAME_EDIT, "");
+      CheckDlgButton(IDC_EXPORT_VPUNITS_RADIO, BST_CHECKED);
+      CheckDlgButton(IDC_EXPORT_METERS_RADIO, BST_UNCHECKED);
+      GetDlgItem(IDOK).EnableWindow(FALSE);
+      return TRUE;
+   }
+
+   void OnOK() override
+   {
+      const string filename = GetDlgItemText(IDC_FILENAME_EDIT).GetString();
+      if (filename.empty())
       {
-         const string newInitDir(szFileName[0].substr(0, index));
-         g_app->m_settings.SetRecentDir_ImportDir(newInitDir, false);
+         ShowError("No .obj file selected!");
+         return;
       }
 
-      prim->m_mesh.SaveWavefrontObj(szFileName[0], prim->m_d.m_use3DMesh ? MakeString(prim->m_wzName) : "Primitive"s);
+      const MeshUnits units = IsDlgButtonChecked(IDC_EXPORT_METERS_RADIO) == BST_CHECKED ? MeshUnits::Meters : MeshUnits::VPUnits;
+      m_prim->m_mesh.SaveWavefrontObj(filename, m_prim->m_d.m_use3DMesh ? MakeString(m_prim->m_wzName) : "Primitive"s, units);
+      EndDialog(TRUE);
    }
+
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override
+   {
+      UNREFERENCED_PARAMETER(lParam);
+      switch (LOWORD(wParam))
+      {
+      case IDC_BROWSE_BUTTON:
+      {
+         SetForegroundWindow();
+
+         const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
+
+         vector<string> szFileName;
+         if (g_pvp->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
+         {
+            SetDlgItemText(IDC_FILENAME_EDIT, szFileName[0].c_str());
+
+            const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
+            if (index != string::npos)
+               g_app->m_settings.SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
+
+            GetDlgItem(IDOK).EnableWindow(TRUE);
+         }
+         return TRUE;
+      }
+      }
+      return FALSE;
+   }
+
+private:
+   Primitive *const m_prim;
+};
+
+void PrimitiveVisualsProperty::ExportMeshDialog(Primitive *const prim)
+{
+   MeshExportDialog dialog(prim);
+   dialog.DoModal(g_pvp->GetHwnd());
 }

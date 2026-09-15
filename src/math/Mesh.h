@@ -4,6 +4,14 @@
 
 class VertexBuffer;
 
+// Units and axes conventions supported when importing from or exporting to a Wavefront OBJ file.
+// VPX uses a left-handed coordinate system (X to the right, Y toward the player, Z up) expressed in VP units.
+enum class MeshUnits
+{
+   VPUnits, // File expressed in VP units, -Z up (VPX convention)
+   Meters // File expressed in meters, +Y up, -Z forward (Wavefront convention, Blender's defaults)
+};
+
 class Mesh final
 {
 public:
@@ -31,9 +39,9 @@ public:
       middlePoint.z = 0.0f;
    }
    void Clear();
-   bool LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded);
-   void SaveWavefrontObj(const string& fname, const string& description);
-   bool LoadAnimation(const char* fname, const bool flipTV, const bool convertToLeftHanded);
+   bool LoadWavefrontObj(const string& fname, const MeshUnits units);
+   void SaveWavefrontObj(const string& fname, const string& description, const MeshUnits units);
+   bool LoadAnimation(const char* fname, const MeshUnits units);
 
    size_t NumVertices() const { return m_vertices.size(); }
    size_t NumIndices() const { return m_indices.size(); }

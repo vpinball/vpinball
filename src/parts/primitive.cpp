@@ -1522,15 +1522,14 @@ void Primitive::Load(IObjectReader& reader)
    CalculateBuiltinOriginal();
 }
 
-bool Primitive::LoadMesh(const string &filename, const bool convertToLeftHanded, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial,
-   const bool importAnimation, const bool doForsyth)
+bool Primitive::LoadMesh(
+   const string &filename, const MeshUnits units, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation, const bool doForsyth)
 {
    m_mesh.Clear();
    m_d.m_use3DMesh = false;
    m_meshBuffer = nullptr;
    m_vertexBufferRegenerate = true;
 
-   constexpr bool flipTV = false;
    if (importMaterial)
    {
       std::filesystem::path szMatName = std::filesystem::path(filename).replace_extension(".mtl");
@@ -1541,8 +1540,16 @@ bool Primitive::LoadMesh(const string &filename, const bool convertToLeftHanded,
          m_d.m_szMaterial = mat->m_name;
       }
    }
-   if (!m_mesh.LoadWavefrontObj(filename, flipTV, convertToLeftHanded))
+   if (!m_mesh.LoadWavefrontObj(filename, units))
       return false;
+
+   // Meshes imported in meters are converted to VP units, so the primitive scale is reset to 1
+   if (units == MeshUnits::Meters)
+   {
+      m_d.m_vSize.x = 1.0f;
+      m_d.m_vSize.y = 1.0f;
+      m_d.m_vSize.z = 1.0f;
+   }
 
    if (importAbsolutePosition || centerMesh)
    {
@@ -1564,7 +1571,7 @@ bool Primitive::LoadMesh(const string &filename, const bool convertToLeftHanded,
    }
    if (importAnimation)
    {
-      if (m_mesh.LoadAnimation(filename.c_str(), flipTV, convertToLeftHanded))
+      if (m_mesh.LoadAnimation(filename.c_str(), units))
       {
          if (centerMesh)
          {
