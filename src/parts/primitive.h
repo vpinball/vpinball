@@ -263,8 +263,8 @@ public:
 
    void WriteRegDefaults() final;
 
-   bool LoadMesh(const string &filename, const bool convertToLeftHanded, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation,
-      const bool doForsyth);
+   bool LoadMesh(
+      const string &filename, const MeshUnits units, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation, const bool doForsyth);
 
 #if (GET_PLATFORM_OS_ENUM==0) // Windows
    bool IsPlayfield() const { return _wcsicmp(m_wzName.c_str(), L"playfield_mesh") == 0; }

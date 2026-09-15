@@ -21,7 +21,7 @@ void Mesh::Clear()
    m_validBounds = false;
 }
 
-bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded)
+bool Mesh::LoadAnimation(const char* fname, const MeshUnits units)
 {
    m_validBounds = false;
    string name(fname);
@@ -52,7 +52,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    {
       sname = allFiles[i];
       ObjLoader loader;
-      if (loader.Load(sname, flipTV, convertToLeftHanded))
+      if (loader.Load(sname, units))
       {
          const vector<Vertex3D_NoTex2>& verts = loader.GetVertices();
          const vector<unsigned int>& indices = loader.GetIndices();
@@ -83,12 +83,12 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    return true;
 }
 
-bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded)
+bool Mesh::LoadWavefrontObj(const string& fname, const MeshUnits units)
 {
    m_validBounds = false;
    Clear();
    ObjLoader loader;
-   if (loader.Load(fname, flipTV, convertToLeftHanded))
+   if (loader.Load(fname, units))
    {
       m_vertices = loader.GetVertices();
       m_indices = loader.GetIndices();
@@ -115,10 +115,10 @@ bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool c
       return false;
 }
 
-void Mesh::SaveWavefrontObj(const string& fname, const string& description)
+void Mesh::SaveWavefrontObj(const string& fname, const string& description, const MeshUnits units)
 {
    ObjLoader loader;
-   loader.Save(fname, description.empty() ? fname : description, *this);
+   loader.Save(fname, description.empty() ? fname : description, *this, units);
 }
 
 void Mesh::UploadToVB(std::shared_ptr<VertexBuffer> vb, const float frame) 

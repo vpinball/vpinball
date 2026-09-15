@@ -539,7 +539,6 @@
 #define IDC_HALO_EDIT                   429
 #define IDC_BULB_MODULATE_VS_ADD        431
 #define IDC_GROUP_CHECK                 431
-#define IDC_CONVERT_COORD_CHECK         431
 #define IDC_LEGACYMODE                  431
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
 #define IDC_CHECK_ROTATE_CENTER         431
@@ -630,6 +629,7 @@
 #define IDC_EDGEALPHA_EDIT              618
 #define IDD_MESH_IMPORT_DIALOG          619
 #define IDD_PROPHITTARGET_VISUALS       620
+#define IDD_MESH_EXPORT_DIALOG          621
 #define IDD_PROPHITTARGET_PHYSICS       622
 #define IDC_BG_FSS                      625
 #define IDD_SOUND_POSITION_DIALOG       629
@@ -852,6 +852,10 @@
 #define IDC_MASK_FSS                    970
 #define IDC_MASK_CABINET                971
 #define IDC_TABLE_GROUND_TO_LOCKBAR_HEIGHT_EDIT 972
+#define IDC_IMPORT_VPUNITS_RADIO        974
+#define IDC_IMPORT_METERS_RADIO         975
+#define IDC_EXPORT_VPUNITS_RADIO        976
+#define IDC_EXPORT_METERS_RADIO         977
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_OVERWRITE_PHYSICS_COMBO     1043
 #define IDC_GRAVITY_EDIT                1100
@@ -1007,7 +1011,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        680
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         973
+#define _APS_NEXT_CONTROL_VALUE         978
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif
