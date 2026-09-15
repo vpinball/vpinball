@@ -777,6 +777,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    {
       assert(m_renderer->m_stereo3D != STEREO_VR);
       m_liveUI->OpenEditorUI();
+      m_liveUI->PushNotification("** Saving should only be used on test tables as it may break table file **", 10000);
+      m_liveUI->PushNotification("This is a an early & unstable version of the Live Editor, only meant for testing.", 10000);
    }
 
    m_progressDialog.SetProgress("Starting..."s, 100);

@@ -284,9 +284,7 @@ enum option_names
    OPTION_EXTMINIMIZED,
    OPTION_EDIT,
 #endif
-#ifdef _DEBUG
    OPTION_LIVE_EDIT,
-#endif
    OPTION_PLAY,
    OPTION_POVEDIT,
    OPTION_POV,
@@ -332,9 +330,7 @@ static const CommandLineOption options[] = {
    { OPTION_EXTMINIMIZED, "ExtMinimized"s, "Start the windows editor in the 'invisible' minimized window mode, but with enabled Pause Menu"s },
    { OPTION_EDIT, "Edit"s, "[filename]  Load file into VP"s },
 #endif
-#ifdef _DEBUG
-   { OPTION_LIVE_EDIT, "LiveEdit"s, "[opt filename]  Start in live editor mode. if a filename is provided, loads it as the table to edit"s },
-#endif
+   { OPTION_LIVE_EDIT, "LiveEdit"s, "[opt filename]  Start in live editor mode. if a filename is provided, loads it as the table to edit. WARNING Unstable feature only provided for early testing"s },
    { OPTION_PLAY, "Play"s, "[filename]  Load and play file"s },
    { OPTION_POVEDIT, "PovEdit"s, "[filename]  Load and run file in live editing mode, then export new pov on exit"s },
    { OPTION_POV, "Pov"s, "[filename]  Load, export pov and close"s },
@@ -598,7 +594,6 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          commands.push_back(std::make_unique<ShowInfoAndExitCommand>("", "Visual Pinball "s + VP_VERSION_STRING_FULL_LITERAL, 0));
          break;
 
-      #ifdef _DEBUG
       case OPTION_LIVE_EDIT:
          if (i + 1 < nArgs)
          {
@@ -618,7 +613,6 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             commands.push_back(std::make_unique<LiveEditCommand>());
          }
          break;
-      #endif
 
       case OPTION_POVEDIT:
       case OPTION_PLAY:
