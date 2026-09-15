@@ -137,7 +137,6 @@ public:
    {
       return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
    }
-   ItemTypeEnum HitableGetItemType() const final { return eItemFlasher; }
 
    void WriteRegDefaults() final;
 

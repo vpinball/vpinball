@@ -279,7 +279,9 @@ public:
 
 public:
    float GetDepth(const Vertex3Ds &viewDir) const final;
-   ItemTypeEnum HitableGetItemType() const final { return eItemPrimitive; }
+   
+   bool IsConstCollidable() const final { return false; }
+   bool IsCollidable() const final { return m_d.m_collidable; }
 
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;

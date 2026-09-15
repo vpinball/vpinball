@@ -83,7 +83,6 @@ public:
    void PutCenter(const Vertex2D& pv) final;
    void SetDefaultPhysics(const bool fromMouseClick) final;
 
-   ItemTypeEnum HitableGetItemType() const final { return eItemSpinner; }
    void ExportMesh(ObjLoader& loader) final;
 
    void WriteRegDefaults() final;

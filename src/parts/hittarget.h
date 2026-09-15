@@ -168,7 +168,9 @@ public:
    void WriteRegDefaults() final;
 
    float GetDepth(const Vertex3Ds& viewDir) const final;
-   ItemTypeEnum HitableGetItemType() const final { return eItemHitTarget; }
+
+   bool IsConstCollidable() const final { return false; }
+   bool IsCollidable() const final { return !m_d.m_isDropped; }
 
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;

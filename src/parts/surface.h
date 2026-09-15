@@ -113,7 +113,6 @@ public:
    // end ISelect
 
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
-   ItemTypeEnum HitableGetItemType() const final { return eItemSurface; }
 
 protected:
    void RenderSlingshots();

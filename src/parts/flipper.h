@@ -106,7 +106,6 @@ public:
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
 
-   ItemTypeEnum HitableGetItemType() const final { return eItemFlipper; }
    void WriteRegDefaults() final;
 
    //DECLARE_NOT_AGGREGATABLE(Flipper)
