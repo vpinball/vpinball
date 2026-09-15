@@ -31,6 +31,16 @@ void ToolbarDialog::OnDestroy()
 {
 }
 
+void ToolbarDialog::OnOK()
+{
+   // Don't call CDialog::OnOk() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
+}
+
+void ToolbarDialog::OnCancel()
+{
+   // Don't call CDialog::OnCancel() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
+}
+
 BOOL ToolbarDialog::OnInitDialog()
 {
     m_hwnd = GetDlgItem(IDD_TOOLBAR).GetHwnd();

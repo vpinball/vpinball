@@ -68,6 +68,8 @@ public:
 
 protected:
     INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    void OnOK() override;
+    void OnCancel() override;
 
     EditBox   *m_baseHitThresholdEdit = nullptr;
     EditBox   *m_baseElasticityEdit = nullptr;
@@ -334,6 +336,8 @@ protected:
     BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
     INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
     void OnClose() override;
+    void OnOK() override;
+    void OnCancel() override;
 
 private:
     PropertyTab  m_tab;

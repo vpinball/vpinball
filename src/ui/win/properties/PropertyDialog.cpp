@@ -731,6 +731,16 @@ void PropertyDialog::OnClose()
     CDialog::OnCancel();
 }
 
+void PropertyDialog::OnOK()
+{
+   // Don't call CDialog::OnOK() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
+}
+
+void PropertyDialog::OnCancel()
+{
+   // Don't call CDialog::OnCancel() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
+}
+
 LRESULT PropertyDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 // Respond to a mouse click on the window
 {
@@ -1028,6 +1038,19 @@ INT_PTR BasePropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     // Pass unhandled messages on to parent DialogProc
     return DialogProcDefault(msg, wparam, lparam);
 
+}
+
+void BasePropertyDialog::OnOK()
+{
+   // Don't call CDialog::OnOK() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
+   // Commit the value of the focused control instead, as EditBox::WndProc does on WM_KEYUP.
+   if (const HWND focus = ::GetFocus(); focus != nullptr && IsChild(focus))
+      UpdateProperties(::GetDlgCtrlID(focus));
+}
+
+void BasePropertyDialog::OnCancel()
+{
+   // Don't call CDialog::OnCancel() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
 }
 #pragma endregion
 

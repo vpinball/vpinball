@@ -123,6 +123,16 @@ BOOL LayersListDialog::PreTranslateMessage(MSG& msg)
    return IsDialogMessage(msg);
 }
 
+void LayersListDialog::OnOK()
+{
+   // Don't call CDialog::OnOK() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
+}
+
+void LayersListDialog::OnCancel()
+{
+   // Don't call CDialog::OnCancel() as this modeless dialog is hosted inside a docked pane, and the default implementation would destroy it
+}
+
 BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    if (m_activeTable == nullptr)
