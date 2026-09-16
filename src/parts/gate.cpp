@@ -442,20 +442,15 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf) const
    world.TransformVertices(m_vertices, buf, m_numVertices);
 }
 
-void Gate::MoveOffset(const float dx, const float dy)
+void Gate::Translate(const Vertex2D &offset)
 {
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
+   m_d.m_vCenter.x += offset.x;
+   m_d.m_vCenter.y += offset.y;
 }
 
 Vertex2D Gate::GetCenter() const
 {
    return m_d.m_vCenter;
-}
-
-void Gate::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_vCenter = pv;
 }
 
 void Gate::Save(IObjectWriter& writer, const bool saveForUndo)

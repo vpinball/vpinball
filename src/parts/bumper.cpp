@@ -626,20 +626,15 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
 #pragma endregion
 
 
-void Bumper::MoveOffset(const float dx, const float dy)
+void Bumper::Translate(const Vertex2D &offset)
 {
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
+   m_d.m_vCenter.x += offset.x;
+   m_d.m_vCenter.y += offset.y;
 }
 
 Vertex2D Bumper::GetCenter() const
 {
    return m_d.m_vCenter;
-}
-
-void Bumper::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_vCenter = pv;
 }
 
 void Bumper::Save(IObjectWriter& writer, const bool saveForUndo)

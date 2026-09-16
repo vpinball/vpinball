@@ -960,13 +960,13 @@ void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Ve
    m_table->SetDirtyDraw();
 }
 
-void PinTableWnd::TranslateMultiSel(const Vertex2D &pvOffset)
+void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
 {
    m_table->BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_vmultisel[i].Translate(pvOffset);
+      m_vmultisel[i].Translate(offset);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -1069,22 +1069,22 @@ void PinTableWnd::OnKeyDown(int key)
             {
             case VK_LEFT:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(-distance / GetZoom(), 0);
+               pisel->Translate(Vertex2D(-distance / GetZoom(), 0.f));
                break;
 
             case VK_RIGHT:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(distance / GetZoom(), 0);
+               pisel->Translate(Vertex2D(distance / GetZoom(), 0.f));
                break;
 
             case VK_UP:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(0, -distance / GetZoom());
+               pisel->Translate(Vertex2D(0.f, -distance / GetZoom()));
                break;
 
             case VK_DOWN:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(0, distance / GetZoom());
+               pisel->Translate(Vertex2D(0.f, distance / GetZoom()));
                break;
             }
          }
@@ -1344,7 +1344,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
                   }
 
                   const float inv_zoom = 1.0f / GetZoom();
-                  pisel->MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
+                  pisel->Translate(Vertex2D((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom));
                   uiPart->UpdateStatusBarObjectPos();
                   Redraw();
                }

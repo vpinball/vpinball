@@ -98,18 +98,15 @@ public:
 
    void ClearForOverwrite() final;
 
-   void MoveOffset(const float dx, const float dy) final;
-
    int GetMinimumPoints() const final { return 2; }
 
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
-   void Translate(const Vertex2D &pvOffset) final;
+   void Translate(const Vertex2D &offset) final;
 
    Vertex2D GetCenter() const final { return GetPointCenter(); }
-   void PutCenter(const Vertex2D &pv) final { PutPointCenter(pv); }
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 

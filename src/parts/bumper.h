@@ -85,9 +85,8 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    // ISelect implementation
-   void MoveOffset(const float dx, const float dy) final;
+   void Translate(const Vertex2D &offset) final;
    Vertex2D GetCenter() const final;
-   void PutCenter(const Vertex2D &pv) final;
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
 

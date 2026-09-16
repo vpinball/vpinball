@@ -27,13 +27,12 @@ public:
    void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);
 
    // From ISelect
-   void MoveOffset(const float dx, const float dy) final;
+   void Translate(const Vertex2D &offset) final;
    static inline constexpr ItemTypeEnum ItemType = eItemDragPoint;
    ItemTypeEnum GetItemType() const final { return eItemDragPoint; }
 
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
-   void PutCenter(const Vertex2D &pv) final;
 
    IEditable *GetIEditable() final;
    const IEditable *GetIEditable() const final;
@@ -130,7 +129,7 @@ public:
    void FlipPointX(const Vertex2D& pvCenter);
    void RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
    void ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   void TranslatePoints(const Vertex2D &pvOffset);
+   void TranslatePoints(const Vertex2D &offset);
    void ReverseOrder();
 
    void GetTextureCoords(const vector<RenderVertex> & vv, float **ppcoords) const;

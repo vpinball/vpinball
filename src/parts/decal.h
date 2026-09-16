@@ -68,10 +68,13 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IDecalEvents)
    END_CONNECTION_POINT_MAP()
 
-   void MoveOffset(const float dx, const float dy) final { m_d.m_vCenter.x += dx; m_d.m_vCenter.y += dy; }
+   void Translate(const Vertex2D &offset) final
+   {
+      m_d.m_vCenter.x += offset.x;
+      m_d.m_vCenter.y += offset.y;
+   }
    // Multi-object manipulation
    Vertex2D GetCenter() const final { return m_d.m_vCenter; }
-   void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
    float GetDepth(const Vertex3Ds &viewDir) const final;
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
 

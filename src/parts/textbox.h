@@ -74,10 +74,9 @@ public:
 
    STANDARD_EDITABLE_DECLARES_NO_HITABLE(Textbox, eItemTextbox, TEXTBOX, VIEW_BACKGLASS)
 
-   void MoveOffset(const float dx, const float dy) final;
+   void Translate(const Vertex2D &offset) final;
    // Multi-object manipulation
    Vertex2D GetCenter() const final { return m_d.m_v1; }
-   void PutCenter(const Vertex2D& pv) final;
 
    void WriteRegDefaults() final;
 

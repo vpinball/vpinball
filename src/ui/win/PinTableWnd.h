@@ -35,7 +35,7 @@ public:
    void FlipXMultiSel(const Vertex2D &pvCenter);
    void RotateMultiSel(const float ang, const Vertex2D &pvCenter, const bool useElementCenter);
    void ScaleMultiSel(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter);
-   void TranslateMultiSel(const Vertex2D &pvOffset);
+   void TranslateMultiSel(const Vertex2D &offset);
 
 #ifndef __STANDALONE__
    void SetMouseCursor();

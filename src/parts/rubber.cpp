@@ -644,17 +644,6 @@ void Rubber::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-void Rubber::MoveOffset(const float dx, const float dy)
-{
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-   {
-      CComObject<DragPoint> * const pdp = m_vdpoint[i];
-
-      pdp->m_v.x += dx;
-      pdp->m_v.y += dy;
-   }
-}
-
 void Rubber::ClearForOverwrite()
 {
    ClearPointsForOverwrite();
@@ -753,10 +742,7 @@ void Rubber::Scale(const float scalex, const float scaley, const Vertex2D& pvCen
    IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Rubber::Translate(const Vertex2D &pvOffset)
-{
-   IHaveDragPoints::TranslatePoints(pvOffset);
-}
+void Rubber::Translate(const Vertex2D &offset) { IHaveDragPoints::TranslatePoints(offset); }
 
 STDMETHODIMP Rubber::InterfaceSupportsErrorInfo(REFIID riid)
 {

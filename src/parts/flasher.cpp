@@ -222,29 +222,20 @@ void Flasher::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
    IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Flasher::Translate(const Vertex2D &pvOffset)
+void Flasher::Translate(const Vertex2D &offset)
 {
-   IHaveDragPoints::TranslatePoints(pvOffset);
-}
-
-void Flasher::MoveOffset(const float dx, const float dy)
-{
-   for (auto& pdp : m_vdpoint)
-   {
-      pdp->m_v.x += dx;
-      pdp->m_v.y += dy;
-   }
+   IHaveDragPoints::TranslatePoints(offset);
    for (auto &vert : m_vertices)
    {
-      vert.x += dx;
-      vert.y += dy;
+      vert.x += offset.x;
+      vert.y += offset.y;
    }
-   m_minx += dx;
-   m_maxx += dx;
-   m_miny += dy;
-   m_maxy += dy;
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
+   m_minx += offset.x;
+   m_maxx += offset.x;
+   m_miny += offset.y;
+   m_maxy += offset.y;
+   m_d.m_vCenter.x += offset.x;
+   m_d.m_vCenter.y += offset.y;
    m_dynamicVertexBufferRegenerate = true;
 }
 
@@ -413,7 +404,7 @@ STDMETHODIMP Flasher::put_X(float newVal)
 {
    UpdateCenter();
    if (m_d.m_vCenter.x != newVal)
-      MoveOffset(newVal - m_d.m_vCenter.x, 0.f);
+      Translate(Vertex2D(newVal - m_d.m_vCenter.x, 0.f));
 
    return S_OK;
 }
@@ -429,7 +420,7 @@ STDMETHODIMP Flasher::put_Y(float newVal)
 {
    UpdateCenter();
    if (m_d.m_vCenter.y != newVal)
-      MoveOffset(0.f, newVal - m_d.m_vCenter.y);
+      Translate(Vertex2D(0.f, newVal - m_d.m_vCenter.y));
 
    return S_OK;
 }

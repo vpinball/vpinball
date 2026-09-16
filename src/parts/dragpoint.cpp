@@ -129,12 +129,12 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
    }
 }
 
-void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
+void IHaveDragPoints::TranslatePoints(const Vertex2D &offset)
 {
    for (const auto& v : m_vdpoint)
    {
-      v->m_v.x += pvOffset.x;
-      v->m_v.y += pvOffset.y;
+      v->m_v.x += offset.x;
+      v->m_v.y += offset.y;
    }
 
    PutPointCenter(GetPointCenter());
@@ -356,21 +356,15 @@ const IEditable *DragPoint::GetIEditable() const
    return M_PIHDP->GetIEditable();
 }
 
-void DragPoint::MoveOffset(const float dx, const float dy)
+void DragPoint::Translate(const Vertex2D &offset)
 {
-   m_v.x += dx;
-   m_v.y += dy;
+   m_v.x += offset.x;
+   m_v.y += offset.y;
 }
 
 Vertex2D DragPoint::GetCenter() const
 {
    return {m_v.x, m_v.y};
-}
-
-void DragPoint::PutCenter(const Vertex2D& pv)
-{
-   m_v.x = pv.x;
-   m_v.y = pv.y;
 }
 
 void DragPoint::Delete()

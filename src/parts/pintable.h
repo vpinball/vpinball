@@ -399,8 +399,7 @@ public:
    void FlipX(const Vertex2D &pvCenter) final { }
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final { }
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final { }
-   void Translate(const Vertex2D &pvOffset) final { }
-   void PutCenter(const Vertex2D &pv) final { }
+   void Translate(const Vertex2D &offset) final { }
    void SetDefaultPhysics(const bool fromMouseClick) final;
    IEditable *GetIEditable() final { return (IEditable *)this; }
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }

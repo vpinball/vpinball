@@ -83,19 +83,16 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void MoveOffset(const float dx, const float dy) final;
-
    // Multi-object manipulation
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
-   void Translate(const Vertex2D &pvOffset) final;
+   void Translate(const Vertex2D &offset) final;
    Vertex2D GetCenter() const final { return GetPointCenter(); }
    Vertex2D GetScale() const final { return {m_d.m_scaleX, m_d.m_scaleY}; }
    float GetRotate() const final { return m_d.m_rotation; }
 
-   void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
    Vertex2D GetPointCenter() const final;
    void PutPointCenter(const Vertex2D& pv) final;
    void ExportMesh(ObjLoader& loader) final;

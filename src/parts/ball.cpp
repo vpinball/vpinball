@@ -58,21 +58,15 @@ HRESULT Ball::Init(const float x, const float y, const bool fromMouseClick, cons
    return S_OK;
 }
 
-void Ball::MoveOffset(const float dx, const float dy)
+void Ball::Translate(const Vertex2D &offset)
 {
-   m_hitBall.m_d.m_pos.x += dx;
-   m_hitBall.m_d.m_pos.y += dy;
+   m_hitBall.m_d.m_pos.x += offset.x;
+   m_hitBall.m_d.m_pos.y += offset.y;
 }
 
 Vertex2D Ball::GetCenter() const
 {
    return {m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y};
-}
-
-void Ball::PutCenter(const Vertex2D& pv)
-{
-   m_hitBall.m_d.m_pos.x = pv.x;
-   m_hitBall.m_d.m_pos.y = pv.y;
 }
 
 void Ball::SetDefaults(const bool fromMouseClick)

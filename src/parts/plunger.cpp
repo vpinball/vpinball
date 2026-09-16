@@ -143,20 +143,15 @@ void Plunger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 #pragma endregion
 
 
-void Plunger::MoveOffset(const float dx, const float dy)
+void Plunger::Translate(const Vertex2D &offset)
 {
-   m_d.m_v.x += dx;
-   m_d.m_v.y += dy;
+   m_d.m_v.x += offset.x;
+   m_d.m_v.y += offset.y;
 }
 
 Vertex2D Plunger::GetCenter() const
 {
    return m_d.m_v;
-}
-
-void Plunger::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_v = pv;
 }
 
 

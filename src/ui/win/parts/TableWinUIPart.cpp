@@ -53,9 +53,8 @@ public:
    void FlipX(const Vertex2D &pvCenter) final { m_editor->FlipXMultiSel(pvCenter); }
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final { m_editor->RotateMultiSel(ang, pvCenter, useElementCenter); }
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final { m_editor->ScaleMultiSel(scalex, scaley, pvCenter, useElementCenter); }
-   void Translate(const Vertex2D &pvOffset) final { m_editor->TranslateMultiSel(pvOffset); }
+   void Translate(const Vertex2D &offset) final { m_editor->TranslateMultiSel(offset); }
    Vertex2D GetCenter() const final { return m_editor->GetMultiSelCenter(); }
-   void PutCenter(const Vertex2D &pv) final { }
 
    IEditable *GetIEditable() final { return m_editor->m_table; }
    const IEditable *GetIEditable() const final { return m_editor->m_table; }

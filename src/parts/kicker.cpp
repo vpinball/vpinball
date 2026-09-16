@@ -497,20 +497,15 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf) const
    }
 }
 
-void Kicker::MoveOffset(const float dx, const float dy)
+void Kicker::Translate(const Vertex2D &offset)
 {
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
+   m_d.m_vCenter.x += offset.x;
+   m_d.m_vCenter.y += offset.y;
 }
 
 Vertex2D Kicker::GetCenter() const
 {
    return m_d.m_vCenter;
-}
-
-void Kicker::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_vCenter = pv;
 }
 
 
