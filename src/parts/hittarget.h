@@ -12,17 +12,6 @@
 #include "unordered_dense.h"
 
 
-// Indices for RotAndTra:
-//     RotX = 0
-//     RotY = 1
-//     RotZ = 2
-//     TraX = 3
-//     TraY = 4
-//     TraZ = 5
-//  ObjRotX = 6
-//  ObjRotY = 7
-//  ObjRotZ = 8
-
 class HitTargetData final : public BaseProperty
 {
 public:
