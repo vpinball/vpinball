@@ -315,7 +315,7 @@ public:
 
    void SetMouseCapture();
 
-   void SetDirtyDraw() final;
+   void SetDirtyDraw();
 
    bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop
    bool GetEMReelsEnabled() const { return m_renderEMReels; } // Enable dispreel on backdrop

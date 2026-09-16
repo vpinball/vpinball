@@ -2,7 +2,6 @@
 
 #pragma once
 
-class PinTable;
 class IEditable;
 class WinEditor;
 
@@ -48,9 +47,6 @@ public:
    // Never null: each selectable element must refer to a parent table part
    virtual IEditable *GetIEditable() = 0;
    virtual const IEditable *GetIEditable() const = 0;
-
-   // Report a change that would need the Win32 UI to be redrawn
-   virtual void SetDirtyDraw();
 
    virtual ItemTypeEnum GetItemType() const = 0;
 
