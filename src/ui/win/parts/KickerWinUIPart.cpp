@@ -79,7 +79,7 @@ void KickerWinUIPart::UIRenderPass2(Sur* const psur)
 void KickerWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
+   psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
    psur->SetObject(m_kicker);
 
    // Draw Arrow to display (default) orientation

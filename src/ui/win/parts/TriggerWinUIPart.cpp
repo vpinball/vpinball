@@ -113,7 +113,7 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
 void TriggerWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 {
    if (solid)
-      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+      psur->SetFillColor(m_blueprintSolidColor);
    else
       psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);

@@ -73,6 +73,8 @@ public:
 protected:
    void SetStatusBarObjectPos(const float x, const float y);
 
+   const COLORREF m_blueprintSolidColor = RGB(0, 0, 0);
+
    PinTableWnd* const m_editor;
    ISelect* const m_select;
 };
