@@ -2936,40 +2936,60 @@ void PinTable::FlipY(const Vertex2D& pvCenter)
 {
    BeginUndo();
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+   {
+      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
       m_tableEditor->m_vmultisel[i].FlipY(pvCenter);
+   }
    EndUndo();
+   SetDirtyDraw();
 }
 
 void PinTable::FlipX(const Vertex2D& pvCenter)
 {
    BeginUndo();
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+   {
+      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
       m_tableEditor->m_vmultisel[i].FlipX(pvCenter);
+   }
    EndUndo();
+   SetDirtyDraw();
 }
 
 void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+   {
+      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
       m_tableEditor->m_vmultisel[i].Rotate(ang, pvCenter, useElementCenter);
+   }
    EndUndo();
+   SetDirtyDraw();
 }
 
 void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    BeginUndo();
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+   {
+      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
       m_tableEditor->m_vmultisel[i].Scale(scalex, scaley, pvCenter, useElementCenter);
+   }
    EndUndo();
+   SetDirtyDraw();
 }
 
 void PinTable::Translate(const Vertex2D &pvOffset)
 {
    BeginUndo();
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
+   {
+      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
       m_tableEditor->m_vmultisel[i].Translate(pvOffset);
+   }
    EndUndo();
+   SetDirtyDraw();
 }
 
 Vertex2D PinTable::GetCenter() const

@@ -510,29 +510,23 @@ void Trigger::FlipY(const Vertex2D &pvCenter) { IHaveDragPoints::FlipPointY(pvCe
 
 void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   STARTUNDO
    IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
    m_d.m_rotation += ang;
-   STOPUNDO
    UpdateStatusBarInfo();
 }
 
 void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   STARTUNDO
    IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
    m_d.m_scaleX *= scalex;
    m_d.m_scaleY *= scaley;
-   STOPUNDO
    UpdateStatusBarInfo();
 }
 
 void Trigger::Translate(const Vertex2D &pvOffset)
 {
-   STARTUNDO
    IHaveDragPoints::TranslatePoints(pvOffset);
    MoveOffset(pvOffset.x, pvOffset.y);
-   STOPUNDO
 }
 
 void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)

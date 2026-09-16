@@ -21,8 +21,6 @@ void ISelect::SetDirtyDraw()
 
 void ISelect::FlipY(const Vertex2D& pvCenter)
 {
-   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
-
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.y - pvCenter.y;
    vCenter.y -= delta * 2.f;
@@ -31,8 +29,6 @@ void ISelect::FlipY(const Vertex2D& pvCenter)
 
 void ISelect::FlipX(const Vertex2D& pvCenter)
 {
-   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
-
    Vertex2D vCenter = GetCenter();
    const float delta = vCenter.x - pvCenter.x;
    vCenter.x -= delta * 2.f;
@@ -41,8 +37,6 @@ void ISelect::FlipX(const Vertex2D& pvCenter)
 
 void ISelect::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
-
    Vertex2D vCenter = GetCenter();
 
    const float sn = sinf(ANGTORAD(ang));
@@ -58,8 +52,6 @@ void ISelect::Rotate(const float ang, const Vertex2D& pvCenter, const bool useEl
 
 void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
-
    Vertex2D vCenter = GetCenter();
 
    const float dx = vCenter.x - pvCenter.x;
@@ -72,8 +64,6 @@ void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
 
 void ISelect::Translate(const Vertex2D &pvOffset)
 {
-   GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this
-
    Vertex2D vCenter = GetCenter();
 
    vCenter.x += pvOffset.x;

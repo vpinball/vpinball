@@ -130,9 +130,23 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
 
    switch (icmd)
    {
-   case ID_WALLMENU_FLIP: m_flasher->FlipPointY(m_flasher->GetPointCenter()); break;
+   case ID_WALLMENU_FLIP:
+      m_flasher->BeginUndo();
+      m_flasher->MarkForUndo();
+      m_flasher->FlipPointY(m_flasher->GetPointCenter());
+      m_flasher->EndUndo();
+      if (m_flasher->GetPTable())
+         m_flasher->GetPTable()->SetDirtyDraw();
+      break;
 
-   case ID_WALLMENU_MIRROR: m_flasher->FlipPointX(m_flasher->GetPointCenter()); break;
+   case ID_WALLMENU_MIRROR:
+      m_flasher->BeginUndo();
+      m_flasher->MarkForUndo();
+      m_flasher->FlipPointX(m_flasher->GetPointCenter());
+      m_flasher->EndUndo();
+      if (m_flasher->GetPTable())
+         m_flasher->GetPTable()->SetDirtyDraw();
+      break;
 
    case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_flasher); break;
 

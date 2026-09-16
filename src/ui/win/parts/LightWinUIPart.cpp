@@ -151,9 +151,23 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
 
    switch (icmd)
    {
-   case ID_WALLMENU_FLIP: m_light->FlipPointY(m_light->GetPointCenter()); break;
+   case ID_WALLMENU_FLIP:
+      m_light->BeginUndo();
+      m_light->MarkForUndo();
+      m_light->FlipPointY(m_light->GetPointCenter());
+      m_light->EndUndo();
+      if (m_light->GetPTable())
+         m_light->GetPTable()->SetDirtyDraw();
+      break;
 
-   case ID_WALLMENU_MIRROR: m_light->FlipPointX(m_light->GetPointCenter()); break;
+   case ID_WALLMENU_MIRROR:
+      m_light->BeginUndo();
+      m_light->MarkForUndo();
+      m_light->FlipPointX(m_light->GetPointCenter());
+      m_light->EndUndo();
+      if (m_light->GetPTable())
+         m_light->GetPTable()->SetDirtyDraw();
+      break;
 
    case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_light); break;
 
