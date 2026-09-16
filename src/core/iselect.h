@@ -52,9 +52,6 @@ public:
    // Report a change that would need the Win32 UI to be redrawn
    virtual void SetDirtyDraw();
 
-   virtual HRESULT GetTypeName(BSTR *pVal) const;
-   wstring GetTypeNameForType(const ItemTypeEnum type) const;
-
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;

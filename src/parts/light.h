@@ -163,8 +163,6 @@ private:
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
 
-      HRESULT GetTypeName(BSTR *pVal) const override { return m_plight->GetTypeName(pVal); }
-
       void Delete() override { m_plight->Delete(); }
       void Uncreate() override { m_plight->Uncreate(); }
 

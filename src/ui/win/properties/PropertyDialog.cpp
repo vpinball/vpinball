@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "PropertyDialog.h"
 
+#include "core/editablereg.h"
 #include "parts/bumper.h"
 #include "parts/Collection.h"
 #include "parts/decal.h"
@@ -656,10 +657,16 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
        const wstring &wzName = psel->GetIEditable()->GetPTable()->GetCollectionNameByElement(psel);
        const string collection = MakeString(wzName);
 
-       BSTR bstr;
-       psel->GetTypeName(&bstr);
-       const string name = MakeString(bstr);
-       SysFreeString(bstr);
+       string name;
+       {
+          switch (psel->GetItemType())
+          {
+          case eItemTable: name = LocalString(g_pvp->m_desktopBackdropView ? IDS_TB_BACKGLASS : IDS_TABLE).m_szbuffer; break;
+          case eItemLightCenter: name = LocalString(IDS_TB_LIGHT).m_szbuffer; break;
+          case eItemDragPoint: name = LocalString(IDS_CONTROLPOINT).m_szbuffer; break;
+          default: name = LocalString(EditableRegistry::GetTypeNameStringID(psel->GetItemType())).m_szbuffer; break;
+          }
+       }
 
        string header;
        if (!collection.empty())

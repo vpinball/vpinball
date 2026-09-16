@@ -518,7 +518,15 @@ bool PinTable::IsNameUnique(const wstring &name) const
 
 void PinTable::GetUniqueName(const ItemTypeEnum type, wstring &wzUniqueName) const
 {
-   const wstring root = GetTypeNameForType(type);
+   UINT strID;
+   switch (type)
+   {
+   case eItemTable: strID = IDS_TABLE; break;
+   case eItemLightCenter: strID = IDS_TB_LIGHT; break;
+   case eItemDragPoint: strID = IDS_CONTROLPOINT; break;
+   default: strID = EditableRegistry::GetTypeNameStringID(type); break;
+   }
+   const wstring root = LocalStringW(strID).m_buffer;
    wzUniqueName = GetUniqueName(root);
 }
 
@@ -3554,14 +3562,6 @@ void PinTable::OnDelete()
 
    SetDirtyDraw();
 #endif
-}
-
-HRESULT PinTable::GetTypeName(BSTR *pVal) const
-{
-   const int stringid = (!m_vpinball->m_desktopBackdropView) ? IDS_TABLE : IDS_TB_BACKGLASS;
-   const LocalStringW lsw(stringid);
-   *pVal = SysAllocStringLen(lsw.m_buffer.c_str(),static_cast<UINT>(lsw.m_buffer.length()));
-   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
