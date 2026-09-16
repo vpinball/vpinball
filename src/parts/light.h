@@ -168,7 +168,7 @@ private:
       void Delete() override { m_plight->Delete(); }
       void Uncreate() override { m_plight->Uncreate(); }
 
-      int GetSelectLevel() const override { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
+      bool IsSubPart() const override { return true; } // Don't select light bulb twice if we have drag points
 
       IEditable *GetIEditable() override { return (IEditable *)m_plight; }
       const IEditable *GetIEditable() const override { return (const IEditable *)m_plight; }

@@ -72,7 +72,7 @@ public:
    virtual void FlipX(const Vertex2D &pvCenter);
    virtual void FlipY(const Vertex2D &pvCenter);
 
-   virtual int GetSelectLevel() const { return 1; }
+   virtual bool IsSubPart() const { return false; }
    virtual void UpdateStatusBarInfo();
 
 protected:

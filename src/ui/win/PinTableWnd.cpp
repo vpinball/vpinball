@@ -1229,21 +1229,21 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
          if (!add)
             ClearMultiSel();
 
-         int minlevel = INT_MAX;
-
+         // Sub parts (drag points, light centers) are band-selected only when the band rectangle contains no main part
+         bool subPartsOnly = true;
          for (const auto &ptr : vsel)
-            minlevel = min(minlevel, ptr->GetSelectLevel());
+            subPartsOnly &= ptr->IsSubPart();
 
          if (!vsel.empty())
          {
             size_t lastItemForUpdate = -1;
             // first check which item is the last item to add to the multi selection
             for (size_t i = 0; i < vsel.size(); i++)
-               if (vsel[i]->GetSelectLevel() == minlevel)
+               if (vsel[i]->IsSubPart() == subPartsOnly)
                   lastItemForUpdate = i;
 
             for (size_t i = 0; i < vsel.size(); i++)
-               if (vsel[i]->GetSelectLevel() == minlevel)
+               if (vsel[i]->IsSubPart() == subPartsOnly)
                   AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
          }
       }
