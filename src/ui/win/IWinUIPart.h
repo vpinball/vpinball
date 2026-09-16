@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/iselect.h"
+#include "ui/win/resource.h"
 
 class Sur;
 class IEditable;
@@ -14,6 +15,18 @@ class CMenu;
 class IWinUIPart
 {
 public:
+   // Views in which a part can be edited in the Win32 editor (playfield and/or backglass)
+   enum class AllowedViews : unsigned
+   {
+      None = 0,
+      Playfield = 1,
+      Backglass = 2,
+      PlayfieldAndBackglass = 3
+   };
+
+   // Returns true if a part with the given allowed views may be used in the given view
+   static constexpr bool IsViewAllowed(const AllowedViews allowedViews, const AllowedViews view) { return (static_cast<unsigned>(allowedViews) & static_cast<unsigned>(view)) != 0; }
+
    IWinUIPart(PinTableWnd* editor, ISelect* select)
       : m_editor(editor)
       , m_select(select)

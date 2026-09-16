@@ -72,7 +72,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IPartGroupEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(PartGroup, eItemPartGroup, PARTGROUP, VIEW_PLAYFIELD | VIEW_BACKGLASS)
+   STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(PartGroup, eItemPartGroup, PARTGROUP)
 
    void Translate(const Vertex2D& offset) final;
    Vertex2D GetCenter() const final;

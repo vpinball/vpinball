@@ -76,13 +76,13 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IRubberEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES(Rubber, eItemRubber, RUBBER, VIEW_PLAYFIELD)
+   STANDARD_EDITABLE_DECLARES(Rubber, eItemRubber, RUBBER)
 
-      //DECLARE_NOT_AGGREGATABLE(Rubber)
-      // Remove the comment from the line above if you don't want your object to
-      // support aggregation.
+   //DECLARE_NOT_AGGREGATABLE(Rubber)
+   // Remove the comment from the line above if you don't want your object to
+   // support aggregation.
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
+   DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

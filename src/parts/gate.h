@@ -72,7 +72,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IGateEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES(Gate, eItemGate, GATE, VIEW_PLAYFIELD)
+   STANDARD_EDITABLE_DECLARES(Gate, eItemGate, GATE)
 
    //DECLARE_NOT_AGGREGATABLE(Gate)
    // Remove the comment from the line above if you don't want your object to

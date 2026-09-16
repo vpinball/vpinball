@@ -85,11 +85,11 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IRampEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES(Ramp, eItemRamp, RAMP, VIEW_PLAYFIELD)
+   STANDARD_EDITABLE_DECLARES(Ramp, eItemRamp, RAMP)
 
-      //DECLARE_NOT_AGGREGATABLE(Ramp)
-      // Remove the comment from the line above if you don't want your object to
-      // support aggregation.
+   //DECLARE_NOT_AGGREGATABLE(Ramp)
+   // Remove the comment from the line above if you don't want your object to
+   // support aggregation.
 
    DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 

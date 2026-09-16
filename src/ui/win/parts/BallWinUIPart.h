@@ -8,6 +8,10 @@ class Ball;
 class BallWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_BALL;
+   static inline constexpr int CursorID = IDC_BALL;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit BallWinUIPart(PinTableWnd* editor, Ball* ball);
    
    void UIRenderPass1(Sur* psur) override;

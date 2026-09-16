@@ -26,45 +26,38 @@ public:
 };
 
 
-// Explanation for AllowedViews:
-// Value gets and'ed with 1 (table view) or 2 (backglass view).
-// If you want to allow an element to be pasted only into the table view, use 1,
-// for only backglass view, use 2, and for both, use 3.
-#define VIEW_PLAYFIELD 1
-#define VIEW_BACKGLASS 2
-
 // declare and implement some methods for an IEditable which supports scripting
-#define STANDARD_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
-	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_HITABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_RENDERABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
+#define STANDARD_EDITABLE_DECLARES(T, ItemType, ResName)                                                                                                                                     \
+   _STANDARD_EDITABLE_CONSTANTS(ItemType, ResName)                                                                                                                                           \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType)                                                                                                                             \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_HITABLE_DECLARES(T, ItemType)                                                                                                                     \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_RENDERABLE_DECLARES(T, ItemType)                                                                                                                  \
+   _STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
 
-#define STANDARD_EDITABLE_DECLARES_NO_RENDERABLE(T, ItemType, ResName, AllowedViews) \
-	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_HITABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	IRenderable *GetIRenderable() final { return nullptr; } \
-	const IRenderable *GetIRenderable() const final { return nullptr; }
+#define STANDARD_EDITABLE_DECLARES_NO_RENDERABLE(T, ItemType, ResName)                                                                                                                       \
+   _STANDARD_EDITABLE_CONSTANTS(ItemType, ResName)                                                                                                                                           \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType)                                                                                                                             \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_HITABLE_DECLARES(T, ItemType)                                                                                                                     \
+   _STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)                                                                                                                                            \
+   IRenderable *GetIRenderable() final { return nullptr; }                                                                                                                                   \
+   const IRenderable *GetIRenderable() const final { return nullptr; }
 
-#define STANDARD_EDITABLE_DECLARES_NO_HITABLE(T, ItemType, ResName, AllowedViews) \
-	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_RENDERABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	IHitable *GetIHitable() final { return nullptr; } \
-	const IHitable *GetIHitable() const final { return nullptr; }
+#define STANDARD_EDITABLE_DECLARES_NO_HITABLE(T, ItemType, ResName)                                                                                                                          \
+   _STANDARD_EDITABLE_CONSTANTS(ItemType, ResName)                                                                                                                                           \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType)                                                                                                                             \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_RENDERABLE_DECLARES(T, ItemType)                                                                                                                  \
+   _STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)                                                                                                                                            \
+   IHitable *GetIHitable() final { return nullptr; }                                                                                                                                         \
+   const IHitable *GetIHitable() const final { return nullptr; }
 
-#define STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(T, ItemType, ResName, AllowedViews) \
-	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
-	_STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType) \
-	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	IRenderable* GetIRenderable() final { return nullptr; } \
-	const IRenderable* GetIRenderable() const final { return nullptr; } \
-	IHitable *GetIHitable() final { return nullptr; } \
-	const IHitable *GetIHitable() const final { return nullptr; }
+#define STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(T, ItemType, ResName)                                                                                                            \
+   _STANDARD_EDITABLE_CONSTANTS(ItemType, ResName)                                                                                                                                           \
+   _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_DECLARES(T, ItemType)                                                                                                                             \
+   _STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)                                                                                                                                            \
+   IRenderable *GetIRenderable() final { return nullptr; }                                                                                                                                   \
+   const IRenderable *GetIRenderable() const final { return nullptr; }                                                                                                                       \
+   IHitable *GetIHitable() final { return nullptr; }                                                                                                                                         \
+   const IHitable *GetIHitable() const final { return nullptr; }
 
 // used above, do not invoke directly
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
@@ -136,12 +129,9 @@ public:
    void Render(const unsigned int renderMask) final; \
    void RenderRelease() final;
 
-#define _STANDARD_EDITABLE_CONSTANTS(ItTy, ResName, AllwdViews) \
-   static inline constexpr ItemTypeEnum ItemType = ItTy; \
-   static inline constexpr int TypeNameID = IDS_TB_##ResName; \
-   static inline constexpr int ToolID = ID_INSERT_##ResName; \
-   static inline constexpr int CursorID = IDC_##ResName; \
-   static inline constexpr unsigned AllowedViews = AllwdViews;
+#define _STANDARD_EDITABLE_CONSTANTS(ItTy, ResName)                                                                                                                                          \
+   static inline constexpr ItemTypeEnum ItemType = ItTy;                                                                                                                                     \
+   static inline constexpr int TypeNameID = IDS_TB_##ResName;
 
 #define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type) \
    type *dst = type::COMCreate(); \

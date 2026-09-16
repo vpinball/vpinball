@@ -8,6 +8,10 @@ class Decal;
 class DecalWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_DECAL;
+   static inline constexpr int CursorID = IDC_DECAL;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::PlayfieldAndBackglass;
+
    explicit DecalWinUIPart(PinTableWnd* editor, Decal* decal);
    
    void UIRenderPass1(Sur* psur) override;

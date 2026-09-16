@@ -144,7 +144,7 @@ public:
    Plunger() { }
    virtual ~Plunger();
 
-   STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER, VIEW_PLAYFIELD)
+   STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER)
 
    void Translate(const Vertex2D &offset) final;
    // Multi-object manipulation

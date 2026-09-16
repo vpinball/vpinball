@@ -575,7 +575,7 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
 {
 #ifndef __STANDALONE__
    // check if it's an Editable tool
-   const ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)code);
+   const ItemTypeEnum type = WinUIPartRegistry::TypeFromToolID((int)code);
    if (type != eItemInvalid)
    {
       m_ToolCur = (int)code;

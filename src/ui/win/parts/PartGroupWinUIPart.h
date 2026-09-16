@@ -8,6 +8,10 @@ class PartGroup;
 class PartGroupWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_PARTGROUP;
+   static inline constexpr int CursorID = IDC_PARTGROUP;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::PlayfieldAndBackglass;
+
    explicit PartGroupWinUIPart(PinTableWnd* editor, PartGroup* partgroup);
 
    void UIRenderPass1(Sur* psur) override;

@@ -8,6 +8,10 @@ class Kicker;
 class KickerWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_KICKER;
+   static inline constexpr int CursorID = IDC_KICKER;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit KickerWinUIPart(PinTableWnd* editor, Kicker* kicker);
    
    void UIRenderPass1(Sur* psur) override;

@@ -8,6 +8,10 @@ class Bumper;
 class BumperWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_BUMPER;
+   static inline constexpr int CursorID = IDC_BUMPER;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit BumperWinUIPart(PinTableWnd* editor, Bumper* bumper);
    
    void UIRenderPass1(Sur* psur) override;

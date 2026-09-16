@@ -38,6 +38,7 @@
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/WinUIPartRegistry.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "utils/hash.h"
@@ -3479,7 +3480,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
        }
    }
 
-   const unsigned viewflag = (m_vpinball->m_desktopBackdropView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
+   const IWinUIPart::AllowedViews currentView = m_vpinball->m_desktopBackdropView ? IWinUIPart::AllowedViews::Backglass : IWinUIPart::AllowedViews::Playfield;
 
    // Do a backwards loop, so that the primary selection we had when
    // copying will again be the primary selection, since it will be
@@ -3498,7 +3499,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
       ItemTypeEnum type;
       /*const HRESULT hr =*/ pstm->Read(&type, sizeof(int), &writ);
 
-      if (!(EditableRegistry::GetAllowedViews(type) & viewflag))
+      if (!IWinUIPart::IsViewAllowed(WinUIPartRegistry::GetAllowedViews(type), currentView))
       {
          error = true;
       }

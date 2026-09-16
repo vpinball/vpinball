@@ -708,9 +708,9 @@ void PinTableWnd::SetMouseCursor()
       }
       else
       {
-         const ItemTypeEnum type = EditableRegistry::TypeFromToolID(m_vpxEditor->m_ToolCur);
+         const ItemTypeEnum type = WinUIPartRegistry::TypeFromToolID(m_vpxEditor->m_ToolCur);
          if (type != eItemInvalid)
-            cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
+            cursorid = MAKEINTRESOURCE(WinUIPartRegistry::GetCursorID(type));
          else
          {
             hinst = nullptr;
@@ -1223,7 +1223,7 @@ void PinTableWnd::UseTool(int x, int y, int tool)
 {
    const Vertex2D v = TransformPoint(x, y);
 
-   const ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
+   const ItemTypeEnum type = WinUIPartRegistry::TypeFromToolID(tool);
    IEditable *const pie = EditableRegistry::CreateAndInit(type, m_table, v.x, v.y);
 
    if (pie)
