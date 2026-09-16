@@ -12,6 +12,10 @@ DragPointWinUIPart::DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint
 {
 }
 
+Vertex2D DragPointWinUIPart::GetCenter() const { return m_dragPoint->GetCenter(); }
+
+void DragPointWinUIPart::Translate(const Vertex2D& offset) { m_dragPoint->Translate(offset); }
+
 void DragPointWinUIPart::OnLButtonDown(int x, int y)
 {
    IWinUIPart::OnLButtonDown(x, y);

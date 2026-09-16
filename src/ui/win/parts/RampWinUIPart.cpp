@@ -174,11 +174,11 @@ void RampWinUIPart::DoCommand(int icmd, int x, int y)
          m_ramp->GetPTable()->SetDirtyDraw();
       break;
 
-   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_ramp); break;
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_ramp); break;
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_ramp); break;
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
    {

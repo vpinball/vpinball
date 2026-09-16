@@ -135,11 +135,11 @@ void SurfaceWinUIPart::DoCommand(int icmd, int x, int y)
          m_surface->GetPTable()->SetDirtyDraw();
       break;
 
-   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_surface); break;
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_surface); break;
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_surface); break;
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT: m_surface->AddPoint(m_editor->TransformPoint(x, y), false); break;
    }

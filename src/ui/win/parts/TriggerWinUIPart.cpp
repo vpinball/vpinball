@@ -155,11 +155,11 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
          m_trigger->GetPTable()->SetDirtyDraw();
       break;
 
-   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_trigger); break;
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_trigger); break;
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_trigger); break;
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
    {

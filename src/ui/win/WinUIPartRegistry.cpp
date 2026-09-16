@@ -27,6 +27,7 @@
 #include "parts/kicker.h"
 #include "ui/win/parts/LightWinUIPart.h"
 #include "parts/light.h"
+#include "ui/win/parts/LightCenterWinUIPart.h"
 #include "ui/win/parts/LightSeqWinUIPart.h"
 #include "parts/lightseq.h"
 #include "ui/win/parts/PartGroupWinUIPart.h"
@@ -52,24 +53,6 @@
 #endif
 
 ankerl::unordered_dense::map<ItemTypeEnum, WinUIPartRegistry::CreateFunc> WinUIPartRegistry::m_map;
-
-#ifndef __STANDALONE__
-namespace
-{
-// Fallback UI part for ISelect types that do not have a dedicated WinUI part (e.g. light centers).
-// It only provides the shared context menu commands of the base implementation.
-class GenericWinUIPart final : public IWinUIPart
-{
-public:
-   GenericWinUIPart(PinTableWnd* editor, ISelect* select)
-      : IWinUIPart(editor, select)
-   {
-   }
-   void UIRenderPass1(Sur* psur) override { }
-   void UIRenderPass2(Sur* psur) override { }
-};
-}
-#endif
 
 std::unique_ptr<IWinUIPart> WinUIPartRegistry::Create(PinTableWnd* editor, ISelect* select)
 {
@@ -97,6 +80,7 @@ void WinUIPartRegistry::InitRegistry()
    Register<HitTargetWinUIPart, HitTarget>();
    Register<KickerWinUIPart, Kicker>();
    Register<LightWinUIPart, Light>();
+   Register<LightCenterWinUIPart, Light::LightCenter>();
    Register<LightSeqWinUIPart, LightSeq>();
    Register<PartGroupWinUIPart, PartGroup>();
    Register<PlungerWinUIPart, Plunger>();
@@ -108,7 +92,5 @@ void WinUIPartRegistry::InitRegistry()
    Register<TextboxWinUIPart, Textbox>();
    Register<TimerWinUIPart, Timer>();
    Register<TriggerWinUIPart, Trigger>();
-
-   m_map[eItemLightCenter] = [](PinTableWnd* editor, ISelect* part) -> std::unique_ptr<IWinUIPart> { return std::make_unique<GenericWinUIPart>(editor, part); };
 #endif
 }
