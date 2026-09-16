@@ -176,8 +176,6 @@ void IEditable::SaveSharedEditableFields(IObjectWriter& writer)
 
 HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 {
-   STARTUNDO
-
    const BOOL val = VBTOF(newVal);
 
    if (val != *pte && m_phittimer)
@@ -185,21 +183,15 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 
    *pte = val;
 
-   STOPUNDO
-
    return S_OK;
 }
 
 HRESULT IEditable::put_TimerInterval(long newVal, int *pTimerInterval)
 {
-   STARTUNDO
-
    *pTimerInterval = newVal;
 
    if (m_phittimer)
       m_phittimer->SetInterval(newVal);
-
-   STOPUNDO
 
    return S_OK;
 }
@@ -212,13 +204,9 @@ HRESULT IEditable::get_UserValue(VARIANT *pVal)
 
 HRESULT IEditable::put_UserValue(VARIANT *newVal)
 {
-   STARTUNDO
-
    VariantInit(&m_uservalue);
    VariantClear(&m_uservalue);
    const HRESULT hr = VariantCopy(&m_uservalue, newVal);
-
-   STOPUNDO
 
    return hr;
 }
@@ -293,12 +281,14 @@ void IEditable::SetName(const wstring& name)
       if (!pt->IsNameUnique(newName))
          newName = pt->GetUniqueName(newName);
 
-      STARTUNDO
+      pt->BeginUndo();
+      pt->MarkForUndo(this);
       if (pt->HasPart(this))
          pt->RenamePart(this, newName);
       else
          scriptable->m_wzName = newName;
-      STOPUNDO
+      pt->EndUndo();
+      pt->SetDirtyDraw();
    }
    else
    {

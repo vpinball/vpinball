@@ -27,20 +27,6 @@ public:
    float   m_currentHitThreshold; // while playing and the ball hits the mesh the hit threshold is updated here
 };
 
-#define STARTUNDO \
-	if (GetPTable()) \
-	{ \
-		GetPTable()->BeginUndo(); \
-		GetPTable()->MarkForUndo(this); \
-	}
-
-#define STOPUNDO \
-	if (GetPTable()) \
-	{ \
-		GetPTable()->EndUndo(); \
-		GetPTable()->SetDirtyDraw(); \
-	}
-
 
 // Explanation for AllowedViews:
 // Value gets and'ed with 1 (table view) or 2 (backglass view).

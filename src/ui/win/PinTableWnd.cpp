@@ -1216,9 +1216,7 @@ void PinTableWnd::UseTool(int x, int y, int tool)
 
       OnPartChanged(m_table);
 
-      m_table->BeginUndo();
-      m_table->m_undo.MarkForCreate(pie);
-      m_table->EndUndo();
+      m_table->MarkForCreate(pie);
       AddMultiSel(pie->GetISelect(), false, true, false);
    }
 
@@ -1754,7 +1752,7 @@ void PinTableWnd::AutoSave()
    Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
    const HRESULT hr = m_table->SaveToStorage(pstgroot, feedback);
 
-   m_table->m_undo.SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
+   m_table->SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
    m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
    m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->m_sdsNonUndoableDirty, (int)eSaveAutosaved));
 
