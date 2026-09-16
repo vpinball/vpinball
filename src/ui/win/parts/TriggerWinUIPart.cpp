@@ -138,19 +138,19 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-      m_trigger->BeginUndo();
-      m_trigger->MarkForUndo();
+      m_trigger->GetPTable()->BeginUndo();
+      m_trigger->GetPTable()->MarkForUndo(m_trigger);
       m_trigger->FlipPointY(m_trigger->GetPointCenter());
-      m_trigger->EndUndo();
+      m_trigger->GetPTable()->EndUndo();
       if (m_trigger->GetPTable())
          m_trigger->GetPTable()->SetDirtyDraw();
       break;
 
    case ID_WALLMENU_MIRROR:
-      m_trigger->BeginUndo();
-      m_trigger->MarkForUndo();
+      m_trigger->GetPTable()->BeginUndo();
+      m_trigger->GetPTable()->MarkForUndo(m_trigger);
       m_trigger->FlipPointX(m_trigger->GetPointCenter());
-      m_trigger->EndUndo();
+      m_trigger->GetPTable()->EndUndo();
       if (m_trigger->GetPTable())
          m_trigger->GetPTable()->SetDirtyDraw();
       break;
@@ -163,8 +163,8 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      m_trigger->BeginUndo();
-      m_trigger->MarkForUndo();
+      m_trigger->GetPTable()->BeginUndo();
+      m_trigger->GetPTable()->MarkForUndo(m_trigger);
 
       const Vertex2D v = m_editor->TransformPoint(x, y);
 
@@ -193,7 +193,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
          m_trigger->m_vdpoint.insert(m_trigger->m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
-      m_trigger->EndUndo();
+      m_trigger->GetPTable()->EndUndo();
       if (m_trigger->GetPTable())
          m_trigger->GetPTable()->SetDirtyDraw();
    }

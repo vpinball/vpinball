@@ -696,13 +696,13 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 
 void PropertyDialog::StartUndo(ISelect *const psel)
 {
-   psel->GetIEditable()->BeginUndo();
-   psel->GetIEditable()->MarkForUndo();
+   psel->GetIEditable()->GetPTable()->BeginUndo();
+   psel->GetIEditable()->GetPTable()->MarkForUndo(psel->GetIEditable());
 }
 
 void PropertyDialog::EndUndo(ISelect *const psel)
 {
-   psel->GetIEditable()->EndUndo();
+   psel->GetIEditable()->GetPTable()->EndUndo();
    psel->GetIEditable()->GetPTable()->SetDirtyDraw();
 }
 

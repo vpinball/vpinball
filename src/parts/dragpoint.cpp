@@ -369,13 +369,13 @@ Vertex2D DragPoint::GetCenter() const
 
 void DragPoint::StartUndo()
 {
-   GetIEditable()->BeginUndo();
-   GetIEditable()->MarkForUndo();
+   GetIEditable()->GetPTable()->BeginUndo();
+   GetIEditable()->GetPTable()->MarkForUndo(GetIEditable());
 }
 
 void DragPoint::StopUndo()
 {
-   GetIEditable()->EndUndo();
+   GetIEditable()->GetPTable()->EndUndo();
    if (GetIEditable()->GetPTable())
       GetIEditable()->GetPTable()->SetDirtyDraw();
 }

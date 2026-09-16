@@ -28,12 +28,18 @@ public:
 };
 
 #define STARTUNDO \
-	BeginUndo(); \
-	MarkForUndo();
+	if (GetPTable()) \
+	{ \
+		GetPTable()->BeginUndo(); \
+		GetPTable()->MarkForUndo(this); \
+	}
 
 #define STOPUNDO \
-	EndUndo(); \
-	if (GetPTable()) GetPTable()->SetDirtyDraw();
+	if (GetPTable()) \
+	{ \
+		GetPTable()->EndUndo(); \
+		GetPTable()->SetDirtyDraw(); \
+	}
 
 
 // Explanation for AllowedViews:
@@ -273,13 +279,9 @@ protected:
 public:
    wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
 
-   virtual void BeginUndo();
-   virtual void EndUndo();
    virtual void Delete();
    virtual void Uncreate();
 
-   void MarkForUndo();
-   void MarkForDelete();
    void Undelete();
 
    string GetName() const;

@@ -827,9 +827,9 @@ void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
 
    m_lastUndoPart = part;
    m_lastUndoId = undoId;
-   m_table->m_undo.BeginUndo();
-   m_table->m_undo.MarkForUndo(part);
-   m_table->m_undo.EndUndo();
+   m_table->BeginUndo();
+   m_table->MarkForUndo(part);
+   m_table->EndUndo();
 }
 
 void EditorUI::DeleteSelection()
@@ -1219,9 +1219,9 @@ void EditorUI::UpdatePropertyUI()
       {
       case Selection::SelectionType::S_NONE: TableProperties(props); break;
       case Selection::SelectionType::S_EDITABLE:
-         m_table->m_undo.BeginUndo();
-         m_table->m_undo.MarkForUndo(m_selection.uiPart->GetEditable());
-         m_table->m_undo.EndUndo();
+         m_table->BeginUndo();
+         m_table->MarkForUndo(m_selection.uiPart->GetEditable());
+         m_table->EndUndo();
          m_selection.uiPart->UpdatePropertyPane(props);
          if (props.GetModifiedField() > 0 && (m_lastUndoPart != m_selection.uiPart->GetEditable() || m_lastUndoId != (0x2000 | props.GetModifiedField())))
          {

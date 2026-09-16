@@ -922,7 +922,7 @@ void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
-      psel->GetIEditable()->MarkForUndo();
+      m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
          // Flip the sub element (drag point, light center) itself around the flip center
@@ -942,7 +942,7 @@ void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
-      psel->GetIEditable()->MarkForUndo();
+      m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
          // Flip the sub element (drag point, light center) itself around the flip center
@@ -962,7 +962,7 @@ void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, cons
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
-      psel->GetIEditable()->MarkForUndo();
+      m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
          // Rotate the sub element (drag point, light center) itself around the rotation center
@@ -989,7 +989,7 @@ void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Ve
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
-      psel->GetIEditable()->MarkForUndo();
+      m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
          // Scale the sub element (drag point, light center) position itself around the scale center
@@ -1011,7 +1011,7 @@ void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
    m_table->BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
-      m_vmultisel[i].GetIEditable()->MarkForUndo();
+      m_table->MarkForUndo(m_vmultisel[i].GetIEditable());
       if (IWinUIPart *const uiPart = GetUIPart(&m_vmultisel[i]))
          uiPart->Translate(offset);
    }
@@ -1022,7 +1022,7 @@ void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
 void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
 {
    m_table->BeginUndo();
-   m_table->MarkForUndo();
+   m_table->MarkForUndo(m_table);
    bool show = false, hide = false;
    for (const IEditable *const e : m_table->GetParts())
       if (e->GetPartGroup() == group && e->GetISelect())
@@ -1116,22 +1116,22 @@ void PinTableWnd::OnKeyDown(int key)
             switch (key)
             {
             case VK_LEFT:
-               pisel->GetIEditable()->MarkForUndo();
+               m_table->MarkForUndo(pisel->GetIEditable());
                uiPart->Translate(Vertex2D(-distance / GetZoom(), 0.f));
                break;
 
             case VK_RIGHT:
-               pisel->GetIEditable()->MarkForUndo();
+               m_table->MarkForUndo(pisel->GetIEditable());
                uiPart->Translate(Vertex2D(distance / GetZoom(), 0.f));
                break;
 
             case VK_UP:
-               pisel->GetIEditable()->MarkForUndo();
+               m_table->MarkForUndo(pisel->GetIEditable());
                uiPart->Translate(Vertex2D(0.f, -distance / GetZoom()));
                break;
 
             case VK_DOWN:
-               pisel->GetIEditable()->MarkForUndo();
+               m_table->MarkForUndo(pisel->GetIEditable());
                uiPart->Translate(Vertex2D(0.f, distance / GetZoom()));
                break;
             }
@@ -1387,8 +1387,8 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
                   if (!uiPart->m_markedForUndo)
                   {
                      uiPart->m_markedForUndo = true;
-                     pisel->GetIEditable()->BeginUndo();
-                     pisel->GetIEditable()->MarkForUndo();
+                     pisel->GetIEditable()->GetPTable()->BeginUndo();
+                     m_table->MarkForUndo(pisel->GetIEditable());
                   }
 
                   const float inv_zoom = 1.0f / GetZoom();

@@ -2931,7 +2931,7 @@ void PinTable::LockElements()
          IEditable * const pedit = psel->GetIEditable();
          if (pedit)
          {
-            pedit->MarkForUndo();
+            MarkForUndo(pedit);
             pedit->SetUILock(lock);
          }
       }
@@ -3344,6 +3344,15 @@ void PinTable::BeginUndo()
 void PinTable::EndUndo()
 {
    m_undo.EndUndo();
+}
+
+void PinTable::MarkForUndo(IEditable *editable) { m_undo.MarkForUndo(editable); }
+
+void PinTable::MarkForDelete(IEditable *editable)
+{
+   BeginUndo();
+   m_undo.MarkForDelete(editable);
+   EndUndo();
 }
 
 void PinTable::Undo()

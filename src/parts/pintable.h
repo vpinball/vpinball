@@ -366,6 +366,12 @@ public:
 
    void ExportMesh(ObjLoader &loader) final;
 
+   void BeginUndo();
+   void EndUndo();
+   void Undo();
+   void MarkForUndo(IEditable *editable);
+   void MarkForDelete(IEditable *editable);
+
    // IFireEvents
    IDispatch *GetIDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetIDispatch() const final { return (const IDispatch *)this; }
@@ -385,9 +391,6 @@ public:
    void WriteRegDefaults() final { }
    IScriptable *GetIScriptable() final { return (IScriptable *)this; }
    const IScriptable *GetIScriptable() const final { return (const IScriptable *)this; }
-   void BeginUndo() final;
-   void EndUndo() final;
-   void Undo();
    void Delete() final { } // Can't delete table itself
    void Uncreate() final { }
 
@@ -520,7 +523,14 @@ public:
 
    // Flag that disables all table edition. Lock toggles are counted to identify version changes in a table (for example to guarantee untouched table for tournament)
    bool IsLocked() const { return (m_tablelocked & 1) != 0; }
-   void ToggleLock() { BeginUndo(); MarkForUndo(); m_tablelocked++; EndUndo(); SetDirtyDraw(); }
+   void ToggleLock()
+   {
+      BeginUndo();
+      MarkForUndo(this);
+      m_tablelocked++;
+      EndUndo();
+      SetDirtyDraw();
+   }
 
    bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_external_script_name.empty(); }
 
