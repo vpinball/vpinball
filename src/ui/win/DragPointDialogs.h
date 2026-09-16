@@ -3,13 +3,15 @@
 #pragma once
 
 
+class PinTableWnd;
+
 namespace VPX::WinUI
 {
 
 class TranslatePointsDialog
 {
 public:
-   explicit TranslatePointsDialog(ISelect *psel);
+   explicit TranslatePointsDialog(PinTableWnd *editor);
 
 private:
    static int m_applyCount;
@@ -20,7 +22,7 @@ private:
 class ScalePointsDialog
 {
 public:
-   explicit ScalePointsDialog(ISelect *psel);
+   explicit ScalePointsDialog(PinTableWnd *editor);
 
 private:
    static int m_applyCount;
@@ -31,7 +33,7 @@ private:
 class RotatePointsDialog
 {
 public:
-   explicit RotatePointsDialog(ISelect *psel);
+   explicit RotatePointsDialog(PinTableWnd *editor);
 
 private:
    static int m_applyCount;

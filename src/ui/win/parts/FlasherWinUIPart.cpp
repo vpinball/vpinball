@@ -148,11 +148,11 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
          m_flasher->GetPTable()->SetDirtyDraw();
       break;
 
-   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_flasher); break;
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_flasher); break;
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_flasher); break;
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT: m_flasher->AddPoint(m_editor->TransformPoint(x, y), false); break;
    }

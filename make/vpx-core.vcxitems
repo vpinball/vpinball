@@ -955,6 +955,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/HitTargetWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightCenterWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/PartGroupWinUIPart.cpp" />
@@ -1807,6 +1808,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/HitTargetWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightCenterWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/PartGroupWinUIPart.h" />

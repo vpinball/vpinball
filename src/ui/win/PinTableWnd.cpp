@@ -892,7 +892,7 @@ void PinTableWnd::RefreshProperties()
 #endif
 }
 
-Vertex2D PinTableWnd::GetMultiSelCenter() const
+Vertex2D PinTableWnd::GetMultiSelCenter()
 {
    float minx = FLT_MAX;
    float maxx = -FLT_MAX;
@@ -901,13 +901,16 @@ Vertex2D PinTableWnd::GetMultiSelCenter() const
 
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
-      const ISelect *const psel = m_vmultisel.ElementAt(i);
-      const Vertex2D vCenter = psel->GetCenter();
+      ISelect *const psel = m_vmultisel.ElementAt(i);
+      if (IWinUIPart *const uiPart = GetUIPart(psel))
+      {
+         const Vertex2D vCenter = uiPart->GetCenter();
 
-      minx = min(minx, vCenter.x);
-      maxx = max(maxx, vCenter.x);
-      miny = min(miny, vCenter.y);
-      maxy = max(maxy, vCenter.y);
+         minx = min(minx, vCenter.x);
+         maxx = max(maxx, vCenter.x);
+         miny = min(miny, vCenter.y);
+         maxy = max(maxy, vCenter.y);
+      }
    }
 
    return { (maxx + minx) * 0.5f, (maxy + miny) * 0.5f };
@@ -918,8 +921,16 @@ void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
    m_table->BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
-      m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_vmultisel[i].FlipY(pvCenter);
+      ISelect *const psel = &m_vmultisel[i];
+      psel->GetIEditable()->MarkForUndo();
+      if (psel->IsSubPart())
+      {
+         // Flip the sub element (drag point, light center) itself around the flip center
+         if (IWinUIPart *const uiPart = GetUIPart(psel))
+            uiPart->Translate(Vertex2D(0.f, -2.f * (uiPart->GetCenter().y - pvCenter.y)));
+      }
+      else
+         psel->GetIEditable()->FlipY(pvCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -930,8 +941,16 @@ void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
    m_table->BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
-      m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_vmultisel[i].FlipX(pvCenter);
+      ISelect *const psel = &m_vmultisel[i];
+      psel->GetIEditable()->MarkForUndo();
+      if (psel->IsSubPart())
+      {
+         // Flip the sub element (drag point, light center) itself around the flip center
+         if (IWinUIPart *const uiPart = GetUIPart(psel))
+            uiPart->Translate(Vertex2D(-2.f * (uiPart->GetCenter().x - pvCenter.x), 0.f));
+      }
+      else
+         psel->GetIEditable()->FlipX(pvCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -942,8 +961,23 @@ void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, cons
    m_table->BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
-      m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_vmultisel[i].Rotate(ang, pvCenter, useElementCenter);
+      ISelect *const psel = &m_vmultisel[i];
+      psel->GetIEditable()->MarkForUndo();
+      if (psel->IsSubPart())
+      {
+         // Rotate the sub element (drag point, light center) itself around the rotation center
+         if (IWinUIPart *const uiPart = GetUIPart(psel))
+         {
+            const Vertex2D vCenter = uiPart->GetCenter();
+            const float sn = sinf(ANGTORAD(ang));
+            const float cs = cosf(ANGTORAD(ang));
+            const float dx = vCenter.x - pvCenter.x;
+            const float dy = vCenter.y - pvCenter.y;
+            uiPart->Translate(Vertex2D(pvCenter.x + cs * dx - sn * dy - vCenter.x, pvCenter.y + cs * dy + sn * dx - vCenter.y));
+         }
+      }
+      else
+         psel->GetIEditable()->Rotate(ang, pvCenter, useElementCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -954,8 +988,19 @@ void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Ve
    m_table->BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
-      m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_vmultisel[i].Scale(scalex, scaley, pvCenter, useElementCenter);
+      ISelect *const psel = &m_vmultisel[i];
+      psel->GetIEditable()->MarkForUndo();
+      if (psel->IsSubPart())
+      {
+         // Scale the sub element (drag point, light center) position itself around the scale center
+         if (IWinUIPart *const uiPart = GetUIPart(psel))
+         {
+            const Vertex2D vCenter = uiPart->GetCenter();
+            uiPart->Translate(Vertex2D(pvCenter.x + (vCenter.x - pvCenter.x) * scalex - vCenter.x, pvCenter.y + (vCenter.y - pvCenter.y) * scaley - vCenter.y));
+         }
+      }
+      else
+         psel->GetIEditable()->Scale(scalex, scaley, pvCenter, useElementCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -967,7 +1012,8 @@ void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_vmultisel[i].Translate(offset);
+      if (IWinUIPart *const uiPart = GetUIPart(&m_vmultisel[i]))
+         uiPart->Translate(offset);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -1064,28 +1110,29 @@ void PinTableWnd::OnKeyDown(int key)
       for (int i = 0; i < m_vmultisel.size(); i++)
       {
          ISelect *const pisel = m_vmultisel.ElementAt(i);
-         if (!pisel->GetIEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
+         IWinUIPart *const uiPart = GetUIPart(pisel);
+         if (uiPart && !pisel->GetIEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
          {
             switch (key)
             {
             case VK_LEFT:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->Translate(Vertex2D(-distance / GetZoom(), 0.f));
+               uiPart->Translate(Vertex2D(-distance / GetZoom(), 0.f));
                break;
 
             case VK_RIGHT:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->Translate(Vertex2D(distance / GetZoom(), 0.f));
+               uiPart->Translate(Vertex2D(distance / GetZoom(), 0.f));
                break;
 
             case VK_UP:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->Translate(Vertex2D(0.f, -distance / GetZoom()));
+               uiPart->Translate(Vertex2D(0.f, -distance / GetZoom()));
                break;
 
             case VK_DOWN:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->Translate(Vertex2D(0.f, distance / GetZoom()));
+               uiPart->Translate(Vertex2D(0.f, distance / GetZoom()));
                break;
             }
          }
@@ -1345,7 +1392,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
                   }
 
                   const float inv_zoom = 1.0f / GetZoom();
-                  pisel->Translate(Vertex2D((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom));
+                  uiPart->Translate(Vertex2D((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom));
                   uiPart->UpdateStatusBarObjectPos();
                   Redraw();
                }

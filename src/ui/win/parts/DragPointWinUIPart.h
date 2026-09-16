@@ -14,6 +14,10 @@ public:
    void UIRenderPass1(Sur* psur) override { }
    void UIRenderPass2(Sur* psur) override { }
 
+   // Transforms apply to the drag point itself, not to its parent editable
+   Vertex2D GetCenter() const override;
+   void Translate(const Vertex2D& offset) override;
+
    void OnLButtonDown(int x, int y) override;
    void OnLButtonUp(int x, int y) override;
    void UpdateStatusBarObjectPos() override;

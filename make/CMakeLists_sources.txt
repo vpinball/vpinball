@@ -553,6 +553,8 @@ set(VPX_WINDOWS_SOURCES
    src/ui/win/parts/HitTargetWinUIPart.h
    src/ui/win/parts/KickerWinUIPart.cpp
    src/ui/win/parts/KickerWinUIPart.h
+   src/ui/win/parts/LightCenterWinUIPart.cpp
+   src/ui/win/parts/LightCenterWinUIPart.h
    src/ui/win/parts/LightSeqWinUIPart.cpp
    src/ui/win/parts/LightSeqWinUIPart.h
    src/ui/win/parts/LightWinUIPart.cpp

@@ -185,7 +185,7 @@ void Decal::GetEditorQuad(Vertex2D rgv[4]) const
 
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   ISelect::Rotate(ang, pvCenter, useElementCenter);
+   IEditable::Rotate(ang, pvCenter, useElementCenter);
 
    m_d.m_rotation += ang;
 }

@@ -155,9 +155,6 @@ public:
    bool  m_lockedByLS = false;
 
    // ISelect of the light center handle, for editor picking
-   ISelect *GetLightCenterSelect() { return &m_lightcenter; }
-
-private:
    class LightCenter final : public ISelect
    {
    public:
@@ -171,20 +168,16 @@ private:
       IEditable *GetIEditable() override { return (IEditable *)m_plight; }
       const IEditable *GetIEditable() const override { return (const IEditable *)m_plight; }
 
-      Vertex2D GetCenter() const override { return m_plight->m_d.m_vCenter; }
-
-      void Translate(const Vertex2D &offset) override
-      {
-         m_plight->m_d.m_vCenter.x += offset.x;
-         m_plight->m_d.m_vCenter.y += offset.y;
-      }
-
+      static inline constexpr ItemTypeEnum ItemType = eItemLightCenter;
       ItemTypeEnum GetItemType() const override { return eItemLightCenter; }
 
    private:
       Light *m_plight;
    };
 
+   ISelect *GetLightCenterSelect() { return &m_lightcenter; }
+
+private:
    Material *m_surfaceMaterial;
    Texture  *m_surfaceTexture;
 

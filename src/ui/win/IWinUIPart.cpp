@@ -60,6 +60,10 @@ void IWinUIPart::SetStatusBarObjectPos(const float x, const float y)
 #endif
 }
 
+Vertex2D IWinUIPart::GetCenter() const { return GetEditable()->GetCenter(); }
+
+void IWinUIPart::Translate(const Vertex2D& offset) { GetEditable()->Translate(offset); }
+
 void IWinUIPart::DoCommand(int icmd, int x, int y)
 {
 #ifndef __STANDALONE__

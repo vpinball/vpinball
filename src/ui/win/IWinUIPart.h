@@ -65,6 +65,11 @@ public:
    // Returns the UI part for a sub select owned by this part's editable (e.g. a drag point, a light center), nullptr if none
    virtual IWinUIPart* GetSubPart(ISelect* select) { return nullptr; }
 
+   // Geometric transforms of the selectable element (applied to the sub element itself for sub selects like drag points)
+   // Higher level transforms (scale, rotate, flip) are performed on the IEditable, or on the sub element through GetCenter/Translate
+   virtual Vertex2D GetCenter() const;
+   virtual void Translate(const Vertex2D& offset);
+
 protected:
    void SetStatusBarObjectPos(const float x, const float y);
 

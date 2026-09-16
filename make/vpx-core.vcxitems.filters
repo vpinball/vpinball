@@ -672,6 +672,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.cpp">
       <Filter>ui\win\parts</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightCenterWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.cpp">
       <Filter>ui\win\parts</Filter>
     </ClCompile>
@@ -1692,6 +1695,9 @@
       <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightCenterWinUIPart.h">
       <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.h">

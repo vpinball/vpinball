@@ -31,35 +31,6 @@ void TableWinUIPart::OnLButtonDown(int x, int y)
    m_table->SetDirtyDraw();
 }
 
-// ISelect adapter exposing the multi-selection of a PinTableWnd as a single selectable,
-// allowing simultaneous edition of multiple parts through the standard ISelect transform interface
-class MultiSelProxy final : public ISelect
-{
-public:
-   explicit MultiSelProxy(PinTableWnd *editor)
-      : m_editor(editor)
-   {
-   }
-
-   ItemTypeEnum GetItemType() const final { return eItemTable; }
-
-   void Delete() final { }
-   void Uncreate() final { }
-
-   void FlipY(const Vertex2D &pvCenter) final { m_editor->FlipYMultiSel(pvCenter); }
-   void FlipX(const Vertex2D &pvCenter) final { m_editor->FlipXMultiSel(pvCenter); }
-   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final { m_editor->RotateMultiSel(ang, pvCenter, useElementCenter); }
-   void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final { m_editor->ScaleMultiSel(scalex, scaley, pvCenter, useElementCenter); }
-   void Translate(const Vertex2D &offset) final { m_editor->TranslateMultiSel(offset); }
-   Vertex2D GetCenter() const final { return m_editor->GetMultiSelCenter(); }
-
-   IEditable *GetIEditable() final { return m_editor->m_table; }
-   const IEditable *GetIEditable() const final { return m_editor->m_table; }
-
-private:
-   PinTableWnd *const m_editor;
-};
-
 void TableWinUIPart::DoCommand(int icmd, int x, int y)
 {
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
@@ -99,8 +70,6 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
       return;
    }
 
-   MultiSelProxy multiSel(m_editor);
-
    switch (icmd)
    {
    case ID_DRAWINFRONT:
@@ -124,8 +93,8 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    case IDC_COPY: m_table->Copy(x, y); break;
    case IDC_PASTE: m_table->Paste(false, x, y); break;
    case IDC_PASTEAT: m_table->Paste(true, x, y); break;
-   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(&multiSel); break;
-   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(&multiSel); break;
-   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(&multiSel); break;
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_editor); break;
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_editor); break;
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
    }
 }

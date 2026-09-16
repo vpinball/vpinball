@@ -27,12 +27,12 @@ public:
    void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);
 
    // From ISelect
-   void Translate(const Vertex2D &offset) final;
    static inline constexpr ItemTypeEnum ItemType = eItemDragPoint;
    ItemTypeEnum GetItemType() const final { return eItemDragPoint; }
 
-   // Multi-object manipulation
-   Vertex2D GetCenter() const final;
+   // Single point manipulation, used by the Win32 editor (moves only this point, not the parent part)
+   void Translate(const Vertex2D &offset);
+   Vertex2D GetCenter() const;
 
    IEditable *GetIEditable() final;
    const IEditable *GetIEditable() const final;

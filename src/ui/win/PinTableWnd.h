@@ -30,7 +30,7 @@ public:
    void AssignSelectionToPartGroup(PartGroup *group);
 
    // Multi-selection manipulation: applies the transform to all the selected parts at once
-   Vertex2D GetMultiSelCenter() const;
+   Vertex2D GetMultiSelCenter();
    void FlipYMultiSel(const Vertex2D &pvCenter);
    void FlipXMultiSel(const Vertex2D &pvCenter);
    void RotateMultiSel(const float ang, const Vertex2D &pvCenter, const bool useElementCenter);

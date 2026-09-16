@@ -252,6 +252,19 @@ public:
 
    virtual EventProxyBase *GetEventProxyBase() = 0;
 
+   // Geometric transforms of the part, as used by the editors
+   virtual Vertex2D GetCenter() const = 0;
+   virtual void Translate(const Vertex2D &offset) = 0;
+
+   virtual Vertex2D GetScale() const { return { 1.f, 1.f }; }
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter);
+
+   virtual float GetRotate() const { return 0.0f; }
+   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter);
+
+   virtual void FlipX(const Vertex2D &pvCenter);
+   virtual void FlipY(const Vertex2D &pvCenter);
+
    // Shared implementation
 protected:
    void LoadSharedEditableField(const int id, IObjectReader &reader);

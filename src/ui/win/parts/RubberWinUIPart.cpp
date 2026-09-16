@@ -162,11 +162,11 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
          m_rubber->GetPTable()->SetDirtyDraw();
       break;
 
-   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_rubber); break;
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_rubber); break;
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_rubber); break;
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
    {
