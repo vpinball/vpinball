@@ -139,8 +139,8 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         if (g_pvp->m_desktopBackdropView)
         {
             m_elementTypeName.SetWindowText("Desktop Backdrop");
-            m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassVisualsProperty(&pvsel), _T("Visuals")));
-            m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassVisualsProperty(&pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
             if (m_tab.m_activeTabText == "Visuals")
                 activePage = 0;
             else if (m_tab.m_activeTabText == "Camera")
@@ -149,10 +149,10 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         else
         {
             m_elementTypeName.SetWindowText("Table");
-            m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableVisualsProperty(&pvsel), _T("Visuals")));
-            m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
-            m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
-            m_tabs[3] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableAudioProperty(&pvsel), _T("Sound")));
+            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableVisualsProperty(&pvsel), _T("Visuals")));
+            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
+            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
+            m_tabs[3] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableAudioProperty(&pvsel), _T("Sound")));
             if (m_tab.m_activeTabText == "Visuals")
                 activePage = 0;
             else if (m_tab.m_activeTabText == "Lights")

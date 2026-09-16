@@ -380,22 +380,25 @@ public:
    IDispatch *GetIDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetIDispatch() const final { return (const IDispatch *)this; }
 
-   // IEditable (mostly bogus for now)
+   // IEditable, somewhat bogus for now, as a PinTable is not really an IEditable (which are defined as the parts of a PinTable)
+   PinTable *GetPTable() final { return this; }
+   const PinTable *GetPTable() const final { return this; }
    IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
    void ClearForOverwrite() final;
    void Load(IObjectReader &reader) final;
    void Save(IObjectWriter& writer, const bool saveForUndo) final;
+   ISelect *GetISelect() final { return (ISelect *)this; }
+   const ISelect *GetISelect() const final { return (const ISelect *)this; }
+   IScriptable *GetIScriptable() final { return (IScriptable *)this; }
+   const IScriptable *GetIScriptable() const final { return (const IScriptable *)this; }
+   // IEditable unused members
    IHitable *GetIHitable() final { return nullptr; }
    const IHitable *GetIHitable() const final { return nullptr; }
    IRenderable *GetIRenderable() final { return nullptr; }
    const IRenderable *GetIRenderable() const final { return nullptr; }
-   ISelect *GetISelect() final { return (ISelect *)this; }
-   const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final { }
    void WriteRegDefaults() final { }
-   IScriptable *GetIScriptable() final { return (IScriptable *)this; }
-   const IScriptable *GetIScriptable() const final { return (const IScriptable *)this; }
-   void Delete() final { } // Can't delete table itself
+   void Delete() final { }
    void Uncreate() final { }
 
    // ISelect
@@ -409,11 +412,9 @@ public:
    IEditable *GetIEditable() final { return (IEditable *)this; }
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }
 
-   // FIXME both ISelect and IEditable
+   // Both ISelect and IEditable
    static inline constexpr ItemTypeEnum ItemType = eItemTable;
    ItemTypeEnum GetItemType() const final { return eItemTable; }
-   PinTable *GetPTable() final { return this; }
-   const PinTable *GetPTable() const final { return this; }
 
 
    static string GetElementName(IEditable *pedit);
