@@ -35,15 +35,6 @@ public:
 	EndUndo(); \
 	if (GetPTable()) GetPTable()->SetDirtyDraw();
 
-#define STARTUNDOSELECT \
-	GetIEditable()->BeginUndo(); \
-	GetIEditable()->MarkForUndo();
-
-#define STOPUNDOSELECT                                                                                                                                                                       \
-   GetIEditable()->EndUndo();                                                                                                                                                                \
-   if (GetIEditable()->GetPTable())                                                                                                                                                          \
-      GetIEditable()->GetPTable()->SetDirtyDraw();
-
 
 // Explanation for AllowedViews:
 // Value gets and'ed with 1 (table view) or 2 (backglass view).
