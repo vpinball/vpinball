@@ -14,7 +14,6 @@ import org.vpinball.app.jni.VPinballExternalDMD
 import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballPath
-import org.vpinball.app.jni.VPinballSettingsSection.GLOBAL
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMDUTIL
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
@@ -63,11 +62,6 @@ class SettingsViewModel : ViewModel() {
         private set
 
     var webServerPort by mutableIntStateOf(0)
-        private set
-
-    // Advanced
-
-    var resetLogOnPlay by mutableStateOf(false)
         private set
 
     var needsTableReload by mutableStateOf(false)
@@ -119,10 +113,6 @@ class SettingsViewModel : ViewModel() {
 
         webServer = VPinballManager.loadValue(STANDALONE, "WebServer", false)
         webServerPort = VPinballManager.loadValue(STANDALONE, "WebServerPort", 2112)
-
-        // Advanced
-
-        resetLogOnPlay = VPinballManager.loadValue(GLOBAL, "ResetLogOnPlay", true)
     }
 
     // General
@@ -213,13 +203,6 @@ class SettingsViewModel : ViewModel() {
         webServerPort = value
         VPinballManager.saveValue(STANDALONE, "WebServerPort", webServerPort)
         VPinballManager.updateWebServer()
-    }
-
-    // Advanced
-
-    fun handleResetLogOnPlay(value: Boolean) {
-        resetLogOnPlay = value
-        VPinballManager.saveValue(GLOBAL, "ResetLogOnPlay", resetLogOnPlay)
     }
 
     // Reset

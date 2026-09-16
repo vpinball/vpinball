@@ -304,14 +304,6 @@ fun SettingsScreen(
                     SectionHeader(title = "Advanced")
 
                     RoundedCard {
-                        SwitchRow(
-                            label = "Reset Log on Play",
-                            isChecked = viewModel.resetLogOnPlay,
-                            onCheckedChange = { viewModel.handleResetLogOnPlay(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
                         ActionRow(
                             label = "Export vpinball.log...",
                             labelColor = Color.VpxRed,

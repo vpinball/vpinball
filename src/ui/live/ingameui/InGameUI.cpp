@@ -13,6 +13,7 @@
 #include "HomePage.h"
 #include "InputProfilePage.h"
 #include "InputSettingsPage.h"
+#include "LoggingSettingsPage.h"
 #include "MiscSettingsPage.h"
 #include "NudgeSettingsPage.h"
 #include "PluginSettingsPage.h"
@@ -40,6 +41,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("settings/displays"s, []() { return std::make_unique<DisplayHomePage>(); });
    AddPage("settings/graphics"s, []() { return std::make_unique<GraphicSettingsPage>(); });
    AddPage("settings/input"s, []() { return std::make_unique<InputSettingsPage>(); });
+   AddPage("settings/logging"s, []() { return std::make_unique<LoggingSettingsPage>(); });
    AddPage("settings/misc"s, []() { return std::make_unique<MiscSettingsPage>(); });
    AddPage("settings/nudge"s, []() { return std::make_unique<NudgeSettingsPage>(); });
    AddPage("settings/plunger"s, []() { return std::make_unique<PlungerSettingsPage>(); });

@@ -352,6 +352,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InputProfilePage.cpp
    src/ui/live/ingameui/InputSettingsPage.h
    src/ui/live/ingameui/InputSettingsPage.cpp
+   src/ui/live/ingameui/LoggingSettingsPage.h
+   src/ui/live/ingameui/LoggingSettingsPage.cpp
    src/ui/live/ingameui/MiscSettingsPage.h
    src/ui/live/ingameui/MiscSettingsPage.cpp
    src/ui/live/ingameui/NudgeSensorSettingsPage.h
