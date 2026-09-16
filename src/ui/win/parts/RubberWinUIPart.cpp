@@ -137,9 +137,23 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
 
    switch (icmd)
    {
-   case ID_WALLMENU_FLIP: m_rubber->FlipPointY(m_rubber->GetPointCenter()); break;
+   case ID_WALLMENU_FLIP:
+      m_rubber->BeginUndo();
+      m_rubber->MarkForUndo();
+      m_rubber->FlipPointY(m_rubber->GetPointCenter());
+      m_rubber->EndUndo();
+      if (m_rubber->GetPTable())
+         m_rubber->GetPTable()->SetDirtyDraw();
+      break;
 
-   case ID_WALLMENU_MIRROR: m_rubber->FlipPointX(m_rubber->GetPointCenter()); break;
+   case ID_WALLMENU_MIRROR:
+      m_rubber->BeginUndo();
+      m_rubber->MarkForUndo();
+      m_rubber->FlipPointX(m_rubber->GetPointCenter());
+      m_rubber->EndUndo();
+      if (m_rubber->GetPTable())
+         m_rubber->GetPTable()->SetDirtyDraw();
+      break;
 
    case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_rubber); break;
 

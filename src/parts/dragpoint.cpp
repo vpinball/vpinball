@@ -36,8 +36,6 @@ Vertex2D IHaveDragPoints::GetPointCenter() const
 
 void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
 {
-   STARTUNDOSELECT
-
    Vertex2D newcenter = GetPointCenter();
 
    for (const auto& v : m_vdpoint)
@@ -52,14 +50,10 @@ void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
    PutPointCenter(newcenter);
 
    ReverseOrder();
-
-   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
 {
-   STARTUNDOSELECT
-
    Vertex2D newcenter = GetPointCenter();
 
    for (const auto& v : m_vdpoint)
@@ -74,14 +68,10 @@ void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
    PutPointCenter(newcenter);
 
    ReverseOrder();
-
-   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   STARTUNDOSELECT
-
    Vertex2D newcenter = GetPointCenter();
 
    const float centerx = useElementCenter ? newcenter.x : pvCenter.x;
@@ -111,14 +101,10 @@ void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, co
       newcenter.y = centery + dy2;
       PutPointCenter(newcenter);
    }
-
-   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   STARTUNDOSELECT
-
    Vertex2D newcenter = GetPointCenter();
 
    const float centerx = useElementCenter ? newcenter.x : pvCenter.x;
@@ -141,14 +127,10 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
       newcenter.y = centery + dy;
       PutPointCenter(newcenter);
    }
-
-   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
 {
-   STARTUNDOSELECT
-
    for (const auto& v : m_vdpoint)
    {
       v->m_v.x += pvOffset.x;
@@ -156,8 +138,6 @@ void IHaveDragPoints::TranslatePoints(const Vertex2D &pvOffset)
    }
 
    PutPointCenter(GetPointCenter());
-
-   STOPUNDOSELECT
 }
 
 void IHaveDragPoints::ReverseOrder()

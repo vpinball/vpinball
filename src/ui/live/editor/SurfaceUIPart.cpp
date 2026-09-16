@@ -29,7 +29,6 @@ void SurfaceUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 {
    const Vertex2D center = m_surface->GetPointCenter();
    m_surface->TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
-   m_surface->GetPTable()->m_undo.Undo(true);
    const float pz = 0.5f * (m_surface->m_d.m_heightbottom + m_surface->m_d.m_heighttop);
    m_surface->m_d.m_heightbottom += pos.z - pz;
    m_surface->m_d.m_heighttop += pos.z - pz;

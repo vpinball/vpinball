@@ -48,8 +48,6 @@ public:
    // Report a change that would need the Win32 UI to be redrawn
    virtual void SetDirtyDraw();
 
-   virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
-
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
 
@@ -66,7 +64,7 @@ public:
    virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
    virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
    virtual void Translate(const Vertex2D &pvOffset);
-
+   virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
    // So objects don't have to implement all the transformation functions themselves
    virtual Vertex2D GetCenter() const = 0;
    virtual Vertex2D GetScale() const
@@ -77,7 +75,6 @@ public:
    {
       return 0.0f;
    }
-
    virtual void PutCenter(const Vertex2D& pv) = 0;
 
    virtual IEditable *GetIEditable() = 0;

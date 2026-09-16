@@ -147,9 +147,23 @@ void RampWinUIPart::DoCommand(int icmd, int x, int y)
 
    switch (icmd)
    {
-   case ID_WALLMENU_FLIP: m_ramp->FlipPointY(m_ramp->GetPointCenter()); break;
+   case ID_WALLMENU_FLIP:
+      m_ramp->BeginUndo();
+      m_ramp->MarkForUndo();
+      m_ramp->FlipPointY(m_ramp->GetPointCenter());
+      m_ramp->EndUndo();
+      if (m_ramp->GetPTable())
+         m_ramp->GetPTable()->SetDirtyDraw();
+      break;
 
-   case ID_WALLMENU_MIRROR: m_ramp->FlipPointX(m_ramp->GetPointCenter()); break;
+   case ID_WALLMENU_MIRROR:
+      m_ramp->BeginUndo();
+      m_ramp->MarkForUndo();
+      m_ramp->FlipPointX(m_ramp->GetPointCenter());
+      m_ramp->EndUndo();
+      if (m_ramp->GetPTable())
+         m_ramp->GetPTable()->SetDirtyDraw();
+      break;
 
    case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_ramp); break;
 

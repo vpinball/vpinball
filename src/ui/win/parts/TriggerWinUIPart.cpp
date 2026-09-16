@@ -137,9 +137,23 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
 
    switch (icmd)
    {
-   case ID_WALLMENU_FLIP: m_trigger->FlipPointY(m_trigger->GetPointCenter()); break;
+   case ID_WALLMENU_FLIP:
+      m_trigger->BeginUndo();
+      m_trigger->MarkForUndo();
+      m_trigger->FlipPointY(m_trigger->GetPointCenter());
+      m_trigger->EndUndo();
+      if (m_trigger->GetPTable())
+         m_trigger->GetPTable()->SetDirtyDraw();
+      break;
 
-   case ID_WALLMENU_MIRROR: m_trigger->FlipPointX(m_trigger->GetPointCenter()); break;
+   case ID_WALLMENU_MIRROR:
+      m_trigger->BeginUndo();
+      m_trigger->MarkForUndo();
+      m_trigger->FlipPointX(m_trigger->GetPointCenter());
+      m_trigger->EndUndo();
+      if (m_trigger->GetPTable())
+         m_trigger->GetPTable()->SetDirtyDraw();
+      break;
 
    case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_trigger); break;
 

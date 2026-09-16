@@ -103,7 +103,13 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
                GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
                v.y = sz2f(szT);
 
+               IEditable *const edit = psel->GetIEditable();
+               edit->BeginUndo();
+               if (edit->GetItemType() != eItemTable) // PinTable transforms record each selected element
+                  edit->MarkForUndo();
                psel->Rotate(f, v, useElementCenter);
+               edit->EndUndo();
+               psel->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -122,7 +128,12 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
             GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
             v.y = sz2f(szT);
 
+            IEditable *const edit = psel->GetIEditable();
+            edit->BeginUndo();
+            if (edit->GetItemType() != eItemTable) // PinTable transforms record each selected element
+               edit->MarkForUndo();
             psel->Rotate(f, v, useElementCenter);
+            edit->EndUndo();
             psel->GetPTable()->SetDirtyDraw();
             break;
          }
@@ -265,7 +276,13 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
 
                const bool useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
                //pihdp->ScalePoints(fx, fy, &v);
+               IEditable *const edit = psel->GetIEditable();
+               edit->BeginUndo();
+               if (edit->GetItemType() != eItemTable) // PinTable transforms record each selected element
+                  edit->MarkForUndo();
                psel->Scale(fx, fy, v, useElementCenter);
+               edit->EndUndo();
+               psel->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -297,7 +314,12 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
             const bool useElementCenter = (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
             //pihdp->ScalePoints(fx, fy, &v);
+            IEditable *const edit = psel->GetIEditable();
+            edit->BeginUndo();
+            if (edit->GetItemType() != eItemTable) // PinTable transforms record each selected element
+               edit->MarkForUndo();
             psel->Scale(fx, fy, v, useElementCenter);
+            edit->EndUndo();
             psel->GetPTable()->SetDirtyDraw();
             break;
          }
@@ -390,7 +412,13 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
                v.x = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
                v.y = sz2f(szT);
+               IEditable *const edit = psel->GetIEditable();
+               edit->BeginUndo();
+               if (edit->GetItemType() != eItemTable) // PinTable transforms record each selected element
+                  edit->MarkForUndo();
                psel->Translate(v);
+               edit->EndUndo();
+               psel->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -404,7 +432,12 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
             v.x = sz2f(szT);
             GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
             v.y = sz2f(szT);
+            IEditable *const edit = psel->GetIEditable();
+            edit->BeginUndo();
+            if (edit->GetItemType() != eItemTable) // PinTable transforms record each selected element
+               edit->MarkForUndo();
             psel->Translate(v);
+            edit->EndUndo();
             psel->GetPTable()->SetDirtyDraw();
             break;
          }

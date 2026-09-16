@@ -110,9 +110,23 @@ void SurfaceWinUIPart::DoCommand(int icmd, int x, int y)
 
    switch (icmd)
    {
-   case ID_WALLMENU_FLIP: m_surface->FlipPointY(m_surface->GetPointCenter()); break;
+   case ID_WALLMENU_FLIP:
+      m_surface->BeginUndo();
+      m_surface->MarkForUndo();
+      m_surface->FlipPointY(m_surface->GetPointCenter());
+      m_surface->EndUndo();
+      if (m_surface->GetPTable())
+         m_surface->GetPTable()->SetDirtyDraw();
+      break;
 
-   case ID_WALLMENU_MIRROR: m_surface->FlipPointX(m_surface->GetPointCenter()); break;
+   case ID_WALLMENU_MIRROR:
+      m_surface->BeginUndo();
+      m_surface->MarkForUndo();
+      m_surface->FlipPointX(m_surface->GetPointCenter());
+      m_surface->EndUndo();
+      if (m_surface->GetPTable())
+         m_surface->GetPTable()->SetDirtyDraw();
+      break;
 
    case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_surface); break;
 
