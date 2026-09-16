@@ -37,6 +37,10 @@ public:
    void ScaleMultiSel(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter);
    void TranslateMultiSel(const Vertex2D &offset);
 
+   // Returns true if the given select is a sub part (drag point, light center) whose owning part is also in the
+   // multi-selection, meaning that selection actions must not be applied to it (they reach it through its owning part)
+   bool IsSubPartOfSelectedPart(const ISelect *psel) const;
+
 #ifndef __STANDALONE__
    void SetMouseCursor();
    #endif
