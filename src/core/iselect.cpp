@@ -53,34 +53,3 @@ void ISelect::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
 
    Translate(Vertex2D(pvCenter.x + dx * scalex - vCenter.x, pvCenter.y + dy * scaley - vCenter.y));
 }
-
-HRESULT ISelect::GetTypeName(BSTR *pVal) const
-{
-   wstring buf = GetTypeNameForType(GetItemType());
-   *pVal = SysAllocStringLen(buf.c_str(), static_cast<UINT>(buf.length()));
-   return S_OK;
-}
-
-wstring ISelect::GetTypeNameForType(const ItemTypeEnum type) const
-{
-   UINT strID;
-   switch (type)
-   {
-   case eItemTable:        strID = IDS_TABLE; break;
-   case eItemLightCenter:  strID = IDS_TB_LIGHT; break;
-   case eItemDragPoint:    strID = IDS_CONTROLPOINT; break;
-   //case eItemLightSeqCenter: strID = IDS_TB_LIGHTSEQ; break;
-   default:
-      strID = EditableRegistry::GetTypeNameStringID(type); break;
-   }
-
-#ifndef __STANDALONE__
-   LPWSTR strPtr = nullptr;
-   const int len = LoadStringW(g_app->GetInstanceHandle(), strID, reinterpret_cast<LPWSTR>(&strPtr), 0);
-   if (len > 0 && strPtr)
-      return wstring(strPtr, len);
-   return wstring();
-#else
-   return LocalStringW(strID).m_buffer;
-#endif
-}

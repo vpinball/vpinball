@@ -313,8 +313,6 @@ public:
 
    void RemoveInvalidReferences();
 
-   HRESULT GetTypeName(BSTR *pVal) const final;
-
    void SetMouseCapture();
 
    void SetDirtyDraw() final;
