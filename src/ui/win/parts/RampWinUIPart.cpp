@@ -181,9 +181,12 @@ void RampWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
-   {
+      m_ramp->BeginUndo();
+      m_ramp->MarkForUndo();
       m_ramp->AddPoint(m_editor->TransformPoint(x, y), true);
-   }
-   break;
+      m_ramp->EndUndo();
+      if (m_ramp->GetPTable())
+         m_ramp->GetPTable()->SetDirtyDraw();
+      break;
    }
 }

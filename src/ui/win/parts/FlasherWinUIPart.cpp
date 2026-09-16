@@ -154,6 +154,13 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_ADDPOINT: m_flasher->AddPoint(m_editor->TransformPoint(x, y), false); break;
+   case ID_WALLMENU_ADDPOINT:
+      m_flasher->BeginUndo();
+      m_flasher->MarkForUndo();
+      m_flasher->AddPoint(m_editor->TransformPoint(x, y), false);
+      m_flasher->EndUndo();
+      if (m_flasher->GetPTable())
+         m_flasher->GetPTable()->SetDirtyDraw();
+      break;
    }
 }

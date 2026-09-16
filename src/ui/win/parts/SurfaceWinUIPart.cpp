@@ -141,6 +141,13 @@ void SurfaceWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
-   case ID_WALLMENU_ADDPOINT: m_surface->AddPoint(m_editor->TransformPoint(x, y), false); break;
+   case ID_WALLMENU_ADDPOINT:
+      m_surface->BeginUndo();
+      m_surface->MarkForUndo();
+      m_surface->AddPoint(m_editor->TransformPoint(x, y), false);
+      m_surface->EndUndo();
+      if (m_surface->GetPTable())
+         m_surface->GetPTable()->SetDirtyDraw();
+      break;
    }
 }

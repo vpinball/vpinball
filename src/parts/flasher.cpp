@@ -241,31 +241,27 @@ void Flasher::Translate(const Vertex2D &offset)
 
 void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
 {
-      STARTUNDO
+   vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
 
-      vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
+   Vertex2D vOut;
+   int iSeg;
+   ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
 
-      Vertex2D vOut;
-      int iSeg;
-      ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
+   // Go through vertices (including iSeg itself) counting control points until iSeg
+   int icp = 0;
+   for (int i = 0; i < (iSeg + 1); i++)
+      if (vvertex[i].controlPoint)
+         icp++;
 
-      // Go through vertices (including iSeg itself) counting control points until iSeg
-      int icp = 0;
-      for (int i = 0; i < (iSeg + 1); i++)
-         if (vvertex[i].controlPoint)
-            icp++;
-
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
-         m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-      }
-
-      STOPUNDO
+   CComObject<DragPoint> *pdp;
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
+      m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+   }
 }
 
 void Flasher::UpdatePoint(int index, float x, float y)
