@@ -15,8 +15,8 @@ ISelect::ISelect()
 
 void ISelect::SetDirtyDraw()
 {
-   if (GetPTable())
-      GetPTable()->SetDirtyDraw();
+   if (PinTable* const table = GetIEditable()->GetPTable())
+      table->SetDirtyDraw();
 }
 
 void ISelect::FlipY(const Vertex2D& pvCenter)

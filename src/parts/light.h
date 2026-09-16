@@ -173,9 +173,6 @@ private:
       IEditable *GetIEditable() override { return (IEditable *)m_plight; }
       const IEditable *GetIEditable() const override { return (const IEditable *)m_plight; }
 
-      PinTable *GetPTable() override { return m_plight->GetPTable(); }
-      const PinTable *GetPTable() const override { return m_plight->GetPTable(); }
-
       Vertex2D GetCenter() const override { return m_plight->m_d.m_vCenter; }
 
       void Translate(const Vertex2D &offset) override

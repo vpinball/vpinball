@@ -45,11 +45,12 @@ class ISelect
 public:
    ISelect();
 
+   // Never null: each selectable element must refer to a parent table part
+   virtual IEditable *GetIEditable() = 0;
+   virtual const IEditable *GetIEditable() const = 0;
+
    // Report a change that would need the Win32 UI to be redrawn
    virtual void SetDirtyDraw();
-
-   virtual PinTable *GetPTable() = 0;
-   virtual const PinTable *GetPTable() const = 0;
 
    virtual HRESULT GetTypeName(BSTR *pVal) const;
    wstring GetTypeNameForType(const ItemTypeEnum type) const;
@@ -70,9 +71,6 @@ public:
 
    virtual void FlipX(const Vertex2D &pvCenter);
    virtual void FlipY(const Vertex2D &pvCenter);
-
-   virtual IEditable *GetIEditable() = 0;
-   virtual const IEditable *GetIEditable() const = 0;
 
    virtual int GetSelectLevel() const { return 1; }
    virtual void UpdateStatusBarInfo();

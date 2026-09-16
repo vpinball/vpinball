@@ -594,7 +594,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
    m_nameEdit.EnableWindow(TRUE);
 
    // Table is locked: just disable property pane
-   if (psel->GetPTable()->IsLocked())
+   if (psel->GetIEditable()->GetPTable()->IsLocked())
    {
       m_multipleElementsStatic.ShowWindow(SW_HIDE);
       m_nameEdit.ShowWindow(SW_HIDE);
@@ -651,22 +651,22 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 
     if (pvsel.size() > 1)
     {
-        const wstring& wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
-        const string collection = MakeString(wzName);
+       const wstring &wzName = psel->GetIEditable()->GetPTable()->GetCollectionNameByElement(psel);
+       const string collection = MakeString(wzName);
 
-        BSTR bstr;
-        psel->GetTypeName(&bstr);
-        const string name = MakeString(bstr);
-        SysFreeString(bstr);
+       BSTR bstr;
+       psel->GetTypeName(&bstr);
+       const string name = MakeString(bstr);
+       SysFreeString(bstr);
 
-        string header;
-        if (!collection.empty())
-           header = collection + " [" + name + "](" + std::to_string(pvsel.size()) + ')';
-        else
-           header = name + '(' + std::to_string(pvsel.size()) + ')';
+       string header;
+       if (!collection.empty())
+          header = collection + " [" + name + "](" + std::to_string(pvsel.size()) + ')';
+       else
+          header = name + '(' + std::to_string(pvsel.size()) + ')';
 
-        m_nameEdit.SetWindowText(header.c_str());
-        m_nameEdit.SetReadOnly();
+       m_nameEdit.SetWindowText(header.c_str());
+       m_nameEdit.SetReadOnly();
     }
     else
     {
@@ -694,7 +694,7 @@ void PropertyDialog::StartUndo(ISelect *const psel)
 void PropertyDialog::EndUndo(ISelect *const psel)
 {
    psel->GetIEditable()->EndUndo();
-   psel->GetPTable()->SetDirtyDraw();
+   psel->GetIEditable()->GetPTable()->SetDirtyDraw();
 }
 
 BOOL PropertyDialog::OnInitDialog()
@@ -1003,13 +1003,13 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
     if (m_hVisibleCheck && (dispid == IDC_VISIBLE_CHECK || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hVisibleCheck, property->m_visible);
     if (m_basePhysicsMaterialCombo && (dispid == IDC_MATERIAL_COMBO4 || dispid == -1))
-        PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(), *m_basePhysicsMaterialCombo, property->m_szPhysicsMaterial);
+       PropertyDialog::UpdateMaterialComboBox(psel->GetIEditable()->GetPTable()->GetMaterialList(), *m_basePhysicsMaterialCombo, property->m_szPhysicsMaterial);
     if (m_hOverwritePhysicsCheck && (dispid == IDC_OVERWRITE_MATERIAL_SETTINGS || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hOverwritePhysicsCheck, property->m_overwritePhysics);
     if (m_baseMaterialCombo && (dispid == IDC_MATERIAL_COMBO || dispid == -1))
-        PropertyDialog::UpdateMaterialComboBox(psel->GetPTable()->GetMaterialList(), *m_baseMaterialCombo, property->m_szMaterial);
+       PropertyDialog::UpdateMaterialComboBox(psel->GetIEditable()->GetPTable()->GetMaterialList(), *m_baseMaterialCombo, property->m_szMaterial);
     if (m_baseImageCombo && (dispid == DISPID_Image || dispid == -1))
-        PropertyDialog::UpdateTextureComboBox(psel->GetPTable()->GetImageList(), *m_baseImageCombo, property->m_szImage);
+       PropertyDialog::UpdateTextureComboBox(psel->GetIEditable()->GetPTable()->GetImageList(), *m_baseImageCombo, property->m_szImage);
 
     if (m_hCollidableCheck)
     {

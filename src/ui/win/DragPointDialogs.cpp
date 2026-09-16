@@ -109,7 +109,7 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
                   edit->MarkForUndo();
                psel->Rotate(f, v, useElementCenter);
                edit->EndUndo();
-               psel->GetPTable()->SetDirtyDraw();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -134,7 +134,7 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
                edit->MarkForUndo();
             psel->Rotate(f, v, useElementCenter);
             edit->EndUndo();
-            psel->GetPTable()->SetDirtyDraw();
+            psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             break;
          }
          case IDC_ROTATE_UNDO_BUTTON:
@@ -142,8 +142,8 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
             if (m_applyCount > 0)
             {
                m_applyCount--;
-               psel->GetPTable()->Undo();
-               psel->GetPTable()->SetDirtyDraw();
+               psel->GetIEditable()->GetPTable()->Undo();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             break;
          }
@@ -151,8 +151,8 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
             if (m_applyCount > 0)
             {
                for (int i = 0; i < m_applyCount; i++)
-                  psel->GetPTable()->Undo();
-               psel->GetPTable()->SetDirtyDraw();
+                  psel->GetIEditable()->GetPTable()->Undo();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);
             break;
@@ -282,7 +282,7 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
                   edit->MarkForUndo();
                psel->Scale(fx, fy, v, useElementCenter);
                edit->EndUndo();
-               psel->GetPTable()->SetDirtyDraw();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -320,7 +320,7 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
                edit->MarkForUndo();
             psel->Scale(fx, fy, v, useElementCenter);
             edit->EndUndo();
-            psel->GetPTable()->SetDirtyDraw();
+            psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             break;
          }
          case IDC_SCALE_UNDO_BUTTON:
@@ -328,8 +328,8 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
             if (m_applyCount > 0)
             {
                m_applyCount--;
-               psel->GetPTable()->Undo();
-               psel->GetPTable()->SetDirtyDraw();
+               psel->GetIEditable()->GetPTable()->Undo();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             break;
          }
@@ -337,8 +337,8 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
             if (m_applyCount > 0)
             {
                for (int i = 0; i < m_applyCount; i++)
-                  psel->GetPTable()->Undo();
-               psel->GetPTable()->SetDirtyDraw();
+                  psel->GetIEditable()->GetPTable()->Undo();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);
             break;
@@ -418,7 +418,7 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
                   edit->MarkForUndo();
                psel->Translate(v);
                edit->EndUndo();
-               psel->GetPTable()->SetDirtyDraw();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, TRUE);
             break;
@@ -438,7 +438,7 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
                edit->MarkForUndo();
             psel->Translate(v);
             edit->EndUndo();
-            psel->GetPTable()->SetDirtyDraw();
+            psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             break;
          }
          case IDC_TRANSLATE_UNDO_BUTTON:
@@ -446,8 +446,8 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
             if (m_applyCount > 0)
             {
                m_applyCount--;
-               psel->GetPTable()->Undo();
-               psel->GetPTable()->SetDirtyDraw();
+               psel->GetIEditable()->GetPTable()->Undo();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             break;
          }
@@ -455,8 +455,8 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
             if (m_applyCount > 0)
             {
                for (int i = 0; i < m_applyCount; i++)
-                  psel->GetPTable()->Undo();
-               psel->GetPTable()->SetDirtyDraw();
+                  psel->GetIEditable()->GetPTable()->Undo();
+               psel->GetIEditable()->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);
             break;
