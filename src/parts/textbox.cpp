@@ -533,7 +533,8 @@ STDMETHODIMP Textbox::putref_Font(IFontDisp* pFont)
    }
 #endif
 
-   SetDirtyDraw();
+   if (PinTable *const table = GetPTable())
+      table->SetDirtyDraw();
 
    return S_OK;
 }

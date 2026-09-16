@@ -12,9 +12,3 @@ ISelect::ISelect()
    : m_vpinball(g_pvp)
 {
 }
-
-void ISelect::SetDirtyDraw()
-{
-   if (PinTable* const table = GetIEditable()->GetPTable())
-      table->SetDirtyDraw();
-}

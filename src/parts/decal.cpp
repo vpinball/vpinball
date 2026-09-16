@@ -778,7 +778,8 @@ STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
        pIFont->Release();
    }
 #endif
-   SetDirtyDraw();
+   if (PinTable *const table = GetPTable())
+      table->SetDirtyDraw();
    EnsureSize();
 
    return S_OK;
