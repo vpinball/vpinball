@@ -2106,25 +2106,45 @@ void WinEditor::AddControlPoint()
          case eItemRamp:
          {
             Ramp *const pRamp = (Ramp *)psel;
+            pRamp->BeginUndo();
+            pRamp->MarkForUndo();
             pRamp->AddPoint(v, false);
+            pRamp->EndUndo();
+            if (pRamp->GetPTable())
+               pRamp->GetPTable()->SetDirtyDraw();
             break;
          }
          case eItemLight:
          {
             Light *const pLight = (Light *)psel;
+            pLight->BeginUndo();
+            pLight->MarkForUndo();
             pLight->AddPoint(v, false);
+            pLight->EndUndo();
+            if (pLight->GetPTable())
+               pLight->GetPTable()->SetDirtyDraw();
             break;
          }
          case eItemSurface:
          {
             Surface *const pSurf = (Surface *)psel;
+            pSurf->BeginUndo();
+            pSurf->MarkForUndo();
             pSurf->AddPoint(v, false);
+            pSurf->EndUndo();
+            if (pSurf->GetPTable())
+               pSurf->GetPTable()->SetDirtyDraw();
             break;
          }
          case eItemRubber:
          {
             Rubber *const pRub = (Rubber *)psel;
+            pRub->BeginUndo();
+            pRub->MarkForUndo();
             pRub->AddPoint(v, false);
+            pRub->EndUndo();
+            if (pRub->GetPTable())
+               pRub->GetPTable()->SetDirtyDraw();
             break;
          }
          default:
@@ -2152,25 +2172,45 @@ void WinEditor::AddSmoothControlPoint()
          case eItemRamp:
          {
             Ramp *const pRamp = (Ramp *)psel;
+            pRamp->BeginUndo();
+            pRamp->MarkForUndo();
             pRamp->AddPoint(v, true);
+            pRamp->EndUndo();
+            if (pRamp->GetPTable())
+               pRamp->GetPTable()->SetDirtyDraw();
             break;
          }
          case eItemLight:
          {
             Light *const pLight = (Light *)psel;
+            pLight->BeginUndo();
+            pLight->MarkForUndo();
             pLight->AddPoint(v, true);
+            pLight->EndUndo();
+            if (pLight->GetPTable())
+               pLight->GetPTable()->SetDirtyDraw();
             break;
          }
          case eItemSurface:
          {
             Surface *const pSurf = (Surface *)psel;
+            pSurf->BeginUndo();
+            pSurf->MarkForUndo();
             pSurf->AddPoint(v, true);
+            pSurf->EndUndo();
+            if (pSurf->GetPTable())
+               pSurf->GetPTable()->SetDirtyDraw();
             break;
          }
          case eItemRubber:
          {
             Rubber *const pRub = (Rubber *)psel;
+            pRub->BeginUndo();
+            pRub->MarkForUndo();
             pRub->AddPoint(v, true);
+            pRub->EndUndo();
+            if (pRub->GetPTable())
+               pRub->GetPTable()->SetDirtyDraw();
             break;
          }
          default:

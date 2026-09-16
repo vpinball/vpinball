@@ -934,8 +934,6 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
 
 void Surface::AddPoint(const Vertex2D &v, const bool smooth)
 {
-   STARTUNDO
-
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
@@ -957,8 +955,6 @@ void Surface::AddPoint(const Vertex2D &v, const bool smooth)
       pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
       m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
-
-   STOPUNDO
 }
 
 void Surface::FlipY(const Vertex2D& pvCenter)

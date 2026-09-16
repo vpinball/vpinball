@@ -169,9 +169,12 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
-   {
+      m_rubber->BeginUndo();
+      m_rubber->MarkForUndo();
       m_rubber->AddPoint(m_editor->TransformPoint(x, y), true);
-   }
-   break;
+      m_rubber->EndUndo();
+      if (m_rubber->GetPTable())
+         m_rubber->GetPTable()->SetDirtyDraw();
+      break;
    }
 }

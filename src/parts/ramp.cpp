@@ -1267,8 +1267,6 @@ void Ramp::Load(IObjectReader& reader)
 
 void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
 {
-   STARTUNDO
-
    vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex);
 
@@ -1293,8 +1291,6 @@ void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
       pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f, smooth); // Ramps are usually always smooth
       m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
-
-   STOPUNDO
 }
 
 void Ramp::FlipY(const Vertex2D& pvCenter)
