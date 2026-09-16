@@ -117,7 +117,7 @@ HRESULT HitTarget::Init(const float x, const float y, const bool fromMouseClick,
    SetDefaults(fromMouseClick);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
-   UpdateStatusBarInfo();
+   TransformVertices();
    return S_OK;
 }
 
@@ -482,11 +482,6 @@ void HitTarget::ExportMesh(ObjLoader& loader)
 // Rendering
 //////////////////////////////
 
-void HitTarget::UpdateStatusBarInfo()
-{
-   TransformVertices();
-}
-
 #pragma region Rendering
 
 void HitTarget::RenderSetup(Renderer *renderer)
@@ -702,7 +697,7 @@ void HitTarget::Translate(const Vertex2D &offset)
    m_d.m_vPosition.x += offset.x;
    m_d.m_vPosition.y += offset.y;
 
-   UpdateStatusBarInfo();
+   TransformVertices();
 }
 
 Vertex2D HitTarget::GetCenter() const
@@ -794,7 +789,7 @@ void HitTarget::Load(IObjectReader& reader)
          }
          return true;
       });
-   UpdateStatusBarInfo();
+   TransformVertices();
 }
 
 
