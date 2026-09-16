@@ -4,7 +4,7 @@
 
 #include "parts/dragpoint.h"
 #include "ui/win/IWinUIPart.h"
-#include "ui/win/WinUIPartRegistry.h"
+#include "ui/win/parts/DragPointWinUIPart.h"
 
 // Maintains one IWinUIPart per DragPoint of an IHaveDragPoints.
 // DragPoint pointers are not stable (points are deleted and recreated on undo, point insertion/removal, ...),
@@ -47,7 +47,7 @@ private:
          m_parts, [&points](const std::unique_ptr<IWinUIPart>& part) { return std::ranges::find(points, static_cast<CComObject<DragPoint>*>(part->GetSelect())) == points.end(); });
       for (CComObject<DragPoint>* const point : points)
          if (std::ranges::none_of(m_parts, [point](const std::unique_ptr<IWinUIPart>& part) { return part->GetSelect() == static_cast<ISelect*>(point); }))
-            if (std::unique_ptr<IWinUIPart> part = WinUIPartRegistry::Create(m_editor, point))
+            if (std::unique_ptr<IWinUIPart> part = std::make_unique<DragPointWinUIPart>(m_editor, point))
                m_parts.push_back(std::move(part));
    }
 
