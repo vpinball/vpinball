@@ -497,11 +497,16 @@ void WinEditor::SetPropSel(VectorProtected<ISelect> &pvsel)
 
 void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
+#ifndef __STANDALONE__
+   PinTable *const pt = editable->GetPTable();
+   pt->BeginUndo();
+   pt->MarkForUndo(editable);
+#endif
+
    const string oldName = MakeString(editable->GetIScriptable()->m_wzName);
    editable->SetName(MakeWString(name));
 
 #ifndef __STANDALONE__
-   PinTable *const pt = editable->GetPTable();
    g_pvp->SetPropSel(pt->m_tableEditor->m_vmultisel);
    g_pvp->GetLayersListDialog()->Update();
 
@@ -529,6 +534,9 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
             ((Trigger *)pedit)->m_d.m_szSurface = name;
       }
    }
+
+   pt->EndUndo();
+   pt->SetDirtyDraw();
 #endif
 }
 
