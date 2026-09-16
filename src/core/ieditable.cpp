@@ -281,14 +281,10 @@ void IEditable::SetName(const wstring& name)
       if (!pt->IsNameUnique(newName))
          newName = pt->GetUniqueName(newName);
 
-      pt->BeginUndo();
-      pt->MarkForUndo(this);
       if (pt->HasPart(this))
          pt->RenamePart(this, newName);
       else
          scriptable->m_wzName = newName;
-      pt->EndUndo();
-      pt->SetDirtyDraw();
    }
    else
    {
