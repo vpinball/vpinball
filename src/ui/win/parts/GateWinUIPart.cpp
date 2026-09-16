@@ -18,6 +18,12 @@ void GateWinUIPart::UpdateStatusBarObjectPos()
    SetStatusBarObjectPos(m_gate->m_d.m_vCenter.x, m_gate->m_d.m_vCenter.y);
 }
 
+void GateWinUIPart::UpdateStatusBarInfo()
+{
+   const string tbuf = std::format("Length: {:.3f} | Height: {:.3f}", m_editor->m_vpxEditor->ConvertToUnit(m_gate->m_d.m_length), m_editor->m_vpxEditor->ConvertToUnit(m_gate->m_d.m_height));
+   m_editor->m_vpxEditor->SetStatusBarUnitInfo(tbuf, true);
+}
+
 void GateWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

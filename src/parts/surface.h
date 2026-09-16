@@ -121,7 +121,6 @@ protected:
 public:
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
-   void UpdateStatusBarInfo() final;
 
    void AddPoint(const Vertex2D &v, const bool smooth);
 

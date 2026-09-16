@@ -204,7 +204,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
             default:
                 break;
         }
-        text->UpdateStatusBarInfo();
+        PropertyDialog::UpdateStatusBarInfo(text);
     }
     UpdateVisuals(dispid);
 }

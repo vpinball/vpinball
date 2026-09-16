@@ -198,7 +198,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(decal, &decal->m_d, dispid);
                 break;
         }
-        decal->UpdateStatusBarInfo();
+        PropertyDialog::UpdateStatusBarInfo(decal);
     }
     UpdateVisuals(dispid);
 }

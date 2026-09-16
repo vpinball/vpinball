@@ -131,7 +131,7 @@ void BumperVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(bumper, &bumper->m_d, dispid);
                 break;
         }
-        bumper->UpdateStatusBarInfo();
+        PropertyDialog::UpdateStatusBarInfo(bumper);
     }
     UpdateVisuals(dispid);
 }

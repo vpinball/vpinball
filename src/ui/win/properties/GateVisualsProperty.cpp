@@ -104,7 +104,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(gate, &gate->m_d, dispid);
                 break;
         }
-        gate->UpdateStatusBarInfo();
+        PropertyDialog::UpdateStatusBarInfo(gate);
     }
     UpdateVisuals(dispid);
 }

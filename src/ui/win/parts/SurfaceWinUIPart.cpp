@@ -15,6 +15,13 @@ SurfaceWinUIPart::SurfaceWinUIPart(PinTableWnd* editor, Surface* surface)
 {
 }
 
+void SurfaceWinUIPart::UpdateStatusBarInfo()
+{
+   const string tbuf = std::format(
+      "TopHeight: {:.03f} | BottomHeight: {:.03f}", m_editor->m_vpxEditor->ConvertToUnit(m_surface->m_d.m_heighttop), m_editor->m_vpxEditor->ConvertToUnit(m_surface->m_d.m_heightbottom));
+   m_editor->m_vpxEditor->SetStatusBarUnitInfo(tbuf, true);
+}
+
 void SurfaceWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetFillColor(m_surface->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);

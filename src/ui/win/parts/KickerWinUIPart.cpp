@@ -19,6 +19,12 @@ void KickerWinUIPart::UpdateStatusBarObjectPos()
    SetStatusBarObjectPos(m_kicker->m_d.m_vCenter.x, m_kicker->m_d.m_vCenter.y);
 }
 
+void KickerWinUIPart::UpdateStatusBarInfo()
+{
+   const string tbuf = std::format("Radius: {:.3f}", m_editor->m_vpxEditor->ConvertToUnit(m_kicker->m_d.m_radius));
+   m_editor->m_vpxEditor->SetStatusBarUnitInfo(tbuf, true);
+}
+
 void KickerWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

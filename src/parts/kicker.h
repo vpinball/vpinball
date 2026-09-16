@@ -86,8 +86,6 @@ public:
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
 
-   void UpdateStatusBarInfo() final;
-
    void WriteRegDefaults() final;
 
    KickerData m_d;

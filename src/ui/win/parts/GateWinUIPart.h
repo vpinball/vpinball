@@ -14,6 +14,7 @@ public:
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;
    void UpdateStatusBarObjectPos() override;
+   void UpdateStatusBarInfo() override;
 
 private:
    Gate* const m_gate;

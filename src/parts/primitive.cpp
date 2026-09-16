@@ -37,7 +37,6 @@ HRESULT Primitive::Init(const float x, const float y, const bool fromMouseClick,
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
    CalculateBuiltinOriginal();
-   UpdateStatusBarInfo();
    return S_OK;
 }
 
@@ -703,20 +702,6 @@ void Primitive::CalculateBuiltinOriginal()
    //ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
 
-void Primitive::UpdateStatusBarInfo()
-{
-   if (!m_vpinball)
-      return;
-   if (m_d.m_use3DMesh)
-   {
-       const string tbuf = "Vertices: " + std::to_string(m_mesh.NumVertices()) + " | Polygons: " + std::to_string(m_mesh.NumIndices());
-       m_vpinball->SetStatusBarUnitInfo(tbuf, false);
-   }
-   else
-       m_vpinball->SetStatusBarUnitInfo(string(), false);
-
-}
-
 void Primitive::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
@@ -1179,7 +1164,6 @@ void Primitive::Translate(const Vertex2D &offset)
    m_d.m_vPosition.x += offset.x;
    m_d.m_vPosition.y += offset.y;
    CalculateBuiltinOriginal();
-   UpdateStatusBarInfo();
 }
 
 Vertex2D Primitive::GetCenter() const
@@ -1589,7 +1573,6 @@ bool Primitive::LoadMesh(
          delete[] tmp;
       }
    }
-   UpdateStatusBarInfo();
    return true;
 }
 

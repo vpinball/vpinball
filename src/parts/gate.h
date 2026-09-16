@@ -89,8 +89,6 @@ public:
 
    void ExportMesh(ObjLoader &loader) final;
 
-   void UpdateStatusBarInfo() final;
-
    void WriteRegDefaults() final;
 
    float GetOpenAngle() const;

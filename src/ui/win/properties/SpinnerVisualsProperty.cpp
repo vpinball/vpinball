@@ -96,7 +96,7 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(spinner, &spinner->m_d, dispid);
                 break;
         }
-        spinner->UpdateStatusBarInfo();
+        PropertyDialog::UpdateStatusBarInfo(spinner);
     }
     UpdateVisuals(dispid);
 }

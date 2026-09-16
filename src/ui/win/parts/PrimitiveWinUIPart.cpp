@@ -18,6 +18,17 @@ void PrimitiveWinUIPart::UpdateStatusBarObjectPos()
    SetStatusBarObjectPos(m_primitive->m_d.m_vPosition.x, m_primitive->m_d.m_vPosition.y);
 }
 
+void PrimitiveWinUIPart::UpdateStatusBarInfo()
+{
+   if (m_primitive->m_d.m_use3DMesh)
+   {
+      const string tbuf = "Vertices: " + std::to_string(m_primitive->m_mesh.NumVertices()) + " | Polygons: " + std::to_string(m_primitive->m_mesh.NumIndices());
+      m_editor->m_vpxEditor->SetStatusBarUnitInfo(tbuf, false);
+   }
+   else
+      m_editor->m_vpxEditor->SetStatusBarUnitInfo(string(), false);
+}
+
 void PrimitiveWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

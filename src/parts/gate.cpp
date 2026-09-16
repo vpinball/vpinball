@@ -71,14 +71,6 @@ void Gate::SetGateType(GateType type)
     }
 }
 
-void Gate::UpdateStatusBarInfo()
-{
-   if (!m_vpinball)
-      return;
-   const string tbuf = std::format("Length: {:.3f} | Height: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_length), m_vpinball->ConvertToUnit(m_d.m_height));
-   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
-}
-
 HRESULT Gate::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    SetDefaults(fromMouseClick);

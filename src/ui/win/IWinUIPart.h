@@ -50,6 +50,9 @@ public:
    // Updates the editor status bar with the part's position (in table units)
    virtual void UpdateStatusBarObjectPos();
 
+   // Updates the editor status bar info field with part specific information (dimensions, mesh stats, ...)
+   virtual void UpdateStatusBarInfo();
+
    // Returns the context menu resource id used when right-clicking this part (-1 for none)
    virtual int GetMenuId() const { return -1; }
 

@@ -20,6 +20,15 @@ void RampWinUIPart::UpdateStatusBarObjectPos()
    SetStatusBarObjectPos(0.f, 0.f);
 }
 
+void RampWinUIPart::UpdateStatusBarInfo()
+{
+   const string tbuf = std::format("TopH: {:.03f} | BottomH: {:.03f} | TopW: {:.03f} | BottomW: {:.03f} | LeftW: {:.03f} | RightW: {:.03f}",
+      m_editor->m_vpxEditor->ConvertToUnit(m_ramp->m_d.m_heighttop), m_editor->m_vpxEditor->ConvertToUnit(m_ramp->m_d.m_heightbottom),
+      m_editor->m_vpxEditor->ConvertToUnit(m_ramp->m_d.m_widthtop), m_editor->m_vpxEditor->ConvertToUnit(m_ramp->m_d.m_widthbottom),
+      m_editor->m_vpxEditor->ConvertToUnit(m_ramp->m_d.m_leftwallheightvisible), m_editor->m_vpxEditor->ConvertToUnit(m_ramp->m_d.m_rightwallheightvisible));
+   m_editor->m_vpxEditor->SetStatusBarUnitInfo(tbuf, true);
+}
+
 void RampWinUIPart::UIRenderPass1(Sur* const psur)
 {
    // make 1-wire ramps look unique in editor - uses ramp color

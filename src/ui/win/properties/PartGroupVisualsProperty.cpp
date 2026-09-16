@@ -118,7 +118,7 @@ void PartGroupVisualsProperty::UpdateProperties(const int dispid)
 
       default: break;
       }
-      partGroup->UpdateStatusBarInfo();
+      PropertyDialog::UpdateStatusBarInfo(partGroup);
    }
    UpdateVisuals(dispid);
 }

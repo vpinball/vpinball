@@ -35,14 +35,6 @@ Kicker *Kicker::CopyForPlay() const
    return dst;
 }
 
-void Kicker::UpdateStatusBarInfo()
-{
-   if (!m_vpinball)
-      return;
-   const string tbuf = std::format( "Radius: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_radius));
-   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
-}
-
 HRESULT Kicker::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    SetDefaults(fromMouseClick);

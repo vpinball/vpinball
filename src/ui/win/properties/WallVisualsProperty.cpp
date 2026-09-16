@@ -109,7 +109,7 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(wall, &wall->m_d, dispid);
                 break;
         }
-        wall->UpdateStatusBarInfo();
+        PropertyDialog::UpdateStatusBarInfo(wall);
     }
     UpdateVisuals(dispid);
 }
