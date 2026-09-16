@@ -29,6 +29,14 @@ public:
    void RefreshProperties();
    void AssignSelectionToPartGroup(PartGroup *group);
 
+   // Multi-selection manipulation: applies the transform to all the selected parts at once
+   Vertex2D GetMultiSelCenter() const;
+   void FlipYMultiSel(const Vertex2D &pvCenter);
+   void FlipXMultiSel(const Vertex2D &pvCenter);
+   void RotateMultiSel(const float ang, const Vertex2D &pvCenter, const bool useElementCenter);
+   void ScaleMultiSel(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter);
+   void TranslateMultiSel(const Vertex2D &pvOffset);
+
 #ifndef __STANDALONE__
    void SetMouseCursor();
    #endif

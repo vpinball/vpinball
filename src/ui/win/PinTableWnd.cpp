@@ -891,6 +891,87 @@ void PinTableWnd::RefreshProperties()
 #endif
 }
 
+Vertex2D PinTableWnd::GetMultiSelCenter() const
+{
+   float minx = FLT_MAX;
+   float maxx = -FLT_MAX;
+   float miny = FLT_MAX;
+   float maxy = -FLT_MAX;
+
+   for (int i = 0; i < m_vmultisel.size(); i++)
+   {
+      const ISelect *const psel = m_vmultisel.ElementAt(i);
+      const Vertex2D vCenter = psel->GetCenter();
+
+      minx = min(minx, vCenter.x);
+      maxx = max(maxx, vCenter.x);
+      miny = min(miny, vCenter.y);
+      maxy = max(maxy, vCenter.y);
+   }
+
+   return { (maxx + minx) * 0.5f, (maxy + miny) * 0.5f };
+}
+
+void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
+{
+   m_table->BeginUndo();
+   for (int i = 0; i < m_vmultisel.size(); i++)
+   {
+      m_vmultisel[i].GetIEditable()->MarkForUndo();
+      m_vmultisel[i].FlipY(pvCenter);
+   }
+   m_table->EndUndo();
+   m_table->SetDirtyDraw();
+}
+
+void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
+{
+   m_table->BeginUndo();
+   for (int i = 0; i < m_vmultisel.size(); i++)
+   {
+      m_vmultisel[i].GetIEditable()->MarkForUndo();
+      m_vmultisel[i].FlipX(pvCenter);
+   }
+   m_table->EndUndo();
+   m_table->SetDirtyDraw();
+}
+
+void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, const bool useElementCenter)
+{
+   m_table->BeginUndo();
+   for (int i = 0; i < m_vmultisel.size(); i++)
+   {
+      m_vmultisel[i].GetIEditable()->MarkForUndo();
+      m_vmultisel[i].Rotate(ang, pvCenter, useElementCenter);
+   }
+   m_table->EndUndo();
+   m_table->SetDirtyDraw();
+}
+
+void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter)
+{
+   m_table->BeginUndo();
+   for (int i = 0; i < m_vmultisel.size(); i++)
+   {
+      m_vmultisel[i].GetIEditable()->MarkForUndo();
+      m_vmultisel[i].Scale(scalex, scaley, pvCenter, useElementCenter);
+   }
+   m_table->EndUndo();
+   m_table->SetDirtyDraw();
+}
+
+void PinTableWnd::TranslateMultiSel(const Vertex2D &pvOffset)
+{
+   m_table->BeginUndo();
+   for (int i = 0; i < m_vmultisel.size(); i++)
+   {
+      m_vmultisel[i].GetIEditable()->MarkForUndo();
+      m_vmultisel[i].Translate(pvOffset);
+   }
+   m_table->EndUndo();
+   m_table->SetDirtyDraw();
+}
+
 void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
 {
    m_table->BeginUndo();

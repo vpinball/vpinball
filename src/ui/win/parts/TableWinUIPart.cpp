@@ -31,6 +31,39 @@ void TableWinUIPart::OnLButtonDown(int x, int y)
    m_table->SetDirtyDraw();
 }
 
+// ISelect adapter exposing the multi-selection of a PinTableWnd as a single selectable,
+// allowing simultaneous edition of multiple parts through the standard ISelect transform interface
+class MultiSelProxy final : public ISelect
+{
+public:
+   explicit MultiSelProxy(PinTableWnd *editor)
+      : m_editor(editor)
+   {
+   }
+
+   PinTable *GetPTable() final { return m_editor->m_table; }
+   const PinTable *GetPTable() const final { return m_editor->m_table; }
+
+   ItemTypeEnum GetItemType() const final { return eItemTable; }
+
+   void Delete() final { }
+   void Uncreate() final { }
+
+   void FlipY(const Vertex2D &pvCenter) final { m_editor->FlipYMultiSel(pvCenter); }
+   void FlipX(const Vertex2D &pvCenter) final { m_editor->FlipXMultiSel(pvCenter); }
+   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final { m_editor->RotateMultiSel(ang, pvCenter, useElementCenter); }
+   void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final { m_editor->ScaleMultiSel(scalex, scaley, pvCenter, useElementCenter); }
+   void Translate(const Vertex2D &pvOffset) final { m_editor->TranslateMultiSel(pvOffset); }
+   Vertex2D GetCenter() const final { return m_editor->GetMultiSelCenter(); }
+   void PutCenter(const Vertex2D &pv) final { }
+
+   IEditable *GetIEditable() final { return m_editor->m_table; }
+   const IEditable *GetIEditable() const final { return m_editor->m_table; }
+
+private:
+   PinTableWnd *const m_editor;
+};
+
 void TableWinUIPart::DoCommand(int icmd, int x, int y)
 {
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
@@ -70,6 +103,8 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
       return;
    }
 
+   MultiSelProxy multiSel(m_editor);
+
    switch (icmd)
    {
    case ID_DRAWINFRONT:
@@ -88,13 +123,13 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_EDIT_DRAWINGORDER_HIT: m_editor->m_vpxEditor->ShowDrawingOrderDialog(false); break;
    case ID_EDIT_DRAWINGORDER_SELECT: m_editor->m_vpxEditor->ShowDrawingOrderDialog(true); break;
    case ID_LOCK: m_table->LockElements(); break;
-   case ID_WALLMENU_FLIP: m_table->FlipY(m_table->GetCenter()); break;
-   case ID_WALLMENU_MIRROR: m_table->FlipX(m_table->GetCenter()); break;
+   case ID_WALLMENU_FLIP: m_editor->FlipYMultiSel(m_editor->GetMultiSelCenter()); break;
+   case ID_WALLMENU_MIRROR: m_editor->FlipXMultiSel(m_editor->GetMultiSelCenter()); break;
    case IDC_COPY: m_table->Copy(x, y); break;
    case IDC_PASTE: m_table->Paste(false, x, y); break;
    case IDC_PASTEAT: m_table->Paste(true, x, y); break;
-   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_table); break;
-   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_table); break;
-   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_table); break;
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(&multiSel); break;
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(&multiSel); break;
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(&multiSel); break;
    }
 }
