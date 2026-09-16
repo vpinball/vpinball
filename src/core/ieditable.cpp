@@ -20,7 +20,7 @@ IEditable::~IEditable()
 
 void IEditable::Delete()
 {
-   MarkForDelete();
+   GetPTable()->MarkForDelete(this);
 
    GetPTable()->RemovePart(this);
 
@@ -247,31 +247,6 @@ void IEditable::TimerRelease(vector<HitTimer *> &pvht)
    if (m_timerEnabled)
       RemoveFromVectorSingle(pvht, m_phittimer.get());
    m_phittimer = nullptr;
-}
-
-void IEditable::BeginUndo()
-{
-   if (GetPTable())
-      GetPTable()->BeginUndo();
-}
-
-void IEditable::EndUndo()
-{
-   if (GetPTable())
-      GetPTable()->EndUndo();
-}
-
-void IEditable::MarkForUndo()
-{
-   if (GetPTable())
-      GetPTable()->m_undo.MarkForUndo(this);
-}
-
-void IEditable::MarkForDelete()
-{
-   GetPTable()->m_undo.BeginUndo();
-   GetPTable()->m_undo.MarkForDelete(this);
-   GetPTable()->m_undo.EndUndo();
 }
 
 void IEditable::Undelete()

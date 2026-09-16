@@ -145,19 +145,19 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-      m_rubber->BeginUndo();
-      m_rubber->MarkForUndo();
+      m_rubber->GetPTable()->BeginUndo();
+      m_rubber->GetPTable()->MarkForUndo(m_rubber);
       m_rubber->FlipPointY(m_rubber->GetPointCenter());
-      m_rubber->EndUndo();
+      m_rubber->GetPTable()->EndUndo();
       if (m_rubber->GetPTable())
          m_rubber->GetPTable()->SetDirtyDraw();
       break;
 
    case ID_WALLMENU_MIRROR:
-      m_rubber->BeginUndo();
-      m_rubber->MarkForUndo();
+      m_rubber->GetPTable()->BeginUndo();
+      m_rubber->GetPTable()->MarkForUndo(m_rubber);
       m_rubber->FlipPointX(m_rubber->GetPointCenter());
-      m_rubber->EndUndo();
+      m_rubber->GetPTable()->EndUndo();
       if (m_rubber->GetPTable())
          m_rubber->GetPTable()->SetDirtyDraw();
       break;
@@ -169,10 +169,10 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
-      m_rubber->BeginUndo();
-      m_rubber->MarkForUndo();
+      m_rubber->GetPTable()->BeginUndo();
+      m_rubber->GetPTable()->MarkForUndo(m_rubber);
       m_rubber->AddPoint(m_editor->TransformPoint(x, y), true);
-      m_rubber->EndUndo();
+      m_rubber->GetPTable()->EndUndo();
       if (m_rubber->GetPTable())
          m_rubber->GetPTable()->SetDirtyDraw();
       break;

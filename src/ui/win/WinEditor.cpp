@@ -2106,10 +2106,10 @@ void WinEditor::AddControlPoint()
          case eItemRamp:
          {
             Ramp *const pRamp = (Ramp *)psel;
-            pRamp->BeginUndo();
-            pRamp->MarkForUndo();
+            pRamp->GetPTable()->BeginUndo();
+            pRamp->GetPTable()->MarkForUndo(pRamp);
             pRamp->AddPoint(v, false);
-            pRamp->EndUndo();
+            pRamp->GetPTable()->EndUndo();
             if (pRamp->GetPTable())
                pRamp->GetPTable()->SetDirtyDraw();
             break;
@@ -2117,10 +2117,10 @@ void WinEditor::AddControlPoint()
          case eItemLight:
          {
             Light *const pLight = (Light *)psel;
-            pLight->BeginUndo();
-            pLight->MarkForUndo();
+            pLight->GetPTable()->BeginUndo();
+            pLight->GetPTable()->MarkForUndo(pLight);
             pLight->AddPoint(v, false);
-            pLight->EndUndo();
+            pLight->GetPTable()->EndUndo();
             if (pLight->GetPTable())
                pLight->GetPTable()->SetDirtyDraw();
             break;
@@ -2128,10 +2128,10 @@ void WinEditor::AddControlPoint()
          case eItemSurface:
          {
             Surface *const pSurf = (Surface *)psel;
-            pSurf->BeginUndo();
-            pSurf->MarkForUndo();
+            pSurf->GetPTable()->BeginUndo();
+            pSurf->GetPTable()->MarkForUndo(pSurf);
             pSurf->AddPoint(v, false);
-            pSurf->EndUndo();
+            pSurf->GetPTable()->EndUndo();
             if (pSurf->GetPTable())
                pSurf->GetPTable()->SetDirtyDraw();
             break;
@@ -2139,10 +2139,10 @@ void WinEditor::AddControlPoint()
          case eItemRubber:
          {
             Rubber *const pRub = (Rubber *)psel;
-            pRub->BeginUndo();
-            pRub->MarkForUndo();
+            pRub->GetPTable()->BeginUndo();
+            pRub->GetPTable()->MarkForUndo(pRub);
             pRub->AddPoint(v, false);
-            pRub->EndUndo();
+            pRub->GetPTable()->EndUndo();
             if (pRub->GetPTable())
                pRub->GetPTable()->SetDirtyDraw();
             break;
@@ -2172,10 +2172,10 @@ void WinEditor::AddSmoothControlPoint()
          case eItemRamp:
          {
             Ramp *const pRamp = (Ramp *)psel;
-            pRamp->BeginUndo();
-            pRamp->MarkForUndo();
+            pRamp->GetPTable()->BeginUndo();
+            pRamp->GetPTable()->MarkForUndo(pRamp);
             pRamp->AddPoint(v, true);
-            pRamp->EndUndo();
+            pRamp->GetPTable()->EndUndo();
             if (pRamp->GetPTable())
                pRamp->GetPTable()->SetDirtyDraw();
             break;
@@ -2183,10 +2183,10 @@ void WinEditor::AddSmoothControlPoint()
          case eItemLight:
          {
             Light *const pLight = (Light *)psel;
-            pLight->BeginUndo();
-            pLight->MarkForUndo();
+            pLight->GetPTable()->BeginUndo();
+            pLight->GetPTable()->MarkForUndo(pLight);
             pLight->AddPoint(v, true);
-            pLight->EndUndo();
+            pLight->GetPTable()->EndUndo();
             if (pLight->GetPTable())
                pLight->GetPTable()->SetDirtyDraw();
             break;
@@ -2194,10 +2194,10 @@ void WinEditor::AddSmoothControlPoint()
          case eItemSurface:
          {
             Surface *const pSurf = (Surface *)psel;
-            pSurf->BeginUndo();
-            pSurf->MarkForUndo();
+            pSurf->GetPTable()->BeginUndo();
+            pSurf->GetPTable()->MarkForUndo(pSurf);
             pSurf->AddPoint(v, true);
-            pSurf->EndUndo();
+            pSurf->GetPTable()->EndUndo();
             if (pSurf->GetPTable())
                pSurf->GetPTable()->SetDirtyDraw();
             break;
@@ -2205,10 +2205,10 @@ void WinEditor::AddSmoothControlPoint()
          case eItemRubber:
          {
             Rubber *const pRub = (Rubber *)psel;
-            pRub->BeginUndo();
-            pRub->MarkForUndo();
+            pRub->GetPTable()->BeginUndo();
+            pRub->GetPTable()->MarkForUndo(pRub);
             pRub->AddPoint(v, true);
-            pRub->EndUndo();
+            pRub->GetPTable()->EndUndo();
             if (pRub->GetPTable())
                pRub->GetPTable()->SetDirtyDraw();
             break;
