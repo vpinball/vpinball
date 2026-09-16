@@ -3,7 +3,6 @@
 #pragma once
 
 class IEditable;
-class WinEditor;
 
 // Warning: these are Win32 ui part id, but also used to identify table parts (see IEditable)
 // These are used for file I/O and must not be changed/reordered!
@@ -54,7 +53,4 @@ public:
    virtual void Uncreate() = 0;
 
    virtual bool IsSubPart() const { return false; }
-
-protected:
-   WinEditor *m_vpinball = nullptr;
 };

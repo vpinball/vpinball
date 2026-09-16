@@ -13,7 +13,7 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/WinEditor.h"
+
 
 Plunger::~Plunger()
 {
@@ -1182,9 +1182,6 @@ STDMETHODIMP Plunger::CreateBall(IBall **pResult)
 STDMETHODIMP Plunger::get_X(float *pVal)
 {
    *pVal = m_d.m_v.x;
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), true);
-
    return S_OK;
 }
 

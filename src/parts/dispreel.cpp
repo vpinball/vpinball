@@ -9,7 +9,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/WinEditor.h"
 #include "utils/color.h"
 
 
@@ -497,9 +496,6 @@ STDMETHODIMP DispReel::put_Height(float newVal)
 STDMETHODIMP DispReel::get_X(float *pVal)
 {
    *pVal = GetX();
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), true);
-
    return S_OK;
 }
 

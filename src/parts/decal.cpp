@@ -9,7 +9,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/WinEditor.h"
 
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
@@ -650,9 +649,6 @@ STDMETHODIMP Decal::put_Height(float newVal)
 STDMETHODIMP Decal::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), true);
-
    return S_OK;
 }
 

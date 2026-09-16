@@ -12,7 +12,6 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/WinEditor.h"
 #include "utils/bulb.h"
 #include "utils/color.h"
 
@@ -1022,9 +1021,6 @@ STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 STDMETHODIMP Light::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), true);
-
    return S_OK;
 }
 

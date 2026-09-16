@@ -8,7 +8,7 @@
 #include "parts/flasher.h"
 #include "parts/light.h"
 #include "parts/primitive.h"
-#include "ui/win/WinEditor.h"
+
 
 LightSeq *LightSeq::CopyForPlay() const
 {

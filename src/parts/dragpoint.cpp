@@ -5,7 +5,7 @@
 
 #include "parts/pintable.h"
 #include "ui/win/PinTableWnd.h"
-#include "ui/win/WinEditor.h"
+
 
 Vertex3Ds DragPoint::m_copyPoint;
 bool      DragPoint::m_pointCopied = false;

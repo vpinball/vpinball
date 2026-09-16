@@ -77,6 +77,7 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 
 PinTable::PinTable()
    : m_settings(&(g_app->m_settings))
+   , m_vpinball(g_pvp)
    , m_undo(this)
 {
    m_renderSolid = m_settings.GetEditor_RenderSolid();

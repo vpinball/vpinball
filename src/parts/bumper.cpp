@@ -14,7 +14,6 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
 Bumper::~Bumper()
@@ -885,9 +884,6 @@ STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 STDMETHODIMP Bumper::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), true);
-
    return S_OK;
 }
 
