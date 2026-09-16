@@ -456,6 +456,8 @@ void PinTable::ReorderParts(bool isDrawingOrder)
       for (int i = m_tableEditor->m_vmultisel.size() - 1; i >= 0; i--)
       {
          IEditable *const pedit = m_tableEditor->m_vmultisel[i].GetIEditable();
+         if (FindIndexOf(m_vedit, pedit) != -1)
+            continue; // Already re-added: the selection may contain multiple selects of a part (part and sub parts)
          m_vedit.push_back(pedit);
       }
    }
@@ -470,6 +472,8 @@ void PinTable::ReorderParts(bool isDrawingOrder)
       for (SSIZE_T i = m_allHitElements.size() - 1; i >= 0; i--)
       {
          IEditable *const pedit = m_allHitElements[i]->GetIEditable();
+         if (FindIndexOf(m_vedit, pedit) != -1)
+            continue; // Already re-added: the hit elements may contain multiple selects of a part (part and sub parts)
          m_vedit.push_back(pedit);
       }
    }
@@ -2751,7 +2755,9 @@ void PinTable::UpdateCollection(const int index)
          for (int t = 0; t < m_tableEditor->m_vmultisel.size(); t++)
          {
             ISelect *const ptr = m_tableEditor->m_vmultisel.ElementAt(t);
-            m_vcollection.ElementAt(index)->AddPart(ptr->GetIEditable());
+            // Multi-select may contain a part together with its sub parts (drag points, light centers): add each part only once
+            if (FindIndexOf(m_vcollection[index].GetParts(), ptr->GetIEditable()) == -1)
+               m_vcollection.ElementAt(index)->AddPart(ptr->GetIEditable());
         }
       }
    }
@@ -3423,18 +3429,22 @@ void PinTable::Copy(int x, int y)
    }
 
    vector<IStream*> vstm;
+   vector<IEditable*> copied;
    //m_vstmclipboard
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
    {
+       IEditable *const pe = m_tableEditor->m_vmultisel[i].GetIEditable();
+
+       // Multi-select may contain a part together with its sub parts (drag points, light centers): copy each part only once
+       if (FindIndexOf(copied, pe) != -1)
+           continue;
+       copied.push_back(pe);
+
        const HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
 
        IStream *pstm;
        CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
 
-       IEditable *const pe = m_tableEditor->m_vmultisel[i].GetIEditable();
-
-       ////////!! BUG!  With multi-select, if you have multiple dragpoints on
-       //////// a surface selected, the surface will get copied multiple times
        const int type = pe->GetItemType();
        ULONG writ = 0;
        pstm->Write(&type, sizeof(int), &writ);
@@ -3549,11 +3559,15 @@ void PinTable::OnDelete()
 
    for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
    {
+      ISelect *const psel = m_tableEditor->m_vmultisel.ElementAt(i);
+      // Sub parts (drag points, light centers) are deleted together with their owning part
+      if (m_tableEditor->IsSubPartOfSelectedPart(psel))
+         continue;
       // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
-      m_vseldelete.push_back(m_tableEditor->m_vmultisel.ElementAt(i));
-      if (m_tableEditor->m_vmultisel.ElementAt(i)->GetItemType() == ItemTypeEnum::eItemPartGroup)
+      m_vseldelete.push_back(psel);
+      if (psel->GetItemType() == ItemTypeEnum::eItemPartGroup)
          for (const auto part : m_vedit)
-            if (part->GetPartGroup() == m_tableEditor->m_vmultisel.ElementAt(i) && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
+            if (part->GetPartGroup() == psel && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
                m_vseldelete.push_back(part->GetISelect());
    }
 

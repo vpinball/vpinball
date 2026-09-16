@@ -892,6 +892,14 @@ void PinTableWnd::RefreshProperties()
 #endif
 }
 
+bool PinTableWnd::IsSubPartOfSelectedPart(const ISelect *psel) const
+{
+   if (psel == nullptr || !psel->IsSubPart())
+      return false;
+   const IEditable *const owner = psel->GetIEditable();
+   return (owner != nullptr) && (owner->GetISelect() != nullptr) && (m_vmultisel.find(owner->GetISelect()) != -1);
+}
+
 Vertex2D PinTableWnd::GetMultiSelCenter()
 {
    float minx = FLT_MAX;
@@ -902,6 +910,8 @@ Vertex2D PinTableWnd::GetMultiSelCenter()
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = m_vmultisel.ElementAt(i);
+      if (IsSubPartOfSelectedPart(psel))
+         continue;
       if (IWinUIPart *const uiPart = GetUIPart(psel))
       {
          const Vertex2D vCenter = uiPart->GetCenter();
@@ -922,6 +932,8 @@ void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
+      if (IsSubPartOfSelectedPart(psel))
+         continue;
       m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
@@ -942,6 +954,8 @@ void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
+      if (IsSubPartOfSelectedPart(psel))
+         continue;
       m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
@@ -962,6 +976,8 @@ void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, cons
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
+      if (IsSubPartOfSelectedPart(psel))
+         continue;
       m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
@@ -989,6 +1005,8 @@ void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Ve
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
       ISelect *const psel = &m_vmultisel[i];
+      if (IsSubPartOfSelectedPart(psel))
+         continue;
       m_table->MarkForUndo(psel->GetIEditable());
       if (psel->IsSubPart())
       {
@@ -1011,8 +1029,11 @@ void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
    m_table->BeginUndo();
    for (int i = 0; i < m_vmultisel.size(); i++)
    {
-      m_table->MarkForUndo(m_vmultisel[i].GetIEditable());
-      if (IWinUIPart *const uiPart = GetUIPart(&m_vmultisel[i]))
+      ISelect *const psel = &m_vmultisel[i];
+      if (IsSubPartOfSelectedPart(psel))
+         continue;
+      m_table->MarkForUndo(psel->GetIEditable());
+      if (IWinUIPart *const uiPart = GetUIPart(psel))
          uiPart->Translate(offset);
    }
    m_table->EndUndo();
@@ -1111,7 +1132,7 @@ void PinTableWnd::OnKeyDown(int key)
       {
          ISelect *const pisel = m_vmultisel.ElementAt(i);
          IWinUIPart *const uiPart = GetUIPart(pisel);
-         if (uiPart && !pisel->GetIEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
+         if (uiPart && !IsSubPartOfSelectedPart(pisel) && !pisel->GetIEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
          {
             switch (key)
             {
@@ -1380,7 +1401,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
             {
                ISelect *const pisel = m_vmultisel.ElementAt(i);
                IWinUIPart *const uiPart = GetUIPart(pisel);
-               if (uiPart && uiPart->m_dragging && !pisel->GetIEditable()->IsUILocked()) // For drag points, follow the lock of the parent
+               if (uiPart && uiPart->m_dragging && !IsSubPartOfSelectedPart(pisel) && !pisel->GetIEditable()->IsUILocked()) // For drag points, follow the lock of the parent
                {
                   if (!uiPart->m_markedForUndo)
                   {
