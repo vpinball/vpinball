@@ -37,7 +37,7 @@ public:
    IEditable *GetIEditable() final;
    const IEditable *GetIEditable() const final;
 
-   int GetSelectLevel() const final { return 2; } // So dragpoints won't be band-selected with the main objects
+   bool IsSubPart() const final { return true; } // So dragpoints won't be band-selected with the main objects
 
    void Copy();
    void Paste();
