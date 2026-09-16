@@ -39,9 +39,10 @@ public:
 	GetIEditable()->BeginUndo(); \
 	GetIEditable()->MarkForUndo();
 
-#define STOPUNDOSELECT \
-	GetIEditable()->EndUndo(); \
-	if (GetPTable()) GetPTable()->SetDirtyDraw();
+#define STOPUNDOSELECT                                                                                                                                                                       \
+   GetIEditable()->EndUndo();                                                                                                                                                                \
+   if (GetIEditable()->GetPTable())                                                                                                                                                          \
+      GetIEditable()->GetPTable()->SetDirtyDraw();
 
 
 // Explanation for AllowedViews:

@@ -15,13 +15,13 @@ DragPointWinUIPart::DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint
 void DragPointWinUIPart::OnLButtonDown(int x, int y)
 {
    IWinUIPart::OnLButtonDown(x, y);
-   m_dragPoint->GetPTable()->SetDirtyDraw();
+   m_dragPoint->GetIEditable()->GetPTable()->SetDirtyDraw();
 }
 
 void DragPointWinUIPart::OnLButtonUp(int x, int y)
 {
    IWinUIPart::OnLButtonUp(x, y);
-   m_dragPoint->GetPTable()->SetDirtyDraw();
+   m_dragPoint->GetIEditable()->GetPTable()->SetDirtyDraw();
 }
 
 void DragPointWinUIPart::UpdateStatusBarObjectPos()

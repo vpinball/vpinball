@@ -16,7 +16,7 @@ void IWinUIPart::OnLButtonDown(int x, int y)
    m_dragging = true;
    m_markedForUndo = false; // So we will be marked when and if we are dragged
 
-   m_select->GetPTable()->SetMouseCapture();
+   m_select->GetIEditable()->GetPTable()->SetMouseCapture();
 
    UpdateStatusBarObjectPos();
 #endif
@@ -33,8 +33,8 @@ void IWinUIPart::OnLButtonUp(int x, int y)
    {
       m_markedForUndo = false;
       m_select->GetIEditable()->EndUndo();
-      if (m_select->GetPTable())
-         m_select->GetPTable()->SetDirtyDraw();
+      if (m_select->GetIEditable()->GetPTable())
+         m_select->GetIEditable()->GetPTable()->SetDirtyDraw();
    }
 #endif
 }
@@ -72,7 +72,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
       const int ksshift = GetKeyState(VK_SHIFT);
       //const int ksctrl = GetKeyState(VK_CONTROL);
 
-      PinTable *const currentTable = m_select->GetPTable();
+      PinTable *const currentTable = m_select->GetIEditable()->GetPTable();
       const int i = (icmd & 0x00FF0000) >> 16;
       ISelect *const pisel = currentTable->m_allHitElements[i];
 
@@ -93,16 +93,16 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
    }
    switch (icmd)
    {
-   case ID_DRAWINFRONT: m_select->GetPTable()->MovePartToFront(piedit); break;
-   case ID_DRAWINBACK: m_select->GetPTable()->MovePartToBack(piedit); break;
+   case ID_DRAWINFRONT: m_select->GetIEditable()->GetPTable()->MovePartToFront(piedit); break;
+   case ID_DRAWINBACK: m_select->GetIEditable()->GetPTable()->MovePartToBack(piedit); break;
    case ID_SETASDEFAULT: piedit->WriteRegDefaults(); break;
    case ID_LOCK:
       piedit->BeginUndo();
       piedit->MarkForUndo();
       piedit->SetUILock(!piedit->IsUILocked());
       piedit->EndUndo();
-      if (m_select->GetPTable())
-         m_select->GetPTable()->SetDirtyDraw();
+      if (m_select->GetIEditable()->GetPTable())
+         m_select->GetIEditable()->GetPTable()->SetDirtyDraw();
       break;
    }
 #endif

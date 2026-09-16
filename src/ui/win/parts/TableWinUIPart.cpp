@@ -41,9 +41,6 @@ public:
    {
    }
 
-   PinTable *GetPTable() final { return m_editor->m_table; }
-   const PinTable *GetPTable() const final { return m_editor->m_table; }
-
    ItemTypeEnum GetItemType() const final { return eItemTable; }
 
    void Delete() final { }

@@ -36,8 +36,6 @@ public:
 
    IEditable *GetIEditable() final;
    const IEditable *GetIEditable() const final;
-   PinTable *GetPTable() final { return GetIEditable()->GetPTable(); }
-   const PinTable *GetPTable() const final { return GetIEditable()->GetPTable(); }
 
    int GetSelectLevel() const final { return 2; } // So dragpoints won't be band-selected with the main objects
 
