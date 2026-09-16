@@ -166,7 +166,6 @@ public:
    void GenerateMesh(vector<Vertex3D_NoTex2> &buf);
    void TransformVertices();
    void SetMeshType(const TargetType type);
-   void UpdateStatusBarInfo() final;
 
    HitTargetData m_d;
 
