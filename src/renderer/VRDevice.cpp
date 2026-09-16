@@ -554,6 +554,8 @@ void VRDevice::SetupHMD()
       m_eyeWidth = static_cast<unsigned int>((float)m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
       m_eyeHeight = static_cast<unsigned int>((float)m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
+
+   // Limit to OpenXR declared limits
    const uint32_t maxWidth = std::min(m_viewConfigurationViews[0].maxImageRectWidth, m_systemProperties.graphicsProperties.maxSwapchainImageWidth);
    const uint32_t maxHeight = std::min(m_viewConfigurationViews[0].maxImageRectHeight, m_systemProperties.graphicsProperties.maxSwapchainImageHeight);
    if (m_eyeWidth == 0 || m_eyeHeight == 0 || m_eyeWidth > maxWidth || m_eyeHeight > maxHeight)
@@ -562,6 +564,16 @@ void VRDevice::SetupHMD()
       m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
       m_eyeHeight = m_viewConfigurationViews[0].recommendedImageRectHeight;
    }
+
+   // Limit to a resolution, under the maximum texture size supported by the GPU
+   const bgfx::Caps* caps = bgfx::getCaps();
+   if ((static_cast<uint32_t>(m_eyeWidth) >= caps->limits.maxTextureSize) || (static_cast<uint32_t>(m_eyeHeight) >= caps->limits.maxTextureSize))
+   {
+      PLOGI << "Requested resolution exceed the GPU capability, defaulting to headset recommended resolution";
+      m_eyeWidth = std::min(m_viewConfigurationViews[0].recommendedImageRectWidth, caps->limits.maxTextureSize);
+      m_eyeHeight = std::min(m_viewConfigurationViews[0].recommendedImageRectHeight, caps->limits.maxTextureSize);
+   }
+
    PLOGI << "Headset recommended resolution: " << m_viewConfigurationViews[0].recommendedImageRectWidth << 'x' << m_viewConfigurationViews[0].recommendedImageRectHeight;
    PLOGI << "Headset maximum resolution: " << m_viewConfigurationViews[0].maxImageRectWidth << 'x' << m_viewConfigurationViews[0].maxImageRectHeight;
    PLOGI << "Selected resolution: " << m_eyeWidth << 'x' << m_eyeHeight;
