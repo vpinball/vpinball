@@ -5,7 +5,6 @@
 
 #include "core/VPApp.h"
 #include "parts/Collection.h"
-#include "ui/win/WinEditor.h"
 
 
 PartGroup *PartGroup::CopyForPlay() const

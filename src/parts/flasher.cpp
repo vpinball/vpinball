@@ -12,7 +12,6 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/WinEditor.h"
 #include "utils/color.h"
 
 
@@ -390,9 +389,6 @@ STDMETHODIMP Flasher::get_X(float *pVal)
 {
    UpdateCenter();
    *pVal = m_d.m_vCenter.x;
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), true);
-
    return S_OK;
 }
 

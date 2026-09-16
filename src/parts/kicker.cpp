@@ -20,7 +20,6 @@
 #include "parts/ball.h"
 #include "parts/PartGroup.h"
 #include "ui/live/LiveUI.h"
-#include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
 

@@ -15,7 +15,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
 
@@ -606,9 +605,6 @@ STDMETHODIMP Trigger::put_Radius(float newVal)
 STDMETHODIMP Trigger::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), true);
-
    return S_OK;
 }
 
