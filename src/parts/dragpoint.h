@@ -90,6 +90,9 @@ public:
    bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 
 private:
+   void StartUndo();
+   void StopUndo();
+
 #if defined(_M_X64) || defined(_M_AMD64) || !defined(_MSC_VER)
    IHaveDragPoints *m_pihdp;
    #define M_PIHDP m_pihdp

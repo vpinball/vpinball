@@ -367,13 +367,26 @@ Vertex2D DragPoint::GetCenter() const
    return {m_v.x, m_v.y};
 }
 
+void DragPoint::StartUndo()
+{
+   GetIEditable()->BeginUndo();
+   GetIEditable()->MarkForUndo();
+}
+
+void DragPoint::StopUndo()
+{
+   GetIEditable()->EndUndo();
+   if (GetIEditable()->GetPTable())
+      GetIEditable()->GetPTable()->SetDirtyDraw();
+}
+
 void DragPoint::Delete()
 {
    if ((int)M_PIHDP->m_vdpoint.size() > M_PIHDP->GetMinimumPoints()) // Can't allow less points than the user can recover from
    {
-      STARTUNDOSELECT
+      StartUndo();
       RemoveFromVectorSingle(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this);
-      STOPUNDOSELECT
+      StopUndo();
       Release();
    }
 }
@@ -386,7 +399,7 @@ void DragPoint::Uncreate()
 
 void DragPoint::ToggleSmooth()
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_smooth = !m_smooth;
    const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)M_PIHDP->m_vdpoint.size()) % (int)M_PIHDP->m_vdpoint.size();
    if (m_smooth && m_slingshot)
@@ -397,12 +410,12 @@ void DragPoint::ToggleSmooth()
    {
       M_PIHDP->m_vdpoint[index2]->m_slingshot = false;
    }
-   STOPUNDOSELECT
+   StopUndo();
 }
 
 void DragPoint::ToggleSlingshot()
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_slingshot = !m_slingshot;
    if (m_slingshot)
    {
@@ -410,7 +423,7 @@ void DragPoint::ToggleSlingshot()
       const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % M_PIHDP->m_vdpoint.size();
       M_PIHDP->m_vdpoint[index2]->m_smooth = false;
    }
-   STOPUNDOSELECT
+   StopUndo();
 }
 
 STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
@@ -447,9 +460,9 @@ STDMETHODIMP DragPoint::get_X(float *pVal)
 
 STDMETHODIMP DragPoint::put_X(float newVal)
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_v.x = newVal;
-   STOPUNDOSELECT
+   StopUndo();
 
    return S_OK;
 }
@@ -462,9 +475,9 @@ STDMETHODIMP DragPoint::get_Y(float *pVal)
 
 STDMETHODIMP DragPoint::put_Y(float newVal)
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_v.y = newVal;
-   STOPUNDOSELECT
+   StopUndo();
 
    return S_OK;
 }
@@ -477,9 +490,9 @@ STDMETHODIMP DragPoint::get_Z(float *pVal)
 
 STDMETHODIMP DragPoint::put_Z(float newVal)
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_v.z = newVal;
-   STOPUNDOSELECT
+   StopUndo();
 
    return S_OK;
 }
@@ -498,9 +511,9 @@ STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DragPoint::put_Smooth(VARIANT_BOOL newVal)
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_smooth = VBTOb(newVal);
-   STOPUNDOSELECT
+   StopUndo();
 
    return S_OK;
 }
@@ -513,9 +526,9 @@ STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 
 STDMETHODIMP DragPoint::put_IsAutoTextureCoordinate(VARIANT_BOOL newVal)
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_autoTexture = VBTOb(newVal);
-   STOPUNDOSELECT
+   StopUndo();
 
    return S_OK;
 }
@@ -528,9 +541,9 @@ STDMETHODIMP DragPoint::get_TextureCoordinateU(float *pVal)
 
 STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
 {
-   STARTUNDOSELECT
+   StartUndo();
    m_texturecoord = newVal;
-   STOPUNDOSELECT
+   StopUndo();
 
    return S_OK;
 }
