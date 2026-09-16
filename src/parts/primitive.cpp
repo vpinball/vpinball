@@ -1174,10 +1174,10 @@ void Primitive::UpdateAnimation(const float diff_time_msec)
 // Positioning
 //////////////////////////////
 
-void Primitive::MoveOffset(const float dx, const float dy)
+void Primitive::Translate(const Vertex2D &offset)
 {
-   m_d.m_vPosition.x += dx;
-   m_d.m_vPosition.y += dy;
+   m_d.m_vPosition.x += offset.x;
+   m_d.m_vPosition.y += offset.y;
    CalculateBuiltinOriginal();
    UpdateStatusBarInfo();
 }
@@ -1185,14 +1185,6 @@ void Primitive::MoveOffset(const float dx, const float dy)
 Vertex2D Primitive::GetCenter() const
 {
    return {m_d.m_vPosition.x, m_d.m_vPosition.y};
-}
-
-void Primitive::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_vPosition.x = pv.x;
-   m_d.m_vPosition.y = pv.y;
-   CalculateBuiltinOriginal();
-   UpdateStatusBarInfo();
 }
 
 //////////////////////////////

@@ -407,20 +407,15 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 #pragma endregion
 
 
-void Spinner::MoveOffset(const float dx, const float dy)
+void Spinner::Translate(const Vertex2D &offset)
 {
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
+   m_d.m_vCenter.x += offset.x;
+   m_d.m_vCenter.y += offset.y;
 }
 
 Vertex2D Spinner::GetCenter() const
 {
    return m_d.m_vCenter;
-}
-
-void Spinner::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_vCenter = pv;
 }
 
 void Spinner::Save(IObjectWriter& writer, const bool saveForUndo)

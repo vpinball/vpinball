@@ -164,21 +164,13 @@ STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-void Textbox::MoveOffset(const float dx, const float dy)
+void Textbox::Translate(const Vertex2D &offset)
 {
-   m_d.m_v1.x += dx;
-   m_d.m_v1.y += dy;
+   m_d.m_v1.x += offset.x;
+   m_d.m_v1.y += offset.y;
 
-   m_d.m_v2.x += dx;
-   m_d.m_v2.y += dy;
-}
-
-void Textbox::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_v2.x = pv.x + m_d.m_v2.x - m_d.m_v1.x;
-   m_d.m_v2.y = pv.y + m_d.m_v2.y - m_d.m_v1.y;
-
-   m_d.m_v1 = pv;
+   m_d.m_v2.x += offset.x;
+   m_d.m_v2.y += offset.y;
 }
 
 

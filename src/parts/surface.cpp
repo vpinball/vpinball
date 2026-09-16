@@ -378,17 +378,6 @@ void Surface::UpdateBounds()
    m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_heighttop);
 }
 
-void Surface::MoveOffset(const float dx, const float dy)
-{
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-   {
-      CComObject<DragPoint> * const pdp = m_vdpoint[i];
-
-      pdp->m_v.x += dx;
-      pdp->m_v.y += dy;
-   }
-}
-
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceMeshGenerator.cs
 
 void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices)
@@ -992,10 +981,7 @@ void Surface::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
    IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Surface::Translate(const Vertex2D &pvOffset)
-{
-   IHaveDragPoints::TranslatePoints(pvOffset);
-}
+void Surface::Translate(const Vertex2D &offset) { IHaveDragPoints::TranslatePoints(offset); }
 
 void Surface::Save(IObjectWriter& writer, const bool saveForUndo)
 {

@@ -1187,17 +1187,6 @@ void Ramp::PrepareHabitrail()
 #pragma endregion
 
 
-void Ramp::MoveOffset(const float dx, const float dy)
-{
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-   {
-      CComObject<DragPoint> * const pdp = m_vdpoint[i];
-
-      pdp->m_v.x += dx;
-      pdp->m_v.y += dy;
-   }
-}
-
 void Ramp::ClearForOverwrite()
 {
    ClearPointsForOverwrite();
@@ -1339,10 +1328,7 @@ void Ramp::Scale(const float scalex, const float scaley, const Vertex2D& pvCente
    IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Ramp::Translate(const Vertex2D &pvOffset)
-{
-   IHaveDragPoints::TranslatePoints(pvOffset);
-}
+void Ramp::Translate(const Vertex2D &offset) { IHaveDragPoints::TranslatePoints(offset); }
 
 STDMETHODIMP Ramp::InterfaceSupportsErrorInfo(REFIID riid)
 {

@@ -55,20 +55,15 @@ void PartGroup::WriteRegDefaults()
 #undef LinkProp
 }
 
-void PartGroup::MoveOffset(const float dx, const float dy)
+void PartGroup::Translate(const Vertex2D& offset)
 {
-   m_d.m_v.x += dx;
-   m_d.m_v.y += dy;
+   m_d.m_v.x += offset.x;
+   m_d.m_v.y += offset.y;
 }
 
 Vertex2D PartGroup::GetCenter() const
 {
    return m_d.m_v;
-}
-
-void PartGroup::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_v = pv;
 }
 
 #pragma endregion

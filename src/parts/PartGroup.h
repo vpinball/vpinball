@@ -74,9 +74,8 @@ public:
 
    STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(PartGroup, eItemPartGroup, PARTGROUP, VIEW_PLAYFIELD | VIEW_BACKGLASS)
 
-   void MoveOffset(const float dx, const float dy) final;
+   void Translate(const Vertex2D& offset) final;
    Vertex2D GetCenter() const final;
-   void PutCenter(const Vertex2D& pv) final;
 
    void WriteRegDefaults() final;
 

@@ -697,10 +697,10 @@ void HitTarget::UpdateTarget()
 // Positioning
 //////////////////////////////
 
-void HitTarget::MoveOffset(const float dx, const float dy)
+void HitTarget::Translate(const Vertex2D &offset)
 {
-   m_d.m_vPosition.x += dx;
-   m_d.m_vPosition.y += dy;
+   m_d.m_vPosition.x += offset.x;
+   m_d.m_vPosition.y += offset.y;
 
    UpdateStatusBarInfo();
 }
@@ -708,14 +708,6 @@ void HitTarget::MoveOffset(const float dx, const float dy)
 Vertex2D HitTarget::GetCenter() const
 {
    return {m_d.m_vPosition.x, m_d.m_vPosition.y};
-}
-
-void HitTarget::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_vPosition.x = pv.x;
-   m_d.m_vPosition.y = pv.y;
-
-   UpdateStatusBarInfo();
 }
 
 //////////////////////////////

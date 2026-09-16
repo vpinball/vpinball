@@ -298,20 +298,15 @@ void Flipper::GetVertices(const float basex, const float basey, const float angl
    rgvTangents[2].y = endy + endradius*faceNormy2;
 }
 
-void Flipper::MoveOffset(const float dx, const float dy)
+void Flipper::Translate(const Vertex2D &offset)
 {
-   m_d.m_Center.x += dx;
-   m_d.m_Center.y += dy;
+   m_d.m_Center.x += offset.x;
+   m_d.m_Center.y += offset.y;
 }
 
 Vertex2D Flipper::GetCenter() const
 {
    return m_d.m_Center;
-}
-
-void Flipper::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_Center = pv;
 }
 
 STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)

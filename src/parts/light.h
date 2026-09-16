@@ -117,19 +117,16 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void MoveOffset(const float dx, const float dy) final;
-
    void ClearForOverwrite() final;
 
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
-   void Translate(const Vertex2D &pvOffset) final;
+   void Translate(const Vertex2D &offset) final;
 
    // DragPoints
    Vertex2D GetCenter() const final { return GetPointCenter(); }
-   void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
    Vertex2D GetPointCenter() const final;
    void PutPointCenter(const Vertex2D& pv) final;
    float GetCurrentHeight() const { return m_desktopBackdrop ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
@@ -180,11 +177,11 @@ private:
       const PinTable *GetPTable() const override { return m_plight->GetPTable(); }
 
       Vertex2D GetCenter() const override { return m_plight->m_d.m_vCenter; }
-      void PutCenter(const Vertex2D& pv) override { m_plight->m_d.m_vCenter = pv; }
 
-      void MoveOffset(const float dx, const float dy) override {
-          m_plight->m_d.m_vCenter.x += dx;
-          m_plight->m_d.m_vCenter.y += dy;
+      void Translate(const Vertex2D &offset) override
+      {
+         m_plight->m_d.m_vCenter.x += offset.x;
+         m_plight->m_d.m_vCenter.y += offset.y;
       }
 
       ItemTypeEnum GetItemType() const override { return eItemLightCenter; }

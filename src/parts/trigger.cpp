@@ -478,22 +478,6 @@ std::unique_ptr<std::vector<Vertex3D_NoTex2>> Trigger::GenerateMesh(Vertex3Ds &b
    return triggerVertices;
 }
 
-void Trigger::MoveOffset(const float dx, const float dy)
-{
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
-
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-   {
-      CComObject<DragPoint> * const pdp = m_vdpoint[i];
-
-      pdp->m_v.x += dx;
-      pdp->m_v.y += dy;
-   }
-
-   UpdateStatusBarInfo();
-}
-
 Vertex2D Trigger::GetPointCenter() const
 {
    return m_d.m_vCenter;
@@ -523,10 +507,12 @@ void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
    UpdateStatusBarInfo();
 }
 
-void Trigger::Translate(const Vertex2D &pvOffset)
+void Trigger::Translate(const Vertex2D &offset)
 {
-   IHaveDragPoints::TranslatePoints(pvOffset);
-   MoveOffset(pvOffset.x, pvOffset.y);
+   IHaveDragPoints::TranslatePoints(offset);
+   m_d.m_vCenter.x += offset.x;
+   m_d.m_vCenter.y += offset.y;
+   UpdateStatusBarInfo();
 }
 
 void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)

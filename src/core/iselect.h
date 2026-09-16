@@ -59,23 +59,17 @@ public:
    virtual void Delete() = 0;
    virtual void Uncreate() = 0;
 
-   virtual void FlipY(const Vertex2D& pvCenter);
-   virtual void FlipX(const Vertex2D& pvCenter);
-   virtual void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   virtual void Translate(const Vertex2D &pvOffset);
-   virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
-   // So objects don't have to implement all the transformation functions themselves
    virtual Vertex2D GetCenter() const = 0;
-   virtual Vertex2D GetScale() const
-   {
-      return {1.f, 1.f};
-   }
-   virtual float GetRotate() const
-   {
-      return 0.0f;
-   }
-   virtual void PutCenter(const Vertex2D& pv) = 0;
+   virtual void Translate(const Vertex2D &offset) = 0;
+
+   virtual Vertex2D GetScale() const { return { 1.f, 1.f }; }
+   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter);
+
+   virtual float GetRotate() const { return 0.0f; }
+   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter);
+
+   virtual void FlipX(const Vertex2D &pvCenter);
+   virtual void FlipY(const Vertex2D &pvCenter);
 
    virtual IEditable *GetIEditable() = 0;
    virtual const IEditable *GetIEditable() const = 0;

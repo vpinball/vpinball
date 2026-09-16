@@ -741,20 +741,6 @@ void Light::Render(const unsigned int renderMask)
    }
 }
 
-void Light::MoveOffset(const float dx, const float dy)
-{
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
-
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-   {
-      CComObject<DragPoint> * const pdp = m_vdpoint[i];
-
-      pdp->m_v.x += dx;
-      pdp->m_v.y += dy;
-   }
-}
-
 void Light::Save(IObjectWriter& writer, const bool saveForUndo)
 {
    writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
@@ -1006,9 +992,11 @@ void Light::Scale(const float scalex, const float scaley, const Vertex2D& pvCent
    IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Light::Translate(const Vertex2D &pvOffset)
+void Light::Translate(const Vertex2D &offset)
 {
-   IHaveDragPoints::TranslatePoints(pvOffset);
+   IHaveDragPoints::TranslatePoints(offset);
+   m_d.m_vCenter.x += offset.x;
+   m_d.m_vCenter.y += offset.y;
 }
 
 STDMETHODIMP Light::get_Color(OLE_COLOR *pVal)

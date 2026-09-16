@@ -351,26 +351,18 @@ void DispReel::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-void DispReel::MoveOffset(const float dx, const float dy)
+void DispReel::Translate(const Vertex2D &offset)
 {
-   m_d.m_v1.x += dx;
-   m_d.m_v1.y += dy;
+   m_d.m_v1.x += offset.x;
+   m_d.m_v1.y += offset.y;
 
-   m_d.m_v2.x += dx;
-   m_d.m_v2.y += dy;
+   m_d.m_v2.x += offset.x;
+   m_d.m_v2.y += offset.y;
 }
 
 Vertex2D DispReel::GetCenter() const
 {
    return m_d.m_v1;
-}
-
-void DispReel::PutCenter(const Vertex2D& pv)
-{
-   m_d.m_v1 = pv;
-
-   m_d.m_v2.x = pv.x + getBoxWidth();
-   m_d.m_v2.y = pv.y + getBoxHeight();
 }
 
 void DispReel::Save(IObjectWriter& writer, const bool saveForUndo)

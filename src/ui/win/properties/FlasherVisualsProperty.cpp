@@ -372,7 +372,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
          {
             const float dx = newX - oldX;
             PropertyDialog::StartUndo(flash);
-            flash->MoveOffset(dx, 0.0f);
+            flash->Translate(Vertex2D(dx, 0.0f));
             PropertyDialog::EndUndo(flash);
          }
          break;
@@ -385,7 +385,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
          {
             const float dy = newY - oldY;
             PropertyDialog::StartUndo(flash);
-            flash->MoveOffset(0.0f, dy);
+            flash->Translate(Vertex2D(0.0f, dy));
             PropertyDialog::EndUndo(flash);
          }
          break;

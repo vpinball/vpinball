@@ -106,10 +106,9 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ILightSeqEvents)
    END_CONNECTION_POINT_MAP()
 
-   void MoveOffset(const float dx, const float dy) final;
+   void Translate(const Vertex2D &offset) final;
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
-   void PutCenter(const Vertex2D& pv) final;
 
    void WriteRegDefaults() final;
 
