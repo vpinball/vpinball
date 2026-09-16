@@ -78,7 +78,7 @@ void PrimitiveWinUIPart::UIRenderPass2(Sur* const psur)
 
 void PrimitiveWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 {
-   psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
+   psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(m_primitive);
 

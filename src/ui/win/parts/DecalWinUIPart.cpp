@@ -53,7 +53,7 @@ void DecalWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
    if (!(m_decal->m_desktopBackdrop && !m_decal->GetPTable()->GetDecalsEnabled()))
    {
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-      psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
+      psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
       psur->SetObject(m_decal);
       psur->SetObject(nullptr);
 

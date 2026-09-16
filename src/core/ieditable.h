@@ -15,8 +15,6 @@ class EventProxyBase;
 class HitTimer;
 class PinTable;
 
-#define BLUEPRINT_SOLID_COLOR RGB(0,0,0)
-
 class IFireEvents
 {
 public:

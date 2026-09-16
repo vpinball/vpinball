@@ -117,7 +117,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
 
 void RubberWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 {
-   psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
+   psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
 
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
