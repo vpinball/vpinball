@@ -435,7 +435,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          m_implicitPlayfieldMesh->m_mesh.m_indices[5] = 3;
          m_implicitPlayfieldMesh->m_mesh.m_validBounds = false;
          m_ptable->AddPart(m_implicitPlayfieldMesh);
-         m_ptable->m_undo.Undo(true);
+         m_ptable->Undo(true);
          m_implicitPlayfieldMesh->Release();
       }
    }
@@ -459,7 +459,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          m_implicitVRBackglass->m_d.m_depthBias = 10000.0f; // Draw before other objects
          m_implicitVRBackglass->m_d.m_isVisible = m_ptable->m_settings.GetPlayerVR_AddBackglass();
          m_ptable->AddPart(m_implicitVRBackglass);
-         m_ptable->m_undo.Undo(true);
+         m_ptable->Undo(true);
          m_implicitVRBackglass->Release();
       }
    }

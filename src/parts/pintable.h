@@ -368,9 +368,13 @@ public:
 
    void BeginUndo();
    void EndUndo();
-   void Undo();
+   void Undo(bool discard = false);
    void MarkForUndo(IEditable *editable);
+   void MarkForCreate(IEditable *editable);
    void MarkForDelete(IEditable *editable);
+   void SetCleanPoint(SaveDirtyState sds);
+   void StartUndo();
+   void StopUndo();
 
    // IFireEvents
    IDispatch *GetIDispatch() final { return (IDispatch *)this; }
@@ -699,8 +703,6 @@ public:
 
    FRect m_rcDragRect; // Multi-select
 
-   PinUndo m_undo;
-
    string m_original_table_script; // Script defined in the loaded file
    std::filesystem::path m_external_script_name; // if defined, file that override internal script
    string m_script_text; // Actual script (either a copy of the original or the one loaded from the override file)
@@ -802,6 +804,8 @@ public:
    bool m_winEditorBackdrop = true;
 
 private:
+   PinUndo m_undo;
+
    unsigned int m_tablelocked = 0;
 
    string m_notesText;

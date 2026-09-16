@@ -708,9 +708,7 @@ STDMETHODIMP Kicker::get_X(float *pVal)
 
 STDMETHODIMP Kicker::put_X(float newVal)
 {
-   STARTUNDO
    m_d.m_vCenter.x = newVal;
-   STOPUNDO
 
    return S_OK;
 }
@@ -723,9 +721,7 @@ STDMETHODIMP Kicker::get_Y(float *pVal)
 
 STDMETHODIMP Kicker::put_Y(float newVal)
 {
-   STARTUNDO
    m_d.m_vCenter.y = newVal;
-   STOPUNDO
 
    return S_OK;
 }
@@ -738,9 +734,7 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
-   STARTUNDO
    m_d.m_szSurface = MakeString(newVal);
-   STOPUNDO
 
    return S_OK;
 }
@@ -753,11 +747,9 @@ STDMETHODIMP Kicker::get_Enabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Kicker::put_Enabled(VARIANT_BOOL newVal)
 {
-   STARTUNDO
    m_d.m_enabled = VBTOb(newVal);
    if (m_phitkickercircle)
       m_phitkickercircle->m_enabled = m_d.m_enabled;
-   STOPUNDO
 
    return S_OK;
 }
@@ -770,9 +762,7 @@ STDMETHODIMP Kicker::get_Scatter(float *pVal)
 
 STDMETHODIMP Kicker::put_Scatter(float newVal)
 {
-   STARTUNDO
    m_d.m_scatter = newVal;
-   STOPUNDO
 
    return S_OK;
 }
@@ -785,9 +775,7 @@ STDMETHODIMP Kicker::get_HitAccuracy(float *pVal)
 
 STDMETHODIMP Kicker::put_HitAccuracy(float newVal)
 {
-   STARTUNDO
    m_d.m_hitAccuracy = saturate(newVal);
-   STOPUNDO
 
    return S_OK;
 }
@@ -800,9 +788,7 @@ STDMETHODIMP Kicker::get_HitHeight(float *pVal)
 
 STDMETHODIMP Kicker::put_HitHeight(float newVal)
 {
-   STARTUNDO
    m_d.m_hit_height = newVal;
-   STOPUNDO
 
    return S_OK;
 }
@@ -815,9 +801,7 @@ STDMETHODIMP Kicker::get_Orientation(float *pVal)
 
 STDMETHODIMP Kicker::put_Orientation(float newVal)
 {
-   STARTUNDO
    m_d.m_orientation = newVal;
-   STOPUNDO
 
    return S_OK;
 }
@@ -830,9 +814,7 @@ STDMETHODIMP Kicker::get_Radius(float *pVal)
 
 STDMETHODIMP Kicker::put_Radius(float newVal)
 {
-   STARTUNDO
    m_d.m_radius = newVal;
-   STOPUNDO
 
    return S_OK;
 }
@@ -845,9 +827,7 @@ STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Kicker::put_FallThrough(VARIANT_BOOL newVal)
 {
-   STARTUNDO
    m_d.m_fallThrough = VBTOb(newVal);
-   STOPUNDO
 
    return S_OK;
 }
@@ -860,9 +840,7 @@ STDMETHODIMP Kicker::get_Legacy(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Kicker::put_Legacy(VARIANT_BOOL newVal)
 {
-   STARTUNDO
    m_d.m_legacyMode = VBTOb(newVal);
-   STOPUNDO
 
    return S_OK;
 }
@@ -876,12 +854,10 @@ STDMETHODIMP Kicker::get_DrawStyle(KickerType *pVal)
 
 STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 {
-   STARTUNDO
    m_d.m_kickertype = newVal;
    // legacy handling:
    if (m_d.m_kickertype > KickerCup2)
 	   m_d.m_kickertype = KickerInvisible;
-   STOPUNDO
 
    return S_OK;
 }
@@ -894,9 +870,7 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 
 STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
-   STARTUNDO
    m_d.m_szMaterial = MakeString(newVal);
-   STOPUNDO
 
    return S_OK;
 }
