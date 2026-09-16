@@ -46,6 +46,13 @@ void IWinUIPart::UpdateStatusBarObjectPos()
 #endif
 }
 
+void IWinUIPart::UpdateStatusBarInfo()
+{
+#ifndef __STANDALONE__
+   m_editor->m_vpxEditor->SetStatusBarUnitInfo(string(), false);
+#endif
+}
+
 void IWinUIPart::SetStatusBarObjectPos(const float x, const float y)
 {
 #ifndef __STANDALONE__

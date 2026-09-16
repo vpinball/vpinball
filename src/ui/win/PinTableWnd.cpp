@@ -859,7 +859,8 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
 #ifndef __STANDALONE__
       m_vpxEditor->SetPropSel(m_vmultisel);
 #endif
-      m_vmultisel[0].UpdateStatusBarInfo();
+      if (IWinUIPart *const uiPart = GetUIPart(&m_vmultisel[0]); uiPart != nullptr)
+         uiPart->UpdateStatusBarInfo();
    }
 
    piSelect = m_vmultisel.ElementAt(0);

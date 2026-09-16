@@ -104,7 +104,6 @@ public:
    void ExportMesh(ObjLoader& loader) final;
 
    void WriteRegDefaults() final;
-   void UpdateStatusBarInfo() final;
 
    void AddPoint(const Vertex2D &v, const bool smooth);
 

@@ -73,7 +73,6 @@ public:
    virtual void FlipY(const Vertex2D &pvCenter);
 
    virtual bool IsSubPart() const { return false; }
-   virtual void UpdateStatusBarInfo();
 
 protected:
    WinEditor *m_vpinball = nullptr;

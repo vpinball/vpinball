@@ -84,9 +84,3 @@ wstring ISelect::GetTypeNameForType(const ItemTypeEnum type) const
    return LocalStringW(strID).m_buffer;
 #endif
 }
-
-void ISelect::UpdateStatusBarInfo()
-{
-   if (m_vpinball)
-      m_vpinball->SetStatusBarUnitInfo(string(), false);
-}

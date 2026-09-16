@@ -284,7 +284,6 @@ public:
 
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
-   void UpdateStatusBarInfo() final;
 
    const Matrix3D &RecalculateMatrices();
    void TransformVertices();

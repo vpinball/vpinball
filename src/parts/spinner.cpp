@@ -27,14 +27,6 @@ Spinner *Spinner::CopyForPlay() const
    return dst;
 }
 
-void Spinner::UpdateStatusBarInfo()
-{
-   if (!m_vpinball)
-      return;
-   const string tbuf = std::format("Length: {:.3f} | Height: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_length), m_vpinball->ConvertToUnit(m_d.m_height));
-   m_vpinball->SetStatusBarUnitInfo(tbuf, true);
-}
-
 float Spinner::GetAngleMax() const { return m_phitspinner ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) : m_d.m_angleMax; }
 
 void Spinner::SetAngleMax(const float angle)

@@ -271,6 +271,8 @@ public:
 
     static void EndUndo(ISelect *const psel);
 
+    static void UpdateStatusBarInfo(ISelect *const psel);
+
     static bool GetCheckboxState(const HWND checkBoxHwnd)
     {
        const size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);

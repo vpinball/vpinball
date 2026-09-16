@@ -415,7 +415,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       case IDC_LIGHTMAP: CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szLightmap, m_lightmapCombo, flash); break;
       default: break;
       }
-      flash->UpdateStatusBarInfo();
+      PropertyDialog::UpdateStatusBarInfo(flash);
    }
    UpdateVisuals(dispid);
 }

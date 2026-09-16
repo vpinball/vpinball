@@ -18,6 +18,13 @@ void SpinnerWinUIPart::UpdateStatusBarObjectPos()
    SetStatusBarObjectPos(m_spinner->m_d.m_vCenter.x, m_spinner->m_d.m_vCenter.y);
 }
 
+void SpinnerWinUIPart::UpdateStatusBarInfo()
+{
+   const string tbuf
+      = std::format("Length: {:.3f} | Height: {:.3f}", m_editor->m_vpxEditor->ConvertToUnit(m_spinner->m_d.m_length), m_editor->m_vpxEditor->ConvertToUnit(m_spinner->m_d.m_height));
+   m_editor->m_vpxEditor->SetStatusBarUnitInfo(tbuf, true);
+}
+
 void SpinnerWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

@@ -20,6 +20,13 @@ void RubberWinUIPart::UpdateStatusBarObjectPos()
    SetStatusBarObjectPos(0.f, 0.f);
 }
 
+void RubberWinUIPart::UpdateStatusBarInfo()
+{
+   const string tbuf = std::format(
+      "Height: {:.3f} | Thickness: {:.3f}", m_editor->m_vpxEditor->ConvertToUnit(m_rubber->m_d.m_height), m_editor->m_vpxEditor->ConvertToUnit((float)m_rubber->m_d.m_thickness));
+   m_editor->m_vpxEditor->SetStatusBarUnitInfo(tbuf, true);
+}
+
 void RubberWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 0);

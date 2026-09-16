@@ -269,7 +269,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 UpdateBaseProperties(prim, &prim->m_d, dispid);
                 break;
         }
-        prim->UpdateStatusBarInfo();
+        PropertyDialog::UpdateStatusBarInfo(prim);
     }
     UpdateVisuals(dispid);
 }
@@ -434,7 +434,10 @@ protected:
       const bool doForsyth = IsDlgButtonChecked(IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
 
       if (m_prim->LoadMesh(filename, units, importAbsolutePosition, centerMesh, importMaterial, importAnimation, doForsyth))
+      {
+         PropertyDialog::UpdateStatusBarInfo(m_prim);
          EndDialog(TRUE);
+      }
       else
          ShowError("Unable to open file!");
    }

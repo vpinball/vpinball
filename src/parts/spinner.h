@@ -85,7 +85,6 @@ public:
    void ExportMesh(ObjLoader& loader) final;
 
    void WriteRegDefaults() final;
-   void UpdateStatusBarInfo() final;
 
    float GetAngleMax() const;
    void  SetAngleMax(const float angle);

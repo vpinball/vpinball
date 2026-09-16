@@ -14,6 +14,7 @@ public:
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;
    void UpdateStatusBarObjectPos() override;
+   void UpdateStatusBarInfo() override;
 
 private:
    Kicker* const m_kicker;

@@ -113,7 +113,6 @@ public:
    float GetDepth(const Vertex3Ds &viewDir) const final;
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
-   void UpdateStatusBarInfo() final;
 
    void WriteRegDefaults() final;
 

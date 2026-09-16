@@ -96,7 +96,6 @@ public:
    Vertex2D GetPointCenter() const final;
    void PutPointCenter(const Vertex2D& pv) final;
    void ExportMesh(ObjLoader& loader) final;
-   void UpdateStatusBarInfo() final { }
 
    void ClearForOverwrite() final;
 

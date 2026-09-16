@@ -24,6 +24,8 @@
 #include "parts/textbox.h"
 #include "parts/timer.h"
 #include "parts/trigger.h"
+#include "ui/win/IWinUIPart.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/properties/BackglassCameraProperty.h"
 #include "ui/win/properties/BackglassVisualsProperty.h"
 #include "ui/win/properties/BallPhysicsProperty.h"
@@ -695,6 +697,13 @@ void PropertyDialog::EndUndo(ISelect *const psel)
 {
    psel->GetIEditable()->EndUndo();
    psel->GetIEditable()->GetPTable()->SetDirtyDraw();
+}
+
+void PropertyDialog::UpdateStatusBarInfo(ISelect *const psel)
+{
+   if (PinTableWnd *const editor = g_pvp->GetActiveTableEditor(); editor != nullptr)
+      if (IWinUIPart *const uiPart = editor->GetUIPart(psel); uiPart != nullptr)
+         uiPart->UpdateStatusBarInfo();
 }
 
 BOOL PropertyDialog::OnInitDialog()

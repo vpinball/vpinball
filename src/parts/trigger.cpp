@@ -71,7 +71,6 @@ void Trigger::InitShape(float x, float y)
 {
    constexpr float lengthX = 30.0f;
    constexpr float lengthY = 30.0f;
-   UpdateStatusBarInfo();
 
    for (size_t i = 0; i < m_vdpoint.size(); i++)
       m_vdpoint[i]->Release();
@@ -496,7 +495,6 @@ void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useEl
 {
    IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
    m_d.m_rotation += ang;
-   UpdateStatusBarInfo();
 }
 
 void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
@@ -504,7 +502,6 @@ void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
    IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
    m_d.m_scaleX *= scalex;
    m_d.m_scaleY *= scaley;
-   UpdateStatusBarInfo();
 }
 
 void Trigger::Translate(const Vertex2D &offset)
@@ -512,7 +509,6 @@ void Trigger::Translate(const Vertex2D &offset)
    IHaveDragPoints::TranslatePoints(offset);
    m_d.m_vCenter.x += offset.x;
    m_d.m_vCenter.y += offset.y;
-   UpdateStatusBarInfo();
 }
 
 void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
@@ -575,7 +571,6 @@ void Trigger::Load(IObjectReader& reader)
          }
          return true;
       });
-   UpdateStatusBarInfo();
 
    // Seed the default shape for tables saved without drag points
    if (m_vdpoint.empty())
@@ -746,7 +741,6 @@ STDMETHODIMP Trigger::get_Rotation(float *pVal)
 STDMETHODIMP Trigger::put_Rotation(float newVal)
 {
    m_d.m_rotation = newVal;
-   UpdateStatusBarInfo();
 
    return S_OK;
 }
@@ -802,7 +796,6 @@ STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
 STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 {
    m_d.m_shape = newVal;
-   UpdateStatusBarInfo();
 
    return S_OK;
 }
