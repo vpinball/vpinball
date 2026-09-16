@@ -77,11 +77,6 @@ struct SettingsView: View {
                 }
 
                 Section("Advanced") {
-                    Toggle(isOn: $settingsModel.resetLogOnPlay) {
-                        Text("Reset Log on Play")
-                    }
-                    .tint(Color.vpxRed)
-
                     Button("Export \(ExportFile.log.name)...") {
                         handleShowExport(.log)
                     }
@@ -275,9 +270,6 @@ struct SettingsView: View {
         }
         .onChange(of: settingsModel.renderingModeOverride) {
             settingsModel.handleRenderingModeOverride()
-        }
-        .onChange(of: settingsModel.resetLogOnPlay) {
-            settingsModel.handleResetLogOnPlay()
         }
     }
 

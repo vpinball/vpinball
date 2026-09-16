@@ -5,7 +5,6 @@ class SettingsModel: ObservableObject {
     // General
 
     @Published var renderingModeOverride: Bool = false
-    @Published var resetLogOnPlay: Bool = false
 
     // External DMD
 
@@ -59,10 +58,6 @@ class SettingsModel: ObservableObject {
 
         webServer = vpinballManager.loadValue(.standalone, "WebServer", false)
         webServerPort = vpinballManager.loadValue(.standalone, "WebServerPort", 2112)
-
-        // Advanced
-
-        resetLogOnPlay = vpinballManager.loadValue(.global, "ResetLogOnPlay", true)
     }
 
     func reset() {
@@ -71,10 +66,6 @@ class SettingsModel: ObservableObject {
 
     func handleRenderingModeOverride() {
         vpinballManager.saveValue(.standalone, "RenderingModeOverride", renderingModeOverride ? 2 : -1)
-    }
-
-    func handleResetLogOnPlay() {
-        vpinballManager.saveValue(.global, "ResetLogOnPlay", resetLogOnPlay)
     }
 
     func handleExternalDMD() {

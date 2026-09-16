@@ -121,6 +121,8 @@ void HomePage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>("Legacy DOF & B2S Settings"s, ""s, "settings/misc"s));
 
+   AddItem(std::make_unique<InGameUIItem>("Logging Settings"s, ""s, "settings/logging"s));
+
    AddItem(std::make_unique<InGameUIItem>("System Info"s, ""s, "misc/systeminfo"s));
 }
 
