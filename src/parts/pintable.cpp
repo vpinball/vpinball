@@ -2932,93 +2932,6 @@ void PinTable::LockElements()
    SetDirtyDraw();
 }
 
-void PinTable::FlipY(const Vertex2D& pvCenter)
-{
-   BeginUndo();
-   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
-   {
-      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_tableEditor->m_vmultisel[i].FlipY(pvCenter);
-   }
-   EndUndo();
-   SetDirtyDraw();
-}
-
-void PinTable::FlipX(const Vertex2D& pvCenter)
-{
-   BeginUndo();
-   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
-   {
-      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_tableEditor->m_vmultisel[i].FlipX(pvCenter);
-   }
-   EndUndo();
-   SetDirtyDraw();
-}
-
-void PinTable::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   BeginUndo();
-   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
-   {
-      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_tableEditor->m_vmultisel[i].Rotate(ang, pvCenter, useElementCenter);
-   }
-   EndUndo();
-   SetDirtyDraw();
-}
-
-void PinTable::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   BeginUndo();
-   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
-   {
-      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_tableEditor->m_vmultisel[i].Scale(scalex, scaley, pvCenter, useElementCenter);
-   }
-   EndUndo();
-   SetDirtyDraw();
-}
-
-void PinTable::Translate(const Vertex2D &pvOffset)
-{
-   BeginUndo();
-   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
-   {
-      m_tableEditor->m_vmultisel[i].GetIEditable()->MarkForUndo();
-      m_tableEditor->m_vmultisel[i].Translate(pvOffset);
-   }
-   EndUndo();
-   SetDirtyDraw();
-}
-
-Vertex2D PinTable::GetCenter() const
-{
-   float minx = FLT_MAX;
-   float maxx = -FLT_MAX;
-   float miny = FLT_MAX;
-   float maxy = -FLT_MAX;
-
-   for (int i = 0; i < m_tableEditor->m_vmultisel.size(); i++)
-   {
-      const ISelect *const psel = m_tableEditor->m_vmultisel.ElementAt(i);
-      const Vertex2D vCenter = psel->GetCenter();
-
-      minx = min(minx, vCenter.x);
-      maxx = max(maxx, vCenter.x);
-      miny = min(miny, vCenter.y);
-      maxy = max(maxy, vCenter.y);
-      //tx += m_vdpoint[i]->m_v.x;
-      //ty += m_vdpoint[i]->m_v.y;
-   }
-
-   return {(maxx + minx)*0.5f, (maxy + miny)*0.5f};
-}
-
-void PinTable::PutCenter(const Vertex2D& pv)
-{
-}
-
 void PinTable::ExportMesh(ObjLoader& loader)
 {
    const string name = MakeString(m_wzName);
@@ -3570,7 +3483,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
    // Center view on newly created objects, if they are off the screen
    if ((cpasted > 0) && atLocation)
-      Translate(m_tableEditor->TransformPoint(x, y) - GetCenter());
+      m_tableEditor->TranslateMultiSel(m_tableEditor->TransformPoint(x, y) - m_tableEditor->GetMultiSelCenter());
 
    if (error)
       ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
