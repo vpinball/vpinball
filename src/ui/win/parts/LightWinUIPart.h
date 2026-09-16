@@ -9,6 +9,10 @@ class Light;
 class LightWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_LIGHT;
+   static inline constexpr int CursorID = IDC_LIGHT;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::PlayfieldAndBackglass;
+
    explicit LightWinUIPart(PinTableWnd* editor, Light* light);
 
    void UIRenderPass1(Sur* psur) override;

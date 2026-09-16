@@ -84,7 +84,7 @@ public:
    Flipper() { }
    virtual ~Flipper();
 
-   STANDARD_EDITABLE_DECLARES(Flipper, eItemFlipper, FLIPPER, VIEW_PLAYFIELD)
+   STANDARD_EDITABLE_DECLARES(Flipper, eItemFlipper, FLIPPER)
 
    BEGIN_COM_MAP(Flipper)
       COM_INTERFACE_ENTRY(IFlipper)

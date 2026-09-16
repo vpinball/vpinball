@@ -8,6 +8,10 @@ class Plunger;
 class PlungerWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_PLUNGER;
+   static inline constexpr int CursorID = IDC_PLUNGER;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit PlungerWinUIPart(PinTableWnd* editor, Plunger* plunger);
 
    void UIRenderPass1(Sur* psur) override;

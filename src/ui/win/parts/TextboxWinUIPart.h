@@ -8,6 +8,10 @@ class Textbox;
 class TextboxWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_TEXTBOX;
+   static inline constexpr int CursorID = IDC_TEXTBOX;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Backglass;
+
    explicit TextboxWinUIPart(PinTableWnd* editor, Textbox* textbox);
 
    void UIRenderPass1(Sur* psur) override;

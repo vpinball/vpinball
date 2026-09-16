@@ -49,7 +49,7 @@
 #include "parts/trigger.h"
 #endif
 
-ankerl::unordered_dense::map<ItemTypeEnum, WinUIPartRegistry::CreateFunc> WinUIPartRegistry::m_map;
+ankerl::unordered_dense::map<ItemTypeEnum, WinUIPartRegistry::UIPartInfo> WinUIPartRegistry::m_map;
 
 std::unique_ptr<IWinUIPart> WinUIPartRegistry::Create(PinTableWnd* editor, IEditable* editable)
 {
@@ -58,9 +58,30 @@ std::unique_ptr<IWinUIPart> WinUIPartRegistry::Create(PinTableWnd* editor, IEdit
 
    auto it = m_map.find(editable->GetItemType());
    if (it != m_map.end())
-      return it->second(editor, editable);
+      return it->second.createFunc(editor, editable);
 
    return nullptr;
+}
+
+ItemTypeEnum WinUIPartRegistry::TypeFromToolID(const int toolID)
+{
+   for (const auto& it : m_map)
+      if (it.second.toolID == toolID)
+         return it.first;
+
+   return eItemInvalid;
+}
+
+int WinUIPartRegistry::GetCursorID(const ItemTypeEnum type)
+{
+   const auto it = m_map.find(type);
+   return it != m_map.end() ? it->second.cursorID : 0;
+}
+
+IWinUIPart::AllowedViews WinUIPartRegistry::GetAllowedViews(const ItemTypeEnum type)
+{
+   const auto it = m_map.find(type);
+   return it != m_map.end() ? it->second.allowedViews : IWinUIPart::AllowedViews::None;
 }
 
 void WinUIPartRegistry::InitRegistry()

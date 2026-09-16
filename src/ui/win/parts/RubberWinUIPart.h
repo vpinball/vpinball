@@ -9,6 +9,10 @@ class Rubber;
 class RubberWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_RUBBER;
+   static inline constexpr int CursorID = IDC_RUBBER;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit RubberWinUIPart(PinTableWnd* editor, Rubber* rubber);
 
    void UIRenderPass1(Sur* psur) override;

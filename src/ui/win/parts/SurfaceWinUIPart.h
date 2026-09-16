@@ -9,6 +9,10 @@ class Surface;
 class SurfaceWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_WALL;
+   static inline constexpr int CursorID = IDC_WALL;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit SurfaceWinUIPart(PinTableWnd* editor, Surface* surface);
 
    void UIRenderPass1(Sur* psur) override;

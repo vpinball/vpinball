@@ -65,7 +65,7 @@ public:
 
    void WriteRegDefaults() final;
 
-   STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(Timer, eItemTimer, TIMER, VIEW_PLAYFIELD | VIEW_BACKGLASS)
+   STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(Timer, eItemTimer, TIMER)
 
    //DECLARE_NOT_AGGREGATABLE(Timer)
    // Remove the comment from the line above if you don't want your object to

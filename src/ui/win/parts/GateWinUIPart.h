@@ -8,6 +8,10 @@ class Gate;
 class GateWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_GATE;
+   static inline constexpr int CursorID = IDC_GATE;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit GateWinUIPart(PinTableWnd* editor, Gate* gate);
 
    void UIRenderPass1(Sur* psur) override;

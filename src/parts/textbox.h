@@ -72,7 +72,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ITextboxEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES_NO_HITABLE(Textbox, eItemTextbox, TEXTBOX, VIEW_BACKGLASS)
+   STANDARD_EDITABLE_DECLARES_NO_HITABLE(Textbox, eItemTextbox, TEXTBOX)
 
    void Translate(const Vertex2D &offset) final;
    // Multi-object manipulation

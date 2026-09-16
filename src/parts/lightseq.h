@@ -112,7 +112,7 @@ public:
 
    void WriteRegDefaults() final;
 
-   STANDARD_EDITABLE_DECLARES_NO_HITABLE(LightSeq, eItemLightSeq, LIGHTSEQ, VIEW_PLAYFIELD | VIEW_BACKGLASS)
+   STANDARD_EDITABLE_DECLARES_NO_HITABLE(LightSeq, eItemLightSeq, LIGHTSEQ)
 
    //DECLARE_NOT_AGGREGATABLE(LightSeq)
    // Remove the comment from the line above if you don't want your object to

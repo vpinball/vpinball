@@ -9,6 +9,10 @@ class Ramp;
 class RampWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_RAMP;
+   static inline constexpr int CursorID = IDC_RAMP;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit RampWinUIPart(PinTableWnd* editor, Ramp* ramp);
 
    void UIRenderPass1(Sur* psur) override;

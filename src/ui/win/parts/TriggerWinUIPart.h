@@ -9,6 +9,10 @@ class Trigger;
 class TriggerWinUIPart final : public IWinUIPart
 {
 public:
+   static inline constexpr int ToolID = ID_INSERT_TRIGGER;
+   static inline constexpr int CursorID = IDC_TRIGGER;
+   static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
+
    explicit TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger);
 
    void UIRenderPass1(Sur* psur) override;
