@@ -13,8 +13,6 @@
 #include "parts/decal.h"
 #include "ui/win/parts/DispReelWinUIPart.h"
 #include "parts/dispreel.h"
-#include "ui/win/parts/DragPointWinUIPart.h"
-#include "parts/dragpoint.h"
 #include "ui/win/parts/FlasherWinUIPart.h"
 #include "parts/flasher.h"
 #include "ui/win/parts/FlipperWinUIPart.h"
@@ -27,7 +25,6 @@
 #include "parts/kicker.h"
 #include "ui/win/parts/LightWinUIPart.h"
 #include "parts/light.h"
-#include "ui/win/parts/LightCenterWinUIPart.h"
 #include "ui/win/parts/LightSeqWinUIPart.h"
 #include "parts/lightseq.h"
 #include "ui/win/parts/PartGroupWinUIPart.h"
@@ -54,14 +51,14 @@
 
 ankerl::unordered_dense::map<ItemTypeEnum, WinUIPartRegistry::CreateFunc> WinUIPartRegistry::m_map;
 
-std::unique_ptr<IWinUIPart> WinUIPartRegistry::Create(PinTableWnd* editor, ISelect* select)
+std::unique_ptr<IWinUIPart> WinUIPartRegistry::Create(PinTableWnd* editor, IEditable* editable)
 {
-   if (!select)
+   if (!editable)
       return nullptr;
 
-   auto it = m_map.find(select->GetItemType());
+   auto it = m_map.find(editable->GetItemType());
    if (it != m_map.end())
-      return it->second(editor, select);
+      return it->second(editor, editable);
 
    return nullptr;
 }
@@ -73,14 +70,12 @@ void WinUIPartRegistry::InitRegistry()
    Register<BumperWinUIPart, Bumper>();
    Register<DecalWinUIPart, Decal>();
    Register<DispReelWinUIPart, DispReel>();
-   Register<DragPointWinUIPart, DragPoint>();
    Register<FlasherWinUIPart, Flasher>();
    Register<FlipperWinUIPart, Flipper>();
    Register<GateWinUIPart, Gate>();
    Register<HitTargetWinUIPart, HitTarget>();
    Register<KickerWinUIPart, Kicker>();
    Register<LightWinUIPart, Light>();
-   Register<LightCenterWinUIPart, Light::LightCenter>();
    Register<LightSeqWinUIPart, LightSeq>();
    Register<PartGroupWinUIPart, PartGroup>();
    Register<PlungerWinUIPart, Plunger>();

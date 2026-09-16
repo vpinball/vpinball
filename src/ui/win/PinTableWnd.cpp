@@ -1819,9 +1819,8 @@ void PinTableWnd::FVerifySaveToClose()
 void PinTableWnd::OnPartAdded(IEditable *part)
 {
 #ifndef __STANDALONE__
-   if (ISelect *const select = part->GetISelect())
-      if (std::unique_ptr<IWinUIPart> uiPart = WinUIPartRegistry::Create(this, select))
-         m_uiParts[select] = std::move(uiPart);
+   if (std::unique_ptr<IWinUIPart> uiPart = WinUIPartRegistry::Create(this, part))
+      m_uiParts[part->GetISelect()] = std::move(uiPart);
 #endif
 }
 
