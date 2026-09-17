@@ -4255,36 +4255,6 @@ Texture* PinTable::GetSurfaceImage(const wstring& name) const
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-STDMETHODIMP PinTable::get_DisplayGrid(VARIANT_BOOL *pVal)
-{
-   *pVal = FTOVB(m_tableEditor->GetDisplayGrid());
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
-{
-   StartUndo();
-   m_tableEditor->SetDisplayGrid(VBTOb(newVal));
-   StopUndo();
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
-{
-   *pVal = FTOVB(m_tableEditor->GetDisplayBackdrop());
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
-{
-   StartUndo();
-   m_tableEditor->SetDisplayBackdrop(VBTOb(newVal));
-   StopUndo();
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_GlassHeight(float *pVal)
 {
    *pVal = m_glassTopHeight;

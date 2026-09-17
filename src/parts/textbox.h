@@ -125,7 +125,6 @@ public:
    STDMETHOD(get_Width)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Width)(/*[in]*/ float newVal);
    STDMETHOD(get_Font)(/*[out, retval]*/ IFontDisp **pVal);
-   STDMETHOD(put_Font)(/*[in]*/ IFontDisp *newVal);
    STDMETHOD(putref_Font)(IFontDisp* pFont);
    STDMETHOD(get_Text)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Text)(/*[in]*/ BSTR newVal);

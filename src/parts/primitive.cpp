@@ -1611,18 +1611,6 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
-{
-   *pVal = MakeWideBSTR(m_d.m_meshFileName);
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
-{
-   m_d.m_meshFileName = MakeString(newVal);
-   return S_OK;
-}
-
 float Primitive::GetDepth(const Vertex3Ds& viewDir) const
 {
    return m_d.m_depthBias + m_d.m_vPosition.Dot(viewDir);

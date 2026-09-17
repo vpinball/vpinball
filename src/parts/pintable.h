@@ -191,10 +191,6 @@ public:
    STDMETHOD(put_GlassHeight)(/*[in]*/ float newVal);
    STDMETHOD(get_TableHeight)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_TableHeight)(/*[in]*/ float newVal);
-   STDMETHOD(get_DisplayBackdrop)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_DisplayBackdrop)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_DisplayGrid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_DisplayGrid)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 
