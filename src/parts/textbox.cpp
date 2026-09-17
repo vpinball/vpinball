@@ -514,12 +514,6 @@ STDMETHODIMP Textbox::get_Font(IFontDisp **pVal)
 #endif
 }
 
-STDMETHODIMP Textbox::put_Font(IFontDisp *newVal)
-{
-   // Does anybody use this way of setting the font?  Need to add to idl file.
-   return S_OK;
-}
-
 STDMETHODIMP Textbox::putref_Font(IFontDisp* pFont)
 {
    //We know that our own property browser gives us the same pointer
