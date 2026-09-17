@@ -908,7 +908,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
          {
             int colIndex = -1;
             int elemIndex = -1;
-            if (m_table->GetCollectionIndex(psel, colIndex, elemIndex))
+            if (m_table->GetCollectionIndex(psel->GetIEditable(), colIndex, elemIndex))
             {
                CComObject<Collection> *col = m_table->m_vcollection.ElementAt(colIndex);
                if (col->m_groupElements)
@@ -963,7 +963,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
    {
       int colIndex = -1;
       int elemIndex = -1;
-      if (!m_table->GetCollectionIndex(psel, colIndex, elemIndex))
+      if (!m_table->GetCollectionIndex(psel->GetIEditable(), colIndex, elemIndex))
       {
          _ASSERTE(pselPart->m_selectstate != IWinUIPart::SelectState::NotSelected);
 
@@ -1193,6 +1193,35 @@ void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
          continue;
       m_table->MarkForUndo(uiPart->GetEditable());
       uiPart->Translate(offset);
+   }
+   m_table->EndUndo();
+   m_table->SetDirtyDraw();
+}
+
+bool PinTableWnd::FMutilSelLocked() const
+{
+   for (ISelect *const psel : GetSelectedParts())
+      if (psel->GetIEditable()->IsUILocked())
+         return true;
+
+   return false;
+}
+
+void PinTableWnd::LockElements()
+{
+   m_table->BeginUndo();
+   const bool lock = !FMutilSelLocked();
+   for (ISelect *const psel : GetSelectedParts())
+   {
+      if (psel)
+      {
+         IEditable * const pedit = psel->GetIEditable();
+         if (pedit)
+         {
+            m_table->MarkForUndo(pedit);
+            pedit->SetUILock(lock);
+         }
+      }
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -2056,7 +2085,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       //!! HACK
       if (psel == m_table) // multi-select case
       {
-         locked = m_table->FMutilSelLocked();
+         locked = FMutilSelLocked();
       }
       newMenu.CheckMenuItem(ID_LOCK, MF_BYCOMMAND | (locked ? MF_CHECKED : MF_UNCHECKED));
    }

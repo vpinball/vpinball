@@ -678,8 +678,7 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
    }
    case ID_LOCK:
    {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (const auto ptCur = GetActiveTableEditor(); ptCur)
          ptCur->LockElements();
       return true;
    }

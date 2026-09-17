@@ -347,8 +347,6 @@ public:
    void RemoveFont(PinFont *const ppf);
    const vector<PinFont *> &GetFontList() const { return m_vfont; }
 
-   bool FMutilSelLocked();
-
    // Expected by CodeViewer
    void SelectItem(IScriptable *piscript);
    void DoCodeViewCommand(int command);
@@ -504,11 +502,9 @@ public:
 
    std::unique_ptr<Material> m_dummyMaterial;
 
-   bool GetCollectionIndex(const ISelect *const element, int &collectionIndex, int &elementIndex);
+   bool GetCollectionIndex(const IEditable *const element, int &collectionIndex, int &elementIndex);
 
    Vertex2D EvaluateGlassHeight() const;
-
-   void LockElements();
 
    std::filesystem::path m_filename;
    string m_title;
@@ -769,7 +765,7 @@ public:
    float GetPlayfieldSlope() const;
    float GetPlayfieldOverridenSlope() const;
 
-   const wstring& GetCollectionNameByElement(const ISelect *const element) const;
+   const wstring &GetCollectionNameByElement(const IEditable *const element) const;
 
    void SetNotesText(const string &text)
    {

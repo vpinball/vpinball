@@ -654,7 +654,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
 
     if (pvsel.size() > 1)
     {
-       const wstring &wzName = psel->GetIEditable()->GetPTable()->GetCollectionNameByElement(psel);
+       const wstring &wzName = psel->GetIEditable()->GetPTable()->GetCollectionNameByElement(psel->GetIEditable());
        const string collection = MakeString(wzName);
 
        string name;

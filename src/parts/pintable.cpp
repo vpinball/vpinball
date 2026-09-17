@@ -2672,15 +2672,6 @@ IEditable *PinTable::GetElementByName(const char * const name) const
    return nullptr;
 }
 
-bool PinTable::FMutilSelLocked()
-{
-   for (ISelect *const psel : m_tableEditor->GetSelectedParts())
-      if (psel->GetIEditable()->IsUILocked())
-         return true;
-
-   return false;
-}
-
 void PinTable::UpdateCollection(const int index)
 {
    if (index < m_vcollection.size())
@@ -2717,13 +2708,13 @@ void PinTable::UpdateCollection(const int index)
    }
 }
 
-bool PinTable::GetCollectionIndex(const ISelect * const element, int &collectionIndex, int &elementIndex)
+bool PinTable::GetCollectionIndex(const IEditable * const element, int &collectionIndex, int &elementIndex)
 {
    for (int i = 0; i < m_vcollection.size(); i++)
    {
       for (int t = 0; t < static_cast<int>(m_vcollection[i].GetParts().size()); t++)
       {
-         if (element == m_vcollection[i].GetParts()[t]->GetISelect())
+         if (element == m_vcollection[i].GetParts()[t])
          {
             collectionIndex = i;
             elementIndex = t;
@@ -2734,11 +2725,11 @@ bool PinTable::GetCollectionIndex(const ISelect * const element, int &collection
    return false;
 }
 
-const wstring& PinTable::GetCollectionNameByElement(const ISelect * const element) const
+const wstring& PinTable::GetCollectionNameByElement(const IEditable * const element) const
 {
     for (int i = 0; i < m_vcollection.size(); i++)
         for (const IEditable *const part : m_vcollection[i].GetParts())
-            if (element == part->GetISelect())
+            if (element == part)
                 return m_vcollection[i].m_wzName;
     static wstring emptyString;
     return emptyString;
@@ -2877,26 +2868,6 @@ Vertex2D PinTable::EvaluateGlassHeight() const
       PLOGI << "Evaluated glass height to " << VPUTOINCHES(result.x) << "\" (" << upperEditableX->GetName() << ") - " << VPUTOINCHES(result.y) << "\" (" << upperEditableY->GetName() << ')';
    }
    return result;
-}
-
-void PinTable::LockElements()
-{
-   BeginUndo();
-   const bool lock = !FMutilSelLocked();
-   for (ISelect *const psel : m_tableEditor->GetSelectedParts())
-   {
-      if (psel)
-      {
-         IEditable * const pedit = psel->GetIEditable();
-         if (pedit)
-         {
-            MarkForUndo(pedit);
-            pedit->SetUILock(lock);
-         }
-      }
-   }
-   EndUndo();
-   SetDirtyDraw();
 }
 
 void PinTable::ExportMesh(ObjLoader& loader)
