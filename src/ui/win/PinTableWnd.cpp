@@ -1072,6 +1072,19 @@ void PinTableWnd::MoveSelection(const int from, const int to)
       m_vmultisel.insert(m_vmultisel.begin() + to, part);
 }
 
+void PinTableWnd::SelectItem(IScriptable *piscript)
+{
+   for (IEditable *const pedit : m_table->GetParts())
+   {
+      if (piscript == pedit->GetIScriptable())
+      {
+         if (ISelect *const pisel = pedit->GetISelect(); pisel)
+            AddMultiSel(pisel, false, true, false);
+         break;
+      }
+   }
+}
+
 Vertex2D PinTableWnd::GetMultiSelCenter()
 {
    float minx = FLT_MAX;
