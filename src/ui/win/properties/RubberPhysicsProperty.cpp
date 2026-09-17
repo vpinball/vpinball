@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-RubberPhysicsProperty::RubberPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
+RubberPhysicsProperty::RubberPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
 {
     m_elasticityEdit.SetDialog(this);
     m_elasticityFallOffEdit.SetDialog(this);

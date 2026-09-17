@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-TableVisualsProperty::TableVisualsProperty(const vector<ISelect *> *pvsel)
+TableVisualsProperty::TableVisualsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
    m_reflectionStrengthEdit.SetDialog(this);
    m_ballReflectPlayfieldEdit.SetDialog(this);
    m_ballDefaultBulbIntensScaleEdit.SetDialog(this);

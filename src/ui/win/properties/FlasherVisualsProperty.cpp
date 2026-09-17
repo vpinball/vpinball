@@ -9,7 +9,7 @@
 #include "ui/win/WinEditor.h"
 
 
-FlasherVisualsProperty::FlasherVisualsProperty(const vector<ISelect *> *pvsel)
+FlasherVisualsProperty::FlasherVisualsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)
 {
    m_modeCombo.SetDialog(this);

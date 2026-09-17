@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-BackglassVisualsProperty::BackglassVisualsProperty(const vector<ISelect *> *pvsel)
+BackglassVisualsProperty::BackglassVisualsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPBACKGLASS_VISUALS, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
     m_dtImageCombo.SetDialog(this);
     m_fsImageCombo.SetDialog(this);
     m_fssImageCombo.SetDialog(this);

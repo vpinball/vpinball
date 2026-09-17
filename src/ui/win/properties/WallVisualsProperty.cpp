@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-WallVisualsProperty::WallVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPWALL_VISUALS, pvsel)
+WallVisualsProperty::WallVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPWALL_VISUALS, pvsel)
 {
     m_disableLightingEdit.SetDialog(this);
     m_disableLightFromBelowEdit.SetDialog(this);

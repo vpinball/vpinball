@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-TableAudioProperty::TableAudioProperty(const vector<ISelect *> *pvsel)
+TableAudioProperty::TableAudioProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_AUDIO, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
    m_soundEffectVolEdit.SetDialog(this);
    m_musicVolEdit.SetDialog(this);
 }

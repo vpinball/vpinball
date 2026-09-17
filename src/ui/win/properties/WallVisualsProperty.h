@@ -7,7 +7,7 @@
 class WallVisualsProperty final : public BasePropertyDialog
 {
 public:
-    WallVisualsProperty(const vector<ISelect *> *pvsel);
+    WallVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~WallVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

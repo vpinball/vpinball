@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-TriggerPhysicsProperty::TriggerPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)
+TriggerPhysicsProperty::TriggerPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)
 {
     m_hitHeightEdit.SetDialog(this);
 }

@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-KickerVisualsProperty::KickerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)
+KickerVisualsProperty::KickerVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)
 {
     m_typeList.push_back("Invisible"s);
     m_typeList.push_back("Hole"s);

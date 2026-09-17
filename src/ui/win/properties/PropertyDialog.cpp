@@ -118,9 +118,9 @@ PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType(
     memset(m_tabs, 0, sizeof(m_tabs));
 }
 
-void PropertyDialog::CreateTabs(const vector<ISelect *> &pvsel)
+void PropertyDialog::CreateTabs(const vector<IWinUIPart *> &pvsel)
 {
-    ISelect* const psel = pvsel.empty() ? nullptr : pvsel[0];
+    ISelect* const psel = pvsel.empty() ? nullptr : pvsel[0]->GetSelect();
     if (psel == nullptr)
         return;
 
@@ -584,10 +584,10 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CCo
     combo.SetCurSel(combo.FindStringExact(0, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateTabs(const vector<ISelect *> &pvsel)
+void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
 {
    // Invalid selection: discard update
-   ISelect *const psel = pvsel.empty() ? nullptr : pvsel[0];
+   ISelect *const psel = pvsel.empty() ? nullptr : pvsel[0]->GetSelect();
    if (psel == nullptr)
    {
       m_nameEdit.EnableWindow(FALSE);
@@ -628,7 +628,7 @@ void PropertyDialog::UpdateTabs(const vector<ISelect *> &pvsel)
         for (int i = 0; i < (int)pvsel.size(); i++)
         {
             // check for multiple selection
-            if (psel->GetItemType() != pvsel[i]->GetItemType())
+            if (psel->GetItemType() != pvsel[i]->GetSelect()->GetItemType())
             {
                 m_multipleElementsStatic.ShowWindow(SW_SHOW);
                 m_nameEdit.ShowWindow(SW_HIDE);
@@ -794,7 +794,7 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 #pragma region TimeProperty
 
-TimerProperty::TimerProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTIMER, pvsel)
+TimerProperty::TimerProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPTIMER, pvsel)
 {
     m_timerIntervalEdit.SetDialog(this);
     m_userValueEdit.SetDialog(this);

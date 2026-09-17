@@ -7,7 +7,7 @@
 class HitTargetPhysicsProperty final : public BasePropertyDialog
 {
 public:
-    HitTargetPhysicsProperty(const vector<ISelect *> *pvsel);
+    HitTargetPhysicsProperty(const vector<IWinUIPart *> *pvsel);
     ~HitTargetPhysicsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

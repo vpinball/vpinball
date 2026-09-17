@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PlungerVisualsProperty::PlungerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
+PlungerVisualsProperty::PlungerVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
 {
     m_typeList.push_back("Modern"s);
     m_typeList.push_back("Flat"s);

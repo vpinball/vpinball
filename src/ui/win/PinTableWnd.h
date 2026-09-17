@@ -24,8 +24,16 @@ public:
 
    void ClearMultiSel(ISelect *newSel = nullptr);
    bool MultiSelIsEmpty() const;
-   ISelect *GetSelectedItem() const { return m_vmultisel[0]; }
+   ISelect *GetSelectedItem() const { return m_vmultisel.empty() ? (ISelect *)m_table : m_vmultisel[0]->GetSelect(); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
+   // Live view of the selected UI parts, primary selection first (for the UI layer)
+   const vector<IWinUIPart *> &GetMultiSelParts() const { return m_vmultisel; }
+   // Number of entries in the multi-selection
+   int GetMultiSelCount() const { return (int)m_vmultisel.size(); }
+   // Snapshot of the selected selects, primary selection first (for core code)
+   vector<ISelect *> GetSelectedParts() const;
+   // Moves the entry at 'from' to position 'to' in the selection (used by the drawing-order dialog)
+   void MoveSelection(const int from, const int to);
    void RefreshProperties();
    void AssignSelectionToPartGroup(PartGroup *group);
 
@@ -94,8 +102,6 @@ public:
 
    CComObject<PinTable> *const m_table;
 
-   vector<ISelect *> m_vmultisel;
-
    std::unique_ptr<class CodeViewer> m_pcv;
 
    ViewSetupID m_currentBackglassMode = ViewSetupID::BG_DESKTOP; // POV shown in the UI (not persisted)
@@ -151,6 +157,9 @@ private:
    // UI parts owned by this editor: one per entry of PinTable::m_vedit (keyed by IEditable::GetISelect()).
    // Kept in sync by OnPartAdded/OnPartRemoved. Sub selects (drag points, light centers) are owned by their parent's UI part (see IWinUIPart::GetSubPart).
    ankerl::unordered_dense::map<ISelect *, std::unique_ptr<IWinUIPart>> m_uiParts;
+
+   // Multi-selection: UI parts of the selected selects, primary selection first. Contains only the table's UI part when nothing is selected.
+   vector<IWinUIPart *> m_vmultisel;
 
 private:
    POINT m_ptLast {}; // Last point when dragging

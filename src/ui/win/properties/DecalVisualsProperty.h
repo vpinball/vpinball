@@ -7,7 +7,7 @@
 class DecalVisualsProperty final : public BasePropertyDialog
 {
 public:
-    DecalVisualsProperty(const vector<ISelect *> *pvsel);
+    DecalVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~DecalVisualsProperty() override;
 
     void UpdateVisuals(const int dispid=-1) override;

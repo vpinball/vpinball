@@ -75,11 +75,10 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_DRAWINFRONT:
    case ID_DRAWINBACK:
    {
-      for (int i = 0; i < (int)m_editor->m_vmultisel.size(); i++)
+      for (IWinUIPart *const uiPart : m_editor->GetMultiSelParts())
       {
-         ISelect *const psel = m_editor->m_vmultisel[i];
-         _ASSERTE(psel != m_table); // Would make an infinite loop
-         if (IWinUIPart *const uiPart = m_editor->GetUIPart(psel); uiPart && uiPart != this)
+         _ASSERTE(uiPart->GetSelect() != m_table); // Would make an infinite loop
+         if (uiPart != this)
             uiPart->DoCommand(icmd, x, y);
       }
       break;

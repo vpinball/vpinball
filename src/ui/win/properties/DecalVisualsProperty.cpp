@@ -8,7 +8,7 @@
 #include "ui/win/WinEditor.h"
 
 
-DecalVisualsProperty::DecalVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(nullptr)
+DecalVisualsProperty::DecalVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(nullptr)
 {
     m_typeList.push_back("Text"s);
     m_typeList.push_back("Image"s);

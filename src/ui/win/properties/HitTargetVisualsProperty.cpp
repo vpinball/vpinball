@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-HitTargetVisualsProperty::HitTargetVisualsProperty(const vector<ISelect *> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
+HitTargetVisualsProperty::HitTargetVisualsProperty(const vector<IWinUIPart *> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
 {
     m_typeList.push_back("DropTarget Beveled"s);
     m_typeList.push_back("DropTarget Simple"s);

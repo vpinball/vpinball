@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-BallVisualsProperty::BallVisualsProperty(const vector<ISelect *> *pvsel)
+BallVisualsProperty::BallVisualsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPBALL_VISUALS, pvsel)
 {
    m_imageCombo.SetDialog(this);

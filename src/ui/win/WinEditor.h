@@ -46,6 +46,7 @@
 class PinTable;
 class PinTableMDI;
 class VPXFileFeedback;
+class IWinUIPart;
 
 class WinEditor final : public CMDIDockFrame
 {
@@ -106,7 +107,7 @@ public:
    void SetObjectPosCur(float x, float y);
    void ClearObjectPosCur();
    float ConvertToUnit(const float value) const;
-   void SetPropSel(const vector<ISelect *> &pvsel);
+   void SetPropSel(const vector<IWinUIPart *> &pvsel);
 
    void RenameEditable(IEditable* editable, const string& newName);
 

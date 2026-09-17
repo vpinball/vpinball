@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-TableLightsProperty::TableLightsProperty(const vector<ISelect *> *pvsel)
+TableLightsProperty::TableLightsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
    m_lightEmissionScaleEdit.SetDialog(this);
    m_lightHeightEdit.SetDialog(this);
    m_lightRangeEdit.SetDialog(this);

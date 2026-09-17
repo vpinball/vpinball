@@ -7,7 +7,7 @@
 class PrimitivePhysicsProperty final : public BasePropertyDialog
 {
 public:
-    PrimitivePhysicsProperty(const vector<ISelect *> *pvsel);
+    PrimitivePhysicsProperty(const vector<IWinUIPart *> *pvsel);
     ~PrimitivePhysicsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

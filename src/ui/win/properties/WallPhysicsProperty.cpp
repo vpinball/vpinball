@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-WallPhysicsProperty::WallPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
+WallPhysicsProperty::WallPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_slingshotForceEdit.SetDialog(this);

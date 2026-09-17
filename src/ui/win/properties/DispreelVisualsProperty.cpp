@@ -9,7 +9,7 @@
 #include "ui/win/WinEditor.h"
 
 
-DispreelVisualsProperty::DispreelVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_VISUALS, pvsel)
+DispreelVisualsProperty::DispreelVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_VISUALS, pvsel)
 {
     m_singleDigitRangeEdit.SetDialog(this);
     m_imagePerRowEdit.SetDialog(this);

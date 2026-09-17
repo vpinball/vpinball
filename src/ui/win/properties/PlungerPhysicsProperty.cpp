@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-PlungerPhysicsProperty::PlungerPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
+PlungerPhysicsProperty::PlungerPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
 {
     m_pullSpeedEdit.SetDialog(this);
     m_releaseSpeedEdit.SetDialog(this);

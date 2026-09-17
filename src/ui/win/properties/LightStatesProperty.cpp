@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-LightStatesProperty::LightStatesProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
+LightStatesProperty::LightStatesProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
 {
     m_stateList.push_back("Off"s);
     m_stateList.push_back("On"s);

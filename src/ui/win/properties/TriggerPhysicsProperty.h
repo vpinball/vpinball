@@ -7,7 +7,7 @@
 class TriggerPhysicsProperty final : public BasePropertyDialog
 {
 public:
-    TriggerPhysicsProperty(const vector<ISelect *> *pvsel);
+    TriggerPhysicsProperty(const vector<IWinUIPart *> *pvsel);
     ~TriggerPhysicsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;
