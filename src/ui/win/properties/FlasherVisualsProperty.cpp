@@ -40,6 +40,7 @@ FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *p
 
    m_opacityAmountEdit.SetDialog(this);
    m_lightmapCombo.SetDialog(this);
+   m_addBlendCombo.SetDialog(this);
    m_modulateEdit.SetDialog(this);
 
    m_heightEdit.SetDialog(this);
@@ -167,7 +168,8 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          const int isAlphaOrExt = (mode != FlasherData::ALPHASEG && mode != FlasherData::EXT_RENDER) ? SW_SHOWNORMAL : SW_HIDE;
          GetDlgItem(IDC_STATIC19).ShowWindow(isAlphaOrExt);
          m_lightmapCombo.ShowWindow(isAlphaOrExt);
-         ::ShowWindow(m_hAdditiveBlendCheck, isAlphaOrExt);
+         GetDlgItem(IDC_STATIC30).ShowWindow(isAlphaOrExt);
+         m_addBlendCombo.ShowWindow(isAlphaOrExt);
          GetDlgItem(IDC_STATIC11).ShowWindow(isAlphaOrExt);
          m_modulateEdit.ShowWindow(isAlphaOrExt);
       }
@@ -233,8 +235,15 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          PropertyDialog::SetIntTextbox(m_opacityAmountEdit, flash->m_d.m_alpha);
       if (dispid == IDC_LIGHTMAP || dispid == -1)
          UpdateLightmapComboBox(flash->GetPTable(), m_lightmapCombo, flash->m_d.m_szLightmap);
-      if (dispid == IDC_ADDBLEND || dispid == -1)
-         PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, flash->m_d.m_addBlend);
+      if (dispid == IDC_ADDBLEND_COMBO || dispid == IDC_DMD || dispid == -1) // IDC_DMD is the render style, which decides whether absorbing is honored
+      {
+         // Entries match FlasherData::AddBlendMode. Absorbing is only offered where it is honored, and since this list
+         // drives the commit path as well it has to be rebuilt, not just filtered for display. The selection is then
+         // clamped to it, so that absorb shows as amplify where it is not honored, which is also how it renders there
+         m_addBlendList = flash->CanAbsorbBlend() ? vector<string> { "Off"s, "On, amplify"s, "On, absorb"s }
+                                                  : vector<string> { "Off"s, "On, amplify"s };
+         PropertyDialog::UpdateComboBox(m_addBlendList, m_addBlendCombo, m_addBlendList[clamp(flash->m_d.m_addBlend, 0, static_cast<int>(m_addBlendList.size()) - 1)]);
+      }
       if (dispid == IDC_MODULATE_VS_ADD || dispid == -1)
          PropertyDialog::SetFloatTextbox(m_modulateEdit, flash->m_d.m_modulate_vs_add);
 
@@ -355,7 +364,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       case IDC_GLASS_PAD_RIGHT: CHECK_UPDATE_ITEM(flash->m_d.m_glassPadRight, PropertyDialog::GetFloatTextbox(m_glassPadRightEdit), flash); break;
       case IDC_VISIBLE_CHECK: CHECK_UPDATE_ITEM(flash->m_d.m_isVisible, PropertyDialog::GetCheckboxState(m_hVisibleCheck), flash); break;
       case IDC_DISPLAY_IMAGE_CHECK: CHECK_UPDATE_ITEM(flash->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(m_hDisplayInEditorCheck), flash); break;
-      case IDC_ADDBLEND: CHECK_UPDATE_ITEM(flash->m_d.m_addBlend, PropertyDialog::GetCheckboxState(m_hAdditiveBlendCheck), flash); break;
+      case IDC_ADDBLEND_COMBO: CHECK_UPDATE_ITEM(flash->m_d.m_addBlend, PropertyDialog::GetComboBoxIndex(m_addBlendCombo, m_addBlendList), flash); break;
       case DISPID_Image: if (isFlasher) CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageA, m_imageACombo, flash); break;
       case DISPID_Image2: CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageB, m_imageBCombo, flash); break;
       case IDC_FLASHER_MODE_COMBO: CHECK_UPDATE_ITEM(flash->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_texModeCombo, m_imageAlignList)), flash); break;
@@ -453,7 +462,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
    m_opacityAmountEdit.AttachItem(IDC_ALPHA_EDIT);
    m_modulateEdit.AttachItem(IDC_MODULATE_VS_ADD);
    m_lightmapCombo.AttachItem(IDC_LIGHTMAP);
-   m_hAdditiveBlendCheck = GetDlgItem(IDC_ADDBLEND);
+   m_addBlendCombo.AttachItem(IDC_ADDBLEND_COMBO);
 
    m_posXEdit.AttachItem(5);
    m_posYEdit.AttachItem(6);
@@ -492,7 +501,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
    m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topright, 0);
    m_resizer.AddChild(m_lightmapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
+   m_resizer.AddChild(m_addBlendCombo, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_modulateEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, RD_STRETCH_WIDTH); // Position Group

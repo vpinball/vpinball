@@ -94,7 +94,7 @@ vec3 ReinhardToneMap(vec3 color)
 	#define N_SAMPLES      2                            // Number of surrounding dots in diffuse evaluation (this has a big performance impact)
 	uniform vec4 vRes_Alpha_time;
 	#define dmdSize        (vRes_Alpha_time.xy)         // Display size in dots
-	#define addBlendMod    (vRes_Alpha_time.z)          // 0 = plain opaque output, otherwise the 'modulate vs add' factor, see the output encoding in main()
+	#define addBlendMod    (vRes_Alpha_time.z)          // 0 = plain opaque output, otherwise the 'modulate vs add' factor, negative to absorb instead of amplify, see main()
 	#define coloredDMD     (displayProperties.x != 0.0) // Linear luminance or sRGB color
 	#define sdfOffset      (displayProperties.y)        // Offset needed for SDF=0.5 at border decreasing to 0.0: 0.5 * (1.0 + (1.0 / (float(N_SAMPLES) + 0.5)) * dotSize / 2.0)
 	#define dotThreshold   (displayProperties.z)        // Threshold inside SDF (so > 0.5): 0.5 + 0.5 * (0.025 /* Antialiasing */ + dotSize * (1.0 - dotSharpness) /* Darkening around border inside dot */);
@@ -108,7 +108,7 @@ vec3 ReinhardToneMap(vec3 color)
 #ifdef CRT
 	uniform vec4 vRes_Alpha_time;
 	#define crtSize        (vRes_Alpha_time.xy)   // input display size in pixels
-	#define addBlendMod    (vRes_Alpha_time.z)    // 0 = plain opaque output, otherwise the 'modulate vs add' factor, see the output encoding in main()
+	#define addBlendMod    (vRes_Alpha_time.z)    // 0 = plain opaque output, otherwise the 'modulate vs add' factor, negative to absorb instead of amplify, see main()
 	#define crtMode        (displayProperties.x)  // main render mode (pixelated, smoothed, CRT)
 	// Output size in pixels is evaluated per pixel in main(), see 'outSize' there
 
@@ -360,14 +360,22 @@ void main()
 		outLum = FBGamma(ReinhardToneMap(lum));
 
 #if defined(DMD) || defined(CRT)
-	// Additive blending, encoded like the flasher shader does (see fs_flasher.sc): the blend unit is set to
-	// dst' = dst * (1 - src) - src * srcAlpha, so emitting a negative color along a 1/m - 1 alpha gives
-	// dst' = dst + outLum * (1 - m * (1 - dst)), an additive term which fades out over a dark background, m being
-	// the 'modulate vs add' factor. This needs a render target able to hold the negative intermediate (the scene
-	// ones are float), and a caller clamping m to ]0,1[, 0 being what selects the plain opaque output below
-	if (addBlendMod > 0.0)
+	// Additive blending, encoded exactly like the flasher shader does, see fs_flasher.sc for the full derivation.
+	// Both modes add the very same light and only differ in what they then do to the background, m = |addBlendMod|
+	// being the 'modulate vs add' factor steering how much
+	if (addBlendMod > 0.0) // Amplify the background
 	{
+		// Blend unit set to dst' = dst * (1 - src) - src * srcAlpha, giving dst' = dst + outLum * (1 - m * (1 - dst)),
+		// an additive term which fades out over a dark background. Needs a render target able to hold the negative
+		// intermediate, which the scene ones are (float)
 		gl_FragColor = vec4(outLum * (-addBlendMod), 1.0 / addBlendMod - 1.0);
+		return;
+	}
+	else if (addBlendMod < 0.0) // Absorb it instead, for a glass like reflection
+	{
+		// Blend unit set to the premultiplied alpha 'over' dst' = src + dst * (1 - srcAlpha). The display covers its
+		// whole quad, so the coverage is just m: the very same light added, over a background dimmed to 1 - m
+		gl_FragColor = vec4(outLum, -addBlendMod);
 		return;
 	}
 #endif

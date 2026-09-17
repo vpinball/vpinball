@@ -50,7 +50,18 @@ public:
    string m_szImageB;
    bool m_displayTexture;
    bool m_isVisible = true;
-   bool m_addBlend;
+
+   // How the flasher is blended over the scene. Honored by the Flasher, DMD and Display render modes only: Alpha Segment
+   // always uses max blending and external rendering is opaque (see Render and CanAbsorbBlend).
+   // The 2 additive modes add the very same light and only differ in what they then do to the background, the
+   // 'modulate vs add' factor steering how much in both cases (its sign is what selects between them in the shaders)
+   enum AddBlendMode
+   {
+      AB_NONE = 0,  // Plain alpha blending
+      AB_ADD = 1,   // Additive, also amplifying the background, the more so the brighter the flasher is
+      AB_ABSORB = 2 // Additive, absorbing the background instead, like a reflection on glass does (fake Fresnel)
+   };
+   int m_addBlend; // AddBlendMode
 
    int m_alpha;
    float m_intensity_scale;
@@ -237,6 +248,9 @@ public:
    STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_AddBlendMode)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_AddBlendMode)(/*[in]*/ int newVal);
+   bool CanAbsorbBlend() const; // Whether the current render mode & style honor AB_ABSORB, so that the editors only offer it there
 
    STDMETHOD(get_DMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DMD)(/*[in]*/ VARIANT_BOOL newVal);

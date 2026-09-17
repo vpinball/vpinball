@@ -84,7 +84,24 @@ EARLY_DEPTH_STENCIL void main()
 
    if (alphaTestValueAB_filterMode_addBlend.w == 0.)
       gl_FragColor = vec4(result.xyz, saturate(result.a)); // Need to clamp here or we get some saturation artifacts on some tables
-   else
-      gl_FragColor = vec4(result.xyz*(-modulateVsAdd*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-                     1.0/modulateVsAdd - 1.0);
+   else if (modulateVsAdd > 0.) // AB_ADD
+   {
+      // Blend unit set to dst' = dst * (1 - src) - src * srcAlpha. Emitting a negative color (negative as it gets
+      // blended with '1.0-thisvalue', the 1.0 being what modulates the underlying elements, and unwanted for the
+      // term below) along a 1/m - 1 alpha gives the historical additive behavior dst' = dst + L * (1 - m * (1 - dst)),
+      // for L = result.rgb * result.a the emitted light: the light is added, and what is behind the flasher is
+      // amplified on top of it, the more so the brighter the flasher is
+      gl_FragColor = vec4(result.xyz*(-modulateVsAdd*result.a), 1.0/modulateVsAdd - 1.0);
+   }
+   else // AB_ABSORB, which a negative 'modulate vs add' selects
+   {
+      // Blend unit set to the premultiplied alpha 'over' dst' = src + dst * (1 - srcAlpha). Emitting the
+      // premultiplied light along an m * coverage alpha gives dst' = L + dst * (1 - m * result.a): the very same
+      // light added, but over a background the flasher now absorbs instead of amplifying, and independently of how
+      // bright it is. That is a glass like reflection, m being how reflective (hence opaque) the glass is. The
+      // flasher alpha still drives the coverage, so its shape and its edges fade the absorption out as well.
+      // Saturated since opacity may go above 100%: the added light keeps that boost, but absorbing more than all of
+      // the background would take it negative, inverting it instead of blackening it
+      gl_FragColor = vec4(result.xyz*result.a, saturate(-modulateVsAdd*result.a));
+   }
 }

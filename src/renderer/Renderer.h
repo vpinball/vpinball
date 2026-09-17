@@ -93,12 +93,14 @@ public:
    void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
       const vec4& glassArea, const vec3& glassAmbient);
-   // 'alpha' is plain opacity for the legacy DMD renderer. For the other ones it is only used when 'addBlend' is set,
-   // as the 'modulate vs add' factor of the additive blend encoding (see fs_display.sc)
-   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const bool addBlend,
+   // 'alpha' is plain opacity, only applied by the legacy DMD renderer. 'addBlendModulate' is the signed 'modulate vs
+   // add' factor the other ones have to encode their output with, 0 asking for a plain opaque one instead, and the
+   // sign selecting whether the background is amplified or absorbed (see fs_display.sc). The caller is the one setting
+   // up the blend state matching it, see Flasher::Render
+   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const float addBlendModulate,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
       const vec4& glassArea, const vec3& glassAmbient);
-   void SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const bool addBlend,
+   void SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const float addBlendModulate,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
       const vec4& glassArea, const vec3& glassAmbient);
    void DrawStatics();

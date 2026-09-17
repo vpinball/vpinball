@@ -988,7 +988,7 @@ PropIntUnbounded(DefaultPropsFlasher, Opacity, "Opacity"s, ""s, 100);
 PropFloatUnbounded(DefaultPropsFlasher, ModulateVsAdd, "ModulateVsAdd"s, ""s, 0.9f);
 PropIntUnbounded(DefaultPropsFlasher, FilterAmount, "FilterAmount"s, ""s, 100);
 PropBool(DefaultPropsFlasher, Visible, "Visible"s, ""s, true);
-PropBool(DefaultPropsFlasher, AddBlend, "AddBlend"s, ""s, false);
+PropEnum(DefaultPropsFlasher, AddBlend, "AddBlend"s, ""s, int, 0, "Off"s, "On, amplify"s, "On, absorb"s);
 PropEnum(DefaultPropsFlasher, RenderMode, "RenderMode"s, ""s, int, 0, "FLASHER"s, "DMD"s, "DISPLAY"s, "ALPHASEG"s);
 PropBool(DefaultPropsFlasher, DisplayTexture, "DisplayTexture"s, ""s, false);
 PropEnum(DefaultPropsFlasher, ImageMode, "ImageMode"s, ""s, RampImageAlignment, ImageModeWrap, "ImageModeWorld"s, "ImageModeWrap"s);

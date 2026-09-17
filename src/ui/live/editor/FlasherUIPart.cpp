@@ -193,14 +193,27 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
          m_flasher, "Lightmap"s, //
          [](const Flasher* flasher) { return flasher->m_d.m_szLightmap; }, //
          [](Flasher* flasher, const string& v) { flasher->m_d.m_szLightmap = v; });
-      props.Checkbox<Flasher>(
-         m_flasher, "Additive Blend"s, //
-         [](const Flasher* flasher) { return flasher->m_d.m_addBlend; }, //
-         [](Flasher* flasher, bool v) { flasher->m_d.m_addBlend = v; });
-      props.InputFloat<Flasher>(
-         m_flasher, "Modulate"s, //
-         [](const Flasher* flasher) { return flasher->m_d.m_modulate_vs_add; }, //
-         [](Flasher* flasher, float v) { flasher->m_d.m_modulate_vs_add = v; }, PropertyPane::Unit::Percent, 1);
+      // Alpha Segment (which always uses max blending) and external rendering ignore both of these, see Flasher::Render
+      const Flasher *const edited = props.GetEditedPart<Flasher>(m_flasher);
+      const FlasherData::RenderMode renderMode = edited->m_d.m_renderMode;
+      if (renderMode != FlasherData::ALPHASEG && renderMode != FlasherData::EXT_RENDER)
+      {
+         // The 2 additive modes add the very same light and only differ in what they do to what is behind the flasher:
+         // 'amplify' brightens it (the historical behavior), 'absorb' darkens it, to fake a Fresnel like reflection
+         vector<string> addBlendModes { "Off"s, "On, amplify"s };
+         if (edited->CanAbsorbBlend())
+            addBlendModes.push_back("On, absorb"s);
+         // Clamped so that absorb shows as amplify where it is not honored, which is also how it renders there
+         const int lastMode = static_cast<int>(addBlendModes.size()) - 1;
+         props.Combo<Flasher>(
+            m_flasher, "Additive Blend"s, addBlendModes, //
+            [lastMode](const Flasher* flasher) { return clamp(flasher->m_d.m_addBlend, 0, lastMode); }, //
+            [](Flasher* flasher, int v) { flasher->m_d.m_addBlend = v; });
+         props.InputFloat<Flasher>(
+            m_flasher, "Modulate"s, //
+            [](const Flasher* flasher) { return flasher->m_d.m_modulate_vs_add; }, //
+            [](Flasher* flasher, float v) { flasher->m_d.m_modulate_vs_add = v; }, PropertyPane::Unit::Percent, 1);
+      }
       props.EndSection();
    }
 

@@ -288,7 +288,7 @@ void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(MOVA), m_d.m_modulate_vs_add);
    writer.WriteBool(FID(FVIS), m_d.m_isVisible);
    writer.WriteBool(FID(DSPT), m_d.m_displayTexture);
-   writer.WriteBool(FID(ADDB), m_d.m_addBlend);
+   writer.WriteInt(FID(ADDB), m_d.m_addBlend); // was a bool, so older versions still load it, but reading AB_ABSORB as AB_ADD
    writer.WriteInt(FID(RDMD), m_d.m_renderMode);
    writer.WriteInt(FID(RSTL), m_d.m_renderStyle);
    writer.WriteFloat(FID(GRGH), m_d.m_glassRoughness);
@@ -338,7 +338,7 @@ void Flasher::Load(IObjectReader& reader)
          case FID(MOVA): m_d.m_modulate_vs_add = reader.AsFloat(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
          case FID(FVIS): m_d.m_isVisible = reader.AsBool(); break;
-         case FID(ADDB): m_d.m_addBlend = reader.AsBool(); break;
+         case FID(ADDB): m_d.m_addBlend = clamp(reader.AsInt(), (int)FlasherData::AB_NONE, (int)FlasherData::AB_ABSORB); break;
          case FID(IDMD):
          {
             bool m;
@@ -629,16 +629,47 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+// Legacy boolean view of AddBlendMode, which can not express AB_ABSORB and hence reports/selects AB_ADD for it
 STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_d.m_addBlend);
+   *pVal = FTOVB(m_d.m_addBlend != FlasherData::AB_NONE);
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
 {
-   m_d.m_addBlend = VBTOb(newVal);
+   m_d.m_addBlend = VBTOb(newVal) ? FlasherData::AB_ADD : FlasherData::AB_NONE;
    return S_OK;
+}
+
+STDMETHODIMP Flasher::get_AddBlendMode(int *pVal)
+{
+   *pVal = m_d.m_addBlend;
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_AddBlendMode(int newVal)
+{
+   m_d.m_addBlend = clamp(newVal, (int)FlasherData::AB_NONE, (int)FlasherData::AB_ABSORB);
+   return S_OK;
+}
+
+// Absorbing needs the additive blend encoding of the shaders. The Alpha Segment (max blending) and external render modes ignore the blend mode altogether,
+// and the legacy DMD renderer falls back to plain additive, so in all of these AB_ABSORB silently renders as AB_ADD does, see Render
+bool Flasher::CanAbsorbBlend() const
+{
+   switch (m_d.m_renderMode)
+   {
+   case FlasherData::ALPHASEG:
+   case FlasherData::EXT_RENDER: return false;
+   case FlasherData::DMD:
+      #if defined(ENABLE_BGFX)
+         return !m_ptable->m_settings.GetDMD_ProfileLegacy(clamp(m_d.m_renderStyle, 0, 6));
+      #else
+         return false; // The legacy renderer is the only one available outside of BGFX, see Renderer::IsLegacyDMDRenderer
+      #endif
+   default: return true;
+   }
 }
 
 STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal)
@@ -1126,29 +1157,43 @@ void Flasher::Render(const unsigned int renderMask)
    const vec4 color = convertColor(m_d.m_color, alpha * m_d.m_intensity_scale / 100.0f);
    const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
 
-   // Blend state of the DMD and Display render modes (Alpha Segment uses max blending instead, see below). Select
-   // whether the selected shader implements the additive blend encoding, returns whether it ends up being used, which its setup needs to know as well
-   auto SetupDisplayBlend = [this](const bool canAddModulate) -> bool
+   // Signed 'modulate vs add' factor the shaders encode their output with: negative absorbs the background instead of amplifying it, 0 asks for a plain opaque output (see fs_flasher.sc / fs_display.sc)
+   const float signedModulateVsAdd = m_d.m_addBlend == FlasherData::AB_ABSORB ? -clampedModulateVsAdd : clampedModulateVsAdd;
+
+   // Blend state matching the encoding the shaders then use. The 2 additive modes add the very same light but differ
+   // in what they do to the background, which no single blend setup can express, hence one each:
+   //   AB_ADD    reverse subtract, so that dst' = dst * (1 - src) - src * srcAlpha, amplifying it
+   //   AB_ABSORB premultiplied alpha 'over', so that dst' = src + dst * (1 - srcAlpha), absorbing it
+   auto SetupAddBlendState = [this]()
+   {
+      RenderDevice *const rd = m_renderer->m_renderDevice;
+      const bool absorb = m_d.m_addBlend == FlasherData::AB_ABSORB;
+      rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+      rd->SetRenderState(RenderState::SRCBLEND, absorb ? RenderState::ONE : RenderState::SRC_ALPHA);
+      rd->SetRenderState(RenderState::DESTBLEND, absorb ? RenderState::INVSRC_ALPHA : RenderState::INVSRC_COLOR);
+      rd->SetRenderState(RenderState::BLENDOP, absorb ? RenderState::BLENDOP_ADD : RenderState::BLENDOP_REVSUBTRACT);
+   };
+
+   // Blend state of the DMD and Display render modes (Alpha Segment uses max blending instead, see below). Takes
+   // whether the selected shader implements the additive blend encoding, returns the factor it has to encode with
+   auto SetupDisplayBlend = [this, signedModulateVsAdd, &SetupAddBlendState](const bool canAddModulate) -> float
    {
       RenderDevice *const rd = m_renderer->m_renderDevice;
       // A 'modulate vs add' of 1 (or above) is a fully opaque display (which allows to skip blending)
       if (m_d.m_modulate_vs_add >= 1.f)
       {
          rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-         return false;
+         return 0.f;
       }
-      if (m_d.m_addBlend && canAddModulate)
+      if (m_d.m_addBlend != FlasherData::AB_NONE && canAddModulate)
       {
-         // Additive blending which also modulates (darkens) the background, using the same scheme as the 'normal' Flasher
-         // render mode above: the shader packs both terms into its single output, see fs_display.sc
-         rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR);
-         rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
-         return true;
+         // Additive blending which also modulates the background, using the same scheme as the 'normal' Flasher render
+         // mode above: the shader encodes the 2 terms into its single output, see fs_display.sc
+         SetupAddBlendState();
+         return signedModulateVsAdd;
       }
-      rd->EnableAlphaBlend(m_d.m_addBlend);
-      return false;
+      rd->EnableAlphaBlend(m_d.m_addBlend != FlasherData::AB_NONE);
+      return 0.f;
    };
 
    switch (m_d.m_renderMode)
@@ -1160,7 +1205,7 @@ void Flasher::Render(const unsigned int renderMask)
 
          m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::staticColor_Alpha, &color);
 
-         vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
+         vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend != FlasherData::AB_NONE ? 1.f : 0.f);
          m_renderer->m_renderDevice->m_flasherShader->SetTechnique(ShaderTechnique::basic_noLight);
 
          float flasherMode;
@@ -1172,7 +1217,7 @@ void Flasher::Render(const unsigned int renderMask)
             else
                m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, pinA);
 
-            if (!m_d.m_addBlend)
+            if (m_d.m_addBlend == FlasherData::AB_NONE)
                flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue : 0.f;
          }
          else if (!(pinA || m_isVideoCap) && pinB)
@@ -1180,7 +1225,7 @@ void Flasher::Render(const unsigned int renderMask)
             flasherMode = 0.f;
             m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, pinB);
 
-            if (!m_d.m_addBlend)
+            if (m_d.m_addBlend == FlasherData::AB_NONE)
                flasherData.x = pinB->m_alphaTestValue;
          }
          else if ((pinA || m_isVideoCap) && pinB)
@@ -1192,7 +1237,7 @@ void Flasher::Render(const unsigned int renderMask)
                m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, pinA);
             m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_B, pinB);
 
-            if (!m_d.m_addBlend)
+            if (m_d.m_addBlend == FlasherData::AB_NONE)
             {
                flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue : 0.f;
                flasherData.y = pinB->m_alphaTestValue;
@@ -1202,17 +1247,17 @@ void Flasher::Render(const unsigned int renderMask)
             flasherMode = 2.f;
 
          m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::alphaTestValueAB_filterMode_addBlend, &flasherData);
-         m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::amount_blend_modulate_vs_add_flasherMode, static_cast<float>(m_d.m_filterAmount) / 100.0f, clampedModulateVsAdd, flasherMode, 0.f);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::amount_blend_modulate_vs_add_flasherMode, static_cast<float>(m_d.m_filterAmount) / 100.0f, signedModulateVsAdd, flasherMode, 0.f);
 
          // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
          if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
             m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
          m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
-         m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
+         if (m_d.m_addBlend != FlasherData::AB_NONE)
+            SetupAddBlendState();
+         else
+            m_renderer->m_renderDevice->EnableAlphaBlend(false);
 
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
@@ -1243,7 +1288,7 @@ void Flasher::Render(const unsigned int renderMask)
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             const int dmdProfile = clamp(m_d.m_renderStyle, 0, 6); // 7 DMD profiles, see Renderer::m_dmdDotColor & co
             // The legacy renderer has no additive blend encoding, it outputs a plain alpha blended color
-            const bool addModulate = SetupDisplayBlend(!m_renderer->IsLegacyDMDRenderer(dmdProfile));
+            const float addModulate = SetupDisplayBlend(!m_renderer->IsLegacyDMDRenderer(dmdProfile));
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
             m_renderer->SetupDMDRender(dmdProfile, m_desktopBackdrop, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, addModulate, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
@@ -1261,7 +1306,7 @@ void Flasher::Render(const unsigned int renderMask)
          {
             UploadRenderFrame(display);
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
-            const bool addModulate = SetupDisplayBlend(true);
+            const float addModulate = SetupDisplayBlend(true);
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 crtTint = vec3(color.x, color.y, color.z);
             const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);

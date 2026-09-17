@@ -316,6 +316,7 @@ DMDColoredPixels = myDMDdata
 | Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 | Visible | bool |  shows/hides the flasher
 | AddBlend | bool |  use additive alpha blending instead of classical alpha blending
+| AddBlendMode | int | superset of AddBlend: 0=off, 1=additive, 2=additive; but darkening what is behind the flasher instead of brightening it, to fake a Fresnel like reflection on glass (ModulateVsAdd steers how much is absorbed)
 | EnableDepthMask | bool | Enable/Disable depth masking
 | ImageAlignment
 | ModulateVsAdd | float | blends between modulating and additive when bulb is enabled (0..1)

@@ -47,7 +47,8 @@ private:
 
     EditBox     m_opacityAmountEdit;
     ComboBox    m_lightmapCombo;
-    HWND        m_hAdditiveBlendCheck = NULL;
+    ComboBox    m_addBlendCombo;
+    vector<string> m_addBlendList;
     EditBox     m_modulateEdit;
 
     EditBox     m_heightEdit;

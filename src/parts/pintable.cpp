@@ -2067,7 +2067,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                dmd->m_d.m_renderStyle = 0; // Legacy rendering style
                dmd->m_d.m_imagealignment = ImageModeWrap;
                dmd->m_d.m_color = textbox->m_d.m_fontcolor;
-               dmd->m_d.m_addBlend = false;
+               dmd->m_d.m_addBlend = FlasherData::AB_NONE;
                dmd->m_d.m_modulate_vs_add = 1.f; // Actually alpha
                dmd->m_d.m_alpha = static_cast<int>(100.f * textbox->m_d.m_intensity_scale); // Actually brightness
                dmd->m_d.m_intensity_scale = 1.f; // Actually brightness scale

@@ -151,6 +151,8 @@ FEATURES:
     VFD segment display, CRT video, ...) needs to be chosen. A few options allow to setup the glass tint/roughness and the position of the light source
     beneath it. Segment display flashers are 'max blended' to support overlapping without graphical glitches.
   . flashers may now be placed on the desktop backdrop, deprecating the use of a textbox for DMD rendering on the desktop backdrop.
+  . 'Additive Blend' was extended with a second sub-mode which darkens what is behind the flasher instead of brightening it (same added light, but with 'Modulate' steering how much is absorbed),
+    to fake Fresnel-like reflections (i.e. the CRT reflected of a Pinball 2000 playfield glass).
 
 - replace layers by hierarchical groups
   Allow groups to have properties (VR space reference, view visibility, ...)

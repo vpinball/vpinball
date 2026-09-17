@@ -838,6 +838,7 @@
 #define IDC_STATIC27                    952
 #define IDC_STATIC28                    953
 #define IDC_STATIC29                    954
+#define IDC_STATIC30                    955
 #define IDS_TB_PARTGROUP                957
 #define ID_INSERT_PARTGROUP             958
 #define IDC_PARTGROUP                   959
@@ -913,6 +914,7 @@
 #define IDC_ENABLE_DECAL_CHECK          13433
 #define IDC_BG_TEST_DESKTOP_CHECK       13434
 #define IDC_CAMERA_LAYOUT_MODE          13435
+#define IDC_ADDBLEND_COMBO              13436
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
