@@ -14,6 +14,8 @@ public:
 
    explicit PrimitiveWinUIPart(PinTableWnd* editor, Primitive* primitive);
 
+   ItemTypeEnum GetItemType() const override { return eItemPrimitive; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

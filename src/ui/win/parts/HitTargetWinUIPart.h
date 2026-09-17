@@ -14,6 +14,8 @@ public:
 
    explicit HitTargetWinUIPart(PinTableWnd* editor, HitTarget* hittarget);
 
+   ItemTypeEnum GetItemType() const override { return eItemHitTarget; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void UpdateStatusBarObjectPos() override;

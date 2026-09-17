@@ -13,6 +13,8 @@ public:
    static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
 
    explicit KickerWinUIPart(PinTableWnd* editor, Kicker* kicker);
+
+   ItemTypeEnum GetItemType() const override { return eItemKicker; }
    
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;

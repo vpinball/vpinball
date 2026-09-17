@@ -9,6 +9,8 @@ class TableWinUIPart final : public IWinUIPart
 public:
    explicit TableWinUIPart(PinTableWnd* editor, PinTable* table);
 
+   ItemTypeEnum GetItemType() const override { return eItemTable; }
+
    // The table itself is rendered by PinTableWnd
    void UIRenderPass1(Sur* psur) override { }
    void UIRenderPass2(Sur* psur) override { }

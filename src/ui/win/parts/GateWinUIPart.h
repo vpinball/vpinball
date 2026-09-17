@@ -14,6 +14,8 @@ public:
 
    explicit GateWinUIPart(PinTableWnd* editor, Gate* gate);
 
+   ItemTypeEnum GetItemType() const override { return eItemGate; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

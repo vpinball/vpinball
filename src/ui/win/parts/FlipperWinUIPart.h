@@ -14,6 +14,8 @@ public:
 
    explicit FlipperWinUIPart(PinTableWnd* editor, Flipper* flipper);
 
+   ItemTypeEnum GetItemType() const override { return eItemFlipper; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void UpdateStatusBarObjectPos() override;

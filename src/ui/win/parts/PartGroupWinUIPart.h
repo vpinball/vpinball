@@ -14,6 +14,8 @@ public:
 
    explicit PartGroupWinUIPart(PinTableWnd* editor, PartGroup* partgroup);
 
+   ItemTypeEnum GetItemType() const override { return eItemPartGroup; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

@@ -14,6 +14,8 @@ public:
 
    explicit TimerWinUIPart(PinTableWnd* editor, Timer* timer);
 
+   ItemTypeEnum GetItemType() const override { return eItemTimer; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

@@ -15,6 +15,8 @@ public:
 
    explicit LightWinUIPart(PinTableWnd* editor, Light* light);
 
+   ItemTypeEnum GetItemType() const override { return eItemLight; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

@@ -14,6 +14,8 @@ public:
 
    explicit PlungerWinUIPart(PinTableWnd* editor, Plunger* plunger);
 
+   ItemTypeEnum GetItemType() const override { return eItemPlunger; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void UpdateStatusBarObjectPos() override;
