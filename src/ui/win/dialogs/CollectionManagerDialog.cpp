@@ -336,7 +336,7 @@ BOOL CollectionDialog::OnInitDialog()
         {
             string name = MakeString(piscript->m_wzName);
             const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)name.data());
-            ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
+            ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piedit);
         }
     }
     ::SendMessage(hwndIn, WM_SETREDRAW, TRUE, 0);
@@ -347,12 +347,11 @@ BOOL CollectionDialog::OnInitDialog()
     for (IEditable *const piedit : ppt->m_table->GetParts())
     {
         IScriptable * const piscript = piedit->GetIScriptable();
-        ISelect * const pisel = piedit->GetISelect();
 
         // Only process objects not in this collection
         size_t l;
         for (l = 0; l < pcol->GetParts().size(); l++)
-            if (pisel == pcol->GetParts()[l]->GetISelect())
+            if (piedit == pcol->GetParts()[l])
                 break;
 
         if ((l == pcol->GetParts().size()) && piscript)
@@ -360,7 +359,7 @@ BOOL CollectionDialog::OnInitDialog()
         {
             string name = MakeString(piscript->m_wzName);
             const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)name.data());
-            ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
+            ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piedit);
         }
     }
     ::SendMessage(hwndOut, WM_SETREDRAW, TRUE, 0);
@@ -468,20 +467,10 @@ void CollectionDialog::OnOK()
 
     for (size_t i = 0; i < count; i++)
     {
-       IScriptable * const piscript = (IScriptable *)::SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
-       for (const auto &pedit : pCurCollection.ppt->m_table->GetParts())
-       {
-          if (piscript == pedit->GetIScriptable())
-          {
-             if (ISelect *const pisel = pedit->GetISelect(); pisel) // Not sure how we could possibly get an iscript here that was never an iselect
-             {
-                pcol->AddPart(pedit);
-                pisel->GetIEditable()->m_vCollection.push_back(pcol);
-                pisel->GetIEditable()->m_viCollection.push_back((int)i);
-             }
-             break;
-          }
-       }
+       IEditable *const pedit = (IEditable *)::SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
+       pcol->AddPart(pedit);
+       pedit->m_vCollection.push_back(pcol);
+       pedit->m_viCollection.push_back((int)i);
     }
 
     const size_t fireEvents = GetDlgItem(IDC_FIRE).SendMessage(BM_GETCHECK, 0, 0);

@@ -627,7 +627,7 @@ void EditorUI::RenderUI()
          if (io.KeyAlt)
          { // Unhide all
             for (auto &part : m_editables)
-               if (part->GetEditable()->GetItemType() != eItemPartGroup && part->GetEditable()->GetISelect())
+               if (part->GetEditable()->GetItemType() != eItemPartGroup)
                   part->GetEditable()->SetUIVisible(true);
          }
          else if (io.KeyShift)
@@ -635,7 +635,7 @@ void EditorUI::RenderUI()
             if (m_selection.type == Selection::S_EDITABLE)
             {
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup && part != m_selection.uiPart && part->GetEditable()->GetISelect())
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && part != m_selection.uiPart)
                      part->GetEditable()->SetUIVisible(false);
             }
          }

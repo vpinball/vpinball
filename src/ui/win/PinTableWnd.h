@@ -22,7 +22,7 @@ public:
 
    IWinUIPart *HitTest(const int x, const int y);
 
-   void ClearMultiSel(ISelect *newSel = nullptr);
+   void ClearMultiSel(IWinUIPart *newSelPart = nullptr);
    bool MultiSelIsEmpty() const;
    ISelect *GetSelectedItem() const { return m_vmultisel.empty() ? (ISelect *)m_table : m_vmultisel[0]->GetSelect(); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
