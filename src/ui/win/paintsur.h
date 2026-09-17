@@ -7,7 +7,7 @@
 class PaintSur final : public Sur
 {
 public:
-   PaintSur(const float zoom, const float offx, const float offy, const int width, const int height, const HDC hdc, class PinTableWnd *pTableWnd, ISelect *const psel);
+   PaintSur(const float zoom, const float offx, const float offy, const int width, const int height, const HDC hdc, class PinTableWnd *pTableWnd, IWinUIPart *const psel);
    ~PaintSur() override;
 
    void Line(const float x, const float y, const float x2, const float y2) override;
@@ -23,7 +23,7 @@ public:
    void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y) override;
    void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height) override;
 
-   void SetObject(ISelect * const psel) override;
+   void SetObject(IWinUIPart * const part) override;
 
    void SetFillColor(const int rgb) override;
    void SetBorderColor(const int rgb, const bool dashed, const int width) override;
@@ -38,7 +38,7 @@ private:
    HPEN m_hpnLine;
 
    HDC m_hdc;
-   ISelect *m_psel;
+   IWinUIPart *m_psel;
    PinTableWnd *m_pTableWnd;
 
    bool m_nullBorder;

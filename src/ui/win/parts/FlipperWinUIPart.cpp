@@ -34,7 +34,7 @@ void FlipperWinUIPart::UIRenderPass1(Sur* const psur)
    Vertex2D rgv[4];
    m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
-   psur->SetObject(m_flipper);
+   psur->SetObject(this);
 
    psur->Polygon(rgv, 4);
    psur->Ellipse(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, m_flipper->m_d.m_BaseRadius);
@@ -43,7 +43,7 @@ void FlipperWinUIPart::UIRenderPass1(Sur* const psur)
    // rubber
    m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, rubBaseRadius, rubEndRadius, vendcenter, rgv);
 
-   psur->SetObject(m_flipper);
+   psur->SetObject(this);
    psur->SetLineColor(RGB(128, 0, 0), false, 0);
 
    psur->Polygon(rgv, 4);
@@ -66,7 +66,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
    psur->SetBorderColor(-1, false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
-   psur->SetObject(m_flipper);
+   psur->SetObject(this);
 
    psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
    psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -81,7 +81,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
    psur->SetBorderColor(-1, false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
-   psur->SetObject(m_flipper);
+   psur->SetObject(this);
 
    psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
    psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -123,7 +123,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
    {
       m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
-      psur->SetObject(m_flipper);
+      psur->SetObject(this);
 
       psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
       psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -157,7 +157,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
 
       m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
-      psur->SetObject(m_flipper);
+      psur->SetObject(this);
 
       psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
       psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);

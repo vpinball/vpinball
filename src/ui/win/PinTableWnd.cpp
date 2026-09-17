@@ -502,7 +502,7 @@ void PinTableWnd::Paint(HDC hdc)
 
    if (m_dirtyDraw)
    {
-      PaintSur psur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, dc.GetHDC(), this, GetSelectedItem());
+      PaintSur psur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, dc.GetHDC(), this, m_vmultisel.empty() ? &m_tablePart : m_vmultisel[0]);
       RenderTable(&psur);
    }
 
@@ -1085,7 +1085,7 @@ void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
 #endif
 }
 
-ISelect *PinTableWnd::HitTest(const int x, const int y)
+IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
 {
 #ifdef __STANDALONE__
    return nullptr;
@@ -1094,10 +1094,10 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    const CRect rc = GetClientRect();
 
-   HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
-   HitSur phs2(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
+   HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, &m_tablePart);
+   HitSur phs2(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, &m_tablePart);
 
-   m_table->m_allHitElements.clear();
+   m_allHitElements.clear();
 
    RenderTable(&phs);
 
@@ -1107,21 +1107,21 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
       {
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
             uiPart->UIRenderPass1(&phs2);
-         ISelect *const tmp = phs2.m_pselected;
-         if (FindIndexOf(m_table->m_allHitElements, tmp) == -1 && tmp != nullptr && tmp != m_table)
+         IWinUIPart *const tmp = phs2.m_pselected;
+         if (FindIndexOf(m_allHitElements, tmp) == -1 && tmp != nullptr && tmp != &m_tablePart)
          {
-            m_table->m_allHitElements.push_back(tmp);
+            m_allHitElements.push_back(tmp);
          }
       }
    }
    // it's possible that UIRenderPass1 doesn't find all elements (gates,plunger)
    // check here if everything was already stored in the list
-   if (FindIndexOf(m_table->m_allHitElements, phs.m_pselected) == -1)
+   if (FindIndexOf(m_allHitElements, phs.m_pselected) == -1)
    {
-      m_table->m_allHitElements.push_back(phs.m_pselected);
+      m_allHitElements.push_back(phs.m_pselected);
    }
 
-   std::ranges::reverse(m_table->m_allHitElements.begin(), m_table->m_allHitElements.end());
+   std::ranges::reverse(m_allHitElements.begin(), m_allHitElements.end());
 
    return phs.m_pselected;
 #endif
@@ -1206,11 +1206,11 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
    }
    else
    {
-      ISelect *const pisel = HitTest(x, y);
+      IWinUIPart *const pisel = HitTest(x, y);
 
       const bool add = ((ksshift & 0x80000000) != 0);
 
-      if (pisel == m_table && add)
+      if (pisel == &m_tablePart && add)
       {
          // Can not include the table in multi-select
          // and table will not be unselected, because the
@@ -1220,7 +1220,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
          return;
       }
 
-      AddMultiSel(pisel, add, true, false);
+      AddMultiSel(pisel->GetSelect(), add, true, false);
 
       m_moving = true;
       for (IWinUIPart *const uiPart : m_vmultisel)
@@ -1286,7 +1286,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
       ReleaseCapture();
       if ((m_table->m_rcDragRect.left != m_table->m_rcDragRect.right) || (m_table->m_rcDragRect.top != m_table->m_rcDragRect.bottom))
       {
-         vector<ISelect *> vsel;
+         vector<IWinUIPart *> vsel;
 
          const CDC &dc = m_mdiTable->GetDC();
 
@@ -1317,7 +1317,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
 
             for (size_t i = 0; i < vsel.size(); i++)
                if (vsel[i]->IsSubPart() == subPartsOnly)
-                  AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
+                  AddMultiSel(vsel[i]->GetSelect(), true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
          }
       }
       Redraw();
@@ -1340,21 +1340,21 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
    {
       // keep the selection if clicking over a selected object, even if
       // the selected object is hidden behind other objects
-      ISelect *hit = HitTest(x, y);
+      IWinUIPart *hit = HitTest(x, y);
       for (IWinUIPart *const uiPart : m_vmultisel)
       {
-         if (FindIndexOf(m_table->m_allHitElements, uiPart->GetSelect()) != -1)
+         if (FindIndexOf(m_allHitElements, uiPart) != -1)
          {
             // found a selected item - keep the current selection set
             // by re-selecting this item (which will also promote it
             // to the head of the selection list)
-            hit = uiPart->GetSelect();
+            hit = uiPart;
             break;
          }
       }
 
       // update the selection
-      AddMultiSel(hit, false, true, false);
+      AddMultiSel(hit->GetSelect(), false, true, false);
    }
 }
 
@@ -1696,15 +1696,15 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
       newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
       // now list all elements that are stacked at the mouse pointer
-      for (size_t i = 0; i < m_table->m_allHitElements.size(); i++)
+      for (size_t i = 0; i < m_allHitElements.size(); i++)
       {
-         if (!m_table->m_allHitElements[i]->GetIEditable()->IsUIVisible(false))
+         if (!m_allHitElements[i]->GetEditable()->IsUIVisible(false))
             continue;
 
-         ISelect *const ptr = m_table->m_allHitElements[i];
+         IWinUIPart *const ptr = m_allHitElements[i];
          if (ptr)
          {
-            IEditable *const pedit = m_table->m_allHitElements[i]->GetIEditable();
+            IEditable *const pedit = m_allHitElements[i]->GetEditable();
             if (pedit)
             {
                const string szTemp = m_table->GetElementName(pedit);

@@ -674,8 +674,6 @@ public:
 
    string m_envImage;
 
-   vector<ISelect *> m_allHitElements;
-
    vector<Texture *> m_vimage;
    vector<Texture *> m_vliveimage;
    const vector<Texture *> &GetImageList() const { return m_vimage; }

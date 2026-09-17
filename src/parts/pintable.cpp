@@ -446,37 +446,21 @@ void PinTable::MovePartToBack(IEditable* part)
 
 void PinTable::ReorderParts(bool isDrawingOrder)
 {
-   SetNonUndoableDirty(eSaveDirty);
-   if (isDrawingOrder)
+   const vector<IWinUIPart *> &selection = isDrawingOrder ? m_tableEditor->GetMultiSelParts() : m_tableEditor->m_allHitElements;
+   if (!selection.empty())
    {
-      const vector<ISelect *> selection = m_tableEditor->GetSelectedParts();
-      for (int i = (int)selection.size() - 1; i >= 0; i--)
+      SetNonUndoableDirty(eSaveDirty);
+      for (size_t i = selection.size() - 1; i >= 0; i--)
       {
-         IEditable *const pedit = selection[i]->GetIEditable();
+         IEditable *const pedit = selection[i]->GetEditable();
          RemoveFromVectorSingle(m_vedit, pedit);
       }
 
-      for (int i = (int)selection.size() - 1; i >= 0; i--)
+      for (size_t i = selection.size() - 1; i >= 0; i--)
       {
-         IEditable *const pedit = selection[i]->GetIEditable();
+         IEditable *const pedit = selection[i]->GetEditable();
          if (FindIndexOf(m_vedit, pedit) != -1)
             continue; // Already re-added: the selection may contain multiple selects of a part (part and sub parts)
-         m_vedit.push_back(pedit);
-      }
-   }
-   else
-   {
-      for (SSIZE_T i = m_allHitElements.size() - 1; i >= 0; i--)
-      {
-         IEditable *const pedit = m_allHitElements[i]->GetIEditable();
-         RemoveFromVectorSingle(m_vedit, pedit);
-      }
-
-      for (SSIZE_T i = m_allHitElements.size() - 1; i >= 0; i--)
-      {
-         IEditable *const pedit = m_allHitElements[i]->GetIEditable();
-         if (FindIndexOf(m_vedit, pedit) != -1)
-            continue; // Already re-added: the hit elements may contain multiple selects of a part (part and sub parts)
          m_vedit.push_back(pedit);
       }
    }
@@ -3420,10 +3404,10 @@ void PinTable::Copy(int x, int y)
    if (m_tableEditor->GetMultiSelCount() == 1)
    {
        // special check if the user selected a Control Point and wants to copy the coordinates
-       ISelect *const pItem = m_tableEditor->HitTest(x, y);
+       IWinUIPart *const pItem = m_tableEditor->HitTest(x, y);
        if (pItem->GetItemType() == eItemDragPoint)
        {
-           DragPoint *pPoint = (DragPoint*)pItem;
+           DragPoint *pPoint = (DragPoint*)pItem->GetSelect();
            pPoint->Copy();
            return;
        }
@@ -3469,10 +3453,10 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
    if (m_tableEditor->GetMultiSelCount() == 1)
    {
        // User wants to paste the copied coordinates of a Control Point
-       ISelect * const pItem = m_tableEditor->HitTest(x, y);
+       IWinUIPart * const pItem = m_tableEditor->HitTest(x, y);
        if (pItem->GetItemType() == eItemDragPoint)
        {
-           DragPoint * const pPoint = (DragPoint*)pItem;
+           DragPoint * const pPoint = (DragPoint*)pItem->GetSelect();
            pPoint->Paste();
            SetDirtyDraw();
            return;

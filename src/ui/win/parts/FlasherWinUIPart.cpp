@@ -26,7 +26,7 @@ void FlasherWinUIPart::UIRenderPass1(Sur * const psur)
       m_flasher->InitShape();
 
    psur->SetFillColor(m_flasher->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);
-   psur->SetObject(m_flasher);
+   psur->SetObject(this);
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1, false, 0);
 
@@ -69,7 +69,7 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_flasher); // For selected formatting
+   psur->SetObject(this); // For selected formatting
    psur->SetObject(nullptr);
 
    vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
@@ -114,7 +114,7 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
       for (const auto &pdp : m_flasher->m_vdpoint)
       {
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
-         psur->SetObject(pdp);
+         psur->SetObject(m_pointParts.Get(pdp));
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
    }

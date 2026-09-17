@@ -25,7 +25,7 @@ void SurfaceWinUIPart::UpdateStatusBarInfo()
 void SurfaceWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetFillColor(m_surface->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);
-   psur->SetObject(m_surface);
+   psur->SetObject(this);
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1, false, 0);
 
@@ -43,7 +43,7 @@ void SurfaceWinUIPart::UIRenderPass2(Sur* const psur)
 {
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_surface); // For selected formatting
+   psur->SetObject(this); // For selected formatting
    psur->SetObject(nullptr);
 
    {
@@ -79,7 +79,7 @@ void SurfaceWinUIPart::UIRenderPass2(Sur* const psur)
 
       if (drawDragpoints)
       {
-         psur->SetObject(pdp);
+         psur->SetObject(m_pointParts.Get(pdp));
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
 
@@ -102,7 +102,7 @@ void SurfaceWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
    else
       psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_surface); // For selected formatting
+   psur->SetObject(this); // For selected formatting
    psur->SetObject(nullptr);
 
    vector<RenderVertex> vvertex;

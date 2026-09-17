@@ -5,7 +5,7 @@
 
 #define PTINRECT(x,y) ((x) >= m_rcRect.left && (x) <= m_rcRect.right && (y) > m_rcRect.top && (y) < m_rcRect.bottom)
 
-HitRectSur::HitRectSur(const float zoom, const float offx, const float offy, const int width, const int height, const FRect * const prcRect, vector<ISelect*> * const pvsel) : Sur(zoom, offx, offy, width, height)
+HitRectSur::HitRectSur(const float zoom, const float offx, const float offy, const int width, const int height, const FRect * const prcRect, vector<IWinUIPart*> * const pvsel) : Sur(zoom, offx, offy, width, height)
 {
    m_rcRect = *prcRect;
    m_pvsel = pvsel;
@@ -107,24 +107,24 @@ void HitRectSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, cons
    Polygon(rgv);
 }
 
-void HitRectSur::SetObject(ISelect * const psel)
+void HitRectSur::SetObject(IWinUIPart * const part)
 {
-   m_pcur = psel;
+   m_pcur = part;
    if (m_pcur)
    {
-      if (FindIndexOf(m_vselFailed, psel) != -1)
+      if (FindIndexOf(m_vselFailed, part) != -1)
       {
          // Object failed previously - just skip this time
          m_failedAlready = true;
       }
       else
       {
-         const int index = FindIndexOf(*m_pvsel, psel);
+         const int index = FindIndexOf(*m_pvsel, part);
          if (index == -1)
          {
             // Object not in list yet - add it
             m_indexcur = m_pvsel->size();
-            m_pvsel->push_back(psel);
+            m_pvsel->push_back(part);
          }
          else
          {

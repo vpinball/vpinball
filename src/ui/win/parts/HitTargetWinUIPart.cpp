@@ -25,7 +25,7 @@ void HitTargetWinUIPart::UIRenderPass1(Sur* const psur)
 void HitTargetWinUIPart::UIRenderPass2(Sur* const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
-   psur->SetObject(m_hittarget);
+   psur->SetObject(this);
 
    vector<Vertex2D> edges;
    m_hittarget->GetEditorWireframe(edges);

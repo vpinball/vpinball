@@ -27,7 +27,7 @@ void BallWinUIPart::UIRenderPass2(Sur* const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
-   psur->SetObject(m_ball);
+   psur->SetObject(this);
    psur->Ellipse(m_ball->m_hitBall.m_d.m_pos.x, m_ball->m_hitBall.m_d.m_pos.y, m_ball->m_hitBall.m_d.m_radius);
 }
 
@@ -35,6 +35,6 @@ void BallWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
-   psur->SetObject(m_ball);
+   psur->SetObject(this);
    psur->Ellipse(m_ball->m_hitBall.m_d.m_pos.x, m_ball->m_hitBall.m_d.m_pos.y, m_ball->m_hitBall.m_d.m_radius);
 }

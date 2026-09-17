@@ -23,7 +23,7 @@ void TriggerWinUIPart::UpdateStatusBarObjectPos()
 void TriggerWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(-1, false, 0);
-   psur->SetObject(m_trigger);
+   psur->SetObject(this);
 
    if (m_trigger->m_d.m_shape != TriggerStar && m_trigger->m_d.m_shape != TriggerButton)
    {
@@ -44,7 +44,7 @@ void TriggerWinUIPart::UIRenderPass1(Sur* const psur)
 void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_trigger);
+   psur->SetObject(this);
    psur->SetFillColor(-1);
 
    if (m_trigger->m_d.m_shape != TriggerStar && m_trigger->m_d.m_shape != TriggerButton)
@@ -80,7 +80,7 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
             CComObject<DragPoint>* const pdp = m_trigger->m_vdpoint[i];
             psur->SetFillColor(-1);
             psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
-            psur->SetObject(pdp);
+            psur->SetObject(m_pointParts.Get(pdp));
 
             psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
          }
@@ -117,7 +117,7 @@ void TriggerWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
    else
       psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_trigger);
+   psur->SetObject(this);
 
    psur->Ellipse(m_trigger->m_d.m_vCenter.x, m_trigger->m_d.m_vCenter.y, m_trigger->m_d.m_radius);
 }

@@ -35,7 +35,7 @@ void RubberWinUIPart::UIRenderPass1(Sur* const psur)
    else
       psur->SetFillColor(-1);
    psur->SetBorderColor(-1, false, 0);
-   psur->SetObject(m_rubber);
+   psur->SetObject(this);
 
    if (!m_rubber->m_d.m_showInEditor)
    {
@@ -58,7 +58,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_rubber);
+   psur->SetObject(this);
    psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    if (!m_rubber->m_d.m_showInEditor)
@@ -108,7 +108,7 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
          CComObject<DragPoint>* const pdp = m_rubber->m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
-         psur->SetObject(pdp);
+         psur->SetObject(m_pointParts.Get(pdp));
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -121,7 +121,7 @@ void RubberWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_rubber);
+   psur->SetObject(this);
    psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    if (!m_rubber->m_d.m_showInEditor)

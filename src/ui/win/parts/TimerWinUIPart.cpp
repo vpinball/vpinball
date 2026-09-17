@@ -28,7 +28,7 @@ void TimerWinUIPart::UIRenderPass2(Sur* const psur)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
-   psur->SetObject(m_timer);
+   psur->SetObject(this);
 
    psur->Ellipse(m_timer->m_d.m_v.x, m_timer->m_d.m_v.y, 18);
    psur->Ellipse(m_timer->m_d.m_v.x, m_timer->m_d.m_v.y, 15);
