@@ -1426,12 +1426,12 @@ void EditorUI::CameraProperties(PropertyPane &props, int bgSet)
    {
       if (ImGui::Button("Import"))
       {
-         m_table->ImportBackdropPOV(string());
+         m_table->ImportBackdropPOV(m_table->GetSettingsFileName(), false);
          m_renderer->MarkShaderDirty();
       }
       ImGui::SameLine();
       if (ImGui::Button("Export"))
-         m_table->ExportBackdropPOV();
+         m_table->ExportBackdropPOV(m_table->GetSettingsFileName());
       ImGui::NewLine();
    }
 

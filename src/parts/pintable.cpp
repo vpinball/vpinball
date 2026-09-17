@@ -154,24 +154,6 @@ PinTable::~PinTable()
       m_liveBaseTable->Release();
 }
 
-void PinTable::UpdatePropertyImageList()
-{
-#ifndef __STANDALONE__
-    // just update the combo boxes in the property dialog
-    if (m_tableEditor)
-       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->GetMultiSelParts());
-#endif
-}
-
-void PinTable::UpdatePropertyMaterialList()
-{
-#ifndef __STANDALONE__
-    // just update the combo boxes in the property dialog
-    if (m_tableEditor)
-       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->GetMultiSelParts());
-#endif
-}
-
 void PinTable::ClearForOverwrite()
 {
    for (size_t i = 0; i < m_materials.size(); ++i)
@@ -181,13 +163,6 @@ void PinTable::ClearForOverwrite()
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
       delete m_vrenderprobe[i];
    m_vrenderprobe.clear();
-}
-
-void PinTable::SetMouseCapture()
-{
-#ifndef __STANDALONE__
-   m_tableEditor->SetCapture();
-#endif
 }
 
 #define CLEAN_MATERIAL(pEditMaterial) \
@@ -2122,9 +2097,9 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings
    // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
    if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".pov"); !FileExists(GetSettingsFileName()) && FileExists(filenameAuto))
-      ImportBackdropPOV(filenameAuto);
+      ImportBackdropPOV(filenameAuto, true);
    else if (const std::filesystem::path filenameAuto2 = tablePath / "autopov.pov"sv; FileExists(filenameAuto2))
-      ImportBackdropPOV(filenameAuto2);
+      ImportBackdropPOV(filenameAuto2, true);
 
    // auto-import VBS table script, if it exists...
    if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(this, tableFile.replace_extension(".vbs")); !filenameAuto.empty())
@@ -2562,25 +2537,18 @@ bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &f
 
 void PinTable::ReImportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
 {
-#ifndef __STANDALONE__
    vector<uint8_t> data = read_file(filename);
    if (!data.empty())
       pps->SetFromFileData(filename, data);
-#endif
 }
-
 
 VPX::Sound *PinTable::ImportSound(const std::filesystem::path &filename)
 {
-#ifndef __STANDALONE__
    VPX::Sound *const pps = VPX::Sound::CreateFromFile(filename);
    if (pps == nullptr)
       return nullptr;
    m_vsound.push_back(pps);
    return pps;
-#else
-   return nullptr;
-#endif
 }
 
 void PinTable::RemoveSound(VPX::Sound *const pps)
@@ -2990,36 +2958,21 @@ void PinTable::ExportMesh(ObjLoader& loader)
 // Import Point of View file. This can be either:
 // - a UI interaction from table author, loading to table **properties** after file selection,
 // - without UI interaction, triggered to load user settings preference to table **settings**.
-void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
+void PinTable::ImportBackdropPOV(const std::filesystem::path &filename, const bool toUserSettings)
 {
-   std::filesystem::path file = filename;
-   const bool toUserSettings = !filename.empty();
-   const bool wasModified = m_settings.IsModified();
-   if (!toUserSettings)
-   {
-      if (IsLocked())
-         return;
-#ifndef __STANDALONE__
-      const string& initialDir = m_settings.GetRecentDir_POVDir();
-      vector<string> fileNames;
-      if (!m_vpinball->OpenFileDialog(initialDir, fileNames,
-         "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0",
-         "ini", 0, toUserSettings ? "Import POV to user settings"s : "Import POV to table properties"s))
-         return;
-      file = fileNames[0];
-      if(file.has_parent_path())
-         g_app->m_settings.SetRecentDir_POVDir(file.parent_path().string(), false);
-#endif
-   }
+   if (filename.empty())
+      return;
 
-   const string ext = lowerCase(file.extension().string());
+   const bool wasModified = m_settings.IsModified();
+
+   const string ext = lowerCase(filename.extension().string());
 
    static const string vsPrefix[3] = { "ViewDT"s, "ViewCab"s, "ViewFSS"s };
    static const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
    if (ext == ".ini")
    {
       Settings settings;
-      settings.SetIniPath(file);
+      settings.SetIniPath(filename);
       settings.Load(false);
       for (int id = 0; id < 3; id++)
       {
@@ -3040,7 +2993,7 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
       try
       {
          std::stringstream buffer;
-         std::ifstream myFile(file);
+         std::ifstream myFile(filename);
          buffer << myFile.rdbuf();
          myFile.close();
          const string& xml = buffer.str();
@@ -3215,7 +3168,7 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
    }
 
    // If loaded without UI interaction, do not mark settings as modified
-   if (!filename.empty())
+   if (toUserSettings)
       m_settings.SetModified(wasModified);
 
    // update properties UI
@@ -3226,49 +3179,25 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
 }
 
 // Select file and export the point of view definition
-void PinTable::ExportBackdropPOV() const
+void PinTable::ExportBackdropPOV(const std::filesystem::path &filename) const
 {
-   string iniFileName;
-#ifndef __STANDALONE__
-	OPENFILENAME ofn = {};
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hInstance = g_app->GetInstanceHandle();
-	ofn.hwndOwner = m_vpinball->GetHwnd();
-	// TEXT
-	ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
-	char szFileName[MAXSTRING];
-   strncpy_s(szFileName, std::size(szFileName), m_filename.string().c_str());
-   const size_t idx = m_filename.string().find_last_of('.');
-	if(idx != string::npos && idx < std::size(szFileName))
-		szFileName[idx] = '\0';
-	ofn.lpstrFile = szFileName;
-	ofn.nMaxFile = std::size(szFileName);
-	ofn.lpstrDefExt = "ini";
-	ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-	const int ret = GetSaveFileName(&ofn);
-	// user cancelled
-	if (ret == 0)
-		return;// S_FALSE;
-	iniFileName = szFileName;
-#endif
-
    // Save view setups (only overriden properties if we are given a reference view setup set)
    Settings settings;
    for (int i = 0; i < 3; i++)
       mViewSetups[i].SaveToTableOverrideSettings(settings, (ViewSetupID)i);
    if (settings.IsModified())
    {
-      settings.SetIniPath(iniFileName);
+      settings.SetIniPath(filename);
       settings.Save();
       if (g_pplayer)
-         g_pplayer->m_liveUI->PushNotification("POV exported to " + iniFileName, 5000);
+         g_pplayer->m_liveUI->PushNotification("POV exported to " + filename.string(), 5000);
    }
    else if (g_pplayer)
    {
-      g_pplayer->m_liveUI->PushNotification("POV was not exported to " + iniFileName + " (nothing to save)", 5000);
+      g_pplayer->m_liveUI->PushNotification("POV was not exported to " + filename.string() + " (nothing to save)", 5000);
    }
 
-   PLOGI << "View setup exported to '" << iniFileName << '\'';
+   PLOGI << "View setup exported to '" << filename << '\'';
 }
 
 void PinTable::SelectItem(IScriptable *piscript)
@@ -3395,137 +3324,6 @@ void PinTable::Undelete(IEditable *pie)
    SetDirtyDraw();
 }
 
-void PinTable::Copy(int x, int y)
-{
-#ifndef __STANDALONE__
-   if (m_tableEditor->MultiSelIsEmpty()) // Can't copy table
-      return;
-
-   if (m_tableEditor->GetMultiSelCount() == 1)
-   {
-       // special check if the user selected a Control Point and wants to copy the coordinates
-       IWinUIPart *const pItem = m_tableEditor->HitTest(x, y);
-       if (pItem->GetItemType() == eItemDragPoint)
-       {
-           DragPoint *pPoint = (DragPoint*)pItem->GetSelect();
-           pPoint->Copy();
-           return;
-       }
-   }
-
-   vector<IStream*> vstm;
-   vector<IEditable*> copied;
-   //m_vstmclipboard
-   for (ISelect *const psel : m_tableEditor->GetSelectedParts())
-   {
-       IEditable *const pe = psel->GetIEditable();
-
-       // Multi-select may contain a part together with its sub parts (drag points, light centers): copy each part only once
-       if (FindIndexOf(copied, pe) != -1)
-           continue;
-       copied.push_back(pe);
-
-       const HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
-
-       IStream *pstm;
-       CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
-
-       const int type = pe->GetItemType();
-       ULONG writ = 0;
-       pstm->Write(&type, sizeof(int), &writ);
-
-       BiffWriter writer(pstm, 0);
-       pe->Save(writer, false);
-
-       vstm.push_back(pstm);
-   }
-
-   m_vpinball->SetClipboard(&vstm);
-#endif
-}
-
-void PinTable::Paste(const bool atLocation, const int x, const int y)
-{
-#ifndef __STANDALONE__
-   bool error = false;
-   int cpasted = 0;
-
-   if (m_tableEditor->GetMultiSelCount() == 1)
-   {
-       // User wants to paste the copied coordinates of a Control Point
-       IWinUIPart * const pItem = m_tableEditor->HitTest(x, y);
-       if (pItem->GetItemType() == eItemDragPoint)
-       {
-           DragPoint * const pPoint = (DragPoint*)pItem->GetSelect();
-           pPoint->Paste();
-           SetDirtyDraw();
-           return;
-       }
-   }
-
-   const IWinUIPart::AllowedViews currentView = m_vpinball->m_desktopBackdropView ? IWinUIPart::AllowedViews::Backglass : IWinUIPart::AllowedViews::Playfield;
-
-   // Do a backwards loop, so that the primary selection we had when
-   // copying will again be the primary selection, since it will be
-   // selected last.  Purely cosmetic.
-   for (SSIZE_T i = m_vpinball->m_vstmclipboard.size() - 1; i >= 0; i--)
-   //for (size_t i=0; i<m_vpinball->m_vstmclipboard.size(); i++)
-   {
-      IStream* const pstm = m_vpinball->m_vstmclipboard[i];
-
-      // Go back to beginning of stream to load
-      LARGE_INTEGER foo;
-      foo.QuadPart = 0;
-      pstm->Seek(foo, STREAM_SEEK_SET, nullptr);
-
-      ULONG writ = 0;
-      ItemTypeEnum type;
-      /*const HRESULT hr =*/ pstm->Read(&type, sizeof(int), &writ);
-
-      if (!IWinUIPart::IsViewAllowed(WinUIPartRegistry::GetAllowedViews(type), currentView))
-      {
-         error = true;
-      }
-      else
-      {
-         IEditable* const peditNew = EditableRegistry::Create(type);
-         if (peditNew)
-         {
-            BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
-            peditNew->Load(reader);
-            peditNew->m_desktopBackdrop = m_vpinball->m_desktopBackdropView;
-            //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet
-            if (!IsNameUnique(peditNew->GetWName()))
-            {
-               //first remove the existing suffix
-               const wstring input = peditNew->GetWName();
-               size_t lastNonDigit = input.length();
-               while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
-                  --lastNonDigit;
-               peditNew->SetName(GetUniqueName(input.substr(0, lastNonDigit)));
-            }
-            peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
-
-            AddPart(peditNew);
-
-            m_tableEditor->AddMultiSel(peditNew->GetISelect(), (i != m_vpinball->m_vstmclipboard.size() - 1), true, false);
-            cpasted++;
-         }
-         else
-            error = true;
-      }
-   }
-   m_vpinball->GetLayersListDialog()->Update();
-
-   // Center view on newly created objects, if they are off the screen
-   if ((cpasted > 0) && atLocation)
-      m_tableEditor->TranslateMultiSel(m_tableEditor->TransformPoint(x, y) - m_tableEditor->GetMultiSelCenter());
-
-   if (error)
-      ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
-#endif
-}
-
 void PinTable::SetDefaultPhysics(const bool fromMouseClick)
 {
    m_Gravity = 0.97f*GRAVITYCONST;
@@ -3534,66 +3332,6 @@ void PinTable::SetDefaultPhysics(const bool fromMouseClick)
    m_elasticity = DEFAULT_TABLE_ELASTICITY;
    m_elasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
    m_scatter = DEFAULT_TABLE_PFSCATTERANGLE;
-}
-
-void PinTable::OnDelete()
-{
-#ifndef __STANDALONE__
-   vector<ISelect*> m_vseldelete;
-   const vector<ISelect *> selection = m_tableEditor->GetSelectedParts();
-   m_vseldelete.reserve(selection.size());
-
-   for (ISelect *const psel : selection)
-   {
-      // Sub parts (drag points, light centers) are deleted together with their owning part
-      if (m_tableEditor->IsSubPartOfSelectedPart(psel))
-         continue;
-      // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
-      m_vseldelete.push_back(psel);
-      if (psel->GetItemType() == ItemTypeEnum::eItemPartGroup)
-         for (const auto part : m_vedit)
-            if (part->GetPartGroup() == psel && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
-               m_vseldelete.push_back(part->GetISelect());
-   }
-
-   m_tableEditor->ClearMultiSel();
-
-   bool inCollection = false;
-   for (size_t t = 0; t < m_vseldelete.size() && !inCollection; t++)
-   {
-      const ISelect * const ptr = m_vseldelete[t];
-      for (int i = 0; i < m_vcollection.size() && !inCollection; i++)
-      {
-         for (const IEditable *const part : m_vcollection[i].GetParts())
-         {
-            // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
-            if (ptr == part->GetISelect() || ptr->GetIEditable() == part)
-            {
-               inCollection = true;
-               break;
-            }
-         }
-      }
-   }
-   if (inCollection)
-   {
-      const int ans = m_tableEditor->MessageBox(LocalString(IDS_DELETE_ELEMENTS).m_szbuffer /*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/,
-         "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
-      if (ans != IDYES)
-         return;
-   }
-
-   for (size_t i = 0; i < m_vseldelete.size(); i++)
-      if (m_vseldelete[i] != nullptr)
-         m_vseldelete[i]->Delete();
-   m_vpinball->GetLayersListDialog()->Update();
-   // update properties to show the properties of the table
-   m_tableEditor->RefreshProperties();
-   if (m_tableEditor)
-      m_tableEditor->OnPartChanged(this);
-
-   SetDirtyDraw();
-#endif
 }
 
 STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
@@ -5403,22 +5141,6 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 
 //
 
-STDMETHODIMP PinTable::ImportPhysics()
-{
-   const string& szInitialDir = m_settings.GetRecentDir_PhysicsDir();
-   vector<string> filename;
-   if (!m_vpinball->OpenFileDialog(szInitialDir, filename, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
-      return S_OK;
-
-   const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
-   if (index != string::npos)
-      g_app->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
-
-   ImportVPP(filename[0]);
-
-   return S_OK;
-}
-
 std::array<string,18> PinTable::VPPelementNames{"gravityConstant"s, "contactFriction"s, "elasticity"s, "elasticityFalloff"s, "playfieldScatter"s, "defaultElementScatter"s, "playfieldminslope"s, "playfieldmaxslope"s,
                                /*flippers:*/    "speed"s, "strength"s, "elasticity"s, "scatter"s, "eosTorque"s, "eosTorqueAngle"s, "returnStrength"s, "elasticityFalloff"s, "friction"s, "coilRampUp"s};
 
@@ -5537,61 +5259,8 @@ void PinTable::ImportVPP(const std::filesystem::path &filename)
    tab->InsertEndChild(node); \
 }
 
-STDMETHODIMP PinTable::ExportPhysics()
+void PinTable::ExportVPP(const std::filesystem::path &filename, Flipper *const flipper)
 {
-#ifndef __STANDALONE__
-   bool foundflipper = false;
-   size_t i;
-   for (i = 0; i < m_vedit.size(); i++)
-   {
-      if (m_vedit[i]->GetItemType() == eItemFlipper)
-      {
-         foundflipper = true;
-         break;
-      }
-   }
-
-   if (!foundflipper)
-   {
-      ShowError("No Flipper found to copy settings from");
-      return S_OK;
-   }
-
-   Flipper * const flipper = (Flipper *)m_vedit[i];
-
-   char szFileName[MAXSTRING];
-   strncpy_s(szFileName, std::size(szFileName), m_filename.string().c_str());
-   const size_t idx = m_filename.string().find_last_of('.');
-   if (idx != string::npos && idx < std::size(szFileName))
-      szFileName[idx] = '\0';
-
-   OPENFILENAME ofn = {};
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_app->GetInstanceHandle();
-   ofn.hwndOwner = m_vpinball->GetHwnd();
-   // TEXT
-   ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
-   ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = std::size(szFileName);
-   ofn.lpstrDefExt = "vpp";
-   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
-   string szInitialDir = m_settings.GetRecentDir_PhysicsDir();
-
-   ofn.lpstrInitialDir = szInitialDir.c_str();
-
-   const int ret = GetSaveFileName(&ofn);
-   if (ret == 0)
-      return S_OK;
-
-   const string filename(ofn.lpstrFile);
-   const size_t index = filename.find_last_of(PATH_SEPARATOR_CHAR);
-   if (index != string::npos)
-   {
-      const string newInitDir(filename.substr(0, index));
-      g_app->m_settings.SetRecentDir_PhysicsDir(newInitDir, false);
-   }
-
    tinyxml2::XMLDocument xmlDoc;
 
    auto root = xmlDoc.NewElement("physics");
@@ -5630,12 +5299,9 @@ STDMETHODIMP PinTable::ExportPhysics()
    tinyxml2::XMLPrinter prn;
    xmlDoc.Print(&prn);
 
-   std::ofstream myfile(ofn.lpstrFile);
+   std::ofstream myfile(filename);
    myfile << prn.CStr();
    myfile.close();
-#endif
-
-   return S_OK;
 }
 
 //
