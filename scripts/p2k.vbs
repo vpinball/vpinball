@@ -70,10 +70,10 @@ vpmSystemHelp = "Pinball 2000 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3" & vbNewLine &_
-  vpmKeyName(keyEnter) & vbTab & "Enter (Coin Door)" & vbNewLine &_
+  vpmKeyName(keyCancel) & vbTab & "Enter (Coin Door)" & vbNewLine &_
   vpmKeyName(keyUp) & vbTab & "Up (Coin Door)" & vbNewLine &_
   vpmKeyName(keyDown) & vbTab & "Down (Coin Door)" & vbNewLine &_
-  vpmKeyName(keyCancel) & vbTab & "Escape (Coin Door)" & vbNewLine &_
+  vpmKeyName(keyEnter) & vbTab & "Escape (Coin Door)" & vbNewLine &_
   vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt" & vbNewLine &_
   vpmKeyName(keyCoinDoor) & vbTab & "Open/Close Coin Door (must be CLOSED for high voltage)" & vbNewLine &_
   vpmKeyName(keyFire1) & vbTab & "Left Action Button" & vbNewLine &_
@@ -111,10 +111,10 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey	 swCopy = swStartButton :	  .Switch(swCopy) = True
-			Case keyCancel		 swCopy = swEscape :		  .Switch(swCopy) = True
+			Case keyCancel		 swCopy = swEnter :			  .Switch(swCopy) = True
 			Case keyDown		 swCopy = swDown :			  .Switch(swCopy) = True
 			Case keyUp			 swCopy = swUp :			  .Switch(swCopy) = True
-			Case keyEnter		 swCopy = swEnter :			  .Switch(swCopy) = True
+			Case keyEnter		 swCopy = swEscape :		  .Switch(swCopy) = True
 			Case keySlamDoorHit	 swCopy = swSlamTilt :		  .Switch(swCopy) = True
 			Case keyFire1		 swCopy = swLActionButton :	  .Switch(swCopy) = True
 			Case keyFire2		 swCopy = swRActionButton :	  .Switch(swCopy) = True
@@ -137,10 +137,10 @@ Function vpmKeyUp(ByVal keycode)
 			Case RightFlipperKey
 				.Switch(swRFlipperButton) = False : vpmKeyUp = False : vpmFlips.FlipR False
 			Case StartGameKey	 swCopy = swStartButton :	  .Switch(swCopy) = False
-			Case keyCancel		 swCopy = swEscape :		  .Switch(swCopy) = False
+			Case keyCancel		 swCopy = swEnter :			  .Switch(swCopy) = False
 			Case keyDown		 swCopy = swDown :			  .Switch(swCopy) = False
 			Case keyUp			 swCopy = swUp :			  .Switch(swCopy) = False
-			Case keyEnter		 swCopy = swEnter :			  .Switch(swCopy) = False
+			Case keyEnter		 swCopy = swEscape :		  .Switch(swCopy) = False
 			Case keySlamDoorHit  swCopy = swSlamTilt :		  .Switch(swCopy) = False
 			Case keyFire1		 swCopy = swLActionButton :	  .Switch(swCopy) = False
 			Case keyFire2		 swCopy = swRActionButton :	  .Switch(swCopy) = False
