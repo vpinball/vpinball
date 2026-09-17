@@ -7,7 +7,7 @@
 class DispreelStateProperty final : public BasePropertyDialog
 {
 public:
-    DispreelStateProperty(const vector<ISelect *> *pvsel);
+    DispreelStateProperty(const vector<IWinUIPart *> *pvsel);
     ~DispreelStateProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

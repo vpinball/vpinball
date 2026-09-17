@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-LightVisualsProperty::LightVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
+LightVisualsProperty::LightVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
 {
     m_falloffEdit.SetDialog(this);
     m_falloffPowerEdit.SetDialog(this);

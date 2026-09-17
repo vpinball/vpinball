@@ -7,7 +7,7 @@
 class FlasherVisualsProperty final : public BasePropertyDialog
 {
 public:
-    FlasherVisualsProperty(const vector<ISelect *> *pvsel);
+    FlasherVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~FlasherVisualsProperty() override{ }
 
     void UpdateVisuals(const int dispid=-1) override;

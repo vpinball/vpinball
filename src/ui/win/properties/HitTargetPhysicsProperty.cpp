@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-HitTargetPhysicsProperty::HitTargetPhysicsProperty(const vector<ISelect *> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
+HitTargetPhysicsProperty::HitTargetPhysicsProperty(const vector<IWinUIPart *> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);

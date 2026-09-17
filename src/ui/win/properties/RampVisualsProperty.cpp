@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-RampVisualsProperty::RampVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
+RampVisualsProperty::RampVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {
     m_typeList.push_back("Flat"s);
     m_typeList.push_back("4-Wire"s);

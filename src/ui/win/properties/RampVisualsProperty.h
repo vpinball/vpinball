@@ -7,7 +7,7 @@
 class RampVisualsProperty final : public BasePropertyDialog
 {
 public:
-    RampVisualsProperty(const vector<ISelect *> *pvsel);
+    RampVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~RampVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

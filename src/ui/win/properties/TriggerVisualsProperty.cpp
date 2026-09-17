@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-TriggerVisualsProperty::TriggerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
+TriggerVisualsProperty::TriggerVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
 {
     m_shapeList.push_back("None"s);
     m_shapeList.push_back("Wire A"s);

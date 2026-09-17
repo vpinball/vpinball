@@ -71,11 +71,12 @@ BOOL DrawingOrderDialog::OnInitDialog()
    vector<ISelect*> selection;
    if (m_drawingOrderSelect)
    {
+      const vector<ISelect *> selParts = ptw->GetSelectedParts();
       for (SSIZE_T i = pt->GetParts().size() - 1; i >= 0; i--)
-         for (int t = 0; t < (int)ptw->m_vmultisel.size(); t++)
+         for (ISelect *const sel : selParts)
          {
-            if (ptw->m_vmultisel[t] == pt->GetParts()[i]->GetISelect())
-               selection.push_back(ptw->m_vmultisel[t]);
+            if (sel == pt->GetParts()[i]->GetISelect())
+               selection.push_back(sel);
          }
    }
    for (size_t i = 0; i < (m_drawingOrderSelect ? selection.size() : pt->m_allHitElements.size()); i++)
@@ -226,9 +227,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
          ::SetFocus(hOrderList);
          if (m_drawingOrderSelect)
          {
-            ISelect *const psel = ptw->m_vmultisel[idx];
-            ptw->m_vmultisel.erase(ptw->m_vmultisel.begin() + idx);
-            ptw->m_vmultisel.insert(ptw->m_vmultisel.begin() + (idx - 1), psel);
+            ptw->MoveSelection(idx, idx - 1);
             pt->ReorderParts(m_drawingOrderSelect);
          }
          else
@@ -245,7 +244,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
       pt->SetNonUndoableDirty(eSaveDirty);
       if (m_drawingOrderSelect)
       {
-         if (idx < (int)ptw->m_vmultisel.size() - 1)
+         if (idx < ptw->GetMultiSelCount() - 1)
          {
             ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
             ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
@@ -261,14 +260,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             ListView_SetItemState(hOrderList, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
             ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
             ::SetFocus(hOrderList);
-            ISelect *const psel = ptw->m_vmultisel[idx];
-            ptw->m_vmultisel.erase(ptw->m_vmultisel.begin() + idx);
-
-            if (idx + 1 >= (int)ptw->m_vmultisel.size())
-               ptw->m_vmultisel.push_back(psel);
-            else
-               ptw->m_vmultisel.insert(ptw->m_vmultisel.begin() + (idx + 1), psel);
-
+            ptw->MoveSelection(idx, idx + 1);
             pt->ReorderParts(m_drawingOrderSelect);
          }
       }

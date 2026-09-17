@@ -9,7 +9,7 @@
 #include "ui/win/WinEditor.h"
 
 
-TextboxVisualsProperty::TextboxVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel), m_font(nullptr)
+TextboxVisualsProperty::TextboxVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel), m_font(nullptr)
 {
     m_alignList.push_back("Align Left"s);
     m_alignList.push_back("Align Center"s);

@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-BumperPhysicsProperty::BumperPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
+BumperPhysicsProperty::BumperPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
 {
     m_forceEdit.SetDialog(this);
     m_hitThresholdEdit.SetDialog(this);

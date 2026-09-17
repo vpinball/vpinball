@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-SpinnerPhysicsProperty::SpinnerPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)
+SpinnerPhysicsProperty::SpinnerPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)
 {
     m_dampingEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);

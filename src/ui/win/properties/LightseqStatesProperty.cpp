@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-LightseqStatesProperty::LightseqStatesProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHTSEQ_STATE, pvsel)
+LightseqStatesProperty::LightseqStatesProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHTSEQ_STATE, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);

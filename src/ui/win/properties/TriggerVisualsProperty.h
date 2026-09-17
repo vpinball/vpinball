@@ -7,7 +7,7 @@
 class TriggerVisualsProperty final : public BasePropertyDialog
 {
 public:
-    TriggerVisualsProperty(const vector<ISelect *> *pvsel);
+    TriggerVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~TriggerVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

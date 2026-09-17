@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-FlipperVisualsProperty::FlipperVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_VISUALS, pvsel)
+FlipperVisualsProperty::FlipperVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_VISUALS, pvsel)
 {
     m_rubberThicknessEdit.SetDialog(this);
     m_rubberOffsetHeightEdit.SetDialog(this);

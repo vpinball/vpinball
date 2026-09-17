@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PrimitivePositionProperty::PrimitivePositionProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
+PrimitivePositionProperty::PrimitivePositionProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);

@@ -7,7 +7,7 @@
 class LightseqStatesProperty final : public BasePropertyDialog
 {
 public:
-    LightseqStatesProperty(const vector<ISelect *> *pvsel);
+    LightseqStatesProperty(const vector<IWinUIPart *> *pvsel);
     ~LightseqStatesProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

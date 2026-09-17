@@ -7,7 +7,7 @@
 class LightVisualsProperty final : public BasePropertyDialog
 {
 public:
-    LightVisualsProperty(const vector<ISelect *> *pvsel);
+    LightVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~LightVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

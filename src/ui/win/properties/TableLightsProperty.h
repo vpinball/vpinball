@@ -7,7 +7,7 @@
 class TableLightsProperty final : public BasePropertyDialog
 {
 public:
-    TableLightsProperty(const vector<ISelect *> *pvsel);
+    TableLightsProperty(const vector<IWinUIPart *> *pvsel);
     ~TableLightsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

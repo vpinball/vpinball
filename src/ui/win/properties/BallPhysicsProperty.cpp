@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-BallPhysicsProperty::BallPhysicsProperty(const vector<ISelect *> *pvsel)
+BallPhysicsProperty::BallPhysicsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPBALL_PHYSICS, pvsel)
 {
    m_massEdit.SetDialog(this);

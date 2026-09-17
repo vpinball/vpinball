@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-GatePhysicsProperty::GatePhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPGATE_PHYSICS, pvsel)
+GatePhysicsProperty::GatePhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPGATE_PHYSICS, pvsel)
 {
     m_elasticityEdit.SetDialog(this);
     m_frictionEdit.SetDialog(this);

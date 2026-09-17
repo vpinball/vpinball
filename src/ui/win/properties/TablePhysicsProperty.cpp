@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-TablePhysicsProperty::TablePhysicsProperty(const vector<ISelect *> *pvsel)
+TablePhysicsProperty::TablePhysicsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
    m_gravityConstantEdit.SetDialog(this);
    m_playfieldFrictionEdit.SetDialog(this);
    m_playfieldElasticityEdit.SetDialog(this);

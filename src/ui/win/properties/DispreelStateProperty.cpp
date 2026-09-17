@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-DispreelStateProperty::DispreelStateProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
+DispreelStateProperty::DispreelStateProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
 {
     m_motorStepsEdit.SetDialog(this);
     m_updateIntervalEdit.SetDialog(this);

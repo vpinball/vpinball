@@ -485,7 +485,7 @@ float WinEditor::ConvertToUnit(const float value) const
    return 0;
 }
 
-void WinEditor::SetPropSel(const vector<ISelect *> &pvsel)
+void WinEditor::SetPropSel(const vector<IWinUIPart *> &pvsel)
 {
 #ifndef __STANDALONE__
    if (m_propertyDialog && m_propertyDialog->IsWindow())
@@ -507,7 +507,7 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
    editable->SetName(MakeWString(name));
 
 #ifndef __STANDALONE__
-   g_pvp->SetPropSel(pt->m_tableEditor->m_vmultisel);
+   g_pvp->SetPropSel(pt->m_tableEditor->GetMultiSelParts());
    g_pvp->GetLayersListDialog()->Update();
 
    if (editable->GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
@@ -647,7 +647,7 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
             }
          }
          ptCur->m_tableEditor->ClearMultiSel();
-         SetPropSel(ptCur->m_tableEditor->m_vmultisel);
+         SetPropSel(ptCur->m_tableEditor->GetMultiSelParts());
          GetLayersListDialog()->ResetView();
          ToggleToolbar();
          SetEnableMenuItems();
@@ -2049,8 +2049,8 @@ void WinEditor::SetDefaultPhysics()
       if (answ == IDYES)
       {
          ptCur->BeginUndo();
-         for (int i = 0; i < (int)ptCur->m_tableEditor->m_vmultisel.size(); i++)
-            if (auto editable = ptCur->m_tableEditor->m_vmultisel[i]->GetIEditable(); editable)
+         for (IWinUIPart *const uiPart : ptCur->m_tableEditor->GetMultiSelParts())
+            if (IEditable *const editable = uiPart->GetEditable(); editable)
                editable->SetDefaultPhysics(true);
          ptCur->EndUndo();
       }
@@ -2102,63 +2102,59 @@ void WinEditor::AddControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_vmultisel.empty())
+   if (ISelect *const psel = ptCur->GetSelectedItem(); psel != nullptr)
    {
-      ISelect *const psel = ptCur->m_vmultisel[0];
-      if (psel != nullptr)
+      const POINT pt = ptCur->GetScreenPoint();
+      const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
+      switch (psel->GetItemType())
       {
-         const POINT pt = ptCur->GetScreenPoint();
-         const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
-         switch (psel->GetItemType())
-         {
-         case eItemRamp:
-         {
-            Ramp *const pRamp = (Ramp *)psel;
-            pRamp->GetPTable()->BeginUndo();
-            pRamp->GetPTable()->MarkForUndo(pRamp);
-            pRamp->AddPoint(v, false);
-            pRamp->GetPTable()->EndUndo();
-            if (pRamp->GetPTable())
-               pRamp->GetPTable()->SetDirtyDraw();
-            break;
-         }
-         case eItemLight:
-         {
-            Light *const pLight = (Light *)psel;
-            pLight->GetPTable()->BeginUndo();
-            pLight->GetPTable()->MarkForUndo(pLight);
-            pLight->AddPoint(v, false);
-            pLight->GetPTable()->EndUndo();
-            if (pLight->GetPTable())
-               pLight->GetPTable()->SetDirtyDraw();
-            break;
-         }
-         case eItemSurface:
-         {
-            Surface *const pSurf = (Surface *)psel;
-            pSurf->GetPTable()->BeginUndo();
-            pSurf->GetPTable()->MarkForUndo(pSurf);
-            pSurf->AddPoint(v, false);
-            pSurf->GetPTable()->EndUndo();
-            if (pSurf->GetPTable())
-               pSurf->GetPTable()->SetDirtyDraw();
-            break;
-         }
-         case eItemRubber:
-         {
-            Rubber *const pRub = (Rubber *)psel;
-            pRub->GetPTable()->BeginUndo();
-            pRub->GetPTable()->MarkForUndo(pRub);
-            pRub->AddPoint(v, false);
-            pRub->GetPTable()->EndUndo();
-            if (pRub->GetPTable())
-               pRub->GetPTable()->SetDirtyDraw();
-            break;
-         }
-         default:
-            break;
-         }
-      } //if (psel != nullptr)
+      case eItemRamp:
+      {
+         Ramp *const pRamp = (Ramp *)psel;
+         pRamp->GetPTable()->BeginUndo();
+         pRamp->GetPTable()->MarkForUndo(pRamp);
+         pRamp->AddPoint(v, false);
+         pRamp->GetPTable()->EndUndo();
+         if (pRamp->GetPTable())
+            pRamp->GetPTable()->SetDirtyDraw();
+         break;
+      }
+      case eItemLight:
+      {
+         Light *const pLight = (Light *)psel;
+         pLight->GetPTable()->BeginUndo();
+         pLight->GetPTable()->MarkForUndo(pLight);
+         pLight->AddPoint(v, false);
+         pLight->GetPTable()->EndUndo();
+         if (pLight->GetPTable())
+            pLight->GetPTable()->SetDirtyDraw();
+         break;
+      }
+      case eItemSurface:
+      {
+         Surface *const pSurf = (Surface *)psel;
+         pSurf->GetPTable()->BeginUndo();
+         pSurf->GetPTable()->MarkForUndo(pSurf);
+         pSurf->AddPoint(v, false);
+         pSurf->GetPTable()->EndUndo();
+         if (pSurf->GetPTable())
+            pSurf->GetPTable()->SetDirtyDraw();
+         break;
+      }
+      case eItemRubber:
+      {
+         Rubber *const pRub = (Rubber *)psel;
+         pRub->GetPTable()->BeginUndo();
+         pRub->GetPTable()->MarkForUndo(pRub);
+         pRub->AddPoint(v, false);
+         pRub->GetPTable()->EndUndo();
+         if (pRub->GetPTable())
+            pRub->GetPTable()->SetDirtyDraw();
+         break;
+      }
+      default:
+         break;
+      }
    }
 }
 
@@ -2168,21 +2164,18 @@ void WinEditor::AddSmoothControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_vmultisel.empty())
+   if (ISelect *const psel = ptCur->GetSelectedItem(); psel != nullptr)
    {
-      ISelect *const psel = ptCur->m_vmultisel[0];
-      if (psel != nullptr)
+      const POINT pt = ptCur->GetScreenPoint();
+      const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
+      switch (psel->GetItemType())
       {
-         const POINT pt = ptCur->GetScreenPoint();
-         const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
-         switch (psel->GetItemType())
-         {
-         case eItemRamp:
-         {
-            Ramp *const pRamp = (Ramp *)psel;
-            pRamp->GetPTable()->BeginUndo();
-            pRamp->GetPTable()->MarkForUndo(pRamp);
-            pRamp->AddPoint(v, true);
+      case eItemRamp:
+      {
+         Ramp *const pRamp = (Ramp *)psel;
+         pRamp->GetPTable()->BeginUndo();
+         pRamp->GetPTable()->MarkForUndo(pRamp);
+         pRamp->AddPoint(v, true);
             pRamp->GetPTable()->EndUndo();
             if (pRamp->GetPTable())
                pRamp->GetPTable()->SetDirtyDraw();
@@ -2215,15 +2208,14 @@ void WinEditor::AddSmoothControlPoint()
             Rubber *const pRub = (Rubber *)psel;
             pRub->GetPTable()->BeginUndo();
             pRub->GetPTable()->MarkForUndo(pRub);
-            pRub->AddPoint(v, true);
-            pRub->GetPTable()->EndUndo();
-            if (pRub->GetPTable())
-               pRub->GetPTable()->SetDirtyDraw();
-            break;
-         }
-         default:
-            break;
-         }
+         pRub->AddPoint(v, true);
+         pRub->GetPTable()->EndUndo();
+         if (pRub->GetPTable())
+            pRub->GetPTable()->SetDirtyDraw();
+         break;
+      }
+      default:
+         break;
       }
    }
 }

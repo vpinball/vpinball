@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-SpinnerVisualsProperty::SpinnerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
+SpinnerVisualsProperty::SpinnerVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);

@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-GateVisualsProperty::GateVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
+GateVisualsProperty::GateVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
 {
     m_typeList.push_back("Wire W"s);
     m_typeList.push_back("Wire Rectangle"s);

@@ -11,7 +11,7 @@
 #include "ui/win/WinEditor.h"
 
 
-PrimitiveVisualsProperty::PrimitiveVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
+PrimitiveVisualsProperty::PrimitiveVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
 {
     m_disableLightingEdit.SetDialog(this);
     m_disableLightFromBelowEdit.SetDialog(this);

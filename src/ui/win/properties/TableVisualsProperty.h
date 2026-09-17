@@ -7,7 +7,7 @@
 class TableVisualsProperty final : public BasePropertyDialog
 {
 public:
-    TableVisualsProperty(const vector<ISelect *> *pvsel);
+    TableVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~TableVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

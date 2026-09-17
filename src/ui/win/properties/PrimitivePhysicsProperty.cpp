@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PrimitivePhysicsProperty::PrimitivePhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
+PrimitivePhysicsProperty::PrimitivePhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
 {
     m_reducePolyEdit.SetDialog(this);
     m_elasticityFalloffEdit.SetDialog(this);

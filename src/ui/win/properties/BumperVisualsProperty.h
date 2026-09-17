@@ -7,7 +7,7 @@
 class BumperVisualsProperty final : public BasePropertyDialog
 {
 public:
-    BumperVisualsProperty(const vector<ISelect *> *pvsel);
+    BumperVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~BumperVisualsProperty() override{ }
 
     void UpdateVisuals(const int dispid=-1) override;

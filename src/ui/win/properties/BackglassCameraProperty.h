@@ -7,7 +7,7 @@
 class BackglassCameraProperty final : public BasePropertyDialog
 {
 public:
-    BackglassCameraProperty(const vector<ISelect *>* pvsel);
+    BackglassCameraProperty(const vector<IWinUIPart *>* pvsel);
     ~BackglassCameraProperty() override{ }
 
     void UpdateVisuals(const int dispid=-1) override;

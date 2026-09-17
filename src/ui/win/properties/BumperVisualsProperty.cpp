@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-BumperVisualsProperty::BumperVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
+BumperVisualsProperty::BumperVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
 {
     m_radiusEdit.SetDialog(this);
     m_heightScaleEdit.SetDialog(this);

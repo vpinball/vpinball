@@ -8,11 +8,11 @@
 #include "ui/win/WinEditor.h"
 
 
-BackglassCameraProperty::BackglassCameraProperty(const vector<ISelect *> *pvsel)
+BackglassCameraProperty::BackglassCameraProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
     m_viewList.push_back("Desktop (DT)"s);
     m_viewList.push_back("Fullscreen (FS)"s);
     m_viewList.push_back("Full Single Screen (FSS)"s);

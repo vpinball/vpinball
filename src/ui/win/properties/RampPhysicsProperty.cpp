@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-RampPhysicsProperty::RampPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)
+RampPhysicsProperty::RampPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_leftWallEdit.SetDialog(this);

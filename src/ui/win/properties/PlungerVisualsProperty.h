@@ -7,7 +7,7 @@
 class PlungerVisualsProperty final : public BasePropertyDialog
 {
 public:
-    PlungerVisualsProperty(const vector<ISelect *> *pvsel);
+    PlungerVisualsProperty(const vector<IWinUIPart *> *pvsel);
     ~PlungerVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

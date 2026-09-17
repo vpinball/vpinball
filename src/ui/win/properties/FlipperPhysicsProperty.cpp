@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-FlipperPhysicsProperty::FlipperPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
+FlipperPhysicsProperty::FlipperPhysicsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
 {
     m_physicSetList.push_back("Disable"s);
     m_physicSetList.push_back("Set1"s);

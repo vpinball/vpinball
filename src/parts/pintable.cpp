@@ -159,7 +159,7 @@ void PinTable::UpdatePropertyImageList()
 #ifndef __STANDALONE__
     // just update the combo boxes in the property dialog
     if (m_tableEditor)
-       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->m_vmultisel);
+       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->GetMultiSelParts());
 #endif
 }
 
@@ -168,7 +168,7 @@ void PinTable::UpdatePropertyMaterialList()
 #ifndef __STANDALONE__
     // just update the combo boxes in the property dialog
     if (m_tableEditor)
-       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->m_vmultisel);
+       g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_tableEditor->GetMultiSelParts());
 #endif
 }
 
@@ -449,15 +449,16 @@ void PinTable::ReorderParts(bool isDrawingOrder)
    SetNonUndoableDirty(eSaveDirty);
    if (isDrawingOrder)
    {
-      for (int i = (int)m_tableEditor->m_vmultisel.size() - 1; i >= 0; i--)
+      const vector<ISelect *> selection = m_tableEditor->GetSelectedParts();
+      for (int i = (int)selection.size() - 1; i >= 0; i--)
       {
-         IEditable *const pedit = m_tableEditor->m_vmultisel[i]->GetIEditable();
+         IEditable *const pedit = selection[i]->GetIEditable();
          RemoveFromVectorSingle(m_vedit, pedit);
       }
 
-      for (int i = (int)m_tableEditor->m_vmultisel.size() - 1; i >= 0; i--)
+      for (int i = (int)selection.size() - 1; i >= 0; i--)
       {
-         IEditable *const pedit = m_tableEditor->m_vmultisel[i]->GetIEditable();
+         IEditable *const pedit = selection[i]->GetIEditable();
          if (FindIndexOf(m_vedit, pedit) != -1)
             continue; // Already re-added: the selection may contain multiple selects of a part (part and sub parts)
          m_vedit.push_back(pedit);
@@ -2721,8 +2722,8 @@ IEditable *PinTable::GetElementByName(const char * const name) const
 
 bool PinTable::FMutilSelLocked()
 {
-   for (int i = 0; i < (int)m_tableEditor->m_vmultisel.size(); i++)
-      if (m_tableEditor->m_vmultisel[i]->GetIEditable()->IsUILocked())
+   for (ISelect *const psel : m_tableEditor->GetSelectedParts())
+      if (psel->GetIEditable()->IsUILocked())
          return true;
 
    return false;
@@ -2732,13 +2733,13 @@ void PinTable::UpdateCollection(const int index)
 {
    if (index < m_vcollection.size())
    {
-      if (!m_tableEditor->m_vmultisel.empty())
+      if (m_tableEditor->GetMultiSelCount() > 0)
       {
+         const vector<ISelect *> selection = m_tableEditor->GetSelectedParts();
          bool removeOnly = false;
          /* if the selection is part of the selected collection remove only these elements*/
-         for (int t = 0; t < (int)m_tableEditor->m_vmultisel.size(); t++)
+         for (ISelect *const ptr : selection)
          {
-            ISelect *const ptr = m_tableEditor->m_vmultisel[t];
             for (IEditable *const part : m_vcollection[index].GetParts())
             {
                if (ptr->GetIEditable() == part)
@@ -2754,9 +2755,8 @@ void PinTable::UpdateCollection(const int index)
             return;
 
          /*selected elements are not part of the selected collection and can be added*/
-         for (int t = 0; t < (int)m_tableEditor->m_vmultisel.size(); t++)
+         for (ISelect *const ptr : selection)
          {
-            ISelect *const ptr = m_tableEditor->m_vmultisel[t];
             // Multi-select may contain a part together with its sub parts (drag points, light centers): add each part only once
             if (FindIndexOf(m_vcollection[index].GetParts(), ptr->GetIEditable()) == -1)
                m_vcollection.ElementAt(index)->AddPart(ptr->GetIEditable());
@@ -2931,9 +2931,8 @@ void PinTable::LockElements()
 {
    BeginUndo();
    const bool lock = !FMutilSelLocked();
-   for (int i = 0; i < (int)m_tableEditor->m_vmultisel.size(); i++)
+   for (ISelect *const psel : m_tableEditor->GetSelectedParts())
    {
-      ISelect *const psel = m_tableEditor->m_vmultisel[i];
       if (psel)
       {
          IEditable * const pedit = psel->GetIEditable();
@@ -3239,7 +3238,7 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
    if (!toUserSettings)
       SetNonUndoableDirty(eSaveDirty);
    if (m_tableEditor)
-      m_vpinball->SetPropSel(m_tableEditor->m_vmultisel);
+      m_tableEditor->RefreshProperties();
 }
 
 // Select file and export the point of view definition
@@ -3418,7 +3417,7 @@ void PinTable::Copy(int x, int y)
    if (m_tableEditor->MultiSelIsEmpty()) // Can't copy table
       return;
 
-   if (m_tableEditor->m_vmultisel.size() == 1)
+   if (m_tableEditor->GetMultiSelCount() == 1)
    {
        // special check if the user selected a Control Point and wants to copy the coordinates
        ISelect *const pItem = m_tableEditor->HitTest(x, y);
@@ -3433,9 +3432,9 @@ void PinTable::Copy(int x, int y)
    vector<IStream*> vstm;
    vector<IEditable*> copied;
    //m_vstmclipboard
-   for (int i = 0; i < (int)m_tableEditor->m_vmultisel.size(); i++)
+   for (ISelect *const psel : m_tableEditor->GetSelectedParts())
    {
-       IEditable *const pe = m_tableEditor->m_vmultisel[i]->GetIEditable();
+       IEditable *const pe = psel->GetIEditable();
 
        // Multi-select may contain a part together with its sub parts (drag points, light centers): copy each part only once
        if (FindIndexOf(copied, pe) != -1)
@@ -3467,7 +3466,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
    bool error = false;
    int cpasted = 0;
 
-   if (m_tableEditor->m_vmultisel.size() == 1)
+   if (m_tableEditor->GetMultiSelCount() == 1)
    {
        // User wants to paste the copied coordinates of a Control Point
        ISelect * const pItem = m_tableEditor->HitTest(x, y);
@@ -3557,11 +3556,11 @@ void PinTable::OnDelete()
 {
 #ifndef __STANDALONE__
    vector<ISelect*> m_vseldelete;
-   m_vseldelete.reserve(m_tableEditor->m_vmultisel.size());
+   const vector<ISelect *> selection = m_tableEditor->GetSelectedParts();
+   m_vseldelete.reserve(selection.size());
 
-   for (int i = 0; i < (int)m_tableEditor->m_vmultisel.size(); i++)
+   for (ISelect *const psel : selection)
    {
-      ISelect *const psel = m_tableEditor->m_vmultisel[i];
       // Sub parts (drag points, light centers) are deleted together with their owning part
       if (m_tableEditor->IsSubPartOfSelectedPart(psel))
          continue;
@@ -3605,7 +3604,7 @@ void PinTable::OnDelete()
          m_vseldelete[i]->Delete();
    m_vpinball->GetLayersListDialog()->Update();
    // update properties to show the properties of the table
-   m_vpinball->SetPropSel(m_tableEditor->m_vmultisel);
+   m_tableEditor->RefreshProperties();
    if (m_tableEditor)
       m_tableEditor->OnPartChanged(this);
 

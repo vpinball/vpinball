@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PartGroupVisualsProperty::PartGroupVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPARTGROUP_VISUALS, pvsel)
+PartGroupVisualsProperty::PartGroupVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPPARTGROUP_VISUALS, pvsel)
 {
 }
 
