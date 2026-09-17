@@ -35,7 +35,10 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
 {
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
    {
-      m_table->UpdateCollection(icmd & 0x000000FF);
+      vector<IEditable *> selection;
+      for (IWinUIPart *const uiPart : m_editor->GetMultiSelParts())
+         selection.push_back(uiPart->GetEditable());
+      m_table->ToggleCollectionMembership(icmd & 0x000000FF, selection);
       return;
    }
 

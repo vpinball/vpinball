@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "parts/light.h"
 #include "parts/pintable.h"
 #include "ui/win/parts/TableWinUIPart.h"
 #include "unordered_dense.h"
@@ -25,7 +26,7 @@ public:
    void ClearMultiSel(IWinUIPart *newSelPart = nullptr);
    bool MultiSelIsEmpty() const;
    ISelect *GetSelectedItem() const { return m_vmultisel.empty() ? (ISelect *)m_table : m_vmultisel[0]->GetSelect(); }
-   void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
+   void AddMultiSel(IWinUIPart *pselPart, const bool add, const bool update, const bool contextClick);
    // Live view of the selected UI parts, primary selection first (for the UI layer)
    const vector<IWinUIPart *> &GetMultiSelParts() const { return m_vmultisel; }
    // Number of entries in the multi-selection
@@ -57,7 +58,7 @@ public:
 
    // Returns true if the given select is a sub part (drag point, light center) whose owning part is also in the
    // multi-selection, meaning that selection actions must not be applied to it (they reach it through its owning part)
-   bool IsSubPartOfSelectedPart(const ISelect *psel) const;
+   bool IsSubPartOfSelectedPart(const IWinUIPart *psel) const;
 
 #ifndef __STANDALONE__
    void SetMouseCursor();
@@ -110,10 +111,13 @@ public:
    void OnPartAdded(IEditable *part);
    void OnPartRemoved(IEditable *part);
 
-   // Returns the UI part owned by this editor for the given select, i.e. an entry of m_uiParts, m_tablePart for the table itself,
-   // or a sub part of the owning part's UI part (drag points, light centers, ...). nullptr if none.
-   IWinUIPart *GetUIPart(ISelect *select);
-   IWinUIPart *GetUIPart(IEditable *part) { return GetUIPart(part ? part->GetISelect() : nullptr); }
+   // Returns the UI part owned by this editor for the given table part, i.e. an entry of m_uiParts, or m_tablePart
+   // for the table itself. nullptr if none.
+   IWinUIPart *GetUIPart(IEditable *part);
+   // Returns the UI part of the given light center, a sub part of the UI part of its light. nullptr if none.
+   IWinUIPart *GetUIPart(Light::LightCenter *center);
+   // Returns the UI part of the given drag point, a sub part of the UI part of its parent part. nullptr if none.
+   IWinUIPart *GetUIPart(DragPoint *point);
 
    CComObject<PinTable> *const m_table;
 
@@ -153,7 +157,7 @@ private:
    void OnMouseWheel(const short x, const short y, const short zDelta);
    void OnKeyDown(int key);
    void OnSize();
-   void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
+   void DoContextMenu(int x, int y, const int menuid, IWinUIPart *uiPart);
 
    void Paint(HDC hdc);
    void Render3DProjection(Sur *const psur);

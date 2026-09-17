@@ -881,9 +881,8 @@ bool PinTableWnd::MultiSelIsEmpty() const
 // 'update' tells us whether to go ahead and change the UI
 // based on the new selection, or whether more stuff is coming
 // down the pipe (speeds up drag-selection)
-void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick)
+void PinTableWnd::AddMultiSel(IWinUIPart *const pselPart, const bool add, const bool update, const bool contextClick)
 {
-   IWinUIPart *const pselPart = GetUIPart(psel);
    if (pselPart == nullptr)
    {
       _ASSERTE(false); // Every selectable element is expected to have a UI part
@@ -908,7 +907,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
          {
             int colIndex = -1;
             int elemIndex = -1;
-            if (m_table->GetCollectionIndex(psel->GetIEditable(), colIndex, elemIndex))
+            if (m_table->GetCollectionIndex(pselPart->GetEditable(), colIndex, elemIndex))
             {
                CComObject<Collection> *col = m_table->m_vcollection.ElementAt(colIndex);
                if (col->m_groupElements)
@@ -963,7 +962,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
    {
       int colIndex = -1;
       int elemIndex = -1;
-      if (!m_table->GetCollectionIndex(psel->GetIEditable(), colIndex, elemIndex))
+      if (!m_table->GetCollectionIndex(pselPart->GetEditable(), colIndex, elemIndex))
       {
          _ASSERTE(pselPart->m_selectstate != IWinUIPart::SelectState::NotSelected);
 
@@ -1038,15 +1037,13 @@ void PinTableWnd::UpdatePropertyMaterialList()
 #endif
 }
 
-bool PinTableWnd::IsSubPartOfSelectedPart(const ISelect *psel) const
+bool PinTableWnd::IsSubPartOfSelectedPart(const IWinUIPart *uiPart) const
 {
-   if (psel == nullptr || !psel->IsSubPart())
+   if (uiPart == nullptr || !uiPart->IsSubPart())
       return false;
-   const IEditable *const owner = psel->GetIEditable();
-   if (owner == nullptr || owner->GetISelect() == nullptr)
-      return false;
+   const IEditable *const owner = uiPart->GetEditable();
    for (const IWinUIPart *const part : m_vmultisel)
-      if (part->GetSelect() == owner->GetISelect())
+      if (!part->IsSubPart() && part->GetEditable() == owner)
          return true;
    return false;
 }
@@ -1078,7 +1075,7 @@ void PinTableWnd::SelectItem(IScriptable *piscript)
    {
       if (piscript == pedit->GetIScriptable())
       {
-         if (ISelect *const pisel = pedit->GetISelect(); pisel)
+         if (IWinUIPart *const pisel = GetUIPart(pedit); pisel)
             AddMultiSel(pisel, false, true, false);
          break;
       }
@@ -1094,7 +1091,7 @@ Vertex2D PinTableWnd::GetMultiSelCenter()
 
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
-      if (IsSubPartOfSelectedPart(uiPart->GetSelect()))
+      if (IsSubPartOfSelectedPart(uiPart))
          continue;
       const Vertex2D vCenter = uiPart->GetCenter();
 
@@ -1112,17 +1109,16 @@ void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
    m_table->BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
-      ISelect *const psel = uiPart->GetSelect();
-      if (IsSubPartOfSelectedPart(psel))
+      if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(psel->GetIEditable());
-      if (psel->IsSubPart())
+      m_table->MarkForUndo(uiPart->GetEditable());
+      if (uiPart->IsSubPart())
       {
          // Flip the sub element (drag point, light center) itself around the flip center
          uiPart->Translate(Vertex2D(0.f, -2.f * (uiPart->GetCenter().y - pvCenter.y)));
       }
       else
-         psel->GetIEditable()->FlipY(pvCenter);
+         uiPart->GetEditable()->FlipY(pvCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -1133,17 +1129,16 @@ void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
    m_table->BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
-      ISelect *const psel = uiPart->GetSelect();
-      if (IsSubPartOfSelectedPart(psel))
+      if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(psel->GetIEditable());
-      if (psel->IsSubPart())
+      m_table->MarkForUndo(uiPart->GetEditable());
+      if (uiPart->IsSubPart())
       {
          // Flip the sub element (drag point, light center) itself around the flip center
          uiPart->Translate(Vertex2D(-2.f * (uiPart->GetCenter().x - pvCenter.x), 0.f));
       }
       else
-         psel->GetIEditable()->FlipX(pvCenter);
+         uiPart->GetEditable()->FlipX(pvCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -1154,11 +1149,10 @@ void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, cons
    m_table->BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
-      ISelect *const psel = uiPart->GetSelect();
-      if (IsSubPartOfSelectedPart(psel))
+      if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(psel->GetIEditable());
-      if (psel->IsSubPart())
+      m_table->MarkForUndo(uiPart->GetEditable());
+      if (uiPart->IsSubPart())
       {
          // Rotate the sub element (drag point, light center) itself around the rotation center
          const Vertex2D vCenter = uiPart->GetCenter();
@@ -1169,7 +1163,7 @@ void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, cons
          uiPart->Translate(Vertex2D(pvCenter.x + cs * dx - sn * dy - vCenter.x, pvCenter.y + cs * dy + sn * dx - vCenter.y));
       }
       else
-         psel->GetIEditable()->Rotate(ang, pvCenter, useElementCenter);
+         uiPart->GetEditable()->Rotate(ang, pvCenter, useElementCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -1180,18 +1174,17 @@ void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Ve
    m_table->BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
-      ISelect *const psel = uiPart->GetSelect();
-      if (IsSubPartOfSelectedPart(psel))
+      if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(psel->GetIEditable());
-      if (psel->IsSubPart())
+      m_table->MarkForUndo(uiPart->GetEditable());
+      if (uiPart->IsSubPart())
       {
          // Scale the sub element (drag point, light center) position itself around the scale center
          const Vertex2D vCenter = uiPart->GetCenter();
          uiPart->Translate(Vertex2D(pvCenter.x + (vCenter.x - pvCenter.x) * scalex - vCenter.x, pvCenter.y + (vCenter.y - pvCenter.y) * scaley - vCenter.y));
       }
       else
-         psel->GetIEditable()->Scale(scalex, scaley, pvCenter, useElementCenter);
+         uiPart->GetEditable()->Scale(scalex, scaley, pvCenter, useElementCenter);
    }
    m_table->EndUndo();
    m_table->SetDirtyDraw();
@@ -1202,7 +1195,7 @@ void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
    m_table->BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
-      if (IsSubPartOfSelectedPart(uiPart->GetSelect()))
+      if (IsSubPartOfSelectedPart(uiPart))
          continue;
       m_table->MarkForUndo(uiPart->GetEditable());
       uiPart->Translate(offset);
@@ -1380,7 +1373,7 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
 
             m_table->AddPart(peditNew);
 
-            AddMultiSel(peditNew->GetISelect(), (i != m_vpxEditor->m_vstmclipboard.size() - 1), true, false);
+            AddMultiSel(GetUIPart(peditNew), (i != m_vpxEditor->m_vstmclipboard.size() - 1), true, false);
             cpasted++;
          }
          else
@@ -1401,11 +1394,11 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
 void PinTableWnd::OnDelete()
 {
 #ifndef __STANDALONE__
-   vector<ISelect *> m_vseldelete;
-   const vector<ISelect *> selection = GetSelectedParts();
+   vector<IWinUIPart *> m_vseldelete;
+   const vector<IWinUIPart *> selection = GetMultiSelParts();
    m_vseldelete.reserve(selection.size());
 
-   for (ISelect *const psel : selection)
+   for (IWinUIPart *const psel : selection)
    {
       // Sub parts (drag points, light centers) are deleted together with their owning part
       if (IsSubPartOfSelectedPart(psel))
@@ -1414,22 +1407,21 @@ void PinTableWnd::OnDelete()
       m_vseldelete.push_back(psel);
       if (psel->GetItemType() == ItemTypeEnum::eItemPartGroup)
          for (const auto part : m_table->GetParts())
-            if (part->GetPartGroup() == psel && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
-               m_vseldelete.push_back(part->GetISelect());
+            if (part->GetPartGroup() == psel->GetEditable() && std::ranges::find(m_vseldelete, GetUIPart(part)) == m_vseldelete.end())
+               m_vseldelete.push_back(GetUIPart(part));
    }
 
    ClearMultiSel();
 
    bool inCollection = false;
-   for (size_t t = 0; t < m_vseldelete.size() && !inCollection; t++)
+   for (IWinUIPart *const ptr : m_vseldelete)
    {
-      const ISelect *const ptr = m_vseldelete[t];
       for (int i = 0; i < m_table->m_vcollection.size() && !inCollection; i++)
       {
          for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
          {
             // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
-            if (ptr == part->GetISelect() || ptr->GetIEditable() == part)
+            if (ptr->GetEditable() == part)
             {
                inCollection = true;
                break;
@@ -1445,9 +1437,10 @@ void PinTableWnd::OnDelete()
          return;
    }
 
-   for (size_t i = 0; i < m_vseldelete.size(); i++)
-      if (m_vseldelete[i] != nullptr)
-         m_vseldelete[i]->Delete();
+   // FIXME invalid undo sequence (on per delete while it is a block operation)
+   for (IWinUIPart *const ptr : m_vseldelete)
+      ptr->GetSelect()->Delete();
+
    m_vpxEditor->GetLayersListDialog()->Update();
    // update properties to show the properties of the table
    RefreshProperties();
@@ -1519,7 +1512,7 @@ void PinTableWnd::OnKeyDown(int key)
       const float distance = shift ? 10.f : 1.f;
       for (IWinUIPart *const uiPart : m_vmultisel)
       {
-         if (!IsSubPartOfSelectedPart(uiPart->GetSelect()) && !uiPart->GetEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
+         if (!IsSubPartOfSelectedPart(uiPart) && !uiPart->GetEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
          {
             switch (key)
             {
@@ -1592,7 +1585,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
          return;
       }
 
-      AddMultiSel(pisel->GetSelect(), add, true, false);
+      AddMultiSel(pisel, add, true, false);
 
       m_moving = true;
       for (IWinUIPart *const uiPart : m_vmultisel)
@@ -1621,7 +1614,7 @@ void PinTableWnd::UseTool(int x, int y, int tool)
       OnPartChanged(m_table);
 
       m_table->MarkForCreate(pie);
-      AddMultiSel(pie->GetISelect(), false, true, false);
+      AddMultiSel(GetUIPart(pie), false, true, false);
    }
 
    m_vpxEditor->ParseCommand(IDC_SELECT, false);
@@ -1689,7 +1682,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
 
             for (size_t i = 0; i < vsel.size(); i++)
                if (vsel[i]->IsSubPart() == subPartsOnly)
-                  AddMultiSel(vsel[i]->GetSelect(), true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
+                  AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
          }
       }
       Redraw();
@@ -1726,7 +1719,7 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
       }
 
       // update the selection
-      AddMultiSel(hit->GetSelect(), false, true, false);
+      AddMultiSel(hit, false, true, false);
    }
 }
 
@@ -1739,18 +1732,16 @@ void PinTableWnd::OnRightButtonUp(int x, int y)
    {
       if (m_vmultisel.size() > 1)
       {
-         DoContextMenu(x, y, IDR_MULTIMENU, m_table);
+         DoContextMenu(x, y, IDR_MULTIMENU, &m_tablePart);
       }
       else if (!MultiSelIsEmpty())
       {
-         int menuid = -1;
-         if (IWinUIPart *const uiPart = GetUIPart(GetSelectedItem()))
-            menuid = uiPart->GetMenuId();
-         DoContextMenu(x, y, menuid, GetSelectedItem());
+         IWinUIPart *const uiPart = m_vmultisel[0];
+         DoContextMenu(x, y, uiPart->GetMenuId(), uiPart);
       }
       else
       {
-         DoContextMenu(x, y, IDR_TABLEMENU, m_table);
+         DoContextMenu(x, y, IDR_TABLEMENU, &m_tablePart);
       }
    }
 }
@@ -1777,7 +1768,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
          {
             for (IWinUIPart *const uiPart : m_vmultisel)
             {
-               if (uiPart->m_dragging && !IsSubPartOfSelectedPart(uiPart->GetSelect()) && !uiPart->GetEditable()->IsUILocked()) // For drag points, follow the lock of the parent
+               if (uiPart->m_dragging && !IsSubPartOfSelectedPart(uiPart) && !uiPart->GetEditable()->IsUILocked()) // For drag points, follow the lock of the parent
                {
                   if (!uiPart->m_markedForUndo)
                   {
@@ -2006,7 +1997,7 @@ void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISe
 }
 
 #ifndef __STANDALONE__
-void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
+void PinTableWnd::DoContextMenu(int x, int y, const int menuid, IWinUIPart *const uiPart)
 {
    POINT pt;
    pt.x = x;
@@ -2022,9 +2013,9 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    else
       newMenu.CreatePopupMenu();
 
-   IWinUIPart *const winPart = GetUIPart(psel);
-   if (winPart)
-      winPart->EditMenu(newMenu);
+   ISelect *const psel = uiPart->GetSelect();
+   if (uiPart)
+      uiPart->EditMenu(newMenu);
 
    if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU && menuid != IDR_POINTMENU_SMOOTH)
    {
@@ -2105,8 +2096,8 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 
    const int icmd = newMenu.TrackPopupMenuEx(TPM_RETURNCMD, pt.x, pt.y, m_mdiTable->GetHwnd(), nullptr);
 
-   if (icmd != 0 && winPart)
-      winPart->DoCommand(icmd, x, y);
+   if (icmd != 0 && uiPart)
+      uiPart->DoCommand(icmd, x, y);
 
    newMenu.Destroy();
 
@@ -2213,25 +2204,33 @@ void PinTableWnd::OnPartRemoved(IEditable *part)
 #endif
 }
 
-IWinUIPart *PinTableWnd::GetUIPart(ISelect *select)
+IWinUIPart *PinTableWnd::GetUIPart(IEditable *part)
 {
-   if (select == nullptr)
+   if (part == nullptr)
       return nullptr;
 #ifndef __STANDALONE__
    // The UI part of the table itself is not stored in the map but directly owned by this editor (m_tablePart)
-   if (select == m_table)
+   if (part == m_table)
       return &m_tablePart;
 #endif
-   auto it = m_uiParts.find(select);
-   if (it != m_uiParts.end())
-      return it->second.get();
-   // Not a table part select: delegate to the UI part of the owning part (drag points, light centers, ...)
-   IEditable *const owner = select->GetIEditable();
-   if (owner == nullptr || owner->GetISelect() == select)
+   const auto it = m_uiParts.find(part->GetISelect());
+   return it != m_uiParts.end() ? it->second.get() : nullptr;
+}
+
+IWinUIPart *PinTableWnd::GetUIPart(Light::LightCenter *center)
+{
+   if (center == nullptr)
       return nullptr;
-   if (const auto it2 = m_uiParts.find(owner->GetISelect()); it2 != m_uiParts.end())
-      return it2->second->GetSubPart(select);
-   return nullptr;
+   IWinUIPart *const ownerPart = GetUIPart(center->GetIEditable());
+   return ownerPart ? ownerPart->GetSubPart(center) : nullptr;
+}
+
+IWinUIPart *PinTableWnd::GetUIPart(DragPoint *point)
+{
+   if (point == nullptr)
+      return nullptr;
+   IWinUIPart *const ownerPart = GetUIPart(point->GetIEditable());
+   return ownerPart ? ownerPart->GetSubPart(point) : nullptr;
 }
 
 void PinTableWnd::OnPartChanged(IEditable *part)

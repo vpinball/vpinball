@@ -189,7 +189,7 @@ void SearchSelectDialog::SelectElement()
               CComObject<Collection> *const pcol = (CComObject<Collection>*)lv.lParam;
               if (!pcol->GetParts().empty())
               {
-                 if (ISelect *const pisel = pcol->GetParts()[0]->GetISelect(); pisel)
+                 if (IWinUIPart *const pisel = m_curTable->GetUIPart(pcol->GetParts()[0]); pisel)
                     m_curTable->AddMultiSel(pisel, false, true, false);
               }
            }
@@ -200,7 +200,7 @@ void SearchSelectDialog::SelectElement()
               {
                  if (pscript == pedit->GetIScriptable())
                  {
-                    if (ISelect *const pisel = pedit->GetISelect(); pisel)
+                    if (IWinUIPart *const pisel = m_curTable->GetUIPart(pedit); pisel)
                        m_curTable->AddMultiSel(pisel, true, true, false);
                     break;
                  }

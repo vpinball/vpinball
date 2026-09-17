@@ -464,7 +464,7 @@ public:
 
    VPX::Sound *GetSound(const string &name) const;
 
-   void UpdateCollection(const int index);
+   void ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection);
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
    int GetDetailLevel() const { return m_settings.GetPlayer_AlphaRampAccuracy(); } // used for rubber, ramp and ball
