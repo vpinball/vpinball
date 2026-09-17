@@ -850,7 +850,7 @@ void PinTableWnd::SetMouseCapture() { SetCapture(); }
 
 #endif
 
-void PinTableWnd::ClearMultiSel(ISelect *newSel)
+void PinTableWnd::ClearMultiSel(IWinUIPart *newSelPart)
 {
    for (IWinUIPart *const part : m_vmultisel)
       part->m_selectstate = IWinUIPart::SelectState::NotSelected;
@@ -860,16 +860,16 @@ void PinTableWnd::ClearMultiSel(ISelect *newSel)
    //it will be updated again on AddMultiSel() call
    m_vmultisel.clear();
 
-   IWinUIPart *part = (newSel != nullptr) ? GetUIPart(newSel) : nullptr;
 #ifndef __STANDALONE__
+   IWinUIPart *part = newSelPart;
    if (part == nullptr)
       part = &m_tablePart;
-#endif
    if (part != nullptr)
    {
       m_vmultisel.push_back(part);
       part->m_selectstate = IWinUIPart::SelectState::Selected;
    }
+#endif
 }
 
 bool PinTableWnd::MultiSelIsEmpty() const
@@ -903,7 +903,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
       // If the table is currently selected, deselect it - the table can not be part of a multi-select
       if (!add || MultiSelIsEmpty())
       {
-         ClearMultiSel(psel);
+         ClearMultiSel(pselPart);
          if (!add && !contextClick)
          {
             int colIndex = -1;
@@ -977,7 +977,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
          pselPart->m_selectstate = IWinUIPart::SelectState::Selected;
       }
       else
-         ClearMultiSel(psel);
+         ClearMultiSel(pselPart);
 
       if (update)
          m_table->SetDirtyDraw();

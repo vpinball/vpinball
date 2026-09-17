@@ -18,7 +18,7 @@ PartGroupUIPart::PartGroupUIPart(PartGroup* partGroup)
       partGroup->SetUIVisible(false);
       for (const auto edit : partGroup->GetPTable()->GetParts())
       {
-         if (edit->GetISelect() && edit->IsUIVisible(false) && edit->IsChild(partGroup))
+         if (edit->IsUIVisible(false) && edit->IsChild(partGroup))
          {
             partGroup->SetUIVisible(true);
             break;
