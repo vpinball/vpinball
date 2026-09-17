@@ -2672,39 +2672,35 @@ IEditable *PinTable::GetElementByName(const char * const name) const
    return nullptr;
 }
 
-void PinTable::UpdateCollection(const int index)
+void PinTable::ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection)
 {
-   if (index < m_vcollection.size())
+   if (colIndex >= m_vcollection.size() || selection.empty())
+      return;
+
+   // if the selection is part of the selected collection remove only these elements
+   bool removeOnly = false;
+   for (IEditable *const part : selection)
    {
-      if (m_tableEditor->GetMultiSelCount() > 0)
+      for (IEditable *const collectionPart : m_vcollection[colIndex].GetParts())
       {
-         const vector<ISelect *> selection = m_tableEditor->GetSelectedParts();
-         bool removeOnly = false;
-         /* if the selection is part of the selected collection remove only these elements*/
-         for (ISelect *const ptr : selection)
+         if (part == collectionPart)
          {
-            for (IEditable *const part : m_vcollection[index].GetParts())
-            {
-               if (ptr->GetIEditable() == part)
-               {
-                  m_vcollection[index].RemovePart(part);
-                  removeOnly = true;
-                  break;
-               }
-            }
+            m_vcollection[colIndex].RemovePart(part);
+            removeOnly = true;
+            break;
          }
-
-         if (removeOnly)
-            return;
-
-         /*selected elements are not part of the selected collection and can be added*/
-         for (ISelect *const ptr : selection)
-         {
-            // Multi-select may contain a part together with its sub parts (drag points, light centers): add each part only once
-            if (FindIndexOf(m_vcollection[index].GetParts(), ptr->GetIEditable()) == -1)
-               m_vcollection.ElementAt(index)->AddPart(ptr->GetIEditable());
-        }
       }
+   }
+
+   if (removeOnly)
+      return;
+
+   // selected elements are not part of the selected collection and can be added
+   for (IEditable *const part : selection)
+   {
+      // Multi-select may contain a part together with its sub parts (drag points, light centers): add each part only once
+      if (FindIndexOf(m_vcollection[colIndex].GetParts(), part) == -1)
+         m_vcollection.ElementAt(colIndex)->AddPart(part);
    }
 }
 
@@ -3262,9 +3258,9 @@ void PinTable::SetCleanPoint(const SaveDirtyState sds)
 
 void PinTable::Uncreate(IEditable *pie)
 {
-   IWinUIPart *const uiPart = m_tableEditor ? m_tableEditor->GetUIPart(pie->GetISelect()) : nullptr;
+   IWinUIPart *const uiPart = m_tableEditor ? m_tableEditor->GetUIPart(pie) : nullptr;
    if (uiPart && uiPart->m_selectstate != IWinUIPart::SelectState::NotSelected)
-      m_tableEditor->AddMultiSel(pie->GetISelect(), true, true, false); // Remove the item from the multi-select list
+      m_tableEditor->AddMultiSel(uiPart, true, true, false); // Remove the item from the multi-select list
 
    pie->Uncreate();
    pie->Release();

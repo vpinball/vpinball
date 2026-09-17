@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/ieditable.h"
-#include "core/iselect.h"
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
 

@@ -150,7 +150,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       if (m_activeTable && GetSelectedPartGroup())
       {
          m_activeTable->m_tableEditor->ClearMultiSel();
-         m_activeTable->m_tableEditor->AddMultiSel(GetSelectedPartGroup(), true, false, false);
+         m_activeTable->m_tableEditor->AddMultiSel(m_activeTable->m_tableEditor->GetUIPart(GetSelectedPartGroup()), true, false, false);
          m_activeTable->m_tableEditor->RefreshProperties();
          m_activeTable->SetDirtyDraw();
       }
@@ -746,10 +746,10 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
             while (pg != nullptr && pg != selected)
                pg = pg->GetPartGroup();
             if (pg == selected)
-               m_activeTable->m_tableEditor->AddMultiSel(te.editable->GetISelect(), true, false, false);
+               m_activeTable->m_tableEditor->AddMultiSel(m_activeTable->m_tableEditor->GetUIPart(te.editable), true, false, false);
          });
    else
-      m_activeTable->m_tableEditor->AddMultiSel(selected->GetISelect(), true, false, false);
+      m_activeTable->m_tableEditor->AddMultiSel(m_activeTable->m_tableEditor->GetUIPart(selected), true, false, false);
    m_activeTable->m_tableEditor->RefreshProperties();
    m_activeTable->SetDirtyDraw();
    return TRUE;

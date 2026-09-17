@@ -706,10 +706,10 @@ void PropertyDialog::EndUndo(ISelect *const psel)
    psel->GetIEditable()->GetPTable()->SetDirtyDraw();
 }
 
-void PropertyDialog::UpdateStatusBarInfo(ISelect *const psel)
+void PropertyDialog::UpdateStatusBarInfo(IEditable *const part)
 {
    if (PinTableWnd *const editor = g_pvp->GetActiveTableEditor(); editor != nullptr)
-      if (IWinUIPart *const uiPart = editor->GetUIPart(psel); uiPart != nullptr)
+      if (IWinUIPart *const uiPart = editor->GetUIPart(part); uiPart != nullptr)
          uiPart->UpdateStatusBarInfo();
 }
 

@@ -1064,7 +1064,7 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
       g_app->m_settings.SetRecentDir_LoadDir(tablePath.string(), false);
       UpdateRecentFileList(filename);
 
-      ppt->AddMultiSel(ppt->m_table, false, true, false);
+      ppt->AddMultiSel(ppt->GetUIPart(ppt->m_table), false, true, false);
       if (updateEditor)
       {
 #ifndef __STANDALONE__
@@ -2013,7 +2013,7 @@ void WinEditor::ToggleBackglassView()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
       // Set selection to something in the new view (unless hiding table elements)
-      ptCur->m_tableEditor->AddMultiSel((ISelect *)ptCur, false, true, false);
+      ptCur->m_tableEditor->AddMultiSel(ptCur->m_tableEditor->GetUIPart(ptCur), false, true, false);
 
    ToggleToolbar();
 }
@@ -2354,7 +2354,7 @@ void WinEditor::OpenNewTable(size_t tableId)
 
    m_vtable.push_back(mdiTable->GetTableWnd());
    AddMDIChild(mdiTable);
-   mdiTable->GetTableWnd()->AddMultiSel(mdiTable->GetTable(), false, true, false);
+   mdiTable->GetTableWnd()->AddMultiSel(mdiTable->GetTableWnd()->GetUIPart(mdiTable->GetTable()), false, true, false);
    GetLayersListDialog()->ResetView();
    ToggleToolbar();
    if (m_dockNotes != nullptr)

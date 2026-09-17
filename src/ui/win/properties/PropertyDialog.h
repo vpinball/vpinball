@@ -275,7 +275,7 @@ public:
 
     static void EndUndo(ISelect *const psel);
 
-    static void UpdateStatusBarInfo(ISelect *const psel);
+    static void UpdateStatusBarInfo(IEditable *const part);
 
     static bool GetCheckboxState(const HWND checkBoxHwnd)
     {

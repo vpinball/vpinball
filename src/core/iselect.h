@@ -50,7 +50,4 @@ public:
    virtual ItemTypeEnum GetItemType() const = 0;
 
    virtual void Delete() = 0;
-   virtual void Uncreate() = 0;
-
-   virtual bool IsSubPart() const { return false; }
 };

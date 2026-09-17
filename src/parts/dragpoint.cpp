@@ -268,7 +268,7 @@ void IHaveDragPoints::ClearPointsForOverwrite()
          if (IWinUIPart *const part = tableEditor->GetUIPart(m_vdpoint[i]); part && part->m_selectstate != IWinUIPart::SelectState::NotSelected /*GetPTable()->m_pselcur == m_vdpoint[i]*/)
          {
             //GetPTable()->SetSel(GetPTable());
-            tableEditor->AddMultiSel(GetPTable(), false, true, false);
+            tableEditor->AddMultiSel(tableEditor->GetUIPart(GetPTable()), false, true, false);
          }
       }
 
@@ -389,12 +389,6 @@ void DragPoint::Delete()
       StopUndo();
       Release();
    }
-}
-
-void DragPoint::Uncreate()
-{
-   RemoveFromVectorSingle(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this);
-   Release();
 }
 
 void DragPoint::ToggleSmooth()

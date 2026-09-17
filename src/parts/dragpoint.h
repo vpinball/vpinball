@@ -37,8 +37,6 @@ public:
    IEditable *GetIEditable() final;
    const IEditable *GetIEditable() const final;
 
-   bool IsSubPart() const final { return true; } // So dragpoints won't be band-selected with the main objects
-
    void Copy();
    void Paste();
 
@@ -59,7 +57,6 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    void Delete() final;
-   void Uncreate() final;
 
    bool LoadToken(const int id, IObjectReader& reader);
 

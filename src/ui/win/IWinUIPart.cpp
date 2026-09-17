@@ -98,7 +98,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          return;
       }
 
-      m_editor->AddMultiSel(pisel->GetSelect(), add, true, true);
+      m_editor->AddMultiSel(pisel, add, true, true);
       return;
    }
    switch (icmd)
