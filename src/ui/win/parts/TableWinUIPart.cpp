@@ -86,7 +86,7 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_ASSIGN_TO_CURRENT_LAYER: m_editor->m_vpxEditor->GetLayersListDialog()->AssignToSelectedGroup(); break;
    case ID_EDIT_DRAWINGORDER_HIT: m_editor->m_vpxEditor->ShowDrawingOrderDialog(false); break;
    case ID_EDIT_DRAWINGORDER_SELECT: m_editor->m_vpxEditor->ShowDrawingOrderDialog(true); break;
-   case ID_LOCK: m_table->LockElements(); break;
+   case ID_LOCK: m_editor->LockElements(); break;
    case ID_WALLMENU_FLIP: m_editor->FlipYMultiSel(m_editor->GetMultiSelCenter()); break;
    case ID_WALLMENU_MIRROR: m_editor->FlipXMultiSel(m_editor->GetMultiSelCenter()); break;
    case IDC_COPY: m_editor->Copy(x, y); break;
