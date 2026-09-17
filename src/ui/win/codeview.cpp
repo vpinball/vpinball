@@ -1198,7 +1198,7 @@ void CodeViewer::TellHostToSelectItem()
    const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
    IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
 
-   m_table->SelectItem(pscript);
+   m_table->m_tableEditor->SelectItem(pscript);
 #endif
 }
 
@@ -2271,12 +2271,10 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
          pcv->ShowFindDialog();
          return TRUE;
       }
-      case ID_SAVE: // accelerator, the frame only knows the menu's save command, fixes ctrl+s in script editor
-         pcv->m_table->DoCodeViewCommand(IDM_SAVE); return TRUE;
+      case ID_SAVE: g_pvp->ParseCommand(IDM_SAVE, false); return TRUE; // accelerator, the frame only knows the menu's save command, fixes ctrl+s in script editor
       case ID_TABLE_CAMERAMODE:
       case ID_TABLE_LIVEEDIT:
-      case ID_TABLE_PLAY:
-         pcv->m_table->DoCodeViewCommand(id); return TRUE;
+      case ID_TABLE_PLAY: g_pvp->ParseCommand(id, false); return TRUE;
       case ID_EDIT_FINDNEXT:
          pcv->Find(); return TRUE;
       case ID_REPLACE:

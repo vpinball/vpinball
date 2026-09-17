@@ -34,6 +34,7 @@ public:
    vector<ISelect *> GetSelectedParts() const;
    // Moves the entry at 'from' to position 'to' in the selection (used by the drawing-order dialog)
    void MoveSelection(const int from, const int to);
+   void SelectItem(IScriptable *piscript);
    void RefreshProperties();
    void UpdatePropertyImageList();
    void UpdatePropertyMaterialList();

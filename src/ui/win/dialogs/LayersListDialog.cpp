@@ -173,7 +173,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_DELETE_LAYER_BUTTON:
       if (PartGroup* toDelete = GetSelectedPartGroup(); m_activeTable && toDelete)
       {
-         m_activeTable->SelectItem(toDelete);
+         m_activeTable->m_tableEditor->SelectItem(toDelete);
          m_activeTable->m_tableEditor->OnDelete();
       }
       return TRUE;

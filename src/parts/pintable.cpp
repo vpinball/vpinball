@@ -3171,24 +3171,6 @@ void PinTable::ExportBackdropPOV(const std::filesystem::path &filename) const
    PLOGI << "View setup exported to '" << filename << '\'';
 }
 
-void PinTable::SelectItem(IScriptable *piscript)
-{
-   for (const auto pedit : m_vedit)
-   {
-      if (piscript == pedit->GetIScriptable())
-      {
-         if (ISelect *const pisel = pedit->GetISelect(); pisel && m_tableEditor)
-            m_tableEditor->AddMultiSel(pisel, false, true, false);
-         break;
-      }
-   }
-}
-
-void PinTable::DoCodeViewCommand(int command)
-{
-   g_pvp->ParseCommand(command, false);
-}
-
 void PinTable::SetDirtyScript(SaveDirtyState sds)
 {
    m_sdsDirtyScript = sds;

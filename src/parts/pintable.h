@@ -348,8 +348,6 @@ public:
    const vector<PinFont *> &GetFontList() const { return m_vfont; }
 
    // Expected by CodeViewer
-   void SelectItem(IScriptable *piscript);
-   void DoCodeViewCommand(int command);
    void SetDirtyScript(SaveDirtyState sds);
 
    void ExportMesh(ObjLoader &loader) final;
