@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-BumperVisualsProperty::BumperVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
+BumperVisualsProperty::BumperVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
 {
     m_radiusEdit.SetDialog(this);
     m_heightScaleEdit.SetDialog(this);
@@ -26,11 +26,11 @@ BumperVisualsProperty::BumperVisualsProperty(const VectorProtected<ISelect> *pvs
 
 void BumperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBumper))
             continue;
-        Bumper *const bumper = (Bumper*)m_pvsel->ElementAt(i);
+        Bumper *const bumper = (Bumper*)SelAt(i);
         if (dispid == IDC_MATERIAL_COMBO || dispid == -1)
             PropertyDialog::UpdateMaterialComboBox(bumper->GetPTable()->GetMaterialList(), m_capMaterialCombo, bumper->m_d.m_szCapMaterial);
         if (dispid == IDC_MATERIAL_COMBO2 || dispid == -1)
@@ -71,11 +71,11 @@ void BumperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void BumperVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBumper))
             continue;
-        Bumper *const bumper = (Bumper *)m_pvsel->ElementAt(i);
+        Bumper *const bumper = (Bumper *)SelAt(i);
         switch (dispid)
         {
             case IDC_MATERIAL_COMBO:

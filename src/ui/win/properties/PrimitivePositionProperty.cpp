@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PrimitivePositionProperty::PrimitivePositionProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
+PrimitivePositionProperty::PrimitivePositionProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
@@ -29,11 +29,11 @@ PrimitivePositionProperty::PrimitivePositionProperty(const VectorProtected<ISele
 
 void PrimitivePositionProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        const Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
+        const Primitive *const prim = (Primitive*)SelAt(i);
 
         if (dispid == DISPID_POSITION_X || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, prim->m_d.m_vPosition.x);
@@ -77,11 +77,11 @@ void PrimitivePositionProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void PrimitivePositionProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
+        Primitive *const prim = (Primitive*)SelAt(i);
         switch (dispid)
         {
             case DISPID_POSITION_X:

@@ -10,7 +10,7 @@ class RenderProbe;
 class PrimitiveVisualsProperty final : public BasePropertyDialog
 {
 public:
-    PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    PrimitiveVisualsProperty(const vector<ISelect *> *pvsel);
     ~PrimitiveVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

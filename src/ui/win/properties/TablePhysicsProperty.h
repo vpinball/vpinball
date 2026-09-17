@@ -7,7 +7,7 @@
 class TablePhysicsProperty final : public BasePropertyDialog
 {
 public:
-    TablePhysicsProperty(const VectorProtected<ISelect> *pvsel);
+    TablePhysicsProperty(const vector<ISelect *> *pvsel);
     ~TablePhysicsProperty() override { }
 
     void UpdateVisuals(const int dispid = -1) override;

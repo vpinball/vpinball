@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-KickerVisualsProperty::KickerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)
+KickerVisualsProperty::KickerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)
 {
     m_typeList.push_back("Invisible"s);
     m_typeList.push_back("Hole"s);
@@ -31,11 +31,11 @@ KickerVisualsProperty::KickerVisualsProperty(const VectorProtected<ISelect> *pvs
 
 void KickerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i);
 
         if (dispid == IDC_KICKER_DISPLAY_COMBO || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_displayCombo, m_typeList[kicker->m_d.m_kickertype]);
@@ -57,11 +57,11 @@ void KickerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void KickerVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i);
         switch (dispid)
         {
             case IDC_KICKER_DISPLAY_COMBO:

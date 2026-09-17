@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-RampVisualsProperty::RampVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
+RampVisualsProperty::RampVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {
     m_typeList.push_back("Flat"s);
     m_typeList.push_back("4-Wire"s);
@@ -38,11 +38,11 @@ RampVisualsProperty::RampVisualsProperty(const VectorProtected<ISelect> *pvsel) 
 
 void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i);
         if (dispid == 6 || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type]);
         if (dispid == 8 || dispid == -1)
@@ -78,11 +78,11 @@ void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void RampVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i);
         switch (dispid)
         {
             case 1:

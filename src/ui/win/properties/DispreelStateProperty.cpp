@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-DispreelStateProperty::DispreelStateProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
+DispreelStateProperty::DispreelStateProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
 {
     m_motorStepsEdit.SetDialog(this);
     m_updateIntervalEdit.SetDialog(this);
@@ -17,11 +17,11 @@ DispreelStateProperty::DispreelStateProperty(const VectorProtected<ISelect> *pvs
 
 void DispreelStateProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i);
         if (dispid == IDC_MOTOR_STEPS_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_motorStepsEdit, reel->GetMotorSteps());
         if (dispid == IDC_UPDATE_INTERVAL_EDIT || dispid == -1)
@@ -35,11 +35,11 @@ void DispreelStateProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void DispreelStateProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i);
         switch (dispid)
         {
             case IDC_MOTOR_STEPS_EDIT:

@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-FlipperVisualsProperty::FlipperVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_VISUALS, pvsel)
+FlipperVisualsProperty::FlipperVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_VISUALS, pvsel)
 {
     m_rubberThicknessEdit.SetDialog(this);
     m_rubberOffsetHeightEdit.SetDialog(this);
@@ -30,11 +30,11 @@ FlipperVisualsProperty::FlipperVisualsProperty(const VectorProtected<ISelect> *p
 
 void FlipperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i);
         if (dispid == IDC_MATERIAL_COMBO2 || dispid == -1)
             PropertyDialog::UpdateMaterialComboBox(flipper->GetPTable()->GetMaterialList(), m_rubberMaterialCombo, flipper->m_d.m_szRubberMaterial);
         if (dispid == 18 || dispid == -1)
@@ -73,11 +73,11 @@ void FlipperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void FlipperVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i);
         switch (dispid)
         {
             case 1:

@@ -9,7 +9,7 @@
 #include "ui/win/WinEditor.h"
 
 
-TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel), m_font(nullptr)
+TextboxVisualsProperty::TextboxVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel), m_font(nullptr)
 {
     m_alignList.push_back("Align Left"s);
     m_alignList.push_back("Align Center"s);
@@ -31,11 +31,11 @@ TextboxVisualsProperty::~TextboxVisualsProperty()
 
 void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTextbox))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTextbox))
             continue;
-        Textbox* const text = (Textbox *)m_pvsel->ElementAt(i);
+        Textbox* const text = (Textbox *)SelAt(i);
 
         if (dispid == IDC_TEXTBOX_TRANSP_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hTransparentCheck, text->m_d.m_transparent);
@@ -73,11 +73,11 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void TextboxVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTextbox))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTextbox))
             continue;
-        Textbox* const text = (Textbox *)m_pvsel->ElementAt(i);
+        Textbox* const text = (Textbox *)SelAt(i);
         switch (dispid)
         {
             case IDC_TEXTBOX_TRANSP_CHECK:

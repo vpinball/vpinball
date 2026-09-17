@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-KickerPhysicsProperty::KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_STATE, pvsel)
+KickerPhysicsProperty::KickerPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_STATE, pvsel)
 {
     m_scatterAngleEdit.SetDialog(this);
     m_hitAccuracyEdit.SetDialog(this);
@@ -18,11 +18,11 @@ KickerPhysicsProperty::KickerPhysicsProperty(const VectorProtected<ISelect> *pvs
 
 void KickerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i);
 
         if (dispid == DISPID_Enabled || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hEnableCheck, kicker->m_d.m_enabled);
@@ -42,11 +42,11 @@ void KickerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void KickerPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemKicker))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)m_pvsel->ElementAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i);
         switch (dispid)
         {
             case DISPID_Enabled:

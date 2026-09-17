@@ -9,7 +9,7 @@
 #include "ui/win/WinEditor.h"
 
 
-DispreelVisualsProperty::DispreelVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_VISUALS, pvsel)
+DispreelVisualsProperty::DispreelVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_VISUALS, pvsel)
 {
     m_singleDigitRangeEdit.SetDialog(this);
     m_imagePerRowEdit.SetDialog(this);
@@ -24,11 +24,11 @@ DispreelVisualsProperty::DispreelVisualsProperty(const VectorProtected<ISelect> 
 
 void DispreelVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i);
 
         if (dispid == IDC_BACK_TRANSP_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hBackgroundTransparentCheck, reel->m_d.m_transparent);
@@ -60,11 +60,11 @@ void DispreelVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void DispreelVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDispReel))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)m_pvsel->ElementAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i);
         switch (dispid)
         {
             case IDC_BACK_TRANSP_CHECK:

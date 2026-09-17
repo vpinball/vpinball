@@ -7,7 +7,7 @@
 class LightStatesProperty final : public BasePropertyDialog
 {
 public:
-    LightStatesProperty(const VectorProtected<ISelect> *pvsel);
+    LightStatesProperty(const vector<ISelect *> *pvsel);
     ~LightStatesProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

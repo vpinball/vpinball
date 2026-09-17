@@ -7,7 +7,7 @@
 class BackglassVisualsProperty final : public BasePropertyDialog
 {
 public:
-    BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    BackglassVisualsProperty(const vector<ISelect *> *pvsel);
     ~BackglassVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid = -1) override;

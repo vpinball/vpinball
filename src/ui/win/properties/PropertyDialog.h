@@ -20,9 +20,12 @@ class Texture;
 class BasePropertyDialog: public CDialog
 {
 public:
-    BasePropertyDialog(const int id, const VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
+    BasePropertyDialog(const int id, const vector<ISelect *> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
     }
+
+    ISelect *SelAt(const int i) const { return (*m_pvsel)[i]; }
+    int SelCount() const { return (int)m_pvsel->size(); }
 
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals(const int dispid=-1) = 0;
@@ -63,7 +66,7 @@ public:
     void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
     void UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid = -1);
 
-    const VectorProtected<ISelect>* m_pvsel;
+    const vector<ISelect *>* m_pvsel;
     static bool m_disableEvents;
 
 protected:
@@ -136,7 +139,7 @@ private:
 class TimerProperty final : public BasePropertyDialog
 {
 public:
-    TimerProperty(const VectorProtected<ISelect> *pvsel);
+    TimerProperty(const vector<ISelect *> *pvsel);
     void UpdateProperties(const int dispid) override;
     void UpdateVisuals(const int dispid=-1) override;
 
@@ -256,9 +259,9 @@ class PropertyDialog final : public CDialog
 public:
     PropertyDialog();
 
-    void CreateTabs(VectorProtected<ISelect> &pvsel);
+    void CreateTabs(const vector<ISelect *> &pvsel);
     void DeleteAllTabs();
-    void UpdateTabs(VectorProtected<ISelect> &pvsel);
+    void UpdateTabs(const vector<ISelect *> &pvsel);
 
     static void UpdateTextureComboBox(const vector<Texture*>& contentList, const CComboBox &combo, const string &selectName);
     static void UpdateComboBox(const vector<string>& contentList, const CComboBox &combo, const string &selectName);

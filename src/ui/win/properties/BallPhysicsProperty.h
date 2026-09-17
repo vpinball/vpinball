@@ -7,7 +7,7 @@
 class BallPhysicsProperty final : public BasePropertyDialog
 {
 public:
-   BallPhysicsProperty(const VectorProtected<ISelect> *pvsel);
+   BallPhysicsProperty(const vector<ISelect *> *pvsel);
    ~BallPhysicsProperty() override { }
 
    void UpdateVisuals(const int dispid=-1) override;

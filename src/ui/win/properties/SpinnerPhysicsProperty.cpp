@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-SpinnerPhysicsProperty::SpinnerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)
+SpinnerPhysicsProperty::SpinnerPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)
 {
     m_dampingEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);
@@ -15,11 +15,11 @@ SpinnerPhysicsProperty::SpinnerPhysicsProperty(const VectorProtected<ISelect> *p
 
 void SpinnerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i);
 
         if (dispid == IDC_DAMPING_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_dampingEdit, spinner->m_d.m_damping);
@@ -32,11 +32,11 @@ void SpinnerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void SpinnerPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i);
 
         switch (dispid)
         {

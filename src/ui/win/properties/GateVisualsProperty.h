@@ -7,7 +7,7 @@
 class GateVisualsProperty final : public BasePropertyDialog
 {
 public:
-    GateVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    GateVisualsProperty(const vector<ISelect *> *pvsel);
     ~GateVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

@@ -11,7 +11,7 @@
 #include "ui/win/WinEditor.h"
 
 
-PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
+PrimitiveVisualsProperty::PrimitiveVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
 {
     m_disableLightingEdit.SetDialog(this);
     m_disableLightFromBelowEdit.SetDialog(this);
@@ -31,11 +31,11 @@ PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect
 
 void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive*)m_pvsel->ElementAt(i);
+        Primitive *const prim = (Primitive*)SelAt(i);
 
         if (dispid == IDC_ADDBLEND || dispid == -1)
         {
@@ -172,11 +172,11 @@ void PrimitiveVisualsProperty::UpdateRenderProbeComboBox(const vector<RenderProb
 
 void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive *)m_pvsel->ElementAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i);
         switch (dispid)
         {
             case IDC_ADDBLEND:

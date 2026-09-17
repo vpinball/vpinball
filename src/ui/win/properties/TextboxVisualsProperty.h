@@ -7,7 +7,7 @@
 class TextboxVisualsProperty final : public BasePropertyDialog
 {
 public:
-    TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    TextboxVisualsProperty(const vector<ISelect *> *pvsel);
     ~TextboxVisualsProperty() override;
 
     void UpdateVisuals(const int dispid=-1) override;

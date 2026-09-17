@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-SpinnerVisualsProperty::SpinnerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
+SpinnerVisualsProperty::SpinnerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
@@ -24,11 +24,11 @@ SpinnerVisualsProperty::SpinnerVisualsProperty(const VectorProtected<ISelect> *p
 
 void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i);
 
         if (dispid == IDC_SURFACE_COMBO || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(spinner->GetPTable(), m_surfaceCombo, spinner->m_d.m_szSurface);
@@ -57,11 +57,11 @@ void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void SpinnerVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSpinner))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)m_pvsel->ElementAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i);
 
         switch (dispid)
         {

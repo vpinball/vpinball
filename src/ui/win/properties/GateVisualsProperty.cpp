@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-GateVisualsProperty::GateVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
+GateVisualsProperty::GateVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPGATE_VISUALS, pvsel)
 {
     m_typeList.push_back("Wire W"s);
     m_typeList.push_back("Wire Rectangle"s);
@@ -30,11 +30,11 @@ GateVisualsProperty::GateVisualsProperty(const VectorProtected<ISelect> *pvsel) 
 
 void GateVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType()!=eItemGate))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType()!=eItemGate))
             continue;
-        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)SelAt(i);
         if (dispid == 9 || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)gate->m_d.m_type - 1]);
         if (dispid == IDC_SURFACE_COMBO || dispid == -1)
@@ -63,11 +63,11 @@ void GateVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void GateVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)SelAt(i);
         switch (dispid)
         {
             case 9:

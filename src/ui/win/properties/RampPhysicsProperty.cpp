@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-RampPhysicsProperty::RampPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)
+RampPhysicsProperty::RampPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_leftWallEdit.SetDialog(this);
@@ -20,11 +20,11 @@ RampPhysicsProperty::RampPhysicsProperty(const VectorProtected<ISelect> *pvsel) 
 
 void RampPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i);
 
         if (dispid == 10 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheight);
@@ -52,11 +52,11 @@ void RampPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void RampPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRamp))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)m_pvsel->ElementAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i);
         switch (dispid)
         {
             case 10:

@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-LightStatesProperty::LightStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
+LightStatesProperty::LightStatesProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
 {
     m_stateList.push_back("Off"s);
     m_stateList.push_back("On"s);
@@ -21,11 +21,11 @@ LightStatesProperty::LightStatesProperty(const VectorProtected<ISelect> *pvsel) 
 
 void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)SelAt(i);
         if (dispid == DISPID_Light_State || dispid == -1)
         {
             float state;
@@ -43,11 +43,11 @@ void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void LightStatesProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)SelAt(i);
         switch (dispid)
         {
             case DISPID_Light_State:

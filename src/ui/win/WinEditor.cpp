@@ -485,7 +485,7 @@ float WinEditor::ConvertToUnit(const float value) const
    return 0;
 }
 
-void WinEditor::SetPropSel(VectorProtected<ISelect> &pvsel)
+void WinEditor::SetPropSel(const vector<ISelect *> &pvsel)
 {
 #ifndef __STANDALONE__
    if (m_propertyDialog && m_propertyDialog->IsWindow())
@@ -2049,8 +2049,8 @@ void WinEditor::SetDefaultPhysics()
       if (answ == IDYES)
       {
          ptCur->BeginUndo();
-         for (int i = 0; i < ptCur->m_tableEditor->m_vmultisel.size(); i++)
-            if (auto editable = ptCur->m_tableEditor->m_vmultisel[i].GetIEditable(); editable)
+         for (int i = 0; i < (int)ptCur->m_tableEditor->m_vmultisel.size(); i++)
+            if (auto editable = ptCur->m_tableEditor->m_vmultisel[i]->GetIEditable(); editable)
                editable->SetDefaultPhysics(true);
          ptCur->EndUndo();
       }
@@ -2104,7 +2104,7 @@ void WinEditor::AddControlPoint()
 
    if (!ptCur->m_vmultisel.empty())
    {
-      ISelect *const psel = ptCur->m_vmultisel.ElementAt(0);
+      ISelect *const psel = ptCur->m_vmultisel[0];
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
@@ -2170,7 +2170,7 @@ void WinEditor::AddSmoothControlPoint()
 
    if (!ptCur->m_vmultisel.empty())
    {
-      ISelect *const psel = ptCur->m_vmultisel.ElementAt(0);
+      ISelect *const psel = ptCur->m_vmultisel[0];
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();

@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PlungerVisualsProperty::PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
+PlungerVisualsProperty::PlungerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
 {
     m_typeList.push_back("Modern"s);
     m_typeList.push_back("Flat"s);
@@ -37,11 +37,11 @@ PlungerVisualsProperty::PlungerVisualsProperty(const VectorProtected<ISelect> *p
 
 void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i);
         if (dispid == IDC_PLUNGER_TYPE_COMBO || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type-1]);
         if (dispid == 1502 || dispid == -1)
@@ -82,11 +82,11 @@ void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void PlungerVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i);
 
         switch (dispid)
         {

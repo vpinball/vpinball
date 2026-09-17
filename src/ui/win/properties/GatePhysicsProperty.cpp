@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-GatePhysicsProperty::GatePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_PHYSICS, pvsel)
+GatePhysicsProperty::GatePhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPGATE_PHYSICS, pvsel)
 {
     m_elasticityEdit.SetDialog(this);
     m_frictionEdit.SetDialog(this);
@@ -18,11 +18,11 @@ GatePhysicsProperty::GatePhysicsProperty(const VectorProtected<ISelect> *pvsel) 
 
 void GatePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)SelAt(i);
 
         if (dispid == 13 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_dampingEdit, gate->m_d.m_damping);
@@ -38,11 +38,11 @@ void GatePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void GatePhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemGate))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate * const gate = (Gate *)m_pvsel->ElementAt(i);
+        Gate * const gate = (Gate *)SelAt(i);
         switch (dispid)
         {
             case 13:

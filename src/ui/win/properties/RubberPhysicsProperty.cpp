@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-RubberPhysicsProperty::RubberPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
+RubberPhysicsProperty::RubberPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
 {
     m_elasticityEdit.SetDialog(this);
     m_elasticityFallOffEdit.SetDialog(this);
@@ -19,11 +19,11 @@ RubberPhysicsProperty::RubberPhysicsProperty(const VectorProtected<ISelect> *pvs
 
 void RubberPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRubber))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRubber))
             continue;
-        Rubber *const rubber = (Rubber *)m_pvsel->ElementAt(i);
+        Rubber *const rubber = (Rubber *)SelAt(i);
 
         if (dispid == 120 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, rubber->m_d.m_elasticityFalloff);
@@ -45,11 +45,11 @@ void RubberPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void RubberPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemRubber))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRubber))
             continue;
-        Rubber *const rubber = (Rubber *)m_pvsel->ElementAt(i);
+        Rubber *const rubber = (Rubber *)SelAt(i);
         switch (dispid)
         {
             case 120:

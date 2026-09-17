@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-LightVisualsProperty::LightVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
+LightVisualsProperty::LightVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
 {
     m_falloffEdit.SetDialog(this);
     m_falloffPowerEdit.SetDialog(this);
@@ -71,11 +71,11 @@ void LightVisualsProperty::UpdateLightType(const int mode)
 
 void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)SelAt(i);
 
         if (dispid == IDC_INTENSITY || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_intensityEdit, light->m_d.m_intensity);
@@ -156,11 +156,11 @@ void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void LightVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLight))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)m_pvsel->ElementAt(i);
+        Light * const light = (Light *)SelAt(i);
 
         switch (dispid)
         {
@@ -290,7 +290,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 }
                 else
                 {
-                   const Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
+                   const Light* const firstLight = (Light*)SelAt(0);
                    light->m_d.m_color = firstLight->m_d.m_color;
                    m_colorButton1.SetColor(light->m_d.m_color);
                    ptable->SetDirtyDraw();
@@ -318,7 +318,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 }
                 else
                 {
-                   const Light* const firstLight = (Light*)m_pvsel->ElementAt(0);
+                   const Light* const firstLight = (Light*)SelAt(0);
                    light->m_d.m_color2 = firstLight->m_d.m_color2;
                    m_colorButton2.SetColor(light->m_d.m_color2);
                 }

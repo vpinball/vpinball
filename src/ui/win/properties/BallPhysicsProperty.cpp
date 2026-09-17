@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-BallPhysicsProperty::BallPhysicsProperty(const VectorProtected<ISelect> *pvsel)
+BallPhysicsProperty::BallPhysicsProperty(const vector<ISelect *> *pvsel)
    : BasePropertyDialog(IDD_PROPBALL_PHYSICS, pvsel)
 {
    m_massEdit.SetDialog(this);
@@ -18,7 +18,7 @@ BallPhysicsProperty::BallPhysicsProperty(const VectorProtected<ISelect> *pvsel)
 void BallPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
    //only show the first element on multi-select
-   Ball *const ball = (Ball *)m_pvsel->ElementAt(0);
+   Ball *const ball = (Ball *)SelAt(0);
    if (ball == nullptr)
       return;
    if (dispid == 14 || dispid == -1)
@@ -28,11 +28,11 @@ void BallPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
 
 void BallPhysicsProperty::UpdateProperties(const int dispid)
 {
-   for (int i = 0; i < m_pvsel->size(); i++)
+   for (int i = 0; i < SelCount(); i++)
    {
-      if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBall))
+      if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBall))
          continue;
-      Ball *const ball = (Ball *)m_pvsel->ElementAt(0);
+      Ball *const ball = (Ball *)SelAt(0);
       switch (dispid)
       {
       case IDC_MASS: CHECK_UPDATE_ITEM(ball->m_hitBall.m_d.m_mass, PropertyDialog::GetFloatTextbox(m_massEdit), ball); break;

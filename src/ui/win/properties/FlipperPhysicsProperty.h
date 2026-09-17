@@ -7,7 +7,7 @@
 class FlipperPhysicsProperty final : public BasePropertyDialog
 {
 public:
-    FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel);
+    FlipperPhysicsProperty(const vector<ISelect *> *pvsel);
     ~FlipperPhysicsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

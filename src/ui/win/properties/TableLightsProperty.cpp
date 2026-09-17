@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel)
+TableLightsProperty::TableLightsProperty(const vector<ISelect *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert(pvsel->ElementAt(0)->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetItemType() == eItemTable);
    m_lightEmissionScaleEdit.SetDialog(this);
    m_lightHeightEdit.SetDialog(this);
    m_lightRangeEdit.SetDialog(this);
@@ -22,7 +22,7 @@ TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel)
 
 void TableLightsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
-   PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+   PinTable *const table = (PinTable *)SelAt(0);
    if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
       m_colorButton1.SetColor(table->m_lightAmbient);
    if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
@@ -43,7 +43,7 @@ void TableLightsProperty::UpdateVisuals(const int dispid /*=-1*/)
 
 void TableLightsProperty::UpdateProperties(const int dispid)
 {
-   PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+   PinTable *const table = (PinTable *)SelAt(0);
    switch (dispid)
    {
    case IDC_COLOR_BUTTON1:

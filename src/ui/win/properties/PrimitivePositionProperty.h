@@ -7,7 +7,7 @@
 class PrimitivePositionProperty final : public BasePropertyDialog
 {
 public:
-    PrimitivePositionProperty(const VectorProtected<ISelect> *pvsel);
+    PrimitivePositionProperty(const vector<ISelect *> *pvsel);
     ~PrimitivePositionProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

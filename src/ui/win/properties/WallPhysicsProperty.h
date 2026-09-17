@@ -7,7 +7,7 @@
 class WallPhysicsProperty final : public BasePropertyDialog
 {
 public:
-    WallPhysicsProperty(const VectorProtected<ISelect> *pvsel);
+    WallPhysicsProperty(const vector<ISelect *> *pvsel);
     ~WallPhysicsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

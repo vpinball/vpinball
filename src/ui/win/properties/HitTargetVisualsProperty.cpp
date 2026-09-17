@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-HitTargetVisualsProperty::HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
+HitTargetVisualsProperty::HitTargetVisualsProperty(const vector<ISelect *> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
 {
     m_typeList.push_back("DropTarget Beveled"s);
     m_typeList.push_back("DropTarget Simple"s);
@@ -40,11 +40,11 @@ HitTargetVisualsProperty::HitTargetVisualsProperty(const VectorProtected<ISelect
 
 void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)SelAt(i);
         if (dispid == IDC_HIT_TARGET_TYPE || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[target->m_d.m_targetType - 1]);
         if (dispid == IDC_TARGET_MOVE_SPEED_EDIT || dispid == -1)
@@ -80,11 +80,11 @@ void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void HitTargetVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)SelAt(i);
         switch (dispid)
         {
             case IDC_HIT_TARGET_TYPE:
