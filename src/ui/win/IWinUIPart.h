@@ -37,6 +37,12 @@ public:
    ISelect* GetSelect() const { return m_select; }
    IEditable* GetEditable() const { return m_select->GetIEditable(); }
 
+   // Type of the table part this UI part edits (independent of the wrapped ISelect, which is meant to be phased out)
+   virtual ItemTypeEnum GetItemType() const = 0;
+
+   // True for UI parts of sub selects (drag points, light centers) owned by another part
+   virtual bool IsSubPart() const { return false; }
+
    enum class SelectState
    {
       NotSelected,

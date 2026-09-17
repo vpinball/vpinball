@@ -14,6 +14,8 @@ public:
 
    explicit LightSeqWinUIPart(PinTableWnd* editor, LightSeq* lightseq);
 
+   ItemTypeEnum GetItemType() const override { return eItemLightSeq; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

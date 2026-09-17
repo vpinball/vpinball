@@ -13,6 +13,8 @@ public:
    static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Backglass;
 
    explicit DispReelWinUIPart(PinTableWnd* editor, DispReel* dispreel);
+
+   ItemTypeEnum GetItemType() const override { return eItemDispReel; }
    
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;

@@ -10,6 +10,9 @@ class DragPointWinUIPart final : public IWinUIPart
 public:
    explicit DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint);
 
+   ItemTypeEnum GetItemType() const override { return eItemDragPoint; }
+   bool IsSubPart() const override { return true; }
+
    // Dragpoints are drawn by their parent's IWinUIPart
    void UIRenderPass1(Sur* psur) override { }
    void UIRenderPass2(Sur* psur) override { }

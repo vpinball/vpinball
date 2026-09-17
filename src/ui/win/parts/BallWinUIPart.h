@@ -13,6 +13,8 @@ public:
    static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::Playfield;
 
    explicit BallWinUIPart(PinTableWnd* editor, Ball* ball);
+
+   ItemTypeEnum GetItemType() const override { return eItemBall; }
    
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;

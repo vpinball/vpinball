@@ -9,6 +9,9 @@ class LightCenterWinUIPart final : public IWinUIPart
 public:
    explicit LightCenterWinUIPart(PinTableWnd* editor, ISelect* lightCenter);
 
+   ItemTypeEnum GetItemType() const override { return eItemLightCenter; }
+   bool IsSubPart() const override { return true; }
+
    // The light center handle is drawn by the light's IWinUIPart
    void UIRenderPass1(Sur* psur) override { }
    void UIRenderPass2(Sur* psur) override { }

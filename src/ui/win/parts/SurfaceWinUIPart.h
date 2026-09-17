@@ -15,6 +15,8 @@ public:
 
    explicit SurfaceWinUIPart(PinTableWnd* editor, Surface* surface);
 
+   ItemTypeEnum GetItemType() const override { return eItemSurface; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

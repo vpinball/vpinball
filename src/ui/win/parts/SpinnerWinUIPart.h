@@ -14,6 +14,8 @@ public:
 
    explicit SpinnerWinUIPart(PinTableWnd* editor, Spinner* spinner);
 
+   ItemTypeEnum GetItemType() const override { return eItemSpinner; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void UpdateStatusBarObjectPos() override;

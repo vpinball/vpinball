@@ -15,6 +15,8 @@ public:
 
    explicit RampWinUIPart(PinTableWnd* editor, Ramp* ramp);
 
+   ItemTypeEnum GetItemType() const override { return eItemRamp; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

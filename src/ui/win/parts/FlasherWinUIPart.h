@@ -14,6 +14,8 @@ public:
    static inline constexpr IWinUIPart::AllowedViews AllowedViews = IWinUIPart::AllowedViews::PlayfieldAndBackglass;
 
    explicit FlasherWinUIPart(PinTableWnd* editor, Flasher* flasher);
+
+   ItemTypeEnum GetItemType() const override { return eItemFlasher; }
    
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;

@@ -15,6 +15,8 @@ public:
 
    explicit TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger);
 
+   ItemTypeEnum GetItemType() const override { return eItemTrigger; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;

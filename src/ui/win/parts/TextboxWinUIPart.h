@@ -14,6 +14,8 @@ public:
 
    explicit TextboxWinUIPart(PinTableWnd* editor, Textbox* textbox);
 
+   ItemTypeEnum GetItemType() const override { return eItemTextbox; }
+
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void UpdateStatusBarObjectPos() override;
