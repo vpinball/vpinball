@@ -24,7 +24,7 @@ void BumperWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(-1, false, 0);
 
-   psur->SetObject(m_bumper);
+   psur->SetObject(this);
    const float radangle = ANGTORAD(m_bumper->m_d.m_orientation);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
@@ -60,7 +60,7 @@ void BumperWinUIPart::UIRenderPass2(Sur* const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
-   psur->SetObject(m_bumper);
+   psur->SetObject(this);
    psur->SetObject(nullptr);
    const float radangle = ANGTORAD(m_bumper->m_d.m_orientation - 90.f);
    const float sn = sinf(radangle);
@@ -86,7 +86,7 @@ void BumperWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 {
    psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_bumper);
+   psur->SetObject(this);
    psur->SetObject(nullptr);
    const float radangle = ANGTORAD(m_bumper->m_d.m_orientation - 90.f);
    const float sn = sinf(radangle);

@@ -21,7 +21,7 @@ void LightSeqWinUIPart::UpdateStatusBarObjectPos()
 void LightSeqWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_lightseq);
+   psur->SetObject(this);
 
    for (int i = 0; i < 8; ++i)
    {
@@ -41,7 +41,7 @@ void LightSeqWinUIPart::UIRenderPass2(Sur* const psur)
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
 
-   psur->SetObject(m_lightseq);
+   psur->SetObject(this);
 
    psur->Ellipse(m_lightseq->m_d.m_v.x, m_lightseq->m_d.m_v.y, 18.0f);
 
@@ -61,7 +61,7 @@ void LightSeqWinUIPart::UIRenderPass2(Sur* const psur)
 void LightSeqWinUIPart::RenderOutline(Sur* const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject((ISelect*)m_lightseq);
+   psur->SetObject(this);
 
    psur->Line(m_lightseq->m_d.m_vCenter.x - 10.0f, m_lightseq->m_d.m_vCenter.y, m_lightseq->m_d.m_vCenter.x + 10.0f, m_lightseq->m_d.m_vCenter.y);
    psur->Line(m_lightseq->m_d.m_vCenter.x, m_lightseq->m_d.m_vCenter.y - 10.0f, m_lightseq->m_d.m_vCenter.x, m_lightseq->m_d.m_vCenter.y + 10.0f);

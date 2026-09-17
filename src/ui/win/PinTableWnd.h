@@ -20,7 +20,7 @@ public:
    void SetMDITable(PinTableMDI *const table) { m_mdiTable = table; }
    PinTableMDI *GetMDITable() const { return m_mdiTable; }
 
-   ISelect *HitTest(const int x, const int y);
+   IWinUIPart *HitTest(const int x, const int y);
 
    void ClearMultiSel(ISelect *newSel = nullptr);
    bool MultiSelIsEmpty() const;
@@ -101,6 +101,9 @@ public:
    IWinUIPart *GetUIPart(IEditable *part) { return GetUIPart(part ? part->GetISelect() : nullptr); }
 
    CComObject<PinTable> *const m_table;
+
+   // UI parts stacked under the mouse at the last HitTest call, front to back (used by the context menu "stacked elements" list and the drawing order dialog)
+   vector<IWinUIPart *> m_allHitElements;
 
    std::unique_ptr<class CodeViewer> m_pcv;
 

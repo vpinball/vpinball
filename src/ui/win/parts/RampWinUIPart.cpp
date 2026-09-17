@@ -34,7 +34,7 @@ void RampWinUIPart::UIRenderPass1(Sur* const psur)
    // make 1-wire ramps look unique in editor - uses ramp color
    psur->SetFillColor(m_ramp->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
-   psur->SetObject(m_ramp);
+   psur->SetObject(this);
 
    int cvertex;
    const Vertex2D* const rgvLocal = m_ramp->GetRampVertex(cvertex, nullptr, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, false);
@@ -48,7 +48,7 @@ void RampWinUIPart::UIRenderPass2(Sur* const psur)
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_ramp);
+   psur->SetObject(this);
    psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    bool* pfCross;
@@ -105,7 +105,7 @@ void RampWinUIPart::UIRenderPass2(Sur* const psur)
          CComObject<DragPoint>* const pdp = m_ramp->m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
-         psur->SetObject(pdp);
+         psur->SetObject(m_pointParts.Get(pdp));
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -117,7 +117,7 @@ void RampWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
    psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(m_ramp);
+   psur->SetObject(this);
    psur->SetObject(nullptr); // nullptr so this won't be hit-tested
 
    bool* pfCross;

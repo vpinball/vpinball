@@ -83,13 +83,12 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
       const int ksshift = GetKeyState(VK_SHIFT);
       //const int ksctrl = GetKeyState(VK_CONTROL);
 
-      PinTable *const currentTable = m_select->GetIEditable()->GetPTable();
       const int i = (icmd & 0x00FF0000) >> 16;
-      ISelect *const pisel = currentTable->m_allHitElements[i];
+      IWinUIPart *const pisel = m_editor->m_allHitElements[i];
 
       const bool add = ((ksshift & 0x80000000) != 0);
 
-      if (pisel == (ISelect *)currentTable && add)
+      if (pisel == &m_editor->m_tablePart && add)
       {
          // Can not include the table in multi-select
          // and table will not be unselected, because the
@@ -99,7 +98,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          return;
       }
 
-      m_editor->AddMultiSel(pisel, add, true, true);
+      m_editor->AddMultiSel(pisel->GetSelect(), add, true, true);
       return;
    }
    switch (icmd)

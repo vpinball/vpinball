@@ -8,7 +8,7 @@ class HitRectSur final : public Sur
 {
 public:
 
-   HitRectSur(const float zoom, const float offx, const float offy, const int width, const int height, const FRect * const prcRect, vector<ISelect*> * const pvsel);
+   HitRectSur(const float zoom, const float offx, const float offy, const int width, const int height, const FRect * const prcRect, vector<IWinUIPart*> * const pvsel);
    ~HitRectSur() override { }
 
    void Line(const float x, const float y, const float x2, const float y2) override;
@@ -25,7 +25,7 @@ public:
    void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y) override { }
    void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height) override { }
 
-   void SetObject(ISelect *const psel) override;
+   void SetObject(IWinUIPart *const part) override;
 
    void SetFillColor(const int rgb) override { }
    void SetBorderColor(const int rgb, const bool dashed, const int width) override { }
@@ -34,13 +34,13 @@ public:
 private:
    void FailObject();
 
-   ISelect *m_pcur;
+   IWinUIPart *m_pcur;
 
    size_t m_indexcur;
 
    FRect m_rcRect;
-   vector<ISelect*> *m_pvsel;
-   vector<ISelect*> m_vselFailed;
+   vector<IWinUIPart*> *m_pvsel;
+   vector<IWinUIPart*> m_vselFailed;
 
    bool m_failedAlready; // Object has already been discounted from selection
 };

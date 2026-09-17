@@ -33,7 +33,7 @@ void SpinnerWinUIPart::UIRenderPass2(Sur* const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 3);
-   psur->SetObject(m_spinner);
+   psur->SetObject(this);
 
    const float halflength = m_spinner->m_d.m_length * 0.5f;
 
@@ -45,7 +45,7 @@ void SpinnerWinUIPart::UIRenderPass2(Sur* const psur)
       m_spinner->m_d.m_vCenter.x - cs * halflength, m_spinner->m_d.m_vCenter.y - sn * halflength);
 
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
-   psur->SetObject(m_spinner);
+   psur->SetObject(this);
 
    psur->Line(m_spinner->m_d.m_vCenter.x + cs * halflength, m_spinner->m_d.m_vCenter.y + sn * halflength,
       m_spinner->m_d.m_vCenter.x - cs * halflength, m_spinner->m_d.m_vCenter.y - sn * halflength);

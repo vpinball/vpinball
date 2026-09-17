@@ -36,7 +36,7 @@ void LightWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(-1, false, 0);
    psur->SetFillColor(m_light->m_ptable->RenderSolid() ? (((m_light->m_d.m_color & 0xFEFEFE) + (m_light->m_d.m_color2 & 0xFEFEFE)) / 2) : -1);
-   psur->SetObject(m_light);
+   psur->SetObject(this);
 
    switch (m_light->m_d.m_shape)
    {
@@ -80,7 +80,7 @@ void LightWinUIPart::UIRenderPass2(Sur* const psur)
          CComObject<DragPoint>* const pdp = m_light->m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
-         psur->SetObject(pdp);
+         psur->SetObject(m_pointParts.Get(pdp));
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -92,7 +92,7 @@ void LightWinUIPart::RenderOutline(Sur* const psur)
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
-   psur->SetObject(m_light);
+   psur->SetObject(this);
    psur->SetObject(nullptr);
 
    switch (m_light->m_d.m_shape)
@@ -113,7 +113,7 @@ void LightWinUIPart::RenderOutline(Sur* const psur)
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->Polygon(vvertex);
 
-      psur->SetObject(m_light->GetLightCenterSelect());
+      psur->SetObject(GetSubPart(m_light->GetLightCenterSelect()));
       break;
    }
    }

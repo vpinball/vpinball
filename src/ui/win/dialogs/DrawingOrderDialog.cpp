@@ -79,9 +79,9 @@ BOOL DrawingOrderDialog::OnInitDialog()
                selection.push_back(sel);
          }
    }
-   for (size_t i = 0; i < (m_drawingOrderSelect ? selection.size() : pt->m_allHitElements.size()); i++)
+   for (size_t i = 0; i < (m_drawingOrderSelect ? selection.size() : ptw->m_allHitElements.size()); i++)
    {
-      IEditable * const pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : pt->m_allHitElements[i]->GetIEditable();
+      IEditable * const pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : ptw->m_allHitElements[i]->GetEditable();
       if (pedit)
       {
          const string szTemp = PinTable::GetElementName(pedit);
@@ -232,9 +232,9 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
          }
          else
          {
-            ISelect * const psel = pt->m_allHitElements[idx];
-            pt->m_allHitElements.erase(pt->m_allHitElements.begin() + idx);
-            pt->m_allHitElements.insert(pt->m_allHitElements.begin() + (idx - 1), psel);
+            IWinUIPart * const psel = ptw->m_allHitElements[idx];
+            ptw->m_allHitElements.erase(ptw->m_allHitElements.begin() + idx);
+            ptw->m_allHitElements.insert(ptw->m_allHitElements.begin() + (idx - 1), psel);
             pt->ReorderParts(m_drawingOrderSelect);
          }
       }
@@ -266,7 +266,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
       }
       else
       {
-         if (idx < (int)pt->m_allHitElements.size() - 1)
+         if (idx < (int)ptw->m_allHitElements.size() - 1)
          {
             ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
             ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
@@ -283,13 +283,13 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
             ::SetFocus(hOrderList);
 
-            ISelect * const psel = pt->m_allHitElements[idx];
-            pt->m_allHitElements.erase(pt->m_allHitElements.begin() + idx);
+            IWinUIPart * const psel = ptw->m_allHitElements[idx];
+            ptw->m_allHitElements.erase(ptw->m_allHitElements.begin() + idx);
 
-            if (idx + 1 >= (int)pt->m_allHitElements.size())
-               pt->m_allHitElements.push_back(psel);
+            if (idx + 1 >= (int)ptw->m_allHitElements.size())
+               ptw->m_allHitElements.push_back(psel);
             else
-               pt->m_allHitElements.insert(pt->m_allHitElements.begin() + (idx+1), psel);
+               ptw->m_allHitElements.insert(ptw->m_allHitElements.begin() + (idx+1), psel);
 
             pt->ReorderParts(m_drawingOrderSelect);
          }

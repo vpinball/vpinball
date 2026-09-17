@@ -21,7 +21,7 @@ void DispReelWinUIPart::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(-1, false, 0);
    psur->SetFillColor(m_dispreel->m_d.m_backcolor);
-   psur->SetObject(m_dispreel);
+   psur->SetObject(this);
 
    // draw background box
    psur->Rectangle(m_dispreel->m_d.m_v1.x, m_dispreel->m_d.m_v1.y, m_dispreel->m_d.m_v2.x, m_dispreel->m_d.m_v2.y);
@@ -49,7 +49,7 @@ void DispReelWinUIPart::UIRenderPass2(Sur * const psur)
 
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
-   psur->SetObject(m_dispreel);
+   psur->SetObject(this);
    psur->SetObject(nullptr);
 
    // draw background box

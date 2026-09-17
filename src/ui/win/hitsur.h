@@ -8,7 +8,7 @@ class HitSur : public Sur
 {
 public:
 
-   HitSur(const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground);
+   HitSur(const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, IWinUIPart * const pbackground);
    ~HitSur() override { }
 
    void Line(const float x, const float y, const float x2, const float y2) override;
@@ -24,16 +24,16 @@ public:
    void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y) override;
    void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height) override { }
 
-   void SetObject(ISelect * const psel) override;
+   void SetObject(IWinUIPart * const part) override;
 
    void SetFillColor(const int rgb) override { }
    void SetBorderColor(const int rgb, const bool dashed, const int width) override { }
    void SetLineColor(const int rgb, const bool dashed, const int width) override { }
 
-   ISelect *m_pselected;
+   IWinUIPart *m_pselected;
 
 private:
-   ISelect *m_pcur;
+   IWinUIPart *m_pcur;
 
    int m_hitx, m_hity;
 };

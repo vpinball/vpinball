@@ -32,7 +32,7 @@ void GateWinUIPart::UIRenderPass2(Sur* const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 2);
-   psur->SetObject(m_gate);
+   psur->SetObject(this);
 
    const float halflength = m_gate->m_d.m_length * 0.5f;
    const float len1 = halflength * 0.5f;

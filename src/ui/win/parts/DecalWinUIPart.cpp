@@ -25,7 +25,7 @@ void DecalWinUIPart::UIRenderPass1(Sur* const psur)
    {
       psur->SetBorderColor(-1, false, 0);
       psur->SetFillColor(m_decal->m_ptable->RenderSolid() ? RGB(0, 0, 255) : -1);
-      psur->SetObject(m_decal);
+      psur->SetObject(this);
 
       Vertex2D rgv[4];
       m_decal->GetEditorQuad(rgv);
@@ -39,7 +39,7 @@ void DecalWinUIPart::UIRenderPass2(Sur* const psur)
    {
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->SetFillColor(-1);
-      psur->SetObject(m_decal);
+      psur->SetObject(this);
       psur->SetObject(nullptr);
 
       Vertex2D rgv[4];
@@ -54,7 +54,7 @@ void DecalWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
    {
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->SetFillColor(solid ? m_blueprintSolidColor : -1);
-      psur->SetObject(m_decal);
+      psur->SetObject(this);
       psur->SetObject(nullptr);
 
       Vertex2D rgv[4];

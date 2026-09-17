@@ -3,7 +3,7 @@
 #include "core/stdafx.h"
 #include "hitsur.h"
 
-HitSur::HitSur(const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground) : Sur(zoom, offx, offy, width, height)
+HitSur::HitSur(const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, IWinUIPart * const pbackground) : Sur(zoom, offx, offy, width, height)
 {
    m_pselected = pbackground;
 
@@ -264,7 +264,7 @@ void HitSur::Arc(const float x, const float y, const float radius, const float p
    //Ellipse(x, y, radius);
 }
 
-void HitSur::SetObject(ISelect * const psel)
+void HitSur::SetObject(IWinUIPart * const part)
 {
-   m_pcur = psel;
+   m_pcur = part;
 }

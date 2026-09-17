@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "paintsur.h"
 
-#include "core/ISelect.h"
 #include "PinTableWnd.h"
 #include "WinEditor.h"
 #include <WinGDI.h> // for AlphaBlend()
@@ -13,7 +12,7 @@
 static POINT m_ptCache[MAX_SUR_PT_CACHE * 2];
 static const vector<DWORD> m_ptCache_idx(MAX_SUR_PT_CACHE * 2, 2);
 
-PaintSur::PaintSur(const float zoom, const float offx, const float offy, const int width, const int height, const HDC hdc, PinTableWnd *pTableWnd, ISelect *const psel)
+PaintSur::PaintSur(const float zoom, const float offx, const float offy, const int width, const int height, const HDC hdc, PinTableWnd *pTableWnd, IWinUIPart *const psel)
    : Sur(zoom, offx, offy, width, height)
 {
    m_hdc = hdc;
@@ -297,16 +296,15 @@ void PaintSur::Image(const float x, const float y, const float x2, const float y
    StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcSrc, 0, 0, width, height, SRCCOPY);
 }
 
-void PaintSur::SetObject(ISelect *const psel)
+void PaintSur::SetObject(IWinUIPart *const part)
 {
-   if ((m_psel != nullptr) && (psel != nullptr)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
+   if ((m_psel != nullptr) && (part != nullptr)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
    {
-      const bool isLocked = psel->GetIEditable()->IsUILocked();
+      const bool isLocked = part->GetEditable()->IsUILocked();
       const COLORREF selectColor = isLocked ? PaintSur::GetSelectLockedColor() : PaintSur::GetSelectColor();
-      const IWinUIPart *const uiPart = m_pTableWnd ? m_pTableWnd->GetUIPart(psel) : nullptr;
-      const IWinUIPart::SelectState selectState = uiPart ? uiPart->m_selectstate : IWinUIPart::SelectState::NotSelected;
+      const IWinUIPart::SelectState selectState = part->m_selectstate;
 
-      if (psel->GetItemType() == eItemDragPoint)
+      if (part->GetItemType() == eItemDragPoint)
       {
          // DragPoint uses fill colors instead of line/border colors
          if (selectState == IWinUIPart::SelectState::Selected)

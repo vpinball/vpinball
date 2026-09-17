@@ -63,9 +63,9 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
    {
       const int i = (icmd & 0x00FF0000) >> 16;
-      ISelect *const pisel = m_table->m_allHitElements[i];
-      // pisel can be the table itself, whose UI part is this part: do not recurse into our own DoCommand
-      if (IWinUIPart *const uiPart = m_editor->GetUIPart(pisel); uiPart && uiPart != this)
+      IWinUIPart *const uiPart = m_editor->m_allHitElements[i];
+      // The hit elements can contain the table itself, whose UI part is this part: do not recurse into our own DoCommand
+      if (uiPart && uiPart != this)
          uiPart->DoCommand(icmd, x, y);
       return;
    }

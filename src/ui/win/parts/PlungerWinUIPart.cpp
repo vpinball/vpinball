@@ -39,7 +39,7 @@ void PlungerWinUIPart::UIRenderPass2(Sur* const psur)
       psur->Line(m_plunger->m_d.m_v.x - m_plunger->m_d.m_width, m_plunger->m_d.m_v.y - m_plunger->m_d.m_stroke + park, m_plunger->m_d.m_v.x + m_plunger->m_d.m_width, m_plunger->m_d.m_v.y - m_plunger->m_d.m_stroke + park);
    }
 
-   psur->SetObject(m_plunger);
+   psur->SetObject(this);
    psur->Rectangle(m_plunger->m_d.m_v.x - m_plunger->m_d.m_width, m_plunger->m_d.m_v.y - m_plunger->m_d.m_stroke,
       m_plunger->m_d.m_v.x + m_plunger->m_d.m_width, m_plunger->m_d.m_v.y + m_plunger->m_d.m_height);
 }
