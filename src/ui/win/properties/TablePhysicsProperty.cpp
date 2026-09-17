@@ -4,6 +4,7 @@
 #include "TablePhysicsProperty.h"
 
 #include "parts/pintable.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 
 
@@ -189,12 +190,12 @@ BOOL TablePhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
    {
    case IDC_IMPORT_PHYSICS_BUTTON:
    {
-      ((PinTable *)SelAt(0))->ImportPhysics();
+      ((PinTable *)SelAt(0))->m_tableEditor->ImportPhysics();
       return TRUE;
    }
    case IDC_EXPORT_PHYSICS_BUTTON:
    {
-      ((PinTable *)SelAt(0))->ExportPhysics();
+      ((PinTable *)SelAt(0))->m_tableEditor->ExportPhysics();
       return TRUE;
    }
    default: break;

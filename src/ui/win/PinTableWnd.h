@@ -35,7 +35,13 @@ public:
    // Moves the entry at 'from' to position 'to' in the selection (used by the drawing-order dialog)
    void MoveSelection(const int from, const int to);
    void RefreshProperties();
+   void UpdatePropertyImageList();
+   void UpdatePropertyMaterialList();
    void AssignSelectionToPartGroup(PartGroup *group);
+
+   void Copy(int x, int y);
+   void Paste(const bool atLocation, const int x, const int y);
+   void OnDelete();
 
    // Multi-selection manipulation: applies the transform to all the selected parts at once
    Vertex2D GetMultiSelCenter();
@@ -51,7 +57,8 @@ public:
 
 #ifndef __STANDALONE__
    void SetMouseCursor();
-   #endif
+   void SetMouseCapture();
+#endif
    void SetCaption(const string &caption);
    int ShowMessageBox(const char *text) const;
 
@@ -72,6 +79,10 @@ public:
    void SetMyScrollInfo();
    POINT GetScreenPoint() const;
    void ExportBlueprint();
+   void ImportBackdropPOV();
+   void ExportBackdropPOV();
+   void ImportPhysics();
+   void ExportPhysics();
    bool GetDisplayGrid() const;
    void SetDisplayGrid(const bool display);
    bool GetDisplayBackdrop() const;

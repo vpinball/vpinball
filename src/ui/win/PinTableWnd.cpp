@@ -5,7 +5,11 @@
 
 #include "core/editablereg.h"
 #include "core/VPApp.h"
+#include "core/vpversion.h"
 #include "parts/Collection.h"
+#include "parts/dragpoint.h"
+#include "parts/flipper.h"
+#include "parts/PartGroup.h"
 #include "parts/primitive.h"
 #include "renderer/Texture.h"
 #include "ui/win/codeview.h"
@@ -17,6 +21,8 @@
 #include "ui/win/WinEditor.h"
 #include "ui/win/worker.h"
 #include "ui/win/WinUIPartRegistry.h"
+#include "utils/BiffReader.h"
+#include "utils/BiffWriter.h"
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/SearchSelectDialog.h"
@@ -317,6 +323,122 @@ void PinTableWnd::ExportBlueprint()
 #if 1
    FreeImage_Unload(dib);
 #endif
+#endif
+}
+
+void PinTableWnd::ImportBackdropPOV()
+{
+#ifndef __STANDALONE__
+   if (m_table->IsLocked())
+      return;
+   const string &initialDir = m_table->m_settings.GetRecentDir_POVDir();
+   vector<string> fileNames;
+   if (!m_vpxEditor->OpenFileDialog(
+          initialDir, fileNames, "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0", "ini", 0, "Import POV to table properties"s))
+      return;
+   const std::filesystem::path file = fileNames[0];
+   if (file.has_parent_path())
+      g_app->m_settings.SetRecentDir_POVDir(file.parent_path().string(), false);
+   m_table->ImportBackdropPOV(file, false);
+#endif
+}
+
+void PinTableWnd::ExportBackdropPOV()
+{
+#ifndef __STANDALONE__
+   OPENFILENAME ofn = {};
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.hInstance = g_app->GetInstanceHandle();
+   ofn.hwndOwner = m_vpxEditor->GetHwnd();
+   // TEXT
+   ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
+   char szFileName[MAXSTRING];
+   strncpy_s(szFileName, std::size(szFileName), m_table->m_filename.string().c_str());
+   const size_t idx = m_table->m_filename.string().find_last_of('.');
+   if (idx != string::npos && idx < std::size(szFileName))
+      szFileName[idx] = '\0';
+   ofn.lpstrFile = szFileName;
+   ofn.nMaxFile = std::size(szFileName);
+   ofn.lpstrDefExt = "ini";
+   ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+   const int ret = GetSaveFileName(&ofn);
+   // user cancelled
+   if (ret == 0)
+      return; // S_FALSE;
+   m_table->ExportBackdropPOV(szFileName);
+#endif
+}
+
+void PinTableWnd::ImportPhysics()
+{
+#ifndef __STANDALONE__
+   const string &szInitialDir = m_table->m_settings.GetRecentDir_PhysicsDir();
+   vector<string> filename;
+   if (!m_vpxEditor->OpenFileDialog(szInitialDir, filename, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
+      return;
+
+   const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
+   if (index != string::npos)
+      g_app->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
+
+   m_table->ImportVPP(filename[0]);
+#endif
+}
+
+void PinTableWnd::ExportPhysics()
+{
+#ifndef __STANDALONE__
+   // The export uses the physics settings of the first flipper of the table
+   Flipper *flipper = nullptr;
+   for (IEditable *const part : m_table->GetParts())
+   {
+      if (part->GetItemType() == eItemFlipper)
+      {
+         flipper = (Flipper *)part;
+         break;
+      }
+   }
+
+   if (flipper == nullptr)
+   {
+      ShowError("No Flipper found to copy settings from");
+      return;
+   }
+
+   char szFileName[MAXSTRING];
+   strncpy_s(szFileName, std::size(szFileName), m_table->m_filename.string().c_str());
+   const size_t idx = m_table->m_filename.string().find_last_of('.');
+   if (idx != string::npos && idx < std::size(szFileName))
+      szFileName[idx] = '\0';
+
+   OPENFILENAME ofn = {};
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.hInstance = g_app->GetInstanceHandle();
+   ofn.hwndOwner = m_vpxEditor->GetHwnd();
+   // TEXT
+   ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
+   ofn.lpstrFile = szFileName;
+   ofn.nMaxFile = std::size(szFileName);
+   ofn.lpstrDefExt = "vpp";
+   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+
+   string szInitialDir = m_table->m_settings.GetRecentDir_PhysicsDir();
+
+   ofn.lpstrInitialDir = szInitialDir.c_str();
+
+   const int ret = GetSaveFileName(&ofn);
+   if (ret == 0)
+      return;
+
+   const string filename(ofn.lpstrFile);
+   const size_t index = filename.find_last_of(PATH_SEPARATOR_CHAR);
+   if (index != string::npos)
+   {
+      const string newInitDir(filename.substr(0, index));
+      g_app->m_settings.SetRecentDir_PhysicsDir(newInitDir, false);
+   }
+
+   m_table->ExportVPP(ofn.lpstrFile, flipper);
 #endif
 }
 
@@ -724,6 +846,8 @@ void PinTableWnd::SetMouseCursor()
    }
 }
 
+void PinTableWnd::SetMouseCapture() { SetCapture(); }
+
 #endif
 
 void PinTableWnd::ClearMultiSel(ISelect *newSel)
@@ -895,6 +1019,22 @@ void PinTableWnd::RefreshProperties()
 {
 #ifndef __STANDALONE__
    m_vpxEditor->SetPropSel(m_vmultisel);
+#endif
+}
+
+void PinTableWnd::UpdatePropertyImageList()
+{
+#ifndef __STANDALONE__
+   // just update the combo boxes in the property dialog
+   m_vpxEditor->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(GetMultiSelParts());
+#endif
+}
+
+void PinTableWnd::UpdatePropertyMaterialList()
+{
+#ifndef __STANDALONE__
+   // just update the combo boxes in the property dialog
+   m_vpxEditor->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(GetMultiSelParts());
 #endif
 }
 
@@ -1085,6 +1225,196 @@ void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
 #endif
 }
 
+void PinTableWnd::Copy(int x, int y)
+{
+#ifndef __STANDALONE__
+   if (MultiSelIsEmpty()) // Can't copy table
+      return;
+
+   if (GetMultiSelCount() == 1)
+   {
+      // special check if the user selected a Control Point and wants to copy the coordinates
+      IWinUIPart *const pItem = HitTest(x, y);
+      if (pItem->GetItemType() == eItemDragPoint)
+      {
+         DragPoint *pPoint = (DragPoint *)pItem->GetSelect();
+         pPoint->Copy();
+         return;
+      }
+   }
+
+   vector<IStream *> vstm;
+   vector<IEditable *> copied;
+   //m_vstmclipboard
+   for (ISelect *const psel : GetSelectedParts())
+   {
+      IEditable *const pe = psel->GetIEditable();
+
+      // Multi-select may contain a part together with its sub parts (drag points, light centers): copy each part only once
+      if (FindIndexOf(copied, pe) != -1)
+         continue;
+      copied.push_back(pe);
+
+      const HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
+
+      IStream *pstm;
+      CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
+
+      const int type = pe->GetItemType();
+      ULONG writ = 0;
+      pstm->Write(&type, sizeof(int), &writ);
+
+      BiffWriter writer(pstm, 0);
+      pe->Save(writer, false);
+
+      vstm.push_back(pstm);
+   }
+
+   m_vpxEditor->SetClipboard(&vstm);
+#endif
+}
+
+void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
+{
+#ifndef __STANDALONE__
+   bool error = false;
+   int cpasted = 0;
+
+   if (GetMultiSelCount() == 1)
+   {
+      // User wants to paste the copied coordinates of a Control Point
+      IWinUIPart *const pItem = HitTest(x, y);
+      if (pItem->GetItemType() == eItemDragPoint)
+      {
+         DragPoint *const pPoint = (DragPoint *)pItem->GetSelect();
+         pPoint->Paste();
+         m_table->SetDirtyDraw();
+         return;
+      }
+   }
+
+   const IWinUIPart::AllowedViews currentView = m_vpxEditor->m_desktopBackdropView ? IWinUIPart::AllowedViews::Backglass : IWinUIPart::AllowedViews::Playfield;
+
+   // Do a backwards loop, so that the primary selection we had when
+   // copying will again be the primary selection, since it will be
+   // selected last.  Purely cosmetic.
+   for (SSIZE_T i = m_vpxEditor->m_vstmclipboard.size() - 1; i >= 0; i--)
+   //for (size_t i=0; i<m_vpxEditor->m_vstmclipboard.size(); i++)
+   {
+      IStream *const pstm = m_vpxEditor->m_vstmclipboard[i];
+
+      // Go back to beginning of stream to load
+      LARGE_INTEGER foo;
+      foo.QuadPart = 0;
+      pstm->Seek(foo, STREAM_SEEK_SET, nullptr);
+
+      ULONG writ = 0;
+      ItemTypeEnum type;
+      /*const HRESULT hr =*/pstm->Read(&type, sizeof(int), &writ);
+
+      if (!IWinUIPart::IsViewAllowed(WinUIPartRegistry::GetAllowedViews(type), currentView))
+      {
+         error = true;
+      }
+      else
+      {
+         IEditable *const peditNew = EditableRegistry::Create(type);
+         if (peditNew)
+         {
+            BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
+            peditNew->Load(reader);
+            peditNew->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
+            //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet
+            if (!m_table->IsNameUnique(peditNew->GetWName()))
+            {
+               //first remove the existing suffix
+               const wstring input = peditNew->GetWName();
+               size_t lastNonDigit = input.length();
+               while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
+                  --lastNonDigit;
+               peditNew->SetName(m_table->GetUniqueName(input.substr(0, lastNonDigit)));
+            }
+            peditNew->SetPartGroup(m_vpxEditor->GetLayersListDialog()->GetSelectedPartGroup());
+
+            m_table->AddPart(peditNew);
+
+            AddMultiSel(peditNew->GetISelect(), (i != m_vpxEditor->m_vstmclipboard.size() - 1), true, false);
+            cpasted++;
+         }
+         else
+            error = true;
+      }
+   }
+   m_vpxEditor->GetLayersListDialog()->Update();
+
+   // Center view on newly created objects, if they are off the screen
+   if ((cpasted > 0) && atLocation)
+      TranslateMultiSel(TransformPoint(x, y) - GetMultiSelCenter());
+
+   if (error)
+      ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
+#endif
+}
+
+void PinTableWnd::OnDelete()
+{
+#ifndef __STANDALONE__
+   vector<ISelect *> m_vseldelete;
+   const vector<ISelect *> selection = GetSelectedParts();
+   m_vseldelete.reserve(selection.size());
+
+   for (ISelect *const psel : selection)
+   {
+      // Sub parts (drag points, light centers) are deleted together with their owning part
+      if (IsSubPartOfSelectedPart(psel))
+         continue;
+      // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
+      m_vseldelete.push_back(psel);
+      if (psel->GetItemType() == ItemTypeEnum::eItemPartGroup)
+         for (const auto part : m_table->GetParts())
+            if (part->GetPartGroup() == psel && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
+               m_vseldelete.push_back(part->GetISelect());
+   }
+
+   ClearMultiSel();
+
+   bool inCollection = false;
+   for (size_t t = 0; t < m_vseldelete.size() && !inCollection; t++)
+   {
+      const ISelect *const ptr = m_vseldelete[t];
+      for (int i = 0; i < m_table->m_vcollection.size() && !inCollection; i++)
+      {
+         for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+         {
+            // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
+            if (ptr == part->GetISelect() || ptr->GetIEditable() == part)
+            {
+               inCollection = true;
+               break;
+            }
+         }
+      }
+   }
+   if (inCollection)
+   {
+      const int ans = MessageBox(LocalString(IDS_DELETE_ELEMENTS).m_szbuffer /*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/,
+         "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+      if (ans != IDYES)
+         return;
+   }
+
+   for (size_t i = 0; i < m_vseldelete.size(); i++)
+      if (m_vseldelete[i] != nullptr)
+         m_vseldelete[i]->Delete();
+   m_vpxEditor->GetLayersListDialog()->Update();
+   // update properties to show the properties of the table
+   RefreshProperties();
+   OnPartChanged(m_table);
+
+   m_table->SetDirtyDraw();
+#endif
+}
+
 IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
 {
 #ifdef __STANDALONE__
@@ -1136,7 +1466,7 @@ void PinTableWnd::OnKeyDown(int key)
 
    switch (key)
    {
-   case VK_DELETE: m_table->OnDelete(); break;
+   case VK_DELETE: OnDelete(); break;
 
    case VK_LEFT:
    case VK_RIGHT:

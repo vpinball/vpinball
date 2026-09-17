@@ -89,9 +89,9 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_LOCK: m_table->LockElements(); break;
    case ID_WALLMENU_FLIP: m_editor->FlipYMultiSel(m_editor->GetMultiSelCenter()); break;
    case ID_WALLMENU_MIRROR: m_editor->FlipXMultiSel(m_editor->GetMultiSelCenter()); break;
-   case IDC_COPY: m_table->Copy(x, y); break;
-   case IDC_PASTE: m_table->Paste(false, x, y); break;
-   case IDC_PASTEAT: m_table->Paste(true, x, y); break;
+   case IDC_COPY: m_editor->Copy(x, y); break;
+   case IDC_PASTE: m_editor->Paste(false, x, y); break;
+   case IDC_PASTEAT: m_editor->Paste(true, x, y); break;
    case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_editor); break;
    case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_editor); break;
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;

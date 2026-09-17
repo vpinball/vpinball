@@ -16,7 +16,7 @@ void IWinUIPart::OnLButtonDown(int x, int y)
    m_dragging = true;
    m_markedForUndo = false; // So we will be marked when and if we are dragged
 
-   m_select->GetIEditable()->GetPTable()->SetMouseCapture();
+   m_editor->SetMouseCapture();
 
    UpdateStatusBarObjectPos();
 #endif

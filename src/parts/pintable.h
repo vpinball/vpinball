@@ -53,6 +53,7 @@ class Sound;
 class Texture;
 class Material;
 class Collection;
+class Flipper;
 
 class VPXFileFeedback;
 namespace VPX::InGameUI { class InGameUIItem; }
@@ -223,9 +224,6 @@ public:
    STDMETHOD(get_OverridePhysicsFlippers)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_OverridePhysicsFlippers)(/*[in]*/ VARIANT_BOOL newVal);
 
-   STDMETHOD(ImportPhysics)();
-   STDMETHOD(ExportPhysics)();
-
    STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
    STDMETHOD(get_ZPD)(/*[out, retval]*/ float *pVal);
@@ -313,21 +311,17 @@ public:
 
    void RemoveInvalidReferences();
 
-   void SetMouseCapture();
-
    void SetDirtyDraw();
 
    bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop
    bool GetEMReelsEnabled() const { return m_renderEMReels; } // Enable dispreel on backdrop
 
-   void Copy(int x, int y);
-   void Paste(const bool atLocation, const int x, const int y);
-
-   void ImportBackdropPOV(const std::filesystem::path &filename);
-   void ExportBackdropPOV() const;
+   void ImportBackdropPOV(const std::filesystem::path &filename, const bool toUserSettings);
+   void ExportBackdropPOV(const std::filesystem::path &filename) const;
 
    static std::array<string, 18> VPPelementNames; // names of the fields in a .vpp file
    void ImportVPP(const std::filesystem::path &filename);
+   void ExportVPP(const std::filesystem::path &filename, Flipper *const flipper);
 
    enum class OptionEventType { Initialized, Changed, Reseted, EndOfEdit };
    void FireOptionEvent(OptionEventType event);
@@ -420,7 +414,6 @@ public:
    static string GetElementName(IEditable *pedit);
 
    IEditable *GetElementByName(const char *const name) const;
-   void OnDelete();
 
    HRESULT Save(VPXFileFeedback &feedback);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
@@ -482,8 +475,6 @@ public:
    void UpdateCollection(const int index);
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
-   void UpdatePropertyImageList();
-   void UpdatePropertyMaterialList();
    int GetDetailLevel() const { return m_settings.GetPlayer_AlphaRampAccuracy(); } // used for rubber, ramp and ball
 
    FRect3D GetBoundingBox() const;

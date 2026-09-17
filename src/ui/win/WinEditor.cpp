@@ -794,12 +794,12 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
    }
 
    case ID_IMPORT_BACKDROPPOV:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ptCur->ImportBackdropPOV(string());
+      if (const auto ptCur = GetActiveTableEditor(); ptCur)
+         ptCur->ImportBackdropPOV();
       return true;
 
    case ID_EXPORT_BACKDROPPOV:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
+      if (const auto ptCur = GetActiveTableEditor(); ptCur)
          ptCur->ExportBackdropPOV();
       return true;
 
@@ -2367,8 +2367,7 @@ void WinEditor::OpenNewTable(size_t tableId)
 
 void WinEditor::ProcessDeleteElement()
 {
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur)
+   if (const auto ptCur = GetActiveTableEditor(); ptCur)
       ptCur->OnDelete();
 }
 
@@ -2390,17 +2389,17 @@ void WinEditor::CopyPasteElement(const CopyPasteModes mode)
       {
       case COPY:
       {
-         ptCur->m_table->Copy(ptCursor.x, ptCursor.y);
+         ptCur->Copy(ptCursor.x, ptCursor.y);
          break;
       }
       case PASTE:
       {
-         ptCur->m_table->Paste(false, ptCursor.x, ptCursor.y);
+         ptCur->Paste(false, ptCursor.x, ptCursor.y);
          break;
       }
       case PASTE_AT:
       {
-         ptCur->m_table->Paste(true, ptCursor.x, ptCursor.y);
+         ptCur->Paste(true, ptCursor.x, ptCursor.y);
          break;
       }
       default:
