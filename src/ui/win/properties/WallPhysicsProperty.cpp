@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-WallPhysicsProperty::WallPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
+WallPhysicsProperty::WallPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_slingshotForceEdit.SetDialog(this);
@@ -23,7 +23,7 @@ WallPhysicsProperty::WallPhysicsProperty(const VectorProtected<ISelect> *pvsel) 
 void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     //only show the first element on multi-select
-    Surface * const wall = (Surface*)m_pvsel->ElementAt(0);
+    Surface * const wall = (Surface*)SelAt(0);
     if (wall == nullptr)
         return;
 
@@ -58,11 +58,11 @@ void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void WallPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemSurface))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSurface))
             continue;
-        Surface * const wall = (Surface*)m_pvsel->ElementAt(i);
+        Surface * const wall = (Surface*)SelAt(i);
         switch (dispid)
         {
             case 11:

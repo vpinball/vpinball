@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel)
+TableVisualsProperty::TableVisualsProperty(const vector<ISelect *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert(pvsel->ElementAt(0)->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetItemType() == eItemTable);
    m_reflectionStrengthEdit.SetDialog(this);
    m_ballReflectPlayfieldEdit.SetDialog(this);
    m_ballDefaultBulbIntensScaleEdit.SetDialog(this);
@@ -28,7 +28,7 @@ TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel
 
 void TableVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
-   PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+   PinTable *const table = (PinTable *)SelAt(0);
    if (dispid == DISPID_Image || dispid == -1)
       PropertyDialog::UpdateTextureComboBox(table->GetImageList(), m_imageCombo, table->m_image);
    if (dispid == IDC_MATERIAL_COMBO || dispid == -1)
@@ -78,7 +78,7 @@ void TableVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
 
 void TableVisualsProperty::UpdateProperties(const int dispid)
 {
-   PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+   PinTable *const table = (PinTable *)SelAt(0);
    switch (dispid)
    {
    case DISPID_Image: CHECK_UPDATE_COMBO_TEXT_STRING(table->m_image, m_imageCombo, table); break;

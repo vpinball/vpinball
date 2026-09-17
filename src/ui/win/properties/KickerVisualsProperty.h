@@ -7,7 +7,7 @@
 class KickerVisualsProperty final : public BasePropertyDialog
 {
 public:
-    KickerVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    KickerVisualsProperty(const vector<ISelect *> *pvsel);
     ~KickerVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

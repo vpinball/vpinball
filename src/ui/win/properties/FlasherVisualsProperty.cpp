@@ -9,7 +9,7 @@
 #include "ui/win/WinEditor.h"
 
 
-FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel)
+FlasherVisualsProperty::FlasherVisualsProperty(const vector<ISelect *> *pvsel)
    : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)
 {
    m_modeCombo.SetDialog(this);
@@ -53,11 +53,11 @@ FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *p
 
 void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
-   for (int i = 0; i < m_pvsel->size(); i++)
+   for (int i = 0; i < SelCount(); i++)
    {
-      if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlasher))
+      if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlasher))
          continue;
-      Flasher *const flash = (Flasher *)m_pvsel->ElementAt(i);
+      Flasher *const flash = (Flasher *)SelAt(i);
       FlasherData::RenderMode mode = clamp(flash->m_d.m_renderMode, FlasherData::FLASHER, FlasherData::EXT_RENDER);
 
       if (dispid == IDC_STYLE_COMBO || dispid == -1)
@@ -301,11 +301,11 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
    const bool isDisplay = mode != FlasherData::FLASHER;
    const bool isDmd = mode == FlasherData::DMD;
    const bool isFlasher = mode == FlasherData::FLASHER;
-   for (int i = 0; i < m_pvsel->size(); i++)
+   for (int i = 0; i < SelCount(); i++)
    {
-      if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlasher))
+      if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlasher))
          continue;
-      Flasher *const flash = (Flasher *)m_pvsel->ElementAt(i);
+      Flasher *const flash = (Flasher *)SelAt(i);
       switch (dispid)
       {
       case IDC_STYLE_COMBO:

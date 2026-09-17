@@ -7,7 +7,7 @@
 class TableAudioProperty final : public BasePropertyDialog
 {
 public:
-    TableAudioProperty(const VectorProtected<ISelect> *pvsel);
+    TableAudioProperty(const vector<ISelect *> *pvsel);
     ~TableAudioProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

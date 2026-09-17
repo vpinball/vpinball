@@ -7,7 +7,7 @@
 class SpinnerVisualsProperty final : public BasePropertyDialog
 {
 public:
-    SpinnerVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    SpinnerVisualsProperty(const vector<ISelect *> *pvsel);
     ~SpinnerVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

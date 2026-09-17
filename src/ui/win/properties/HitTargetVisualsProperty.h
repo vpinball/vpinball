@@ -7,7 +7,7 @@
 class HitTargetVisualsProperty final : public BasePropertyDialog
 {
 public:
-    HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    HitTargetVisualsProperty(const vector<ISelect *> *pvsel);
     ~HitTargetVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

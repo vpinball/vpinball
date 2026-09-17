@@ -7,7 +7,7 @@
 class PrimitivePhysicsProperty final : public BasePropertyDialog
 {
 public:
-    PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel);
+    PrimitivePhysicsProperty(const vector<ISelect *> *pvsel);
     ~PrimitivePhysicsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

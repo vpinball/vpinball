@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PartGroupVisualsProperty::PartGroupVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPARTGROUP_VISUALS, pvsel)
+PartGroupVisualsProperty::PartGroupVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPARTGROUP_VISUALS, pvsel)
 {
 }
 
@@ -51,7 +51,7 @@ INT_PTR PartGroupVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lP
 void PartGroupVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
    // Only show the first element on multi-select
-   PartGroup* const partGroup = static_cast<PartGroup*>(m_pvsel->ElementAt(0));
+   PartGroup* const partGroup = static_cast<PartGroup*>(SelAt(0));
    if (partGroup == nullptr)
       return;
    if (dispid == IDC_SPACE_REFERENCE || dispid == -1)
@@ -85,11 +85,11 @@ void PartGroupVisualsProperty::UpdatePlayerModeVisibilityMask(PartGroup* const p
 
 void PartGroupVisualsProperty::UpdateProperties(const int dispid)
 {
-   for (int i = 0; i < m_pvsel->size(); i++)
+   for (int i = 0; i < SelCount(); i++)
    {
-      if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPartGroup))
+      if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPartGroup))
          continue;
-      PartGroup* const partGroup = static_cast<PartGroup*>(m_pvsel->ElementAt(i));
+      PartGroup* const partGroup = static_cast<PartGroup*>(SelAt(i));
       switch (dispid)
       {
       case IDC_SPACE_REFERENCE:

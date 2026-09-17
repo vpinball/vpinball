@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-LightseqStatesProperty::LightseqStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHTSEQ_STATE, pvsel)
+LightseqStatesProperty::LightseqStatesProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPLIGHTSEQ_STATE, pvsel)
 {
     m_posXEdit.SetDialog(this);
     m_posYEdit.SetDialog(this);
@@ -18,11 +18,11 @@ LightseqStatesProperty::LightseqStatesProperty(const VectorProtected<ISelect> *p
 
 void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLightSeq))
             continue;
-        LightSeq *const lightseq = (LightSeq *)m_pvsel->ElementAt(i);
+        LightSeq *const lightseq = (LightSeq *)SelAt(i);
 
         if (dispid == 9 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, lightseq->GetX());
@@ -40,11 +40,11 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void LightseqStatesProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemLightSeq))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLightSeq))
             continue;
-        LightSeq *const lightseq = (LightSeq *)m_pvsel->ElementAt(i);
+        LightSeq *const lightseq = (LightSeq *)SelAt(i);
         switch (dispid)
         {
             case 9:

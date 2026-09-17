@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-PrimitivePhysicsProperty::PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
+PrimitivePhysicsProperty::PrimitivePhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
 {
     m_reducePolyEdit.SetDialog(this);
     m_elasticityFalloffEdit.SetDialog(this);
@@ -21,11 +21,11 @@ PrimitivePhysicsProperty::PrimitivePhysicsProperty(const VectorProtected<ISelect
 
 void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive *)m_pvsel->ElementAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i);
 
         if (dispid == IDC_PRIMITIVE_IS_TOY || dispid == -1)
         {
@@ -78,11 +78,11 @@ void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void PrimitivePhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPrimitive))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive *)m_pvsel->ElementAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i);
         switch (dispid)
         {
             case IDC_ELASTICITY_FALLOFF_EDIT:

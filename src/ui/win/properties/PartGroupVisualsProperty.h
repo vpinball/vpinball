@@ -8,7 +8,7 @@
 class PartGroupVisualsProperty final : public BasePropertyDialog
 {
 public:
-    PartGroupVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    PartGroupVisualsProperty(const vector<ISelect *> *pvsel);
     ~PartGroupVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel)
+TablePhysicsProperty::TablePhysicsProperty(const vector<ISelect *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert(pvsel->ElementAt(0)->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetItemType() == eItemTable);
    m_gravityConstantEdit.SetDialog(this);
    m_playfieldFrictionEdit.SetDialog(this);
    m_playfieldElasticityEdit.SetDialog(this);
@@ -43,7 +43,7 @@ TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel
 
 void TablePhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
-   PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+   PinTable *const table = (PinTable *)SelAt(0);
    if (dispid == IDC_GRAVITY_EDIT || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_gravityConstantEdit, table->GetGravity());
    if (dispid == IDC_PLAYFIELD_FRICTION_EDIT || dispid == -1)
@@ -84,7 +84,7 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
 
 void TablePhysicsProperty::UpdateProperties(const int dispid)
 {
-   PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+   PinTable *const table = (PinTable *)SelAt(0);
    switch (dispid)
    {
    case IDC_GRAVITY_EDIT: CHECK_UPDATE_VALUE_SETTER(table->SetGravity, table->GetGravity, PropertyDialog::GetFloatTextbox, m_gravityConstantEdit, table); break;
@@ -189,12 +189,12 @@ BOOL TablePhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
    {
    case IDC_IMPORT_PHYSICS_BUTTON:
    {
-      ((PinTable *)m_pvsel->ElementAt(0))->ImportPhysics();
+      ((PinTable *)SelAt(0))->ImportPhysics();
       return TRUE;
    }
    case IDC_EXPORT_PHYSICS_BUTTON:
    {
-      ((PinTable *)m_pvsel->ElementAt(0))->ExportPhysics();
+      ((PinTable *)SelAt(0))->ExportPhysics();
       return TRUE;
    }
    default: break;

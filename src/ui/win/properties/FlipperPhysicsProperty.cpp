@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-FlipperPhysicsProperty::FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
+FlipperPhysicsProperty::FlipperPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
 {
     m_physicSetList.push_back("Disable"s);
     m_physicSetList.push_back("Set1"s);
@@ -35,11 +35,11 @@ FlipperPhysicsProperty::FlipperPhysicsProperty(const VectorProtected<ISelect> *p
 
 void FlipperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i);
         if (dispid == DISPID_Flipper_Speed || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_massEdit, flipper->m_d.m_mass);
         if (dispid == 19 || dispid == -1)
@@ -64,11 +64,11 @@ void FlipperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void FlipperPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlipper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)m_pvsel->ElementAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i);
         switch (dispid)
         {
             case 19:

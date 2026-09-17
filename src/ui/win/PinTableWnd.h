@@ -24,7 +24,7 @@ public:
 
    void ClearMultiSel(ISelect *newSel = nullptr);
    bool MultiSelIsEmpty() const;
-   ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
+   ISelect *GetSelectedItem() const { return m_vmultisel[0]; }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
    void RefreshProperties();
    void AssignSelectionToPartGroup(PartGroup *group);
@@ -94,7 +94,7 @@ public:
 
    CComObject<PinTable> *const m_table;
 
-   VectorProtected<ISelect> m_vmultisel;
+   vector<ISelect *> m_vmultisel;
 
    std::unique_ptr<class CodeViewer> m_pcv;
 

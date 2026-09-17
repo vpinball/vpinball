@@ -728,8 +728,8 @@ void PinTableWnd::SetMouseCursor()
 
 void PinTableWnd::ClearMultiSel(ISelect *newSel)
 {
-   for (int i = 0; i < m_vmultisel.size(); i++)
-      if (IWinUIPart *const part = GetUIPart(&m_vmultisel[i]))
+   for (int i = 0; i < (int)m_vmultisel.size(); i++)
+      if (IWinUIPart *const part = GetUIPart(m_vmultisel[i]))
          part->m_selectstate = IWinUIPart::SelectState::NotSelected;
 
    //remove the clone of the multi selection in the smart browser class
@@ -747,7 +747,7 @@ void PinTableWnd::ClearMultiSel(ISelect *newSel)
 bool PinTableWnd::MultiSelIsEmpty() const
 {
    // empty selection means only the table itself is selected
-   return (m_vmultisel.size() == 1 && m_vmultisel.ElementAt(0) == m_table);
+   return (m_vmultisel.size() == 1 && m_vmultisel[0] == m_table);
 }
 
 // 'update' tells us whether to go ahead and change the UI
@@ -755,7 +755,7 @@ bool PinTableWnd::MultiSelIsEmpty() const
 // down the pipe (speeds up drag-selection)
 void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick)
 {
-   const int index = m_vmultisel.find(psel);
+   const int index = FindIndexOf(m_vmultisel, psel);
    ISelect *piSelect = nullptr;
    IWinUIPart *const pselPart = GetUIPart(psel);
    //_ASSERTE(m_vmultisel[0].m_selectstate == eSelected);
@@ -795,11 +795,11 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
       else
       {
          // Make this new selection the primary one for the group
-         piSelect = m_vmultisel.ElementAt(0);
+         piSelect = m_vmultisel[0];
          if (piSelect != nullptr)
             if (IWinUIPart *const part = GetUIPart(piSelect))
                part->m_selectstate = IWinUIPart::SelectState::MultiSelected;
-         m_vmultisel.insert(psel, 0);
+         m_vmultisel.insert(m_vmultisel.begin(), psel);
       }
 
       if (pselPart)
@@ -811,7 +811,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
    else if (add) // Take the element off the list
    {
       _ASSERTE(pselPart == nullptr || pselPart->m_selectstate != IWinUIPart::SelectState::NotSelected);
-      m_vmultisel.erase(index);
+      m_vmultisel.erase(m_vmultisel.begin() + index);
       if (pselPart)
          pselPart->m_selectstate = IWinUIPart::SelectState::NotSelected;
       if (m_vmultisel.empty())
@@ -820,7 +820,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
          m_vmultisel.push_back((ISelect *)m_table);
       }
       // The main element might have changed
-      piSelect = m_vmultisel.ElementAt(0);
+      piSelect = m_vmultisel[0];
       if (piSelect != nullptr)
          if (IWinUIPart *const part = GetUIPart(piSelect))
             part->m_selectstate = IWinUIPart::SelectState::Selected;
@@ -828,7 +828,7 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
       if (update)
          m_table->SetDirtyDraw();
    }
-   else if (m_vmultisel.ElementAt(0) != psel) // Object already in list - no change to selection, only to primary
+   else if (m_vmultisel[0] != psel) // Object already in list - no change to selection, only to primary
    {
       int colIndex = -1;
       int elemIndex = -1;
@@ -837,12 +837,12 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
          _ASSERTE(pselPart == nullptr || pselPart->m_selectstate != IWinUIPart::SelectState::NotSelected);
 
          // Make this new selection the primary one for the group
-         piSelect = m_vmultisel.ElementAt(0);
+         piSelect = m_vmultisel[0];
          if (piSelect != nullptr)
             if (IWinUIPart *const part = GetUIPart(piSelect))
                part->m_selectstate = IWinUIPart::SelectState::MultiSelected;
-         m_vmultisel.erase(index);
-         m_vmultisel.insert(psel, 0);
+         m_vmultisel.erase(m_vmultisel.begin() + index);
+         m_vmultisel.insert(m_vmultisel.begin(), psel);
 
          if (pselPart)
             pselPart->m_selectstate = IWinUIPart::SelectState::Selected;
@@ -859,11 +859,11 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
 #ifndef __STANDALONE__
       m_vpxEditor->SetPropSel(m_vmultisel);
 #endif
-      if (IWinUIPart *const uiPart = GetUIPart(&m_vmultisel[0]); uiPart != nullptr)
+      if (IWinUIPart *const uiPart = GetUIPart(m_vmultisel[0]); uiPart != nullptr)
          uiPart->UpdateStatusBarInfo();
    }
 
-   piSelect = m_vmultisel.ElementAt(0);
+   piSelect = m_vmultisel[0];
    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetIScriptable())
    {
       string info = piSelect->GetIEditable()->GetPathString(false);
@@ -897,7 +897,7 @@ bool PinTableWnd::IsSubPartOfSelectedPart(const ISelect *psel) const
    if (psel == nullptr || !psel->IsSubPart())
       return false;
    const IEditable *const owner = psel->GetIEditable();
-   return (owner != nullptr) && (owner->GetISelect() != nullptr) && (m_vmultisel.find(owner->GetISelect()) != -1);
+   return (owner != nullptr) && (owner->GetISelect() != nullptr) && (FindIndexOf(m_vmultisel, const_cast<ISelect*>(owner->GetISelect())) != -1);
 }
 
 Vertex2D PinTableWnd::GetMultiSelCenter()
@@ -907,9 +907,9 @@ Vertex2D PinTableWnd::GetMultiSelCenter()
    float miny = FLT_MAX;
    float maxy = -FLT_MAX;
 
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < (int)m_vmultisel.size(); i++)
    {
-      ISelect *const psel = m_vmultisel.ElementAt(i);
+      ISelect *const psel = m_vmultisel[i];
       if (IsSubPartOfSelectedPart(psel))
          continue;
       if (IWinUIPart *const uiPart = GetUIPart(psel))
@@ -929,9 +929,9 @@ Vertex2D PinTableWnd::GetMultiSelCenter()
 void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
 {
    m_table->BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < (int)m_vmultisel.size(); i++)
    {
-      ISelect *const psel = &m_vmultisel[i];
+      ISelect *const psel = m_vmultisel[i];
       if (IsSubPartOfSelectedPart(psel))
          continue;
       m_table->MarkForUndo(psel->GetIEditable());
@@ -951,9 +951,9 @@ void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
 void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
 {
    m_table->BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < (int)m_vmultisel.size(); i++)
    {
-      ISelect *const psel = &m_vmultisel[i];
+      ISelect *const psel = m_vmultisel[i];
       if (IsSubPartOfSelectedPart(psel))
          continue;
       m_table->MarkForUndo(psel->GetIEditable());
@@ -973,9 +973,9 @@ void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
 void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, const bool useElementCenter)
 {
    m_table->BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < (int)m_vmultisel.size(); i++)
    {
-      ISelect *const psel = &m_vmultisel[i];
+      ISelect *const psel = m_vmultisel[i];
       if (IsSubPartOfSelectedPart(psel))
          continue;
       m_table->MarkForUndo(psel->GetIEditable());
@@ -1002,9 +1002,9 @@ void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, cons
 void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter)
 {
    m_table->BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < (int)m_vmultisel.size(); i++)
    {
-      ISelect *const psel = &m_vmultisel[i];
+      ISelect *const psel = m_vmultisel[i];
       if (IsSubPartOfSelectedPart(psel))
          continue;
       m_table->MarkForUndo(psel->GetIEditable());
@@ -1027,9 +1027,9 @@ void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Ve
 void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
 {
    m_table->BeginUndo();
-   for (int i = 0; i < m_vmultisel.size(); i++)
+   for (int i = 0; i < (int)m_vmultisel.size(); i++)
    {
-      ISelect *const psel = &m_vmultisel[i];
+      ISelect *const psel = m_vmultisel[i];
       if (IsSubPartOfSelectedPart(psel))
          continue;
       m_table->MarkForUndo(psel->GetIEditable());
@@ -1051,9 +1051,9 @@ void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
          show |= e->IsUIVisible(false);
          hide |= !e->IsUIVisible(false);
       }
-   for (int t = 0; t < m_vmultisel.size(); t++)
+   for (int t = 0; t < (int)m_vmultisel.size(); t++)
    {
-      ISelect *const psel = m_vmultisel.ElementAt(t);
+      ISelect *const psel = m_vmultisel[t];
       IEditable *const pedit = psel->GetIEditable();
       pedit->SetPartGroup(group);
       if (pedit->IsUIVisible(false) && hide && !show)
@@ -1128,9 +1128,9 @@ void PinTableWnd::OnKeyDown(int key)
    {
       m_table->BeginUndo();
       const float distance = shift ? 10.f : 1.f;
-      for (int i = 0; i < m_vmultisel.size(); i++)
+      for (int i = 0; i < (int)m_vmultisel.size(); i++)
       {
-         ISelect *const pisel = m_vmultisel.ElementAt(i);
+         ISelect *const pisel = m_vmultisel[i];
          IWinUIPart *const uiPart = GetUIPart(pisel);
          if (uiPart && !IsSubPartOfSelectedPart(pisel) && !pisel->GetIEditable()->IsUILocked()) // control points get lock info from parent - UNDONE - make this code snippet be in one place
          {
@@ -1208,9 +1208,9 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
       AddMultiSel(pisel, add, true, false);
 
       m_moving = true;
-      for (int i = 0; i < m_vmultisel.size(); i++)
+      for (int i = 0; i < (int)m_vmultisel.size(); i++)
       {
-         ISelect *const pisel2 = m_vmultisel.ElementAt(i);
+         ISelect *const pisel2 = m_vmultisel[i];
          if (pisel2)
             // Skip the table's UI part: band select on empty space is handled above, a plain click must not start one
             if (IWinUIPart *const uiPart = GetUIPart(pisel2); uiPart && uiPart != &m_tablePart)
@@ -1261,9 +1261,9 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
 {
    if (!m_tablePart.m_dragging) // Not doing band select
    {
-      for (int i = 0; i < m_vmultisel.size(); i++)
+      for (int i = 0; i < (int)m_vmultisel.size(); i++)
       {
-         ISelect *const pisel = m_vmultisel.ElementAt(i);
+         ISelect *const pisel = m_vmultisel[i];
          if (pisel)
             if (IWinUIPart *const uiPart = GetUIPart(pisel))
                uiPart->OnLButtonUp(x, y);
@@ -1335,14 +1335,14 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
       // keep the selection if clicking over a selected object, even if
       // the selected object is hidden behind other objects
       ISelect *hit = HitTest(x, y);
-      for (int i = 0; i < m_vmultisel.size(); i++)
+      for (int i = 0; i < (int)m_vmultisel.size(); i++)
       {
-         if (FindIndexOf(m_table->m_allHitElements, m_vmultisel.ElementAt(i)) != -1)
+         if (FindIndexOf(m_table->m_allHitElements, m_vmultisel[i]) != -1)
          {
             // found a selected item - keep the current selection set
             // by re-selecting this item (which will also promote it
             // to the head of the selection list)
-            hit = m_vmultisel.ElementAt(i);
+            hit = m_vmultisel[i];
             break;
          }
       }
@@ -1397,9 +1397,9 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
       {
          if ((x != m_ptLast.x) || (y != m_ptLast.y))
          {
-            for (int i = 0; i < m_vmultisel.size(); i++)
+            for (int i = 0; i < (int)m_vmultisel.size(); i++)
             {
-               ISelect *const pisel = m_vmultisel.ElementAt(i);
+               ISelect *const pisel = m_vmultisel[i];
                IWinUIPart *const uiPart = GetUIPart(pisel);
                if (uiPart && uiPart->m_dragging && !IsSubPartOfSelectedPart(pisel) && !pisel->GetIEditable()->IsUILocked()) // For drag points, follow the lock of the parent
                {
@@ -1485,9 +1485,9 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
    {
       vector<int> allIndices;
 
-      for (int t = 0; t < m_vmultisel.size(); t++)
+      for (int t = 0; t < (int)m_vmultisel.size(); t++)
       {
-         const ISelect *const iSel = m_vmultisel.ElementAt(t);
+         const ISelect *const iSel = m_vmultisel[t];
 
          for (int i = maxItems; i >= 0; i--)
             for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
@@ -1510,9 +1510,9 @@ void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelectio
 
    if (fromSelection && !MultiSelIsEmpty())
    {
-      for (int i = 0; i < m_vmultisel.size(); i++)
+      for (int i = 0; i < (int)m_vmultisel.size(); i++)
       {
-         ISelect *const pisel = m_vmultisel.ElementAt(i);
+         ISelect *const pisel = m_vmultisel[i];
          IEditable *const piedit = pisel->GetIEditable();
          if (piedit)
          {

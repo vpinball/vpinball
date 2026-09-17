@@ -7,7 +7,7 @@
 class DragpointVisualsProperty final : public BasePropertyDialog
 {
 public:
-    DragpointVisualsProperty(int id, const VectorProtected<ISelect> *pvsel);
+    DragpointVisualsProperty(int id, const vector<ISelect *> *pvsel);
     ~DragpointVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

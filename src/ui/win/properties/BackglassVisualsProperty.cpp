@@ -7,11 +7,11 @@
 #include "ui/win/resource.h"
 
 
-BackglassVisualsProperty::BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel)
+BackglassVisualsProperty::BackglassVisualsProperty(const vector<ISelect *> *pvsel)
    : BasePropertyDialog(IDD_PROPBACKGLASS_VISUALS, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert(pvsel->ElementAt(0)->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetItemType() == eItemTable);
     m_dtImageCombo.SetDialog(this);
     m_fsImageCombo.SetDialog(this);
     m_fssImageCombo.SetDialog(this);
@@ -20,7 +20,7 @@ BackglassVisualsProperty::BackglassVisualsProperty(const VectorProtected<ISelect
 
 void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+    PinTable *const table = (PinTable *)SelAt(0);
     if(dispid == IDC_BG_NIGHT_DAY || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hApplyNightDayCheck, table->m_ImageBackdropNightDay);
     if (dispid == DISPID_Image2 || dispid == -1)
@@ -41,7 +41,7 @@ void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void BackglassVisualsProperty::UpdateProperties(const int dispid)
 {
-    PinTable *const table = (PinTable *)m_pvsel->ElementAt(0);
+    PinTable *const table = (PinTable *)SelAt(0);
     switch (dispid)
     {
         case IDC_BG_NIGHT_DAY:

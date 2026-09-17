@@ -28,7 +28,7 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
       editor = (PinTableWnd *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-      const float angle = editor->m_vmultisel[0].GetIEditable()->GetRotate();
+      const float angle = editor->m_vmultisel[0]->GetIEditable()->GetRotate();
 
       SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_SETCHECK, BST_CHECKED, 0);
 
@@ -163,7 +163,7 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
       editor = (PinTableWnd *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-      Vertex2D v = editor->m_vmultisel[0].GetIEditable()->GetScale();
+      Vertex2D v = editor->m_vmultisel[0]->GetIEditable()->GetScale();
 
       SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, f2sz(v.x).c_str());
       SetDlgItemText(hwndDlg, IDC_SCALEY, f2sz(v.y).c_str());

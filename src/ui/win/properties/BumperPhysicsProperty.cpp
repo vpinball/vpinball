@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-BumperPhysicsProperty::BumperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
+BumperPhysicsProperty::BumperPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
 {
     m_forceEdit.SetDialog(this);
     m_hitThresholdEdit.SetDialog(this);
@@ -17,11 +17,11 @@ BumperPhysicsProperty::BumperPhysicsProperty(const VectorProtected<ISelect> *pvs
 
 void BumperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBumper))
             continue;
-        Bumper *const bumper = (Bumper *)m_pvsel->ElementAt(i);
+        Bumper *const bumper = (Bumper *)SelAt(i);
         if( dispid == IDC_FORCE_EDIT || dispid==-1)
             PropertyDialog::SetFloatTextbox(m_forceEdit, bumper->m_d.m_force);
         if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
@@ -34,11 +34,11 @@ void BumperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void BumperPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemBumper))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBumper))
             continue;
-        Bumper *const bumper = (Bumper *)m_pvsel->ElementAt(i);
+        Bumper *const bumper = (Bumper *)SelAt(i);
         switch (dispid)
         {
             case IDC_FORCE_EDIT:

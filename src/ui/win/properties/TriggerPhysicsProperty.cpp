@@ -8,18 +8,18 @@
 #include "ui/win/resource.h"
 
 
-TriggerPhysicsProperty::TriggerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)
+TriggerPhysicsProperty::TriggerPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)
 {
     m_hitHeightEdit.SetDialog(this);
 }
 
 void TriggerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        const Trigger *const trigger = (Trigger *)m_pvsel->ElementAt(i);
+        const Trigger *const trigger = (Trigger *)SelAt(i);
 
         if (dispid == IDC_HIT_HEIGHT_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_hitHeightEdit, trigger->m_d.m_hit_height);
@@ -32,11 +32,11 @@ void TriggerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void TriggerPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
+        Trigger * const trigger = (Trigger *)SelAt(i);
         switch (dispid)
         {
            case DISPID_Enabled:

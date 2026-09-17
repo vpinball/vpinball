@@ -7,7 +7,7 @@
 #include "ui/win/resource.h"
 
 
-TriggerVisualsProperty::TriggerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
+TriggerVisualsProperty::TriggerVisualsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
 {
     m_shapeList.push_back("None"s);
     m_shapeList.push_back("Wire A"s);
@@ -31,11 +31,11 @@ TriggerVisualsProperty::TriggerVisualsProperty(const VectorProtected<ISelect> *p
 
 void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
+        Trigger * const trigger = (Trigger *)SelAt(i);
 
         if (dispid == DISPID_Shape || dispid == -1)
             PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape]);
@@ -67,11 +67,11 @@ void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void TriggerVisualsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemTrigger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger * const trigger = (Trigger *)m_pvsel->ElementAt(i);
+        Trigger * const trigger = (Trigger *)SelAt(i);
         switch (dispid)
         {
             case DISPID_Shape:

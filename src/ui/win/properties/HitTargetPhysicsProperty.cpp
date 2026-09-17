@@ -8,7 +8,7 @@
 #include "ui/win/resource.h"
 
 
-HitTargetPhysicsProperty::HitTargetPhysicsProperty(const VectorProtected<ISelect> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
+HitTargetPhysicsProperty::HitTargetPhysicsProperty(const vector<ISelect *> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
 {
     m_hitThresholdEdit.SetDialog(this);
     m_elasticityEdit.SetDialog(this);
@@ -20,11 +20,11 @@ HitTargetPhysicsProperty::HitTargetPhysicsProperty(const VectorProtected<ISelect
 
 void HitTargetPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)SelAt(i);
 
         if (dispid == IDC_TARGET_ISDROPPED_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hIsDroppedCheck, target->m_d.m_isDropped);
@@ -45,11 +45,11 @@ void HitTargetPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void HitTargetPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemHitTarget))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)m_pvsel->ElementAt(i);
+        HitTarget * const target = (HitTarget*)SelAt(i);
         switch (dispid)
         {
             case IDC_TARGET_ISDROPPED_CHECK:

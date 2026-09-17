@@ -7,7 +7,7 @@
 class DispreelVisualsProperty final : public BasePropertyDialog
 {
 public:
-    DispreelVisualsProperty(const VectorProtected<ISelect> *pvsel);
+    DispreelVisualsProperty(const vector<ISelect *> *pvsel);
     ~DispreelVisualsProperty() override { }
 
     void UpdateVisuals(const int dispid=-1) override;

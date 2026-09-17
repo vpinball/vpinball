@@ -9,7 +9,7 @@
 #include "ui/win/resource.h"
 
 
-PlungerPhysicsProperty::PlungerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
+PlungerPhysicsProperty::PlungerPhysicsProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
 {
     m_pullSpeedEdit.SetDialog(this);
     m_releaseSpeedEdit.SetDialog(this);
@@ -22,11 +22,11 @@ PlungerPhysicsProperty::PlungerPhysicsProperty(const VectorProtected<ISelect> *p
 
 void PlungerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i);
         if (dispid == IDC_PULL_SPEED_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_pullSpeedEdit, plunger->m_d.m_speedPull);
         if (dispid == IDC_RELEASE_SPEED_EDIT || dispid == -1)
@@ -54,11 +54,11 @@ void PlungerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void PlungerPhysicsProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemPlunger))
+        if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)m_pvsel->ElementAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i);
         switch (dispid)
         {
             case IDC_PULL_SPEED_EDIT:

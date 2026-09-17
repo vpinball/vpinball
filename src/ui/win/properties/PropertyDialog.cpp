@@ -118,9 +118,9 @@ PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType(
     memset(m_tabs, 0, sizeof(m_tabs));
 }
 
-void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
+void PropertyDialog::CreateTabs(const vector<ISelect *> &pvsel)
 {
-    ISelect* const psel = pvsel.ElementAt(0);
+    ISelect* const psel = pvsel.empty() ? nullptr : pvsel[0];
     if (psel == nullptr)
         return;
 
@@ -584,10 +584,10 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CCo
     combo.SetCurSel(combo.FindStringExact(0, selectName.c_str()));
 }
 
-void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
+void PropertyDialog::UpdateTabs(const vector<ISelect *> &pvsel)
 {
    // Invalid selection: discard update
-   ISelect *const psel = pvsel.ElementAt(0);
+   ISelect *const psel = pvsel.empty() ? nullptr : pvsel[0];
    if (psel == nullptr)
    {
       m_nameEdit.EnableWindow(FALSE);
@@ -625,10 +625,10 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
          m_tab.RemoveTabPage(0);
       memset(m_tabs, 0, sizeof(m_tabs));
 
-        for (int i = 0; i < pvsel.size(); i++)
+        for (int i = 0; i < (int)pvsel.size(); i++)
         {
             // check for multiple selection
-            if (psel->GetItemType() != pvsel.ElementAt(i)->GetItemType())
+            if (psel->GetItemType() != pvsel[i]->GetItemType())
             {
                 m_multipleElementsStatic.ShowWindow(SW_SHOW);
                 m_nameEdit.ShowWindow(SW_HIDE);
@@ -779,10 +779,10 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case CBN_SELCHANGE:
         case BN_CLICKED:
         {
-            if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != nullptr)
+            if (m_tabs[0] && m_tabs[0]->SelAt(0) != nullptr)
             {
-                g_pvp->RenameEditable(m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable(), m_nameEdit.GetWindowText().GetString());
-                m_nameEdit.SetWindowText(m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->GetName().c_str()); // set it again in case it was truncated
+                g_pvp->RenameEditable(m_tabs[0]->SelAt(0)->GetIEditable(), m_nameEdit.GetWindowText().GetString());
+                m_nameEdit.SetWindowText(m_tabs[0]->SelAt(0)->GetIEditable()->GetName().c_str()); // set it again in case it was truncated
             }
             return TRUE;
         }
@@ -794,7 +794,7 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 #pragma region TimeProperty
 
-TimerProperty::TimerProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTIMER, pvsel)
+TimerProperty::TimerProperty(const vector<ISelect *> *pvsel) : BasePropertyDialog(IDD_PROPTIMER, pvsel)
 {
     m_timerIntervalEdit.SetDialog(this);
     m_userValueEdit.SetDialog(this);
@@ -802,9 +802,9 @@ TimerProperty::TimerProperty(const VectorProtected<ISelect> *pvsel) : BaseProper
 
 void TimerProperty::UpdateProperties(const int dispid)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        ISelect* const el = m_pvsel->ElementAt(i);
+        ISelect* const el = SelAt(i);
         if (el == nullptr)
             continue;
         IEditable *const eel = el->GetIEditable();
@@ -857,9 +857,9 @@ void TimerProperty::UpdateProperties(const int dispid)
 
 void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-    for (int i = 0; i < m_pvsel->size(); i++)
+    for (int i = 0; i < SelCount(); i++)
     {
-        ISelect* const el = m_pvsel->ElementAt(i);
+        ISelect* const el = SelAt(i);
         if (el == nullptr)
             continue;
         IEditable* const eel = el->GetIEditable();
