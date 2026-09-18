@@ -405,7 +405,6 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
 
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
-   msgApi->FlushPendingCallbacks(endpointId);
    PinmameSetMsgAPI(nullptr, 0);
    msgApi = nullptr;
 }

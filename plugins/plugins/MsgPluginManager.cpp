@@ -466,6 +466,12 @@ void MsgPluginManager::UnloadPlugin(MsgPlugin& plugin)
 {
    m_settingHandler(plugin.m_id, SettingAction::UnregisterAll, nullptr);
    plugin.Unload();
+   {
+      // Check for any invalid pending callback
+      const std::lock_guard lock(m_timerListMutex);
+      assert(std::ranges::find_if(m_timers, [id = plugin.m_endpointId](auto callback) { return callback.endpointId == id; }) == m_timers.end());
+   }
+
    bool invalidPlugin = false;
    for (const auto& timer : m_timers)
       if (timer.endpointId == plugin.m_endpointId)
@@ -556,7 +562,6 @@ void MsgPlugin::Unload()
       return;
    }
    m_unloadPlugin();
-   m_msgAPI->FlushPendingCallbacks(m_endpointId);
    if (m_loader)
    {
       m_loader->Unlink(m_module);

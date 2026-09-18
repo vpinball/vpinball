@@ -58,11 +58,11 @@
 // Then, the plugin will be available for the end user to enable it from the host application.
 // 
 // When plugins are unloaded, they must clean up after them:
-// - ensure 'ReleaseMsgID' has been called for each 'GetMsgID'
 // - ensure 'UnsubscribeMsg' has been called for each 'SubscribeMsg'
 // - stop submitting runnables to 'RunOnMainThread', then call 'FlushPendingCallbacks'
 //   which will ensure all previously submitted callback are ran in an order corresponding 
 //   to their submission timing parameters.
+// - ensure 'ReleaseMsgID' has been called for each 'GetMsgID'
 //
 // This header is a common header to be used both by host and plugins.
 //
