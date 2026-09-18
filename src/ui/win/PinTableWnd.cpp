@@ -1439,7 +1439,21 @@ void PinTableWnd::DeleteSelection()
 
    // FIXME invalid undo sequence (on per delete while it is a block operation)
    for (IWinUIPart *const ptr : m_vseldelete)
-      ptr->GetSelect()->Delete();
+   {
+      if (ptr->GetItemType() == ItemTypeEnum::eItemDragPoint)
+      {
+         // Deleting a drag point modifies its owning part
+         if (DragPoint *const dpoint = static_cast<DragPoint *>(ptr->GetSelect()); dpoint->CanDelete())
+         {
+            m_table->BeginUndo();
+            m_table->MarkForUndo(ptr->GetEditable());
+            dpoint->Delete();
+            m_table->EndUndo();
+         }
+      }
+      else
+         ptr->GetSelect()->Delete();
+   }
 
    m_vpxEditor->GetLayersListDialog()->Update();
    // update properties to show the properties of the table

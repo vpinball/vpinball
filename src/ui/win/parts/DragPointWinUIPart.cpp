@@ -48,9 +48,22 @@ void DragPointWinUIPart::EditMenu(CMenu& menu)
 void DragPointWinUIPart::DoCommand(int icmd, int x, int y)
 {
    IWinUIPart::DoCommand(icmd, x, y);
+   PinTable* const ptable = m_dragPoint->GetIEditable()->GetPTable();
    switch (icmd)
    {
-   case ID_POINTMENU_SMOOTH: m_dragPoint->ToggleSmooth(); break;
-   case ID_POINTMENU_SLINGSHOT: m_dragPoint->ToggleSlingshot(); break;
+   case ID_POINTMENU_SMOOTH:
+      ptable->BeginUndo();
+      ptable->MarkForUndo(m_dragPoint->GetIEditable());
+      m_dragPoint->ToggleSmooth();
+      ptable->EndUndo();
+      ptable->SetDirtyDraw();
+      break;
+   case ID_POINTMENU_SLINGSHOT:
+      ptable->BeginUndo();
+      ptable->MarkForUndo(m_dragPoint->GetIEditable());
+      m_dragPoint->ToggleSlingshot();
+      ptable->EndUndo();
+      ptable->SetDirtyDraw();
+      break;
    }
 }
