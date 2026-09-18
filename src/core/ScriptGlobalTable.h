@@ -149,5 +149,5 @@ public:
    END_COM_MAP()
 
 private:
-   PinTable *m_pt = nullptr;
+   PinTable * m_table = nullptr;
 };
