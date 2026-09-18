@@ -164,7 +164,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             m_activeTable->GetUniqueName(ItemTypeEnum::eItemPartGroup, partGroup->GetIScriptable()->m_wzName);
             m_activeTable->AddPart(partGroup);
             partGroup->SetPartGroup(GetSelectedPartGroup());
+            m_activeTable->BeginUndo();
             m_activeTable->MarkForCreate(partGroup);
+            m_activeTable->EndUndo();
             Update();
          }
       }

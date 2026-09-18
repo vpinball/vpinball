@@ -167,8 +167,6 @@ public:
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
 
-      void Delete() override { m_plight->Delete(); }
-
       IEditable *GetIEditable() override { return (IEditable *)m_plight; }
       const IEditable *GetIEditable() const override { return (const IEditable *)m_plight; }
 
