@@ -375,6 +375,8 @@ public:
    void Save(IObjectWriter& writer, const bool saveForUndo) final;
    IScriptable *GetIScriptable() final { return (IScriptable *)this; }
    const IScriptable *GetIScriptable() const final { return (const IScriptable *)this; }
+   ItemTypeEnum GetItemType() const final { return eItemTable; }
+   static inline constexpr ItemTypeEnum ItemType = eItemTable;
    // IEditable unused members
    IHitable *GetIHitable() final { return nullptr; }
    const IHitable *GetIHitable() const final { return nullptr; }
@@ -389,11 +391,6 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final { }
    void Translate(const Vertex2D &offset) final { }
    void SetDefaultPhysics(const bool fromMouseClick) final;
-
-   // IEditable
-   static inline constexpr ItemTypeEnum ItemType = eItemTable;
-   ItemTypeEnum GetItemType() const final { return eItemTable; }
-
 
    static string GetElementName(IEditable *pedit);
 
@@ -440,7 +437,7 @@ public:
    wstring GetUniqueName(const wstring &wzRoot) const;
 
 private:
-   ankerl::unordered_dense::map<wstring, IEditable *> m_scriptableNames;
+   ankerl::unordered_dense::map<wstring, IEditable*> m_scriptableNames;
    vector<IEditable *> m_vedit;
 
 public:
