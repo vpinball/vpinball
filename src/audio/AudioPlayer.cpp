@@ -479,6 +479,8 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
    SoundPlayer* player = nullptr;
    vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
 
+   std::erase_if(players, [sound](const auto& soundPlayer) { return soundPlayer->GetOutputTarget() != sound->GetOutputTarget(); });
+
    // Until 10.8, implementation would:
    // - for some reason, 'usesame' would only be processed for wav file:
    //   - if 'usesame' is true, search for the first player for the given sound and reuse it if any (even is it is playing), create a new one otherwise

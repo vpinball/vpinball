@@ -12,7 +12,6 @@
 #include "core/AppCommands.h"
 #include "core/VPApp.h"
 
-#include "ui/win/resource.h"
 #include <initguid.h>
 
 #define SET_CRT_DEBUG_FIELD(a) _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
