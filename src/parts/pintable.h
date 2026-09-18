@@ -437,7 +437,7 @@ public:
    wstring GetUniqueName(const wstring &wzRoot) const;
 
 private:
-   ankerl::unordered_dense::map<wstring, IEditable*> m_scriptableNames;
+   ankerl::unordered_dense::set<wstring> m_scriptableNames;
    vector<IEditable *> m_vedit;
 
 public:
