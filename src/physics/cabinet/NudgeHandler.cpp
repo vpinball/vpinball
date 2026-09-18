@@ -168,7 +168,7 @@ void NudgeHandler::RemoveSensor(int index) {
       }
    }
    m_sensors.erase(m_sensors.begin() + index);
-   g_app->m_settings.SetInput_NudgeSensorCount(static_cast<int>(m_sensors.size() + 1), false);
+   g_app->m_settings.SetInput_NudgeSensorCount(static_cast<int>(m_sensors.size()), false);
    g_app->m_settings.Save();
 }
 
