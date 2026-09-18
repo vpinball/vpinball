@@ -48,6 +48,11 @@ void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
    //
    // In 10.8.1 the cabinet physics was rewritten, using an angular pendulum model.
    
+   if (fabsf(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
+      g_pplayer->m_ptable->m_tblNudgeRead.x = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x;
+   if (fabsf(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
+      g_pplayer->m_ptable->m_tblNudgeRead.y = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y;
+
    if (!m_enablePlumbTilt || m_plumbTiltThreshold <= 0.0f)
       return;
 
@@ -137,10 +142,6 @@ void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
    // When the table script reads the values, they will reset to 0.
    if (tiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
       g_pplayer->m_ptable->m_tblNudgeReadTilt = tiltPerc;
-   if (fabsf(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
-      g_pplayer->m_ptable->m_tblNudgeRead.x = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x;
-   if (fabsf(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
-      g_pplayer->m_ptable->m_tblNudgeRead.y = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y;
    if (fabsf(m_plumbPos.x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.x))
       g_pplayer->m_ptable->m_tblNudgePlumb.x = m_plumbPos.x;
    if (fabsf(m_plumbPos.y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.y))
