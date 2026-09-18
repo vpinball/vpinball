@@ -92,10 +92,10 @@ private:
 template <class T> T* PropertyPane::GetStartupObj(T* obj) const
 {
    T* startupObj = nullptr;
-   if constexpr (std::is_base_of_v<IEditable, T>)
-      startupObj = static_cast<T*>(m_table->GetStartupFromLive<IEditable>(obj));
-   else if constexpr (std::is_base_of_v<PinTable, T>)
+   if constexpr (std::is_base_of_v<PinTable, T>)
       startupObj = m_table->m_liveBaseTable;
+   else if constexpr (std::is_base_of_v<IEditable, T>)
+      startupObj = static_cast<T*>(m_table->GetStartupFromLive<IEditable>(obj));
    else
       startupObj = m_table->GetStartupFromLive<T>(obj);
    return startupObj;
