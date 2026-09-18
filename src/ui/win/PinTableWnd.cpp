@@ -2229,14 +2229,6 @@ IWinUIPart *PinTableWnd::GetUIPart(IEditable *part)
    return it != m_uiParts.end() ? it->second.get() : nullptr;
 }
 
-IWinUIPart *PinTableWnd::GetUIPart(LightCenter *center)
-{
-   if (center == nullptr)
-      return nullptr;
-   IWinUIPart *const ownerPart = GetUIPart(center->GetIEditable());
-   return ownerPart ? ownerPart->GetSubPart(center) : nullptr;
-}
-
 IWinUIPart *PinTableWnd::GetUIPart(DragPoint *point)
 {
    if (point == nullptr)
