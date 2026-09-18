@@ -5,8 +5,7 @@
 #include "ui/win/resource.h"
 #include "utils/fileio.h"
 
-// Warning: these are Win32 ui part id, but also used to identify table parts (see IEditable)
-// These are used for file I/O and must not be changed/reordered!
+// These are used to identify parts for file I/O and must not be changed/reordered
 enum ItemTypeEnum : uint32_t
 {
    eItemSurface,
@@ -23,7 +22,7 @@ enum ItemTypeEnum : uint32_t
    eItemSpinner,
    eItemRamp,
    eItemTable,
-   eItemLightCenter,
+   eItemLightCenter, // Used in WinUI to select light center apart from light
    eItemDragPoint,
    eItemCollection,
    eItemDispReel,
@@ -34,7 +33,6 @@ enum ItemTypeEnum : uint32_t
    eItemHitTarget,
    eItemBall,
    eItemPartGroup,
-   eItemTypeCount,
    eItemInvalid = 0xFFFFFFFFu
 };
 
@@ -275,8 +273,6 @@ protected:
 
 public:
    wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
-
-   void Undelete();
 
    string GetName() const;
    const wstring& GetWName() const;
