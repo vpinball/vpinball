@@ -68,7 +68,6 @@ public:
    float m_modulate_vs_add;
    string m_szLightmap;
 
-   Vertex2D m_vCenter;
    float m_height;
    float m_rotX, m_rotY, m_rotZ;
 };
@@ -131,7 +130,7 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
 
-   Vertex2D GetCenter() const final { return m_d.m_vCenter; }
+   Vertex2D GetCenter() const final;
 
    void AddPoint(const Vertex2D &v, const bool smooth);
 
@@ -143,7 +142,8 @@ public:
 
    float GetDepth(const Vertex3Ds& viewDir) const final
    {
-      return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
+      const Vertex2D center = GetCenter();
+      return m_d.m_depthBias + viewDir.x * center.x + viewDir.y * center.y + viewDir.z * m_d.m_height;
    }
 
    void WriteRegDefaults() final;
@@ -179,19 +179,19 @@ public:
    std::atomic_uint m_dmdFrameId = 0;
 
 public:
-   void InitShape();
+   void InitShape(const float x, const float y);
 
 private:
-   void UpdateCenter();
+   void UpdateCenter() const;
    void UploadRenderFrame(const PinballPlugin::ResURIResolver::DisplayState& display);
 
    unsigned int m_numVertices = 0;
    int m_numPolys = 0;
    bool m_centerClean = false;
-   float m_minx = FLT_MAX;
-   float m_maxx = -FLT_MAX;
-   float m_miny = FLT_MAX;
-   float m_maxy = -FLT_MAX;
+   mutable float m_minx = FLT_MAX;
+   mutable float m_maxx = -FLT_MAX;
+   mutable float m_miny = FLT_MAX;
+   mutable float m_maxy = -FLT_MAX;
    vector<Vertex3D_NoTex2> m_vertices;
    vector<Vertex3D_NoTex2> m_transformedVertices;
 
