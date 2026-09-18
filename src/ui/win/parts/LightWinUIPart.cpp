@@ -6,23 +6,14 @@
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
-#include "ui/win/parts/LightCenterWinUIPart.h"
 #include "ui/win/parts/LightWinUIPart.h"
 
 LightWinUIPart::LightWinUIPart(PinTableWnd* editor, Light* light)
    : IWinUIPart(editor, light)
    , m_light(light)
    , m_pointParts(editor, &light->m_curve)
+   , m_centerPart(editor, light)
 {
-}
-
-IWinUIPart* LightWinUIPart::GetSubPart(LightCenter* center)
-{
-   if (center != m_light->GetLightCenter())
-      return nullptr;
-   if (!m_centerPart)
-      m_centerPart = std::make_unique<LightCenterWinUIPart>(m_editor, center);
-   return m_centerPart.get();
 }
 
 void LightWinUIPart::UpdateStatusBarObjectPos()
@@ -111,7 +102,7 @@ void LightWinUIPart::RenderOutline(Sur* const psur)
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->Polygon(vvertex);
 
-      psur->SetObject(GetSubPart(m_light->GetLightCenter()));
+      psur->SetObject(&m_centerPart);
       break;
    }
    }

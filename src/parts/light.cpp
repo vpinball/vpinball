@@ -49,7 +49,6 @@ Light *Light::CopyForPlay() const
    dst->m_finalLightState = m_finalLightState;
    dst->m_surfaceMaterial = m_surfaceMaterial;
    dst->m_surfaceTexture = m_surfaceTexture;
-   dst->m_lightcenter = m_lightcenter;
    dst->m_initSurfaceHeight = m_initSurfaceHeight;
    dst->m_maxDist = m_maxDist;
    return dst;

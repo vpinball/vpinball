@@ -114,8 +114,6 @@ public:
    // Returns the UI part owned by this editor for the given table part, i.e. an entry of m_uiParts, or m_tablePart
    // for the table itself. nullptr if none.
    IWinUIPart *GetUIPart(IEditable *part);
-   // Returns the UI part of the given light center, a sub part of the UI part of its light. nullptr if none.
-   IWinUIPart *GetUIPart(LightCenter *center);
    // Returns the UI part of the given drag point, a sub part of the UI part of its parent part. nullptr if none.
    IWinUIPart *GetUIPart(DragPoint *point);
 

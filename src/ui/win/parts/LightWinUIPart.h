@@ -3,6 +3,7 @@
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/parts/DragPointUIPartList.h"
+#include "ui/win/parts/LightCenterWinUIPart.h"
 
 class Light;
 
@@ -26,12 +27,11 @@ public:
    void DoCommand(int icmd, int x, int y) override;
 
    IWinUIPart* GetSubPart(DragPoint* point) override { return m_pointParts.Get(point); }
-   IWinUIPart* GetSubPart(LightCenter* center) override;
 
 private:
    void RenderOutline(Sur* psur);
 
    Light* const m_light;
    DragPointUIPartList m_pointParts;
-   std::unique_ptr<IWinUIPart> m_centerPart;
+   LightCenterWinUIPart m_centerPart;
 };

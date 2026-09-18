@@ -67,27 +67,6 @@ public:
    Fader m_fader = Fader::FADER_LINEAR;
 };
 
-class Light;
-
-// Light center handle: a sub element of a light for editor picking
-class LightCenter final
-{
-public:
-   LightCenter(Light *plight)
-      : m_plight(plight)
-   {
-   }
-
-   IEditable *GetIEditable();
-   const IEditable *GetIEditable() const;
-
-   static inline constexpr ItemTypeEnum ItemType = eItemLightCenter;
-   ItemTypeEnum GetItemType() const { return eItemLightCenter; }
-
-private:
-   Light *m_plight;
-};
-
 class Light :
    public IDispatchImpl<ILight, &IID_ILight, &LIBID_VPinballLib>,
    //public ISupportErrorInfo,
@@ -112,7 +91,6 @@ public:
 #endif
    Light()
       : m_curve(this, &m_d.m_vCenter)
-      , m_lightcenter(this)
    {
       m_d.m_depthBias = 0.0f;
       m_d.m_shape = ShapeCustom;
@@ -181,14 +159,9 @@ public:
    float m_surfaceHeight;
    bool  m_lockedByLS = false;
 
-   // Light center handle, for editor picking
-   LightCenter *GetLightCenter() { return &m_lightcenter; }
-
 private:
    Material *m_surfaceMaterial;
    Texture  *m_surfaceTexture;
-
-   LightCenter m_lightcenter;
 
    std::shared_ptr<MeshBuffer> m_lightmapMeshBuffer;
    std::shared_ptr<MeshBuffer> m_lightmapMeshEdgeBuffer;
@@ -298,6 +271,3 @@ private:
       m_timerDurationEndTime = cur_time_msec + m_duration;
    }
 };
-
-inline IEditable *LightCenter::GetIEditable() { return m_plight; }
-inline const IEditable *LightCenter::GetIEditable() const { return m_plight; }

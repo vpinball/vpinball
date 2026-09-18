@@ -5,7 +5,6 @@
 
 class Sur;
 class DragPoint;
-class LightCenter;
 class PinTableWnd;
 namespace Win32xx
 {
@@ -83,9 +82,8 @@ public:
    // Returns the drag point edited by this UI part, nullptr if this UI part does not edit a drag point
    virtual DragPoint* GetDragPoint() const { return nullptr; }
 
-   // Returns the UI part for a sub element owned by this part's editable (a drag point or a light center), nullptr if none
+   // Returns the UI part for a sub element owned by this part's editable (a drag point), nullptr if none
    virtual IWinUIPart* GetSubPart(DragPoint* point) { return nullptr; }
-   virtual IWinUIPart* GetSubPart(LightCenter* center) { return nullptr; }
 
    // Geometric transforms of the selectable element (applied to the sub element itself for sub selects like drag points)
    // Higher level transforms (scale, rotate, flip) are performed on the IEditable, or on the sub element through GetCenter/Translate
