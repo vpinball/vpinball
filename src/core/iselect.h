@@ -48,6 +48,4 @@ public:
    virtual const IEditable *GetIEditable() const = 0;
 
    virtual ItemTypeEnum GetItemType() const = 0;
-
-   virtual void Delete() = 0;
 };

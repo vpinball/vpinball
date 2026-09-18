@@ -3205,17 +3205,15 @@ bool PinTable::FDirty() const
    return (m_sdsCurrentDirtyState > eSaveClean);
 }
 
-void PinTable::BeginUndo()
-{
-   m_undo.BeginUndo();
-}
-
-void PinTable::EndUndo()
-{
-   m_undo.EndUndo();
-}
+void PinTable::BeginUndo() { m_undo.BeginUndo(); }
 
 void PinTable::MarkForUndo(IEditable *editable) { m_undo.MarkForUndo(editable); }
+
+void PinTable::MarkForCreate(IEditable *editable) { m_undo.MarkForCreate(editable); }
+
+void PinTable::MarkForDelete(IEditable *editable) { m_undo.MarkForDelete(editable); }
+
+void PinTable::EndUndo() { m_undo.EndUndo(); }
 
 void PinTable::StartUndo()
 {
@@ -3227,20 +3225,6 @@ void PinTable::StopUndo()
 {
    EndUndo();
    SetDirtyDraw();
-}
-
-void PinTable::MarkForCreate(IEditable *editable)
-{
-   BeginUndo();
-   m_undo.MarkForCreate(editable);
-   EndUndo();
-}
-
-void PinTable::MarkForDelete(IEditable *editable)
-{
-   BeginUndo();
-   m_undo.MarkForDelete(editable);
-   EndUndo();
 }
 
 void PinTable::Undo(const bool discard)

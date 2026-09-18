@@ -60,7 +60,7 @@ public:
    // Can't allow less points than the user can recover from
    bool CanDelete() const;
 
-   void Delete() final;
+   void Delete();
 
    bool LoadToken(const int id, IObjectReader& reader);
 

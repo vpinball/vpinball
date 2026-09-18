@@ -1437,7 +1437,7 @@ void PinTableWnd::DeleteSelection()
          return;
    }
 
-   // FIXME invalid undo sequence (on per delete while it is a block operation)
+   m_table->BeginUndo();
    for (IWinUIPart *const ptr : m_vseldelete)
    {
       if (ptr->GetItemType() == ItemTypeEnum::eItemDragPoint)
@@ -1445,15 +1445,20 @@ void PinTableWnd::DeleteSelection()
          // Deleting a drag point modifies its owning part
          if (DragPoint *const dpoint = static_cast<DragPoint *>(ptr->GetSelect()); dpoint->CanDelete())
          {
-            m_table->BeginUndo();
             m_table->MarkForUndo(ptr->GetEditable());
             dpoint->Delete();
-            m_table->EndUndo();
          }
       }
       else
-         ptr->GetSelect()->Delete();
+      {
+         IEditable *part = ptr->GetEditable();
+         m_table->MarkForDelete(part);
+         m_table->RemovePart(part);
+         for (Collection *const pcollection : part->m_vCollection)
+            pcollection->RemovePart(part);
+      }
    }
+   m_table->EndUndo();
 
    m_vpxEditor->GetLayersListDialog()->Update();
    // update properties to show the properties of the table
@@ -1627,7 +1632,9 @@ void PinTableWnd::UseTool(int x, int y, int tool)
 
       OnPartChanged(m_table);
 
+      m_table->BeginUndo();
       m_table->MarkForCreate(pie);
+      m_table->EndUndo();
       AddMultiSel(GetUIPart(pie), false, true, false);
    }
 

@@ -353,11 +353,12 @@ public:
    void ExportMesh(ObjLoader &loader) final;
 
    void BeginUndo();
-   void EndUndo();
-   void Undo(bool discard = false);
    void MarkForUndo(IEditable *editable);
    void MarkForCreate(IEditable *editable);
    void MarkForDelete(IEditable *editable);
+   void EndUndo();
+
+   void Undo(bool discard = false);
    void SetCleanPoint(SaveDirtyState sds);
    void StartUndo();
    void StopUndo();
@@ -384,7 +385,6 @@ public:
    const IRenderable *GetIRenderable() const final { return nullptr; }
    void SetDefaults(const bool fromMouseClick) final { }
    void WriteRegDefaults() final { }
-   void Delete() final { }
    Vertex2D GetCenter() const final { return { 0.f, 0.f }; }
    void FlipY(const Vertex2D &pvCenter) final { }
    void FlipX(const Vertex2D &pvCenter) final { }

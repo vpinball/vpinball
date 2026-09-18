@@ -18,19 +18,6 @@ IEditable::~IEditable()
    SetPartGroup(nullptr);
 }
 
-void IEditable::Delete()
-{
-   GetPTable()->MarkForDelete(this);
-
-   GetPTable()->RemovePart(this);
-
-   for (size_t i = 0; i < m_vCollection.size(); i++)
-   {
-      Collection *const pcollection = m_vCollection[i];
-      pcollection->RemovePart(this);
-   }
-}
-
 void IEditable::SetPartGroup(PartGroup* partGroup)
 {
    if (m_partGroup != partGroup)
