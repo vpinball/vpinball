@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "InputManager.h"
+#include "physics/cabinet/CabinetNudgeSensor.h"
 #include "physics/cabinet/GamepadNudge.h"
 
 
@@ -380,9 +381,9 @@ private:
                std::unique_ptr<PlungerSensor> plunger = std::make_unique<PlungerSensor>(&m_pininput);
                plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, 0x0202, SensorMapping::Type::Position));
                map.MapPlunger(std::move(plunger));
-               std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_pininput);
-               nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration));
-               nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
+               std::unique_ptr<VPX::Physics::CabinetNudgeSensor> nudge = std::make_unique<VPX::Physics::CabinetNudgeSensor>(&m_pininput);
+               nudge->GetXAccSensor().SetMapping(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration).WithScale(9.80665f));
+               nudge->GetYAccSensor().SetMapping(SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration).WithScale(9.80665f));
                map.MapNudge(std::move(nudge));
             });
          break;
