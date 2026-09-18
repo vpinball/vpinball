@@ -9,7 +9,6 @@
 #include "parts/ball.h"
 #include "physics/cabinet/NudgeHandler.h"
 #include "renderer/Renderer.h"
-#include "ui/win/WinEditor.h"
 
 #ifndef __STANDALONE__
 #include <atlsafe.h>
