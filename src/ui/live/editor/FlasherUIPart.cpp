@@ -28,7 +28,7 @@ FlasherUIPart::TransformMask FlasherUIPart::GetTransform(Matrix3D& transform)
 void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
    const float px = m_flasher->m_d.m_vCenter.x, py = m_flasher->m_d.m_vCenter.y;
-   m_flasher->TranslatePoints(Vertex2D { pos.x - px, pos.y - py });
+   m_flasher->m_curve.TranslatePoints(Vertex2D { pos.x - px, pos.y - py });
    m_flasher->put_Height(pos.z);
    m_flasher->put_RotX(rot.x);
    m_flasher->put_RotY(rot.y);
@@ -226,7 +226,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
          {
             const float px = flasher->m_d.m_vCenter.x;
             const float py = flasher->m_d.m_vCenter.y;
-            flasher->TranslatePoints(Vertex2D { v.x - px, v.y - py });
+            flasher->m_curve.TranslatePoints(Vertex2D { v.x - px, v.y - py });
             flasher->put_Height(v.z);
          },
          PropertyPane::Unit::VPLength, 1);

@@ -84,7 +84,6 @@ class Flasher :
    public IEditable,
    public IHitable, // only used for UI picking
    public IRenderable,
-   public IHaveDragPoints,
    public IScriptable,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
@@ -96,7 +95,10 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Flasher() { }
+   Flasher()
+      : m_curve(this, nullptr, 2)
+   {
+   }
    virtual ~Flasher();
 
    STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER)
@@ -129,8 +131,6 @@ public:
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
-
-   int GetMinimumPoints() const final { return 2; }
 
    Vertex2D GetCenter() const final { return m_d.m_vCenter; }
 
@@ -169,6 +169,9 @@ public:
    void setInPlayState(const bool newVal);
 
    FlasherData m_d;
+
+   // The flasher outline curve (drag points defining the flasher shape)
+   DragPointCurve m_curve;
 
    bool m_lockedByLS = false;
    bool m_inPlayState = false;

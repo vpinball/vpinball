@@ -4,10 +4,11 @@
 
 #pragma once
 
+#include "core/ieditable.h"
 #include "math/MeshUtils.h"
 #include "ui/win/resource.h"
 
-class IHaveDragPoints;
+class DragPointCurve;
 
 class DragPoint :
    public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VPinballLib>,
@@ -24,7 +25,7 @@ public:
 #endif
    DragPoint() { }
 
-   void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);
+   void Init(DragPointCurve *pcurve, const float x, const float y, const float z, const bool smooth);
 
    // From ISelect
    static inline constexpr ItemTypeEnum ItemType = eItemDragPoint;
@@ -90,38 +91,45 @@ private:
    void StartUndo();
    void StopUndo();
 
-#if defined(_M_X64) || defined(_M_AMD64) || !defined(_MSC_VER)
-   IHaveDragPoints *m_pihdp;
-   #define M_PIHDP m_pihdp
-#else
-   void *m_pihdp; // actually IHaveDragPoints, but somehow doesn't work on VS/x86, no sane solution found yet, might simply be a compiler bug
-   #define M_PIHDP ((IHaveDragPoints *)m_pihdp)
-#endif
+   DragPointCurve *m_pcurve;
    static Vertex3Ds m_copyPoint;   // coordinates of a control point to copy
    static bool      m_pointCopied;
 };
 
-class IHaveDragPoints
+// A curve made of DragPoint control points
+class DragPointCurve final
 {
 public:
-   IHaveDragPoints() = default;
+   // 'center' optionally points to a part-owned position (e.g. LightData::m_vCenter) which is used
+   // as the element center by the point transforms and updated by them. When null, the element center
+   // is derived from the points and PutPointCenter has no effect.
+   DragPointCurve(IEditable *owner, Vertex2D *const center = nullptr, const int minPoints = 3)
+      : m_owner(owner)
+      , m_pCenter(center)
+      , m_minPoints(minPoints)
+   {
+   }
 
-   virtual ~IHaveDragPoints();
+   ~DragPointCurve();
 
-   virtual IEditable *GetIEditable() = 0;
-   virtual const IEditable *GetIEditable() const = 0;
-   virtual PinTable *GetPTable() = 0;
-   virtual const PinTable *GetPTable() const = 0;
+   IEditable *GetIEditable() { return m_owner; }
+   const IEditable *GetIEditable() const { return m_owner; }
+   PinTable *GetPTable() { return m_owner->GetPTable(); }
+   const PinTable *GetPTable() const { return m_owner->GetPTable(); }
 
-   virtual int GetMinimumPoints() const { return 3; }
+   int GetMinimumPoints() const { return m_minPoints; }
 
    void SavePoints(IObjectWriter& writer) const;
    void LoadPointToken(IObjectReader& reader);
 
-   virtual void ClearPointsForOverwrite();
+   void ClearPointsForOverwrite();
 
-   virtual Vertex2D GetPointCenter() const;
-   virtual void PutPointCenter(const Vertex2D &pv) { }
+   Vertex2D GetPointCenter() const;
+   void PutPointCenter(const Vertex2D &pv)
+   {
+      if (m_pCenter != nullptr)
+         *m_pCenter = pv;
+   }
 
    void FlipPointY(const Vertex2D& pvCenter);
    void FlipPointX(const Vertex2D& pvCenter);
@@ -131,8 +139,6 @@ public:
    void ReverseOrder();
 
    void GetTextureCoords(const vector<RenderVertex> & vv, float **ppcoords) const;
-
-   friend class DragPoint;
 
    template <typename T>
    void GetRgVertex(vector<T> &vv, const bool loop = true, const float accuracy = 4.f) const // 4 = maximum precision that we allow for
@@ -193,4 +199,9 @@ public:
    }
 
    vector< CComObject<DragPoint>* > m_vdpoint;
+
+private:
+   IEditable *const m_owner;
+   Vertex2D *const m_pCenter;
+   const int m_minPoints;
 };

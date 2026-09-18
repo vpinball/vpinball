@@ -21,7 +21,7 @@ Ramp::~Ramp()
 
 Ramp *Ramp::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Ramp, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Ramp, m_curve)
    return dst;
 }
 
@@ -37,18 +37,18 @@ HRESULT Ramp::Init(const float x, const float y, const bool fromMouseClick, cons
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x, y + length, 0.f, true);
+      pdp->Init(&m_curve, x, y + length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heightbottom;
-      m_vdpoint.push_back(pdp);
+      m_curve.m_vdpoint.push_back(pdp);
    }
 
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x, y - length, 0.f, true);
+      pdp->Init(&m_curve, x, y - length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heighttop;
-      m_vdpoint.push_back(pdp);
+      m_curve.m_vdpoint.push_back(pdp);
    }
 
    return S_OK;
@@ -173,10 +173,10 @@ void Ramp::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *con
 
 void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height) const
 {
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
+   for (size_t i = 0; i < m_curve.m_vdpoint.size(); i++)
    {
-      if (m_vdpoint[i]->m_v.x == v.x && m_vdpoint[i]->m_v.y == v.y)
-         m_vdpoint[i]->m_calcHeight = height;
+      if (m_curve.m_vdpoint[i]->m_v.x == v.x && m_curve.m_vdpoint[i]->m_v.y == v.y)
+         m_curve.m_vdpoint[i]->m_calcHeight = height;
    }
 }
 
@@ -865,7 +865,7 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir) const
 
 void Ramp::UpdateBounds()
 {
-   const Vertex2D center2D = GetPointCenter();
+   const Vertex2D center2D = m_curve.GetPointCenter();
    m_boundingSphereCenter.Set(center2D.x, center2D.y, 0.5f * (m_d.m_heightbottom + m_d.m_heighttop));
 }
 
@@ -1177,7 +1177,7 @@ void Ramp::PrepareHabitrail()
 
 void Ramp::ClearForOverwrite()
 {
-   ClearPointsForOverwrite();
+   m_curve.ClearPointsForOverwrite();
 }
 
 void Ramp::Save(IObjectWriter& writer, const bool saveForUndo)
@@ -1213,7 +1213,7 @@ void Ramp::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
    writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
    SaveSharedEditableFields(writer);
-   SavePoints(writer);
+   m_curve.SavePoints(writer);
    writer.EndObject();
 }
 
@@ -1257,7 +1257,7 @@ void Ramp::Load(IObjectReader& reader)
          case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
          case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
          case FID(PNTS): break; // Empty tag placed before drag point data (unused)
-         case FID(DPNT): LoadPointToken(reader); break;
+         case FID(DPNT): m_curve.LoadPointToken(reader); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
@@ -1280,39 +1280,39 @@ void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_vdpoint.size();
+   //icp = m_curve.m_vdpoint.size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f, smooth); // Ramps are usually always smooth
-      m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      pdp->Init(&m_curve, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f, smooth); // Ramps are usually always smooth
+      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
 void Ramp::FlipY(const Vertex2D& pvCenter)
 {
-   IHaveDragPoints::FlipPointY(pvCenter);
+   m_curve.FlipPointY(pvCenter);
 }
 
 void Ramp::FlipX(const Vertex2D& pvCenter)
 {
-   IHaveDragPoints::FlipPointX(pvCenter);
+   m_curve.FlipPointX(pvCenter);
 }
 
 void Ramp::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
+   m_curve.RotatePoints(ang, pvCenter, useElementCenter);
 }
 
 void Ramp::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
-void Ramp::Translate(const Vertex2D &offset) { IHaveDragPoints::TranslatePoints(offset); }
+void Ramp::Translate(const Vertex2D &offset) { m_curve.TranslatePoints(offset); }
 
 STDMETHODIMP Ramp::InterfaceSupportsErrorInfo(REFIID riid)
 {

@@ -49,7 +49,6 @@ class Ramp :
    public IHitable,
    public IRenderable,
    public IScriptable,
-   public IHaveDragPoints,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
@@ -61,6 +60,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Ramp()
+      : m_curve(this, nullptr, 2)
    {
       m_d.m_collidable = true;
       m_d.m_visible = true;
@@ -98,15 +98,13 @@ public:
 
    void ClearForOverwrite() final;
 
-   int GetMinimumPoints() const final { return 2; }
-
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
 
-   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 
@@ -127,6 +125,9 @@ public:
       int &pcvertex, float **const ppheight, bool **const ppfCross, float **const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width) const;
 
    RampData m_d;
+
+   // The ramp center curve (drag points defining the ramp path)
+   DragPointCurve m_curve;
 
 private:
    Renderer *m_renderer = nullptr;
@@ -165,7 +166,7 @@ private:
 
       accuracy = 4.0f*powf(10.0f, (10.0f - accuracy)*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
 
-      IHaveDragPoints::GetRgVertex(vv, false, accuracy);
+      m_curve.GetRgVertex(vv, false, accuracy);
    }
 
    void PrepareHabitrail();

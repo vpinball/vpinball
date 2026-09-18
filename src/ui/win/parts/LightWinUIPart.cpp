@@ -12,7 +12,7 @@
 LightWinUIPart::LightWinUIPart(PinTableWnd* editor, Light* light)
    : IWinUIPart(editor, light)
    , m_light(light)
-   , m_pointParts(editor, light)
+   , m_pointParts(editor, &light->m_curve)
 {
 }
 
@@ -43,7 +43,7 @@ void LightWinUIPart::UIRenderPass1(Sur* const psur)
    default:
    case ShapeCustom:
       vector<RenderVertex> vvertex;
-      m_light->GetRgVertex(vvertex);
+      m_light->m_curve.GetRgVertex(vvertex);
 
       // Check if we should display the image in the editor.
       psur->Polygon(vvertex);
@@ -60,9 +60,9 @@ void LightWinUIPart::UIRenderPass2(Sur* const psur)
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_light->m_vdpoint.size(); i++)
+      for (size_t i = 0; i < m_light->m_curve.m_vdpoint.size(); i++)
       {
-         const CComObject<DragPoint>* const pdp = m_light->m_vdpoint[i];
+         const CComObject<DragPoint>* const pdp = m_light->m_curve.m_vdpoint[i];
          if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
@@ -75,9 +75,9 @@ void LightWinUIPart::UIRenderPass2(Sur* const psur)
 
    if ((m_light->m_d.m_shape == ShapeCustom) && drawDragpoints)
    {
-      for (size_t i = 0; i < m_light->m_vdpoint.size(); i++)
+      for (size_t i = 0; i < m_light->m_curve.m_vdpoint.size(); i++)
       {
-         CComObject<DragPoint>* const pdp = m_light->m_vdpoint[i];
+         CComObject<DragPoint>* const pdp = m_light->m_curve.m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
          psur->SetObject(m_pointParts.Get(pdp));
@@ -107,7 +107,7 @@ void LightWinUIPart::RenderOutline(Sur* const psur)
    case ShapeCustom:
    {
       vector<RenderVertex> vvertex;
-      m_light->GetRgVertex(vvertex);
+      m_light->m_curve.GetRgVertex(vvertex);
       psur->SetBorderColor(RGB(255, 0, 0), false, 0);
       psur->Ellipse(m_light->m_d.m_vCenter.x, m_light->m_d.m_vCenter.y, m_light->m_d.m_falloff);
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -154,7 +154,7 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_FLIP:
       m_light->GetPTable()->BeginUndo();
       m_light->GetPTable()->MarkForUndo(m_light);
-      m_light->FlipPointY(m_light->GetPointCenter());
+      m_light->m_curve.FlipPointY(m_light->m_curve.GetPointCenter());
       m_light->GetPTable()->EndUndo();
       if (m_light->GetPTable())
          m_light->GetPTable()->SetDirtyDraw();
@@ -163,7 +163,7 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_MIRROR:
       m_light->GetPTable()->BeginUndo();
       m_light->GetPTable()->MarkForUndo(m_light);
-      m_light->FlipPointX(m_light->GetPointCenter());
+      m_light->m_curve.FlipPointX(m_light->m_curve.GetPointCenter());
       m_light->GetPTable()->EndUndo();
       if (m_light->GetPTable())
          m_light->GetPTable()->SetDirtyDraw();

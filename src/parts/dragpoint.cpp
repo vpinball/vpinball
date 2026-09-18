@@ -10,14 +10,17 @@
 Vertex3Ds DragPoint::m_copyPoint;
 bool      DragPoint::m_pointCopied = false;
 
-IHaveDragPoints::~IHaveDragPoints()
+DragPointCurve::~DragPointCurve()
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
       m_vdpoint[i]->Release();
 }
 
-Vertex2D IHaveDragPoints::GetPointCenter() const
+Vertex2D DragPointCurve::GetPointCenter() const
 {
+   if (m_pCenter != nullptr)
+      return *m_pCenter;
+
    float minx = FLT_MAX;
    float maxx = -FLT_MAX;
    float miny = FLT_MAX;
@@ -34,7 +37,7 @@ Vertex2D IHaveDragPoints::GetPointCenter() const
    return {(maxx + minx)*0.5f, (maxy + miny)*0.5f};
 }
 
-void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
+void DragPointCurve::FlipPointY(const Vertex2D &pvCenter)
 {
    Vertex2D newcenter = GetPointCenter();
 
@@ -52,7 +55,7 @@ void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
    ReverseOrder();
 }
 
-void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
+void DragPointCurve::FlipPointX(const Vertex2D &pvCenter)
 {
    Vertex2D newcenter = GetPointCenter();
 
@@ -70,7 +73,7 @@ void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
    ReverseOrder();
 }
 
-void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
+void DragPointCurve::RotatePoints(const float ang, const Vertex2D &pvCenter, const bool useElementCenter)
 {
    Vertex2D newcenter = GetPointCenter();
 
@@ -103,7 +106,7 @@ void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, co
    }
 }
 
-void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
+void DragPointCurve::ScalePoints(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter)
 {
    Vertex2D newcenter = GetPointCenter();
 
@@ -129,7 +132,7 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
    }
 }
 
-void IHaveDragPoints::TranslatePoints(const Vertex2D &offset)
+void DragPointCurve::TranslatePoints(const Vertex2D &offset)
 {
    for (const auto& v : m_vdpoint)
    {
@@ -140,7 +143,7 @@ void IHaveDragPoints::TranslatePoints(const Vertex2D &offset)
    PutPointCenter(GetPointCenter());
 }
 
-void IHaveDragPoints::ReverseOrder()
+void DragPointCurve::ReverseOrder()
 {
    if (m_vdpoint.empty())
       return;
@@ -163,7 +166,7 @@ void IHaveDragPoints::ReverseOrder()
 
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
 
-void IHaveDragPoints::GetTextureCoords(const vector<RenderVertex> & vv, float **ppcoords) const
+void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **ppcoords) const
 {
    vector<int> vitexpoints;
    vector<int> virenderpoints;
@@ -259,7 +262,7 @@ void IHaveDragPoints::GetTextureCoords(const vector<RenderVertex> & vv, float **
    }
 }
 
-void IHaveDragPoints::ClearPointsForOverwrite()
+void DragPointCurve::ClearPointsForOverwrite()
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
@@ -278,7 +281,7 @@ void IHaveDragPoints::ClearPointsForOverwrite()
    m_vdpoint.clear();
 }
 
-void IHaveDragPoints::SavePoints(IObjectWriter &writer) const
+void DragPointCurve::SavePoints(IObjectWriter &writer) const
 {
    for (const auto pdp : m_vdpoint)
    {
@@ -295,7 +298,7 @@ void IHaveDragPoints::SavePoints(IObjectWriter &writer) const
    }
 }
 
-void IHaveDragPoints::LoadPointToken(IObjectReader& reader)
+void DragPointCurve::LoadPointToken(IObjectReader &reader)
 {
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -332,9 +335,9 @@ void IHaveDragPoints::LoadPointToken(IObjectReader& reader)
    m_vdpoint.push_back(pdp);
 }
 
-void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth)
+void DragPoint::Init(DragPointCurve *pcurve, const float x, const float y, const float z, const bool smooth)
 {
-   m_pihdp = pihdp;
+   m_pcurve = pcurve;
    m_smooth = smooth;
 
    m_slingshot = false;
@@ -346,15 +349,9 @@ void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const
    m_texturecoord = 0.0f;
 }
 
-IEditable *DragPoint::GetIEditable()
-{
-   return M_PIHDP->GetIEditable();
-}
+IEditable *DragPoint::GetIEditable() { return m_pcurve->GetIEditable(); }
 
-const IEditable *DragPoint::GetIEditable() const
-{
-   return M_PIHDP->GetIEditable();
-}
+const IEditable *DragPoint::GetIEditable() const { return m_pcurve->GetIEditable(); }
 
 void DragPoint::Translate(const Vertex2D &offset)
 {
@@ -382,10 +379,10 @@ void DragPoint::StopUndo()
 
 void DragPoint::Delete()
 {
-   if ((int)M_PIHDP->m_vdpoint.size() > M_PIHDP->GetMinimumPoints()) // Can't allow less points than the user can recover from
+   if ((int)m_pcurve->m_vdpoint.size() > m_pcurve->GetMinimumPoints()) // Can't allow less points than the user can recover from
    {
       StartUndo();
-      RemoveFromVectorSingle(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this);
+      RemoveFromVectorSingle(m_pcurve->m_vdpoint, (CComObject<DragPoint> *)this);
       StopUndo();
       Release();
    }
@@ -395,14 +392,14 @@ void DragPoint::ToggleSmooth()
 {
    StartUndo();
    m_smooth = !m_smooth;
-   const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)M_PIHDP->m_vdpoint.size()) % (int)M_PIHDP->m_vdpoint.size();
+   const int index2 = (FindIndexOf(m_pcurve->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)m_pcurve->m_vdpoint.size()) % (int)m_pcurve->m_vdpoint.size();
    if (m_smooth && m_slingshot)
    {
       m_slingshot = false;
    }
-   if (m_smooth && M_PIHDP->m_vdpoint[index2]->m_slingshot)
+   if (m_smooth && m_pcurve->m_vdpoint[index2]->m_slingshot)
    {
-      M_PIHDP->m_vdpoint[index2]->m_slingshot = false;
+      m_pcurve->m_vdpoint[index2]->m_slingshot = false;
    }
    StopUndo();
 }
@@ -414,8 +411,8 @@ void DragPoint::ToggleSlingshot()
    if (m_slingshot)
    {
       m_smooth = false;
-      const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % M_PIHDP->m_vdpoint.size();
-      M_PIHDP->m_vdpoint[index2]->m_smooth = false;
+      const int index2 = (FindIndexOf(m_pcurve->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % m_pcurve->m_vdpoint.size();
+      m_pcurve->m_vdpoint[index2]->m_smooth = false;
    }
    StopUndo();
 }

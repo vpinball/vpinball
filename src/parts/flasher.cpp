@@ -22,13 +22,13 @@ Flasher::~Flasher()
 
 Flasher *Flasher::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Flasher, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Flasher, m_curve)
    return dst;
 }
 
 void Flasher::InitShape()
 {
-   if (m_vdpoint.empty())
+   if (m_curve.m_vdpoint.empty())
    {
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
@@ -40,29 +40,29 @@ void Flasher::InitShape()
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x - size*0.5f, y - size*0.5f, 0.f, false);
-         m_vdpoint.push_back(pdp);
+         pdp->Init(&m_curve, x - size*0.5f, y - size*0.5f, 0.f, false);
+         m_curve.m_vdpoint.push_back(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x - size*0.5f, y + size*0.5f, 0.f, false);
-         m_vdpoint.push_back(pdp);
+         pdp->Init(&m_curve, x - size*0.5f, y + size*0.5f, 0.f, false);
+         m_curve.m_vdpoint.push_back(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x + size*0.5f, y + size*0.5f, 0.f, false);
-         m_vdpoint.push_back(pdp);
+         pdp->Init(&m_curve, x + size*0.5f, y + size*0.5f, 0.f, false);
+         m_curve.m_vdpoint.push_back(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x + size*0.5f, y - size*0.5f, 0.f, false);
-         m_vdpoint.push_back(pdp);
+         pdp->Init(&m_curve, x + size*0.5f, y - size*0.5f, 0.f, false);
+         m_curve.m_vdpoint.push_back(pdp);
       }
    }
 }
@@ -78,7 +78,7 @@ void Flasher::UpdateCenter()
    m_maxy = -FLT_MAX;
 
    vector<RenderVertex> vvertex;
-   GetRgVertex(vvertex);
+   m_curve.GetRgVertex(vvertex);
 
    for (const RenderVertex& pv0 : vvertex)
    {
@@ -166,7 +166,7 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (isUI)
    {
       vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
+      m_curve.GetRgVertex(vvertex);
       if (vvertex.empty())
          return;
 
@@ -203,27 +203,27 @@ void Flasher::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 void Flasher::FlipY(const Vertex2D& pvCenter)
 {
-   IHaveDragPoints::FlipPointY(pvCenter);
+   m_curve.FlipPointY(pvCenter);
 }
 
 void Flasher::FlipX(const Vertex2D& pvCenter)
 {
-   IHaveDragPoints::FlipPointX(pvCenter);
+   m_curve.FlipPointX(pvCenter);
 }
 
 void Flasher::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
+   m_curve.RotatePoints(ang, pvCenter, useElementCenter);
 }
 
 void Flasher::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter);
 }
 
 void Flasher::Translate(const Vertex2D &offset)
 {
-   IHaveDragPoints::TranslatePoints(offset);
+   m_curve.TranslatePoints(offset);
    for (auto &vert : m_vertices)
    {
       vert.x += offset.x;
@@ -241,7 +241,7 @@ void Flasher::Translate(const Vertex2D &offset)
 void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
 {
    vector<RenderVertex> vvertex;
-   GetRgVertex(vvertex);
+   m_curve.GetRgVertex(vvertex);
 
    Vertex2D vOut;
    int iSeg;
@@ -258,14 +258,14 @@ void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
-      m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
+      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
 void Flasher::UpdatePoint(int index, float x, float y)
 {
-     CComObject<DragPoint> *pdp = m_vdpoint[index];
+     CComObject<DragPoint> *pdp = m_curve.m_vdpoint[index];
      pdp->m_v.x = x;
      pdp->m_v.y = y;
 }
@@ -305,13 +305,13 @@ void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(LMAP), m_d.m_szLightmap);
    writer.WriteBool(FID(BGLS), m_desktopBackdrop);
    SaveSharedEditableFields(writer);
-   SavePoints(writer);
+   m_curve.SavePoints(writer);
    writer.EndObject();
 }
 
 void Flasher::ClearForOverwrite()
 {
-   ClearPointsForOverwrite();
+   m_curve.ClearPointsForOverwrite();
 }
 
 
@@ -362,7 +362,7 @@ void Flasher::Load(IObjectReader& reader)
          case FID(FILT): m_d.m_filter = static_cast<Filters>(reader.AsInt()); break;
          case FID(FIAM): m_d.m_filterAmount = reader.AsInt(); break;
          case FID(LMAP): m_d.m_szLightmap = reader.AsString(); break;
-         case FID(DPNT): LoadPointToken(reader); break;
+         case FID(DPNT): m_curve.LoadPointToken(reader); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
@@ -936,7 +936,7 @@ void Flasher::RenderSetup(Renderer *renderer)
    m_centerClean = true; // Modifying points is not allowed while rendering, so center stays clean
 
    vector<RenderVertex> vvertex;
-   GetRgVertex(vvertex);
+   m_curve.GetRgVertex(vvertex);
 
    m_numVertices = (unsigned int)vvertex.size();
    if (m_numVertices == 0)

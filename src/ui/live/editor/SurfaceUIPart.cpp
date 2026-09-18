@@ -20,15 +20,15 @@ SurfaceUIPart::~SurfaceUIPart()
 
 SurfaceUIPart::TransformMask SurfaceUIPart::GetTransform(Matrix3D& transform)
 {
-   const Vertex2D center = m_surface->GetPointCenter();
+   const Vertex2D center = m_surface->m_curve.GetPointCenter();
    transform = Matrix3D::MatrixTranslate(center.x, center.y, 0.5f * (m_surface->m_d.m_heightbottom + m_surface->m_d.m_heighttop));
    return TM_TransAny;
 }
 
 void SurfaceUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
-   const Vertex2D center = m_surface->GetPointCenter();
-   m_surface->TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
+   const Vertex2D center = m_surface->m_curve.GetPointCenter();
+   m_surface->m_curve.TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
    const float pz = 0.5f * (m_surface->m_d.m_heightbottom + m_surface->m_d.m_heighttop);
    m_surface->m_d.m_heightbottom += pos.z - pz;
    m_surface->m_d.m_heighttop += pos.z - pz;

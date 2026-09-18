@@ -11,7 +11,7 @@
 RubberWinUIPart::RubberWinUIPart(PinTableWnd* editor, Rubber* rubber)
    : IWinUIPart(editor, rubber)
    , m_rubber(rubber)
-   , m_pointParts(editor, rubber)
+   , m_pointParts(editor, &rubber->m_curve)
 {
 }
 
@@ -90,9 +90,9 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_rubber->m_vdpoint.size(); i++)
+      for (size_t i = 0; i < m_rubber->m_curve.m_vdpoint.size(); i++)
       {
-         const CComObject<DragPoint>* const pdp = m_rubber->m_vdpoint[i];
+         const CComObject<DragPoint>* const pdp = m_rubber->m_curve.m_vdpoint[i];
          if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
@@ -103,9 +103,9 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
 
    if (drawDragpoints)
    {
-      for (size_t i = 0; i < m_rubber->m_vdpoint.size(); i++)
+      for (size_t i = 0; i < m_rubber->m_curve.m_vdpoint.size(); i++)
       {
-         CComObject<DragPoint>* const pdp = m_rubber->m_vdpoint[i];
+         CComObject<DragPoint>* const pdp = m_rubber->m_curve.m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(m_pointParts.Get(pdp));
@@ -147,7 +147,7 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_FLIP:
       m_rubber->GetPTable()->BeginUndo();
       m_rubber->GetPTable()->MarkForUndo(m_rubber);
-      m_rubber->FlipPointY(m_rubber->GetPointCenter());
+      m_rubber->m_curve.FlipPointY(m_rubber->m_curve.GetPointCenter());
       m_rubber->GetPTable()->EndUndo();
       if (m_rubber->GetPTable())
          m_rubber->GetPTable()->SetDirtyDraw();
@@ -156,7 +156,7 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_MIRROR:
       m_rubber->GetPTable()->BeginUndo();
       m_rubber->GetPTable()->MarkForUndo(m_rubber);
-      m_rubber->FlipPointX(m_rubber->GetPointCenter());
+      m_rubber->m_curve.FlipPointX(m_rubber->m_curve.GetPointCenter());
       m_rubber->GetPTable()->EndUndo();
       if (m_rubber->GetPTable())
          m_rubber->GetPTable()->SetDirtyDraw();

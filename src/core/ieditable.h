@@ -143,25 +143,25 @@ public:
    dst->m_timerInterval = m_timerInterval; \
    dst->m_timerEnabled = m_timerEnabled;
 
-#define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, points) \
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type) \
-   for (size_t i = 0; i < dst->points.size(); i++) \
-      dst->points[i]->Release(); \
-   dst->points.clear(); \
-   CComObject<DragPoint> *pdp; \
-   for (const auto dpt : m_vdpoint) \
-   { \
-      CComObject<DragPoint>::CreateInstance(&pdp); \
-      if (pdp) \
-      { \
-         pdp->AddRef(); \
-         pdp->Init(dst, dpt->m_v.x, dpt->m_v.y, dpt->m_v.z, dpt->m_smooth); \
-         pdp->m_slingshot = dpt->m_slingshot; \
-         pdp->m_calcHeight = dpt->m_calcHeight; \
-         pdp->m_autoTexture = dpt->m_autoTexture; \
-         pdp->m_texturecoord = dpt->m_texturecoord; \
-         dst->points.push_back(pdp); \
-      } \
+#define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, curve)                                                                                                                     \
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type)                                                                                                                                                \
+   for (size_t i = 0; i < dst->curve.m_vdpoint.size(); i++)                                                                                                                                  \
+      dst->curve.m_vdpoint[i]->Release();                                                                                                                                                    \
+   dst->curve.m_vdpoint.clear();                                                                                                                                                             \
+   CComObject<DragPoint> *pdp;                                                                                                                                                               \
+   for (const auto dpt : curve.m_vdpoint)                                                                                                                                                    \
+   {                                                                                                                                                                                         \
+      CComObject<DragPoint>::CreateInstance(&pdp);                                                                                                                                           \
+      if (pdp)                                                                                                                                                                               \
+      {                                                                                                                                                                                      \
+         pdp->AddRef();                                                                                                                                                                      \
+         pdp->Init(&dst->curve, dpt->m_v.x, dpt->m_v.y, dpt->m_v.z, dpt->m_smooth);                                                                                                          \
+         pdp->m_slingshot = dpt->m_slingshot;                                                                                                                                                \
+         pdp->m_calcHeight = dpt->m_calcHeight;                                                                                                                                              \
+         pdp->m_autoTexture = dpt->m_autoTexture;                                                                                                                                            \
+         pdp->m_texturecoord = dpt->m_texturecoord;                                                                                                                                          \
+         dst->curve.m_vdpoint.push_back(pdp);                                                                                                                                                \
+      }                                                                                                                                                                                      \
    }
 
 

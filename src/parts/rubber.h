@@ -42,7 +42,6 @@ class Rubber :
    public IHitable,
    public IRenderable,
    public IScriptable,
-   public IHaveDragPoints,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
@@ -54,6 +53,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Rubber()
+      : m_curve(this, nullptr, 2)
    {
       m_d.m_collidable = true;
       m_d.m_visible = true;
@@ -88,14 +88,12 @@ public:
 
    void ClearForOverwrite() final;
 
-   int GetMinimumPoints() const final { return 2; }
-
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
-   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 
@@ -112,6 +110,9 @@ public:
 #endif
 
    RubberData m_d;
+
+   // The rubber outline curve (drag points defining the rubber band shape)
+   DragPointCurve m_curve;
 
    // Fills 'outline' with the closed 2D outline of the rubber for editor display, and optionally
    // 'crossFlags' with one flag per curve vertex marking the ones located at a control point.

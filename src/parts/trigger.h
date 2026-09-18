@@ -46,7 +46,6 @@ class Trigger :
    public IHitable,
    public IRenderable,
    public IScriptable,
-   public IHaveDragPoints,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
@@ -57,7 +56,10 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Trigger() { }
+   Trigger()
+      : m_curve(this, &m_d.m_vCenter)
+   {
+   }
    virtual ~Trigger();
 
    BEGIN_COM_MAP(Trigger)
@@ -89,12 +91,10 @@ public:
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
-   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
    Vertex2D GetScale() const final { return {m_d.m_scaleX, m_d.m_scaleY}; }
    float GetRotate() const final { return m_d.m_rotation; }
 
-   Vertex2D GetPointCenter() const final;
-   void PutPointCenter(const Vertex2D& pv) final;
    void ExportMesh(ObjLoader& loader) final;
 
    void ClearForOverwrite() final;
@@ -108,6 +108,9 @@ public:
    void GetWireOutline(vector<Vertex2D> &outline) const;
 
    TriggerData m_d;
+
+   // Custom shape outline (defines the trigger shape when m_d.m_shape is a wire shape)
+   DragPointCurve m_curve;
 
 private:
    // Regenerates the default drag point shape centered on (x, y), releasing any previously defined drag points

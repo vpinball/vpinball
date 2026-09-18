@@ -6,13 +6,13 @@
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/parts/DragPointWinUIPart.h"
 
-// Maintains one IWinUIPart per DragPoint of an IHaveDragPoints.
+// Maintains one IWinUIPart per DragPoint of an DragPointCurve.
 // DragPoint pointers are not stable (points are deleted and recreated on undo, point insertion/removal, ...),
 // so the list is reconciled lazily by pointer identity on each access, preserving the UI parts of surviving points.
 class DragPointUIPartList
 {
 public:
-   DragPointUIPartList(PinTableWnd* editor, IHaveDragPoints* owner)
+   DragPointUIPartList(PinTableWnd* editor, DragPointCurve* owner)
       : m_editor(editor)
       , m_owner(owner)
    {
@@ -52,6 +52,6 @@ private:
    }
 
    PinTableWnd* const m_editor;
-   IHaveDragPoints* const m_owner;
+   DragPointCurve* const m_owner;
    vector<std::unique_ptr<IWinUIPart>> m_parts;
 };

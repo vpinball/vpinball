@@ -50,7 +50,6 @@ class Surface :
    public IEditable,
    public IHitable,
    public IRenderable,
-   public IHaveDragPoints,
    public IScriptable,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
@@ -64,6 +63,7 @@ public:
 #endif
 
    Surface()
+      : m_curve(this)
    {
       m_d.m_collidable = true;
       m_d.m_slingshotAnimation = true;
@@ -106,7 +106,7 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
 
-   Vertex2D GetCenter() const final { return GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
 
    // end ISelect
 
@@ -151,6 +151,9 @@ public:
 
    SurfaceData m_d;
    bool m_disabled = false;
+
+   // The wall outline curve (drag points defining the wall shape)
+   DragPointCurve m_curve;
 
 private:
    void SetupHitObject(class PhysicsEngine *physics, HitObject *const obj, const bool isUI);

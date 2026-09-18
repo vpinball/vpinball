@@ -38,7 +38,7 @@ Light::~Light()
 
 Light *Light::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, m_curve)
    // Light specific copy and live data (not really needed)
    dst->m_currentIntensity = m_currentIntensity;
    dst->m_currentFilamentTemperature = m_currentFilamentTemperature;
@@ -150,7 +150,7 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       case ShapeCustom:
       {
          vector<RenderVertex> vvertex;
-         GetRgVertex(vvertex);
+         m_curve.GetRgVertex(vvertex);
          if (vvertex.empty())
             return;
 
@@ -184,10 +184,7 @@ void Light::UpdateBounds()
    m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, m_initSurfaceHeight);
 }
 
-void Light::ClearForOverwrite()
-{
-   ClearPointsForOverwrite();
-}
+void Light::ClearForOverwrite() { m_curve.ClearPointsForOverwrite(); }
 
 void Light::UpdateAnimation(const float diff_time_msec)
 {
@@ -322,7 +319,7 @@ void Light::RenderSetup(Renderer *renderer)
       bulbSocketVBuffer->Unlock();
    }
 
-   GetRgVertex(m_vvertex);
+   m_curve.GetRgVertex(m_vvertex);
 
    if (m_vvertex.empty())
       return;
@@ -776,7 +773,7 @@ void Light::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(FADE), m_d.m_fader);
    writer.WriteBool(FID(VSBL), m_d.m_visible);
    SaveSharedEditableFields(writer);
-   SavePoints(writer);
+   m_curve.SavePoints(writer);
    writer.EndObject();
 }
 
@@ -856,7 +853,7 @@ void Light::Load(IObjectReader& reader)
          case FID(SHDW): m_d.m_shadows = static_cast<ShadowMode>(reader.AsInt()); break;
          case FID(FADE): m_d.m_fader = static_cast<Fader>(reader.AsInt()); break;
          case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
-         case FID(DPNT): LoadPointToken(reader); break;
+         case FID(DPNT): m_curve.LoadPointToken(reader); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
@@ -866,20 +863,10 @@ void Light::Load(IObjectReader& reader)
       InitShape();
 }
 
-Vertex2D Light::GetPointCenter() const
-{
-   return m_d.m_vCenter;
-}
-
-void Light::PutPointCenter(const Vertex2D& pv)
-{
-   m_d.m_vCenter = pv;
-}
-
 void Light::AddPoint(const Vertex2D &v, const bool smooth)
 {
    vector<RenderVertex> vvertex;
-   GetRgVertex(vvertex);
+   m_curve.GetRgVertex(vvertex);
 
    int iSeg;
    Vertex2D vOut;
@@ -892,15 +879,15 @@ void Light::AddPoint(const Vertex2D &v, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_vdpoint.size();
+   //icp = m_curve.m_vdpoint.size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, vOut.x, vOut.y, 0.f, smooth);
-      m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
+      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
@@ -967,29 +954,17 @@ STDMETHODIMP Light::put_State(float newVal)
    return S_OK;
 }
 
-void Light::FlipY(const Vertex2D& pvCenter)
-{
-   IHaveDragPoints::FlipPointY(pvCenter);
-}
+void Light::FlipY(const Vertex2D &pvCenter) { m_curve.FlipPointY(pvCenter); }
 
-void Light::FlipX(const Vertex2D& pvCenter)
-{
-   IHaveDragPoints::FlipPointX(pvCenter);
-}
+void Light::FlipX(const Vertex2D &pvCenter) { m_curve.FlipPointX(pvCenter); }
 
-void Light::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
-}
+void Light::Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.RotatePoints(ang, pvCenter, useElementCenter); }
 
-void Light::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
-}
+void Light::Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter); }
 
 void Light::Translate(const Vertex2D &offset)
 {
-   IHaveDragPoints::TranslatePoints(offset);
+   m_curve.TranslatePoints(offset);
    m_d.m_vCenter.x += offset.x;
    m_d.m_vCenter.y += offset.y;
 }
@@ -1044,7 +1019,7 @@ STDMETHODIMP Light::put_Y(float newVal)
 
 void Light::InitShape()
 {
-   if (m_vdpoint.empty())
+   if (m_curve.m_vdpoint.empty())
    {
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
@@ -1060,8 +1035,8 @@ void Light::InitShape()
          if (pdp)
          {
             pdp->AddRef();
-            pdp->Init(this, xx, yy, 0.f, true);
-            m_vdpoint.push_back(pdp);
+            pdp->Init(&m_curve, xx, yy, 0.f, true);
+            m_curve.m_vdpoint.push_back(pdp);
          }
       }
    }
