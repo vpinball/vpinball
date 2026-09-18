@@ -248,9 +248,9 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          PropertyDialog::SetFloatTextbox(m_modulateEdit, flash->m_d.m_modulate_vs_add);
 
       if (dispid == 5 || dispid == -1)
-         PropertyDialog::SetFloatTextbox(m_posXEdit, flash->m_d.m_vCenter.x);
+         PropertyDialog::SetFloatTextbox(m_posXEdit, flash->GetCenter().x);
       if (dispid == 6 || dispid == -1)
-         PropertyDialog::SetFloatTextbox(m_posYEdit, flash->m_d.m_vCenter.y);
+         PropertyDialog::SetFloatTextbox(m_posYEdit, flash->GetCenter().y);
       if (dispid == IDC_HEIGHT_EDIT || dispid == -1)
          PropertyDialog::SetFloatTextbox(m_heightEdit, flash->m_d.m_height);
       if (dispid == 9 || dispid == -1)
@@ -375,7 +375,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       case IDC_MODULATE_VS_ADD: CHECK_UPDATE_ITEM(flash->m_d.m_modulate_vs_add, PropertyDialog::GetFloatTextbox(m_modulateEdit), flash); break;
       case 5:
       {
-         const float oldX = flash->m_d.m_vCenter.x;
+         const float oldX = flash->GetCenter().x;
          const float newX = PropertyDialog::GetFloatTextbox(m_posXEdit);
          if (oldX != newX)
          {
@@ -388,7 +388,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       }
       case 6:
       {
-         const float oldY = flash->m_d.m_vCenter.y;
+         const float oldY = flash->GetCenter().y;
          const float newY = PropertyDialog::GetFloatTextbox(m_posYEdit);
          if (oldY != newY)
          {

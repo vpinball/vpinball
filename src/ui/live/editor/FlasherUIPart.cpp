@@ -17,7 +17,8 @@ FlasherUIPart::~FlasherUIPart() { m_flasher->m_d.m_isVisible = m_visible; }
 
 FlasherUIPart::TransformMask FlasherUIPart::GetTransform(Matrix3D& transform)
 {
-   const Matrix3D trans = Matrix3D::MatrixTranslate(m_flasher->m_d.m_vCenter.x, m_flasher->m_d.m_vCenter.y, m_flasher->m_d.m_height);
+   const Vertex2D center = m_flasher->GetCenter();
+   const Matrix3D trans = Matrix3D::MatrixTranslate(center.x, center.y, m_flasher->m_d.m_height);
    const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(m_flasher->m_d.m_rotX));
    const Matrix3D roty = Matrix3D::MatrixRotateY(ANGTORAD(m_flasher->m_d.m_rotY));
    const Matrix3D rotz = Matrix3D::MatrixRotateZ(ANGTORAD(m_flasher->m_d.m_rotZ));
@@ -27,8 +28,8 @@ FlasherUIPart::TransformMask FlasherUIPart::GetTransform(Matrix3D& transform)
 
 void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
-   const float px = m_flasher->m_d.m_vCenter.x, py = m_flasher->m_d.m_vCenter.y;
-   m_flasher->m_curve.TranslatePoints(Vertex2D { pos.x - px, pos.y - py });
+   const Vertex2D center = m_flasher->GetCenter();
+   m_flasher->m_curve.TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
    m_flasher->put_Height(pos.z);
    m_flasher->put_RotX(rot.x);
    m_flasher->put_RotY(rot.y);
@@ -221,12 +222,15 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
    {
       props.InputFloat3<Flasher>(
          m_flasher, "Position"s, //
-         [](const Flasher* flasher) { return vec3(flasher->m_d.m_vCenter.x, flasher->m_d.m_vCenter.y, flasher->m_d.m_height); }, //
+         [](const Flasher* flasher)
+         {
+            const Vertex2D center = flasher->GetCenter();
+            return vec3(center.x, center.y, flasher->m_d.m_height);
+         }, //
          [](Flasher* flasher, const vec3& v)
          {
-            const float px = flasher->m_d.m_vCenter.x;
-            const float py = flasher->m_d.m_vCenter.y;
-            flasher->m_curve.TranslatePoints(Vertex2D { v.x - px, v.y - py });
+            const Vertex2D center = flasher->GetCenter();
+            flasher->m_curve.TranslatePoints(Vertex2D { v.x - center.x, v.y - center.y });
             flasher->put_Height(v.z);
          },
          PropertyPane::Unit::VPLength, 1);

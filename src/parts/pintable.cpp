@@ -1697,7 +1697,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                            center += (miny + 0.5f * backglassHeight) * planeYAxis;
                            center.x += (minx + 0.5f * backglassWidth); // since planeXAxis is (1, 0, 0)
                            backglass->Translate(Vertex2D(center.x, center.y));
-                           backglass->m_d.m_vCenter = Vertex2D(center.x, center.y);
                            backglass->m_d.m_height = center.z;
                            backglass->m_d.m_rotX = -180.f - RADTOANG(atan2(planeNormal.y, planeNormal.z)); // since planeXAxis is (1, 0, 0)
                            backglass->m_d.m_renderMode = FlasherData::EXT_RENDER;

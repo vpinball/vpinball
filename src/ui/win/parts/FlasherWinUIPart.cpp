@@ -23,7 +23,7 @@ void FlasherWinUIPart::UpdateStatusBarObjectPos()
 void FlasherWinUIPart::UIRenderPass1(Sur * const psur)
 {
    if (m_flasher->m_curve.m_vdpoint.empty())
-      m_flasher->InitShape();
+      return;
 
    psur->SetFillColor(m_flasher->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);
    psur->SetObject(this);
@@ -120,8 +120,9 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
    }
 
    // Little cross at the object center
-   psur->Line(m_flasher->m_d.m_vCenter.x - 10.0f, m_flasher->m_d.m_vCenter.y, m_flasher->m_d.m_vCenter.x + 10.0f, m_flasher->m_d.m_vCenter.y);
-   psur->Line(m_flasher->m_d.m_vCenter.x, m_flasher->m_d.m_vCenter.y - 10.0f, m_flasher->m_d.m_vCenter.x, m_flasher->m_d.m_vCenter.y + 10.0f);
+   const Vertex2D center = m_flasher->GetCenter();
+   psur->Line(center.x - 10.0f, center.y, center.x + 10.0f, center.y);
+   psur->Line(center.x, center.y - 10.0f, center.x, center.y + 10.0f);
 }
 
 void FlasherWinUIPart::DoCommand(int icmd, int x, int y)

@@ -26,13 +26,11 @@ Flasher *Flasher::CopyForPlay() const
    return dst;
 }
 
-void Flasher::InitShape()
+void Flasher::InitShape(const float x, const float y)
 {
    if (m_curve.m_vdpoint.empty())
    {
       // First time shape has been set to custom - set up some points
-      const float x = m_d.m_vCenter.x;
-      const float y = m_d.m_vCenter.y;
       constexpr float size = 100.0f;
 
       CComObject<DragPoint> *pdp;
@@ -67,7 +65,7 @@ void Flasher::InitShape()
    }
 }
 
-void Flasher::UpdateCenter()
+void Flasher::UpdateCenter() const
 {
    if (m_centerClean)
       return;
@@ -91,21 +89,16 @@ void Flasher::UpdateCenter()
       if (pv0.y < m_miny)
          m_miny = pv0.y;
    }
-
-   m_d.m_vCenter.x = 0.5f * (m_minx + m_maxx);
-   m_d.m_vCenter.y = 0.5f * (m_miny + m_maxy);
 }
 
 HRESULT Flasher::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    SetDefaults(fromMouseClick);
    m_d.m_isVisible = true;
-   m_d.m_vCenter.x = x;
-   m_d.m_vCenter.y = y;
    m_d.m_rotX = 0.0f;
    m_d.m_rotY = 0.0f;
    m_d.m_rotZ = 0.0f;
-   InitShape();
+   InitShape(x , y);
    return S_OK;
 }
 
@@ -233,9 +226,13 @@ void Flasher::Translate(const Vertex2D &offset)
    m_maxx += offset.x;
    m_miny += offset.y;
    m_maxy += offset.y;
-   m_d.m_vCenter.x += offset.x;
-   m_d.m_vCenter.y += offset.y;
    m_dynamicVertexBufferRegenerate = true;
+}
+
+Vertex2D Flasher::GetCenter() const
+{
+   UpdateCenter();
+   return { 0.5f * (m_minx + m_maxx), 0.5f * (m_miny + m_maxy) };
 }
 
 void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
@@ -273,8 +270,6 @@ void Flasher::UpdatePoint(int index, float x, float y)
 void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
 {
    writer.WriteFloat(FID(FHEI), m_d.m_height);
-   writer.WriteFloat(FID(FLAX), m_d.m_vCenter.x); // Just for information, as it is computed from dragpoints
-   writer.WriteFloat(FID(FLAY), m_d.m_vCenter.y); // Just for information, as it is computed from dragpoints
    writer.WriteFloat(FID(FROX), m_d.m_rotX);
    writer.WriteFloat(FID(FROY), m_d.m_rotY);
    writer.WriteFloat(FID(FROZ), m_d.m_rotZ);
@@ -324,8 +319,6 @@ void Flasher::Load(IObjectReader& reader)
          switch (tag)
          {
          case FID(FHEI): m_d.m_height = reader.AsFloat(); break;
-         case FID(FLAX): m_d.m_vCenter.x = reader.AsFloat(); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
-         case FID(FLAY): m_d.m_vCenter.y = reader.AsFloat(); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
          case FID(FROX): m_d.m_rotX = reader.AsFloat(); break;
          case FID(FROY): m_d.m_rotY = reader.AsFloat(); break;
          case FID(FROZ): m_d.m_rotZ = reader.AsFloat(); break;
@@ -363,6 +356,8 @@ void Flasher::Load(IObjectReader& reader)
          case FID(FIAM): m_d.m_filterAmount = reader.AsInt(); break;
          case FID(LMAP): m_d.m_szLightmap = reader.AsString(); break;
          case FID(DPNT): m_curve.LoadPointToken(reader); break;
+         case FID(FLAX): reader.AsFloat(); break; // Center X: Removed as it has always been computed from dragpoints
+         case FID(FLAY): reader.AsFloat(); break; // Center Y: Removed as it has always been computed from dragpoints
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
@@ -388,15 +383,15 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Flasher::get_X(float *pVal)
 {
    UpdateCenter();
-   *pVal = m_d.m_vCenter.x;
+   *pVal = 0.5f * (m_minx + m_maxx);
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_X(float newVal)
 {
    UpdateCenter();
-   if (m_d.m_vCenter.x != newVal)
-      Translate(Vertex2D(newVal - m_d.m_vCenter.x, 0.f));
+   if (const float center = 0.5f * (m_minx + m_maxx); center != newVal)
+      Translate(Vertex2D(newVal - center, 0.f));
 
    return S_OK;
 }
@@ -404,15 +399,15 @@ STDMETHODIMP Flasher::put_X(float newVal)
 STDMETHODIMP Flasher::get_Y(float *pVal)
 {
    UpdateCenter();
-   *pVal = m_d.m_vCenter.y;
+   *pVal = 0.5f * (m_miny + m_maxy);
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_Y(float newVal)
 {
    UpdateCenter();
-   if (m_d.m_vCenter.y != newVal)
-      Translate(Vertex2D(0.f, newVal - m_d.m_vCenter.y));
+   if (const float center = 0.5f * (m_miny + m_maxy); center != newVal)
+      Translate(Vertex2D(0.f, newVal - center));
 
    return S_OK;
 }
