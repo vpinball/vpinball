@@ -25,7 +25,7 @@ public:
    void EditMenu(Win32xx::CMenu& menu) override;
    void DoCommand(int icmd, int x, int y) override;
 
-   IWinUIPart* GetSubPart(ISelect* select) override { return m_pointParts.Get(select); }
+   IWinUIPart* GetSubPart(DragPoint* point) override { return m_pointParts.Get(point); }
 
 private:
    Trigger* const m_trigger;

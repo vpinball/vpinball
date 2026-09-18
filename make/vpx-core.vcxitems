@@ -796,7 +796,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/FileLocator.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/ieditable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/editablereg.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/core/iselect.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/pinundo.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/player.cpp" />
@@ -1590,7 +1589,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/extern.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/FileLocator.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/ieditable.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/core/iselect.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/main.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/pinundo.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/Scriptable.h" />

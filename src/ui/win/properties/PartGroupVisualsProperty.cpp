@@ -51,7 +51,7 @@ INT_PTR PartGroupVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lP
 void PartGroupVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
    // Only show the first element on multi-select
-   PartGroup* const partGroup = static_cast<PartGroup*>(SelAt(0));
+   PartGroup* const partGroup = static_cast<PartGroup*>(SelAt(0)->GetEditable());
    if (partGroup == nullptr)
       return;
    if (dispid == IDC_SPACE_REFERENCE || dispid == -1)
@@ -89,7 +89,7 @@ void PartGroupVisualsProperty::UpdateProperties(const int dispid)
    {
       if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPartGroup))
          continue;
-      PartGroup* const partGroup = static_cast<PartGroup*>(SelAt(i));
+      PartGroup* const partGroup = static_cast<PartGroup*>(SelAt(i)->GetEditable());
       switch (dispid)
       {
       case IDC_SPACE_REFERENCE:

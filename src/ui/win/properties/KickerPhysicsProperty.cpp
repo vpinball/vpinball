@@ -22,7 +22,7 @@ void KickerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)SelAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i)->GetEditable();
 
         if (dispid == DISPID_Enabled || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hEnableCheck, kicker->m_d.m_enabled);
@@ -46,7 +46,7 @@ void KickerPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)SelAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case DISPID_Enabled:

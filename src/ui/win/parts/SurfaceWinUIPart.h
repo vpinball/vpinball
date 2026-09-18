@@ -24,7 +24,7 @@ public:
    int GetMenuId() const override { return IDR_SURFACEMENU; }
    void DoCommand(int icmd, int x, int y) override;
 
-   IWinUIPart* GetSubPart(ISelect* select) override { return m_pointParts.Get(select); }
+   IWinUIPart* GetSubPart(DragPoint* point) override { return m_pointParts.Get(point); }
 
 private:
    Surface* const m_surface;

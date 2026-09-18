@@ -223,8 +223,8 @@ void LayersListDialog::SetActiveTable(PinTable* ptable)
       {
          if (m_activeTable)
          {
-            ISelect* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
-            m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
+            IWinUIPart* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
+            m_layerTreeView.Select(sel ? sel->GetEditable() : nullptr);
          }
          else
          {
@@ -240,8 +240,8 @@ void LayersListDialog::Update()
    m_layerTreeView.Update();
    if (IsSyncedOnSelection())
    {
-      ISelect* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
-      m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
+      IWinUIPart* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
+      m_layerTreeView.Select(sel ? sel->GetEditable() : nullptr);
    }
    UpdateCommands();
 }
@@ -435,7 +435,7 @@ void LayerTreeView::Update()
       {
          bool show = false, hide = false;
          for (auto e : m_activeTable->GetParts())
-            if (e->GetPartGroup() == node.editable && e->GetISelect())
+            if (e->GetPartGroup() == node.editable)
             {
                show |= e->IsUIVisible(false);
                hide |= !e->IsUIVisible(false);

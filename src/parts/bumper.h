@@ -42,7 +42,6 @@ class Bumper :
    public EventProxy<Bumper, &DIID_IBumperEvents>,
    public IConnectionPointContainerImpl<Bumper>,
    public IProvideClassInfo2Impl<&CLSID_Bumper, &DIID_IBumperEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,
@@ -84,7 +83,6 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   // ISelect implementation
    void Translate(const Vertex2D &offset) final;
    Vertex2D GetCenter() const final;
    void SetDefaultPhysics(const bool fromMouseClick) final;

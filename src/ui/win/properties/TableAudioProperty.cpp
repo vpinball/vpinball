@@ -11,14 +11,14 @@ TableAudioProperty::TableAudioProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_AUDIO, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetItemType() == eItemTable);
    m_soundEffectVolEdit.SetDialog(this);
    m_musicVolEdit.SetDialog(this);
 }
 
 void TableAudioProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
-   PinTable *const table = (PinTable *)SelAt(0);
+   PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
    if (dispid == IDC_TABLESOUNDVOLUME || dispid == -1)
       PropertyDialog::SetIntTextbox(m_soundEffectVolEdit, table->GetTableSoundVolume());
    if (dispid == IDC_TABLEMUSICVOLUME || dispid == -1)
@@ -27,7 +27,7 @@ void TableAudioProperty::UpdateVisuals(const int dispid /*=-1*/)
 
 void TableAudioProperty::UpdateProperties(const int dispid)
 {
-   PinTable *const table = (PinTable *)SelAt(0);
+   PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
    switch (dispid)
    {
    case IDC_TABLESOUNDVOLUME: CHECK_UPDATE_VALUE_SETTER(table->SetTableSoundVolume, table->GetTableSoundVolume, PropertyDialog::GetIntTextbox, m_soundEffectVolEdit, table); break;

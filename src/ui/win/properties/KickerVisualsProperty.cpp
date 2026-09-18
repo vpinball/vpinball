@@ -35,7 +35,7 @@ void KickerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)SelAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_KICKER_DISPLAY_COMBO || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_displayCombo, m_typeList[kicker->m_d.m_kickertype]);
@@ -61,7 +61,7 @@ void KickerVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemKicker))
             continue;
-        Kicker * const kicker = (Kicker *)SelAt(i);
+        Kicker * const kicker = (Kicker *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_KICKER_DISPLAY_COMBO:

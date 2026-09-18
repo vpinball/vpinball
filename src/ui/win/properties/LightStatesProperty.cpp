@@ -25,7 +25,7 @@ void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)SelAt(i);
+        Light * const light = (Light *)SelAt(i)->GetEditable();
         if (dispid == DISPID_Light_State || dispid == -1)
         {
             float state;
@@ -47,7 +47,7 @@ void LightStatesProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)SelAt(i);
+        Light * const light = (Light *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case DISPID_Light_State:

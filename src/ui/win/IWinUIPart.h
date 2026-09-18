@@ -1,11 +1,11 @@
 #pragma once
 
-#include "core/iselect.h"
+#include "core/ieditable.h"
 #include "ui/win/resource.h"
 
 class Sur;
-class IEditable;
-class ISelect;
+class DragPoint;
+class LightCenter;
 class PinTableWnd;
 namespace Win32xx
 {
@@ -27,17 +27,16 @@ public:
    // Returns true if a part with the given allowed views may be used in the given view
    static constexpr bool IsViewAllowed(const AllowedViews allowedViews, const AllowedViews view) { return (static_cast<unsigned>(allowedViews) & static_cast<unsigned>(view)) != 0; }
 
-   IWinUIPart(PinTableWnd* editor, ISelect* select)
+   IWinUIPart(PinTableWnd* editor, IEditable* editable)
       : m_editor(editor)
-      , m_select(select)
+      , m_editable(editable)
    {
    }
    virtual ~IWinUIPart() = default;
 
-   ISelect* GetSelect() const { return m_select; }
-   IEditable* GetEditable() const { return m_select->GetIEditable(); }
+   IEditable* GetEditable() const { return m_editable; }
 
-   // Type of the table part this UI part edits (independent of the wrapped ISelect, which is meant to be phased out)
+   // Type of the table part this UI part edits
    virtual ItemTypeEnum GetItemType() const = 0;
 
    // True for UI parts of sub selects (drag points, light centers) owned by another part
@@ -81,8 +80,12 @@ public:
    // Executes a command picked from the context menu
    virtual void DoCommand(int icmd, int x, int y);
 
-   // Returns the UI part for a sub select owned by this part's editable (e.g. a drag point, a light center), nullptr if none
-   virtual IWinUIPart* GetSubPart(ISelect* select) { return nullptr; }
+   // Returns the drag point edited by this UI part, nullptr if this UI part does not edit a drag point
+   virtual DragPoint* GetDragPoint() const { return nullptr; }
+
+   // Returns the UI part for a sub element owned by this part's editable (a drag point or a light center), nullptr if none
+   virtual IWinUIPart* GetSubPart(DragPoint* point) { return nullptr; }
+   virtual IWinUIPart* GetSubPart(LightCenter* center) { return nullptr; }
 
    // Geometric transforms of the selectable element (applied to the sub element itself for sub selects like drag points)
    // Higher level transforms (scale, rotate, flip) are performed on the IEditable, or on the sub element through GetCenter/Translate
@@ -95,5 +98,5 @@ protected:
    const COLORREF m_blueprintSolidColor = RGB(0, 0, 0);
 
    PinTableWnd* const m_editor;
-   ISelect* const m_select;
+   IEditable* const m_editable;
 };

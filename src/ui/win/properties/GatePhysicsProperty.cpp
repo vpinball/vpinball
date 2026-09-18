@@ -22,7 +22,7 @@ void GatePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate * const gate = (Gate *)SelAt(i);
+        Gate * const gate = (Gate *)SelAt(i)->GetEditable();
 
         if (dispid == 13 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_dampingEdit, gate->m_d.m_damping);
@@ -42,7 +42,7 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate * const gate = (Gate *)SelAt(i);
+        Gate * const gate = (Gate *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 13:

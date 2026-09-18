@@ -21,7 +21,7 @@ void BumperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBumper))
             continue;
-        Bumper *const bumper = (Bumper *)SelAt(i);
+        Bumper *const bumper = (Bumper *)SelAt(i)->GetEditable();
         if( dispid == IDC_FORCE_EDIT || dispid==-1)
             PropertyDialog::SetFloatTextbox(m_forceEdit, bumper->m_d.m_force);
         if (dispid == IDC_COLLIDABLE_CHECK || dispid == -1)
@@ -38,7 +38,7 @@ void BumperPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBumper))
             continue;
-        Bumper *const bumper = (Bumper *)SelAt(i);
+        Bumper *const bumper = (Bumper *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_FORCE_EDIT:

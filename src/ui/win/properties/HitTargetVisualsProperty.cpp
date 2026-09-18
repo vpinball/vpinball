@@ -44,7 +44,7 @@ void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)SelAt(i);
+        HitTarget * const target = (HitTarget *)SelAt(i)->GetEditable();
         if (dispid == IDC_HIT_TARGET_TYPE || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[target->m_d.m_targetType - 1]);
         if (dispid == IDC_TARGET_MOVE_SPEED_EDIT || dispid == -1)
@@ -84,7 +84,7 @@ void HitTargetVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)SelAt(i);
+        HitTarget * const target = (HitTarget *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_HIT_TARGET_TYPE:

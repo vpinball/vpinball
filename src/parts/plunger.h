@@ -109,7 +109,6 @@ class Plunger :
    public IProvideClassInfo2Impl<&CLSID_Plunger, &DIID_IPlungerEvents, &LIBID_VPinballLib>,
    //public CComObjectRootEx<CComSingleThreadModel>,
 
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

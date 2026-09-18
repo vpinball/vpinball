@@ -24,7 +24,7 @@ void RubberVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRubber))
             continue;
-        Rubber *const rubber = (Rubber *)SelAt(i);
+        Rubber *const rubber = (Rubber *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_STATIC_RENDERING_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hStaticRenderingCheck, rubber->m_d.m_staticRendering);
@@ -53,7 +53,7 @@ void RubberVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRubber))
             continue;
-        Rubber *const rubber = (Rubber *)SelAt(i);
+        Rubber *const rubber = (Rubber *)SelAt(i)->GetEditable();
 
         switch (dispid)
         {

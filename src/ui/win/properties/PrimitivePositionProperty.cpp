@@ -33,7 +33,7 @@ void PrimitivePositionProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        const Primitive *const prim = (Primitive*)SelAt(i);
+        const Primitive *const prim = (Primitive *)SelAt(i)->GetEditable();
 
         if (dispid == DISPID_POSITION_X || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, prim->m_d.m_vPosition.x);
@@ -81,7 +81,7 @@ void PrimitivePositionProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive*)SelAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case DISPID_POSITION_X:

@@ -10,12 +10,10 @@
 
 class DragPointCurve;
 
-class DragPoint :
-   public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VPinballLib>,
-   public ISupportErrorInfo,
-   public CComObjectRoot,
-   public CComCoClass<DragPoint, &CLSID_DragPoint>,
-   public ISelect
+class DragPoint : public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VPinballLib>,
+                  public ISupportErrorInfo,
+                  public CComObjectRoot,
+                  public CComCoClass<DragPoint, &CLSID_DragPoint>
 {
 public:
 #ifdef __STANDALONE__
@@ -27,16 +25,15 @@ public:
 
    void Init(DragPointCurve *pcurve, const float x, const float y, const float z, const bool smooth);
 
-   // From ISelect
    static inline constexpr ItemTypeEnum ItemType = eItemDragPoint;
-   ItemTypeEnum GetItemType() const final { return eItemDragPoint; }
+   ItemTypeEnum GetItemType() const { return eItemDragPoint; }
 
    // Single point manipulation, used by the Win32 editor (moves only this point, not the parent part)
    void Translate(const Vertex2D &offset);
    Vertex2D GetCenter() const;
 
-   IEditable *GetIEditable() final;
-   const IEditable *GetIEditable() const final;
+   IEditable *GetIEditable();
+   const IEditable *GetIEditable() const;
 
    void Copy();
    void Paste();

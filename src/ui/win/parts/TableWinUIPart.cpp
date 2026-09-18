@@ -80,7 +80,7 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    {
       for (IWinUIPart *const uiPart : m_editor->GetMultiSelParts())
       {
-         _ASSERTE(uiPart->GetSelect() != m_table); // Would make an infinite loop
+         _ASSERTE(uiPart->GetEditable() != m_table); // Would make an infinite loop
          if (uiPart != this)
             uiPart->DoCommand(icmd, x, y);
       }

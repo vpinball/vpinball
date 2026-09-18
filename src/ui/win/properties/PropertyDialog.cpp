@@ -120,7 +120,7 @@ PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType(
 
 void PropertyDialog::CreateTabs(const vector<IWinUIPart *> &pvsel)
 {
-    ISelect* const psel = pvsel.empty() ? nullptr : pvsel[0]->GetSelect();
+    IWinUIPart* const psel = pvsel.empty() ? nullptr : pvsel[0];
     if (psel == nullptr)
         return;
 
@@ -384,7 +384,7 @@ void PropertyDialog::CreateTabs(const vector<IWinUIPart *> &pvsel)
     }
     case eItemPrimitive:
     {
-        m_isPlayfieldMesh = pvsel.size() == 1 && ((Primitive *)psel)->IsPlayfield();
+        m_isPlayfieldMesh = pvsel.size() == 1 && ((Primitive *)psel->GetEditable())->IsPlayfield();
         m_elementTypeName.SetWindowText(m_isPlayfieldMesh ? "Playfield Primitive" : "Primitive");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitiveVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitivePositionProperty(&pvsel), _T("Position")));
@@ -425,7 +425,7 @@ void PropertyDialog::CreateTabs(const vector<IWinUIPart *> &pvsel)
     case eItemDragPoint:
     {
         m_elementTypeName.SetWindowText("Control Point");
-        const DragPoint* const dpoint = (DragPoint*)psel;
+        const DragPoint* const dpoint = psel->GetDragPoint();
         const ItemTypeEnum itemType = dpoint->GetIEditable()->GetItemType();
         if (itemType == eItemRamp)
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWHEIGHT, &pvsel), _T("Visuals")));
@@ -587,7 +587,7 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CCo
 void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
 {
    // Invalid selection: discard update
-   ISelect *const psel = pvsel.empty() ? nullptr : pvsel[0]->GetSelect();
+   IWinUIPart *const psel = pvsel.empty() ? nullptr : pvsel[0];
    if (psel == nullptr)
    {
       m_nameEdit.EnableWindow(FALSE);
@@ -597,7 +597,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
    m_nameEdit.EnableWindow(TRUE);
 
    // Table is locked: just disable property pane
-   if (psel->GetIEditable()->GetPTable()->IsLocked())
+   if (psel->GetEditable()->GetPTable()->IsLocked())
    {
       m_multipleElementsStatic.ShowWindow(SW_HIDE);
       m_nameEdit.ShowWindow(SW_HIDE);
@@ -616,7 +616,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
    m_elementTypeName.ShowWindow();
    m_tab.ShowWindow();
 
-   const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->IsPlayfield();
+   const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel->GetEditable())->IsPlayfield();
    if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_desktopBackdropView != g_pvp->m_desktopBackdropView || m_multipleElementsStatic.IsWindowVisible())
    {
       BasePropertyDialog::m_disableEvents = true;
@@ -628,7 +628,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
         for (int i = 0; i < (int)pvsel.size(); i++)
         {
             // check for multiple selection
-            if (psel->GetItemType() != pvsel[i]->GetSelect()->GetItemType())
+            if (psel->GetItemType() != pvsel[i]->GetItemType())
             {
                 m_multipleElementsStatic.ShowWindow(SW_SHOW);
                 m_nameEdit.ShowWindow(SW_HIDE);
@@ -654,7 +654,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
 
     if (pvsel.size() > 1)
     {
-       const wstring &wzName = psel->GetIEditable()->GetPTable()->GetCollectionNameByElement(psel->GetIEditable());
+       const wstring &wzName = psel->GetEditable()->GetPTable()->GetCollectionNameByElement(psel->GetEditable());
        const string collection = MakeString(wzName);
 
        string name;
@@ -679,7 +679,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
     }
     else
     {
-        m_nameEdit.SetWindowText(psel->GetIEditable()->GetName().c_str());
+        m_nameEdit.SetWindowText(psel->GetEditable()->GetName().c_str());
         m_nameEdit.SetReadOnly(0);
     }
 
@@ -694,16 +694,16 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
     ShowWindow();
 }
 
-void PropertyDialog::StartUndo(ISelect *const psel)
+void PropertyDialog::StartUndo(IEditable *const part)
 {
-   psel->GetIEditable()->GetPTable()->BeginUndo();
-   psel->GetIEditable()->GetPTable()->MarkForUndo(psel->GetIEditable());
+   part->GetPTable()->BeginUndo();
+   part->GetPTable()->MarkForUndo(part);
 }
 
-void PropertyDialog::EndUndo(ISelect *const psel)
+void PropertyDialog::EndUndo(IEditable *const part)
 {
-   psel->GetIEditable()->GetPTable()->EndUndo();
-   psel->GetIEditable()->GetPTable()->SetDirtyDraw();
+   part->GetPTable()->EndUndo();
+   part->GetPTable()->SetDirtyDraw();
 }
 
 void PropertyDialog::UpdateStatusBarInfo(IEditable *const part)
@@ -781,8 +781,8 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             if (m_tabs[0] && m_tabs[0]->SelAt(0) != nullptr)
             {
-                g_pvp->RenameEditable(m_tabs[0]->SelAt(0)->GetIEditable(), m_nameEdit.GetWindowText().GetString());
-                m_nameEdit.SetWindowText(m_tabs[0]->SelAt(0)->GetIEditable()->GetName().c_str()); // set it again in case it was truncated
+                g_pvp->RenameEditable(m_tabs[0]->SelAt(0)->GetEditable(), m_nameEdit.GetWindowText().GetString());
+                m_nameEdit.SetWindowText(m_tabs[0]->SelAt(0)->GetEditable()->GetName().c_str()); // set it again in case it was truncated
             }
             return TRUE;
         }
@@ -804,10 +804,10 @@ void TimerProperty::UpdateProperties(const int dispid)
 {
     for (int i = 0; i < SelCount(); i++)
     {
-        ISelect* const el = SelAt(i);
+        IWinUIPart* const el = SelAt(i);
         if (el == nullptr)
             continue;
-        IEditable *const eel = el->GetIEditable();
+        IEditable *const eel = el->GetEditable();
         if (eel == nullptr)
             continue;
 
@@ -836,12 +836,12 @@ void TimerProperty::UpdateProperties(const int dispid)
             case eItemLightSeq:
             {
                 if (dispid == DISPID_Timer_Interval)
-                   CHECK_UPDATE_ITEM(eel->m_timerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), el);
+                   CHECK_UPDATE_ITEM(eel->m_timerInterval, PropertyDialog::GetIntTextbox(m_timerIntervalEdit), eel);
 
                 /*TODO: uservalue is missing due to VARIANT handling*/
 
                 if (dispid == DISPID_Timer_Enabled)
-                   CHECK_UPDATE_ITEM(eel->m_timerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), el);
+                   CHECK_UPDATE_ITEM(eel->m_timerEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(DISPID_Timer_Enabled).GetHwnd()), eel);
                 break;
             }
             // eItemTable
@@ -859,10 +859,10 @@ void TimerProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     for (int i = 0; i < SelCount(); i++)
     {
-        ISelect* const el = SelAt(i);
+        IWinUIPart* const el = SelAt(i);
         if (el == nullptr)
             continue;
-        IEditable* const eel = el->GetIEditable();
+        IEditable* const eel = el->GetEditable();
         if (eel == nullptr)
             continue;
 
@@ -951,53 +951,53 @@ INT_PTR TimerProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #pragma region BasePropertyDialog
 
-void BasePropertyDialog::UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid)
+void BasePropertyDialog::UpdateBaseProperties(IEditable *part, BaseProperty *property, const int dispid)
 {
-    if (!property || psel==nullptr)
+    if (!property || part==nullptr)
         return;
 
     switch (dispid)
     {
         case IDC_HIT_THRESHOLD_EDIT:
-            CHECK_UPDATE_ITEM(property->m_threshold, PropertyDialog::GetFloatTextbox(*m_baseHitThresholdEdit), psel);
+            CHECK_UPDATE_ITEM(property->m_threshold, PropertyDialog::GetFloatTextbox(*m_baseHitThresholdEdit), part);
             break;
         case IDC_HAS_HITEVENT_CHECK:
-            CHECK_UPDATE_ITEM(property->m_hitEvent, PropertyDialog::GetCheckboxState(m_hHitEventCheck), psel);
+            CHECK_UPDATE_ITEM(property->m_hitEvent, PropertyDialog::GetCheckboxState(m_hHitEventCheck), part);
             break;
         case IDC_ELASTICITY_EDIT:
-            CHECK_UPDATE_ITEM(property->m_elasticity, PropertyDialog::GetFloatTextbox(*m_baseElasticityEdit), psel);
+            CHECK_UPDATE_ITEM(property->m_elasticity, PropertyDialog::GetFloatTextbox(*m_baseElasticityEdit), part);
             break;
         case IDC_COLLIDABLE_CHECK:
-            CHECK_UPDATE_ITEM(property->m_collidable, PropertyDialog::GetCheckboxState(m_hCollidableCheck), psel);
+            CHECK_UPDATE_ITEM(property->m_collidable, PropertyDialog::GetCheckboxState(m_hCollidableCheck), part);
             break;
         case IDC_VISIBLE_CHECK:
-            CHECK_UPDATE_ITEM(property->m_visible, PropertyDialog::GetCheckboxState(m_hVisibleCheck), psel);
+            CHECK_UPDATE_ITEM(property->m_visible, PropertyDialog::GetCheckboxState(m_hVisibleCheck), part);
             break;
         case IDC_REFLECT_ENABLED_CHECK:
-            CHECK_UPDATE_ITEM(property->m_reflectionEnabled, PropertyDialog::GetCheckboxState(m_hReflectionEnabledCheck), psel);
+            CHECK_UPDATE_ITEM(property->m_reflectionEnabled, PropertyDialog::GetCheckboxState(m_hReflectionEnabledCheck), part);
             break;
         case IDC_FRICTION_EDIT:
-            CHECK_UPDATE_ITEM(property->m_friction, PropertyDialog::GetFloatTextbox(*m_baseFrictionEdit), psel);
+            CHECK_UPDATE_ITEM(property->m_friction, PropertyDialog::GetFloatTextbox(*m_baseFrictionEdit), part);
             break;
         case IDC_SCATTER_ANGLE_EDIT:
-            CHECK_UPDATE_ITEM(property->m_scatter, PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit), psel);
+            CHECK_UPDATE_ITEM(property->m_scatter, PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit), part);
             break;
         case DISPID_Image:
-            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szImage, *m_baseImageCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szImage, *m_baseImageCombo, part);
             break;
         case IDC_MATERIAL_COMBO:
-            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szMaterial, *m_baseMaterialCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szMaterial, *m_baseMaterialCombo, part);
             break;
         case IDC_MATERIAL_COMBO4:
-            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szPhysicsMaterial, *m_basePhysicsMaterialCombo, psel);
+            CHECK_UPDATE_COMBO_TEXT_STRING(property->m_szPhysicsMaterial, *m_basePhysicsMaterialCombo, part);
             break;
         case IDC_OVERWRITE_MATERIAL_SETTINGS:
-            CHECK_UPDATE_ITEM(property->m_overwritePhysics, PropertyDialog::GetCheckboxState(m_hOverwritePhysicsCheck), psel);
+            CHECK_UPDATE_ITEM(property->m_overwritePhysics, PropertyDialog::GetCheckboxState(m_hOverwritePhysicsCheck), part);
             break;
     }
 }
 
-void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid)
+void BasePropertyDialog::UpdateBaseVisuals(IEditable *part, BaseProperty *property, const int dispid)
 {
     if (!property)
         return;
@@ -1019,13 +1019,13 @@ void BasePropertyDialog::UpdateBaseVisuals(ISelect *psel, BaseProperty *property
     if (m_hVisibleCheck && (dispid == IDC_VISIBLE_CHECK || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hVisibleCheck, property->m_visible);
     if (m_basePhysicsMaterialCombo && (dispid == IDC_MATERIAL_COMBO4 || dispid == -1))
-       PropertyDialog::UpdateMaterialComboBox(psel->GetIEditable()->GetPTable()->GetMaterialList(), *m_basePhysicsMaterialCombo, property->m_szPhysicsMaterial);
+       PropertyDialog::UpdateMaterialComboBox(part->GetPTable()->GetMaterialList(), *m_basePhysicsMaterialCombo, property->m_szPhysicsMaterial);
     if (m_hOverwritePhysicsCheck && (dispid == IDC_OVERWRITE_MATERIAL_SETTINGS || dispid == -1))
         PropertyDialog::SetCheckboxState(m_hOverwritePhysicsCheck, property->m_overwritePhysics);
     if (m_baseMaterialCombo && (dispid == IDC_MATERIAL_COMBO || dispid == -1))
-       PropertyDialog::UpdateMaterialComboBox(psel->GetIEditable()->GetPTable()->GetMaterialList(), *m_baseMaterialCombo, property->m_szMaterial);
+       PropertyDialog::UpdateMaterialComboBox(part->GetPTable()->GetMaterialList(), *m_baseMaterialCombo, property->m_szMaterial);
     if (m_baseImageCombo && (dispid == DISPID_Image || dispid == -1))
-       PropertyDialog::UpdateTextureComboBox(psel->GetIEditable()->GetPTable()->GetImageList(), *m_baseImageCombo, property->m_szImage);
+       PropertyDialog::UpdateTextureComboBox(part->GetPTable()->GetImageList(), *m_baseImageCombo, property->m_szImage);
 
     if (m_hCollidableCheck)
     {

@@ -35,7 +35,6 @@ class Decal :
    public EventProxy<Decal, &DIID_IDecalEvents>,
    public IConnectionPointContainerImpl<Decal>,
    public IProvideClassInfo2Impl<&CLSID_Decal, &DIID_IDecalEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    //public Hitable, // FIXME implement UI picking
    public IRenderable,

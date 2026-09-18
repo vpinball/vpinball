@@ -25,7 +25,7 @@ void PrimitivePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive *)SelAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_PRIMITIVE_IS_TOY || dispid == -1)
         {
@@ -82,7 +82,7 @@ void PrimitivePhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive *)SelAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_ELASTICITY_FALLOFF_EDIT:

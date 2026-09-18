@@ -34,7 +34,7 @@ void FlipperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)SelAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i)->GetEditable();
         if (dispid == IDC_MATERIAL_COMBO2 || dispid == -1)
             PropertyDialog::UpdateMaterialComboBox(flipper->GetPTable()->GetMaterialList(), m_rubberMaterialCombo, flipper->m_d.m_szRubberMaterial);
         if (dispid == 18 || dispid == -1)
@@ -77,7 +77,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)SelAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 1:

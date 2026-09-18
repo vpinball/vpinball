@@ -41,7 +41,6 @@ class HitTarget :
    public IConnectionPointContainerImpl<HitTarget>,
    public IProvideClassInfo2Impl<&CLSID_HitTarget, &DIID_IHitTargetEvents, &LIBID_VPinballLib>,
 
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

@@ -40,7 +40,7 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDecal))
             continue;
-        Decal * const decal = (Decal *)SelAt(i);
+        Decal * const decal = (Decal *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_FONT_TYPE_COMBO || dispid == -1)
         {
@@ -103,7 +103,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDecal))
             continue;
-        Decal * const decal = (Decal *)SelAt(i);
+        Decal * const decal = (Decal *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_FONT_TYPE_COMBO:

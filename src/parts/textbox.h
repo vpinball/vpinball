@@ -39,7 +39,6 @@ class Textbox :
    public EventProxy<Textbox, &DIID_ITextboxEvents>,
    public IConnectionPointContainerImpl<Textbox>,
    public IProvideClassInfo2Impl<&CLSID_Textbox, &DIID_ITextboxEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IScriptable,
    public IFireEvents,

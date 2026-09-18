@@ -195,12 +195,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/ieditable.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/core/iselect.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/core/pinundo.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -1074,9 +1068,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/ieditable.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/core/iselect.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/Scriptable.h">

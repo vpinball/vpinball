@@ -25,14 +25,14 @@ public:
 
    void ClearMultiSel(IWinUIPart *newSelPart = nullptr);
    bool MultiSelIsEmpty() const;
-   ISelect *GetSelectedItem() const { return m_vmultisel.empty() ? (ISelect *)m_table : m_vmultisel[0]->GetSelect(); }
+   IWinUIPart *GetSelectedItem() { return m_vmultisel.empty() ? GetUIPart(m_table) : m_vmultisel[0]; }
    void AddMultiSel(IWinUIPart *pselPart, const bool add, const bool update, const bool contextClick);
    // Live view of the selected UI parts, primary selection first (for the UI layer)
    const vector<IWinUIPart *> &GetMultiSelParts() const { return m_vmultisel; }
    // Number of entries in the multi-selection
    int GetMultiSelCount() const { return (int)m_vmultisel.size(); }
-   // Snapshot of the selected selects, primary selection first (for core code)
-   vector<ISelect *> GetSelectedParts() const;
+   // Snapshot of the selected UI parts, primary selection first
+   vector<IWinUIPart *> GetSelectedParts() const;
    // Moves the entry at 'from' to position 'to' in the selection (used by the drawing-order dialog)
    void MoveSelection(const int from, const int to);
    void SelectItem(IScriptable *piscript);
@@ -67,8 +67,8 @@ public:
    void SetCaption(const string &caption);
    int ShowMessageBox(const char *text) const;
 
-   void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);
-   void FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel);
+   void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, IWinUIPart *psel);
+   void FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, IWinUIPart *psel);
 
    void NewCollection(const HWND hwndListView, const bool fFromSelection);
    void ListCollections(HWND hwndListView);
@@ -115,7 +115,7 @@ public:
    // for the table itself. nullptr if none.
    IWinUIPart *GetUIPart(IEditable *part);
    // Returns the UI part of the given light center, a sub part of the UI part of its light. nullptr if none.
-   IWinUIPart *GetUIPart(Light::LightCenter *center);
+   IWinUIPart *GetUIPart(LightCenter *center);
    // Returns the UI part of the given drag point, a sub part of the UI part of its parent part. nullptr if none.
    IWinUIPart *GetUIPart(DragPoint *point);
 
@@ -176,11 +176,11 @@ private:
    bool m_dirtyDraw = true; // Whether our background bitmap is up to date
    HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window
 
-   // UI parts owned by this editor: one per entry of PinTable::m_vedit (keyed by IEditable::GetISelect()).
-   // Kept in sync by OnPartAdded/OnPartRemoved. Sub selects (drag points, light centers) are owned by their parent's UI part (see IWinUIPart::GetSubPart).
-   ankerl::unordered_dense::map<ISelect *, std::unique_ptr<IWinUIPart>> m_uiParts;
+   // UI parts owned by this editor: one per entry of PinTable::m_vedit (keyed by IEditable).
+   // Kept in sync by OnPartAdded/OnPartRemoved. Sub parts (drag points, light centers) are owned by their parent's UI part (see IWinUIPart::GetSubPart).
+   ankerl::unordered_dense::map<IEditable *, std::unique_ptr<IWinUIPart>> m_uiParts;
 
-   // Multi-selection: UI parts of the selected selects, primary selection first. Contains only the table's UI part when nothing is selected.
+   // Multi-selection: selected UI parts, primary selection first. Contains only the table's UI part when nothing is selected.
    vector<IWinUIPart *> m_vmultisel;
 
 private:

@@ -46,7 +46,6 @@ class Surface :
    public EventProxy<Surface, &DIID_IWallEvents>,
    public IConnectionPointContainerImpl<Surface>,
    public IProvideClassInfo2Impl<&CLSID_Wall, &DIID_IWallEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,
@@ -99,7 +98,6 @@ public:
    void ClearForOverwrite() final;
    // end IEditable
 
-   // ISelect
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
@@ -107,8 +105,6 @@ public:
    void Translate(const Vertex2D &offset) final;
 
    Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
-
-   // end ISelect
 
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
 

@@ -7,7 +7,7 @@
 class LightCenterWinUIPart final : public IWinUIPart
 {
 public:
-   explicit LightCenterWinUIPart(PinTableWnd* editor, ISelect* lightCenter);
+   explicit LightCenterWinUIPart(PinTableWnd* editor, LightCenter* lightCenter);
 
    ItemTypeEnum GetItemType() const override { return eItemLightCenter; }
    bool IsSubPart() const override { return true; }

@@ -18,7 +18,7 @@ BallPhysicsProperty::BallPhysicsProperty(const vector<IWinUIPart *> *pvsel)
 void BallPhysicsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
    //only show the first element on multi-select
-   Ball *const ball = (Ball *)SelAt(0);
+   Ball *const ball = (Ball *)SelAt(0)->GetEditable();
    if (ball == nullptr)
       return;
    if (dispid == 14 || dispid == -1)
@@ -32,7 +32,7 @@ void BallPhysicsProperty::UpdateProperties(const int dispid)
    {
       if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBall))
          continue;
-      Ball *const ball = (Ball *)SelAt(0);
+      Ball *const ball = (Ball *)SelAt(0)->GetEditable();
       switch (dispid)
       {
       case IDC_MASS: CHECK_UPDATE_ITEM(ball->m_hitBall.m_d.m_mass, PropertyDialog::GetFloatTextbox(m_massEdit), ball); break;

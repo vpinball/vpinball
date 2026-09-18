@@ -57,7 +57,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
    {
       if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlasher))
          continue;
-      Flasher *const flash = (Flasher *)SelAt(i);
+      Flasher *const flash = (Flasher *)SelAt(i)->GetEditable();
       FlasherData::RenderMode mode = clamp(flash->m_d.m_renderMode, FlasherData::FLASHER, FlasherData::EXT_RENDER);
 
       if (dispid == IDC_STYLE_COMBO || dispid == -1)
@@ -305,7 +305,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
    {
       if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlasher))
          continue;
-      Flasher *const flash = (Flasher *)SelAt(i);
+      Flasher *const flash = (Flasher *)SelAt(i)->GetEditable();
       switch (dispid)
       {
       case IDC_STYLE_COMBO:

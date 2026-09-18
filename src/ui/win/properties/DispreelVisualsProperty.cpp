@@ -28,7 +28,7 @@ void DispreelVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)SelAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_BACK_TRANSP_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hBackgroundTransparentCheck, reel->m_d.m_transparent);
@@ -64,7 +64,7 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)SelAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_BACK_TRANSP_CHECK:

@@ -44,7 +44,6 @@ class Ramp :
    public EventProxy<Ramp, &DIID_IRampEvents>,
    public IConnectionPointContainerImpl<Ramp>,
    public IProvideClassInfo2Impl<&CLSID_Ramp, &DIID_IRampEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

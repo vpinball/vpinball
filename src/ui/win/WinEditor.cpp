@@ -2101,7 +2101,7 @@ void WinEditor::AddControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (ISelect *const psel = ptCur->GetSelectedItem(); psel != nullptr)
+   if (IWinUIPart *const psel = ptCur->GetSelectedItem(); psel != nullptr)
    {
       const POINT pt = ptCur->GetScreenPoint();
       const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
@@ -2109,7 +2109,7 @@ void WinEditor::AddControlPoint()
       {
       case eItemRamp:
       {
-         Ramp *const pRamp = (Ramp *)psel;
+         Ramp *const pRamp = (Ramp *)psel->GetEditable();
          pRamp->GetPTable()->BeginUndo();
          pRamp->GetPTable()->MarkForUndo(pRamp);
          pRamp->AddPoint(v, false);
@@ -2120,7 +2120,7 @@ void WinEditor::AddControlPoint()
       }
       case eItemLight:
       {
-         Light *const pLight = (Light *)psel;
+         Light *const pLight = (Light *)psel->GetEditable();
          pLight->GetPTable()->BeginUndo();
          pLight->GetPTable()->MarkForUndo(pLight);
          pLight->AddPoint(v, false);
@@ -2131,7 +2131,7 @@ void WinEditor::AddControlPoint()
       }
       case eItemSurface:
       {
-         Surface *const pSurf = (Surface *)psel;
+         Surface *const pSurf = (Surface *)psel->GetEditable();
          pSurf->GetPTable()->BeginUndo();
          pSurf->GetPTable()->MarkForUndo(pSurf);
          pSurf->AddPoint(v, false);
@@ -2142,7 +2142,7 @@ void WinEditor::AddControlPoint()
       }
       case eItemRubber:
       {
-         Rubber *const pRub = (Rubber *)psel;
+         Rubber *const pRub = (Rubber *)psel->GetEditable();
          pRub->GetPTable()->BeginUndo();
          pRub->GetPTable()->MarkForUndo(pRub);
          pRub->AddPoint(v, false);
@@ -2163,7 +2163,7 @@ void WinEditor::AddSmoothControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (ISelect *const psel = ptCur->GetSelectedItem(); psel != nullptr)
+   if (IWinUIPart *const psel = ptCur->GetSelectedItem(); psel != nullptr)
    {
       const POINT pt = ptCur->GetScreenPoint();
       const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
@@ -2171,7 +2171,7 @@ void WinEditor::AddSmoothControlPoint()
       {
       case eItemRamp:
       {
-         Ramp *const pRamp = (Ramp *)psel;
+         Ramp *const pRamp = (Ramp *)psel->GetEditable();
          pRamp->GetPTable()->BeginUndo();
          pRamp->GetPTable()->MarkForUndo(pRamp);
          pRamp->AddPoint(v, true);
@@ -2182,7 +2182,7 @@ void WinEditor::AddSmoothControlPoint()
          }
          case eItemLight:
          {
-            Light *const pLight = (Light *)psel;
+            Light *const pLight = (Light *)psel->GetEditable();
             pLight->GetPTable()->BeginUndo();
             pLight->GetPTable()->MarkForUndo(pLight);
             pLight->AddPoint(v, true);
@@ -2193,7 +2193,7 @@ void WinEditor::AddSmoothControlPoint()
          }
          case eItemSurface:
          {
-            Surface *const pSurf = (Surface *)psel;
+            Surface *const pSurf = (Surface *)psel->GetEditable();
             pSurf->GetPTable()->BeginUndo();
             pSurf->GetPTable()->MarkForUndo(pSurf);
             pSurf->AddPoint(v, true);
@@ -2204,7 +2204,7 @@ void WinEditor::AddSmoothControlPoint()
          }
          case eItemRubber:
          {
-            Rubber *const pRub = (Rubber *)psel;
+            Rubber *const pRub = (Rubber *)psel->GetEditable();
             pRub->GetPTable()->BeginUndo();
             pRub->GetPTable()->MarkForUndo(pRub);
          pRub->AddPoint(v, true);

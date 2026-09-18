@@ -42,7 +42,7 @@ void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)SelAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i)->GetEditable();
         if (dispid == 6 || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)ramp->m_d.m_type]);
         if (dispid == 8 || dispid == -1)
@@ -82,7 +82,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)SelAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 1:

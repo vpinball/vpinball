@@ -75,7 +75,7 @@ void LightVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)SelAt(i);
+        Light * const light = (Light *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_INTENSITY || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_intensityEdit, light->m_d.m_intensity);
@@ -160,7 +160,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
             continue;
-        Light * const light = (Light *)SelAt(i);
+        Light * const light = (Light *)SelAt(i)->GetEditable();
 
         switch (dispid)
         {
@@ -290,7 +290,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 }
                 else
                 {
-                   const Light* const firstLight = (Light*)SelAt(0);
+                   const Light* const firstLight = (Light *)SelAt(0)->GetEditable();
                    light->m_d.m_color = firstLight->m_d.m_color;
                    m_colorButton1.SetColor(light->m_d.m_color);
                    ptable->SetDirtyDraw();
@@ -318,7 +318,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 }
                 else
                 {
-                   const Light* const firstLight = (Light*)SelAt(0);
+                   const Light* const firstLight = (Light *)SelAt(0)->GetEditable();
                    light->m_d.m_color2 = firstLight->m_d.m_color2;
                    m_colorButton2.SetColor(light->m_d.m_color2);
                 }
