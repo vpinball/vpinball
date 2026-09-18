@@ -97,7 +97,7 @@ private:
 
    Vertex2D m_cabinetAcceleration;
 
-   float m_cabinetMass = 1.f;
+   float m_cabinetMass = 113.f;
 
    float m_nudgeStrengthScale = 1.f;
 
