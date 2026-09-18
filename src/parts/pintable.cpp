@@ -38,7 +38,6 @@
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
-#include "ui/win/WinUIPartRegistry.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "utils/hash.h"

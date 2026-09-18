@@ -33,6 +33,8 @@ public:
    void SetMainVolume(float backglassVolume, float playfieldVolume);
    void SetVolume(float volume);
 
+   SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
+
 private:
    SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound);
    SoundPlayer(const AudioPlayer* audioPlayer, const string& filename);
