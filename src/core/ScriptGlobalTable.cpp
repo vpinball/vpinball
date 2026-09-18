@@ -1129,7 +1129,7 @@ STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 #ifndef __STANDALONE__
       *pVal = 0; // 2D
 #else
-      int val = g_pplayer->m_tableable->m_settings.GetStandalone_RenderingModeOverride();
+      int val = m_table->m_settings.GetStandalone_RenderingModeOverride();
       *pVal = (val == -1) ? 0 : val;
 #endif
    }
