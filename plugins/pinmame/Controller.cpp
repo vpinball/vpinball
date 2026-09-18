@@ -263,14 +263,22 @@ void Controller::Run(long hParentWnd, int nMinVersion)
 void Controller::Stop()
 {
    PinmameSetTimeFence(0.0);
-   if (PinmameIsRunning())
-   {
-      PinmameStop();
-      while (PinmameIsRunning() != 0) // Wait until the machine is stopped
-         std::this_thread::sleep_for(std::chrono::milliseconds(75));
-      if (m_onGameEndHandler)
-         m_onGameEndHandler(this);
-   }
+
+   // libpinmame defers message dispatch to the main thread through RunOnMainThread, queueing callbacks from its game thread.
+   // Flush them so that a queued game start notification is applied before the game end one triggered by PinmameStop.
+   m_msgApi->FlushPendingCallbacks(m_endpointId);
+
+   // Always request PinMAME to stop (even if not running) as it also performs memory cleanup
+   const bool wasRunning = PinmameIsRunning() != 0;
+   PinmameStop();
+   while (PinmameIsRunning() != 0) // Wait until the machine is stopped
+      std::this_thread::sleep_for(std::chrono::milliseconds(75));
+   if (wasRunning && m_onGameEndHandler)
+      m_onGameEndHandler(this);
+
+   // The game thread may have queued deferred callbacks while it was shutting down (audio buffers, sound commands, a late game start notification).
+   // Dispatch them now, while host side references still keep the released message ids alive.
+   m_msgApi->FlushPendingCallbacks(m_endpointId);
 }
 
 void Controller::SetMech(int mechNo, int newVal)
