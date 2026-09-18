@@ -11,7 +11,7 @@
 TriggerWinUIPart::TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger)
    : IWinUIPart(editor, trigger)
    , m_trigger(trigger)
-   , m_pointParts(editor, trigger)
+   , m_pointParts(editor, &trigger->m_curve)
 {
 }
 
@@ -30,7 +30,7 @@ void TriggerWinUIPart::UIRenderPass1(Sur* const psur)
       psur->SetFillColor(m_trigger->m_ptable->RenderSolid() ? RGB(200, 220, 200) : -1);
 
       vector<RenderVertex> vvertex;
-      m_trigger->GetRgVertex(vvertex);
+      m_trigger->m_curve.GetRgVertex(vvertex);
 
       psur->Polygon(vvertex);
    }
@@ -50,7 +50,7 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
    if (m_trigger->m_d.m_shape != TriggerStar && m_trigger->m_d.m_shape != TriggerButton)
    {
       vector<RenderVertex> vvertex;
-      m_trigger->GetRgVertex(vvertex);
+      m_trigger->m_curve.GetRgVertex(vvertex);
 
       psur->SetObject(nullptr);
       psur->SetBorderColor(RGB(0, 180, 0), false, 1);
@@ -62,9 +62,9 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
       if (!drawDragpoints)
       {
          // if any of the dragpoints of this object are selected then draw all the dragpoints
-         for (size_t i = 0; i < m_trigger->m_vdpoint.size(); i++)
+         for (size_t i = 0; i < m_trigger->m_curve.m_vdpoint.size(); i++)
          {
-            const CComObject<DragPoint>* const pdp = m_trigger->m_vdpoint[i];
+            const CComObject<DragPoint>* const pdp = m_trigger->m_curve.m_vdpoint[i];
             if (m_pointParts.IsSelected(pdp))
             {
                drawDragpoints = true;
@@ -75,9 +75,9 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
 
       if (drawDragpoints)
       {
-         for (size_t i = 0; i < m_trigger->m_vdpoint.size(); i++)
+         for (size_t i = 0; i < m_trigger->m_curve.m_vdpoint.size(); i++)
          {
-            CComObject<DragPoint>* const pdp = m_trigger->m_vdpoint[i];
+            CComObject<DragPoint>* const pdp = m_trigger->m_curve.m_vdpoint[i];
             psur->SetFillColor(-1);
             psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
             psur->SetObject(m_pointParts.Get(pdp));
@@ -140,7 +140,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_FLIP:
       m_trigger->GetPTable()->BeginUndo();
       m_trigger->GetPTable()->MarkForUndo(m_trigger);
-      m_trigger->FlipPointY(m_trigger->GetPointCenter());
+      m_trigger->m_curve.FlipPointY(m_trigger->m_curve.GetPointCenter());
       m_trigger->GetPTable()->EndUndo();
       if (m_trigger->GetPTable())
          m_trigger->GetPTable()->SetDirtyDraw();
@@ -149,7 +149,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_MIRROR:
       m_trigger->GetPTable()->BeginUndo();
       m_trigger->GetPTable()->MarkForUndo(m_trigger);
-      m_trigger->FlipPointX(m_trigger->GetPointCenter());
+      m_trigger->m_curve.FlipPointX(m_trigger->m_curve.GetPointCenter());
       m_trigger->GetPTable()->EndUndo();
       if (m_trigger->GetPTable())
          m_trigger->GetPTable()->SetDirtyDraw();
@@ -169,7 +169,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
       const Vertex2D v = m_editor->TransformPoint(x, y);
 
       vector<RenderVertex> vvertex;
-      m_trigger->GetRgVertex(vvertex);
+      m_trigger->m_curve.GetRgVertex(vvertex);
 
       int iSeg;
       Vertex2D vOut;
@@ -182,15 +182,15 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
             icp++;
 
       //if (icp == 0) // need to add point after the last point
-      //icp = m_trigger->m_vdpoint.size();
+      //icp = m_trigger->m_curve.m_vdpoint.size();
 
       CComObject<DragPoint>* pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(m_trigger, vOut.x, vOut.y, 0.f, false);
-         m_trigger->m_vdpoint.insert(m_trigger->m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+         pdp->Init(&m_trigger->m_curve, vOut.x, vOut.y, 0.f, false);
+         m_trigger->m_curve.m_vdpoint.insert(m_trigger->m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
       m_trigger->GetPTable()->EndUndo();

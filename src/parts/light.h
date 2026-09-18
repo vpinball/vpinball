@@ -79,7 +79,6 @@ class Light :
    public IEditable,
    public IHitable, // only used for UI picking
    public IRenderable,
-   public IHaveDragPoints,
    public IScriptable,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
@@ -91,7 +90,14 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Light() : m_lightcenter(this) { m_d.m_depthBias = 0.0f; m_d.m_shape = ShapeCustom; m_d.m_visible = true; }
+   Light()
+      : m_curve(this, &m_d.m_vCenter)
+      , m_lightcenter(this)
+   {
+      m_d.m_depthBias = 0.0f;
+      m_d.m_shape = ShapeCustom;
+      m_d.m_visible = true;
+   }
    virtual ~Light();
 
    BEGIN_COM_MAP(Light)
@@ -126,9 +132,7 @@ public:
    void Translate(const Vertex2D &offset) final;
 
    // DragPoints
-   Vertex2D GetCenter() const final { return GetPointCenter(); }
-   Vertex2D GetPointCenter() const final;
-   void PutPointCenter(const Vertex2D& pv) final;
+   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
    float GetCurrentHeight() const { return m_desktopBackdrop ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
 protected:
@@ -146,6 +150,9 @@ public:
 
    // Light definition
    LightData m_d;
+
+   // Custom shape outline (defines the light shape when m_d.m_shape == ShapeCustom)
+   DragPointCurve m_curve;
 
    // Live data
    float m_inPlayState; // 0..1 is modulated from off to on, 2 is blinking

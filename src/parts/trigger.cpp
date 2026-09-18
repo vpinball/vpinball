@@ -25,7 +25,7 @@ Trigger::~Trigger()
 
 Trigger *Trigger::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, m_curve)
    return dst;
 }
 
@@ -71,9 +71,9 @@ void Trigger::InitShape(float x, float y)
    constexpr float lengthX = 30.0f;
    constexpr float lengthY = 30.0f;
 
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-      m_vdpoint[i]->Release();
-   m_vdpoint.clear();
+   for (size_t i = 0; i < m_curve.m_vdpoint.size(); i++)
+      m_curve.m_vdpoint[i]->Release();
+   m_curve.m_vdpoint.clear();
 
    // First time shape has been set to custom - set up some points
    CComObject<DragPoint> *pdp;
@@ -81,29 +81,29 @@ void Trigger::InitShape(float x, float y)
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - lengthX, y - lengthY, 0.f, false);
-      m_vdpoint.push_back(pdp);
+      pdp->Init(&m_curve, x - lengthX, y - lengthY, 0.f, false);
+      m_curve.m_vdpoint.push_back(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x - lengthX, y + lengthY, 0.f, false);
-      m_vdpoint.push_back(pdp);
+      pdp->Init(&m_curve, x - lengthX, y + lengthY, 0.f, false);
+      m_curve.m_vdpoint.push_back(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + lengthX, y + lengthY, 0.f, false);
-      m_vdpoint.push_back(pdp);
+      pdp->Init(&m_curve, x + lengthX, y + lengthY, 0.f, false);
+      m_curve.m_vdpoint.push_back(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, x + lengthX, y - lengthY, 0.f, false);
-      m_vdpoint.push_back(pdp);
+      pdp->Init(&m_curve, x + lengthX, y - lengthY, 0.f, false);
+      m_curve.m_vdpoint.push_back(pdp);
    }
 }
 
@@ -112,7 +112,7 @@ HRESULT Trigger::Init(const float x, const float y, const bool fromMouseClick, c
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   if (m_vdpoint.empty())
+   if (m_curve.m_vdpoint.empty())
       InitShape(x, y);
    return S_OK;
 }
@@ -186,7 +186,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    else
    {
       vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
+      m_curve.GetRgVertex(vvertex);
 
       const int count = (int)vvertex.size();
       for (int i = 0; i < count; i++)
@@ -476,36 +476,26 @@ std::unique_ptr<std::vector<Vertex3D_NoTex2>> Trigger::GenerateMesh(Vertex3Ds &b
    return triggerVertices;
 }
 
-Vertex2D Trigger::GetPointCenter() const
-{
-   return m_d.m_vCenter;
-}
+void Trigger::FlipX(const Vertex2D &pvCenter) { m_curve.FlipPointX(pvCenter); }
 
-void Trigger::PutPointCenter(const Vertex2D& pv)
-{
-   m_d.m_vCenter = pv;
-}
-
-void Trigger::FlipX(const Vertex2D &pvCenter) { IHaveDragPoints::FlipPointX(pvCenter); }
-
-void Trigger::FlipY(const Vertex2D &pvCenter) { IHaveDragPoints::FlipPointY(pvCenter); }
+void Trigger::FlipY(const Vertex2D &pvCenter) { m_curve.FlipPointY(pvCenter); }
 
 void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
+   m_curve.RotatePoints(ang, pvCenter, useElementCenter);
    m_d.m_rotation += ang;
 }
 
 void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter);
    m_d.m_scaleX *= scalex;
    m_d.m_scaleY *= scaley;
 }
 
 void Trigger::Translate(const Vertex2D &offset)
 {
-   IHaveDragPoints::TranslatePoints(offset);
+   m_curve.TranslatePoints(offset);
    m_d.m_vCenter.x += offset.x;
    m_d.m_vCenter.y += offset.y;
 }
@@ -530,14 +520,11 @@ void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(ANSP), m_d.m_animSpeed);
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    SaveSharedEditableFields(writer);
-   SavePoints(writer);
+   m_curve.SavePoints(writer);
    writer.EndObject();
 }
 
-void Trigger::ClearForOverwrite()
-{
-   ClearPointsForOverwrite();
-}
+void Trigger::ClearForOverwrite() { m_curve.ClearPointsForOverwrite(); }
 
 void Trigger::Load(IObjectReader& reader)
 {
@@ -565,14 +552,14 @@ void Trigger::Load(IObjectReader& reader)
          case FID(SHAP): m_d.m_shape = static_cast<TriggerShape>(reader.AsInt()); break;
          case FID(ANSP): m_d.m_animSpeed = reader.AsFloat(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
-         case FID(DPNT): LoadPointToken(reader); break;
+         case FID(DPNT): m_curve.LoadPointToken(reader); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });
 
    // Seed the default shape for tables saved without drag points
-   if (m_vdpoint.empty())
+   if (m_curve.m_vdpoint.empty())
       InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 

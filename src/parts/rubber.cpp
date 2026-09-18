@@ -21,7 +21,7 @@ Rubber::~Rubber()
 
 Rubber *Rubber::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Rubber, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Rubber, m_curve)
    return dst;
 }
 
@@ -40,8 +40,8 @@ HRESULT Rubber::Init(const float x, const float y, const bool fromMouseClick, co
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, xx, yy, 0.f, true);
-         m_vdpoint.push_back(pdp);
+         pdp->Init(&m_curve, xx, yy, 0.f, true);
+         m_curve.m_vdpoint.push_back(pdp);
       }
    }
 
@@ -356,7 +356,7 @@ void Rubber::GetCentralCurve(vector<RenderVertex> &vv, const float _accuracy) co
       accuracy = 4.0f*powf(10.0f, (10.0f - accuracy)*(float)(1.0 / 1.5)); // min = 4 (highest accuracy/detail level), max = 4 * 10^(10/1.5) = ~18.000.000 (lowest accuracy/detail level)
    }
 
-   IHaveDragPoints::GetRgVertex(vv, true, accuracy);
+   m_curve.GetRgVertex(vv, true, accuracy);
 }
 
 #if 0
@@ -527,15 +527,15 @@ void Rubber::AddPoint(const Vertex2D &v, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_vdpoint.size();
+   //icp = m_curve.m_vdpoint.size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
-      pdp->Init(this, vOut.x, vOut.y, 0.f, smooth); // Rubbers are usually always smooth
-      m_vdpoint.insert(m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth); // Rubbers are usually always smooth
+      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
@@ -561,7 +561,7 @@ void Rubber::RenderSetup(Renderer *renderer)
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
    UpdateRubber(true, m_d.m_height);
 
-   const Vertex2D center2D = GetPointCenter();
+   const Vertex2D center2D = m_curve.GetPointCenter();
    m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
 }
 
@@ -632,10 +632,7 @@ void Rubber::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-void Rubber::ClearForOverwrite()
-{
-   ClearPointsForOverwrite();
-}
+void Rubber::ClearForOverwrite() { m_curve.ClearPointsForOverwrite(); }
 
 void Rubber::Save(IObjectWriter& writer, const bool saveForUndo)
 {
@@ -663,7 +660,7 @@ void Rubber::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
    writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
    SaveSharedEditableFields(writer);
-   SavePoints(writer);
+   m_curve.SavePoints(writer);
    writer.EndObject();
 }
 
@@ -701,7 +698,7 @@ void Rubber::Load(IObjectReader& reader)
          case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
          case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
          case FID(PNTS): break; // Empty tag placed before drag point data (unused)
-         case FID(DPNT): LoadPointToken(reader); break;
+         case FID(DPNT): m_curve.LoadPointToken(reader); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
@@ -710,27 +707,15 @@ void Rubber::Load(IObjectReader& reader)
       m_d.m_hitHeight = m_d.m_height;
 }
 
-void Rubber::FlipY(const Vertex2D& pvCenter)
-{
-   IHaveDragPoints::FlipPointY(pvCenter);
-}
+void Rubber::FlipY(const Vertex2D &pvCenter) { m_curve.FlipPointY(pvCenter); }
 
-void Rubber::FlipX(const Vertex2D& pvCenter)
-{
-   IHaveDragPoints::FlipPointX(pvCenter);
-}
+void Rubber::FlipX(const Vertex2D &pvCenter) { m_curve.FlipPointX(pvCenter); }
 
-void Rubber::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
-}
+void Rubber::Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.RotatePoints(ang, pvCenter, useElementCenter); }
 
-void Rubber::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
-}
+void Rubber::Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter); }
 
-void Rubber::Translate(const Vertex2D &offset) { IHaveDragPoints::TranslatePoints(offset); }
+void Rubber::Translate(const Vertex2D &offset) { m_curve.TranslatePoints(offset); }
 
 STDMETHODIMP Rubber::InterfaceSupportsErrorInfo(REFIID riid)
 {

@@ -11,7 +11,7 @@
 FlasherWinUIPart::FlasherWinUIPart(PinTableWnd* editor, Flasher* flasher)
    : IWinUIPart(editor, flasher)
    , m_flasher(flasher)
-   , m_pointParts(editor, flasher)
+   , m_pointParts(editor, &flasher->m_curve)
 {
 }
 
@@ -22,7 +22,7 @@ void FlasherWinUIPart::UpdateStatusBarObjectPos()
 
 void FlasherWinUIPart::UIRenderPass1(Sur * const psur)
 {
-   if (m_flasher->m_vdpoint.empty())
+   if (m_flasher->m_curve.m_vdpoint.empty())
       m_flasher->InitShape();
 
    psur->SetFillColor(m_flasher->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);
@@ -31,7 +31,7 @@ void FlasherWinUIPart::UIRenderPass1(Sur * const psur)
    psur->SetBorderColor(-1, false, 0);
 
    vector<RenderVertex> vvertex;
-   m_flasher->GetRgVertex(vvertex);
+   m_flasher->m_curve.GetRgVertex(vvertex);
    if (!m_flasher->m_ptable->RenderSolid() || !m_flasher->m_d.m_displayTexture)
    {
       psur->Polygon(vvertex);
@@ -73,7 +73,7 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
    psur->SetObject(nullptr);
 
    vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
-   m_flasher->GetRgVertex(vvertex);
+   m_flasher->m_curve.GetRgVertex(vvertex);
    psur->Polygon(vvertex);
 
    // Except for flasher mode, shape is simplified before rendering into its bounding rectangle
@@ -98,7 +98,7 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (const auto& pdp : m_flasher->m_vdpoint)
+      for (const auto& pdp : m_flasher->m_curve.m_vdpoint)
       {
          if (m_pointParts.IsSelected(pdp))
          {
@@ -111,7 +111,7 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
    if (drawDragpoints)
    {
       psur->SetFillColor(-1);
-      for (const auto &pdp : m_flasher->m_vdpoint)
+      for (const auto &pdp : m_flasher->m_curve.m_vdpoint)
       {
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
          psur->SetObject(m_pointParts.Get(pdp));
@@ -133,7 +133,7 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_FLIP:
       m_flasher->GetPTable()->BeginUndo();
       m_flasher->GetPTable()->MarkForUndo(m_flasher);
-      m_flasher->FlipPointY(m_flasher->GetPointCenter());
+      m_flasher->m_curve.FlipPointY(m_flasher->m_curve.GetPointCenter());
       m_flasher->GetPTable()->EndUndo();
       if (m_flasher->GetPTable())
          m_flasher->GetPTable()->SetDirtyDraw();
@@ -142,7 +142,7 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_MIRROR:
       m_flasher->GetPTable()->BeginUndo();
       m_flasher->GetPTable()->MarkForUndo(m_flasher);
-      m_flasher->FlipPointX(m_flasher->GetPointCenter());
+      m_flasher->m_curve.FlipPointX(m_flasher->m_curve.GetPointCenter());
       m_flasher->GetPTable()->EndUndo();
       if (m_flasher->GetPTable())
          m_flasher->GetPTable()->SetDirtyDraw();

@@ -2816,7 +2816,7 @@ Vertex2D PinTable::EvaluateGlassHeight() const
          if (const Surface *const surf = static_cast<Surface *>(edit); surf->m_d.m_visible)
          {
             vector<RenderVertex> vertices;
-            surf->GetRgVertex(vertices, true);
+            surf->m_curve.GetRgVertex(vertices, true);
             const float h = max(surf->m_d.m_heightbottom, surf->m_d.m_heighttop);
             RenderVertex prev = vertices.back();
             for (const auto &v : vertices)
@@ -2832,7 +2832,7 @@ Vertex2D PinTable::EvaluateGlassHeight() const
          if (const Ramp *const ramp = static_cast<Ramp *>(edit); ramp->m_d.m_visible)
          {
             vector<RenderVertex> vertices;
-            ramp->GetRgVertex(vertices, false);
+            ramp->m_curve.GetRgVertex(vertices, false);
             RenderVertex prev = vertices.back();
             bool first = true; // Skip first as we do not loop
             for (const auto &v : vertices)
