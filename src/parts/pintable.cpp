@@ -3262,7 +3262,8 @@ void PinTable::Uncreate(IEditable *pie)
    if (uiPart && uiPart->m_selectstate != IWinUIPart::SelectState::NotSelected)
       m_tableEditor->AddMultiSel(uiPart, true, true, false); // Remove the item from the multi-select list
 
-   pie->Uncreate();
+   RemovePart(pie);
+
    pie->Release();
 }
 

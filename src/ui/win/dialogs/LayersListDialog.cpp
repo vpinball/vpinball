@@ -174,7 +174,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       if (PartGroup* toDelete = GetSelectedPartGroup(); m_activeTable && toDelete)
       {
          m_activeTable->m_tableEditor->SelectItem(toDelete);
-         m_activeTable->m_tableEditor->OnDelete();
+         m_activeTable->m_tableEditor->DeleteSelection();
       }
       return TRUE;
 

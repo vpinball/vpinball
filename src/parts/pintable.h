@@ -385,9 +385,6 @@ public:
    void SetDefaults(const bool fromMouseClick) final { }
    void WriteRegDefaults() final { }
    void Delete() final { }
-   void Uncreate() final { }
-
-   // ISelect
    Vertex2D GetCenter() const final { return { 0.f, 0.f }; }
    void FlipY(const Vertex2D &pvCenter) final { }
    void FlipX(const Vertex2D &pvCenter) final { }
@@ -395,6 +392,8 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final { }
    void Translate(const Vertex2D &offset) final { }
    void SetDefaultPhysics(const bool fromMouseClick) final;
+
+   // ISelect
    IEditable *GetIEditable() final { return (IEditable *)this; }
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }
 

@@ -31,11 +31,6 @@ void IEditable::Delete()
    }
 }
 
-void IEditable::Uncreate()
-{
-   GetPTable()->RemovePart(this);
-}
-
 void IEditable::SetPartGroup(PartGroup* partGroup)
 {
    if (m_partGroup != partGroup)
