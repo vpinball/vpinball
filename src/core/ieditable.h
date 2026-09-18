@@ -97,7 +97,6 @@ public:
 	PinTable *GetPTable() final { return m_ptable; } \
 	const PinTable *GetPTable() const final { return m_ptable; } \
 	void Delete() final {IEditable::Delete();} \
-	void Uncreate() final {IEditable::Uncreate();} \
 	void Load(IObjectReader &reader) final; \
 	void Save(IObjectWriter &writer, const bool saveForUndo) final; \
 	ItemTypeEnum GetItemType() const final { return ItemType; } \
@@ -254,7 +253,6 @@ public:
    wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
 
    virtual void Delete();
-   virtual void Uncreate();
 
    void Undelete();
 

@@ -43,7 +43,7 @@ public:
 
    void Copy(int x, int y);
    void Paste(const bool atLocation, const int x, const int y);
-   void OnDelete();
+   void DeleteSelection();
 
    // Multi-selection manipulation: applies the transform to all the selected parts at once
    Vertex2D GetMultiSelCenter();

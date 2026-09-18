@@ -1391,7 +1391,7 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
 #endif
 }
 
-void PinTableWnd::OnDelete()
+void PinTableWnd::DeleteSelection()
 {
 #ifndef __STANDALONE__
    vector<IWinUIPart *> m_vseldelete;
@@ -1501,7 +1501,7 @@ void PinTableWnd::OnKeyDown(int key)
 
    switch (key)
    {
-   case VK_DELETE: OnDelete(); break;
+   case VK_DELETE: DeleteSelection(); break;
 
    case VK_LEFT:
    case VK_RIGHT:

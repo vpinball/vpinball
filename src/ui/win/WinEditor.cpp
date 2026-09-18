@@ -2367,7 +2367,7 @@ void WinEditor::OpenNewTable(size_t tableId)
 void WinEditor::ProcessDeleteElement()
 {
    if (const auto ptCur = GetActiveTableEditor(); ptCur)
-      ptCur->OnDelete();
+      ptCur->DeleteSelection();
 }
 
 void WinEditor::OpenRecentFile(const size_t menuId)
