@@ -59,15 +59,25 @@ void NudgeSensorSettingsPage::BuildPage()
          {
             std::unique_ptr<VPX::Physics::GamepadNudge> sensor = std::make_unique<VPX::Physics::GamepadNudge>(&m_player->m_pininput);
             sensor->SetStrengthScale(GetSensor()->GetStrengthScale());
+            if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
+            {
+               if (cabSensor->GetXAccSensor().IsMapped())
+                  sensor->GetXSensor().SetMapping(cabSensor->GetXAccSensor().GetMapping());
+               if (cabSensor->GetYAccSensor().IsMapped())
+                  sensor->GetYSensor().SetMapping(cabSensor->GetYAccSensor().GetMapping());
+            }
             m_player->m_pininput.m_nudgeHandler->ReplaceSensor(m_sensorIndex, std::move(sensor));
             break;
          }
          case 1:
+         case 2:
          {
             std::unique_ptr<VPX::Physics::CabinetNudgeSensor> sensor = std::make_unique<VPX::Physics::CabinetNudgeSensor>(&m_player->m_pininput);
-            sensor->SetIntentSensor(true);
+            sensor->SetIntentSensor(v == 1);
+            sensor->SetStrengthScale(GetSensor()->GetStrengthScale());
             if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
             {
+               sensor->SetCabinetMass(cabSensor->GetCabinetMass());
                if (cabSensor->GetXVelSensor().IsMapped())
                   sensor->GetXVelSensor().SetMapping(cabSensor->GetXVelSensor().GetMapping());
                if (cabSensor->GetYVelSensor().IsMapped())
@@ -77,23 +87,12 @@ void NudgeSensorSettingsPage::BuildPage()
                if (cabSensor->GetYAccSensor().IsMapped())
                   sensor->GetYAccSensor().SetMapping(cabSensor->GetYAccSensor().GetMapping());
             }
-            m_player->m_pininput.m_nudgeHandler->ReplaceSensor(m_sensorIndex, std::move(sensor));
-            break;
-         }
-         case 2:
-         {
-            std::unique_ptr<VPX::Physics::CabinetNudgeSensor> sensor = std::make_unique<VPX::Physics::CabinetNudgeSensor>(&m_player->m_pininput);
-            sensor->SetIntentSensor(false);
-            if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
+            else if (VPX::Physics::GamepadNudge* gamepadSensor = dynamic_cast<VPX::Physics::GamepadNudge*>(GetSensor().get()); gamepadSensor)
             {
-               if (cabSensor->GetXVelSensor().IsMapped())
-                  sensor->GetXVelSensor().SetMapping(cabSensor->GetXVelSensor().GetMapping());
-               if (cabSensor->GetYVelSensor().IsMapped())
-                  sensor->GetYVelSensor().SetMapping(cabSensor->GetYVelSensor().GetMapping());
-               if (cabSensor->GetXAccSensor().IsMapped())
-                  sensor->GetXAccSensor().SetMapping(cabSensor->GetXAccSensor().GetMapping());
-               if (cabSensor->GetYAccSensor().IsMapped())
-                  sensor->GetYAccSensor().SetMapping(cabSensor->GetYAccSensor().GetMapping());
+               if (gamepadSensor->GetXSensor().IsMapped())
+                  sensor->GetXAccSensor().SetMapping(gamepadSensor->GetXSensor().GetMapping());
+               if (gamepadSensor->GetYSensor().IsMapped())
+                  sensor->GetYAccSensor().SetMapping(gamepadSensor->GetYSensor().GetMapping());
             }
             m_player->m_pininput.m_nudgeHandler->ReplaceSensor(m_sensorIndex, std::move(sensor));
             break;
