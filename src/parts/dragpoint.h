@@ -57,6 +57,9 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
+   // Can't allow less points than the user can recover from
+   bool CanDelete() const;
+
    void Delete() final;
 
    bool LoadToken(const int id, IObjectReader& reader);
@@ -88,9 +91,6 @@ public:
    bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 
 private:
-   void StartUndo();
-   void StopUndo();
-
    DragPointCurve *m_pcurve;
    static Vertex3Ds m_copyPoint;   // coordinates of a control point to copy
    static bool      m_pointCopied;

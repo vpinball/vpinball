@@ -205,7 +205,9 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
                     if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDragPoint))
                         continue;
                     DragPoint * const dpoint = (DragPoint *)SelAt(i);
+                    PropertyDialog::StartUndo(dpoint);
                     dpoint->ToggleSmooth();
+                    PropertyDialog::EndUndo(dpoint);
                 }
             }
             UpdateProperties(dispID);
