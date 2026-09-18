@@ -94,7 +94,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Flasher()
-      : m_curve(this, nullptr, 2)
+      : m_curve(this, 2)
    {
    }
    virtual ~Flasher();
@@ -130,7 +130,7 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
 
-   Vertex2D GetCenter() const final;
+   Vertex2D GetCenter() const final { return m_curve.GetCenter(); }
 
    void AddPoint(const Vertex2D &v, const bool smooth);
 
@@ -182,16 +182,10 @@ public:
    void InitShape(const float x, const float y);
 
 private:
-   void UpdateCenter() const;
    void UploadRenderFrame(const PinballPlugin::ResURIResolver::DisplayState& display);
 
    unsigned int m_numVertices = 0;
    int m_numPolys = 0;
-   bool m_centerClean = false;
-   mutable float m_minx = FLT_MAX;
-   mutable float m_maxx = -FLT_MAX;
-   mutable float m_miny = FLT_MAX;
-   mutable float m_maxy = -FLT_MAX;
    vector<Vertex3D_NoTex2> m_vertices;
    vector<Vertex3D_NoTex2> m_transformedVertices;
 

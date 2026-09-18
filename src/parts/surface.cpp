@@ -46,28 +46,28 @@ HRESULT Surface::Init(const float x, const float y, const bool fromMouseClick, c
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x - width, y - length, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x - width, y + length, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x + width, y + length, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x + width, y - length, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
 
    return S_OK;
@@ -88,7 +88,7 @@ HRESULT Surface::InitTarget(const float x, const float y, const bool fromMouseCl
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x - width, y - length, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
@@ -96,7 +96,7 @@ HRESULT Surface::InitTarget(const float x, const float y, const bool fromMouseCl
       pdp->AddRef();
       pdp->Init(&m_curve, x - width, y + length, 0.f, false);
       pdp->m_autoTexture = false;
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
@@ -105,14 +105,14 @@ HRESULT Surface::InitTarget(const float x, const float y, const bool fromMouseCl
       pdp->Init(&m_curve, x + width, y + length, 0.f, false);
       pdp->m_autoTexture = false;
       pdp->m_texturecoord = 1.0f;
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x + 30.0f, y - 6.0f, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
 
    //SetDefaults();
@@ -373,7 +373,7 @@ void Surface::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *
 
 void Surface::UpdateBounds()
 {
-   const Vertex2D center2D = m_curve.GetPointCenter();
+   const Vertex2D& center2D = GetCenter();
    m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_heighttop);
 }
 
@@ -952,7 +952,7 @@ void Surface::AddPoint(const Vertex2D &v, const bool smooth)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
-      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
@@ -966,14 +966,11 @@ void Surface::FlipX(const Vertex2D& pvCenter)
    m_curve.FlipPointX(pvCenter);
 }
 
-void Surface::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   m_curve.RotatePoints(ang, pvCenter, useElementCenter);
-}
+void Surface::Rotate(const float ang, const Vertex2D &center, const bool useElementCenter) { m_curve.RotatePoints(ang, useElementCenter ? GetCenter() : center); }
 
-void Surface::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
+void Surface::Scale(const float scalex, const float scaley, const Vertex2D &center, const bool useElementCenter)
 {
-   m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_curve.ScalePoints(scalex, scaley, useElementCenter ? GetCenter() : center);
 }
 
 void Surface::Translate(const Vertex2D &offset) { m_curve.TranslatePoints(offset); }
@@ -1082,7 +1079,7 @@ void Surface::Load(IObjectReader& reader)
    // On some tables, the outer wall is still modelled/copy-pasted 'inside-out',
    // this tries to compensate for that
    if (!inner) {
-      const size_t cvertex = m_curve.m_vdpoint.size();
+      const size_t cvertex = m_curve.GetPoints().size();
 
       float miny = FLT_MAX;
       size_t minyindex = 0;
@@ -1091,7 +1088,7 @@ void Surface::Load(IObjectReader& reader)
       for (size_t i = 0; i < cvertex; i++)
       {
          float y;
-         m_curve.m_vdpoint[i]->get_Y(&y);
+         m_curve.GetPoints()[i]->get_Y(&y);
          if (y < miny)
          {
             miny = y;
@@ -1100,11 +1097,11 @@ void Surface::Load(IObjectReader& reader)
       }
 
       float tmpx;
-      m_curve.m_vdpoint[minyindex]->get_X(&tmpx);
+      m_curve.GetPoints()[minyindex]->get_X(&tmpx);
       const float tmpy = miny /*- 1.0f*/; // put tiny gap in to avoid errors
 
       // swap list around
-      std::ranges::reverse(m_curve.m_vdpoint.begin(), m_curve.m_vdpoint.end());
+      m_curve.ReverseOrder();
 
       CComObject<DragPoint> *pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1112,42 +1109,42 @@ void Surface::Load(IObjectReader& reader)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_top, 0.f, false);
-         m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + (cvertex - minyindex - 1), pdp);
+         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, m_ptable->m_right, m_ptable->m_top, 0.f, false);
-         m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + (cvertex - minyindex - 1), pdp);
+         m_curve.InsertPoint((cvertex - minyindex - 1), pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, m_ptable->m_right + 1.0f, m_ptable->m_bottom, 0.f, false); //!!! +1 needed for whatever reason (triangulation screwed up)
-         m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + (cvertex - minyindex - 1), pdp);
+         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_bottom, 0.f, false);
-         m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + (cvertex - minyindex - 1), pdp);
+         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, m_ptable->m_left - 1.0f, m_ptable->m_top, 0.f, false); //!!! -1 needed for whatever reason (triangulation screwed up)
-         m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + (cvertex - minyindex - 1), pdp);
+         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, tmpx, tmpy, 0.f, false);
-         m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + (cvertex - minyindex - 1), pdp);
+         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
       }
    }
 }

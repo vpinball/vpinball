@@ -39,7 +39,7 @@ HRESULT Ramp::Init(const float x, const float y, const bool fromMouseClick, cons
       pdp->AddRef();
       pdp->Init(&m_curve, x, y + length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heightbottom;
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
 
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -48,7 +48,7 @@ HRESULT Ramp::Init(const float x, const float y, const bool fromMouseClick, cons
       pdp->AddRef();
       pdp->Init(&m_curve, x, y - length, 0.f, true);
       pdp->m_calcHeight = m_d.m_heighttop;
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
 
    return S_OK;
@@ -173,10 +173,10 @@ void Ramp::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *con
 
 void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height) const
 {
-   for (size_t i = 0; i < m_curve.m_vdpoint.size(); i++)
+   for (size_t i = 0; i < m_curve.GetPoints().size(); i++)
    {
-      if (m_curve.m_vdpoint[i]->m_v.x == v.x && m_curve.m_vdpoint[i]->m_v.y == v.y)
-         m_curve.m_vdpoint[i]->m_calcHeight = height;
+      if (m_curve.GetPoints()[i]->m_v.x == v.x && m_curve.GetPoints()[i]->m_v.y == v.y)
+         m_curve.GetPoints()[i]->m_calcHeight = height;
    }
 }
 
@@ -865,7 +865,7 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir) const
 
 void Ramp::UpdateBounds()
 {
-   const Vertex2D center2D = m_curve.GetPointCenter();
+   const Vertex2D& center2D = m_curve.GetCenter();
    m_boundingSphereCenter.Set(center2D.x, center2D.y, 0.5f * (m_d.m_heightbottom + m_d.m_heighttop));
 }
 
@@ -1280,7 +1280,7 @@ void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_curve.m_vdpoint.size();
+   //icp = m_curve.GetPoints().size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1288,7 +1288,8 @@ void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f, smooth); // Ramps are usually always smooth
-      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_curve.OnPointsModified();
    }
 }
 
@@ -1302,14 +1303,11 @@ void Ramp::FlipX(const Vertex2D& pvCenter)
    m_curve.FlipPointX(pvCenter);
 }
 
-void Ramp::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   m_curve.RotatePoints(ang, pvCenter, useElementCenter);
-}
+void Ramp::Rotate(const float ang, const Vertex2D &center, const bool useElementCenter) { m_curve.RotatePoints(ang, useElementCenter ? GetCenter() : center); }
 
-void Ramp::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
+void Ramp::Scale(const float scalex, const float scaley, const Vertex2D &center, const bool useElementCenter)
 {
-   m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_curve.ScalePoints(scalex, scaley, useElementCenter ? GetCenter() : center);
 }
 
 void Ramp::Translate(const Vertex2D &offset) { m_curve.TranslatePoints(offset); }

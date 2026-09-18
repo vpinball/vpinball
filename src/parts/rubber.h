@@ -52,7 +52,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Rubber()
-      : m_curve(this, nullptr, 2)
+      : m_curve(this, 2)
    {
       m_d.m_collidable = true;
       m_d.m_visible = true;
@@ -92,7 +92,7 @@ public:
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
-   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_curve.GetCenter(); }
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 

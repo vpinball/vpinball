@@ -71,9 +71,7 @@ void Trigger::InitShape(float x, float y)
    constexpr float lengthX = 30.0f;
    constexpr float lengthY = 30.0f;
 
-   for (size_t i = 0; i < m_curve.m_vdpoint.size(); i++)
-      m_curve.m_vdpoint[i]->Release();
-   m_curve.m_vdpoint.clear();
+   m_curve.ClearPoints();
 
    // First time shape has been set to custom - set up some points
    CComObject<DragPoint> *pdp;
@@ -82,28 +80,28 @@ void Trigger::InitShape(float x, float y)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x - lengthX, y - lengthY, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x - lengthX, y + lengthY, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x + lengthX, y + lengthY, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
    CComObject<DragPoint>::CreateInstance(&pdp);
    if (pdp)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, x + lengthX, y - lengthY, 0.f, false);
-      m_curve.m_vdpoint.push_back(pdp);
+      m_curve.PushPoint(pdp);
    }
 }
 
@@ -112,7 +110,7 @@ HRESULT Trigger::Init(const float x, const float y, const bool fromMouseClick, c
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   if (m_curve.m_vdpoint.empty())
+   if (m_curve.GetPoints().empty())
       InitShape(x, y);
    return S_OK;
 }
@@ -476,19 +474,47 @@ std::unique_ptr<std::vector<Vertex3D_NoTex2>> Trigger::GenerateMesh(Vertex3Ds &b
    return triggerVertices;
 }
 
-void Trigger::FlipX(const Vertex2D &pvCenter) { m_curve.FlipPointX(pvCenter); }
-
-void Trigger::FlipY(const Vertex2D &pvCenter) { m_curve.FlipPointY(pvCenter); }
-
-void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
+void Trigger::FlipX(const Vertex2D &pvCenter)
 {
-   m_curve.RotatePoints(ang, pvCenter, useElementCenter);
+   m_curve.FlipPointX(pvCenter);
+   const float deltax = m_d.m_vCenter.x - pvCenter.x;
+   m_d.m_vCenter.x -= deltax * 2.0f;
+}
+
+void Trigger::FlipY(const Vertex2D &pvCenter)
+{
+   m_curve.FlipPointY(pvCenter);
+   const float deltay = m_d.m_vCenter.y - pvCenter.y;
+   m_d.m_vCenter.y -= deltay * 2.0f;
+}
+
+void Trigger::Rotate(const float ang, const Vertex2D &center, const bool useElementCenter)
+{
+   m_curve.RotatePoints(ang, useElementCenter ? GetCenter() : center);
+   if (!useElementCenter)
+   {
+      const float sn = sinf(ANGTORAD(ang));
+      const float cs = cosf(ANGTORAD(ang));
+      const float dx = m_d.m_vCenter.x - center.x;
+      const float dy = m_d.m_vCenter.y - center.y;
+      const float dx2 = cs * dx - sn * dy;
+      const float dy2 = cs * dy + sn * dx;
+      m_d.m_vCenter.x = center.x + dx2;
+      m_d.m_vCenter.y = center.y + dy2;
+   }
    m_d.m_rotation += ang;
 }
 
-void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
+void Trigger::Scale(const float scalex, const float scaley, const Vertex2D &center, const bool useElementCenter)
 {
-   m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_curve.ScalePoints(scalex, scaley, useElementCenter ? GetCenter() : center);
+   if (!useElementCenter)
+   {
+      const float dx = (m_d.m_vCenter.x - center.x) * scalex;
+      const float dy = (m_d.m_vCenter.y - center.y) * scaley;
+      m_d.m_vCenter.x = center.x + dx;
+      m_d.m_vCenter.y = center.y + dy;
+   }
    m_d.m_scaleX *= scalex;
    m_d.m_scaleY *= scaley;
 }
@@ -559,7 +585,7 @@ void Trigger::Load(IObjectReader& reader)
       });
 
    // Seed the default shape for tables saved without drag points
-   if (m_curve.m_vdpoint.empty())
+   if (m_curve.GetPoints().empty())
       InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 

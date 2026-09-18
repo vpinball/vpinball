@@ -878,7 +878,7 @@ void Light::AddPoint(const Vertex2D &v, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_curve.m_vdpoint.size();
+   //icp = m_curve.GetPoints().size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -886,7 +886,7 @@ void Light::AddPoint(const Vertex2D &v, const bool smooth)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
-      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
@@ -953,13 +953,47 @@ STDMETHODIMP Light::put_State(float newVal)
    return S_OK;
 }
 
-void Light::FlipY(const Vertex2D &pvCenter) { m_curve.FlipPointY(pvCenter); }
+void Light::FlipX(const Vertex2D &pvCenter)
+{
+   m_curve.FlipPointX(pvCenter);
+   const float deltax = m_d.m_vCenter.x - pvCenter.x;
+   m_d.m_vCenter.x -= deltax * 2.0f;
+}
 
-void Light::FlipX(const Vertex2D &pvCenter) { m_curve.FlipPointX(pvCenter); }
+void Light::FlipY(const Vertex2D &pvCenter)
+{
+   m_curve.FlipPointY(pvCenter);
+   const float deltay = m_d.m_vCenter.y - pvCenter.y;
+   m_d.m_vCenter.y -= deltay * 2.0f;
+}
 
-void Light::Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.RotatePoints(ang, pvCenter, useElementCenter); }
+void Light::Rotate(const float ang, const Vertex2D &center, const bool useElementCenter)
+{
+   m_curve.RotatePoints(ang, useElementCenter ? GetCenter() : center);
+   if (!useElementCenter)
+   {
+      const float sn = sinf(ANGTORAD(ang));
+      const float cs = cosf(ANGTORAD(ang));
+      const float dx = m_d.m_vCenter.x - center.x;
+      const float dy = m_d.m_vCenter.y - center.y;
+      const float dx2 = cs * dx - sn * dy;
+      const float dy2 = cs * dy + sn * dx;
+      m_d.m_vCenter.x = center.x + dx2;
+      m_d.m_vCenter.y = center.y + dy2;
+   }
+}
 
-void Light::Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter); }
+void Light::Scale(const float scalex, const float scaley, const Vertex2D &center, const bool useElementCenter)
+{
+   m_curve.ScalePoints(scalex, scaley, useElementCenter ? GetCenter() : center);
+   if (!useElementCenter)
+   {
+      const float dx = (m_d.m_vCenter.x - center.x) * scalex;
+      const float dy = (m_d.m_vCenter.y - center.y) * scaley;
+      m_d.m_vCenter.x = center.x + dx;
+      m_d.m_vCenter.y = center.y + dy;
+   }
+}
 
 void Light::Translate(const Vertex2D &offset)
 {
@@ -1018,7 +1052,7 @@ STDMETHODIMP Light::put_Y(float newVal)
 
 void Light::InitShape()
 {
-   if (m_curve.m_vdpoint.empty())
+   if (m_curve.GetPoints().empty())
    {
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
@@ -1035,7 +1069,7 @@ void Light::InitShape()
          {
             pdp->AddRef();
             pdp->Init(&m_curve, xx, yy, 0.f, true);
-            m_curve.m_vdpoint.push_back(pdp);
+            m_curve.PushPoint(pdp);
          }
       }
    }

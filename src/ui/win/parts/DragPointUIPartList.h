@@ -42,7 +42,7 @@ public:
 private:
    void Sync()
    {
-      const vector<CComObject<DragPoint>*>& points = m_owner->m_vdpoint;
+      const vector<CComObject<DragPoint>*>& points = m_owner->GetPoints();
       std::erase_if(m_parts, [&points](const std::unique_ptr<IWinUIPart>& part) { return std::ranges::find(points, part->GetDragPoint()) == points.end(); });
       for (CComObject<DragPoint>* const point : points)
          if (std::ranges::none_of(m_parts, [point](const std::unique_ptr<IWinUIPart>& part) { return part->GetDragPoint() == point; }))

@@ -170,11 +170,9 @@ public:
 
 #define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, curve)                                                                                                                     \
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type)                                                                                                                                                \
-   for (size_t i = 0; i < dst->curve.m_vdpoint.size(); i++)                                                                                                                                  \
-      dst->curve.m_vdpoint[i]->Release();                                                                                                                                                    \
-   dst->curve.m_vdpoint.clear();                                                                                                                                                             \
+   dst->m_curve.ClearPoints();                                                                                                                                                               \
    CComObject<DragPoint> *pdp;                                                                                                                                                               \
-   for (const auto dpt : curve.m_vdpoint)                                                                                                                                                    \
+   for (const auto dpt : curve.GetPoints())                                                                                                                                                    \
    {                                                                                                                                                                                         \
       CComObject<DragPoint>::CreateInstance(&pdp);                                                                                                                                           \
       if (pdp)                                                                                                                                                                               \
@@ -185,7 +183,7 @@ public:
          pdp->m_calcHeight = dpt->m_calcHeight;                                                                                                                                              \
          pdp->m_autoTexture = dpt->m_autoTexture;                                                                                                                                            \
          pdp->m_texturecoord = dpt->m_texturecoord;                                                                                                                                          \
-         dst->curve.m_vdpoint.push_back(pdp);                                                                                                                                                \
+         dst->curve.PushPoint(pdp);                                                                                                                                                \
       }                                                                                                                                                                                      \
    }
 

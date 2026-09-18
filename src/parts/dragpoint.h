@@ -97,12 +97,8 @@ private:
 class DragPointCurve final
 {
 public:
-   // 'center' optionally points to a part-owned position (e.g. LightData::m_vCenter) which is used
-   // as the element center by the point transforms and updated by them. When null, the element center
-   // is derived from the points and PutPointCenter has no effect.
-   DragPointCurve(IEditable *owner, Vertex2D *const center = nullptr, const int minPoints = 3)
+   DragPointCurve(IEditable *owner, const int minPoints)
       : m_owner(owner)
-      , m_pCenter(center)
       , m_minPoints(minPoints)
    {
    }
@@ -111,6 +107,7 @@ public:
 
    IEditable *GetIEditable() { return m_owner; }
    const IEditable *GetIEditable() const { return m_owner; }
+
    PinTable *GetPTable() { return m_owner->GetPTable(); }
    const PinTable *GetPTable() const { return m_owner->GetPTable(); }
 
@@ -121,17 +118,14 @@ public:
 
    void ClearPointsForOverwrite();
 
-   Vertex2D GetPointCenter() const;
-   void PutPointCenter(const Vertex2D &pv)
-   {
-      if (m_pCenter != nullptr)
-         *m_pCenter = pv;
-   }
+   const Vertex2D& GetCenter() const;
+   const Vertex2D& GetMinBound() const;
+   const Vertex2D& GetMaxBound() const;
 
    void FlipPointY(const Vertex2D& pvCenter);
    void FlipPointX(const Vertex2D& pvCenter);
-   void RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   void ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
+   void RotatePoints(const float ang, const Vertex2D& center);
+   void ScalePoints(const float scalex, const float scaley, const Vertex2D& center);
    void TranslatePoints(const Vertex2D &offset);
    void ReverseOrder();
 
@@ -142,15 +136,15 @@ public:
    {
       static const int Dim = T::Dim;    // for now, this is always 2 or 3
 
-      const int cpoint = (int)m_vdpoint.size();
+      const int cpoint = (int)m_dragpoints.size();
       const int endpoint = loop ? cpoint : cpoint - 1;
 
       T rendv2;
 
       for (int i = 0; i < endpoint; i++)
       {
-         const CComObject<DragPoint> * const pdp1 = m_vdpoint[i];
-         const CComObject<DragPoint> * const pdp2 = m_vdpoint[(i < cpoint - 1) ? (i + 1) : 0];
+         const CComObject<DragPoint> * const pdp1 = m_dragpoints[i];
+         const CComObject<DragPoint> * const pdp2 = m_dragpoints[(i < cpoint - 1) ? (i + 1) : 0];
 
          if ((pdp1->m_v.x == pdp2->m_v.x) && (pdp1->m_v.y == pdp2->m_v.y) && (pdp1->m_v.z == pdp2->m_v.z))
          {
@@ -166,8 +160,8 @@ public:
          if (inext >= cpoint)
             inext = (loop ? inext - cpoint : cpoint - 1);
 
-         const CComObject<DragPoint> * const pdp0 = m_vdpoint[iprev];
-         const CComObject<DragPoint> * const pdp3 = m_vdpoint[inext];
+         const CComObject<DragPoint> * const pdp0 = m_dragpoints[iprev];
+         const CComObject<DragPoint> * const pdp3 = m_dragpoints[inext];
 
          CatmullCurve<Dim> cc;
          cc.SetCurve(pdp0->m_v, pdp1->m_v, pdp2->m_v, pdp3->m_v);
@@ -195,10 +189,47 @@ public:
       }
    }
 
-   vector< CComObject<DragPoint>* > m_vdpoint;
+   void ClearPoints()
+   {
+      for (auto point : m_dragpoints)
+         point->Release();
+      m_dragpoints.clear();                                                                                                                                                             \
+      OnPointsModified();
+   }
+
+   void DeletePoint(CComObject<DragPoint> * point)
+   {
+      RemoveFromVectorSingle(m_dragpoints, point);
+      point->Release();
+      OnPointsModified();
+   }
+
+   void PushPoint(CComObject<DragPoint> *pdp)
+   {
+      m_dragpoints.push_back(pdp);
+      OnPointsModified();
+   }
+
+   void InsertPoint(size_t pos, CComObject<DragPoint> *pdp)
+   {
+      m_dragpoints.insert(m_dragpoints.begin() + pos, pdp);
+      OnPointsModified();
+   }
+
+   void OnPointsModified() { m_boundsDirty = true; }
+
+   const vector<CComObject<DragPoint> *> GetPoints() const { return m_dragpoints; }
 
 private:
    IEditable *const m_owner;
-   Vertex2D *const m_pCenter;
    const int m_minPoints;
+
+   vector<CComObject<DragPoint> *> m_dragpoints;
+
+   // Lazily updated bounds & center
+   void UpdateBounds() const;
+   mutable bool m_boundsDirty = true;
+   mutable Vertex2D m_minBound;
+   mutable Vertex2D m_maxBound;
+   mutable Vertex2D m_center;
 };

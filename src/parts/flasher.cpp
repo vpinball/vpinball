@@ -28,7 +28,7 @@ Flasher *Flasher::CopyForPlay() const
 
 void Flasher::InitShape(const float x, const float y)
 {
-   if (m_curve.m_vdpoint.empty())
+   if (m_curve.GetPoints().empty())
    {
       // First time shape has been set to custom - set up some points
       constexpr float size = 100.0f;
@@ -39,55 +39,29 @@ void Flasher::InitShape(const float x, const float y)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, x - size*0.5f, y - size*0.5f, 0.f, false);
-         m_curve.m_vdpoint.push_back(pdp);
+         m_curve.PushPoint(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, x - size*0.5f, y + size*0.5f, 0.f, false);
-         m_curve.m_vdpoint.push_back(pdp);
+         m_curve.PushPoint(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, x + size*0.5f, y + size*0.5f, 0.f, false);
-         m_curve.m_vdpoint.push_back(pdp);
+         m_curve.PushPoint(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
          pdp->Init(&m_curve, x + size*0.5f, y - size*0.5f, 0.f, false);
-         m_curve.m_vdpoint.push_back(pdp);
+         m_curve.PushPoint(pdp);
       }
-   }
-}
-
-void Flasher::UpdateCenter() const
-{
-   if (m_centerClean)
-      return;
-
-   m_minx = FLT_MAX;
-   m_miny = FLT_MAX;
-   m_maxx = -FLT_MAX;
-   m_maxy = -FLT_MAX;
-
-   vector<RenderVertex> vvertex;
-   m_curve.GetRgVertex(vvertex);
-
-   for (const RenderVertex& pv0 : vvertex)
-   {
-      if (pv0.x > m_maxx)
-         m_maxx = pv0.x;
-      if (pv0.x < m_minx)
-         m_minx = pv0.x;
-      if (pv0.y > m_maxy)
-         m_maxy = pv0.y;
-      if (pv0.y < m_miny)
-         m_miny = pv0.y;
    }
 }
 
@@ -169,13 +143,12 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       assert(m_renderer != nullptr); // as m_min, m_max are only defined between RenderSetup/RenderRelease
 
       const float height = m_d.m_height;
-      const float centerX = m_minx + (m_maxx - m_minx)*0.5f;
-      const float centerY = m_miny + (m_maxy - m_miny)*0.5f;
-      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-centerX, -centerY, 0.f)
+      const Vertex2D &center = m_curve.GetCenter();
+      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-center.x, -center.y, 0.f)
                              * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
                                 * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
                                 * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
-                                * Matrix3D::MatrixTranslate(centerX, centerY, height));
+                                * Matrix3D::MatrixTranslate(center.x, center.y, height));
 
       for (int i = 0; i < cvertex; i++)
       {
@@ -204,14 +177,11 @@ void Flasher::FlipX(const Vertex2D& pvCenter)
    m_curve.FlipPointX(pvCenter);
 }
 
-void Flasher::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
-{
-   m_curve.RotatePoints(ang, pvCenter, useElementCenter);
-}
+void Flasher::Rotate(const float ang, const Vertex2D &center, const bool useElementCenter) { m_curve.RotatePoints(ang, useElementCenter ? m_curve.GetCenter() : center); }
 
-void Flasher::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
+void Flasher::Scale(const float scalex, const float scaley, const Vertex2D &center, const bool useElementCenter)
 {
-   m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_curve.ScalePoints(scalex, scaley, useElementCenter ? m_curve.GetCenter() : center);
 }
 
 void Flasher::Translate(const Vertex2D &offset)
@@ -222,17 +192,7 @@ void Flasher::Translate(const Vertex2D &offset)
       vert.x += offset.x;
       vert.y += offset.y;
    }
-   m_minx += offset.x;
-   m_maxx += offset.x;
-   m_miny += offset.y;
-   m_maxy += offset.y;
    m_dynamicVertexBufferRegenerate = true;
-}
-
-Vertex2D Flasher::GetCenter() const
-{
-   UpdateCenter();
-   return { 0.5f * (m_minx + m_maxx), 0.5f * (m_miny + m_maxy) };
 }
 
 void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
@@ -256,15 +216,16 @@ void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
-      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
 void Flasher::UpdatePoint(int index, float x, float y)
 {
-     CComObject<DragPoint> *pdp = m_curve.m_vdpoint[index];
+     CComObject<DragPoint> *pdp = m_curve.GetPoints()[index];
      pdp->m_v.x = x;
      pdp->m_v.y = y;
+     m_curve.OnPointsModified();
 }
 
 void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
@@ -363,7 +324,6 @@ void Flasher::Load(IObjectReader& reader)
          return true;
       });
    m_inPlayState = m_d.m_isVisible;
-   UpdateCenter();
 }
 
 STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
@@ -382,15 +342,13 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
 
 STDMETHODIMP Flasher::get_X(float *pVal)
 {
-   UpdateCenter();
-   *pVal = 0.5f * (m_minx + m_maxx);
+   *pVal = m_curve.GetCenter().x;
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_X(float newVal)
 {
-   UpdateCenter();
-   if (const float center = 0.5f * (m_minx + m_maxx); center != newVal)
+   if (const float center = m_curve.GetCenter().x; center != newVal)
       Translate(Vertex2D(newVal - center, 0.f));
 
    return S_OK;
@@ -398,15 +356,13 @@ STDMETHODIMP Flasher::put_X(float newVal)
 
 STDMETHODIMP Flasher::get_Y(float *pVal)
 {
-   UpdateCenter();
-   *pVal = 0.5f * (m_miny + m_maxy);
+   *pVal = m_curve.GetCenter().y;
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_Y(float newVal)
 {
-   UpdateCenter();
-   if (const float center = 0.5f * (m_miny + m_maxy); center != newVal)
+   if (const float center = m_curve.GetCenter().y; center != newVal)
       Translate(Vertex2D(0.f, newVal - center));
 
    return S_OK;
@@ -927,9 +883,6 @@ void Flasher::RenderSetup(Renderer *renderer)
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
 
-   UpdateCenter();
-   m_centerClean = true; // Modifying points is not allowed while rendering, so center stays clean
-
    vector<RenderVertex> vvertex;
    m_curve.GetRgVertex(vvertex);
 
@@ -944,11 +897,6 @@ void Flasher::RenderSetup(Renderer *renderer)
    m_vertices.resize(m_numVertices);
    m_transformedVertices.resize(m_numVertices);
 
-   m_minx = FLT_MAX;
-   m_miny = FLT_MAX;
-   m_maxx = -FLT_MAX;
-   m_maxy = -FLT_MAX;
-
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
       const RenderVertex * const pv0 = &vvertex[i];
@@ -960,23 +908,18 @@ void Flasher::RenderSetup(Renderer *renderer)
       m_vertices[i].nx = 0.f;
       m_vertices[i].ny = 0.f;
       m_vertices[i].nz = 1.f;
-
-      if (pv0->x > m_maxx) m_maxx = pv0->x;
-      if (pv0->x < m_minx) m_minx = pv0->x;
-      if (pv0->y > m_maxy) m_maxy = pv0->y;
-      if (pv0->y < m_miny) m_miny = pv0->y;
    }
-
-   const float inv_width = 1.0f / (m_maxx - m_minx);
-   const float inv_height = 1.0f / (m_maxy - m_miny);
+   
+   const float inv_width = 1.0f / (m_curve.GetMaxBound().x - m_curve.GetMinBound().x);
+   const float inv_height = 1.0f / (m_curve.GetMaxBound().y - m_curve.GetMinBound().y);
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
    for (auto& v : m_vertices)
    {
       if (m_d.m_imagealignment == ImageModeWrap)
       {
-         v.tu = (v.x - m_minx) * inv_width;
-         v.tv = (v.y - m_miny) * inv_height;
+         v.tu = (v.x - m_curve.GetMinBound().x) * inv_width;
+         v.tv = (v.y - m_curve.GetMinBound().y) * inv_height;
       }
       else
       {
@@ -990,10 +933,10 @@ void Flasher::RenderSetup(Renderer *renderer)
       m_numVertices = 4;
       m_vertices.resize(m_numVertices);
       m_transformedVertices.resize(m_numVertices);
-      m_vertices[0] = { m_minx, m_miny, 0.f, 0.f, 0.f, 1.0f, 0.f, 0.f };
-      m_vertices[1] = { m_minx, m_maxy, 0.f, 0.f, 0.f, 1.0f, 0.f, 1.f };
-      m_vertices[2] = { m_maxx, m_maxy, 0.f, 0.f, 0.f, 1.0f, 1.f, 1.f };
-      m_vertices[3] = { m_maxx, m_miny, 0.f, 0.f, 0.f, 1.0f, 1.f, 0.f };
+      m_vertices[0] = { m_curve.GetMinBound().x, m_curve.GetMinBound().y, 0.f, 0.f, 0.f, 1.0f, 0.f, 0.f };
+      m_vertices[1] = { m_curve.GetMinBound().x, m_curve.GetMaxBound().y, 0.f, 0.f, 0.f, 1.0f, 0.f, 1.f };
+      m_vertices[2] = { m_curve.GetMaxBound().x, m_curve.GetMaxBound().y, 0.f, 0.f, 0.f, 1.0f, 1.f, 1.f };
+      m_vertices[3] = { m_curve.GetMaxBound().x, m_curve.GetMinBound().y, 0.f, 0.f, 0.f, 1.0f, 1.f, 0.f };
    }
 
    vector<WORD> vtri;
@@ -1021,7 +964,6 @@ void Flasher::RenderRelease()
 {
    assert(m_renderer != nullptr);
    ResetVideoCap();
-   m_centerClean = false;
    m_meshBuffer = nullptr;
    m_meshEdgeBuffer = nullptr;
    m_vertices.clear();
@@ -1090,17 +1032,17 @@ void Flasher::Render(const unsigned int renderMask)
    if (!isUIPass && (m_d.m_color == 0 || alpha == 0.0f || m_d.m_intensity_scale == 0.0f))
       return;
 
+   const Vertex2D &center = m_curve.GetCenter();
+
    if (m_dynamicVertexBufferRegenerate)
    {
       m_dynamicVertexBufferRegenerate = false;
       const float height = m_d.m_height;
-      const float centerX = m_minx + (m_maxx - m_minx) * 0.5f; // Should match m_vCenter.x at all time
-      const float centerY = m_miny + (m_maxy - m_miny) * 0.5f; // Should match m_vCenter.y at all time
-      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-centerX, -centerY, 0.f)
+      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-center.x, -center.y, 0.f)
                              * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
                                 * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
                                 * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
-                                * Matrix3D::MatrixTranslate(centerX, centerY, height));
+                                * Matrix3D::MatrixTranslate(center.x, center.y, height));
 
       Vertex3D_NoTex2 *buf;
       m_meshBuffer->m_vb->Lock(buf);
@@ -1120,7 +1062,7 @@ void Flasher::Render(const unsigned int renderMask)
       m_meshBuffer->m_vb->Unlock();
    }
 
-   const Vertex3Ds pos(0.5f * (m_minx + m_maxx), 0.5f * (m_miny + m_maxy), m_d.m_height);
+   const Vertex3Ds pos(center.x, center.y, m_d.m_height);
 
    if (m_desktopBackdrop)
       m_renderer->UpdateDesktopBackdropShaderMatrix(m_d.m_renderMode == FlasherData::EXT_RENDER, false, true);
@@ -1340,8 +1282,8 @@ void Flasher::Render(const unsigned int renderMask)
       case FlasherData::EXT_RENDER:
          if (m_d.m_renderStyle >= VPXWindowId::VPXWINDOW_Backglass && m_d.m_renderStyle <= VPXWindowId::VPXWINDOW_Topper)
          {
-            const float width = m_maxx - m_minx;
-            const float height = m_maxy - m_miny;
+            const float width = m_curve.GetMaxBound().x - m_curve.GetMinBound().x;
+            const float height = m_curve.GetMaxBound().y - m_curve.GetMinBound().y;
             m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
             // Draw a solid black background using the common flasher mesh and transform
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -1361,7 +1303,7 @@ void Flasher::Render(const unsigned int renderMask)
                const float h = height * sy;
                transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(w, h, 0.f) //
                   * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height, and a z scale at 0
-                  * Matrix3D::MatrixTranslate(m_minx * sx + 0.5f * w, m_miny * sy + 0.5f * h, 0.f); //
+                  * Matrix3D::MatrixTranslate(m_curve.GetMinBound().x * sx + 0.5f * w, m_curve.GetMinBound().y * sy + 0.5f * h, 0.f); //
                context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
                context->outWidth = w;
                context->outHeight = h;
@@ -1370,7 +1312,7 @@ void Flasher::Render(const unsigned int renderMask)
             {
                transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(width, height, 0.f) //
                   * ((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX))) //
-                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, m_d.m_height);
+                  * Matrix3D::MatrixTranslate(m_curve.GetMinBound().x + 0.5f * width, m_curve.GetMinBound().y + 0.5f * height, m_d.m_height);
                context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
                context->outWidth = width;
                context->outHeight = height;

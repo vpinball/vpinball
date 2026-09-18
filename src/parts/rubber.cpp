@@ -41,7 +41,7 @@ HRESULT Rubber::Init(const float x, const float y, const bool fromMouseClick, co
       {
          pdp->AddRef();
          pdp->Init(&m_curve, xx, yy, 0.f, true);
-         m_curve.m_vdpoint.push_back(pdp);
+         m_curve.PushPoint(pdp);
       }
    }
 
@@ -527,7 +527,7 @@ void Rubber::AddPoint(const Vertex2D &v, const bool smooth)
          icp++;
 
    //if (icp == 0) // need to add point after the last point
-   //icp = m_curve.m_vdpoint.size();
+   //icp = m_curve.GetPoints().size();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -535,7 +535,7 @@ void Rubber::AddPoint(const Vertex2D &v, const bool smooth)
    {
       pdp->AddRef();
       pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth); // Rubbers are usually always smooth
-      m_curve.m_vdpoint.insert(m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
    }
 }
 
@@ -561,7 +561,7 @@ void Rubber::RenderSetup(Renderer *renderer)
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
    UpdateRubber(true, m_d.m_height);
 
-   const Vertex2D center2D = m_curve.GetPointCenter();
+   const Vertex2D& center2D = m_curve.GetCenter();
    m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
 }
 
@@ -711,9 +711,12 @@ void Rubber::FlipY(const Vertex2D &pvCenter) { m_curve.FlipPointY(pvCenter); }
 
 void Rubber::FlipX(const Vertex2D &pvCenter) { m_curve.FlipPointX(pvCenter); }
 
-void Rubber::Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.RotatePoints(ang, pvCenter, useElementCenter); }
+void Rubber::Rotate(const float ang, const Vertex2D &center, const bool useElementCenter) { m_curve.RotatePoints(ang, useElementCenter ? GetCenter() : center); }
 
-void Rubber::Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) { m_curve.ScalePoints(scalex, scaley, pvCenter, useElementCenter); }
+void Rubber::Scale(const float scalex, const float scaley, const Vertex2D &center, const bool useElementCenter)
+{
+   m_curve.ScalePoints(scalex, scaley, useElementCenter ? GetCenter() : center);
+}
 
 void Rubber::Translate(const Vertex2D &offset) { m_curve.TranslatePoints(offset); }
 
