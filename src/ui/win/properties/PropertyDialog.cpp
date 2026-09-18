@@ -606,7 +606,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
       while (m_tab.GetItemCount() > 0)
          m_tab.RemoveTabPage(0);
       memset(m_tabs, 0, sizeof(m_tabs));
-      m_previousType = eItemTypeCount;
+      m_previousType = eItemInvalid;
       return;
    }
 

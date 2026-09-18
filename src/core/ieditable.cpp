@@ -219,15 +219,6 @@ void IEditable::TimerRelease(vector<HitTimer *> &pvht)
    m_phittimer = nullptr;
 }
 
-void IEditable::Undelete()
-{
-   for (size_t i = 0; i < m_vCollection.size(); i++)
-   {
-      Collection *const pcollection = m_vCollection[i];
-      pcollection->AddPart(this);
-   }
-}
-
 string IEditable::GetName() const
 {
    const IScriptable *const pscript = const_cast<IEditable*>(this)->GetIScriptable();

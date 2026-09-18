@@ -1487,7 +1487,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                {
                   POLE::Stream stream(&rootStorage, streamName);
 
-                  ItemTypeEnum type = ItemTypeEnum::eItemTypeCount;
+                  ItemTypeEnum type = ItemTypeEnum::eItemInvalid;
                   stream.read(reinterpret_cast<unsigned char *>(&type), sizeof(int));
 
                   IEditable *const piedit = EditableRegistry::Create(type);
@@ -3254,7 +3254,11 @@ void PinTable::Uncreate(IEditable *pie)
 void PinTable::Undelete(IEditable *pie)
 {
    AddPart(pie);
-   pie->Undelete();
+   for (size_t i = 0; i < pie->m_vCollection.size(); i++)
+   {
+      Collection *const pcollection = pie->m_vCollection[i];
+      pcollection->AddPart(pie);
+   }
    SetDirtyDraw();
 }
 
