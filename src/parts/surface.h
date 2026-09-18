@@ -62,7 +62,7 @@ public:
 #endif
 
    Surface()
-      : m_curve(this)
+      : m_curve(this, 3)
    {
       m_d.m_collidable = true;
       m_d.m_slingshotAnimation = true;
@@ -104,7 +104,7 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
 
-   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_curve.GetCenter(); }
 
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
 

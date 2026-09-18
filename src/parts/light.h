@@ -90,7 +90,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Light()
-      : m_curve(this, &m_d.m_vCenter)
+      : m_curve(this, 3)
    {
       m_d.m_depthBias = 0.0f;
       m_d.m_shape = ShapeCustom;
@@ -130,7 +130,7 @@ public:
    void Translate(const Vertex2D &offset) final;
 
    // DragPoints
-   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_d.m_vCenter; }
    float GetCurrentHeight() const { return m_desktopBackdrop ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
 protected:

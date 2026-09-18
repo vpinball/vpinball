@@ -49,9 +49,8 @@ void LightWinUIPart::UIRenderPass2(Sur* const psur)
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_light->m_curve.m_vdpoint.size(); i++)
+      for (const CComObject<DragPoint>* const pdp : m_light->m_curve.GetPoints())
       {
-         const CComObject<DragPoint>* const pdp = m_light->m_curve.m_vdpoint[i];
          if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
@@ -64,9 +63,8 @@ void LightWinUIPart::UIRenderPass2(Sur* const psur)
 
    if ((m_light->m_d.m_shape == ShapeCustom) && drawDragpoints)
    {
-      for (size_t i = 0; i < m_light->m_curve.m_vdpoint.size(); i++)
+      for (CComObject<DragPoint>* const pdp : m_light->m_curve.GetPoints())
       {
-         CComObject<DragPoint>* const pdp = m_light->m_curve.m_vdpoint[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
          psur->SetObject(m_pointParts.Get(pdp));
@@ -143,7 +141,7 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_FLIP:
       m_light->GetPTable()->BeginUndo();
       m_light->GetPTable()->MarkForUndo(m_light);
-      m_light->m_curve.FlipPointY(m_light->m_curve.GetPointCenter());
+      m_light->FlipY(m_light->GetCenter());
       m_light->GetPTable()->EndUndo();
       if (m_light->GetPTable())
          m_light->GetPTable()->SetDirtyDraw();
@@ -152,7 +150,7 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_MIRROR:
       m_light->GetPTable()->BeginUndo();
       m_light->GetPTable()->MarkForUndo(m_light);
-      m_light->m_curve.FlipPointX(m_light->m_curve.GetPointCenter());
+      m_light->FlipX(m_light->GetCenter());
       m_light->GetPTable()->EndUndo();
       if (m_light->GetPTable())
          m_light->GetPTable()->SetDirtyDraw();

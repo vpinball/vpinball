@@ -56,7 +56,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Trigger()
-      : m_curve(this, &m_d.m_vCenter)
+      : m_curve(this, 3)
    {
    }
    virtual ~Trigger();
@@ -90,7 +90,7 @@ public:
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &offset) final;
-   Vertex2D GetCenter() const final { return m_curve.GetPointCenter(); }
+   Vertex2D GetCenter() const final { return m_d.m_vCenter; }
    Vertex2D GetScale() const final { return {m_d.m_scaleX, m_d.m_scaleY}; }
    float GetRotate() const final { return m_d.m_rotation; }
 

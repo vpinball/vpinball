@@ -12,156 +12,137 @@ bool      DragPoint::m_pointCopied = false;
 
 DragPointCurve::~DragPointCurve()
 {
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
-      m_vdpoint[i]->Release();
+   ClearPoints();
 }
 
-Vertex2D DragPointCurve::GetPointCenter() const
+void DragPointCurve::UpdateBounds() const
 {
-   if (m_pCenter != nullptr)
-      return *m_pCenter;
-
-   float minx = FLT_MAX;
-   float maxx = -FLT_MAX;
-   float miny = FLT_MAX;
-   float maxy = -FLT_MAX;
-
-   for (const auto& v : m_vdpoint)
+   if (m_boundsDirty)
    {
-      minx = min(minx, v->m_v.x);
-      maxx = max(maxx, v->m_v.x);
-      miny = min(miny, v->m_v.y);
-      maxy = max(maxy, v->m_v.y);
+      m_boundsDirty = false;
+      m_minBound.x = FLT_MAX;
+      m_maxBound.x = -FLT_MAX;
+      m_minBound.y = FLT_MAX;
+      m_maxBound.y = -FLT_MAX;
+      vector<RenderVertex> vvertex;
+      GetRgVertex(vvertex);
+      for (const auto& v : vvertex)
+      {
+         m_minBound.x = min(m_minBound.x, v.x);
+         m_maxBound.x = max(m_maxBound.x, v.x);
+         m_minBound.y = min(m_minBound.y, v.y);
+         m_maxBound.y = max(m_maxBound.y, v.y);
+      }
+      /*
+      for (const auto& v : m_dragpoints)
+      {
+         m_minBound.x = min(m_minBound.x, v->m_v.x);
+         m_maxBound.x = max(m_maxBound.x, v->m_v.x);
+         m_minBound.y = min(m_minBound.y, v->m_v.y);
+         m_maxBound.y = max(m_maxBound.y, v->m_v.y);
+      }
+      */
+      m_center = 0.5f * (m_maxBound + m_minBound);
    }
+}
 
-   return {(maxx + minx)*0.5f, (maxy + miny)*0.5f};
+const Vertex2D& DragPointCurve::GetCenter() const
+{
+   UpdateBounds();
+   return m_center;
+}
+
+const Vertex2D& DragPointCurve::GetMinBound() const
+{
+   UpdateBounds();
+   return m_minBound;
+}
+
+const Vertex2D& DragPointCurve::GetMaxBound() const
+{
+   UpdateBounds();
+   return m_maxBound;
 }
 
 void DragPointCurve::FlipPointY(const Vertex2D &pvCenter)
 {
-   Vertex2D newcenter = GetPointCenter();
-
-   for (const auto& v : m_vdpoint)
+   for (const auto& v : m_dragpoints)
    {
       const float deltay = v->m_v.y - pvCenter.y;
-
       v->m_v.y -= deltay*2.0f;
    }
-
-   const float deltay = newcenter.y - pvCenter.y;
-   newcenter.y -= deltay*2.0f;
-   PutPointCenter(newcenter);
-
    ReverseOrder();
+   OnPointsModified();
 }
 
 void DragPointCurve::FlipPointX(const Vertex2D &pvCenter)
 {
-   Vertex2D newcenter = GetPointCenter();
-
-   for (const auto& v : m_vdpoint)
+   for (const auto& v : m_dragpoints)
    {
       const float deltax = v->m_v.x - pvCenter.x;
-
       v->m_v.x -= deltax*2.0f;
    }
-
-   const float deltax = newcenter.x - pvCenter.x;
-   newcenter.x -= deltax*2.0f;
-   PutPointCenter(newcenter);
-
    ReverseOrder();
+   OnPointsModified();
 }
 
-void DragPointCurve::RotatePoints(const float ang, const Vertex2D &pvCenter, const bool useElementCenter)
+void DragPointCurve::RotatePoints(const float ang, const Vertex2D &center)
 {
-   Vertex2D newcenter = GetPointCenter();
-
-   const float centerx = useElementCenter ? newcenter.x : pvCenter.x;
-   const float centery = useElementCenter ? newcenter.y : pvCenter.y;
-
    const float sn = sinf(ANGTORAD(ang));
    const float cs = cosf(ANGTORAD(ang));
-
-   for (const auto& v : m_vdpoint)
+   for (const auto& v : m_dragpoints)
    {
-      const float dx = v->m_v.x - centerx;
-      const float dy = v->m_v.y - centery;
+      const float dx = v->m_v.x - center.x;
+      const float dy = v->m_v.y - center.y;
       const float dx2 = cs*dx - sn*dy;
       const float dy2 = cs*dy + sn*dx;
-      v->m_v.x = centerx + dx2;
-      v->m_v.y = centery + dy2;
+      v->m_v.x = center.x + dx2;
+      v->m_v.y = center.y + dy2;
    }
-
-   // Move object center as well (if rotating around object center, this would have no effect)
-   if (!useElementCenter)
-   {
-      const float dx = newcenter.x - centerx;
-      const float dy = newcenter.y - centery;
-      const float dx2 = cs*dx - sn*dy;
-      const float dy2 = cs*dy + sn*dx;
-      newcenter.x = centerx + dx2;
-      newcenter.y = centery + dy2;
-      PutPointCenter(newcenter);
-   }
+   OnPointsModified();
 }
 
-void DragPointCurve::ScalePoints(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter)
+void DragPointCurve::ScalePoints(const float scalex, const float scaley, const Vertex2D &center)
 {
-   Vertex2D newcenter = GetPointCenter();
-
-   const float centerx = useElementCenter ? newcenter.x : pvCenter.x;
-   const float centery = useElementCenter ? newcenter.y : pvCenter.y;
-
-   for (const auto& v : m_vdpoint)
+   for (const auto& v : m_dragpoints)
    {
-      const float dx = (v->m_v.x - centerx) * scalex;
-      const float dy = (v->m_v.y - centery) * scaley;
-      v->m_v.x = centerx + dx;
-      v->m_v.y = centery + dy;
+      const float dx = (v->m_v.x - center.x) * scalex;
+      const float dy = (v->m_v.y - center.y) * scaley;
+      v->m_v.x = center.x + dx;
+      v->m_v.y = center.y + dy;
    }
-
-   // Move object center as well (if scaling from object center, this would have no effect)
-   if (!useElementCenter)
-   {
-      const float dx = (newcenter.x - centerx) * scalex;
-      const float dy = (newcenter.y - centery) * scaley;
-      newcenter.x = centerx + dx;
-      newcenter.y = centery + dy;
-      PutPointCenter(newcenter);
-   }
+   OnPointsModified();
 }
 
 void DragPointCurve::TranslatePoints(const Vertex2D &offset)
 {
-   for (const auto& v : m_vdpoint)
+   for (const auto& v : m_dragpoints)
    {
       v->m_v.x += offset.x;
       v->m_v.y += offset.y;
    }
-
-   PutPointCenter(GetPointCenter());
+   OnPointsModified();
 }
 
 void DragPointCurve::ReverseOrder()
 {
-   if (m_vdpoint.empty())
+   if (m_dragpoints.empty())
       return;
 
    // Reverse order of points (switches winding, reverses inside/outside)
-   std::ranges::reverse(m_vdpoint.begin(), m_vdpoint.end());
+   std::ranges::reverse(m_dragpoints.begin(), m_dragpoints.end());
 
-   const bool slingshotTemp = m_vdpoint[0]->m_slingshot;
+   const bool slingshotTemp = m_dragpoints[0]->m_slingshot;
 
-   for (size_t i = 0; i < m_vdpoint.size() - 1; i++)
+   for (size_t i = 0; i < m_dragpoints.size() - 1; i++)
    {
-      DragPoint * const pdp1 = m_vdpoint[i];
-      const DragPoint * const pdp2 = m_vdpoint[i + 1];
+      DragPoint * const pdp1 = m_dragpoints[i];
+      const DragPoint * const pdp2 = m_dragpoints[i + 1];
 
       pdp1->m_slingshot = pdp2->m_slingshot;
    }
 
-   m_vdpoint[m_vdpoint.size() - 1]->m_slingshot = slingshotTemp;
+   m_dragpoints[m_dragpoints.size() - 1]->m_slingshot = slingshotTemp;
 }
 
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
@@ -183,7 +164,7 @@ void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **pp
       const RenderVertex * const prv = &vv[i];
       if (prv->controlPoint)
       {
-         if (!m_vdpoint[icontrolpoint]->m_autoTexture)
+         if (!m_dragpoints[icontrolpoint]->m_autoTexture)
          {
             vitexpoints.push_back(icontrolpoint);
             virenderpoints.push_back(i);
@@ -203,7 +184,7 @@ void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **pp
    }
 
    // Wrap the array around so we cover the last section
-   vitexpoints.push_back(vitexpoints[0] + (int)m_vdpoint.size());
+   vitexpoints.push_back(vitexpoints[0] + (int)m_dragpoints.size());
    virenderpoints.push_back(virenderpoints[0] + cpoints);
 
    for (int i = 0; i < (int)vitexpoints.size() - 1; ++i)
@@ -220,8 +201,8 @@ void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **pp
       }
       else
       {
-         starttexcoord = m_vdpoint[vitexpoints[i] % m_vdpoint.size()]->m_texturecoord;
-         endtexcoord = m_vdpoint[vitexpoints[i + 1] % m_vdpoint.size()]->m_texturecoord;
+         starttexcoord = m_dragpoints[vitexpoints[i] % m_dragpoints.size()]->m_texturecoord;
+         endtexcoord = m_dragpoints[vitexpoints[i + 1] % m_dragpoints.size()]->m_texturecoord;
       }
 
       const float deltacoord = endtexcoord - starttexcoord;
@@ -264,26 +245,24 @@ void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **pp
 
 void DragPointCurve::ClearPointsForOverwrite()
 {
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
+   for (size_t i = 0; i < m_dragpoints.size(); i++)
    {
       if (PinTableWnd *const tableEditor = GetPTable()->m_tableEditor)
       {
-         if (IWinUIPart *const part = tableEditor->GetUIPart(m_vdpoint[i]); part && part->m_selectstate != IWinUIPart::SelectState::NotSelected /*GetPTable()->m_pselcur == m_vdpoint[i]*/)
+         if (IWinUIPart *const part = tableEditor->GetUIPart(m_dragpoints[i]); part && part->m_selectstate != IWinUIPart::SelectState::NotSelected /*GetPTable()->m_pselcur == m_dragpoints[i]*/)
          {
             //GetPTable()->SetSel(GetPTable());
             tableEditor->AddMultiSel(tableEditor->GetUIPart(GetPTable()), false, true, false);
          }
       }
-
-      m_vdpoint[i]->Release();
    }
 
-   m_vdpoint.clear();
+   ClearPoints();
 }
 
 void DragPointCurve::SavePoints(IObjectWriter &writer) const
 {
-   for (const auto pdp : m_vdpoint)
+   for (const auto pdp : m_dragpoints)
    {
       writer.BeginObject(FID(DPNT), true, false);
       writer.WriteVector2(FID(VCEN), Vertex2D(pdp->m_v.x, pdp->m_v.y));
@@ -332,7 +311,7 @@ void DragPointCurve::LoadPointToken(IObjectReader &reader)
          }
          return true;
       });
-   m_vdpoint.push_back(pdp);
+   PushPoint(pdp);
 }
 
 void DragPoint::Init(DragPointCurve *pcurve, const float x, const float y, const float z, const bool smooth)
@@ -359,36 +338,27 @@ void DragPoint::Translate(const Vertex2D &offset)
    m_v.y += offset.y;
 }
 
-Vertex2D DragPoint::GetCenter() const
-{
-   return {m_v.x, m_v.y};
-}
+Vertex2D DragPoint::GetCenter() const { return { m_v.x, m_v.y }; }
 
-bool DragPoint::CanDelete() const
-{
-   return (int)m_pcurve->m_vdpoint.size() > m_pcurve->GetMinimumPoints();
-}
+bool DragPoint::CanDelete() const { return (int)m_pcurve->GetPoints().size() > m_pcurve->GetMinimumPoints(); }
 
 void DragPoint::Delete()
 {
    if (CanDelete())
-   {
-      RemoveFromVectorSingle(m_pcurve->m_vdpoint, (CComObject<DragPoint> *)this);
-      Release();
-   }
+      m_pcurve->DeletePoint((CComObject<DragPoint> *)this);
 }
 
 void DragPoint::ToggleSmooth()
 {
    m_smooth = !m_smooth;
-   const int index2 = (FindIndexOf(m_pcurve->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)m_pcurve->m_vdpoint.size()) % (int)m_pcurve->m_vdpoint.size();
+   const int index2 = (FindIndexOf(m_pcurve->GetPoints(), (CComObject<DragPoint> *)this) - 1 + (int)m_pcurve->GetPoints().size()) % (int)m_pcurve->GetPoints().size();
    if (m_smooth && m_slingshot)
    {
       m_slingshot = false;
    }
-   if (m_smooth && m_pcurve->m_vdpoint[index2]->m_slingshot)
+   if (m_smooth && m_pcurve->GetPoints()[index2]->m_slingshot)
    {
-      m_pcurve->m_vdpoint[index2]->m_slingshot = false;
+      m_pcurve->GetPoints()[index2]->m_slingshot = false;
    }
 }
 
@@ -398,8 +368,8 @@ void DragPoint::ToggleSlingshot()
    if (m_slingshot)
    {
       m_smooth = false;
-      const int index2 = (FindIndexOf(m_pcurve->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % m_pcurve->m_vdpoint.size();
-      m_pcurve->m_vdpoint[index2]->m_smooth = false;
+      const int index2 = (FindIndexOf(m_pcurve->GetPoints(), (CComObject<DragPoint> *)this) + 1) % m_pcurve->GetPoints().size();
+      m_pcurve->GetPoints()[index2]->m_smooth = false;
    }
 }
 

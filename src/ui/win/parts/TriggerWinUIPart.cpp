@@ -62,9 +62,8 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
       if (!drawDragpoints)
       {
          // if any of the dragpoints of this object are selected then draw all the dragpoints
-         for (size_t i = 0; i < m_trigger->m_curve.m_vdpoint.size(); i++)
+         for (const CComObject<DragPoint>* const pdp : m_trigger->m_curve.GetPoints())
          {
-            const CComObject<DragPoint>* const pdp = m_trigger->m_curve.m_vdpoint[i];
             if (m_pointParts.IsSelected(pdp))
             {
                drawDragpoints = true;
@@ -75,9 +74,8 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
 
       if (drawDragpoints)
       {
-         for (size_t i = 0; i < m_trigger->m_curve.m_vdpoint.size(); i++)
+         for (CComObject<DragPoint>* const pdp : m_trigger->m_curve.GetPoints())
          {
-            CComObject<DragPoint>* const pdp = m_trigger->m_curve.m_vdpoint[i];
             psur->SetFillColor(-1);
             psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
             psur->SetObject(m_pointParts.Get(pdp));
@@ -140,7 +138,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_FLIP:
       m_trigger->GetPTable()->BeginUndo();
       m_trigger->GetPTable()->MarkForUndo(m_trigger);
-      m_trigger->m_curve.FlipPointY(m_trigger->m_curve.GetPointCenter());
+      m_trigger->FlipY(m_trigger->GetCenter());
       m_trigger->GetPTable()->EndUndo();
       if (m_trigger->GetPTable())
          m_trigger->GetPTable()->SetDirtyDraw();
@@ -149,7 +147,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_MIRROR:
       m_trigger->GetPTable()->BeginUndo();
       m_trigger->GetPTable()->MarkForUndo(m_trigger);
-      m_trigger->m_curve.FlipPointX(m_trigger->m_curve.GetPointCenter());
+      m_trigger->FlipX(m_trigger->GetCenter());
       m_trigger->GetPTable()->EndUndo();
       if (m_trigger->GetPTable())
          m_trigger->GetPTable()->SetDirtyDraw();
@@ -182,7 +180,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
             icp++;
 
       //if (icp == 0) // need to add point after the last point
-      //icp = m_trigger->m_curve.m_vdpoint.size();
+      //icp = m_trigger->m_curve.GetPoints().size();
 
       CComObject<DragPoint>* pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);
@@ -190,7 +188,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
       {
          pdp->AddRef();
          pdp->Init(&m_trigger->m_curve, vOut.x, vOut.y, 0.f, false);
-         m_trigger->m_curve.m_vdpoint.insert(m_trigger->m_curve.m_vdpoint.begin() + icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+         m_trigger->m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
 
       m_trigger->GetPTable()->EndUndo();

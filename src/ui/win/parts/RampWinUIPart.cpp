@@ -87,9 +87,8 @@ void RampWinUIPart::UIRenderPass2(Sur* const psur)
    if (!drawDragpoints)
    {
       // if any of the drag points of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_ramp->m_curve.m_vdpoint.size(); i++)
+      for (const CComObject<DragPoint>* const pdp : m_ramp->m_curve.GetPoints())
       {
-         const CComObject<DragPoint>* const pdp = m_ramp->m_curve.m_vdpoint[i];
          if (m_pointParts.IsSelected(pdp))
          {
             drawDragpoints = true;
@@ -100,9 +99,9 @@ void RampWinUIPart::UIRenderPass2(Sur* const psur)
 
    if (drawDragpoints)
    {
-      for (size_t i = 0; i < m_ramp->m_curve.m_vdpoint.size(); i++)
+      for (size_t i = 0; i < m_ramp->m_curve.GetPoints().size(); i++)
       {
-         CComObject<DragPoint>* const pdp = m_ramp->m_curve.m_vdpoint[i];
+         CComObject<DragPoint>* const pdp = m_ramp->m_curve.GetPoints()[i];
          psur->SetFillColor(-1);
          psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
          psur->SetObject(m_pointParts.Get(pdp));
@@ -159,7 +158,7 @@ void RampWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_FLIP:
       m_ramp->GetPTable()->BeginUndo();
       m_ramp->GetPTable()->MarkForUndo(m_ramp);
-      m_ramp->m_curve.FlipPointY(m_ramp->m_curve.GetPointCenter());
+      m_ramp->FlipY(m_ramp->GetCenter());
       m_ramp->GetPTable()->EndUndo();
       if (m_ramp->GetPTable())
          m_ramp->GetPTable()->SetDirtyDraw();
@@ -168,7 +167,7 @@ void RampWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_MIRROR:
       m_ramp->GetPTable()->BeginUndo();
       m_ramp->GetPTable()->MarkForUndo(m_ramp);
-      m_ramp->m_curve.FlipPointX(m_ramp->m_curve.GetPointCenter());
+      m_ramp->FlipX(m_ramp->GetCenter());
       m_ramp->GetPTable()->EndUndo();
       if (m_ramp->GetPTable())
          m_ramp->GetPTable()->SetDirtyDraw();
