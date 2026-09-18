@@ -21,7 +21,7 @@ void DispreelStateProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)SelAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i)->GetEditable();
         if (dispid == IDC_MOTOR_STEPS_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_motorStepsEdit, reel->GetMotorSteps());
         if (dispid == IDC_UPDATE_INTERVAL_EDIT || dispid == -1)
@@ -39,7 +39,7 @@ void DispreelStateProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDispReel))
             continue;
-        DispReel * const reel = (DispReel *)SelAt(i);
+        DispReel * const reel = (DispReel *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_MOTOR_STEPS_EDIT:

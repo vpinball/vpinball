@@ -34,7 +34,7 @@ void GateVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType()!=eItemGate))
             continue;
-        Gate * const gate = (Gate *)SelAt(i);
+        Gate * const gate = (Gate *)SelAt(i)->GetEditable();
         if (dispid == 9 || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)gate->m_d.m_type - 1]);
         if (dispid == IDC_SURFACE_COMBO || dispid == -1)
@@ -67,7 +67,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemGate))
             continue;
-        Gate * const gate = (Gate *)SelAt(i);
+        Gate * const gate = (Gate *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 9:

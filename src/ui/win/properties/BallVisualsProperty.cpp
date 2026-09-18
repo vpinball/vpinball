@@ -28,7 +28,7 @@ void BallVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
    {
       if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBall))
          continue;
-      Ball *const ball = (Ball *)SelAt(i);
+      Ball *const ball = (Ball *)SelAt(i)->GetEditable();
       if (dispid == IDC_USE_TABLE_SETTINGS || dispid == -1)
       {
          PropertyDialog::SetCheckboxState(m_hUseTableSettings, ball->m_d.m_useTableRenderSettings);
@@ -75,7 +75,7 @@ void BallVisualsProperty::UpdateProperties(const int dispid)
    {
       if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemBall))
          continue;
-      Ball *const ball = (Ball *)SelAt(i);
+      Ball *const ball = (Ball *)SelAt(i)->GetEditable();
       switch (dispid)
       {
       case IDC_USE_TABLE_SETTINGS: CHECK_UPDATE_ITEM(ball->m_d.m_useTableRenderSettings, PropertyDialog::GetCheckboxState(m_hUseTableSettings), ball); break;

@@ -12,6 +12,7 @@ public:
 
    ItemTypeEnum GetItemType() const override { return eItemDragPoint; }
    bool IsSubPart() const override { return true; }
+   DragPoint* GetDragPoint() const override { return m_dragPoint; }
 
    // Dragpoints are drawn by their parent's IWinUIPart
    void UIRenderPass1(Sur* psur) override { }

@@ -35,7 +35,7 @@ void TriggerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger * const trigger = (Trigger *)SelAt(i);
+        Trigger * const trigger = (Trigger *)SelAt(i)->GetEditable();
 
         if (dispid == DISPID_Shape || dispid == -1)
             PropertyDialog::UpdateComboBox(m_shapeList, m_shapeCombo, m_shapeList[(int)trigger->m_d.m_shape]);
@@ -71,7 +71,7 @@ void TriggerVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger * const trigger = (Trigger *)SelAt(i);
+        Trigger * const trigger = (Trigger *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case DISPID_Shape:

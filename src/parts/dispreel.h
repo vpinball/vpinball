@@ -40,7 +40,6 @@ class DispReel :
    public EventProxy<DispReel, &DIID_IDispReelEvents>,
    public IConnectionPointContainerImpl<DispReel>,
    public IProvideClassInfo2Impl<&CLSID_DispReel, &DIID_IDispReelEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IScriptable,
    public IFireEvents,

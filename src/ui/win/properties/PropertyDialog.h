@@ -25,7 +25,7 @@ public:
     {
     }
 
-    ISelect *SelAt(const int i) const { return (*m_pvsel)[i]->GetSelect(); }
+    IWinUIPart *SelAt(const int i) const { return (*m_pvsel)[i]; }
     int SelCount() const { return (int)m_pvsel->size(); }
 
     virtual void UpdateProperties(const int dispid) = 0;
@@ -64,8 +64,8 @@ public:
         return FALSE;
     }
 
-    void UpdateBaseProperties(ISelect *psel, BaseProperty *property, const int dispid);
-    void UpdateBaseVisuals(ISelect *psel, BaseProperty *property, const int dispid = -1);
+    void UpdateBaseProperties(IEditable *part, BaseProperty *property, const int dispid);
+    void UpdateBaseVisuals(IEditable *part, BaseProperty *property, const int dispid = -1);
 
     const vector<IWinUIPart *>* m_pvsel;
     static bool m_disableEvents;
@@ -271,9 +271,9 @@ public:
     static void UpdateSoundComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
     static void UpdateCollectionComboBox(const PinTable *const ptable, const CComboBox &combo, const char *selectName);
 
-    static void StartUndo(ISelect *const psel);
+    static void StartUndo(IEditable *const part);
 
-    static void EndUndo(ISelect *const psel);
+    static void EndUndo(IEditable *const part);
 
     static void UpdateStatusBarInfo(IEditable *const part);
 

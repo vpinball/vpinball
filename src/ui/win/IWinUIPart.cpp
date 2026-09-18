@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 
 #include "core/ieditable.h"
-#include "core/iselect.h"
 #include "parts/pintable.h"
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
@@ -32,9 +31,9 @@ void IWinUIPart::OnLButtonUp(int x, int y)
    if (m_markedForUndo)
    {
       m_markedForUndo = false;
-      m_select->GetIEditable()->GetPTable()->EndUndo();
-      if (m_select->GetIEditable()->GetPTable())
-         m_select->GetIEditable()->GetPTable()->SetDirtyDraw();
+      m_editable->GetPTable()->EndUndo();
+      if (m_editable->GetPTable())
+         m_editable->GetPTable()->SetDirtyDraw();
    }
 #endif
 }
@@ -77,7 +76,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
       return;
    }
 
-   IEditable *const piedit = m_select->GetIEditable();
+   IEditable *const piedit = m_editable;
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
    {
       const int ksshift = GetKeyState(VK_SHIFT);
@@ -103,16 +102,16 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
    }
    switch (icmd)
    {
-   case ID_DRAWINFRONT: m_select->GetIEditable()->GetPTable()->MovePartToFront(piedit); break;
-   case ID_DRAWINBACK: m_select->GetIEditable()->GetPTable()->MovePartToBack(piedit); break;
+   case ID_DRAWINFRONT: m_editable->GetPTable()->MovePartToFront(piedit); break;
+   case ID_DRAWINBACK: m_editable->GetPTable()->MovePartToBack(piedit); break;
    case ID_SETASDEFAULT: piedit->WriteRegDefaults(); break;
    case ID_LOCK:
       piedit->GetPTable()->BeginUndo();
       piedit->GetPTable()->MarkForUndo(piedit);
       piedit->SetUILock(!piedit->IsUILocked());
       piedit->GetPTable()->EndUndo();
-      if (m_select->GetIEditable()->GetPTable())
-         m_select->GetIEditable()->GetPTable()->SetDirtyDraw();
+      if (m_editable->GetPTable())
+         m_editable->GetPTable()->SetDirtyDraw();
       break;
    }
 #endif

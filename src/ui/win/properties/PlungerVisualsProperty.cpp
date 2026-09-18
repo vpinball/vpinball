@@ -41,7 +41,7 @@ void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)SelAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i)->GetEditable();
         if (dispid == IDC_PLUNGER_TYPE_COMBO || dispid == -1)
             PropertyDialog::UpdateComboBox(m_typeList, m_typeCombo, m_typeList[(int)plunger->m_d.m_type-1]);
         if (dispid == 1502 || dispid == -1)
@@ -86,7 +86,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)SelAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i)->GetEditable();
 
         switch (dispid)
         {

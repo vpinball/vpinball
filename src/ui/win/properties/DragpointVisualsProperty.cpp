@@ -24,7 +24,7 @@ void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDragPoint))
             continue;
-        const DragPoint * const dpoint = (DragPoint *)SelAt(i);
+        const DragPoint * const dpoint = SelAt(i)->GetDragPoint();
 
         PropertyDialog::SetCheckboxState(GetDlgItem(3), dpoint->m_smooth);
         if (prev!=nullptr)
@@ -71,32 +71,32 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDragPoint))
             continue;
-        DragPoint * const dpoint = (DragPoint *)SelAt(i);
+        DragPoint * const dpoint = SelAt(i)->GetDragPoint();
 
         switch (dispid)
         {
             case 1:
                 if (m_posXEdit.IsWindow() && !m_posXEdit.GetWindowText().IsEmpty())
-                    CHECK_UPDATE_ITEM(dpoint->m_v.x, PropertyDialog::GetFloatTextbox(m_posXEdit), dpoint);
+                    CHECK_UPDATE_ITEM(dpoint->m_v.x, PropertyDialog::GetFloatTextbox(m_posXEdit), dpoint->GetIEditable());
                 break;
             case 2:
                 if (m_posYEdit.IsWindow() && !m_posYEdit.GetWindowText().IsEmpty())
-                    CHECK_UPDATE_ITEM(dpoint->m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), dpoint);
+                    CHECK_UPDATE_ITEM(dpoint->m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), dpoint->GetIEditable());
                 break;
             case 4:
-                CHECK_UPDATE_ITEM(dpoint->m_autoTexture, PropertyDialog::GetCheckboxState(GetDlgItem(4)), dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_autoTexture, PropertyDialog::GetCheckboxState(GetDlgItem(4)), dpoint->GetIEditable());
                 break;
             case 5:
                 if (m_textureCoordEdit.IsWindow() && !m_textureCoordEdit.GetWindowText().IsEmpty())
-                    CHECK_UPDATE_ITEM(dpoint->m_texturecoord, PropertyDialog::GetFloatTextbox(m_textureCoordEdit), dpoint);
+                    CHECK_UPDATE_ITEM(dpoint->m_texturecoord, PropertyDialog::GetFloatTextbox(m_textureCoordEdit), dpoint->GetIEditable());
                 break;
             case 6:
                 if (m_heightOffsetEdit.IsWindow() && !m_heightOffsetEdit.GetWindowText().IsEmpty())
-                    CHECK_UPDATE_ITEM(dpoint->m_v.z, PropertyDialog::GetFloatTextbox(m_heightOffsetEdit), dpoint);
+                    CHECK_UPDATE_ITEM(dpoint->m_v.z, PropertyDialog::GetFloatTextbox(m_heightOffsetEdit), dpoint->GetIEditable());
                 break;
             case IDC_CALC_HEIGHT_EDIT:
                 if (m_realHeightEdit.IsWindow() && !m_realHeightEdit.GetWindowText().IsEmpty())
-                    CHECK_UPDATE_ITEM(dpoint->m_calcHeight, PropertyDialog::GetFloatTextbox(m_realHeightEdit), dpoint);
+                    CHECK_UPDATE_ITEM(dpoint->m_calcHeight, PropertyDialog::GetFloatTextbox(m_realHeightEdit), dpoint->GetIEditable());
                 break;
             default:
                 break;
@@ -167,20 +167,20 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         case IDC_POINT_COPY_BUTTON:
         {
-            ISelect *const pItem = SelAt(0);
+            IWinUIPart *const pItem = SelAt(0);
             if ((SelCount() == 1) && (pItem->GetItemType() == eItemDragPoint))
             {
-                DragPoint * const pPoint = (DragPoint *)pItem;
+                DragPoint * const pPoint = pItem->GetDragPoint();
                 pPoint->Copy();
             }
             return TRUE;
         }
         case IDC_POINT_PASTE_BUTTON:
         {
-            ISelect *const pItem = SelAt(0);
+            IWinUIPart *const pItem = SelAt(0);
             if ((SelCount() == 1) && (pItem->GetItemType() == eItemDragPoint))
             {
-                DragPoint * const pPoint = (DragPoint *)pItem;
+                DragPoint * const pPoint = pItem->GetDragPoint();
                 pPoint->Paste();
             }
             return TRUE;
@@ -204,10 +204,10 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
                 {
                     if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemDragPoint))
                         continue;
-                    DragPoint * const dpoint = (DragPoint *)SelAt(i);
-                    PropertyDialog::StartUndo(dpoint);
+                    DragPoint * const dpoint = SelAt(i)->GetDragPoint();
+                    PropertyDialog::StartUndo(dpoint->GetIEditable());
                     dpoint->ToggleSmooth();
-                    PropertyDialog::EndUndo(dpoint);
+                    PropertyDialog::EndUndo(dpoint->GetIEditable());
                 }
             }
             UpdateProperties(dispID);

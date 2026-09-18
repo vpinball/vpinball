@@ -5,8 +5,8 @@
 #include "parts/light.h"
 #include "ui/win/parts/LightCenterWinUIPart.h"
 
-LightCenterWinUIPart::LightCenterWinUIPart(PinTableWnd* editor, ISelect* lightCenter)
-   : IWinUIPart(editor, lightCenter)
+LightCenterWinUIPart::LightCenterWinUIPart(PinTableWnd* editor, LightCenter* lightCenter)
+   : IWinUIPart(editor, lightCenter->GetIEditable())
 {
 }
 

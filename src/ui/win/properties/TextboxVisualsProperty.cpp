@@ -35,7 +35,7 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTextbox))
             continue;
-        Textbox* const text = (Textbox *)SelAt(i);
+        Textbox* const text = (Textbox *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_TEXTBOX_TRANSP_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hTransparentCheck, text->m_d.m_transparent);
@@ -77,7 +77,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTextbox))
             continue;
-        Textbox* const text = (Textbox *)SelAt(i);
+        Textbox* const text = (Textbox *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_TEXTBOX_TRANSP_CHECK:

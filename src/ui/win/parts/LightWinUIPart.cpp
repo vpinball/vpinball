@@ -16,15 +16,13 @@ LightWinUIPart::LightWinUIPart(PinTableWnd* editor, Light* light)
 {
 }
 
-IWinUIPart* LightWinUIPart::GetSubPart(ISelect* select)
+IWinUIPart* LightWinUIPart::GetSubPart(LightCenter* center)
 {
-   if (select == m_light->GetLightCenterSelect())
-   {
-      if (!m_centerPart)
-         m_centerPart = std::make_unique<LightCenterWinUIPart>(m_editor, select);
-      return m_centerPart.get();
-   }
-   return m_pointParts.Get(select);
+   if (center != m_light->GetLightCenter())
+      return nullptr;
+   if (!m_centerPart)
+      m_centerPart = std::make_unique<LightCenterWinUIPart>(m_editor, center);
+   return m_centerPart.get();
 }
 
 void LightWinUIPart::UpdateStatusBarObjectPos()
@@ -113,7 +111,7 @@ void LightWinUIPart::RenderOutline(Sur* const psur)
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->Polygon(vvertex);
 
-      psur->SetObject(GetSubPart(m_light->GetLightCenterSelect()));
+      psur->SetObject(GetSubPart(m_light->GetLightCenter()));
       break;
    }
    }

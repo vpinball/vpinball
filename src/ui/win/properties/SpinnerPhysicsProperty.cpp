@@ -19,7 +19,7 @@ void SpinnerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)SelAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_DAMPING_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_dampingEdit, spinner->m_d.m_damping);
@@ -36,7 +36,7 @@ void SpinnerPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)SelAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i)->GetEditable();
 
         switch (dispid)
         {

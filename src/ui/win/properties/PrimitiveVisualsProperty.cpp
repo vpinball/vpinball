@@ -35,7 +35,7 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive*)SelAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_ADDBLEND || dispid == -1)
         {
@@ -176,7 +176,7 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
             continue;
-        Primitive *const prim = (Primitive *)SelAt(i);
+        Primitive *const prim = (Primitive *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_ADDBLEND:

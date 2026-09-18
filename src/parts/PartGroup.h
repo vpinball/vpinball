@@ -43,7 +43,6 @@ class PartGroup :
    public EventProxy<PartGroup, &DIID_IPartGroupEvents>,
    public IConnectionPointContainerImpl<PartGroup>,
    public IProvideClassInfo2Impl<&CLSID_PartGroup, &DIID_IPartGroupEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IScriptable,
    public IFireEvents,

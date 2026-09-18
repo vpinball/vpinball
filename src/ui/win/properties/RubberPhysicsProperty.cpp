@@ -23,7 +23,7 @@ void RubberPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRubber))
             continue;
-        Rubber *const rubber = (Rubber *)SelAt(i);
+        Rubber *const rubber = (Rubber *)SelAt(i)->GetEditable();
 
         if (dispid == 120 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, rubber->m_d.m_elasticityFalloff);
@@ -49,7 +49,7 @@ void RubberPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRubber))
             continue;
-        Rubber *const rubber = (Rubber *)SelAt(i);
+        Rubber *const rubber = (Rubber *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 120:

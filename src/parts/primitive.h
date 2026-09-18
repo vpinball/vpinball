@@ -78,7 +78,6 @@ class Primitive :
    public IConnectionPointContainerImpl<Primitive>,
    public IProvideClassInfo2Impl<&CLSID_Primitive, &DIID_IPrimitiveEvents, &LIBID_VPinballLib>,
 
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

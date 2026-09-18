@@ -7,7 +7,7 @@
 #include "ui/win/parts/DragPointWinUIPart.h"
 
 DragPointWinUIPart::DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint)
-   : IWinUIPart(editor, dragPoint)
+   : IWinUIPart(editor, dragPoint->GetIEditable())
    , m_dragPoint(dragPoint)
 {
 }

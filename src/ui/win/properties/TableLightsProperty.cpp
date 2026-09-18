@@ -11,7 +11,7 @@ TableLightsProperty::TableLightsProperty(const vector<IWinUIPart *> *pvsel)
    : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetItemType() == eItemTable);
    m_lightEmissionScaleEdit.SetDialog(this);
    m_lightHeightEdit.SetDialog(this);
    m_lightRangeEdit.SetDialog(this);
@@ -22,7 +22,7 @@ TableLightsProperty::TableLightsProperty(const vector<IWinUIPart *> *pvsel)
 
 void TableLightsProperty::UpdateVisuals(const int dispid /*=-1*/)
 {
-   PinTable *const table = (PinTable *)SelAt(0);
+   PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
    if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
       m_colorButton1.SetColor(table->m_lightAmbient);
    if (dispid == IDC_COLOR_BUTTON2 || dispid == -1)
@@ -43,7 +43,7 @@ void TableLightsProperty::UpdateVisuals(const int dispid /*=-1*/)
 
 void TableLightsProperty::UpdateProperties(const int dispid)
 {
-   PinTable *const table = (PinTable *)SelAt(0);
+   PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
    switch (dispid)
    {
    case IDC_COLOR_BUTTON1:

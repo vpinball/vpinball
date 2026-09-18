@@ -67,6 +67,27 @@ public:
    Fader m_fader = Fader::FADER_LINEAR;
 };
 
+class Light;
+
+// Light center handle: a sub element of a light for editor picking
+class LightCenter final
+{
+public:
+   LightCenter(Light *plight)
+      : m_plight(plight)
+   {
+   }
+
+   IEditable *GetIEditable();
+   const IEditable *GetIEditable() const;
+
+   static inline constexpr ItemTypeEnum ItemType = eItemLightCenter;
+   ItemTypeEnum GetItemType() const { return eItemLightCenter; }
+
+private:
+   Light *m_plight;
+};
+
 class Light :
    public IDispatchImpl<ILight, &IID_ILight, &LIBID_VPinballLib>,
    //public ISupportErrorInfo,
@@ -75,7 +96,6 @@ class Light :
    public EventProxy<Light, &DIID_ILightEvents>,
    public IConnectionPointContainerImpl<Light>,
    public IProvideClassInfo2Impl<&CLSID_Light, &DIID_ILightEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable, // only used for UI picking
    public IRenderable,
@@ -161,23 +181,8 @@ public:
    float m_surfaceHeight;
    bool  m_lockedByLS = false;
 
-   // ISelect of the light center handle, for editor picking
-   class LightCenter final : public ISelect
-   {
-   public:
-      LightCenter(Light *plight) : m_plight(plight) { }
-
-      IEditable *GetIEditable() override { return (IEditable *)m_plight; }
-      const IEditable *GetIEditable() const override { return (const IEditable *)m_plight; }
-
-      static inline constexpr ItemTypeEnum ItemType = eItemLightCenter;
-      ItemTypeEnum GetItemType() const override { return eItemLightCenter; }
-
-   private:
-      Light *m_plight;
-   };
-
-   ISelect *GetLightCenterSelect() { return &m_lightcenter; }
+   // Light center handle, for editor picking
+   LightCenter *GetLightCenter() { return &m_lightcenter; }
 
 private:
    Material *m_surfaceMaterial;
@@ -293,3 +298,6 @@ private:
       m_timerDurationEndTime = cur_time_msec + m_duration;
    }
 };
+
+inline IEditable *LightCenter::GetIEditable() { return m_plight; }
+inline const IEditable *LightCenter::GetIEditable() const { return m_plight; }

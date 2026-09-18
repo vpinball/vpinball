@@ -26,7 +26,7 @@ void PlungerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)SelAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i)->GetEditable();
         if (dispid == IDC_PULL_SPEED_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_pullSpeedEdit, plunger->m_d.m_speedPull);
         if (dispid == IDC_RELEASE_SPEED_EDIT || dispid == -1)
@@ -58,7 +58,7 @@ void PlungerPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPlunger))
             continue;
-        Plunger * const plunger = (Plunger *)SelAt(i);
+        Plunger * const plunger = (Plunger *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_PULL_SPEED_EDIT:

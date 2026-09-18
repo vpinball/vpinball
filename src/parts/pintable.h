@@ -66,7 +66,6 @@ class PinTable : public CComObjectRootEx<CComSingleThreadModel>,
                  // allowing VBScript to get the set of events to sync to.
                  // VBA does not need this interface for some reason
                  public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VPinballLib>,
-                 public ISelect,
                  public IScriptable,
                  public IEditable,
                  public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
@@ -374,8 +373,6 @@ public:
    void ClearForOverwrite() final;
    void Load(IObjectReader &reader) final;
    void Save(IObjectWriter& writer, const bool saveForUndo) final;
-   ISelect *GetISelect() final { return (ISelect *)this; }
-   const ISelect *GetISelect() const final { return (const ISelect *)this; }
    IScriptable *GetIScriptable() final { return (IScriptable *)this; }
    const IScriptable *GetIScriptable() const final { return (const IScriptable *)this; }
    // IEditable unused members
@@ -393,11 +390,7 @@ public:
    void Translate(const Vertex2D &offset) final { }
    void SetDefaultPhysics(const bool fromMouseClick) final;
 
-   // ISelect
-   IEditable *GetIEditable() final { return (IEditable *)this; }
-   const IEditable *GetIEditable() const final { return (const IEditable *)this; }
-
-   // Both ISelect and IEditable
+   // IEditable
    static inline constexpr ItemTypeEnum ItemType = eItemTable;
    ItemTypeEnum GetItemType() const final { return eItemTable; }
 

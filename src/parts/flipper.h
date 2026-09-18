@@ -66,7 +66,6 @@ class Flipper :
    public IConnectionPointContainerImpl<Flipper>,
    public IProvideClassInfo2Impl<&CLSID_Flipper, &DIID_IFlipperEvents, &LIBID_VPinballLib>,
    public EventProxy<Flipper, &DIID_IFlipperEvents>,
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

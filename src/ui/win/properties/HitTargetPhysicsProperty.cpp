@@ -24,7 +24,7 @@ void HitTargetPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)SelAt(i);
+        HitTarget * const target = (HitTarget *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_TARGET_ISDROPPED_CHECK || dispid == -1)
             PropertyDialog::SetCheckboxState(m_hIsDroppedCheck, target->m_d.m_isDropped);
@@ -49,7 +49,7 @@ void HitTargetPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemHitTarget))
             continue;
-        HitTarget * const target = (HitTarget*)SelAt(i);
+        HitTarget * const target = (HitTarget *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case IDC_TARGET_ISDROPPED_CHECK:

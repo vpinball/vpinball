@@ -68,20 +68,20 @@ BOOL DrawingOrderDialog::OnInitDialog()
    lv.mask = LVIF_TEXT;
 
    // create a selection in the same drawing order as the selected elements are stored in the main vector
-   vector<ISelect*> selection;
+   vector<IWinUIPart *> selection;
    if (m_drawingOrderSelect)
    {
-      const vector<ISelect *> selParts = ptw->GetSelectedParts();
+      const vector<IWinUIPart *> selParts = ptw->GetSelectedParts();
       for (SSIZE_T i = pt->GetParts().size() - 1; i >= 0; i--)
-         for (ISelect *const sel : selParts)
+         for (IWinUIPart *const sel : selParts)
          {
-            if (sel == pt->GetParts()[i]->GetISelect())
+            if (sel->GetEditable() == pt->GetParts()[i])
                selection.push_back(sel);
          }
    }
    for (size_t i = 0; i < (m_drawingOrderSelect ? selection.size() : ptw->m_allHitElements.size()); i++)
    {
-      IEditable * const pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : ptw->m_allHitElements[i]->GetEditable();
+      IEditable *const pedit = m_drawingOrderSelect ? selection[i]->GetEditable() : ptw->m_allHitElements[i]->GetEditable();
       if (pedit)
       {
          const string szTemp = PinTable::GetElementName(pedit);

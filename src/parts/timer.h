@@ -28,7 +28,6 @@ class Timer :
    public IConnectionPointContainerImpl<Timer>,
    public IProvideClassInfo2Impl<&CLSID_Timer, &DIID_ITimerEvents, &LIBID_VPinballLib>,
    public EventProxy<Timer, &DIID_ITimerEvents>,
-   public ISelect,
    public IEditable,
    public IScriptable,
    //public IHitable, // FIXME implement UI picking

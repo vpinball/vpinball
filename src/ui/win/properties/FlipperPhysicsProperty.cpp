@@ -39,7 +39,7 @@ void FlipperPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)SelAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i)->GetEditable();
         if (dispid == DISPID_Flipper_Speed || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_massEdit, flipper->m_d.m_mass);
         if (dispid == 19 || dispid == -1)
@@ -68,7 +68,7 @@ void FlipperPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlipper))
             continue;
-        Flipper * const flipper = (Flipper *)SelAt(i);
+        Flipper * const flipper = (Flipper *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 19:

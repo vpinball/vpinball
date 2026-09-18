@@ -37,7 +37,6 @@ class Rubber :
    public EventProxy<Rubber, &DIID_IRubberEvents>,
    public IConnectionPointContainerImpl<Rubber>,
    public IProvideClassInfo2Impl<&CLSID_Rubber, &DIID_IRubberEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

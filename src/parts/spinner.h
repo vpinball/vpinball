@@ -36,7 +36,6 @@ class Spinner :
    public EventProxy<Spinner, &DIID_ISpinnerEvents>,
    public IConnectionPointContainerImpl<Spinner>,
    public IProvideClassInfo2Impl<&CLSID_Spinner, &DIID_ISpinnerEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

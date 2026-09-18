@@ -19,7 +19,7 @@ void TriggerPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        const Trigger *const trigger = (Trigger *)SelAt(i);
+        const Trigger *const trigger = (Trigger *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_HIT_HEIGHT_EDIT || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_hitHeightEdit, trigger->m_d.m_hit_height);
@@ -36,7 +36,7 @@ void TriggerPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemTrigger))
             continue;
-        Trigger * const trigger = (Trigger *)SelAt(i);
+        Trigger * const trigger = (Trigger *)SelAt(i)->GetEditable();
         switch (dispid)
         {
            case DISPID_Enabled:

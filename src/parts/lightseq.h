@@ -72,7 +72,6 @@ class LightSeq :
    public IConnectionPointContainerImpl<LightSeq>,
    public IProvideClassInfo2Impl<&CLSID_LightSeq, &DIID_ILightSeqEvents, &LIBID_VPinballLib>,
    public EventProxy<LightSeq, &DIID_ILightSeqEvents>,
-   public ISelect,
    public IEditable,
    public IScriptable,
    public IFireEvents,

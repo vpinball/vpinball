@@ -25,7 +25,8 @@ public:
    void EditMenu(Win32xx::CMenu& menu) override;
    void DoCommand(int icmd, int x, int y) override;
 
-   IWinUIPart* GetSubPart(ISelect* select) override;
+   IWinUIPart* GetSubPart(DragPoint* point) override { return m_pointParts.Get(point); }
+   IWinUIPart* GetSubPart(LightCenter* center) override;
 
 private:
    void RenderOutline(Sur* psur);

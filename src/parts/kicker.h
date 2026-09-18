@@ -38,7 +38,6 @@ class Kicker :
    public EventProxy<Kicker, &DIID_IKickerEvents>,
    public IConnectionPointContainerImpl<Kicker>,
    public IProvideClassInfo2Impl<&CLSID_Kicker, &DIID_IKickerEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,

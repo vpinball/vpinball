@@ -30,8 +30,6 @@ set(VPX_SOURCES
    src/core/FileLocator.h
    src/core/ieditable.cpp
    src/core/ieditable.h
-   src/core/iselect.cpp
-   src/core/iselect.h
    src/core/pinundo.cpp
    src/core/pinundo.h
    src/core/main.cpp

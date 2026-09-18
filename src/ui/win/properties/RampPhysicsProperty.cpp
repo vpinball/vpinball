@@ -24,7 +24,7 @@ void RampPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)SelAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i)->GetEditable();
 
         if (dispid == 10 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_leftWallEdit, ramp->m_d.m_leftwallheight);
@@ -56,7 +56,7 @@ void RampPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemRamp))
             continue;
-        Ramp * const ramp = (Ramp *)SelAt(i);
+        Ramp * const ramp = (Ramp *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 10:

@@ -2,9 +2,41 @@
 
 #pragma once
 
-#include "core/iselect.h"
 #include "ui/win/resource.h"
 #include "utils/fileio.h"
+
+// Warning: these are Win32 ui part id, but also used to identify table parts (see IEditable)
+// These are used for file I/O and must not be changed/reordered!
+enum ItemTypeEnum : uint32_t
+{
+   eItemSurface,
+   eItemFlipper,
+   eItemTimer,
+   eItemPlunger,
+   eItemTextbox,
+   eItemBumper,
+   eItemTrigger,
+   eItemLight,
+   eItemKicker,
+   eItemDecal,
+   eItemGate,
+   eItemSpinner,
+   eItemRamp,
+   eItemTable,
+   eItemLightCenter,
+   eItemDragPoint,
+   eItemCollection,
+   eItemDispReel,
+   eItemLightSeq,
+   eItemPrimitive,
+   eItemFlasher,
+   eItemRubber,
+   eItemHitTarget,
+   eItemBall,
+   eItemPartGroup,
+   eItemTypeCount,
+   eItemInvalid = 0xFFFFFFFFu
+};
 
 class IHitable;
 class IRenderable;
@@ -101,10 +133,6 @@ public:
 	ItemTypeEnum GetItemType() const final { return ItemType; } \
 	IDispatch *GetIDispatch() final {return static_cast<IDispatch *>(this);} \
 	const IDispatch *GetIDispatch() const final {return static_cast<const IDispatch *>(this);} \
-	IEditable *GetIEditable() final {return static_cast<IEditable*>(this);} \
-	const IEditable *GetIEditable() const final {return static_cast<const IEditable*>(this);} \
-	ISelect *GetISelect() final {return static_cast<ISelect*>(this);} \
-	const ISelect *GetISelect() const final {return static_cast<const ISelect*>(this);} \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR * pbstr) { return ResultFromScode(E_NOTIMPL); } \
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID * pclsid) { return ResultFromScode(E_NOTIMPL); } \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
@@ -184,7 +212,7 @@ public:
 };
 
 // IEditable is the interface for self-contained table element.
-// Example: Bumper is an IEditable and ISelect, but DragPoint is only ISelect.
+// Example: Bumper is an IEditable, but DragPoint is not (it is a sub element of a part's curve).
 class IEditable
 {
 public:
@@ -196,9 +224,6 @@ public:
 
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
-
-   virtual ISelect *GetISelect() = 0;
-   virtual const ISelect *GetISelect() const = 0;
 
    virtual IHitable *GetIHitable() = 0;
    virtual const IHitable *GetIHitable() const = 0;

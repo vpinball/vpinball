@@ -28,7 +28,7 @@ void SpinnerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)SelAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i)->GetEditable();
 
         if (dispid == IDC_SURFACE_COMBO || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(spinner->GetPTable(), m_surfaceCombo, spinner->m_d.m_szSurface);
@@ -61,7 +61,7 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSpinner))
             continue;
-        Spinner *const spinner = (Spinner *)SelAt(i);
+        Spinner *const spinner = (Spinner *)SelAt(i)->GetEditable();
 
         switch (dispid)
         {

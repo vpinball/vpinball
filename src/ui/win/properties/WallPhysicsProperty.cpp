@@ -23,7 +23,7 @@ WallPhysicsProperty::WallPhysicsProperty(const vector<IWinUIPart *> *pvsel) : Ba
 void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
     //only show the first element on multi-select
-    Surface * const wall = (Surface*)SelAt(0);
+    Surface * const wall = (Surface *)SelAt(0)->GetEditable();
     if (wall == nullptr)
         return;
 
@@ -62,7 +62,7 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemSurface))
             continue;
-        Surface * const wall = (Surface*)SelAt(i);
+        Surface * const wall = (Surface *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 11:

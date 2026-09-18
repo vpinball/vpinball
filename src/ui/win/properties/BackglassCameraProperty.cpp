@@ -12,7 +12,7 @@ BackglassCameraProperty::BackglassCameraProperty(const vector<IWinUIPart *> *pvs
    : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
 {
    assert(pvsel->size() == 1);
-   assert((*pvsel)[0]->GetSelect()->GetItemType() == eItemTable);
+   assert((*pvsel)[0]->GetItemType() == eItemTable);
     m_viewList.push_back("Desktop (DT)"s);
     m_viewList.push_back("Fullscreen (FS)"s);
     m_viewList.push_back("Full Single Screen (FSS)"s);
@@ -42,7 +42,7 @@ BackglassCameraProperty::BackglassCameraProperty(const vector<IWinUIPart *> *pvs
 
 void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-   PinTable *const table = (PinTable *)SelAt(0);
+   PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
    PinTableWnd *const tableEditor = g_pvp->GetActiveTableEditor();
    if (tableEditor == nullptr || tableEditor->m_table != table)
       return;
@@ -110,7 +110,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void BackglassCameraProperty::UpdateProperties(const int dispid)
 {
-   PinTable *const table = (PinTable *)SelAt(0);
+   PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
    PinTableWnd *const tableEditor = g_pvp->GetActiveTableEditor();
    if (tableEditor == nullptr || tableEditor->m_table != table)
       return;

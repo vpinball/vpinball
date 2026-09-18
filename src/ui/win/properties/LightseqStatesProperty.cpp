@@ -22,7 +22,7 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLightSeq))
             continue;
-        LightSeq *const lightseq = (LightSeq *)SelAt(i);
+        LightSeq *const lightseq = (LightSeq *)SelAt(i)->GetEditable();
 
         if (dispid == 9 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, lightseq->GetX());
@@ -44,7 +44,7 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
     {
         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLightSeq))
             continue;
-        LightSeq *const lightseq = (LightSeq *)SelAt(i);
+        LightSeq *const lightseq = (LightSeq *)SelAt(i)->GetEditable();
         switch (dispid)
         {
             case 9:

@@ -80,7 +80,6 @@ class Flasher :
    public EventProxy<Flasher, &DIID_IFlasherEvents>,
    public IConnectionPointContainerImpl<Flasher>,
    public IProvideClassInfo2Impl<&CLSID_Flasher, &DIID_IFlasherEvents, &LIBID_VPinballLib>,
-   public ISelect,
    public IEditable,
    public IHitable, // only used for UI picking
    public IRenderable,

@@ -107,7 +107,6 @@ class Ball :
    public IConnectionPointContainerImpl<Ball>,
    public IProvideClassInfo2Impl<&IID_IBall, &DIID_IBallEvents, &LIBID_VPinballLib>,
 
-   public ISelect,
    public IEditable,
    public IHitable,
    public IRenderable,
@@ -150,7 +149,6 @@ public:
    // IHitable implementation
    bool PhysicUpdate(class PhysicsEngine *physics, const bool isUI) final;
 
-   // ISelect implementation
    void Translate(const Vertex2D &offset) final;
    Vertex2D GetCenter() const final;
 
