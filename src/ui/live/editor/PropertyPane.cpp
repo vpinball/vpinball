@@ -183,6 +183,12 @@ void PropertyPane::ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalA
    }
 }
 
+void PropertyPane::ResolveUnit(Unit from, Unit& to, int& nDecimalAdjust)
+{
+   float value = 0.f;
+   ConvertUnit(from, to, value, nDecimalAdjust);
+}
+
 const char* PropertyPane::GetUnitLabel(Unit unit)
 {
    switch (unit)

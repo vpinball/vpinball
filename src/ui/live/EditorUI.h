@@ -7,8 +7,9 @@
 #include "imgui/imgui.h"
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
-#include "editor/EditableUIPart.h"
+#include "editor/EditorUIPart.h"
 #include "renderer/Renderer.h"
+#include "unordered_dense.h"
 
 class LiveUI;
 class PinTable;
@@ -60,7 +61,7 @@ private:
          Texture *image;
          RenderProbe *renderprobe;
       };
-      std::shared_ptr<EditableUIPart> uiPart;
+      std::shared_ptr<EditorUIPart> uiPart;
 
       Selection() { }
       Selection(SelectionType t, int index)
@@ -68,7 +69,7 @@ private:
          type = t;
          this->index = index;
       }
-      Selection(std::shared_ptr<EditableUIPart> data)
+      Selection(std::shared_ptr<EditorUIPart> data)
       {
          type = S_EDITABLE;
          uiPart = data;
@@ -106,8 +107,9 @@ private:
       }
    } m_selection;
 
-   // Decorated editable parts
-   vector<std::shared_ptr<EditableUIPart>> m_editables;
+   // Decorated editable parts (kept sorted for the outliner, and indexed by editable)
+   vector<std::shared_ptr<EditorUIPart>> m_editables;
+   ankerl::unordered_dense::map<const IEditable *, std::shared_ptr<EditorUIPart>> m_editableMap;
    void UpdateEditableList();
 
    // Main UI frame & panels

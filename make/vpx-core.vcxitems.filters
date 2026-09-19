@@ -483,6 +483,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/DispReelUIPart.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/EditorUIPartRegistry.cpp">
+      <Filter>ui\live\editor</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/FlasherUIPart.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
@@ -1487,7 +1490,10 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/EditorUI.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditableUIPart.h">
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorUIPart.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorUIPartRegistry.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/PropertyPane.h">
