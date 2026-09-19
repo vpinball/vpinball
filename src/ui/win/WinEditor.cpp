@@ -255,10 +255,10 @@ void WinEditor::SetClipboard(vector<IStream*> * const pvstm)
          m_vstmclipboard.push_back((*pvstm)[i]);
 }
 
-void WinEditor::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
+void WinEditor::SetCursorCur(LPCTSTR lpCursorName)
 {
 #ifndef __STANDALONE__
-   const HCURSOR hcursor = LoadCursor(hInstance, lpCursorName);
+   const HCURSOR hcursor = LoadCursor(NULL, lpCursorName);
    SetCursor(hcursor);
 #endif
 }
@@ -2316,7 +2316,11 @@ void WinEditor::SaveTable(const bool saveAs)
    }
 
    Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   SetActionCur(LocalString(IDS_SAVING).m_szbuffer);
+   SetCursorCur(IDC_WAIT);
    hr = ptCur->Save(feedback);
+   SetActionCur(string());
+   SetCursorCur(IDC_ARROW);
    if (hr == S_OK)
       UpdateRecentFileList(ptCur->m_filename);
 #endif

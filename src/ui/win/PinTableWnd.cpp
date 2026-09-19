@@ -2143,7 +2143,7 @@ void PinTableWnd::AutoSave()
    m_vpxEditor->KillTimer(WinEditor::TIMER_ID_AUTOSAVE);
 
    m_vpxEditor->SetActionCur(LocalString(IDS_AUTOSAVING).m_szbuffer);
-   m_vpxEditor->SetCursorCur(nullptr, IDC_WAIT);
+   m_vpxEditor->SetCursorCur(IDC_WAIT);
 
    FastIStorage *const pstgroot = new FastIStorage();
    pstgroot->AddRef();
@@ -2173,7 +2173,7 @@ void PinTableWnd::AutoSave()
       m_vpxEditor->SetActionCur(string());
    }
 
-   m_vpxEditor->SetCursorCur(nullptr, IDC_ARROW);
+   m_vpxEditor->SetCursorCur(IDC_ARROW);
 #endif
 }
 

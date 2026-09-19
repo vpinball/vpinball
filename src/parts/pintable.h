@@ -576,8 +576,6 @@ public:
    class PinTableWnd *m_tableEditor = nullptr;
 
 private:
-   WinEditor *const m_vpinball;
-
    std::filesystem::path m_iniFileName;
 
    ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
