@@ -1327,14 +1327,16 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
    {
       IStream *const pstm = m_vpxEditor->m_vstmclipboard[i];
 
-      // Go back to beginning of stream to load
-      LARGE_INTEGER foo;
-      foo.QuadPart = 0;
-      pstm->Seek(foo, STREAM_SEEK_SET, nullptr);
+      // Copy the stream data to memory
+      LARGE_INTEGER offset {};
+      ULARGE_INTEGER endPos {};
+      pstm->Seek(offset, STREAM_SEEK_END, &endPos);
+      pstm->Seek(offset, STREAM_SEEK_SET, nullptr);
+      vector<uint8_t> data(static_cast<size_t>(endPos.QuadPart));
+      ULONG read = 0;
+      pstm->Read(data.data(), static_cast<ULONG>(data.size()), &read);
 
-      ULONG writ = 0;
-      ItemTypeEnum type;
-      /*const HRESULT hr =*/pstm->Read(&type, sizeof(int), &writ);
+      const ItemTypeEnum type = *reinterpret_cast<const ItemTypeEnum *>(data.data());
 
       if (!IWinUIPart::IsViewAllowed(WinUIPartRegistry::GetAllowedViews(type), currentView))
       {
@@ -1345,7 +1347,7 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
          IEditable *const peditNew = EditableRegistry::Create(type);
          if (peditNew)
          {
-            BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
+            BiffReader reader(data.data() + sizeof(int), static_cast<uint32_t>(data.size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
             peditNew->Load(reader);
             peditNew->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
             //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet
