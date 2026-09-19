@@ -37,7 +37,6 @@
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
-#include "ui/win/WinEditor.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "utils/hash.h"
@@ -77,7 +76,6 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 
 PinTable::PinTable()
    : m_settings(&(g_app->m_settings))
-   , m_vpinball(g_pvp)
    , m_undo(this)
 {
    m_renderSolid = m_settings.GetEditor_RenderSolid();
@@ -744,9 +742,6 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
       return hr;
    }
 
-   m_vpinball->SetActionCur(LocalString(IDS_SAVING).m_szbuffer);
-   m_vpinball->SetCursorCur(nullptr, IDC_WAIT);
-
    RemoveInvalidReferences();
 
    hr = SaveToStorage(pstgRoot, feedback);
@@ -760,9 +755,6 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
          m_tableEditor->m_pcv->SetClean(eSaveClean);
       SetNonUndoableDirty(eSaveClean);
    }
-
-   m_vpinball->SetActionCur(string());
-   m_vpinball->SetCursorCur(nullptr, IDC_ARROW);
 #endif
 
    // Save user custom settings file (if any) along the table file

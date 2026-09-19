@@ -49,8 +49,16 @@ bool PinTableMDI::CanClose() const
             return false;
 
         Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
-        if ((result == IDYES) && (m_tableWnd->m_table->Save(feedback) != S_OK))
-            MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
+        if (result == IDYES)
+        {
+           m_vpxEditor->SetActionCur(LocalString(IDS_SAVING).m_szbuffer);
+           m_vpxEditor->SetCursorCur(IDC_WAIT);
+           const bool failed = m_tableWnd->m_table->Save(feedback) != S_OK;
+           m_vpxEditor->SetActionCur(string());
+           m_vpxEditor->SetCursorCur(IDC_ARROW);
+           if (failed)
+              MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
+        }
 #endif
     }
     return true;

@@ -112,7 +112,7 @@ public:
    void RenameEditable(IEditable* editable, const string& newName);
 
    void SetActionCur(const string& szaction);
-   void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
+   void SetCursorCur(LPCTSTR lpCursorName);
 
    void CloseTable(PinTableWnd * ppt);
 
