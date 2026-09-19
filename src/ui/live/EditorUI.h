@@ -55,19 +55,18 @@ private:
       } type = S_NONE;
       union
       {
-         int camera;
+         int index;
          Material *material;
          Texture *image;
          RenderProbe *renderprobe;
-         int ball_index;
       };
       std::shared_ptr<EditableUIPart> uiPart;
 
       Selection() { }
-      Selection(SelectionType t, int ball)
+      Selection(SelectionType t, int index)
       {
          type = t;
-         ball_index = ball;
+         this->index = index;
       }
       Selection(std::shared_ptr<EditableUIPart> data)
       {
@@ -96,7 +95,7 @@ private:
          switch (type)
          {
          case S_NONE: return true;
-         case S_CAMERA: return camera == s.camera;
+         case S_CAMERA: return index == s.index;
          case S_MATERIAL: return material == s.material;
          case S_IMAGE: return image == s.image;
          case S_EDITABLE: return uiPart == s.uiPart;
@@ -138,7 +137,6 @@ private:
    void DeleteSelection();
 
    // Outliner
-   float m_outliner_width = 0.0f;
    string m_outlinerFilter;
    bool m_outlinerSelectLiveTab = true;
    bool IsOutlinerFiltered(const string &name) const;
@@ -163,15 +161,12 @@ private:
       SF_Lights = 0x0008,
       SF_Flashers = 0x0010
    };
-   int m_selectionFilter = 0xFFFF;
+   int m_selectionFilter = SF_Playfield | SF_Primitives | SF_Lights | SF_Flashers;
 
    // UI state
    bool m_isOpened = false;
-   bool m_showPlumbDialog = false;
    bool m_flyMode = false;
    bool m_showRendererInspection = false;
-   uint32_t m_OpenUITime = 0; // Used to delay keyboard shortcut
-   uint32_t m_StartTime_msec = 0; // Used for timed splash overlays
    enum class Units
    {
       VPX, Metric, Imperial
@@ -200,8 +195,8 @@ private:
       RenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync);
       ~RenderContext() override = default;
 
-      bool NeedsLiveTableSync() const { return m_needsLiveTableSync; }
-      ImU32 GetColor(bool selected) const { return selected ? IM_COL32(255, 128, 0, 255) : IM_COL32_BLACK; };
+      bool NeedsLiveTableSync() const override { return m_needsLiveTableSync; }
+      ImU32 GetColor(bool selected) const override { return selected ? IM_COL32(255, 128, 0, 255) : IM_COL32_BLACK; };
       bool IsSelected() const override { return m_isSelected; }
       bool IsShowInvisible() const override;
       ViewMode GetViewMode() const override { return m_viewMode; }

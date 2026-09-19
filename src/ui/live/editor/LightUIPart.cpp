@@ -24,7 +24,7 @@ LightUIPart::TransformMask LightUIPart::GetTransform(Matrix3D& transform)
 
 void LightUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
-   const float pz = pos.z - m_light->GetPTable()->GetSurfaceHeight(m_light->m_d.m_szSurface, m_light->m_d.m_vCenter.x, m_light->m_d.m_vCenter.y);
+   const float pz = pos.z - m_light->GetPTable()->GetSurfaceHeight(m_light->m_d.m_szSurface, pos.x, pos.y);
    m_light->m_d.m_bulbHaloHeight = m_light->m_d.m_bulbHaloHeight + (pz - m_light->m_d.m_height);
    m_light->m_d.m_vCenter.x = pos.x;
    m_light->m_d.m_vCenter.y = pos.y;
@@ -70,12 +70,12 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Light* light, float v) { light->m_d.m_fadeSpeedDown = v > 0.001f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / v : 100000.0f; }, PropertyPane::Unit::None, 1);
       props.InputRGB<Light>(
          m_light, "Light Color"s, //
-         [](const Light* light) { return convertColor(light->m_d.m_color2); }, //
+         [](const Light* light) { return convertColor(light->m_d.m_color); }, //
          [](Light* light, const vec3& v) { light->m_d.m_color = convertColorRGB(v); });
       props.InputRGB<Light>(
          m_light, "Center Burst Color"s, //
          [](const Light* light) { return convertColor(light->m_d.m_color2); }, //
-         [](Light* light, const vec3& v) { light->m_d.m_color = convertColorRGB(v); });
+         [](Light* light, const vec3& v) { light->m_d.m_color2 = convertColorRGB(v); });
       props.InputFloat<Light>(
          m_light, "Falloff Range"s, //
          [](const Light* light) { return light->m_d.m_falloff; }, //

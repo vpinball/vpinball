@@ -32,7 +32,7 @@ void KickerUIPart::Render(const EditorRenderContext& ctx)
       m_kickerType = m_kicker->m_d.m_kickertype;
 
    const bool isUIVisible = m_kicker->IsUIVisible(true);
-   if (isUIVisible && (ctx.IsSelected() || m_kickerType == KickerType::KickerInvisible))
+   if (isUIVisible && (ctx.IsSelected() || (m_kickerType == KickerType::KickerInvisible && ctx.IsShowInvisible())))
    {
       m_kicker->m_d.m_visible = true;
       if (m_kickerType == KickerType::KickerInvisible)
@@ -107,7 +107,7 @@ void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Kicker>(
          m_kicker, "Hit Height"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_hit_height; }, //
-         [](Kicker* kicker, float v) { kicker->m_d.m_scatter = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Kicker* kicker, float v) { kicker->m_d.m_hit_height = v; }, PropertyPane::Unit::VPLength, 1);
       props.EndSection();
    }
 

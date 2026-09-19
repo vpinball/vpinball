@@ -156,8 +156,8 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Bumper* bumper, float v) { bumper->m_d.m_force = v; }, PropertyPane::Unit::VPLength, 3);
       props.InputFloat<Bumper>(
          m_bumper, "Hit Threshold"s, //
-         [](const Bumper* bumper) { return bumper->m_d.m_heightScale; }, //
-         [](Bumper* bumper, float v) { bumper->m_d.m_heightScale = v; }, PropertyPane::Unit::None, 3);
+         [](const Bumper* bumper) { return bumper->m_d.m_threshold; }, //
+         [](Bumper* bumper, float v) { bumper->m_d.m_threshold = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Bumper>(
          m_bumper, "Scatter Angle"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_scatter; }, //

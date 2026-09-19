@@ -6,6 +6,7 @@
 #include "parts/Material.h"
 #include "renderer/Texture.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_stdlib.h"
 
 namespace VPX::EditorUI
 {
@@ -67,7 +68,7 @@ public:
    }
 
 private:
-   const char* ICON_SAVE = ICON_FK_FLOPPY_O;
+   static constexpr const char* ICON_SAVE = ICON_FK_FLOPPY_O;
 
    bool IsStartup() const { return m_table->m_liveBaseTable && m_showStartup; }
    template <class T> T* GetStartupObj(T* obj) const;
@@ -160,7 +161,7 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
       bool value = getter(displayObj);
-      if (ImGui::Checkbox(label.c_str(), &value))
+      if (ImGui::Checkbox(("##" + label).c_str(), &value))
       {
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
@@ -206,7 +207,7 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
       int value = getter(displayObj);
-      if (ImGui::InputInt(label.c_str(), &value))
+      if (ImGui::InputInt(("##" + label).c_str(), &value))
       {
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
@@ -245,7 +246,7 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   float displayValue = 0.f, value;
+   float displayValue = 0.f, value = 0.f;
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
    ConvertUnit(unit, displayUnit, value, nDecimalAdjust);
@@ -305,7 +306,7 @@ inline void PropertyPane::InputFloat2(
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   Vertex2D displayValue, value;
+   Vertex2D displayValue(0.f, 0.f), value(0.f, 0.f);
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
    ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
@@ -368,7 +369,7 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   vec3 displayValue, value;
+   vec3 displayValue(0.f, 0.f, 0.f), value(0.f, 0.f, 0.f);
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
    ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
@@ -480,7 +481,6 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   vector<char> buffer(256);
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    PropertyLabel(label);
    if (startupObj)
@@ -489,10 +489,8 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
       string value = getter(displayObj);
-      memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
-      if (ImGui::InputText(("##" + label).c_str(), buffer.data(), buffer.size()))
+      if (ImGui::InputText(("##" + label).c_str(), &value))
       {
-         value = buffer.data();
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
@@ -517,10 +515,8 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
    else
    {
       string value = getter(obj);
-      memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
-      if (ImGui::InputText(("##" + label).c_str(), buffer.data(), buffer.size()))
+      if (ImGui::InputText(("##" + label).c_str(), &value))
       {
-         value = buffer.data();
          setter(obj, value);
          m_modified = m_modifyFieldId;
       }
@@ -540,7 +536,8 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
       int value = getter(displayObj);
-      if (ImGui::BeginCombo(("##" + label).c_str(), values[value].c_str()))
+      const int displayIndex = values.empty() ? -1 : std::clamp(value, 0, static_cast<int>(values.size()) - 1);
+      if (ImGui::BeginCombo(("##" + label).c_str(), displayIndex < 0 ? "" : values[displayIndex].c_str()))
       {
          for (size_t i = 0; i < values.size(); i++)
          {
@@ -573,7 +570,8 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
    }
    else
    {
-      string value = values[getter(obj)];
+      const int index = values.empty() ? -1 : std::clamp(getter(obj), 0, static_cast<int>(values.size()) - 1);
+      const string value = index < 0 ? ""s : values[index];
       if (ImGui::BeginCombo(("##" + label).c_str(), value.c_str()))
       {
          for (size_t i = 0; i < values.size(); i++)

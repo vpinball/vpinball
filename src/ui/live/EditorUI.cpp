@@ -85,7 +85,6 @@ EditorUI::EditorUI(LiveUI &liveUI)
    , m_renderer(m_player->m_renderer)
    , m_undo(m_player->m_ptable)
 {
-   m_StartTime_msec = msec();
    m_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
 
@@ -118,6 +117,11 @@ void EditorUI::Close()
       return;
    m_isOpened = false;
    m_flyMode = false;
+   if (m_showRendererInspection)
+   {
+      m_showRendererInspection = false;
+      m_player->m_infoMode = IF_FPS;
+   }
    m_renderer->DisableStaticPrePass(false);
 }
 
@@ -149,7 +153,6 @@ void EditorUI::RenderUI()
    Selection previousSelection = m_selection;
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
-   UpdateEditableList();
 
    // Gives some transparency when positioning camera to better view camera view bounds
    // TODO for some reasons, this breaks the modal background behavior
@@ -169,7 +172,7 @@ void EditorUI::RenderUI()
       {
          if (!IsInspectMode() && ImGui::BeginMenu("File"))
          {
-            if (ImGui::MenuItem("Save"))
+            if (ImGui::MenuItem("Save", "Ctrl+S"))
             {
                // TODO cursor feedback
                VPXFileFeedback feedback;
@@ -187,7 +190,7 @@ void EditorUI::RenderUI()
                m_player->m_showDebugger = true;
             if (ImGui::MenuItem("Renderer Inspection"))
                m_showRendererInspection = true;
-            if (ImGui::MenuItem(m_player->m_debugWindowActive ? "Play" : "Pause"))
+            if (ImGui::MenuItem(m_player->IsPlaying() ? "Pause" : "Play"))
                m_player->SetPlayState(!m_player->IsPlaying());
             ImGui::EndMenu();
          }
@@ -400,7 +403,7 @@ void EditorUI::RenderUI()
    // Selection manipulator
    Matrix3D transform;
    const bool isSelectionTransformValid = GetSelectionTransform(transform);
-   if (isSelectionTransformValid)
+   if (isSelectionTransformValid && !m_table->IsLocked())
    {
       float camViewLH[16];
       memcpy(camViewLH, &m_camView.m[0][0], sizeof(float) * 4 * 4);
@@ -413,6 +416,12 @@ void EditorUI::RenderUI()
          PushUndo(m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE ? m_selection.uiPart->GetEditable() : m_table, 0x1000);
          SetSelectionTransform(transform);
       }
+   }
+   // Reset gizmo undo deduplication once the gizmo is released (each drag should create a single undo entry)
+   if (!ImGuizmo::IsUsing() && m_lastUndoId == 0x1000)
+   {
+      m_lastUndoPart = nullptr;
+      m_lastUndoId = 0;
    }
 
    m_renderer->SetShadeMode(m_shadeMode);
@@ -549,10 +558,10 @@ void EditorUI::RenderUI()
          const bool noFlashers = !(m_selectionFilter & SelectionFilter::SF_Flashers);
          for (const auto &hr : vhoUnfilteredHit)
          {
-            const auto type = hr.m_obj->m_editable->GetItemType();
             const auto editable = hr.m_obj->m_editable;
             if (editable)
             {
+               const auto type = editable->GetItemType();
                const PartGroup *parent = editable->GetPartGroup();
                bool visible = editable->IsUIVisible(false);
                while (parent && visible)
@@ -592,6 +601,8 @@ void EditorUI::RenderUI()
                   const auto it = std::ranges::find_if(m_editables, [select](const std::shared_ptr<EditableUIPart> &part) { return part->GetEditable() == select; });
                   if (it != m_editables.end())
                      m_selection = Selection(*it);
+                  else
+                     m_selection = Selection();
                }
             }
             // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pBall;
@@ -607,7 +618,7 @@ void EditorUI::RenderUI()
          else if (m_selection.type != Selection::S_NONE)
             m_selection = Selection(); // Cancel current selection
       }
-      else if (ImGui::IsKeyPressed(ImGuiKey_F))
+      else if (ImGui::IsKeyPressed(ImGuiKey_F) && !io.KeyCtrl)
       {
          m_flyMode = !m_flyMode;
       }
@@ -623,31 +634,30 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_H))
       {
-         if (m_table->m_liveBaseTable)
+         if (m_table->m_liveBaseTable == nullptr && !io.KeyCtrl) // No UI visibility in inspection mode
          {
-            // No UI visibility in inspection mode
-         }
-         if (io.KeyAlt)
-         { // Unhide all
-            for (auto &part : m_editables)
-               if (part->GetEditable()->GetItemType() != eItemPartGroup)
-                  part->GetEditable()->SetUIVisible(true);
-         }
-         else if (io.KeyShift)
-         { // Hide unselected
-            if (m_selection.type == Selection::S_EDITABLE)
-            {
+            if (io.KeyAlt)
+            { // Unhide all
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup && part != m_selection.uiPart)
-                     part->GetEditable()->SetUIVisible(false);
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup)
+                     part->GetEditable()->SetUIVisible(true);
             }
-         }
-         else
-         { // Hide selected
-            if (m_selection.type == Selection::S_EDITABLE)
-            {
-               m_selection.uiPart->GetEditable()->SetUIVisible(false);
-               m_selection = Selection();
+            else if (io.KeyShift)
+            { // Hide unselected
+               if (m_selection.type == Selection::S_EDITABLE)
+               {
+                  for (auto &part : m_editables)
+                     if (part->GetEditable()->GetItemType() != eItemPartGroup && part != m_selection.uiPart)
+                        part->GetEditable()->SetUIVisible(false);
+               }
+            }
+            else
+            { // Hide selected
+               if (m_selection.type == Selection::S_EDITABLE)
+               {
+                  m_selection.uiPart->GetEditable()->SetUIVisible(false);
+                  m_selection = Selection();
+               }
             }
          }
       }
@@ -662,7 +672,7 @@ void EditorUI::RenderUI()
             if (GetSelectionTransform(tmp))
                SetSelectionTransform(tmp, true, false, false);
          }
-         else
+         else if (!io.KeyCtrl)
          {
             m_gizmoOperation = ImGuizmo::TRANSLATE;
             m_gizmoMode = m_gizmoOperation == ImGuizmo::TRANSLATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
@@ -670,19 +680,32 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_S))
       {
-         // Scale
-         if (m_camMode == ViewMode::PreviewCam)
-            m_camMode = ViewMode::EditorCam;
-         if (io.KeyAlt)
+         if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
          {
-            Matrix3D tmp;
-            if (GetSelectionTransform(tmp))
-               SetSelectionTransform(tmp, false, true, false);
+            // Save table
+            if (!IsInspectMode() && !m_table->IsLocked())
+            {
+               VPXFileFeedback feedback;
+               if (SUCCEEDED(m_table->Save(feedback)))
+                  m_undo.SetCleanPoint(eSaveClean);
+            }
          }
-         else
+         else if (!io.KeyCtrl)
          {
-            m_gizmoOperation = ImGuizmo::SCALE;
-            m_gizmoMode = m_gizmoOperation == ImGuizmo::SCALE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
+            // Scale
+            if (m_camMode == ViewMode::PreviewCam)
+               m_camMode = ViewMode::EditorCam;
+            if (io.KeyAlt)
+            {
+               Matrix3D tmp;
+               if (GetSelectionTransform(tmp))
+                  SetSelectionTransform(tmp, false, true, false);
+            }
+            else
+            {
+               m_gizmoOperation = ImGuizmo::SCALE;
+               m_gizmoMode = m_gizmoOperation == ImGuizmo::SCALE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
+            }
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_R))
@@ -696,7 +719,7 @@ void EditorUI::RenderUI()
             if (GetSelectionTransform(tmp))
                SetSelectionTransform(tmp, false, false, true);
          }
-         else
+         else if (!io.KeyCtrl)
          {
             m_gizmoOperation = ImGuizmo::ROTATE;
             m_gizmoMode = m_gizmoOperation == ImGuizmo::ROTATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
@@ -840,6 +863,8 @@ void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
 
 void EditorUI::DeleteSelection()
 {
+   if (m_table->IsLocked())
+      return;
    if (m_selection.type == Selection::S_EDITABLE && m_selection.uiPart->GetEditable()->GetItemType() != eItemBall && m_selection.uiPart->GetEditable()->GetPartGroup() != nullptr)
    {
       IEditable* const edit = m_selection.uiPart->GetEditable();
@@ -946,7 +971,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
    const Vertex3Ds right(transform._11, transform._12, transform._13);
    const Vertex3Ds up(transform._21, transform._22, transform._23);
    const Vertex3Ds dir(transform._31, transform._32, transform._33);
-   vec3 scale(right.Length(), up.Length(), dir.Length());
+   vec3 scale(max(right.Length(), 1e-8f), max(up.Length(), 1e-8f), max(dir.Length(), 1e-8f)); // Clamp to avoid division by zero
 
    transform._11 /= scale.x; // Normalize transform to evaluate rotation
    transform._12 /= scale.x;
@@ -982,7 +1007,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
    else
    {
       rot.x = -RADTOANG(atan2f(transform._23, transform._22));
-      rot.y = -RADTOANG(atan2f(-transform._22, sy));
+      rot.y = -RADTOANG(atan2f(-transform._31, sy));
       rot.z = 0.f;
    }
 
@@ -1157,7 +1182,6 @@ void EditorUI::UpdateOutlinerUI()
       ImGui::TreePop();
    }
 
-   m_outliner_width = ImGui::GetWindowWidth();
    ImGui::End();
    ImGui::PopStyleVar(3);
 }
@@ -1209,7 +1233,7 @@ void EditorUI::UpdatePropertyUI()
                   }
                   break;
                case Selection::SelectionType::S_IMAGE: ImageProperties(props, m_selection.image); break;
-               case Selection::SelectionType::S_CAMERA: CameraProperties(props, m_selection.camera); break;
+               case Selection::SelectionType::S_CAMERA: CameraProperties(props, m_selection.index); break;
                case Selection::SelectionType::S_MATERIAL: MaterialProperties(props, m_selection.material); break;
                case Selection::SelectionType::S_RENDERPROBE: RenderProbeProperties(props, m_selection.renderprobe); break;
                }
@@ -1245,7 +1269,7 @@ void EditorUI::UpdatePropertyUI()
          }
          break;
       case Selection::SelectionType::S_IMAGE: ImageProperties(props, m_selection.image); break;
-      case Selection::SelectionType::S_CAMERA: CameraProperties(props, m_selection.camera); break;
+      case Selection::SelectionType::S_CAMERA: CameraProperties(props, m_selection.index); break;
       case Selection::SelectionType::S_MATERIAL: MaterialProperties(props, m_selection.material); break;
       case Selection::SelectionType::S_RENDERPROBE: RenderProbeProperties(props, m_selection.renderprobe); break;
       }
@@ -1260,11 +1284,11 @@ void EditorUI::UpdateRendererInspectionModal()
    // FIXME m_renderer->DisableStaticPrePass(false);
    m_camMode = ViewMode::PreviewCam;
 
+   static int pass_selection = IF_FPS;
    ImGui::SetNextWindowSize(ImVec2(350.f * m_liveUI.GetDPI(), 0));
    if (ImGui::Begin(ID_RENDERER_INSPECTION, &m_showRendererInspection))
    {
       ImGui::TextUnformatted("Display single render pass:");
-      static int pass_selection = IF_FPS;
       ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
 #if defined(ENABLE_DX9) // No GPU profiler for OpenGL or BGFX for the time being
       ImGui::RadioButton("Profiler", &pass_selection, IF_PROFILING);
@@ -1320,6 +1344,13 @@ void EditorUI::UpdateRendererInspectionModal()
       ImGui::TextUnformatted(m_player->GetPerfInfo().c_str());
    }
    ImGui::End();
+
+   // Restore default rendering when the modal is closed (leaving the render pass override active would stick into gameplay)
+   if (!m_showRendererInspection)
+   {
+      pass_selection = IF_FPS;
+      m_player->m_infoMode = IF_FPS;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1443,7 +1474,7 @@ void EditorUI::CameraProperties(PropertyPane &props, int bgSet)
 
    if (props.BeginSection("Visuals"s))
    {
-      ViewSetup *vs = &m_table->mViewSetups[bgSet];
+      ViewSetup *const vs = &props.GetEditedPart<PinTable>(m_table)->mViewSetups[bgSet];
       props.Combo<ViewSetup>(
          vs, "View Mode"s, vector { "Legacy"s, "Camera"s, "Window"s }, //
          [](const ViewSetup *viewSetup) { return static_cast<int>(viewSetup->mMode); }, //
@@ -1512,7 +1543,8 @@ void EditorUI::ImageProperties(PropertyPane &props, Texture *texture)
             [](Texture *image, float v) { image->m_alphaTestValue = v; }, PropertyPane::Unit::None, 2);
          ImGui::EndDisabled();
 
-         const string info = std::to_string(image->GetWidth()) + 'x' + std::to_string(image->GetHeight()) + ' ' + (tex->m_format ? BaseTexture::GetFormatString(tex->m_format) : ""s);
+         const string info
+            = std::to_string(image->GetWidth()) + 'x' + std::to_string(image->GetHeight()) + ' ' + ((tex != nullptr && tex->m_format) ? BaseTexture::GetFormatString(tex->m_format) : ""s);
          props.Separator(info);
 
          props.EndSection();
@@ -1703,7 +1735,7 @@ void EditorUI::RenderContext::DrawCircle(const Vertex3Ds &center, const Vertex3D
          const float c = radius * cos((float)i * (float)(2. * M_PI / n));
          const float s = radius * sin((float)i * (float)(2. * M_PI / n));
          const ImVec2 p = Project(Vertex3Ds(center.x + c * x.x + s * y.x, center.y + c * x.y + s * y.y, center.z + c * x.z + s * y.z));
-         if (i > 0)
+         if (i > 0 && p.x != FLT_MAX && prev.x != FLT_MAX) // Skip segments ending behind the camera
             GetDrawList()->AddLine(prev, p, color, 1.f);
          prev = p;
       }
