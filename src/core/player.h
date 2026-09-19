@@ -307,9 +307,9 @@ public:
    int m_frameCaptureFPS = 0;
    bool m_cutCaptureToLoop = true;
 
-   CComObject<ScriptInterpreter>* m_scriptInterpreter = nullptr;
+   IScriptEngine* m_scriptInterpreter = nullptr;
    unsigned int m_nScriptErrorNotification = 0;
-   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
+   void OnScriptError(IScriptEngine::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
    PinballPlugin::ResURIResolver m_resURIResolver;
 

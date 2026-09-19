@@ -4,7 +4,7 @@
 #include <activdbg.h>
 #include <atlcom.h>
 
-#include "core/Scriptable.h"
+#include "core/ScriptEngine.h"
 
 class PinTable;
 
@@ -17,7 +17,8 @@ enum SecurityLevelEnum
    eSecurityNoControls = 4
 };
 
-class ScriptInterpreter : public CComObjectRoot,
+class ScriptInterpreter : public IScriptEngine,
+                          public CComObjectRoot,
                           public IActiveScriptSite,
                           public IActiveScriptSiteDebug,
                           public IActiveScriptSiteWindow,
@@ -28,22 +29,21 @@ public:
    ScriptInterpreter();
    virtual ~ScriptInterpreter();
 
-   void Start(PinTable *table);
-   void Stop(PinTable *table, bool interruptDirectly = false);
-   void AddItem(IScriptable *scriptable, const bool global) { AddItem(scriptable->get_Name(), scriptable->GetIDispatch(), global); }
-   void AddItem(const wstring& name, IDispatch *dispatch, const bool global);
-   void RemoveItem(IScriptable *const piscript);
-   void Evaluate(const string &script, bool isDebugStatement);
-   bool HasError() const { return m_hasError || (m_pScript == nullptr); }
-   void GetScriptDispatch(IDispatch **ppdisp) const;
-
-   enum class ErrorType
+   ScriptLanguage GetLanguage() const override { return ScriptLanguage::VBScript; }
+   void Start(PinTable *table) override;
+   void Stop(PinTable *table, bool interruptDirectly = false) override;
+   using IScriptEngine::AddItem;
+   void AddItem(const wstring& name, IDispatch *dispatch, const bool global) override;
+   void RemoveItem(IScriptable *const piscript) override;
+   void Evaluate(const string &script, bool isDebugStatement) override;
+   bool HasError() const override { return m_hasError || (m_pScript == nullptr); }
+   void GetScriptDispatch(IDispatch **ppdisp) const override;
+   void SetScriptErrorHandler(const ErrorHandler &errorHandler) override { m_errorHandler = errorHandler; }
+   void Dispose() override
    {
-      Compile,
-      Runtime,
-      DebugConsole
-   };
-   void SetScriptErrorHandler(const std::function<void(ErrorType, int, int, const string &, const vector<string> &)> &errorHandler) { m_errorHandler = errorHandler; }
+      const ULONG refCount = static_cast<IActiveScriptSite *>(this)->Release();
+      assert(refCount == 0);
+   }
 
    // IActiveScriptSite interface
    STDMETHOD(GetLCID)(LCID *plcid) override;
@@ -100,7 +100,7 @@ private:
 
    bool m_hasError = false;
    void HandleScriptError(IActiveScriptError *pScriptError, IActiveScriptErrorDebug *pScriptDebugError);
-   std::function<void(ErrorType, int, int, const string &, const vector<string> &)> m_errorHandler;
+   ErrorHandler m_errorHandler;
 
    IActiveScript *m_pScript = nullptr;
    IActiveScriptParse *m_pScriptParse = nullptr;

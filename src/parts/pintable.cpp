@@ -2021,6 +2021,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    // auto-import VBS table script, if it exists...
    if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(this, tableFile.replace_extension(".vbs")); !filenameAuto.empty())
       LoadScriptOverride(filenameAuto);
+   else if (std::filesystem::path filenameAutoJs = g_app->m_fileLocator.SearchScript(this, tableFile.replace_extension(".js")); !filenameAutoJs.empty())
+      LoadScriptOverride(filenameAutoJs);
    else
    {
       auto fn = tablePath.filename();

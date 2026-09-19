@@ -41,7 +41,7 @@ public:
 
    void Compile(const bool message);
 
-   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
+   void OnScriptError(IScriptEngine::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
    void UncolorError();
    void ParseForFunction();

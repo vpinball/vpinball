@@ -709,9 +709,10 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_progressDialog.SetProgress("Starting Game Scripts..."s, m_progressDialog.GetProgress() + progressVisualLength);
 
       // Setup script interpreter and run the main script
-      CComObject<ScriptInterpreter>::CreateInstance(&m_scriptInterpreter);
-      m_scriptInterpreter->AddRef();
-      m_scriptInterpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
+      const ScriptLanguage scriptLanguage = DetectScriptLanguage(table->m_script_text);
+      PLOGI << "Table script language: " << (scriptLanguage == ScriptLanguage::JavaScript ? "JavaScript" : "VBScript");
+      m_scriptInterpreter = CreateScriptEngine(scriptLanguage);
+      m_scriptInterpreter->SetScriptErrorHandler([this](IScriptEngine::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
          { OnScriptError(type, line, column, description, stackDump); });
       m_scriptInterpreter->Start(m_ptable);
       m_scriptInterpreter->Evaluate(m_pluginAPI.ApplyScriptCOMObjectOverrides(table->m_script_text), false);
@@ -867,8 +868,8 @@ Player::~Player()
    if (m_scriptInterpreter)
    {
       m_scriptInterpreter->Stop(m_ptable);
-      ULONG refCount = m_scriptInterpreter->Release();
-      assert(refCount == 0);
+      m_scriptInterpreter->Dispose();
+      m_scriptInterpreter = nullptr;
    }
 
    // Release plugin message Ids
@@ -1211,14 +1212,16 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
    }
 }
 
-void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
+void Player::OnScriptError(IScriptEngine::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
 {
    if (m_playMode == Player::PlayMode::CaptureAttract)
       SetCloseState(Player::CloseState::CS_STOP_PLAY);
 
-   const string errorType = (type == ScriptInterpreter::ErrorType::Runtime) ? "Runtime" : "Compile";
+   const string errorType = (type == IScriptEngine::ErrorType::Runtime) ? "Runtime" : "Compile";
    const string desc = string_from_utf8_or_iso8859_1(description.c_str(), description.length());
    PLOGE << errorType << " error on line " << line << ", col " << column << ": " << desc;
+   for (const string &frame : stackDump)
+      PLOGE << "   " << frame;
    if (m_liveUI && m_nScriptErrorNotification < 200)
    {
       m_liveUI->PushNotification(errorType + " error: " + desc, 5000);

@@ -408,14 +408,14 @@ void CodeViewer::SetClean(const SaveDirtyState sds)
 #endif
 }
 
-void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
+void CodeViewer::OnScriptError(IScriptEngine::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
 {
 #ifndef __STANDALONE__
    // Show the error in the last error log
    AppendLastErrorTextW(MakeWString(description));
    SetLastErrorVisibility(true);
 
-   if (!m_suppressErrorDialogs && type != ScriptInterpreter::ErrorType::DebugConsole)
+   if (!m_suppressErrorDialogs && type != IScriptEngine::ErrorType::DebugConsole)
    {
       if (g_pplayer)
          g_pplayer->LockForegroundWindow(false);
@@ -430,7 +430,7 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
       if (g_pplayer == nullptr || g_pplayer->GetCloseState() != Player::CloseState::CS_CLOSE_APP)
       {
          std::wstringstream errorStream;
-         errorStream << (type == ScriptInterpreter::ErrorType::Compile ? L"Compile error\r\n" : L"Runtime error\r\n");
+         errorStream << (type == IScriptEngine::ErrorType::Compile ? L"Compile error\r\n" : L"Runtime error\r\n");
          errorStream << L"-------------\r\n";
          errorStream << L"Line: " << line << L" Column: " << column << L"\r\n";
          errorStream << MakeWString(description) << L"\r\n";
@@ -948,17 +948,15 @@ BOOL CodeViewer::PreTranslateMessage(MSG &msg)
 
 void CodeViewer::Compile(const bool message)
 {
-   CComObject<ScriptInterpreter>* interpreter;
-   CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
-   interpreter->AddRef();
+   IScriptEngine* const interpreter = CreateScriptEngine(DetectScriptLanguage(m_table->m_script_text));
    interpreter->Start(m_table);
-   interpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
+   interpreter->SetScriptErrorHandler([this](IScriptEngine::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
       { OnScriptError(type, line, column, description, stackDump); });
    interpreter->Evaluate(m_table->m_script_text, false);
    if (message && !interpreter->HasError())
       MessageBox("Compilation successful", "Compile", MB_OK);
    interpreter->Stop(m_table);
-   interpreter->Release();
+   interpreter->Dispose();
 }
 
 void CodeViewer::AddToDebugOutput(const string &szText)

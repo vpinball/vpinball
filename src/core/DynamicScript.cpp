@@ -856,6 +856,27 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
    return "<< bug >>"s;
 }
 
+int DynamicTypeLibrary::GetMemberKind(const ScriptClassDef *classDef, DISPID dispid) const
+{
+   if (classDef == nullptr || classDef->name.id == TypeID::TYPEID_UNRESOLVED || classDef->name.id >= m_types.size())
+      return 0;
+   const TypeDef &type = m_types[classDef->name.id];
+   if (type.category != TypeDef::TD_CLASS || dispid <= 0 || dispid > static_cast<DISPID>(type.classDef->members.size()))
+      return 0;
+   bool getter = false, indexed = false;
+   for (int i : type.classDef->members[dispid - 1])
+   {
+      const ScriptClassMemberDef &memberDef = classDef->members[i];
+      if (memberDef.type.id == TypeID::TYPEID_VOID)
+         continue;
+      if (memberDef.nArgs == 0)
+         getter = true;
+      else
+         indexed = true;
+   }
+   return getter ? 1 : indexed ? 2 : 3;
+}
+
 HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO*, UINT* puArgErr) const
 {
    assert(classDef->name.id != TypeID::TYPEID_UNRESOLVED);
