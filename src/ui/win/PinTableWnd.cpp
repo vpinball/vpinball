@@ -1115,7 +1115,7 @@ void PinTableWnd::SelectItem(IScriptable *piscript)
    }
 }
 
-Vertex2D PinTableWnd::GetMultiSelCenter()
+Vertex2D PinTableWnd::GetMultiSelCenter() const
 {
    float minx = FLT_MAX;
    float maxx = -FLT_MAX;

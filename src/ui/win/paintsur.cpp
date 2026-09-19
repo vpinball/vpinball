@@ -206,17 +206,18 @@ void PaintSur::PolygonImage(
 
       constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
       const BOOL ok = AlphaBlend(m_hdc, cix, ciy, cix2 - cix, ciy2 - ciy, dc.GetHDC(), six, siy, six2 - six, siy2 - siy, blendf);
+
+      // Cleaned up unconditionally: returning early on failure would leak the region and, worse, leave m_hdc
+      // clipped to it for all subsequent drawing (SelectClipRgn copies it, so it always has to be deleted here)
+      SelectClipRgn(m_hdc, nullptr);
+      DeleteObject(hrgn);
+      dc.SelectObject(hbmOld);
+
       if (!ok)
       {
          assert(false);
          PLOGE << std::format("AlphaBlend failed, err={}", GetLastError());
-         return;
       }
-
-      SelectClipRgn(m_hdc, nullptr);
-      DeleteObject(hrgn);
-
-      dc.SelectObject(hbmOld);
    }
    catch (...)
    {

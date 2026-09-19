@@ -1112,7 +1112,7 @@ CComObject<PinTable>* WinEditor::GetActiveTable()
    return nullptr;
 }
 
-bool WinEditor::CanClose()
+bool WinEditor::CloseWhatIsPossible()
 {
    while (!m_vtable.empty())
    {
@@ -1432,8 +1432,8 @@ void WinEditor::OnClose()
          Sleep(THREADS_PAUSE);
 
 #ifndef __STANDALONE__
-   const bool canClose = CanClose();
-   if (canClose)
+   const bool allClosed = CloseWhatIsPossible();
+   if (allClosed)
    {
       WINDOWPLACEMENT winpl;
       winpl.length = sizeof(winpl);

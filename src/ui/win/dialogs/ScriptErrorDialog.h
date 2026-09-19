@@ -9,7 +9,7 @@
 class ScriptErrorDialog final : public CDialog
 {
 public:
-	ScriptErrorDialog(const wstring &message);
+	explicit ScriptErrorDialog(const wstring &message);
 
 	BOOL OnInitDialog() override;
 	BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;

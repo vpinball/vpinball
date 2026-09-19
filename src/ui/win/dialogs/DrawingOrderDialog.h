@@ -5,7 +5,7 @@
 class DrawingOrderDialog final : public CDialog
 {
 public:
-   DrawingOrderDialog(bool select);
+   explicit DrawingOrderDialog(bool select);
    ~DrawingOrderDialog() override;
 
 protected:

@@ -13,7 +13,7 @@
 class PinTableMDI;
 class IWinUIPart;
 
-class PinTableWnd : public CWnd
+class PinTableWnd final : public CWnd
 {
 public:
    explicit PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table);
@@ -58,7 +58,7 @@ public:
    void StopUndo();
 
    // Multi-selection manipulation: applies the transform to all the selected parts at once
-   Vertex2D GetMultiSelCenter();
+   Vertex2D GetMultiSelCenter() const;
    void FlipYMultiSel(const Vertex2D &pvCenter);
    void FlipXMultiSel(const Vertex2D &pvCenter);
    void RotateMultiSel(const float ang, const Vertex2D &pvCenter, const bool useElementCenter);

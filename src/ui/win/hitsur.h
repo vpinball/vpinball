@@ -4,7 +4,7 @@
 
 #include "sur.h"
 
-class HitSur : public Sur
+class HitSur final : public Sur
 {
 public:
 

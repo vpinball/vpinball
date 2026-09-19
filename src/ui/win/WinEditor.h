@@ -85,7 +85,9 @@ private:
    void OpenRecentFile(const size_t menuId);
    void CopyPasteElement(const CopyPasteModes mode);
    void InitTools();
-   bool CanClose();
+   // Closes every table that can be closed, stopping at the first one which refuses (so some tables may
+   // already be closed when returning false). Returns true if all of them are closed
+   bool CloseWhatIsPossible();
    void UpdateRecentFileList(const std::filesystem::path& filename);
 
 public:
@@ -196,8 +198,6 @@ public:
 
 //    HWND m_hwndToolbarMain;
    HWND m_hwndStatusBar;
-
-   int m_palettescroll;
 
    vector<InMemStream*> m_vstmclipboard;
 

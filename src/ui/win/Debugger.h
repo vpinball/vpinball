@@ -27,8 +27,6 @@ private:
     CButton m_pauseButton;
     CButton m_stepButton;
     CEdit   m_stepAmountEdit;
-    CButton m_dbgLightsButton;
-    CButton m_dbgMaterialsButton;
     CEdit   m_ballSizeEdit;
     CEdit   m_ballMassEdit;
     CResizer m_resizer;

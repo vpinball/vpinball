@@ -22,7 +22,7 @@
 
 #define MAX_FIND_LENGTH 81 // from MS docs: The buffer should be at least 80 characters long (for find/replace)
 
-class CodeViewer : public CWnd
+class CodeViewer final : public CWnd
 {
 public:
    CodeViewer(PinTable *table);
@@ -141,11 +141,12 @@ private:
    BOOL ParseClickEvents(const int id, const SCNotification *pSCN);
    BOOL ParseSelChangeEvent(const int id, const SCNotification *pSCN);
 
-   string ParseDelimtByColon(string &wholeline);
+   string ParseDelimtByColon(const string &wholeline, size_t &pos);
    void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
    bool ParseStructureName(fi_vector<UserData> &ListIn, const UserData &ud, const string &UCline, const string &line, const int Lineno);
 
    size_t SureFind(const string &LineIn, const string &ToFind);
+   size_t SureFindNoCase(const string &LineIn, const string &ToFind); // 'ToFind' has to be lowercase
    void RemoveByVal(string &line); 
    void RemoveNonVBSChars(string &line);
    string ExtractWordOperand(const string &line, const size_t StartPos) const;
@@ -161,7 +162,7 @@ private:
 
    void InitPreferences();
 
-   string GetParamsFromEvent(const UINT iEvent);
+   string GetParamsFromEvent(const UINT iEvent) const;
 
    /**
     * Resizes the Scintilla widget (the text editor) and the last error widget (if it's visible)
