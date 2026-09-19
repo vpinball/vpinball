@@ -76,7 +76,6 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 
 PinTable::PinTable()
    : m_settings(&(g_app->m_settings))
-   , m_undo(this)
 {
    m_renderSolid = m_settings.GetEditor_RenderSolid();
 
@@ -750,9 +749,11 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
       pstgRoot->Commit(STGC_DEFAULT);
       pstgRoot->Release();
 
-      SetCleanPoint(eSaveClean);
       if (m_tableEditor)
+      {
+         m_tableEditor->SetCleanPoint(eSaveClean);
          m_tableEditor->m_pcv->SetClean(eSaveClean);
+      }
       SetNonUndoableDirty(eSaveClean);
    }
 #endif
@@ -3192,41 +3193,6 @@ void PinTable::CheckDirty()
 bool PinTable::FDirty() const
 {
    return (m_sdsCurrentDirtyState > eSaveClean);
-}
-
-void PinTable::BeginUndo() { m_undo.BeginUndo(); }
-
-void PinTable::MarkForUndo(IEditable *editable) { m_undo.MarkForUndo(editable); }
-
-void PinTable::MarkForCreate(IEditable *editable) { m_undo.MarkForCreate(editable); }
-
-void PinTable::MarkForDelete(IEditable *editable) { m_undo.MarkForDelete(editable); }
-
-void PinTable::EndUndo() { m_undo.EndUndo(); }
-
-void PinTable::StartUndo()
-{
-   BeginUndo();
-   MarkForUndo(this);
-}
-
-void PinTable::StopUndo()
-{
-   EndUndo();
-   SetDirtyDraw();
-}
-
-void PinTable::Undo(const bool discard)
-{
-   m_undo.Undo(discard);
-
-   if (m_tableEditor)
-      m_tableEditor->OnPartChanged(this);
-}
-
-void PinTable::SetCleanPoint(const SaveDirtyState sds)
-{
-   m_undo.SetCleanPoint(sds);
 }
 
 void PinTable::Uncreate(IEditable *pie)

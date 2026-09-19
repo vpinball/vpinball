@@ -3,6 +3,7 @@
 #pragma once
 
 #include "input/InputManager.h"
+#include "core/pinundo.h"
 #include "imgui/imgui.h"
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
@@ -129,6 +130,7 @@ private:
 
    // Undo support
    void PushUndo(IEditable *part, unsigned int editId);
+   PinUndo m_undo;
    IEditable *m_lastUndoPart = nullptr;
    unsigned int m_lastUndoId = 0;
 

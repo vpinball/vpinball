@@ -696,13 +696,13 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
 
 void PropertyDialog::StartUndo(IEditable *const part)
 {
-   part->GetPTable()->BeginUndo();
-   part->GetPTable()->MarkForUndo(part);
+   part->GetPTable()->m_tableEditor->BeginUndo();
+   part->GetPTable()->m_tableEditor->MarkForUndo(part);
 }
 
 void PropertyDialog::EndUndo(IEditable *const part)
 {
-   part->GetPTable()->EndUndo();
+   part->GetPTable()->m_tableEditor->EndUndo();
    part->GetPTable()->SetDirtyDraw();
 }
 

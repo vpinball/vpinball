@@ -132,19 +132,19 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-      m_flasher->GetPTable()->BeginUndo();
-      m_flasher->GetPTable()->MarkForUndo(m_flasher);
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_flasher);
       m_flasher->FlipY(m_flasher->GetCenter());
-      m_flasher->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_flasher->GetPTable())
          m_flasher->GetPTable()->SetDirtyDraw();
       break;
 
    case ID_WALLMENU_MIRROR:
-      m_flasher->GetPTable()->BeginUndo();
-      m_flasher->GetPTable()->MarkForUndo(m_flasher);
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_flasher);
       m_flasher->FlipX(m_flasher->GetCenter());
-      m_flasher->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_flasher->GetPTable())
          m_flasher->GetPTable()->SetDirtyDraw();
       break;
@@ -156,10 +156,10 @@ void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
-      m_flasher->GetPTable()->BeginUndo();
-      m_flasher->GetPTable()->MarkForUndo(m_flasher);
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_flasher);
       m_flasher->AddPoint(m_editor->TransformPoint(x, y), false);
-      m_flasher->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_flasher->GetPTable())
          m_flasher->GetPTable()->SetDirtyDraw();
       break;

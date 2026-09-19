@@ -139,19 +139,19 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-      m_light->GetPTable()->BeginUndo();
-      m_light->GetPTable()->MarkForUndo(m_light);
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_light);
       m_light->FlipY(m_light->GetCenter());
-      m_light->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_light->GetPTable())
          m_light->GetPTable()->SetDirtyDraw();
       break;
 
    case ID_WALLMENU_MIRROR:
-      m_light->GetPTable()->BeginUndo();
-      m_light->GetPTable()->MarkForUndo(m_light);
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_light);
       m_light->FlipX(m_light->GetCenter());
-      m_light->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_light->GetPTable())
          m_light->GetPTable()->SetDirtyDraw();
       break;
@@ -163,10 +163,10 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_editor); break;
 
    case ID_WALLMENU_ADDPOINT:
-      m_light->GetPTable()->BeginUndo();
-      m_light->GetPTable()->MarkForUndo(m_light);
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_light);
       m_light->AddPoint(m_editor->TransformPoint(x, y), true);
-      m_light->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_light->GetPTable())
          m_light->GetPTable()->SetDirtyDraw();
       break;

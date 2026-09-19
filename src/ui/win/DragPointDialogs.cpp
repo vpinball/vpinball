@@ -123,7 +123,7 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
             if (m_applyCount > 0)
             {
                m_applyCount--;
-               editor->m_table->Undo();
+               editor->Undo();
                editor->m_table->SetDirtyDraw();
             }
             break;
@@ -132,7 +132,7 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
             if (m_applyCount > 0)
             {
                for (int i = 0; i < m_applyCount; i++)
-                  editor->m_table->Undo();
+                  editor->Undo();
                editor->m_table->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);
@@ -287,7 +287,7 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
             if (m_applyCount > 0)
             {
                m_applyCount--;
-               editor->m_table->Undo();
+               editor->Undo();
                editor->m_table->SetDirtyDraw();
             }
             break;
@@ -296,7 +296,7 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
             if (m_applyCount > 0)
             {
                for (int i = 0; i < m_applyCount; i++)
-                  editor->m_table->Undo();
+                  editor->Undo();
                editor->m_table->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);
@@ -386,7 +386,7 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
             if (m_applyCount > 0)
             {
                m_applyCount--;
-               editor->m_table->Undo();
+               editor->Undo();
                editor->m_table->SetDirtyDraw();
             }
             break;
@@ -395,7 +395,7 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
             if (m_applyCount > 0)
             {
                for (int i = 0; i < m_applyCount; i++)
-                  editor->m_table->Undo();
+                  editor->Undo();
                editor->m_table->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);

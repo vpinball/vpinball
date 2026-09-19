@@ -499,8 +499,8 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
 #ifndef __STANDALONE__
    PinTable *const pt = editable->GetPTable();
-   pt->BeginUndo();
-   pt->MarkForUndo(editable);
+   pt->m_tableEditor->BeginUndo();
+   pt->m_tableEditor->MarkForUndo(editable);
 #endif
 
    const string oldName = MakeString(editable->GetIScriptable()->m_wzName);
@@ -535,7 +535,7 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
       }
    }
 
-   pt->EndUndo();
+   pt->m_tableEditor->EndUndo();
    pt->SetDirtyDraw();
 #endif
 }
@@ -638,18 +638,18 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
                              "to unlock the table ?",
                   "Table Unlocking", MB_YESNO | MB_ICONINFORMATION))
             {
-               ptCur->StartUndo();
+               ptCur->m_tableEditor->StartUndo();
                ptCur->ToggleLock();
-               ptCur->StopUndo();
+               ptCur->m_tableEditor->StopUndo();
             }
          }
          else if (!ptCur->IsLocked())
          {
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
-               ptCur->StartUndo();
+               ptCur->m_tableEditor->StartUndo();
                ptCur->ToggleLock();
-               ptCur->StopUndo();
+               ptCur->m_tableEditor->StopUndo();
                string msg = ptCur->AuditTable(true);
                InfoDialog info(msg);
                info.DoModal();
@@ -787,7 +787,7 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
 
    case ID_EDIT_UNDO:
       if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ptCur->Undo();
+         ptCur->m_tableEditor->Undo();
       return true;
 
    case ID_FILE_EXPORT_BLUEPRINT:
@@ -2056,11 +2056,11 @@ void WinEditor::SetDefaultPhysics()
       const int answ = MessageBox(LocalString(IDS_DEFAULTPHYSICS).m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
       if (answ == IDYES)
       {
-         ptCur->BeginUndo();
+         ptCur->m_tableEditor->BeginUndo();
          for (IWinUIPart *const uiPart : ptCur->m_tableEditor->GetMultiSelParts())
             if (IEditable *const editable = uiPart->GetEditable(); editable)
                editable->SetDefaultPhysics(true);
-         ptCur->EndUndo();
+         ptCur->m_tableEditor->EndUndo();
       }
    }
 }
@@ -2119,10 +2119,10 @@ void WinEditor::AddControlPoint()
       case eItemRamp:
       {
          Ramp *const pRamp = (Ramp *)psel->GetEditable();
-         pRamp->GetPTable()->BeginUndo();
-         pRamp->GetPTable()->MarkForUndo(pRamp);
+         ptCur->BeginUndo();
+         ptCur->MarkForUndo(pRamp);
          pRamp->AddPoint(v, false);
-         pRamp->GetPTable()->EndUndo();
+         ptCur->EndUndo();
          if (pRamp->GetPTable())
             pRamp->GetPTable()->SetDirtyDraw();
          break;
@@ -2130,10 +2130,10 @@ void WinEditor::AddControlPoint()
       case eItemLight:
       {
          Light *const pLight = (Light *)psel->GetEditable();
-         pLight->GetPTable()->BeginUndo();
-         pLight->GetPTable()->MarkForUndo(pLight);
+         ptCur->BeginUndo();
+         ptCur->MarkForUndo(pLight);
          pLight->AddPoint(v, false);
-         pLight->GetPTable()->EndUndo();
+         ptCur->EndUndo();
          if (pLight->GetPTable())
             pLight->GetPTable()->SetDirtyDraw();
          break;
@@ -2141,10 +2141,10 @@ void WinEditor::AddControlPoint()
       case eItemSurface:
       {
          Surface *const pSurf = (Surface *)psel->GetEditable();
-         pSurf->GetPTable()->BeginUndo();
-         pSurf->GetPTable()->MarkForUndo(pSurf);
+         ptCur->BeginUndo();
+         ptCur->MarkForUndo(pSurf);
          pSurf->AddPoint(v, false);
-         pSurf->GetPTable()->EndUndo();
+         ptCur->EndUndo();
          if (pSurf->GetPTable())
             pSurf->GetPTable()->SetDirtyDraw();
          break;
@@ -2152,10 +2152,10 @@ void WinEditor::AddControlPoint()
       case eItemRubber:
       {
          Rubber *const pRub = (Rubber *)psel->GetEditable();
-         pRub->GetPTable()->BeginUndo();
-         pRub->GetPTable()->MarkForUndo(pRub);
+         ptCur->BeginUndo();
+         ptCur->MarkForUndo(pRub);
          pRub->AddPoint(v, false);
-         pRub->GetPTable()->EndUndo();
+         ptCur->EndUndo();
          if (pRub->GetPTable())
             pRub->GetPTable()->SetDirtyDraw();
          break;
@@ -2181,10 +2181,10 @@ void WinEditor::AddSmoothControlPoint()
       case eItemRamp:
       {
          Ramp *const pRamp = (Ramp *)psel->GetEditable();
-         pRamp->GetPTable()->BeginUndo();
-         pRamp->GetPTable()->MarkForUndo(pRamp);
+         ptCur->BeginUndo();
+         ptCur->MarkForUndo(pRamp);
          pRamp->AddPoint(v, true);
-            pRamp->GetPTable()->EndUndo();
+            ptCur->EndUndo();
             if (pRamp->GetPTable())
                pRamp->GetPTable()->SetDirtyDraw();
             break;
@@ -2192,10 +2192,10 @@ void WinEditor::AddSmoothControlPoint()
          case eItemLight:
          {
             Light *const pLight = (Light *)psel->GetEditable();
-            pLight->GetPTable()->BeginUndo();
-            pLight->GetPTable()->MarkForUndo(pLight);
+            ptCur->BeginUndo();
+            ptCur->MarkForUndo(pLight);
             pLight->AddPoint(v, true);
-            pLight->GetPTable()->EndUndo();
+            ptCur->EndUndo();
             if (pLight->GetPTable())
                pLight->GetPTable()->SetDirtyDraw();
             break;
@@ -2203,10 +2203,10 @@ void WinEditor::AddSmoothControlPoint()
          case eItemSurface:
          {
             Surface *const pSurf = (Surface *)psel->GetEditable();
-            pSurf->GetPTable()->BeginUndo();
-            pSurf->GetPTable()->MarkForUndo(pSurf);
+            ptCur->BeginUndo();
+            ptCur->MarkForUndo(pSurf);
             pSurf->AddPoint(v, true);
-            pSurf->GetPTable()->EndUndo();
+            ptCur->EndUndo();
             if (pSurf->GetPTable())
                pSurf->GetPTable()->SetDirtyDraw();
             break;
@@ -2214,10 +2214,10 @@ void WinEditor::AddSmoothControlPoint()
          case eItemRubber:
          {
             Rubber *const pRub = (Rubber *)psel->GetEditable();
-            pRub->GetPTable()->BeginUndo();
-            pRub->GetPTable()->MarkForUndo(pRub);
+            ptCur->BeginUndo();
+            ptCur->MarkForUndo(pRub);
          pRub->AddPoint(v, true);
-         pRub->GetPTable()->EndUndo();
+         ptCur->EndUndo();
          if (pRub->GetPTable())
             pRub->GetPTable()->SetDirtyDraw();
          break;

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "core/pinundo.h"
 #include "parts/light.h"
 #include "parts/pintable.h"
 #include "ui/win/parts/TableWinUIPart.h"
@@ -44,6 +45,17 @@ public:
    void Copy(int x, int y);
    void Paste(const bool atLocation, const int x, const int y);
    void DeleteSelection();
+
+   // Undo support
+   void BeginUndo();
+   void MarkForUndo(IEditable *editable);
+   void MarkForCreate(IEditable *editable);
+   void MarkForDelete(IEditable *editable);
+   void EndUndo();
+   void Undo(bool discard = false);
+   void SetCleanPoint(SaveDirtyState sds);
+   void StartUndo();
+   void StopUndo();
 
    // Multi-selection manipulation: applies the transform to all the selected parts at once
    Vertex2D GetMultiSelCenter();
@@ -180,6 +192,8 @@ private:
 
    // Multi-selection: selected UI parts, primary selection first. Contains only the table's UI part when nothing is selected.
    vector<IWinUIPart *> m_vmultisel;
+
+   PinUndo m_undo;
 
 private:
    POINT m_ptLast {}; // Last point when dragging

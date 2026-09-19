@@ -164,9 +164,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             m_activeTable->GetUniqueName(ItemTypeEnum::eItemPartGroup, partGroup->GetIScriptable()->m_wzName);
             m_activeTable->AddPart(partGroup);
             partGroup->SetPartGroup(GetSelectedPartGroup());
-            m_activeTable->BeginUndo();
-            m_activeTable->MarkForCreate(partGroup);
-            m_activeTable->EndUndo();
+            m_activeTable->m_tableEditor->BeginUndo();
+            m_activeTable->m_tableEditor->MarkForCreate(partGroup);
+            m_activeTable->m_tableEditor->EndUndo();
             Update();
          }
       }
@@ -573,7 +573,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             PartGroup* group = (hSelectedDrop == m_hRootItem) ? nullptr 
                              : (dropTarget->editable->GetItemType() == eItemPartGroup) ? static_cast<PartGroup*>(dropTarget->editable)
                              : dropTarget->editable->GetPartGroup();
-            m_activeTable->BeginUndo();
+            m_activeTable->m_tableEditor->BeginUndo();
             for (const auto& dragItem : m_DragItems)
             {
                auto existing = std::ranges::find_if(m_content, [dragItem](const TreeEntry& te) { return te.item == dragItem; });
@@ -584,7 +584,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                existing->editable->SetPartGroup(group);
                Select(existing->editable);
             }
-            m_activeTable->EndUndo();
+            m_activeTable->m_tableEditor->EndUndo();
             Update();
          }
          m_DragItems.clear();

@@ -52,17 +52,17 @@ void DragPointWinUIPart::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_POINTMENU_SMOOTH:
-      ptable->BeginUndo();
-      ptable->MarkForUndo(m_dragPoint->GetIEditable());
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_dragPoint->GetIEditable());
       m_dragPoint->ToggleSmooth();
-      ptable->EndUndo();
+      m_editor->EndUndo();
       ptable->SetDirtyDraw();
       break;
    case ID_POINTMENU_SLINGSHOT:
-      ptable->BeginUndo();
-      ptable->MarkForUndo(m_dragPoint->GetIEditable());
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(m_dragPoint->GetIEditable());
       m_dragPoint->ToggleSlingshot();
-      ptable->EndUndo();
+      m_editor->EndUndo();
       ptable->SetDirtyDraw();
       break;
    }

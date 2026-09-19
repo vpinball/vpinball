@@ -83,6 +83,7 @@ EditorUI::EditorUI(LiveUI &liveUI)
    : m_liveUI(liveUI)
    , m_player(g_pplayer)
    , m_renderer(m_player->m_renderer)
+   , m_undo(m_player->m_ptable)
 {
    m_StartTime_msec = msec();
    m_table = m_player->m_ptable;
@@ -172,7 +173,8 @@ void EditorUI::RenderUI()
             {
                // TODO cursor feedback
                VPXFileFeedback feedback;
-               m_table->Save(feedback);
+               if (SUCCEEDED(m_table->Save(feedback)))
+                  m_undo.SetCleanPoint(eSaveClean);
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Quit"))
@@ -707,7 +709,7 @@ void EditorUI::RenderUI()
             m_lastUndoPart = nullptr;
             m_lastUndoId = 0;
             if (m_table->m_liveBaseTable == nullptr)
-               m_table->Undo();
+               m_undo.Undo();
          }
          else if (!io.KeyShift && !io.KeyAlt)
          { // Wireframe shade mode selection
@@ -828,9 +830,9 @@ void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
 
    m_lastUndoPart = part;
    m_lastUndoId = undoId;
-   m_table->BeginUndo();
-   m_table->MarkForUndo(part);
-   m_table->EndUndo();
+   m_undo.BeginUndo();
+   m_undo.MarkForUndo(part);
+   m_undo.EndUndo();
 }
 
 void EditorUI::DeleteSelection()
@@ -1220,9 +1222,9 @@ void EditorUI::UpdatePropertyUI()
       {
       case Selection::SelectionType::S_NONE: TableProperties(props); break;
       case Selection::SelectionType::S_EDITABLE:
-         m_table->BeginUndo();
-         m_table->MarkForUndo(m_selection.uiPart->GetEditable());
-         m_table->EndUndo();
+         m_undo.BeginUndo();
+         m_undo.MarkForUndo(m_selection.uiPart->GetEditable());
+         m_undo.EndUndo();
          m_selection.uiPart->UpdatePropertyPane(props);
          if (props.GetModifiedField() > 0 && (m_lastUndoPart != m_selection.uiPart->GetEditable() || m_lastUndoId != (0x2000 | props.GetModifiedField())))
          {
@@ -1231,7 +1233,7 @@ void EditorUI::UpdatePropertyUI()
          }
          else
          {
-            m_table->Undo(true);
+            m_undo.Undo(true);
          }
          if (props.GetModifiedField() > 0)
          {
