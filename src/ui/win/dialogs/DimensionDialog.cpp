@@ -4,6 +4,7 @@
 #include "DimensionDialog.h"
 
 #include "parts/pintable.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
@@ -174,7 +175,7 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_APPLY_TO_TABLE:
       if (pt != nullptr)
       {
-         pt->StartUndo();
+         pt->m_tableEditor->StartUndo();
          float value = sz2f(GetDlgItemText(IDC_VP_WIDTH).GetString());
          if (value > 0.f)
             pt->put_Width(value);
@@ -187,7 +188,7 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          value = sz2f(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).GetString());
          if (value > 0.f)
             pt->m_glassBottomHeight = INCHESTOVPU(value);
-         pt->StopUndo();
+         pt->m_tableEditor->StopUndo();
       }
       UpdateApplyState();
       return TRUE;

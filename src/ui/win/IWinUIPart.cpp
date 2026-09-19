@@ -31,7 +31,7 @@ void IWinUIPart::OnLButtonUp(int x, int y)
    if (m_markedForUndo)
    {
       m_markedForUndo = false;
-      m_editable->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_editable->GetPTable())
          m_editable->GetPTable()->SetDirtyDraw();
    }
@@ -106,10 +106,10 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
    case ID_DRAWINBACK: m_editable->GetPTable()->MovePartToBack(piedit); break;
    case ID_SETASDEFAULT: piedit->WriteRegDefaults(); break;
    case ID_LOCK:
-      piedit->GetPTable()->BeginUndo();
-      piedit->GetPTable()->MarkForUndo(piedit);
+      m_editor->BeginUndo();
+      m_editor->MarkForUndo(piedit);
       piedit->SetUILock(!piedit->IsUILocked());
-      piedit->GetPTable()->EndUndo();
+      m_editor->EndUndo();
       if (m_editable->GetPTable())
          m_editable->GetPTable()->SetDirtyDraw();
       break;

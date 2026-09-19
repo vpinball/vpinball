@@ -5,7 +5,6 @@
 #pragma once
 
 
-#include "core/pinundo.h"
 #include "parts/Collection.h"
 #include "parts/pinbinary.h"
 #include "renderer/RenderProbe.h"
@@ -343,24 +342,6 @@ public:
    void SetDirtyScript(SaveDirtyState sds);
 
    void ExportMesh(ObjLoader &loader) final;
-
-#pragma region Undo
-public:
-   void BeginUndo();
-   void MarkForUndo(IEditable *editable);
-   void MarkForCreate(IEditable *editable);
-   void MarkForDelete(IEditable *editable);
-   void EndUndo();
-
-   void Undo(bool discard = false);
-   void SetCleanPoint(SaveDirtyState sds);
-   void StartUndo();
-   void StopUndo();
-
-private:
-   PinUndo m_undo;
-#pragma endregion
-
 
 #pragma region IEditable
 public:

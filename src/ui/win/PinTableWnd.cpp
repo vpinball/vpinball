@@ -40,6 +40,7 @@ PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
 #ifndef __STANDALONE__
    , m_tablePart(this, table)
 #endif
+   , m_undo(table)
 {
    m_table->AddRef();
    m_table->m_tableEditor = this;
@@ -89,6 +90,37 @@ void PinTableWnd::Redraw()
    if (IsWindow())
       InvalidateRect(false);
 #endif
+}
+
+void PinTableWnd::BeginUndo() { m_undo.BeginUndo(); }
+
+void PinTableWnd::MarkForUndo(IEditable *editable) { m_undo.MarkForUndo(editable); }
+
+void PinTableWnd::MarkForCreate(IEditable *editable) { m_undo.MarkForCreate(editable); }
+
+void PinTableWnd::MarkForDelete(IEditable *editable) { m_undo.MarkForDelete(editable); }
+
+void PinTableWnd::EndUndo() { m_undo.EndUndo(); }
+
+void PinTableWnd::Undo(const bool discard)
+{
+   m_undo.Undo(discard);
+
+   OnPartChanged(m_table);
+}
+
+void PinTableWnd::SetCleanPoint(const SaveDirtyState sds) { m_undo.SetCleanPoint(sds); }
+
+void PinTableWnd::StartUndo()
+{
+   BeginUndo();
+   MarkForUndo(m_table);
+}
+
+void PinTableWnd::StopUndo()
+{
+   EndUndo();
+   m_table->SetDirtyDraw();
 }
 
 void PinTableWnd::SetDefaultView()
@@ -381,9 +413,9 @@ void PinTableWnd::ImportPhysics()
    if (index != string::npos)
       g_app->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
 
-   m_table->StartUndo();
+   StartUndo();
    m_table->ImportVPP(filename[0]);
-   m_table->StopUndo();
+   StopUndo();
 #endif
 }
 
@@ -1100,12 +1132,12 @@ Vertex2D PinTableWnd::GetMultiSelCenter()
 
 void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
 {
-   m_table->BeginUndo();
+   BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
       if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(uiPart->GetEditable());
+      MarkForUndo(uiPart->GetEditable());
       if (uiPart->IsSubPart())
       {
          // Flip the sub element (drag point, light center) itself around the flip center
@@ -1114,18 +1146,18 @@ void PinTableWnd::FlipYMultiSel(const Vertex2D &pvCenter)
       else
          uiPart->GetEditable()->FlipY(pvCenter);
    }
-   m_table->EndUndo();
+   EndUndo();
    m_table->SetDirtyDraw();
 }
 
 void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
 {
-   m_table->BeginUndo();
+   BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
       if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(uiPart->GetEditable());
+      MarkForUndo(uiPart->GetEditable());
       if (uiPart->IsSubPart())
       {
          // Flip the sub element (drag point, light center) itself around the flip center
@@ -1134,18 +1166,18 @@ void PinTableWnd::FlipXMultiSel(const Vertex2D &pvCenter)
       else
          uiPart->GetEditable()->FlipX(pvCenter);
    }
-   m_table->EndUndo();
+   EndUndo();
    m_table->SetDirtyDraw();
 }
 
 void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, const bool useElementCenter)
 {
-   m_table->BeginUndo();
+   BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
       if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(uiPart->GetEditable());
+      MarkForUndo(uiPart->GetEditable());
       if (uiPart->IsSubPart())
       {
          // Rotate the sub element (drag point, light center) itself around the rotation center
@@ -1159,18 +1191,18 @@ void PinTableWnd::RotateMultiSel(const float ang, const Vertex2D &pvCenter, cons
       else
          uiPart->GetEditable()->Rotate(ang, pvCenter, useElementCenter);
    }
-   m_table->EndUndo();
+   EndUndo();
    m_table->SetDirtyDraw();
 }
 
 void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter)
 {
-   m_table->BeginUndo();
+   BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
       if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(uiPart->GetEditable());
+      MarkForUndo(uiPart->GetEditable());
       if (uiPart->IsSubPart())
       {
          // Scale the sub element (drag point, light center) position itself around the scale center
@@ -1180,21 +1212,21 @@ void PinTableWnd::ScaleMultiSel(const float scalex, const float scaley, const Ve
       else
          uiPart->GetEditable()->Scale(scalex, scaley, pvCenter, useElementCenter);
    }
-   m_table->EndUndo();
+   EndUndo();
    m_table->SetDirtyDraw();
 }
 
 void PinTableWnd::TranslateMultiSel(const Vertex2D &offset)
 {
-   m_table->BeginUndo();
+   BeginUndo();
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
       if (IsSubPartOfSelectedPart(uiPart))
          continue;
-      m_table->MarkForUndo(uiPart->GetEditable());
+      MarkForUndo(uiPart->GetEditable());
       uiPart->Translate(offset);
    }
-   m_table->EndUndo();
+   EndUndo();
    m_table->SetDirtyDraw();
 }
 
@@ -1209,25 +1241,25 @@ bool PinTableWnd::FMutilSelLocked() const
 
 void PinTableWnd::LockElements()
 {
-   m_table->BeginUndo();
+   BeginUndo();
    const bool lock = !FMutilSelLocked();
    for (IWinUIPart *const psel : GetSelectedParts())
    {
       IEditable *const pedit = psel->GetEditable();
       if (pedit)
       {
-         m_table->MarkForUndo(pedit);
+         MarkForUndo(pedit);
          pedit->SetUILock(lock);
       }
    }
-   m_table->EndUndo();
+   EndUndo();
    m_table->SetDirtyDraw();
 }
 
 void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
 {
-   m_table->BeginUndo();
-   m_table->MarkForUndo(m_table);
+   BeginUndo();
+   MarkForUndo(m_table);
    bool show = false, hide = false;
    for (const IEditable *const e : m_table->GetParts())
       if (e->GetPartGroup() == group)
@@ -1244,7 +1276,7 @@ void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
       else if (!pedit->IsUIVisible(false) && show && !hide)
          pedit->SetUIVisible(true);
    }
-   m_table->EndUndo();
+   EndUndo();
    m_table->SetDirtyDraw();
 #ifndef __STANDALONE__
    m_vpxEditor->GetLayersListDialog()->Update();
@@ -1432,7 +1464,7 @@ void PinTableWnd::DeleteSelection()
          return;
    }
 
-   m_table->BeginUndo();
+   BeginUndo();
    for (IWinUIPart *const ptr : m_vseldelete)
    {
       if (ptr->GetItemType() == ItemTypeEnum::eItemDragPoint)
@@ -1440,20 +1472,20 @@ void PinTableWnd::DeleteSelection()
          // Deleting a drag point modifies its owning part
          if (DragPoint *const dpoint = ptr->GetDragPoint(); dpoint->CanDelete())
          {
-            m_table->MarkForUndo(ptr->GetEditable());
+            MarkForUndo(ptr->GetEditable());
             dpoint->Delete();
          }
       }
       else
       {
          IEditable *part = ptr->GetEditable();
-         m_table->MarkForDelete(part);
+         MarkForDelete(part);
          m_table->RemovePart(part);
          for (Collection *const pcollection : part->m_vCollection)
             pcollection->RemovePart(part);
       }
    }
-   m_table->EndUndo();
+   EndUndo();
 
    m_vpxEditor->GetLayersListDialog()->Update();
    // update properties to show the properties of the table
@@ -1522,7 +1554,7 @@ void PinTableWnd::OnKeyDown(int key)
    case VK_UP:
    case VK_DOWN:
    {
-      m_table->BeginUndo();
+      BeginUndo();
       const float distance = shift ? 10.f : 1.f;
       for (IWinUIPart *const uiPart : m_vmultisel)
       {
@@ -1531,28 +1563,28 @@ void PinTableWnd::OnKeyDown(int key)
             switch (key)
             {
             case VK_LEFT:
-               m_table->MarkForUndo(uiPart->GetEditable());
+               MarkForUndo(uiPart->GetEditable());
                uiPart->Translate(Vertex2D(-distance / GetZoom(), 0.f));
                break;
 
             case VK_RIGHT:
-               m_table->MarkForUndo(uiPart->GetEditable());
+               MarkForUndo(uiPart->GetEditable());
                uiPart->Translate(Vertex2D(distance / GetZoom(), 0.f));
                break;
 
             case VK_UP:
-               m_table->MarkForUndo(uiPart->GetEditable());
+               MarkForUndo(uiPart->GetEditable());
                uiPart->Translate(Vertex2D(0.f, -distance / GetZoom()));
                break;
 
             case VK_DOWN:
-               m_table->MarkForUndo(uiPart->GetEditable());
+               MarkForUndo(uiPart->GetEditable());
                uiPart->Translate(Vertex2D(0.f, distance / GetZoom()));
                break;
             }
          }
       }
-      m_table->EndUndo();
+      EndUndo();
       Redraw();
    }
    break;
@@ -1627,9 +1659,9 @@ void PinTableWnd::UseTool(int x, int y, int tool)
 
       OnPartChanged(m_table);
 
-      m_table->BeginUndo();
-      m_table->MarkForCreate(pie);
-      m_table->EndUndo();
+      BeginUndo();
+      MarkForCreate(pie);
+      EndUndo();
       AddMultiSel(GetUIPart(pie), false, true, false);
    }
 
@@ -1789,8 +1821,8 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
                   if (!uiPart->m_markedForUndo)
                   {
                      uiPart->m_markedForUndo = true;
-                     uiPart->GetEditable()->GetPTable()->BeginUndo();
-                     m_table->MarkForUndo(uiPart->GetEditable());
+                     BeginUndo();
+                     MarkForUndo(uiPart->GetEditable());
                   }
 
                   const float inv_zoom = 1.0f / GetZoom();
@@ -2153,7 +2185,7 @@ void PinTableWnd::AutoSave()
    Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
    const HRESULT hr = m_table->SaveToStorage(pstgroot, feedback);
 
-   m_table->SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
+   SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
    m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
    m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->m_sdsNonUndoableDirty, (int)eSaveAutosaved));
 
