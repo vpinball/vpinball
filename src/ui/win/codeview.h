@@ -50,7 +50,6 @@ public:
    void ShowFindReplaceDialog();
    void Find();
    void Replace();
-   void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash);
    void SetCaption(const string& szCaption);
 
    bool ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const bool tooltip);

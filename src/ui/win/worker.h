@@ -8,12 +8,12 @@
 
 extern HANDLE g_hWorkerStarted;
 
-class FastIStorage;
+class InMemStructuredStorage;
 
 class AutoSavePackage final
 {
 public:
-   FastIStorage *pstg;
+   InMemStructuredStorage *pstg;
    int tableindex;
    class PinTable *table;
    HWND hwndtable;

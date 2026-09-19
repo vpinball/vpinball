@@ -24,7 +24,7 @@ public:
    void MarkForCreate(IEditable *const pie);
    void MarkForDelete(IEditable *const pie);
 
-   vector<FastIStream *> m_vstm;
+   vector<std::unique_ptr<InMemStream>> m_vstm;
    vector<IEditable *> m_vieCreate;
    vector<IEditable *> m_vieDelete;
    vector<IEditable *> m_vieMark;
@@ -35,9 +35,6 @@ UndoRecord::UndoRecord() { }
 
 UndoRecord::~UndoRecord()
 {
-   for (FastIStream *stream : m_vstm)
-      stream->Release();
-
    for (IEditable *editable : m_vieDelete)
       editable->Release();
 }
@@ -53,16 +50,14 @@ void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 
    m_vieMark.push_back(pie);
 
-   FastIStream *const pstm = new FastIStream();
-   pstm->AddRef();
+   auto pstm = std::make_unique<InMemStream>();
 
-   DWORD write;
-   pstm->Write(&pie, sizeof(IEditable *), &write);
+   pstm->Write(&pie, sizeof(IEditable *));
 
-   BiffWriter writer(pstm, 0);
+   BiffWriter writer(pstm.get(), 0);
    pie->Save(writer, true);
 
-   m_vstm.push_back(pstm);
+   m_vstm.push_back(std::move(pstm));
 #endif
 }
 
@@ -175,14 +170,13 @@ void PinUndo::Undo()
       editable->AddRef(); // As undelete does not add the reference on the undeleted part (should be fixed there ?)
    }
 
-   for (FastIStream *const pstm : m_undoRecords.back()->m_vstm)
+   for (const auto &pstm : m_undoRecords.back()->m_vstm)
    {
-      IEditable *const pie = *reinterpret_cast<IEditable *const *>(pstm->m_rg);
+      IEditable *const pie = *reinterpret_cast<IEditable *const *>(pstm->Data());
       pie->ClearForOverwrite();
 
       // Note that we do not process the loaded PartGroup parenting. This is not an issue as we do not support undoing reparenting (yet)
-      BiffReader reader(
-         reinterpret_cast<const uint8_t *>(pstm->m_rg) + sizeof(IEditable *), pstm->m_cSize - static_cast<unsigned int>(sizeof(IEditable *)), CURRENT_FILE_FORMAT_VERSION, 0, 0);
+      BiffReader reader(pstm->Data() + sizeof(IEditable *), static_cast<uint32_t>(pstm->Size() - sizeof(IEditable *)), CURRENT_FILE_FORMAT_VERSION, 0, 0);
       pie->Load(reader);
       if (g_pplayer)
       {

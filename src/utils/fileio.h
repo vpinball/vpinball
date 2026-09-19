@@ -116,77 +116,41 @@ public:
 };
 
 
+namespace POLE
+{
+class Storage;
+}
 
-
-
-class FastIStream : public IStream
+// Simple in-memory byte stream
+class InMemStream final
 {
 public:
-   FastIStream();
-   virtual ~FastIStream();
+   void Write(const void *pv, size_t count);
+   void Seek(uint64_t pos) { m_cSeek = static_cast<size_t>(pos); }
+   uint64_t Tell() const { return m_cSeek; }
 
-   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override { return S_OK; }
-   ULONG __stdcall AddRef() override;
-   ULONG __stdcall Release() override;
-   HRESULT __stdcall Read(void *pv, ULONG count, ULONG *foo) override;
-   HRESULT __stdcall Write(const void *pv, ULONG count, ULONG *foo) override;
-   HRESULT __stdcall Seek(union _LARGE_INTEGER, ULONG, union _ULARGE_INTEGER *) override;
-   HRESULT __stdcall SetSize(union _ULARGE_INTEGER) override { return S_OK; }
-   HRESULT __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *) override { return S_OK; }
-   HRESULT __stdcall Commit(ULONG) override { return S_OK; }
-   HRESULT __stdcall Revert() override { return S_OK; }
-
-   HRESULT __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
-   HRESULT __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
-   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override { return S_OK; }
-   HRESULT __stdcall Clone(struct IStream **) override { return S_OK; }
-
-   char *m_rg; // Data buffer
-   WCHAR *m_wzName;
-   unsigned int m_cSize; // Size of stream
+   const uint8_t *Data() const { return m_data.data(); }
+   size_t Size() const { return m_data.size(); }
 
 private:
-   void SetSize(const unsigned int i);
-
-   int m_cref;
-
-   unsigned int m_cMax; // Number of elements allocated
-   unsigned int m_cSeek; // Last element used
+   vector<uint8_t> m_data; // Stream content
+   size_t m_cSeek = 0; // Current position
 };
 
 
-class FastIStorage : public IStorage
+// Simple in-memory structured storage: an ordered set of named streams that can be flushed to a POLE structured storage file.
+class InMemStructuredStorage final
 {
 public:
-   FastIStorage();
-   virtual ~FastIStorage();
+   ~InMemStructuredStorage();
 
-   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override { return S_OK; }
-   ULONG __stdcall AddRef() override;
-   ULONG __stdcall Release() override;
+   // Creates a new empty stream, name being its full path (e.g. "GameStg/GameData")
+   InMemStream *CreateStream(const string &name);
 
-   HRESULT __stdcall CreateStream(const WCHAR *, ULONG, ULONG, ULONG, struct IStream **) override;
-   HRESULT __stdcall OpenStream(const WCHAR *, void *, ULONG, ULONG, struct IStream **) override { return S_OK; }
-   HRESULT __stdcall CreateStorage(const WCHAR *, ULONG, ULONG, ULONG, struct IStorage **) override;
-   HRESULT __stdcall OpenStorage(const WCHAR *, struct IStorage *, ULONG, WCHAR **, ULONG, struct IStorage **) override { return S_OK; }
-   HRESULT __stdcall CopyTo(ULONG, const struct _GUID *, WCHAR **, struct IStorage *) override;
-   HRESULT __stdcall MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, ULONG) override { return S_OK; }
-   HRESULT __stdcall Commit(ULONG) override { return S_OK; }
-   HRESULT __stdcall Revert() override { return S_OK; }
-   HRESULT __stdcall EnumElements(ULONG, void *, ULONG, struct IEnumSTATSTG **) override { return S_OK; }
-   HRESULT __stdcall DestroyElement(const WCHAR *) override { return S_OK; }
-   HRESULT __stdcall RenameElement(const WCHAR *, const WCHAR *) override { return S_OK; }
-   HRESULT __stdcall SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *) override { return S_OK; }
-   HRESULT __stdcall SetClass(const struct _GUID &) override { return S_OK; }
-   HRESULT __stdcall SetStateBits(ULONG, ULONG) override { return S_OK; }
-   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override { return S_OK; }
+   // Writes all the streams to a POLE storage opened for writing
+   bool WriteToStorage(POLE::Storage &storage) const;
 
 private:
-   int m_cref;
-
-   vector<FastIStorage*> m_vstg;
-   vector<FastIStream*> m_vstm;
-
-   WCHAR *m_wzName;
+   vector<std::pair<string, InMemStream *>> m_streams;
 };
 

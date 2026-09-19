@@ -16,13 +16,16 @@
    More datatype changes to allow for 32 and 64 bit code, some fixes involving incremental updates, flushing
    Copyright 2013 <srbaum@gmail.com>
 
-   Corrected some of the artificial (=failing on 32bit systems) handling of 64bit sizes/indices, leading to a lot of warnings
-   Note that things can still fail on 32bit systems for large files, but it should at least assert now
-   Allow multithreaded reading of multiple streams from a single storage (synchronized read access)
-   Also some minor optimizations
+   - Corrected some of the artificial (=failing on 32bit systems) handling of 64bit sizes/indices, leading to a lot of warnings
+   - Note that things can still fail on 32bit systems for large files, but it should at least assert now
+   - Allow multithreaded reading of multiple streams from a single storage (synchronized read access)
+   - Also some minor optimizations
+   - Fixed OLE FAT entries sector indices wrongly considered as 64bit, causing over allocation
+   - Fixed DirTree::flush partial last directory block
+   - Fixed StorageIO::flush not padding file to sector boundary
    2026 VPX team
 
-   Version: 0.5.3 VPX
+   Version: 0.5.4 VPX
 
    Redistribution and use in source and binary forms, with or without 
    modification, are permitted provided that the following conditions 

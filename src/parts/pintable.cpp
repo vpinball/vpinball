@@ -722,33 +722,37 @@ void PinTable::SetupLookUpTables(bool isPlaying)
 
 HRESULT PinTable::Save(VPXFileFeedback &feedback)
 {
+   HRESULT hr = S_OK;
 #ifndef __STANDALONE__
    // Get file name if needed
    std::filesystem::path vpxPath = m_filename;
    vpxPath.replace_extension(".vpx");
 
-   STGOPTIONS stg;
-   stg.usVersion = 1;
-   stg.reserved = 0;
-   stg.ulSectorSize = 4096;
-
-   HRESULT hr;
-   IStorage* pstgRoot;
-   if (FAILED(hr = StgCreateStorageEx(vpxPath.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-      STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
-   {
-      ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
-      return hr;
-   }
-
    RemoveInvalidReferences();
 
-   hr = SaveToStorage(pstgRoot, feedback);
+   InMemStructuredStorage storage;
+   hr = SaveToStorage(&storage, feedback);
    if (SUCCEEDED(hr))
    {
-      pstgRoot->Commit(STGC_DEFAULT);
-      pstgRoot->Release();
+      POLE::Storage fileStorage(vpxPath.string().c_str());
+      if (!fileStorage.open(true, true) || fileStorage.result() != POLE::Storage::Ok)
+      {
+         ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
+         hr = E_FAIL;
+      }
+      else
+      {
+         if (!storage.WriteToStorage(fileStorage))
+         {
+            ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
+            hr = E_FAIL;
+         }
+         fileStorage.close();
+      }
+   }
 
+   if (SUCCEEDED(hr))
+   {
       if (m_tableEditor)
       {
          m_tableEditor->SetCleanPoint(eSaveClean);
@@ -764,10 +768,10 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
    m_settings.SetIniPath(GetSettingsFileName());
    m_settings.Save();
 
-   return S_OK;
+   return hr;
 }
 
-HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
+HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedback &feedback)
 {
 #ifndef __STANDALONE__
    m_savingActive = true;
@@ -790,166 +794,100 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
    feedback.SetLength(ctotalitems);
 
+   HRESULT hr = S_OK;
+
    //first save our own data
-   IStorage* pstgData;
-   HRESULT hr;
-   if (SUCCEEDED(hr = pstgRoot->CreateStorage(L"GameStg", STGM_DIRECT/*STGM_TRANSACTED*/ | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgData)))
+   InMemStream *const pstmGame = pstgRoot->CreateStream("GameStg/GameData"s);
+
+   InMemStream *pstmItem = pstgRoot->CreateStream("GameStg/Version"s);
+   int version = CURRENT_FILE_FORMAT_VERSION;
+   CryptHashData(hch, (BYTE *)&version, sizeof(version), 0);
+   pstmItem->Write(&version, sizeof(version));
+
+   SaveInfo(pstgRoot, hch);
+
+   pstmItem = pstgRoot->CreateStream("GameStg/CustomInfoTags"s);
+   SaveCustomInfo(pstgRoot, pstmItem, hch);
+
+   BiffWriter writer(pstmGame, hch);
+   Save(writer, false);
+   if (!writer.HasError())
    {
-      IStream *pstmGame;
-      if (SUCCEEDED(hr = pstgData->CreateStream(L"GameData", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmGame)))
+      // Move PartGroup ahead of objects they contain, so that they are saved first
+      std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
+      for (size_t i = 0; i < m_vedit.size(); i++)
       {
-         IStream *pstmItem;
-         if (SUCCEEDED(hr = pstgData->CreateStream(L"Version", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
-         {
-            int version = CURRENT_FILE_FORMAT_VERSION;
-            CryptHashData(hch, (BYTE *)&version, sizeof(version), 0);
-            ULONG writ;
-            pstmItem->Write(&version, sizeof(version), &writ);
-            pstmItem->Release();
-            pstmItem = nullptr;
-         }
+         pstmItem = pstgRoot->CreateStream(std::format("GameStg/GameItem{}", i));
 
-         IStorage *pstgInfo;
-         if (SUCCEEDED(hr = pstgRoot->CreateStorage(L"TableInfo", STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgInfo)))
-         {
-            SaveInfo(pstgInfo, hch);
+         IEditable *const piedit = m_vedit[i];
+         const ItemTypeEnum type = piedit->GetItemType();
+         pstmItem->Write(&type, sizeof(int));
+         BiffWriter writer(pstmItem, 0);
+         piedit->Save(writer, false);
 
-            if (SUCCEEDED(hr = pstgData->CreateStream(L"CustomInfoTags", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
-            {
-               SaveCustomInfo(pstgInfo, pstmItem, hch);
-               pstmItem->Release();
-               pstmItem = nullptr;
-            }
-
-            pstgInfo->Release();
-         }
-
-         BiffWriter writer(pstmGame, hch);
-         Save(writer, false);
-         if (!writer.HasError())
-         {
-            // Move PartGroup ahead of objects they contain, so that they are saved first
-            std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
-            for (size_t i = 0; i < m_vedit.size(); i++)
-            {
-               const wstring wStmName = L"GameItem" + std::to_wstring(i);
-
-               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
-               {
-                  ULONG writ;
-                  IEditable *const piedit = m_vedit[i];
-                  const ItemTypeEnum type = piedit->GetItemType();
-                  pstmItem->Write(&type, sizeof(int), &writ);
-                  BiffWriter writer(pstmItem, 0);
-                  piedit->Save(writer, false);
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-                  //if (FAILED(hr)) goto Error;
-               }
-
-               csaveditems++;
-               feedback.SetProgress(csaveditems);
-            }
-
-            for (size_t i = 0; i < m_vsound.size(); i++)
-            {
-               const wstring wStmName = L"Sound" + std::to_wstring(i);
-
-               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
-               {
-                  m_vsound[i]->SaveToStream(pstmItem);
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-               }
-
-               csaveditems++;
-               feedback.SetProgress(csaveditems);
-            }
-
-            for (size_t i = 0; i < m_vimage.size(); i++)
-            {
-               const wstring wStmName = L"Image" + std::to_wstring(i);
-
-               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
-               {
-                  BiffWriter imageWriter(pstmItem, 0);
-                  m_vimage[i]->Save(imageWriter, this);
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-               }
-
-               csaveditems++;
-               feedback.SetProgress(csaveditems);
-            }
-
-            for (size_t i = 0; i < m_vfont.size(); i++)
-            {
-               const wstring wStmName = L"Font" + std::to_wstring(i);
-
-               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
-               {
-                  BiffWriter writer(pstmItem, 0);
-                  m_vfont[i]->Save(writer);
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-               }
-
-               csaveditems++;
-               feedback.SetProgress(csaveditems);
-            }
-
-            int i = 0;
-            for (auto pcol : m_vcollection)
-            {
-               const wstring wStmName = L"Collection" + std::to_wstring(i++);
-
-               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
-               {
-                  BiffWriter writer(pstmItem, hch);
-                  pcol->Save(writer, false);
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-               }
-
-               csaveditems++;
-               feedback.SetProgress(csaveditems);
-            }
-
-         }
-         pstmGame->Release();
+         csaveditems++;
+         feedback.SetProgress(csaveditems);
       }
 
-      // Authentication block
-      BYTE hashval[256];
-      DWORD hashlen = 256;
-      foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
-      hashlen = 256;
-      foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
-
-      IStream* pstmItem;
-      if (SUCCEEDED(hr = pstgData->CreateStream(L"MAC", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
+      for (size_t i = 0; i < m_vsound.size(); i++)
       {
-         ULONG writ;
-         //int version = CURRENT_FILE_FORMAT_VERSION;
-         pstmItem->Write(hashval, hashlen, &writ);
-         pstmItem->Release();
-         pstmItem = nullptr;
+         pstmItem = pstgRoot->CreateStream(std::format("GameStg/Sound{}", i));
+         m_vsound[i]->SaveToStream(pstmItem);
+
+         csaveditems++;
+         feedback.SetProgress(csaveditems);
       }
 
-      foo = CryptDestroyHash(hch);
-      foo = CryptReleaseContext(hcp, 0);
-      // End Authentication block
-
-      if (SUCCEEDED(hr))
-         pstgData->Commit(STGC_DEFAULT);
-      else
+      for (size_t i = 0; i < m_vimage.size(); i++)
       {
-         pstgData->Revert();
-         pstgRoot->Revert();
-         ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
+         pstmItem = pstgRoot->CreateStream(std::format("GameStg/Image{}", i));
+         BiffWriter imageWriter(pstmItem, 0);
+         m_vimage[i]->Save(imageWriter, this);
+
+         csaveditems++;
+         feedback.SetProgress(csaveditems);
       }
-      pstgData->Release();
+
+      for (size_t i = 0; i < m_vfont.size(); i++)
+      {
+         pstmItem = pstgRoot->CreateStream(std::format("GameStg/Font{}", i));
+         BiffWriter writer(pstmItem, 0);
+         m_vfont[i]->Save(writer);
+
+         csaveditems++;
+         feedback.SetProgress(csaveditems);
+      }
+
+      int i = 0;
+      for (auto pcol : m_vcollection)
+      {
+         pstmItem = pstgRoot->CreateStream(std::format("GameStg/Collection{}", i++));
+         BiffWriter writer(pstmItem, hch);
+         pcol->Save(writer, false);
+
+         csaveditems++;
+         feedback.SetProgress(csaveditems);
+      }
    }
+   else
+   {
+      hr = E_FAIL;
+      ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
+   }
+
+   // Authentication block
+   BYTE hashval[256];
+   DWORD hashlen = 256;
+   foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
+   hashlen = 256;
+   foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
+
+   pstmItem = pstgRoot->CreateStream("GameStg/MAC"s);
+   pstmItem->Write(hashval, hashlen);
+
+   foo = CryptDestroyHash(hch);
+   foo = CryptReleaseContext(hcp, 0);
+   // End Authentication block
 
    m_savingActive = false;
 
@@ -959,29 +897,24 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 #endif
 }
 
-HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const string& szValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::WriteInfoValue(InMemStructuredStorage *pstg, const string &name, const string &szValue, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
    if (szValue.empty())
       return S_OK;
 
-   IStream *pstm;
-   HRESULT hr = pstg->CreateStream(wzName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm);
-   if (FAILED(hr))
-      return hr;
+   InMemStream *const pstm = pstg->CreateStream("TableInfo/" + name);
 
    BiffWriter writer(pstm, hcrypthash);
    const wstring wzT = MakeWString(szValue);
 
 #if (WCHAR_T_SIZE == 4) // Linux, macOS
    const std::u16string wzT_utf16 = utf32_to_utf16(wzT);
-   writer.WriteBytes(wzT_utf16.c_str(), static_cast<ULONG>(wzT_utf16.length() * 2));
+   writer.WriteBytes(wzT_utf16.c_str(), wzT_utf16.length() * 2);
 #else // Windows
-   writer.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.length() * sizeof(WCHAR)));
+   writer.WriteBytes(wzT.c_str(), wzT.length() * sizeof(WCHAR));
 #endif
 
-   pstm->Release();
-   pstm = nullptr;
    return S_OK;
 #else
    return 0L;
@@ -989,18 +922,18 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const st
 }
 
 
-HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
+HRESULT PinTable::SaveInfo(InMemStructuredStorage *pstg, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
-   WriteInfoValue(pstg, L"TableName"s, m_tableName, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorName"s, m_author, hcrypthash);
-   WriteInfoValue(pstg, L"TableVersion"s, m_version, hcrypthash);
-   WriteInfoValue(pstg, L"ReleaseDate"s, m_releaseDate, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorEmail"s, m_authorEMail, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorWebSite"s, m_webSite, hcrypthash);
-   WriteInfoValue(pstg, L"TableBlurb"s, m_blurb, hcrypthash);
-   WriteInfoValue(pstg, L"TableDescription"s, m_description, hcrypthash);
-   WriteInfoValue(pstg, L"TableRules"s, m_rules, hcrypthash);
+   WriteInfoValue(pstg, "TableName"s, m_tableName, hcrypthash);
+   WriteInfoValue(pstg, "AuthorName"s, m_author, hcrypthash);
+   WriteInfoValue(pstg, "TableVersion"s, m_version, hcrypthash);
+   WriteInfoValue(pstg, "ReleaseDate"s, m_releaseDate, hcrypthash);
+   WriteInfoValue(pstg, "AuthorEmail"s, m_authorEMail, hcrypthash);
+   WriteInfoValue(pstg, "AuthorWebSite"s, m_webSite, hcrypthash);
+   WriteInfoValue(pstg, "TableBlurb"s, m_blurb, hcrypthash);
+   WriteInfoValue(pstg, "TableDescription"s, m_description, hcrypthash);
+   WriteInfoValue(pstg, "TableRules"s, m_rules, hcrypthash);
    time_t hour_machine;
    time(&hour_machine);
    tm local_hour;
@@ -1008,33 +941,24 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    char buffer[256];
    asctime_s(buffer, &local_hour);
    buffer[strnlen_s(buffer,std::size(buffer))-1] = '\0'; // remove line break
-   WriteInfoValue(pstg, L"TableSaveDate"s, buffer, NULL);
+   WriteInfoValue(pstg, "TableSaveDate"s, buffer, NULL);
    _itoa_s(++m_numTimesSaved, buffer, 10);
-   WriteInfoValue(pstg, L"TableSaveRev"s, buffer, NULL);
+   WriteInfoValue(pstg, "TableSaveRev"s, buffer, NULL);
 
    Texture * const pin = GetImage(m_screenShot);
    if (pin)
    {
-      IStream *pstm;
-      HRESULT hr;
-
-      if (SUCCEEDED(hr = pstg->CreateStream(L"Screenshot", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
-      {
-         BiffWriter writer(pstm, hcrypthash);
-         writer.WriteBytes(pin->GetFileRaw(), static_cast<ULONG>(pin->GetFileSize()));
-         pstm->Release();
-         pstm = nullptr;
-      }
+      InMemStream *const pstm = pstg->CreateStream("TableInfo/Screenshot"s);
+      BiffWriter writer(pstm, hcrypthash);
+      writer.WriteBytes(pin->GetFileRaw(), pin->GetFileSize());
    }
-
-   pstg->Commit(STGC_DEFAULT);
 #endif
 
    return S_OK;
 }
 
 
-HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash)
+HRESULT PinTable::SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
    BiffWriter writer(pstmTags, hcrypthash);
@@ -1043,9 +967,7 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    writer.EndObject();
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      WriteInfoValue(pstg, MakeWString(m_vCustomInfoTag[i]), m_vCustomInfoContent[i], hcrypthash);
-
-   pstg->Commit(STGC_DEFAULT);
+      WriteInfoValue(pstg, m_vCustomInfoTag[i], m_vCustomInfoContent[i], hcrypthash);
 #endif
 
    return S_OK;

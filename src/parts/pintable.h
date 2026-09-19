@@ -388,14 +388,14 @@ public:
 #pragma endregion
 
    HRESULT Save(VPXFileFeedback &feedback);
-   HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
+   HRESULT SaveToStorage(InMemStructuredStorage *pstg, VPXFileFeedback &feedback);
    HRESULT LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback);
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
 
 private:
-   HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
-   HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-   static HRESULT WriteInfoValue(IStorage *pstg, const wstring &wzName, const string &szValue, HCRYPTHASH hcrypthash);
+   HRESULT SaveInfo(InMemStructuredStorage *pstg, HCRYPTHASH hcrypthash);
+   HRESULT SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, HCRYPTHASH hcrypthash);
+   static HRESULT WriteInfoValue(InMemStructuredStorage *pstg, const string &name, const string &szValue, HCRYPTHASH hcrypthash);
    static void ReadInfoValue(POLE::Storage &storage, const string &wzName, string &output, HCRYPTHASH hcrypthash);
    void LoadInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version);
    void LoadCustomInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version);
