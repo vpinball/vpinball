@@ -381,7 +381,9 @@ void PinTableWnd::ImportPhysics()
    if (index != string::npos)
       g_app->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
 
+   m_table->StartUndo();
    m_table->ImportVPP(filename[0]);
+   m_table->StopUndo();
 #endif
 }
 

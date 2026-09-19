@@ -633,14 +633,23 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       {
          if (ptCur->IsLocked())
          {
-            if (IDYES == MessageBox("This table is locked to avoid modification.\n\nYou do not need to unlock it to adjust settings like the camera or rendering options.\n\nAre you sure you want to unlock the table ?", "Table Unlocking", MB_YESNO | MB_ICONINFORMATION))
+            if (IDYES
+               == MessageBox("This table is locked to avoid modification.\n\nYou do not need to unlock it to adjust settings like the camera or rendering options.\n\nAre you sure you want "
+                             "to unlock the table ?",
+                  "Table Unlocking", MB_YESNO | MB_ICONINFORMATION))
+            {
+               ptCur->StartUndo();
                ptCur->ToggleLock();
+               ptCur->StopUndo();
+            }
          }
          else if (!ptCur->IsLocked())
          {
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
+               ptCur->StartUndo();
                ptCur->ToggleLock();
+               ptCur->StopUndo();
                string msg = ptCur->AuditTable(true);
                InfoDialog info(msg);
                info.DoModal();
