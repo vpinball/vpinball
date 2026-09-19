@@ -1,33 +1,22 @@
 #pragma once
 
-#include "EditableUIPart.h"
+#include "EditorUIPart.h"
 #include "parts/rubber.h"
 
 namespace VPX::EditorUI
 {
 
-class RubberUIPart final : public EditableUIPart
+class RubberUIPart final : public EditableUIPart<Rubber>
 {
 public:
    explicit RubberUIPart(Rubber* rubber);
-   ~RubberUIPart() override;
-
-   IEditable* GetEditable() const override { return m_rubber; }
-
-   const string& GetOutlinerPath() const override { return m_outlinerPath; }
-   void SetOutlinerPath(const string& path) override { m_outlinerPath = path; }
 
    TransformMask GetTransform(Matrix3D& transform) override;
    void SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) override;
 
-   void Render(const EditorRenderContext& ctx) override;
+   void RenderOverlay(const EditorRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
-
-private:
-   Rubber* const m_rubber;
-   string m_outlinerPath;
-   bool m_visible;
 };
 
 }

@@ -6,11 +6,9 @@ namespace VPX::EditorUI
 {
 
 DispReelUIPart::DispReelUIPart(DispReel* dispreel)
-   : m_dispreel(dispreel)
+   : EditableUIPart(dispreel)
 {
 }
-
-DispReelUIPart::~DispReelUIPart() { }
 
 DispReelUIPart::TransformMask DispReelUIPart::GetTransform(Matrix3D& transform)
 {
@@ -21,18 +19,18 @@ void DispReelUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3
 {
 }
 
-void DispReelUIPart::Render(const EditorRenderContext& ctx) { }
+void DispReelUIPart::RenderOverlay(const EditorRenderContext& ctx) { }
 
 void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("DispReel"s, m_dispreel);
+   props.EditableHeader("DispReel"s, m_part);
 
    if (props.BeginSection("Visuals"s))
    {
       props.EndSection();
    }
 
-   props.TimerSection(m_dispreel);
+   props.TimerSection(m_part);
 }
 
 }

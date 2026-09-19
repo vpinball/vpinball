@@ -278,7 +278,9 @@ set(VPX_SOURCES
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
    
-   src/ui/live/editor/EditableUIPart.h
+   src/ui/live/editor/EditorUIPart.h
+   src/ui/live/editor/EditorUIPartRegistry.h
+   src/ui/live/editor/EditorUIPartRegistry.cpp
    src/ui/live/editor/PropertyPane.h
    src/ui/live/editor/PropertyPane.cpp
    src/ui/live/editor/BallUIPart.h

@@ -6,28 +6,11 @@
 #include "core/TableDB.h"
 #include "core/VPXPluginAPIImpl.h"
 
-#include "editor/EditableUIPart.h"
-#include "editor/BallUIPart.h"
-#include "editor/BumperUIPart.h"
-#include "editor/DecalUIPart.h"
-#include "editor/DispReelUIPart.h"
-#include "editor/FlasherUIPart.h"
-#include "editor/FlipperUIPart.h"
-#include "editor/GateUIPart.h"
-#include "editor/HitTargetUIPart.h"
-#include "editor/KickerUIPart.h"
-#include "editor/LightUIPart.h"
-#include "editor/LightSeqUIPart.h"
-#include "editor/PartGroupUIPart.h"
-#include "editor/PlungerUIPart.h"
-#include "editor/PrimitiveUIPart.h"
-#include "editor/RampUIPart.h"
-#include "editor/RubberUIPart.h"
-#include "editor/SpinnerUIPart.h"
-#include "editor/SurfaceUIPart.h"
-#include "editor/TextBoxUIPart.h"
-#include "editor/TimerUIPart.h"
-#include "editor/TriggerUIPart.h"
+#include "editor/EditorUIPart.h"
+#include "editor/EditorUIPartRegistry.h"
+
+#include "parts/PartGroup.h"
+#include "parts/primitive.h"
 
 #include "plugins/VPXPlugin.h"
 
@@ -87,6 +70,8 @@ EditorUI::EditorUI(LiveUI &liveUI)
 {
    m_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
+
+   EditorUIPartRegistry::InitRegistry();
 
    m_selection.type = Selection::SelectionType::S_NONE;
 
@@ -598,9 +583,9 @@ void EditorUI::RenderUI()
                {
                   const size_t p = selectionIndex % vhoHit.size();
                   const IEditable *select = vhoHit[p].m_obj->m_editable;
-                  const auto it = std::ranges::find_if(m_editables, [select](const std::shared_ptr<EditableUIPart> &part) { return part->GetEditable() == select; });
-                  if (it != m_editables.end())
-                     m_selection = Selection(*it);
+                  const auto it = m_editableMap.find(select);
+                  if (it != m_editableMap.end())
+                     m_selection = Selection(it->second);
                   else
                      m_selection = Selection();
                }
@@ -869,6 +854,7 @@ void EditorUI::DeleteSelection()
    {
       IEditable* const edit = m_selection.uiPart->GetEditable();
       RemoveFromVectorSingle(m_editables, m_selection.uiPart);
+      m_editableMap.erase(edit);
       m_selection = Selection();
       if (edit->GetIHitable())
          m_player->m_physics->Remove(edit);
@@ -888,61 +874,58 @@ void EditorUI::DeleteSelection()
 void EditorUI::UpdateEditableList()
 {
    // Remove UI parts of removed editables
+   const ankerl::unordered_dense::set<const IEditable *> liveParts(m_table->GetParts().begin(), m_table->GetParts().end());
    std::erase_if(m_editables,
-      [this](const auto &uiPart)
+      [this, &liveParts](const auto &uiPart)
       {
-         const auto it = std::ranges::find_if(m_table->GetParts(), [uiPartEdit = uiPart->GetEditable()](const auto &edit) { return uiPartEdit == edit; });
-         return it == m_table->GetParts().end();
+         if (!liveParts.contains(uiPart->GetEditable()))
+         {
+            m_editableMap.erase(uiPart->GetEditable());
+            return true;
+         }
+         return false;
       });
    // Add UI parts for new editables
    bool needSort = false;
+   ankerl::unordered_dense::set<PartGroup *> newGroups;
    for (const auto &edit : m_table->GetParts())
    {
-      const auto it = std::ranges::find_if(m_editables, [edit](const auto &uiPart) { return uiPart->GetEditable() == edit; });
-      if (it == m_editables.end()) // New part
+      const auto it = m_editableMap.find(edit);
+      if (it == m_editableMap.end()) // New part
       {
-         std::shared_ptr<EditableUIPart> uiPart;
-         switch (edit->GetItemType())
-         {
-         // eItemTable, eItemLightCenter, eItemDragPoint, eItemCollection
-         case eItemBall: uiPart = std::make_shared<BallUIPart>(static_cast<Ball *>(edit)); break;
-         case eItemBumper: uiPart = std::make_shared<BumperUIPart>(static_cast<Bumper *>(edit)); break;
-         case eItemDecal: uiPart = std::make_shared<DecalUIPart>(static_cast<Decal *>(edit)); break;
-         case eItemDispReel: uiPart = std::make_shared<DispReelUIPart>(static_cast<DispReel *>(edit)); break;
-         case eItemFlasher: uiPart = std::make_shared<FlasherUIPart>(static_cast<Flasher *>(edit)); break;
-         case eItemFlipper: uiPart = std::make_shared<FlipperUIPart>(static_cast<Flipper *>(edit)); break;
-         case eItemGate: uiPart = std::make_shared<GateUIPart>(static_cast<Gate *>(edit)); break;
-         case eItemHitTarget: uiPart = std::make_shared<HitTargetUIPart>(static_cast<HitTarget *>(edit)); break;
-         case eItemKicker: uiPart = std::make_shared<KickerUIPart>(static_cast<Kicker *>(edit)); break;
-         case eItemLight: uiPart = std::make_shared<LightUIPart>(static_cast<Light *>(edit)); break;
-         case eItemLightSeq: uiPart = std::make_shared<LightSeqUIPart>(static_cast<LightSeq *>(edit)); break;
-         case eItemPartGroup: uiPart = std::make_shared<PartGroupUIPart>(static_cast<PartGroup *>(edit)); break;
-         case eItemPlunger: uiPart = std::make_shared<PlungerUIPart>(static_cast<Plunger *>(edit)); break;
-         case eItemPrimitive: uiPart = std::make_shared<PrimitiveUIPart>(static_cast<Primitive *>(edit)); break;
-         case eItemRamp: uiPart = std::make_shared<RampUIPart>(static_cast<Ramp *>(edit)); break;
-         case eItemRubber: uiPart = std::make_shared<RubberUIPart>(static_cast<Rubber *>(edit)); break;
-         case eItemSpinner: uiPart = std::make_shared<SpinnerUIPart>(static_cast<Spinner *>(edit)); break;
-         case eItemSurface: uiPart = std::make_shared<SurfaceUIPart>(static_cast<Surface *>(edit)); break;
-         case eItemTextbox: uiPart = std::make_shared<TextBoxUIPart>(static_cast<Textbox *>(edit)); break;
-         case eItemTimer: uiPart = std::make_shared<TimerUIPart>(static_cast<Timer *>(edit)); break;
-         case eItemTrigger: uiPart = std::make_shared<TriggerUIPart>(static_cast<Trigger *>(edit)); break;
-         default: uiPart = std::make_shared<BaseUIPart>(edit); break;
-         }
+         std::shared_ptr<EditorUIPart> uiPart = EditorUIPartRegistry::Create(edit);
+         if (uiPart == nullptr) // eItemTable, eItemLightCenter, eItemDragPoint, eItemCollection
+            uiPart = std::make_shared<BaseUIPart>(edit);
          if (m_table->m_liveBaseTable)
             edit->SetUIVisible(true);
+         else if (edit->GetItemType() == eItemPartGroup)
+            newGroups.insert(static_cast<PartGroup *>(edit));
          uiPart->SetOutlinerPath(edit->GetPathString(false));
-         m_editables.push_back(std::move(uiPart));
+         m_editables.push_back(uiPart);
+         m_editableMap[edit] = std::move(uiPart);
          needSort = true;
       }
-      else if (!(*it)->GetOutlinerPath().ends_with(edit->GetName())) // Name and therefore outliner path has changed
+      else if (!it->second->GetOutlinerPath().ends_with(edit->GetName())) // Name and therefore outliner path has changed
       {
          needSort = true;
          if (edit->GetItemType() == eItemPartGroup) // Also update all children
             for (const auto &uiPart : m_editables)
                uiPart->SetOutlinerPath(uiPart->GetEditable()->GetPathString(false));
          else
-            (*it)->SetOutlinerPath((*it)->GetEditable()->GetPathString(false));
+            it->second->SetOutlinerPath(edit->GetPathString(false));
       }
+   }
+   // Win32 UI does not manage PartGroup UI hidden/shown state, so we lazily initialize new groups in a
+   // single pass: hidden by default in edit mode, shown if they contain at least one visible part
+   if (!newGroups.empty())
+   {
+      for (PartGroup *group : newGroups)
+         group->SetUIVisible(false);
+      for (const auto &edit : m_table->GetParts())
+         if (edit->GetItemType() != eItemPartGroup && edit->IsUIVisible(false))
+            for (PartGroup *group = edit->GetPartGroup(); group != nullptr; group = group->GetPartGroup())
+               if (newGroups.contains(group))
+                  group->SetUIVisible(true);
    }
    // Sort according to outliner path to ease its rendering
    if (needSort)
@@ -959,8 +942,8 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
 {
    if (m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE)
    {
-      const EditableUIPart::TransformMask mask = m_selection.uiPart->GetTransform(transform);
-      return mask != EditableUIPart::TransformMask::TM_None;
+      const EditorUIPart::TransformMask mask = m_selection.uiPart->GetTransform(transform);
+      return mask != EditorUIPart::TransformMask::TM_None;
    }
    return false;
 }
@@ -1118,8 +1101,7 @@ void EditorUI::UpdateOutlinerUI()
       };
       vector<Node> stack;
       int outlinerItem = 0;
-      const float eyeWidth = ImGui::CalcTextSize(ICON_FK_EYE, nullptr, true).x;
-      const float eyeX = ImGui::GetContentRegionAvail().x; // - eyeWidth;
+      const float eyeX = ImGui::GetContentRegionAvail().x;
       for (const auto &edit : m_editables)
       {
          const PartGroup *parent = edit->GetEditable()->GetPartGroup();
@@ -1602,11 +1584,11 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
             continue;
          if ((probe->GetType() == RenderProbe::SCREEN_SPACE_TRANSPARENCY) && (primitive->m_d.m_szRefractionProbe != probe->GetName()))
             continue;
-         const auto it = std::ranges::find_if(m_editables, [editable](const auto part) { return part->GetEditable() == editable; });
-         if (it == m_editables.end())
+         const auto it = m_editableMap.find(editable);
+         if (it == m_editableMap.end())
             continue;
          if (ImGui::Selectable(primitive->GetName().c_str()))
-            m_selection = Selection(*it);
+            m_selection = Selection(it->second);
       }
    }
 }

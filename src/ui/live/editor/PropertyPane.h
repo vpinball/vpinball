@@ -38,6 +38,7 @@ public:
    };
    static const char* GetUnitLabel(Unit unit);
    static void ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust);
+   static void ResolveUnit(Unit from, Unit& to, int& nDecimalAdjust); // Resolves display unit & decimals without converting a value
    void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
 
    void Header(const string& typeName, const std::function<wstring()>& getName, const std::function<void(const wstring&)>& setName);
@@ -61,17 +62,23 @@ public:
    template <class T> void CollectionCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
 
    int GetModifiedField() const { return m_modified; }
-   void ResetModified()
-   {
-      m_modified = -1;
-      m_modifyFieldId = 0;
-   }
 
 private:
    static constexpr const char* ICON_SAVE = ICON_FK_FLOPPY_O;
 
    bool IsStartup() const { return m_table->m_liveBaseTable && m_showStartup; }
    template <class T> T* GetStartupObj(T* obj) const;
+
+   // Shared handling of fields that can be synchronized between a live table and its
+   // startup version: BeginSyncField resolves the displayed instance and its counterpart
+   // (null when there is none), EndSyncField draws the "copy to other version" button.
+   template <class T> struct SyncField
+   {
+      T* display;
+      T* other;
+   };
+   template <class T> SyncField<T> BeginSyncField(T* obj);
+   template <class T, class Getter, class Setter, class V> void EndSyncField(const SyncField<T>& sync, const Getter& getter, const Setter& setter, const V& displayValue);
 
    void PropertyLabel(const string& label);
 
@@ -111,6 +118,36 @@ template <class T> T* PropertyPane::GetEditedPart(T* obj) const
          return startupObj;
    }
    return obj;
+}
+
+template <class T> PropertyPane::SyncField<T> PropertyPane::BeginSyncField(T* obj)
+{
+   T* const startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj == nullptr)
+      return { obj, nullptr };
+   return m_showStartup ? SyncField<T> { startupObj, obj } : SyncField<T> { obj, startupObj };
+}
+
+template <class T, class Getter, class Setter, class V> void PropertyPane::EndSyncField(const SyncField<T>& sync, const Getter& getter, const Setter& setter, const V& displayValue)
+{
+   if (sync.other == nullptr)
+      return;
+   ImGui::SetCursorScreenPos(m_syncPos);
+   ImGui::BeginDisabled(displayValue == getter(sync.other));
+   if (ImGui::Button(ICON_SAVE))
+   {
+      setter(sync.other, getter(sync.display));
+      m_modified = m_modifyFieldId;
+   }
+   if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+   {
+      ImGui::BeginTooltip();
+      ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+      ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+      ImGui::PopTextWrapPos();
+      ImGui::EndTooltip();
+   }
+   ImGui::EndDisabled();
 }
 
 inline void PropertyPane::TimerSection(IEditable* obj)
@@ -153,92 +190,34 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    PropertyLabel(label);
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   bool value = getter(sync.display);
+   if (ImGui::Checkbox(("##" + label).c_str(), &value))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      bool value = getter(displayObj);
-      if (ImGui::Checkbox(("##" + label).c_str(), &value))
-      {
-         setter(displayObj, value);
-         m_modified = m_modifyFieldId;
-      }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      setter(sync.display, value);
+      m_modified = m_modifyFieldId;
    }
-   else
-   {
-      bool value = getter(obj);
-      if (ImGui::Checkbox(("##" + label).c_str(), &value))
-      {
-         setter(obj, value);
-         m_modified = m_modifyFieldId;
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T> inline void PropertyPane::InputInt(T* obj, const string& label, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter)
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    PropertyLabel(label);
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   int value = getter(sync.display);
+   if (ImGui::InputInt(("##" + label).c_str(), &value))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      int value = getter(displayObj);
-      if (ImGui::InputInt(("##" + label).c_str(), &value))
-      {
-         setter(displayObj, value);
-         m_modified = m_modifyFieldId;
-      }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      setter(sync.display, value);
+      m_modified = m_modifyFieldId;
    }
-   else
-   {
-      int value = getter(obj);
-      if (ImGui::InputInt(("##" + label).c_str(), &value))
-      {
-         setter(obj, value);
-         m_modified = m_modifyFieldId;
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T>
@@ -246,58 +225,26 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   float displayValue = 0.f, value = 0.f;
    int nDecimalAdjust;
-   Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
-   ConvertUnit(unit, displayUnit, value, nDecimalAdjust);
+   Unit displayUnit = m_lengthUnit; // ResolveUnit will set it to the supported converted display unit
+   ResolveUnit(unit, displayUnit, nDecimalAdjust);
    string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
    const char* unitLabel = GetUnitLabel(displayUnit);
    PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   float value = getter(sync.display);
+   float displayValue = value;
+   ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
+   if (ImGui::InputFloat(("##" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      displayValue = value = getter(displayObj);
-      ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
-      if (ImGui::InputFloat(("##" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
-      {
-         value = displayValue;
-         ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
-         setter(displayObj, value);
-         m_modified = m_modifyFieldId;
-      }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      value = displayValue;
+      ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
+      setter(sync.display, value);
+      m_modified = m_modifyFieldId;
    }
-   else
-   {
-      displayValue = value = getter(obj);
-      ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
-      if (ImGui::InputFloat(("##" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
-      {
-         value = displayValue;
-         ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
-         setter(obj, value);
-         m_modified = m_modifyFieldId;
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T>
@@ -306,62 +253,28 @@ inline void PropertyPane::InputFloat2(
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   Vertex2D displayValue(0.f, 0.f), value(0.f, 0.f);
    int nDecimalAdjust;
-   Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
-   ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
+   Unit displayUnit = m_lengthUnit; // ResolveUnit will set it to the supported converted display unit
+   ResolveUnit(unit, displayUnit, nDecimalAdjust);
    string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
    const char* unitLabel = GetUnitLabel(displayUnit);
    PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   Vertex2D value = getter(sync.display);
+   Vertex2D displayValue = value;
+   ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
+   ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
+   if (ImGui::InputFloat2(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      displayValue = value = getter(displayObj);
-      ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
-      ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      if (ImGui::InputFloat2(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
-      {
-         value = displayValue;
-         ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
-         ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
-         setter(displayObj, value);
-         m_modified = m_modifyFieldId;
-      }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      value = displayValue;
+      ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
+      ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
+      setter(sync.display, value);
+      m_modified = m_modifyFieldId;
    }
-   else
-   {
-      displayValue = value = getter(obj);
-      ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
-      ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      if (ImGui::InputFloat2(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
-      {
-         value = displayValue;
-         ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
-         ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
-         setter(obj, value);
-         m_modified = m_modifyFieldId;
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T>
@@ -369,158 +282,64 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   vec3 displayValue(0.f, 0.f, 0.f), value(0.f, 0.f, 0.f);
    int nDecimalAdjust;
-   Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
-   ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
+   Unit displayUnit = m_lengthUnit; // ResolveUnit will set it to the supported converted display unit
+   ResolveUnit(unit, displayUnit, nDecimalAdjust);
    string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
    const char* unitLabel = GetUnitLabel(displayUnit);
    PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   vec3 value = getter(sync.display);
+   vec3 displayValue = value;
+   ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
+   ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
+   ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
+   if (ImGui::InputFloat3(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      displayValue = value = getter(displayObj);
-      ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
-      ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
-      if (ImGui::InputFloat3(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
-      {
-         value = displayValue;
-         ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
-         ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
-         ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
-         setter(displayObj, value);
-         m_modified = m_modifyFieldId;
-      }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      value = displayValue;
+      ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
+      ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
+      ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
+      setter(sync.display, value);
+      m_modified = m_modifyFieldId;
    }
-   else
-   {
-      displayValue = value = getter(obj);
-      ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
-      ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
-      if (ImGui::InputFloat3(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
-      {
-         value = displayValue;
-         ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
-         ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
-         ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
-         setter(obj, value);
-         m_modified = m_modifyFieldId;
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T> inline void PropertyPane::InputRGB(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter)
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    PropertyLabel(label);
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   vec3 value = getter(sync.display);
+   if (ImGui::ColorEdit3(("##" + label).c_str(), &value.x))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      vec3 value = getter(displayObj);
-      if (ImGui::ColorEdit3(("##" + label).c_str(), &value.x))
-      {
-         setter(displayObj, value);
-         m_modified = m_modifyFieldId;
-      }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      setter(sync.display, value);
+      m_modified = m_modifyFieldId;
    }
-   else
-   {
-      vec3 value = getter(obj);
-      if (ImGui::ColorEdit3(("##" + label).c_str(), &value.x))
-      {
-         setter(obj, value);
-         m_modified = m_modifyFieldId;
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T> inline void PropertyPane::InputString(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    PropertyLabel(label);
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   string value = getter(sync.display);
+   if (ImGui::InputText(("##" + label).c_str(), &value))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      string value = getter(displayObj);
-      if (ImGui::InputText(("##" + label).c_str(), &value))
-      {
-         setter(displayObj, value);
-         m_modified = m_modifyFieldId;
-      }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      setter(sync.display, value);
+      m_modified = m_modifyFieldId;
    }
-   else
-   {
-      string value = getter(obj);
-      if (ImGui::InputText(("##" + label).c_str(), &value))
-      {
-         setter(obj, value);
-         m_modified = m_modifyFieldId;
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T>
@@ -528,63 +347,26 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
 {
    assert(m_inSection);
    m_modifyFieldId++;
-   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    PropertyLabel(label);
-   if (startupObj)
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   int value = getter(sync.display);
+   const int displayIndex = values.empty() ? -1 : std::clamp(value, 0, static_cast<int>(values.size()) - 1);
+   if (ImGui::BeginCombo(("##" + label).c_str(), displayIndex < 0 ? "" : values[displayIndex].c_str()))
    {
-      T* displayObj = m_showStartup ? startupObj : obj;
-      T* otherObj = m_showStartup ? obj : startupObj;
-      ImGui::PushID(label.c_str());
-      int value = getter(displayObj);
-      const int displayIndex = values.empty() ? -1 : std::clamp(value, 0, static_cast<int>(values.size()) - 1);
-      if (ImGui::BeginCombo(("##" + label).c_str(), displayIndex < 0 ? "" : values[displayIndex].c_str()))
+      for (size_t i = 0; i < values.size(); i++)
       {
-         for (size_t i = 0; i < values.size(); i++)
+         if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
          {
-            if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
-            {
-               setter(displayObj, static_cast<int>(i));
-               value = static_cast<int>(i);
-               m_modified = m_modifyFieldId;
-            }
+            setter(sync.display, static_cast<int>(i));
+            value = static_cast<int>(i);
+            m_modified = m_modifyFieldId;
          }
-         ImGui::EndCombo();
       }
-      ImGui::SetCursorScreenPos(m_syncPos);
-      ImGui::BeginDisabled(value == getter(otherObj));
-      if (ImGui::Button(ICON_SAVE))
-      {
-         setter(otherObj, getter(displayObj));
-         m_modified = m_modifyFieldId;
-      }
-      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-      {
-         ImGui::BeginTooltip();
-         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
-         ImGui::PopTextWrapPos();
-         ImGui::EndTooltip();
-      }
-      ImGui::EndDisabled();
-      ImGui::PopID();
+      ImGui::EndCombo();
    }
-   else
-   {
-      const int index = values.empty() ? -1 : std::clamp(getter(obj), 0, static_cast<int>(values.size()) - 1);
-      const string value = index < 0 ? ""s : values[index];
-      if (ImGui::BeginCombo(("##" + label).c_str(), value.c_str()))
-      {
-         for (size_t i = 0; i < values.size(); i++)
-         {
-            if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
-            {
-               setter(obj, static_cast<int>(i));
-               m_modified = m_modifyFieldId;
-            }
-         }
-         ImGui::EndCombo();
-      }
-   }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
 }
 
 template <class T> inline void PropertyPane::ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)

@@ -6,12 +6,9 @@ namespace VPX::EditorUI
 {
 
 TextBoxUIPart::TextBoxUIPart(Textbox* textbox)
-   : m_textbox(textbox)
-   , m_visible(textbox->m_d.m_visible)
+   : EditableUIPart(textbox, { &Data::m_visible })
 {
 }
-
-TextBoxUIPart::~TextBoxUIPart() { m_textbox->m_d.m_visible = m_visible; }
 
 TextBoxUIPart::TransformMask TextBoxUIPart::GetTransform(Matrix3D& transform)
 {
@@ -22,25 +19,14 @@ void TextBoxUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 { 
 }
 
-void TextBoxUIPart::Render(const EditorRenderContext& ctx)
+void TextBoxUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
-   if (ctx.NeedsLiveTableSync())
-      m_visible = m_textbox->m_d.m_visible;
-
-   const bool isUIVisible = m_textbox->IsUIVisible(true);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
-   {
-      m_textbox->m_d.m_visible = true;
-      //ctx.DrawWireframe(m_light);
-      //ctx.DrawHitObjects(m_light);
-   }
-
-   m_textbox->m_d.m_visible = isUIVisible && m_visible;
+   // TODO draw a selection overlay (textboxes have no wireframe/hit objects to display)
 }
 
 void TextBoxUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("TextBox"s, m_textbox);
+   props.EditableHeader("TextBox"s, m_part);
 
    if (props.BeginSection("Visuals"s))
    {
@@ -53,7 +39,7 @@ void TextBoxUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   props.TimerSection(m_textbox);
+   props.TimerSection(m_part);
 }
 
 }
