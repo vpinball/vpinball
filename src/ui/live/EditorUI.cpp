@@ -73,9 +73,7 @@ EditorUI::EditorUI(LiveUI &liveUI)
 
    EditorUIPartRegistry::InitRegistry();
 
-   m_selection.type = Selection::SelectionType::S_NONE;
-   m_multiSel.clear();
-   m_outlinerAnchor.reset();
+   ClearSelection();
 
    // Editor camera position. We use a right handed system for easy ImGuizmo integration while VPX renderer is left handed, so reverse X axis
    m_camDistance = m_table->m_bottom * 0.7f;
@@ -144,7 +142,7 @@ void EditorUI::RenderUI()
 
    // Gives some transparency when positioning camera to better view camera view bounds
    // TODO for some reasons, this breaks the modal background behavior
-   //SetupImGuiStyle(m_selection.type == EditorUI::Selection::SelectionType::S_CAMERA ? 0.3f : 1.0f);
+   //SetupImGuiStyle(m_selection.GetType() == Selection::S_CAMERA ? 0.3f : 1.0f);
 
    bool showFullUI = true;
    showFullUI &= !m_showRendererInspection;
@@ -225,7 +223,7 @@ void EditorUI::RenderUI()
       }
       else
       {
-         if (m_selection.type == Selection::S_EDITABLE && ImGui::Button(ICON_FK_TRASH_O))
+         if (m_selection.GetType() == Selection::S_EDITABLE && ImGui::Button(ICON_FK_TRASH_O))
             DeleteSelection();
       }
       const float buttonWidth = //
@@ -257,12 +255,12 @@ void EditorUI::RenderUI()
          ImGui::Checkbox("Overlay selection", &m_selectionOverlay);
          ImGui::Separator();
          ImGui::TextUnformatted("Physic Overlay:");
-         if (ImGui::RadioButton("None", m_physOverlay == PO_NONE))
-            m_physOverlay = PO_NONE;
-         if (ImGui::RadioButton("Selected", m_physOverlay == PO_SELECTED))
-            m_physOverlay = PO_SELECTED;
-         if (ImGui::RadioButton("All", m_physOverlay == PO_ALL))
-            m_physOverlay = PO_ALL;
+         if (ImGui::RadioButton("None", m_physOverlay == PhysicOverlay::None))
+            m_physOverlay = PhysicOverlay::None;
+         if (ImGui::RadioButton("Selected", m_physOverlay == PhysicOverlay::Selected))
+            m_physOverlay = PhysicOverlay::Selected;
+         if (ImGui::RadioButton("All", m_physOverlay == PhysicOverlay::All))
+            m_physOverlay = PhysicOverlay::All;
          ImGui::EndPopup();
       }
       ImGui::SameLine();
@@ -270,20 +268,20 @@ void EditorUI::RenderUI()
          ImGui::OpenPopup("Selection filter Popup");
       if (ImGui::BeginPopup("Selection filter Popup"))
       {
-         bool pf = m_selectionFilter & SelectionFilter::SF_Playfield;
-         bool prims = m_selectionFilter & SelectionFilter::SF_Primitives;
-         bool lights = m_selectionFilter & SelectionFilter::SF_Lights;
-         bool flashers = m_selectionFilter & SelectionFilter::SF_Flashers;
+         bool pf = HasFlag(m_selectionFilter, SelectionFilter::Playfield);
+         bool prims = HasFlag(m_selectionFilter, SelectionFilter::Primitives);
+         bool lights = HasFlag(m_selectionFilter, SelectionFilter::Lights);
+         bool flashers = HasFlag(m_selectionFilter, SelectionFilter::Flashers);
          ImGui::TextUnformatted("Selection filters:");
          ImGui::Separator();
          if (ImGui::Checkbox("Playfield", &pf))
-            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Playfield) | (pf ? SelectionFilter::SF_Playfield : 0x0000);
+            m_selectionFilter = pf ? (m_selectionFilter | SelectionFilter::Playfield) : (m_selectionFilter & ~SelectionFilter::Playfield);
          if (ImGui::Checkbox("Primitives", &prims))
-            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Primitives) | (prims ? SelectionFilter::SF_Primitives : 0x0000);
+            m_selectionFilter = prims ? (m_selectionFilter | SelectionFilter::Primitives) : (m_selectionFilter & ~SelectionFilter::Primitives);
          if (ImGui::Checkbox("Lights", &lights))
-            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Lights) | (lights ? SelectionFilter::SF_Lights : 0x0000);
+            m_selectionFilter = lights ? (m_selectionFilter | SelectionFilter::Lights) : (m_selectionFilter & ~SelectionFilter::Lights);
          if (ImGui::Checkbox("Flashers", &flashers))
-            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Flashers) | (flashers ? SelectionFilter::SF_Flashers : 0x0000);
+            m_selectionFilter = flashers ? (m_selectionFilter | SelectionFilter::Flashers) : (m_selectionFilter & ~SelectionFilter::Flashers);
          ImGui::EndPopup();
       }
       ImGui::End();
@@ -433,7 +431,7 @@ void EditorUI::RenderUI()
          ctx.m_isSelected = true;
          for (const auto &part : m_multiSel)
          {
-            ctx.m_isActive = part == m_selection.uiPart;
+            ctx.m_isActive = part == m_selection.GetPart();
             part->Render(ctx);
          }
          ctx.m_isActive = false;
@@ -446,7 +444,7 @@ void EditorUI::RenderUI()
          overlayDrawList->AddCircleFilled(pos, 3.f * m_liveUI.GetDPI(), IM_COL32(255, 255, 255, 255), 16);
       }
 
-      if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && !m_multiSel.empty()))
+      if (m_physOverlay == PhysicOverlay::All || (m_physOverlay == PhysicOverlay::Selected && !m_multiSel.empty()))
       {
          auto project = [ctx](Vertex3Ds v)
          {
@@ -456,7 +454,7 @@ void EditorUI::RenderUI()
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 0, 0, 255)); // We abuse ImGui colors to pass render colors
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
          for (auto pho : m_player->m_physics->GetHitObjects())
-            if (pho != nullptr && (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && IsEditableSelected(pho->m_editable))))
+            if (pho != nullptr && (m_physOverlay == PhysicOverlay::All || (m_physOverlay == PhysicOverlay::Selected && IsEditableSelected(pho->m_editable))))
                pho->DrawUI(project, overlayDrawList, true);
          ImGui::PopStyleColor(2);
       }
@@ -576,7 +574,7 @@ void EditorUI::RenderUI()
                   size_t selectionIndex = vhoHit.size();
                   for (size_t i = 0; i <= vhoHit.size(); i++)
                   {
-                     if (i < vhoHit.size() && m_selection.type == Selection::S_EDITABLE && vhoHit[i].m_obj->m_editable == m_selection.uiPart->GetEditable())
+                     if (i < vhoHit.size() && m_selection.GetType() == Selection::S_EDITABLE && vhoHit[i].m_obj->m_editable == m_selection.GetPart()->GetEditable())
                         selectionIndex = i + 1;
                      if (i == selectionIndex)
                      {
@@ -608,7 +606,7 @@ void EditorUI::RenderUI()
             m_gizmoOperation = ImGuizmo::OPERATION(0); // Cancel current operation
          else if (m_boxSelectActive)
             m_boxSelectActive = false; // Cancel current box selection
-         else if (m_selection.type != Selection::S_NONE)
+         else if (m_selection.GetType() != Selection::S_NONE)
             ClearSelection(); // Cancel current selection
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_F) && !io.KeyCtrl)
@@ -875,8 +873,8 @@ void EditorUI::SetSelection(const Selection &selection)
 {
    m_selection = selection;
    m_multiSel.clear();
-   if (selection.type == Selection::S_EDITABLE)
-      m_multiSel.push_back(selection.uiPart);
+   if (selection.GetType() == Selection::S_EDITABLE)
+      m_multiSel.push_back(selection.GetPart());
 }
 
 void EditorUI::TogglePartSelection(const std::shared_ptr<EditorUIPart> &part)
@@ -889,7 +887,7 @@ void EditorUI::TogglePartSelection(const std::shared_ptr<EditorUIPart> &part)
    }
    else
    {
-      const bool wasActive = m_selection.type == Selection::S_EDITABLE && m_selection.uiPart == part;
+      const bool wasActive = m_selection.GetType() == Selection::S_EDITABLE && m_selection.GetPart() == part;
       m_multiSel.erase(it);
       if (m_multiSel.empty())
          m_selection = Selection();
@@ -985,13 +983,13 @@ bool EditorUI::IsEditablePickable(const IEditable *editable) const
    if (!visible)
       return false;
    const auto type = editable->GetItemType();
-   if (!(m_selectionFilter & SelectionFilter::SF_Playfield) && type == ItemTypeEnum::eItemPrimitive && static_cast<const Primitive *>(editable)->IsPlayfield())
+   if (!HasFlag(m_selectionFilter, SelectionFilter::Playfield) && type == ItemTypeEnum::eItemPrimitive && static_cast<const Primitive *>(editable)->IsPlayfield())
       return false;
-   if (!(m_selectionFilter & SelectionFilter::SF_Primitives) && type == ItemTypeEnum::eItemPrimitive)
+   if (!HasFlag(m_selectionFilter, SelectionFilter::Primitives) && type == ItemTypeEnum::eItemPrimitive)
       return false;
-   if (!(m_selectionFilter & SelectionFilter::SF_Lights) && type == ItemTypeEnum::eItemLight)
+   if (!HasFlag(m_selectionFilter, SelectionFilter::Lights) && type == ItemTypeEnum::eItemLight)
       return false;
-   if (!(m_selectionFilter & SelectionFilter::SF_Flashers) && type == ItemTypeEnum::eItemFlasher)
+   if (!HasFlag(m_selectionFilter, SelectionFilter::Flashers) && type == ItemTypeEnum::eItemFlasher)
       return false;
    return true;
 }
@@ -1019,7 +1017,7 @@ void EditorUI::BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool
       if (pos.x >= boxMin.x && pos.x <= boxMax.x && pos.y >= boxMin.y && pos.y <= boxMax.y && !IsPartSelected(uiPart))
          m_multiSel.push_back(uiPart);
    }
-   if (!m_multiSel.empty() && (m_selection.type != Selection::S_EDITABLE || !IsPartSelected(m_selection.uiPart)))
+   if (!m_multiSel.empty() && (m_selection.GetType() != Selection::S_EDITABLE || !IsPartSelected(m_selection.GetPart())))
       m_selection = Selection(m_multiSel.back());
 }
 
@@ -1050,7 +1048,7 @@ void EditorUI::DeleteSelection()
    }
    // Remove the deleted parts from the selection (non deletable parts stay selected)
    std::erase_if(m_multiSel, [this](const auto &part) { return std::ranges::find(m_editables, part) == m_editables.end(); });
-   if (m_selection.type == Selection::S_EDITABLE && !IsPartSelected(m_selection.uiPart))
+   if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
       m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
    if (m_outlinerAnchor && std::ranges::find(m_editables, m_outlinerAnchor) == m_editables.end())
       m_outlinerAnchor.reset();
@@ -1072,7 +1070,7 @@ void EditorUI::UpdateEditableList()
       });
    // Drop removed parts from the multi selection, keeping a valid active part
    std::erase_if(m_multiSel, [&liveParts](const auto &part) { return !liveParts.contains(part->GetEditable()); });
-   if (m_selection.type == Selection::S_EDITABLE && !IsPartSelected(m_selection.uiPart))
+   if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
       m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
    if (m_outlinerAnchor && !liveParts.contains(m_outlinerAnchor->GetEditable()))
       m_outlinerAnchor.reset();
@@ -1131,9 +1129,9 @@ void EditorUI::UpdateEditableList()
 
 bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
 {
-   if (m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE)
+   if (m_selection.GetType() == Selection::S_EDITABLE)
    {
-      const EditorUIPart::TransformMask mask = m_selection.uiPart->GetTransform(transform);
+      const EditorUIPart::TransformMask mask = m_selection.GetPart()->GetTransform(transform);
       return mask != EditorUIPart::TransformMask::TM_None;
    }
    return false;
@@ -1141,7 +1139,7 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
 
 void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation) const
 {
-   if (m_selection.type != EditorUI::Selection::SelectionType::S_EDITABLE)
+   if (m_selection.GetType() != Selection::S_EDITABLE)
       return;
 
    // Decompose a transform into the position/scale/rotation components used by the parts' SetTransform
@@ -1210,7 +1208,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
 
    // Apply the active part's transform delta to every selected part
    Matrix3D delta;
-   m_selection.uiPart->GetTransform(delta);
+   m_selection.GetPart()->GetTransform(delta);
    delta.Invert();
    delta = delta * newTransform;
    for (const auto &part : m_multiSel)
@@ -1222,7 +1220,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
    }
 }
 
-bool EditorUI::IsOutlinerFiltered(const string &name) const
+bool EditorUI::MatchesOutlinerFilter(const string &name) const
 {
    if (m_outlinerFilter.empty())
       return true;
@@ -1256,21 +1254,21 @@ void EditorUI::UpdateOutlinerUI()
          ClearSelection();
          m_camMode = ViewMode::EditorCam;
       }
-      Selection cam0(Selection::SelectionType::S_CAMERA, 0);
+      const Selection cam0 = Selection::Camera(0);
       if (ImGui::Selectable("Preview: Desktop", m_selection == cam0))
       {
          SetSelection(cam0);
          m_camMode = ViewMode::PreviewCam;
          m_table->SetViewSetupOverride(BG_DESKTOP);
       }
-      Selection cam1(Selection::SelectionType::S_CAMERA, 1);
+      const Selection cam1 = Selection::Camera(1);
       if (ImGui::Selectable("Preview: Cabinet", m_selection == cam1))
       {
          SetSelection(cam1);
          m_camMode = ViewMode::PreviewCam;
          m_table->SetViewSetupOverride(BG_FULLSCREEN);
       }
-      Selection cam2(Selection::SelectionType::S_CAMERA, 2);
+      const Selection cam2 = Selection::Camera(2);
       if (ImGui::Selectable("Preview: Full Single Screen", m_selection == cam2))
       {
          SetSelection(cam2);
@@ -1285,7 +1283,7 @@ void EditorUI::UpdateOutlinerUI()
       for (Material *&material : SortedCaseInsensitive(m_table->m_materials, map))
       {
          Selection sel(material);
-         if (IsOutlinerFiltered(material->m_name) && ImGui::Selectable(material->m_name.c_str(), m_selection == sel))
+         if (MatchesOutlinerFilter(material->m_name) && ImGui::Selectable(material->m_name.c_str(), m_selection == sel))
             SetSelection(sel);
       }
       ImGui::TreePop();
@@ -1296,7 +1294,7 @@ void EditorUI::UpdateOutlinerUI()
       for (Texture *&image : SortedCaseInsensitive(m_table->m_vimage, map))
       {
          Selection sel(image);
-         if (IsOutlinerFiltered(image->m_name) && ImGui::Selectable(image->m_name.c_str(), m_selection == sel))
+         if (MatchesOutlinerFilter(image->m_name) && ImGui::Selectable(image->m_name.c_str(), m_selection == sel))
             SetSelection(sel);
       }
       ImGui::TreePop();
@@ -1358,7 +1356,7 @@ void EditorUI::UpdateOutlinerUI()
             if (stack.back().opened)
             {
                Selection sel(edit);
-               if (IsOutlinerFiltered(edit->GetEditable()->GetName()))
+               if (MatchesOutlinerFilter(edit->GetEditable()->GetName()))
                {
                   if (ImGui::Selectable((edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), IsPartSelected(edit), ImGuiSelectableFlags_AllowOverlap))
                   {
@@ -1428,7 +1426,7 @@ void EditorUI::UpdatePropertyUI()
    case Units::Metric: props.SetLengthUnit(PropertyPane::Unit::Millimeters); break;
    case Units::Imperial: props.SetLengthUnit(PropertyPane::Unit::Inches); break;
    }
-   if (IsInspectMode() && m_selection.type != Selection::SelectionType::S_IMAGE) // Images are shared between live and startup instance, so they do not have 2 states
+   if (IsInspectMode() && m_selection.GetType() != Selection::S_IMAGE) // Images are shared between live and startup instance, so they do not have 2 states
    {
       if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
       {
@@ -1440,21 +1438,21 @@ void EditorUI::UpdatePropertyUI()
                if (is_live)
                   m_propertiesSelectLiveTab = false;
                props.SetShowStartup(!is_live);
-               switch (m_selection.type)
+               switch (m_selection.GetType())
                {
-               case Selection::SelectionType::S_NONE: TableProperties(props); break;
-               case Selection::SelectionType::S_EDITABLE:
-                  m_selection.uiPart->UpdatePropertyPane(props);
+               case Selection::S_NONE: TableProperties(props); break;
+               case Selection::S_EDITABLE:
+                  m_selection.GetPart()->UpdatePropertyPane(props);
                   if (props.GetModifiedField() > 0)
                   {
-                     m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIRenderable());
-                     m_player->m_physics->Update(m_selection.uiPart->GetEditable());
+                     m_renderer->ReinitRenderable(m_selection.GetPart()->GetEditable()->GetIRenderable());
+                     m_player->m_physics->Update(m_selection.GetPart()->GetEditable());
                   }
                   break;
-               case Selection::SelectionType::S_IMAGE: ImageProperties(props, m_selection.image); break;
-               case Selection::SelectionType::S_CAMERA: CameraProperties(props, m_selection.index); break;
-               case Selection::SelectionType::S_MATERIAL: MaterialProperties(props, m_selection.material); break;
-               case Selection::SelectionType::S_RENDERPROBE: RenderProbeProperties(props, m_selection.renderprobe); break;
+               case Selection::S_IMAGE: ImageProperties(props, m_selection.GetImage()); break;
+               case Selection::S_CAMERA: CameraProperties(props, m_selection.GetCamera()); break;
+               case Selection::S_MATERIAL: MaterialProperties(props, m_selection.GetMaterial()); break;
+               case Selection::S_RENDERPROBE: RenderProbeProperties(props, m_selection.GetProbe()); break;
                }
                ImGui::EndTabItem();
             }
@@ -1464,17 +1462,17 @@ void EditorUI::UpdatePropertyUI()
    }
    else
    {
-      switch (m_selection.type)
+      switch (m_selection.GetType())
       {
-      case Selection::SelectionType::S_NONE: TableProperties(props); break;
-      case Selection::SelectionType::S_EDITABLE:
+      case Selection::S_NONE: TableProperties(props); break;
+      case Selection::S_EDITABLE:
          m_undo.BeginUndo();
-         m_undo.MarkForUndo(m_selection.uiPart->GetEditable());
+         m_undo.MarkForUndo(m_selection.GetPart()->GetEditable());
          m_undo.EndUndo();
-         m_selection.uiPart->UpdatePropertyPane(props);
-         if (props.GetModifiedField() > 0 && (m_lastUndoPart != m_selection.uiPart->GetEditable() || m_lastUndoId != (0x2000 | props.GetModifiedField())))
+         m_selection.GetPart()->UpdatePropertyPane(props);
+         if (props.GetModifiedField() > 0 && (m_lastUndoPart != m_selection.GetPart()->GetEditable() || m_lastUndoId != (0x2000 | props.GetModifiedField())))
          {
-            m_lastUndoPart = m_selection.uiPart->GetEditable();
+            m_lastUndoPart = m_selection.GetPart()->GetEditable();
             m_lastUndoId = 0x2000 | props.GetModifiedField();
          }
          else
@@ -1483,14 +1481,14 @@ void EditorUI::UpdatePropertyUI()
          }
          if (props.GetModifiedField() > 0)
          {
-            m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIRenderable());
-            m_player->m_physics->Update(m_selection.uiPart->GetEditable());
+            m_renderer->ReinitRenderable(m_selection.GetPart()->GetEditable()->GetIRenderable());
+            m_player->m_physics->Update(m_selection.GetPart()->GetEditable());
          }
          break;
-      case Selection::SelectionType::S_IMAGE: ImageProperties(props, m_selection.image); break;
-      case Selection::SelectionType::S_CAMERA: CameraProperties(props, m_selection.index); break;
-      case Selection::SelectionType::S_MATERIAL: MaterialProperties(props, m_selection.material); break;
-      case Selection::SelectionType::S_RENDERPROBE: RenderProbeProperties(props, m_selection.renderprobe); break;
+      case Selection::S_IMAGE: ImageProperties(props, m_selection.GetImage()); break;
+      case Selection::S_CAMERA: CameraProperties(props, m_selection.GetCamera()); break;
+      case Selection::S_MATERIAL: MaterialProperties(props, m_selection.GetMaterial()); break;
+      case Selection::S_RENDERPROBE: RenderProbeProperties(props, m_selection.GetProbe()); break;
       }
    }
 
@@ -1757,7 +1755,7 @@ void EditorUI::ImageProperties(PropertyPane &props, Texture *texture)
 
          ImGui::BeginDisabled(tex == nullptr || !tex->HasAlpha());
          props.InputFloat<Texture>(
-            m_selection.image, "Alpha Mask", //
+            m_selection.GetImage(), "Alpha Mask", //
             [](const Texture *image) { return image->m_alphaTestValue; }, //
             [](Texture *image, float v) { image->m_alphaTestValue = v; }, PropertyPane::Unit::None, 2);
          ImGui::EndDisabled();
