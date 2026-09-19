@@ -7,7 +7,6 @@
 #else
 #include <dirent.h>
 #include <sys/stat.h>
-#include "standalone/PoleStorage.h"
 #if defined(__APPLE__)
 #include <sys/param.h>
 #include <sys/mount.h>
@@ -875,12 +874,3 @@ vector<string> add_line_numbers(const char* src)
 
    return result;
 }
-
-#ifdef __STANDALONE__
-
-HRESULT WINAPI StgOpenStorage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen)
-{
-   return PoleStorage::Create(MakeString(pwcsName), "/"s, (IStorage**)ppstgOpen);
-}
-
-#endif
