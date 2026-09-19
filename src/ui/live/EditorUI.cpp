@@ -74,6 +74,8 @@ EditorUI::EditorUI(LiveUI &liveUI)
    EditorUIPartRegistry::InitRegistry();
 
    m_selection.type = Selection::SelectionType::S_NONE;
+   m_multiSel.clear();
+   m_outlinerAnchor.reset();
 
    // Editor camera position. We use a right handed system for easy ImGuizmo integration while VPX renderer is left handed, so reverse X axis
    m_camDistance = m_table->m_bottom * 0.7f;
@@ -91,6 +93,7 @@ void EditorUI::Open()
    if (m_isOpened)
       return;
    m_isOpened = true;
+   m_boxSelectActive = false;
    ResetCameraFromPlayer();
    m_player->SetPlayState(false);
    m_renderer->DisableStaticPrePass(true);
@@ -135,7 +138,7 @@ void EditorUI::RenderUI()
    ImGuizmo::BeginFrame();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
-   Selection previousSelection = m_selection;
+   const auto previousMultiSel = m_multiSel;
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
 
@@ -398,7 +401,16 @@ void EditorUI::RenderUI()
       ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), m_gizmoOperation, m_gizmoMode, (float *)(transform.m));
       if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
       {
-         PushUndo(m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE ? m_selection.uiPart->GetEditable() : m_table, 0x1000);
+         // Mark all selected parts for undo once per drag (m_lastUndoId is reset when the gizmo is released)
+         if (m_lastUndoId != 0x1000 && m_table->m_liveBaseTable == nullptr)
+         {
+            m_undo.BeginUndo();
+            for (const auto &part : m_multiSel)
+               m_undo.MarkForUndo(part->GetEditable());
+            m_undo.EndUndo();
+            m_lastUndoPart = nullptr;
+            m_lastUndoId = 0x1000;
+         }
          SetSelectionTransform(transform);
       }
    }
@@ -414,12 +426,17 @@ void EditorUI::RenderUI()
    // Selection and physic colliders overlay
    {
       RenderContext ctx(m_player, overlayDrawList, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
-      if (m_selection.type == Selection::S_EDITABLE)
+      if (!m_multiSel.empty())
       {
          if (m_renderer->m_renderDevice->GetCurrentRenderTarget()->HasDepth())
             m_renderer->m_renderDevice->Clear(clearType::ZBUFFER, 0);
          ctx.m_isSelected = true;
-         m_selection.uiPart->Render(ctx);
+         for (const auto &part : m_multiSel)
+         {
+            ctx.m_isActive = part == m_selection.uiPart;
+            part->Render(ctx);
+         }
+         ctx.m_isActive = false;
          ctx.m_isSelected = false;
       }
 
@@ -429,7 +446,7 @@ void EditorUI::RenderUI()
          overlayDrawList->AddCircleFilled(pos, 3.f * m_liveUI.GetDPI(), IM_COL32(255, 255, 255, 255), 16);
       }
 
-      if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && m_selection.type == Selection::S_EDITABLE))
+      if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && !m_multiSel.empty()))
       {
          auto project = [ctx](Vertex3Ds v)
          {
@@ -439,7 +456,7 @@ void EditorUI::RenderUI()
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 0, 0, 255)); // We abuse ImGui colors to pass render colors
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
          for (auto pho : m_player->m_physics->GetHitObjects())
-            if (pho != nullptr && (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.uiPart->GetEditable())))
+            if (pho != nullptr && (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && IsEditableSelected(pho->m_editable))))
                pho->DrawUI(project, overlayDrawList, true);
          ImGui::PopStyleColor(2);
       }
@@ -511,97 +528,88 @@ void EditorUI::RenderUI()
          }
       }
 
-      // Select
-      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+      // Select: click selects the front-most part (click again to cycle through overlapping parts),
+      // shift+click toggles a part in the multi selection, drag box selects parts (shift+drag adds to the selection)
+      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
       {
-         // Compute mouse position in clip space
-         const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
-         const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-         const float xcoord = (ImGui::GetMousePos().x - rClipWidth) / rClipWidth;
-         const float ycoord = (rClipHeight - ImGui::GetMousePos().y) / rClipHeight;
-
-         // Use the inverse of our 3D transform to determine where in 3D space the
-         // screen pixel the user clicked on is at.  Get the point at the near
-         // clipping plane (z=0) and the far clipping plane (z=1) to get the whole
-         // range we need to hit test
-         Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
-         invMVP.Invert();
-         const Vertex3Ds v3d = invMVP * Vertex3Ds { xcoord, ycoord, 0.f };
-         const Vertex3Ds v3d2 = invMVP * Vertex3Ds { xcoord, ycoord, 1.f };
-
-         // FIXME This is not really great as:
-         // - picking depends on what was visible/enabled when quadtree was built (lazily at first pick), and also uses the physics quadtree for some parts
-         // - primitives can have hit bug (Apron Top and Gottlieb arm of default table for example): degenerated geometry ?
-         // We would need a dedicated quadtree for UI with all parts, and filter after picking by visibility
-         vector<HitTestResult> vhoUnfilteredHit;
-         m_player->m_physics->RayCast(v3d, v3d2, true, vhoUnfilteredHit);
-
-         vector<HitTestResult> vhoHit;
-         const bool noPF = !(m_selectionFilter & SelectionFilter::SF_Playfield);
-         const bool noPrims = !(m_selectionFilter & SelectionFilter::SF_Primitives);
-         const bool noLights = !(m_selectionFilter & SelectionFilter::SF_Lights);
-         const bool noFlashers = !(m_selectionFilter & SelectionFilter::SF_Flashers);
-         for (const auto &hr : vhoUnfilteredHit)
+         m_boxSelectActive = true;
+         m_boxSelectStart = ImGui::GetMousePos();
+      }
+      if (m_boxSelectActive)
+      {
+         if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
          {
-            const auto editable = hr.m_obj->m_editable;
-            if (editable)
+            const ImVec2 end = ImGui::GetMousePos();
+            if (fabsf(end.x - m_boxSelectStart.x) > 2.f || fabsf(end.y - m_boxSelectStart.y) > 2.f)
             {
-               const auto type = editable->GetItemType();
-               const PartGroup *parent = editable->GetPartGroup();
-               bool visible = editable->IsUIVisible(false);
-               while (parent && visible)
-               {
-                  if ((parent->GetPlayerModeVisibilityMask() & m_renderer->GetPlayerModeVisibilityMask()) == 0)
-                     visible = false;
-                  visible &= parent->IsUIVisible(false);
-                  parent = parent->GetPartGroup();
-               }
-               if (!visible)
-                  continue;
-               if (noPF && type == ItemTypeEnum::eItemPrimitive && static_cast<Primitive *>(editable)->IsPlayfield())
-                  continue;
-               if (noPrims && type == ItemTypeEnum::eItemPrimitive)
-                  continue;
-               if (noLights && type == ItemTypeEnum::eItemLight)
-                  continue;
-               if (noFlashers && type == ItemTypeEnum::eItemFlasher)
-                  continue;
+               overlayDrawList->AddRectFilled(m_boxSelectStart, end, IM_COL32(255, 128, 0, 32));
+               overlayDrawList->AddRect(m_boxSelectStart, end, IM_COL32(255, 128, 0, 255));
             }
-            vhoHit.push_back(hr);
          }
-
-         if (vhoHit.empty())
-            m_selection.type = Selection::SelectionType::S_NONE;
          else
          {
-            size_t selectionIndex = vhoHit.size();
-            for (size_t i = 0; i <= vhoHit.size(); i++)
+            m_boxSelectActive = false;
+            const ImVec2 end = ImGui::GetMousePos();
+            if (fabsf(end.x - m_boxSelectStart.x) > 4.f || fabsf(end.y - m_boxSelectStart.y) > 4.f)
+               BoxSelectParts(m_boxSelectStart, end, io.KeyShift);
+            else
             {
-               if (i < vhoHit.size() && m_selection.type == Selection::S_EDITABLE && vhoHit[i].m_obj->m_editable == m_selection.uiPart->GetEditable())
-                  selectionIndex = i + 1;
-               if (i == selectionIndex)
+               vector<HitTestResult> vhoHit;
+               RayCastParts(end, vhoHit);
+               if (io.KeyShift)
                {
-                  const size_t p = selectionIndex % vhoHit.size();
-                  const IEditable *select = vhoHit[p].m_obj->m_editable;
-                  const auto it = m_editableMap.find(select);
-                  if (it != m_editableMap.end())
-                     m_selection = Selection(it->second);
-                  else
-                     m_selection = Selection();
+                  // Shift+click toggles the front-most hit part in the multi selection
+                  if (!vhoHit.empty())
+                  {
+                     const auto it = m_editableMap.find(vhoHit.front().m_obj->m_editable);
+                     if (it != m_editableMap.end())
+                     {
+                        TogglePartSelection(it->second);
+                        m_outlinerAnchor = it->second;
+                     }
+                  }
+               }
+               else if (vhoHit.empty())
+                  ClearSelection();
+               else
+               {
+                  size_t selectionIndex = vhoHit.size();
+                  for (size_t i = 0; i <= vhoHit.size(); i++)
+                  {
+                     if (i < vhoHit.size() && m_selection.type == Selection::S_EDITABLE && vhoHit[i].m_obj->m_editable == m_selection.uiPart->GetEditable())
+                        selectionIndex = i + 1;
+                     if (i == selectionIndex)
+                     {
+                        const size_t p = selectionIndex % vhoHit.size();
+                        const IEditable *select = vhoHit[p].m_obj->m_editable;
+                        const auto it = m_editableMap.find(select);
+                        if (it != m_editableMap.end())
+                        {
+                           SetSelection(Selection(it->second));
+                           m_outlinerAnchor = it->second;
+                        }
+                        else
+                           ClearSelection();
+                     }
+                  }
+                  // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pBall;
                }
             }
-            // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pBall;
          }
       }
    }
+   if (m_boxSelectActive && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+      m_boxSelectActive = false; // Canceled: button released outside of the playfield
    if (!io.WantCaptureKeyboard)
    {
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {
          if (m_gizmoOperation != ImGuizmo::OPERATION(0))
             m_gizmoOperation = ImGuizmo::OPERATION(0); // Cancel current operation
+         else if (m_boxSelectActive)
+            m_boxSelectActive = false; // Cancel current box selection
          else if (m_selection.type != Selection::S_NONE)
-            m_selection = Selection(); // Cancel current selection
+            ClearSelection(); // Cancel current selection
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_F) && !io.KeyCtrl)
       {
@@ -610,7 +618,7 @@ void EditorUI::RenderUI()
       else if (ImGui::IsKeyPressed(ImGuiKey_A))
       {
          if (io.KeyAlt && !io.KeyCtrl && !io.KeyShift)
-            m_selection = Selection();
+            ClearSelection();
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
       {
@@ -629,20 +637,15 @@ void EditorUI::RenderUI()
             }
             else if (io.KeyShift)
             { // Hide unselected
-               if (m_selection.type == Selection::S_EDITABLE)
-               {
-                  for (auto &part : m_editables)
-                     if (part->GetEditable()->GetItemType() != eItemPartGroup && part != m_selection.uiPart)
-                        part->GetEditable()->SetUIVisible(false);
-               }
+               for (auto &part : m_editables)
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && !IsPartSelected(part))
+                     part->GetEditable()->SetUIVisible(false);
             }
             else
             { // Hide selected
-               if (m_selection.type == Selection::S_EDITABLE)
-               {
-                  m_selection.uiPart->GetEditable()->SetUIVisible(false);
-                  m_selection = Selection();
-               }
+               for (const auto &part : m_multiSel)
+                  part->GetEditable()->SetUIVisible(false);
+               ClearSelection();
             }
          }
       }
@@ -814,18 +817,23 @@ void EditorUI::RenderUI()
       }
    }
 
-   if (m_selection != previousSelection)
+   if (m_multiSel != previousMultiSel)
    {
-      if (previousSelection.type == Selection::S_EDITABLE)
+      for (const auto &part : previousMultiSel)
       {
-         auto edit = previousSelection.uiPart->GetEditable();
-         if (FindIndexOf(m_table->GetParts(), edit) != -1 // Not deleted
-            && (edit->GetIHitable() != nullptr)
-            && (edit->GetItemType() != eItemBall))
+         IEditable *edit = part->GetEditable();
+         if (std::ranges::find(m_multiSel, part) == m_multiSel.end() // Not selected anymore
+            && FindIndexOf(m_table->GetParts(), edit) != -1 // Not deleted
+            && (edit->GetIHitable() != nullptr) && (edit->GetItemType() != eItemBall))
             m_player->m_physics->SetStatic(edit);
       }
-      if ((m_selection.type == Selection::S_EDITABLE) && (m_selection.uiPart->GetEditable()->GetIHitable() != nullptr) && (m_selection.uiPart->GetEditable()->GetItemType() != eItemBall))
-         m_player->m_physics->SetDynamic(m_selection.uiPart->GetEditable());
+      for (const auto &part : m_multiSel)
+      {
+         IEditable *edit = part->GetEditable();
+         if (std::ranges::find(previousMultiSel, part) == previousMultiSel.end() // Newly selected
+            && (edit->GetIHitable() != nullptr) && (edit->GetItemType() != eItemBall))
+            m_player->m_physics->SetDynamic(edit);
+      }
    }
 }
 
@@ -846,16 +854,187 @@ void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
    m_undo.EndUndo();
 }
 
+bool EditorUI::IsPartSelected(const std::shared_ptr<EditorUIPart> &part) const { return part != nullptr && std::ranges::find(m_multiSel, part) != m_multiSel.end(); }
+
+bool EditorUI::IsEditableSelected(const IEditable *editable) const
+{
+   for (const auto &part : m_multiSel)
+      if (part->GetEditable() == editable)
+         return true;
+   return false;
+}
+
+void EditorUI::ClearSelection()
+{
+   m_selection = Selection();
+   m_multiSel.clear();
+   m_outlinerAnchor.reset();
+}
+
+void EditorUI::SetSelection(const Selection &selection)
+{
+   m_selection = selection;
+   m_multiSel.clear();
+   if (selection.type == Selection::S_EDITABLE)
+      m_multiSel.push_back(selection.uiPart);
+}
+
+void EditorUI::TogglePartSelection(const std::shared_ptr<EditorUIPart> &part)
+{
+   const auto it = std::ranges::find(m_multiSel, part);
+   if (it == m_multiSel.end())
+   {
+      m_multiSel.push_back(part);
+      m_selection = Selection(part);
+   }
+   else
+   {
+      const bool wasActive = m_selection.type == Selection::S_EDITABLE && m_selection.uiPart == part;
+      m_multiSel.erase(it);
+      if (m_multiSel.empty())
+         m_selection = Selection();
+      else if (wasActive)
+         m_selection = Selection(m_multiSel.back());
+   }
+}
+
+void EditorUI::SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part)
+{
+   // Range selection between the anchor part (last clicked one) and the given part
+   if (m_outlinerAnchor == nullptr)
+   {
+      SetSelection(Selection(part));
+      return;
+   }
+   int anchorPos = -1, partPos = -1, pos = 0;
+   for (const auto &edit : m_editables)
+   {
+      if (edit->GetEditable()->GetItemType() == eItemPartGroup)
+         continue;
+      if (edit == m_outlinerAnchor)
+         anchorPos = pos;
+      if (edit == part)
+         partPos = pos;
+      pos++;
+   }
+   if (anchorPos < 0 || partPos < 0)
+   {
+      SetSelection(Selection(part));
+      return;
+   }
+   if (partPos < anchorPos)
+      std::swap(anchorPos, partPos);
+   m_multiSel.clear();
+   pos = 0;
+   for (const auto &edit : m_editables)
+   {
+      if (edit->GetEditable()->GetItemType() == eItemPartGroup)
+         continue;
+      if (pos >= anchorPos && pos <= partPos)
+         m_multiSel.push_back(edit);
+      pos++;
+   }
+   m_selection = Selection(part);
+}
+
+void EditorUI::RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const
+{
+   // Compute mouse position in clip space
+   const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+   const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
+   const float xcoord = (mousePos.x - rClipWidth) / rClipWidth;
+   const float ycoord = (rClipHeight - mousePos.y) / rClipHeight;
+
+   // Use the inverse of our 3D transform to determine where in 3D space the
+   // screen pixel the user clicked on is at.  Get the point at the near
+   // clipping plane (z=0) and the far clipping plane (z=1) to get the whole
+   // range we need to hit test
+   Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
+   invMVP.Invert();
+   const Vertex3Ds v3d = invMVP * Vertex3Ds { xcoord, ycoord, 0.f };
+   const Vertex3Ds v3d2 = invMVP * Vertex3Ds { xcoord, ycoord, 1.f };
+
+   // FIXME This is not really great as:
+   // - picking depends on what was visible/enabled when quadtree was built (lazily at first pick), and also uses the physics quadtree for some parts
+   // - primitives can have hit bug (Apron Top and Gottlieb arm of default table for example): degenerated geometry ?
+   // We would need a dedicated quadtree for UI with all parts, and filter after picking by visibility
+   vector<HitTestResult> vhoUnfilteredHit;
+   m_player->m_physics->RayCast(v3d, v3d2, true, vhoUnfilteredHit);
+
+   // Filter out the colliders that should not be picked
+   for (const auto &hr : vhoUnfilteredHit)
+   {
+      const auto editable = hr.m_obj->m_editable;
+      if (editable && !IsEditablePickable(editable))
+         continue;
+      vhoHit.push_back(hr);
+   }
+}
+
+bool EditorUI::IsEditablePickable(const IEditable *editable) const
+{
+   const PartGroup *parent = editable->GetPartGroup();
+   bool visible = editable->IsUIVisible(false);
+   while (parent && visible)
+   {
+      if ((parent->GetPlayerModeVisibilityMask() & m_renderer->GetPlayerModeVisibilityMask()) == 0)
+         visible = false;
+      visible &= parent->IsUIVisible(false);
+      parent = parent->GetPartGroup();
+   }
+   if (!visible)
+      return false;
+   const auto type = editable->GetItemType();
+   if (!(m_selectionFilter & SelectionFilter::SF_Playfield) && type == ItemTypeEnum::eItemPrimitive && static_cast<const Primitive *>(editable)->IsPlayfield())
+      return false;
+   if (!(m_selectionFilter & SelectionFilter::SF_Primitives) && type == ItemTypeEnum::eItemPrimitive)
+      return false;
+   if (!(m_selectionFilter & SelectionFilter::SF_Lights) && type == ItemTypeEnum::eItemLight)
+      return false;
+   if (!(m_selectionFilter & SelectionFilter::SF_Flashers) && type == ItemTypeEnum::eItemFlasher)
+      return false;
+   return true;
+}
+
+void EditorUI::BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add)
+{
+   // Select all the pickable parts whose transform position projects inside the given screen box
+   if (!add)
+   {
+      m_multiSel.clear();
+      m_selection = Selection();
+   }
+   const RenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   const ImVec2 boxMin(std::min(cornerA.x, cornerB.x), std::min(cornerA.y, cornerB.y));
+   const ImVec2 boxMax(std::max(cornerA.x, cornerB.x), std::max(cornerA.y, cornerB.y));
+   for (const auto &uiPart : m_editables)
+   {
+      IEditable *const editable = uiPart->GetEditable();
+      if (editable == nullptr || editable->GetItemType() == eItemPartGroup || !IsEditablePickable(editable))
+         continue;
+      Matrix3D transform;
+      if (uiPart->GetTransform(transform) == EditorUIPart::TM_None)
+         continue;
+      const ImVec2 pos = ctx.Project(transform.GetOrthoNormalPos());
+      if (pos.x >= boxMin.x && pos.x <= boxMax.x && pos.y >= boxMin.y && pos.y <= boxMax.y && !IsPartSelected(uiPart))
+         m_multiSel.push_back(uiPart);
+   }
+   if (!m_multiSel.empty() && (m_selection.type != Selection::S_EDITABLE || !IsPartSelected(m_selection.uiPart)))
+      m_selection = Selection(m_multiSel.back());
+}
+
 void EditorUI::DeleteSelection()
 {
    if (m_table->IsLocked())
       return;
-   if (m_selection.type == Selection::S_EDITABLE && m_selection.uiPart->GetEditable()->GetItemType() != eItemBall && m_selection.uiPart->GetEditable()->GetPartGroup() != nullptr)
+   const vector<std::shared_ptr<EditorUIPart>> parts(m_multiSel); // Work on a copy since parts are removed while iterating
+   for (const auto &part : parts)
    {
-      IEditable* const edit = m_selection.uiPart->GetEditable();
-      RemoveFromVectorSingle(m_editables, m_selection.uiPart);
+      if (part->GetEditable()->GetItemType() == eItemBall || part->GetEditable()->GetPartGroup() == nullptr)
+         continue;
+      IEditable *const edit = part->GetEditable();
+      RemoveFromVectorSingle(m_editables, part);
       m_editableMap.erase(edit);
-      m_selection = Selection();
       if (edit->GetIHitable())
          m_player->m_physics->Remove(edit);
       m_table->RemovePart(edit);
@@ -869,6 +1048,12 @@ void EditorUI::DeleteSelection()
             edit->Release();
          });
    }
+   // Remove the deleted parts from the selection (non deletable parts stay selected)
+   std::erase_if(m_multiSel, [this](const auto &part) { return std::ranges::find(m_editables, part) == m_editables.end(); });
+   if (m_selection.type == Selection::S_EDITABLE && !IsPartSelected(m_selection.uiPart))
+      m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+   if (m_outlinerAnchor && std::ranges::find(m_editables, m_outlinerAnchor) == m_editables.end())
+      m_outlinerAnchor.reset();
 }
 
 void EditorUI::UpdateEditableList()
@@ -885,6 +1070,12 @@ void EditorUI::UpdateEditableList()
          }
          return false;
       });
+   // Drop removed parts from the multi selection, keeping a valid active part
+   std::erase_if(m_multiSel, [&liveParts](const auto &part) { return !liveParts.contains(part->GetEditable()); });
+   if (m_selection.type == Selection::S_EDITABLE && !IsPartSelected(m_selection.uiPart))
+      m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+   if (m_outlinerAnchor && !liveParts.contains(m_outlinerAnchor->GetEditable()))
+      m_outlinerAnchor.reset();
    // Add UI parts for new editables
    bool needSort = false;
    ankerl::unordered_dense::set<PartGroup *> newGroups;
@@ -950,55 +1141,84 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
 
 void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation) const
 {
-   Matrix3D transform = newTransform;
-   const Vertex3Ds right(transform._11, transform._12, transform._13);
-   const Vertex3Ds up(transform._21, transform._22, transform._23);
-   const Vertex3Ds dir(transform._31, transform._32, transform._33);
-   vec3 scale(max(right.Length(), 1e-8f), max(up.Length(), 1e-8f), max(dir.Length(), 1e-8f)); // Clamp to avoid division by zero
+   if (m_selection.type != EditorUI::Selection::SelectionType::S_EDITABLE)
+      return;
 
-   transform._11 /= scale.x; // Normalize transform to evaluate rotation
-   transform._12 /= scale.x;
-   transform._13 /= scale.x;
-   transform._21 /= scale.y;
-   transform._22 /= scale.y;
-   transform._23 /= scale.y;
-   transform._31 /= scale.z;
-   transform._32 /= scale.z;
-   transform._33 /= scale.z;
-   if (clearScale)
-      scale.Set(1.f, 1.f, 1.f);
+   // Decompose a transform into the position/scale/rotation components used by the parts' SetTransform
+   const auto extractTRS = [](Matrix3D transform, vec3 &pos, vec3 &scale, vec3 &rot)
+   {
+      const Vertex3Ds right(transform._11, transform._12, transform._13);
+      const Vertex3Ds up(transform._21, transform._22, transform._23);
+      const Vertex3Ds dir(transform._31, transform._32, transform._33);
+      scale.Set(max(right.Length(), 1e-8f), max(up.Length(), 1e-8f), max(dir.Length(), 1e-8f)); // Clamp to avoid division by zero
 
-   vec3 pos;
-   if (clearPosition)
-      pos.Set(0.f, 0.f, 0.f);
-   else
+      transform._11 /= scale.x; // Normalize transform to evaluate rotation
+      transform._12 /= scale.x;
+      transform._13 /= scale.x;
+      transform._21 /= scale.y;
+      transform._22 /= scale.y;
+      transform._23 /= scale.y;
+      transform._31 /= scale.z;
+      transform._32 /= scale.z;
+      transform._33 /= scale.z;
+
       pos.Set(transform._41, transform._42, transform._43);
 
-   // Derived from https://learnopencv.com/rotation-matrix-to-euler-angles/
-   vec3 rot;
-   const float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
-   if (clearRotation)
+      // Derived from https://learnopencv.com/rotation-matrix-to-euler-angles/
+      const float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
+      if (sy > 1e-6f)
+      {
+         rot.x = -RADTOANG(atan2f(transform._32, transform._33));
+         rot.y = -RADTOANG(atan2f(-transform._31, sy));
+         rot.z = -RADTOANG(atan2f(transform._21, transform._11));
+      }
+      else
+      {
+         rot.x = -RADTOANG(atan2f(transform._23, transform._22));
+         rot.y = -RADTOANG(atan2f(-transform._31, sy));
+         rot.z = 0.f;
+      }
+   };
+
+   const auto applyTransform = [this, &extractTRS](const std::shared_ptr<EditorUIPart> &part, const Matrix3D &partTransform, bool clearPos, bool clearScale, bool clearRot)
    {
-      rot.Set(0.f, 0.f, 0.f);
-   }
-   else if (sy > 1e-6f)
+      vec3 pos, scale, rot;
+      extractTRS(partTransform, pos, scale, rot);
+      if (clearPos)
+         pos.Set(0.f, 0.f, 0.f);
+      if (clearScale)
+         scale.Set(1.f, 1.f, 1.f);
+      if (clearRot)
+         rot.Set(0.f, 0.f, 0.f);
+      part->SetTransform(pos, scale, rot);
+      m_renderer->ReinitRenderable(part->GetEditable()->GetIRenderable());
+      m_player->m_physics->Update(part->GetEditable());
+   };
+
+   if (clearPosition || clearScale || clearRotation)
    {
-      rot.x = -RADTOANG(atan2f(transform._32, transform._33));
-      rot.y = -RADTOANG(atan2f(-transform._31, sy));
-      rot.z = -RADTOANG(atan2f(transform._21, transform._11));
-   }
-   else
-   {
-      rot.x = -RADTOANG(atan2f(transform._23, transform._22));
-      rot.y = -RADTOANG(atan2f(-transform._31, sy));
-      rot.z = 0.f;
+      // Reset the requested transform components of each selected part
+      for (const auto &part : m_multiSel)
+      {
+         Matrix3D partTransform;
+         if (part->GetTransform(partTransform) == EditorUIPart::TM_None)
+            continue;
+         applyTransform(part, partTransform, clearPosition, clearScale, clearRotation);
+      }
+      return;
    }
 
-   if (m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE)
+   // Apply the active part's transform delta to every selected part
+   Matrix3D delta;
+   m_selection.uiPart->GetTransform(delta);
+   delta.Invert();
+   delta = delta * newTransform;
+   for (const auto &part : m_multiSel)
    {
-      m_selection.uiPart->SetTransform(pos, scale, rot);
-      m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIRenderable());
-      m_player->m_physics->Update(m_selection.uiPart->GetEditable());
+      Matrix3D partTransform;
+      if (part->GetTransform(partTransform) == EditorUIPart::TM_None)
+         continue;
+      applyTransform(part, partTransform * delta, false, false, false);
    }
 }
 
@@ -1033,27 +1253,27 @@ void EditorUI::UpdateOutlinerUI()
    {
       if (ImGui::Selectable("Editor Camera"))
       {
-         m_selection.type = Selection::SelectionType::S_NONE;
+         ClearSelection();
          m_camMode = ViewMode::EditorCam;
       }
       Selection cam0(Selection::SelectionType::S_CAMERA, 0);
       if (ImGui::Selectable("Preview: Desktop", m_selection == cam0))
       {
-         m_selection = cam0;
+         SetSelection(cam0);
          m_camMode = ViewMode::PreviewCam;
          m_table->SetViewSetupOverride(BG_DESKTOP);
       }
       Selection cam1(Selection::SelectionType::S_CAMERA, 1);
       if (ImGui::Selectable("Preview: Cabinet", m_selection == cam1))
       {
-         m_selection = cam1;
+         SetSelection(cam1);
          m_camMode = ViewMode::PreviewCam;
          m_table->SetViewSetupOverride(BG_FULLSCREEN);
       }
       Selection cam2(Selection::SelectionType::S_CAMERA, 2);
       if (ImGui::Selectable("Preview: Full Single Screen", m_selection == cam2))
       {
-         m_selection = cam2;
+         SetSelection(cam2);
          m_camMode = ViewMode::PreviewCam;
          m_table->SetViewSetupOverride(BG_FSS);
       }
@@ -1066,7 +1286,7 @@ void EditorUI::UpdateOutlinerUI()
       {
          Selection sel(material);
          if (IsOutlinerFiltered(material->m_name) && ImGui::Selectable(material->m_name.c_str(), m_selection == sel))
-            m_selection = sel;
+            SetSelection(sel);
       }
       ImGui::TreePop();
    }
@@ -1077,7 +1297,7 @@ void EditorUI::UpdateOutlinerUI()
       {
          Selection sel(image);
          if (IsOutlinerFiltered(image->m_name) && ImGui::Selectable(image->m_name.c_str(), m_selection == sel))
-            m_selection = sel;
+            SetSelection(sel);
       }
       ImGui::TreePop();
    }
@@ -1087,7 +1307,7 @@ void EditorUI::UpdateOutlinerUI()
       {
          Selection sel(probe);
          if (ImGui::Selectable(probe->GetName().c_str(), m_selection == sel))
-            m_selection = sel;
+            SetSelection(sel);
       }
       ImGui::TreePop();
    }
@@ -1140,8 +1360,22 @@ void EditorUI::UpdateOutlinerUI()
                Selection sel(edit);
                if (IsOutlinerFiltered(edit->GetEditable()->GetName()))
                {
-                  if (ImGui::Selectable((edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), m_selection == sel, ImGuiSelectableFlags_AllowOverlap))
-                     m_selection = sel;
+                  if (ImGui::Selectable((edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), IsPartSelected(edit), ImGuiSelectableFlags_AllowOverlap))
+                  {
+                     const ImGuiIO &selIO = ImGui::GetIO();
+                     if (selIO.KeyCtrl)
+                     {
+                        TogglePartSelection(edit);
+                        m_outlinerAnchor = edit;
+                     }
+                     else if (selIO.KeyShift)
+                        SelectOutlinerRange(edit);
+                     else
+                     {
+                        SetSelection(sel);
+                        m_outlinerAnchor = edit;
+                     }
+                  }
                   IEditable* editable = edit->GetEditable();
                   if (editable && m_table->m_liveBaseTable == nullptr)
                   {
@@ -1183,6 +1417,9 @@ void EditorUI::UpdatePropertyUI()
    ImGui::Begin("PROPERTIES", nullptr,
       ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
          | ImGuiWindowFlags_NoNavFocus);
+
+   if (m_multiSel.size() > 1)
+      ImGui::TextDisabled("%d parts selected (editing the active one)", (int)m_multiSel.size());
 
    PropertyPane props(m_table);
    switch (m_units)
@@ -1588,7 +1825,7 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
          if (it == m_editableMap.end())
             continue;
          if (ImGui::Selectable(primitive->GetName().c_str()))
-            m_selection = Selection(it->second);
+            SetSelection(Selection(it->second));
       }
    }
 }
