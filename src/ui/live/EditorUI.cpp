@@ -1439,7 +1439,14 @@ void EditorUI::UpdateOutlinerUI()
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
    ImGui::Begin("OUTLINER", nullptr, window_flags);
 
-   ImGui::InputTextWithHint("Filter", "Name part filter", &m_outlinerFilter);
+   const float clearFilterWidth = ImGui::CalcTextSize(ICON_FK_TIMES).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+   ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - clearFilterWidth - ImGui::GetStyle().ItemSpacing.x);
+   ImGui::InputTextWithHint("##OutlinerFilter", "Name part filter", &m_outlinerFilter);
+   ImGui::SameLine();
+   ImGui::BeginDisabled(m_outlinerFilter.empty());
+   if (ImGui::Button(ICON_FK_TIMES "##ClearOutlinerFilter"))
+      m_outlinerFilter.clear();
+   ImGui::EndDisabled();
 
    if (ImGui::TreeNodeEx("View Setups"))
    {
@@ -1511,6 +1518,32 @@ void EditorUI::UpdateOutlinerUI()
          PartGroup *group;
          bool opened;
       };
+      // When a filter is applied, only display groups that match it or contain a matching part in their subtree
+      ankerl::unordered_dense::set<const PartGroup *> matchedGroups;
+      ankerl::unordered_dense::set<const PartGroup *> visibleGroups;
+      if (!m_outlinerFilter.empty())
+      {
+         vector<PartGroup *> groupStack;
+         for (const auto &edit : m_editables)
+         {
+            IEditable *const editable = edit->GetEditable();
+            while (!groupStack.empty() && (editable->GetPartGroup() == nullptr || !editable->IsChild(groupStack.back())))
+               groupStack.pop_back();
+            if (MatchesOutlinerFilter(editable->GetName())
+               || (editable->GetItemType() != eItemPartGroup && std::ranges::any_of(groupStack, [&matchedGroups](const PartGroup *group) { return matchedGroups.contains(group); })))
+            {
+               for (PartGroup *ancestor : groupStack)
+                  visibleGroups.insert(ancestor);
+               if (editable->GetItemType() == eItemPartGroup)
+               {
+                  matchedGroups.insert(static_cast<PartGroup *>(editable));
+                  visibleGroups.insert(static_cast<PartGroup *>(editable));
+               }
+            }
+            if (editable->GetItemType() == eItemPartGroup)
+               groupStack.push_back(static_cast<PartGroup *>(editable));
+         }
+      }
       vector<Node> stack;
       int outlinerItem = 0;
       const float eyeX = ImGui::GetContentRegionAvail().x;
@@ -1528,6 +1561,8 @@ void EditorUI::UpdateOutlinerUI()
          }
          // TODO allow selection => ImGuiTreeNodeFlags_Selected
          // TODO support empty nodes => ImGuiTreeNodeFlags_Leaf
+         if (edit->GetEditable()->GetItemType() == eItemPartGroup && !m_outlinerFilter.empty() && !visibleGroups.contains(static_cast<PartGroup *>(edit->GetEditable())))
+            continue;
          ImGui::AlignTextToFramePadding();
          if (edit->GetEditable()->GetItemType() == eItemPartGroup)
          {
@@ -1545,12 +1580,14 @@ void EditorUI::UpdateOutlinerUI()
          }
          else
          {
-            if (parent == nullptr && stack.empty())
+            const bool show = MatchesOutlinerFilter(edit->GetEditable()->GetName())
+               || std::ranges::any_of(stack, [&matchedGroups](const Node &node) { return node.group != nullptr && matchedGroups.contains(node.group); });
+            if (parent == nullptr && stack.empty() && show)
                stack.push_back({ nullptr, ImGui::TreeNodeEx("[Live Objects]", ImGuiTreeNodeFlags_AllowOverlap) });
-            if (stack.back().opened)
+            if (!stack.empty() && stack.back().opened)
             {
                Selection sel(edit);
-               if (MatchesOutlinerFilter(edit->GetEditable()->GetName()))
+               if (show)
                {
                   if (ImGui::Selectable((edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), IsPartSelected(edit), ImGuiSelectableFlags_AllowOverlap))
                   {
