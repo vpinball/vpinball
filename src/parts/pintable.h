@@ -297,13 +297,7 @@ public:
    PinTable();
    ~PinTable() override;
 
-private:
-   PinTable *CopyForPlay() const final { assert(!"const CopyForPlay not implemented"); return nullptr; } // inherited via IEditable
 public:
-   PinTable *CopyForPlay();
-
-   EventProxyBase *GetEventProxyBase() final { return (EventProxyBase *)this; }
-
    void RemoveInvalidReferences();
 
    void SetDirtyDraw();
@@ -362,39 +356,48 @@ public:
    void StartUndo();
    void StopUndo();
 
-   // IFireEvents
-   IDispatch *GetIDispatch() final { return (IDispatch *)this; }
-   const IDispatch *GetIDispatch() const final { return (const IDispatch *)this; }
-
-   // IEditable, somewhat bogus for now, as a PinTable is not really an IEditable (which are defined as the parts of a PinTable)
+#pragma region IEditable
    PinTable *GetPTable() final { return this; }
    const PinTable *GetPTable() const final { return this; }
-   IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
-   void ClearForOverwrite() final;
-   void Load(IObjectReader &reader) final;
-   void Save(IObjectWriter& writer, const bool saveForUndo) final;
-   IScriptable *GetIScriptable() final { return (IScriptable *)this; }
-   const IScriptable *GetIScriptable() const final { return (const IScriptable *)this; }
-   ItemTypeEnum GetItemType() const final { return eItemTable; }
-   static inline constexpr ItemTypeEnum ItemType = eItemTable;
-   // IEditable unused members
    IHitable *GetIHitable() final { return nullptr; }
    const IHitable *GetIHitable() const final { return nullptr; }
    IRenderable *GetIRenderable() final { return nullptr; }
    const IRenderable *GetIRenderable() const final { return nullptr; }
+   IScriptable *GetIScriptable() final { return static_cast<IScriptable *>(this); }
+   const IScriptable *GetIScriptable() const final { return static_cast<const IScriptable *>(this); }
+   IFireEvents *GetIFireEvents() final { return nullptr; }
+   ItemTypeEnum GetItemType() const final { return eItemTable; }
+   static inline constexpr ItemTypeEnum ItemType = eItemTable;
    void SetDefaults(const bool fromMouseClick) final { }
+   void SetDefaultPhysics(const bool fromMouseClick) final;
    void WriteRegDefaults() final { }
+   EventProxyBase *GetEventProxyBase() final { return static_cast<EventProxyBase *>(this); }
+   void Save(IObjectWriter &writer, const bool saveForUndo) final;
+   void ClearForOverwrite() final;
+   void Load(IObjectReader &reader) final;
+   PinTable *CopyForPlay() const final; // Not exactly const as we add a reference, and copied table keeps a non const reference on this
    Vertex2D GetCenter() const final { return { 0.f, 0.f }; }
    void FlipY(const Vertex2D &pvCenter) final { }
    void FlipX(const Vertex2D &pvCenter) final { }
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final { }
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final { }
    void Translate(const Vertex2D &offset) final { }
-   void SetDefaultPhysics(const bool fromMouseClick) final;
+#pragma endregion
 
-   static string GetElementName(IEditable *pedit);
+#pragma region IScriptable
+   IDispatch *GetIDispatch() final { return static_cast<IDispatch *>(this); }
+   const IDispatch *GetIDispatch() const final { return static_cast<const IDispatch *>(this); }
+#pragma endregion
 
-   IEditable *GetElementByName(const char *const name) const;
+#pragma region IPerPropertyBrowsing
+   // FIXME Remove as this is unmaintained deadcode (no internal property page, no will for VPX to offer a data model for an external COM editor)
+   STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) { return ResultFromScode(E_NOTIMPL); }
+   STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) { return ResultFromScode(E_NOTIMPL); }
+   STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
+   STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
+   STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
+   STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
+#pragma endregion
 
    HRESULT Save(VPXFileFeedback &feedback);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
@@ -413,35 +416,36 @@ public:
    void Uncreate(IEditable *pie);
    void Undelete(IEditable *pie);
 
-   STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) { return ResultFromScode(E_NOTIMPL); }
-   STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) { return ResultFromScode(E_NOTIMPL); }
-   STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
-   STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
+   void ReorderParts(bool isDrawingOrder);
 
-   STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
-   STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
-
-   const vector<IEditable *>& GetParts() const { return m_vedit; }
+#pragma region Scene Parts
+public:
+   const vector<IEditable *> &GetParts() const { return m_vedit; }
    bool HasPart(IEditable *part) const { return std::ranges::find(m_vedit, part) != m_vedit.end(); }
    void AddPart(IEditable *part);
    void RemovePart(IEditable *part);
    void RenamePart(IEditable *part, const wstring& newName);
    void MovePartToFront(IEditable *part);
    void MovePartToBack(IEditable *part);
-   void ReorderParts(bool isDrawingOrder);
-   void AddCollection(Collection *collection);
-   void RemoveCollection(Collection *collection);
-   void RenameCollection(Collection *collection, const wstring &newName);
+   IEditable *GetElementByName(const char *const name) const;
+
+private:
+   vector<IEditable *> m_vedit;
+#pragma endregion
+
+
+#pragma region Unique name ids
+public:
    bool IsNameUnique(const wstring &wzName) const;
-   void GetUniqueName(const ItemTypeEnum type, wstring& wzUniqueName) const;
+   void GetUniqueName(const ItemTypeEnum type, wstring &wzUniqueName) const;
    wstring GetUniqueName(const wstring &wzRoot) const;
 
 private:
    ankerl::unordered_dense::set<wstring> m_scriptableNames;
-   vector<IEditable *> m_vedit;
+#pragma endregion
+
 
 public:
-
    float GetSurfaceHeight(const string &name, float x, float y) const;
 
    void SetLoadDefaults();
@@ -453,9 +457,6 @@ public:
 
    VPX::Sound *GetSound(const string &name) const;
 
-   void ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection);
-   void MoveCollectionUp(CComObject<Collection> *pcol);
-   void MoveCollectionDown(CComObject<Collection> *pcol);
    int GetDetailLevel() const { return m_settings.GetPlayer_AlphaRampAccuracy(); } // used for rubber, ramp and ball
 
    FRect3D GetBoundingBox() const;
@@ -479,19 +480,34 @@ public:
    CONNECTION_POINT_ENTRY(DIID_ITableEvents)
    END_CONNECTION_POINT_MAP()
 
+#pragma region Material
+public:
    void RemoveMaterial(Material *const pmat);
    void AddMaterial(Material *const pmat);
-
    bool IsMaterialNameUnique(const string &name) const;
    Material *GetMaterial(const string &name) const;
    Material *GetSurfaceMaterial(const wstring &name) const;
    Texture *GetSurfaceImage(const wstring &name) const;
+   bool IsDummyMaterial(const Material *const mat) const { return mat == m_dummyMaterial.get(); }
 
+private:
    std::unique_ptr<Material> m_dummyMaterial;
+#pragma endregion
 
+
+#pragma region Collection
+public:
+   void AddCollection(Collection *collection);
+   void RemoveCollection(Collection *collection);
+   void RenameCollection(Collection *collection, const wstring &newName);
    bool GetCollectionIndex(const IEditable *const element, int &collectionIndex, int &elementIndex);
+   void ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection);
+   void MoveCollectionUp(CComObject<Collection> *pcol);
+   void MoveCollectionDown(CComObject<Collection> *pcol);
+   const wstring &GetCollectionNameByElement(const IEditable *const element) const;
 
-   Vertex2D EvaluateGlassHeight() const;
+   VectorProtected<CComObject<Collection>> m_vcollection;
+#pragma endregion
 
    std::filesystem::path m_filename;
    string m_title;
@@ -570,6 +586,7 @@ public:
    float m_right = 0.f;
    float m_bottom = 0.f;
 
+   Vertex2D EvaluateGlassHeight() const;
    float m_glassBottomHeight = 210.f; // Height of glass above playfield at bottom of playfield
    float m_glassTopHeight = 210.f; // Height of glass above playfield at top of playfield
 
@@ -653,8 +670,6 @@ public:
    const vector<Material *> &GetMaterialList() const { return m_materials; }
 
    vector<VPX::Sound *> m_vsound;
-
-   VectorProtected<CComObject<Collection>> m_vcollection;
 
    vector<RenderProbe *> m_vrenderprobe;
    void RemoveRenderProbe(RenderProbe *pb) { std::erase(m_vrenderprobe, pb); }
@@ -751,8 +766,6 @@ public:
 
    float GetPlayfieldSlope() const;
    float GetPlayfieldOverridenSlope() const;
-
-   const wstring &GetCollectionNameByElement(const IEditable *const element) const;
 
    void SetNotesText(const string &text)
    {

@@ -533,7 +533,7 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, const 
                 // but no checks are being performed at moment:
                 (editable->GetItemType() == eItemFlasher))
             {
-                combo.AddString(PinTable::GetElementName(editable).c_str());
+               combo.AddString(editable->GetName().c_str());
             }
         }
     }
