@@ -558,8 +558,8 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
     {
         combo.ResetContent();
         combo.AddString(_T("<None>"));
-        for (int i = 0; i < ptable->m_vcollection.size(); i++)
-            combo.AddString(MakeString(ptable->m_vcollection[i].m_wzName).c_str());
+        for (auto pcol : ptable->GetCollections())
+           combo.AddString(MakeString(pcol->m_wzName).c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }

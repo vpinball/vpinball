@@ -650,8 +650,8 @@ inline void PropertyPane::RenderProbeCombo(T* obj, const string& label, const st
 template <class T> void PropertyPane::CollectionCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    std::vector<string> collections;
-   for (int i = 0; i < m_table->m_vcollection.size(); i++)
-      collections.push_back(MakeString(m_table->m_vcollection[i].m_wzName));
+   for (auto pcol : m_table->GetCollections())
+      collections.push_back(MakeString(pcol->m_wzName));
    std::sort(collections.begin(), collections.end(), [](const std::string& a, const std::string& b)
       { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
    collections.insert(collections.begin(), ""s);

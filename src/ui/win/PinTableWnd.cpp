@@ -909,7 +909,7 @@ void PinTableWnd::AddMultiSel(IWinUIPart *const pselPart, const bool add, const 
             int elemIndex = -1;
             if (m_table->GetCollectionIndex(pselPart->GetEditable(), colIndex, elemIndex))
             {
-               CComObject<Collection> *col = m_table->m_vcollection.ElementAt(colIndex);
+               CComObject<Collection> *col = m_table->GetCollections()[colIndex];
                if (col->m_groupElements)
                {
                   for (IEditable *const part : col->GetParts())
@@ -1407,9 +1407,11 @@ void PinTableWnd::DeleteSelection()
    bool inCollection = false;
    for (IWinUIPart *const ptr : m_vseldelete)
    {
-      for (int i = 0; i < m_table->m_vcollection.size() && !inCollection; i++)
+      for (auto pcol : m_table->GetCollections())
       {
-         for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+         if (inCollection)
+            break;
+         for (const IEditable *const part : pcol->GetParts())
          {
             // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
             if (ptr->GetEditable() == part)
@@ -1842,7 +1844,7 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
 #ifndef __STANDALONE__
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)colSubMenu.GetHandle(), LocalString(IDS_TO_COLLECTION).m_szbuffer);
 
-   const int maxItems = m_table->m_vcollection.size() - 1;
+   const int maxItems = (int)m_table->GetCollections().size() - 1;
 
    // run through all collections and list them in the context menu
    // the actual processing is done in IWinUIPart::DoCommand()
@@ -1851,13 +1853,13 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
       UINT flags = MF_POPUP | MF_UNCHECKED;
       if ((maxItems - i) % 32 == 0) // add new column each 32 entries
          flags |= MF_MENUBREAK;
-      colSubMenu.AppendMenu(flags, 0x40000 + i, MakeString(m_table->m_vcollection[i].get_Name()).c_str());
+      colSubMenu.AppendMenu(flags, 0x40000 + i, MakeString(m_table->GetCollections()[i]->get_Name()).c_str());
    }
    if (m_vmultisel.size() == 1)
    {
       if (!psel->IsSubPart())
          for (int i = maxItems; i >= 0; i--)
-            for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+            for (const IEditable *const part : m_table->GetCollections()[i]->GetParts())
                if (psel->GetEditable() == part)
                   colSubMenu.CheckMenuItem(0x40000 + i, MF_CHECKED);
    }
@@ -1872,7 +1874,7 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
          const IEditable *const editable = uiPart->GetEditable();
 
          for (int i = maxItems; i >= 0; i--)
-            for (const IEditable *const part : m_table->m_vcollection[i].GetParts())
+            for (const IEditable *const part : m_table->GetCollections()[i]->GetParts())
                if (editable == part)
                   allIndices.push_back(i);
       }
@@ -1940,12 +1942,8 @@ void PinTableWnd::ListCollections(HWND hwndListView)
 {
    //ListView_DeleteAllItems(hwndListView);
 
-   for (int i = 0; i < m_table->m_vcollection.size(); i++)
-   {
-      CComObject<Collection> *const pcol = m_table->m_vcollection.ElementAt(i);
-
+   for (auto pcol : m_table->GetCollections())
       AddListCollection(hwndListView, pcol);
-   }
 }
 
 void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)

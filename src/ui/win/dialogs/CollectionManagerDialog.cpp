@@ -225,7 +225,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_COL_DOWN_BUTTON:
         {
             const int idx = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-            if (idx != -1 && (idx < pt->m_table->m_vcollection.size() - 1))
+            if (idx != -1 && (idx < (int)pt->m_table->GetCollections().size() - 1))
             {
                 ::SetFocus(hListHwnd);
                 LVITEM lvitem1 = {};
