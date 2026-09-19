@@ -10,6 +10,7 @@
 #include "editor/EditorUIPart.h"
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
+#include <variant>
 
 class LiveUI;
 class PinTable;
@@ -53,62 +54,74 @@ private:
          S_IMAGE,
          S_EDITABLE,
          S_RENDERPROBE
-      } type = S_NONE;
-      union
-      {
-         int index;
-         Material *material;
-         Texture *image;
-         RenderProbe *renderprobe;
       };
-      std::shared_ptr<EditorUIPart> uiPart;
+      struct CameraSel
+      {
+         int viewSetup;
+         bool operator==(const CameraSel &) const = default;
+      };
 
-      Selection() { }
-      Selection(SelectionType t, int index)
+      // Alternative order must match SelectionType (GetType relies on it)
+      using Payload = std::variant<std::monostate, CameraSel, Material *, Texture *, std::shared_ptr<EditorUIPart>, RenderProbe *>;
+      static_assert(std::variant_size_v<Payload> == S_RENDERPROBE + 1);
+      Payload payload;
+
+      Selection() = default;
+      Selection(Material *material)
+         : payload(material)
       {
-         type = t;
-         this->index = index;
       }
-      Selection(std::shared_ptr<EditorUIPart> data)
+      Selection(Texture *image)
+         : payload(image)
       {
-         type = S_EDITABLE;
-         uiPart = data;
       }
-      Selection(Material *data)
+      Selection(const std::shared_ptr<EditorUIPart> &uiPart)
+         : payload(uiPart)
       {
-         type = S_MATERIAL;
-         material = data;
       }
-      Selection(Texture *data)
+      Selection(RenderProbe *probe)
+         : payload(probe)
       {
-         type = S_IMAGE;
-         image = data;
       }
-      Selection(RenderProbe *data)
+      static Selection Camera(int viewSetup)
       {
-         type = S_RENDERPROBE;
-         renderprobe = data;
+         Selection sel;
+         sel.payload = CameraSel { viewSetup };
+         return sel;
       }
-      bool operator==(Selection s) const
+
+      SelectionType GetType() const { return static_cast<SelectionType>(payload.index()); }
+      int GetCamera() const
       {
-         if (type != s.type)
-            return false;
-         switch (type)
-         {
-         case S_NONE: return true;
-         case S_CAMERA: return index == s.index;
-         case S_MATERIAL: return material == s.material;
-         case S_IMAGE: return image == s.image;
-         case S_EDITABLE: return uiPart == s.uiPart;
-         case S_RENDERPROBE: return renderprobe == s.renderprobe;
-         }
-         assert(false);
-         return false;
+         const CameraSel *cam = std::get_if<CameraSel>(&payload);
+         return cam ? cam->viewSetup : -1;
       }
+      Material *GetMaterial() const
+      {
+         const auto *p = std::get_if<Material *>(&payload);
+         return p ? *p : nullptr;
+      }
+      Texture *GetImage() const
+      {
+         const auto *p = std::get_if<Texture *>(&payload);
+         return p ? *p : nullptr;
+      }
+      std::shared_ptr<EditorUIPart> GetPart() const
+      {
+         const auto *p = std::get_if<std::shared_ptr<EditorUIPart>>(&payload);
+         return p ? *p : nullptr;
+      }
+      RenderProbe *GetProbe() const
+      {
+         const auto *p = std::get_if<RenderProbe *>(&payload);
+         return p ? *p : nullptr;
+      }
+
+      bool operator==(const Selection &) const = default;
    } m_selection;
 
-   // Multi selection of editable parts: all currently selected parts, with m_selection.uiPart being the
-   // active one (property pane target and gizmo pivot). Empty unless m_selection.type == S_EDITABLE.
+   // Multi selection of editable parts: all currently selected parts, with m_selection.GetPart() being the
+   // active one (property pane target and gizmo pivot). Empty unless m_selection.GetType() == S_EDITABLE.
    vector<std::shared_ptr<EditorUIPart>> m_multiSel;
    std::shared_ptr<EditorUIPart> m_outlinerAnchor; // Anchor part for shift+click range selection in the outliner
    bool m_boxSelectActive = false;
@@ -157,7 +170,7 @@ private:
    // Outliner
    string m_outlinerFilter;
    bool m_outlinerSelectLiveTab = true;
-   bool IsOutlinerFiltered(const string &name) const;
+   bool MatchesOutlinerFilter(const string &name) const;
 
    // Properties
    bool m_propertiesSelectLiveTab = true;
@@ -165,21 +178,28 @@ private:
    // Rendering
    float m_menubar_height = 0.0f;
    float m_toolbar_height = 0.0f;
-   enum PhysicOverlay
+   enum class PhysicOverlay
    {
-      PO_NONE,
-      PO_SELECTED,
-      PO_ALL
-   } m_physOverlay = PO_NONE;
-   bool m_selectionOverlay = true;
-   enum SelectionFilter
-   {
-      SF_Playfield = 0x0002,
-      SF_Primitives = 0x0004,
-      SF_Lights = 0x0008,
-      SF_Flashers = 0x0010
+      None,
+      Selected,
+      All
    };
-   int m_selectionFilter = SF_Playfield | SF_Primitives | SF_Lights | SF_Flashers;
+   PhysicOverlay m_physOverlay = PhysicOverlay::None;
+   bool m_selectionOverlay = true;
+   enum class SelectionFilter : uint32_t
+   {
+      None = 0,
+      Playfield = 0x0002,
+      Primitives = 0x0004,
+      Lights = 0x0008,
+      Flashers = 0x0010,
+      All = 0x0002 | 0x0004 | 0x0008 | 0x0010
+   };
+   friend constexpr SelectionFilter operator|(const SelectionFilter a, const SelectionFilter b) { return static_cast<SelectionFilter>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); }
+   friend constexpr SelectionFilter operator&(const SelectionFilter a, const SelectionFilter b) { return static_cast<SelectionFilter>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); }
+   friend constexpr SelectionFilter operator~(const SelectionFilter a) { return static_cast<SelectionFilter>(~static_cast<uint32_t>(a)); }
+   static constexpr bool HasFlag(const SelectionFilter flags, const SelectionFilter flag) { return (flags & flag) != SelectionFilter::None; }
+   SelectionFilter m_selectionFilter = SelectionFilter::All;
 
    // UI state
    bool m_isOpened = false;
