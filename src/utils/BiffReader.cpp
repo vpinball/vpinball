@@ -11,14 +11,6 @@ static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 #endif
 
 
-BiffReader::BiffReader(IStream *pistream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
-   : m_pistream(pistream)
-   , m_hcrypthash(hcrypthash)
-   , m_hcryptkey(hcryptkey)
-   , m_version(version)
-{
-}
-
 BiffReader::BiffReader(POLE::Stream *stream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
    : m_stream(stream)
    , m_hcrypthash(hcrypthash)
@@ -27,23 +19,34 @@ BiffReader::BiffReader(POLE::Stream *stream, const int version, const HCRYPTHASH
 {
 }
 
+BiffReader::BiffReader(const uint8_t *data, const uint32_t size, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
+   : m_hcrypthash(hcrypthash)
+   , m_hcryptkey(hcryptkey)
+   , m_data(data)
+   , m_dataSize(size)
+   , m_version(version)
+{
+}
+
+uint64_t BiffReader::ReadSource(unsigned char *pv, const uint32_t count)
+{
+   if (m_stream)
+      return m_stream->read(pv, count);
+
+   const uint32_t available = (m_dataPos < m_dataSize) ? (m_dataSize - m_dataPos) : 0;
+   const uint32_t read = std::min(count, available);
+   memcpy(pv, m_data + m_dataPos, read);
+   m_dataPos += read;
+   return read;
+}
+
 void BiffReader::ReadBytes(void * const pv, const uint32_t count)
 {
    const bool iow = IsOnWine();
    if (iow)
       mtx.lock();
 
-   if (m_stream)
-   {
-      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(pv), count);
-      m_hasError |= read != count;
-   }
-   else
-   {
-      ULONG read = 0;
-      m_hasError |= FAILED(m_pistream->Read(pv, count, &read));
-      m_hasError |= read != count;
-   }
+   m_hasError |= ReadSource(reinterpret_cast<unsigned char *>(pv), count) != count;
 
    if (iow)
       mtx.unlock();
@@ -58,21 +61,11 @@ int BiffReader::GetIntNoHash()
 {
    m_bytesinrecordremaining -= sizeof(int32_t);
 
-   ULONG read = 0;
    const bool iow = IsOnWine();
    if (iow)
       mtx.lock();
    int32_t value;
-   if (m_stream)
-   {
-      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(&value), sizeof(value));
-      m_hasError |= read != sizeof(value);
-   }
-   else
-   {
-      m_hasError |= FAILED(m_pistream->Read(&value, sizeof(value), &read));
-      m_hasError |= read != sizeof(value);
-   }
+   m_hasError |= ReadSource(reinterpret_cast<unsigned char *>(&value), sizeof(value)) != sizeof(value);
    if (iow)
       mtx.unlock();
    return value;
@@ -172,30 +165,11 @@ string BiffReader::AsScript(bool isScriptProtected)
 {
    static_assert(sizeof(char) == 1);
    string script;
-   ULONG read = 0;
    int32_t cchar;
-   if (m_stream)
-   {
-      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(&cchar), sizeof(cchar));
-      m_hasError |= read != sizeof(cchar);
-   }
-   else
-   {
-      m_hasError |= FAILED(m_pistream->Read(&cchar, sizeof(cchar), &read));
-      m_hasError |= read != sizeof(cchar);
-   }
+   m_hasError |= ReadSource(reinterpret_cast<unsigned char *>(&cchar), sizeof(cchar)) != sizeof(cchar);
 
    char *szText = new char[cchar + 1];
-   if (m_stream)
-   {
-      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(szText), cchar);
-      m_hasError |= read != cchar;
-   }
-   else
-   {
-      m_hasError |= FAILED(m_pistream->Read(szText, cchar, &read));
-      m_hasError |= read != cchar;
-   }
+   m_hasError |= ReadSource(reinterpret_cast<unsigned char *>(szText), cchar) != cchar;
 
 #ifndef __STANDALONE__
    if (m_hcrypthash)
@@ -259,16 +233,8 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
    const auto getStreamPos = [this]()
    {
       if (m_stream)
-      {
          return static_cast<uint64_t>(m_stream->tell());
-      }
-      else
-      {
-         ULARGE_INTEGER uiPos;
-         LARGE_INTEGER seek { };
-         m_pistream->Seek(seek, STREAM_SEEK_CUR, &uiPos);
-         return static_cast<uint64_t>(uiPos.QuadPart);
-      }
+      return static_cast<uint64_t>(m_dataPos);
    };
 
    uint64_t pos = skip ? getStreamPos() : 0;

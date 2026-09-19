@@ -117,20 +117,14 @@ void PinUndo::Undo(bool discard)
          editable->AddRef(); // As undelete does not add the reference on the undeleted part (should be fixed there ?)
       }
 
-      for (IStream *const pstm : m_undoRecords.back()->m_vstm)
+      for (FastIStream *const pstm : m_undoRecords.back()->m_vstm)
       {
-         // Go back to beginning of stream to load
-         LARGE_INTEGER foo;
-         foo.QuadPart = 0;
-         pstm->Seek(foo, STREAM_SEEK_SET, nullptr);
-
-         DWORD read;
-         IEditable *pie;
-         pstm->Read(&pie, sizeof(IEditable *), &read);
+         IEditable *const pie = *reinterpret_cast<IEditable *const *>(pstm->m_rg);
          pie->ClearForOverwrite();
 
          // Note that we do not process the loaded PartGroup parenting. This is not an issue as we do not support undoing reparenting (yet)
-         BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, 0, 0);
+         BiffReader reader(
+            reinterpret_cast<const uint8_t *>(pstm->m_rg) + sizeof(IEditable *), pstm->m_cSize - static_cast<unsigned int>(sizeof(IEditable *)), CURRENT_FILE_FORMAT_VERSION, 0, 0);
          pie->Load(reader);
          if (g_pplayer)
          {
