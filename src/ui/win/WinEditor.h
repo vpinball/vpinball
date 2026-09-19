@@ -47,6 +47,7 @@ class PinTable;
 class PinTableMDI;
 class VPXFileFeedback;
 class IWinUIPart;
+class InMemStream;
 
 class WinEditor final : public CMDIDockFrame
 {
@@ -99,7 +100,7 @@ public:
    CComObject<PinTable>* GetActiveTable();
    bool LoadFile(const bool updateEditor);
    void LoadFileName(const string& szFileName, const bool updateEditor);
-   void SetClipboard(vector<IStream*> * const pvstm);
+   void SetClipboard(vector<InMemStream*> * const pvstm);
 
    void DoPlay(const int playMode);
 
@@ -198,7 +199,7 @@ public:
 
    int m_palettescroll;
 
-   vector<IStream*> m_vstmclipboard;
+   vector<InMemStream*> m_vstmclipboard;
 
    int m_ToolCur; // palette button currently pressed
 

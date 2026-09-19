@@ -1308,7 +1308,7 @@ void PinTableWnd::Copy(int x, int y)
       }
    }
 
-   vector<IStream *> vstm;
+   vector<InMemStream *> vstm;
    vector<IEditable *> copied;
    //m_vstmclipboard
    for (IWinUIPart *const psel : GetSelectedParts())
@@ -1320,14 +1320,10 @@ void PinTableWnd::Copy(int x, int y)
          continue;
       copied.push_back(pe);
 
-      const HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
-
-      IStream *pstm;
-      CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
+      InMemStream *const pstm = new InMemStream();
 
       const int type = pe->GetItemType();
-      ULONG writ = 0;
-      pstm->Write(&type, sizeof(int), &writ);
+      pstm->Write(&type, sizeof(int));
 
       BiffWriter writer(pstm, 0);
       pe->Save(writer, false);
@@ -1366,18 +1362,9 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
    for (SSIZE_T i = m_vpxEditor->m_vstmclipboard.size() - 1; i >= 0; i--)
    //for (size_t i=0; i<m_vpxEditor->m_vstmclipboard.size(); i++)
    {
-      IStream *const pstm = m_vpxEditor->m_vstmclipboard[i];
+      InMemStream *const pstm = m_vpxEditor->m_vstmclipboard[i];
 
-      // Copy the stream data to memory
-      LARGE_INTEGER offset {};
-      ULARGE_INTEGER endPos {};
-      pstm->Seek(offset, STREAM_SEEK_END, &endPos);
-      pstm->Seek(offset, STREAM_SEEK_SET, nullptr);
-      vector<uint8_t> data(static_cast<size_t>(endPos.QuadPart));
-      ULONG read = 0;
-      pstm->Read(data.data(), static_cast<ULONG>(data.size()), &read);
-
-      const ItemTypeEnum type = *reinterpret_cast<const ItemTypeEnum *>(data.data());
+      const ItemTypeEnum type = *reinterpret_cast<const ItemTypeEnum *>(pstm->Data());
 
       if (!IWinUIPart::IsViewAllowed(WinUIPartRegistry::GetAllowedViews(type), currentView))
       {
@@ -1388,7 +1375,7 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
          IEditable *const peditNew = EditableRegistry::Create(type);
          if (peditNew)
          {
-            BiffReader reader(data.data() + sizeof(int), static_cast<uint32_t>(data.size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
+            BiffReader reader(pstm->Data() + sizeof(int), static_cast<uint32_t>(pstm->Size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
             peditNew->Load(reader);
             peditNew->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
             //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet
@@ -2186,8 +2173,7 @@ void PinTableWnd::AutoSave()
    m_vpxEditor->SetActionCur(LocalString(IDS_AUTOSAVING).m_szbuffer);
    m_vpxEditor->SetCursorCur(IDC_WAIT);
 
-   FastIStorage *const pstgroot = new FastIStorage();
-   pstgroot->AddRef();
+   InMemStructuredStorage *const pstgroot = new InMemStructuredStorage();
 
    Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
    const HRESULT hr = m_table->SaveToStorage(pstgroot, feedback);
@@ -2211,6 +2197,8 @@ void PinTableWnd::AutoSave()
    }
    else
    {
+      delete pasp->pstg;
+      delete pasp;
       m_vpxEditor->SetActionCur(string());
    }
 

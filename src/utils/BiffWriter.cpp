@@ -10,8 +10,8 @@ static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 #include <fstream>
 #endif
 
-BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
-   : m_pistream(pistream)
+BiffWriter::BiffWriter(InMemStream *stream, const HCRYPTHASH hcrypthash)
+   : m_stream(stream)
    , m_hcrypthash(hcrypthash)
 {
 }
@@ -19,25 +19,21 @@ BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
 void BiffWriter::WriteRecordSize(const int size)
 {
    static_assert(sizeof(size) == sizeof(int32_t));
-   ULONG written = 0;
-   m_hasError |= FAILED(m_pistream->Write(&size, sizeof(int32_t), &written));
-   m_hasError |= written != sizeof(int32_t);
+   m_stream->Write(&size, sizeof(int32_t));
 
 #ifndef __STANDALONE__
-   if (m_hcrypthash && !m_subObjectRecordSizePos.empty() && m_subObjectRecordSizePos.back().QuadPart >= 0)
+   if (m_hcrypthash && !m_subObjectRecordSizePos.empty() && m_subObjectRecordSizePos.back() >= 0)
       CryptHashData(m_hcrypthash, (BYTE *)&size, sizeof(int32_t), 0);
 #endif
 }
 
-void BiffWriter::WriteBytes(const void *pv, const ULONG count)
+void BiffWriter::WriteBytes(const void *pv, const size_t count)
 {
-   ULONG written = 0;
-   m_hasError |= FAILED(m_pistream->Write(pv, count, &written));
-   m_hasError |= written != count;
+   m_stream->Write(pv, count);
 
 #ifndef __STANDALONE__
    if (m_hcrypthash)
-      CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
+      CryptHashData(m_hcrypthash, (BYTE *)pv, (DWORD)count, 0);
 #endif
 }
 
@@ -47,26 +43,17 @@ void BiffWriter::BeginObject(const int objectId, bool isArray, bool isSkippable)
    // BIFF implementation has always been very hacky regarding encapsulating sub objects.
    // Most legacy sub arry/objects are encapsulated by having a tag, then the sub object ended by
    // a ENDB tag, but the initial tag does not encompass the object in its recordsize. Therefore,
-   // if it is not recognized, it won't be skipped and the following field will be wrongly read 
-   // and the ENDB tag will be interpreted as the end of the container object and not as the end 
-   // of the sub object. To solve this, later sub object have increased the record size of their 
+   // if it is not recognized, it won't be skipped and the following field will be wrongly read
+   // and the ENDB tag will be interpreted as the end of the container object and not as the end
+   // of the sub object. To solve this, later sub object have increased the record size of their
    // initial tag, to cover the complete subobject data up to the end of the ENDB block.
    // Sub objects saved with isSkippable must be read with the reader that found them in order
    // to actually read the record bytes.
    WriteRecordSize(sizeof(int32_t));
-   LARGE_INTEGER seek {};
    if (isSkippable)
-   {
-      ULARGE_INTEGER pos;
-      m_pistream->Seek(seek, STREAM_SEEK_CUR, &pos);
-      seek.QuadPart = pos.QuadPart - sizeof(int32_t);
-      m_subObjectRecordSizePos.push_back(seek);
-   }
+      m_subObjectRecordSizePos.push_back(static_cast<int64_t>(m_stream->Tell()) - sizeof(int32_t));
    else
-   {
-      seek.QuadPart = -1;
-      m_subObjectRecordSizePos.push_back(seek);
-   }
+      m_subObjectRecordSizePos.push_back(-1);
    WriteBytes(&objectId, sizeof(int32_t));
 }
 
@@ -152,11 +139,10 @@ void BiffWriter::WriteVector4(const int id, const vec4 &vec)
 void BiffWriter::WriteScript(int fieldId, const string &value)
 {
    // Not really a valid BIFF format: the object tag is directly followed by data without a field id
-   ULONG writ = 0;
    BeginObject(FID(CODE), false, false);
    const int32_t nBytes = (int32_t)value.size();
-   m_hasError |= FAILED(m_pistream->Write(&nBytes, static_cast<ULONG>(sizeof(int32_t)), &writ));
-   m_hasError |= FAILED(m_pistream->Write(value.c_str(), static_cast<ULONG>(nBytes), &writ));
+   m_stream->Write(&nBytes, sizeof(int32_t));
+   m_stream->Write(value.c_str(), nBytes);
 #ifndef __STANDALONE__
    CryptHashData(m_hcrypthash, (const BYTE*)(value.c_str()), static_cast<DWORD>(nBytes), 0);
 #endif
@@ -193,18 +179,15 @@ void BiffWriter::EndObject()
 
    if (!m_subObjectRecordSizePos.empty())
    {
-      LARGE_INTEGER seekStart = m_subObjectRecordSizePos.back();
+      const int64_t seekStart = m_subObjectRecordSizePos.back();
       m_subObjectRecordSizePos.pop_back();
-      if (seekStart.QuadPart >= 0)
+      if (seekStart >= 0)
       {
-         LARGE_INTEGER seek0 {};
-         ULARGE_INTEGER curPos;
-         m_pistream->Seek(seek0, STREAM_SEEK_CUR, &curPos);
-         const int size = static_cast<int>(curPos.QuadPart - 2 * sizeof(int32_t) - seekStart.QuadPart);
-         m_pistream->Seek(seekStart, STREAM_SEEK_SET, nullptr);
+         const uint64_t curPos = m_stream->Tell();
+         const int size = static_cast<int>(curPos - 2 * sizeof(int32_t) - seekStart);
+         m_stream->Seek(static_cast<uint64_t>(seekStart));
          WriteRecordSize((int)sizeof(int32_t) + size);
-         seekStart.QuadPart = curPos.QuadPart;
-         m_pistream->Seek(seekStart, STREAM_SEEK_SET, nullptr);
+         m_stream->Seek(curPos);
       }
    }
 }

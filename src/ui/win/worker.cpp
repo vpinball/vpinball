@@ -3,6 +3,9 @@
 
 #include "core/VPApp.h"
 #include "ui/win/resource.h"
+#include "utils/fileio.h"
+
+#include "pole/pole.h"
 
 
 HANDLE g_hWorkerStarted;
@@ -78,26 +81,19 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 {
    const AutoSavePackage * const pasp = (AutoSavePackage *)lParam;
 
-   FastIStorage * const pstgroot = pasp->pstg;
+   InMemStructuredStorage * const pstgroot = pasp->pstg;
 
    const std::filesystem::path fn = g_app->m_fileLocator.GetTablePath(pasp->table, FileLocator::TableSubFolder::AutoSave, true) / std::format("AutoSave{}.vpx", pasp->tableindex);
 
-   STGOPTIONS stg;
-   stg.usVersion = 1;
-   stg.reserved = 0;
-   stg.ulSectorSize = 4096;
-
-   IStorage* pstgDisk;
-   HRESULT hr;
-   if (SUCCEEDED(hr = StgCreateStorageEx(fn.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-      STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgDisk)))
+   HRESULT hr = E_FAIL;
+   POLE::Storage storage(fn.string().c_str());
+   if (storage.open(true, true) && storage.result() == POLE::Storage::Ok)
    {
-      pstgroot->CopyTo(0, nullptr, nullptr, pstgDisk);
-      hr = pstgDisk->Commit(STGC_DEFAULT);
-      pstgDisk->Release();
+      hr = pstgroot->WriteToStorage(storage) ? S_OK : E_FAIL;
+      storage.close();
    }
 
-   pstgroot->Release();
+   delete pstgroot;
 
    SetEvent(hEvent);
 

@@ -8,6 +8,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "parts/ball.h"
 #include "physics/cabinet/NudgeHandler.h"
+#include "pole/pole.h"
 #include "renderer/Renderer.h"
 
 #ifndef __STANDALONE__
@@ -541,52 +542,31 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 #ifndef __STANDALONE__
       // VPX used to save table persisted values in a OLE container. When the value is missing, try to locate & load from a legacy file.
       {
-         HRESULT hr;
-
          const std::filesystem::path path = g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, false) / "VPReg.stg"sv;
 
-         IStorage *pstgRoot;
-         if (FAILED(StgOpenStorage(path.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
+         POLE::Storage storage(path.string().c_str());
+         if (!storage.open() || storage.result() != POLE::Storage::Ok)
          {
             SetVarBstr(Value, SysAllocString(L""));
             return S_OK;
          }
 
-         IStorage *pstgTable;
-         if (FAILED(pstgRoot->OpenStorage(TableName, nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgTable)))
+         const string streamName = szTableName + '/' + szValueName;
+         if (!storage.exists(streamName))
          {
             SetVarBstr(Value, SysAllocString(L""));
-            pstgRoot->Release();
+            storage.close();
             return S_OK;
          }
 
-         IStream *pstmValue;
-         if (FAILED(pstgTable->OpenStream(ValueName, 0, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmValue)))
-         {
-            SetVarBstr(Value, SysAllocString(L""));
-            pstgTable->Release();
-            pstgRoot->Release();
-            return S_OK;
-         }
-
-         STATSTG statstg;
-         pstmValue->Stat(&statstg, STATFLAG_NONAME);
-
-         const unsigned int size = statstg.cbSize.LowPart / sizeof(WCHAR);
+         POLE::Stream stream(&storage, streamName);
+         const unsigned int size = static_cast<unsigned int>(stream.size()) / sizeof(WCHAR);
 
          BSTR wzT = SysAllocStringLen(nullptr, size);
-
-         DWORD read;
-         hr = pstmValue->Read(wzT, size * (int)sizeof(WCHAR), &read);
+         stream.read(reinterpret_cast<unsigned char *>(wzT), size * sizeof(WCHAR));
          wzT[size] = L'\0';
 
-         pstmValue->Release();
-
-         pstgTable->Commit(STGC_DEFAULT);
-         pstgTable->Release();
-
-         pstgRoot->Commit(STGC_DEFAULT);
-         pstgRoot->Release();
+         storage.close();
 
          SetVarBstr(Value, wzT);
       }

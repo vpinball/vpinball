@@ -16,12 +16,16 @@
    More datatype changes to allow for 32 and 64 bit code, some fixes involving incremental updates, flushing
    Copyright 2013 <srbaum@gmail.com>
 
-   Corrected some of the artificial (=failing on 32bit systems) handling of 64bit sizes/indices, leading to a lot of warnings
-   Note that things can still fail on 32bit systems for large files, but it should at least assert now
-   Also some minor optimizations
+   - Corrected some of the artificial (=failing on 32bit systems) handling of 64bit sizes/indices, leading to a lot of warnings
+   - Note that things can still fail on 32bit systems for large files, but it should at least assert now
+   - Allow multithreaded reading of multiple streams from a single storage (synchronized read access)
+   - Also some minor optimizations
+   - Fixed OLE FAT entries sector indices wrongly considered as 64bit, causing over allocation
+   - Fixed DirTree::flush partial last directory block
+   - Fixed StorageIO::flush not padding file to sector boundary
    2026 VPX team
 
-   Version: 0.5.2 VPX
+   Version: 0.5.4 VPX
 
    Redistribution and use in source and binary forms, with or without 
    modification, are permitted provided that the following conditions 
@@ -884,7 +888,7 @@ DirEntry* DirTree::entry( const std::string& name, bool create, int64 bigBlockSi
            io->bbat->set(nblock, AllocTable::Eof);
            io->bbat->markAsDirty(nblock, bigBlockSize);
            blocks.push_back(nblock);
-           uint64 bbidxn = nblock / (io->bbat->blockSize / sizeof(uint64));
+           uint64 bbidxn = nblock / (io->bbat->blockSize / sizeof(uint32));
            while (bbidxn >= io->header->num_bat)
                io->addbbatBlock();
        }
@@ -1074,8 +1078,11 @@ void DirTree::markAsDirty(uint64 dataIndex, int64 bigBlockSize)
 void DirTree::flush(const std::vector<uint64>& blocks, StorageIO *const io, uint64 bigBlockSize, uint64 sb_start, uint64 sb_size)
 {
     uint64 bufLen = size();
-    assert(bufLen <= std::numeric_limits<size_t>::max());
-    unsigned char *buffer = new unsigned char[(size_t)bufLen];
+    uint64 allocLen = static_cast<uint64>(blocks.size()) * bigBlockSize;
+    if (allocLen < bufLen)
+        allocLen = bufLen;
+    assert(allocLen <= std::numeric_limits<size_t>::max());
+    unsigned char *buffer = new unsigned char[(size_t)allocLen]();
     save(buffer);
     writeU32( buffer + 0x74, (uint32) sb_start );
     writeU32( buffer + 0x78, (uint32) sb_size );
@@ -1090,12 +1097,9 @@ void DirTree::flush(const std::vector<uint64>& blocks, StorageIO *const io, uint
                 break;
             }
         }
-        uint64 bytesToWrite = bigBlockSize;
         uint64 pos = bigBlockSize*idx;
-        if ((bufLen - pos) < bytesToWrite)
-            bytesToWrite = bufLen - pos;
         if (bDirty)
-            io->saveBigBlock(blocks[idx], 0, &buffer[pos], bytesToWrite);
+            io->saveBigBlock(blocks[idx], 0, &buffer[pos], bigBlockSize);
     }
     dirtyBlocks.clear();
     delete[] buffer;
@@ -1478,7 +1482,7 @@ void StorageIO::flush()
         unsigned char *buffer = new unsigned char[(size_t)nBytes];
         uint64 sIdx = 0;
         uint64 dcount = 0;
-        uint64 blockCapacity = bbat->blockSize / sizeof(uint64) - 1;
+        uint64 blockCapacity = bbat->blockSize / sizeof(uint32) - 1;
         size_t blockIdx = 0;
         for (size_t mdIdx = 0; mdIdx < mbat_data.size(); mdIdx++)
         {
@@ -1499,6 +1503,18 @@ void StorageIO::flush()
         saveBigBlocks(mbat_blocks, 0, buffer, nBytes);
         delete[] buffer;
         mbatDirty = false;
+    }
+    // Pad the file to a whole number of sectors; partial writes of the last
+    // data or directory block would otherwise leave the file mid-sector.
+    const uint64 blockSize = bbat->blockSize;
+    uint64 alignedSize = (filesize + blockSize - 1) / blockSize * blockSize;
+    if (writeable && alignedSize > filesize)
+    {
+        std::vector<char> zeros(static_cast<size_t>(alignedSize - filesize), 0);
+        file.seekp(filesize);
+        file.write(zeros.data(), static_cast<std::streamsize>(zeros.size()));
+        fileCheck(file);
+        filesize = alignedSize;
     }
     file.flush();
     fileCheck(file);
@@ -1919,7 +1935,7 @@ uint64 StorageIO::ExtendFile( std::vector<uint64> *chain )
 {
     uint64 newblockIdx = bbat->unused();
     bbat->set(newblockIdx, AllocTable::Eof);
-    uint64 bbidx = newblockIdx / (bbat->blockSize / sizeof(uint64));
+    uint64 bbidx = newblockIdx / (bbat->blockSize / sizeof(uint32));
     while (bbidx >= header->num_bat)
         addbbatBlock();
     bbat->markAsDirty(newblockIdx, bbat->blockSize);
@@ -1944,7 +1960,7 @@ void StorageIO::addbbatBlock()
         mbatDirty = true;
         mbat_data.push_back(newblockIdx);
         uint64 metaIdx = header->num_bat - 109;
-        uint64 idxPerBlock = bbat->blockSize / sizeof(uint64) - 1; //reserve room for index to next block
+        uint64 idxPerBlock = bbat->blockSize / sizeof(uint32) - 1; //reserve room for index to next block
         uint64 idxBlock = metaIdx / idxPerBlock;
         if (idxBlock == mbat_blocks.size())
         {

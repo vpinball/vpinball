@@ -36,6 +36,7 @@
 #include "ui/win/resource.h"
 #include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/worker.h"
+#include "utils/fileio.h"
 #include "utils/objloader.h"
 
 #ifndef __STANDALONE__
@@ -244,10 +245,10 @@ void WinEditor::LoadEditorSetupFromSettings()
    m_convertToUnit = g_app->m_settings.GetEditor_Units();
 }
 
-void WinEditor::SetClipboard(vector<IStream*> * const pvstm)
+void WinEditor::SetClipboard(vector<InMemStream *> *const pvstm)
 {
    for (size_t i = 0; i < m_vstmclipboard.size(); i++)
-      m_vstmclipboard[i]->Release();
+      delete m_vstmclipboard[i];
    m_vstmclipboard.clear();
 
    if (pvstm)

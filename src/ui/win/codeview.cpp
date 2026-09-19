@@ -1122,46 +1122,6 @@ void CodeViewer::Replace()
 #endif
 }
 
-void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
-{
-#ifndef __STANDALONE__
-   size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   char * szText = new char[cchar + 1];
-   ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-
-   // if there was an external vbs loaded, save the script to that file
-   // and ask if to save the original script also to the table
-   bool save_external_script_to_table = true;
-   if (!m_table->m_external_script_name.empty())
-   {
-      FILE* fScript;
-      if ((fopen_s(&fScript, m_table->m_external_script_name.string().c_str(), "wb") == 0) && fScript)
-      {
-         fwrite(szText, 1, cchar, fScript);
-         fclose(fScript);
-      }
-
-      save_external_script_to_table = (MessageBox("Save externally loaded .vbs script also to .vpx table?", "Visual Pinball", MB_YESNO | MB_DEFBUTTON2) == IDYES);
-
-      if (!save_external_script_to_table)
-      {
-         delete[] szText;
-         szText = m_table->m_original_table_script.data();
-         cchar = m_table->m_original_table_script.size();
-      }
-   }
-
-   ULONG writ = 0;
-   pistream->Write(&cchar, (ULONG)sizeof(int), &writ);
-   pistream->Write(szText, (ULONG)(cchar*sizeof(char)), &writ);
-
-   CryptHashData(hcrypthash, (BYTE *)szText, (DWORD)cchar, 0);
-
-   if (save_external_script_to_table)
-      delete[] szText;
-#endif
-}
-
 void CodeViewer::ColorLine(const int line)
 {
    //!!

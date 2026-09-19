@@ -6,6 +6,7 @@
 #include <iomanip>
 
 #include "core/vpversion.h"
+#include "utils/fileio.h"
 
 namespace VPX
 {
@@ -173,19 +174,18 @@ bool Sound::SaveToFile(const std::filesystem::path& filename) const
    return false;
 }
 
-void Sound::SaveToStream(IStream* pstm) const
+void Sound::SaveToStream(InMemStream* pstm) const
 {
-   ULONG writ = 0;
    const int32_t nameLen = static_cast<int32_t>(m_name.length());
    const int32_t pathLen = static_cast<int32_t>(m_path.string().length());
    constexpr int32_t dummyLen = 1;
    constexpr char dummyPath = '\0';
-   pstm->Write(&nameLen, sizeof(int32_t), &writ);
-   pstm->Write(m_name.c_str(), nameLen, &writ);
-   pstm->Write(&pathLen, sizeof(int32_t), &writ);
-   pstm->Write(m_path.string().c_str(), pathLen, &writ);
-   pstm->Write(&dummyLen, sizeof(int32_t), &writ); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
-   pstm->Write(&dummyPath, dummyLen, &writ);
+   pstm->Write(&nameLen, sizeof(int32_t));
+   pstm->Write(m_name.c_str(), nameLen);
+   pstm->Write(&pathLen, sizeof(int32_t));
+   pstm->Write(m_path.string().c_str(), pathLen);
+   pstm->Write(&dummyLen, sizeof(int32_t)); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
+   pstm->Write(&dummyPath, dummyLen);
    if (isWav(m_path))
    {
       const auto waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
@@ -197,28 +197,28 @@ void Sound::SaveToStream(IStream* pstm) const
       wfx.nBlockAlign = waveHeader->wNBlockAlign;
       wfx.wBitsPerSample = waveHeader->wBitsPerSample;
       wfx.cbSize = 0;
-      pstm->Write(&wfx, sizeof(WAVEFORMATEX), &writ);
+      pstm->Write(&wfx, sizeof(WAVEFORMATEX));
       const int32_t sampleDataLength = static_cast<int32_t>(m_data.size() - sizeof(WaveHeader));
-      pstm->Write(&sampleDataLength, sizeof(int32_t), &writ);
-      pstm->Write(m_data.data() + sizeof(WaveHeader), static_cast<ULONG>(sampleDataLength), &writ);
+      pstm->Write(&sampleDataLength, sizeof(int32_t));
+      pstm->Write(m_data.data() + sizeof(WaveHeader), static_cast<size_t>(sampleDataLength));
    }
    else
    {
       const int32_t dataLength = static_cast<int32_t>(m_data.size());
-      pstm->Write(&dataLength, sizeof(int32_t), &writ);
-      pstm->Write(m_data.data(), static_cast<ULONG>(dataLength), &writ);
+      pstm->Write(&dataLength, sizeof(int32_t));
+      pstm->Write(m_data.data(), static_cast<size_t>(dataLength));
    }
 
    // Begin NEW_SOUND_FORMAT_VERSION data
    const uint8_t outputTarget = static_cast<uint8_t>(GetOutputTarget());
-   pstm->Write(&outputTarget, sizeof(uint8_t), &writ);
+   pstm->Write(&outputTarget, sizeof(uint8_t));
    const int32_t volume = GetVolume();
-   pstm->Write(&volume, sizeof(int32_t), &writ);
+   pstm->Write(&volume, sizeof(int32_t));
    const int32_t pan = GetPan();
-   pstm->Write(&pan, sizeof(int32_t), &writ);
+   pstm->Write(&pan, sizeof(int32_t));
    const int32_t frontRearFade = GetFrontRearFade();
-   pstm->Write(&frontRearFade, sizeof(int32_t), &writ);
-   pstm->Write(&volume, sizeof(int32_t), &writ);
+   pstm->Write(&frontRearFade, sizeof(int32_t));
+   pstm->Write(&volume, sizeof(int32_t));
 }
 
 }
