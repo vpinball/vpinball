@@ -103,5 +103,13 @@ public:
 
 private:
    uint32_t m_last_hittime;
-   float m_rumblePeak = 0.f; // strongest impact of the current contact sequence, see Collide()
+   // Contacts of the last RUMBLE_WINDOW_MS, summed for the contact rumble, see Collide()
+   static constexpr uint32_t RUMBLE_WINDOW_MS = 80;
+   static constexpr int RUMBLE_CONTACTS = 32; // more than a slap delivers within a window
+   static constexpr float RUMBLE_FULL_IMPACT = 30.f; // the sum at which the contact rumble saturates in level and length, see InputManager::PlayFlipperContactRumble
+   uint32_t m_rumbleContactMs[RUMBLE_CONTACTS];
+   float m_rumbleContactImpact[RUMBLE_CONTACTS];
+   int m_rumbleContactTail = 0;
+   int m_rumbleContactCount = 0;
+   float m_rumblePlayed = 0.f; // sum last played, reset when the window runs empty
 };
