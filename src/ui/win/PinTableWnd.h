@@ -52,7 +52,7 @@ public:
    void MarkForCreate(IEditable *editable);
    void MarkForDelete(IEditable *editable);
    void EndUndo();
-   void Undo(bool discard = false);
+   void Undo();
    void SetCleanPoint(SaveDirtyState sds);
    void StartUndo();
    void StopUndo();

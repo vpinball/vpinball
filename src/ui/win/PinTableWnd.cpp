@@ -102,9 +102,16 @@ void PinTableWnd::MarkForDelete(IEditable *editable) { m_undo.MarkForDelete(edit
 
 void PinTableWnd::EndUndo() { m_undo.EndUndo(); }
 
-void PinTableWnd::Undo(const bool discard)
+void PinTableWnd::Undo()
 {
-   m_undo.Undo(discard);
+   if (m_undo.IsUndoPastCleanPoint())
+   {
+      const int result = m_vpxEditor->MessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer, "Visual Pinball", MB_YESNO);
+      if (result != IDYES)
+         return;
+   }
+
+   m_undo.Undo();
 
    OnPartChanged(m_table);
 }
