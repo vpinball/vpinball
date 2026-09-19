@@ -17,6 +17,7 @@ class PinTable;
 class Player;
 class InputManager;
 class Renderer;
+class DragPoint;
 
 namespace VPX::EditorUI
 {
@@ -135,6 +136,30 @@ private:
    void RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const;
    bool IsEditablePickable(const IEditable *editable) const;
    void BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
+   void SelectAllParts();
+
+   // Drag point edit mode (entered/exited with Tab when the active selected part has a DragPointCurve):
+   // while active, the part's curve points are rendered and can be selected & transformed in the table XY plane
+   std::shared_ptr<EditorUIPart> m_pointEditPart; // Part whose DragPointCurve is being edited (nullptr when not in point edit mode)
+   vector<DragPoint *> m_pointSel; // Selected drag points of the edited part's curve
+   Selection m_savedSelection; // Selection state saved on mode entry, restored on exit
+   vector<std::shared_ptr<EditorUIPart>> m_savedMultiSel;
+   std::shared_ptr<EditorUIPart> m_savedOutlinerAnchor;
+   bool m_pointDragPending = false; // Left button is down on a selected point (drag not started yet)
+   bool m_pointDragActive = false; // Left button drag is moving the selected points
+   float m_pointDragZ = 0.f; // Table Z coordinate of the plane in which points are dragged
+   Vertex2D m_pointDragPos; // Last drag position in table coordinates
+   void EnterPointEditMode();
+   void ExitPointEditMode(bool restoreSelection);
+   bool IsPointSelected(const DragPoint *point) const;
+   void TogglePointSelection(DragPoint *point);
+   DragPoint *HitTestDragPoint(const ImVec2 &mousePos) const;
+   void BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
+   Vertex2D GetPointSelectionCenter() const;
+   Vertex2D UnprojectToPlane(const ImVec2 &mousePos, float z) const;
+   void FlipPointSelection(bool flipX);
+   void SetPointSelectionSmooth(bool smooth);
+   void DeleteSelectedPoints();
 
    // Decorated editable parts (kept sorted for the outliner, and indexed by editable)
    vector<std::shared_ptr<EditorUIPart>> m_editables;

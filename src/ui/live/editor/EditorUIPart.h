@@ -2,11 +2,14 @@
 
 #include "PropertyPane.h"
 #include "core/ieditable.h"
+#include "parts/dragpoint.h"
 
 #include <functional>
 #include <initializer_list>
 #include <type_traits>
 #include <utility>
+
+class DragPointCurve;
 
 namespace VPX::EditorUI
 {
@@ -76,6 +79,13 @@ public:
    virtual void SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) = 0;
 
    virtual void Render(const EditorRenderContext& ctx) = 0;
+
+   // Returns the editable drag point curve of this part, nullptr if it does not have one
+   virtual DragPointCurve* GetDragPointCurve() { return nullptr; }
+
+   // Returns the Z coordinate at which a point of this part's drag point curve should be displayed
+   // (drag point curves are 2D in the table XY plane, the display height is part specific)
+   virtual float GetDragPointZ(const DragPoint* point) const { return point->m_v.z; }
 
    virtual void UpdatePropertyPane(PropertyPane& props) = 0;
 

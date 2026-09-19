@@ -11,6 +11,7 @@
 
 #include "parts/PartGroup.h"
 #include "parts/primitive.h"
+#include "parts/dragpoint.h"
 
 #include "plugins/VPXPlugin.h"
 
@@ -103,6 +104,7 @@ void EditorUI::Close()
       return;
    m_isOpened = false;
    m_flyMode = false;
+   ExitPointEditMode(false);
    if (m_showRendererInspection)
    {
       m_showRendererInspection = false;
@@ -137,6 +139,21 @@ void EditorUI::RenderUI()
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
    const auto previousMultiSel = m_multiSel;
+
+   // Drag point edit mode housekeeping: exit without restoring the selection if the edited part is no
+   // longer the active selected part, and drop selected points that do not exist anymore (points are
+   // recreated on undo, ...)
+   if (m_pointEditPart)
+   {
+      DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
+      if (IsInspectMode() || curve == nullptr || m_selection.GetType() != Selection::S_EDITABLE || m_selection.GetPart() != m_pointEditPart)
+         ExitPointEditMode(false);
+      else
+      {
+         const vector<CComObject<DragPoint> *> &points = curve->GetPoints();
+         std::erase_if(m_pointSel, [&points](const DragPoint *point) { return std::ranges::find(points, point) == points.end(); });
+      }
+   }
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
 
@@ -320,6 +337,8 @@ void EditorUI::RenderUI()
       case ImGuizmo::SCALE: ImGui::TextUnformatted("Scale"); break;
       default: break;
       }
+      if (m_pointEditPart)
+         ImGui::TextUnformatted("Drag Point Edit (Tab to exit)");
       ImGui::End();
 
       // Side panels
@@ -396,7 +415,18 @@ void EditorUI::RenderUI()
       for (int i = 8; i < 12; i++)
          camViewLH[i] = -camViewLH[i];
       const Matrix3D prevTransform(transform);
-      ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), m_gizmoOperation, m_gizmoMode, (float *)(transform.m));
+      ImGuizmo::OPERATION gizmoOperation = m_gizmoOperation;
+      if (m_pointEditPart)
+      {
+         // Drag point curves are 2D in the table XY plane: restrict gizmo operations to this plane
+         if (gizmoOperation == ImGuizmo::TRANSLATE)
+            gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::TRANSLATE_X | ImGuizmo::TRANSLATE_Y);
+         else if (gizmoOperation == ImGuizmo::ROTATE)
+            gizmoOperation = ImGuizmo::ROTATE_Z;
+         else if (gizmoOperation == ImGuizmo::SCALE)
+            gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Y);
+      }
+      ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), gizmoOperation, m_gizmoMode, (float *)(transform.m));
       if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
       {
          // Mark all selected parts for undo once per drag (m_lastUndoId is reset when the gizmo is released)
@@ -442,6 +472,22 @@ void EditorUI::RenderUI()
       {
          const ImVec2 pos = ctx.Project(transform.GetOrthoNormalPos());
          overlayDrawList->AddCircleFilled(pos, 3.f * m_liveUI.GetDPI(), IM_COL32(255, 255, 255, 255), 16);
+      }
+
+      // In drag point edit mode, render the drag points of the edited part's curve
+      if (m_pointEditPart)
+      {
+         const vector<CComObject<DragPoint> *> &points = m_pointEditPart->GetDragPointCurve()->GetPoints();
+         for (size_t i = 0; i < points.size(); i++)
+         {
+            const ImVec2 pos = ctx.Project(Vertex3Ds(points[i]->m_v.x, points[i]->m_v.y, m_pointEditPart->GetDragPointZ(points[i])));
+            if (pos.x == FLT_MAX)
+               continue;
+            const ImU32 color = IsPointSelected(points[i]) ? IM_COL32(255, 128, 0, 255) : (points[i]->m_smooth ? IM_COL32(80, 160, 255, 255) : IM_COL32(255, 96, 96, 255));
+            const float radius = (i == 0 ? 5.f : 4.f) * m_liveUI.GetDPI(); // First point is drawn slightly larger to mark the curve start
+            overlayDrawList->AddCircleFilled(pos, radius, color, 12);
+            overlayDrawList->AddCircle(pos, radius + m_liveUI.GetDPI(), IM_COL32(0, 0, 0, 255), 12, 1.5f);
+         }
       }
 
       if (m_physOverlay == PhysicOverlay::All || (m_physOverlay == PhysicOverlay::Selected && !m_multiSel.empty()))
@@ -528,10 +574,27 @@ void EditorUI::RenderUI()
 
       // Select: click selects the front-most part (click again to cycle through overlapping parts),
       // shift+click toggles a part in the multi selection, drag box selects parts (shift+drag adds to the selection)
+      // In drag point edit mode, click selects a drag point of the edited curve (shift toggles), dragging a
+      // selected point moves the selected points in the table XY plane, drag box selects points
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
       {
-         m_boxSelectActive = true;
          m_boxSelectStart = ImGui::GetMousePos();
+         DragPoint *const hitPoint = (m_pointEditPart != nullptr) ? HitTestDragPoint(m_boxSelectStart) : nullptr;
+         if (hitPoint != nullptr)
+         {
+            if (io.KeyShift)
+               TogglePointSelection(hitPoint);
+            else if (!IsPointSelected(hitPoint))
+            {
+               m_pointSel.clear();
+               m_pointSel.push_back(hitPoint);
+            }
+            m_pointDragPending = IsPointSelected(hitPoint) && !hitPoint->m_uiLocked;
+            m_pointDragZ = m_pointEditPart->GetDragPointZ(hitPoint);
+            m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_pointDragZ);
+         }
+         else
+            m_boxSelectActive = true;
       }
       if (m_boxSelectActive)
       {
@@ -548,7 +611,14 @@ void EditorUI::RenderUI()
          {
             m_boxSelectActive = false;
             const ImVec2 end = ImGui::GetMousePos();
-            if (fabsf(end.x - m_boxSelectStart.x) > 4.f || fabsf(end.y - m_boxSelectStart.y) > 4.f)
+            if (m_pointEditPart)
+            {
+               if (fabsf(end.x - m_boxSelectStart.x) > 4.f || fabsf(end.y - m_boxSelectStart.y) > 4.f)
+                  BoxSelectPoints(m_boxSelectStart, end, io.KeyShift);
+               else if (!io.KeyShift)
+                  m_pointSel.clear();
+            }
+            else if (fabsf(end.x - m_boxSelectStart.x) > 4.f || fabsf(end.y - m_boxSelectStart.y) > 4.f)
                BoxSelectParts(m_boxSelectStart, end, io.KeyShift);
             else
             {
@@ -595,6 +665,50 @@ void EditorUI::RenderUI()
             }
          }
       }
+
+      // Drag the selected drag points in the table XY plane
+      if (m_pointEditPart && (m_pointDragPending || m_pointDragActive))
+      {
+         if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+         {
+            const Vertex2D pos = UnprojectToPlane(ImGui::GetMousePos(), m_pointDragZ);
+            const Vertex2D delta(pos.x - m_pointDragPos.x, pos.y - m_pointDragPos.y);
+            if (m_pointDragPending)
+            {
+               const ImVec2 dragDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+               if (fabsf(dragDelta.x) > 2.f || fabsf(dragDelta.y) > 2.f)
+               {
+                  // Drag actually starts: mark the edited part for undo once per drag
+                  m_pointDragPending = false;
+                  m_pointDragActive = !m_pointSel.empty();
+                  if (m_pointDragActive)
+                  {
+                     m_undo.BeginUndo();
+                     m_undo.MarkForUndo(m_pointEditPart->GetEditable());
+                     m_undo.EndUndo();
+                  }
+               }
+            }
+            if (m_pointDragActive && (delta.x != 0.f || delta.y != 0.f))
+            {
+               DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
+               for (DragPoint *point : m_pointSel)
+               {
+                  point->m_v.x += delta.x;
+                  point->m_v.y += delta.y;
+               }
+               curve->OnPointsModified();
+               m_renderer->ReinitRenderable(m_pointEditPart->GetEditable()->GetIRenderable());
+               m_player->m_physics->Update(m_pointEditPart->GetEditable());
+            }
+            m_pointDragPos = pos;
+         }
+         else
+         {
+            m_pointDragPending = false;
+            m_pointDragActive = false;
+         }
+      }
    }
    if (m_boxSelectActive && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
       m_boxSelectActive = false; // Canceled: button released outside of the playfield
@@ -606,8 +720,18 @@ void EditorUI::RenderUI()
             m_gizmoOperation = ImGuizmo::OPERATION(0); // Cancel current operation
          else if (m_boxSelectActive)
             m_boxSelectActive = false; // Cancel current box selection
+         else if (m_pointEditPart)
+            ExitPointEditMode(true); // Exit drag point edit mode
          else if (m_selection.GetType() != Selection::S_NONE)
             ClearSelection(); // Cancel current selection
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+      {
+         // Toggle drag point edit mode on the active selected part
+         if (m_pointEditPart)
+            ExitPointEditMode(true);
+         else
+            EnterPointEditMode();
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_F) && !io.KeyCtrl)
       {
@@ -617,11 +741,28 @@ void EditorUI::RenderUI()
       {
          if (io.KeyAlt && !io.KeyCtrl && !io.KeyShift)
             ClearSelection();
+         else if (!io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+         {
+            // Select all: all curve points in drag point edit mode, all pickable parts otherwise
+            if (m_pointEditPart)
+            {
+               m_pointSel.clear();
+               for (CComObject<DragPoint> *point : m_pointEditPart->GetDragPointCurve()->GetPoints())
+                  m_pointSel.push_back(point);
+            }
+            else
+               SelectAllParts();
+         }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
       {
          if (!io.KeyAlt && !io.KeyCtrl && !io.KeyShift)
-            DeleteSelection();
+         {
+            if (m_pointEditPart)
+               DeleteSelectedPoints();
+            else
+               DeleteSelection();
+         }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_H))
       {
@@ -652,7 +793,7 @@ void EditorUI::RenderUI()
          // Grab (translate)
          if (m_camMode == ViewMode::PreviewCam)
             m_camMode = ViewMode::EditorCam;
-         if (io.KeyAlt)
+         if (io.KeyAlt && !m_pointEditPart)
          {
             Matrix3D tmp;
             if (GetSelectionTransform(tmp))
@@ -681,7 +822,7 @@ void EditorUI::RenderUI()
             // Scale
             if (m_camMode == ViewMode::PreviewCam)
                m_camMode = ViewMode::EditorCam;
-            if (io.KeyAlt)
+            if (io.KeyAlt && !m_pointEditPart)
             {
                Matrix3D tmp;
                if (GetSelectionTransform(tmp))
@@ -699,7 +840,7 @@ void EditorUI::RenderUI()
          // Rotate
          if (m_camMode == ViewMode::PreviewCam)
             m_camMode = ViewMode::EditorCam;
-         if (io.KeyAlt)
+         if (io.KeyAlt && !m_pointEditPart)
          {
             Matrix3D tmp;
             if (GetSelectionTransform(tmp))
@@ -994,6 +1135,19 @@ bool EditorUI::IsEditablePickable(const IEditable *editable) const
    return true;
 }
 
+void EditorUI::SelectAllParts()
+{
+   // Select all the pickable parts
+   m_multiSel.clear();
+   for (const auto &uiPart : m_editables)
+   {
+      IEditable *const editable = uiPart->GetEditable();
+      if (editable != nullptr && editable->GetItemType() != eItemPartGroup && IsEditablePickable(editable))
+         m_multiSel.push_back(uiPart);
+   }
+   m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+}
+
 void EditorUI::BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add)
 {
    // Select all the pickable parts whose transform position projects inside the given screen box
@@ -1129,6 +1283,23 @@ void EditorUI::UpdateEditableList()
 
 bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
 {
+   if (m_pointEditPart)
+   {
+      // In drag point edit mode, the gizmo operates on the selected points (positioned at their bounding box center)
+      if (m_pointSel.empty())
+         return false;
+      float minX = FLT_MAX, maxX = -FLT_MAX, minY = FLT_MAX, maxY = -FLT_MAX, z = 0.f;
+      for (const DragPoint *point : m_pointSel)
+      {
+         minX = min(minX, point->m_v.x);
+         maxX = max(maxX, point->m_v.x);
+         minY = min(minY, point->m_v.y);
+         maxY = max(maxY, point->m_v.y);
+         z += m_pointEditPart->GetDragPointZ(point);
+      }
+      transform = Matrix3D::MatrixTranslate(0.5f * (minX + maxX), 0.5f * (minY + maxY), z / (float)m_pointSel.size());
+      return true;
+   }
    if (m_selection.GetType() == Selection::S_EDITABLE)
    {
       const EditorUIPart::TransformMask mask = m_selection.GetPart()->GetTransform(transform);
@@ -1139,6 +1310,29 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
 
 void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation) const
 {
+   if (m_pointEditPart)
+   {
+      // In drag point edit mode, apply the gizmo transform delta to the selected points in the table XY plane
+      if (m_pointSel.empty())
+         return;
+      Matrix3D oldTransform;
+      GetSelectionTransform(oldTransform);
+      Matrix3D invOldTransform(oldTransform);
+      invOldTransform.Invert();
+      const Matrix3D delta = newTransform * invOldTransform;
+      for (DragPoint *point : m_pointSel)
+      {
+         const Vertex3Ds v = delta * point->m_v;
+         point->m_v.x = v.x;
+         point->m_v.y = v.y;
+      }
+      DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
+      curve->OnPointsModified();
+      m_renderer->ReinitRenderable(m_pointEditPart->GetEditable()->GetIRenderable());
+      m_player->m_physics->Update(m_pointEditPart->GetEditable());
+      return;
+   }
+
    if (m_selection.GetType() != Selection::S_EDITABLE)
       return;
 
@@ -1466,6 +1660,25 @@ void EditorUI::UpdatePropertyUI()
       {
       case Selection::S_NONE: TableProperties(props); break;
       case Selection::S_EDITABLE:
+         if (m_pointEditPart && props.BeginSection("Drag Points"s))
+         {
+            ImGui::Text("%d of %d point(s) selected", (int)m_pointSel.size(), (int)m_pointEditPart->GetDragPointCurve()->GetPoints().size());
+            ImGui::BeginDisabled(m_pointSel.empty());
+            if (ImGui::Button("Smooth"))
+               SetPointSelectionSmooth(true);
+            ImGui::SameLine();
+            if (ImGui::Button("Sharp"))
+               SetPointSelectionSmooth(false);
+            ImGui::SameLine();
+            if (ImGui::Button("Flip X"))
+               FlipPointSelection(true);
+            ImGui::SameLine();
+            if (ImGui::Button("Flip Y"))
+               FlipPointSelection(false);
+            ImGui::EndDisabled();
+            ImGui::TextDisabled("Click or box select points, drag or use the gizmo (G/R/S) to move them in the playfield plane, Tab/Esc to exit");
+            props.EndSection();
+         }
          m_undo.BeginUndo();
          m_undo.MarkForUndo(m_selection.GetPart()->GetEditable());
          m_undo.EndUndo();
@@ -1897,6 +2110,185 @@ void EditorUI::MaterialProperties(PropertyPane &props, Material *material)
          [](Material *material, const vec3 &v) { material->m_cRefractionTint = convertColorRGB(v); });
       props.EndSection();
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Drag point edit mode: edit the points of the DragPointCurve of the active selected part.
+// Entered/exited with Tab (or Escape). The selection is saved on entry and restored on exit.
+//
+
+void EditorUI::EnterPointEditMode()
+{
+   if (m_pointEditPart || IsInspectMode() || m_table->IsLocked())
+      return;
+   if (m_selection.GetType() != Selection::S_EDITABLE || m_selection.GetPart() == nullptr || m_selection.GetPart()->GetDragPointCurve() == nullptr)
+      return;
+   m_savedSelection = m_selection;
+   m_savedMultiSel = m_multiSel;
+   m_savedOutlinerAnchor = m_outlinerAnchor;
+   m_pointEditPart = m_selection.GetPart();
+   m_pointSel.clear();
+}
+
+void EditorUI::ExitPointEditMode(bool restoreSelection)
+{
+   m_pointEditPart.reset();
+   m_pointSel.clear();
+   m_pointDragPending = false;
+   m_pointDragActive = false;
+   if (!restoreSelection)
+      return;
+   // Restore the selection as it was when entering this mode, filtering out parts deleted since then
+   const ankerl::unordered_dense::set<const IEditable *> liveParts(m_table->GetParts().begin(), m_table->GetParts().end());
+   std::erase_if(m_savedMultiSel, [&liveParts](const std::shared_ptr<EditorUIPart> &part) { return !liveParts.contains(part->GetEditable()); });
+   m_multiSel = m_savedMultiSel;
+   m_selection = (m_savedSelection.GetType() == Selection::S_EDITABLE && (m_savedSelection.GetPart() == nullptr || !liveParts.contains(m_savedSelection.GetPart()->GetEditable())))
+      ? (m_multiSel.empty() ? Selection() : Selection(m_multiSel.back()))
+      : m_savedSelection;
+   m_outlinerAnchor = (m_savedOutlinerAnchor == nullptr || liveParts.contains(m_savedOutlinerAnchor->GetEditable())) ? m_savedOutlinerAnchor : nullptr;
+}
+
+bool EditorUI::IsPointSelected(const DragPoint *point) const { return std::ranges::find(m_pointSel, point) != m_pointSel.end(); }
+
+void EditorUI::TogglePointSelection(DragPoint *point)
+{
+   const auto it = std::ranges::find(m_pointSel, point);
+   if (it == m_pointSel.end())
+      m_pointSel.push_back(point);
+   else
+      m_pointSel.erase(it);
+}
+
+Vertex2D EditorUI::GetPointSelectionCenter() const
+{
+   if (m_pointSel.empty())
+      return Vertex2D(0.f, 0.f);
+   float minX = FLT_MAX, maxX = -FLT_MAX, minY = FLT_MAX, maxY = -FLT_MAX;
+   for (const DragPoint *point : m_pointSel)
+   {
+      minX = min(minX, point->m_v.x);
+      maxX = max(maxX, point->m_v.x);
+      minY = min(minY, point->m_v.y);
+      maxY = max(maxY, point->m_v.y);
+   }
+   return Vertex2D(0.5f * (minX + maxX), 0.5f * (minY + maxY));
+}
+
+Vertex2D EditorUI::UnprojectToPlane(const ImVec2 &mousePos, float z) const
+{
+   // Compute the mouse ray and intersect it with the table plane at the given Z coordinate
+   const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+   const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
+   const float xcoord = (mousePos.x - rClipWidth) / rClipWidth;
+   const float ycoord = (rClipHeight - mousePos.y) / rClipHeight;
+   Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
+   invMVP.Invert();
+   const Vertex3Ds v3d = invMVP * Vertex3Ds { xcoord, ycoord, 0.f };
+   const Vertex3Ds v3d2 = invMVP * Vertex3Ds { xcoord, ycoord, 1.f };
+   const float dz = v3d2.z - v3d.z;
+   const float t = (fabsf(dz) > 1e-10f) ? (z - v3d.z) / dz : 0.f;
+   return Vertex2D(v3d.x + t * (v3d2.x - v3d.x), v3d.y + t * (v3d2.y - v3d.y));
+}
+
+DragPoint *EditorUI::HitTestDragPoint(const ImVec2 &mousePos) const
+{
+   const RenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   const float maxDist = 10.f * m_liveUI.GetDPI();
+   DragPoint *best = nullptr;
+   float bestDist = maxDist;
+   for (CComObject<DragPoint> *point : m_pointEditPart->GetDragPointCurve()->GetPoints())
+   {
+      const ImVec2 pos = ctx.Project(Vertex3Ds(point->m_v.x, point->m_v.y, m_pointEditPart->GetDragPointZ(point)));
+      if (pos.x == FLT_MAX)
+         continue;
+      const float dx = pos.x - mousePos.x;
+      const float dy = pos.y - mousePos.y;
+      const float dist = sqrtf(dx * dx + dy * dy);
+      if (dist < bestDist)
+      {
+         bestDist = dist;
+         best = point;
+      }
+   }
+   return best;
+}
+
+void EditorUI::BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add)
+{
+   // Select all the drag points of the edited curve projecting inside the given screen box
+   if (!add)
+      m_pointSel.clear();
+   const RenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   const ImVec2 boxMin(std::min(cornerA.x, cornerB.x), std::min(cornerA.y, cornerB.y));
+   const ImVec2 boxMax(std::max(cornerA.x, cornerB.x), std::max(cornerA.y, cornerB.y));
+   for (CComObject<DragPoint> *point : m_pointEditPart->GetDragPointCurve()->GetPoints())
+   {
+      const ImVec2 pos = ctx.Project(Vertex3Ds(point->m_v.x, point->m_v.y, m_pointEditPart->GetDragPointZ(point)));
+      if (pos.x >= boxMin.x && pos.x <= boxMax.x && pos.y >= boxMin.y && pos.y <= boxMax.y && !IsPointSelected(point))
+         m_pointSel.push_back(point);
+   }
+}
+
+void EditorUI::FlipPointSelection(bool flipX)
+{
+   if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked())
+      return;
+   const Vertex2D center = GetPointSelectionCenter();
+   m_undo.BeginUndo();
+   m_undo.MarkForUndo(m_pointEditPart->GetEditable());
+   m_undo.EndUndo();
+   for (DragPoint *point : m_pointSel)
+   {
+      if (flipX)
+         point->m_v.x = 2.f * center.x - point->m_v.x;
+      else
+         point->m_v.y = 2.f * center.y - point->m_v.y;
+   }
+   DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
+   curve->OnPointsModified();
+   m_renderer->ReinitRenderable(m_pointEditPart->GetEditable()->GetIRenderable());
+   m_player->m_physics->Update(m_pointEditPart->GetEditable());
+}
+
+void EditorUI::SetPointSelectionSmooth(bool smooth)
+{
+   if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked())
+      return;
+   m_undo.BeginUndo();
+   m_undo.MarkForUndo(m_pointEditPart->GetEditable());
+   m_undo.EndUndo();
+   for (DragPoint *point : m_pointSel)
+      if (point->m_smooth != smooth)
+         point->ToggleSmooth(); // ToggleSmooth also maintains slingshot flag coherence
+   DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
+   curve->OnPointsModified();
+   m_renderer->ReinitRenderable(m_pointEditPart->GetEditable()->GetIRenderable());
+   m_player->m_physics->Update(m_pointEditPart->GetEditable());
+}
+
+void EditorUI::DeleteSelectedPoints()
+{
+   if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked())
+      return;
+   DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
+   vector<CComObject<DragPoint> *> deletable;
+   for (DragPoint *point : m_pointSel)
+      if (point->CanDelete())
+         deletable.push_back(static_cast<CComObject<DragPoint> *>(point));
+   if (deletable.empty())
+      return;
+   m_undo.BeginUndo();
+   m_undo.MarkForUndo(m_pointEditPart->GetEditable());
+   m_undo.EndUndo();
+   for (CComObject<DragPoint> *point : deletable)
+   {
+      m_pointSel.erase(std::ranges::find(m_pointSel, point));
+      curve->DeletePoint(point);
+   }
+   m_renderer->ReinitRenderable(m_pointEditPart->GetEditable()->GetIRenderable());
+   m_player->m_physics->Update(m_pointEditPart->GetEditable());
 }
 
 
