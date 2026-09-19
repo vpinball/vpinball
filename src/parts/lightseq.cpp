@@ -80,15 +80,13 @@ void LightSeq::RenderSetup(Renderer *renderer)
    m_queue.Head = 0;
    m_queue.Tail = 0;
 
-   // get the number of collections available
-   int size = m_ptable->m_vcollection.size();
-   for (int i = 0; i < size; ++i)
+   for (auto pcol : m_ptable->GetCollections())
    {
       // is the name of this collection the one we are to use?
-      if (m_ptable->m_vcollection[i].m_wzName == m_d.m_wzCollection)
+      if (pcol->m_wzName == m_d.m_wzCollection)
       {
          // yep, set a pointer to this sub-collection
-         m_pcollection = m_ptable->m_vcollection.ElementAt(i);
+         m_pcollection = pcol;
          break;
       }
    }
@@ -111,7 +109,7 @@ void LightSeq::RenderSetup(Renderer *renderer)
    m_GridYCenterAdjust = abs(m_lightSeqGridHeight / 2 - (int)m_GridYCenter);
 
    // allocate the grid for this sequence
-   m_pgridData = new short[m_lightSeqGridHeight*m_lightSeqGridWidth];
+   m_pgridData = new short[m_lightSeqGridHeight * m_lightSeqGridWidth];
    /*if (m_pgridData == nullptr)
    {
       // make the entire collection (for the sequencer) invalid and bomb out
@@ -119,10 +117,10 @@ void LightSeq::RenderSetup(Renderer *renderer)
       return;
    }
    else*/
-      memset((void *)m_pgridData, 0, m_lightSeqGridHeight*m_lightSeqGridWidth * sizeof(short));
+   memset((void*)m_pgridData, 0, m_lightSeqGridHeight * m_lightSeqGridWidth * sizeof(short));
 
    // get the number of elements (objects) in the collection
-   size = static_cast<int>(m_pcollection->GetParts().size());
+   const int size = static_cast<int>(m_pcollection->GetParts().size());
 
    // go though the collection and get the coordinates of all the lights
    for (int i = 0; i < size; ++i)
@@ -136,35 +134,35 @@ void LightSeq::RenderSetup(Renderer *renderer)
 
          if (type == eItemLight)
          {
-             // process a light
-             Light* const pLight = (Light*)m_pcollection->GetParts()[i];
-             pLight->get_X(&x);
-             pLight->get_Y(&y);
+            // process a light
+            Light* const pLight = (Light*)m_pcollection->GetParts()[i];
+            pLight->get_X(&x);
+            pLight->get_Y(&y);
 
-             if (pLight->m_desktopBackdrop)
-             {
-                 // if the light is on the backglass then scale up its Y position
-                 y *= 2.666f; // 2 little devils ;-)
-             }
+            if (pLight->m_desktopBackdrop)
+            {
+               // if the light is on the backglass then scale up its Y position
+               y *= 2.666f; // 2 little devils ;-)
+            }
          }
-         else if(type == eItemFlasher)
+         else if (type == eItemFlasher)
          {
-             Flasher* const pFlasher = (Flasher*)m_pcollection->GetParts()[i];
-             pFlasher->get_X(&x);
-             pFlasher->get_Y(&y);
+            Flasher* const pFlasher = (Flasher*)m_pcollection->GetParts()[i];
+            pFlasher->get_X(&x);
+            pFlasher->get_Y(&y);
          }
          else //if (type == eItemPrimitive)
          {
-             Primitive* const pPrimitive = (Primitive*)m_pcollection->GetParts()[i];
-             pPrimitive->get_X(&x);
-             pPrimitive->get_Y(&y);
+            Primitive* const pPrimitive = (Primitive*)m_pcollection->GetParts()[i];
+            pPrimitive->get_X(&x);
+            pPrimitive->get_Y(&y);
          }
 
          // scale down to suit the size of the light sequence grid
          const unsigned int ix = (int)(x * (float)(1.0 / LIGHTSEQGRIDSCALE));
          const unsigned int iy = (int)(y * (float)(1.0 / LIGHTSEQGRIDSCALE));
          // if on the playfield
-         if ( /*(ix >= 0) &&*/ (ix < (unsigned int)m_lightSeqGridWidth) && //>=0 handled by unsigned int
+         if (/*(ix >= 0) &&*/ (ix < (unsigned int)m_lightSeqGridWidth) && //>=0 handled by unsigned int
             /*(iy >= 0) &&*/ (iy < (unsigned int)m_lightSeqGridHeight)) //>=0 handled by unsigned int
          {
             const int gridIndex = iy * m_lightSeqGridWidth + ix;

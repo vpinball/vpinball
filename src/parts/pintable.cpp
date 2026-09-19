@@ -143,8 +143,8 @@ PinTable::~PinTable()
    for (size_t i = 0; i < m_vrenderprobe.size(); ++i)
       delete m_vrenderprobe[i];
 
-   for (int i = 0; i < m_vcollection.size(); i++)
-      m_vcollection.ElementAt(i)->Release();
+   for (auto pcol : m_vcollection)
+      pcol->Release();
 
    m_psgt->Release();
    m_psgt = nullptr;
@@ -440,7 +440,7 @@ void PinTable::ReorderParts(bool isDrawingOrder)
    }
 }
 
-void PinTable::AddCollection(Collection* collection)
+void PinTable::AddCollection(CComObject<Collection> *collection)
 {
    const auto id = lowerCase(collection->m_wzName);
    assert(m_scriptableNames.find(id) == m_scriptableNames.end());
@@ -451,7 +451,7 @@ void PinTable::AddCollection(Collection* collection)
       m_tableEditor->m_pcv->AddItem((IScriptable *)collection, false);
 }
 
-void PinTable::RemoveCollection(Collection *collection)
+void PinTable::RemoveCollection(CComObject<Collection> *collection)
 {
 #ifndef __STANDALONE__
    auto it = m_scriptableNames.find(lowerCase(collection->m_wzName));
@@ -459,7 +459,10 @@ void PinTable::RemoveCollection(Collection *collection)
    m_scriptableNames.erase(it);
    if (m_tableEditor)
       m_tableEditor->m_pcv->RemoveItem((IScriptable *)collection);
-   m_vcollection.find_erase(collection);
+   const int idx = FindIndexOf(m_vcollection, collection);
+   assert(idx != -1);
+   if (idx != -1)
+      m_vcollection.erase(m_vcollection.begin() + idx);
    collection->Release();
 #endif
 }
@@ -650,16 +653,16 @@ PinTable* PinTable::CopyForPlay() const
 
    PLOGI << "Duplicating collections"; // For profiling
    live_table->m_vcollection.reserve(m_vcollection.size() + live_table->m_vcollection.size());
-   for (int i = 0; i < m_vcollection.size(); i++)
+   for (auto srccol : m_vcollection)
    {
       CComObject<Collection> *pcol;
       CComObject<Collection>::CreateInstance(&pcol);
       pcol->AddRef();
-      pcol->m_wzName = m_vcollection[i].m_wzName;
-      pcol->m_fireEvents = m_vcollection[i].m_fireEvents;
-      pcol->m_stopSingleEvents = m_vcollection[i].m_stopSingleEvents;
-      pcol->m_groupElements = m_vcollection[i].m_groupElements;
-      for (IEditable *const ed : m_vcollection[i].GetParts())
+      pcol->m_wzName = srccol->m_wzName;
+      pcol->m_fireEvents = srccol->m_fireEvents;
+      pcol->m_stopSingleEvents = srccol->m_stopSingleEvents;
+      pcol->m_groupElements = srccol->m_groupElements;
+      for (IEditable *const ed : srccol->GetParts())
       {
          if (dst->m_startupToLive.find(ed) != dst->m_startupToLive.end())
          {
@@ -902,14 +905,15 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                feedback.SetProgress(csaveditems);
             }
 
-            for (int i = 0; i < m_vcollection.size(); i++)
+            int i = 0;
+            for (auto pcol : m_vcollection)
             {
-               const wstring wStmName = L"Collection" + std::to_wstring(i);
+               const wstring wStmName = L"Collection" + std::to_wstring(i++);
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   BiffWriter writer(pstmItem, hch);
-                  m_vcollection[i].Save(writer, false);
+                  pcol->Save(writer, false);
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
@@ -1311,7 +1315,7 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
       writer.WriteInt(FID(SSND), (int)m_vsound.size());
       writer.WriteInt(FID(SIMG), (int)m_vimage.size());
       writer.WriteInt(FID(SFNT), (int)m_vfont.size());
-      writer.WriteInt(FID(SCOL), m_vcollection.size());
+      writer.WriteInt(FID(SCOL), (int)m_vcollection.size());
 
       writer.WriteWideString(FID(NAME), m_wzName);
 
@@ -1854,8 +1858,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
 
          // Resolve collection parts
-         for (int i = 0; i < m_vcollection.size(); i++)
-            m_vcollection[i].InitPostLoad(this);
+         for (auto pcol : m_vcollection)
+            pcol->InitPostLoad(this);
       }
 
       // Authentication block
@@ -1994,9 +1998,9 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   return; // Conflict with another part name
                if ((shortName.find_first_not_of(L"0123456789") != std::string::npos) && script.find(shortNameLCaseS) != std::string::npos) //!!
                   return; // (Potential) conflict with a script variable
-               for (int i = 0; i < m_vcollection.size(); i++)
+               for (auto pcol : m_vcollection)
                {
-                  if (lowerCase(m_vcollection.ElementAt(i)->m_wzName) == shortNameLCase)
+                  if (lowerCase(pcol->m_wzName) == shortNameLCase)
                      return; // Conflict with a collection name
                }
                RenamePart(editable, shortName);
@@ -2568,13 +2572,13 @@ void PinTable::RemoveFont(PinFont * const ppf)
 
 void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
 {
-   const int idx = m_vcollection.find(pcol);
+   const int idx = FindIndexOf(m_vcollection, pcol);
    assert(idx >= 0);
-   m_vcollection.erase(idx);
+   m_vcollection.erase(m_vcollection.begin() + idx);
    if (idx - 1 < 0)
       m_vcollection.push_back(pcol);
    else
-      m_vcollection.insert(pcol, idx - 1);
+      m_vcollection.insert(m_vcollection.begin() + idx - 1, pcol);
 }
 
 FRect3D PinTable::GetBoundingBox() const
@@ -2630,13 +2634,13 @@ void PinTable::ComputeNearFarPlane(const Matrix3D &matWorldView, const float sca
 
 void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 {
-   const int idx = m_vcollection.find(pcol);
+   const int idx = FindIndexOf(m_vcollection, pcol);
    assert(idx >= 0);
-   m_vcollection.erase(idx);
-   if (idx + 1 >= m_vcollection.size())
-      m_vcollection.insert(pcol, 0);
+   m_vcollection.erase(m_vcollection.begin() + idx);
+   if (idx + 1 >= (int)m_vcollection.size())
+      m_vcollection.insert(m_vcollection.begin(), pcol);
    else
-      m_vcollection.insert(pcol, idx + 1);
+      m_vcollection.insert(m_vcollection.begin() + idx + 1, pcol);
 }
 
 void PinTable::FireOptionEvent(OptionEventType eventType)
@@ -2665,18 +2669,18 @@ IEditable *PinTable::GetElementByName(const char * const name) const
 
 void PinTable::ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection)
 {
-   if (colIndex >= m_vcollection.size() || selection.empty())
+   if (colIndex < 0 || (size_t)colIndex >= m_vcollection.size() || selection.empty())
       return;
 
    // if the selection is part of the selected collection remove only these elements
    bool removeOnly = false;
    for (IEditable *const part : selection)
    {
-      for (IEditable *const collectionPart : m_vcollection[colIndex].GetParts())
+      for (IEditable *const collectionPart : m_vcollection[colIndex]->GetParts())
       {
          if (part == collectionPart)
          {
-            m_vcollection[colIndex].RemovePart(part);
+            m_vcollection[colIndex]->RemovePart(part);
             removeOnly = true;
             break;
          }
@@ -2690,36 +2694,38 @@ void PinTable::ToggleCollectionMembership(const int colIndex, const vector<IEdit
    for (IEditable *const part : selection)
    {
       // Multi-select may contain a part together with its sub parts (drag points, light centers): add each part only once
-      if (FindIndexOf(m_vcollection[colIndex].GetParts(), part) == -1)
-         m_vcollection.ElementAt(colIndex)->AddPart(part);
+      if (FindIndexOf(m_vcollection[colIndex]->GetParts(), part) == -1)
+         m_vcollection[colIndex]->AddPart(part);
    }
 }
 
 bool PinTable::GetCollectionIndex(const IEditable * const element, int &collectionIndex, int &elementIndex)
 {
-   for (int i = 0; i < m_vcollection.size(); i++)
+   int i = 0;
+   for (auto pcol : m_vcollection)
    {
-      for (int t = 0; t < static_cast<int>(m_vcollection[i].GetParts().size()); t++)
+      for (int t = 0; t < static_cast<int>(pcol->GetParts().size()); t++)
       {
-         if (element == m_vcollection[i].GetParts()[t])
+         if (element == pcol->GetParts()[t])
          {
             collectionIndex = i;
             elementIndex = t;
             return true;
          }
       }
+      i++;
    }
    return false;
 }
 
 const wstring& PinTable::GetCollectionNameByElement(const IEditable * const element) const
 {
-    for (int i = 0; i < m_vcollection.size(); i++)
-        for (const IEditable *const part : m_vcollection[i].GetParts())
-            if (element == part)
-                return m_vcollection[i].m_wzName;
-    static wstring emptyString;
-    return emptyString;
+   for (auto pcol : m_vcollection)
+      for (const IEditable *const part : pcol->GetParts())
+         if (element == part)
+            return pcol->m_wzName;
+   static wstring emptyString;
+   return emptyString;
 }
 
 Vertex2D PinTable::EvaluateGlassHeight() const
@@ -3917,18 +3923,20 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       wcsncpy_s(rgstr[0], 7, L"<None>");
       rgdw[0] = ~0u;
 
-      for (size_t ivar = 0; ivar < cvar; ivar++)
+      size_t ivar = 0;
+      for (auto pcol : m_vcollection)
       {
-         const size_t len = m_vcollection[(int)ivar].m_wzName.length();
+         const size_t len = pcol->m_wzName.length();
          rgstr[ivar + 1] = (WCHAR *)CoTaskMemAlloc((len + 1) * sizeof(WCHAR));
          if (rgstr[ivar + 1] == nullptr)
             ShowError("DISPID_Collection alloc failed (1)");
          else
          {
-            memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName.c_str(), len * sizeof(WCHAR));
+            memcpy(rgstr[ivar + 1], pcol->m_wzName.c_str(), len * sizeof(WCHAR));
             rgstr[ivar + 1][len] = L'\0';
          }
          rgdw[ivar + 1] = (uint32_t)ivar;
+         ivar++;
       }
       cvar++;
    }
@@ -4091,9 +4099,9 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const size_t len = m_vcollection[(int)dwCookie].m_wzName.length();
+         const size_t len = m_vcollection[dwCookie]->m_wzName.length();
          wzDst = new WCHAR[len+1];
-         memcpy(wzDst, m_vcollection[(int)dwCookie].m_wzName.c_str(), len * sizeof(WCHAR));
+         memcpy(wzDst, m_vcollection[dwCookie]->m_wzName.c_str(), len * sizeof(WCHAR));
          wzDst[len] = L'\0';
       }
    }

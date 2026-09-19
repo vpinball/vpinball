@@ -105,9 +105,8 @@ void SearchSelectDialog::Update()
       ListView_DeleteAllItems(m_hElementList);
 
    int idx = 0;
-   for (int i = 0; i < m_curTable->m_table->m_vcollection.size(); i++)
+   for (auto pcol : m_curTable->m_table->GetCollections())
    {
-      CComObject<Collection> *const pcol = m_curTable->m_table->m_vcollection.ElementAt(i);
       LVITEM lv;
       lv.mask = LVIF_TEXT | LVIF_PARAM;
       lv.iItem = idx;

@@ -14,7 +14,6 @@
 #include "utils/eventproxy.h"
 #include "utils/fileio.h"
 #include "utils/hash.h"
-#include "utils/vector.h"
 
 #include "pole/pole.h"
 
@@ -497,18 +496,22 @@ private:
 
 #pragma region Collection
 public:
-   void AddCollection(Collection *collection);
-   void RemoveCollection(Collection *collection);
+   void AddCollection(CComObject<Collection> *collection);
+   void RemoveCollection(CComObject<Collection> *collection);
    void RenameCollection(Collection *collection, const wstring &newName);
-   bool GetCollectionIndex(const IEditable *const element, int &collectionIndex, int &elementIndex);
-   void ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection);
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
+   const vector<CComObject<Collection> *> &GetCollections() const { return m_vcollection; }
+   bool GetCollectionIndex(const IEditable *const element, int &collectionIndex, int &elementIndex);
+   void ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection);
    const wstring &GetCollectionNameByElement(const IEditable *const element) const;
 
-   VectorProtected<CComObject<Collection>> m_vcollection;
+private:
+   vector<CComObject<Collection> *> m_vcollection;
 #pragma endregion
 
+
+public:
    std::filesystem::path m_filename;
    string m_title;
 
