@@ -17,7 +17,7 @@ FlipperUIPart::TransformMask FlipperUIPart::GetTransform(Matrix3D& transform)
 {
    const float height = m_flipper->GetPTable()->GetSurfaceHeight(m_flipper->m_d.m_szSurface, m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y);
    transform = Matrix3D::MatrixTranslate(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, height);
-   return static_cast<TransformMask>(TM_TransAny | TM_RotAny);
+   return TM_TransAny;
 }
 
 void FlipperUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)

@@ -53,7 +53,7 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Combo<Ramp>(
          m_ramp, "Type"s, vector<string> { "Flat"s, "4 Wires"s, "2 Wires"s, "3 Wires Left"s, "3 Wires Right"s, "1 Wire"s }, //
          [](const Ramp* ramp) { return static_cast<int>(ramp->m_d.m_type); }, //
-         [](Ramp* ramp, int v) { ramp->m_d.m_szImage = static_cast<RampType>(v); });
+         [](Ramp* ramp, int v) { ramp->m_d.m_type = static_cast<RampType>(v); });
       props.ImageCombo<Ramp>(
          m_ramp, "Image"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_szImage; }, //

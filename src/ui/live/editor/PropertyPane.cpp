@@ -61,7 +61,7 @@ void PropertyPane::Header(const string& typeName, const std::function<wstring()>
    const wstring wname = getName();
    string name = MakeString(wname);
    if ( ImGui::InputText("##Name", &name))
-      setName(wname);
+      setName(MakeWString(name));
    ImGui::EndDisabled();
    ImGui::Separator();
 }
