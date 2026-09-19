@@ -551,8 +551,16 @@ public:
    Settings m_settings; // Settings for this table (apply overrides above application settings)
 
    PinTable * m_liveBaseTable = nullptr; // Defined when this table is a live shallow copy of another table
-   template <class T> T *GetLiveFromStartup(T *obj) { return static_cast<T *>(m_startupToLive[obj]); }
-   template <class T> T *GetStartupFromLive(T *obj) { return static_cast<T *>(m_liveToStartup[obj]); }
+   template <class T> T *GetLiveFromStartup(T *obj)
+   {
+      const auto it = m_startupToLive.find(obj);
+      return it != m_startupToLive.end() ? static_cast<T *>(it->second) : nullptr;
+   }
+   template <class T> T *GetStartupFromLive(T *obj)
+   {
+      const auto it = m_liveToStartup.find(obj);
+      return it != m_liveToStartup.end() ? static_cast<T *>(it->second) : nullptr;
+   }
 
    // FIXME circular dependency with PinTableWnd, needed while splitting Win32 editor from core parts, but must be removed afterward
    class PinTableWnd *m_tableEditor = nullptr;
