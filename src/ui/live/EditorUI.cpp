@@ -709,7 +709,10 @@ void EditorUI::RenderUI()
             m_lastUndoPart = nullptr;
             m_lastUndoId = 0;
             if (m_table->m_liveBaseTable == nullptr)
+            {
+               // TODO handle IsUndoPastCleanPoint
                m_undo.Undo();
+            }
          }
          else if (!io.KeyShift && !io.KeyAlt)
          { // Wireframe shade mode selection
@@ -1233,7 +1236,7 @@ void EditorUI::UpdatePropertyUI()
          }
          else
          {
-            m_undo.Undo(true);
+            m_undo.Discard();
          }
          if (props.GetModifiedField() > 0)
          {
