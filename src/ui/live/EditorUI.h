@@ -107,6 +107,22 @@ private:
       }
    } m_selection;
 
+   // Multi selection of editable parts: all currently selected parts, with m_selection.uiPart being the
+   // active one (property pane target and gizmo pivot). Empty unless m_selection.type == S_EDITABLE.
+   vector<std::shared_ptr<EditorUIPart>> m_multiSel;
+   std::shared_ptr<EditorUIPart> m_outlinerAnchor; // Anchor part for shift+click range selection in the outliner
+   bool m_boxSelectActive = false;
+   ImVec2 m_boxSelectStart;
+   bool IsPartSelected(const std::shared_ptr<EditorUIPart> &part) const;
+   bool IsEditableSelected(const IEditable *editable) const;
+   void ClearSelection();
+   void SetSelection(const Selection &selection);
+   void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
+   void SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part);
+   void RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const;
+   bool IsEditablePickable(const IEditable *editable) const;
+   void BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
+
    // Decorated editable parts (kept sorted for the outliner, and indexed by editable)
    vector<std::shared_ptr<EditorUIPart>> m_editables;
    ankerl::unordered_dense::map<const IEditable *, std::shared_ptr<EditorUIPart>> m_editableMap;
@@ -198,7 +214,7 @@ private:
       ~RenderContext() override = default;
 
       bool NeedsLiveTableSync() const override { return m_needsLiveTableSync; }
-      ImU32 GetColor(bool selected) const override { return selected ? IM_COL32(255, 128, 0, 255) : IM_COL32_BLACK; };
+      ImU32 GetColor(bool selected) const override { return selected ? (m_isActive ? IM_COL32(255, 128, 0, 255) : IM_COL32(192, 96, 0, 255)) : IM_COL32_BLACK; };
       bool IsSelected() const override { return m_isSelected; }
       bool IsShowInvisible() const override;
       ViewMode GetViewMode() const override { return m_viewMode; }
@@ -211,6 +227,7 @@ private:
       void DrawWireframe(IEditable *editable) const override;
 
       bool m_isSelected = false;
+      bool m_isActive = false;
 
    private:
       Player *m_player;
