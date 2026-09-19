@@ -2084,7 +2084,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, IWinUIPart *cons
             IEditable *const pedit = m_allHitElements[i]->GetEditable();
             if (pedit)
             {
-               const string szTemp = m_table->GetElementName(pedit);
+               const string szTemp = pedit->GetName();
                if (!szTemp.empty())
                {
                   //!! what a hack!

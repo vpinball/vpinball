@@ -671,7 +671,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, fl
    float elasticity, float elasticityFalloff, float friction, float scatterAngle)
 {
    Material *const pMat = m_table->GetMaterial(MakeString(pVal));
-   if (pMat != m_table->m_dummyMaterial.get())
+   if (!m_table->IsDummyMaterial(pMat))
    {
       pMat->m_fWrapLighting = wrapLighting;
       pMat->m_fRoughness = roughness;
@@ -700,7 +700,7 @@ STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, VARIANT *wrapLighting, VA
    VARIANT *elasticity, VARIANT *elasticityFalloff, VARIANT *friction, VARIANT *scatterAngle)
 {
    const Material *const pMat = m_table->GetMaterial(MakeString(pVal));
-   if (pMat != m_table->m_dummyMaterial.get())
+   if (!m_table->IsDummyMaterial(pMat))
    {
       CComVariant(pMat->m_fWrapLighting).Detach(wrapLighting);
       CComVariant(pMat->m_fRoughness).Detach(roughness);
@@ -727,7 +727,7 @@ STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, VARIANT *wrapLighting, VA
 STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticity, float elasticityFalloff, float friction, float scatterAngle)
 {
    Material *const pMat = m_table->GetMaterial(MakeString(pVal));
-   if (pMat != m_table->m_dummyMaterial.get())
+   if (!m_table->IsDummyMaterial(pMat))
    {
       pMat->m_fElasticity = elasticity;
       pMat->m_fElasticityFalloff = elasticityFalloff;
@@ -742,7 +742,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticit
 STDMETHODIMP ScriptGlobalTable::GetMaterialPhysics(BSTR pVal, VARIANT *elasticity, VARIANT *elasticityFalloff, VARIANT *friction, VARIANT *scatterAngle)
 {
    const Material *const pMat = m_table->GetMaterial(MakeString(pVal));
-   if (pMat != m_table->m_dummyMaterial.get())
+   if (!m_table->IsDummyMaterial(pMat))
    {
       CComVariant(pMat->m_fElasticity).Detach(elasticity);
       CComVariant(pMat->m_fElasticityFalloff).Detach(elasticityFalloff);
@@ -758,7 +758,7 @@ STDMETHODIMP ScriptGlobalTable::GetMaterialPhysics(BSTR pVal, VARIANT *elasticit
 STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 {
    Material * const pMat = m_table->GetMaterial(MakeString(pVal));
-   if (pMat != m_table->m_dummyMaterial.get())
+   if (!m_table->IsDummyMaterial(pMat))
       pMat->m_cBase = newVal;
    else
       return E_FAIL;

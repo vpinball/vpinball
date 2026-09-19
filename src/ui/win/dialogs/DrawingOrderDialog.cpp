@@ -84,7 +84,7 @@ BOOL DrawingOrderDialog::OnInitDialog()
       IEditable *const pedit = m_drawingOrderSelect ? selection[i]->GetEditable() : ptw->m_allHitElements[i]->GetEditable();
       if (pedit)
       {
-         const string szTemp = PinTable::GetElementName(pedit);
+         const string szTemp = pedit->GetName();
          if (!szTemp.empty())
          {
             lv.iItem = (int)i;

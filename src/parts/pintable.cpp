@@ -516,14 +516,14 @@ void PinTable::SetDirtyDraw()
       m_tableEditor->Redraw();
 }
 
-PinTable* PinTable::CopyForPlay()
+PinTable* PinTable::CopyForPlay() const
 {
-   PinTable * const src = this;
+   const PinTable * const src = this;
    CComObject<PinTable> *live_table;
    CComObject<PinTable>::CreateInstance(&live_table);
    live_table->AddRef();
-   live_table->m_liveBaseTable = this;
-   AddRef(); // as the live table holds a reference on this
+   live_table->m_liveBaseTable = const_cast<PinTable*>(this);
+   const_cast<PinTable *>(this)->AddRef(); // as the live table holds a reference on this
 
    CComObject<PinTable> *dst = live_table;
 
@@ -2652,13 +2652,6 @@ void PinTable::FireOptionEvent(OptionEventType eventType)
    CComVariant rgvar[1] = { CComVariant(event) };
    DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
    FireDispID(DISPID_GameEvents_OptionEvent, &dispparams);
-}
-
-string PinTable::GetElementName(IEditable *pedit)
-{
-   if (pedit)
-      return pedit->GetName();
-   return string();
 }
 
 IEditable *PinTable::GetElementByName(const char * const name) const
