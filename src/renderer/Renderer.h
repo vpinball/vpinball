@@ -31,6 +31,7 @@ public:
    void SetFlip(ModelViewProj::FlipMode flipMode); // Flip the rendered image horizontally and/or vertically (e.g. for rear projection setups), applied to base MVP
    void SetViewProj(const Matrix3D& view, const Matrix3D& proj); // Override the MVP, applied to the base MVP
    void SetReflection(const Matrix3D& reflectionMatrix); // Set a reflection matrix to be applied to the view matrix, used for mirror reflections, applied to current MVP, NOT the base MVP
+   void ApplyViewJitter(const float xpixoff, const float ypixoff); // Apply a sub pixel offset to the projection of the current MVP (same offset as InitLayout but without resetting view and base MVP, allowing to jitter a reflected MVP)
    const ModelViewProj& GetMVP() const { return m_mvp; }
    Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const;
    Vertex3Ds Get3DPointFrom2D(const int width, const int height, const Vertex2D& p, float z);
@@ -42,16 +43,8 @@ public:
    void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD);
    void UpdateStereoShaderState();
 
-   void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
-   bool IsUsingStaticPrepass() const
-   {
-      #ifdef ENABLE_BGFX
-      // Static prepass is not compatible with MSAA as BGFX does not allow to blit between MSAA textures
-      return !GetMSAABackBufferTexture()->IsMSAA() && (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR);
-      #else
-      return (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR);
-      #endif
-   }
+   void DisableStaticPrePass(const bool disable);
+   bool IsUsingStaticPrepass() const;
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
 
    enum class ShadeMode
@@ -180,8 +173,8 @@ public:
    enum RenderMask : unsigned int
    {
       DEFAULT = 0,                // No flag, just render everything
-      STATIC_ONLY = 1 << 0,       // Disable non static part rendering (for static prerendering)
-      DYNAMIC_ONLY = 1 << 1,      // Disable static part rendering
+      STATIC_ONLY = 1 << 0,       // Static part prerendering
+      DYNAMIC_ONLY = 1 << 1,      // Dynamic part rendering (after a static part prerendering)
       LIGHT_BUFFER = 1 << 2,      // Transmitted light rendering
       REFLECTION_PASS = 1 << 3,   // Reflection pass, only render reflected elements
       DISABLE_LIGHTMAPS = 1 << 4, // Disable lightmaps, useful for reflection probe parallel to lightmap ot avoid doubling them
@@ -218,15 +211,15 @@ public:
 private:
    void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force);
    void RenderItem(IEditable* const renderable, bool isNoBackdrop);
-   void RenderStaticPrepass();
-   void RenderDynamics();
+   void RenderStatics(); // Render background, then static parts if IsUsingStaticPrepass
+   void RenderDynamics(); // Render static parts if not IsUsingStaticPrepass, then render dynamic parts
    void DrawBackground();
    void DrawBulbLightBuffer();
    bool IsBloomEnabled() const;
    std::shared_ptr<BaseTexture> EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
 
    // Postprocess passes
-   void UpdateAmbientOcclusion(RenderTarget* renderedRT);
+   void UpdateAmbientOcclusion(RenderTarget* renderedRT, unsigned int jitterIndex);
    void UpdateBloom(RenderTarget* renderedRT);
    void SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT, bool isFullTonemap);
    RenderTarget* ApplyTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT);
@@ -313,6 +306,7 @@ private:
    bool m_isStaticPrepassDirty = true;
    int m_disableStaticPrepass = 0;
    RenderTarget* m_staticPrepassRT = nullptr;
+   int m_staticPrepassAccumCount = 0; // Number of samples accumulated so far by the temporal static prerendering
    unsigned int m_statsDrawnStaticTriangles = 0;
    RenderProbe::ReflectionMode m_maxReflectionMode;
    
