@@ -894,6 +894,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/BumperUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/DecalUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/DispReelUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/EditorUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/EditorUIPartRegistry.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/FlasherUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/FlipperUIPart.cpp" />

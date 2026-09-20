@@ -23,6 +23,7 @@ namespace VPX::EditorUI
 {
 
 class EditorUI final
+   : private DragPointEditContext
 {
 public:
    EditorUI(LiveUI &liveUI);
@@ -156,11 +157,14 @@ private:
    void TogglePointSelection(DragPoint *point);
    DragPoint *HitTestDragPoint(const ImVec2 &mousePos) const;
    void BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
-   Vertex2D GetPointSelectionCenter() const;
    Vertex2D UnprojectToPlane(const ImVec2 &mousePos, float z) const;
-   void FlipPointSelection(bool flipX);
-   void SetPointSelectionSmooth(bool smooth);
+   void AddPointOnNearestSegment();
    void DeleteSelectedPoints();
+
+   // DragPointEditContext implementation
+   const vector<DragPoint *> &GetSelectedPoints() const override { return m_pointSel; }
+   void BeginPointEdit() override;
+   void EndPointEdit() override;
 
    // Decorated editable parts (kept sorted for the outliner, and indexed by editable)
    vector<std::shared_ptr<EditorUIPart>> m_editables;

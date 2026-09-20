@@ -31,9 +31,22 @@ void SurfaceUIPart::RenderOverlay(const EditorRenderContext& ctx)
    ctx.DrawWireframe(m_part);
 }
 
+void SurfaceUIPart::UpdatePointZField(PropertyPane& props, DragPoint* point)
+{
+   // Surface drag points have no Z of their own: show the surface height range instead
+   ImGui::BeginDisabled();
+   props.InputFloat2<Surface>(
+      m_part, "Z Range"s, //
+      [](const Surface* surf) { return Vertex2D(surf->m_d.m_heightbottom, surf->m_d.m_heighttop); }, //
+      [](Surface*, const Vertex2D&) {}, PropertyPane::Unit::VPLength, 1);
+   ImGui::EndDisabled();
+}
+
 void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Surface"s, m_part);
+
+   UpdateCurveSection(props);
 
    if (props.BeginSection("Visuals"s))
    {

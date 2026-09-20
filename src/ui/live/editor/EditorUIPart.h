@@ -42,6 +42,20 @@ public:
 };
 
 
+// Editor interface exposed to a UIPart while its drag point curve is being edited (point edit mode).
+// It gives access to the current point selection and to the editor-side side effects
+// (undo marking, renderable/physics refresh) needed by point editing commands.
+class DragPointEditContext
+{
+public:
+   virtual ~DragPointEditContext() = default;
+
+   virtual const vector<DragPoint*>& GetSelectedPoints() const = 0;
+   virtual void BeginPointEdit() = 0; // Mark the edited part for undo, before modifying its curve points
+   virtual void EndPointEdit() = 0; // Commit point modifications: refresh curve bounds, rendering & physics
+};
+
+
 class EditorUIPart
 {
 public:
@@ -87,9 +101,34 @@ public:
    // (drag point curves are 2D in the table XY plane, the display height is part specific)
    virtual float GetDragPointZ(const DragPoint* point) const { return point->m_v.z; }
 
+   // Drag point edit mode: the editor sets the context while this part's curve is being edited
+   void SetPointEditContext(DragPointEditContext* ctx) { m_pointEditCtx = ctx; }
+
+   // Adds a drag point on the curve segment nearest to pos (in table XY coordinates), returning it (nullptr on failure)
+   DragPoint* AddPointOnCurve(const Vertex2D& pos);
+
    virtual void UpdatePropertyPane(PropertyPane& props) = 0;
 
+protected:
+   // Renders the 'Curve' section of the property pane (only shown while in drag point edit mode)
+   void UpdateCurveSection(PropertyPane& props);
+
+   // Inserts a new drag point on the curve segment nearest to pos (default implementation for closed 2D curves)
+   virtual void InsertPointOnCurve(const Vertex2D& pos);
+   // Whether points added to the curve are smooth by default
+   virtual bool IsNewPointSmooth() const { return false; }
+   // Whether the curve points can be flagged as slingshot segments (surfaces only)
+   virtual bool HasSlingshotSegments() const { return false; }
+   // Renders the read only Z coordinate field of a single selected drag point in the curve section
+   virtual void UpdatePointZField(PropertyPane& props, DragPoint* point);
+
 private:
+   void SetSelectedPointsSmooth(bool smooth);
+   void FlipSelectedPoints(bool flipX);
+   void AlignSelectedPoints(bool onX, bool toMax);
+   void ToggleSelectedPointsSlingshot();
+
+   DragPointEditContext* m_pointEditCtx = nullptr;
    IEditable* const m_editable;
    string m_outlinerPath;
 };

@@ -31,9 +31,16 @@ void RampUIPart::RenderOverlay(const EditorRenderContext& ctx)
    ctx.DrawWireframe(m_part);
 }
 
+void RampUIPart::InsertPointOnCurve(const Vertex2D& pos)
+{
+   m_part->AddPoint(pos, true); // Ramp points are usually always smooth
+}
+
 void RampUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Ramp"s, m_part);
+
+   UpdateCurveSection(props);
 
    if (props.BeginSection("Visuals"s))
    {

@@ -20,6 +20,10 @@ public:
    void RenderOverlay(const EditorRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
+
+private:
+   bool HasSlingshotSegments() const override { return true; }
+   void UpdatePointZField(PropertyPane& props, DragPoint* point) override;
 };
 
 }

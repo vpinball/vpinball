@@ -20,6 +20,9 @@ public:
    void RenderOverlay(const EditorRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
+
+private:
+   bool IsNewPointSmooth() const override { return true; }
 };
 
 }

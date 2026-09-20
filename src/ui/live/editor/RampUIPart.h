@@ -20,6 +20,9 @@ public:
    void RenderOverlay(const EditorRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
+
+private:
+   void InsertPointOnCurve(const Vertex2D& pos) override;
 };
 
 }

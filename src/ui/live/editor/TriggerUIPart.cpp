@@ -32,6 +32,8 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Trigger"s, m_part);
 
+   UpdateCurveSection(props);
+
    if (props.BeginSection("Visuals"s))
    {
       props.Checkbox<Trigger>(
