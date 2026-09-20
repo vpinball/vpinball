@@ -134,7 +134,8 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+      // Backdrop lights are flat, in the 2D backdrop XY plane
+      const float height = m_desktopBackdrop ? 0.f : m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
       switch (m_d.m_shape)
       {

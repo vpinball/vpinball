@@ -15,6 +15,12 @@ FlasherUIPart::FlasherUIPart(Flasher* flasher)
 FlasherUIPart::TransformMask FlasherUIPart::GetTransform(Matrix3D& transform)
 {
    const Vertex2D center = m_part->GetCenter();
+   if (m_part->m_desktopBackdrop)
+   {
+      // Backdrop flashers are flat, in the 2D backdrop XY plane (only in plane rotation applies)
+      transform = Matrix3D::MatrixRotateZ(ANGTORAD(m_part->m_d.m_rotZ)) * Matrix3D::MatrixTranslate(center.x, center.y, 0.f);
+      return static_cast<TransformMask>(TM_TransAny | TM_RotZ);
+   }
    const Matrix3D trans = Matrix3D::MatrixTranslate(center.x, center.y, m_part->m_d.m_height);
    const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(m_part->m_d.m_rotX));
    const Matrix3D roty = Matrix3D::MatrixRotateY(ANGTORAD(m_part->m_d.m_rotY));
@@ -27,6 +33,11 @@ void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 {
    const Vertex2D center = m_part->GetCenter();
    m_part->m_curve.TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
+   if (m_part->m_desktopBackdrop)
+   {
+      m_part->put_RotZ(rot.z);
+      return;
+   }
    m_part->put_Height(pos.z);
    m_part->put_RotX(rot.x);
    m_part->put_RotY(rot.y);

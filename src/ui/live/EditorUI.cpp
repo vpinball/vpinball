@@ -119,6 +119,17 @@ void EditorUI::ResetCameraFromPlayer()
    m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_renderer->GetMVP().GetView(0) * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
 }
 
+void EditorUI::SetBackdropCamera()
+{
+   // Setup the editor camera to frame the desktop backdrop (a flat rectangle in EDITOR_BG_WIDTH x EDITOR_BG_HEIGHT coordinates, Y axis going down)
+   const ImGuiIO &io = ImGui::GetIO();
+   m_camDistance = 0.5f * max((float)EDITOR_BG_HEIGHT, (float)EDITOR_BG_WIDTH * io.DisplaySize.y / io.DisplaySize.x);
+   const vec3 eye((float)EDITOR_BG_WIDTH * 0.5f, (float)EDITOR_BG_HEIGHT * 0.5f, -m_camDistance);
+   const vec3 at((float)EDITOR_BG_WIDTH * 0.5f, (float)EDITOR_BG_HEIGHT * 0.5f, 0.f);
+   constexpr vec3 up { 0.f, -1.f, 0.f };
+   m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
+}
+
 void EditorUI::Render3D()
 {
    UpdateEditableList();
@@ -139,6 +150,16 @@ void EditorUI::RenderUI()
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
    const auto previousMultiSel = m_multiSel;
+
+   // In desktop backdrop mode, only backdrop parts can be selected and edited, and conversely
+   {
+      const bool backdropMode = m_camMode == ViewMode::DesktopBackdrop;
+      std::erase_if(m_multiSel, [backdropMode](const std::shared_ptr<EditorUIPart> &part) { return part->GetEditable()->m_desktopBackdrop != backdropMode; });
+      if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
+         m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+      if (m_outlinerAnchor && m_outlinerAnchor->GetEditable()->GetItemType() != eItemPartGroup && m_outlinerAnchor->GetEditable()->m_desktopBackdrop != backdropMode)
+         m_outlinerAnchor.reset();
+   }
 
    // Drag point edit mode housekeeping: exit without restoring the selection if the edited part is no
    // longer the active selected part, and drop selected points that do not exist anymore (points are
@@ -383,7 +404,7 @@ void EditorUI::RenderUI()
       const Matrix3D proj = YAxis * m_camProj;
       m_renderer->SetViewProj(view, proj);
 
-      if (m_perspectiveCam)
+      if (m_perspectiveCam && m_camMode != ViewMode::DesktopBackdrop) // The desktop backdrop is a 2D view, always edited with an orthographic camera
       {
          // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
          // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
@@ -416,9 +437,9 @@ void EditorUI::RenderUI()
          camViewLH[i] = -camViewLH[i];
       const Matrix3D prevTransform(transform);
       ImGuizmo::OPERATION gizmoOperation = m_gizmoOperation;
-      if (m_pointEditPart)
+      if (m_pointEditPart || m_camMode == ViewMode::DesktopBackdrop)
       {
-         // Drag point curves are 2D in the table XY plane: restrict gizmo operations to this plane
+         // Drag point curves are 2D in the table XY plane, and backdrop parts are 2D in the backdrop XY plane: restrict gizmo operations to this plane
          if (gizmoOperation == ImGuizmo::TRANSLATE)
             gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::TRANSLATE_X | ImGuizmo::TRANSLATE_Y);
          else if (gizmoOperation == ImGuizmo::ROTATE)
@@ -472,6 +493,15 @@ void EditorUI::RenderUI()
       {
          const ImVec2 pos = ctx.Project(transform.GetOrthoNormalPos());
          overlayDrawList->AddCircleFilled(pos, 3.f * m_liveUI.GetDPI(), IM_COL32(255, 255, 255, 255), 16);
+      }
+
+      // In desktop backdrop mode, draw the bounds of the backdrop area
+      if (m_camMode == ViewMode::DesktopBackdrop)
+      {
+         const Vertex3Ds bounds[4] = { Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds((float)EDITOR_BG_WIDTH, 0.f, 0.f), Vertex3Ds((float)EDITOR_BG_WIDTH, (float)EDITOR_BG_HEIGHT, 0.f),
+            Vertex3Ds(0.f, (float)EDITOR_BG_HEIGHT, 0.f) };
+         for (int i = 0; i < 4; i++)
+            ctx.DrawLine(bounds[i], bounds[(i + 1) % 4], IM_COL32(255, 255, 255, 64));
       }
 
       // In drag point edit mode, render the drag points of the edited part's curve
@@ -539,7 +569,7 @@ void EditorUI::RenderUI()
             vec3 camTarget = pos - dir * m_camDistance;
             if (io.KeyShift || m_camMode == ViewMode::DesktopBackdrop)
             {
-               if (!m_perspectiveCam)
+               if (!m_perspectiveCam || m_camMode == ViewMode::DesktopBackdrop)
                {
                   const float viewScale = 2.f * m_camDistance / io.DisplaySize.y;
                   drag.x *= viewScale;
@@ -771,13 +801,13 @@ void EditorUI::RenderUI()
             if (io.KeyAlt)
             { // Unhide all
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup)
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == (m_camMode == ViewMode::DesktopBackdrop)))
                      part->GetEditable()->SetUIVisible(true);
             }
             else if (io.KeyShift)
             { // Hide unselected
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup && !IsPartSelected(part))
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == (m_camMode == ViewMode::DesktopBackdrop)) && !IsPartSelected(part))
                      part->GetEditable()->SetUIVisible(false);
             }
             else
@@ -883,11 +913,10 @@ void EditorUI::RenderUI()
             m_camMode = ViewMode::EditorCam;
             ResetCameraFromPlayer();
             break;
-#ifdef _DEBUG
-         case ViewMode::EditorCam: m_camMode = ViewMode::DesktopBackdrop; break; // Desktop backdrop editor is not yet operational
-#else
-         case ViewMode::EditorCam: m_camMode = ViewMode::PreviewCam; break;
-#endif
+         case ViewMode::EditorCam:
+            m_camMode = ViewMode::DesktopBackdrop;
+            SetBackdropCamera();
+            break;
          case ViewMode::DesktopBackdrop: m_camMode = ViewMode::PreviewCam; break;
          }
       }
@@ -1048,7 +1077,7 @@ void EditorUI::SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part)
    int anchorPos = -1, partPos = -1, pos = 0;
    for (const auto &edit : m_editables)
    {
-      if (edit->GetEditable()->GetItemType() == eItemPartGroup)
+      if (edit->GetEditable()->GetItemType() == eItemPartGroup || (edit->GetEditable()->m_desktopBackdrop != (m_camMode == ViewMode::DesktopBackdrop)))
          continue;
       if (edit == m_outlinerAnchor)
          anchorPos = pos;
@@ -1067,7 +1096,7 @@ void EditorUI::SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part)
    pos = 0;
    for (const auto &edit : m_editables)
    {
-      if (edit->GetEditable()->GetItemType() == eItemPartGroup)
+      if (edit->GetEditable()->GetItemType() == eItemPartGroup || (edit->GetEditable()->m_desktopBackdrop != (m_camMode == ViewMode::DesktopBackdrop)))
          continue;
       if (pos >= anchorPos && pos <= partPos)
          m_multiSel.push_back(edit);
@@ -1112,6 +1141,9 @@ void EditorUI::RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHi
 
 bool EditorUI::IsEditablePickable(const IEditable *editable) const
 {
+   // In desktop backdrop mode, only backdrop parts can be picked, and conversely in the other view modes
+   if (editable->m_desktopBackdrop != (m_camMode == ViewMode::DesktopBackdrop))
+      return false;
    const PartGroup *parent = editable->GetPartGroup();
    bool visible = editable->IsUIVisible(false);
    while (parent && visible)
@@ -1562,6 +1594,9 @@ void EditorUI::UpdateOutlinerUI()
          // TODO allow selection => ImGuiTreeNodeFlags_Selected
          // TODO support empty nodes => ImGuiTreeNodeFlags_Leaf
          if (edit->GetEditable()->GetItemType() == eItemPartGroup && !m_outlinerFilter.empty() && !visibleGroups.contains(static_cast<PartGroup *>(edit->GetEditable())))
+            continue;
+         // In desktop backdrop mode, only display backdrop parts, and conversely in the other view modes
+         if (edit->GetEditable()->GetItemType() != eItemPartGroup && (edit->GetEditable()->m_desktopBackdrop != (m_camMode == ViewMode::DesktopBackdrop)))
             continue;
          ImGui::AlignTextToFramePadding();
          if (edit->GetEditable()->GetItemType() == eItemPartGroup)

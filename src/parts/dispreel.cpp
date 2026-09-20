@@ -352,8 +352,10 @@ void DispReel::Render(const unsigned int renderMask)
 
       for (unsigned int i = 0; i < 4; ++i)
       {
-         vertices[i].x =        (vertices[i].x * m_renderwidth  + x1)*2.0f - 1.0f;
-         vertices[i].y = 1.0f - (vertices[i].y * m_renderheight + y1)*2.0f;
+         const Vertex2D clip
+            = m_renderer->BackdropToClip(Vertex2D((vertices[i].x * m_renderwidth + x1) * (float)EDITOR_BG_WIDTH, (vertices[i].y * m_renderheight + y1) * (float)EDITOR_BG_HEIGHT));
+         vertices[i].x = clip.x;
+         vertices[i].y = clip.y;
       }
 
       m_renderer->m_renderDevice->DrawTexturedQuad(m_renderer->m_renderDevice->m_DMDShader, vertices);

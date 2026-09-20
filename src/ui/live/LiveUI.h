@@ -30,6 +30,7 @@ public:
    void OpenEditorUI() { m_editorUI.Open(); }
    bool IsEditorUIOpened() const { return m_editorUI.IsOpened(); }
    bool IsEditorViewMode() const { return m_editorUI.IsOpened() && !m_editorUI.IsPreview(); }
+   bool IsEditorBackdropViewMode() const { return m_editorUI.IsOpened() && m_editorUI.IsBackdropEditMode(); }
 
    void OpenInGameUI(const string& page = "homepage"s);
    bool IsInGameUIOpened() const { return m_inGameUI.IsOpened(); }
