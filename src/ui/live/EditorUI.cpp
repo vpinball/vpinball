@@ -85,9 +85,16 @@ void EditorUI::Open()
       return;
    m_isOpened = true;
    m_boxSelectActive = false;
-   ResetCameraFromPlayer();
    m_player->SetPlayState(false);
    m_renderer->DisableStaticPrePass(true);
+
+   // Enter with the user camera setup as an orthographic top view fitted on the playfield bounds, rendered as masked wireframe
+   m_camMode = ViewMode::EditorCam;
+   m_perspectiveCam = false;
+   m_predefinedView = PredefinedView::Top;
+   m_shadeMode = Renderer::ShadeMode::Wireframe;
+   // The playfield fit needs a valid display size which may not be known yet (editor opened during startup): defer to the first rendered frame
+   m_fitPlayfieldCamera = true;
 }
 
 void EditorUI::Close()
@@ -99,6 +106,7 @@ void EditorUI::Close()
    ExitPointEditMode(false);
    m_inspectionModal.Close();
    m_renderer->DisableStaticPrePass(false);
+   m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
 }
 
 void EditorUI::ResetCameraFromPlayer()
@@ -118,6 +126,17 @@ void EditorUI::SetBackdropCamera()
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
 }
 
+void EditorUI::SetPlayfieldCamera()
+{
+   // Setup the editor camera to frame the playfield bounds from a top view (table XY plane, Y axis going down)
+   const ImGuiIO &io = ImGui::GetIO();
+   m_camDistance = 0.5f * max(m_table->m_bottom, m_table->m_right * io.DisplaySize.y / io.DisplaySize.x);
+   const vec3 eye(m_table->m_right * 0.5f, m_table->m_bottom * 0.5f, -m_camDistance);
+   const vec3 at(m_table->m_right * 0.5f, m_table->m_bottom * 0.5f, 0.f);
+   constexpr vec3 up { 0.f, -1.f, 0.f };
+   m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
+}
+
 void EditorUI::Render3D()
 {
    UpdateEditableList();
@@ -133,6 +152,11 @@ void EditorUI::Render3D()
 void EditorUI::RenderUI()
 {
    const ImGuiIO &io = ImGui::GetIO();
+   if (m_fitPlayfieldCamera && io.DisplaySize.x > 0.f && io.DisplaySize.y > 0.f)
+   {
+      m_fitPlayfieldCamera = false;
+      SetPlayfieldCamera();
+   }
    ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
    ImGuizmo::BeginFrame();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
