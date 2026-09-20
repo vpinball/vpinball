@@ -20,8 +20,8 @@ public:
    void Polygon(const vector<RenderVertex> &rgv) override;
    void PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight) override;
 
-   void Polyline(const Vertex2D * const rgv, const int count) override { }
-   void Lines(const Vertex2D * const rgv, const int count) override { }
+   void Polyline(const Vertex2D *const rgv, const int count) override;
+   void Lines(const Vertex2D *const rgv, const int count) override;
    void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y) override { }
    void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height) override { }
 
