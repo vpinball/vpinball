@@ -119,6 +119,10 @@ protected:
    virtual bool IsNewPointSmooth() const { return false; }
    // Whether the curve points can be flagged as slingshot segments (surfaces only)
    virtual bool HasSlingshotSegments() const { return false; }
+   // Whether the curve points support the auto texture coordinate flag
+   virtual bool HasPointAutoTexture() const { return false; }
+   // Whether the curve points have an editable texture coordinate
+   virtual bool HasPointTextureCoord() const { return false; }
    // Renders the read only Z coordinate field of a single selected drag point in the curve section
    virtual void UpdatePointZField(PropertyPane& props, DragPoint* point);
 

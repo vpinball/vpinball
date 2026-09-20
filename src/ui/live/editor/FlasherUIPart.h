@@ -20,6 +20,10 @@ public:
    void RenderOverlay(const EditorRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
+
+private:
+   bool HasPointAutoTexture() const override { return true; }
+   bool HasPointTextureCoord() const override { return true; }
 };
 
 }

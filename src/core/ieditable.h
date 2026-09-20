@@ -288,6 +288,10 @@ public:
    bool IsUIVisible(const bool applyPartGroupVisibility) const;
    void SetUIVisible(const bool visible) { m_uiVisible = visible; }
 
+   // Editor support: when true, the part is rendered (shaded) instead of drawn as a wireframe when the
+   // editor is in a wireframe shade mode, and the part group visibility mask does not apply to it
+   virtual bool IsShownInEditor() const { return false; }
+
    HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
    HRESULT put_TimerInterval(long newVal, int *pti);
 

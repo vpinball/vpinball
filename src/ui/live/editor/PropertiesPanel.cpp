@@ -118,21 +118,184 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
    PinTable *table = props.GetEditedPart<PinTable>(editor.m_table);
    props.Header("Table"s, [table]() { return table->GetWName(); }, [table](const wstring &v) { table->SetName(v); });
 
-   if (props.BeginSection("User Settings"s))
-   {
-
-      props.EndSection();
-   }
-
    if (props.BeginSection("Visuals"s))
    {
+      props.Separator("Playfield"s);
+      props.ImageCombo<PinTable>(
+         table, "Image"s, //
+         [](const PinTable *table) { return table->m_image; }, //
+         [](PinTable *table, const string &v) { table->m_image = v; });
+      props.MaterialCombo<PinTable>(
+         table, "Material"s, //
+         [](const PinTable *table) { return table->m_playfieldMaterial; }, //
+         [](PinTable *table, const string &v) { table->m_playfieldMaterial = v; });
+      props.InputInt<PinTable>(
+         table, "Reflection Strength"s, //
+         [](const PinTable *table) { return table->GetPlayfieldReflectionStrength(); }, //
+         [](PinTable *table, int v) { table->SetPlayfieldReflectionStrength(v); });
+      props.Checkbox<PinTable>(
+         table, "Display Backdrop"s, //
+         [](const PinTable *table) { return table->m_winEditorBackdrop; }, //
+         [](PinTable *table, bool v) { table->m_winEditorBackdrop = v; });
 
+      props.Separator("Ball"s);
+      props.ImageCombo<PinTable>(
+         table, "Ball Image"s, //
+         [](const PinTable *table) { return table->m_ballImage; }, //
+         [](PinTable *table, const string &v) { table->m_ballImage = v; });
+      props.Checkbox<PinTable>(
+         table, "Spherical Map"s, //
+         [](const PinTable *table) { return table->m_ballSphericalMapping; }, //
+         [](PinTable *table, bool v) { table->m_ballSphericalMapping = v; });
+      props.ImageCombo<PinTable>(
+         table, "Ball Decal"s, //
+         [](const PinTable *table) { return table->m_ballImageDecal; }, //
+         [](PinTable *table, const string &v) { table->m_ballImageDecal = v; });
+      props.Checkbox<PinTable>(
+         table, "Logo Mode"s, //
+         [](const PinTable *table) { return table->m_BallDecalMode; }, //
+         [](PinTable *table, bool v) { table->m_BallDecalMode = v; });
+      props.InputFloat<PinTable>(
+         table, "Reflection of Playfield"s, //
+         [](const PinTable *table) { return table->m_ballPlayfieldReflectionStrength; }, //
+         [](PinTable *table, float v) { table->m_ballPlayfieldReflectionStrength = v; }, PropertyPane::Unit::None, 2);
+      props.InputFloat<PinTable>(
+         table, "Default Bulb Intensity Scale"s, //
+         [](const PinTable *table) { return table->m_defaultBulbIntensityScaleOnBall; }, //
+         [](PinTable *table, float v) { table->m_defaultBulbIntensityScaleOnBall = v; }, PropertyPane::Unit::None, 2);
+
+      props.Separator("Backdrop"s);
+      props.InputRGB<PinTable>(
+         table, "Background Color"s, //
+         [](const PinTable *table) { return convertColor(table->m_colorbackdrop); }, //
+         [](PinTable *table, const vec3 &v) { table->m_colorbackdrop = convertColorRGB(v); });
+      props.Checkbox<PinTable>(
+         table, "Apply Night->Day cycle"s, //
+         [](const PinTable *table) { return table->m_ImageBackdropNightDay; }, //
+         [](PinTable *table, bool v) { table->m_ImageBackdropNightDay = v; });
+      props.ImageCombo<PinTable>(
+         table, "DT Image"s, //
+         [](const PinTable *table) { return table->m_BG_image[0]; }, //
+         [](PinTable *table, const string &v) { table->m_BG_image[0] = v; });
+      props.ImageCombo<PinTable>(
+         table, "FS Image"s, //
+         [](const PinTable *table) { return table->m_BG_image[1]; }, //
+         [](PinTable *table, const string &v) { table->m_BG_image[1] = v; });
+      props.ImageCombo<PinTable>(
+         table, "FSS Image"s, //
+         [](const PinTable *table) { return table->m_BG_image[2]; }, //
+         [](PinTable *table, const string &v) { table->m_BG_image[2] = v; });
+      props.ImageCombo<PinTable>(
+         table, "Color Grading LUT"s, //
+         [](const PinTable *table) { return table->m_imageColorGrade; }, //
+         [](PinTable *table, const string &v) { table->m_imageColorGrade = v; });
+      props.Checkbox<PinTable>(
+         table, "Enable EMReels"s, //
+         [](const PinTable *table) { return table->m_renderEMReels; }, //
+         [](PinTable *table, bool v) { table->m_renderEMReels = v; });
+      props.Checkbox<PinTable>(
+         table, "Enable Decals"s, //
+         [](const PinTable *table) { return table->m_renderDecals; }, //
+         [](PinTable *table, bool v) { table->m_renderDecals = v; });
+      props.Checkbox<PinTable>(
+         table, "Enable FSS mode"s, //
+         [](const PinTable *table) { return table->IsFSSEnabled(); }, //
+         [](PinTable *table, bool v) { table->EnableFSS(v); });
       props.EndSection();
    }
 
    if (props.BeginSection("Physics"s))
    {
+      props.Separator("Physics Constants"s);
+      props.InputFloat<PinTable>(
+         table, "Gravity Constant"s, //
+         [](const PinTable *table) { return table->GetGravity(); }, //
+         [](PinTable *table, float v) { table->SetGravity(v); }, PropertyPane::Unit::None, 2);
+      props.InputFloat<PinTable>(
+         table, "Playfield Elasticity"s, //
+         [](const PinTable *table) { return table->m_elasticity; }, //
+         [](PinTable *table, float v) { table->m_elasticity = v; }, PropertyPane::Unit::None, 3);
+      props.InputFloat<PinTable>(
+         table, "Playfield Elasticity Falloff"s, //
+         [](const PinTable *table) { return table->m_elasticityFalloff; }, //
+         [](PinTable *table, float v) { table->m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3);
+      props.InputFloat<PinTable>(
+         table, "Playfield Friction"s, //
+         [](const PinTable *table) { return table->m_friction; }, //
+         [](PinTable *table, float v) { table->m_friction = v; }, PropertyPane::Unit::None, 3);
+      props.InputFloat<PinTable>(
+         table, "Playfield Scatter Angle"s, //
+         [](const PinTable *table) { return table->m_scatter; }, //
+         [](PinTable *table, float v) { table->m_scatter = v; }, PropertyPane::Unit::Degree, 1);
+      props.InputFloat<PinTable>(
+         table, "Default Elements Scatter Angle"s, //
+         [](const PinTable *table) { return table->m_defaultScatter; }, //
+         [](PinTable *table, float v) { table->m_defaultScatter = v; }, PropertyPane::Unit::Degree, 1);
+      props.Combo<PinTable>(
+         table, "Overwrite Physics by Global Set"s, vector<string> { "Disable"s, "Set1"s, "Set2"s, "Set3"s, "Set4"s, "Set5"s, "Set6"s, "Set7"s, "Set8"s }, //
+         [](const PinTable *table) { return table->m_overridePhysics; }, //
+         [](PinTable *table, int v) { table->m_overridePhysics = v; });
+      props.Checkbox<PinTable>(
+         table, "including Flipper Physics"s, //
+         [](const PinTable *table) { return table->m_overridePhysicsFlipper; }, //
+         [](PinTable *table, bool v) { table->m_overridePhysicsFlipper = v; });
+      props.InputFloat<PinTable>(
+         table, "Nudge Time"s, //
+         [](const PinTable *table) { return table->m_nudgeTime; }, //
+         [](PinTable *table, float v) { table->m_nudgeTime = v; }, PropertyPane::Unit::None, 2);
+      props.InputInt<PinTable>(
+         table, "Physics Max. Loops (-1=def.)"s, //
+         [](const PinTable *table) { return static_cast<int>(table->m_PhysicsMaxLoops); }, //
+         [](PinTable *table, int v) { table->m_PhysicsMaxLoops = static_cast<unsigned int>(v); });
 
+      props.Separator("Dimensions"s);
+      props.InputFloat<PinTable>(
+         table, "Playfield Width"s, //
+         [](const PinTable *table) { return table->GetTableWidth(); }, //
+         [](PinTable *table, float v) { table->SetTableWidth(v); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<PinTable>(
+         table, "Playfield Length"s, //
+         [](const PinTable *table) { return table->GetHeight(); }, //
+         [](PinTable *table, float v) { table->SetHeight(v); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<PinTable>(
+         table, "Top Glass Height"s, //
+         [](const PinTable *table) { return table->m_glassTopHeight; }, //
+         [](PinTable *table, float v) { table->m_glassTopHeight = v; }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<PinTable>(
+         table, "Bottom Glass Height"s, //
+         [](const PinTable *table) { return table->m_glassBottomHeight; }, //
+         [](PinTable *table, float v) { table->m_glassBottomHeight = v; }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<PinTable>(
+         table, "Lockbar Height"s, //
+         [](const PinTable *table) { return table->m_groundToLockbarHeight; }, //
+         [](PinTable *table, float v) { table->m_groundToLockbarHeight = v; }, PropertyPane::Unit::VPLength, 1);
+
+      props.Separator("Difficulty"s);
+      props.InputFloat<PinTable>(
+         table, "Slope for Min. Difficulty"s, //
+         [](const PinTable *table) { return table->m_angletiltMin; }, //
+         [](PinTable *table, float v) { table->m_angletiltMin = v; }, PropertyPane::Unit::Degree, 2);
+      props.InputFloat<PinTable>(
+         table, "Slope for Max. Difficulty"s, //
+         [](const PinTable *table) { return table->m_angletiltMax; }, //
+         [](PinTable *table, float v) { table->m_angletiltMax = v; }, PropertyPane::Unit::Degree, 2);
+      props.InputFloat<PinTable>(
+         table, "Game Difficulty"s, //
+         [](const PinTable *table) { return table->m_difficulty; }, //
+         [](PinTable *table, float v) { table->m_difficulty = v; }, PropertyPane::Unit::Percent, 0);
+      props.EndSection();
+   }
+
+   if (props.BeginSection("Sound"s))
+   {
+      props.InputInt<PinTable>(
+         table, "Sound Effect Volume"s, //
+         [](const PinTable *table) { return table->GetTableSoundVolume(); }, //
+         [](PinTable *table, int v) { table->SetTableSoundVolume(v); });
+      props.InputInt<PinTable>(
+         table, "Music Volume"s, //
+         [](const PinTable *table) { return table->GetTableMusicVolume(); }, //
+         [](PinTable *table, int v) { table->SetTableMusicVolume(v); });
       props.EndSection();
    }
 
@@ -182,28 +345,76 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
             editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
          },
          PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<PinTable>(
+         table, "Scene Lighting Scale"s, //
+         [](const PinTable *table) { return table->m_globalEmissionScale; }, //
+         [&editor](PinTable *table, float v)
+         {
+            table->m_globalEmissionScale = v;
+            editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
+         },
+         PropertyPane::Unit::Percent, 1);
 
-      // TODO Missing: environment texture combo
-
+      props.Separator("Environment Lighting"s);
+      props.ImageCombo<PinTable>(
+         table, "Environment Image"s, //
+         [](const PinTable *table) { return table->m_envImage; }, //
+         [&editor](PinTable *table, const string &v)
+         {
+            table->m_envImage = v;
+            editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
+         });
       props.InputFloat<PinTable>(
          table, "Environment Em. Scale"s, //
          [](const PinTable *table) { return table->m_envEmissionScale; }, //
          [](PinTable *table, float v) { table->m_envEmissionScale = v; }, PropertyPane::Unit::Percent, 3);
+
+      props.Separator("Render Options"s);
+      props.Checkbox<PinTable>(
+         table, "Enable Ambient Occlusion"s, //
+         [](const PinTable *table) { return table->m_enableAO; }, //
+         [&editor](PinTable *table, bool v)
+         {
+            table->m_enableAO = v;
+            editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
+         });
       props.InputFloat<PinTable>(
          table, "Ambient Occlusion Scale"s, //
          [](const PinTable *table) { return table->m_AOScale; }, //
          [](PinTable *table, float v) { table->m_AOScale = v; }, PropertyPane::Unit::Percent, 1);
-      props.InputFloat<PinTable>(
-         table, "Bloom Strength"s, //
-         [](const PinTable *table) { return table->m_bloom_strength; }, //
-         [](PinTable *table, float v) { table->m_bloom_strength = v; }, PropertyPane::Unit::Percent, 1);
+      props.Checkbox<PinTable>(
+         table, "Enable Sc. Sp. Reflections"s, //
+         [](const PinTable *table) { return table->m_enableSSR; }, //
+         [&editor](PinTable *table, bool v)
+         {
+            table->m_enableSSR = v;
+            editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
+         });
       props.InputFloat<PinTable>(
          table, "Screen Space Reflection Scale"s, //
          [](const PinTable *table) { return table->m_SSRScale; }, //
          [](PinTable *table, float v) { table->m_SSRScale = v; }, PropertyPane::Unit::Percent, 1);
-
-      // TODO Missing: tonemapper
-      // TODO Missing: exposure
+      props.InputFloat<PinTable>(
+         table, "Bloom Strength"s, //
+         [](const PinTable *table) { return table->m_bloom_strength; }, //
+         [](PinTable *table, float v) { table->m_bloom_strength = v; }, PropertyPane::Unit::Percent, 1);
+      props.Combo<PinTable>(
+         table, "Tonemapping"s, vector<string> { "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s, "AgX Punchy"s }, //
+         [](const PinTable *table) { return static_cast<int>(table->GetToneMapper()); }, //
+         [&editor](PinTable *table, int v)
+         {
+            table->SetToneMapper(static_cast<ToneMapper>(v));
+            editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
+         });
+      props.InputFloat<PinTable>(
+         table, "Exposure"s, //
+         [](const PinTable *table) { return table->GetExposure(); }, //
+         [&editor](PinTable *table, float v)
+         {
+            table->SetExposure(v);
+            editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
+         },
+         PropertyPane::Unit::None, 2);
 
       props.EndSection();
    }
@@ -263,6 +474,14 @@ void PropertiesPanel::CameraProperties(PropertyPane &props, int bgSet)
          vs, "Rotation"s, //
          [](const ViewSetup *viewSetup) { return viewSetup->mViewportRotation; }, //
          [](ViewSetup *viewSetup, float v) { viewSetup->mViewportRotation = v; }, PropertyPane::Unit::Degree, 0);
+      props.InputFloat<ViewSetup>(
+         vs, "View X Offset"s, //
+         [](const ViewSetup *viewSetup) { return viewSetup->mViewHOfs; }, //
+         [](ViewSetup *viewSetup, float v) { viewSetup->mViewHOfs = v; }, PropertyPane::Unit::None, 1);
+      props.InputFloat<ViewSetup>(
+         vs, "View Y Offset"s, //
+         [](const ViewSetup *viewSetup) { return viewSetup->mViewVOfs; }, //
+         [](ViewSetup *viewSetup, float v) { viewSetup->mViewVOfs = v; }, PropertyPane::Unit::None, 1);
       props.InputFloat<ViewSetup>(
          vs, "X Scale"s, //
          [](const ViewSetup *viewSetup) { return viewSetup->mSceneScaleX; }, //

@@ -58,6 +58,10 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Top Image"s, //
          [](const Surface* surf) { return surf->m_d.m_szImage; }, //
          [](Surface* surf, const string& v) { surf->m_d.m_szImage = v; });
+      props.Checkbox<Surface>(
+         m_part, "Show in Editor"s, //
+         [](const Surface* surf) { return surf->m_d.m_displayTexture; }, //
+         [](Surface* surf, bool v) { surf->m_d.m_displayTexture = v; });
       props.MaterialCombo<Surface>(
          m_part, "Top Material"s, //
          [](const Surface* surf) { return surf->m_d.m_szTopMaterial; }, //

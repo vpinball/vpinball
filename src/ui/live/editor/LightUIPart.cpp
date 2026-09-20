@@ -174,6 +174,10 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Position"s, //
          [](const Light* light) { return light->m_d.m_vCenter; }, //
          [](Light* light, const Vertex2D& v) { light->Translate(Vertex2D(v.x - light->m_d.m_vCenter.x, v.y - light->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<Light>(
+         m_part, "Height"s, //
+         [](const Light* light) { return light->m_d.m_height; }, //
+         [](Light* light, float v) { light->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Light>(
          m_part, "Surface"s, //
          [](const Light* light) { return light->m_d.m_szSurface; }, //

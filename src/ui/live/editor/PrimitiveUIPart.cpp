@@ -1,6 +1,8 @@
 #include "core/stdafx.h"
 #include "PrimitiveUIPart.h"
 
+#include "core/extern.h"
+#include "core/player.h"
 #include "utils/color.h"
 
 
@@ -41,8 +43,53 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Primitive"s, m_part);
 
+   // Apply asynchronous mesh file dialog results
+   if (const auto path = m_pendingMeshImport.lock(); path && !path->empty())
+   {
+      m_pendingMeshImport.reset();
+      m_part->m_d.m_meshFileName = std::filesystem::path(*path).filename().string();
+      m_part->LoadMesh(*path, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits, false, false, false, false, true);
+   }
+   if (const auto path = m_pendingMeshExport.lock(); path && !path->empty())
+   {
+      m_pendingMeshExport.reset();
+      m_part->m_mesh.SaveWavefrontObj(*path, m_part->m_d.m_use3DMesh ? MakeString(m_part->m_wzName) : "Primitive"s, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits);
+   }
+
    if (props.BeginSection("Visuals"s))
    {
+      props.Separator("Geometry"s);
+      props.Checkbox<Primitive>(
+         m_part, "Draw Textures Inside"s, //
+         [](const Primitive* primitive) { return primitive->m_d.m_drawTexturesInside; }, //
+         [](Primitive* primitive, bool v) { primitive->m_d.m_drawTexturesInside = v; });
+      if (props.GetEditedPart<Primitive>(m_part)->m_d.m_use3DMesh)
+      {
+         ImGui::BeginDisabled();
+         props.InputString<Primitive>(
+            m_part, "Mesh File"s, //
+            [](const Primitive* primitive) { return primitive->m_d.m_meshFileName; }, //
+            [](Primitive*, const string&) {});
+         ImGui::EndDisabled();
+         props.InputFloat<Primitive>(
+            m_part, "Edge Factor"s, //
+            [](const Primitive* primitive) { return primitive->m_d.m_edgeFactorUI; }, //
+            [](Primitive* primitive, float v) { primitive->m_d.m_edgeFactorUI = v; }, PropertyPane::Unit::None, 2);
+      }
+      else
+      {
+         props.InputInt<Primitive>(
+            m_part, "Sides"s, //
+            [](const Primitive* primitive) { return primitive->m_d.m_Sides; }, //
+            [](Primitive* primitive, int v) { primitive->m_d.m_Sides = v; });
+      }
+      ImGui::Checkbox("Meter Units", &m_meshUnitsMeters);
+      if (ImGui::Button("Import Mesh"))
+         ImportMesh();
+      ImGui::SameLine();
+      if (ImGui::Button("Export Mesh"))
+         ExportMesh();
+
       props.Separator("Render Options"s);
       props.Checkbox<Primitive>(
          m_part, "Visible"s, //
@@ -86,6 +133,10 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Image"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szImage; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szImage = v; });
+      props.Checkbox<Primitive>(
+         m_part, "Show in Editor"s, //
+         [](const Primitive* primitive) { return primitive->m_d.m_displayTexture; }, //
+         [](Primitive* primitive, bool v) { primitive->m_d.m_displayTexture = v; });
       props.ImageCombo<Primitive>(
          m_part, "Normal Map"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szNormalMap; }, //
@@ -231,4 +282,41 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
    //props.TimerSection(m_part);
 }
 
+void PrimitiveUIPart::ImportMesh()
+{
+   if (g_pplayer == nullptr || g_pplayer->m_playfieldWnd == nullptr)
+      return;
+   auto result = std::make_shared<string>();
+   m_pendingMeshImport = result;
+   const SDL_DialogFileFilter filters[] = { { "Wavefront obj file", "obj" } };
+   SDL_ShowOpenFileDialog(
+      [](void* userdata, const char* const* filelist, int filter)
+      {
+         auto* res = static_cast<std::shared_ptr<string>*>(userdata);
+         if (filelist != nullptr && filelist[0] != nullptr)
+            **res = filelist[0];
+         delete res;
+      },
+      new std::shared_ptr<string>(result), //
+      g_pplayer->m_playfieldWnd->GetCore(), filters, 1, nullptr, false);
+}
+
+void PrimitiveUIPart::ExportMesh()
+{
+   if (g_pplayer == nullptr || g_pplayer->m_playfieldWnd == nullptr)
+      return;
+   auto result = std::make_shared<string>();
+   m_pendingMeshExport = result;
+   const SDL_DialogFileFilter filters[] = { { "Wavefront obj file", "obj" } };
+   SDL_ShowSaveFileDialog(
+      [](void* userdata, const char* const* filelist, int filter)
+      {
+         auto* res = static_cast<std::shared_ptr<string>*>(userdata);
+         if (filelist != nullptr && filelist[0] != nullptr)
+            **res = filelist[0];
+         delete res;
+      },
+      new std::shared_ptr<string>(result), //
+      g_pplayer->m_playfieldWnd->GetCore(), filters, 1, nullptr);
+}
 }

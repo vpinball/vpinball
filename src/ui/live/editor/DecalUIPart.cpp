@@ -2,6 +2,8 @@
 
 #include "DecalUIPart.h"
 
+#include "utils/color.h"
+
 namespace VPX::EditorUI
 {
 
@@ -39,29 +41,68 @@ void DecalUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Material"s, //
          [](const Decal* decal) { return decal->m_d.m_szMaterial; }, //
          [](Decal* decal, const string& v) { decal->m_d.m_szMaterial = v; });
-      // Missing type
+      props.Combo<Decal>(
+         m_part, "Type"s, vector<string> { "Text"s, "Image"s }, //
+         [](const Decal* decal) { return static_cast<int>(decal->m_d.m_decaltype); }, //
+         [](Decal* decal, int v)
+         {
+            decal->m_d.m_decaltype = static_cast<DecalType>(v);
+            decal->EnsureSize();
+         });
       props.InputString<Decal>(
          m_part, "Text"s, //
          [](const Decal* decal) { return decal->m_d.m_text; }, //
-         [](Decal* decal, const string& v) { decal->m_d.m_text = v; });
+         [](Decal* decal, const string& v)
+         {
+            decal->m_d.m_text = v;
+            decal->EnsureSize();
+         });
       props.Checkbox<Decal>(
          m_part, "Vertical Text"s, //
          [](const Decal* decal) { return decal->m_d.m_verticalText; }, //
          [](Decal* decal, bool v) { decal->m_d.m_verticalText = v; });
-      // Missing Font Color and Font selection
+      props.InputRGB<Decal>(
+         m_part, "Font Color"s, //
+         [](const Decal* decal) { return convertColor(decal->m_d.m_color); }, //
+         [](Decal* decal, const vec3& v) { decal->m_d.m_color = convertColorRGB(v); });
+      props.Font<Decal>(
+         m_part, //
+         [](const Decal* decal) { return decal->m_d.m_font; }, //
+         [](Decal* decal, const FontDesc& v)
+         {
+            decal->m_d.m_font = v;
+            decal->EnsureSize();
+         });
       props.ImageCombo<Decal>(
          m_part, "Image"s, //
          [](const Decal* decal) { return decal->m_d.m_szImage; }, //
          [](Decal* decal, const string& v) { decal->m_d.m_szImage = v; });
-      // Missing sizing
+      props.Combo<Decal>(
+         m_part, "Sizing"s, vector<string> { "Auto Size"s, "Auto Width"s, "Manual Size"s }, //
+         [](const Decal* decal) { return static_cast<int>(decal->m_d.m_sizingtype); }, //
+         [](Decal* decal, int v)
+         {
+            decal->m_d.m_sizingtype = static_cast<SizingType>(v);
+            decal->EnsureSize();
+         });
       props.InputFloat<Decal>(
          m_part, "Width"s, //
          [](const Decal* decal) { return decal->m_d.m_width; }, //
-         [](Decal* decal, float v) { decal->m_d.m_width = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Decal* decal, float v)
+         {
+            decal->m_d.m_width = v;
+            decal->EnsureSize();
+         },
+         PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Decal>(
          m_part, "Height"s, //
          [](const Decal* decal) { return decal->m_d.m_height; }, //
-         [](Decal* decal, float v) { decal->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Decal* decal, float v)
+         {
+            decal->m_d.m_height = v;
+            decal->EnsureSize();
+         },
+         PropertyPane::Unit::VPLength, 1);
       props.EndSection();
    }
 

@@ -172,4 +172,17 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
    props.TimerSection(m_part);
 }
 
+void RampUIPart::UpdatePointZField(PropertyPane& props, DragPoint* point)
+{
+   props.InputFloat<DragPoint>(
+      point, "Height Offset"s, //
+      [](const DragPoint* p) { return p->m_v.z; }, //
+      [](DragPoint* p, float v) { p->m_v.z = v; }, PropertyPane::Unit::VPLength, 1);
+   ImGui::BeginDisabled();
+   props.InputFloat<DragPoint>(
+      point, "Real Height"s, //
+      [](const DragPoint* p) { return p->m_calcHeight; }, //
+      [](DragPoint*, float) {}, PropertyPane::Unit::VPLength, 1);
+   ImGui::EndDisabled();
+}
 }
