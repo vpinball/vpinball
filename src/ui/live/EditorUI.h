@@ -131,6 +131,7 @@ private:
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void ResetCameraFromPlayer();
    void SetBackdropCamera();
+   void SetPlayfieldCamera();
 
    // Undo support
    void PushUndo(IEditable *part, unsigned int editId);
@@ -190,6 +191,7 @@ private:
    {
       None, Front, Back, Right, Left, Top, Bottom
    } m_predefinedView = PredefinedView::None;
+   bool m_fitPlayfieldCamera = false;
    Matrix3D m_camView, m_camProj;
    float m_camDistance;
 };
