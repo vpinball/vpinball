@@ -784,16 +784,13 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    m_progressDialog.SetProgress("Starting..."s, 100);
 
-   if (m_renderer->IsUsingStaticPrepass())
-   {
-      // Perform a quick render to avoid displaying a blank screen while the static prerendering will be performed
-      m_renderer->DisableStaticPrePass(true);
-      PrepareFrame();
-      SubmitFrame();
-      FinishFrame();
-      LockFrameMutex();
-      m_renderer->DisableStaticPrePass(false);
-   }
+   // Perform a quick render to avoid displaying a blank screen while starting
+   m_renderer->DisableStaticPrePass(true);
+   PrepareFrame();
+   SubmitFrame();
+   FinishFrame();
+   LockFrameMutex();
+   m_renderer->DisableStaticPrePass(false);
 
 #ifndef __STANDALONE__
    m_progressDialog.Destroy();
@@ -802,16 +799,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    // Show the window (before rendering static part to avoid delaying too long)
    m_playfieldWnd->Show();
    m_playfieldWnd->RaiseAndFocus();
-
-   // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
-   // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
-   if (m_renderer->IsUsingStaticPrepass())
-   {
-      PrepareFrame();
-      SubmitFrame();
-      FinishFrame();
-      LockFrameMutex();
-   }
 
    m_physics->StartPhysics();
 
