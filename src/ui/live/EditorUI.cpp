@@ -337,8 +337,11 @@ void EditorUI::RenderUI()
             ImGui::SameLine();
             ImGui::Separator();
             ImGui::SameLine();
-            if (ImGui::Button(ICON_FK_TRASH_O, ImVec2(iconSize, iconSize)))
+            const float popupIconSize = iconSize + 2.f * ImGui::GetStyle().FramePadding.y;
+            if (ImGui::Button(ICON_FK_TRASH_O, ImVec2(popupIconSize, popupIconSize)))
                DeleteSelection();
+            if (ImGui::IsItemHovered())
+               ImGui::SetTooltip("Delete selection");
          }
 
          // Part type picker popup (Shift+A in standard mode): picking a type arms add part mode,
@@ -351,7 +354,6 @@ void EditorUI::RenderUI()
          ImGui::SetNextWindowPos(m_addPartPopupPos, ImGuiCond_Appearing);
          if (ImGui::BeginPopup("Add Part"))
          {
-            const float popupIconSize = ImGui::GetFrameHeight();
             int column = 0;
             for (const auto &button : m_addPartButtons)
             {
@@ -359,7 +361,7 @@ void EditorUI::RenderUI()
                   continue;
                if (column > 0)
                   ImGui::SameLine();
-               if (ImGui::ImageButton(button.name, button.icon, ImVec2(popupIconSize, popupIconSize)))
+               if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
                {
                   m_addPartType = button.type;
                   ImGui::CloseCurrentPopup();
