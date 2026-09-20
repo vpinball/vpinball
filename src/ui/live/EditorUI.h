@@ -218,6 +218,8 @@ private:
       std::shared_ptr<Sampler> icon;
    };
    vector<AddPartButton> m_addPartButtons; // Lazily initialized add part toolbar buttons
+   ImVec2 m_addPartPopupPos; // Position at which the Shift+A part type picker popup was opened
+   bool m_openAddPartPopup = false; // Request to open the part type picker popup (consumed in the toolbar window scope)
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
 
    // Outliner

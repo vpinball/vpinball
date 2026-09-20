@@ -7,7 +7,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "core/editablereg.h"
 #include "core/FileLocator.h"
-#include "core/vpapp.h"
+#include "core/VPApp.h"
 
 #include "editor/EditorUIPart.h"
 #include "editor/EditorUIPartRegistry.h"
@@ -274,8 +274,7 @@ void EditorUI::RenderUI()
       }
       else
       {
-         if (m_selection.GetType() == Selection::S_EDITABLE && ImGui::Button(ICON_FK_TRASH_O))
-            DeleteSelection();
+         const float iconSize = ImGui::GetContentRegionAvail().y;
 
          // Add part buttons (same parts and icons as the WinUI toolbar)
          if (m_addPartButtons.empty())
@@ -315,13 +314,12 @@ void EditorUI::RenderUI()
                   { def.type, def.name, tex ? std::make_shared<Sampler>(m_renderer->m_renderDevice, def.name, tex, false) : nullptr });
             }
          }
-         const float iconSize = ImGui::GetContentRegionAvail().y;
          ImGui::BeginDisabled(m_pointEditPart != nullptr || m_table->IsLocked());
          for (const auto &button : m_addPartButtons)
          {
-            ImGui::SameLine();
             if (button.icon == nullptr)
                continue;
+            ImGui::SameLine();
             const bool active = (m_addPartType == button.type);
             if (active)
                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
@@ -333,6 +331,45 @@ void EditorUI::RenderUI()
                ImGui::SetTooltip("Add %s", button.name);
          }
          ImGui::EndDisabled();
+
+         if (m_selection.GetType() == Selection::S_EDITABLE)
+         {
+            ImGui::SameLine();
+            ImGui::Separator();
+            ImGui::SameLine();
+            if (ImGui::Button(ICON_FK_TRASH_O, ImVec2(iconSize, iconSize)))
+               DeleteSelection();
+         }
+
+         // Part type picker popup (Shift+A in standard mode): picking a type arms add part mode,
+         // clicking outside of the popup dismisses it without arming add part mode
+         if (m_openAddPartPopup)
+         {
+            m_openAddPartPopup = false;
+            ImGui::OpenPopup("Add Part");
+         }
+         ImGui::SetNextWindowPos(m_addPartPopupPos, ImGuiCond_Appearing);
+         if (ImGui::BeginPopup("Add Part"))
+         {
+            const float popupIconSize = ImGui::GetFrameHeight();
+            int column = 0;
+            for (const auto &button : m_addPartButtons)
+            {
+               if (button.icon == nullptr)
+                  continue;
+               if (column > 0)
+                  ImGui::SameLine();
+               if (ImGui::ImageButton(button.name, button.icon, ImVec2(popupIconSize, popupIconSize)))
+               {
+                  m_addPartType = button.type;
+                  ImGui::CloseCurrentPopup();
+               }
+               if (ImGui::IsItemHovered())
+                  ImGui::SetTooltip("Add %s", button.name);
+               column = (column + 1) % 5;
+            }
+            ImGui::EndPopup();
+         }
       }
       const float buttonWidth = //
          ImGui::CalcTextSize(ICON_FK_EXCHANGE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f //
@@ -858,6 +895,14 @@ void EditorUI::RenderUI()
             // Add a drag point on the curve segment nearest to the mouse position
             if (m_pointEditPart && !io.WantCaptureMouse)
                AddPointOnNearestSegment();
+            else if (!m_pointEditPart && !IsInspectMode() && !m_table->IsLocked())
+            {
+               // Request the part type picker popup at the mouse position (it is opened from the
+               // toolbar window scope below, as OpenPopup must be called in the same window scope
+               // as the matching BeginPopup)
+               m_addPartPopupPos = ImGui::GetMousePos();
+               m_openAddPartPopup = true;
+            }
          }
          else if (!io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
          {
