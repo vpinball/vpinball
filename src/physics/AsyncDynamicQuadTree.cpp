@@ -226,8 +226,11 @@ void AsyncDynamicQuadTree::Update(IEditable* editable)
    const auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](const std::unique_ptr<DynamicEditable>& dynEd) { return dynEd->editable == editable; });
    assert(dynEdIt != m_dynamicEditables.end() && !(*dynEdIt)->pendingStaticInclusion); // We do not support updating static parts
    if (!editable->GetIHitable()->PhysicUpdate(m_physics, m_isUI))
+   {
       // update was not performed: release and reallocate colliders
+      *dynEdIt = nullptr; 
       *dynEdIt = std::make_unique<DynamicEditable>(editable, m_physics, m_isUI);
+   }
 }
 
 void AsyncDynamicQuadTree::UpdateAsync()

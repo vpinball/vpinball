@@ -1572,6 +1572,16 @@ bool Primitive::LoadMesh(
          delete[] tmp;
       }
    }
+   if (auto renderer = m_renderer)
+   {
+      RenderRelease();
+      RenderSetup(renderer);
+   }
+   if (g_pplayer && g_pplayer->m_physics)
+   {
+      m_physicMatrix.Scale(0.f, 0.f, 0.f); // Invalidate to force update
+      g_pplayer->m_physics->Update(this);
+   }
    return true;
 }
 

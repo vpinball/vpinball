@@ -44,25 +44,113 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
    props.EditableHeader("Primitive"s, m_part);
 
    // Apply asynchronous mesh file dialog results
-   if (const auto path = m_pendingMeshImport.lock(); path && !path->empty())
+   if (m_pendingMeshImport && !m_pendingMeshImport->empty())
    {
-      m_pendingMeshImport.reset();
-      m_part->m_d.m_meshFileName = std::filesystem::path(*path).filename().string();
-      m_part->LoadMesh(*path, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits, false, false, false, false, true);
+      // A file was selected: reset the options to their defaults and show the import option dialog
+      m_meshImportFileName = *m_pendingMeshImport;
+      m_pendingMeshImport = nullptr;
+      m_meshUnitsMeters = false;
+      m_meshImportAbsolutePosition = false;
+      m_meshImportCenterMesh = false;
+      m_meshImportMaterial = false;
+      m_meshImportAnimation = false;
+      m_meshImportNoForsyth = false;
+      m_meshImportFailed = false;
+      ImGui::OpenPopup("Wavefront OBJ Importer");
    }
-   if (const auto path = m_pendingMeshExport.lock(); path && !path->empty())
+   if (m_pendingMeshExport && !m_pendingMeshExport->empty())
    {
-      m_pendingMeshExport.reset();
-      m_part->m_mesh.SaveWavefrontObj(*path, m_part->m_d.m_use3DMesh ? MakeString(m_part->m_wzName) : "Primitive"s, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits);
+      // A file was selected: reset the options to their defaults and show the export option dialog
+      m_meshExportFileName = *m_pendingMeshExport;
+      m_pendingMeshExport = nullptr;
+      m_meshUnitsMeters = false;
+      ImGui::OpenPopup("Wavefront OBJ Exporter");
+   }
+
+   // Import option dialog (same options as the WinUI 'Wavefront OBJ Importer' dialog)
+   if (!m_meshImportFileName.empty())
+   {
+      if (ImGui::BeginPopupModal("Wavefront OBJ Importer", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      {
+         ImGui::TextWrapped("%s", m_meshImportFileName.c_str());
+         ImGui::Spacing();
+         UpdateMeshUnitsUI();
+         ImGui::SeparatorText("Options");
+         ImGui::Columns(2, nullptr, true);
+         ImGui::Checkbox("Center mesh to its midpoint", &m_meshImportCenterMesh);
+         int position = m_meshImportAbsolutePosition ? 1 : 0;
+         ImGui::RadioButton("Place at primitive's position", &position, 0);
+         ImGui::RadioButton("Place at mesh's absolute position (use mesh's midpoint)", &position, 1);
+         m_meshImportAbsolutePosition = position != 0;
+         ImGui::NextColumn();
+         ImGui::Checkbox("Import mesh's material", &m_meshImportMaterial);
+         ImGui::Checkbox("Import Animation Sequence", &m_meshImportAnimation);
+         ImGui::Checkbox("Do not reorder/optimize data", &m_meshImportNoForsyth);
+         ImGui::Columns(1);
+         if (m_meshImportFailed)
+            ImGui::TextColored(ImVec4(1.f, 0.2f, 0.2f, 1.f), "Failed to import file!");
+         ImGui::Separator();
+         if (ImGui::Button("Import"))
+         {
+            m_part->m_d.m_meshFileName = std::filesystem::path(m_meshImportFileName).filename().string();
+            m_meshImportFailed = !m_part->LoadMesh(m_meshImportFileName, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits, m_meshImportAbsolutePosition, m_meshImportCenterMesh,
+               m_meshImportMaterial, m_meshImportAnimation, !m_meshImportNoForsyth);
+            if (!m_meshImportFailed)
+            {
+               m_meshImportFileName.clear();
+               ImGui::CloseCurrentPopup();
+            }
+         }
+         ImGui::SameLine();
+         if (ImGui::Button("Cancel"))
+         {
+            m_meshImportFileName.clear();
+            ImGui::CloseCurrentPopup();
+         }
+         ImGui::EndPopup();
+      }
+      else
+         m_meshImportFileName.clear();
+   }
+
+   // Export option dialog (same options as the WinUI 'Wavefront OBJ Exporter' dialog)
+   if (!m_meshExportFileName.empty())
+   {
+      if (ImGui::BeginPopupModal("Wavefront OBJ Exporter", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      {
+         ImGui::TextWrapped("%s", m_meshExportFileName.c_str());
+         ImGui::Spacing();
+         UpdateMeshUnitsUI();
+         ImGui::Separator();
+         if (ImGui::Button("Export"))
+         {
+            m_part->m_mesh.SaveWavefrontObj(
+               m_meshExportFileName, m_part->m_d.m_use3DMesh ? MakeString(m_part->m_wzName) : "Primitive"s, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits);
+            m_meshExportFileName.clear();
+            ImGui::CloseCurrentPopup();
+         }
+         ImGui::SameLine();
+         if (ImGui::Button("Cancel"))
+         {
+            m_meshExportFileName.clear();
+            ImGui::CloseCurrentPopup();
+         }
+         ImGui::EndPopup();
+      }
+      else
+         m_meshExportFileName.clear();
    }
 
    if (props.BeginSection("Visuals"s))
    {
       props.Separator("Geometry"s);
-      props.Checkbox<Primitive>(
-         m_part, "Draw Textures Inside"s, //
-         [](const Primitive* primitive) { return primitive->m_d.m_drawTexturesInside; }, //
-         [](Primitive* primitive, bool v) { primitive->m_d.m_drawTexturesInside = v; });
+      if (ImGui::Button("Import Mesh"))
+         ImportMesh();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(!props.GetEditedPart<Primitive>(m_part)->m_d.m_use3DMesh);
+      if (ImGui::Button("Export Mesh"))
+         ExportMesh();
+      ImGui::EndDisabled();
       if (props.GetEditedPart<Primitive>(m_part)->m_d.m_use3DMesh)
       {
          ImGui::BeginDisabled();
@@ -71,10 +159,6 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
             [](const Primitive* primitive) { return primitive->m_d.m_meshFileName; }, //
             [](Primitive*, const string&) {});
          ImGui::EndDisabled();
-         props.InputFloat<Primitive>(
-            m_part, "Edge Factor"s, //
-            [](const Primitive* primitive) { return primitive->m_d.m_edgeFactorUI; }, //
-            [](Primitive* primitive, float v) { primitive->m_d.m_edgeFactorUI = v; }, PropertyPane::Unit::None, 2);
       }
       else
       {
@@ -82,13 +166,11 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
             m_part, "Sides"s, //
             [](const Primitive* primitive) { return primitive->m_d.m_Sides; }, //
             [](Primitive* primitive, int v) { primitive->m_d.m_Sides = v; });
+         props.Checkbox<Primitive>(
+            m_part, "Draw Textures Inside"s, //
+            [](const Primitive* primitive) { return primitive->m_d.m_drawTexturesInside; }, //
+            [](Primitive* primitive, bool v) { primitive->m_d.m_drawTexturesInside = v; });
       }
-      ImGui::Checkbox("Meter Units", &m_meshUnitsMeters);
-      if (ImGui::Button("Import Mesh"))
-         ImportMesh();
-      ImGui::SameLine();
-      if (ImGui::Button("Export Mesh"))
-         ExportMesh();
 
       props.Separator("Render Options"s);
       props.Checkbox<Primitive>(
@@ -204,7 +286,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat3<Primitive>(
          m_part, "Scale"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_vSize; }, //
-         [](Primitive* primitive, const vec3& v) { primitive->m_d.m_vSize = v; }, PropertyPane::Unit::Percent, 2);
+         [](Primitive* primitive, const vec3& v) { primitive->m_d.m_vSize = v; }, PropertyPane::Unit::PercentX100, 2);
 
       props.Separator("Additional Transform"s);
       props.InputFloat3<Primitive>(
@@ -282,12 +364,26 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
    //props.TimerSection(m_part);
 }
 
+void PrimitiveUIPart::UpdateMeshUnitsUI()
+{
+   ImGui::SeparatorText("Units and axes");
+   int units = m_meshUnitsMeters ? 1 : 0;
+   ImGui::RadioButton("VPUnits (Up -Z, Visual Pinball default)", &units, 0);
+   ImGui::Indent();
+   ImGui::TextDisabled("Recommended Blender Import/Export Transformations:\nScale 0.00054, Forward -Y, Up -Z");
+   ImGui::Unindent();
+   ImGui::RadioButton("Meters (Up Y, Blender default)", &units, 1);
+   ImGui::Indent();
+   ImGui::TextDisabled("Matches Blender's default Import/Export Transformations:\nScale 1.0, Forward -Z, Up Y. Primitive scale stays 1.");
+   ImGui::Unindent();
+   m_meshUnitsMeters = units != 0;
+}
+
 void PrimitiveUIPart::ImportMesh()
 {
    if (g_pplayer == nullptr || g_pplayer->m_playfieldWnd == nullptr)
       return;
-   auto result = std::make_shared<string>();
-   m_pendingMeshImport = result;
+   m_pendingMeshImport = std::make_shared<string>();
    const SDL_DialogFileFilter filters[] = { { "Wavefront obj file", "obj" } };
    SDL_ShowOpenFileDialog(
       [](void* userdata, const char* const* filelist, int filter)
@@ -297,7 +393,7 @@ void PrimitiveUIPart::ImportMesh()
             **res = filelist[0];
          delete res;
       },
-      new std::shared_ptr<string>(result), //
+      new std::shared_ptr<string>(m_pendingMeshImport), //
       g_pplayer->m_playfieldWnd->GetCore(), filters, 1, nullptr, false);
 }
 
@@ -305,8 +401,7 @@ void PrimitiveUIPart::ExportMesh()
 {
    if (g_pplayer == nullptr || g_pplayer->m_playfieldWnd == nullptr)
       return;
-   auto result = std::make_shared<string>();
-   m_pendingMeshExport = result;
+   m_pendingMeshExport = std::make_shared<string>();
    const SDL_DialogFileFilter filters[] = { { "Wavefront obj file", "obj" } };
    SDL_ShowSaveFileDialog(
       [](void* userdata, const char* const* filelist, int filter)
@@ -316,7 +411,7 @@ void PrimitiveUIPart::ExportMesh()
             **res = filelist[0];
          delete res;
       },
-      new std::shared_ptr<string>(result), //
+      new std::shared_ptr<string>(m_pendingMeshExport), //
       g_pplayer->m_playfieldWnd->GetCore(), filters, 1, nullptr);
 }
 }
