@@ -107,6 +107,18 @@ void HitRectSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, cons
    Polygon(rgv);
 }
 
+void HitRectSur::Polyline(const Vertex2D *const rgv, const int count)
+{
+   for (int i = 0; i < count - 1; ++i)
+      Line(rgv[i].x, rgv[i].y, rgv[i + 1].x, rgv[i + 1].y);
+}
+
+void HitRectSur::Lines(const Vertex2D *const rgv, const int count)
+{
+   for (int i = 0; i < count * 2; i += 2)
+      Line(rgv[i].x, rgv[i].y, rgv[i + 1].x, rgv[i + 1].y);
+}
+
 void HitRectSur::SetObject(IWinUIPart * const part)
 {
    m_pcur = part;
