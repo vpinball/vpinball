@@ -278,12 +278,6 @@ set(VPX_SOURCES
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
    
-   src/ui/live/editor/EditorUIPart.h
-   src/ui/live/editor/EditorUIPart.cpp
-   src/ui/live/editor/EditorUIPartRegistry.h
-   src/ui/live/editor/EditorUIPartRegistry.cpp
-   src/ui/live/editor/PropertyPane.h
-   src/ui/live/editor/PropertyPane.cpp
    src/ui/live/editor/BallUIPart.h
    src/ui/live/editor/BallUIPart.cpp
    src/ui/live/editor/BumperUIPart.h
@@ -292,6 +286,12 @@ set(VPX_SOURCES
    src/ui/live/editor/DecalUIPart.cpp
    src/ui/live/editor/DispReelUIPart.h
    src/ui/live/editor/DispReelUIPart.cpp
+   src/ui/live/editor/EditorChrome.h
+   src/ui/live/editor/EditorChrome.cpp
+   src/ui/live/editor/EditorUIPart.h
+   src/ui/live/editor/EditorUIPart.cpp
+   src/ui/live/editor/EditorUIPartRegistry.h
+   src/ui/live/editor/EditorUIPartRegistry.cpp
    src/ui/live/editor/FlasherUIPart.h
    src/ui/live/editor/FlasherUIPart.cpp
    src/ui/live/editor/FlipperUIPart.h
@@ -306,16 +306,27 @@ set(VPX_SOURCES
    src/ui/live/editor/LightUIPart.cpp
    src/ui/live/editor/LightSeqUIPart.h
    src/ui/live/editor/LightSeqUIPart.cpp
+   src/ui/live/editor/LiveRenderContext.h
+   src/ui/live/editor/LiveRenderContext.cpp
+   src/ui/live/editor/OutlinerPanel.h
+   src/ui/live/editor/OutlinerPanel.cpp
    src/ui/live/editor/PartGroupUIPart.h
    src/ui/live/editor/PartGroupUIPart.cpp
    src/ui/live/editor/PlungerUIPart.h
    src/ui/live/editor/PlungerUIPart.cpp
    src/ui/live/editor/PrimitiveUIPart.h
    src/ui/live/editor/PrimitiveUIPart.cpp
+   src/ui/live/editor/PropertiesPanel.h
+   src/ui/live/editor/PropertiesPanel.cpp
+   src/ui/live/editor/PropertyPane.h
+   src/ui/live/editor/PropertyPane.cpp
    src/ui/live/editor/RampUIPart.h
    src/ui/live/editor/RampUIPart.cpp
+   src/ui/live/editor/RendererInspectionModal.h
+   src/ui/live/editor/RendererInspectionModal.cpp
    src/ui/live/editor/RubberUIPart.h
    src/ui/live/editor/RubberUIPart.cpp
+   src/ui/live/editor/Selection.h
    src/ui/live/editor/SpinnerUIPart.h
    src/ui/live/editor/SpinnerUIPart.cpp
    src/ui/live/editor/SurfaceUIPart.h
