@@ -46,6 +46,9 @@ namespace VPX::EditorUI
 // Titles (used as Ids) of modal dialogs
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
 
+// Vertical field of view (in degrees) of the perspective editor camera
+constexpr float editorCamFovY = 39.6f;
+
 template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T> &list, const std::function<string(T)> &map)
 {
    std::vector<T> sorted(list.begin(), list.end());
@@ -523,7 +526,7 @@ void EditorUI::RenderUI()
          //m_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
          constexpr float zNear = 5.f;
          constexpr float zFar = 50000.f;
-         m_camProj = Matrix3D::MatrixPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
+         m_camProj = Matrix3D::MatrixPerspectiveFovRH(editorCamFovY, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
       else
       {
@@ -1064,16 +1067,31 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))
       {
-         // Editor Camera center on selection
-         Matrix3D tmp;
-         if (GetSelectionTransform(tmp))
+         // Editor Camera center on the whole selection, adjusting the zoom so that it fills the view
+         FRect3D bounds;
+         if (GetSelectionBounds(bounds))
          {
             m_camMode = ViewMode::EditorCam;
             Matrix3D view(m_camView);
             view.Invert();
             const vec3 up = view.GetOrthoNormalUp();
             const vec3 dir = view.GetOrthoNormalDir();
-            const vec3 newTarget(tmp._41, tmp._42, -tmp._43);
+            const vec3 right = view.GetOrthoNormalRight();
+            const vec3 newTarget(0.5f * (bounds.left + bounds.right), 0.5f * (bounds.top + bounds.bottom), -0.5f * (bounds.zlow + bounds.zhigh));
+
+            // Evaluate the distance needed for all the bounds corners to be inside the view, keeping the camera orientation
+            const float aspect = io.DisplaySize.x / io.DisplaySize.y;
+            const float tanHalfFovY = tanf(0.5f * ANGTORAD(editorCamFovY));
+            float distance = 0.f;
+            for (int i = 0; i < 8; i++)
+            {
+               const vec3 toCorner = vec3((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? -bounds.zlow : -bounds.zhigh) - newTarget;
+               const float dx = fabsf(right.Dot(toCorner));
+               const float dy = fabsf(up.Dot(toCorner));
+               distance = max(distance, m_perspectiveCam ? dir.Dot(toCorner) + max(dy / tanHalfFovY, dx / (tanHalfFovY * aspect)) : max(dy, dx / aspect));
+            }
+            if (distance > 0.f) // Keep the current distance for degenerate (point) selections
+               m_camDistance = distance * 1.1f; // Small margin so that the selection does not exactly touch the view borders
             const vec3 newEye = newTarget + dir * m_camDistance;
             m_camView = Matrix3D::MatrixLookAtRH(newEye, newTarget, up);
          }
@@ -1590,6 +1608,42 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
       return mask != EditorUIPart::TransformMask::TM_None;
    }
    return false;
+}
+
+bool EditorUI::GetSelectionBounds(FRect3D &bounds) const
+{
+   bounds.Clear();
+   if (m_pointEditPart)
+   {
+      // In drag point edit mode, the bounds are the ones of the selected points
+      for (const DragPoint *point : m_pointSel)
+      {
+         const float z = m_pointEditPart->GetDragPointZ(point);
+         bounds.Extend(FRect3D(point->m_v.x, point->m_v.x, point->m_v.y, point->m_v.y, z, z));
+      }
+   }
+   else
+   {
+      const auto extendWithPart = [this, &bounds](const std::shared_ptr<EditorUIPart> &part)
+      {
+         IEditable *const editable = part->GetEditable();
+         if (editable->GetIHitable() != nullptr)
+            for (const HitObject *const hitObject : m_player->m_physics->GetUIHitObjects(editable))
+               bounds.Extend(hitObject->m_hitBBox);
+         // Also include the part's position to cover parts without hit objects
+         Matrix3D transform;
+         if (part->GetTransform(transform) != EditorUIPart::TM_None)
+         {
+            const Vertex3Ds pos = transform.GetOrthoNormalPos();
+            bounds.Extend(FRect3D(pos.x, pos.x, pos.y, pos.y, pos.z, pos.z));
+         }
+      };
+      for (const auto &part : m_multiSel)
+         extendWithPart(part);
+      if (m_multiSel.empty() && m_selection.GetPart())
+         extendWithPart(m_selection.GetPart());
+   }
+   return bounds.left <= bounds.right;
 }
 
 void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation) const

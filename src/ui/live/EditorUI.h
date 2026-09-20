@@ -19,6 +19,7 @@ class InputManager;
 class Renderer;
 class DragPoint;
 class Sampler;
+class FRect3D;
 
 namespace VPX::EditorUI
 {
@@ -269,6 +270,7 @@ private:
    ImGuizmo::OPERATION m_gizmoOperation = (ImGuizmo::OPERATION)0;
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
    bool GetSelectionTransform(Matrix3D &transform) const;
+   bool GetSelectionBounds(FRect3D &bounds) const;
    void SetSelectionTransform(const Matrix3D &transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
 
    // Editor camera
