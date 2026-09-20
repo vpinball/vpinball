@@ -926,7 +926,8 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
 void Renderer::DrawBackground()
 {
    const PinTable * const ptable = g_pplayer->m_ptable;
-   Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[ptable->GetViewMode()]) : nullptr;
+   const ViewSetupID bgSet = g_pplayer->m_liveUI->IsEditorBackdropViewMode() ? BG_DESKTOP : ptable->GetViewMode();
+   Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[bgSet]) : nullptr;
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_CCW);
    if (pin)
@@ -1030,6 +1031,20 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const int width, const int height, const Ve
    const float wx = (wz - p1.z)*(p2.x - p1.x) / (p2.z - p1.z) + p1.x;
    const float wy = (wz - p1.z)*(p2.y - p1.y) / (p2.z - p1.z) + p1.y;
    return {wx, wy, wz};
+}
+
+Vertex2D Renderer::BackdropToClip(const Vertex2D& pos) const
+{
+   if (g_pplayer->m_liveUI->IsEditorBackdropViewMode())
+   {
+      // The live editor setup its own backdrop ortho MVP to allow pan & zoom
+      return (m_mvp.GetView(0) * m_mvp.GetProj(0) * Vertex3Ds(pos.x, pos.y, 0.f)).xy();
+   }
+   else
+   {
+      // Otherwise, defaults to a fixed full screen ortho camera that scales to EDITOR_BG_WIDTH x EDITOR_BG_HEIGHT
+      return Vertex2D(2.0f * pos.x / (float)EDITOR_BG_WIDTH - 1.0f, 1.0f - 2.0f * pos.y / (float)EDITOR_BG_HEIGHT);
+   }
 }
 
 void Renderer::SetupShaders()
@@ -1237,11 +1252,20 @@ void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool fl
 {
    Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
    matWorldViewProj[0].SetIdentity();
-   matWorldViewProj[0]._11 = 2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetWidth();
-   matWorldViewProj[0]._41 = -1.0f;
-   matWorldViewProj[0]._22 = -2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetHeight();
-   matWorldViewProj[0]._42 = 1.0f;
-   matWorldViewProj[0] = matWorldViewProj[0];
+   if (g_pplayer->m_liveUI->IsEditorBackdropViewMode())
+   {
+      // The live editor setup its own backdrop ortho MVP, but we need to adapt it to the render target scale
+      matWorldViewProj[0] = Matrix3D::MatrixScale((float)EDITOR_BG_WIDTH / (float)m_renderDevice->GetCurrentRenderTarget()->GetWidth(),
+                               (float)EDITOR_BG_HEIGHT / (float)m_renderDevice->GetCurrentRenderTarget()->GetHeight(), 1.f)
+         * m_mvp.GetView(0) * m_mvp.GetProj(0);
+   }
+   else
+   {
+      matWorldViewProj[0]._11 = 2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetWidth();
+      matWorldViewProj[0]._41 = -1.0f;
+      matWorldViewProj[0]._22 = -2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetHeight();
+      matWorldViewProj[0]._42 = 1.0f;
+   }
    const int eyes = m_renderDevice->GetCurrentRenderTarget()->m_nLayers;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
@@ -1592,8 +1616,9 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
 
    for (unsigned int i = 0; i < 4; ++i)
    {
-      vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
-      vertices[i].y = 1.0f - (vertices[i].y * height + posy)*2.0f;
+      const Vertex2D clip = BackdropToClip(Vertex2D((vertices[i].x * width + posx) * (float)EDITOR_BG_WIDTH, (vertices[i].y * height + posy) * (float)EDITOR_BG_HEIGHT));
+      vertices[i].x = clip.x;
+      vertices[i].y = clip.y;
    }
 
    const vec4 c = convertColor(color, intensity);
@@ -1970,14 +1995,21 @@ void Renderer::RenderDynamics()
    UpdateBasicShaderMatrix();
    UpdateBallShaderMatrix();
 
-   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0) || g_pplayer->m_liveUI->IsEditorViewMode();
+   // In the live editor's desktop backdrop mode, only render backdrop parts (and skip the playfield bulb light buffer)
+   const bool isBackdropEdit = g_pplayer->m_liveUI->IsEditorBackdropViewMode();
+   const bool isNoBackdrop = !isBackdropEdit && (m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0) || g_pplayer->m_liveUI->IsEditorViewMode());
    if (m_shadeMode == ShadeMode::Default)
    {
       const unsigned int mask = m_render_mask;
       m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
-      DrawBulbLightBuffer();
+      if (!isBackdropEdit)
+         DrawBulbLightBuffer();
       for (auto renderable : g_pplayer->m_ptable->GetParts())
+      {
+         if (isBackdropEdit && !renderable->m_desktopBackdrop)
+            continue;
          RenderItem(renderable, isNoBackdrop);
+      }
       m_render_mask = mask;
    }
    else
@@ -1986,7 +2018,7 @@ void Renderer::RenderDynamics()
       constexpr vec4 edgeColor{0.f, 0.f, 0.f, 1.f};
       for (auto renderable : g_pplayer->m_ptable->GetParts())
       {
-         if (isNoBackdrop && renderable->m_desktopBackdrop)
+         if ((isNoBackdrop && renderable->m_desktopBackdrop) || (isBackdropEdit && !renderable->m_desktopBackdrop))
             continue;
 
          const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
@@ -2956,6 +2988,8 @@ void Renderer::RenderFrame()
          m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x000D0D0D);
       else
          m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+      if (g_pplayer->m_liveUI->IsEditorBackdropViewMode())
+         DrawBackground(); // Draw the desktop backdrop image behind the backdrop parts being edited
       #ifdef ENABLE_XR
       if (g_pplayer->IsVR())
       {

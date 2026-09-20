@@ -12,7 +12,8 @@ DecalUIPart::DecalUIPart(Decal* decal)
 
 DecalUIPart::TransformMask DecalUIPart::GetTransform(Matrix3D& transform)
 {
-   const float height = m_part->GetPTable()->GetSurfaceHeight(m_part->m_d.m_szSurface, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y);
+   // Desktop backdrop decals are flat, in the 2D backdrop XY plane
+   const float height = m_part->m_desktopBackdrop ? 0.f : m_part->GetPTable()->GetSurfaceHeight(m_part->m_d.m_szSurface, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y);
    transform = Matrix3D::MatrixTranslate(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, height);
    return TM_TransAny;
 }
@@ -25,7 +26,7 @@ void DecalUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& r
 
 void DecalUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
-   // TODO draw a selection overlay (decals have no wireframe/hit objects to display)
+   ctx.DrawHitObjects(m_part); // Draw the UI picking quad (decals have no wireframe to display)
 }
 
 void DecalUIPart::UpdatePropertyPane(PropertyPane& props)

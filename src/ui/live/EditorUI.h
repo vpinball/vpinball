@@ -35,6 +35,7 @@ public:
    void Close();
    
    bool IsPreview() const { return m_camMode == ViewMode::PreviewCam; }
+   bool IsBackdropEditMode() const { return m_camMode == ViewMode::DesktopBackdrop; }
 
    bool IsInspectMode() const { return m_table->m_liveBaseTable != nullptr; }
 
@@ -182,6 +183,7 @@ private:
 
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void ResetCameraFromPlayer();
+   void SetBackdropCamera();
 
    // Undo support
    void PushUndo(IEditable *part, unsigned int editId);
