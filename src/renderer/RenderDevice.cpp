@@ -2257,6 +2257,7 @@ void RenderDevice::NextView()
    bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
    bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
    bgfx::touch(m_activeViewId);
+   m_activeViewClearFlags = BGFX_CLEAR_NONE;
 }
 
 void RenderDevice::ResetActiveView()

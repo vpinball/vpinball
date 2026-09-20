@@ -169,7 +169,7 @@ void RenderPass::SortCommands()
 
 void RenderPass::Submit(RenderCommand* command)
 {
-   if (command->IsFullClear(m_rt->HasDepth()))
+   if (!m_commands.empty() && command->IsFullClear(m_rt->HasDepth()))
    {
       for (RenderCommand* cmd : m_commands)
          delete cmd;
