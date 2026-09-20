@@ -291,6 +291,8 @@ public:
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    bgfx::ViewId m_activeViewId = 0;
+   uint16_t m_activeViewClearFlags = BGFX_CLEAR_NONE; // Accumulated clear flags of the active view (BGFX applies a single clear per view, using the last defined state)
+   uint32_t m_activeViewClearColor = 0;
    uint64_t m_bgfxState = 0;
 
    bool m_frameNoPresent = false; // Flag set when the next frame should be submitted without VBlank sync disabled

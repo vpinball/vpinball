@@ -57,7 +57,11 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       const uint32_t b = (m_clearARGB & 0x00ff0000) >> 16;
       const uint32_t a = (m_clearARGB & 0xff000000) >> 24;
       const uint32_t rgba = (r << 24) | (g << 16) | (b << 8) | a;
-      bgfx::setViewClear(m_rd->m_activeViewId, (uint16_t) m_clearFlags, rgba);
+      // BGFX applies a single clear per view when it is submitted, using the last defined clear state: combine this clear with the previous ones of the active view
+      m_rd->m_activeViewClearFlags = (uint16_t)(m_rd->m_activeViewClearFlags | m_clearFlags);
+      if (m_clearFlags & clearType::TARGET)
+         m_rd->m_activeViewClearColor = rgba;
+      bgfx::setViewClear(m_rd->m_activeViewId, m_rd->m_activeViewClearFlags, m_rd->m_activeViewClearColor);
       bgfx::touch(m_rd->m_activeViewId);
 
       #elif defined(ENABLE_OPENGL)
