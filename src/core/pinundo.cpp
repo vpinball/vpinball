@@ -5,6 +5,7 @@
 #include "pinundo.h"
 
 #include "vpversion.h"
+#include "parts/ball.h"
 #include "parts/pintable.h"
 #include "ui/live/LiveUI.h"
 #include "utils/fileio.h"
@@ -188,7 +189,28 @@ void PinUndo::Undo()
    }
 
    for (size_t i = 0; i < m_undoRecords.back()->m_vieCreate.size(); i++)
-      m_table->Uncreate(m_undoRecords.back()->m_vieCreate[i]);
+   {
+      IEditable *const pie = m_undoRecords.back()->m_vieCreate[i];
+      if (g_pplayer && (g_pplayer->m_ptable == m_table))
+      {
+         // The part was created through the LiveUI and owns player side resources: release them before removing it
+         if (pie->GetItemType() == eItemBall)
+            RemoveFromVectorSingle(g_pplayer->m_vball, static_cast<Ball *>(pie));
+         if (pie->GetIHitable())
+            g_pplayer->m_physics->Remove(pie);
+         if (pie->m_phittimer)
+            g_pplayer->TimerRelease(pie);
+         pie->AddRef(); // Keep the part alive until its deferred render release has been processed
+         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
+            [pie]()
+            {
+               if (pie->GetIRenderable())
+                  pie->GetIRenderable()->RenderRelease();
+               pie->Release();
+            });
+      }
+      m_table->Uncreate(pie);
+   }
 
    m_undoRecords.pop_back();
 

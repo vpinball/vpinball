@@ -145,10 +145,51 @@ void AsyncDynamicQuadTree::SetStatic(IEditable* editable)
    UpdateAsync();
 }
 
+void AsyncDynamicQuadTree::AddEditable(IEditable* editable)
+{
+   assert(editable->GetIHitable() != nullptr);
+
+   // Purge any pending update that may modify the static quadtree we are going to update
+   while (m_quadTreeUpdateInProgress)
+   {
+      m_quadtreeUpdateReady.acquire();
+      m_quadtreeUpdateReady.release();
+      UpdateAsync();
+   }
+
+   // Collect the hit objects of the new editable and add them to the static quadtree
+   vector<HitObject*> hitObjects;
+   m_physics->CollectColliders(editable, &hitObjects, m_isUI);
+   if (hitObjects.empty())
+      return;
+   vector<HitObject*>& vho = m_quadTree->BeginReset();
+   std::erase(vho, nullptr); // Compact away the slots nulled for dynamic parts (their recorded indices would be stale after insertion anyway)
+   m_nullSlots.clear();
+   vho.insert(vho.end(), hitObjects.begin(), hitObjects.end());
+   m_quadTree->EndReset();
+}
+
 void AsyncDynamicQuadTree::Remove(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+
+   if (editable->GetItemType() == eItemBall)
+   {
+      // Balls are not supported as dynamic editables as they manage their hit object lifecycle.
+      // Their HitBall is always part of the static quadtree, remove it without deleting it (owned by the ball)
+      while (m_quadTreeUpdateInProgress)
+      {
+         m_quadtreeUpdateReady.acquire();
+         m_quadtreeUpdateReady.release();
+         UpdateAsync();
+      }
+      vector<HitObject*>& vho = m_quadTree->BeginReset();
+      std::erase_if(vho, [editable](HitObject* ho) { return (ho != nullptr) && (ho->m_editable == editable); });
+      std::erase(vho, nullptr); // Compact away the slots nulled for dynamic parts (their recorded indices would be stale after removal anyway)
+      m_nullSlots.clear();
+      m_quadTree->EndReset();
+      return;
+   }
 
    // Remove from static quadtree
    if (IsStatic(editable))

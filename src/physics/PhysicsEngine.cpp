@@ -111,18 +111,50 @@ void PhysicsEngine::SetGravity(float slopeDeg, float strength)
    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
 }
 
-void PhysicsEngine::Remove(IEditable* editable)
+void PhysicsEngine::Add(IEditable *editable)
 {
-   assert(editable->GetItemType() != eItemBall); // As they own the hit object
    assert(editable->GetIHitable() != nullptr);
 
-   editable->GetIHitable()->PhysicRelease(this, false);
+   // Add the editable's colliders to the gameplay quadtree (balls insert and own their HitBall through AddCollider)
+   vector<HitObject *> hitObjects;
+   CollectColliders(editable, &hitObjects, false);
+   for (HitObject *const pho : hitObjects)
+   {
+      if (pho->GetType() == eFlipper)
+         m_vFlippers.push_back(static_cast<HitFlipper *>(pho));
+      else if (pho->GetType() == ePlunger)
+         m_vPlungers.push_back(static_cast<HitPlunger *>(pho));
+      if (MoverObject *const pmo = pho->GetMoverObject(); pmo && pmo->AddToList())
+         m_vmover.push_back(pmo);
+   }
+   if (!hitObjects.empty())
+   {
+      vector<HitObject *> &vho = m_hitoctree.BeginReset();
+      vho.insert(vho.end(), hitObjects.begin(), hitObjects.end());
+      m_hitoctree.EndReset();
+   }
+
+   if (m_UIQuadTtree)
+      m_UIQuadTtree->AddEditable(editable);
+}
+
+void PhysicsEngine::Remove(IEditable* editable)
+{
+   assert(editable->GetIHitable() != nullptr);
+
+   editable->GetIHitable()->PhysicRelease(this, false); // Balls remove their HitBall from the dynamic quadtree through RemoveCollider
    vector<HitObject *> &vho = m_hitoctree.BeginReset();
    std::erase_if(vho,
-      [editable](HitObject *ho)
+      [this, editable](HitObject *ho)
       {
          if (ho->m_editable == editable)
          {
+            if (ho->GetType() == eFlipper)
+               RemoveFromVectorSingle(m_vFlippers, static_cast<HitFlipper *>(ho));
+            else if (ho->GetType() == ePlunger)
+               RemoveFromVectorSingle(m_vPlungers, static_cast<HitPlunger *>(ho));
+            if (MoverObject *const pmo = ho->GetMoverObject(); pmo && pmo->AddToList())
+               RemoveFromVectorSingle(m_vmover, pmo);
             delete ho;
             return true;
          }
