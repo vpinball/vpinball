@@ -8,9 +8,13 @@
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
 #include "editor/EditorUIPart.h"
+#include "editor/Selection.h"
+#include "editor/EditorChrome.h"
+#include "editor/OutlinerPanel.h"
+#include "editor/PropertiesPanel.h"
+#include "editor/RendererInspectionModal.h"
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
-#include <variant>
 
 class LiveUI;
 class PinTable;
@@ -18,7 +22,6 @@ class Player;
 class InputManager;
 class Renderer;
 class DragPoint;
-class Sampler;
 class FRect3D;
 
 namespace VPX::EditorUI
@@ -27,6 +30,13 @@ namespace VPX::EditorUI
 class EditorUI final
    : private DragPointEditContext
 {
+   // The editor's UI is split between sub components which, for the time being, access
+   // the shared editor state directly (to be refined as domain objects are extracted)
+   friend class EditorChrome;
+   friend class OutlinerPanel;
+   friend class PropertiesPanel;
+   friend class RendererInspectionModal;
+
 public:
    EditorUI(LiveUI &liveUI);
    ~EditorUI();
@@ -36,7 +46,7 @@ public:
    void Render3D();
    void RenderUI();
    void Close();
-   
+
    bool IsPreview() const { return m_camMode == ViewMode::PreviewCam; }
    bool IsBackdropEditMode() const { return m_camMode == ViewMode::DesktopBackdrop; }
 
@@ -49,81 +59,14 @@ private:
    PinTable *m_table; // The table displayed by the player
    InputManager *m_pininput;
    std::unique_ptr<Renderer>& m_renderer;
-   struct Selection
-   {
-      enum SelectionType
-      {
-         S_NONE,
-         S_CAMERA,
-         S_MATERIAL,
-         S_IMAGE,
-         S_EDITABLE,
-         S_RENDERPROBE
-      };
-      struct CameraSel
-      {
-         int viewSetup;
-         bool operator==(const CameraSel &) const = default;
-      };
 
-      // Alternative order must match SelectionType (GetType relies on it)
-      using Payload = std::variant<std::monostate, CameraSel, Material *, Texture *, std::shared_ptr<EditorUIPart>, RenderProbe *>;
-      static_assert(std::variant_size_v<Payload> == S_RENDERPROBE + 1);
-      Payload payload;
+   // Sub components (UI panels & modals)
+   EditorChrome m_chrome;
+   OutlinerPanel m_outliner;
+   PropertiesPanel m_properties;
+   RendererInspectionModal m_inspectionModal;
 
-      Selection() = default;
-      Selection(Material *material)
-         : payload(material)
-      {
-      }
-      Selection(Texture *image)
-         : payload(image)
-      {
-      }
-      Selection(const std::shared_ptr<EditorUIPart> &uiPart)
-         : payload(uiPart)
-      {
-      }
-      Selection(RenderProbe *probe)
-         : payload(probe)
-      {
-      }
-      static Selection Camera(int viewSetup)
-      {
-         Selection sel;
-         sel.payload = CameraSel { viewSetup };
-         return sel;
-      }
-
-      SelectionType GetType() const { return static_cast<SelectionType>(payload.index()); }
-      int GetCamera() const
-      {
-         const CameraSel *cam = std::get_if<CameraSel>(&payload);
-         return cam ? cam->viewSetup : -1;
-      }
-      Material *GetMaterial() const
-      {
-         const auto *p = std::get_if<Material *>(&payload);
-         return p ? *p : nullptr;
-      }
-      Texture *GetImage() const
-      {
-         const auto *p = std::get_if<Texture *>(&payload);
-         return p ? *p : nullptr;
-      }
-      std::shared_ptr<EditorUIPart> GetPart() const
-      {
-         const auto *p = std::get_if<std::shared_ptr<EditorUIPart>>(&payload);
-         return p ? *p : nullptr;
-      }
-      RenderProbe *GetProbe() const
-      {
-         const auto *p = std::get_if<RenderProbe *>(&payload);
-         return p ? *p : nullptr;
-      }
-
-      bool operator==(const Selection &) const = default;
-   } m_selection;
+   Selection m_selection;
 
    // Multi selection of editable parts: all currently selected parts, with m_selection.GetPart() being the
    // active one (property pane target and gizmo pivot). Empty unless m_selection.GetType() == S_EDITABLE.
@@ -185,20 +128,6 @@ private:
    ankerl::unordered_dense::map<const IEditable *, std::shared_ptr<EditorUIPart>> m_editableMap;
    void UpdateEditableList();
 
-   // Main UI frame & panels
-   void UpdateOutlinerUI();
-   void UpdatePropertyUI();
-
-   // Popups & Modals
-   void UpdateRendererInspectionModal();
-
-   // Properties
-   void TableProperties(PropertyPane &props);
-   void ImageProperties(PropertyPane &props, Texture* image);
-   void RenderProbeProperties(PropertyPane &props, RenderProbe* probe);
-   void CameraProperties(PropertyPane &props, int bgSet);
-   void MaterialProperties(PropertyPane &props, Material* material);
-
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void ResetCameraFromPlayer();
    void SetBackdropCamera();
@@ -212,28 +141,9 @@ private:
    // Add/Remove parts
    void DeleteSelection();
    ItemTypeEnum m_addPartType = eItemInvalid; // Part type pending placement (eItemInvalid when not in add part mode)
-   struct AddPartButton
-   {
-      ItemTypeEnum type;
-      const char *name;
-      std::shared_ptr<Sampler> icon;
-   };
-   vector<AddPartButton> m_addPartButtons; // Lazily initialized add part toolbar buttons
-   ImVec2 m_addPartPopupPos; // Position at which the Shift+A part type picker popup was opened
-   bool m_openAddPartPopup = false; // Request to open the part type picker popup (consumed in the toolbar window scope)
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
 
-   // Outliner
-   string m_outlinerFilter;
-   bool m_outlinerSelectLiveTab = true;
-   bool MatchesOutlinerFilter(const string &name) const;
-
-   // Properties
-   bool m_propertiesSelectLiveTab = true;
-
    // Rendering
-   float m_menubar_height = 0.0f;
-   float m_toolbar_height = 0.0f;
    enum class PhysicOverlay
    {
       None,
@@ -260,7 +170,6 @@ private:
    // UI state
    bool m_isOpened = false;
    bool m_flyMode = false;
-   bool m_showRendererInspection = false;
    enum class Units
    {
       VPX, Metric, Imperial
@@ -283,36 +192,6 @@ private:
    } m_predefinedView = PredefinedView::None;
    Matrix3D m_camView, m_camProj;
    float m_camDistance;
-
-   class RenderContext : public EditorRenderContext
-   {
-   public:
-      RenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync);
-      ~RenderContext() override = default;
-
-      bool NeedsLiveTableSync() const override { return m_needsLiveTableSync; }
-      ImU32 GetColor(bool selected) const override { return selected ? (m_isActive ? IM_COL32(255, 128, 0, 255) : IM_COL32(192, 96, 0, 255)) : IM_COL32_BLACK; };
-      bool IsSelected() const override { return m_isSelected; }
-      bool IsShowInvisible() const override;
-      ViewMode GetViewMode() const override { return m_viewMode; }
-      ImDrawList *GetDrawList() const override { return m_drawlist; }
-
-      ImVec2 Project(const Vertex3Ds &v) const override;
-      void DrawLine(const Vertex3Ds &a, const Vertex3Ds &b, ImU32 color) const override;
-      void DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, const Vertex3Ds &y, float radius, ImU32 color) const override;
-      void DrawHitObjects(IEditable *editable) const override;
-      void DrawWireframe(IEditable *editable) const override;
-
-      bool m_isSelected = false;
-      bool m_isActive = false;
-
-   private:
-      Player *m_player;
-      ImDrawList *const m_drawlist;
-      const ViewMode m_viewMode;
-      const Renderer::ShadeMode m_shadeMode;
-      const bool m_needsLiveTableSync;
-   };
 };
 
 }
