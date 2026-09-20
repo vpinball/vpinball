@@ -42,6 +42,9 @@ PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
 #endif
    , m_undo(table)
 {
+   // Store the current selection in each undo record, so that undoing also restores it
+   m_undo.SetEditorStateCapture([this]() { return std::any(CaptureUndoSelection()); });
+
    m_table->AddRef();
    m_table->m_tableEditor = this;
    m_pcv->Create(nullptr);
@@ -111,12 +114,71 @@ void PinTableWnd::Undo()
          return;
    }
 
-   m_undo.Undo();
+   const std::any state = m_undo.Undo();
+   if (state.has_value())
+      RestoreUndoSelection(std::any_cast<const vector<UndoSelectionEntry> &>(state));
 
    OnPartChanged(m_table);
 }
 
 void PinTableWnd::SetCleanPoint(const SaveDirtyState sds) { m_undo.SetCleanPoint(sds); }
+
+vector<PinTableWnd::UndoSelectionEntry> PinTableWnd::CaptureUndoSelection() const
+{
+   vector<UndoSelectionEntry> selection;
+   selection.reserve(m_vmultisel.size());
+   for (const IWinUIPart *const part : m_vmultisel)
+      selection.push_back(UndoSelectionEntry { part->GetEditable(), part->GetSubPartIndex() });
+   return selection;
+}
+
+void PinTableWnd::RestoreUndoSelection(const vector<UndoSelectionEntry> &selection)
+{
+#ifndef __STANDALONE__
+   // Resolve the entries to the current UI parts, dropping (or falling back to their owner) the ones that
+   // do not exist anymore
+   vector<IWinUIPart *> parts;
+   for (const UndoSelectionEntry &entry : selection)
+   {
+      IWinUIPart *const ownerPart = GetUIPart(entry.editable);
+      if (ownerPart == nullptr)
+         continue;
+      IWinUIPart *part = (entry.subPartIndex == -1) ? ownerPart : ownerPart->GetSubPartByIndex(entry.subPartIndex);
+      if (part == nullptr && entry.subPartIndex != -1)
+         part = ownerPart; // The sub part is gone: fall back to selecting its owning part
+      if (part != nullptr && FindIndexOf(parts, part) == -1)
+         parts.push_back(part);
+   }
+
+   // The selection may contain stale UI part pointers: undo reloads the parts, deleting and recreating their
+   // sub parts (drag points, light centers), so only reset the selection flag of parts that are still valid
+   ankerl::unordered_dense::set<IWinUIPart *> validParts;
+   validParts.insert(&m_tablePart);
+   for (const auto &[editable, uiPart] : m_uiParts)
+   {
+      validParts.insert(uiPart.get());
+      for (int i = 0; IWinUIPart *const subPart = uiPart->GetSubPartByIndex(i); i++)
+         validParts.insert(subPart);
+      if (IWinUIPart *const subPart = uiPart->GetSubPartByIndex(IWinUIPart::LightCenterSubPartIndex))
+         validParts.insert(subPart);
+   }
+   for (IWinUIPart *const part : m_vmultisel)
+      if (validParts.contains(part))
+         part->m_selectstate = IWinUIPart::SelectState::NotSelected;
+   if (parts.empty())
+      parts.push_back(&m_tablePart); // Something is always selected (the table when nothing else is)
+   m_vmultisel = parts;
+   m_vmultisel[0]->m_selectstate = IWinUIPart::SelectState::Selected;
+   for (size_t i = 1; i < m_vmultisel.size(); i++)
+      m_vmultisel[i]->m_selectstate = IWinUIPart::SelectState::MultiSelected;
+
+   m_vpxEditor->SetPropSel(m_vmultisel);
+   if (m_vmultisel[0]->GetEditable() && m_vmultisel[0]->GetEditable()->GetIScriptable())
+      m_pcv->SelectItem(m_vmultisel[0]->GetEditable()->GetIScriptable());
+   m_vmultisel[0]->UpdateStatusBarInfo();
+   m_table->SetDirtyDraw();
+#endif
+}
 
 void PinTableWnd::StartUndo()
 {
@@ -1430,8 +1492,6 @@ void PinTableWnd::DeleteSelection()
                m_vseldelete.push_back(GetUIPart(part));
    }
 
-   ClearMultiSel();
-
    bool inCollection = false;
    for (IWinUIPart *const ptr : m_vseldelete)
    {
@@ -1458,7 +1518,10 @@ void PinTableWnd::DeleteSelection()
          return;
    }
 
+   // Start the undo record before clearing the selection, so that it captures the current selection
+   // (undoing the deletion restores the deleted parts as selected)
    BeginUndo();
+   ClearMultiSel();
    for (IWinUIPart *const ptr : m_vseldelete)
    {
       if (ptr->GetItemType() == ItemTypeEnum::eItemDragPoint)

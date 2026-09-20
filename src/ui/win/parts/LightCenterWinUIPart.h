@@ -13,6 +13,7 @@ public:
 
    ItemTypeEnum GetItemType() const override { return eItemLightCenter; }
    bool IsSubPart() const override { return true; }
+   int GetSubPartIndex() const override { return LightCenterSubPartIndex; }
 
    // The light center handle is drawn by the light's IWinUIPart
    void UIRenderPass1(Sur* psur) override { }

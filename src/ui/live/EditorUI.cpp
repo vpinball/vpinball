@@ -79,6 +79,9 @@ EditorUI::EditorUI(LiveUI &liveUI)
 
    EditorUIPartRegistry::InitRegistry();
 
+   // Store the current selection in each undo record, so that undoing also restores it
+   m_undo.SetEditorStateCapture([this]() { return std::any(CaptureUndoSelection()); });
+
    ClearSelection();
 
    // Editor camera position. We use a right handed system for easy ImGuizmo integration while VPX renderer is left handed, so reverse X axis
@@ -976,7 +979,9 @@ void EditorUI::RenderUI()
             if (m_table->m_liveBaseTable == nullptr)
             {
                // TODO handle IsUndoPastCleanPoint
-               m_undo.Undo();
+               const std::any state = m_undo.Undo();
+               if (state.has_value())
+                  RestoreUndoSelection(std::any_cast<const UndoSelectionState &>(state));
             }
          }
          else if (!io.KeyShift && !io.KeyAlt)
@@ -1122,6 +1127,77 @@ void EditorUI::ClearSelection()
    m_selection = Selection();
    m_multiSel.clear();
    m_outlinerAnchor.reset();
+}
+
+EditorUI::UndoSelectionState EditorUI::CaptureUndoSelection() const
+{
+   UndoSelectionState state { m_selection, m_multiSel, m_outlinerAnchor, m_pointEditPart, {} };
+   // Drag points are deleted and recreated when their part is reloaded (undo, ...): store their index in the curve
+   if (DragPointCurve *const curve = m_pointEditPart ? m_pointEditPart->GetDragPointCurve() : nullptr)
+   {
+      const vector<CComObject<DragPoint> *> points = curve->GetPoints();
+      for (const DragPoint *point : m_pointSel)
+         state.pointSel.push_back(FindIndexOf(points, (CComObject<DragPoint> *)point));
+   }
+   return state;
+}
+
+void EditorUI::RestoreUndoSelection(const UndoSelectionState &state)
+{
+   // Ensure the editable map is up to date (undo may have deleted or undeleted parts)
+   UpdateEditableList();
+   // Parts are resolved through the editable map since undo may have removed and recreated them
+   const auto resolve = [this](const std::shared_ptr<EditorUIPart> &part) -> std::shared_ptr<EditorUIPart>
+   {
+      if (part == nullptr)
+         return nullptr;
+      const auto it = m_editableMap.find(part->GetEditable());
+      return it != m_editableMap.end() ? it->second : nullptr;
+   };
+   // Restore the drag point edit mode state (selected points are resolved by index since they are recreated on part reload)
+   const std::shared_ptr<EditorUIPart> pointEditPart = resolve(state.pointEditPart);
+   if (m_pointEditPart != pointEditPart)
+   {
+      if (m_pointEditPart)
+         m_pointEditPart->SetPointEditContext(nullptr);
+      m_pointEditPart = pointEditPart;
+      if (m_pointEditPart)
+         m_pointEditPart->SetPointEditContext(this);
+      m_pointDragPending = false;
+      m_pointDragActive = false;
+   }
+   m_pointSel.clear();
+   if (DragPointCurve *const curve = m_pointEditPart ? m_pointEditPart->GetDragPointCurve() : nullptr)
+   {
+      const vector<CComObject<DragPoint> *> points = curve->GetPoints();
+      for (const int index : state.pointSel)
+         if (index >= 0 && index < (int)points.size())
+            m_pointSel.push_back(points[index]);
+   }
+   m_multiSel.clear();
+   for (const auto &part : state.multiSel)
+      if (std::shared_ptr<EditorUIPart> resolved = resolve(part))
+         m_multiSel.push_back(resolved);
+   switch (state.selection.GetType())
+   {
+   case Selection::S_EDITABLE:
+   {
+      std::shared_ptr<EditorUIPart> part = resolve(state.selection.GetPart());
+      if (part == nullptr || !IsPartSelected(part))
+         part = m_multiSel.empty() ? nullptr : m_multiSel.back();
+      m_selection = part ? Selection(part) : Selection();
+      break;
+   }
+   case Selection::S_MATERIAL:
+      m_selection = std::ranges::find(m_table->GetMaterialList(), state.selection.GetMaterial()) != m_table->GetMaterialList().end() ? state.selection : Selection();
+      break;
+   case Selection::S_IMAGE: m_selection = std::ranges::find(m_table->GetImageList(), state.selection.GetImage()) != m_table->GetImageList().end() ? state.selection : Selection(); break;
+   case Selection::S_RENDERPROBE:
+      m_selection = std::ranges::find(m_table->GetRenderProbeList(), state.selection.GetProbe()) != m_table->GetRenderProbeList().end() ? state.selection : Selection();
+      break;
+   default: m_selection = state.selection; break; // S_NONE, S_CAMERA
+   }
+   m_outlinerAnchor = resolve(state.outlinerAnchor);
 }
 
 void EditorUI::SetSelection(const Selection &selection)
