@@ -6,6 +6,7 @@
 
 #include "parts/Collection.h"
 #include "parts/pintable.h"
+#include "physics/hitable.h"
 #include "renderer/Renderable.h"
 #include "physics/hittimer.h"
 #include "utils/eventproxy.h"
@@ -28,19 +29,18 @@ public:
    FontDesc m_font;
 };
 
-class Decal :
-   public IDispatchImpl<IDecal, &IID_IDecal, &LIBID_VPinballLib>,
-   public CComObjectRoot,
-   public CComCoClass<Decal, &CLSID_Decal>,
-   public EventProxy<Decal, &DIID_IDecalEvents>,
-   public IConnectionPointContainerImpl<Decal>,
-   public IProvideClassInfo2Impl<&CLSID_Decal, &DIID_IDecalEvents, &LIBID_VPinballLib>,
-   public IEditable,
-   //public Hitable, // FIXME implement UI picking
-   public IRenderable,
-   public IScriptable,
-   public IFireEvents,
-   public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
+class Decal : public IDispatchImpl<IDecal, &IID_IDecal, &LIBID_VPinballLib>,
+              public CComObjectRoot,
+              public CComCoClass<Decal, &CLSID_Decal>,
+              public EventProxy<Decal, &DIID_IDecalEvents>,
+              public IConnectionPointContainerImpl<Decal>,
+              public IProvideClassInfo2Impl<&CLSID_Decal, &DIID_IDecalEvents, &LIBID_VPinballLib>,
+              public IEditable,
+              public IHitable, // only used for UI picking
+              public IRenderable,
+              public IScriptable,
+              public IFireEvents,
+              public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
 #ifdef __STANDALONE__
@@ -61,7 +61,7 @@ public:
       COM_INTERFACE_ENTRY(IProvideClassInfo2)
    END_COM_MAP()
 
-   STANDARD_EDITABLE_DECLARES_NO_HITABLE(Decal, eItemDecal, DECAL)
+   STANDARD_EDITABLE_DECLARES(Decal, eItemDecal, DECAL)
 
    BEGIN_CONNECTION_POINT_MAP(Decal)
       CONNECTION_POINT_ENTRY(DIID_IDecalEvents)
