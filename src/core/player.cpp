@@ -1360,6 +1360,10 @@ void Player::TimerStateChange(HitTimer * const hittimer, bool enabled)
    }
 }
 
+void Player::TimerSetup(IEditable *editable) { editable->TimerSetup(m_vht); }
+
+void Player::TimerRelease(IEditable *editable) { editable->TimerRelease(m_vht); }
+
 
 string Player::GetPerfInfo()
 {

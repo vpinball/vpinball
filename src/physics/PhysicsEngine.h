@@ -23,6 +23,7 @@ public:
    void SetStatic(IEditable *editable) { GetUIQuadTree()->SetStatic(editable); }
 
    // Allow to add/remove parts after initial setup
+   void Add(IEditable *editable);
    void Remove(IEditable *editable);
 
    // Add or remove a collider, as a consequence of PhysicSetup/Release

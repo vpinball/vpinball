@@ -4,6 +4,9 @@
     <Filter Include="assets">
       <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="assets\editor">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="assets\meshes">
       <UniqueIdentifier>{23b51dec-131c-4ac3-8f28-4e8fd6a3b646}</UniqueIdentifier>
     </Filter>
@@ -2534,6 +2537,66 @@
     </Image>
     <Image Include="$(SolutionDir)/../../src/assets/bumperskirt.webp">
       <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/ball.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/bumper.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/decal.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/flasher.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/flipper.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/gate.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/kicker.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/light.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/lightseq.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/plunger.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/primitive.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/ramp.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/reel.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/rubber.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/spinner.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/target.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/textbox.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/timer.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/trigger.png">
+      <Filter>assets\editor</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/wall.png">
+      <Filter>assets\editor</Filter>
     </Image>
     <Image Include="$(SolutionDir)/../../src/assets/envmap.webp">
       <Filter>assets</Filter>

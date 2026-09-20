@@ -31,6 +31,7 @@ public:
    void SetDynamic(IEditable* editable);
    void Update(IEditable* editable);
    void SetStatic(IEditable* editable);
+   void AddEditable(IEditable* editable); // Add the hit objects of a new editable to the static quadtree
    void Remove(IEditable* editable);
 
    void HitTestBall(const HitBall* const pball, CollisionEvent& coll);

@@ -24,6 +24,7 @@ class Renderer;
 class VRDevice;
 class LiveUI;
 class BaseTexture;
+class IEditable;
 
 enum InfoMode
 {
@@ -157,6 +158,8 @@ private:
 public:
    void FireTimers(const int mode); // 0 = timer, -1 = frame sync, -2 = game sync
    void TimerStateChange(HitTimer * const hittimer, bool enabled);
+   void TimerSetup(IEditable *editable);
+   void TimerRelease(IEditable *editable);
 
 private:
    bool m_deferTimerChanges = false;

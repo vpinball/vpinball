@@ -18,6 +18,7 @@ class Player;
 class InputManager;
 class Renderer;
 class DragPoint;
+class Sampler;
 
 namespace VPX::EditorUI
 {
@@ -197,6 +198,15 @@ private:
 
    // Add/Remove parts
    void DeleteSelection();
+   ItemTypeEnum m_addPartType = eItemInvalid; // Part type pending placement (eItemInvalid when not in add part mode)
+   struct AddPartButton
+   {
+      ItemTypeEnum type;
+      const char *name;
+      std::shared_ptr<Sampler> icon;
+   };
+   vector<AddPartButton> m_addPartButtons; // Lazily initialized add part toolbar buttons
+   void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
 
    // Outliner
    string m_outlinerFilter;

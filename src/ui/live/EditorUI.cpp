@@ -5,11 +5,15 @@
 
 #include "core/TableDB.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "core/editablereg.h"
+#include "core/FileLocator.h"
+#include "core/vpapp.h"
 
 #include "editor/EditorUIPart.h"
 #include "editor/EditorUIPartRegistry.h"
 
 #include "parts/PartGroup.h"
+#include "parts/ball.h"
 #include "parts/primitive.h"
 #include "parts/dragpoint.h"
 
@@ -17,6 +21,7 @@
 
 #include "renderer/Anaglyph.h"
 #include "renderer/Renderer.h"
+#include "renderer/Sampler.h"
 #include "renderer/Shader.h"
 #include "renderer/VRDevice.h"
 
@@ -161,6 +166,11 @@ void EditorUI::RenderUI()
          m_outlinerAnchor.reset();
    }
 
+   // Add part mode housekeeping: it is only available in edit mode, when the table is not locked, and
+   // while not in drag point edit mode, so cancel it if one of these conditions is no longer met
+   if (m_addPartType != eItemInvalid && (IsInspectMode() || m_table->IsLocked() || m_pointEditPart != nullptr))
+      m_addPartType = eItemInvalid;
+
    // Drag point edit mode housekeeping: exit without restoring the selection if the edited part is no
    // longer the active selected part, and drop selected points that do not exist anymore (points are
    // recreated on undo, ...)
@@ -263,6 +273,63 @@ void EditorUI::RenderUI()
       {
          if (m_selection.GetType() == Selection::S_EDITABLE && ImGui::Button(ICON_FK_TRASH_O))
             DeleteSelection();
+
+         // Add part buttons (same parts and icons as the WinUI toolbar)
+         if (m_addPartButtons.empty())
+         {
+            static const struct
+            {
+               ItemTypeEnum type;
+               const char *name;
+               const char *file;
+            } addParts[] = {
+               { eItemSurface, "Surface", "editor/wall.png" },          //
+               { eItemGate, "Gate", "editor/gate.png" },                //
+               { eItemRamp, "Ramp", "editor/ramp.png" },                //
+               { eItemFlipper, "Flipper", "editor/flipper.png" },       //
+               { eItemPlunger, "Plunger", "editor/plunger.png" },       //
+               { eItemBall, "Ball", "editor/ball.png" },                //
+               { eItemBumper, "Bumper", "editor/bumper.png" },          //
+               { eItemSpinner, "Spinner", "editor/spinner.png" },       //
+               { eItemTimer, "Timer", "editor/timer.png" },             //
+               { eItemTrigger, "Trigger", "editor/trigger.png" },       //
+               { eItemLight, "Light", "editor/light.png" },             //
+               { eItemKicker, "Kicker", "editor/kicker.png" },          //
+               { eItemHitTarget, "Target", "editor/target.png" },       //
+               { eItemDecal, "Decal", "editor/decal.png" },             //
+               { eItemTextbox, "Textbox", "editor/textbox.png" },       //
+               { eItemDispReel, "Display Reel", "editor/reel.png" },    //
+               { eItemLightSeq, "Light Seq", "editor/lightseq.png" },   //
+               { eItemPrimitive, "Primitive", "editor/primitive.png" }, //
+               { eItemFlasher, "Flasher", "editor/flasher.png" },       //
+               { eItemRubber, "Rubber", "editor/rubber.png" },          //
+            };
+            for (const auto &def : addParts)
+            {
+               std::shared_ptr<const BaseTexture> tex
+                  = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, def.file));
+               m_addPartButtons.push_back(
+                  { def.type, def.name, tex ? std::make_shared<Sampler>(m_renderer->m_renderDevice, def.name, tex, false) : nullptr });
+            }
+         }
+         const float iconSize = ImGui::GetContentRegionAvail().y;
+         ImGui::BeginDisabled(m_pointEditPart != nullptr || m_table->IsLocked());
+         for (const auto &button : m_addPartButtons)
+         {
+            ImGui::SameLine();
+            if (button.icon == nullptr)
+               continue;
+            const bool active = (m_addPartType == button.type);
+            if (active)
+               ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+            if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
+               m_addPartType = active ? eItemInvalid : button.type;
+            if (active)
+               ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+               ImGui::SetTooltip("Add %s", button.name);
+         }
+         ImGui::EndDisabled();
       }
       const float buttonWidth = //
          ImGui::CalcTextSize(ICON_FK_EXCHANGE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f //
@@ -609,22 +676,32 @@ void EditorUI::RenderUI()
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
       {
          m_boxSelectStart = ImGui::GetMousePos();
-         DragPoint *const hitPoint = (m_pointEditPart != nullptr) ? HitTestDragPoint(m_boxSelectStart) : nullptr;
-         if (hitPoint != nullptr)
+         if (m_addPartType != eItemInvalid)
          {
-            if (io.KeyShift)
-               TogglePointSelection(hitPoint);
-            else if (!IsPointSelected(hitPoint))
-            {
-               m_pointSel.clear();
-               m_pointSel.push_back(hitPoint);
-            }
-            m_pointDragPending = IsPointSelected(hitPoint) && !hitPoint->m_uiLocked;
-            m_pointDragZ = m_pointEditPart->GetDragPointZ(hitPoint);
-            m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_pointDragZ);
+            // Add part mode: create the pending part at the picked point of the playfield XY plane
+            const ItemTypeEnum type = m_addPartType;
+            m_addPartType = eItemInvalid;
+            CreatePart(type, UnprojectToPlane(m_boxSelectStart, 0.f));
          }
          else
-            m_boxSelectActive = true;
+         {
+            DragPoint *const hitPoint = (m_pointEditPart != nullptr) ? HitTestDragPoint(m_boxSelectStart) : nullptr;
+            if (hitPoint != nullptr)
+            {
+               if (io.KeyShift)
+                  TogglePointSelection(hitPoint);
+               else if (!IsPointSelected(hitPoint))
+               {
+                  m_pointSel.clear();
+                  m_pointSel.push_back(hitPoint);
+               }
+               m_pointDragPending = IsPointSelected(hitPoint) && !hitPoint->m_uiLocked;
+               m_pointDragZ = m_pointEditPart->GetDragPointZ(hitPoint);
+               m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_pointDragZ);
+            }
+            else
+               m_boxSelectActive = true;
+         }
       }
       if (m_boxSelectActive)
       {
@@ -750,6 +827,8 @@ void EditorUI::RenderUI()
             m_gizmoOperation = ImGuizmo::OPERATION(0); // Cancel current operation
          else if (m_boxSelectActive)
             m_boxSelectActive = false; // Cancel current box selection
+         else if (m_addPartType != eItemInvalid)
+            m_addPartType = eItemInvalid; // Cancel add part mode
          else if (m_pointEditPart)
             ExitPointEditMode(true); // Exit drag point edit mode
          else if (m_selection.GetType() != Selection::S_NONE)
@@ -1211,6 +1290,50 @@ void EditorUI::BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool
    }
    if (!m_multiSel.empty() && (m_selection.GetType() != Selection::S_EDITABLE || !IsPartSelected(m_selection.GetPart())))
       m_selection = Selection(m_multiSel.back());
+}
+
+void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
+{
+   IEditable *const pie = EditableRegistry::CreateAndInit(type, m_table, pos.x, pos.y);
+   if (pie == nullptr)
+      return;
+
+   // Same initialization sequence as the WinUI editor
+   if (auto *const scriptable = pie->GetIScriptable(); scriptable)
+      m_table->GetUniqueName(type, scriptable->m_wzName);
+   pie->m_desktopBackdrop = (m_camMode == ViewMode::DesktopBackdrop);
+   m_table->AddPart(pie);
+   // Assign the part to the group of the current selection, defaulting to the first root part group
+   PartGroup *partGroup = nullptr;
+   if (m_selection.GetType() == Selection::S_EDITABLE)
+      partGroup = m_selection.GetPart()->GetEditable()->GetItemType() == eItemPartGroup ? static_cast<PartGroup *>(m_selection.GetPart()->GetEditable())
+                                                                                     : m_selection.GetPart()->GetEditable()->GetPartGroup();
+   if (partGroup == nullptr)
+      for (IEditable *const part : m_table->GetParts())
+         if (part->GetItemType() == eItemPartGroup && part->GetPartGroup() == nullptr)
+            partGroup = static_cast<PartGroup *>(part);
+   pie->SetPartGroup(partGroup);
+
+   // Same player side setup as player initialization
+   if (type == eItemBall)
+      m_player->m_vball.push_back(static_cast<Ball *>(pie));
+   m_player->TimerSetup(pie);
+   if (auto *const renderable = pie->GetIRenderable(); renderable)
+      renderable->RenderSetup(m_renderer.get());
+   if (pie->GetIHitable())
+      m_player->m_physics->Add(pie);
+
+   m_undo.BeginUndo();
+   m_undo.MarkForCreate(pie);
+   m_undo.EndUndo();
+
+   // Create the UI part now (it would otherwise be lazily added on next frame) and select the new part
+   UpdateEditableList();
+   if (const auto it = m_editableMap.find(pie); it != m_editableMap.end())
+   {
+      SetSelection(Selection(it->second));
+      m_outlinerAnchor = it->second;
+   }
 }
 
 void EditorUI::DeleteSelection()
