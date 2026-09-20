@@ -52,7 +52,7 @@ void OutlinerPanel::Render(float topBarHeight)
       return;
 
    const ImGuiViewport *const viewport = ImGui::GetMainViewport();
-   const float pane_width = 200.f * editor.m_liveUI.GetDPI();
+   const float pane_width = PaneWidth * editor.m_liveUI.GetDPI();
    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + topBarHeight));
    ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - topBarHeight));
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove

@@ -93,7 +93,7 @@ void EditorUI::Open()
    m_perspectiveCam = false;
    m_predefinedView = PredefinedView::Top;
    m_shadeMode = Renderer::ShadeMode::Wireframe;
-   // The playfield fit needs a valid display size which may not be known yet (editor opened during startup): defer to the first rendered frame
+   // The playfield fit needs a valid display size and chrome height which may not be known yet (editor opened during startup): defer to the first rendered frame
    m_fitPlayfieldCamera = true;
 }
 
@@ -126,11 +126,26 @@ void EditorUI::SetBackdropCamera()
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
 }
 
+Vertex2D EditorUI::GetUIVisibleFraction() const
+{
+   // When the editor UI is not displayed (fly mode, inspection modal), nothing is drawn over the render
+   if (m_flyMode || m_inspectionModal.IsVisible())
+      return Vertex2D(1.f, 1.f);
+   // Otherwise, the top chrome (and the side panes, unless the table is locked) are drawn over the render:
+   // evaluate the remaining visible fraction, applied as a symmetric margin so that fitted content stays centered
+   const ImGuiIO &io = ImGui::GetIO();
+   const float marginX = m_table->IsLocked() ? 0.f : max(OutlinerPanel::PaneWidth, PropertiesPanel::PaneWidth) * m_liveUI.GetDPI();
+   const float marginY = m_chrome.GetTopBarHeight();
+   return Vertex2D(max(0.1f, 1.f - 2.f * marginX / io.DisplaySize.x), max(0.1f, 1.f - 2.f * marginY / io.DisplaySize.y));
+}
+
 void EditorUI::SetPlayfieldCamera()
 {
    // Setup the editor camera to frame the playfield bounds from a top view (table XY plane, Y axis going down)
    const ImGuiIO &io = ImGui::GetIO();
-   m_camDistance = 0.5f * max(m_table->m_bottom, m_table->m_right * io.DisplaySize.y / io.DisplaySize.x);
+   const Vertex2D visible = GetUIVisibleFraction();
+   const float aspect = io.DisplaySize.x / io.DisplaySize.y;
+   m_camDistance = 0.5f * max(m_table->m_bottom / visible.y, m_table->m_right / (aspect * visible.x));
    const vec3 eye(m_table->m_right * 0.5f, m_table->m_bottom * 0.5f, -m_camDistance);
    const vec3 at(m_table->m_right * 0.5f, m_table->m_bottom * 0.5f, 0.f);
    constexpr vec3 up { 0.f, -1.f, 0.f };
@@ -152,11 +167,6 @@ void EditorUI::Render3D()
 void EditorUI::RenderUI()
 {
    const ImGuiIO &io = ImGui::GetIO();
-   if (m_fitPlayfieldCamera && io.DisplaySize.x > 0.f && io.DisplaySize.y > 0.f)
-   {
-      m_fitPlayfieldCamera = false;
-      SetPlayfieldCamera();
-   }
    ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
    ImGuizmo::BeginFrame();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
@@ -206,6 +216,13 @@ void EditorUI::RenderUI()
    m_inspectionModal.Render();
 
 #endif
+
+   // Deferred playfield fit on editor opening (display size and chrome height are valid once the UI has been rendered)
+   if (m_fitPlayfieldCamera && io.DisplaySize.x > 0.f && io.DisplaySize.y > 0.f)
+   {
+      m_fitPlayfieldCamera = false;
+      SetPlayfieldCamera();
+   }
 
    // Invisible full frame window for overlays
    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
@@ -802,7 +819,9 @@ void EditorUI::RenderUI()
             const vec3 newTarget(0.5f * (bounds.left + bounds.right), 0.5f * (bounds.top + bounds.bottom), -0.5f * (bounds.zlow + bounds.zhigh));
 
             // Evaluate the distance needed for all the bounds corners to be inside the view, keeping the camera orientation
+            // and fitting inside the area left visible by the UI (a symmetric margin accounts for the UI drawn over the render)
             const float aspect = io.DisplaySize.x / io.DisplaySize.y;
+            const Vertex2D visible = GetUIVisibleFraction();
             const float tanHalfFovY = tanf(0.5f * ANGTORAD(editorCamFovY));
             float distance = 0.f;
             for (int i = 0; i < 8; i++)
@@ -810,7 +829,8 @@ void EditorUI::RenderUI()
                const vec3 toCorner = vec3((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? -bounds.zlow : -bounds.zhigh) - newTarget;
                const float dx = fabsf(right.Dot(toCorner));
                const float dy = fabsf(up.Dot(toCorner));
-               distance = max(distance, m_perspectiveCam ? dir.Dot(toCorner) + max(dy / tanHalfFovY, dx / (tanHalfFovY * aspect)) : max(dy, dx / aspect));
+               distance = max(distance,
+                  m_perspectiveCam ? dir.Dot(toCorner) + max(dy / (tanHalfFovY * visible.y), dx / (tanHalfFovY * aspect * visible.x)) : max(dy / visible.y, dx / (aspect * visible.x)));
             }
             if (distance > 0.f) // Keep the current distance for degenerate (point) selections
                m_camDistance = distance * 1.1f; // Small margin so that the selection does not exactly touch the view borders

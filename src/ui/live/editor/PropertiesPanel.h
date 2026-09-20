@@ -24,6 +24,9 @@ public:
 
    void Render(float topBarHeight);
 
+   // Width of the panel in logical pixels (scaled by the UI DPI)
+   static constexpr float PaneWidth = 280.f;
+
 private:
    void TableProperties(PropertyPane &props);
    void ImageProperties(PropertyPane &props, Texture *image);

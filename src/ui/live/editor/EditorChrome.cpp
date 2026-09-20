@@ -270,9 +270,9 @@ void EditorChrome::RenderStatusOverlay()
    const ImGuiIO &io = ImGui::GetIO();
 
    // Overlay Info Text
-   ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - 200.f * editor.m_liveUI.GetDPI(),
+   ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - OutlinerPanel::PaneWidth * editor.m_liveUI.GetDPI(),
       io.DisplaySize.y - m_toolBarHeight - m_menuBarHeight - 5.f * editor.m_liveUI.GetDPI())); // Fixed outliner width (to be adjusted when moving ImGui to the docking branch)
-   ImGui::SetNextWindowPos(ImVec2(200.f * editor.m_liveUI.GetDPI(), m_toolBarHeight + m_menuBarHeight + 5.f * editor.m_liveUI.GetDPI()));
+   ImGui::SetNextWindowPos(ImVec2(OutlinerPanel::PaneWidth * editor.m_liveUI.GetDPI(), m_toolBarHeight + m_menuBarHeight + 5.f * editor.m_liveUI.GetDPI()));
    ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
    switch (editor.m_camMode)
    {

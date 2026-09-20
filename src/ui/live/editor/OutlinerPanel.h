@@ -19,6 +19,9 @@ public:
 
    void Render(float topBarHeight);
 
+   // Width of the panel in logical pixels (scaled by the UI DPI)
+   static constexpr float PaneWidth = 200.f;
+
 private:
    bool MatchesFilter(const string &name) const;
 
