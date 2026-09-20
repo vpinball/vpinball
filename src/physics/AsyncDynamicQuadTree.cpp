@@ -213,8 +213,15 @@ void AsyncDynamicQuadTree::Remove(IEditable* editable)
 void AsyncDynamicQuadTree::Update(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
    //PLOGD << "Updating item " << editable->GetName();
+
+   if (editable->GetItemType() == eItemBall)
+   {
+      // Balls are always part of the quadtree as they own their (shared) HitBall: simply update its bounds
+      for (HitObject* const ho : GetHitObjects(editable))
+         ho->CalcHitBBox();
+      return;
+   }
 
    const auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](const std::unique_ptr<DynamicEditable>& dynEd) { return dynEd->editable == editable; });
    assert(dynEdIt != m_dynamicEditables.end() && !(*dynEdIt)->pendingStaticInclusion); // We do not support updating static parts
