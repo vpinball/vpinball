@@ -6,6 +6,7 @@
 
 #include "plugins/B2SPluginEventStream.h"
 #include "plugins/ControllerPlugin.h"
+#include "plugins/ResURIResolver.h"
 #include "plugins/VPXPlugin.h"
 
 #pragma warning(push)
@@ -139,13 +140,19 @@ private:
    bool m_reportedMissingIdentification = false;
    std::array<uint8_t, 128 * 32> m_idFrame;
    int ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame);
-   
+
    const unsigned int m_getVpxApiId;
 
    const unsigned int m_getAuxRendererId;
    const unsigned int m_onAuxRendererChgId;
    static int Render(VPXRenderContext2D* const renderCtx, void* context);
    static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);
+
+   // Optional DMD overlay drawn on top of the PUP video for a window (see *DMDOverlay* settings).
+   // Uses m_resURIResolver to fetch the default DMD frame.
+   std::unique_ptr<PinballPlugin::ResURIResolver> m_resURIResolver;
+   VPXTexture m_dmdOverlayTex = nullptr;
+   void RenderDMDOverlay(VPXRenderContext2D* const renderCtx);
 
    const unsigned int m_getAudioSrcId;
    const unsigned int m_onAudioSrcChangedId;
