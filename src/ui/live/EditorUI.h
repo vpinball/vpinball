@@ -132,6 +132,7 @@ private:
    void ResetCameraFromPlayer();
    void SetBackdropCamera();
    void SetPlayfieldCamera();
+   Vertex2D GetUIVisibleFraction() const;
 
    // Undo support
    void PushUndo(IEditable *part, unsigned int editId);

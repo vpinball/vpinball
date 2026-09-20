@@ -22,7 +22,7 @@ void PropertiesPanel::Render(float topBarHeight)
       return;
 
    const ImGuiViewport *const viewport = ImGui::GetMainViewport();
-   const float pane_width = 280.f * editor.m_liveUI.GetDPI();
+   const float pane_width = PaneWidth * editor.m_liveUI.GetDPI();
    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x - pane_width, viewport->Pos.y + topBarHeight));
    ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - topBarHeight));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * editor.m_liveUI.GetDPI(), 4.0f * editor.m_liveUI.GetDPI()));
