@@ -499,19 +499,20 @@ void WinEditor::SetPropSel(const vector<IWinUIPart *> &pvsel)
 void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
 #ifndef __STANDALONE__
+   const string oldName = MakeString(editable->GetIScriptable()->m_wzName);
+   if (name == oldName)
+      return;
+
+   editable->SetName(MakeWString(name));
+
    PinTable *const pt = editable->GetPTable();
    pt->m_tableEditor->BeginUndo();
    pt->m_tableEditor->MarkForUndo(editable);
-#endif
 
-   const string oldName = MakeString(editable->GetIScriptable()->m_wzName);
-   editable->SetName(MakeWString(name));
-
-#ifndef __STANDALONE__
    g_pvp->SetPropSel(pt->m_tableEditor->GetMultiSelParts());
    g_pvp->GetLayersListDialog()->Update();
 
-   if (editable->GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
+   if (editable->GetItemType() == eItemSurface)
    {
       for (IEditable *const pedit : pt->GetParts())
       {
