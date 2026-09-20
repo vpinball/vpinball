@@ -246,7 +246,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Editor"s))
    {
       props.Checkbox<Flasher>(
-         m_part, "Disable Wireframe"s, //
+         m_part, "Show in Editor"s, //
          [](const Flasher* flasher) { return flasher->m_d.m_displayTexture; }, //
          [](Flasher* flasher, bool v) { flasher->m_d.m_displayTexture = v; });
       props.EndSection();

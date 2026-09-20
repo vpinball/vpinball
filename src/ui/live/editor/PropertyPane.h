@@ -1,6 +1,8 @@
 #pragma once
 
 #include "fonts/IconsForkAwesome.h"
+#include "utils/fileio.h"
+#include "parts/Sound.h"
 #include "parts/pintable.h"
 #include "parts/Collection.h"
 #include "parts/Material.h"
@@ -60,6 +62,8 @@ public:
    template <class T> void LightmapCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void RenderProbeCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void CollectionCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   template <class T> void SoundCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   template <class T> void Font(T* obj, const std::function<FontDesc(const T*)>& getter, const std::function<void(T*, const FontDesc&)>& setter);
 
    int GetModifiedField() const { return m_modified; }
 
@@ -438,4 +442,55 @@ template <class T> void PropertyPane::CollectionCombo(T* obj, const string& labe
    Combo<T>(obj, label, collections, [&](const T* obj) { return max(0, FindIndexOf(collections, getter(obj))); }, [&](T* obj, int v) { setter(obj, collections[v]); });
 }
 
+template <class T> void PropertyPane::SoundCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
+{
+   std::vector<string> sounds;
+   for (const VPX::Sound* sound : m_table->m_vsound)
+      sounds.push_back(sound->GetName());
+   std::sort(sounds.begin(), sounds.end(), [](const std::string& a, const std::string& b)
+      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   sounds.insert(sounds.begin(), ""s);
+   Combo<T>(obj, label, sounds, [&](const T* obj) { return max(0, FindIndexOf(sounds, getter(obj))); }, [&](T* obj, int v) { setter(obj, sounds[v]); });
+}
+
+template <class T> void PropertyPane::Font(T* obj, const std::function<FontDesc(const T*)>& getter, const std::function<void(T*, const FontDesc&)>& setter)
+{
+   InputString<T>(
+      obj, "Font"s, //
+      [getter](const T* o) { return getter(o).name; }, //
+      [getter, setter](T* o, const string& v)
+      {
+         FontDesc f = getter(o);
+         f.name = v;
+         setter(o, f);
+      });
+   InputFloat<T>(
+      obj, "Font Size"s, //
+      [getter](const T* o) { return static_cast<float>(getter(o).size) / 10000.f; }, //
+      [getter, setter](T* o, float v)
+      {
+         FontDesc f = getter(o);
+         f.size = static_cast<uint32_t>(max(0.f, v) * 10000.f);
+         setter(o, f);
+      },
+      Unit::None, 1);
+   Checkbox<T>(
+      obj, "Bold"s, //
+      [getter](const T* o) { return getter(o).IsBold(); }, //
+      [getter, setter](T* o, bool v)
+      {
+         FontDesc f = getter(o);
+         f.weight = v ? 700 : 400;
+         setter(o, f);
+      });
+   Checkbox<T>(
+      obj, "Italic"s, //
+      [getter](const T* o) { return getter(o).IsItalic(); }, //
+      [getter, setter](T* o, bool v)
+      {
+         FontDesc f = getter(o);
+         f.attributes = v ? f.attributes | 0x02 : f.attributes & ~0x02;
+         setter(o, f);
+      });
+}
 }

@@ -132,6 +132,8 @@ public:
 
    Vertex2D GetCenter() const final { return m_curve.GetCenter(); }
 
+   bool IsShownInEditor() const final { return m_d.m_displayTexture; }
+
    void AddPoint(const Vertex2D &v, const bool smooth);
 
 protected:

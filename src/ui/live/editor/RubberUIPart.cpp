@@ -80,6 +80,10 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
             rubber->m_d.m_rotZ = v.z;
          },
          PropertyPane::Unit::Degree, 1);
+      props.Checkbox<Rubber>(
+         m_part, "Show in Editor"s, //
+         [](const Rubber* rubber) { return rubber->m_d.m_showInEditor; }, //
+         [](Rubber* rubber, bool v) { rubber->m_d.m_showInEditor = v; });
       props.EndSection();
    }
 

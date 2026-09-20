@@ -58,6 +58,16 @@ void EditorUIPart::UpdateCurveSection(PropertyPane& props)
          },
          PropertyPane::Unit::VPLength, 1);
       UpdatePointZField(props, point);
+      if (HasPointAutoTexture())
+         props.Checkbox<DragPoint>(
+            point, "Auto Texture Coord."s, //
+            [](const DragPoint* p) { return p->m_autoTexture; }, //
+            [](DragPoint* p, bool v) { p->m_autoTexture = v; });
+      if (HasPointTextureCoord())
+         props.InputFloat<DragPoint>(
+            point, "Texture Coord."s, //
+            [](const DragPoint* p) { return p->m_texturecoord; }, //
+            [](DragPoint* p, float v) { p->m_texturecoord = v; }, PropertyPane::Unit::None, 2);
       ImGui::PopID();
    }
    else if (sel.size() > 1)

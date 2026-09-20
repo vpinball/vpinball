@@ -106,6 +106,8 @@ public:
 
    Vertex2D GetCenter() const final { return m_curve.GetCenter(); }
 
+   bool IsShownInEditor() const final { return m_d.m_displayTexture; }
+
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }
 
 protected:

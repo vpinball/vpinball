@@ -2,6 +2,8 @@
 
 #include "TextBoxUIPart.h"
 
+#include "utils/color.h"
+
 namespace VPX::EditorUI
 {
 
@@ -34,12 +36,61 @@ void TextBoxUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Visuals"s))
    {
+      props.Checkbox<Textbox>(
+         m_part, "Transparent"s, //
+         [](const Textbox* textbox) { return textbox->m_d.m_transparent; }, //
+         [](Textbox* textbox, bool v) { textbox->m_d.m_transparent = v; });
+      props.InputRGB<Textbox>(
+         m_part, "Back Color"s, //
+         [](const Textbox* textbox) { return convertColor(textbox->m_d.m_backcolor); }, //
+         [](Textbox* textbox, const vec3& v) { textbox->m_d.m_backcolor = convertColorRGB(v); });
+      props.InputRGB<Textbox>(
+         m_part, "Text Color"s, //
+         [](const Textbox* textbox) { return convertColor(textbox->m_d.m_fontcolor); }, //
+         [](Textbox* textbox, const vec3& v) { textbox->m_d.m_fontcolor = convertColorRGB(v); });
+      props.Font<Textbox>(
+         m_part, //
+         [](const Textbox* textbox) { return textbox->m_d.m_font; }, //
+         [](Textbox* textbox, const FontDesc& v) { textbox->m_d.m_font = v; });
+      props.Combo<Textbox>(
+         m_part, "Alignment"s, vector<string> { "Left"s, "Center"s, "Right"s }, //
+         [](const Textbox* textbox) { return static_cast<int>(textbox->m_d.m_talign); }, //
+         [](Textbox* textbox, int v) { textbox->m_d.m_talign = static_cast<TextAlignment>(v); });
       props.EndSection();
    }
 
    if (props.BeginSection("Position"s))
    {
-      // Missing position
+      props.InputFloat2<Textbox>(
+         m_part, "Position"s, //
+         [](const Textbox* textbox) { return textbox->m_d.m_v1; }, //
+         [](Textbox* textbox, const Vertex2D& v) { textbox->Translate(Vertex2D(v.x - textbox->m_d.m_v1.x, v.y - textbox->m_d.m_v1.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat2<Textbox>(
+         m_part, "Size"s, //
+         [](const Textbox* textbox) { return Vertex2D(textbox->m_d.m_v2.x - textbox->m_d.m_v1.x, textbox->m_d.m_v2.y - textbox->m_d.m_v1.y); }, //
+         [](Textbox* textbox, const Vertex2D& v)
+         {
+            textbox->m_d.m_v2.x = textbox->m_d.m_v1.x + v.x;
+            textbox->m_d.m_v2.y = textbox->m_d.m_v1.y + v.y;
+         },
+         PropertyPane::Unit::VPLength, 1);
+      props.EndSection();
+   }
+
+   if (props.BeginSection("State"s))
+   {
+      props.Checkbox<Textbox>(
+         m_part, "Use Script DMD"s, //
+         [](const Textbox* textbox) { return textbox->m_d.m_isDMD; }, //
+         [](Textbox* textbox, bool v) { textbox->m_d.m_isDMD = v; });
+      props.InputFloat<Textbox>(
+         m_part, "Text Intensity"s, //
+         [](const Textbox* textbox) { return textbox->m_d.m_intensity_scale; }, //
+         [](Textbox* textbox, float v) { textbox->m_d.m_intensity_scale = v; }, PropertyPane::Unit::None, 1);
+      props.InputString<Textbox>(
+         m_part, "Text"s, //
+         [](const Textbox* textbox) { return textbox->m_d.m_text; }, //
+         [](Textbox* textbox, const string& v) { textbox->m_d.m_text = v; });
       props.EndSection();
    }
 

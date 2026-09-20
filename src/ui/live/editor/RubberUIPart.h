@@ -23,6 +23,8 @@ public:
 
 private:
    bool IsNewPointSmooth() const override { return true; }
+   bool HasPointAutoTexture() const override { return true; }
+   bool HasPointTextureCoord() const override { return true; }
 };
 
 }

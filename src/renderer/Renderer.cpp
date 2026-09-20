@@ -2023,7 +2023,11 @@ void Renderer::RenderDynamics()
 
          const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
          SetSpaceReference(spaceReference, false);
-         DrawWireframe(renderable, fillColor, edgeColor, m_shadeMode != ShadeMode::NoDepthWireframe);
+         // Parts flagged as "Show in Editor" are rendered shaded, even when the part group visibility mask would hide them
+         if (renderable->IsShownInEditor() && renderable->GetIRenderable())
+            renderable->GetIRenderable()->Render(m_render_mask);
+         else
+            DrawWireframe(renderable, fillColor, edgeColor, m_shadeMode != ShadeMode::NoDepthWireframe);
       }
    }
 

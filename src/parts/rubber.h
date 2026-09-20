@@ -94,6 +94,8 @@ public:
    void Translate(const Vertex2D &offset) final;
    Vertex2D GetCenter() const final { return m_curve.GetCenter(); }
 
+   bool IsShownInEditor() const final { return m_d.m_showInEditor; }
+
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 
    float GetDepth(const Vertex3Ds& viewDir) const final;

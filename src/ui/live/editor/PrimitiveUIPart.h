@@ -17,6 +17,14 @@ public:
    void RenderOverlay(const EditorRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
+
+private:
+   void ImportMesh();
+   void ExportMesh();
+
+   bool m_meshUnitsMeters = false;
+   std::weak_ptr<string> m_pendingMeshImport;
+   std::weak_ptr<string> m_pendingMeshExport;
 };
 
 }
