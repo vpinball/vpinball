@@ -57,6 +57,7 @@ These shortcuts are handled by the editor when the keyboard is not captured by a
 | Tab             | Enter/exit drag point edition of the selected part (Edit mode only, for parts defined by curves like ramps, triggers or lights) |
 | A               | Select all parts (all the curve points in drag point edit mode)                                |
 | Alt + A         | Clear selection                                                                                |
+| Shift + A       | Add a point on the nearest curve segment (drag point edit mode)                                |
 | Delete          | Delete selected parts (selected curve points in drag point edit mode)                          |
 | G               | Grab (move) the selected parts, repeated presses toggle world/local coordinates                |
 | Alt + G         | Reset position of the selected parts                                                           |
@@ -92,7 +93,7 @@ Mouse:
 | Middle drag         | Orbit the camera around its target                                               |
 | Shift + Middle drag | Pan the camera                                                                   |
 
-In drag point edit mode (Edit mode only, entered with [Tab] on parts defined by a curve like ramps or triggers), clicks and box selection apply to the curve points ([Shift] toggles), dragging or using the gizmo moves the selected points in the playfield plane, and the property pane offers smooth/sharp/flip actions on the selected points.
+In drag point edit mode (Edit mode only, entered with [Tab] on parts defined by a curve like ramps or triggers), clicks and box selection apply to the curve points ([Shift] toggles), dragging or using the gizmo moves the selected points in the playfield plane, [Shift]+[A] adds a point on the segment nearest to the mouse, and the property pane shows a 'Curve' section with smooth/sharp/flip/slingshot actions, the coordinates of a single selected point, and left/right/top/bottom alignment actions when multiple points are selected.
 
 Use the buttons on the right of the menu bar to leave the editor: the back arrow resumes playing (tweak mode), the close button exits the editor (back to the main editor in tweak mode, quit the application in edit mode).
 

@@ -49,6 +49,8 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Light"s, m_part);
 
+   UpdateCurveSection(props);
+
    if (props.BeginSection("Light Settings"s))
    {
       props.Combo<Light>(

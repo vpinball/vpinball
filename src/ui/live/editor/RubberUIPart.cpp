@@ -33,6 +33,8 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Rubber"s, m_part);
 
+   UpdateCurveSection(props);
+
    if (props.BeginSection("Visuals"s))
    {
       props.ImageCombo<Rubber>(

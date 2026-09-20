@@ -53,6 +53,8 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Flasher"s, m_part);
 
+   UpdateCurveSection(props);
+
    if (props.BeginSection("Visuals"s))
    {
       const FlasherData::RenderMode renderMode = props.GetEditedPart<Flasher>(m_part)->m_d.m_renderMode;
