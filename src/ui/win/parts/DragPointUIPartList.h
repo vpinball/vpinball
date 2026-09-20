@@ -27,6 +27,13 @@ public:
       return nullptr;
    }
 
+   // Returns the UI part of the index-th point of the owner's curve, nullptr if out of range
+   IWinUIPart* GetAt(int index)
+   {
+      const vector<CComObject<DragPoint>*> points = m_owner->GetPoints();
+      return (index >= 0 && index < (int)points.size()) ? Get(points[index]) : nullptr;
+   }
+
    bool IsDragging(const DragPoint* point)
    {
       const IWinUIPart* const part = Get(point);

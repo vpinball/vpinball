@@ -12,6 +12,12 @@ DragPointWinUIPart::DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint
 {
 }
 
+int DragPointWinUIPart::GetSubPartIndex() const
+{
+   const vector<CComObject<DragPoint>*> points = m_dragPoint->GetCurve()->GetPoints();
+   return FindIndexOf(points, (CComObject<DragPoint>*)m_dragPoint);
+}
+
 Vertex2D DragPointWinUIPart::GetCenter() const { return m_dragPoint->GetCenter(); }
 
 void DragPointWinUIPart::Translate(const Vertex2D& offset) { m_dragPoint->Translate(offset); }

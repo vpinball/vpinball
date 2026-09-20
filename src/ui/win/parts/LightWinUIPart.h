@@ -27,6 +27,7 @@ public:
    void DoCommand(int icmd, int x, int y) override;
 
    IWinUIPart* GetSubPart(DragPoint* point) override { return m_pointParts.Get(point); }
+   IWinUIPart* GetSubPartByIndex(int index) override { return (index == LightCenterSubPartIndex) ? static_cast<IWinUIPart*>(&m_centerPart) : m_pointParts.GetAt(index); }
 
 private:
    void RenderOutline(Sur* psur);

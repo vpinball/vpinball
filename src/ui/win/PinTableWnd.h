@@ -193,6 +193,18 @@ private:
    // Multi-selection: selected UI parts, primary selection first. Contains only the table's UI part when nothing is selected.
    vector<IWinUIPart *> m_vmultisel;
 
+   // Selection snapshot stored in undo records and restored on undo. Entries are stored as (editable, sub part
+   // index) so that they stay valid when the corresponding UI parts are destroyed and recreated (undo reloads
+   // the parts and their drag points): they are resolved back to UI parts when the undo is applied.
+   struct UndoSelectionEntry
+   {
+      IEditable *editable; // Editable of the selected part (or of the part owning a selected sub part)
+      int subPartIndex = -1; // IWinUIPart::GetSubPartIndex of the selected sub part, -1 when the part itself is selected
+   };
+
+   vector<UndoSelectionEntry> CaptureUndoSelection() const;
+   void RestoreUndoSelection(const vector<UndoSelectionEntry> &selection);
+
    PinUndo m_undo;
 
 private:

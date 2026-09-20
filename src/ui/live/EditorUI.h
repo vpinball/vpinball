@@ -141,6 +141,18 @@ private:
    void BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
    void SelectAllParts();
 
+   // Selection snapshot stored in undo records and restored on undo
+   struct UndoSelectionState
+   {
+      Selection selection;
+      vector<std::shared_ptr<EditorUIPart>> multiSel;
+      std::shared_ptr<EditorUIPart> outlinerAnchor;
+      std::shared_ptr<EditorUIPart> pointEditPart; // Part in drag point edit mode, nullptr when not in that mode
+      vector<int> pointSel; // Indices of the selected points in the edited part's curve
+   };
+   UndoSelectionState CaptureUndoSelection() const;
+   void RestoreUndoSelection(const UndoSelectionState &state);
+
    // Drag point edit mode (entered/exited with Tab when the active selected part has a DragPointCurve):
    // while active, the part's curve points are rendered and can be selected & transformed in the table XY plane
    std::shared_ptr<EditorUIPart> m_pointEditPart; // Part whose DragPointCurve is being edited (nullptr when not in point edit mode)

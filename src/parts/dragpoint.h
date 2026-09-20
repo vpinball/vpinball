@@ -35,6 +35,9 @@ public:
    IEditable *GetIEditable();
    const IEditable *GetIEditable() const;
 
+   DragPointCurve *GetCurve() { return m_pcurve; }
+   const DragPointCurve *GetCurve() const { return m_pcurve; }
+
    void Copy();
    void Paste();
 

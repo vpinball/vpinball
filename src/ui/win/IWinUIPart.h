@@ -85,6 +85,17 @@ public:
    // Returns the UI part for a sub element owned by this part's editable (a drag point), nullptr if none
    virtual IWinUIPart* GetSubPart(DragPoint* point) { return nullptr; }
 
+   // Sub part index of a light's center handle (its single non drag point sub part)
+   static constexpr int LightCenterSubPartIndex = -2;
+
+   // Index identifying this part as a sub part of its owner (index of a drag point in the owner's DragPointCurve,
+   // or a predefined negative id for unique sub parts like the light center). -1 when this is not a sub part.
+   // Unlike pointers, the index remains valid when the part's drag points are deleted and recreated (undo, ...).
+   virtual int GetSubPartIndex() const { return -1; }
+
+   // Returns the UI part of this part's sub part with the given index (as returned by GetSubPartIndex), nullptr if none
+   virtual IWinUIPart* GetSubPartByIndex(int index) { return nullptr; }
+
    // Geometric transforms of the selectable element (applied to the sub element itself for sub selects like drag points)
    // Higher level transforms (scale, rotate, flip) are performed on the IEditable, or on the sub element through GetCenter/Translate
    virtual Vertex2D GetCenter() const;

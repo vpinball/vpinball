@@ -29,6 +29,7 @@ public:
    vector<IEditable *> m_vieCreate;
    vector<IEditable *> m_vieDelete;
    vector<IEditable *> m_vieMark;
+   std::any m_editorState; // Editor provided state (e.g. selection) captured when the record was begun
 };
 
 
@@ -117,6 +118,8 @@ void PinUndo::BeginUndo()
          m_cleanpoint--;
       }
       m_undoRecords.push_back(std::make_unique<UndoRecord>());
+      if (m_editorStateCapture)
+         m_undoRecords.back()->m_editorState = m_editorStateCapture();
    }
 }
 
@@ -156,14 +159,14 @@ void PinUndo::MarkForDelete(IEditable *const pie)
    m_undoRecords.back()->MarkForDelete(pie);
 }
 
-void PinUndo::Undo()
+std::any PinUndo::Undo()
 {
    assert(m_nUndoLayer == 0);
    while (m_nUndoLayer > 0)
       EndUndo();
 
    if (!HasUndo())
-      return;
+      return {};
 
    for (IEditable *editable : m_undoRecords.back()->m_vieDelete)
    {
@@ -212,6 +215,7 @@ void PinUndo::Undo()
       m_table->Uncreate(pie);
    }
 
+   std::any editorState = std::move(m_undoRecords.back()->m_editorState);
    m_undoRecords.pop_back();
 
    if ((m_undoRecords.size() == m_cleanpoint) && (m_dirtyState > eSaveClean)) // UNDONE - how could we get here without m_fDirty being true?
@@ -229,6 +233,8 @@ void PinUndo::Undo()
       m_dirtyState = eSaveDirty;
       m_table->SetDirty(eSaveDirty);
    }
+
+   return editorState;
 }
 
 void PinUndo::Discard()

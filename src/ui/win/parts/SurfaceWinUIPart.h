@@ -25,6 +25,7 @@ public:
    void DoCommand(int icmd, int x, int y) override;
 
    IWinUIPart* GetSubPart(DragPoint* point) override { return m_pointParts.Get(point); }
+   IWinUIPart* GetSubPartByIndex(int index) override { return m_pointParts.GetAt(index); }
 
 private:
    Surface* const m_surface;
