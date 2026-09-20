@@ -5,6 +5,7 @@
 #pragma once
 
 #include "parts/pintable.h"
+#include "physics/hitable.h"
 #include "plugins/ResURIResolver.h"
 #include "renderer/Renderable.h"
 #include "ui/win/resource.h"
@@ -42,7 +43,7 @@ class Textbox :
    public IEditable,
    public IScriptable,
    public IFireEvents,
-   //public IHitable, // FIXME implement UI picking
+   public IHitable, // only used for UI picking
    public IRenderable
 {
 public:
@@ -71,7 +72,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ITextboxEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES_NO_HITABLE(Textbox, eItemTextbox, TEXTBOX)
+   STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox, TEXTBOX)
 
    void Translate(const Vertex2D &offset) final;
    // Multi-object manipulation

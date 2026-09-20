@@ -182,6 +182,24 @@ void Decal::GetEditorQuad(Vertex2D rgv[4]) const
    rgv[3] = Vertex2D(m_d.m_vCenter.x - sn * halfheight - cs * halfwidth, m_d.m_vCenter.y + cs * halfheight - sn * halfwidth);
 }
 
+void Decal::PhysicSetup(PhysicsEngine *physics, const bool isUI)
+{
+   if (isUI)
+   {
+      // UI picking quad covering the decal (decals have no playfield collider)
+      EnsureSize();
+      Vertex2D quad[4];
+      GetEditorQuad(quad);
+      const float height = m_desktopBackdrop ? 0.f : (m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) + 0.2f);
+      Vertex3Ds *const rgv3d = new Vertex3Ds[4];
+      for (int i = 0; i < 4; i++)
+         rgv3d[i] = Vertex3Ds(quad[3 - i].x, quad[3 - i].y, height); // Reversed winding so that the quad faces up and can be picked from the top-down editor views
+      physics->AddCollider(new Hit3DPoly(this, rgv3d, 4), isUI);
+   }
+}
+
+void Decal::PhysicRelease(PhysicsEngine *physics, const bool isUI) { }
+
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    IEditable::Rotate(ang, pvCenter, useElementCenter);

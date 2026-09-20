@@ -6,6 +6,7 @@
 
 #include "parts/Collection.h"
 #include "parts/pintable.h"
+#include "physics/hitable.h"
 #include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
@@ -43,7 +44,7 @@ class DispReel :
    public IEditable,
    public IScriptable,
    public IFireEvents,
-   //public Hitable, // FIXME implement UI picking
+   public IHitable, // only used for UI picking
    public IRenderable,
    public IPerPropertyBrowsing     // Ability to fill in dropdown(s) in property browser
 {
@@ -74,7 +75,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IDispReelEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES_NO_HITABLE(DispReel, eItemDispReel, DISPREEL)
+   STANDARD_EDITABLE_DECLARES(DispReel, eItemDispReel, DISPREEL)
 
    void Translate(const Vertex2D &offset) final;
    // Multi-object manipulation
