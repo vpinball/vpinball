@@ -1089,15 +1089,35 @@ void PinTable::LoadInfo(POLE::Storage& storage, TableHash *const hash, int versi
    }
 }
 
-std::filesystem::path PinTable::GetCompanionFileName(const string &extension) const
+std::filesystem::path PinTable::GetCompanionFileName(const string &extension, const string &profile) const
 {
    // File not yet saved => No companion file available
    if (!FileExists(m_filename))
       return std::filesystem::path();
 
+   // Build the '<name><profile><extension>' variant of a companion file path
+   const auto withProfile = [&profile, &extension](const std::filesystem::path &path) -> std::filesystem::path
+   {
+      std::filesystem::path result = path;
+      std::filesystem::path fn = path.stem();
+      fn += profile;
+      fn += extension;
+      result.replace_filename(fn);
+      return result;
+   };
+
    // File alongside table file, name matching table filename
    std::filesystem::path tableFile = m_filename;
    tableFile.replace_extension(extension);
+
+   // Profile table-name file takes priority over the default one when a profile is specified
+   if (!profile.empty())
+   {
+      const std::filesystem::path profileTableFile = find_case_insensitive_file_path(withProfile(tableFile));
+      if (!profileTableFile.empty())
+         return profileTableFile;
+   }
+
    if (FileExists(tableFile))
       return tableFile;
 
@@ -1106,12 +1126,22 @@ std::filesystem::path PinTable::GetCompanionFileName(const string &extension) co
    auto fn = folder.filename();
    fn += extension;
    std::filesystem::path folderFile = folder / fn;
+
+   // Profile folder-name file takes priority over the default one when a profile is specified
+   if (!profile.empty())
+   {
+      const std::filesystem::path profileFolderFile = find_case_insensitive_file_path(withProfile(folderFile));
+      if (!profileFolderFile.empty())
+         return profileFolderFile;
+   }
+
    folderFile = find_case_insensitive_file_path(folderFile);
    if (!folderFile.empty())
       return folderFile;
 
-   // No existing file: defaults to file alongside table file, name matching table filename
-   return tableFile;
+   // No existing file: defaults to file alongside table file, name matching table filename.
+   // When a profile is specified, default to the profile file so we never clobber the default one.
+   return profile.empty() ? tableFile : withProfile(tableFile);
 }
 
 // Reads, updates then writes back the '.info' companion file of the given table (see docs/FileLayout.md
@@ -1741,7 +1771,7 @@ HRESULT PinTable::LoadGameFromVPXStorage(VPXFileFeedback &feedback)
 
          // Sort tasks by storage offset to limit read back and get better reading performance
          std::ranges::sort(loadQueue, [&rootStorage](const LoadTask &a, const LoadTask &b) { return rootStorage.streamOffset(a.name) < rootStorage.streamOffset(b.name); });
- 
+
          ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
 
          // Dispatch all load tasks & wait, updating the progress bar on UI thread
