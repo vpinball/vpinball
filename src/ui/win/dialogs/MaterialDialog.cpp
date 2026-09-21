@@ -1021,7 +1021,6 @@ void MaterialDialog::ListMaterials(HWND hwndListView)
 
 int MaterialDialog::AddListMaterial(HWND hwndListView, Material *const pmat)
 {
-#ifndef __STANDALONE__
    constexpr char usedStringYes[] = "X";
    constexpr char usedStringNo[] = " ";
 
@@ -1150,7 +1149,4 @@ int MaterialDialog::AddListMaterial(HWND hwndListView, Material *const pmat)
       } //else
    }
    return index;
-#else
-   return 0;
-#endif
 }

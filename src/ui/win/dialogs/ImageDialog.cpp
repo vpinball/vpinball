@@ -884,7 +884,6 @@ void ImageDialog::ListImages(HWND hwndListView)
 
 int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
 {
-#ifndef __STANDALONE__
    constexpr char usedStringYes[] = "X";
    constexpr char usedStringNo[] = " ";
 
@@ -1028,9 +1027,6 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
       } //else
    }
    return index;
-#else
-   return 0;
-#endif
 }
 
 void ImageDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
