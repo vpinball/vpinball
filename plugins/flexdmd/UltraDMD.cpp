@@ -73,6 +73,7 @@ UltraDMD::~UltraDMD()
 
 void UltraDMD::Clear()
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    Flex::SurfaceGraphics* pGraphics = m_pFlexDMD->GetGraphics();
    if (pGraphics) {
       pGraphics->SetColor(RGB(0, 0, 0));
@@ -124,6 +125,7 @@ Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrigh
 
 void UltraDMD::SetScoreboardBackgroundImage(const string& filename, int selectedBrightness, int unselectedBrightness)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    m_pScoreBoard->SetBackground(ResolveImage(filename, false));
    m_pScoreBoard->SetFonts(
       GetFont(m_pScoreFontNormal->GetPath(), (float)unselectedBrightness / 15.0f, -1),
@@ -133,6 +135,7 @@ void UltraDMD::SetScoreboardBackgroundImage(const string& filename, int selected
 
 Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    int key;
    ankerl::unordered_dense::map<int, BaseDef*>::const_iterator k;
    if (try_parse_int(filename, key) && ((k = m_preloads.find(key)) != m_preloads.end())) {
@@ -252,12 +255,14 @@ int UltraDMD::RegisterVideo(int videoStretchMode, bool loop, const string& video
 
 void UltraDMD::DisplayVersionInfo()
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    m_pScoreBoard->SetVisible(false);
    m_pQueue->SetVisible(false);
 }
 
 void UltraDMD::DisplayScoreboard(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, const string& lowerLeft, const string& lowerRight)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    m_pScoreBoard->SetNPlayers(cPlayers);
    m_pScoreBoard->SetHighlightedPlayer(highlightedPlayer);
    m_pScoreBoard->SetScore(score1, score2, score3, score4);
@@ -288,6 +293,7 @@ void UltraDMD::DisplayScene00Ex(const string& background, const string& toptext,
 void UltraDMD::DisplayScene00ExWithId(const string& sceneId, bool cancelPrevious, const string& background, const string& toptext, int topBrightness, int topOutlineBrightness, const string& bottomtext,
    int bottomBrightness, int bottomOutlineBrightness, int animateIn, int pauseTime, int animateOut)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    if (cancelPrevious && !sceneId.empty()) {
       Scene* const pScene = m_pQueue->GetActiveScene();
       if (pScene != nullptr && pScene->GetName() == sceneId)
@@ -322,6 +328,7 @@ void UltraDMD::DisplayScene00ExWithId(const string& sceneId, bool cancelPrevious
 
 void UltraDMD::ModifyScene00(const string& id, const string& toptext, const string& bottomtext)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    Scene* const pScene = m_pQueue->GetActiveScene();
    if (pScene != nullptr && !id.empty() && pScene->GetName() == id) {
       TwoLineScene* const pScene2 = dynamic_cast<TwoLineScene*>(pScene);
@@ -335,6 +342,7 @@ void UltraDMD::ModifyScene00(const string& id, const string& toptext, const stri
 
 void UltraDMD::ModifyScene00Ex(const string& id, const string& toptext, const string& bottomtext, int pauseTime)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    Scene* const pScene = m_pQueue->GetActiveScene();
    if (pScene != nullptr && !id.empty() && pScene->GetName() == id) {
       TwoLineScene* const pScene2 = dynamic_cast<TwoLineScene*>(pScene);
@@ -349,6 +357,7 @@ void UltraDMD::ModifyScene00Ex(const string& id, const string& toptext, const st
 
 void UltraDMD::DisplayScene01(const string& sceneId, const string& background, const string& text, int textBrightness, int textOutlineBrightness, int animateIn, int pauseTime, int animateOut)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    Font* const pFont = GetFont(m_singleLineFonts[0]->GetPath(), (float)textBrightness / 15.0f, (float)textOutlineBrightness / 15.0f);
    SingleLineScene* const pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(background, false), text, pFont, (AnimationType)animateIn, (float)pauseTime / 1000.0f, (AnimationType)animateOut, true, sceneId);
    m_pScoreBoard->SetVisible(false);
@@ -358,17 +367,20 @@ void UltraDMD::DisplayScene01(const string& sceneId, const string& background, c
 
 void UltraDMD::DisplayText(const string& text, int textBrightness, int textOutlineBrightness)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    m_pScoreBoard->SetVisible(false);
    if (m_pQueue->IsFinished()) {
       m_pQueue->SetVisible(false);
       Label* const pLabel = GetFittedLabel(text, (float)textBrightness / 15.0f, (float)textOutlineBrightness / 15.0f);
-      pLabel->Draw(m_pFlexDMD->GetGraphics());
+      if (Flex::SurfaceGraphics* pGraphics = m_pFlexDMD->GetGraphics())
+         pLabel->Draw(pGraphics);
       pLabel->Release();
    }
 }
 
 void UltraDMD::ScrollingCredits(const string& background, const string& text, int textBrightness, int animateIn, int pauseTime, int animateOut)
 {
+   std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
    m_pScoreBoard->SetVisible(false);
 
    vector<string> lines;

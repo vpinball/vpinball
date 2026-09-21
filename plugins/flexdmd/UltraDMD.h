@@ -28,9 +28,21 @@ public:
    static int GetBuildNumber() { return 9999; }
    bool SetVisibleVirtualDMD(bool visible) { /* Unimplemented */ return false; }
    bool SetFlipY(bool flipY) { /* Unimplemented */ return false; }
-   bool IsRendering() const { return !m_pQueue->IsFinished(); }
-   void CancelRendering() { m_pQueue->RemoveAllScenes(); }
-   void CancelRenderingWithId(const string& sceneId) { m_pQueue->RemoveScene(sceneId); }
+   bool IsRendering() const
+   {
+      std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
+      return !m_pQueue->IsFinished();
+   }
+   void CancelRendering()
+   {
+      std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
+      m_pQueue->RemoveAllScenes();
+   }
+   void CancelRenderingWithId(const string& sceneId)
+   {
+      std::lock_guard renderLock(m_pFlexDMD->GetRenderMutex());
+      m_pQueue->RemoveScene(sceneId);
+   }
    void Clear();
    void SetProjectFolder(const string& basePath) { m_pFlexDMD->SetProjectFolder(basePath); }
    void SetVideoStretchMode(int mode) { m_stretchMode = mode; }

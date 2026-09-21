@@ -29,6 +29,7 @@ FlexDMD::FlexDMD(const MsgPluginAPI* msgApi, unsigned int endpointId, VPXPluginA
 FlexDMD::~FlexDMD()
 {
    SetRun(false);
+   StopRenderThread();
    m_pStage->Release();
    DiscardFrames();
    delete m_pAssetManager;
@@ -45,20 +46,20 @@ void FlexDMD::SetRun(bool run)
    m_segProvider.ClearItems();
    m_dmdProvider.ClearItems();
 
-   m_run = run;
-   if (m_run) {
-      m_lastRenderTick = SDL_GetTicks();
-      m_pStage->SetOnStage(true);
-      //RenderLoop();
+   {
+      std::lock_guard renderLock(m_renderMutex);
+      m_run = run;
+      if (m_run) {
+         m_lastRenderTick = SDL_GetTicks();
+         m_pStage->SetOnStage(true);
+      }
+      else {
+         StopRenderThread();
+         m_pAssetManager->ClearAll();
+         m_pStage->SetOnStage(false);
+      }
    }
-   else {
-      //m_pThread->join();
-      //delete m_pThread;
-      //m_pThread = NULL;
-      m_pAssetManager->ClearAll();
-      m_pStage->SetOnStage(false);
-   }
-   
+
    AdvertiseDisplay();
 }
 
@@ -83,9 +84,12 @@ void FlexDMD::SetWidth(int w)
    m_dmdProvider.ClearItems();
    m_segProvider.ClearItems();
 
-   m_width = w;
-   m_pStage->SetSize(m_width, m_height);
-   DiscardFrames();
+   {
+      std::lock_guard renderLock(m_renderMutex);
+      m_width = w;
+      m_pStage->SetSize(m_width, m_height);
+      DiscardFrames();
+   }
 
    AdvertiseDisplay();
 }
@@ -98,9 +102,12 @@ void FlexDMD::SetHeight(int h)
    m_dmdProvider.ClearItems();
    m_segProvider.ClearItems();
 
-   m_height = h;
-   m_pStage->SetSize(m_width, m_height);
-   DiscardFrames();
+   {
+      std::lock_guard renderLock(m_renderMutex);
+      m_height = h;
+      m_pStage->SetSize(m_width, m_height);
+      DiscardFrames();
+   }
 
    AdvertiseDisplay();
 }
@@ -113,8 +120,11 @@ void FlexDMD::SetRenderMode(RenderMode renderMode)
    m_dmdProvider.ClearItems();
    m_segProvider.ClearItems();
 
-   m_renderMode = renderMode;
-   DiscardFrames();
+   {
+      std::lock_guard renderLock(m_renderMutex);
+      m_renderMode = renderMode;
+      DiscardFrames();
+   }
 
    AdvertiseDisplay();
 }
@@ -123,13 +133,13 @@ DisplayFrame FlexDMD::GetRenderFrame(void* callContext)
 {
    auto ctx = static_cast<CallContext*>(callContext);
    FlexDMD* me = ctx->me;
-   me->Render();
-   if (me->GetRenderMode() == RenderMode_DMD_RGB)
-      return { me->m_frameId, me->UpdateRGBFrame() };
-   else if ((me->GetRenderMode() == RenderMode_DMD_GRAY_2) || (me->GetRenderMode() == RenderMode_DMD_GRAY_4))
-      return { me->m_frameId, me->UpdateLumFP32Frame() };
-   assert(false);
-   return { 0, nullptr };
+   // Request the render thread to render a frame, and serve the latest rendered one
+   {
+      std::lock_guard requestLock(me->m_requestMutex);
+      me->m_renderRequested = true;
+   }
+   me->m_requestCond.notify_one();
+   return { me->m_frameId, ctx->renderFrame };
 }
 
 SegDisplayFrame FlexDMD::GetSegState(void* callContext)
@@ -155,22 +165,24 @@ SegDisplayFrame FlexDMD::GetSegState(void* callContext)
    };
    auto ctx = static_cast<CallContext*>(callContext);
    FlexDMD* me = ctx->me;
-   uint32_t subId = ctx->index;
-   int pos = 0;
-   static thread_local float segLuminances[16 * 128] = { };
-   float* __restrict lum = segLuminances;
-   for (uint32_t i = 0; i < subId; i++)
+   // Update the display state unless the client is mutating it (between LockRenderThread/UnlockRenderThread)
+   std::unique_lock renderLock(me->m_renderMutex, std::try_to_lock);
+   if (renderLock.owns_lock())
    {
-      pos += sizes[me->GetRenderMode()][i];
-      lum += sizes[me->GetRenderMode()][i] * 16;
+      const uint32_t subId = ctx->index;
+      int pos = 0;
+      float* __restrict lum = ctx->segFrame;
+      for (uint32_t i = 0; i < subId; i++)
+         pos += sizes[me->GetRenderMode()][i];
+      for (int i = 0; i < sizes[me->GetRenderMode()][subId]; i++)
+      {
+         uint16_t v = me->m_segData[pos + i];
+         for (int j = 0; j < 16; j++, v >>= 1)
+            lum[i * 16 + j] = (v & 1) ? 1.f : 0.f;
+      }
+      ctx->segFrameId = me->m_frameId;
    }
-   for (int i = 0; i < sizes[me->GetRenderMode()][subId]; i++)
-   {
-      uint16_t v = me->m_segData[pos + i];
-      for (int j = 0; j < 16; j++, v >>= 1)
-         lum[i * 16 + j] = (v & 1) ? 1.f : 0.f;
-   }
-   return { me->m_frameId, lum };
+   return { ctx->segFrameId, ctx->segFrame };
 }
 
 void FlexDMD::AdvertiseDisplay()
@@ -179,12 +191,30 @@ void FlexDMD::AdvertiseDisplay()
    assert(m_dmdProvider.GetItems().empty());
 
    if (!m_run || !m_show)
+   {
+      StopRenderThread();
       return;
+   }
 
    m_callContexts.clear();
    if (GetRenderMode() == RenderMode_DMD_GRAY_2 || GetRenderMode() == RenderMode_DMD_GRAY_4 || GetRenderMode() == RenderMode_DMD_RGB)
    {
-      m_callContexts.emplace_back(this, 0);
+      {
+         // Allocate the advertised frame backing store, so that requests always return a valid frame
+         std::lock_guard renderLock(m_renderMutex);
+         if (GetRenderMode() == RenderMode_DMD_RGB)
+         {
+            if (m_rgbFrame == nullptr)
+               m_rgbFrame = new uint8_t[m_width * m_height * 3]();
+            m_callContexts.emplace_back(this, 0, m_rgbFrame);
+         }
+         else
+         {
+            if (m_lumFP32Frame == nullptr)
+               m_lumFP32Frame = new float[m_width * m_height]();
+            m_callContexts.emplace_back(this, 0, m_lumFP32Frame);
+         }
+      }
       m_dmdProvider.SetItem({ //
          .id = { .endpointId = m_endpointId, .resId = GetId() << 8 },
          .overrideId = { },
@@ -193,9 +223,11 @@ void FlexDMD::AdvertiseDisplay()
          .callContext = &m_callContexts[0],
          .frameFormat = GetRenderMode() == RenderMode_DMD_RGB ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_LUM32F,
          .GetRenderFrame = GetRenderFrame });
+      StartRenderThread();
       return;
    }
 
+   StopRenderThread();
    std::vector<SegSrcId> segSrcs;
    auto AddSegSrc = [this, &segSrcs](uint32_t displayIndex, int nDisplays, unsigned int nElements, SegElementType type)
    {
@@ -208,7 +240,7 @@ void FlexDMD::AdvertiseDisplay()
          src.elementType[j] = type;
       src.GetState = GetSegState;
       segSrcs.push_back(src);
-      m_callContexts.emplace_back(this, displayIndex);
+      m_callContexts.emplace_back(this, displayIndex, nullptr);
    };
    switch (GetRenderMode())
    {
@@ -320,12 +352,66 @@ void FlexDMD::AdvertiseDisplay()
    m_segProvider.AddItems(segSrcs);
 }
 
+void FlexDMD::StartRenderThread()
+{
+   if (m_renderThread.joinable())
+      return;
+   {
+      std::lock_guard requestLock(m_requestMutex);
+      m_renderThreadStop = false;
+      m_renderRequested = true; // Render a first frame
+   }
+   m_renderThread = std::thread(&FlexDMD::RenderLoop, this);
+}
+
+void FlexDMD::StopRenderThread()
+{
+   {
+      std::lock_guard requestLock(m_requestMutex);
+      if (!m_renderThread.joinable())
+         return;
+      m_renderThreadStop = true;
+   }
+   m_requestCond.notify_all();
+   m_renderThread.join();
+}
+
+void FlexDMD::RenderLoop()
+{
+   std::unique_lock requestLock(m_requestMutex);
+   while (!m_renderThreadStop)
+   {
+      m_requestCond.wait(requestLock, [this] { return m_renderThreadStop || m_renderRequested; });
+      if (m_renderThreadStop)
+         break;
+      m_renderRequested = false;
+      requestLock.unlock();
+      {
+         // Only render when the client is not mutating the scene graph (between LockRenderThread/UnlockRenderThread).
+         // Try-locking also guarantees that the render thread never blocks on the lock, allowing it to be stopped
+         // and joined even while the client holds it.
+         std::unique_lock renderLock(m_renderMutex, std::try_to_lock);
+         if (renderLock.owns_lock())
+         {
+            Render();
+            if (m_renderMode == RenderMode_DMD_RGB)
+               UpdateRGBFrame();
+            else if ((m_renderMode == RenderMode_DMD_GRAY_2) || (m_renderMode == RenderMode_DMD_GRAY_4))
+               UpdateLumFP32Frame();
+         }
+      }
+      requestLock.lock();
+   }
+}
+
 void FlexDMD::Render()
 {
-   // TODO we could do it on a separate thread and afford a latency of 1 frame to remove all overhead
+   // Must only be called with the render lock acquired
+   if (!m_run)
+      return;
    uint64_t tick = SDL_GetTicks();
    uint64_t elapsedMs = tick - m_lastRenderTick;
-   if ((m_renderLockCount == 0) && elapsedMs > 2)
+   if (elapsedMs > 2)
    {
       m_frameId++;
       m_lum8FrameDirty = m_lumFP32FrameDirty = m_lumFrameDirty = m_rgbFrameDirty = m_rgbaFrameDirty = true;
@@ -370,8 +456,6 @@ float* FlexDMD::UpdateLumFP32Frame()
       m_lumFP32Frame = new float[m_width * m_height];
    if (m_pSurface == nullptr)
       return m_lumFP32Frame;
-   if (m_renderLockCount > 0)
-      return m_lumFP32Frame;
    m_lumFP32FrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
    SDL_LockSurface(surf);
@@ -397,8 +481,6 @@ void FlexDMD::UpdateLumFrame()
       m_lumFrame.resize(m_width * m_height);
    if (m_pSurface == nullptr)
       return;
-   if (m_renderLockCount > 0)
-      return;
    m_lumFrameDirty = false;
    UpdateLum8Frame();
    const uint8_t* __restrict src = m_lum8Frame;
@@ -422,8 +504,6 @@ uint8_t* FlexDMD::UpdateRGBFrame()
       m_rgbFrame = new uint8_t[m_width * m_height * 3];
    if (m_pSurface == nullptr)
       return m_rgbFrame;
-   if (m_renderLockCount > 0)
-      return m_rgbFrame;
    m_rgbFrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
    SDL_LockSurface(surf);
@@ -439,8 +519,6 @@ void FlexDMD::UpdateRGBAFrame()
    if (m_rgbaFrame.empty())
       m_rgbaFrame.resize(m_width * m_height);
    if (m_pSurface == nullptr)
-      return;
-   if (m_renderLockCount > 0)
       return;
    m_rgbaFrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
@@ -459,6 +537,7 @@ void FlexDMD::UpdateRGBAFrame()
 
 const std::vector<uint32_t>& FlexDMD::GetDmdColoredPixels()
 {
+   std::lock_guard renderLock(m_renderMutex);
    Render();
    UpdateRGBAFrame();
    return m_rgbaFrame;
@@ -466,6 +545,7 @@ const std::vector<uint32_t>& FlexDMD::GetDmdColoredPixels()
 
 const std::vector<uint8_t>& FlexDMD::GetDmdPixels()
 {
+   std::lock_guard renderLock(m_renderMutex);
    Render();
    UpdateLumFrame();
    return m_lumFrame;
@@ -473,9 +553,11 @@ const std::vector<uint8_t>& FlexDMD::GetDmdPixels()
 
 void FlexDMD::SetSegments(const std::vector<uint16_t>& segments)
 {
-   if (memcmp(m_segData, segments.data(), segments.size() * sizeof(uint16_t)) != 0)
+   std::lock_guard renderLock(m_renderMutex);
+   const size_t size = min(segments.size(), std::size(m_segData));
+   if (memcmp(m_segData, segments.data(), size * sizeof(uint16_t)) != 0)
    {
-      memcpy(m_segData, segments.data(), segments.size() * sizeof(uint16_t));
+      memcpy(m_segData, segments.data(), size * sizeof(uint16_t));
       m_frameId++;
    }
 }
@@ -486,12 +568,21 @@ Frame* FlexDMD::NewFrame(const string& name) { return new Frame(this, name); }
 
 Label* FlexDMD::NewLabel(const string& Name, Font *Font_, const string& Text) { return new Label(this, Font_, Text,  Name); }
 
-Image* FlexDMD::NewImage(const string& name, const string& image) { return Image::Create(this, m_pAssetManager, image, name); }
+Image* FlexDMD::NewImage(const string& name, const string& image)
+{
+   std::lock_guard renderLock(m_renderMutex);
+   return Image::Create(this, m_pAssetManager, image, name);
+}
 
-UltraDMD* FlexDMD::NewUltraDMD() { return new UltraDMD(this); }
+UltraDMD* FlexDMD::NewUltraDMD()
+{
+   std::lock_guard renderLock(m_renderMutex);
+   return new UltraDMD(this);
+}
 
 Font* FlexDMD::NewFont(const string& font, uint32_t tint, uint32_t borderTint, int borderSize)
 {
+   std::lock_guard renderLock(m_renderMutex);
    const string tintHex = std::format("{:08X}", ((tint & 0x0000FFu) << 24) | ((tint & 0x00FF00u) << 8) | ((tint & 0xFF0000u) >> 8) | 0xFFu);
    const string borderHex = std::format("{:08X}", ((borderTint & 0x0000FFu) << 24) | ((borderTint & 0x00FF00u) << 8) | ((borderTint & 0xFF0000u) >> 8) | 0xFFu);
    AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(font + "&tint=" + tintHex + "&border_size=" + std::to_string(borderSize) + "&border_tint=" + borderHex, nullptr);
@@ -502,6 +593,7 @@ Font* FlexDMD::NewFont(const string& font, uint32_t tint, uint32_t borderTint, i
 
 AnimatedActor* FlexDMD::NewVideo(const string& name, const string& video)
 {
+   std::lock_guard renderLock(m_renderMutex);
    if (video.find('|') != string::npos)
       return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, video, name, 30, true);
    else {
