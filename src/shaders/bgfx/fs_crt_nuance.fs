@@ -68,9 +68,9 @@ vec3 CrtsNuanceFilter(vec2 uv, vec2 srcSize, vec2 dstSize)
 	float vignetting = 0.1 + 16.0 * (uvw01.x - uvw01.x * uvw01.x) * (uvw01.y - uvw01.y * uvw01.y);
 	col *= pow(vignetting, 0.2);
 
-	col *= vec3(0.95, 1.05, 0.95) * 1.15 * 2.8;
+	col *= vec3(0.95, 1.05, 0.95) * (1.15 * 2.8);
 
-	col *= pow(0.35 + 0.18 * sin(uvw.y * 1.5), 0.9); // scanline
+	col *= pow(0.45 + 0.075 * sin(uvw.y * 1.5), 0.9); // scanline
 
 	col *= 1.0 - 0.23 * clamp(2.0 * uvw.x - (4.0 * floor(uvw.x * 0.5) + 2.0), 0.0, 1.0); // mask pattern
 
