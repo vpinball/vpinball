@@ -925,7 +925,40 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
 
 void Renderer::DrawBackground()
 {
-   const PinTable * const ptable = g_pplayer->m_ptable;
+   if (g_pplayer->m_liveUI->IsEditorViewMode())
+   {
+      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x000D0D0D);
+      if (!g_pplayer->m_liveUI->IsEditorBackdropViewMode())
+         return;
+   }
+   else if (g_pplayer->IsVR())
+   {
+      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+#ifdef ENABLE_XR
+      if (std::shared_ptr<MeshBuffer> mask = g_pplayer->m_vrDevice->GetVisibilityMask(); mask)
+      {
+         static constexpr Vertex3Ds pos { 0.f, 0.f, 200000.0f }; // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
+         m_renderDevice->ResetRenderState();
+         m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+         m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
+         m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+         m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+         m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
+         m_renderDevice->m_basicShader->SetMatrix(ShaderUniform::matWorldViewProj, g_pplayer->m_vrDevice->GetVisibilityMaskProjs(), 2);
+         m_renderDevice->m_basicShader->SetTechnique(ShaderTechnique::vr_mask);
+         m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, false, pos, 0, mask, RenderDevice::TRIANGLELIST, 0, mask->m_ib->m_count);
+         UpdateBasicShaderMatrix();
+      }
+#endif
+      return;
+   }
+   else if (g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
+   {
+      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+      return;
+   }
+
+   const PinTable* const ptable = g_pplayer->m_ptable;
    const ViewSetupID bgSet = g_pplayer->m_liveUI->IsEditorBackdropViewMode() ? BG_DESKTOP : ptable->GetViewMode();
    Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[bgSet]) : nullptr;
    m_renderDevice->ResetRenderState();
@@ -985,6 +1018,16 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    #endif
    viewSetup.ComputeMVP(m_table, GetDisplayAspectRatio(), stereo, m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
    m_initialMVP = m_mvp;
+}
+
+void Renderer::ApplyViewJitter(const float xpixoff, const float ypixoff)
+{
+   assert(m_stereo3D != STEREO_VR);
+   // Apply the same clip space offset as InitLayout (see ViewSetup::ComputeMVP projTrans), but on the current MVP, preserving
+   // the (eventually reflected) view matrix since the offset is a post projection translation which does not interact with it
+   const Matrix3D offset = Matrix3D::MatrixTranslate(xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight(), 0.f);
+   for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+      m_mvp.SetProj(eye, m_mvp.GetProj(eye) * offset);
 }
 
 void Renderer::SetFlip(ModelViewProj::FlipMode flipMode)
@@ -1590,16 +1633,22 @@ void Renderer::DrawDynamics(bool onlyBalls)
    const unsigned int mask = m_render_mask;
    const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
    m_render_mask |= Renderer::DYNAMIC_ONLY;
-   if (onlyBalls)
+   const bool isBackdropEdit = g_pplayer->m_liveUI->IsEditorBackdropViewMode();
+   if (!onlyBalls)
+   {
+      if (!isBackdropEdit)
+         DrawBulbLightBuffer();
+      for (auto renderable : g_pplayer->m_ptable->GetParts())
+      {
+         if (isBackdropEdit && !renderable->m_desktopBackdrop)
+            continue;
+         RenderItem(renderable, isNoBackdrop);
+      }
+   }
+   else if (!isBackdropEdit)
    {
       for (Ball* ball : g_pplayer->m_vball)
          RenderItem(ball, isNoBackdrop);
-   }
-   else
-   {
-      DrawBulbLightBuffer();
-      for (auto renderable : g_pplayer->m_ptable->GetParts())
-         RenderItem(renderable, isNoBackdrop);
    }
    m_render_mask = mask;
 }
@@ -1713,246 +1762,205 @@ void Renderer::SetSpaceReference(PartGroupData::SpaceReference spaceReference, b
 
 void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
 {
-   if (!editable->GetIRenderable()
-      || (isNoBackdrop && editable->m_desktopBackdrop) // Don't render backdrop items in reflections or VR & cabinet modes
+   // Wireframe modes only apply to the main scene render, not to sub passes (UI wireframe fill/edges, light buffer, reflection probes)
+   const bool isWireframe = m_shadeMode != ShadeMode::Default && (m_render_mask & (UI_FILL | UI_EDGES | LIGHT_BUFFER | REFLECTION_PASS)) == 0;
+   if (editable->GetIRenderable() == nullptr // Not renderable
+      || (editable->m_desktopBackdrop && isNoBackdrop) // Don't render backdrop items in reflections or VR & cabinet modes
       || (editable->GetPartGroup() != nullptr && ((editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0))) // Apply player mode visibility mask
       return;
 
    const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
    SetSpaceReference(spaceReference, false);
-   editable->GetIRenderable()->Render(m_render_mask);
+
+   // Parts flagged as "Show in Editor" are rendered shaded, even when the part group visibility mask would hide them
+   if (!isWireframe || editable->IsShownInEditor())
+   {
+      editable->GetIRenderable()->Render(m_render_mask);
+   }
+   else
+   {
+      const vec4 fillColor = m_shadeMode == ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, (float)(32. / 255.)) : vec4((float)(32. / 255.), (float)(32. / 255.), (float)(32. / 255.), 1.f);
+      constexpr vec4 edgeColor{0.f, 0.f, 0.f, 1.f};
+      DrawWireframe(editable, fillColor, edgeColor, m_shadeMode != ShadeMode::NoDepthWireframe);
+   }
 }
 
+void Renderer::DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
 
-void Renderer::RenderStaticPrepass()
+bool Renderer::IsUsingStaticPrepass() const
 {
-   // For VR, we don't use any static pre-rendering
-   if (m_stereo3D == STEREO_VR)
-      return;
+   // LiveUI may not exist yet during player startup (e.g. VR setup calls DisableStaticPrePass from the Player constructor)
+   return (g_pplayer->m_liveUI == nullptr || !g_pplayer->m_liveUI->IsEditorViewMode()) // Editor mode disables prerendering (FIXME why ?)
+      && !g_pplayer->IsVR() // VR disable prerender accumulation to avoid the perf impact as the view constantly moves
+      && g_pplayer->GetInfoMode() != IF_DYNAMIC_ONLY // Dynamic inspection hides static parts (TODO remove embedded inspection as RenderDoc superseed this function and only DX9 still uses it)
+      && !GetMSAABackBufferTexture()->IsMSAA() // Static prepass is not compatible with BGFX's MSAA (BGFX does not allow to blit between MSAA textures). OpenGL backend is able to support it, but it is disabled as the resource to maintain it are too low and it is EOL
+      && m_shadeMode == ShadeMode::Default // TODO Wireframe rendering modes are not tested for prerendering optimization yet
+      && m_disableStaticPrepass <= 0; // Something resuested to disable static part accumulation (for example headtracking,...)
+}
 
-   if (!m_isStaticPrepassDirty)
-      return;
-
-   #if defined(ENABLE_OPENGL) && defined(__STANDALONE__)
-   SDL_GL_MakeCurrent(g_pplayer->m_playfieldWnd->GetCore(), g_pplayer->m_renderer->m_renderDevice->m_sdl_context);
-   #endif
-
-   m_isStaticPrepassDirty = false;
-
-   TRACE_FUNCTION();
-
-   m_render_mask |= Renderer::STATIC_ONLY;
-   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
-
-   // Defer deletion to the render thread end-of-frame: already submitted frames may still hold copy commands sourcing this RT
-   if (m_staticPrepassRT)
-      m_renderDevice->AddEndOfFrameCmd([rt = m_staticPrepassRT]() { delete rt; });
-
-   // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
-   m_staticPrepassRT = GetBackBufferTexture()->Duplicate("StaticPreRender"s);
-   assert(!m_staticPrepassRT->IsMSAA());
-
-   RenderTarget *accumulationSurface = IsUsingStaticPrepass() ? m_staticPrepassRT->Duplicate("Accumulation"s) : nullptr;
-
-   RenderTarget* renderRT = GetAOMode() == 1 ? GetBackBufferTexture() : m_staticPrepassRT;
-
-   if (IsUsingStaticPrepass())
+void Renderer::RenderStatics()
+{
+   if (!IsUsingStaticPrepass())
    {
-      PLOGI << "Performing prerendering of static parts."; // For profiling
-      // if rendering static/with heavy oversampling, disable mipmaps & aniso/trilinear filter to get a sharper/more precise result overall!
-      ShaderState::m_disableMipmaps = true;
-      #ifdef ENABLE_BGFX
-         m_renderDevice->m_DMDShader->SetVector(ShaderUniform::u_basic_shade_mode, 0.f, 0.f, 0.f, 1.f);
-      #endif
+      m_renderDevice->SetRenderTarget("Render Background"s, GetMSAABackBufferTexture());
+      DrawBackground();
+      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture(), true, true); // Force new pass to avoid sorting background draw calls with 3D rendering draw calls
+      return;
    }
 
-   //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the number of iterations!
-   // loop for X times and accumulate/average these renderings
-   // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
-   int n_iter = IsUsingStaticPrepass() ? (STATIC_PRERENDER_ITERATIONS - 1) : 0;
-   for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
+   if (m_isStaticPrepassDirty)
    {
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      span* tagSpan = new span(series, 1, _T("PreRender"));
-      #endif
+      m_isStaticPrepassDirty = false;
+      PLOGI << "Performing prerendering of static parts."; // For profiling
+      // Defer deletion to the render thread end-of-frame: already submitted frames may still hold copy commands sourcing this RT
+      if (m_staticPrepassRT)
+         m_renderDevice->AddEndOfFrameCmd([rt = m_staticPrepassRT]() { delete rt; });
+      m_staticPrepassRT = GetBackBufferTexture()->Duplicate("StaticPreRender"s);
+      for (RenderProbe* probe : m_table->m_vrenderprobe)
+         probe->MarkDirtyStatics();
+      m_staticPrepassAccumCount = 0;
+   }
 
-#ifdef __LIBVPINBALL__
-      VPinballLib::ProgressData progressData = { static_cast<unsigned int>((n_iter - iter) * 100 / n_iter) };
-      VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PRERENDERING, &progressData);
-#endif
+   if (m_staticPrepassAccumCount < STATIC_PRERENDER_ITERATIONS)
+   {
+      const bool isFirstSample = m_staticPrepassAccumCount == 0;
+      RenderTarget* sampleRT = GetBackBufferTexture(); // We use the back buffer as a temporary target (then accumulated to the static RT, which is copied back to backbuffer)
       m_renderDevice->m_curDrawnTriangles = 0;
 
-      float u1 = xyLDBNbnot[iter*2  ];  //      (float)iter*(float)(1.0                                /STATIC_PRERENDER_ITERATIONS);
-      float u2 = xyLDBNbnot[iter*2+1];  //fmodf((float)iter*(float)(STATIC_PRERENDER_ITERATIONS_KOROBOV/STATIC_PRERENDER_ITERATIONS), 1.f);
-      // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
-      gaussianDistribution(u1, u2, 0.5f, 0.0f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
-      // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
-      assert(u1 > -1.5f && u1 < 1.5f);
-      assert(u2 > -1.5f && u2 < 1.5f);
-      // Last iteration MUST set a sample offset of 0,0 so that final depth buffer features 'correctly' centered pixel sample
-      assert(iter != 0 || (u1 == 0.f && u2 == 0.f));
-
-      // Setup Camera,etc matrices for each iteration.
-      InitLayout(u1, u2);
-
-      // Direct all renders to the "static" buffer
-      m_renderDevice->SetRenderTarget("PreRender Background"s, renderRT, iter == 0, true); // First iteration needs to declare a dependency on what is already there (if any) to avoid discarding it in final render frame
-      DrawBackground();
-
-      m_renderDevice->SetRenderTarget("PreRender Draw"s, renderRT, true, true); // Force new pass to avoid sorting background draw calls with 3D rendering draw calls
-
-      if (IsUsingStaticPrepass())
+      // Setup the view matrices with a jitter depending on the accumulation step.
+      // The first accumulated sample always uses a centered offset so that the acquired depth buffer is the unjittered one.
+      float u1 = xyLDBNbnot[m_staticPrepassAccumCount * 2];
+      float u2 = xyLDBNbnot[m_staticPrepassAccumCount * 2 + 1];
+      if (!isFirstSample)
       {
-         // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
-         for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
-            m_table->m_vrenderprobe[i]->MarkDirty();
-
-         // Render static parts
-         UpdateBasicShaderMatrix();
-         for (auto renderable : g_pplayer->m_ptable->GetParts())
-            RenderItem(renderable, isNoBackdrop);
-
-         // Rendering is done to the static render target then accumulated to accumulationSurface
-         // We use the framebuffer mirror shader which copies a weighted version of the bound texture
-         m_renderDevice->SetRenderTarget("PreRender Accumulate"s, accumulationSurface);
-         m_renderDevice->AddRenderTargetDependency(renderRT);
-         m_renderDevice->ResetRenderState();
-         m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, iter == STATIC_PRERENDER_ITERATIONS - 1 ? RenderState::RS_FALSE : RenderState::RS_TRUE);
-         m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
-         m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-         m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-         m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_mirror);
-         m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, 
-            (float)(1.0 / (double)renderRT->GetWidth()), (float)(1.0 / (double)renderRT->GetHeight()),
-            (float)((double)STATIC_PRERENDER_ITERATIONS), 0.0f);
-         m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, renderRT->GetColorSampler());
-         m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-         m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_fb_unfiltered);
+         // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
+         gaussianDistribution(u1, u2, 0.5f, 0.0f); //!! first 0.5 could be increased for more blur, but is pretty much what is recommended
+         // sanity check to be sure to limit filter area to 3x3 in practice, as the gauss transformation is unbound (which is correct, but for our use-case/limited amount of samples very bad)
+         assert(u1 > -1.5f && u1 < 1.5f);
+         assert(u2 > -1.5f && u2 < 1.5f);
+         // First accumulated sample MUST set a sample offset of 0,0 so that the depth buffer features 'correctly' centered pixel sample
+         assert(m_staticPrepassAccumCount != 0 || (u1 == 0.f && u2 == 0.f));
+         // Apply the jitter to the reflected MVP (the offset is applied to the projection, preserving the reflected view)
+         ApplyViewJitter(u1, u2);
       }
 
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      delete tagSpan;
-      #endif
+      // if rendering static/with heavy oversampling, disable mipmaps & aniso/trilinear filter to get a sharper/more precise result overall!
+      ShaderState::m_disableMipmaps = true;
+#ifdef ENABLE_BGFX
+      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::u_basic_shade_mode, 0.f, 0.f, 0.f, 1.f);
+#endif
 
-      m_renderDevice->SubmitRenderFrame(); // Submit to avoid stacking up all prerender passes in a huge render frame
-   }
+      m_renderDevice->SetRenderTarget("PreRender Background"s, sampleRT, isFirstSample, true);
+      DrawBackground();
 
-   if (accumulationSurface)
-   {
-      // copy back weighted antialiased color result to the static render target, keeping depth untouched
-      m_renderDevice->SetRenderTarget("PreRender Store"s, renderRT);
-      m_renderDevice->BlitRenderTarget(accumulationSurface, renderRT, true, false);
-      m_renderDevice->AddEndOfFrameCmd([accumulationSurface]() { delete accumulationSurface; });
-   }
+      m_renderDevice->SetRenderTarget("PreRender Draw"s, sampleRT, true, true); // Force new pass to avoid sorting background rendering draw calls with 3D rendering draw calls
+      UpdateBasicShaderMatrix();
+      DrawStatics();
 
-   ShaderState::m_disableMipmaps = false;
-   #ifdef ENABLE_BGFX
-      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::u_basic_shade_mode, 0.f, 0.f, 0.f, 0.f);
-   #endif
+      if (!isFirstSample)
+         ApplyViewJitter(-u1, -u2); // Restore the unjittered projection
 
-   // Now finalize static buffer with static AO
-   if (GetAOMode() == 1)
-   {
-      PLOGI << "Starting static AO prerendering"; // For profiling
-
-      const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
-
-      m_renderDevice->SetRenderTarget("PreRender AO Save Depth"s, m_staticPrepassRT);
-      m_renderDevice->ResetRenderState();
-      m_renderDevice->BlitRenderTarget(renderRT, m_staticPrepassRT, false, true);
-
-      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      m_renderDevice->SetRenderState(RenderState::CULLMODE ,RenderState::CULL_NONE);
-      m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-
-      m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_depth, renderRT->GetDepthSampler());
-      m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_ao_dither, m_aoDitherSampler);
-      m_renderDevice->m_FBShader->SetVector(ShaderUniform::AO_scale_timeblur, m_table->m_AOScale, 0.1f, 0.f, 0.f);
-      m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::AO);
-
-      for (unsigned int i = 0; i < 50; ++i) // 50 iterations to get AO smooth
+      // Static only AO is done in a single step, then it is applied after each render before accumulation (could be done more efficiently by sampling it directly)
+      const bool useStaticAO = GetAOMode() == 1;
+      if (useStaticAO)
       {
-         m_renderDevice->SetRenderTarget("PreRender AO"s, GetAORenderTarget(0));
-         m_renderDevice->AddRenderTargetDependency(renderRT);
+         if (isFirstSample)
+         {
+            // Compute static AO from the unjittered first sample (its depth is the one kept for the accumulated render)
+            m_renderDevice->SetRenderTarget("PreRender AO Clear"s, GetAORenderTarget(1));
+            m_renderDevice->Clear(clearType::TARGET, 0x00000000); // Clear stale AO history (freshly created buffers may hold garbage)
+            for (int i = 0; i < 50; i++) // 50 iterations to get AO smooth
+               UpdateAmbientOcclusion(sampleRT, i);
+            m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_depth);
+         }
+
+         // Apply AO to the rendered sample before accumulating it (the reflection buffer is a transient target, fully overwritten by the SSR pass)
+         const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
+         m_renderDevice->SetRenderTarget("PreRender Apply AO"s, GetReflectionBufferTexture());
+         m_renderDevice->AddRenderTargetDependency(sampleRT);
          m_renderDevice->AddRenderTargetDependency(GetAORenderTarget(1));
-         if (i == 0)
-            m_renderDevice->Clear(clearType::TARGET, 0x00000000);
-
-         m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, GetAORenderTarget(1)->GetColorSampler()); //!! ?
-         m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, GetAORenderTarget(1)->GetColorSampler()); //!! ?
-         m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, 
-            (float)(1.0 / GetAORenderTarget(1)->GetWidth()), (float)(1.0 / GetAORenderTarget(1)->GetHeight()),
-            radical_inverse(i) * (float)(1. / 8.0), /*sobol*/ radical_inverse<3>(i) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
-         m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-
-         // flip AO buffers (avoids copy)
-         SwapAORenderTargets();
-      }
-
-      m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_depth);
-
-      m_renderDevice->SetRenderTarget("PreRender Apply AO"s, m_staticPrepassRT);
-      m_renderDevice->AddRenderTargetDependency(renderRT);
-      m_renderDevice->AddRenderTargetDependency(GetAORenderTarget(1));
-
-      m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, renderRT->GetColorSampler());
-      m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, renderRT->GetColorSampler());
-      m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_ao, GetAORenderTarget(1)->GetColorSampler());
-
-      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderRT->GetWidth()), (float)(1.0 / renderRT->GetHeight()), 1.0f, 1.0f);
-      m_renderDevice->m_FBShader->SetTechnique(useAA ? ShaderTechnique::fb_AO_static : ShaderTechnique::fb_AO_no_filter_static);
-
-      m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-
-      // Delete buffers: we won't need them anymore since dynamic AO is disabled
-      m_renderDevice->AddEndOfFrameCmd([this]() { ReleaseAORenderTargets(); });
-
-      m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_ao);
-   }
-
-   if (GetMSAABackBufferTexture()->IsMSAA())
-   {
-      // Render one frame with MSAA to keep MSAA depth (this adds MSAA to the overlapping parts between statics & dynamics)
-      RenderTarget* const renderRTmsaa = GetMSAABackBufferTexture()->Duplicate("MSAAPreRender"s);
-      InitLayout();
-      m_renderDevice->SetRenderTarget("PreRender MSAA Background"s, renderRTmsaa, false);
-      DrawBackground();
-      if (IsUsingStaticPrepass())
-      {
-         m_renderDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRTmsaa, true, true); // Force new pass to avoid sorting scene calls with background calls
          m_renderDevice->ResetRenderState();
-         for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
-            m_table->m_vrenderprobe[i]->MarkDirty();
-         UpdateBasicShaderMatrix();
-         for (auto renderable : g_pplayer->m_ptable->GetParts())
-            RenderItem(renderable, isNoBackdrop);
+         m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+         m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+         m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+         m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, sampleRT->GetColorSampler());
+         m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, sampleRT->GetColorSampler());
+         m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_ao, GetAORenderTarget(1)->GetColorSampler());
+         m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / sampleRT->GetWidth()), (float)(1.0 / sampleRT->GetHeight()), 1.0f, 1.0f);
+         m_renderDevice->m_FBShader->SetTechnique(useAA ? ShaderTechnique::fb_AO_static : ShaderTechnique::fb_AO_no_filter_static);
+         m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+         m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_ao);
+         sampleRT = GetReflectionBufferTexture();
       }
-      // Copy supersampled color buffer
-      m_renderDevice->SetRenderTarget("PreRender Combine Color"s, renderRTmsaa, true, true); // Force new pass to avoid sorting blit call with background calls
-      m_renderDevice->BlitRenderTarget(m_staticPrepassRT, renderRTmsaa, true, false);
-      // Replace with this new MSAA pre render
-      RenderTarget *initialPreRender = m_staticPrepassRT;
-      m_staticPrepassRT = renderRTmsaa;
-      m_renderDevice->AddEndOfFrameCmd([initialPreRender]() { delete initialPreRender; });
-   }
-   m_renderDevice->SubmitRenderFrame(); // Submit frame as other rendering will not declare a dependency on the created passes and therefore they would be discarded
 
-   if (IsUsingStaticPrepass())
+      // Accumulate the new sample into the static render target, weighted by 1/STATIC_PRERENDER_ITERATIONS
+      m_staticPrepassAccumCount++;
+      m_renderDevice->SetRenderTarget("PreRender Accumulate"s, m_staticPrepassRT);
+      m_renderDevice->AddRenderTargetDependency(sampleRT);
+      if (isFirstSample) // Copy unjiterred depth buffer rendered on first sample
+      {
+         if (useStaticAO)
+            m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture());
+         m_renderDevice->BlitRenderTarget(GetBackBufferTexture(), m_staticPrepassRT, false, true);
+      }
+      m_renderDevice->ResetRenderState();
+      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, isFirstSample ? RenderState::RS_FALSE : RenderState::RS_TRUE);
+      m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
+      m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+      m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+      m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_mirror);
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)GetBackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetBackBufferTexture()->GetHeight()),
+         (float)(double)STATIC_PRERENDER_ITERATIONS, 0.0f);
+      m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, sampleRT->GetColorSampler());
+      m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+      m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_fb_unfiltered);
+
+      ShaderState::m_disableMipmaps = false;
+#ifdef ENABLE_BGFX
+      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::u_basic_shade_mode, 0.f, 0.f, 0.f, 0.f);
+#endif
+
+      if (m_staticPrepassAccumCount >= STATIC_PRERENDER_ITERATIONS)
+      {
+         PLOGI << "Static PreRender done"; // For profiling
+         // Delete buffers: we won't need them anymore since static AO was baked in the accumulated render and dynamic AO is disabled in this mode
+         if (useStaticAO)
+            m_renderDevice->AddEndOfFrameCmd([this]() { ReleaseAORenderTargets(); });
+      }
+
+      // Store the total number of triangles prerendered (including ones done for render probes)
+      m_statsDrawnStaticTriangles = m_renderDevice->m_curDrawnTriangles;
+   }
+
+   // Copy the accumulated background + static part renders
+   m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
+   m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
+   if (m_staticPrepassAccumCount >= STATIC_PRERENDER_ITERATIONS)
    {
-      PLOGI << "Starting Reflection Probe prerendering"; // For profiling
-      for (RenderProbe* probe : m_table->m_vrenderprobe)
-         probe->PreRenderStatic();
+      // Accumulation is complete: the static render target holds the final rendering
+      m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
    }
-
-   // Store the total number of triangles prerendered (including ones done for render probes)
-   m_statsDrawnStaticTriangles = m_renderDevice->m_curDrawnTriangles;
-   m_render_mask &= ~Renderer::STATIC_ONLY;
-
-   PLOGI << "Static PreRender done"; // For profiling
+   else
+   {
+      // The static render target holds the scaled accumulation: its depth is copied as-is while its color is
+      // scaled back up by STATIC_PRERENDER_ITERATIONS/accumulated samples (weight reaches 1 when accumulation is complete)
+      m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture(), false, true);
+      m_renderDevice->ResetRenderState();
+      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_mirror);
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)m_staticPrepassRT->GetWidth()), (float)(1.0 / (double)m_staticPrepassRT->GetHeight()),
+         (float)(std::max(1, m_staticPrepassAccumCount) / (double)STATIC_PRERENDER_ITERATIONS), 0.0f);
+      m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, m_staticPrepassRT->GetColorSampler());
+      m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+      m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_fb_unfiltered);
+   }
 }
 
 void Renderer::RenderDynamics()
@@ -1961,10 +1969,6 @@ void Renderer::RenderDynamics()
       return;
 
    TRACE_FUNCTION();
-
-   // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
-   for (auto probe : m_table->m_vrenderprobe)
-      probe->MarkDirty();
 
    // Setup the projection matrices used for refraction and ball reflection
    SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, false);
@@ -1997,38 +2001,15 @@ void Renderer::RenderDynamics()
 
    // In the live editor's desktop backdrop mode, only render backdrop parts (and skip the playfield bulb light buffer)
    const bool isBackdropEdit = g_pplayer->m_liveUI->IsEditorBackdropViewMode();
-   const bool isNoBackdrop = !isBackdropEdit && (m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0) || g_pplayer->m_liveUI->IsEditorViewMode());
-   if (m_shadeMode == ShadeMode::Default)
+   
+   m_render_mask = IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
+   if (!isBackdropEdit)
+      DrawBulbLightBuffer();
+   for (auto renderable : g_pplayer->m_ptable->GetParts())
    {
-      const unsigned int mask = m_render_mask;
-      m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
-      if (!isBackdropEdit)
-         DrawBulbLightBuffer();
-      for (auto renderable : g_pplayer->m_ptable->GetParts())
-      {
-         if (isBackdropEdit && !renderable->m_desktopBackdrop)
-            continue;
-         RenderItem(renderable, isNoBackdrop);
-      }
-      m_render_mask = mask;
-   }
-   else
-   {
-      const vec4 fillColor = m_shadeMode == ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, (float)(32. / 255.)) : vec4((float)(32. / 255.), (float)(32. / 255.), (float)(32. / 255.), 1.f);
-      constexpr vec4 edgeColor{0.f, 0.f, 0.f, 1.f};
-      for (auto renderable : g_pplayer->m_ptable->GetParts())
-      {
-         if ((isNoBackdrop && renderable->m_desktopBackdrop) || (isBackdropEdit && !renderable->m_desktopBackdrop))
-            continue;
-
-         const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
-         SetSpaceReference(spaceReference, false);
-         // Parts flagged as "Show in Editor" are rendered shaded, even when the part group visibility mask would hide them
-         if (renderable->IsShownInEditor() && renderable->GetIRenderable())
-            renderable->GetIRenderable()->Render(m_render_mask);
-         else
-            DrawWireframe(renderable, fillColor, edgeColor, m_shadeMode != ShadeMode::NoDepthWireframe);
-      }
+      if (isBackdropEdit && !renderable->m_desktopBackdrop)
+         continue;
+      RenderItem(renderable, m_noBackdrop);
    }
 
    m_renderDevice->m_basicShader->SetTextureNull(ShaderUniform::tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
@@ -2049,11 +2030,8 @@ void Renderer::SetScreenOffset(const float x, const float y)
    m_screenOffset.y = x * s + y * c;
 }
 
-void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT)
+void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT, unsigned int jitterIndex)
 {
-   if (GetAOMode() != 2) // Only process for dynamic AO
-      return;
-
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
@@ -2071,14 +2049,13 @@ void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT)
    m_renderDevice->SetRenderTarget("ScreenSpace AO"s, GetAORenderTarget(0), false);
    m_renderDevice->AddRenderTargetDependency(GetAORenderTarget(1));
    m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, GetAORenderTarget(1)->GetColorSampler());
-   m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true);
-   m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_depth, GetBackBufferTexture()->GetDepthSampler());
+   m_renderDevice->AddRenderTargetDependency(renderedRT, true);
+   m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_depth, renderedRT->GetDepthSampler());
    //m_renderDevice->m_FBShader->SetTexture(ShaderUniform::Texture1, m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
    m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_ao_dither, m_aoDitherSampler);
    m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / GetAORenderTarget(1)->GetWidth()), (float)(1.0 / GetAORenderTarget(1)->GetHeight()),
-      radical_inverse(g_pplayer->m_overall_frames % 2048) * (float)(1. / 8.0),
-      /*sobol*/ radical_inverse<3>(g_pplayer->m_overall_frames % 2048)
-         * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
+      radical_inverse(jitterIndex) * (float)(1. / 8.0),
+      /*sobol*/ radical_inverse<3>(jitterIndex) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
    m_renderDevice->m_FBShader->SetVector(ShaderUniform::AO_scale_timeblur, m_table->m_AOScale, 0.4f, 0.f,
       0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
    m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::AO);
@@ -2952,7 +2929,8 @@ void Renderer::RenderFrame()
 
    // Update backdrop visibility and visibility mask
    // For the time being, the RenderFrame only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
-   m_noBackdrop = (g_pplayer->m_vrDevice != nullptr) || (m_table->GetViewMode() == BG_FULLSCREEN);
+   m_noBackdrop = !g_pplayer->m_liveUI->IsEditorBackdropViewMode() // Force backdrop rendering if its being edited
+      && ((g_pplayer->m_vrDevice != nullptr) || (m_table->GetViewMode() == BG_FULLSCREEN)  || g_pplayer->m_liveUI->IsEditorViewMode());
    if (g_pplayer->m_vrDevice)
       m_visibilityMask = m_vrApplyColorKey ? PartGroupData::PlayerModeVisibilityMask::PMVM_MIXED_REALITY : PartGroupData::PlayerModeVisibilityMask::PMVM_VIRTUAL_REALITY;
    else if (m_table->GetViewMode() == BG_FULLSCREEN)
@@ -2984,52 +2962,17 @@ void Renderer::RenderFrame()
    else
       SetScreenOffset(0.f, 0.f);
 
-   // Start from the prerendered parts/background or a clear background for VR & editor
-   if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY || g_pplayer->m_liveUI->IsEditorViewMode())
-   {
-      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
-      if (g_pplayer->m_liveUI->IsEditorViewMode())
-         m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x000D0D0D);
-      else
-         m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
-      if (g_pplayer->m_liveUI->IsEditorBackdropViewMode())
-         DrawBackground(); // Draw the desktop backdrop image behind the backdrop parts being edited
-      #ifdef ENABLE_XR
-      if (g_pplayer->IsVR())
-      {
-         if (std::shared_ptr<MeshBuffer> mask = g_pplayer->m_vrDevice->GetVisibilityMask(); mask)
-         {
-            static constexpr Vertex3Ds pos{0.f, 0.f, 200000.0f}; // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
-            m_renderDevice->ResetRenderState();
-            m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-            m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
-            m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-            m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
-            m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
-            m_renderDevice->m_basicShader->SetMatrix(ShaderUniform::matWorldViewProj, g_pplayer->m_vrDevice->GetVisibilityMaskProjs(), 2);
-            m_renderDevice->m_basicShader->SetTechnique(ShaderTechnique::vr_mask);
-            m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, false, pos, 0, mask, RenderDevice::TRIANGLELIST, 0, mask->m_ib->m_count);
-            UpdateBasicShaderMatrix();
-         }
-      }
-      #endif
-   }
-   #ifdef ENABLE_BGFX
-   else if (GetMSAABackBufferTexture()->IsMSAA())
-   {
-      // Static prepass is not compatible with MSAA as BGFX does not allow to blit between MSAA textures (the blit happens on the resolved textures)
-      m_renderDevice->SetRenderTarget("Render MSAA Scene"s, GetMSAABackBufferTexture());
-      DrawBackground();
-      m_renderDevice->SetRenderTarget("Render MSAA Scene"s, GetMSAABackBufferTexture(), true, true); // Force new pass to avoid sorting scene calls with background calls
-   }
-   #endif
-   else
-   {
-      RenderStaticPrepass(); // Update statically prerendered parts if needed
-      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
-      m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
-      m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
-   }
+#if defined(ENABLE_OPENGL) && defined(__STANDALONE__)
+   SDL_GL_MakeCurrent(g_pplayer->m_playfieldWnd->GetCore(), g_pplayer->m_renderer->m_renderDevice->m_sdl_context);
+#endif
+
+   // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
+   for (auto probe : m_table->m_vrenderprobe)
+      probe->MarkDirty();
+   
+   m_render_mask = Renderer::DEFAULT;
+
+   RenderStatics();
 
    m_renderDevice->m_noMovingBalls = true;
 
@@ -3062,7 +3005,8 @@ void Renderer::RenderFrame()
    ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT);
 
    // Compute AO contribution (to be applied later, with tonemapping)
-   UpdateAmbientOcclusion(renderedRT);
+   if (GetAOMode() == 2) // Only process for dynamic AO
+      UpdateAmbientOcclusion(GetBackBufferTexture(), g_pplayer->m_overall_frames % 2048);
 
    // Compute bloom (to be applied later, with tonemapping)
    UpdateBloom(renderedRT);
