@@ -532,9 +532,30 @@ public:
       if (!FileExists(m_filename))
          return std::filesystem::path();
 
+      // Build profile ini path from the default ini path
+      const string &profileSuffix = m_settings.GetGlobal_SettingsProfileSuffix();
+      const auto withProfileSuffix = [&profileSuffix](const std::filesystem::path &iniPath) -> std::filesystem::path
+      {
+         std::filesystem::path result = iniPath;
+         std::filesystem::path fn = iniPath.stem();
+         fn += profileSuffix;
+         fn += ".ini"sv;
+         result.replace_filename(fn);
+         return result;
+      };
+
       // Table ini file alongside table file, name matching table filename
       std::filesystem::path tableIni = m_filename;
       tableIni.replace_extension(".ini");
+
+      // Profile table-name ini takes priority over the default one when the profile is specified
+      if (!profileSuffix.empty())
+      {
+         const std::filesystem::path profileTableIni = find_case_insensitive_file_path(withProfileSuffix(tableIni));
+         if (!profileTableIni.empty())
+            return profileTableIni;
+      }
+
       if (FileExists(tableIni))
          return tableIni;
 
@@ -543,12 +564,22 @@ public:
       auto fn = folder.filename();
       fn += ".ini"sv;
       std::filesystem::path folderIni = folder / fn;
+
+      // Profile folder-name ini takes priority over the default one when the profile is specified
+      if (!profileSuffix.empty())
+      {
+         const std::filesystem::path profileFolderIni = find_case_insensitive_file_path(withProfileSuffix(folderIni));
+         if (!profileFolderIni.empty())
+            return profileFolderIni;
+      }
+
       folderIni = find_case_insensitive_file_path(folderIni);
       if (!folderIni.empty())
          return folderIni;
 
-      // No existing file: defaults to ini file alongside table file, name matching table filename
-      return tableIni;
+      // No existing file: defaults to ini file alongside table file, name matching table filename.
+      // When a profile is specified, save to the profile ini file so we never clobber the default ini file.
+      return profileSuffix.empty() ? tableIni : withProfileSuffix(tableIni);
    }
 
    // Settings for this table (apply overrides above application settings)

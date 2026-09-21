@@ -2,9 +2,12 @@
 PropString(Version, VPinball, "VPX Version"s, "VPX version that saved this file"s, string(VP_VERSION_STRING_DIGITS));
 
 // Global settings
+// Log settings
 PropBool(Global, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
 PropBool(Global, LogScriptOutput, "Log Script Output"s, "Enable script logging output"s, true);
 PropBool(Global, ResetLogOnPlay, "Reset Log on Play"s, "Reset the log file when a table is played"s, g_isMobile);
+// Settings profile
+PropString(Global, SettingsProfileSuffix, "Settings Profile Suffix"s, "Settings suffix spliced into the table ini filename as '<table><suffix>.ini' to select a profile specific override. Empty disables profiles"s, ""s);
 
 // General Application settings
 PropBool(Editor, DisableHash, "Disable File Validation"s, "Disable file integrity validation (risky; but slightly faster loading)"s, false);
