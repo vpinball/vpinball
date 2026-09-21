@@ -21,6 +21,7 @@ protected:
     BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
     void OnOK() override;
     void OnCancel() override;
+    BOOL PreTranslateMessage(MSG &msg) override;
 
 private:
     HWND m_hwnd;

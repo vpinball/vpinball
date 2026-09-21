@@ -27,6 +27,16 @@
    #include "properties/PropertyDialog.h"
 
    #define OVERRIDE override
+
+   // The frame has no window menu of its own: win32xx hosts it in a CMenuBar inside the rebar, and it is only opened
+   // by DefWindowProc turning an Alt press into the WM_SYSCOMMAND/SC_KEYMENU which CFrameT::OnSysCommand forwards to
+   // that menu bar. So these messages have to make it to DispatchMessage. A PreTranslateMessage handing them over to
+   // IsDialogMessage instead would consume them for its own mnemonic handling, and Alt (or Alt+F, ...) would then do
+   // nothing at all for as long as the corresponding pane holds the focus
+   constexpr bool IsAltKeyMessage(const UINT message)
+   {
+      return (message == WM_SYSKEYDOWN) || (message == WM_SYSKEYUP) || (message == WM_SYSCHAR) || (message == WM_SYSDEADCHAR);
+   }
 #else
    class ImageDialog final { };
    class SoundDialog final { };

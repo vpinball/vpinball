@@ -120,7 +120,8 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
 BOOL LayersListDialog::PreTranslateMessage(MSG& msg)
 {
-   return IsDialogMessage(msg);
+   // Except for the Alt combinations, which are what opens the frame menu
+   return IsAltKeyMessage(msg.message) ? FALSE : IsDialogMessage(msg);
 }
 
 void LayersListDialog::OnOK()
@@ -606,7 +607,7 @@ BOOL LayerTreeView::PreTranslateMessage(MSG& msg)
          return true;
       }
       else if (msg.message == WM_KEYDOWN && msg.wParam == VK_F2 && GetEditControl() == nullptr)
-      { // Override F2 accelerator to start label edition
+      { // Override F2 accelerator to start label edit
          EditLabel(CTreeView::GetSelection());
          return true;
       }

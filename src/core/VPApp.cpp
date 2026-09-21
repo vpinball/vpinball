@@ -384,8 +384,12 @@ BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
 {
    if (g_pvp && g_pvp->IsWindow() && msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
    {
-      // Always formward F1-F12 to the main VPinball class to open subdialogs from everywhere
+      // Always forward F1-F12 to the main VPinball class to open subdialogs from everywhere
       if (const int keyPressed = LOWORD(msg.wParam); (keyPressed >= VK_F1 && keyPressed <= VK_F12))
+         return __super::PreTranslateMessage(msg);
+
+      // Never hand the Alt combinations to IsDialogMessage below, they are what opens the frame menu
+      if (IsAltKeyMessage(msg.message))
          return __super::PreTranslateMessage(msg);
 
       // Skip accelerators for control of the main editor embedded dialogs (property pane edits, to avoid Delete, Copy/Paste, Undo,... conflicts, support tabbing through pane control)

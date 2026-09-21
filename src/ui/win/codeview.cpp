@@ -954,7 +954,11 @@ BOOL CodeViewer::PreTranslateMessage(MSG &msg)
 #ifndef __STANDALONE__
    if (!IsWindow())
       return FALSE;
-   
+
+   // The Alt combinations are what opens the menu, so they must not be given to IsDialogMessage
+   if (IsAltKeyMessage(msg.message))
+      return FALSE;
+
    if (m_findReplace.IsWindow() && m_findReplace.IsDialogMessage(msg))
       return TRUE;
 

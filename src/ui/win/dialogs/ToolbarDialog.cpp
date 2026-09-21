@@ -110,9 +110,9 @@ BOOL ToolbarDialog::OnInitDialog()
     m_tooltip.AddTool(m_flasherButton, _T("Insert Flasher"));
     m_tooltip.AddTool(m_rubberButton, _T("Insert Rubber"));
 
-    m_vrCombo.AddString("Off");
-    m_vrCombo.AddString("Auto");
-    m_vrCombo.AddString("On");
+    m_vrCombo.AddString("Disabled");
+    m_vrCombo.AddString("Autodetect");
+    m_vrCombo.AddString("Enabled");
     m_vrCombo.SetCurSel(2 - g_app->m_settings.GetPlayerVR_AskToTurnOn());
 
     constexpr int iconSize = 24;
@@ -260,7 +260,7 @@ void ToolbarDialog::EnableButtons()
         m_backglassButton.EnableWindow(FALSE);
         m_playButton.EnableWindow(FALSE);
         m_playCameraButton.EnableWindow(FALSE);
-        m_vrCombo.EnableWindow(FALSE);
+        m_vrCombo.ShowWindow(FALSE);
 
         m_textboxButton.EnableWindow(FALSE);
         m_reelButton.EnableWindow(FALSE);
@@ -286,7 +286,7 @@ void ToolbarDialog::EnableButtons()
     }
     else
     {
-        BOOL lockable = ptCur->IsLocked() ? FALSE : TRUE;
+        BOOL lockable = (ptCur != nullptr && ptCur->IsLocked()) ? FALSE : TRUE;
 
         m_magnifyButton.EnableWindow(TRUE);
         m_selectButton.EnableWindow(lockable);
@@ -294,7 +294,7 @@ void ToolbarDialog::EnableButtons()
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
         m_playCameraButton.EnableWindow(TRUE);
-        m_vrCombo.EnableWindow(TRUE);
+        m_vrCombo.ShowWindow(TRUE);
 
         m_decalButton.EnableWindow(lockable);
         m_lightButton.EnableWindow(lockable);
@@ -409,6 +409,18 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
     }
     return FALSE;
+}
+
+BOOL ToolbarDialog::PreTranslateMessage(MSG& msg)
+{
+   if (!IsWindow())
+      return FALSE;
+
+   // The Alt combinations are what opens the menu, so they must not be passed through
+   if (IsAltKeyMessage(msg.message))
+      return FALSE;
+
+   return __super::PreTranslateMessage(msg);
 }
 
 CContainToolbar::CContainToolbar()
