@@ -19,7 +19,14 @@ public:
       m_lastProgress = progress;
       ++m_progressCalls;
    }
-   void SetLength(unsigned int length) override { m_length = length; }
+   void SetLength(unsigned int length) override
+   {
+      // Each reported operation starts with SetLength: reset the recorded progress
+      m_length = length;
+      m_lastProgress = 0;
+      m_progressCalls = 0;
+      m_isMonotonic = true;
+   }
 
    unsigned int m_length = 0;
    unsigned int m_lastProgress = 0;
