@@ -7,7 +7,6 @@
 #include "parts/Collection.h"
 #include "parts/pintable.h"
 #ifndef __STANDALONE__
-#include "ui/win/WinEditor.h"
 #include <initguid.h>
 #endif
 
@@ -583,14 +582,7 @@ bool ScriptInterpreter::IsUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) con
    OLECHAR *wzT;
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
       return false;
-   HWND parent = nullptr;
-   if (parent == nullptr && g_pplayer && !g_pplayer->IsVR())
-      parent = g_pplayer->m_playfieldWnd->GetNativeHWND();
-   if (parent == nullptr && g_pvp)
-      parent = g_pvp->GetHwnd();
-   const int ans = MessageBox(
-      parent, (LocalString(IDS_UNSECURECONTROL1).m_szbuffer + MakeString(wzT) + LocalString(IDS_UNSECURECONTROL2).m_szbuffer).c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
-   return (ans == IDYES);
+   return AskUser(LocalString(IDS_UNSECURECONTROL1).m_szbuffer + MakeString(wzT) + LocalString(IDS_UNSECURECONTROL2).m_szbuffer);
 #else
    return false;
 #endif

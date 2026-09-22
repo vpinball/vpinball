@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "core/def.h"
 #include "input/InputManager.h"
 #include "renderer/Renderer.h"
 
@@ -15,11 +16,16 @@
 #include "PlumbOverlay.h"
 #include "BallControl.h"
 
-class LiveUI final
+class LiveUI final : public UserMessageSink
 {
 public:
    LiveUI(RenderDevice* const rd);
    ~LiveUI();
+
+   // UserMessageSink interface: non fatal messages are routed to the in-game notification
+   // overlay, while fatal errors and confirmations use a (blocking) SDL message box.
+   void Notify(MsgSeverity severity, const string &title, const string &message) override;
+   bool Confirm(const string &title, const string &message, bool fallback) override;
 
    void Render3D(); // Called to contribute to 3D Scene
    void RenderUI(); // Called to render UI overlay

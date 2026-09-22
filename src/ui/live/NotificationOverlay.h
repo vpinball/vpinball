@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <mutex>
+
 class NotificationOverlay final
 {
 public:
@@ -19,6 +21,7 @@ private:
       string message;
       uint32_t disappearTick;
    };
+   std::mutex m_mutex; // Notifications may be pushed from any thread (e.g. worker threads reporting load errors)
    vector<Notification> m_notifications;
    unsigned int m_nextNotificationIs = 1;
 

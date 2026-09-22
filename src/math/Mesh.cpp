@@ -5,9 +5,6 @@
 #include "core/stdafx.h" 
 
 #include "renderer/VertexBuffer.h"
-#ifndef __STANDALONE__
-#include "ui/win/WinEditor.h"
-#endif
 #include "utils/objloader.h"
 
 void Mesh::Clear()
@@ -80,7 +77,7 @@ bool Mesh::LoadAnimation(const char* fname, const MeshUnits units)
 
    }
    sname = std::to_string(frameCounter)+" frames imported!";
-   g_pvp->MessageBox(sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
+   ShowMessage(MsgSeverity::Info, sname);
 #endif
    return true;
 }

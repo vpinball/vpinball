@@ -8,6 +8,7 @@
 
 unsigned int NotificationOverlay::PushNotification(const string &message, const int lengthMs, const unsigned int reuseId)
 {
+   const std::lock_guard<std::mutex> lock(m_mutex);
    auto notif = std::ranges::find_if(m_notifications, [reuseId](const Notification &n) { return n.id == reuseId; });
    if (notif != m_notifications.end())
    {
@@ -25,6 +26,7 @@ unsigned int NotificationOverlay::PushNotification(const string &message, const 
 
 void NotificationOverlay::Update(bool showNotification, ImFont * font)
 {
+   const std::lock_guard<std::mutex> lock(m_mutex);
    const uint32_t tick = msec();
    const auto& io = ImGui::GetIO();
    float notifY = io.DisplaySize.y * 0.25f;

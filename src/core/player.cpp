@@ -225,7 +225,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       init_cpu_detection
       // check for SSE and exit if not available, as some code relies on it by now
       if (detect_no_sse) { // No SSE?
-         ShowError("SSE is not supported on this processor");
+         ShowFatalError("SSE is not supported on this processor");
          exit(0);
       }
    }
@@ -247,7 +247,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
                useVR = true;
             else if (vrDetectionMode == 0) // 0 is VR on
             {
-               while (!m_vrDevice->IsOpenXRHMDReady() && (MessageBox(nullptr, "Retry connection ?", "Connection to VR headset failed", MB_YESNO) == IDYES))
+               while (!m_vrDevice->IsOpenXRHMDReady() && AskUser("Retry connection ?", "Connection to VR headset failed"))
                   m_vrDevice->SetupHMD();
                useVR = m_vrDevice->IsOpenXRHMDReady();
             }
@@ -360,7 +360,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
    catch (HRESULT hr)
    {
-      ShowError(std::format("Renderer initialization error code: {:#010X}", static_cast<unsigned int>(hr)));
+      ShowFatalError(std::format("Renderer initialization error code: {:#010X}", static_cast<unsigned int>(hr)));
       throw hr;
    }
 

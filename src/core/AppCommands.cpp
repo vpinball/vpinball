@@ -55,9 +55,7 @@ void ShowInfoAndExitCommand::Execute()
       std::cout << m_title << "\n\n";
    if (!m_message.empty())
       std::cout << m_message << "\n\n";
-#ifndef __STANDALONE__
-   ::MessageBox(nullptr, m_message.c_str(), m_title.empty() ? "Visual Pinball" : m_title.c_str(), MB_OK);
-#endif
+   ShowMessage(MsgSeverity::Info, m_message, m_title);
    exit(m_exitCode);
 }
 
@@ -162,7 +160,10 @@ void PlayTableCommand::Execute()
 {
    CComObject<PinTable>* table = LoadTable();
    auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
-   player->GameLoop();
+   {
+      ScopedUserMessageSink msgSink(player->m_liveUI);
+      player->GameLoop();
+   }
    player = nullptr;
    table->Release();
 }
@@ -190,7 +191,10 @@ void PovEditCommand::Execute()
 {
    CComObject<PinTable>* table = LoadTable();
    auto player = std::make_unique<Player>(table, Player::PlayMode::EditPOV);
-   player->GameLoop();
+   {
+      ScopedUserMessageSink msgSink(player->m_liveUI);
+      player->GameLoop();
+   }
    player = nullptr;
    table->Release();
 }
@@ -214,6 +218,8 @@ void Win32EditCommand::Execute()
    vpxEditor.m_open_minimized = m_minimized;
    vpxEditor.m_disable_pause_menu = m_disablePauseMenu;
    vpxEditor.Create(nullptr);
+   Win32DialogSink msgSink(vpxEditor.GetHwnd());
+   ScopedUserMessageSink scopedMsgSink(&msgSink);
    vpxEditor.LoadEditorSetupFromSettings();
    if (!m_tableFilename.empty() && FileExists(m_tableFilename))
    {
@@ -277,9 +283,12 @@ void LiveEditCommand::Execute()
       table->SetSettingsFileName(m_tableIniFileName);
 
    auto player = std::make_unique<Player>(table, Player::PlayMode::FullEdit);
-   if (loadFailed)
-      player->m_liveUI->PushNotification("Failed to load table '" + m_tableFilename.string() + "', starting with a new table"s, 10000);
-   player->GameLoop();
+   {
+      ScopedUserMessageSink msgSink(player->m_liveUI);
+      if (loadFailed)
+         player->m_liveUI->PushNotification("Failed to load table '" + m_tableFilename.string() + "', starting with a new table"s, 10000);
+      player->GameLoop();
+   }
    player = nullptr;
    table->Release();
 }
@@ -299,6 +308,7 @@ void CaptureAttractCommand::Execute()
          << "loop truncation";
    CComObject<PinTable>* table = LoadTable();
    auto player = std::make_unique<Player>(table, Player::PlayMode::CaptureAttract);
+   ScopedUserMessageSink msgSink(nullptr); // Batch capture: report user messages to the log only
    player->m_nFrameToCapture = m_nFrames;
    player->m_frameCaptureFPS = m_framesPerSecond;
    player->m_cutCaptureToLoop = m_cutToLoop;
@@ -444,14 +454,7 @@ string CommandLineProcessor::GetCommandLineHelp()
    return ss.str();
 }
 
-void CommandLineProcessor::OnCommandLineError(const string& title, const string& message)
-{
-   #ifndef __STANDALONE__
-      MessageBox(nullptr, message.c_str(), title.c_str(), MB_ICONERROR);
-   #else
-      std::cout << title << "\n\n" << message << "\n\n";
-   #endif
-}
+void CommandLineProcessor::OnCommandLineError(const string& title, const string& message) { ShowMessage(MsgSeverity::Error, message, title); }
 
 void CommandLineProcessor::ProcessCommandLine()
 {
