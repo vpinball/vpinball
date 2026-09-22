@@ -5,7 +5,9 @@
 #include "core/stdafx.h" 
 
 #include "renderer/VertexBuffer.h"
+#ifndef __STANDALONE__
 #include "ui/win/WinEditor.h"
+#endif
 #include "utils/objloader.h"
 
 void Mesh::Clear()

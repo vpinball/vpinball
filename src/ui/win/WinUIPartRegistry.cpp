@@ -4,7 +4,6 @@
 
 #include "ui/win/WinUIPartRegistry.h"
 
-#ifndef __STANDALONE__
 #include "ui/win/parts/BallWinUIPart.h"
 #include "parts/ball.h"
 #include "ui/win/parts/BumperWinUIPart.h"
@@ -47,7 +46,6 @@
 #include "parts/timer.h"
 #include "ui/win/parts/TriggerWinUIPart.h"
 #include "parts/trigger.h"
-#endif
 
 ankerl::unordered_dense::map<ItemTypeEnum, WinUIPartRegistry::UIPartInfo> WinUIPartRegistry::m_map;
 
@@ -86,7 +84,6 @@ IWinUIPart::AllowedViews WinUIPartRegistry::GetAllowedViews(const ItemTypeEnum t
 
 void WinUIPartRegistry::InitRegistry()
 {
-#ifndef __STANDALONE__
    Register<BallWinUIPart, Ball>();
    Register<BumperWinUIPart, Bumper>();
    Register<DecalWinUIPart, Decal>();
@@ -108,5 +105,4 @@ void WinUIPartRegistry::InitRegistry()
    Register<TextboxWinUIPart, Textbox>();
    Register<TimerWinUIPart, Timer>();
    Register<TriggerWinUIPart, Trigger>();
-#endif
 }

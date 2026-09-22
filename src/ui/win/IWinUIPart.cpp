@@ -11,19 +11,16 @@
 
 void IWinUIPart::OnLButtonDown(int x, int y)
 {
-#ifndef __STANDALONE__
    m_dragging = true;
    m_markedForUndo = false; // So we will be marked when and if we are dragged
 
    m_editor->SetMouseCapture();
 
    UpdateStatusBarObjectPos();
-#endif
 }
 
 void IWinUIPart::OnLButtonUp(int x, int y)
 {
-#ifndef __STANDALONE__
    m_dragging = false;
 
    ReleaseCapture();
@@ -35,28 +32,21 @@ void IWinUIPart::OnLButtonUp(int x, int y)
       if (m_editable->GetPTable())
          m_editable->GetPTable()->SetDirtyDraw();
    }
-#endif
 }
 
 void IWinUIPart::UpdateStatusBarObjectPos()
 {
-#ifndef __STANDALONE__
    m_editor->m_vpxEditor->ClearObjectPosCur();
-#endif
 }
 
 void IWinUIPart::UpdateStatusBarInfo()
 {
-#ifndef __STANDALONE__
    m_editor->m_vpxEditor->SetStatusBarUnitInfo(string(), false);
-#endif
 }
 
 void IWinUIPart::SetStatusBarObjectPos(const float x, const float y)
 {
-#ifndef __STANDALONE__
    m_editor->m_vpxEditor->SetObjectPosCur(x, y);
-#endif
 }
 
 Vertex2D IWinUIPart::GetCenter() const { return GetEditable()->GetCenter(); }
@@ -65,7 +55,6 @@ void IWinUIPart::Translate(const Vertex2D& offset) { GetEditable()->Translate(of
 
 void IWinUIPart::DoCommand(int icmd, int x, int y)
 {
-#ifndef __STANDALONE__
    // Commands that are handled by the table element
    if ((((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020)) // Assign to collection
       || ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1 + NUM_ASSIGN_LAYERS - 1)) // Assign to layer
@@ -114,5 +103,4 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          m_editable->GetPTable()->SetDirtyDraw();
       break;
    }
-#endif
 }

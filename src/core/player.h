@@ -15,8 +15,10 @@
 #include "plugins/VPXPlugin.h"
 #include "renderer/typedefs3D.h"
 #include "renderer/Window.h"
+#ifndef __STANDALONE__
 #include "ui/win/Debugger.h"
-#include "ui/win/ProgressDialog.h"
+#endif
+#include "ui/win/ProgressDialog.h" // Not win32-editor only: Player holds one by value, and it logs load progress when there is no UI
 #include "utils/wintimer.h"
 #include "VPXPluginAPIImpl.h"
 

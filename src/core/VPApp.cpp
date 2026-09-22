@@ -61,14 +61,6 @@
 #include "ui/win/WinEditor.h"
 #endif
 
-#ifndef OVERRIDE
-#ifndef __STANDALONE__
-   #define OVERRIDE override
-#else
-   #define OVERRIDE
-#endif
-#endif
-
 #if !defined(__STANDALONE__)
 
 #if defined(ENABLE_DX9)
@@ -388,7 +380,9 @@ BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
       if (const int keyPressed = LOWORD(msg.wParam); (keyPressed >= VK_F1 && keyPressed <= VK_F12))
          return __super::PreTranslateMessage(msg);
 
-      // Never hand the Alt combinations to IsDialogMessage below, they are what opens the frame menu
+      // Leave the Alt combinations to the default pre translation rather than to the edit control filtering below,
+      // so that each pane decides for itself: the ones which are meant to reach the frame menu let them through in
+      // their PreTranslateMessage, the dialog like ones (notes, property pages) keep them for their own mnemonics
       if (IsAltKeyMessage(msg.message))
          return __super::PreTranslateMessage(msg);
 

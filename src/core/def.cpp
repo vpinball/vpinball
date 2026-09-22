@@ -17,7 +17,9 @@
 
 #include "core/VPApp.h"
 #include "ui/win/resource.h"
+#ifndef __STANDALONE__
 #include "ui/win/WinEditor.h"
+#endif
 
 #include <charconv>
 #include <iomanip>
@@ -559,10 +561,14 @@ bool IsWindowsVistaOr7()
 
 void ShowError(const char* const sz)
 {
+#ifndef __STANDALONE__ // Win32 editor only, g_pvp being null without it
    if (g_pvp)
+   {
       g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
-   else
-      MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+      return;
+   }
+#endif
+   MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary)

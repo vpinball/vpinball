@@ -260,7 +260,7 @@ void ToolbarDialog::EnableButtons()
         m_backglassButton.EnableWindow(FALSE);
         m_playButton.EnableWindow(FALSE);
         m_playCameraButton.EnableWindow(FALSE);
-        m_vrCombo.ShowWindow(FALSE);
+        m_vrCombo.ShowWindow(SW_HIDE);
 
         m_textboxButton.EnableWindow(FALSE);
         m_reelButton.EnableWindow(FALSE);
@@ -286,7 +286,7 @@ void ToolbarDialog::EnableButtons()
     }
     else
     {
-        BOOL lockable = (ptCur != nullptr && ptCur->IsLocked()) ? FALSE : TRUE;
+        const BOOL lockable = (ptCur == nullptr || ptCur->IsLocked()) ? FALSE : TRUE;
 
         m_magnifyButton.EnableWindow(TRUE);
         m_selectButton.EnableWindow(lockable);
@@ -294,7 +294,7 @@ void ToolbarDialog::EnableButtons()
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
         m_playCameraButton.EnableWindow(TRUE);
-        m_vrCombo.ShowWindow(TRUE);
+        m_vrCombo.ShowWindow(SW_SHOWNORMAL);
 
         m_decalButton.EnableWindow(lockable);
         m_lightButton.EnableWindow(lockable);

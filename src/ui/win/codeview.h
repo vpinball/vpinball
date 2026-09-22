@@ -6,19 +6,9 @@
 #include "utils/vector.h"
 #include "utils/vectorsort.h"
 
-#ifndef __STANDALONE__
 #include <commdlg.h>
 #include "dialogs/ScriptErrorDialog.h"
 #include "scintilla.h"
-#endif
-
-#ifndef OVERRIDE
-#ifndef __STANDALONE__
-   #define OVERRIDE override
-#else
-   #define OVERRIDE
-#endif
-#endif
 
 #define MAX_FIND_LENGTH 81 // from MS docs: The buffer should be at least 80 characters long (for find/replace)
 
@@ -26,7 +16,7 @@ class CodeViewer final : public CWnd
 {
 public:
    CodeViewer(PinTable *table);
-   ~CodeViewer() OVERRIDE;
+   ~CodeViewer() override;
 
    void SetVisible(const bool visible);
 
@@ -66,13 +56,11 @@ public:
 
    void UpdateScinFromPrefs();
 
-#ifndef __STANDALONE__
    void MarginClick(const Sci_Position position, const int modifiers);
-#endif
 
    void AddToDebugOutput(const string& szText);
 
-   BOOL PreTranslateMessage(MSG& msg) OVERRIDE;
+   BOOL PreTranslateMessage(MSG& msg) override;
 
    void SetScript(const string& script);
 
@@ -114,9 +102,7 @@ public:
    int m_dwellDisplayTime;
 
    fi_vector<UserData> m_pageConstructsDict;
-#ifndef __STANDALONE__
    Sci_TextRange m_wordUnderCaret;
-#endif
 
    HWND m_hwndMain = nullptr;
    HWND m_hwndScintilla = nullptr;
@@ -166,7 +152,7 @@ private:
 
    /**
     * Resizes the Scintilla widget (the text editor) and the last error widget (if it's visible)
-    * 
+    *
     * This is called when the window is resized (when we get a WM_SIZE message)
     * or when the last error widget is toggled (since that appears below the text editor)
     */
@@ -183,9 +169,7 @@ private:
 
    string m_validChars;
 
-#ifndef __STANDALONE__
    CFindReplaceDialog m_findReplace;
-#endif
 
    // CodeViewer Preferences
    CVPreference *prefDefault = nullptr;

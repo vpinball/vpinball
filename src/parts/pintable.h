@@ -563,6 +563,7 @@ public:
    }
 
    // FIXME circular dependency with PinTableWnd, needed while splitting Win32 editor from core parts, but must be removed afterward
+   // Only ever set by PinTableWnd's constructor, so this stays null in a build without the Win32 editor
    class PinTableWnd *m_tableEditor = nullptr;
 
 private:

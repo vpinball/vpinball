@@ -39,14 +39,10 @@
 #include "utils/fileio.h"
 #include "utils/objloader.h"
 
-#ifndef __STANDALONE__
 #include <iostream>
 #include "FreeImage.h"
 #include "dialogs/DrawingOrderDialog.h"
 #include "ui/win/dialogs/Win32ProgressBar.h"
-#else
-#include "standalone/FreeImage.h"
-#endif
 
 #ifdef __LIBVPINBALL__
 #include "lib/src/VPinballLib.h"
@@ -131,7 +127,6 @@ WinEditor::WinEditor(HINSTANCE appInstance)
 
    m_hbmInPlayMode = nullptr;
 
-#ifndef __STANDALONE__
 #ifdef _WIN64
    m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
 #else
@@ -152,7 +147,6 @@ WinEditor::WinEditor(HINSTANCE appInstance)
            ShowError("Unable to load SciLexerVP.DLL or SciLexer.DLL");
        #endif
    }
-#endif
 
    wintimer_init();
 }
@@ -163,9 +157,7 @@ WinEditor::~WinEditor()
 {
    // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); // would only be needed if linking statically
    SetClipboard(nullptr);
-#ifndef __STANDALONE__
    FreeLibrary(m_scintillaDll);
-#endif
 }
 
 
@@ -177,7 +169,6 @@ WinEditor::~WinEditor()
 //returns Handle to Event that get ack. If event is finished (unsure)
 HANDLE WinEditor::PostWorkToWorkerThread(int workid, LPARAM lParam)
 {
-#ifndef __STANDALONE__
    // Check if Workerthread was created once, otherwise create
    if (!m_workerthread)
    {
@@ -191,9 +182,6 @@ HANDLE WinEditor::PostWorkToWorkerThread(int workid, LPARAM lParam)
    HANDLE hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
    PostThreadMessage(m_workerthreadid, workid, (WPARAM)hEvent, lParam);
    return hEvent;
-#else
-   return nullptr;
-#endif
 }
 
 void WinEditor::SetAutoSaveMinutes(const int minutes)
@@ -258,29 +246,22 @@ void WinEditor::SetClipboard(vector<InMemStream *> *const pvstm)
 
 void WinEditor::SetCursorCur(LPCTSTR lpCursorName)
 {
-#ifndef __STANDALONE__
    const HCURSOR hcursor = LoadCursor(NULL, lpCursorName);
    SetCursor(hcursor);
-#endif
 }
 
 void WinEditor::SetActionCur(const string& szaction)
 {
-#ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction.c_str());
-#endif
 }
 
 void WinEditor::SetStatusBarElementInfo(const string& info)
 {
-#ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
-#endif
 }
 
 bool WinEditor::OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
 {
-#ifndef __STANDALONE__
    CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
@@ -298,14 +279,10 @@ bool WinEditor::OpenFileDialog(const string& initDir, vector<string>& filename, 
 
       return false;
    }
-#else
-   return false;
-#endif
 }
 
 bool WinEditor::SaveFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
 {
-#ifndef __STANDALONE__
    CFileDialog fileDlg(FALSE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
@@ -323,14 +300,10 @@ bool WinEditor::SaveFileDialog(const string& initDir, vector<string>& filename, 
 
       return false;
    }
-#else
-   return false;
-#endif
 }
 
 CDockProperty *WinEditor::GetPropertiesDocker()
 {
-   #ifndef __STANDALONE__
       if (m_propertyDialog == nullptr || !m_dockProperties->IsWindow())
       {
          constexpr int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;
@@ -339,13 +312,11 @@ CDockProperty *WinEditor::GetPropertiesDocker()
          m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
          m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
       }
-   #endif
    return m_dockProperties;
 }
 
 CDockToolbar *WinEditor::GetToolbarDocker()
 {
-   #ifndef __STANDALONE__
       if (m_dockToolbar == nullptr || !m_dockToolbar->IsWindow())
       {
          constexpr int dockStyle = DS_DOCKED_LEFT | DS_CLIENTEDGE | DS_NO_CLOSE;
@@ -354,13 +325,11 @@ CDockToolbar *WinEditor::GetToolbarDocker()
          m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
          m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
       }
-   #endif
    return m_dockToolbar;
 }
 
 void WinEditor::ResetAllDockers()
 {
-#ifndef __STANDALONE__
    const bool createNotes = m_dockNotes != nullptr;
    CloseAllDockers();
    // FIXME these are Windows only registry key. Move to g_app->m_settings. ?
@@ -369,12 +338,10 @@ void WinEditor::ResetAllDockers()
    CreateDocker();
    if (createNotes)
       GetDefaultNotesDocker();
-#endif
 }
 
 CDockNotes* WinEditor::GetDefaultNotesDocker()
 {
-#ifndef __STANDALONE__
    constexpr int dockStyle = DS_CLIENTEDGE;
    RECT rc;
    rc.left = 0;
@@ -385,25 +352,21 @@ CDockNotes* WinEditor::GetDefaultNotesDocker()
    assert(m_dockNotes->GetContainer());
    m_dockNotes->GetContainer()->SetHideSingleTab(TRUE);
    m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
-#endif
    return m_dockNotes;
 }
 
 CDockNotes* WinEditor::GetNotesDocker()
 {
-#ifndef __STANDALONE__
    if (m_dockNotes != nullptr && !m_dockNotes->IsWindowEnabled())
    {
       m_dockNotes->ShowWindow();
       m_dockNotes->Enable();
    }
-#endif
    return m_dockNotes;
 }
 
 CDockLayers *WinEditor::GetLayersDocker()
 {
-#ifndef __STANDALONE__
    if (m_dockLayers == nullptr || !m_dockLayers->IsWindow())
    {
       constexpr int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
@@ -411,23 +374,19 @@ CDockLayers *WinEditor::GetLayersDocker()
       assert(m_dockLayers->GetContainer());
       m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
    }
-#endif
    return m_dockLayers;
 }
 
 void WinEditor::CreateDocker()
 {
-#ifndef __STANDALONE__
    LoadDockRegistrySettings(DOCKER_REGISTRY_KEY);
    GetPropertiesDocker()->GetContainer()->SetHideSingleTab(TRUE);
    GetLayersDocker()->GetContainer()->SetHideSingleTab(TRUE);
    GetToolbarDocker()->GetContainer()->SetHideSingleTab(TRUE);
-#endif
 }
 
 void WinEditor::SetPosCur(float x, float y)
 {
-#ifndef __STANDALONE__
    // display position 1st column in VP units
    char szT[256];
    sprintf_s(szT, std::size(szT), "%.4f, %.4f", x, y);
@@ -453,23 +412,18 @@ void WinEditor::SetPosCur(float x, float y)
 
    m_mouseCursorPosition.x = x;
    m_mouseCursorPosition.y = y;
-#endif
 }
 
 void WinEditor::SetObjectPosCur(float x, float y)
 {
-#ifndef __STANDALONE__
    char szT[256];
    sprintf_s(szT, std::size(szT), "%.4f, %.4f", x, y);
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
-#endif
 }
 
 void WinEditor::ClearObjectPosCur()
 {
-#ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
-#endif
 }
 
 float WinEditor::ConvertToUnit(const float value) const
@@ -488,17 +442,14 @@ float WinEditor::ConvertToUnit(const float value) const
 
 void WinEditor::SetPropSel(const vector<IWinUIPart *> &pvsel)
 {
-#ifndef __STANDALONE__
    if (m_propertyDialog && m_propertyDialog->IsWindow())
       m_propertyDialog->UpdateTabs(pvsel);
    if (const auto pt = GetActiveTableEditor(); pt && !g_pplayer)
       pt->SetFocus();
-#endif
 }
 
 void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
-#ifndef __STANDALONE__
    const string oldName = MakeString(editable->GetIScriptable()->m_wzName);
    if (name == oldName)
       return;
@@ -539,21 +490,15 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
 
    pt->m_tableEditor->EndUndo();
    pt->SetDirtyDraw();
-#endif
 }
 
 CMenu WinEditor::GetMainMenu(int id)
 {
-#ifndef __STANDALONE__
    const CMenu& cm = GetMenu();
    const int count = /*m_mainMenu*/cm.GetMenuItemCount();
    return /*m_mainMenu*/cm.GetSubMenu(id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
-#else
-   return CMenu();
-#endif
 }
 
-#ifndef __STANDALONE__
 class InfoDialog final : public CDialog
 {
 public:
@@ -571,11 +516,9 @@ public:
 
    string m_message;
 };
-#endif
 
 bool WinEditor::ParseCommand(const size_t code, const bool notify)
 {
-#ifndef __STANDALONE__
    // check if it's an Editable tool
    const ItemTypeEnum type = WinUIPartRegistry::TypeFromToolID((int)code);
    if (type != eItemInvalid)
@@ -903,16 +846,13 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       MDIIconArrange();
       return true;
    }
-#endif
    return false;
 }
 
 void WinEditor::ToggleToolbar()
 {
-#ifndef __STANDALONE__
    if (m_toolbarDialog)
       m_toolbarDialog->EnableButtons();
-#endif
 }
 
 void WinEditor::DoPlay(const int playMode)
@@ -954,7 +894,6 @@ void WinEditor::DoPlay(const int playMode)
       return;
    }
 
-#ifndef __STANDALONE__
    tableEditor->EndAutoSaveCounter();
    GetPropertiesDocker()->EnableWindow(FALSE);
    GetLayersDocker()->EnableWindow(FALSE);
@@ -963,7 +902,6 @@ void WinEditor::DoPlay(const int playMode)
       GetNotesDocker()->EnableWindow(FALSE);
    if (const auto pt = GetActiveTableEditor(); pt)
       pt->EnableWindow(FALSE);
-#endif
 
    // Switch to Player's main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop)
    g_pplayer->GameLoop();
@@ -975,7 +913,6 @@ void WinEditor::DoPlay(const int playMode)
    table->m_settings.SetModified(live_table->m_settings.IsModified());
    live_table->Release();
 
-#ifndef __STANDALONE__
    GetPropertiesDocker()->EnableWindow();
    GetLayersDocker()->EnableWindow();
    GetToolbarDocker()->EnableWindow();
@@ -991,7 +928,6 @@ void WinEditor::DoPlay(const int playMode)
    tableEditor->EnableWindow();
    tableEditor->SetFocus();
    tableEditor->SetActiveWindow();
-#endif
 
    // If the table was played via the "Select Table on Start" option, then close the table and propose to load another one
    if (m_table_played_via_SelectTableOnStart)
@@ -1039,11 +975,7 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    PinTableWnd *const ppt = mdiTable->GetTableWnd();
-#ifndef __STANDALONE__
    Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
-#else
-   VPXFileFeedback feedback;
-#endif
    const HRESULT hr = ppt->m_table->LoadGameFromFilename(filename, feedback);
 
    const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
@@ -1060,9 +992,6 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
    {
       m_vtable.push_back(ppt);
 
-#ifdef __STANDALONE__
-      m_ptableActive = ppt->m_table;
-#endif
 
       AddMDIChild(mdiTable);
 
@@ -1078,7 +1007,6 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
       ppt->AddMultiSel(ppt->GetUIPart(ppt->m_table), false, true, false);
       if (updateEditor)
       {
-#ifndef __STANDALONE__
          GetLayersListDialog()->ResetView();
          ToggleToolbar();
          if (m_dockNotes != nullptr)
@@ -1092,7 +1020,6 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
             InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n" + audit);
             info.DoModal(GetHwnd());
          }
-#endif
       }
 
       PLOGI << "UI Post Load End";
@@ -1128,7 +1055,6 @@ bool WinEditor::CloseWhatIsPossible()
 
 void WinEditor::CloseTable(PinTableWnd * ppt)
 {
-#ifndef __STANDALONE__
    m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
    m_unloadingTable = false;
@@ -1141,18 +1067,10 @@ void WinEditor::CloseTable(PinTableWnd * ppt)
       if (m_notesDialog && m_notesDialog->IsWindow())
          m_notesDialog->Disable();
    }
-#else
-    PinTableMDI* mdiTable = ppt->GetMDITable();
-    if (mdiTable)
-        RemoveMDIChild(mdiTable);
-
-    RemoveFromVectorSingle(m_vtable, ppt);
-#endif
 }
 
 void WinEditor::SetEnableMenuItems()
 {
-#ifndef __STANDALONE__
    const auto editor = GetActiveTableEditor();
 
    // Set menu item to the correct state
@@ -1297,7 +1215,6 @@ void WinEditor::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_INSERT_FLASHER, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_RUBBER, grayed);
    }
-#endif
 }
 
 void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
@@ -1334,7 +1251,6 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
    // must be at least 1 recent file in the list
    if (!m_recentTableList.empty())
    {
-#ifndef __STANDALONE__
       // update the file menu to contain the last n recent loaded files
       const CMenu menuFile = GetMainMenu(FILEMENU);
 
@@ -1379,7 +1295,6 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
 
       // update the menu bar
       DrawMenuBar();
-#endif
    }
 }
 
@@ -1410,10 +1325,8 @@ void WinEditor::PreCreate(CREATESTRUCT& cs)
 
 void WinEditor::PreRegisterClass(WNDCLASS& wc)
 {
-#ifndef __STANDALONE__
    wc.hIcon = LoadIcon(m_instance, MAKEINTRESOURCE(IDI_VPINBALL));
    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-#endif
    wc.style = CS_DBLCLKS; //CS_NOCLOSE | CS_OWNDC;
    wc.lpszClassName = _T("VPinball");
    wc.lpszMenuName = _T("IDR_APPMENU");
@@ -1432,7 +1345,6 @@ void WinEditor::OnClose()
       while (ptable->m_savingActive)
          Sleep(THREADS_PAUSE);
 
-#ifndef __STANDALONE__
    const bool allClosed = CloseWhatIsPossible();
    if (allClosed)
    {
@@ -1452,19 +1364,15 @@ void WinEditor::OnClose()
 
       CWnd::OnClose();
    }
-#endif
 }
 
 void WinEditor::OnDestroy()
 {
-#ifndef __STANDALONE__
     PostMessage(WM_QUIT, 0, 0);
-#endif
 }
 
 void WinEditor::ShowSubDialog(CDialog &dlg, const bool show)
 {
-#ifndef __STANDALONE__
    if (!dlg.IsWindow())
    {
       dlg.Create(GetHwnd());
@@ -1472,13 +1380,11 @@ void WinEditor::ShowSubDialog(CDialog &dlg, const bool show)
    }
    else
       dlg.SetForegroundWindow();
-#endif
 }
 
 
 int WinEditor::OnCreate(CREATESTRUCT& cs)
 {
-#ifndef __STANDALONE__
    // OnCreate controls the way the frame is created.
    // Overriding CFrame::OnCreate is optional.
    // Uncomment the lines below to change frame options.
@@ -1501,21 +1407,16 @@ int WinEditor::OnCreate(CREATESTRUCT& cs)
    CreateDocker();
 
    return result;
-#else
-   return 0;
-#endif
 }
 
 LRESULT WinEditor::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 {
-#ifndef __STANDALONE__
    PAINTSTRUCT ps;
    const HDC hdc = BeginPaint(ps);
    const CRect rc = GetClientRect();
    SelectObject(hdc, GetStockObject(WHITE_BRUSH));
    PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
    EndPaint(ps);
-#endif
    return 0;
 }
 
@@ -1526,7 +1427,6 @@ void WinEditor::OnInitialUpdate()
 
    LoadEditorSetupFromSettings();
 
-#ifndef __STANDALONE__
    SetAccelerators(IDR_VPACCEL);
 
    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", GetHwnd(), 1); // Create Status Line at the bottom
@@ -1567,7 +1467,6 @@ void WinEditor::OnInitialUpdate()
 
    // Load 'in playing mode' image for UI
    m_hbmInPlayMode = (HBITMAP)LoadImage(m_instance, MAKEINTRESOURCE(IDB_INPLAYMODE), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-#endif
 
    UpdateRecentFileList(string()); // update the recent loaded file list
 
@@ -1578,7 +1477,6 @@ void WinEditor::OnInitialUpdate()
 
 BOOL WinEditor::OnCommand(WPARAM wparam, LPARAM lparam)
 {
-#ifndef __STANDALONE__
    if (!ParseCommand(LOWORD(wparam), HIWORD(wparam) == 1))
    {
       const auto mdiTable = GetActiveMDIChild();
@@ -1586,11 +1484,9 @@ BOOL WinEditor::OnCommand(WPARAM wparam, LPARAM lparam)
          mdiTable->SendMessage(WM_COMMAND, wparam, lparam);
       return FALSE;
    }
-#endif
    return TRUE;
 }
 
-#ifndef __STANDALONE__
 BOOL WinEditor::PreTranslateMessage(MSG& msg)
 {
    if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
@@ -1605,11 +1501,9 @@ BOOL WinEditor::PreTranslateMessage(MSG& msg)
    }
    return false;
 }
-#endif
 
 LRESULT WinEditor::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifndef __STANDALONE__
    switch (uMsg)
    {
    case WM_ACTIVATE:
@@ -1662,34 +1556,22 @@ LRESULT WinEditor::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       break;
    }
    return WndProcDefault(uMsg, wParam, lParam);
-#else
-   return 0;
-#endif
 }
 
 LRESULT WinEditor::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
-#ifndef __STANDALONE__
    if (m_dockNotes != nullptr)
       m_dockNotes->Refresh();
    return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
-#else 
-   return 0;
-#endif
 }
 
 LRESULT WinEditor::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
 {
-#ifndef __STANDALONE__
    if (GetAllMDIChildren().size() == 1)
       GetLayersListDialog()->SetActiveTable(nullptr);
    return CMDIFrameT::OnMDIDestroyed(msg, wparam, lparam);
-#else
-   return 0;
-#endif
 }
 
-#ifndef __STANDALONE__
 Win32xx::DockPtr WinEditor::NewDockerFromID(int id)
 {
    switch (id)
@@ -1720,11 +1602,9 @@ Win32xx::DockPtr WinEditor::NewDockerFromID(int id)
    }
    return nullptr;
 }
-#endif
 
 int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
-#ifndef __STANDALONE__
    LVFINDINFO lvf;
    const SORTDATA *lpsd = (SORTDATA *)lSortOption;
 
@@ -1745,14 +1625,10 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
       return ( lstrcmpi(buf1, buf2));
    else
       return (-lstrcmpi(buf1, buf2));
-#else
-   return 0;
-#endif
 }
 
 int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
-#ifndef __STANDALONE__
    LVFINDINFO lvf;
    const SORTDATA * const lpsd = (SORTDATA *)lSortOption;
 
@@ -1776,9 +1652,6 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
       return (value1 - value2);
    else
       return (value2 - value1);
-#else
-   return 0;
-#endif
 }
 
 int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
@@ -1798,7 +1671,6 @@ static constexpr int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, 
 
 INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifndef __STANDALONE__
    switch (uMsg)
    {
    case WM_INITDIALOG:
@@ -1864,14 +1736,12 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
       EndDialog(hwndDlg, FALSE);
       break;
    }
-#endif
 
    return FALSE;
 }
 
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifndef __STANDALONE__
    PinTableWnd *pt = (PinTableWnd *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
@@ -1970,7 +1840,6 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       }
       break;
    }
-#endif
 
    return FALSE;
 }
@@ -1978,15 +1847,12 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 void WinEditor::ShowDrawingOrderDialog(bool select)
 {
-#ifndef __STANDALONE__
    DrawingOrderDialog orderDlg(select);
    orderDlg.DoModal();
-#endif
 }
 
 void WinEditor::CloseAllDialogs()
 {
-#ifndef __STANDALONE__
    if (m_imageMngDlg.IsWindow())
       m_imageMngDlg.Destroy();
    if (m_soundMngDlg.IsWindow())
@@ -2007,7 +1873,6 @@ void WinEditor::CloseAllDialogs()
       m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())
       m_aboutDialog.Destroy();
-#endif
 }
 
 void WinEditor::ToggleBackglassView()
@@ -2031,7 +1896,6 @@ void WinEditor::ToggleBackglassView()
 
 void WinEditor::ToggleScriptEditor()
 {
-#ifndef __STANDALONE__
    const auto editor = GetActiveTableEditor();
    if (editor)
    {
@@ -2039,15 +1903,12 @@ void WinEditor::ToggleScriptEditor()
       editor->m_pcv->SetVisible(alwaysViewScript || !(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized));
       //SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized, 0));
    }
-#endif
 }
 
 void WinEditor::ShowSearchSelect()
 {
-#ifndef __STANDALONE__
    if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
       ptCur->ShowSearchSelectDlg();
-#endif
 }
 
 void WinEditor::SetDefaultPhysics()
@@ -2069,7 +1930,6 @@ void WinEditor::SetDefaultPhysics()
 
 void WinEditor::SetViewSolidOutline(size_t viewId)
 {
-#ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
@@ -2080,30 +1940,25 @@ void WinEditor::SetViewSolidOutline(size_t viewId)
       ptCur->SetDirtyDraw();
       g_app->m_settings.SetEditor_RenderSolid(ptCur->m_renderSolid, false);
    }
-#endif
 }
 
 void WinEditor::ShowGridView()
 {
-#ifndef __STANDALONE__
    auto ptCur = GetActiveTableEditor();
    if (ptCur)
    {
       ptCur->SetDisplayGrid(!ptCur->GetDisplayGrid());
       GetMenu().CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->GetDisplayGrid() ? MF_CHECKED : MF_UNCHECKED));
    }
-#endif
 }
 
 void WinEditor::ShowBackdropView()
 {
-#ifndef __STANDALONE__
    if (const auto ptCur = GetActiveTableEditor(); ptCur)
    {
       ptCur->SetDisplayBackdrop(!ptCur->GetDisplayBackdrop());
       GetMenu().CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->GetDisplayBackdrop() ? MF_CHECKED : MF_UNCHECKED));
    }
-#endif
 }
 
 void WinEditor::AddControlPoint()
@@ -2232,7 +2087,6 @@ void WinEditor::AddSmoothControlPoint()
 
 void WinEditor::ExportTableMesh()
 {
-#ifndef __STANDALONE__
    CComObject<PinTable> *const ptCur = GetActiveTable();
    if (ptCur == nullptr)
       return;
@@ -2269,12 +2123,10 @@ void WinEditor::ExportTableMesh()
    loader.ExportEnd();
 
    MessageBox("Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
-#endif
 }
 
 void WinEditor::SaveTable(const bool saveAs)
 {
-#ifndef __STANDALONE__
    CComObject<PinTable> *const ptCur = GetActiveTable();
    if (ptCur == nullptr)
       return;
@@ -2334,7 +2186,6 @@ void WinEditor::SaveTable(const bool saveAs)
    SetCursorCur(IDC_ARROW);
    if (hr == S_OK)
       UpdateRecentFileList(ptCur->m_filename);
-#endif
 }
 
 void WinEditor::OpenNewTable(size_t tableId)
@@ -2345,7 +2196,6 @@ void WinEditor::OpenNewTable(size_t tableId)
       return;
    }
 
-#ifndef __STANDALONE__
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    CComObject<PinTable> *const ppt = mdiTable->GetTable();
    string path;
@@ -2376,7 +2226,6 @@ void WinEditor::OpenNewTable(size_t tableId)
       m_dockNotes->Enable();
 
    SetFocus();
-#endif
 }
 
 void WinEditor::ProcessDeleteElement()

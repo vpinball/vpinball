@@ -34,8 +34,10 @@
 #include "tinyxml2/tinyxml2.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
+#ifndef __STANDALONE__
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
+#endif
 #include "ui/win/resource.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
@@ -351,16 +353,20 @@ void PinTable::AddPart(IEditable *const part)
    part->AddRef();
    part->m_ptable = this;
    m_vedit.push_back(part);
+#ifndef __STANDALONE__
    if (m_tableEditor)
       m_tableEditor->OnPartAdded(part);
+#endif
    if (auto scriptable = part->GetIScriptable(); scriptable)
    {
       assert(!scriptable->m_wzName.empty());
       const auto id = lowerCase(scriptable->m_wzName);
       assert(m_scriptableNames.find(id) == m_scriptableNames.end());
       m_scriptableNames.insert(id);
+#ifndef __STANDALONE__
       if (m_tableEditor)
          m_tableEditor->m_pcv->AddItem(scriptable, false);
+#endif
    }
 }
 
@@ -370,16 +376,20 @@ void PinTable::RemovePart(IEditable *const part)
    assert(it2 != m_vedit.end());
    assert(part->m_ptable == this);
    m_vedit.erase(it2);
+#ifndef __STANDALONE__
    if (m_tableEditor)
       m_tableEditor->OnPartRemoved(part);
+#endif
    if (auto scriptable = part->GetIScriptable(); scriptable)
    {
       assert(!part->GetIScriptable()->m_wzName.empty());
       auto it = m_scriptableNames.find(lowerCase(scriptable->m_wzName));
       assert(it != m_scriptableNames.end());
       m_scriptableNames.erase(it);
+#ifndef __STANDALONE__
       if (m_tableEditor)
          m_tableEditor->m_pcv->RemoveItem(scriptable);
+#endif
    }
    part->m_ptable = nullptr;
    part->Release();
@@ -397,8 +407,10 @@ void PinTable::RenamePart(IEditable *const part, const wstring& newName)
    assert(m_scriptableNames.find(id) == m_scriptableNames.end());
    m_scriptableNames.insert(id);
    scriptable->m_wzName = newName;
+#ifndef __STANDALONE__
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(scriptable, newName);
+#endif
 }
 
 void PinTable::MovePartToFront(IEditable* part)
@@ -417,6 +429,7 @@ void PinTable::MovePartToBack(IEditable* part)
 
 void PinTable::ReorderParts(bool isDrawingOrder)
 {
+#ifndef __STANDALONE__ // Win32 editor only: DrawingOrderDialog is its sole caller
    const vector<IWinUIPart *> &selection = isDrawingOrder ? m_tableEditor->GetMultiSelParts() : m_tableEditor->m_allHitElements;
    if (!selection.empty())
    {
@@ -435,6 +448,7 @@ void PinTable::ReorderParts(bool isDrawingOrder)
          m_vedit.push_back(pedit);
       }
    }
+#endif
 }
 
 void PinTable::AddCollection(CComObject<Collection> *collection)
@@ -444,8 +458,10 @@ void PinTable::AddCollection(CComObject<Collection> *collection)
    collection->AddRef();
    m_vcollection.push_back(collection);
    m_scriptableNames.insert(id);
+#ifndef __STANDALONE__
    if (m_tableEditor)
       m_tableEditor->m_pcv->AddItem((IScriptable *)collection, false);
+#endif
 }
 
 void PinTable::RemoveCollection(CComObject<Collection> *collection)
@@ -474,8 +490,10 @@ void PinTable::RenameCollection(Collection *collection, const wstring &newName)
    assert(m_scriptableNames.find(id) == m_scriptableNames.end());
    m_scriptableNames.insert(id);
    collection->m_wzName = newName;
+#ifndef __STANDALONE__
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(collection, newName);
+#endif
 }
 
 bool PinTable::IsNameUnique(const wstring &name) const
@@ -512,8 +530,10 @@ wstring PinTable::GetUniqueName(const wstring &wzRoot) const
 
 void PinTable::SetDirtyDraw()
 {
+#ifndef __STANDALONE__
    if (g_pplayer == nullptr && m_tableEditor != nullptr)
       m_tableEditor->Redraw();
+#endif
 }
 
 PinTable* PinTable::CopyForPlay() const
@@ -672,12 +692,14 @@ PinTable* PinTable::CopyForPlay() const
       live_table->AddCollection(pcol);
    }
 
+#ifndef __STANDALONE__
    if (live_table->m_tableEditor)
    {
       live_table->m_tableEditor->m_pcv->AddItem(live_table, false);
       live_table->m_tableEditor->m_pcv->AddItem(live_table->m_psgt, true);
       //live_table->m_tableEditor->m_pcv->AddItem(live_table->m_tableEditor->m_pcv->m_pdm, false);
    }
+#endif
 
    live_table->m_vrenderprobe.reserve(m_vrenderprobe.size() + live_table->m_vrenderprobe.size());
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
@@ -2037,6 +2059,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    else if (const std::filesystem::path filenameAuto2 = tablePath / "autovpp.vpp"sv; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
       ImportVPP(filenameAuto2);
 
+#ifndef __STANDALONE__
    if (m_tableEditor)
    {
       m_tableEditor->m_pcv->SetScript(m_script_text);
@@ -2044,6 +2067,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
       m_tableEditor->m_pcv->AddItem(m_psgt, true);
       //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
    }
+#endif
 
    // Loading (including an overriding .vbs) is not a user edit, but filling the code viewer raised the script dirty flag
    SetDirtyScript(eSaveClean);
@@ -2069,8 +2093,10 @@ void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
    }
 
    m_script_text = string_from_utf8_or_iso8859_1(buffer.data(), buffer.size());
+#ifndef __STANDALONE__
    if (m_tableEditor)
       m_tableEditor->m_pcv->SetScript(m_script_text);
+#endif
 
    m_external_script_name = scriptPath;
 }
@@ -3053,8 +3079,10 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename, const bo
    // update properties UI
    if (!toUserSettings)
       SetNonUndoableDirty(eSaveDirty);
+#ifndef __STANDALONE__
    if (m_tableEditor)
       m_tableEditor->RefreshProperties();
+#endif
 }
 
 // Select file and export the point of view definition
@@ -3101,6 +3129,7 @@ void PinTable::CheckDirty()
 {
    const SaveDirtyState sdsNewDirtyState = (SaveDirtyState)max(max((int)m_sdsDirtyProp, (int)m_sdsDirtyScript), (int)m_sdsNonUndoableDirty);
 
+#ifndef __STANDALONE__
    if (m_tableEditor && sdsNewDirtyState != m_sdsCurrentDirtyState)
    {
       if (sdsNewDirtyState > eSaveClean)
@@ -3108,6 +3137,7 @@ void PinTable::CheckDirty()
       else
          m_tableEditor->SetCaption(m_title);
    }
+#endif
 
    m_sdsCurrentDirtyState = sdsNewDirtyState;
 }
@@ -3119,9 +3149,11 @@ bool PinTable::FDirty() const
 
 void PinTable::Uncreate(IEditable *pie)
 {
+#ifndef __STANDALONE__
    IWinUIPart *const uiPart = m_tableEditor ? m_tableEditor->GetUIPart(pie) : nullptr;
    if (uiPart && uiPart->m_selectstate != IWinUIPart::SelectState::NotSelected)
       m_tableEditor->AddMultiSel(uiPart, true, true, false); // Remove the item from the multi-select list
+#endif
 
    RemovePart(pie);
 
@@ -4103,7 +4135,10 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 {
    SetTableWidth(newVal);
 
-   m_tableEditor->SetMyScrollInfo();
+#ifndef __STANDALONE__
+   if (m_tableEditor) // Scripts may set this without the Win32 editor, where there is no view to rescale
+      m_tableEditor->SetMyScrollInfo();
+#endif
    return S_OK;
 }
 
@@ -4137,7 +4172,10 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 {
    SetHeight(newVal);
 
-   m_tableEditor->SetMyScrollInfo();
+#ifndef __STANDALONE__
+   if (m_tableEditor) // Scripts may set this without the Win32 editor, where there is no view to rescale
+      m_tableEditor->SetMyScrollInfo();
+#endif
    return S_OK;
 }
 

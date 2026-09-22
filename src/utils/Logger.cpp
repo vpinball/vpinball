@@ -21,9 +21,11 @@
 #endif
 
 #include "core/VPApp.h"
+#ifndef __STANDALONE__
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
+#endif
 
 
 class DebugAppender final : public plog::IAppender
@@ -36,6 +38,7 @@ public:
 
    void write(const plog::Record &record) PLOG_OVERRIDE
    {
+#ifndef __STANDALONE__ // Win32 editor only: this sink writes to the script editor debug output
       if ((std::this_thread::get_id() != m_uiThreadId) || (g_pvp == nullptr) || (g_pvp->GetActiveTableEditor() == nullptr))
          return;
       #ifdef _WIN32
@@ -44,6 +47,7 @@ public:
       #else
       g_pvp->GetActiveTableEditor()->m_pcv->AddToDebugOutput(record.getMessage());
       #endif
+#endif
    }
 
 private:

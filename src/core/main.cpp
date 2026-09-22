@@ -53,16 +53,6 @@ void OnSignalHandler(int signum)
 }
 #endif
 
-#ifndef OVERRIDE
-#ifndef __STANDALONE__
-   #define OVERRIDE override
-#else
-   #define OVERRIDE
-#endif
-#endif
-
-
-
 
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 // The OpenGL implementation will fail on NVIDIA drivers when Threaded Optimization is enabled so we disable it for this app

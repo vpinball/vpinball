@@ -24,22 +24,16 @@
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 
-#ifndef __STANDALONE__
 #include "ui/win/dialogs/SearchSelectDialog.h"
 #include "ui/win/dialogs/Win32ProgressBar.h"
 #include "FreeImage.h"
-#else
-class SearchSelectDialog { };
-#endif
 
 
 PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    : m_table(table)
    , m_pcv(std::make_unique<CodeViewer>(table))
    , m_vpxEditor(vpxEditor)
-#ifndef __STANDALONE__
    , m_tablePart(this, table)
-#endif
    , m_undo(table)
 {
    // Store the current selection in each undo record, so that undoing also restores it
@@ -50,11 +44,9 @@ PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    m_pcv->Create(nullptr);
    ClearMultiSel();
    SetDefaultView();
-#ifndef __STANDALONE__
    // Create the UI parts of any part added before the editor was attached
    for (IEditable *const part : m_table->GetParts())
       OnPartAdded(part);
-#endif
 }
 
 PinTableWnd::~PinTableWnd()
@@ -62,37 +54,27 @@ PinTableWnd::~PinTableWnd()
    m_uiParts.clear();
    m_table->m_tableEditor = nullptr;
    m_table->Release();
-#ifndef __STANDALONE__
    if (m_hbmOffScreen)
       DeleteObject(m_hbmOffScreen);
-#endif
 }
 
 void PinTableWnd::SetCaption(const string &szCaption)
 {
-#ifndef __STANDALONE__
    if (m_mdiTable != nullptr && m_mdiTable->IsWindow())
       m_mdiTable->SetWindowText(szCaption.c_str());
    m_pcv->SetCaption(szCaption);
-#endif
 }
 
 int PinTableWnd::ShowMessageBox(const char *text) const
 {
-#ifndef __STANDALONE__
    return m_mdiTable->MessageBox(text, "Visual Pinball", MB_YESNO);
-#else
-   return 0;
-#endif
 }
 
 void PinTableWnd::Redraw()
 {
-#ifndef __STANDALONE__
    m_dirtyDraw = true;
    if (IsWindow())
       InvalidateRect(false);
-#endif
 }
 
 void PinTableWnd::BeginUndo() { m_undo.BeginUndo(); }
@@ -134,7 +116,6 @@ vector<PinTableWnd::UndoSelectionEntry> PinTableWnd::CaptureUndoSelection() cons
 
 void PinTableWnd::RestoreUndoSelection(const vector<UndoSelectionEntry> &selection)
 {
-#ifndef __STANDALONE__
    // Resolve the entries to the current UI parts, dropping (or falling back to their owner) the ones that
    // do not exist anymore
    vector<IWinUIPart *> parts;
@@ -177,7 +158,6 @@ void PinTableWnd::RestoreUndoSelection(const vector<UndoSelectionEntry> &selecti
       m_pcv->SelectItem(m_vmultisel[0]->GetEditable()->GetIScriptable());
    m_vmultisel[0]->UpdateStatusBarInfo();
    m_table->SetDirtyDraw();
-#endif
 }
 
 void PinTableWnd::StartUndo()
@@ -229,11 +209,7 @@ void PinTableWnd::SetZoom(float zoom)
 
 Vertex2D PinTableWnd::TransformPoint(int x, int y) const
 {
-#ifndef __STANDALONE__
    const CRect rc = GetClientRect();
-#else
-   const CRect rc(m_table->m_left, m_table->m_top, m_table->m_right, m_table->m_bottom);
-#endif
    const HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
    const Vertex2D result = phs.ScreenToSurface(x, y);
@@ -261,7 +237,6 @@ void PinTableWnd::GetViewRect(FRect *const pfrect) const
 
 void PinTableWnd::SetMyScrollInfo()
 {
-#ifndef __STANDALONE__
    if (!IsWindow())
       return;
    FRect frect;
@@ -291,12 +266,10 @@ void PinTableWnd::SetMyScrollInfo()
    si.nPos = (int)(rgv[0].y);
 
    SetScrollInfo(SB_VERT, si, true);
-#endif
 }
 
 void PinTableWnd::ExportBlueprint()
 {
-#ifndef __STANDALONE__
    //bool saveAs = true;
    //if (saveAs)
    //{
@@ -424,12 +397,10 @@ void PinTableWnd::ExportBlueprint()
 #if 1
    FreeImage_Unload(dib);
 #endif
-#endif
 }
 
 void PinTableWnd::ImportBackdropPOV()
 {
-#ifndef __STANDALONE__
    if (m_table->IsLocked())
       return;
    const string &initialDir = m_table->m_settings.GetRecentDir_POVDir();
@@ -441,12 +412,10 @@ void PinTableWnd::ImportBackdropPOV()
    if (file.has_parent_path())
       g_app->m_settings.SetRecentDir_POVDir(file.parent_path().string(), false);
    m_table->ImportBackdropPOV(file, false);
-#endif
 }
 
 void PinTableWnd::ExportBackdropPOV()
 {
-#ifndef __STANDALONE__
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = g_app->GetInstanceHandle();
@@ -467,12 +436,10 @@ void PinTableWnd::ExportBackdropPOV()
    if (ret == 0)
       return; // S_FALSE;
    m_table->ExportBackdropPOV(szFileName);
-#endif
 }
 
 void PinTableWnd::ImportPhysics()
 {
-#ifndef __STANDALONE__
    const string &szInitialDir = m_table->m_settings.GetRecentDir_PhysicsDir();
    vector<string> filename;
    if (!m_vpxEditor->OpenFileDialog(szInitialDir, filename, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
@@ -485,12 +452,10 @@ void PinTableWnd::ImportPhysics()
    StartUndo();
    m_table->ImportVPP(filename[0]);
    StopUndo();
-#endif
 }
 
 void PinTableWnd::ExportPhysics()
 {
-#ifndef __STANDALONE__
    // The export uses the physics settings of the first flipper of the table
    Flipper *flipper = nullptr;
    for (IEditable *const part : m_table->GetParts())
@@ -542,10 +507,8 @@ void PinTableWnd::ExportPhysics()
    }
 
    m_table->ExportVPP(ofn.lpstrFile, flipper);
-#endif
 }
 
-#ifndef __STANDALONE__
 void PinTableWnd::RenderTable(Sur *const psur)
 {
    const CRect rc = GetClientRect();
@@ -737,21 +700,15 @@ void PinTableWnd::Paint(HDC hdc)
 
    m_dirtyDraw = false;
 }
-#endif
 
 
 POINT PinTableWnd::GetScreenPoint() const
 {
-#ifndef __STANDALONE__
    CPoint pt = GetCursorPos();
    ScreenToClient(pt);
    return pt;
-#else
-   return POINT();
-#endif
 }
 
-#ifndef __STANDALONE__
 
 void PinTableWnd::OnInitialUpdate()
 {
@@ -951,7 +908,6 @@ void PinTableWnd::SetMouseCursor()
 
 void PinTableWnd::SetMouseCapture() { SetCapture(); }
 
-#endif
 
 void PinTableWnd::ClearMultiSel(IWinUIPart *newSelPart)
 {
@@ -963,7 +919,6 @@ void PinTableWnd::ClearMultiSel(IWinUIPart *newSelPart)
    //it will be updated again on AddMultiSel() call
    m_vmultisel.clear();
 
-#ifndef __STANDALONE__
    IWinUIPart *part = newSelPart;
    if (part == nullptr)
       part = &m_tablePart;
@@ -972,7 +927,6 @@ void PinTableWnd::ClearMultiSel(IWinUIPart *newSelPart)
       m_vmultisel.push_back(part);
       part->m_selectstate = IWinUIPart::SelectState::Selected;
    }
-#endif
 }
 
 bool PinTableWnd::MultiSelIsEmpty() const
@@ -1087,9 +1041,7 @@ void PinTableWnd::AddMultiSel(IWinUIPart *const pselPart, const bool add, const 
 
    if (update)
    {
-#ifndef __STANDALONE__
       m_vpxEditor->SetPropSel(m_vmultisel);
-#endif
       if (!m_vmultisel.empty())
          m_vmultisel[0]->UpdateStatusBarInfo();
    }
@@ -1104,39 +1056,29 @@ void PinTableWnd::AddMultiSel(IWinUIPart *const pselPart, const bool add, const 
          if (!prim->m_mesh.m_animationFrames.empty())
             info += " (animated " + std::to_string((uint32_t)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
       }
-#ifndef __STANDALONE__
       m_vpxEditor->SetStatusBarElementInfo(info);
       m_pcv->SelectItem(piSelect->GetEditable()->GetIScriptable());
-#endif
    }
 
-#ifndef __STANDALONE__
    if (m_vpxEditor->GetLayersListDialog()->IsSyncedOnSelection())
       m_vpxEditor->GetLayersListDialog()->Update();
-#endif
 }
 
 void PinTableWnd::RefreshProperties()
 {
-#ifndef __STANDALONE__
    m_vpxEditor->SetPropSel(m_vmultisel);
-#endif
 }
 
 void PinTableWnd::UpdatePropertyImageList()
 {
-#ifndef __STANDALONE__
    // just update the combo boxes in the property dialog
    m_vpxEditor->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(GetMultiSelParts());
-#endif
 }
 
 void PinTableWnd::UpdatePropertyMaterialList()
 {
-#ifndef __STANDALONE__
    // just update the combo boxes in the property dialog
    m_vpxEditor->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(GetMultiSelParts());
-#endif
 }
 
 bool PinTableWnd::IsSubPartOfSelectedPart(const IWinUIPart *uiPart) const
@@ -1347,14 +1289,11 @@ void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
    }
    EndUndo();
    m_table->SetDirtyDraw();
-#ifndef __STANDALONE__
    m_vpxEditor->GetLayersListDialog()->Update();
-#endif
 }
 
 void PinTableWnd::Copy(int x, int y)
 {
-#ifndef __STANDALONE__
    if (MultiSelIsEmpty()) // Can't copy table
       return;
 
@@ -1394,12 +1333,10 @@ void PinTableWnd::Copy(int x, int y)
    }
 
    m_vpxEditor->SetClipboard(&vstm);
-#endif
 }
 
 void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
 {
-#ifndef __STANDALONE__
    bool error = false;
    int cpasted = 0;
 
@@ -1469,12 +1406,10 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
 
    if (error)
       ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
-#endif
 }
 
 void PinTableWnd::DeleteSelection()
 {
-#ifndef __STANDALONE__
    vector<IWinUIPart *> m_vseldelete;
    const vector<IWinUIPart *> selection = GetMultiSelParts();
    m_vseldelete.reserve(selection.size());
@@ -1550,14 +1485,10 @@ void PinTableWnd::DeleteSelection()
    OnPartChanged(m_table);
 
    m_table->SetDirtyDraw();
-#endif
 }
 
 IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
 {
-#ifdef __STANDALONE__
-   return nullptr;
-#else
    const CDC dc;
 
    const CRect rc = GetClientRect();
@@ -1592,10 +1523,8 @@ IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
    std::ranges::reverse(m_allHitElements.begin(), m_allHitElements.end());
 
    return phs.m_pselected;
-#endif
 }
 
-#ifndef __STANDALONE__
 void PinTableWnd::OnKeyDown(int key)
 {
    const int shift = GetKeyState(VK_SHIFT) & 0x8000;
@@ -1928,11 +1857,9 @@ void PinTableWnd::OnMouseWheel(const short x, const short y, const short zDelta)
       SetMyScrollInfo();
    }
 }
-#endif
 
 void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, IWinUIPart *psel)
 {
-#ifndef __STANDALONE__
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)colSubMenu.GetHandle(), LocalString(IDS_TO_COLLECTION).m_szbuffer);
 
    const int maxItems = (int)m_table->GetCollections().size() - 1;
@@ -1972,7 +1899,6 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
       for (size_t i = 0; i < allIndices.size(); i++)
          colSubMenu.CheckMenuItem(0x40000 + allIndices[i], MF_CHECKED);
    }
-#endif
 }
 
 void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelection)
@@ -2002,9 +1928,7 @@ void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelectio
 
    const int index = AddListCollection(hwndListView, pcol);
 
-#ifndef __STANDALONE__
    ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
-#endif
 
    m_table->AddCollection(pcol);
    pcol->Release();
@@ -2012,7 +1936,6 @@ void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelectio
 
 int PinTableWnd::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
 {
-#ifndef __STANDALONE__
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
@@ -2024,9 +1947,6 @@ int PinTableWnd::AddListCollection(HWND hwndListView, CComObject<Collection> *pc
    const int index = ListView_InsertItem(hwndListView, &lvitem);
    ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->GetParts().size()).c_str());
    return index;
-#else
-   return 0;
-#endif
 }
 
 void PinTableWnd::ListCollections(HWND hwndListView)
@@ -2039,7 +1959,6 @@ void PinTableWnd::ListCollections(HWND hwndListView)
 
 void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)
 {
-#ifndef __STANDALONE__
    PinFont *const ppb = new PinFont();
 
    ppb->ReadFromFile(filename);
@@ -2053,7 +1972,6 @@ void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)
    }
    else
       delete ppb;
-#endif
 }
 
 void PinTableWnd::ListFonts(HWND hwndListView)
@@ -2064,7 +1982,6 @@ void PinTableWnd::ListFonts(HWND hwndListView)
 
 int PinTableWnd::AddListBinary(HWND hwndListView, PinBinary *ppb)
 {
-#ifndef __STANDALONE__
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
@@ -2077,14 +1994,10 @@ int PinTableWnd::AddListBinary(HWND hwndListView, PinBinary *ppb)
    ListView_SetItemText_Safe(hwndListView, index, 1, ppb->m_path.string().c_str());
 
    return index;
-#else
-   return 0;
-#endif
 }
 
 void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, IWinUIPart *psel)
 {
-#ifndef __STANDALONE__
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), LocalString(IDS_ASSIGN_TO_LAYER2).m_szbuffer);
    int i = 0;
    for (const IEditable * const edit : m_table->GetParts())
@@ -2097,10 +2010,8 @@ void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, IWi
             break;
       }
    }
-#endif
 }
 
-#ifndef __STANDALONE__
 void PinTableWnd::DoContextMenu(int x, int y, const int menuid, IWinUIPart *const uiPart)
 {
    POINT pt;
@@ -2207,27 +2118,21 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, IWinUIPart *cons
    if (menuid != -1)
       mainMenu.Destroy();
 }
-#endif
 
 
 void PinTableWnd::BeginAutoSaveCounter()
 {
-#ifndef __STANDALONE__
    if (m_vpxEditor->m_autosaveTime > 0)
       m_vpxEditor->SetTimer(WinEditor::TIMER_ID_AUTOSAVE, m_vpxEditor->m_autosaveTime, nullptr);
-#endif
 }
 
 void PinTableWnd::EndAutoSaveCounter()
 {
-#ifndef __STANDALONE__
    m_vpxEditor->KillTimer(WinEditor::TIMER_ID_AUTOSAVE);
-#endif
 }
 
 void PinTableWnd::AutoSave()
 {
-#ifndef __STANDALONE__
    if (m_table->m_sdsCurrentDirtyState <= eSaveAutosaved)
       return;
 
@@ -2266,12 +2171,10 @@ void PinTableWnd::AutoSave()
    }
 
    m_vpxEditor->SetCursorCur(IDC_ARROW);
-#endif
 }
 
 void PinTableWnd::FVerifySaveToClose()
 {
-#ifndef __STANDALONE__
    if (!m_vAsyncHandles.empty())
    {
       /*const DWORD wait =*/WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), m_vAsyncHandles.data(), TRUE, INFINITE);
@@ -2283,20 +2186,16 @@ void PinTableWnd::FVerifySaveToClose()
 
       m_vpxEditor->SetActionCur(string());
    }
-#endif
 }
 
 void PinTableWnd::OnPartAdded(IEditable *part)
 {
-#ifndef __STANDALONE__
    if (std::unique_ptr<IWinUIPart> uiPart = WinUIPartRegistry::Create(this, part))
       m_uiParts[part] = std::move(uiPart);
-#endif
 }
 
 void PinTableWnd::OnPartRemoved(IEditable *part)
 {
-#ifndef __STANDALONE__
    // The selection stores raw pointers to UI parts: remove the part and its sub parts (drag points, light centers)
    // before destroying the corresponding UI part
    for (int i = (int)m_vmultisel.size() - 1; i >= 0; i--)
@@ -2305,18 +2204,15 @@ void PinTableWnd::OnPartRemoved(IEditable *part)
    if (m_vmultisel.empty())
       ClearMultiSel();
    m_uiParts.erase(part);
-#endif
 }
 
 IWinUIPart *PinTableWnd::GetUIPart(IEditable *part)
 {
    if (part == nullptr)
       return nullptr;
-#ifndef __STANDALONE__
    // The UI part of the table itself is not stored in the map but directly owned by this editor (m_tablePart)
    if (part == m_table)
       return &m_tablePart;
-#endif
    const auto it = m_uiParts.find(part);
    return it != m_uiParts.end() ? it->second.get() : nullptr;
 }
@@ -2331,7 +2227,6 @@ IWinUIPart *PinTableWnd::GetUIPart(DragPoint *point)
 
 void PinTableWnd::OnPartChanged(IEditable *part)
 {
-#ifndef __STANDALONE__
    switch (part->GetItemType())
    {
    case eItemTable:
@@ -2346,12 +2241,10 @@ void PinTableWnd::OnPartChanged(IEditable *part)
       // Not yet implemented
       assert(false);
    }
-#endif
 }
 
 void PinTableWnd::ShowSearchSelectDlg()
 {
-#ifndef __STANDALONE__
    if (m_searchSelectDlg == nullptr || !m_searchSelectDlg->IsWindow())
    {
       m_searchSelectDlg = std::make_unique<SearchSelectDialog>(this);
@@ -2359,5 +2252,4 @@ void PinTableWnd::ShowSearchSelectDlg()
    }
    m_searchSelectDlg->ShowWindow();
    m_searchSelectDlg->SetForegroundWindow();
-#endif
 }

@@ -4,7 +4,9 @@
 #include "dragpoint.h"
 
 #include "parts/pintable.h"
+#ifndef __STANDALONE__
 #include "ui/win/PinTableWnd.h"
+#endif
 
 
 Vertex3Ds DragPoint::m_copyPoint;
@@ -245,6 +247,7 @@ void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **pp
 
 void DragPointCurve::ClearPointsForOverwrite()
 {
+#ifndef __STANDALONE__
    for (size_t i = 0; i < m_dragpoints.size(); i++)
    {
       if (PinTableWnd *const tableEditor = GetPTable()->m_tableEditor)
@@ -256,6 +259,7 @@ void DragPointCurve::ClearPointsForOverwrite()
          }
       }
    }
+#endif
 
    ClearPoints();
 }

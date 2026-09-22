@@ -6,9 +6,8 @@
 #include "core/vpversion.h"
 #include "parts/Collection.h"
 #include "parts/pintable.h"
-#include "ui/win/WinEditor.h"
-
 #ifndef __STANDALONE__
+#include "ui/win/WinEditor.h"
 #include <initguid.h>
 #endif
 

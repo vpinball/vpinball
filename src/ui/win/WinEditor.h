@@ -8,50 +8,33 @@
 #include "ui/win/resource.h"
 #include "utils/vector.h"
 
-#ifndef __STANDALONE__
-   #include <wxx_docking.h>
-   #include <wxx_dockframe.h>
-   #include "dialogs/ImageDialog.h"
-   #include "dialogs/SoundDialog.h"
-   #include "dialogs/EditorOptionsDialog.h"
-   #include "dialogs/CollectionManagerDialog.h"
-   #include "dialogs/PhysicsOptionsDialog.h"
-   #include "dialogs/RenderProbeDialog.h"
-   #include "dialogs/TableInfoDialog.h"
-   #include "dialogs/DimensionDialog.h"
-   #include "dialogs/MaterialDialog.h"
-   #include "dialogs/AboutDialog.h"
-   #include "dialogs/ToolbarDialog.h"
-   #include "dialogs/LayersListDialog.h"
-   #include "dialogs/NotesDialog.h"
-   #include "properties/PropertyDialog.h"
+#include <wxx_docking.h>
+#include <wxx_dockframe.h>
+#include "dialogs/ImageDialog.h"
+#include "dialogs/SoundDialog.h"
+#include "dialogs/EditorOptionsDialog.h"
+#include "dialogs/CollectionManagerDialog.h"
+#include "dialogs/PhysicsOptionsDialog.h"
+#include "dialogs/RenderProbeDialog.h"
+#include "dialogs/TableInfoDialog.h"
+#include "dialogs/DimensionDialog.h"
+#include "dialogs/MaterialDialog.h"
+#include "dialogs/AboutDialog.h"
+#include "dialogs/ToolbarDialog.h"
+#include "dialogs/LayersListDialog.h"
+#include "dialogs/NotesDialog.h"
+#include "properties/PropertyDialog.h"
 
-   #define OVERRIDE override
-
-   // The frame has no window menu of its own: win32xx hosts it in a CMenuBar inside the rebar, and it is only opened
-   // by DefWindowProc turning an Alt press into the WM_SYSCOMMAND/SC_KEYMENU which CFrameT::OnSysCommand forwards to
-   // that menu bar. So these messages have to make it to DispatchMessage. A PreTranslateMessage handing them over to
-   // IsDialogMessage instead would consume them for its own mnemonic handling, and Alt (or Alt+F, ...) would then do
-   // nothing at all for as long as the corresponding pane holds the focus
-   constexpr bool IsAltKeyMessage(const UINT message)
-   {
-      return (message == WM_SYSKEYDOWN) || (message == WM_SYSKEYUP) || (message == WM_SYSCHAR) || (message == WM_SYSDEADCHAR);
-   }
-#else
-   class ImageDialog final { };
-   class SoundDialog final { };
-   class EditorOptionsDialog final { };
-   class CollectionManagerDialog final { };
-   class PhysicsOptionsDialog final { };
-   class TableInfoDialog final { };
-   class DimensionDialog final { };
-   class RenderProbeDialog final { };
-   class MaterialDialog final { };
-   class AboutDialog final { };
-   class ToolbarDialog final { };
-   class NotesDialog final { };
-   #define OVERRIDE
-#endif
+// The frame has no window menu of its own: win32xx hosts it in a CMenuBar inside the rebar, and it is only opened
+// by DefWindowProc turning an Alt press into the WM_SYSCOMMAND/SC_KEYMENU which CFrameT::OnSysCommand forwards to
+// that menu bar. So these messages have to reach DispatchMessage, while the default PreTranslateMessage of any
+// modeless dialog instead hands them to IsDialogMessage, which consumes them for its own mnemonics. Panes from
+// which the menu is meant to open therefore let them through explicitly, the dialog like ones (notes, property
+// pages) keep the default and do not open it
+constexpr bool IsAltKeyMessage(const UINT message)
+{
+   return (message == WM_SYSKEYDOWN) || (message == WM_SYSKEYUP) || (message == WM_SYSCHAR) || (message == WM_SYSDEADCHAR);
+}
 
 class PinTable;
 class PinTableMDI;
@@ -76,7 +59,7 @@ public:
     };
 
    WinEditor(HINSTANCE appInstance);
-   ~WinEditor() OVERRIDE;
+   ~WinEditor() override;
 
    void ShowSubDialog(CDialog& dlg, const bool show);
 
@@ -174,9 +157,7 @@ public:
        }
     }
 
-#ifndef __STANDALONE__
     ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
-#endif
    }
 
    bool OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle = string());
@@ -194,9 +175,7 @@ public:
       m_dockNotes = nullptr;
    }
    void CreateDocker();
-   #ifndef __STANDALONE__
    LayersListDialog* GetLayersListDialog() { return GetLayersDocker()->GetContainLayers()->GetLayersDialog(); }
-   #endif
    bool IsClosing() const { return m_closing; }
 
    ULONG m_cref;
@@ -241,18 +220,16 @@ protected:
    void PreCreate(CREATESTRUCT& cs) override;
    void PreRegisterClass(WNDCLASS& wc) override;
    void OnClose() override;
-   void OnDestroy() OVERRIDE;
+   void OnDestroy() override;
    int  OnCreate(CREATESTRUCT& cs) override;
-   LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
+   LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) override;
    void OnInitialUpdate() override;
    BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
    LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
-   LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
-#ifndef __STANDALONE__
+   LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam) override;
    BOOL PreTranslateMessage(MSG& msg) override;
    DockPtr NewDockerFromID(int id) override;
-#endif
 
 private:
    const HINSTANCE m_instance;

@@ -72,10 +72,8 @@ public:
    // multi-selection, meaning that selection actions must not be applied to it (they reach it through its owning part)
    bool IsSubPartOfSelectedPart(const IWinUIPart *psel) const;
 
-#ifndef __STANDALONE__
    void SetMouseCursor();
    void SetMouseCapture();
-#endif
    void SetCaption(const string &caption);
    int ShowMessageBox(const char *text) const;
 
@@ -140,22 +138,17 @@ public:
 
    WinEditor *const m_vpxEditor;
 
-#ifndef __STANDALONE__
    // UI part of the table itself. Unlike the other UI parts, it is not created through WinUIPartRegistry
    // but is a direct member of this editor, sharing its lifecycle.
    TableWinUIPart m_tablePart;
-#endif
 
 protected:
-#ifndef __STANDALONE__
    // Overriden from CWnd
    void OnInitialUpdate() final;
    BOOL OnEraseBkgnd(CDC &dc) final;
    LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
-#endif
 
 private:
-#ifndef __STANDALONE__
    void OnLeftDoubleClick(int x, int y);
    void OnLeftButtonDown(const short x, const short y);
    void DoLeftButtonDown(int x, int y, bool zoomIn);
@@ -172,7 +165,6 @@ private:
    void Paint(HDC hdc);
    void Render3DProjection(Sur *const psur);
    void RenderTable(Sur *const psur);
-#endif
 
    PinTableMDI *m_mdiTable = nullptr;
 

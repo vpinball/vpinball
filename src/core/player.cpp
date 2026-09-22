@@ -27,10 +27,12 @@
 #include "ui/live/ingameui/HomePage.h"
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
+#ifndef __STANDALONE__
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
-#include "ui/win/worker.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/worker.h"
+#endif
 #include "unordered_dense.h"
 #include "utils/denormals.h"
 #include "utils/ushock_output.h"
@@ -844,8 +846,10 @@ Player::~Player()
    if (!IsEditorMode())
    {
       m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
+#ifndef __STANDALONE__ // Win32 editor only
       if (m_detectScriptHang && g_pvp)
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+#endif
    }
 
    delete m_liveUI;
@@ -1212,10 +1216,12 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
       m_nScriptErrorNotification++;
    }
 
+#ifndef __STANDALONE__ // Win32 editor only: report to the script editor
    if (m_ptable->m_tableEditor)
       m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
    else if (m_ptable->m_liveBaseTable && m_ptable->m_liveBaseTable->m_tableEditor)
       m_ptable->m_liveBaseTable->m_tableEditor->m_pcv->OnScriptError(type, line, column, description, stackDump);
+#endif
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -2199,9 +2205,11 @@ void Player::FinishFrame()
    // Close requested with user input
    if (m_closing == CS_USER_INPUT)
    {
+#ifndef __STANDALONE__ // Win32 editor only
       if (g_pvp && g_pvp->m_disable_pause_menu)
          m_closing = CS_STOP_PLAY;
       else
+#endif
       {
          m_closing = CS_PLAYING;
          m_liveUI->OpenInGameUI();
@@ -2212,13 +2220,13 @@ void Player::FinishFrame()
    if (m_closing == CS_FORCE_STOP)
       exit(-9999); 
 
+#ifndef __STANDALONE__ // Win32 editor only
    // Open debugger window
    if (g_pvp && m_showDebugger && !m_ptable->IsLocked() && !g_pvp->m_disable_pause_menu)
    {
       m_debugMode = true;
       m_showDebugger = false;
 
-#ifndef __STANDALONE__
       if (!m_debuggerDialog.IsWindow())
       {
          m_debuggerDialog.Create(m_playfieldWnd->GetNativeHWND());
@@ -2228,8 +2236,8 @@ void Player::FinishFrame()
          m_debuggerDialog.SetForegroundWindow();
 
       EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
-#endif
    }
+#endif
 
    #ifdef _MSC_VER
       // Legacy hacky Win32 focus management: keep VPX focused & overlayed by the ancillary COM created window

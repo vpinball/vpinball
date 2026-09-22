@@ -395,27 +395,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/SystemInfoPage.h
    src/ui/live/ingameui/SystemInfoPage.cpp
 
-   src/ui/win/codeview.cpp
-   src/ui/win/codeview.h
-   src/ui/win/codeviewedit.cpp
-   src/ui/win/codeviewedit.h
-   src/ui/win/hitrectsur.cpp
-   src/ui/win/hitrectsur.h
-   src/ui/win/hitsur.cpp
-   src/ui/win/hitsur.h
-   src/ui/win/sur.h
-   src/ui/win/PinTableMDI.cpp
-   src/ui/win/PinTableMDI.h
-   src/ui/win/PinTableWnd.cpp
-   src/ui/win/PinTableWnd.h
    src/ui/win/ProgressDialog.cpp
    src/ui/win/ProgressDialog.h
-   src/ui/win/IWinUIPart.cpp
-   src/ui/win/IWinUIPart.h
-   src/ui/win/WinEditor.cpp
-   src/ui/win/WinEditor.h
-   src/ui/win/WinUIPartRegistry.cpp
-   src/ui/win/WinUIPartRegistry.h
 
    src/utils/BiffReader.cpp
    src/utils/BiffReader.h
@@ -500,6 +481,25 @@ set(VPX_WINDOWS_SOURCES
 
    src/ui/win/DragPointDialogs.h
    src/ui/win/DragPointDialogs.cpp
+   src/ui/win/codeview.cpp
+   src/ui/win/codeview.h
+   src/ui/win/codeviewedit.cpp
+   src/ui/win/codeviewedit.h
+   src/ui/win/hitrectsur.cpp
+   src/ui/win/hitrectsur.h
+   src/ui/win/hitsur.cpp
+   src/ui/win/hitsur.h
+   src/ui/win/sur.h
+   src/ui/win/IWinUIPart.cpp
+   src/ui/win/IWinUIPart.h
+   src/ui/win/PinTableMDI.cpp
+   src/ui/win/PinTableMDI.h
+   src/ui/win/PinTableWnd.cpp
+   src/ui/win/PinTableWnd.h
+   src/ui/win/WinEditor.cpp
+   src/ui/win/WinEditor.h
+   src/ui/win/WinUIPartRegistry.cpp
+   src/ui/win/WinUIPartRegistry.h
    src/ui/win/paintsur.cpp
    src/ui/win/paintsur.h
    src/ui/win/worker.cpp

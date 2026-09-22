@@ -6,10 +6,8 @@
 
 #include "ui/win/WinEditor.h"
 
-#ifndef __STANDALONE__
 #include "core/VPApp.h"
 #include "ui/win/dialogs/Win32ProgressBar.h"
-#endif
 
 static CComObject<PinTable>* CreatePinTable()
 {
@@ -23,11 +21,9 @@ PinTableMDI::PinTableMDI(WinEditor* vpinball)
    , m_vpxEditor(vpinball)
 {
    m_tableWnd->SetMDITable(this);
-#ifndef __STANDALONE__
    SetView(*m_tableWnd);
    //m_menu.LoadMenu(IDR_APPMENU);
    SetHandles(m_vpxEditor->GetMenu(), nullptr);
-#endif
 }
 
 PinTableMDI::~PinTableMDI()
@@ -42,7 +38,6 @@ bool PinTableMDI::CanClose() const
     if (m_tableWnd->m_table != nullptr && m_tableWnd->m_table->FDirty())
     {
         const string szText = LocalString(IDS_SAVE_CHANGES1).m_szbuffer /*"Do you want to save the changes you made to '"*/ + m_tableWnd->m_table->m_title + LocalString(IDS_SAVE_CHANGES2).m_szbuffer;
-#ifndef __STANDALONE__
         const int result = MessageBox(szText.c_str(), "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
 
         if (result == IDCANCEL)
@@ -59,7 +54,6 @@ bool PinTableMDI::CanClose() const
            if (failed)
               MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
         }
-#endif
     }
     return true;
 }
@@ -78,19 +72,14 @@ void PinTableMDI::PreCreate(CREATESTRUCT &cs)
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 {
-#ifndef __STANDALONE__
     SetWindowText(m_tableWnd->m_table->m_title.c_str());
     SetIconLarge(IDI_TABLE);
     SetIconSmall(IDI_TABLE);
     return CMDIChild::OnCreate(cs);
-#else
-    return 0;
-#endif
 }
 
 void PinTableMDI::OnClose()
 {
-#ifndef __STANDALONE__
    if (m_vpxEditor->IsClosing() || CanClose())
    {
       if(m_vpxEditor->GetNotesDocker() != nullptr)
@@ -101,14 +90,10 @@ void PinTableMDI::OnClose()
       m_tableWnd->KillTimer(WinEditor::TIMER_ID_AUTOSAVE);
       CMDIChild::OnClose();
    }
-#endif
 }
 
 LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 {
-#ifdef __STANDALONE__
-   return 0L;
-#else
    //wparam holds HWND of the MDI frame that is about to be deactivated
    //lparam holds HWND of the MDI frame that is about to be activated
    if (GetHwnd() == (HWND)wparam)
@@ -126,7 +111,6 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
       }
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
-#endif
 }
 
 BOOL PinTableMDI::OnEraseBkgnd(CDC& dc)
