@@ -81,6 +81,14 @@ void RenderProbe::MarkDirty()
    m_reflection_clip_bounds.x = m_reflection_clip_bounds.y = m_reflection_clip_bounds.z = m_reflection_clip_bounds.w = FLT_MAX;
 }
 
+bool RenderProbe::IsStaticAccumulationPending() const
+{
+   // A probe accumulates its static parts over successive frames only when it is a dynamic reflection
+   // rendered while the main renderer performs split static/dynamic rendering
+   return m_renderer != nullptr && m_type == PLANE_REFLECTION && min(m_reflection_mode, m_renderer->GetMaxReflectionMode()) == REFL_DYNAMIC && m_renderer->IsUsingStaticPrepass()
+      && m_staticAccumCount < STATIC_PRERENDER_ITERATIONS;
+}
+
 void RenderProbe::MarkDirtyStatics()
 {
    // Discard the accumulated static render. Defer deletion to the render thread end-of-frame as already submitted frames may still hold copy commands sourcing this render target.

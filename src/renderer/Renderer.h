@@ -45,6 +45,7 @@ public:
 
    void DisableStaticPrePass(const bool disable);
    bool IsUsingStaticPrepass() const;
+   bool IsTemporalAccumulationInProgress() const; // True while the static parts prerender is still accumulating samples (main renderer or any render probe)
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
 
    enum class ShadeMode

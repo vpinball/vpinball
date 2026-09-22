@@ -86,14 +86,14 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
    #endif
 }
 
-TEST_CASE("Base render")
+TEST_CASE("Base render [render]")
 {
    ResetVPX();
    TestRender("test000-default-table.vpx"s, "test000-default-table"s, VPXBackends::ALL);
    ResetVPX();
 }
 
-TEST_CASE("Stereo top/bottom render")
+TEST_CASE("Stereo top/bottom render [render]")
 {
    ResetVPX();
    Settings& settings = g_app->m_settings;
@@ -102,7 +102,7 @@ TEST_CASE("Stereo top/bottom render")
    ResetVPX();
 }
 
-TEST_CASE("Stereo interleaved render")
+TEST_CASE("Stereo interleaved render [render]")
 {
    ResetVPX();
    Settings& settings = g_app->m_settings;
@@ -111,7 +111,7 @@ TEST_CASE("Stereo interleaved render")
    ResetVPX();
 }
 
-TEST_CASE("Stereo side by side render")
+TEST_CASE("Stereo side by side render [render]")
 {
    ResetVPX();
    Settings& settings = g_app->m_settings;
@@ -120,7 +120,7 @@ TEST_CASE("Stereo side by side render")
    ResetVPX();
 }
 
-TEST_CASE("Stereo anaglyph render")
+TEST_CASE("Stereo anaglyph render [render]")
 {
    ResetVPX();
    Settings& settings = g_app->m_settings;

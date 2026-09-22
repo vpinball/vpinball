@@ -1798,6 +1798,16 @@ bool Renderer::IsUsingStaticPrepass() const
       && m_disableStaticPrepass <= 0; // Something resuested to disable static part accumulation (for example headtracking,...)
 }
 
+bool Renderer::IsTemporalAccumulationInProgress() const
+{
+   if (IsUsingStaticPrepass() && (m_isStaticPrepassDirty || m_staticPrepassAccumCount < STATIC_PRERENDER_ITERATIONS))
+      return true;
+   for (const RenderProbe* probe : m_table->m_vrenderprobe)
+      if (probe->IsStaticAccumulationPending())
+         return true;
+   return false;
+}
+
 void Renderer::RenderStatics()
 {
    if (!IsUsingStaticPrepass())

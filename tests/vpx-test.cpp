@@ -104,20 +104,31 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    {
       std::filesystem::path tmpScreenshotPath;
       bool done;
-   } state = { GetAssetPath() / screenshotPath, false };
+      bool captureRequested;
+   } state = { GetAssetPath() / screenshotPath, false, false };
    msgpi_msg_callback onPrepareFrame = [](const unsigned int msgId, void* context, void* msgData)
    {
       CaptureState* state = reinterpret_cast<CaptureState*>(context);
-      if (g_pplayer->m_overall_frames == 25)
-         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot({ g_pplayer->m_playfieldWnd }, { state->tmpScreenshotPath },
-            [state](bool success)
-            {
-               #ifdef ENABLE_BGFX
-               lastBgfxRenderer = bgfx::getRendererType();
-               #endif
-               g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
-               state->done = true;
-            });
+      if (state->captureRequested || g_pplayer->m_overall_frames < 25)
+         return;
+      if (g_pplayer->m_renderer->IsTemporalAccumulationInProgress())
+      {
+         // Wait for the static prerender accumulation to settle, so the screenshot matches the converged
+         // rendering, but bound the wait to avoid stalling if a render probe never finishes accumulating
+         if (g_pplayer->m_overall_frames < 512)
+            return;
+         MESSAGE("Timed out waiting for static prerender accumulation");
+      }
+      state->captureRequested = true;
+      g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot({ g_pplayer->m_playfieldWnd }, { state->tmpScreenshotPath },
+         [state](bool success)
+         {
+#ifdef ENABLE_BGFX
+            lastBgfxRenderer = bgfx::getRendererType();
+#endif
+            g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
+            state->done = true;
+         });
    };
 
    CComObject<PinTable>* table;
