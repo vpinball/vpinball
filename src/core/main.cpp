@@ -187,6 +187,12 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
    Logger::Init();
 
+#ifndef __STANDALONE__
+   // Default message sink for the whole application lifetime: report user messages through
+   // plain Win32 message boxes. UI contexts (Win32 editor, player) install their own sinks.
+   Win32DialogSink win32DialogSink;
+   ScopedUserMessageSink scopedMessageSink(&win32DialogSink);
+#endif
 
    int retval = 0;
    try
@@ -218,7 +224,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    catch (const CException &e)
    {
       // Display the exception and quit
-      MessageBox(nullptr, e.GetText(), AtoT(e.what()), MB_ICONERROR);
+      ShowMessage(MsgSeverity::Fatal, e.GetText(), e.what());
 
       retval = -1;
    }

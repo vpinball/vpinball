@@ -2890,7 +2890,7 @@ void ReportFatalError(const HRESULT hr, const char* file, const int line)
 #elif defined(ENABLE_DX9)
    const string msg = std::format("Fatal Error {} ({:#010X}: {}) at {}:{}", DXGetErrorString(hr), (unsigned int)hr, DXGetErrorDescription(hr), file, line);
 #endif
-   ShowError(msg);
+   ShowFatalError(msg);
    assert(false);
    exit(-1);
 }

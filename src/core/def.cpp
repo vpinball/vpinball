@@ -17,10 +17,8 @@
 
 #include "core/VPApp.h"
 #include "ui/win/resource.h"
-#ifndef __STANDALONE__
-#include "ui/win/WinEditor.h"
-#endif
 
+#include <atomic>
 #include <charconv>
 #include <iomanip>
 #include <filesystem>
@@ -559,17 +557,53 @@ bool IsWindowsVistaOr7()
 }
 #endif
 
-void ShowError(const char* const sz)
+static std::atomic<UserMessageSink*> s_userMessageSink = nullptr;
+
+UserMessageSink* SetUserMessageSink(UserMessageSink* const sink) { return s_userMessageSink.exchange(sink); }
+
+void ShowMessage(const MsgSeverity severity, const string& message, const string& title)
 {
-#ifndef __STANDALONE__ // Win32 editor only, g_pvp being null without it
-   if (g_pvp)
+   switch (severity)
    {
-      g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
-      return;
+   case MsgSeverity::Info: PLOGI << message; break;
+   case MsgSeverity::Warning: PLOGW << message; break;
+   case MsgSeverity::Error:
+   case MsgSeverity::Fatal: PLOGE << message; break;
    }
-#endif
-   MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+   UserMessageSink* const sink = s_userMessageSink.load();
+   if (sink)
+      sink->Notify(severity, title.empty() ? ((severity == MsgSeverity::Error || severity == MsgSeverity::Fatal) ? "Visual Pinball Error"s : "Visual Pinball"s) : title, message);
 }
+
+void ShowError(const char* const sz) { ShowMessage(MsgSeverity::Error, sz); }
+
+void ShowFatalError(const string& message) { ShowMessage(MsgSeverity::Fatal, message); }
+
+bool AskUser(const string& question, const string& title, const bool fallback)
+{
+   UserMessageSink* const sink = s_userMessageSink.load();
+   if (sink == nullptr)
+   {
+      PLOGI << "User question '" << question << "' answered with fallback (" << (fallback ? "yes" : "no") << ") as no message sink is installed";
+      return fallback;
+   }
+   const bool answer = sink->Confirm(title.empty() ? "Visual Pinball"s : title, question, fallback);
+   PLOGI << "User question '" << question << "' answered: " << (answer ? "yes" : "no");
+   return answer;
+}
+
+#ifndef __STANDALONE__
+void Win32DialogSink::Notify(const MsgSeverity severity, const string& title, const string& message)
+{
+   const UINT icon = severity == MsgSeverity::Info ? MB_ICONINFORMATION : severity == MsgSeverity::Warning ? MB_ICONWARNING : MB_ICONERROR;
+   ::MessageBox(m_parent, message.c_str(), title.c_str(), MB_OK | icon);
+}
+
+bool Win32DialogSink::Confirm(const string& title, const string& message, const bool fallback)
+{
+   return ::MessageBox(m_parent, message.c_str(), title.c_str(), MB_YESNO | MB_ICONQUESTION | (fallback ? MB_DEFBUTTON1 : MB_DEFBUTTON2)) == IDYES;
+}
+#endif
 
 vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary)
 {

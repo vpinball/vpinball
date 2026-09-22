@@ -107,6 +107,33 @@ LiveUI::~LiveUI()
    }
 }
 
+void LiveUI::Notify(const MsgSeverity severity, const string &title, const string &message)
+{
+   if (severity == MsgSeverity::Fatal)
+   {
+      // Fatal errors are reported through a blocking message box as the application is terminating
+      SDL_Window *const wnd = (m_player != nullptr && m_player->m_playfieldWnd != nullptr) ? m_player->m_playfieldWnd->GetCore() : nullptr;
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title.c_str(), message.c_str(), wnd);
+      return;
+   }
+   const int durationMs = severity == MsgSeverity::Error ? 10000 : severity == MsgSeverity::Warning ? 8000 : 5000;
+   PushNotification(message, durationMs);
+}
+
+bool LiveUI::Confirm(const string &title, const string &message, const bool fallback)
+{
+   SDL_Window *const wnd = (m_player != nullptr && m_player->m_playfieldWnd != nullptr) ? m_player->m_playfieldWnd->GetCore() : nullptr;
+   const SDL_MessageBoxButtonData buttons[] = {
+      { static_cast<Uint32>(fallback ? SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT : 0), 1, "Yes" },
+      { static_cast<Uint32>(SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT | (fallback ? 0 : SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT)), 0, "No" },
+   };
+   const SDL_MessageBoxData data = { SDL_MESSAGEBOX_WARNING, wnd, title.c_str(), message.c_str(), SDL_arraysize(buttons), buttons, nullptr };
+   int buttonId = fallback ? 1 : 0;
+   if (!SDL_ShowMessageBox(&data, &buttonId))
+      return fallback;
+   return buttonId == 1;
+}
+
 void LiveUI::MarkdownFormatCallback(const ImGui::MarkdownFormatInfo &markdownFormatInfo, bool start)
 {
    const LiveUI *const ui = static_cast<LiveUI*>(markdownFormatInfo.config->userData);

@@ -213,6 +213,69 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 void ShowError(const char* const sz);
 inline void ShowError(const string& sz) { ShowError(sz.c_str()); }
 
+enum class MsgSeverity
+{
+   Info,
+   Warning,
+   Error,
+   Fatal // Error reported while the application is terminating
+};
+
+// Interface implemented by the UI layer owning the current execution context to route
+// messages to the user (Win32 dialogs for the editor, in-game overlay for the player).
+// When no sink is installed (tests, command line tools, early initialization), messages are only logged.
+class UserMessageSink
+{
+public:
+   virtual ~UserMessageSink() = default;
+
+   virtual void Notify(MsgSeverity severity, const string& title, const string& message) = 0;
+   virtual bool Confirm(const string& title, const string& message, bool fallback) { return fallback; }
+};
+
+// Sets the sink receiving user messages, returning the previously installed one (nullptr = only log messages)
+UserMessageSink* SetUserMessageSink(UserMessageSink* sink);
+
+// RAII helper to temporarily install a message sink, restoring the previous one on destruction
+class ScopedUserMessageSink final
+{
+public:
+   explicit ScopedUserMessageSink(UserMessageSink* sink)
+      : m_previous(SetUserMessageSink(sink))
+   {
+   }
+   ~ScopedUserMessageSink() { SetUserMessageSink(m_previous); }
+   ScopedUserMessageSink(const ScopedUserMessageSink&) = delete;
+   ScopedUserMessageSink& operator=(const ScopedUserMessageSink&) = delete;
+
+private:
+   UserMessageSink* const m_previous;
+};
+
+void ShowMessage(MsgSeverity severity, const string& message, const string& title = string());
+void ShowFatalError(const string& message);
+
+// Asks the user a yes/no question through the installed message sink, returning 'fallback'
+// when no sink is installed (tests, command line tools, early initialization).
+bool AskUser(const string& question, const string& title = "Visual Pinball"s, bool fallback = false);
+
+#ifndef __STANDALONE__
+// Reports messages through a Win32 message box, optionally parented to the given window
+class Win32DialogSink final : public UserMessageSink
+{
+public:
+   explicit Win32DialogSink(HWND parent = nullptr)
+      : m_parent(parent)
+   {
+   }
+   void Notify(MsgSeverity severity, const string& title, const string& message) override;
+   bool Confirm(const string& title, const string& message, bool fallback) override;
+
+private:
+   const HWND m_parent;
+};
+#endif
+
 #define SAFE_VECTOR_DELETE(p)   { delete [] (p);  (p)=nullptr; }
 #define SAFE_DELETE(p)          { delete (p);     (p)=nullptr; }
 
