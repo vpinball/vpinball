@@ -5,6 +5,9 @@
 
 #include "math/math.h"
 #include "renderer/Renderer.h"
+#ifndef __STANDALONE__
+#include "ui/win/WinEditor.h"
+#endif
 #include "utils/BiffReader.h"
 #include "utils/lzwreader.h"
 
