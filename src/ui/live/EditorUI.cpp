@@ -88,9 +88,13 @@ void EditorUI::Open()
    m_renderer->DisableStaticPrePass(true);
    m_player->SetPlayState(false); // Suspend play while editing
 
+   // Drop input events queued while the editor was closed (e.g. the key press that ended a play test), so they don't trigger editor shortcuts
+   ImGui::GetIO().ClearEventsQueue();
+   ImGui::GetIO().ClearInputKeys();
+
    if (IsInspectMode())
    {
-      // Inspecting a live copy (tweak mode): use the normal player camera view with default shading
+      // Inspecting a live copy (play testing): keep the game playing, use the normal player camera view with default shading
       m_camMode = ViewMode::PreviewCam;
       m_shadeMode = Renderer::ShadeMode::Default;
    }
@@ -116,6 +120,45 @@ void EditorUI::Close()
    m_inspectionModal.Close();
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
+}
+
+void EditorUI::SetTable(PinTable *const table)
+{
+   assert(table != nullptr);
+   // Only tables of a same base table / live copy pair are supported (guaranteed by the player's SetTable)
+   PinTable *const baseTable = m_table->m_liveBaseTable ? m_table->m_liveBaseTable : m_table;
+   assert(table == baseTable || table->m_liveBaseTable == baseTable);
+   m_table = table;
+
+   // Drop all the state bound to the previous table's editables (undo is bound to the base table which outlives the switch)
+   if (m_pointEditPart)
+      m_pointEditPart->SetPointEditContext(nullptr);
+   m_pointEditPart.reset();
+   m_pointSel.clear();
+   m_pointDragPending = false;
+   m_pointDragActive = false;
+   m_savedSelection = Selection();
+   m_savedMultiSel.clear();
+   m_savedOutlinerAnchor = nullptr;
+   ClearSelection();
+   m_editables.clear();
+   m_editableMap.clear();
+   m_lastUndoPart = nullptr;
+   m_addPartType = eItemInvalid;
+   m_boxSelectActive = false;
+}
+
+void EditorUI::PlayTest()
+{
+   if (IsInspectMode())
+      return;
+   // Restore the authored visibility of all parts: the editor continuously overrides the parts' m_d
+   // visibility fields to reflect the outliner state (see EditableUIPart::Render), and this editor
+   // state must not leak into the duplicated table used for the play session
+   for (const auto &uiPart : m_editables)
+      uiPart->RestorePartVisibility();
+   PinTable *const liveTable = m_table->CopyForPlay();
+   m_player->SetTable(liveTable, Player::TableTransition::Stack);
 }
 
 void EditorUI::ResetCameraFromPlayer()
@@ -623,6 +666,12 @@ void EditorUI::RenderUI()
             ExitPointEditMode(true); // Exit drag point edit mode
          else if (m_selection.GetType() != Selection::S_NONE)
             ClearSelection(); // Cancel current selection
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_F5) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+      {
+         // Play a shallow copy of the edited table
+         if (!IsInspectMode() && !m_table->IsLocked())
+            PlayTest();
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       {

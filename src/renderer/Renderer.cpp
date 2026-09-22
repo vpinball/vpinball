@@ -49,36 +49,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    , m_mvp(stereo3D == STEREO_OFF ? 1 : 2)
    , m_initialMVP(stereo3D == STEREO_OFF ? 1 : 2)
 {
-   m_stereo3Denabled = true; // m_table->m_settings.GetPlayer_Stereo3DEnabled();
-   m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
-   m_HDRforceDisableToneMapper = m_table->m_settings.GetPlayer_HDRDisableToneMapper();
-   Settings::SetTableOverride_Exposure_Default(m_table->GetExposure());
-   m_exposure = m_table->m_settings.GetTableOverride_Exposure();
-   m_dynamicAO = m_table->m_settings.GetPlayer_DynamicAO();
-   m_disableAO = m_table->m_settings.GetPlayer_DisableAO();
-   for (int wnd = VPXWindowId::VPXWINDOW_Backglass; wnd <= VPXWindowId::VPXWINDOW_Topper; wnd++)
-      m_ancillaryWndRotation[wnd] = 90 * clamp(m_table->m_settings.GetWindow_Rotation(wnd), 0, 3); // Setting is an index in the 0 / 90 / 180 / 270 literals
-   m_vrPreview = (VRPreviewMode)m_table->m_settings.GetPlayer_VRPreview();
-   m_vrPreviewShrink = m_table->m_settings.GetPlayerVR_ShrinkPreview();
-   m_FXAA = m_table->m_settings.GetPlayer_FXAA();
-   m_sharpen = m_table->m_settings.GetPlayer_Sharpen();
-   m_ss_refl = m_table->m_settings.GetPlayer_SSRefl();
-   m_bloomOff = m_table->m_settings.GetPlayer_ForceBloomOff();
-   m_motionBlurOff = m_table->m_settings.GetPlayer_ForceMotionBlurOff();
-   m_maxReflectionMode = (RenderProbe::ReflectionMode)m_table->m_settings.GetPlayer_PFReflection();
-   m_trailForBalls = m_table->m_settings.GetPlayer_BallTrail();
-   m_ballTrailStrength = m_table->m_settings.GetPlayer_BallTrailStrength();
-   m_ballAntiStretch = m_table->m_settings.GetPlayer_BallAntiStretch();
-   m_ballImage = nullptr;
-   m_decalImage = nullptr;
-   m_overwriteBallImages = m_table->m_settings.GetPlayer_OverwriteBallImage();
-   if (m_overwriteBallImages)
-   {
-      m_ballImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_BallImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
-      m_decalImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_DecalImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
-   }
-   m_vrApplyColorKey = m_stereo3D == STEREO_VR && m_table->m_settings.GetPlayerVR_UsePassthroughColor();
-   m_visualNudgeStrength = m_table->m_settings.GetPlayer_NudgeStrength();
+   ApplyTableSettings();
 
    #if defined(ENABLE_BGFX)
    constexpr int MSAASamples[] = { 1, 4, 6, 8, 16 };
@@ -282,6 +253,67 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    std::shared_ptr<VertexBuffer> ballTrailVertexBuffer = std::make_shared<VertexBuffer>(m_renderDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = std::make_shared<MeshBuffer>("Ball.Trail"s, ballTrailVertexBuffer);
 
+   m_renderDevice->ResetRenderState();
+   #if defined(ENABLE_DX9)
+   D3DVIEWPORT9 viewPort;
+   viewPort.X = 0;
+   viewPort.Y = 0;
+   viewPort.Width = m_renderWidth;
+   viewPort.Height = m_renderHeight;
+   viewPort.MinZ = 0.0f;
+   viewPort.MaxZ = 1.0f;
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetViewport(&viewPort));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
+   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
+   #endif
+}
+
+void Renderer::ApplyTableSettings()
+{
+   m_stereo3Denabled = true; // m_table->m_settings.GetPlayer_Stereo3DEnabled();
+   m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
+   m_HDRforceDisableToneMapper = m_table->m_settings.GetPlayer_HDRDisableToneMapper();
+   Settings::SetTableOverride_Exposure_Default(m_table->GetExposure());
+   m_exposure = m_table->m_settings.GetTableOverride_Exposure();
+   m_dynamicAO = m_table->m_settings.GetPlayer_DynamicAO();
+   m_disableAO = m_table->m_settings.GetPlayer_DisableAO();
+   for (int wnd = VPXWindowId::VPXWINDOW_Backglass; wnd <= VPXWindowId::VPXWINDOW_Topper; wnd++)
+      m_ancillaryWndRotation[wnd] = 90 * clamp(m_table->m_settings.GetWindow_Rotation(wnd), 0, 3); // Setting is an index in the 0 / 90 / 180 / 270 literals
+   m_vrPreview = (VRPreviewMode)m_table->m_settings.GetPlayer_VRPreview();
+   m_vrPreviewShrink = m_table->m_settings.GetPlayerVR_ShrinkPreview();
+   m_FXAA = m_table->m_settings.GetPlayer_FXAA();
+   m_sharpen = m_table->m_settings.GetPlayer_Sharpen();
+   m_ss_refl = m_table->m_settings.GetPlayer_SSRefl();
+   m_bloomOff = m_table->m_settings.GetPlayer_ForceBloomOff();
+   m_motionBlurOff = m_table->m_settings.GetPlayer_ForceMotionBlurOff();
+   m_maxReflectionMode = (RenderProbe::ReflectionMode)m_table->m_settings.GetPlayer_PFReflection();
+   m_trailForBalls = m_table->m_settings.GetPlayer_BallTrail();
+   m_ballTrailStrength = m_table->m_settings.GetPlayer_BallTrailStrength();
+   m_ballAntiStretch = m_table->m_settings.GetPlayer_BallAntiStretch();
+   m_ballImage = nullptr;
+   m_decalImage = nullptr;
+   m_overwriteBallImages = m_table->m_settings.GetPlayer_OverwriteBallImage();
+   if (m_overwriteBallImages)
+   {
+      m_ballImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_BallImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
+      m_decalImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_DecalImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
+   }
+   m_vrApplyColorKey = m_stereo3D == STEREO_VR && m_table->m_settings.GetPlayerVR_UsePassthroughColor();
+   m_visualNudgeStrength = m_table->m_settings.GetPlayer_NudgeStrength();
+
+   // HDR2020 output disables bloom and boosts exposure
+   if (m_renderDevice && (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer())
+   {
+      m_exposure *= g_app->m_settings.GetPlayer_HDRGlobalExposure();
+      m_bloomOff = true;
+   }
+
    // Cache DMD renderer properties
    for (int profile = 0; profile < (int)std::size(m_dmdUseLegacyRenderer); profile++)
    {
@@ -318,27 +350,29 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_segUnlitColor[profile].y = InvsRGB(m_segUnlitColor[profile].y);
       m_segUnlitColor[profile].z = InvsRGB(m_segUnlitColor[profile].z);
    }
+}
 
+void Renderer::SetTable(PinTable *const table)
+{
+   assert(table != nullptr);
+   m_table = table;
+   m_sceneLighting.SetTable(table);
 
-   m_renderDevice->ResetRenderState();
-   #if defined(ENABLE_DX9)
-   D3DVIEWPORT9 viewPort;
-   viewPort.X = 0;
-   viewPort.Y = 0;
-   viewPort.Width = m_renderWidth;
-   viewPort.Height = m_renderHeight;
-   viewPort.MinZ = 0.0f;
-   viewPort.MaxZ = 1.0f;
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetViewport(&viewPort));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetRenderState(D3DRS_LIGHTING, FALSE));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetRenderState(D3DRS_CLIPPING, FALSE));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
-   CHECKD3D(m_renderDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
-   #endif
+   // Drop renderable initialization requests targeting the previous table
+   m_renderableToInit.clear();
+
+   // Re-evaluate the cached table settings (they may have been edited during the previous session)
+   ApplyTableSettings();
+   DisableBallLighting(m_table->m_settings.GetPlayer_DisableLightingForBalls());
+
+   // Static prerendering must be fully re-evaluated for the new table
+   m_isStaticPrepassDirty = true;
+   m_staticPrepassAccumCount = 0;
+   m_statsDrawnStaticTriangles = 0;
+
+   // The environment map sampler and its precomputed radiance are kept: base tables and their
+   // live copies share the same table images (and therefore the same environment map). Rebinding
+   // them will be needed if table switching is extended to unrelated tables.
 }
 
 Renderer::~Renderer()

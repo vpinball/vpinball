@@ -47,6 +47,12 @@ public:
    void RenderUI();
    void Close();
 
+   // Switch the editor to a new table (either the base edited table or one of its live copies)
+   void SetTable(PinTable *table);
+
+   // Start playing a shallow copy of the edited table (edition is suspended, restored when the play session ends)
+   void PlayTest();
+
    bool IsPreview() const { return m_camMode == ViewMode::PreviewCam; }
    bool IsBackdropEditMode() const { return m_camMode == ViewMode::DesktopBackdrop; }
 
