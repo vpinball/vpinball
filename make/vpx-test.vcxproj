@@ -37,6 +37,7 @@
     <ClCompile Include="../../tests/vpx-test.cpp" />
     <ClCompile Include="../../tests/test-base-render.cpp" />
     <ClCompile Include="../../tests/test-plugin-arrays.cpp" />
+    <ClCompile Include="../../tests/test-table-io.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../tests/vpx-test.h" />
