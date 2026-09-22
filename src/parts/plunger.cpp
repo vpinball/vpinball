@@ -120,7 +120,20 @@ void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
    if (isUI)
    {
-      // FIXME implement UI picking
+      // Editor picking proxy: a flat quad covering the plunger lane (rod travel range and housing) at the rod's height
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y) + m_d.m_zAdjust;
+      const float xMin = m_d.m_v.x - m_d.m_width;
+      const float xMax = m_d.m_v.x + m_d.m_width;
+      const float yMin = m_d.m_v.y - m_d.m_stroke; // furthest travel of the tip
+      const float yMax = m_d.m_v.y + m_d.m_height; // housing behind the plunger
+      Vertex3Ds *const rgv3D = new Vertex3Ds[4]; // CCW winding for upward facing normal
+      rgv3D[0] = Vertex3Ds(xMin, yMin, height + 2.f * m_d.m_width); // at the top of the rod
+      rgv3D[1] = Vertex3Ds(xMin, yMax, height + 2.f * m_d.m_width);
+      rgv3D[2] = Vertex3Ds(xMax, yMax, height + 2.f * m_d.m_width);
+      rgv3D[3] = Vertex3Ds(xMax, yMin, height + 2.f * m_d.m_width);
+      Hit3DPoly *const ph3dpoly = new Hit3DPoly(this, rgv3D, 4);
+      ph3dpoly->m_ObjType = ePlunger;
+      physics->AddCollider(ph3dpoly, isUI);
    }
    else
    {

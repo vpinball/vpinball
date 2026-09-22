@@ -542,24 +542,24 @@ void EditorUI::RenderUI()
                   ClearSelection();
                else
                {
-                  size_t selectionIndex = vhoHit.size();
-                  for (size_t i = 0; i <= vhoHit.size(); i++)
+                  // Click selects the nearest hit part, subsequent clicks cycle to the parts behind it
+                  vector<std::shared_ptr<EditorUIPart>> hitParts;
+                  for (const HitTestResult &hr : vhoHit)
                   {
-                     if (i < vhoHit.size() && m_selection.GetType() == Selection::S_EDITABLE && vhoHit[i].m_obj->m_editable == m_selection.GetPart()->GetEditable())
-                        selectionIndex = i + 1;
-                     if (i == selectionIndex)
-                     {
-                        const size_t p = selectionIndex % vhoHit.size();
-                        const IEditable *select = vhoHit[p].m_obj->m_editable;
-                        const auto it = m_editableMap.find(select);
-                        if (it != m_editableMap.end())
-                        {
-                           SetSelection(Selection(it->second));
-                           m_outlinerAnchor = it->second;
-                        }
-                        else
-                           ClearSelection();
-                     }
+                     const auto it = m_editableMap.find(hr.m_obj->m_editable);
+                     if (it != m_editableMap.end() && std::ranges::find(hitParts, it->second) == hitParts.end())
+                        hitParts.push_back(it->second);
+                  }
+                  if (hitParts.empty())
+                     ClearSelection();
+                  else
+                  {
+                     size_t selectionIndex = 0;
+                     const auto selIt = std::ranges::find(hitParts, m_selection.GetPart());
+                     if (selIt != hitParts.end())
+                        selectionIndex = static_cast<size_t>(selIt - hitParts.begin() + 1) % hitParts.size();
+                     SetSelection(Selection(hitParts[selectionIndex]));
+                     m_outlinerAnchor = hitParts[selectionIndex];
                   }
                   // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pBall;
                }
