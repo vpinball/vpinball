@@ -236,7 +236,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    bool useVR = false;
    #if defined(ENABLE_XR)
-      const int vrDetectionMode = m_ptable->m_settings.GetPlayerVR_AskToTurnOn();
+      // The live editor is not available in VR, so force VR off in the modes that open it (LiveEdit / FullEdit)
+      const int vrDetectionMode = (m_playMode == PlayMode::LiveEdit || m_playMode == PlayMode::FullEdit) ? 2 : m_ptable->m_settings.GetPlayerVR_AskToTurnOn();
       if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
       {
          m_vrDevice = new VRDevice(m_ptable->m_settings);
