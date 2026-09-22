@@ -85,16 +85,25 @@ void EditorUI::Open()
       return;
    m_isOpened = true;
    m_boxSelectActive = false;
-   m_player->SetPlayState(false);
    m_renderer->DisableStaticPrePass(true);
+   m_player->SetPlayState(false); // Suspend play while editing
 
-   // Enter with the user camera setup as an orthographic top view fitted on the playfield bounds, rendered as masked wireframe
-   m_camMode = ViewMode::EditorCam;
-   m_perspectiveCam = false;
-   m_predefinedView = PredefinedView::Top;
-   m_shadeMode = Renderer::ShadeMode::Wireframe;
-   // The playfield fit needs a valid display size and chrome height which may not be known yet (editor opened during startup): defer to the first rendered frame
-   m_fitPlayfieldCamera = true;
+   if (IsInspectMode())
+   {
+      // Inspecting a live copy (tweak mode): use the normal player camera view with default shading
+      m_camMode = ViewMode::PreviewCam;
+      m_shadeMode = Renderer::ShadeMode::Default;
+   }
+   else
+   {
+      // Enter with the user camera setup as an orthographic top view fitted on the playfield bounds, rendered as masked wireframe
+      m_camMode = ViewMode::EditorCam;
+      m_perspectiveCam = false;
+      m_predefinedView = PredefinedView::Top;
+      m_shadeMode = Renderer::ShadeMode::Wireframe;
+      // The playfield fit needs a valid display size and chrome height which may not be known yet (editor opened during startup): defer to the first rendered frame
+      m_fitPlayfieldCamera = true;
+   }
 }
 
 void EditorUI::Close()
