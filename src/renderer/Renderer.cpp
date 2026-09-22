@@ -3021,11 +3021,6 @@ void Renderer::RenderFrame()
    // Compute bloom (to be applied later, with tonemapping)
    UpdateBloom(renderedRT);
 
-   // Render ancillary windows (eventually embedded in the main window, so must be done after main rendering but before post process)
-   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Backglass]);
-   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_ScoreView]);
-   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper]);
-
    const bool hasAntialiasPass = m_FXAA != Disabled;
    const bool hasSharpenPass = m_sharpen != 0;
    const bool hasUpscalerPass = m_renderWidth < GetBackBufferTexture()->GetWidth();
@@ -3064,6 +3059,14 @@ void Renderer::RenderFrame()
 
    // Apply stereo
    renderedRT = ApplyStereo(renderedRT, m_renderDevice->GetOutputBackBuffer());
+
+   // Render ancillary windows. Embedded windows are rendered after the postprocess chain, directly to the output backbuffer,
+   // so that they are not modified by the table's postprocessing (color grade LUT, tonemapping, sharpen, ...)
+   RenderAncillaryWindow(
+      VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, m_renderDevice->GetOutputBackBuffer(), g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Backglass]);
+   RenderAncillaryWindow(
+      VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, m_renderDevice->GetOutputBackBuffer(), g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_ScoreView]);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, m_renderDevice->GetOutputBackBuffer(), g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper]);
 
    if (!uiBeforeStero)
    {
@@ -3250,8 +3253,8 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
       outputRT = embedRT;
       VPX::Window* containerWnd = m_renderDevice->m_outputWnd[0];
 
-      const float displayScaleX = static_cast<float>(containerWnd->GetPixelWidth()) / static_cast<float>(containerWnd->GetWidth());
-      const float displayScaleY = static_cast<float>(containerWnd->GetPixelHeight()) / static_cast<float>(containerWnd->GetHeight());
+      const float displayScaleX = static_cast<float>(outputRT->GetWidth()) / static_cast<float>(containerWnd->GetWidth());
+      const float displayScaleY = static_cast<float>(outputRT->GetHeight()) / static_cast<float>(containerWnd->GetHeight());
 
       const int wndW = output.GetEmbeddedWindow()->GetWidth();
       const int wndH = output.GetEmbeddedWindow()->GetHeight();
@@ -3327,8 +3330,9 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
    rd->m_DMDShader->SetFloat(ShaderUniform::alphaTestValue, -1.0f);
 
    // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)
+   // Embedded windows are rendered after the main postprocess chain, directly to the sRGB output backbuffer
    // TODO we should allow plugins to decide if they want linear colorspace + tonemapping or simple sRGB composition
-   isOutputLinear = output.GetMode() == VPX::RenderOutput::OM_EMBEDDED;
+   isOutputLinear = false;
 
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
@@ -3428,12 +3432,6 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
    RenderTarget* outputRT = SetupAncillaryRenderTarget(window, output, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, isOutputLinear);
    if (outputRT == nullptr)
       return;
-
-   // Keep the embedded ancillary content ordered after bloom: it writes the back buffer that bloom
-   // already sampled with this region cleared, so without this dependency the sorter may run it before
-   // the bloom sample and bloom bleeds the content into the region. No-op if bloom did not run.
-   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-      rd->AddRenderTargetDependency(GetBloomBufferTexture());
 
    rd->ResetRenderState();
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
