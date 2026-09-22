@@ -23,9 +23,12 @@
    - Fixed OLE FAT entries sector indices wrongly considered as 64bit, causing over allocation
    - Fixed DirTree::flush partial last directory block
    - Fixed StorageIO::flush not padding file to sector boundary
+   - Fixed StorageIO::flush writing uninitialized data in the last DIFAT sector
+   - Balance directory sibling trees on flush (deep chains break recursive readers)
+   - Added creation of version 4 files with 4K sectors (Storage::open bLargeSectors)
    2026 VPX team
 
-   Version: 0.5.4 VPX
+   Version: 0.5.5 VPX
 
    Redistribution and use in source and binary forms, with or without 
    modification, are permitted provided that the following conditions 
@@ -122,7 +125,7 @@ public:
   /**
    * Opens the storage. Returns true if no error occurs.
    **/
-  bool open(bool bWriteAccess = false, bool bCreate = false);
+  bool open(bool bWriteAccess = false, bool bCreate = false, bool bLargeSectors = false);
 
   /**
    * Closes the storage.

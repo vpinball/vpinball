@@ -23,9 +23,12 @@
    - Fixed OLE FAT entries sector indices wrongly considered as 64bit, causing over allocation
    - Fixed DirTree::flush partial last directory block
    - Fixed StorageIO::flush not padding file to sector boundary
+   - Fixed StorageIO::flush writing uninitialized data in the last DIFAT sector
+   - Balance directory sibling trees on flush (deep chains break recursive readers)
+   - Added creation of version 4 files with 4K sectors (Storage::open bLargeSectors)
    2026 VPX team
 
-   Version: 0.5.4 VPX
+   Version: 0.5.5 VPX
 
    Redistribution and use in source and binary forms, with or without 
    modification, are permitted provided that the following conditions 
@@ -60,6 +63,7 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <algorithm>
 #include <limits>
 #include <mutex>
 
@@ -100,6 +104,7 @@ class Header final
     uint64 num_sbat;         // blocks allocated for small bat
     uint64 mbat_start;       // starting block to store meta bat
     uint64 num_mbat;         // blocks allocated for meta bat
+    uint64 num_dirent;       // blocks allocated for directory (only written for 4K sector files)
     uint64 bb_blocks[109];
     bool dirty;                // Needs to be written
     
@@ -181,6 +186,7 @@ class DirTree final
     void debug();
     bool isDirty() const;
     void markAsDirty(uint64 dataIndex, int64 bigBlockSize);
+    void rebalance(int64 bigBlockSize);
     void flush(const std::vector<uint64>& blocks, StorageIO *const io, uint64 bigBlockSize, uint64 sb_start, uint64 sb_size);
     size_t unused();
     void findParentAndSib(uint64 inIdx, const std::string& inFullName, uint64 &parentIdx, uint64 &sibIdx);
@@ -221,7 +227,7 @@ class StorageIO final
     StorageIO( Storage* storage, const char* filename );
     ~StorageIO();
     
-    bool open(bool bWriteAccess = false, bool bCreate = false);
+    bool open(bool bWriteAccess = false, bool bCreate = false, bool bLargeSectors = false);
     void close();
     void flush();
     void load(bool bWriteAccess);
@@ -381,6 +387,7 @@ Header::Header()
     num_sbat(0),                // [40H,04] number of SECTs in the MiniFAT chain
     mbat_start(AllocTable::Eof),// [44H,04] first SECT in the DIFAT chain
     num_mbat(0),                // [48H,04] number of SECTs in the DIFAT chain
+    num_dirent(0),              // [28H,04] number of SECTs in the directory chain (version 4 only)
     dirty(true)	
 
 {
@@ -406,6 +413,7 @@ bool Header::valid() const
 void Header::load( const unsigned char* buffer ) {
   b_shift      = readU16( buffer + 0x1e ); // [1EH,02] size of sectors in power-of-two; typically 9 indicating 512-byte sectors and 12 for 4096
   s_shift      = readU16( buffer + 0x20 ); // [20H,02] size of mini-sectors in power-of-two; typically 6 indicating 64-byte mini-sectors
+  num_dirent   = readU32( buffer + 0x28 ); // [28H,04] number of SECTs in the directory chain (version 4 only)
   num_bat      = readU32( buffer + 0x2c ); // [2CH,04] number of SECTs in the FAT chain
   dirent_start = readU32( buffer + 0x30 ); // [30H,04] first SECT in the directory chain
   threshold    = readU32( buffer + 0x38 ); // [38H,04] maximum size for a mini stream; typically 4096 bytes
@@ -431,10 +439,11 @@ void Header::save( unsigned char* buffer )
   writeU32( buffer + 12, 0 );             // unknown
   writeU32( buffer + 16, 0 );             // unknown
   writeU16( buffer + 24, 0x003e );        // revision ?
-  writeU16( buffer + 26, 3 );             // version ?
+  writeU16( buffer + 26, b_shift == 12 ? 4 : 3 ); // major version: 3 for 512 byte sectors, 4 for 4096 byte sectors
   writeU16( buffer + 28, 0xfffe );        // unknown
   writeU16( buffer + 0x1e, (uint32) b_shift );
   writeU16( buffer + 0x20, (uint32) s_shift );
+  writeU32( buffer + 0x28, b_shift == 12 ? (uint32) num_dirent : 0 );
   writeU32( buffer + 0x2c, (uint32) num_bat );
   writeU32( buffer + 0x30, (uint32) dirent_start );
   writeU32( buffer + 0x38, (uint32) threshold );
@@ -1075,8 +1084,68 @@ void DirTree::markAsDirty(uint64 dataIndex, int64 bigBlockSize)
     dirtyBlocks.push_back(dbidx);
 }
 
+static void dirtree_collect_siblings(DirTree* dirtree, std::vector<uint64>& result, uint64 index)
+{
+    uint64 count = dirtree->entryCount();
+    std::vector<uint64> pending;
+    pending.push_back(index);
+    while (!pending.empty())
+    {
+        uint64 idx = pending.back();
+        pending.pop_back();
+        if (idx == DirTree::End || idx >= count)
+            continue;
+        DirEntry* e = dirtree->entry(idx);
+        if (!e || !e->valid)
+            continue;
+        result.push_back(idx);
+        pending.push_back(e->prev);
+        pending.push_back(e->next);
+    }
+}
+
+static uint64 dirtree_balance(DirTree* dirtree, const std::vector<uint64>& sorted, size_t lo, size_t hi, int64 bigBlockSize)
+{
+    if (lo >= hi)
+        return DirTree::End;
+    size_t mid = lo + (hi - lo) / 2;
+    uint64 prev = dirtree_balance(dirtree, sorted, lo, mid, bigBlockSize);
+    uint64 next = dirtree_balance(dirtree, sorted, mid + 1, hi, bigBlockSize);
+    DirEntry* e = dirtree->entry(sorted[mid]);
+    if (e->prev != prev || e->next != next)
+    {
+        e->prev = prev;
+        e->next = next;
+        dirtree->markAsDirty(sorted[mid], bigBlockSize);
+    }
+    return sorted[mid];
+}
+
+// Siblings are inserted as a plain binary search tree, so creating streams in sorted order
+// (the common case) degenerates into a linked list. Rebuild each storage's sibling tree as a
+// balanced one before writing, as readers that recurse over it choke on deep chains.
+void DirTree::rebalance(int64 bigBlockSize)
+{
+    for (size_t idx = 0; idx < entryCount(); idx++)
+    {
+        DirEntry* e = entry(idx);
+        if (!e || !e->valid || !e->dir || e->child == End)
+            continue;
+        std::vector<uint64> children;
+        dirtree_collect_siblings(this, children, e->child);
+        std::sort(children.begin(), children.end(), [this](uint64 a, uint64 b) { return entry(a)->compare(*entry(b)) < 0; });
+        uint64 child = dirtree_balance(this, children, 0, children.size(), bigBlockSize);
+        if (e->child != child)
+        {
+            e->child = child;
+            markAsDirty(idx, bigBlockSize);
+        }
+    }
+}
+
 void DirTree::flush(const std::vector<uint64>& blocks, StorageIO *const io, uint64 bigBlockSize, uint64 sb_start, uint64 sb_size)
 {
+    rebalance(bigBlockSize);
     uint64 bufLen = size();
     uint64 allocLen = static_cast<uint64>(blocks.size()) * bigBlockSize;
     if (allocLen < bufLen)
@@ -1283,13 +1352,17 @@ StorageIO::~StorageIO()
   delete header;
 }
 
-bool StorageIO::open(bool bWriteAccess, bool bCreate)
+bool StorageIO::open(bool bWriteAccess, bool bCreate, bool bLargeSectors)
 {
   // already opened ? close first
   if (opened)
       close();
   if (bCreate)
   {
+      header->b_shift = bLargeSectors ? 12 : 9;
+      bbat->blockSize = (uint64) 1 << header->b_shift;
+      sbat->blockSize = (uint64) 1 << header->s_shift;
+      dirtree->clear(bbat->blockSize);
       create();
       init();
       writeable = true;
@@ -1453,13 +1526,25 @@ void StorageIO::init()
 
 void StorageIO::flush()
 {
+    if (writeable)
+    {
+        uint64 num_dirent = static_cast<uint64>(bbat->follow(header->dirent_start).size());
+        if (num_dirent != header->num_dirent)
+        {
+            header->num_dirent = num_dirent;
+            header->dirty = true;
+        }
+    }
     if (header->dirty)
     {
-        unsigned char *buffer = new unsigned char[512];
+        assert(bbat->blockSize >= 512 && bbat->blockSize <= std::numeric_limits<size_t>::max());
+        unsigned char *buffer = new unsigned char[(size_t)bbat->blockSize]();
         header->save( buffer );
         file.seekp( 0 ); 
-        file.write( (char*)buffer, 512 );
+        file.write( (char*)buffer, (std::streamsize)bbat->blockSize );
         fileCheck(file);
+        if (filesize < bbat->blockSize)
+            filesize = bbat->blockSize;
         delete[] buffer;
     }
     if (bbat->isDirty())
@@ -1480,6 +1565,7 @@ void StorageIO::flush()
         uint64 nBytes = bbat->blockSize * static_cast<uint64>(mbat_blocks.size());
         assert(nBytes <= std::numeric_limits<size_t>::max());
         unsigned char *buffer = new unsigned char[(size_t)nBytes];
+        memset(buffer, 0xff, (size_t)nBytes);
         uint64 sIdx = 0;
         uint64 dcount = 0;
         uint64 blockCapacity = bbat->blockSize / sizeof(uint32) - 1;
@@ -1500,6 +1586,8 @@ void StorageIO::flush()
                 dcount = 0;
             }
         }
+        if (dcount != 0)
+            writeU32(buffer + (mbat_blocks.size() - 1) * bbat->blockSize + blockCapacity * 4, AllocTable::Eof);
         saveBigBlocks(mbat_blocks, 0, buffer, nBytes);
         delete[] buffer;
         mbatDirty = false;
@@ -2334,9 +2422,9 @@ int Storage::result() const
   return (int) io->result;
 }
 
-bool Storage::open(bool bWriteAccess, bool bCreate)
+bool Storage::open(bool bWriteAccess, bool bCreate, bool bLargeSectors)
 {
-  return io->open(bWriteAccess, bCreate);
+  return io->open(bWriteAccess, bCreate, bLargeSectors);
 }
 
 void Storage::close()
