@@ -757,7 +757,7 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
    if (SUCCEEDED(hr))
    {
       POLE::Storage fileStorage(vpxPath.string().c_str());
-      if (!fileStorage.open(true, true) || fileStorage.result() != POLE::Storage::Ok)
+      if (!fileStorage.open(true, true, true) || fileStorage.result() != POLE::Storage::Ok)
       {
          ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
          hr = E_FAIL;

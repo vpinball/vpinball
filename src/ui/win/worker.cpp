@@ -87,7 +87,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    HRESULT hr = E_FAIL;
    POLE::Storage storage(fn.string().c_str());
-   if (storage.open(true, true) && storage.result() == POLE::Storage::Ok)
+   if (storage.open(true, true, true) && storage.result() == POLE::Storage::Ok)
    {
       hr = pstgroot->WriteToStorage(storage) ? S_OK : E_FAIL;
       storage.close();
