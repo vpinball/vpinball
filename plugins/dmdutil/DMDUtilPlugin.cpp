@@ -288,7 +288,7 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
    dmdSource = std::make_unique<CtrlItemConsumer<DisplaySrcId>>(
       msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG,
       [](std::vector<DisplaySrcId>& items) { SelectSource(items); },
-      []() { dmdDispatcher = nullptr; },
+      []() { },
       []() { dmdSource->With([](const std::vector<DisplaySrcId>& items) {
             if (items.empty())
             {
@@ -297,13 +297,15 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
             }
             const DisplaySrcId& dmdSrc = items.front();
             LOGI(std::format("DMD source selected [endpointId={}.{}, {}x{} fmt={}]", dmdSrc.id.endpointId, dmdSrc.id.resId, dmdSrc.width, dmdSrc.height, dmdSrc.frameFormat));
-            dmdDispatcher = std::make_unique<DMDUtilDispatcher>();
+            if (dmdDispatcher == nullptr)
+               dmdDispatcher = std::make_unique<DMDUtilDispatcher>();
          }); });
    dmdSource->Subscribe();
 }
 
 MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload()
 {
+   dmdDispatcher = nullptr;
    dmdSource->Unsubscribe();
    dmdSource = nullptr;
    msgApi = nullptr;
