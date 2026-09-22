@@ -1498,31 +1498,39 @@ IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
 
    m_allHitElements.clear();
 
-   RenderTable(&phs);
-
+   // Collect all elements under the click in the order they are rendered:
+   // UIRenderPass1 of all elements first, then UIRenderPass2 of all elements.
+   // This reflects the actual stacking order, so elements hit during pass 2
+   // (e.g. gates, plungers, spinners) are above all elements hit during pass 1.
+   // Sub parts (drag points, light centers) are not listed.
+   const auto collectHit = [this, &phs2]()
+   {
+      IWinUIPart *const tmp = phs2.m_pselected;
+      if (tmp == nullptr || tmp == &m_tablePart || tmp->IsSubPart())
+         return;
+      const auto it = std::ranges::find(m_allHitElements, tmp);
+      if (it != m_allHitElements.end())
+         m_allHitElements.erase(it);
+      m_allHitElements.push_back(tmp);
+   };
    for (IEditable *const ptr : m_table->GetParts())
-   {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
-      {
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
-            uiPart->UIRenderPass1(&phs2);
-         IWinUIPart *const tmp = phs2.m_pselected;
-         if (FindIndexOf(m_allHitElements, tmp) == -1 && tmp != nullptr && tmp != &m_tablePart)
          {
-            m_allHitElements.push_back(tmp);
+            uiPart->UIRenderPass1(&phs2);
+            collectHit();
          }
-      }
-   }
-   // it's possible that UIRenderPass1 doesn't find all elements (gates,plunger)
-   // check here if everything was already stored in the list
-   if (FindIndexOf(m_allHitElements, phs.m_pselected) == -1)
-   {
-      m_allHitElements.push_back(phs.m_pselected);
-   }
+   for (IEditable *const ptr : m_table->GetParts())
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
+         if (IWinUIPart *const uiPart = GetUIPart(ptr))
+         {
+            uiPart->UIRenderPass2(&phs2);
+            collectHit();
+         }
 
    std::ranges::reverse(m_allHitElements.begin(), m_allHitElements.end());
 
-   return phs.m_pselected;
+   return m_allHitElements.empty() ? &m_tablePart : m_allHitElements[0];
 }
 
 void PinTableWnd::OnKeyDown(int key)
@@ -1603,7 +1611,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
    }
    else
    {
-      IWinUIPart *const pisel = HitTest(x, y);
+      IWinUIPart *pisel = HitTest(x, y);
 
       const bool add = ((ksshift & 0x80000000) != 0);
 
@@ -1615,6 +1623,20 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
          // to add them to the selection group
          m_tablePart.OnLButtonDown(x, y); // Start the band select
          return;
+      }
+
+      // Repeated left clicks cycle through the elements stacked under the
+      // cursor, from the topmost one down, then wrap around.
+      // m_allHitElements is ordered front to back by HitTest.
+      // Sub parts (drag points, light centers) are always picked directly.
+      if (!add && pisel != nullptr && !pisel->IsSubPart() && m_vmultisel.size() == 1)
+      {
+         auto it = std::ranges::find(m_allHitElements, m_vmultisel.front());
+         if (it != m_allHitElements.end())
+         {
+            ++it;
+            pisel = (it == m_allHitElements.end()) ? m_allHitElements.front() : *it;
+         }
       }
 
       AddMultiSel(pisel, add, true, false);
