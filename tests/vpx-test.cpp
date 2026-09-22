@@ -123,7 +123,11 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    CComObject<PinTable>* table;
    CComObject<PinTable>::CreateInstance(&table);
    table->AddRef();
-   table->LoadGameFromFilename((GetAssetPath() / tablePath).string());
+   TestFileFeedback feedback;
+   const HRESULT hr = table->LoadGameFromFilename(GetAssetPath() / tablePath, feedback);
+   CHECK(SUCCEEDED(hr));
+   CHECK(feedback.m_isMonotonic);
+   CHECK(feedback.m_lastProgress <= feedback.m_length);
    auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
    const unsigned int onPrepareFrameMsgId = player->m_pluginManager.GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    player->m_pluginManager.GetMsgAPI().SubscribeMsg(player->m_pluginAPI.GetVPXEndPointId(), onPrepareFrameMsgId, onPrepareFrame, &state);
@@ -166,13 +170,11 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    context.setOption("no-breaks", true); // Disable breaks when a test fail (including crash & exceptions)
    const string outPath = (GetAssetPath() / "test_results.txt").string();
    context.setOption("out", outPath.c_str());
-   context.applyCommandLine(0, nullptr); // TODO Apply command line arguments if any
+   context.applyCommandLine(__argc, __argv);
    int res = context.run();
 
    // Clean up
    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
-   if (context.shouldExit())
-      return res;
-   return 0;
+   return res;
 }
