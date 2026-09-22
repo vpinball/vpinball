@@ -8,7 +8,6 @@
 #include "core/vpversion.h"
 #include "parts/pintable.h"
 #include "ui/live/LiveUI.h"
-#include "ui/win/WinEditor.h"
 
 #include "VPinballLib.h"
 #include "ZipUtils.h"
