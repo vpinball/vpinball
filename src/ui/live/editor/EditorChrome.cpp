@@ -46,6 +46,9 @@ void EditorChrome::RenderMenuBar()
                editor.m_undo.SetCleanPoint(eSaveClean);
          }
          ImGui::Separator();
+         if (ImGui::MenuItem("Play", "F5", false, !editor.m_table->IsLocked()))
+            editor.PlayTest();
+         ImGui::Separator();
          if (ImGui::MenuItem("Quit"))
             editor.m_player->SetCloseState(Player::CS_CLOSE_APP);
          ImGui::EndMenu();
@@ -107,6 +110,17 @@ void EditorChrome::RenderToolbar()
    else
    {
       const float iconSize = ImGui::GetContentRegionAvail().y;
+
+      // Play a shallow copy of the edited table
+      ImGui::BeginDisabled(editor.m_table->IsLocked());
+      if (ImGui::Button(ICON_FK_PLAY))
+         editor.PlayTest();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Play table (F5)");
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::Separator();
+      ImGui::SameLine();
 
       // Add part buttons (same parts and icons as the WinUI toolbar)
       if (m_addPartButtons.empty())

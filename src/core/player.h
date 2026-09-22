@@ -86,11 +86,46 @@ public:
    uint32_t m_pauseTimeTarget = 0;
    bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)
 
-   PinTable *const m_ptable; // The played table (which can eventually be a shallow copy of a table to allow being modified by the script without changing the original table)
+   PinTable *m_ptable; // The played table (which can eventually be a shallow copy of a table to allow being modified by the script without changing the original table)
    bool m_tblMirrorEnabled = false; // Mirror tables left to right.  This is activated by a cheat during table selection.
 
    bool IsEditorMode() const { return m_playMode == PlayMode::FullEdit; }
-   const PlayMode m_playMode;
+   PlayMode m_playMode;
+
+   // Request to replace the played table with a new one. The transition is performed at the beginning
+   // of the next game loop iteration, so it is safe to call this at any time (including from a UI or a
+   // script callback). The given reference on the table is adopted by the player.
+   // For the time being, only tables of a same base table / live copy pair are supported (i.e. the new
+   // table must be a shallow copy created with PinTable::CopyForPlay, or the base table of one).
+   enum class TableTransition
+   {
+      Replace, // Discard the current table session and switch to the new table
+      Stack    // Suspend the current table session and switch to the new table (restored when the new session ends)
+   };
+   void SetTable(PinTable *table, TableTransition transition);
+   bool HasStackedTableSession() const { return !m_tableStack.empty(); }
+
+private:
+   // A table session suspended by a stacked SetTable, restored when the newer session ends
+   struct StackedTable
+   {
+      PinTable *table;   // Table of the suspended session (a reference is owned by the stack)
+      PlayMode playMode; // Play mode to restore when getting back to this session
+      bool editorWasOpened;
+   };
+   vector<StackedTable> m_tableStack;
+   PinTable *m_pendingTable = nullptr; // Table requested through SetTable (a reference is owned until applied)
+   bool m_pendingTableStack = false;
+   volatile bool m_pendingTablePop = false;
+   bool m_frameMutexHeld = false; // True while the game thread owns the render frame mutex, in which case table transitions must be deferred (BGFX only)
+   void ProcessTableTransitions();
+   void ApplyTableTransition(PinTable *newTable, bool stackTable, const StackedTable *restore);
+   void InitTableSession(bool isInitial);
+   void ShutdownTableSession();
+   void LockRenderThread();   // Wait for the render thread to be idle and take ownership of the render frame (BGFX only)
+   void UnlockRenderThread(); // Release render frame ownership, letting the game loop resume (BGFX only)
+
+public:
 
    uint64_t m_timeUpdateTimeStamp = 0; // Timestamp in computer time that correspond to last update of game time
    double m_time_sec = 0.0; // current physics time
@@ -288,7 +323,7 @@ public:
       CS_CLOSED = 5,     // Closing (or closed is called from another thread, but g_pplayer is null when closed)
       CS_CLOSE_CAPTURE_SCREENSHOT = 6 // Close and capture screenshot for table image
    };
-   void SetCloseState(CloseState state) { if (m_closing != CS_CLOSED) m_closing = state; }
+   void SetCloseState(CloseState state);
    CloseState GetCloseState() const { return m_closing; }
 private:
    volatile CloseState m_closing = CS_PLAYING;

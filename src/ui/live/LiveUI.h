@@ -51,6 +51,9 @@ public:
    // Ball Control
    BallControl m_ballControl;
 
+   // Editor UI
+   VPX::EditorUI::EditorUI m_editorUI;
+
    // In Game UI
    VPX::InGameUI::InGameUI m_inGameUI;
 
@@ -76,9 +79,6 @@ private:
    void UpdateScale();
 
    vector<std::shared_ptr<MeshBuffer>> m_meshBuffers;
-
-   // Editor UI
-   VPX::EditorUI::EditorUI m_editorUI;
 
    // Touch UI overlay
    void UpdateTouchUI();

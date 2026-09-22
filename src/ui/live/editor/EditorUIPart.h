@@ -94,6 +94,10 @@ public:
 
    virtual void Render(const EditorRenderContext& ctx) = 0;
 
+   // Restores the part's authored visibility values in its m_d fields, reverting the visibility overrides
+   // applied for editor display (called before duplicating the table for a play session)
+   virtual void RestorePartVisibility() { }
+
    // Returns the editable drag point curve of this part, nullptr if it does not have one
    virtual DragPointCurve* GetDragPointCurve() { return nullptr; }
 
@@ -156,7 +160,9 @@ public:
          m_visibilityFields.emplace_back(field, part->m_d.*field);
    }
 
-   ~EditableUIPart() override
+   ~EditableUIPart() override { RestorePartVisibility(); }
+
+   void RestorePartVisibility() override
    {
       for (auto& visibilityField : m_visibilityFields)
          m_part->m_d.*visibilityField.field = visibilityField.visible;

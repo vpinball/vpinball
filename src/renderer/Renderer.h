@@ -105,6 +105,8 @@ public:
 
    void ReinitRenderable(IRenderable* part) { if (part) m_renderableToInit.push_back(part); }
 
+   void SetTable(PinTable* table); // Rebind to a new table (currently limited to base table / live copy swaps)
+
    RenderProbe::ReflectionMode GetMaxReflectionMode() const;
    int GetAOMode() const; // 0=Off, 1=Static, 2=Dynamic
 
@@ -131,12 +133,14 @@ public:
 
       float GetGlobalEmissionScale() const { return m_emissionScale; }
 
+      void SetTable(PinTable* table) { m_table = table; Update(); } // Rebind to another table of the same base/live copy pair
+
    private:
       void Update();
 
       float m_emissionScale = 0.f;
 
-      PinTable* const m_table;
+      PinTable* m_table;
       Mode m_mode = Mode::Table;
       float m_userLightLevel = 1.f;
       float m_latitude = 0.f;
@@ -301,7 +305,7 @@ private:
    RenderTarget* m_pOffscreenVRLeft = nullptr;
    RenderTarget* m_pOffscreenVRRight = nullptr;
 
-   PinTable* const m_table;
+   PinTable* m_table;
 
    ModelViewProj m_mvp; // Active Model / View / Projection (includes visual nudge)
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
@@ -334,6 +338,8 @@ public:
    bool m_vrPreviewShrink = false;
 
 private:
+   void ApplyTableSettings(); // (Re)load the cached table settings (called from ctor and SetTable)
+
    float m_visualNudgeStrength; // whether to shake the table/screen during nudges and how much
    Vertex2D m_screenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
 
