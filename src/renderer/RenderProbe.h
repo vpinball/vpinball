@@ -61,6 +61,7 @@ public:
    void RenderSetup(class Renderer* renderer);
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
    bool IsRendering() const { return m_rendering; }
+   bool IsStaticAccumulationPending() const; // True while this probe still has samples to accumulate for its static parts prerender
    void MarkDirtyStatics(); // Mark the prerendered static parts as dirty, they are lazily accumulated again over the next frames
    RenderTarget* Render(const unsigned int renderMask); // Lazily update render probe and returns it
    void RenderRelease();
