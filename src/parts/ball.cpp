@@ -150,6 +150,7 @@ void Ball::Load(IObjectReader& reader)
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;

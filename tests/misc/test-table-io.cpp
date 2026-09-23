@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "vpx-test.h"
+#include "../vpx-test.h"
 
 #include "parts/pintable.h"
 #include "utils/fileio.h"
