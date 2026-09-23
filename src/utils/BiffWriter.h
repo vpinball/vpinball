@@ -3,12 +3,13 @@
 #pragma once
 
 #include "fileio.h"
+#include "TableHash.h"
 
 class BiffWriter final :
    public IObjectWriter
 {
 public:
-   BiffWriter(InMemStream* stream, const HCRYPTHASH hcrypthash);
+   BiffWriter(InMemStream* stream, TableHash* const hash);
    bool HasError() const override { return m_hasError; }
 
    void BeginObject(int objectId, bool isArray, bool isSkippable) override;
@@ -30,7 +31,7 @@ public:
    void WriteRecordSize(const int size);
 
    InMemStream* m_stream;
-   HCRYPTHASH m_hcrypthash;
+   TableHash* m_hash; // null to write without contributing to the table hash
 
 private:
    bool m_hasError = false;

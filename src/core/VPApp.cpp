@@ -57,7 +57,7 @@
 #include "parts/rubber.h"
 #include "parts/PartGroup.h"
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 #include "ui/win/WinEditor.h"
 #endif
 

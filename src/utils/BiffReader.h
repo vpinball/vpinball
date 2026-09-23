@@ -3,6 +3,7 @@
 #pragma once
 
 #include "fileio.h"
+#include "TableHash.h"
 
 #include "pole/pole.h"
 
@@ -11,8 +12,8 @@ class BiffReader final :
    public IObjectReader
 {
 public:
-   BiffReader(POLE::Stream *stream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
-   BiffReader(const uint8_t *data, const uint32_t size, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
+   BiffReader(POLE::Stream *stream, const int version, TableHash *const hash, const HCRYPTKEY hcryptkey);
+   BiffReader(const uint8_t *data, const uint32_t size, const int version, TableHash *const hash, const HCRYPTKEY hcryptkey);
    int GetVersion() const override { return m_version; }
    bool HasError() const override { return m_hasError; }
 
@@ -33,7 +34,7 @@ public:
    void ReadBytes(void *const pv, const uint32_t count);
 
    POLE::Stream *m_stream = nullptr;
-   HCRYPTHASH m_hcrypthash;
+   TableHash *m_hash; // null to read without contributing to the table hash
    HCRYPTKEY m_hcryptkey;
 
 private:

@@ -10,7 +10,7 @@
 #include "parts/pintable.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 #include "ui/win/WinEditor.h"
 #endif
 #include "utils/BiffReader.h"
@@ -95,7 +95,7 @@ void ExportVBSCommand::Execute()
       versionStream.read(reinterpret_cast<unsigned char*>(&loadfileversion), sizeof(int));
       bool isProtected = false;
       POLE::Stream gameStream(&rootStorage, "GameStg/GameData");
-      BiffReader reader(&gameStream, loadfileversion, 0, 0);
+      BiffReader reader(&gameStream, loadfileversion, nullptr, 0);
       reader.AsObject(
          [&script, &isProtected](int tag, IObjectReader& reader)
          {
@@ -200,7 +200,7 @@ void PovEditCommand::Execute()
 }
 
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 Win32EditCommand::Win32EditCommand()
    : Win32EditCommand(""s)
 {
@@ -661,7 +661,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       case OPTION_AUDIT:
       case OPTION_POV:
       case OPTION_EXTRACTVBS:
-      #ifndef __STANDALONE__
+      #ifdef VPX_ENABLE_WIN32_EDITOR
          case OPTION_EDIT:
       #endif
       {
@@ -692,7 +692,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             case OPTION_AUDIT: commands.push_back(std::make_unique<AuditTableCommand>(tableFileName)); break;
             case OPTION_POV: commands.push_back(std::make_unique<ExportPOVCommand>(tableFileName)); break;
             case OPTION_EXTRACTVBS: commands.push_back(std::make_unique<ExportVBSCommand>(tableFileName)); break;
-            #ifndef __STANDALONE__
+            #ifdef VPX_ENABLE_WIN32_EDITOR
             case OPTION_EDIT: commands.push_back(std::make_unique<Win32EditCommand>(tableFileName)); break;
             #endif
             }
@@ -791,7 +791,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       }
    }
 
-   #ifndef __STANDALONE__
+   #ifdef VPX_ENABLE_WIN32_EDITOR
    if (defaultToWin32Editor && commands.empty())
       commands.push_back(std::make_unique<Win32EditCommand>());
    #endif
@@ -807,7 +807,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       commands.push_back(std::make_unique<ShowInfoAndExitCommand>("Visual Pinball Usage"s, GetCommandLineHelp(), 0));
    m_command = std::move(commands[0]);
 
-   #ifndef __STANDALONE__
+   #ifdef VPX_ENABLE_WIN32_EDITOR
    if (win32EditorMinimized)
    {
       if (auto win32EditCmd = dynamic_cast<Win32EditCommand*>(m_command.get()); win32EditCmd)

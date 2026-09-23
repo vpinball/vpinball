@@ -29,7 +29,7 @@ ScriptInterpreter::ScriptInterpreter()
    if (vbScriptResult != S_OK)
       return;
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_SCRIPT_DEBUGGER
    // This can fail on some systems (I tested with wine 6.9 and this fails)
    // In that case, m_pProcessDebugManager will remain as nullptr
    const HRESULT debugResult = CoCreateInstance(CLSID_ProcessDebugManager, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IProcessDebugManager, (LPVOID *)&m_pProcessDebugManager); //!! dto.?
@@ -55,7 +55,7 @@ ScriptInterpreter::ScriptInterpreter()
    m_pScriptParse->QueryInterface(IID_IActiveScriptDebug, (LPVOID *)&m_pScriptDebug);
    m_pScriptParse->InitNew();
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_ACTIVEX_SECURITY
    IObjectSafety *pios;
    m_pScriptParse->QueryInterface(IID_IObjectSafety, (LPVOID *)&pios);
    if (pios)
@@ -102,7 +102,7 @@ ScriptInterpreter::~ScriptInterpreter()
       SAFE_RELEASE_NO_RCC(m_pScript);
       SAFE_RELEASE_NO_RCC(m_pScriptParse);
       SAFE_RELEASE(m_pScriptDebug);
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_SCRIPT_DEBUGGER
       if (m_pProcessDebugManager != nullptr)
          m_pProcessDebugManager->Release();
 #endif
@@ -228,7 +228,7 @@ void ScriptInterpreter::HandleScriptError(IActiveScriptError *pScriptError, IAct
 
    // Get stack trace
    vector<string> stackDump;
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_SCRIPT_DEBUGGER
    if (pScriptDebugError)
    {
       if (IDebugStackFrame * errStackFrame; pScriptDebugError->GetStackFrame(&errStackFrame) == S_OK)
@@ -417,7 +417,7 @@ STDMETHODIMP ScriptInterpreter::GetDocumentContextFromPosition(DWORD_PTR dwSourc
 
 STDMETHODIMP ScriptInterpreter::GetApplication(IDebugApplication **ppda)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_SCRIPT_DEBUGGER
    if (m_pProcessDebugManager != nullptr)
    {
       IDebugApplication *app;
@@ -491,7 +491,7 @@ DEFINE_GUID(GUID_CUSTOM_CONFIRMOBJECTSAFETY, 0x10200490, 0xfa38, 0x11d0, 0xac, 0
 HRESULT STDMETHODCALLTYPE ScriptInterpreter::QueryCustomPolicy(
    REFGUID guidKey, BYTE __RPC_FAR *__RPC_FAR *ppPolicy, DWORD __RPC_FAR *pcbPolicy, BYTE __RPC_FAR *pContext, DWORD cbContext, DWORD dwReserved)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_ACTIVEX_SECURITY
    uint32_t *const ppolicy = (uint32_t *)CoTaskMemAlloc(sizeof(uint32_t)); // needs to use CoTaskMemAlloc because of COM model
    *ppolicy = URLPOLICY_DISALLOW;
 
@@ -556,7 +556,7 @@ void ScriptInterpreter::AddControlToOkayedList(const CONFIRMSAFETY *pcs) const
 bool ScriptInterpreter::IsControlMarkedSafe(const CONFIRMSAFETY *pcs)
 {
    bool safe = false;
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_ACTIVEX_SECURITY
    IObjectSafety *pios = nullptr;
 
    DWORD supported, enabled;
@@ -578,7 +578,7 @@ bool ScriptInterpreter::IsControlMarkedSafe(const CONFIRMSAFETY *pcs)
 
 bool ScriptInterpreter::IsUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) const
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_ACTIVEX_SECURITY
    OLECHAR *wzT;
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
       return false;

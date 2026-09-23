@@ -27,7 +27,7 @@
 #include "ui/live/ingameui/HomePage.h"
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
@@ -210,7 +210,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    g_frameProfiler = &m_logicProfiler;
 
    // Only show the progress dialog in the not minimized Win32 editor mode
-   #ifndef __STANDALONE__
+   #ifdef VPX_ENABLE_WIN32_EDITOR
    if (g_pvp && !g_pvp->IsIconic())
    {
       m_loadProgress.Create(g_pvp->GetHwnd());
@@ -731,7 +731,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       }
       m_ptable->FireOptionEvent(PinTable::OptionEventType::Initialized);
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_detectScriptHang && g_pvp)
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
 #endif
@@ -795,7 +795,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    LockFrameMutex();
    m_renderer->DisableStaticPrePass(false);
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    m_loadProgress.Destroy();
 #endif
 
@@ -847,7 +847,7 @@ Player::~Player()
    if (!IsEditorMode())
    {
       m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-#ifndef __STANDALONE__ // Win32 editor only
+#ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_detectScriptHang && g_pvp)
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 #endif
@@ -1040,7 +1040,7 @@ Player::~Player()
 
    m_changed_vht.clear();
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_loadProgress.IsWindow())
       m_loadProgress.Destroy();
 
@@ -1179,7 +1179,7 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
    {
       m_playing = willPlay;
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_debuggerDialog.IsWindow())
          m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
 #endif
@@ -1217,7 +1217,7 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
       m_nScriptErrorNotification++;
    }
 
-#ifndef __STANDALONE__ // Win32 editor only: report to the script editor
+#ifdef VPX_ENABLE_WIN32_EDITOR // report to the script editor
    if (m_ptable->m_tableEditor)
       m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
    else if (m_ptable->m_liveBaseTable && m_ptable->m_liveBaseTable->m_tableEditor)
@@ -2206,7 +2206,7 @@ void Player::FinishFrame()
    // Close requested with user input
    if (m_closing == CS_USER_INPUT)
    {
-#ifndef __STANDALONE__ // Win32 editor only
+#ifdef VPX_ENABLE_WIN32_EDITOR
       if (g_pvp && g_pvp->m_disable_pause_menu)
          m_closing = CS_STOP_PLAY;
       else
@@ -2221,7 +2221,7 @@ void Player::FinishFrame()
    if (m_closing == CS_FORCE_STOP)
       exit(-9999); 
 
-#ifndef __STANDALONE__ // Win32 editor only
+#ifdef VPX_ENABLE_WIN32_EDITOR
    // Open debugger window
    if (g_pvp && m_showDebugger && !m_ptable->IsLocked() && !g_pvp->m_disable_pause_menu)
    {

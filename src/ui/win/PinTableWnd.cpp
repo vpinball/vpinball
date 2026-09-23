@@ -1326,7 +1326,7 @@ void PinTableWnd::Copy(int x, int y)
       const int type = pe->GetItemType();
       pstm->Write(&type, sizeof(int));
 
-      BiffWriter writer(pstm, 0);
+      BiffWriter writer(pstm, nullptr);
       pe->Save(writer, false);
 
       vstm.push_back(pstm);
@@ -1374,7 +1374,7 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
          IEditable *const peditNew = EditableRegistry::Create(type);
          if (peditNew)
          {
-            BiffReader reader(pstm->Data() + sizeof(int), static_cast<uint32_t>(pstm->Size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
+            BiffReader reader(pstm->Data() + sizeof(int), static_cast<uint32_t>(pstm->Size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, nullptr, NULL);
             peditNew->Load(reader);
             peditNew->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
             //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet

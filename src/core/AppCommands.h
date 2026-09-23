@@ -76,7 +76,7 @@ public:
    void Execute() override;
 };
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 class Win32EditCommand : public TableBasedCommand
 {
 public:
@@ -141,4 +141,3 @@ private:
    static string GetCommandLineHelp();
    static void OnCommandLineError(const string& title, const string& message);
 };
-

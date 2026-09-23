@@ -11,16 +11,16 @@ static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 #endif
 
 
-BiffReader::BiffReader(POLE::Stream *stream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
+BiffReader::BiffReader(POLE::Stream *stream, const int version, TableHash *const hash, const HCRYPTKEY hcryptkey)
    : m_stream(stream)
-   , m_hcrypthash(hcrypthash)
+   , m_hash(hash)
    , m_hcryptkey(hcryptkey)
    , m_version(version)
 {
 }
 
-BiffReader::BiffReader(const uint8_t *data, const uint32_t size, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
-   : m_hcrypthash(hcrypthash)
+BiffReader::BiffReader(const uint8_t *data, const uint32_t size, const int version, TableHash *const hash, const HCRYPTKEY hcryptkey)
+   : m_hash(hash)
    , m_hcryptkey(hcryptkey)
    , m_data(data)
    , m_dataSize(size)
@@ -51,10 +51,7 @@ void BiffReader::ReadBytes(void * const pv, const uint32_t count)
    if (iow)
       mtx.unlock();
 
-#ifndef __STANDALONE__
-   if (m_hcrypthash)
-      CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
-#endif
+   TableHash::Update(m_hash, pv, count);
 }
 
 int BiffReader::GetIntNoHash()
@@ -171,10 +168,9 @@ string BiffReader::AsScript(bool isScriptProtected)
    char *szText = new char[cchar + 1];
    m_hasError |= ReadSource(reinterpret_cast<unsigned char *>(szText), cchar) != cchar;
 
-#ifndef __STANDALONE__
-   if (m_hcrypthash)
-      CryptHashData(m_hcrypthash, (BYTE *)szText, cchar, 0);
+   TableHash::Update(m_hash, szText, cchar);
 
+#ifdef VPX_HAS_CRYPTOAPI
    // if there is a valid key, then decrypt the script text (now in szText, must be done after the hash is updated)
    if (isScriptProtected && (m_hcryptkey != 0))
    {

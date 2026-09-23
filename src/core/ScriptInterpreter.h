@@ -5,7 +5,6 @@
 #include <atlcom.h>
 
 #include "core/Scriptable.h"
-
 class PinTable;
 
 enum SecurityLevelEnum
@@ -113,7 +112,7 @@ private:
     * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
     * ... if I try to create CLSID_ProcessDebugManager
     */
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_SCRIPT_DEBUGGER
    IProcessDebugManager *m_pProcessDebugManager = nullptr;
 #endif
 
@@ -125,7 +124,7 @@ private:
       public IDispatchImpl<IVPDebug, &IID_IVPDebug, &LIBID_VPinballLib>,
       public IScriptable
    {
-#ifdef __STANDALONE__
+#ifdef VPX_MANUAL_SCRIPT_DISPATCH
    public:
       STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
       STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);

@@ -10,9 +10,9 @@ static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 #include <fstream>
 #endif
 
-BiffWriter::BiffWriter(InMemStream *stream, const HCRYPTHASH hcrypthash)
+BiffWriter::BiffWriter(InMemStream *stream, TableHash *const hash)
    : m_stream(stream)
-   , m_hcrypthash(hcrypthash)
+   , m_hash(hash)
 {
 }
 
@@ -21,20 +21,15 @@ void BiffWriter::WriteRecordSize(const int size)
    static_assert(sizeof(size) == sizeof(int32_t));
    m_stream->Write(&size, sizeof(int32_t));
 
-#ifndef __STANDALONE__
-   if (m_hcrypthash && !m_subObjectRecordSizePos.empty() && m_subObjectRecordSizePos.back() >= 0)
-      CryptHashData(m_hcrypthash, (BYTE *)&size, sizeof(int32_t), 0);
-#endif
+   if (m_hash && !m_subObjectRecordSizePos.empty() && m_subObjectRecordSizePos.back() >= 0)
+      m_hash->Update(&size, sizeof(int32_t));
 }
 
 void BiffWriter::WriteBytes(const void *pv, const size_t count)
 {
    m_stream->Write(pv, count);
 
-#ifndef __STANDALONE__
-   if (m_hcrypthash)
-      CryptHashData(m_hcrypthash, (BYTE *)pv, (DWORD)count, 0);
-#endif
+   TableHash::Update(m_hash, pv, count);
 }
 
 void BiffWriter::BeginObject(const int objectId, bool isArray, bool isSkippable)
@@ -143,9 +138,9 @@ void BiffWriter::WriteScript(int fieldId, const string &value)
    const int32_t nBytes = (int32_t)value.size();
    m_stream->Write(&nBytes, sizeof(int32_t));
    m_stream->Write(value.c_str(), nBytes);
-#ifndef __STANDALONE__
-   CryptHashData(m_hcrypthash, (const BYTE*)(value.c_str()), static_cast<DWORD>(nBytes), 0);
-#endif
+   // Only the script text feeds the hash, not the length written just above it.
+   // Quirk of the original format, keep as-is
+   TableHash::Update(m_hash, value.c_str(), nBytes);
 }
 
 void BiffWriter::WriteRaw(const int id, const void *pvalue, const int size)

@@ -882,6 +882,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/ViewSetup.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/LoadProgress.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/BallControl.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.cpp" />
@@ -1056,9 +1057,11 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/fileio.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/md2.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/MemoryStatus.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/StackTrace.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/TableHash.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/wintimer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../third-party/include/pole/pole.cpp">
@@ -1651,6 +1654,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/AppCommands.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/def.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/dispid.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/resourceid.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/editablereg.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/extern.h" />
@@ -1800,6 +1804,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/XRVulkanBackend.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/trace.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/typedefs3D.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/LoadProgress.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h" />
@@ -1980,9 +1985,11 @@
     <ClInclude Include="$(SolutionDir)/../../src/utils/hash.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/Logger.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/lzwreader.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/md2.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/MemoryStatus.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/objloader.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/StackTrace.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/TableHash.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/ushock_output.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/vector.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/vectorsort.h" />

@@ -35,7 +35,7 @@
 #include "tinyxml2/tinyxml2.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #endif
@@ -353,7 +353,7 @@ void PinTable::AddPart(IEditable *const part)
    part->AddRef();
    part->m_ptable = this;
    m_vedit.push_back(part);
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->OnPartAdded(part);
 #endif
@@ -363,7 +363,7 @@ void PinTable::AddPart(IEditable *const part)
       const auto id = lowerCase(scriptable->m_wzName);
       assert(m_scriptableNames.find(id) == m_scriptableNames.end());
       m_scriptableNames.insert(id);
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
          m_tableEditor->m_pcv->AddItem(scriptable, false);
 #endif
@@ -376,7 +376,7 @@ void PinTable::RemovePart(IEditable *const part)
    assert(it2 != m_vedit.end());
    assert(part->m_ptable == this);
    m_vedit.erase(it2);
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->OnPartRemoved(part);
 #endif
@@ -386,7 +386,7 @@ void PinTable::RemovePart(IEditable *const part)
       auto it = m_scriptableNames.find(lowerCase(scriptable->m_wzName));
       assert(it != m_scriptableNames.end());
       m_scriptableNames.erase(it);
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
          m_tableEditor->m_pcv->RemoveItem(scriptable);
 #endif
@@ -407,7 +407,7 @@ void PinTable::RenamePart(IEditable *const part, const wstring& newName)
    assert(m_scriptableNames.find(id) == m_scriptableNames.end());
    m_scriptableNames.insert(id);
    scriptable->m_wzName = newName;
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(scriptable, newName);
 #endif
@@ -429,7 +429,7 @@ void PinTable::MovePartToBack(IEditable* part)
 
 void PinTable::ReorderParts(bool isDrawingOrder)
 {
-#ifndef __STANDALONE__ // Win32 editor only: DrawingOrderDialog is its sole caller
+#ifdef VPX_ENABLE_WIN32_EDITOR // DrawingOrderDialog is its sole caller
    const vector<IWinUIPart *> &selection = isDrawingOrder ? m_tableEditor->GetMultiSelParts() : m_tableEditor->m_allHitElements;
    if (!selection.empty())
    {
@@ -458,7 +458,7 @@ void PinTable::AddCollection(CComObject<Collection> *collection)
    collection->AddRef();
    m_vcollection.push_back(collection);
    m_scriptableNames.insert(id);
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->m_pcv->AddItem((IScriptable *)collection, false);
 #endif
@@ -466,7 +466,7 @@ void PinTable::AddCollection(CComObject<Collection> *collection)
 
 void PinTable::RemoveCollection(CComObject<Collection> *collection)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    auto it = m_scriptableNames.find(lowerCase(collection->m_wzName));
    assert(it != m_scriptableNames.end());
    m_scriptableNames.erase(it);
@@ -490,7 +490,7 @@ void PinTable::RenameCollection(Collection *collection, const wstring &newName)
    assert(m_scriptableNames.find(id) == m_scriptableNames.end());
    m_scriptableNames.insert(id);
    collection->m_wzName = newName;
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(collection, newName);
 #endif
@@ -530,7 +530,7 @@ wstring PinTable::GetUniqueName(const wstring &wzRoot) const
 
 void PinTable::SetDirtyDraw()
 {
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (g_pplayer == nullptr && m_tableEditor != nullptr)
       m_tableEditor->Redraw();
 #endif
@@ -692,7 +692,7 @@ PinTable* PinTable::CopyForPlay() const
       live_table->AddCollection(pcol);
    }
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (live_table->m_tableEditor)
    {
       live_table->m_tableEditor->m_pcv->AddItem(live_table, false);
@@ -745,7 +745,6 @@ void PinTable::SetupLookUpTables(bool isPlaying)
 HRESULT PinTable::Save(VPXFileFeedback &feedback)
 {
    HRESULT hr = S_OK;
-#ifndef __STANDALONE__
    // Get file name if needed
    std::filesystem::path vpxPath = m_filename;
    vpxPath.replace_extension(".vpx");
@@ -775,14 +774,15 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
 
    if (SUCCEEDED(hr))
    {
+#ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
       {
          m_tableEditor->SetCleanPoint(eSaveClean);
          m_tableEditor->m_pcv->SetClean(eSaveClean);
       }
+#endif
       SetNonUndoableDirty(eSaveClean);
    }
-#endif
 
    // Save user custom settings file (if any) along the table file
    // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
@@ -795,21 +795,11 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
 
 HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedback &feedback)
 {
-#ifndef __STANDALONE__
    m_savingActive = true;
 
    // Hashing (to ensure file integrity)
-   HCRYPTPROV hcp = NULL; // context
-   HCRYPTHASH hch = NULL; // hash
-
-   int foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
-   foo = GetLastError();
-   foo = CryptCreateHash(hcp, CALG_MD2, NULL, 0, &hch);
-   foo = GetLastError();
-   foo = CryptHashData(hch, (BYTE *)TABLE_KEY, 14, 0);
-   foo = GetLastError();
-
-   //
+   TableHash hash;
+   hash.Update(TABLE_KEY, 14);
 
    const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size());
    int csaveditems = 0;
@@ -823,15 +813,15 @@ HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedbac
 
    InMemStream *pstmItem = pstgRoot->CreateStream("GameStg/Version"s);
    int version = CURRENT_FILE_FORMAT_VERSION;
-   CryptHashData(hch, (BYTE *)&version, sizeof(version), 0);
+   hash.Update(&version, sizeof(version));
    pstmItem->Write(&version, sizeof(version));
 
-   SaveInfo(pstgRoot, hch);
+   SaveInfo(pstgRoot, &hash);
 
    pstmItem = pstgRoot->CreateStream("GameStg/CustomInfoTags"s);
-   SaveCustomInfo(pstgRoot, pstmItem, hch);
+   SaveCustomInfo(pstgRoot, pstmItem, &hash);
 
-   BiffWriter writer(pstmGame, hch);
+   BiffWriter writer(pstmGame, &hash);
    Save(writer, false);
    if (!writer.HasError())
    {
@@ -844,7 +834,7 @@ HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedbac
          IEditable *const piedit = m_vedit[i];
          const ItemTypeEnum type = piedit->GetItemType();
          pstmItem->Write(&type, sizeof(int));
-         BiffWriter writer(pstmItem, 0);
+         BiffWriter writer(pstmItem, nullptr);
          piedit->Save(writer, false);
 
          csaveditems++;
@@ -863,7 +853,7 @@ HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedbac
       for (size_t i = 0; i < m_vimage.size(); i++)
       {
          pstmItem = pstgRoot->CreateStream(std::format("GameStg/Image{}", i));
-         BiffWriter imageWriter(pstmItem, 0);
+         BiffWriter imageWriter(pstmItem, nullptr);
          m_vimage[i]->Save(imageWriter, this);
 
          csaveditems++;
@@ -873,7 +863,7 @@ HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedbac
       for (size_t i = 0; i < m_vfont.size(); i++)
       {
          pstmItem = pstgRoot->CreateStream(std::format("GameStg/Font{}", i));
-         BiffWriter writer(pstmItem, 0);
+         BiffWriter writer(pstmItem, nullptr);
          m_vfont[i]->Save(writer);
 
          csaveditems++;
@@ -884,7 +874,7 @@ HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedbac
       for (auto pcol : m_vcollection)
       {
          pstmItem = pstgRoot->CreateStream(std::format("GameStg/Collection{}", i++));
-         BiffWriter writer(pstmItem, hch);
+         BiffWriter writer(pstmItem, &hash);
          pcol->Save(writer, false);
 
          csaveditems++;
@@ -898,36 +888,31 @@ HRESULT PinTable::SaveToStorage(InMemStructuredStorage *pstgRoot, VPXFileFeedbac
    }
 
    // Authentication block
-   BYTE hashval[256];
-   DWORD hashlen = 256;
-   foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
-   hashlen = 256;
-   foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
+   uint8_t hashval[MD2::DIGEST_SIZE];
+   if (!hash.Finish(hashval))
+   {
+      // Finish() has already reported this. Refuse to write a table we cannot vouch for.
+      m_savingActive = false;
+      return E_FAIL;
+   }
 
    pstmItem = pstgRoot->CreateStream("GameStg/MAC"s);
-   pstmItem->Write(hashval, hashlen);
-
-   foo = CryptDestroyHash(hch);
-   foo = CryptReleaseContext(hcp, 0);
+   pstmItem->Write(hashval, sizeof(hashval));
    // End Authentication block
 
    m_savingActive = false;
 
    return hr;
-#else
-   return 0L;
-#endif
 }
 
-HRESULT PinTable::WriteInfoValue(InMemStructuredStorage *pstg, const string &name, const string &szValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::WriteInfoValue(InMemStructuredStorage *pstg, const string &name, const string &szValue, TableHash *const hash)
 {
-#ifndef __STANDALONE__
    if (szValue.empty())
       return S_OK;
 
    InMemStream *const pstm = pstg->CreateStream("TableInfo/" + name);
 
-   BiffWriter writer(pstm, hcrypthash);
+   BiffWriter writer(pstm, hash);
    const wstring wzT = MakeWString(szValue);
 
 #if (WCHAR_T_SIZE == 4) // Linux, macOS
@@ -938,24 +923,20 @@ HRESULT PinTable::WriteInfoValue(InMemStructuredStorage *pstg, const string &nam
 #endif
 
    return S_OK;
-#else
-   return 0L;
-#endif
 }
 
 
-HRESULT PinTable::SaveInfo(InMemStructuredStorage *pstg, HCRYPTHASH hcrypthash)
+HRESULT PinTable::SaveInfo(InMemStructuredStorage *pstg, TableHash *const hash)
 {
-#ifndef __STANDALONE__
-   WriteInfoValue(pstg, "TableName"s, m_tableName, hcrypthash);
-   WriteInfoValue(pstg, "AuthorName"s, m_author, hcrypthash);
-   WriteInfoValue(pstg, "TableVersion"s, m_version, hcrypthash);
-   WriteInfoValue(pstg, "ReleaseDate"s, m_releaseDate, hcrypthash);
-   WriteInfoValue(pstg, "AuthorEmail"s, m_authorEMail, hcrypthash);
-   WriteInfoValue(pstg, "AuthorWebSite"s, m_webSite, hcrypthash);
-   WriteInfoValue(pstg, "TableBlurb"s, m_blurb, hcrypthash);
-   WriteInfoValue(pstg, "TableDescription"s, m_description, hcrypthash);
-   WriteInfoValue(pstg, "TableRules"s, m_rules, hcrypthash);
+   WriteInfoValue(pstg, "TableName"s, m_tableName, hash);
+   WriteInfoValue(pstg, "AuthorName"s, m_author, hash);
+   WriteInfoValue(pstg, "TableVersion"s, m_version, hash);
+   WriteInfoValue(pstg, "ReleaseDate"s, m_releaseDate, hash);
+   WriteInfoValue(pstg, "AuthorEmail"s, m_authorEMail, hash);
+   WriteInfoValue(pstg, "AuthorWebSite"s, m_webSite, hash);
+   WriteInfoValue(pstg, "TableBlurb"s, m_blurb, hash);
+   WriteInfoValue(pstg, "TableDescription"s, m_description, hash);
+   WriteInfoValue(pstg, "TableRules"s, m_rules, hash);
    time_t hour_machine;
    time(&hour_machine);
    tm local_hour;
@@ -971,39 +952,36 @@ HRESULT PinTable::SaveInfo(InMemStructuredStorage *pstg, HCRYPTHASH hcrypthash)
    if (pin)
    {
       InMemStream *const pstm = pstg->CreateStream("TableInfo/Screenshot"s);
-      BiffWriter writer(pstm, hcrypthash);
+      BiffWriter writer(pstm, hash);
       writer.WriteBytes(pin->GetFileRaw(), pin->GetFileSize());
    }
-#endif
 
    return S_OK;
 }
 
 
-HRESULT PinTable::SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, HCRYPTHASH hcrypthash)
+HRESULT PinTable::SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, TableHash *const hash)
 {
-#ifndef __STANDALONE__
-   BiffWriter writer(pstmTags, hcrypthash);
+   BiffWriter writer(pstmTags, hash);
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
       writer.WriteString(FID(CUST), m_vCustomInfoTag[i]);
    writer.EndObject();
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      WriteInfoValue(pstg, m_vCustomInfoTag[i], m_vCustomInfoContent[i], hcrypthash);
-#endif
+      WriteInfoValue(pstg, m_vCustomInfoTag[i], m_vCustomInfoContent[i], hash);
 
    return S_OK;
 }
 
 
-void PinTable::ReadInfoValue(POLE::Storage &storage, const std::string &name, string &output, HCRYPTHASH hcrypthash)
+void PinTable::ReadInfoValue(POLE::Storage &storage, const std::string &name, string &output, TableHash *const hash)
 {
    if (!storage.exists(name))
       return;
 
    POLE::Stream versionStream(&storage, name);
    const unsigned int size = static_cast<unsigned int>(versionStream.size());
-   BiffReader br(&versionStream, 0, hcrypthash, NULL);
+   BiffReader br(&versionStream, 0, hash, NULL);
 
 #if (WCHAR_T_SIZE == 4)
    const int len = size / 2;
@@ -1025,17 +1003,17 @@ void PinTable::ReadInfoValue(POLE::Storage &storage, const std::string &name, st
 }
 
 
-void PinTable::LoadInfo(POLE::Storage& storage, HCRYPTHASH hcrypthash, int version)
+void PinTable::LoadInfo(POLE::Storage& storage, TableHash *const hash, int version)
 {
-   ReadInfoValue(storage, "TableInfo/TableName"s, m_tableName, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/AuthorName"s, m_author, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/TableVersion"s, m_version, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/ReleaseDate"s, m_releaseDate, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/AuthorEmail"s, m_authorEMail, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/AuthorWebSite"s, m_webSite, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/TableBlurb"s, m_blurb, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/TableDescription"s, m_description, hcrypthash);
-   ReadInfoValue(storage, "TableInfo/TableRules"s, m_rules, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/TableName"s, m_tableName, hash);
+   ReadInfoValue(storage, "TableInfo/AuthorName"s, m_author, hash);
+   ReadInfoValue(storage, "TableInfo/TableVersion"s, m_version, hash);
+   ReadInfoValue(storage, "TableInfo/ReleaseDate"s, m_releaseDate, hash);
+   ReadInfoValue(storage, "TableInfo/AuthorEmail"s, m_authorEMail, hash);
+   ReadInfoValue(storage, "TableInfo/AuthorWebSite"s, m_webSite, hash);
+   ReadInfoValue(storage, "TableInfo/TableBlurb"s, m_blurb, hash);
+   ReadInfoValue(storage, "TableInfo/TableDescription"s, m_description, hash);
+   ReadInfoValue(storage, "TableInfo/TableRules"s, m_rules, hash);
    ReadInfoValue(storage, "TableInfo/TableSaveDate"s, m_dateSaved, NULL);
 
    string numTimesSaved;
@@ -1059,12 +1037,12 @@ void PinTable::LoadInfo(POLE::Storage& storage, HCRYPTHASH hcrypthash, int versi
       POLE::Stream screenshotStream(&storage, "TableInfo/Screenshot");
       m_pbTempScreenshot = new PinBinary();
       m_pbTempScreenshot->m_buffer.resize(screenshotStream.size());
-      BiffReader br(&screenshotStream, 0, hcrypthash, 0);
+      BiffReader br(&screenshotStream, 0, hash, 0);
       br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<uint32_t>(m_pbTempScreenshot->m_buffer.size()));
    }
 }
 
-void PinTable::LoadCustomInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version)
+void PinTable::LoadCustomInfo(POLE::Storage &storage, TableHash *const hash, int version)
 {
    if (!storage.exists("GameStg/CustomInfoTags"))
       return;
@@ -1072,7 +1050,7 @@ void PinTable::LoadCustomInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int
    m_vCustomInfoTag.clear();
    m_vCustomInfoContent.clear();
    POLE::Stream customTagsStream(&storage, "GameStg/CustomInfoTags");
-   BiffReader reader(&customTagsStream, version, hcrypthash, 0);
+   BiffReader reader(&customTagsStream, version, hash, 0);
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
       {
@@ -1086,14 +1064,13 @@ void PinTable::LoadCustomInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int
    for (const string& tag : m_vCustomInfoTag)
    {
       string customInfo;
-      ReadInfoValue(storage, "TableInfo/" + tag, customInfo, hcrypthash);
+      ReadInfoValue(storage, "TableInfo/" + tag, customInfo, hash);
       m_vCustomInfoContent.push_back(std::move(customInfo));
    }
 }
 
 void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-#ifndef __STANDALONE__
    writer.WriteFloat(FID(LEFT), m_left);
    writer.WriteFloat(FID(TOPX), m_top);
    writer.WriteFloat(FID(RGHT), m_right);
@@ -1274,7 +1251,6 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
 
    writer.WriteInt(FID(TLCK), m_tablelocked);
    writer.EndObject();
-#endif
 }
 
 HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback)
@@ -1311,25 +1287,19 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
    HRESULT hr = S_OK;
 
-   HCRYPTPROV hcp = NULL; // crypt context
-   HCRYPTHASH hch = NULL; // hash for file integrity check
-   HCRYPTHASH hchkey = NULL; // hash for decryption key derivation
+   // Hashing (to ensure file integrity), can be disabled for slightly faster loading
+   TableHash tableHash;
+   TableHash *const hch = g_app->m_settings.GetEditor_DisableHash() ? nullptr : &tableHash;
+   TableHash::Update(hch, TABLE_KEY, 14);
 
-   #ifndef __STANDALONE__
-   // Hashing (to ensure file integrity), can be disabled for slightly faster loading (and then also matches standalone which cannot feature this)
-   const bool hashValidation = !g_app->m_settings.GetEditor_DisableHash();
-   int foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET /* | CRYPT_SILENT*/);
-   foo = GetLastError();
-   if (hashValidation)
-   {
-      foo = CryptCreateHash(hcp, CALG_MD2, NULL, 0, &hch);
-      foo = GetLastError();
-      foo = CryptHashData(hch, (BYTE *)TABLE_KEY, 14, 0);
-      foo = GetLastError();
-   }
+   #ifdef VPX_HAS_CRYPTOAPI
    // Decryption, for unlocking old VP8/VP9 tables that featured password protection (and that had script encryption set);
    // Create a key hash (we have to use a second hash as deriving a key from the
    // integrity hash actually modifies it, and thus it calculates the wrong hash)
+   HCRYPTPROV hcp = NULL;    // crypt context, only still needed for the legacy decryption
+   HCRYPTHASH hchkey = NULL; // hash for decryption key derivation
+   int foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET /* | CRYPT_SILENT*/);
+   foo = GetLastError();
    foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
    foo = GetLastError();
    // Hash the password
@@ -1344,15 +1314,12 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
    if (rootStorage.exists("GameStg/GameData"))
    {
-      HCRYPTKEY hkey = NULL;
+      HCRYPTKEY hkey = NULL; // legacy VP8/VP9 script decryption key, NULL without CryptoAPI
       if (rootStorage.exists("GameStg/Version"))
       {
          POLE::Stream versionStream(&rootStorage, "GameStg/Version");
          versionStream.read(reinterpret_cast<unsigned char *>(&loadfileversion), sizeof(int));
-         #ifndef __STANDALONE__
-            if (hch)
-               CryptHashData(hch, (BYTE *)&loadfileversion, sizeof(int), 0);
-         #endif
+         TableHash::Update(hch, &loadfileversion, sizeof(int));
          if (loadfileversion < 100) // Tech Beta 3 and below
          {
             rootStorage.close();
@@ -1365,7 +1332,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             ShowError(errorMsg);
          }
 
-         #ifndef __STANDALONE__
+         #ifdef VPX_HAS_CRYPTOAPI
             // Create a block cipher session key based on the hash of the password.
             if (hchkey)
                CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
@@ -1475,7 +1442,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems]
                {
                   POLE::Stream stream(&rootStorage, streamName);
-                  BiffReader reader(&stream, loadfileversion, 0, 0);
+                  BiffReader reader(&stream, loadfileversion, nullptr, 0);
                   m_vimage[i] = Texture::CreateFromObjectReader(reader, this);
                   nLoadedItems++;
                });
@@ -1493,7 +1460,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems]
                {
                   POLE::Stream stream(&rootStorage, streamName);
-                  BiffReader reader(&stream, loadfileversion, 0, 0);
+                  BiffReader reader(&stream, loadfileversion, nullptr, 0);
                   m_vfont[i] = new PinFont();
                   m_vfont[i]->Load(reader);
                   nLoadedItems++;
@@ -1503,8 +1470,15 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          // Sort tasks by storage offset to limit read back and get better reading performance
          std::ranges::sort(loadQueue, [&rootStorage](const LoadTask &a, const LoadTask &b) { return rootStorage.streamOffset(a.name) < rootStorage.streamOffset(b.name); });
  
+         // Before file version 1000 the game items took part in the table hash (see the
+         // BiffReader above). MD2 is order dependent and TableHash is not thread safe, so
+         // those have to be read one at a time or the digest differs on every load. Legacy
+         // tables only, where load time does not matter anyway; the queue is already sorted by
+         // stream offset, which is the order they were written in
+         const bool itemsFeedTheHash = (hch != nullptr) && (loadfileversion < 1000);
+         ThreadPool pool(IsNetworkPath(m_filename) || itemsFeedTheHash ? 1 : g_app->GetLogicalNumberOfProcessors());
+
          // Dispatch all load tasks & wait, updating the progress bar on UI thread
-         ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
          feedback.SetLength(static_cast<unsigned int>(loadQueue.size()));
          for (const LoadTask &task : loadQueue)
             pool.enqueue(task.task);
@@ -1804,34 +1778,30 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
       {
          if (rootStorage.exists("GameStg/MAC"))
          {
-            BYTE hashvalOld[256];
+            uint8_t hashvalOld[HASHLENGTH];
             POLE::Stream stream(&rootStorage, "GameStg/MAC");
             stream.read(hashvalOld, HASHLENGTH);
 
-            BYTE hashval[256];
-            DWORD hashlen = 256;
-            #ifndef __STANDALONE__
-               int foo2 = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
-               hashlen = 256;
-               foo2 = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
-               foo2 = CryptDestroyHash(hch);
-               foo2 = CryptDestroyHash(hchkey);
-               foo2 = CryptDestroyKey(hkey);
-               foo2 = CryptReleaseContext(hcp, 0);
-            #endif
-
-            #ifndef __STANDALONE__
-               for (int i = 0; i < HASHLENGTH; i++)
-                  if (hashval[i] != hashvalOld[i])
-                  {
-                     hr = APPX_E_BLOCK_HASH_INVALID;
-                     break;
-                  }
-            #endif
+            uint8_t hashval[MD2::DIGEST_SIZE];
+            static_assert(HASHLENGTH == static_cast<int>(MD2::DIGEST_SIZE));
+            // Finish() reports an implementation mismatch itself. Either way we cannot
+            // vouch for the file, so refuse it rather than load it and hope
+            if (!hch->Finish(hashval) || memcmp(hashval, hashvalOld, HASHLENGTH) != 0)
+               hr = APPX_E_BLOCK_HASH_INVALID;
          }
          else
             hr = APPX_E_CORRUPT_CONTENT; // Error
       }
+
+      #ifdef VPX_HAS_CRYPTOAPI
+         // Legacy decryption resources, done with once every stream has been read
+         if (hkey)
+            CryptDestroyKey(hkey);
+         if (hchkey)
+            CryptDestroyHash(hchkey);
+         if (hcp)
+            CryptReleaseContext(hcp, 0);
+      #endif
 
       if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
          for (size_t i = 0; i < m_materials.size(); ++i)
@@ -2000,11 +1970,14 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    SetDirty(eSaveClean);
 
    m_title = TitleFromFilename(filename);
-#ifndef __STANDALONE__
-   const DWORD attr = GetFileAttributes(filename.string().c_str());
-   if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
+   // A read only table cannot be saved over, so say so in the title. On Windows this
+   // mirrors FILE_ATTRIBUTE_READONLY, which is what the standard library reports there;
+   // elsewhere it is the owner write bit. Ignore any error: an unreadable status just
+   // means we leave the title alone
+   std::error_code ec;
+   const std::filesystem::perms perms = std::filesystem::status(filename, ec).permissions();
+   if (!ec && (perms & std::filesystem::perms::owner_write) == std::filesystem::perms::none)
       m_title += " [READ ONLY]"sv;
-#endif
 
    PLOGI << "InitTablePostLoad"; // For profiling
 
@@ -2059,7 +2032,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    else if (const std::filesystem::path filenameAuto2 = tablePath / "autovpp.vpp"sv; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
       ImportVPP(filenameAuto2);
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
    {
       m_tableEditor->m_pcv->SetScript(m_script_text);
@@ -2093,7 +2066,7 @@ void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
    }
 
    m_script_text = string_from_utf8_or_iso8859_1(buffer.data(), buffer.size());
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->m_pcv->SetScript(m_script_text);
 #endif
@@ -2466,14 +2439,10 @@ bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &f
    {
       if (pps->SaveToFile(filename))
          return true;
-#ifndef __STANDALONE__
       ShowError("Can not Open/Create Sound file!");
    }
    else
       ShowError("File extension does not match, will not convert sound to other format!");
-#else
-   }
-#endif
 
    return false;
 }
@@ -3079,7 +3048,7 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename, const bo
    // update properties UI
    if (!toUserSettings)
       SetNonUndoableDirty(eSaveDirty);
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->RefreshProperties();
 #endif
@@ -3129,7 +3098,7 @@ void PinTable::CheckDirty()
 {
    const SaveDirtyState sdsNewDirtyState = (SaveDirtyState)max(max((int)m_sdsDirtyProp, (int)m_sdsDirtyScript), (int)m_sdsNonUndoableDirty);
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor && sdsNewDirtyState != m_sdsCurrentDirtyState)
    {
       if (sdsNewDirtyState > eSaveClean)
@@ -3149,7 +3118,7 @@ bool PinTable::FDirty() const
 
 void PinTable::Uncreate(IEditable *pie)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    IWinUIPart *const uiPart = m_tableEditor ? m_tableEditor->GetUIPart(pie) : nullptr;
    if (uiPart && uiPart->m_selectstate != IWinUIPart::SelectState::NotSelected)
       m_tableEditor->AddMultiSel(uiPart, true, true, false); // Remove the item from the multi-select list
@@ -4135,7 +4104,7 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 {
    SetTableWidth(newVal);
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor) // Scripts may set this without the Win32 editor, where there is no view to rescale
       m_tableEditor->SetMyScrollInfo();
 #endif
@@ -4172,7 +4141,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 {
    SetHeight(newVal);
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor) // Scripts may set this without the Win32 editor, where there is no view to rescale
       m_tableEditor->SetMyScrollInfo();
 #endif

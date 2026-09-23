@@ -43,7 +43,7 @@ UndoRecord::~UndoRecord()
 
 void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
       return;
 
@@ -56,7 +56,7 @@ void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 
    pstm->Write(&pie, sizeof(IEditable *));
 
-   BiffWriter writer(pstm.get(), 0);
+   BiffWriter writer(pstm.get(), nullptr);
    pie->Save(writer, true);
 
    m_vstm.push_back(std::move(pstm));
@@ -180,7 +180,7 @@ std::any PinUndo::Undo()
       pie->ClearForOverwrite();
 
       // Note that we do not process the loaded PartGroup parenting. This is not an issue as we do not support undoing reparenting (yet)
-      BiffReader reader(pstm->Data() + sizeof(IEditable *), static_cast<uint32_t>(pstm->Size() - sizeof(IEditable *)), CURRENT_FILE_FORMAT_VERSION, 0, 0);
+      BiffReader reader(pstm->Data() + sizeof(IEditable *), static_cast<uint32_t>(pstm->Size() - sizeof(IEditable *)), CURRENT_FILE_FORMAT_VERSION, nullptr, 0);
       pie->Load(reader);
       if (g_pplayer)
       {

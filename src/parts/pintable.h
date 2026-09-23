@@ -23,6 +23,8 @@
 class Light;
 #endif
 
+class TableHash;
+
 
 
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
@@ -69,7 +71,7 @@ class PinTable : public CComObjectRootEx<CComSingleThreadModel>,
                  public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-#ifdef __STANDALONE__
+#ifdef VPX_MANUAL_SCRIPT_DISPATCH
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
@@ -393,12 +395,12 @@ public:
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
 
 private:
-   HRESULT SaveInfo(InMemStructuredStorage *pstg, HCRYPTHASH hcrypthash);
-   HRESULT SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, HCRYPTHASH hcrypthash);
-   static HRESULT WriteInfoValue(InMemStructuredStorage *pstg, const string &name, const string &szValue, HCRYPTHASH hcrypthash);
-   static void ReadInfoValue(POLE::Storage &storage, const string &wzName, string &output, HCRYPTHASH hcrypthash);
-   void LoadInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version);
-   void LoadCustomInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version);
+   HRESULT SaveInfo(InMemStructuredStorage *pstg, TableHash *const hash);
+   HRESULT SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, TableHash *const hash);
+   static HRESULT WriteInfoValue(InMemStructuredStorage *pstg, const string &name, const string &szValue, TableHash *const hash);
+   static void ReadInfoValue(POLE::Storage &storage, const string &wzName, string &output, TableHash *const hash);
+   void LoadInfo(POLE::Storage &storage, TableHash *const hash, int version);
+   void LoadCustomInfo(POLE::Storage &storage, TableHash *const hash, int version);
 
 public:
    void Uncreate(IEditable *pie);

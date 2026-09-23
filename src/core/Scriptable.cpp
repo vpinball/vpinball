@@ -6,7 +6,7 @@
 vector<wstring> IScriptable::GetMethodNames()
 {
    vector<wstring> methods;
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_REGISTERED_TYPELIB
    IDispatch *pdisp = GetIDispatch();
    if (!pdisp)
       return methods;
@@ -50,7 +50,7 @@ vector<wstring> IScriptable::GetMethodNames()
 vector<wstring> IScriptable::GetEventNames()
 {
    vector<wstring> events;
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_REGISTERED_TYPELIB
    IDispatch * pdisp = GetIDispatch();
 
    // Enum Events From Dispatch

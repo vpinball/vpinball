@@ -168,6 +168,7 @@ LocalString::LocalString(const int resid)
 #else
    static const ankerl::unordered_dense::map<int, const char*> ids_map = {
      { IDS_SCRIPT, "Script" },
+     { IDS_SAVEERROR, "There was an error saving the file." },
      { IDS_TB_BUMPER, "Bumper" },
      { IDS_TB_DECAL, "Decal" },
      { IDS_TB_DISPREEL, "EMReel" },

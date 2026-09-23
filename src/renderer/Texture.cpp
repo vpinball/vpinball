@@ -5,19 +5,11 @@
 
 #include "math/math.h"
 #include "renderer/Renderer.h"
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 #include "ui/win/WinEditor.h"
 #endif
 #include "utils/BiffReader.h"
 #include "utils/lzwreader.h"
-
-#include <atomic>
-
-static uint64_t NextLiveHash()
-{
-   static std::atomic<uint64_t> s_counter { 1 };
-   return s_counter.fetch_add(1, std::memory_order_relaxed);
-}
 
 #ifndef __STANDALONE__
 #include "FreeImage.h"
@@ -37,6 +29,8 @@ static uint64_t NextLiveHash()
 #include <fstream>
 #include <iostream>
 #endif
+
+#include <atomic>
 
 #define QOI_API static
 #define QOI_IMPLEMENTATION
@@ -59,6 +53,12 @@ static inline int GetPixelSize(const BaseTexture::Format format)
    case BaseTexture::RGBA_FP32: return 4 * 4;
    default: assert(false); return 0;
    }
+}
+
+static inline uint64_t NextLiveHash()
+{
+   static std::atomic<uint64_t> s_counter { 1 };
+   return s_counter.fetch_add(1, std::memory_order_relaxed);
 }
 
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
@@ -1086,7 +1086,7 @@ Texture* Texture::CreateFromFile(const std::filesystem::path& filename, const bo
 Texture::~Texture()
 {
    delete m_ppb;
-   #ifndef __STANDALONE__
+   #ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_hbmGDIVersion)
       {
          if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
@@ -1160,7 +1160,7 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
 
 HBITMAP Texture::GetGDIBitmap() const
 {
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_hbmGDIVersion)
       return m_hbmGDIVersion;
 

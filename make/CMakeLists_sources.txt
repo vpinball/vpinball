@@ -403,6 +403,10 @@ set(VPX_SOURCES
    src/utils/BiffReader.h
    src/utils/BiffWriter.cpp
    src/utils/BiffWriter.h
+   src/utils/md2.cpp
+   src/utils/md2.h
+   src/utils/TableHash.cpp
+   src/utils/TableHash.h
    src/utils/bulb.cpp
    src/utils/bulb.h
    src/utils/denormals.h

@@ -21,7 +21,7 @@
 #endif
 
 #include "core/VPApp.h"
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
@@ -38,7 +38,7 @@ public:
 
    void write(const plog::Record &record) PLOG_OVERRIDE
    {
-#ifndef __STANDALONE__ // Win32 editor only: this sink writes to the script editor debug output
+#ifdef VPX_ENABLE_WIN32_EDITOR // this sink writes to the script editor debug output
       if ((std::this_thread::get_id() != m_uiThreadId) || (g_pvp == nullptr) || (g_pvp->GetActiveTableEditor() == nullptr))
          return;
       #ifdef _WIN32

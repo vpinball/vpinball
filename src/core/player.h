@@ -2,8 +2,9 @@
 
 #pragma once
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 #include <wxx_stdcontrols.h> // Add CButton, CEdit, CListBox
+#include "ui/win/Debugger.h"
 #endif
 
 #include "audio/AudioPlayer.h"
@@ -15,22 +16,22 @@
 #include "plugins/VPXPlugin.h"
 #include "renderer/typedefs3D.h"
 #include "renderer/Window.h"
-#ifndef __STANDALONE__
-#include "ui/win/Debugger.h"
-#endif
+#include "utils/wintimer.h"
+#include "VPXPluginAPIImpl.h"
 
 // Load progress is shown in a dialog by the Win32 editor, and merely logged without it. Both offer the same
 // SetProgress/GetProgress pair so the choice is made here rather than at each call site, the few calls which are
-// specific to the dialog (Create, ShowWindow, IsWindow, Destroy) being made from Win32 editor only code
-#ifndef __STANDALONE__
+// specific to the dialog (Create, ShowWindow, IsWindow, Destroy) being made from Win32 editor only code.
+// This picks a type, so unlike most capability guards a missing macro would not fail to compile, it would pick
+// the wrong one: core/stdafx.h, which defines it, has to be included ahead of this header in every translation
+// unit (it is, as the precompiled prelude)
+#ifdef VPX_ENABLE_WIN32_EDITOR
    #include "ui/win/ProgressDialog.h"
    using LoadProgressReporter = ProgressDialog;
 #else
    #include "ui/LoadProgress.h"
    using LoadProgressReporter = LoadProgress;
 #endif
-#include "utils/wintimer.h"
-#include "VPXPluginAPIImpl.h"
 
 class Renderer;
 class VRDevice;
@@ -297,13 +298,13 @@ public:
    bool m_debugMode = false;
    bool m_showDebugger = false;
    HWND m_hwndDebugOutput = nullptr;
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
    DebuggerDialog m_debuggerDialog;
 #endif
 
-   bool m_debugBalls = false;           // Draw balls in the foreground via 'O' key
+   bool m_debugBalls = false;    // Draw balls in the foreground via 'O' key
 
-   bool m_noTimeCorrect = false;        // Used so the frame after debugging does not do normal time correction
+   bool m_noTimeCorrect = false; // Used so the frame after debugging does not do normal time correction
 
    // Used to detect script hangs (modal is used by script to tell VPX that it is in a modal state, so disabling watch dog)
    bool m_detectScriptHang;
