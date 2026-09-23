@@ -196,8 +196,8 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       if (with_depth)
       {
          bgfx::Attachment depthAttachment;
-         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_NONE);
-         depthAttachment.init(IsMSAA() ? m_msaaResolveDepthTex : m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_NONE);
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
+         depthAttachment.init(IsMSAA() ? m_msaaResolveDepthTex : m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
          const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
          m_framebuffer = bgfx::createFrameBuffer(2, attachments.data());
          if (IsMSAA())
@@ -206,16 +206,16 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
             // A dedicated non-MSAA color texture is used since m_color_tex is MSAA and all framebuffer attachments must have matching sample counts.
             m_msaaDepthResolveColorTex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, bgfx::TextureFormat::R8, BGFX_TEXTURE_RT);
             bgfx::Attachment resolveColorAttachment;
-            resolveColorAttachment.init(m_msaaDepthResolveColorTex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_NONE);
+            resolveColorAttachment.init(m_msaaDepthResolveColorTex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
             bgfx::Attachment resolveDepthAttachment;
-            resolveDepthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_NONE);
+            resolveDepthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
             const std::array<bgfx::Attachment, 2> attachments { resolveColorAttachment, resolveDepthAttachment };
             m_msaaDepthResolveFramebuffer = bgfx::createFrameBuffer(2, attachments.data());
          }
       }
       else
       {
-         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_NONE);
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
          m_framebuffer = bgfx::createFrameBuffer(1, &colorAttachment);
       }
       if (!bgfx::isValid(m_framebuffer))
@@ -236,14 +236,14 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          if (with_depth)
          {
             bgfx::Attachment depthAttachment;
-            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_NONE);
-            depthAttachment.init(IsMSAA() ? m_msaaResolveDepthTex : m_depth_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_NONE);
+            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_ATTACHMENT_NONE);
+            depthAttachment.init(IsMSAA() ? m_msaaResolveDepthTex : m_depth_tex, bgfx::Access::Write, i, 1, 0, BGFX_ATTACHMENT_NONE);
             const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
             m_framebuffer_layers[i] = bgfx::createFrameBuffer(2, attachments.data());
          }
          else
          {
-            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_NONE);
+            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_ATTACHMENT_NONE);
             m_framebuffer_layers[i] = bgfx::createFrameBuffer(1, &colorAttachment);
          }
          if (!bgfx::isValid(m_framebuffer_layers[i]))

@@ -1342,8 +1342,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          {
             const uint16_t nViews = static_cast<uint16_t>(m_viewConfigurationViews.size());
             bgfx::Attachment colorAttachment, depthAttachment;
-            colorAttachment.init(m_colorSwapchainInfo.imageViews[colorImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_RESOLVE_NONE);
-            depthAttachment.init(m_depthSwapchainInfo.imageViews[depthImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_RESOLVE_NONE);
+            colorAttachment.init(m_colorSwapchainInfo.imageViews[colorImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_ATTACHMENT_NONE);
+            depthAttachment.init(m_depthSwapchainInfo.imageViews[depthImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_ATTACHMENT_NONE);
             const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
             const bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
             m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()]

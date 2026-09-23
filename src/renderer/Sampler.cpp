@@ -351,17 +351,6 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
    }
    return m_nomipsTexture;
 }
-
-uintptr_t Sampler::GetNativeTexture()
-{
-   if (m_texture_override == 0)
-   {
-      // Lazily create a texture override
-      bgfx::TextureHandle handle = GetCoreTexture(false);
-      m_texture_override = bgfx::overrideInternal(handle, m_width, m_height, 0, m_bgfx_format, BGFX_TEXTURE_BLIT_DST | BGFX_SAMPLER_NONE);
-   }
-   return m_texture_override;
-}
 #endif
 
 void Sampler::Unbind()

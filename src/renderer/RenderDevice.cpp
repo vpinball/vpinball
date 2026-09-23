@@ -372,12 +372,12 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    //   . Metal & OpenGL do not have support for swapchain latency management yet
    // - OpenXR offers its own frame display time prediction that we use when in VR mode.
 
-   init.resolution.numBackBuffers = 2; // Simple flip model with 2 buffers: one locked for the GPU (rendering), one locked for the swapchain (displayed or queued)
-   init.resolution.maxFrameLatency = clamp(g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames(), 1, 3); // Default to 1 (User should set swapchain queue to 1 or 2 to limit latency)
-   init.resolution.reset = 0; 
-   init.resolution.reset |= BGFX_RESET_MAXANISOTROPY;
-   //init.resolution.reset |= BGFX_RESET_FLUSH_AFTER_RENDER; // Not really needed as we are doing a present after submit which in turn triger sending the commands to the GPU
-   init.resolution.reset |= BGFX_RESET_FLIP_AFTER_RENDER;
+   init.swapChain.numBackBuffers = 2; // Simple flip model with 2 buffers: one locked for the GPU (rendering), one locked for the swapchain (displayed or queued)
+   init.swapChain.maxFrameLatency = clamp(g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames(), 1, 3); // Default to 1 (User should set swapchain queue to 1 or 2 to limit latency)
+   init.reset = 0;
+   init.reset |= BGFX_RESET_MAXANISOTROPY;
+   //init.reset |= BGFX_RESET_FLUSH_AFTER_RENDER; // Not really needed as we are doing a present after submit which in turn triger sending the commands to the GPU
+   init.reset |= BGFX_RESET_FLIP_AFTER_RENDER;
    // BGFX despite proposing a reset flag (BGFX_RESET_FULLSCREEN) does not implement exclusive fullscreen, so we do not support it on this backend (exclusive fullscreen is
    // somewhat deprecated anyway as some OS do not offer it at all, and others implement it through GPU multiplane overlay to actually achieve zero-overhead backbuffer flips)
    assert(rd->m_outputWnd[0]->GetWindowMode() != VPX::Window::WindowMode::ExclusiveFullscreen);
@@ -391,14 +391,14 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    if (g_pplayer->IsVR())
    {
 #ifdef ENABLE_XR
-      assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
+      assert((init.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
       init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
       init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
       assert(init.platformData.context != nullptr);
       // For the time being, we do not support having a desktop swapchain along the headset swapchain under Vulkan, so we run BGFX in headless mode
       // Note that this is needed for native VR (running directly on the headset)
       if (init.type == bgfx::RendererType::Vulkan)
-         init.platformData.nwh = nullptr;
+         init.swapChain.nwh = nullptr;
 #endif
    }
 
@@ -412,41 +412,41 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 
    // We first run in headless mode to initialize the underlying backend and try to gather information to select a supported backbuffer format
    // This is needed to select a safe backbuffer format but will fail under OpenGL or Linux. For these, we start using BGRA8 which seems to be supported everywhere and adjust afterward
-   init.resolution.formatColor = bgfx::TextureFormat::BGRA8;
-   if (init.platformData.nwh && init.type != bgfx::RendererType::OpenGL && init.type != bgfx::RendererType::OpenGLES && init.type != bgfx::RendererType::Direct3D12)
+   init.swapChain.formatColor = bgfx::TextureFormat::BGRA8;
+   if (init.swapChain.nwh && init.type != bgfx::RendererType::OpenGL && init.type != bgfx::RendererType::OpenGLES && init.type != bgfx::RendererType::Direct3D12)
    {
-      const uint32_t width = init.resolution.width;
-      const uint32_t height = init.resolution.height;
-      void* nativeWindow = init.platformData.nwh;
-      void* nativeDisplayType = init.platformData.ndt;
+      const uint32_t width = init.swapChain.width;
+      const uint32_t height = init.swapChain.height;
+      void* nativeWindow = init.swapChain.nwh;
+      void* nativeDisplayType = init.swapChain.ndt;
       void* context = init.platformData.context;
-      init.resolution.width = 0;
-      init.resolution.height = 0;
-      init.resolution.reset &= ~BGFX_RESET_HDR10;
-      init.platformData.nwh = nullptr;
-      init.platformData.ndt = nullptr;
+      init.swapChain.width = 0;
+      init.swapChain.height = 0;
+      init.swapChain.flags &= ~BGFX_SWAP_CHAIN_HDR10;
+      init.swapChain.nwh = nullptr;
+      init.swapChain.ndt = nullptr;
       init.platformData.context = nullptr;
       bgfx::renderFrame();
       if (bgfx::init(init))
       {
          // Select the backbuffer color format, after initializing in headless mode to have access to the list of supported backbuffer format
          // This may fail on some backends that need a surface to report its capabilities (for example Linux/Vulkan)
-         init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], bgfx::TextureFormat::Count, allowHDR10ColorSpace && (bgfx::getCaps()->supported & BGFX_CAPS_HDR10));
+         init.swapChain.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], bgfx::TextureFormat::Count, allowHDR10ColorSpace && (bgfx::getCaps()->supported & BGFX_CAPS_HDR10));
          bgfx::shutdown();
       }
       else
       {
          PLOGE << "Failed to initialize BGFX for backbuffer format selection, defaulting to BGRA8";
       }
-      init.resolution.width = width;
-      init.resolution.height = height;
-      init.platformData.nwh = nativeWindow;
-      init.platformData.ndt = nativeDisplayType;
+      init.swapChain.width = width;
+      init.swapChain.height = height;
+      init.swapChain.nwh = nativeWindow;
+      init.swapChain.ndt = nativeDisplayType;
       init.platformData.context = context;
    }
 
-   init.resolution.reset &= ~BGFX_RESET_HDR10; // Handle HDR10 color space (actually BGFX select colorspace based on the backbuffer format and discard this flag)
-   init.resolution.reset |= init.resolution.formatColor == bgfx::TextureFormat::RGB10A2 ? BGFX_RESET_HDR10 : 0;
+   init.swapChain.flags &= ~BGFX_SWAP_CHAIN_HDR10; // Handle HDR10 color space (actually BGFX select colorspace based on the backbuffer format and discard this flag)
+   init.swapChain.flags |= init.swapChain.formatColor == bgfx::TextureFormat::RGB10A2 ? BGFX_SWAP_CHAIN_HDR10 : 0;
    bgfx::renderFrame();
    if (!bgfx::init(init))
    {
@@ -462,21 +462,21 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
             << bgfx::getRendererName(bgfx::getRendererType());
    }
 
-   if (init.platformData.nwh)
+   if (init.swapChain.nwh)
    {
       // Validate the backbuffer format now that we have a swapchain (handles buggy platforms like Linux/Vulkan where capabilities of the swapchain is only reported after creation of the swapchain...)
-      const bgfx::TextureFormat::Enum initFormatColor = init.resolution.formatColor;
-      init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], initFormatColor, allowHDR10ColorSpace && (bgfx::getCaps()->supported & BGFX_CAPS_HDR10));
-      if (initFormatColor != init.resolution.formatColor)
+      const bgfx::TextureFormat::Enum initFormatColor = init.swapChain.formatColor;
+      init.swapChain.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], initFormatColor, allowHDR10ColorSpace && (bgfx::getCaps()->supported & BGFX_CAPS_HDR10));
+      if (initFormatColor != init.swapChain.formatColor)
       {
-         init.resolution.reset &= ~BGFX_RESET_HDR10;
-         init.resolution.reset |= init.resolution.formatColor == bgfx::TextureFormat::RGB10A2 ? BGFX_RESET_HDR10 : 0;
-         bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.formatColor);
+         init.swapChain.flags &= ~BGFX_SWAP_CHAIN_HDR10;
+         init.swapChain.flags |= init.swapChain.formatColor == bgfx::TextureFormat::RGB10A2 ? BGFX_SWAP_CHAIN_HDR10 : 0;
+         bgfx::reset(init.reset, &init.swapChain);
       }
    }
 
-   PLOGI << "BGFX initialized using " << bgfx::getRendererName(bgfx::getRendererType()) << " backend (" << init.resolution.width << 'x' << init.resolution.height << " "
-         << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor)) << ')';
+   PLOGI << "BGFX initialized using " << bgfx::getRendererName(bgfx::getRendererType()) << " backend (" << init.swapChain.width << 'x' << init.swapChain.height << " "
+         << bimg::getName(bimg::TextureFormat::Enum(init.swapChain.formatColor)) << ')';
 
    const uint16_t vendorId = bgfx::getCaps()->vendorId;
    string vendorString;
@@ -506,9 +506,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    }
    else
    {
-      RenderTarget* backbuffer = new RenderTarget(rd, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, init.resolution.formatColor, BGFX_INVALID_HANDLE,
-         init.resolution.formatDepthStencil, "BackBuffer", init.resolution.width, init.resolution.height, BGFXtoVPXTextureFormat(init.resolution.formatColor));
-      rd->m_outputWnd[0]->SetBackBuffer(backbuffer, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
+      RenderTarget* backbuffer = new RenderTarget(rd, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, init.swapChain.formatColor, BGFX_INVALID_HANDLE,
+         init.swapChain.formatDepthStencil, "BackBuffer", init.swapChain.width, init.swapChain.height, BGFXtoVPXTextureFormat(init.swapChain.formatColor));
+      rd->m_outputWnd[0]->SetBackBuffer(backbuffer, (init.swapChain.flags & BGFX_SWAP_CHAIN_HDR10) != 0);
       rd->m_framePending = false; // Request first frame to be prepared as soon as possible
    }
 
@@ -780,10 +780,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
             if (nwh == nullptr)
                continue;
 
-            bgfx::PlatformData pd = {};
-            pd.nwh = nwh;
-            bgfx::setPlatformData(pd);
-            bgfxVSync = !needsVSync; // Force reset by making VSync state appear changed
+            bgfxVSync = !needsVSync; // Force reset (which will apply the new native window handle) by making VSync state appear changed
          }
          if (nwh == nullptr)
             continue;
@@ -791,8 +788,13 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          if (bgfxVSync != needsVSync)
          {
             bgfxVSync = needsVSync;
-            bgfx::reset(m_outputWnd[0]->GetBackBuffer()->GetWidth(), m_outputWnd[0]->GetBackBuffer()->GetHeight(), init.resolution.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE),
-               init.resolution.formatColor);
+            bgfx::SwapChain swapChain = init.swapChain;
+            swapChain.width = m_outputWnd[0]->GetBackBuffer()->GetWidth();
+            swapChain.height = m_outputWnd[0]->GetBackBuffer()->GetHeight();
+#if defined(__ANDROID__)
+            swapChain.nwh = nwh;
+#endif
+            bgfx::reset(init.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), &swapChain);
          }
       }
 
@@ -850,7 +852,10 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
                Flip();
                if (isMainSwpachain)
                {
-                  bgfx::reset(windowWidth, windowHeight, init.resolution.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
+                  bgfx::SwapChain swapChain = init.swapChain;
+                  swapChain.width = windowWidth;
+                  swapChain.height = windowHeight;
+                  bgfx::reset(init.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), &swapChain);
                   m_outputWnd[0]->GetBackBuffer()->SetSize(windowWidth, windowHeight);
                }
                else
@@ -924,7 +929,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          // Evaluate latency as the delay between when we submitted the frame data and when the swapchain has an empty slot (as this denotes that the Present operation has been performed)
          const uint64_t now = usec();
          m_renderLatency = static_cast<float>((double)(now - lastSubmitTimestamp) / 1000000.0) // Time spent since pushing data to the GPU until consumed by swapchain
-            + static_cast<float>(init.resolution.maxFrameLatency - 1) / m_outputWnd[0]->GetRefreshRate(); // Time that will be spent in the GPU queue before display (if any)
+            + static_cast<float>(init.swapChain.maxFrameLatency - 1) / m_outputWnd[0]->GetRefreshRate(); // Time that will be spent in the GPU queue before display (if any)
          END_SPAN(tagSpan)
       }
 
@@ -1333,32 +1338,30 @@ RenderDevice::RenderDevice(
 
    init.callback = &m_bgfxCallback;
    init.fallback = true;
-   init.resolution.width = swapchainWnd->GetPixelWidth();
-   init.resolution.height = swapchainWnd->GetPixelHeight();
+   init.swapChain.width = swapchainWnd->GetPixelWidth();
+   init.swapChain.height = swapchainWnd->GetPixelHeight();
    init.platformData.context = nullptr;
-   init.platformData.backBuffer = nullptr;
-   init.platformData.backBufferDS = nullptr;
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    if (SDL_GetCurrentVideoDriver() == "x11"sv) {
-      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
-      init.platformData.nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+      init.swapChain.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+      init.swapChain.nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
    }
    else if (SDL_GetCurrentVideoDriver() == "wayland"sv) {
       init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
-      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-      init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+      init.swapChain.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+      init.swapChain.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
    }
    #elif BX_PLATFORM_OSX
-   init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(swapchainWnd->GetCore(), "Metal"));
+   init.swapChain.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(swapchainWnd->GetCore(), "Metal"));
    #elif BX_PLATFORM_IOS
-   init.platformData.nwh = VPinballLib::VPinballLib::Instance().GetMetalLayer();
+   init.swapChain.nwh = VPinballLib::VPinballLib::Instance().GetMetalLayer();
    #elif BX_PLATFORM_ANDROID
-   init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+   init.swapChain.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
-   init.platformData.nwh = swapchainWnd->GetNativeHWND();
+   init.swapChain.nwh = swapchainWnd->GetNativeHWND();
    #elif BX_PLATFORM_STEAMLINK
-   init.platformData.ndt = wmInfo.info.vivante.display;
-   init.platformData.nwh = wmInfo.info.vivante.window;
+   init.swapChain.ndt = wmInfo.info.vivante.display;
+   init.swapChain.nwh = wmInfo.info.vivante.window;
    #endif // BX_PLATFORM_
    #ifdef DEBUG
    // Disable Direct3D12 debug layer as it crashes on some NVIDIA drivers
@@ -2043,13 +2046,11 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    SDL_Window* sdlWnd = wnd->GetCore();
    void* nwh;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-   void* ndt;
+   // Note: swapChainDesc.ndt is left NULL so the swap chain inherits the main window's native display type
    if (SDL_GetCurrentVideoDriver() == "x11"sv) {
-      ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
       nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
    }
    else if (SDL_GetCurrentVideoDriver() == "wayland"sv) {
-      ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
       nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
    }
 #elif BX_PLATFORM_OSX
@@ -2070,7 +2071,12 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #else
    return;
 #endif // BX_PLATFORM_
-   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()), bgfxFormat);
+   bgfx::SwapChain swapChainDesc;
+   swapChainDesc.nwh = nwh;
+   swapChainDesc.width = wnd->GetPixelWidth();
+   swapChainDesc.height = wnd->GetPixelHeight();
+   swapChainDesc.formatColor = bgfxFormat;
+   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(swapChainDesc);
    m_outputWnd.push_back(wnd);
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfxFormat, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
       "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), vpxFormat));
