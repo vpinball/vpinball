@@ -159,7 +159,7 @@ public:
    bool SupportLayeredRendering() const
    {
       #if defined(ENABLE_BGFX)
-      constexpr uint64_t caps = BGFX_CAPS_INSTANCING | BGFX_CAPS_TEXTURE_2D_ARRAY | BGFX_CAPS_VIEWPORT_LAYER_ARRAY;
+      constexpr uint64_t caps = BGFX_CAPS_VIEWPORT_LAYER_ARRAY;
       return (bgfx::getCaps()->supported & caps) == caps;
       #elif defined(ENABLE_OPENGL)
       return true;
