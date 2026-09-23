@@ -11,6 +11,11 @@
 # the test runner looks for it (FileLocator::AppSubFolder::Root / "test-assets").
 
 set(VPX_TEST_SOURCES
+   tests/audio/test-audioplayer.cpp
+   tests/input/test-buttonmapping.cpp
+   tests/input/test-plunger-kalman.cpp
+   tests/input/test-scancodes.cpp
+   tests/input/test-sensormapping.cpp
    tests/misc/test-collection.cpp
    tests/misc/test-material.cpp
    tests/misc/test-pinbinary.cpp
@@ -40,6 +45,11 @@ set(VPX_TEST_SOURCES
    tests/parts/test-textbox.cpp
    tests/parts/test-timer.cpp
    tests/parts/test-trigger.cpp
+   tests/physics/test-cabinet.cpp
+   tests/physics/test-collide.cpp
+   tests/physics/test-hittimer.cpp
+   tests/physics/test-motion-kalman.cpp
+   tests/physics/test-quadtree.cpp
    tests/render/test-base-render.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
