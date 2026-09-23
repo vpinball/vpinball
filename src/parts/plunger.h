@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "core/resourceid.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
 #include "physics/hitplunger.h"
 #include "renderer/Renderable.h"
-#include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 
 constexpr int MAXTIPSHAPE = 256;

@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "core/resourceid.h"
 #include "physics/hittimer.h"
 #include "physics/hitable.h"
-#include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 #include "utils/fileio.h"
 #include "parts/pintable.h"

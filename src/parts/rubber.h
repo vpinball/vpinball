@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include "core/resourceid.h"
 #include "math/MeshUtils.h"
 #include "parts/dragpoint.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
 #include "renderer/Renderable.h"
-#include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 
 #include "unordered_dense.h"

@@ -6,9 +6,7 @@
 #include "ui/win/resource.h"
 
 
-#ifndef __STANDALONE__
 #define ID_SETTEXT 0x100
-#endif
 
 ProgressDialog::ProgressDialog()
    : CDialog(IDD_PROGRESS)
@@ -17,28 +15,23 @@ ProgressDialog::ProgressDialog()
 
 BOOL ProgressDialog::OnInitDialog()
 {
-#ifndef __STANDALONE__
    AttachItem(IDC_PROGRESS2, m_progressBar);
    AttachItem(IDC_STATUSNAME, m_progressName);
-#endif
    return TRUE;
 }
 
 BOOL ProgressDialog::OnCommand(WPARAM wparam, LPARAM lparam)
 {
-#ifndef __STANDALONE__
    if (wparam == ID_SETTEXT)
    {
       std::unique_ptr<CString> wtext(reinterpret_cast<CString*>(lparam));
       m_progressName.SetWindowText(*wtext);
    }
-#endif
    return FALSE;
 }
 
 void ProgressDialog::SetProgress(const string &text, const float value)
 {
-#ifndef __STANDALONE__
    if (IsWindow())
    {
       auto* wtext = new CString(text);
@@ -47,18 +40,6 @@ void ProgressDialog::SetProgress(const string &text, const float value)
       if (value >= 0.f && m_progress != value)
          PostMessage(m_progressBar.GetHwnd(), PBM_SETPOS, static_cast<WPARAM>((int)value), 0);
    }
-#else
-   if (value >= 0.f && m_progress != value)
-   {
-      const auto now = std::chrono::steady_clock::now();
-      if (now - m_lastLogTick >= std::chrono::seconds(1) || text != m_lastLogText)
-      {
-         PLOGI.printf("%s %d%%", text.c_str(), (int)value);
-         m_lastLogTick = now;
-         m_lastLogText = text;
-      }
-   }
-#endif
    if (value >= 0.f)
       m_progress = value;
 }

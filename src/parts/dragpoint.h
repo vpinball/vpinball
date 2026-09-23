@@ -5,8 +5,8 @@
 #pragma once
 
 #include "core/ieditable.h"
+#include "core/resourceid.h"
 #include "math/MeshUtils.h"
-#include "ui/win/resource.h"
 
 class DragPointCurve;
 

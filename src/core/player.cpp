@@ -213,12 +213,12 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    #ifndef __STANDALONE__
    if (g_pvp && !g_pvp->IsIconic())
    {
-      m_progressDialog.Create(g_pvp->GetHwnd());
-      m_progressDialog.ShowWindow(SW_SHOWNORMAL);
+      m_loadProgress.Create(g_pvp->GetHwnd());
+      m_loadProgress.ShowWindow(SW_SHOWNORMAL);
    }
    #endif
 
-   m_progressDialog.SetProgress("Creating Player..."s, 0.f);
+   m_loadProgress.SetProgress("Creating Player..."s, 0.f);
 
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__x86_64__))
    {
@@ -342,7 +342,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    set_lowest_possible_win_timer_resolution();
 
-   m_progressDialog.SetProgress("Initializing Renderer..."s, m_progressDialog.GetProgress() + progressStartupLength);
+   m_loadProgress.SetProgress("Initializing Renderer..."s, m_loadProgress.GetProgress() + progressStartupLength);
 
    m_backglassVolume = dequantizeUnsignedPercent(m_ptable->m_settings.GetPlayer_MusicVolume());
    m_playfieldVolume = dequantizeUnsignedPercent(m_ptable->m_settings.GetPlayer_SoundVolume());
@@ -474,7 +474,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
 
    PLOGI << "Initializing physics"; // For profiling
-   m_progressDialog.SetProgress("Initializing Physics..."s, m_progressDialog.GetProgress() + progressRendererLength);
+   m_loadProgress.SetProgress("Initializing Physics..."s, m_loadProgress.GetProgress() + progressRendererLength);
    // Need to set timecur here, for init functions that set timers
    m_physics = new PhysicsEngine(m_ptable);
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
@@ -571,7 +571,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       int nLoadInProgress = 0;
       vector<Texture *> failedPreloads;
       const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.GetPlayer_MaxTexDimension());
-      auto loadImage = [progressPos = m_progressDialog.GetProgress() + progressPhysicLength, maxTexDim, &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](
+      auto loadImage = [progressPos = m_loadProgress.GetProgress() + progressPhysicLength, maxTexDim, &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](
                           Texture *image, bool resizeOnLowMem)
       {
          bool readyToLoad = false;
@@ -652,7 +652,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
                   failedPreloads.push_back(image);
                }
                nLoadPerformed++;
-               m_progressDialog.SetProgress("Loading Textures..."s, progressPos + progressTextureLength * static_cast<float>(nLoadPerformed) / (static_cast<float>(m_ptable->m_vimage.size()) - 1.f));
+               m_loadProgress.SetProgress("Loading Textures..."s, progressPos + progressTextureLength * static_cast<float>(nLoadPerformed) / (static_cast<float>(m_ptable->m_vimage.size()) - 1.f));
             }
          }
          {
@@ -685,7 +685,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    //----------------------------------------------------------------------------------
 
    PLOGI << "Initializing renderer"; // For profiling
-   m_progressDialog.SetProgress("Initializing Visuals..."s);
+   m_loadProgress.SetProgress("Initializing Visuals..."s);
 
    // Setup rendering and timers
    RenderState state;
@@ -709,7 +709,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    if (!IsEditorMode())
    {
       PLOGI << "Starting script"; // For profiling
-      m_progressDialog.SetProgress("Starting Game Scripts..."s, m_progressDialog.GetProgress() + progressVisualLength);
+      m_loadProgress.SetProgress("Starting Game Scripts..."s, m_loadProgress.GetProgress() + progressVisualLength);
 
       // Setup script interpreter and run the main script
       CComObject<ScriptInterpreter>::CreateInstance(&m_scriptInterpreter);
@@ -785,7 +785,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_liveUI->PushNotification("This is a an early & unstable version of the Live Editor, only meant for testing.", 10000);
    }
 
-   m_progressDialog.SetProgress("Starting..."s, 100);
+   m_loadProgress.SetProgress("Starting..."s, 100);
 
    // Perform a quick render to avoid displaying a blank screen while starting
    m_renderer->DisableStaticPrePass(true);
@@ -796,7 +796,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_renderer->DisableStaticPrePass(false);
 
 #ifndef __STANDALONE__
-   m_progressDialog.Destroy();
+   m_loadProgress.Destroy();
 #endif
 
    // Show the window (before rendering static part to avoid delaying too long)
@@ -1041,8 +1041,8 @@ Player::~Player()
    m_changed_vht.clear();
 
 #ifndef __STANDALONE__
-   if (m_progressDialog.IsWindow())
-      m_progressDialog.Destroy();
+   if (m_loadProgress.IsWindow())
+      m_loadProgress.Destroy();
 
    // Close application if requested
    if (appExitRequested && g_pvp)

@@ -4,6 +4,7 @@
 #include "pintable.h"
 
 #include "core/editablereg.h"
+#include "core/resourceid.h"
 #include "core/ScriptGlobalTable.h"
 #include "core/VPApp.h"
 #include "core/vpversion.h"
@@ -38,7 +39,6 @@
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #endif
-#include "ui/win/resource.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "utils/hash.h"

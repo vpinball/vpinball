@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ui/win/resource.h"
+#include "core/resourceid.h"
 #include "utils/fileio.h"
 
 // These are used to identify parts for file I/O and must not be changed/reordered

@@ -18,7 +18,17 @@
 #ifndef __STANDALONE__
 #include "ui/win/Debugger.h"
 #endif
-#include "ui/win/ProgressDialog.h" // Not win32-editor only: Player holds one by value, and it logs load progress when there is no UI
+
+// Load progress is shown in a dialog by the Win32 editor, and merely logged without it. Both offer the same
+// SetProgress/GetProgress pair so the choice is made here rather than at each call site, the few calls which are
+// specific to the dialog (Create, ShowWindow, IsWindow, Destroy) being made from Win32 editor only code
+#ifndef __STANDALONE__
+   #include "ui/win/ProgressDialog.h"
+   using LoadProgressReporter = ProgressDialog;
+#else
+   #include "ui/LoadProgress.h"
+   using LoadProgressReporter = LoadProgress;
+#endif
 #include "utils/wintimer.h"
 #include "VPXPluginAPIImpl.h"
 
@@ -96,7 +106,7 @@ private:
    bool m_wantsToPlay = true; // If we want the player to play beside the player focus state
    bool m_playing = true; // If the player is actually playing or not
 
-   ProgressDialog m_progressDialog;
+   LoadProgressReporter m_loadProgress;
 
 #pragma region Main Loop
 public:

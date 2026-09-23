@@ -1,12 +1,12 @@
+// license:GPLv3+
+
 #pragma once
 
-#ifndef __STANDALONE__
 #include <wxx_controls.h>
 #include <wxx_dialog.h>
-#else
-#include <chrono>
-#endif
 
+// Shows table load progress in a dialog. Offers the same SetProgress/GetProgress pair as LoadProgress, which is
+// what Player falls back to when built without this editor, see Player::m_loadProgress
 class ProgressDialog final : public CDialog
 {
 public:
@@ -21,11 +21,6 @@ protected:
 
 private:
    float m_progress = 0.f;
-#ifndef __STANDALONE__
    CProgressBar m_progressBar;
    CStatic m_progressName;
-#else
-   std::chrono::steady_clock::time_point m_lastLogTick;
-   std::string m_lastLogText;
-#endif
 };

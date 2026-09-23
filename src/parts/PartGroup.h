@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ui/win/resource.h"
+#include "core/resourceid.h"
 #include "utils/eventproxy.h"
 #include "utils/fileio.h"
 #include "timer.h"

@@ -16,7 +16,7 @@
 #endif
 
 #include "core/VPApp.h"
-#include "ui/win/resource.h"
+#include "core/resourceid.h"
 
 #include <atomic>
 #include <charconv>

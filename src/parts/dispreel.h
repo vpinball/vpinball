@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "core/resourceid.h"
 #include "parts/Collection.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
 #include "renderer/Renderable.h"
-#include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 
 // data in this class is persisted with the table

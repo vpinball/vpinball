@@ -20,6 +20,7 @@ set(VPX_SOURCES
    src/core/def.h
    src/core/def.cpp
    src/core/dispid.h
+   src/core/resourceid.h
    src/core/DynamicScript.cpp
    src/core/DynamicScript.h
    src/core/editablereg.cpp
@@ -395,8 +396,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/SystemInfoPage.h
    src/ui/live/ingameui/SystemInfoPage.cpp
 
-   src/ui/win/ProgressDialog.cpp
-   src/ui/win/ProgressDialog.h
+   src/ui/LoadProgress.cpp
+   src/ui/LoadProgress.h
 
    src/utils/BiffReader.cpp
    src/utils/BiffReader.h
@@ -481,6 +482,8 @@ set(VPX_WINDOWS_SOURCES
 
    src/ui/win/DragPointDialogs.h
    src/ui/win/DragPointDialogs.cpp
+   src/ui/win/ProgressDialog.cpp
+   src/ui/win/ProgressDialog.h
    src/ui/win/codeview.cpp
    src/ui/win/codeview.h
    src/ui/win/codeviewedit.cpp

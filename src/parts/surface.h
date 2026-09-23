@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include "core/resourceid.h"
 #include "dragpoint.h"
 #include "math/MeshUtils.h"
 #include "parts/Material.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
 #include "renderer/Renderable.h"
-#include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 
 class MeshBuffer;
