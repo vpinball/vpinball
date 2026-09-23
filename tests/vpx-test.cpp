@@ -162,7 +162,11 @@ void ResetVPX()
 }
 
 
+#ifndef __STANDALONE__
 extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nShowCmd)
+#else
+int main(int argc, const char** argv)
+#endif
 {
    SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
    SDL_InitSubSystem(SDL_INIT_VIDEO);
@@ -172,7 +176,7 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    VPApp vpx;
    CommandLineProcessor cmdLine;
    const string iniPath = (GetAssetPath() / "VPinball.ini").string();
-   const char* args[] = { "vpx-test.exe", "-ini", iniPath.c_str() };
+   const char* args[] = { "vpx-test", "-ini", iniPath.c_str() };
    cmdLine.ProcessCommandLine(3, args);
    vpx.InitInstance();
 
@@ -181,7 +185,11 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    context.setOption("no-breaks", true); // Disable breaks when a test fail (including crash & exceptions)
    const string outPath = (GetAssetPath() / "test_results.txt").string();
    context.setOption("out", outPath.c_str());
+#ifndef __STANDALONE__
    context.applyCommandLine(__argc, __argv);
+#else
+   context.applyCommandLine(argc, argv);
+#endif
    int res = context.run();
 
    // Clean up

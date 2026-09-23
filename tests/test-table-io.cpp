@@ -12,7 +12,9 @@
 
 #include "doctest.h"
 
+#ifndef __STANDALONE__
 #include <objbase.h>
+#endif
 #include <filesystem>
 #include <set>
 
@@ -69,6 +71,8 @@ static void CompareStorageFiles(const std::filesystem::path &fileA, const std::f
 // Reads a stream from an OLE container using the Windows native structured storage API.
 // This is an oracle validating that files written by POLE conform to the OLE format
 // (and therefore remain readable by older VPX versions and third-party tools).
+// Only available on the Win32 build: standalone builds have no native OLE structured storage.
+#ifndef __STANDALONE__
 static vector<uint8_t> NativeReadStream(const std::filesystem::path &file, const wchar_t *storageName, const wchar_t *streamName)
 {
    vector<uint8_t> result;
@@ -106,6 +110,7 @@ static std::set<wstring> NativeStorageEntries(IStorage *storage)
    }
    return names;
 }
+#endif // !__STANDALONE__
 
 
 TEST_CASE("POLE structured storage")
@@ -220,6 +225,7 @@ TEST_CASE("POLE structured storage")
 }
 
 
+#ifndef __STANDALONE__
 TEST_CASE("POLE storage conforms to the OLE format")
 {
    std::error_code ec;
@@ -275,6 +281,7 @@ TEST_CASE("POLE storage conforms to the OLE format")
       }
    }
 }
+#endif // !__STANDALONE__
 
 
 TEST_CASE("BIFF reader/writer round-trip")
@@ -380,9 +387,11 @@ TEST_CASE("Table file save/load round-trip")
    CHECK(feedback.m_isMonotonic);
    CHECK(feedback.m_lastProgress == feedback.m_length); // Save reports the progress of every single saved item
 
+#ifndef __STANDALONE__
    // The saved file must be a valid OLE container, readable by the native API
    CHECK(NativeReadStream(out1, L"GameStg", L"GameData").size() > 0);
    CHECK(NativeReadStream(out1, L"GameStg", L"MAC").size() > 0);
+#endif
 
    CComObject<PinTable> *reloaded;
    CComObject<PinTable>::CreateInstance(&reloaded);

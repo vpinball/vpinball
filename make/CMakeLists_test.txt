@@ -1,0 +1,490 @@
+# test runner CMake file to be included in main project CMakeLists
+#
+# vpx-test is a doctest based test runner that shares the application sources but provides
+# its own entry point, like the MSVC make/vpx-test.vcxproj which imports vpx-core.vcxitems
+# and adds the tests/ sources.
+#
+# The target is excluded from the default build; build it explicitly:
+#   cmake --build <build-dir> --target vpx-test
+#
+# tests/assets is deployed in a 'test-assets' folder next to the executable, which is where
+# the test runner looks for it (FileLocator::AppSubFolder::Root / "test-assets").
+
+set(VPX_TEST_SOURCES
+   tests/test-base-render.cpp
+   tests/test-plugin-arrays.cpp
+   tests/test-table-io.cpp
+   tests/vpx-test.cpp
+   tests/vpx-test.h
+)
+
+# Win32 Editor build (BGFX / GL / DX9)
+
+if(PLATFORM STREQUAL "windows")
+
+   set(VPX_TEST_APP_SOURCES ${VPX_WINDOWS_SOURCES} ${VPX_TEST_SOURCES})
+   list(REMOVE_ITEM VPX_TEST_APP_SOURCES src/core/main.cpp)
+
+   add_executable(vpx-test WIN32 EXCLUDE_FROM_ALL
+      ${VPX_TEST_APP_SOURCES}
+   )
+
+   target_precompile_headers(vpx-test PUBLIC
+      src/core/stdafx.h
+   )
+
+   if(RENDERER STREQUAL "BGFX")
+      target_include_directories(vpx-test PUBLIC
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
+         third-party/include
+         third-party/include/win32xx/include
+         third-party/include/compat/msvc
+         src
+         plugins
+      )
+      target_compile_definitions(vpx-test PRIVATE
+         ENABLE_BGFX
+         $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
+      )
+   elseif(RENDERER STREQUAL "GL")
+      target_sources(vpx-test PRIVATE
+         src/renderer/DXGIRegistry.h
+      )
+      target_include_directories(vpx-test PUBLIC
+         $ENV{DXSDK_DIR}/Include
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
+         third-party/include
+         third-party/include/win32xx/include
+         src
+         plugins
+      )
+      target_compile_definitions(vpx-test PRIVATE
+         ENABLE_OPENGL
+      )
+   else()
+      target_sources(vpx-test PRIVATE
+         src/shaders/hlsl_glsl/BallShader.hlsl
+         src/shaders/hlsl_glsl/BasicShader.hlsl
+         src/shaders/hlsl_glsl/DMDShader.hlsl
+         src/shaders/hlsl_glsl/FBShader.hlsl
+         src/shaders/hlsl_glsl/FlasherShader.hlsl
+         src/shaders/hlsl_glsl/LightShader.hlsl
+         src/shaders/hlsl_glsl/UIShader.hlsl
+      )
+      target_include_directories(vpx-test PUBLIC
+         $ENV{DXSDK_DIR}/Include
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
+         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src
+         third-party/include
+         third-party/include/winsdk
+         third-party/include/win32xx/include
+         src
+         plugins
+         shader
+      )
+      target_compile_definitions(vpx-test PRIVATE
+         ENABLE_DX9
+      )
+   endif()
+
+   target_compile_options(vpx-test PUBLIC
+      $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+      $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   )
+
+   if(RENDERER STREQUAL "BGFX")
+      target_link_directories(vpx-test PUBLIC
+         ${BUILD_LIBS_DIR}
+      )
+   else()
+      target_link_directories(vpx-test PUBLIC
+         $ENV{DXSDK_DIR}/Lib/${ARCH}
+         ${BUILD_LIBS_DIR}
+      )
+   endif()
+
+   target_link_libraries(vpx-test
+      comctl32.lib
+      dxguid.lib
+      nvapi.lib
+      winmm.lib
+      hid.lib
+      setupapi.lib
+      dinput8.lib
+      $<IF:$<STREQUAL:${ARCH},x64>,freeimage64.lib,freeimage.lib>
+      $<IF:$<STREQUAL:${ARCH},x64>,SDL364.lib,SDL3.lib>
+   )
+
+   if(RENDERER STREQUAL "BGFX")
+      target_link_libraries(vpx-test
+         $<IF:$<STREQUAL:${ARCH},x64>,openxr_loader64.lib,openxr_loader.lib>
+         $<IF:$<STREQUAL:${ARCH},x64>,bgfx64.lib,bgfx.lib>
+         $<IF:$<STREQUAL:${ARCH},x64>,bimg64.lib,bimg.lib>
+         $<IF:$<STREQUAL:${ARCH},x64>,bx64.lib,bx.lib>
+      )
+   elseif(RENDERER STREQUAL "GL")
+      target_link_libraries(vpx-test
+         glad
+      )
+   else()
+      target_link_libraries(vpx-test
+         d3d9.lib
+         d3dx9.lib
+         dxerr.lib
+      )
+   endif()
+
+   target_link_options(vpx-test PUBLIC
+      $<$<CONFIG:Release>:/INCREMENTAL:NO>
+      $<$<CONFIG:Release>:/OPT:REF>
+      $<$<CONFIG:Release>:/OPT:ICF>
+      $<$<CONFIG:Release>:/LTCG>
+      $<$<CONFIG:Release>:/DEBUG:FULL>
+      $<$<CONFIG:Release>:/DYNAMICBASE:NO>
+      $<IF:$<STREQUAL:${ARCH},x64>,$<$<CONFIG:Release>:/SAFESEH:NO>,/SAFESEH:NO>
+      $<$<NOT:$<STREQUAL:${ARCH},x64>>:/LARGEADDRESSAWARE>
+   )
+
+   if(RENDERER STREQUAL "BGFX")
+      set(TEST_RUNTIME_OUTPUT_NAME "$<IF:$<STREQUAL:${ARCH},x64>,VPXTest_BGFX64,VPXTest_BGFX>")
+   elseif(RENDERER STREQUAL "GL")
+      set(TEST_RUNTIME_OUTPUT_NAME "$<IF:$<STREQUAL:${ARCH},x64>,VPXTest_GL64,VPXTest_GL>")
+   else()
+      set(TEST_RUNTIME_OUTPUT_NAME "$<IF:$<STREQUAL:${ARCH},x64>,VPXTest_DX964,VPXTest_DX9>")
+   endif()
+
+   set_target_properties(vpx-test PROPERTIES
+      RUNTIME_OUTPUT_NAME "${TEST_RUNTIME_OUTPUT_NAME}"
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+   )
+
+   add_custom_command(TARGET vpx-test POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+   )
+
+   if(POST_BUILD_COPY_EXT_LIBS)
+      add_custom_command(TARGET vpx-test POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,freeimage64.dll,freeimage.dll>" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SciLexerVP64.dll,SciLexerVP.dll>" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SDL364.dll,SDL3.dll>" "$<TARGET_FILE_DIR:vpx-test>"
+      )
+      if(RENDERER STREQUAL "BGFX")
+         add_custom_command(TARGET vpx-test POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,openxr_loader64.dll,openxr_loader.dll>" "$<TARGET_FILE_DIR:vpx-test>"
+         )
+      elseif(RENDERER STREQUAL "DX9")
+         add_custom_command(TARGET vpx-test POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,D3DX9_4364.dll,D3DX9_4332.dll>" "$<TARGET_FILE_DIR:vpx-test>"
+         )
+      endif()
+   endif()
+
+# Windows MinGW build (BGFX)
+
+elseif(PLATFORM STREQUAL "windows-mingw")
+
+   set(VPX_TEST_APP_SOURCES ${VPX_STANDALONE_SOURCES} ${VPX_TEST_SOURCES}
+      src/utils/StackTrace.cpp
+      src/utils/StackTrace.h
+      src/utils/MemoryStatus.cpp
+      src/utils/MemoryStatus.h
+      src/utils/BlackBox.cpp
+      src/utils/BlackBox.h
+      src/utils/CrashHandler.cpp
+      src/utils/CrashHandler.h
+   )
+   list(REMOVE_ITEM VPX_TEST_APP_SOURCES src/core/main.cpp)
+
+   add_executable(vpx-test EXCLUDE_FROM_ALL
+      ${VPX_TEST_APP_SOURCES}
+   )
+
+   target_include_directories(vpx-test PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      ${CMAKE_SOURCE_DIR}
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atlmfc/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include/msvcrt
+      src
+      plugins
+   )
+
+   target_compile_definitions(vpx-test PRIVATE
+      __STANDALONE__
+
+      __LIBWINEVBS__
+      WINE_UNICODE_NATIVE
+
+      WINBOOL=int
+      WIN32_LEAN_AND_MEAN
+      NOMINMAX
+
+      ENABLE_BGFX
+      $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
+
+      VPX_STANDALONE_CRASH_HANDLER
+   )
+
+   target_compile_options(vpx-test PUBLIC
+      -mssse3
+      $<$<CONFIG:Release>:-g1>
+      $<$<CXX_COMPILER_ID:GNU>:
+         -ffast-math
+         -ffp-contract=off
+         -Wno-template-body>
+   )
+
+   target_link_directories(vpx-test PUBLIC
+      ${BUILD_LIBS_DIR}
+      ${RUNTIME_LIBS_DIR}
+   )
+
+   target_link_libraries(vpx-test
+      bgfx64
+      bimg64
+      bx64
+      SDL364
+      SDL3_image64
+      SDL3_ttf64
+      freeimage64
+      hidapi64
+      openxr_loader64
+      winevbs64
+      backtrace
+      dbghelp
+   )
+
+   target_link_options(vpx-test PUBLIC
+      -Wl,--dynamicbase
+      -Wl,--nxcompat
+      -Wl,--high-entropy-va
+   )
+
+   set_target_properties(vpx-test PROPERTIES
+      RUNTIME_OUTPUT_NAME "vpx-test"
+   )
+
+   add_custom_command(TARGET vpx-test POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+   )
+
+   if(POST_BUILD_COPY_EXT_LIBS)
+      add_custom_command(TARGET vpx-test POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL364.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_image64.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_ttf64.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/freeimage64.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/hidapi64.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/openxr_loader64.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/winevbs64.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "$<TARGET_FILE_DIR:vpx-test>"
+      )
+   endif()
+
+# macOS build (BGFX / GL)
+
+elseif(PLATFORM STREQUAL "macos")
+
+   set(VPX_TEST_APP_SOURCES ${VPX_STANDALONE_SOURCES} ${VPX_TEST_SOURCES})
+   list(REMOVE_ITEM VPX_TEST_APP_SOURCES src/core/main.cpp)
+
+   add_executable(vpx-test EXCLUDE_FROM_ALL
+      ${VPX_TEST_APP_SOURCES}
+   )
+
+   target_include_directories(vpx-test PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      ${CMAKE_SOURCE_DIR}
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atlmfc/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
+      src
+      plugins
+   )
+
+   target_compile_definitions(vpx-test PRIVATE
+      __STANDALONE__
+
+      __LIBWINEVBS__
+      __WINESRC__
+      WINE_UNICODE_NATIVE
+
+      "__forceinline=__attribute__((always_inline)) inline"
+   )
+
+   if(RENDERER STREQUAL "BGFX")
+      target_compile_definitions(vpx-test PRIVATE
+         ENABLE_BGFX
+
+         $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
+      )
+   else()
+      target_compile_definitions(vpx-test PRIVATE
+         ENABLE_OPENGL
+      )
+   endif()
+
+   target_compile_options(vpx-test PUBLIC
+      -Wno-inconsistent-missing-override
+      -Wno-missing-exception-spec
+      -fdenormal-fp-math=preserve-sign
+      -freciprocal-math
+      -fassociative-math
+      -fapprox-func
+      -fno-math-errno
+      -fno-trapping-math
+      -ffp-contract=off
+      -Wno-shorten-64-to-32
+      $<$<AND:$<STREQUAL:${ARCH},x64>,$<STREQUAL:${RENDERER},GL>>:-mssse3>
+   )
+
+   target_link_directories(vpx-test PUBLIC
+      "${RUNTIME_LIBS_DIR}"
+   )
+
+   target_link_libraries(vpx-test PUBLIC
+      SDL3
+      SDL3_image
+      SDL3_ttf
+      freeimage
+      hidapi
+      winevbs
+      "-framework AppKit"
+   )
+
+   target_link_libraries(vpx-test PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
+
+   set_target_properties(vpx-test PROPERTIES
+      RUNTIME_OUTPUT_NAME "vpx-test"
+      # Not a bundle: look for dylibs next to the executable instead of ../Frameworks
+      INSTALL_RPATH "@executable_path"
+   )
+
+   add_custom_command(TARGET vpx-test POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+   )
+
+   if(POST_BUILD_COPY_EXT_LIBS)
+      add_custom_command(TARGET vpx-test POST_BUILD
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/*.dylib" "$<TARGET_FILE_DIR:vpx-test>"
+      )
+   endif()
+
+# Linux build (BGFX / GL)
+
+elseif(PLATFORM STREQUAL "linux")
+
+   set(VPX_TEST_APP_SOURCES ${VPX_STANDALONE_SOURCES} ${VPX_TEST_SOURCES})
+   list(REMOVE_ITEM VPX_TEST_APP_SOURCES src/core/main.cpp)
+
+   add_executable(vpx-test EXCLUDE_FROM_ALL
+      ${VPX_TEST_APP_SOURCES}
+   )
+
+   target_include_directories(vpx-test PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      ${CMAKE_SOURCE_DIR}
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atlmfc/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
+      src
+      plugins
+   )
+
+   target_compile_definitions(vpx-test PRIVATE
+      __STANDALONE__
+
+      __LIBWINEVBS__
+      __WINESRC__
+      WINE_UNICODE_NATIVE
+
+      "__forceinline=__attribute__((always_inline)) inline"
+   )
+
+   if(RENDERER STREQUAL "BGFX")
+      target_compile_definitions(vpx-test PRIVATE
+         ENABLE_BGFX
+
+         $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
+      )
+   else()
+      target_compile_definitions(vpx-test PRIVATE
+         ENABLE_OPENGL
+         $<$<NOT:$<STREQUAL:${ARCH},x64>>:__OPENGLES__>
+      )
+   endif()
+
+   target_compile_definitions(vpx-test PRIVATE
+      $<$<BOOL:${BUILD_RPI}>:__RPI__>
+      $<$<BOOL:${BUILD_RK3588}>:__RK3588__>
+   )
+
+   target_compile_options(vpx-test PUBLIC
+      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+         -fdenormal-fp-math=preserve-sign
+         -freciprocal-math
+         -fassociative-math
+         -fapprox-func
+         -fno-math-errno
+         -fno-trapping-math
+         -ffp-contract=off
+         -Wno-shorten-64-to-32>
+      $<$<CXX_COMPILER_ID:GNU>:
+         -ffast-math
+         -ffp-contract=off
+         -Wno-changes-meaning>
+      $<$<STREQUAL:${ARCH},x64>:-mssse3>
+   )
+
+   target_link_directories(vpx-test PUBLIC
+      "${RUNTIME_LIBS_DIR}"
+   )
+
+   target_link_libraries(vpx-test PUBLIC
+      SDL3
+      SDL3_image
+      SDL3_ttf
+      freeimage
+      hidapi-hidraw
+      winevbs
+   )
+
+   target_link_libraries(vpx-test PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
+
+   set_target_properties(vpx-test PROPERTIES
+      RUNTIME_OUTPUT_NAME "vpx-test"
+   )
+
+   add_custom_command(TARGET vpx-test POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+   )
+
+   if(POST_BUILD_COPY_EXT_LIBS)
+      add_custom_command(TARGET vpx-test POST_BUILD
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3.so" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3.so.*" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_image.so" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_image.so.*" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_ttf.so" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_ttf.so.*" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libfreeimage.so" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libfreeimage.so.*" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libhidapi-hidraw.so" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libhidapi-hidraw.so.*" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libwinevbs.so" "$<TARGET_FILE_DIR:vpx-test>"
+         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libwinevbs.so.*" "$<TARGET_FILE_DIR:vpx-test>"
+      )
+      if(RENDERER STREQUAL "BGFX")
+         add_custom_command(TARGET vpx-test POST_BUILD
+            COMMAND cp -a "${RUNTIME_LIBS_DIR}/libbgfx.so" "$<TARGET_FILE_DIR:vpx-test>"
+         )
+      endif()
+   endif()
+
+endif()
