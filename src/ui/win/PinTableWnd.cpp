@@ -1494,7 +1494,6 @@ IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
    const CRect rc = GetClientRect();
 
    HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, &m_tablePart);
-   HitSur phs2(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, &m_tablePart);
 
    m_allHitElements.clear();
 
@@ -1503,9 +1502,9 @@ IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
    // This reflects the actual stacking order, so elements hit during pass 2
    // (e.g. gates, plungers, spinners) are above all elements hit during pass 1.
    // Sub parts (drag points, light centers) are not listed.
-   const auto collectHit = [this, &phs2]()
+   const auto collectHit = [this, &phs]()
    {
-      IWinUIPart *const tmp = phs2.m_pselected;
+      IWinUIPart *const tmp = phs.m_pselected;
       if (tmp == nullptr || tmp == &m_tablePart || tmp->IsSubPart())
          return;
       const auto it = std::ranges::find(m_allHitElements, tmp);
@@ -1517,20 +1516,20 @@ IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->IsUIVisible(false))
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
          {
-            uiPart->UIRenderPass1(&phs2);
+            uiPart->UIRenderPass1(&phs);
             collectHit();
          }
    for (IEditable *const ptr : m_table->GetParts())
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->IsUIVisible(false))
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
          {
-            uiPart->UIRenderPass2(&phs2);
+            uiPart->UIRenderPass2(&phs);
             collectHit();
          }
 
    std::ranges::reverse(m_allHitElements.begin(), m_allHitElements.end());
 
-   return m_allHitElements.empty() ? &m_tablePart : m_allHitElements[0];
+   return phs.m_pselected;
 }
 
 void PinTableWnd::OnKeyDown(int key)
