@@ -232,6 +232,10 @@ private:
    RenderTarget* ApplyStereo(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
 
    // Ancillary window rendering
+
+   // Normalized [x1,y1,x2,y2] of each embedded ancillary window composited into the linear render
+   // buffer this frame, which ApplyTonemapping regrades without the table's color grade
+   vector<vec4> m_embeddedRegions;
    static void DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const float tintR, const float tintG, const float tintB, const float alpha, const float texX, const float texY,
       const float texW, const float texH, const float pivotX, const float pivotY, const float rotation, const float srcX, const float srcY, const float srcW, const float srcH);
    static void DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle style, VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB,

@@ -2453,6 +2453,34 @@ RenderTarget* Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarget*
       { -1.0f + m_screenOffset.x, -1.0f + m_screenOffset.y, 0.0f, 0.0f, 1.0f }
    };
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, shiftedVerts);
+
+   // Embedded ancillary windows are (potentially) separate physical displays, so the table's color grade must not
+   // reach them, while everything else this pass does (exposure, tonemapper, bloom, dither and the
+   // output colorspace, sRGB or HDR10/BT.2100) still must. Rather than masking inside the shader,
+   // run the very same pass again over their regions with the grade switched off: it reads the same
+   // source and blending is disabled, so it simply overwrites the graded result.
+   // Skipped in the info modes, which rebind the source to a probe or the bloom buffer
+   if (!m_embeddedRegions.empty() && (g_pplayer->GetInfoMode() == IF_NONE) && m_table->GetImage(m_table->m_imageColorGrade) != nullptr)
+   {
+      // The flags SetupTonemapping just set, with only the color grade cleared
+      const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::bloom_dither_colorgrade, //
+         IsBloomEnabled() ? 1.f : 0.f, // Bloom
+         (!isHdr2020 && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither
+         0.f, // No LUT colorgrade
+         0.f);
+      for (const vec4& region : m_embeddedRegions)
+      {
+         const Vertex3D_TexelOnly regionVerts[4] = {
+            { 2.f * region.z - 1.f + m_screenOffset.x, 1.f - 2.f * region.y + m_screenOffset.y, 0.0f, region.z, region.y },
+            { 2.f * region.x - 1.f + m_screenOffset.x, 1.f - 2.f * region.y + m_screenOffset.y, 0.0f, region.x, region.y },
+            { 2.f * region.z - 1.f + m_screenOffset.x, 1.f - 2.f * region.w + m_screenOffset.y, 0.0f, region.z, region.w },
+            { 2.f * region.x - 1.f + m_screenOffset.x, 1.f - 2.f * region.w + m_screenOffset.y, 0.0f, region.x, region.w }
+         };
+         m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, regionVerts);
+      }
+   }
+
    return tonemapRT;
 }
 
@@ -3021,6 +3049,15 @@ void Renderer::RenderFrame()
    // Compute bloom (to be applied later, with tonemapping)
    UpdateBloom(renderedRT);
 
+   // Render ancillary windows. Embedded ones are composited into the linear render buffer so that
+   // the postprocess chain below converts them along with the rest of the frame: that is what knows
+   // whether the backbuffer is sRGB or HDR10/BT.2100, and what applies the scene exposure and the
+   // table's tonemapper. Only the color grade has to be kept off them, which ApplyTonemapping does
+   m_embeddedRegions.clear();
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Backglass]);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_ScoreView]);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper]);
+
    const bool hasAntialiasPass = m_FXAA != Disabled;
    const bool hasSharpenPass = m_sharpen != 0;
    const bool hasUpscalerPass = m_renderWidth < GetBackBufferTexture()->GetWidth();
@@ -3059,14 +3096,6 @@ void Renderer::RenderFrame()
 
    // Apply stereo
    renderedRT = ApplyStereo(renderedRT, m_renderDevice->GetOutputBackBuffer());
-
-   // Render ancillary windows. Embedded windows are rendered after the postprocess chain, directly to the output backbuffer,
-   // so that they are not modified by the table's postprocessing (color grade LUT, tonemapping, sharpen, ...)
-   RenderAncillaryWindow(
-      VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, m_renderDevice->GetOutputBackBuffer(), g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Backglass]);
-   RenderAncillaryWindow(
-      VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, m_renderDevice->GetOutputBackBuffer(), g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_ScoreView]);
-   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, m_renderDevice->GetOutputBackBuffer(), g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper]);
 
    if (!uiBeforeStero)
    {
@@ -3253,8 +3282,8 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
       outputRT = embedRT;
       VPX::Window* containerWnd = m_renderDevice->m_outputWnd[0];
 
-      const float displayScaleX = static_cast<float>(outputRT->GetWidth()) / static_cast<float>(containerWnd->GetWidth());
-      const float displayScaleY = static_cast<float>(outputRT->GetHeight()) / static_cast<float>(containerWnd->GetHeight());
+      const float displayScaleX = static_cast<float>(containerWnd->GetPixelWidth()) / static_cast<float>(containerWnd->GetWidth());
+      const float displayScaleY = static_cast<float>(containerWnd->GetPixelHeight()) / static_cast<float>(containerWnd->GetHeight());
 
       const int wndW = output.GetEmbeddedWindow()->GetWidth();
       const int wndH = output.GetEmbeddedWindow()->GetHeight();
@@ -3330,9 +3359,11 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
    rd->m_DMDShader->SetFloat(ShaderUniform::alphaTestValue, -1.0f);
 
    // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)
-   // Embedded windows are rendered after the main postprocess chain, directly to the sRGB output backbuffer
+   // so dedicated windows compose directly in sRGB. Embedded windows on the other hand are composited
+   // into the linear render buffer and converted by the shared postprocess chain, which is what keeps
+   // them correct on an HDR10/BT.2100 backbuffer, where sRGB values would be read as PQ and blow out.
    // TODO we should allow plugins to decide if they want linear colorspace + tonemapping or simple sRGB composition
-   isOutputLinear = false;
+   isOutputLinear = output.GetMode() == VPX::RenderOutput::OM_EMBEDDED;
 
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
@@ -3432,6 +3463,22 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
    RenderTarget* outputRT = SetupAncillaryRenderTarget(window, output, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, isOutputLinear);
    if (outputRT == nullptr)
       return;
+
+   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      // Remember the region so ApplyTonemapping can redo it without the table's color grade. The
+      // content is rotated inside the [0..1] square before being mapped onto this rectangle, so
+      // whatever the rotation, it stays within it
+      m_embeddedRegions.push_back(vec4(static_cast<float>(m_outputX) / static_cast<float>(outputRT->GetWidth()),
+         static_cast<float>(m_outputY) / static_cast<float>(outputRT->GetHeight()),
+         static_cast<float>(m_outputX + m_outputW) / static_cast<float>(outputRT->GetWidth()),
+         static_cast<float>(m_outputY + m_outputH) / static_cast<float>(outputRT->GetHeight())));
+
+      // Keep the embedded ancillary content ordered after bloom: it writes the buffer that bloom
+      // already sampled with this region cleared, so without this dependency the sorter may run it
+      // before the bloom sample and bloom bleeds the content into the region. No-op without bloom
+      rd->AddRenderTargetDependency(GetBloomBufferTexture());
+   }
 
    rd->ResetRenderState();
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
