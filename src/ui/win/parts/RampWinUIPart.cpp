@@ -87,9 +87,9 @@ void RampWinUIPart::UIRenderPass2(Sur* const psur)
    if (!drawDragpoints)
    {
       // if any of the drag points of this object are selected then draw all the dragpoints
-      for (const CComObject<DragPoint>* const pdp : m_ramp->m_curve.GetPoints())
+      for (const auto& pdp : m_ramp->m_curve.GetPoints())
       {
-         if (m_pointParts.IsSelected(pdp))
+         if (m_pointParts.IsSelected(pdp.get()))
          {
             drawDragpoints = true;
             break;
@@ -101,12 +101,12 @@ void RampWinUIPart::UIRenderPass2(Sur* const psur)
    {
       for (size_t i = 0; i < m_ramp->m_curve.GetPoints().size(); i++)
       {
-         CComObject<DragPoint>* const pdp = m_ramp->m_curve.GetPoints()[i];
+         const auto& pdp = m_ramp->m_curve.GetPoints()[i];
          psur->SetFillColor(-1);
-         psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
-         psur->SetObject(m_pointParts.Get(pdp));
+         psur->SetBorderColor(m_pointParts.IsDragging(pdp.get()) ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
+         psur->SetObject(m_pointParts.Get(pdp.get()));
 
-         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+         psur->Ellipse2(pdp->GetX(), pdp->GetY(), 8);
       }
    }
 }

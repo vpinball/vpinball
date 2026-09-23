@@ -33,35 +33,10 @@ void Flasher::InitShape(const float x, const float y)
       // First time shape has been set to custom - set up some points
       constexpr float size = 100.0f;
 
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, x - size*0.5f, y - size*0.5f, 0.f, false);
-         m_curve.PushPoint(pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, x - size*0.5f, y + size*0.5f, 0.f, false);
-         m_curve.PushPoint(pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, x + size*0.5f, y + size*0.5f, 0.f, false);
-         m_curve.PushPoint(pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, x + size*0.5f, y - size*0.5f, 0.f, false);
-         m_curve.PushPoint(pdp);
-      }
+      m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - size * 0.5f, y - size * 0.5f, 0.f, false));
+      m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - size * 0.5f, y + size * 0.5f, 0.f, false));
+      m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + size * 0.5f, y + size * 0.5f, 0.f, false));
+      m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + size * 0.5f, y - size * 0.5f, 0.f, false));
    }
 }
 
@@ -210,21 +185,14 @@ void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
       if (vvertex[i].controlPoint)
          icp++;
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
-      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-   }
+   m_curve.InsertPoint(icp, std::make_unique<DragPoint>(&m_curve, vOut.x, vOut.y, 0.f, smooth)); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 }
 
 void Flasher::UpdatePoint(int index, float x, float y)
 {
-     CComObject<DragPoint> *pdp = m_curve.GetPoints()[index];
-     pdp->m_v.x = x;
-     pdp->m_v.y = y;
+     const auto &pdp = m_curve.GetPoints()[index];
+     pdp->SetX(x);
+     pdp->SetY(y);
      m_curve.OnPointsModified();
 }
 
@@ -267,7 +235,7 @@ void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
 
 void Flasher::ClearForOverwrite()
 {
-   m_curve.ClearPointsForOverwrite();
+   m_curve.ClearPoints();
 }
 
 

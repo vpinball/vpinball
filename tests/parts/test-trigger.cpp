@@ -5,7 +5,7 @@
 
 #include "parts/pintable.h"
 #include "parts/trigger.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 
 #include "doctest.h"
 

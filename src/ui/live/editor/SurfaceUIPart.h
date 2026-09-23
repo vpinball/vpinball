@@ -15,7 +15,7 @@ public:
    void SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) override;
 
    DragPointCurve* GetDragPointCurve() override { return &m_part->m_curve; }
-   float GetDragPointZ(const DragPoint* point) const override { return point->m_v.z + 0.5f * (m_part->m_d.m_heightbottom + m_part->m_d.m_heighttop); }
+   float GetDragPointZ(const DragPoint* point) const override { return point->GetZ() + 0.5f * (m_part->m_d.m_heightbottom + m_part->m_d.m_heighttop); }
 
    void RenderOverlay(const EditorRenderContext& ctx) override;
 

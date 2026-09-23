@@ -3,7 +3,7 @@
 #pragma once
 
 #include "core/resourceid.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 #include "parts/Material.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"

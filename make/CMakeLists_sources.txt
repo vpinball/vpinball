@@ -78,6 +78,8 @@ set(VPX_SOURCES
    src/input/XRInputHandler.h
 
    src/math/bbox.h
+   src/math/dragpoint.h
+   src/math/dragpoint.cpp
    src/math/ExponentialMovingAverage.h
    src/math/HighPassFilter.cpp
    src/math/HighPassFilter.h
@@ -122,7 +124,6 @@ set(VPX_SOURCES
    src/meshes/triggerSimpleMesh.h
    src/meshes/triggerStarMesh.h
 
-   src/parts/dragpoint.h
    src/parts/Material.h
    src/parts/pinbinary.cpp
    src/parts/pinbinary.h
@@ -136,7 +137,6 @@ set(VPX_SOURCES
    src/parts/decal.h
    src/parts/dispreel.cpp
    src/parts/dispreel.h
-   src/parts/dragpoint.cpp
    src/parts/flasher.cpp
    src/parts/flasher.h
    src/parts/flipper.cpp
@@ -696,7 +696,6 @@ set(VPX_WINDOWS_SOURCES
    src/ui/win/res/bumper.rgs
    src/ui/win/res/hittarget.rgs
    src/ui/win/res/dispreel.rgs
-   src/ui/win/res/dragpoint.rgs
    src/ui/win/res/flasher.rgs
    src/ui/win/res/rubber.rgs
    src/ui/win/res/flipper.rgs

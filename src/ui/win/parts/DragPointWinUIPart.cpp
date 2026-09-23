@@ -2,7 +2,7 @@
 
 #include "core/stdafx.h"
 
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 #include "parts/pintable.h"
 #include "ui/win/parts/DragPointWinUIPart.h"
 
@@ -12,11 +12,7 @@ DragPointWinUIPart::DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint
 {
 }
 
-int DragPointWinUIPart::GetSubPartIndex() const
-{
-   const vector<CComObject<DragPoint>*> points = m_dragPoint->GetCurve()->GetPoints();
-   return FindIndexOf(points, (CComObject<DragPoint>*)m_dragPoint);
-}
+int DragPointWinUIPart::GetSubPartIndex() const { return m_dragPoint->GetCurve()->GetPointIndex(m_dragPoint); }
 
 Vertex2D DragPointWinUIPart::GetCenter() const { return m_dragPoint->GetCenter(); }
 
@@ -36,7 +32,7 @@ void DragPointWinUIPart::OnLButtonUp(int x, int y)
 
 void DragPointWinUIPart::UpdateStatusBarObjectPos()
 {
-   SetStatusBarObjectPos(m_dragPoint->m_v.x, m_dragPoint->m_v.y);
+   SetStatusBarObjectPos(m_dragPoint->GetX(), m_dragPoint->GetY());
 }
 
 int DragPointWinUIPart::GetMenuId() const
@@ -46,9 +42,9 @@ int DragPointWinUIPart::GetMenuId() const
 
 void DragPointWinUIPart::EditMenu(CMenu& menu)
 {
-   menu.CheckMenuItem(ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_dragPoint->m_smooth ? MF_CHECKED : MF_UNCHECKED));
+   menu.CheckMenuItem(ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_dragPoint->IsSmooth() ? MF_CHECKED : MF_UNCHECKED));
    //EnableMenuItem(hmenu, ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | (m_fSmooth ? MF_GRAYED : MF_ENABLED));
-   menu.CheckMenuItem(ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | ((m_dragPoint->m_slingshot && !m_dragPoint->m_smooth) ? MF_CHECKED : MF_UNCHECKED));
+   menu.CheckMenuItem(ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | ((m_dragPoint->m_slingshot && !m_dragPoint->IsSmooth()) ? MF_CHECKED : MF_UNCHECKED));
 }
 
 void DragPointWinUIPart::DoCommand(int icmd, int x, int y)

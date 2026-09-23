@@ -100,7 +100,7 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (const auto& pdp : m_flasher->m_curve.GetPoints())
       {
-         if (m_pointParts.IsSelected(pdp))
+         if (m_pointParts.IsSelected(pdp.get()))
          {
             drawDragpoints = true;
             break;
@@ -113,9 +113,9 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
       psur->SetFillColor(-1);
       for (const auto &pdp : m_flasher->m_curve.GetPoints())
       {
-         psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
-         psur->SetObject(m_pointParts.Get(pdp));
-         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+         psur->SetBorderColor(m_pointParts.IsDragging(pdp.get()) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+         psur->SetObject(m_pointParts.Get(pdp.get()));
+         psur->Ellipse2(pdp->GetX(), pdp->GetY(), 8);
       }
    }
 

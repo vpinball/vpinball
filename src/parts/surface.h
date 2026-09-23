@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/resourceid.h"
-#include "dragpoint.h"
+#include "math/dragpoint.h"
 #include "math/MeshUtils.h"
 #include "parts/Material.h"
 #include "parts/pintable.h"

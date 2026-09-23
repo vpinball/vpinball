@@ -16,7 +16,7 @@
 #include "parts/PartGroup.h"
 #include "parts/ball.h"
 #include "parts/primitive.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 
 #include "plugins/VPXPlugin.h"
 
@@ -207,8 +207,7 @@ void EditorUI::RenderUI()
          ExitPointEditMode(false);
       else
       {
-         const vector<CComObject<DragPoint> *> &points = curve->GetPoints();
-         std::erase_if(m_pointSel, [&points](const DragPoint *point) { return std::ranges::find(points, point) == points.end(); });
+         std::erase_if(m_pointSel, [curve](const DragPoint *point) { return curve->GetPointIndex(point) < 0; });
       }
    }
 
@@ -368,13 +367,13 @@ void EditorUI::RenderUI()
       // In drag point edit mode, render the drag points of the edited part's curve
       if (m_pointEditPart)
       {
-         const vector<CComObject<DragPoint> *> &points = m_pointEditPart->GetDragPointCurve()->GetPoints();
+         const auto &points = m_pointEditPart->GetDragPointCurve()->GetPoints();
          for (size_t i = 0; i < points.size(); i++)
          {
-            const ImVec2 pos = ctx.Project(Vertex3Ds(points[i]->m_v.x, points[i]->m_v.y, m_pointEditPart->GetDragPointZ(points[i])));
+            const ImVec2 pos = ctx.Project(Vertex3Ds(points[i]->GetX(), points[i]->GetY(), m_pointEditPart->GetDragPointZ(points[i].get())));
             if (pos.x == FLT_MAX)
                continue;
-            const ImU32 color = IsPointSelected(points[i]) ? IM_COL32(255, 128, 0, 255) : (points[i]->m_smooth ? IM_COL32(80, 160, 255, 255) : IM_COL32(255, 96, 96, 255));
+            const ImU32 color = IsPointSelected(points[i].get()) ? IM_COL32(255, 128, 0, 255) : (points[i]->IsSmooth() ? IM_COL32(80, 160, 255, 255) : IM_COL32(255, 96, 96, 255));
             const float radius = (i == 0 ? 5.f : 4.f) * m_liveUI.GetDPI(); // First point is drawn slightly larger to mark the curve start
             overlayDrawList->AddCircleFilled(pos, radius, color, 12);
             overlayDrawList->AddCircle(pos, radius + m_liveUI.GetDPI(), IM_COL32(0, 0, 0, 255), 12, 1.5f);
@@ -594,10 +593,7 @@ void EditorUI::RenderUI()
             {
                DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
                for (DragPoint *point : m_pointSel)
-               {
-                  point->m_v.x += delta.x;
-                  point->m_v.y += delta.y;
-               }
+                  point->Translate(delta);
                curve->OnPointsModified();
                m_renderer->ReinitRenderable(m_pointEditPart->GetEditable()->GetIRenderable());
                m_player->m_physics->Update(m_pointEditPart->GetEditable());
@@ -663,8 +659,8 @@ void EditorUI::RenderUI()
             if (m_pointEditPart)
             {
                m_pointSel.clear();
-               for (CComObject<DragPoint> *point : m_pointEditPart->GetDragPointCurve()->GetPoints())
-                  m_pointSel.push_back(point);
+               for (const auto &point : m_pointEditPart->GetDragPointCurve()->GetPoints())
+                  m_pointSel.push_back(point.get());
             }
             else
                SelectAllParts();
@@ -951,9 +947,8 @@ EditorUI::UndoSelectionState EditorUI::CaptureUndoSelection() const
    // Drag points are deleted and recreated when their part is reloaded (undo, ...): store their index in the curve
    if (DragPointCurve *const curve = m_pointEditPart ? m_pointEditPart->GetDragPointCurve() : nullptr)
    {
-      const vector<CComObject<DragPoint> *> points = curve->GetPoints();
       for (const DragPoint *point : m_pointSel)
-         state.pointSel.push_back(FindIndexOf(points, (CComObject<DragPoint> *)point));
+         state.pointSel.push_back(curve->GetPointIndex(point));
    }
    return state;
 }
@@ -985,10 +980,10 @@ void EditorUI::RestoreUndoSelection(const UndoSelectionState &state)
    m_pointSel.clear();
    if (DragPointCurve *const curve = m_pointEditPart ? m_pointEditPart->GetDragPointCurve() : nullptr)
    {
-      const vector<CComObject<DragPoint> *> points = curve->GetPoints();
+      const auto &points = curve->GetPoints();
       for (const int index : state.pointSel)
          if (index >= 0 && index < (int)points.size())
-            m_pointSel.push_back(points[index]);
+            m_pointSel.push_back(points[index].get());
    }
    m_multiSel.clear();
    for (const auto &part : state.multiSel)
@@ -1344,10 +1339,10 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
       float minX = FLT_MAX, maxX = -FLT_MAX, minY = FLT_MAX, maxY = -FLT_MAX, z = 0.f;
       for (const DragPoint *point : m_pointSel)
       {
-         minX = min(minX, point->m_v.x);
-         maxX = max(maxX, point->m_v.x);
-         minY = min(minY, point->m_v.y);
-         maxY = max(maxY, point->m_v.y);
+         minX = min(minX, point->GetX());
+         maxX = max(maxX, point->GetX());
+         minY = min(minY, point->GetY());
+         maxY = max(maxY, point->GetY());
          z += m_pointEditPart->GetDragPointZ(point);
       }
       transform = Matrix3D::MatrixTranslate(0.5f * (minX + maxX), 0.5f * (minY + maxY), z / (float)m_pointSel.size());
@@ -1370,7 +1365,7 @@ bool EditorUI::GetSelectionBounds(FRect3D &bounds) const
       for (const DragPoint *point : m_pointSel)
       {
          const float z = m_pointEditPart->GetDragPointZ(point);
-         bounds.Extend(FRect3D(point->m_v.x, point->m_v.x, point->m_v.y, point->m_v.y, z, z));
+         bounds.Extend(FRect3D(point->GetX(), point->GetX(), point->GetY(), point->GetY(), z, z));
       }
    }
    else
@@ -1411,9 +1406,9 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
       const Matrix3D delta = newTransform * invOldTransform;
       for (DragPoint *point : m_pointSel)
       {
-         const Vertex3Ds v = delta * point->m_v;
-         point->m_v.x = v.x;
-         point->m_v.y = v.y;
+         const Vertex3Ds v = delta * point->GetVertex();
+         point->SetX(v.x);
+         point->SetY(v.y);
       }
       DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
       curve->OnPointsModified();
@@ -1577,11 +1572,11 @@ void EditorUI::AddPointOnNearestSegment()
    DragPointCurve *const curve = (m_pointEditPart != nullptr && !m_table->IsLocked()) ? m_pointEditPart->GetDragPointCurve() : nullptr;
    if (curve == nullptr)
       return;
-   const vector<CComObject<DragPoint> *> &points = curve->GetPoints();
+   const auto &points = curve->GetPoints();
    if (points.empty())
       return;
    // Unproject the mouse position on the drag plane of the edited curve
-   const float z = m_pointEditPart->GetDragPointZ(m_pointSel.empty() ? points.front() : m_pointSel.front());
+   const float z = m_pointEditPart->GetDragPointZ(m_pointSel.empty() ? points.front().get() : m_pointSel.front());
    const Vertex2D pos = UnprojectToPlane(ImGui::GetMousePos(), z);
    m_undo.BeginUndo();
    m_undo.MarkForUndo(m_pointEditPart->GetEditable());
@@ -1621,9 +1616,9 @@ DragPoint *EditorUI::HitTestDragPoint(const ImVec2 &mousePos) const
    const float maxDist = 10.f * m_liveUI.GetDPI();
    DragPoint *best = nullptr;
    float bestDist = maxDist;
-   for (CComObject<DragPoint> *point : m_pointEditPart->GetDragPointCurve()->GetPoints())
+   for (const auto &point : m_pointEditPart->GetDragPointCurve()->GetPoints())
    {
-      const ImVec2 pos = ctx.Project(Vertex3Ds(point->m_v.x, point->m_v.y, m_pointEditPart->GetDragPointZ(point)));
+      const ImVec2 pos = ctx.Project(Vertex3Ds(point->GetX(), point->GetY(), m_pointEditPart->GetDragPointZ(point.get())));
       if (pos.x == FLT_MAX)
          continue;
       const float dx = pos.x - mousePos.x;
@@ -1632,7 +1627,7 @@ DragPoint *EditorUI::HitTestDragPoint(const ImVec2 &mousePos) const
       if (dist < bestDist)
       {
          bestDist = dist;
-         best = point;
+         best = point.get();
       }
    }
    return best;
@@ -1646,11 +1641,11 @@ void EditorUI::BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, boo
    const LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
    const ImVec2 boxMin(std::min(cornerA.x, cornerB.x), std::min(cornerA.y, cornerB.y));
    const ImVec2 boxMax(std::max(cornerA.x, cornerB.x), std::max(cornerA.y, cornerB.y));
-   for (CComObject<DragPoint> *point : m_pointEditPart->GetDragPointCurve()->GetPoints())
+   for (const auto &point : m_pointEditPart->GetDragPointCurve()->GetPoints())
    {
-      const ImVec2 pos = ctx.Project(Vertex3Ds(point->m_v.x, point->m_v.y, m_pointEditPart->GetDragPointZ(point)));
-      if (pos.x >= boxMin.x && pos.x <= boxMax.x && pos.y >= boxMin.y && pos.y <= boxMax.y && !IsPointSelected(point))
-         m_pointSel.push_back(point);
+      const ImVec2 pos = ctx.Project(Vertex3Ds(point->GetX(), point->GetY(), m_pointEditPart->GetDragPointZ(point.get())));
+      if (pos.x >= boxMin.x && pos.x <= boxMax.x && pos.y >= boxMin.y && pos.y <= boxMax.y && !IsPointSelected(point.get()))
+         m_pointSel.push_back(point.get());
    }
 }
 
@@ -1659,14 +1654,14 @@ void EditorUI::DeleteSelectedPoints()
    if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked())
       return;
    DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
-   vector<CComObject<DragPoint> *> deletable;
+   vector<DragPoint *> deletable;
    for (DragPoint *point : m_pointSel)
       if (point->CanDelete())
-         deletable.push_back(static_cast<CComObject<DragPoint> *>(point));
+         deletable.push_back(point);
    if (deletable.empty())
       return;
    BeginPointEdit();
-   for (CComObject<DragPoint> *point : deletable)
+   for (DragPoint *point : deletable)
    {
       m_pointSel.erase(std::ranges::find(m_pointSel, point));
       curve->DeletePoint(point);

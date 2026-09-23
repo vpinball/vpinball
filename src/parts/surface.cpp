@@ -40,35 +40,10 @@ HRESULT Surface::Init(const float x, const float y, const bool fromMouseClick, c
    LinkProp(width, Width);
    LinkProp(length, Length);
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x - width, y - length, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x - width, y + length, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x + width, y + length, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x + width, y - length, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - width, y - length, 0.f, false));
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - width, y + length, 0.f, false));
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + width, y + length, 0.f, false));
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + width, y - length, 0.f, false));
 
    return S_OK;
 }
@@ -82,38 +57,15 @@ HRESULT Surface::InitTarget(const float x, const float y, const bool fromMouseCl
    LinkProp(width, Width);
    LinkProp(length, Length);
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x - width, y - length, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x - width, y + length, 0.f, false);
-      pdp->m_autoTexture = false;
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x + width, y + length, 0.f, false);
-      pdp->m_autoTexture = false;
-      pdp->m_texturecoord = 1.0f;
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x + 30.0f, y - 6.0f, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - width, y - length, 0.f, false));
+   auto pdp = std::make_unique<DragPoint>(&m_curve, x - width, y + length, 0.f, false);
+   pdp->SetAutoTextureCoordinate(false);
+   m_curve.PushPoint(std::move(pdp));
+   pdp = std::make_unique<DragPoint>(&m_curve, x + width, y + length, 0.f, false);
+   pdp->SetAutoTextureCoordinate(false);
+   pdp->SetTextureCoordinateU(1.0f);
+   m_curve.PushPoint(std::move(pdp));
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + 30.0f, y - 6.0f, 0.f, false));
 
    //SetDefaults();
    //Set separate defaults for targets (SetDefaults sets the Wall defaults)
@@ -946,14 +898,7 @@ void Surface::AddPoint(const Vertex2D &v, const bool smooth)
       if (vvertex[i].controlPoint)
          icp++;
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
-      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-   }
+   m_curve.InsertPoint(icp, std::make_unique<DragPoint>(&m_curve, vOut.x, vOut.y, 0.f, smooth)); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 }
 
 void Surface::FlipY(const Vertex2D& pvCenter)
@@ -1016,7 +961,7 @@ void Surface::Save(IObjectWriter& writer, const bool saveForUndo)
 
 void Surface::ClearForOverwrite()
 {
-   m_curve.ClearPointsForOverwrite();
+   m_curve.ClearPoints();
 }
 
 void Surface::Load(IObjectReader& reader)
@@ -1097,8 +1042,7 @@ void Surface::InitPostLoad()
    // Find smallest y point - use it to connect with surrounding border
    for (size_t i = 0; i < cvertex; i++)
    {
-      float y;
-      m_curve.GetPoints()[i]->get_Y(&y);
+      const float y = m_curve.GetPoints()[i]->GetY();
       if (y < miny)
       {
          miny = y;
@@ -1106,56 +1050,20 @@ void Surface::InitPostLoad()
       }
    }
 
-   float tmpx;
-   m_curve.GetPoints()[minyindex]->get_X(&tmpx);
+   const float tmpx = m_curve.GetPoints()[minyindex]->GetX();
    const float tmpy = miny /*- 1.0f*/; // put tiny gap in to avoid errors
 
    // swap list around
    m_curve.ReverseOrder();
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_top, 0.f, false);
-      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, m_ptable->m_right, m_ptable->m_top, 0.f, false);
-      m_curve.InsertPoint((cvertex - minyindex - 1), pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, m_ptable->m_right + 1.0f, m_ptable->m_bottom, 0.f, false); //!!! +1 needed for whatever reason (triangulation screwed up)
-      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_bottom, 0.f, false);
-      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, m_ptable->m_left - 1.0f, m_ptable->m_top, 0.f, false); //!!! -1 needed for whatever reason (triangulation screwed up)
-      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, tmpx, tmpy, 0.f, false);
-      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-   }
+   m_curve.InsertPoint(cvertex - minyindex - 1, std::make_unique<DragPoint>(&m_curve, m_ptable->m_left, m_ptable->m_top, 0.f, false));
+   m_curve.InsertPoint((cvertex - minyindex - 1), std::make_unique<DragPoint>(&m_curve, m_ptable->m_right, m_ptable->m_top, 0.f, false));
+   //!!! +1 needed for whatever reason (triangulation screwed up)
+   m_curve.InsertPoint(cvertex - minyindex - 1, std::make_unique<DragPoint>(&m_curve, m_ptable->m_right + 1.0f, m_ptable->m_bottom, 0.f, false));
+   m_curve.InsertPoint(cvertex - minyindex - 1, std::make_unique<DragPoint>(&m_curve, m_ptable->m_left, m_ptable->m_bottom, 0.f, false));
+   //!!! -1 needed for whatever reason (triangulation screwed up)
+   m_curve.InsertPoint(cvertex - minyindex - 1, std::make_unique<DragPoint>(&m_curve, m_ptable->m_left - 1.0f, m_ptable->m_top, 0.f, false));
+   m_curve.InsertPoint(cvertex - minyindex - 1, std::make_unique<DragPoint>(&m_curve, tmpx, tmpy, 0.f, false));
 }
 
 STDMETHODIMP Surface::get_HasHitEvent(VARIANT_BOOL *pVal)

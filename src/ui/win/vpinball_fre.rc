@@ -94,7 +94,6 @@ END
 
 IDR_VPINBALL            REGISTRY                "res\\vpinball.rgs"
 IDR_SURFACE             REGISTRY                "res\\surface.rgs"
-IDR_DRAG_POINT          REGISTRY                "res\\dragpoint.rgs"
 IDR_FLIPPER             REGISTRY                "res\\flipper.rgs"
 IDR_TIMER               REGISTRY                "res\\timer.rgs"
 IDR_PLUNGER             REGISTRY                "res\\plunger.rgs"
@@ -136,7 +135,7 @@ BEGIN
     END
     POPUP "&Modifier"
     BEGIN
-        MENUITEM "&Défaire\tCtrl+Z",            ID_EDIT_UNDO
+        MENUITEM "&Dï¿½faire\tCtrl+Z",            ID_EDIT_UNDO
         MENUITEM SEPARATOR
         MENUITEM "&Copier\tCtrl+C",             IDC_COPY
         MENUITEM "C&oller\tCtrl+V",             IDC_PASTE
@@ -156,20 +155,20 @@ BEGIN
         MENUITEM "&Bumper\tCtrl+B",             ID_INSERT_BUMPER
         MENUITEM "&Spinner\tCtrl+I",            ID_INSERT_SPINNER
         MENUITEM "&Chrono\tCtrl+M",             ID_INSERT_TIMER
-        MENUITEM "&Détonateur\tCtrl+T",         ID_INSERT_TRIGGER
-        MENUITEM "&Lumière\tCtrl+L",            ID_INSERT_LIGHT
+        MENUITEM "&Dï¿½tonateur\tCtrl+T",         ID_INSERT_TRIGGER
+        MENUITEM "&Lumiï¿½re\tCtrl+L",            ID_INSERT_LIGHT
         MENUITEM "&Kicker\tCtrl+K",             ID_INSERT_KICKER
         MENUITEM "&Cible\tCtrl+A",              ID_INSERT_TARGET
-        MENUITEM "&Décalco\tCtrl+D",            ID_INSERT_DECAL
+        MENUITEM "&Dï¿½calco\tCtrl+D",            ID_INSERT_DECAL
         MENUITEM "Champ Texte\tCtrl+E",         ID_INSERT_TEXTBOX
     END
     POPUP "&Table"
     BEGIN
         MENUITEM "&Jouer\tF5",                  ID_TABLE_PLAY
         MENUITEM SEPARATOR
-        MENUITEM "&Contrôle du Son…",           ID_TABLE_SOUNDMANAGER
-        MENUITEM "Contrôle de l'&Image…",       ID_TABLE_IMAGEMANAGER
-        MENUITEM "Contrôle de la &Police…",     ID_TABLE_FONTMANAGER, GRAYED
+        MENUITEM "&Contrï¿½le du Sonï¿½",           ID_TABLE_SOUNDMANAGER
+        MENUITEM "Contrï¿½le de l'&Imageï¿½",       ID_TABLE_IMAGEMANAGER
+        MENUITEM "Contrï¿½le de la &Policeï¿½",     ID_TABLE_FONTMANAGER, GRAYED
         MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
         MENUITEM SEPARATOR
         MENUITEM "&Grossir",                    ID_TABLE_MAGNIFY
@@ -177,7 +176,7 @@ BEGIN
     POPUP "&Preferences"
     BEGIN
     END
-    POPUP "&Fenêtre"
+    POPUP "&Fenï¿½tre"
     BEGIN
         MENUITEM "&Tile",                       ID_WINDOW_TILE
         MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
@@ -185,7 +184,7 @@ BEGIN
     END
     POPUP "&Aide"
     BEGIN
-        MENUITEM "A Propos de…",                ID_HELP_ABOUT
+        MENUITEM "A Propos deï¿½",                ID_HELP_ABOUT
     END
 END
 
@@ -231,7 +230,7 @@ BEGIN
     END
     POPUP "&Modifier"
     BEGIN
-        MENUITEM "&Défaire\tCtrl+Z",            ID_EDIT_UNDO
+        MENUITEM "&Dï¿½faire\tCtrl+Z",            ID_EDIT_UNDO
         MENUITEM SEPARATOR
         MENUITEM "&Copier\tCtrl+C",             ID_EDIT_COPY
         MENUITEM "Cou&per\tCtrl+X",             ID_EDIT_CUT
@@ -318,7 +317,7 @@ END
 
 IDD_SOUNDDIALOG DIALOG  0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Contrôle du Son"
+CAPTION "Contrï¿½le du Son"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,259,146,50,14
@@ -326,8 +325,8 @@ BEGIN
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
                     WS_BORDER | WS_TABSTOP,7,7,240,153
     PUSHBUTTON      "&Importer",IDC_IMPORT,259,7,50,14
-    PUSHBUTTON      "&Réimporter",IDC_REIMPORT,259,25,50,14
-    PUSHBUTTON      "Réimporter &De",IDC_REIMPORTFROM,259,43,50,14
+    PUSHBUTTON      "&Rï¿½importer",IDC_REIMPORT,259,25,50,14
+    PUSHBUTTON      "Rï¿½importer &De",IDC_REIMPORTFROM,259,43,50,14
     PUSHBUTTON      "&Ecouter",IDC_PLAY,259,98,50,14
     PUSHBUTTON      "&Supprimer",IDC_DELETE,259,61,50,14
     PUSHBUTTON      "Re&nommer",IDC_RENAME,259,79,50,14
@@ -335,7 +334,7 @@ END
 
 IDD_IMAGEDIALOG DIALOG  0, 0, 415, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Contrôle des Images"
+CAPTION "Contrï¿½le des Images"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,358,146,50,14
@@ -343,8 +342,8 @@ BEGIN
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
                     WS_BORDER | WS_TABSTOP,7,7,240,153
     PUSHBUTTON      "&Importer",IDC_IMPORT,358,7,50,14
-    PUSHBUTTON      "&Réimporter",IDC_REIMPORT,358,26,50,14
-    PUSHBUTTON      "Réimporter &De",IDC_REIMPORTFROM,358,44,50,14
+    PUSHBUTTON      "&Rï¿½importer",IDC_REIMPORT,358,26,50,14
+    PUSHBUTTON      "Rï¿½importer &De",IDC_REIMPORTFROM,358,44,50,14
     PUSHBUTTON      "&Supprimer",IDC_DELETE,358,62,50,14
     PUSHBUTTON      "Re&nommer",IDC_RENAME,358,80,50,14
     CONTROL         "Button1",IDC_PICTUREPREVIEW,"Button",BS_OWNERDRAW | 
@@ -384,7 +383,7 @@ BEGIN
     LTEXT           "Centre",IDC_STATIC,7,75,24,11
     LTEXT           "X",IDC_STATIC,37,75,8,10
     LTEXT           "Y",IDC_STATIC,37,89,8,10
-    CONTROL         "Echelle symétrique",IDC_SQUARE,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Echelle symï¿½trique",IDC_SQUARE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,43,22,64,10
     EDITTEXT        IDC_SCALEY,53,49,52,12,ES_AUTOHSCROLL
     LTEXT           "Echelle Y",IDC_STATIC_SCALEY,19,51,26,8
@@ -392,7 +391,7 @@ END
 
 IDD_PROGRESS DIALOG  0, 0, 167, 44
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Table en Cours de Préparation"
+CAPTION "Table en Cours de Prï¿½paration"
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Progress2",IDC_PROGRESS2,"msctls_progress32",WS_BORDER,
@@ -445,7 +444,7 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,7,113,8,8
     EDITTEXT        7,17,111,49,12,ES_AUTOHSCROLL
     GROUPBOX        "Clignotement",IDC_STATIC,7,126,89,40
-    LTEXT           "&Modèle",IDC_STATIC,14,137,24,9
+    LTEXT           "&Modï¿½le",IDC_STATIC,14,137,24,9
     EDITTEXT        9,40,135,50,12,ES_AUTOHSCROLL
     LTEXT           "Inter&valle",IDC_STATIC,14,150,24,9
     EDITTEXT        10,40,149,31,12,ES_AUTOHSCROLL
@@ -476,9 +475,9 @@ BEGIN
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
     LTEXT           "&Type",IDC_STATIC,7,26,17,8
     LTEXT           "&Couleur",IDC_STATIC,7,46,17,8
-    LTEXT           "&Elevat° Haut",IDC_STATIC,7,64,43,8
+    LTEXT           "&Elevatï¿½ Haut",IDC_STATIC,7,64,43,8
     EDITTEXT        2,59,64,31,12,ES_AUTOHSCROLL
-    LTEXT           "Elevat° &Bas",IDC_STATIC,7,81,47,8
+    LTEXT           "Elevatï¿½ &Bas",IDC_STATIC,7,81,47,8
     EDITTEXT        1,59,80,31,12,ES_AUTOHSCROLL
     LTEXT           "&Largeur Haut",IDC_STATIC,7,104,43,8
     EDITTEXT        4,59,101,31,12,ES_AUTOHSCROLL
@@ -503,7 +502,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nom",IDC_STATIC,7,8,20,9
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "&Activé",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,26,
+    CONTROL         "&Activï¿½",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,26,
                     45,10
     LTEXT           "&Intervalle",IDC_STATIC,7,41,24,8
     EDITTEXT        901,36,39,31,12,ES_AUTOHSCROLL
@@ -532,7 +531,7 @@ BEGIN
     EDITTEXT        2,54,111,31,12,ES_AUTOHSCROLL
     LTEXT           "&Longueur",IDC_STATIC,7,128,23,8
     EDITTEXT        3,54,126,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Début Angle",IDC_STATIC,7,143,36,8
+    LTEXT           "&Dï¿½but Angle",IDC_STATIC,7,143,36,8
     EDITTEXT        4,54,141,31,12,ES_AUTOHSCROLL
     LTEXT           "Fin &Angle",IDC_STATIC,7,158,34,8
     EDITTEXT        7,54,156,31,12,ES_AUTOHSCROLL
@@ -545,7 +544,7 @@ BEGIN
     EDITTEXT        18,69,61,25,12,ES_AUTOHSCROLL
     LTEXT           "&Force",IDC_STATIC,7,188,28,8
     EDITTEXT        19,37,186,48,12,ES_AUTOHSCROLL
-    CONTROL         "&Visibilité",20,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+    CONTROL         "&Visibilitï¿½",20,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
                     213,36,10
     LTEXT           "Elast&icity",IDC_STATIC,7,201,28,8
     EDITTEXT        21,37,199,48,12,ES_AUTOHSCROLL
@@ -637,13 +636,13 @@ BEGIN
     LTEXT           "&Etat",IDC_STATIC,7,115,18,8
     COMBOBOX        11,27,112,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "&Modèle Clignotant",IDC_STATIC,7,131,43,9
+    LTEXT           "&Modï¿½le Clignotant",IDC_STATIC,7,131,43,9
     EDITTEXT        12,51,128,45,12,ES_AUTOHSCROLL
     LTEXT           "Inter&valle Clignotant",IDC_STATIC,7,145,41,9
     EDITTEXT        13,51,144,31,12,ES_AUTOHSCROLL
-    CONTROL         "Cli&gnote Quand Heurté",14,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Cli&gnote Quand Heurtï¿½",14,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,229,65,10
-    LTEXT           "&Couleur Coté",IDC_STATIC,7,47,35,9
+    LTEXT           "&Couleur Cotï¿½",IDC_STATIC,7,47,35,9
     CONTROL         "Custom2",15,"ColorControl",WS_TABSTOP,45,43,40,14
 END
 
@@ -657,7 +656,7 @@ BEGIN
     EDITTEXT        1,44,57,31,12,ES_AUTOHSCROLL
     CONTROL         "&Visible",7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,24,
                     36,10
-    CONTROL         "&Activé",6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,41,
+    CONTROL         "&Activï¿½",6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,41,
                     42,10
     LTEXT           "X",IDC_STATIC,9,95,8,8
     EDITTEXT        4,19,93,31,12,ES_AUTOHSCROLL
@@ -680,7 +679,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nom",IDC_STATIC,7,8,20,9
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "&Activé",8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,60,
+    CONTROL         "&Activï¿½",8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,60,
                     42,10
     LTEXT           "X",IDC_STATIC,7,79,8,8
     EDITTEXT        6,17,77,31,12,ES_AUTOHSCROLL
@@ -811,7 +810,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nom",IDC_STATIC,7,8,20,9
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "&Déclanche Action Heurté",3,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "&Dï¿½clanche Action Heurtï¿½",3,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,151,60,10
     LTEXT           "&Seuil de Choc",IDC_STATIC,7,166,43,8
     EDITTEXT        4,56,164,31,12,ES_AUTOHSCROLL
@@ -820,10 +819,10 @@ BEGIN
                     WS_TABSTOP
     LTEXT           "&Alignement Image",IDC_STATIC,7,41,59,9
     LTEXT           "&Couleur Haut",IDC_STATIC,7,76,32,8
-    LTEXT           "Cou&leur Coté",IDC_STATIC,7,95,33,8
-    LTEXT           "&Elevat° Haut",IDC_STATIC,7,114,43,8
+    LTEXT           "Cou&leur Cotï¿½",IDC_STATIC,7,95,33,8
+    LTEXT           "&Elevatï¿½ Haut",IDC_STATIC,7,114,43,8
     EDITTEXT        9,59,112,31,12,ES_AUTOHSCROLL
-    LTEXT           "Elevat° &Bas",IDC_STATIC,7,130,47,8
+    LTEXT           "Elevatï¿½ &Bas",IDC_STATIC,7,130,47,8
     EDITTEXT        8,59,129,31,12,ES_AUTOHSCROLL
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,233,11,10
     LTEXT           "&Intervalle Temps",IDC_STATIC,19,233,44,9
@@ -868,9 +867,9 @@ BEGIN
     LTEXT           "Randy Davis - designer, developpeur",IDC_STATIC,13,77,
                     115,9
     LTEXT           "Mark Parris - test",IDC_STATIC,13,89,115,9
-    GROUPBOX        "Crédits",IDC_STATIC,7,62,126,65
+    GROUPBOX        "Crï¿½dits",IDC_STATIC,7,62,126,65
     LTEXT           "Jerry Rice - musique",IDC_STATIC,13,101,115,9
-    CTEXT           "Copyright © 2000-2001 Randy Davis. Tous droits réservés.",
+    CTEXT           "Copyright ï¿½ 2000-2001 Randy Davis. Tous droits rï¿½servï¿½s.",
                     IDC_STATIC,7,129,124,19
     LTEXT           "Nom du Traducteur - Traduction",IDC_TRANSNAME,13,113,
                     115,9
@@ -882,7 +881,7 @@ END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Contrôle de la Police"
+CAPTION "Contrï¿½le de la Police"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,259,146,50,14
@@ -890,8 +889,8 @@ BEGIN
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | 
                     WS_TABSTOP,7,7,240,153
     PUSHBUTTON      "&Importer",IDC_IMPORT,259,7,50,14
-    PUSHBUTTON      "&Réimporter",IDC_REIMPORT,259,43,50,14
-    PUSHBUTTON      "Réimporter &De",IDC_REIMPORTFROM,259,61,50,14
+    PUSHBUTTON      "&Rï¿½importer",IDC_REIMPORT,259,43,50,14
+    PUSHBUTTON      "Rï¿½importer &De",IDC_REIMPORTFROM,259,61,50,14
     PUSHBUTTON      "&Supprimer",IDC_DELETE,259,79,50,14
     PUSHBUTTON      "Re&nommer",IDC_RENAME,259,97,50,14,WS_DISABLED
 END
@@ -1419,13 +1418,13 @@ BEGIN
     IDS_TB_BUMPER           "Bumper"
     IDS_PIEVENTHANDLER_DESC "PIEventHandler Class"
     IDS_TRIGGER_DESC        "Trigger Class"
-    IDS_TB_TRIGGER          "Détonateur"
+    IDS_TB_TRIGGER          "Dï¿½tonateur"
 END
 
 STRINGTABLE 
 BEGIN
     IDS_LIGHT_DESC          "Light Class"
-    IDS_TB_LIGHT            "Lumière"
+    IDS_TB_LIGHT            "Lumiï¿½re"
     IDS_KICKER_DESC         "Kicker Class"
     IDS_TB_KICKER           "Kicker"
     IDS_TB_TARGET           "Cible"
@@ -1445,15 +1444,15 @@ BEGIN
     IDS_TB_SCRIPT           "Script"
     IDS_NAME                "Nom"
     IDS_IMPORTPATH          "Importer Chemin"
-    IDS_REPLACESOUND        "Etes-vous sûr de vouloir remplacer ce son par un nouveau?"
-    IDS_REMOVESOUND         "Etes-vous sûr de vouloir supprimer ce son?"
-    IDS_IMAGE_PREVIEW       "Apperçu\n\nImage"
-    IDS_REMOVEIMAGE         "Etes-vous sûr de vouloir supprimer cette image?"
-    IDS_REPLACEIMAGE        "Etes-vous sûr de vouloir remplacer cette image par une nouvelle?"
+    IDS_REPLACESOUND        "Etes-vous sï¿½r de vouloir remplacer ce son par un nouveau?"
+    IDS_REMOVESOUND         "Etes-vous sï¿½r de vouloir supprimer ce son?"
+    IDS_IMAGE_PREVIEW       "Apperï¿½u\n\nImage"
+    IDS_REMOVEIMAGE         "Etes-vous sï¿½r de vouloir supprimer cette image?"
+    IDS_REPLACEIMAGE        "Etes-vous sï¿½r de vouloir remplacer cette image par une nouvelle?"
     IDS_TABLE               "Table"
     IDS_SCRIPT              "Script"
     IDS_SAVE_CHANGES1       "La Table '"
-    IDS_SAVE_CHANGES2       "' a changé.  Voulez-vous enregistrer les modifications avant de quitter?"
+    IDS_SAVE_CHANGES2       "' a changï¿½.  Voulez-vous enregistrer les modifications avant de quitter?"
     IDS_DRAWINFRONT         "Dessiner 1er &Plan"
 END
 
@@ -1463,12 +1462,12 @@ BEGIN
     IDS_SAVEERROR           "Il y a eu une erreur lors de l'enregistrement du fichier."
     IDS_TB_BACKGLASS        "Toile de Fond"
     IDS_WRONGFILEVERSION    "Visual Pinball ne peut pas charger de fichier de cette version."
-    IDS_NOPASTEINVIEW       "Un ou plus des objects sur le clipboard ne peuvent être placés dans la vue courante."
-    IDS_FINDLOOPED          "A dépassé la fin du fichier"
-    IDS_FINDFAILED          "Impossible de trouver la chaîne de caractères '"
+    IDS_NOPASTEINVIEW       "Un ou plus des objects sur le clipboard ne peuvent ï¿½tre placï¿½s dans la vue courante."
+    IDS_FINDLOOPED          "A dï¿½passï¿½ la fin du fichier"
+    IDS_FINDFAILED          "Impossible de trouver la chaï¿½ne de caractï¿½res '"
     IDS_FINDFAILED2         "'"
-    IDS_CONTROLPOINT        "Point de Contrôle"
-    IDS_CORRUPTFILE         "Ce fichier a un défaut et ne peut pas être chargé."
+    IDS_CONTROLPOINT        "Point de Contrï¿½le"
+    IDS_CORRUPTFILE         "Ce fichier a un dï¿½faut et ne peut pas ï¿½tre chargï¿½."
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object is not marked as being safe, and may represent a security threat.  Do you want to allow this object to be created?  Only answer Yes if you completely trust the source of this table."
     IDS_COLLECTION          "Collection"

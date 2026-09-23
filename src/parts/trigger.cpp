@@ -74,35 +74,10 @@ void Trigger::InitShape(float x, float y)
    m_curve.ClearPoints();
 
    // First time shape has been set to custom - set up some points
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x - lengthX, y - lengthY, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x - lengthX, y + lengthY, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x + lengthX, y + lengthY, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x + lengthX, y - lengthY, 0.f, false);
-      m_curve.PushPoint(pdp);
-   }
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - lengthX, y - lengthY, 0.f, false));
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - lengthX, y + lengthY, 0.f, false));
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + lengthX, y + lengthY, 0.f, false));
+   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + lengthX, y - lengthY, 0.f, false));
 }
 
 HRESULT Trigger::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
@@ -550,7 +525,7 @@ void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.EndObject();
 }
 
-void Trigger::ClearForOverwrite() { m_curve.ClearPointsForOverwrite(); }
+void Trigger::ClearForOverwrite() { m_curve.ClearPoints(); }
 
 void Trigger::Load(IObjectReader& reader)
 {

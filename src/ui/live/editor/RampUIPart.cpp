@@ -176,12 +176,12 @@ void RampUIPart::UpdatePointZField(PropertyPane& props, DragPoint* point)
 {
    props.InputFloat<DragPoint>(
       point, "Height Offset"s, //
-      [](const DragPoint* p) { return p->m_v.z; }, //
-      [](DragPoint* p, float v) { p->m_v.z = v; }, PropertyPane::Unit::VPLength, 1);
+      [](const DragPoint* p) { return p->GetZ(); }, //
+      [](DragPoint* p, float v) { p->SetZ(v); }, PropertyPane::Unit::VPLength, 1);
    ImGui::BeginDisabled();
    props.InputFloat<DragPoint>(
       point, "Real Height"s, //
-      [](const DragPoint* p) { return p->m_calcHeight; }, //
+      [](const DragPoint* p) { return p->GetCalcHeight(); }, //
       [](DragPoint*, float) {}, PropertyPane::Unit::VPLength, 1);
    ImGui::EndDisabled();
 }

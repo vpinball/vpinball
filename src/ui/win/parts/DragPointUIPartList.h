@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/parts/DragPointWinUIPart.h"
 
@@ -30,8 +30,8 @@ public:
    // Returns the UI part of the index-th point of the owner's curve, nullptr if out of range
    IWinUIPart* GetAt(int index)
    {
-      const vector<CComObject<DragPoint>*> points = m_owner->GetPoints();
-      return (index >= 0 && index < (int)points.size()) ? Get(points[index]) : nullptr;
+      const auto& points = m_owner->GetPoints();
+      return (index >= 0 && index < (int)points.size()) ? Get(points[index].get()) : nullptr;
    }
 
    bool IsDragging(const DragPoint* point)
@@ -49,11 +49,12 @@ public:
 private:
    void Sync()
    {
-      const vector<CComObject<DragPoint>*>& points = m_owner->GetPoints();
-      std::erase_if(m_parts, [&points](const std::unique_ptr<IWinUIPart>& part) { return std::ranges::find(points, part->GetDragPoint()) == points.end(); });
-      for (CComObject<DragPoint>* const point : points)
-         if (std::ranges::none_of(m_parts, [point](const std::unique_ptr<IWinUIPart>& part) { return part->GetDragPoint() == point; }))
-            if (std::unique_ptr<IWinUIPart> part = std::make_unique<DragPointWinUIPart>(m_editor, point))
+      const auto& points = m_owner->GetPoints();
+      std::erase_if(m_parts, [&points](const std::unique_ptr<IWinUIPart>& part)
+         { return std::ranges::find_if(points, [&part](const std::unique_ptr<DragPoint>& p) { return p.get() == part->GetDragPoint(); }) == points.end(); });
+      for (const auto& point : points)
+         if (std::ranges::none_of(m_parts, [&point](const std::unique_ptr<IWinUIPart>& part) { return part->GetDragPoint() == point.get(); }))
+            if (std::unique_ptr<IWinUIPart> part = std::make_unique<DragPointWinUIPart>(m_editor, point.get()))
                m_parts.push_back(std::move(part));
    }
 

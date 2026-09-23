@@ -94,7 +94,6 @@ END
 
 IDR_VPINBALL            REGISTRY                "res\\vpinball.rgs"
 IDR_SURFACE             REGISTRY                "res\\surface.rgs"
-IDR_DRAG_POINT          REGISTRY                "res\\dragpoint.rgs"
 IDR_FLIPPER             REGISTRY                "res\\flipper.rgs"
 IDR_TIMER               REGISTRY                "res\\timer.rgs"
 IDR_PLUNGER             REGISTRY                "res\\plunger.rgs"
@@ -134,7 +133,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
-    POPUP "&Edición"
+    POPUP "&Ediciï¿½n"
     BEGIN
         MENUITEM "&Deshacer\tCtrl+Z",           ID_EDIT_UNDO
         MENUITEM SEPARATOR
@@ -191,7 +190,7 @@ END
 
 IDR_POINTMENU MENU 
 BEGIN
-    POPUP "Menú Puntos"
+    POPUP "Menï¿½ Puntos"
     BEGIN
         MENUITEM "&Suavizar Contornos",         ID_POINTMENU_SMOOTH
         MENUITEM "&Banda de Rebote",            ID_POINTMENU_SLINGSHOT
@@ -200,23 +199,23 @@ END
 
 IDR_SURFACEMENU MENU 
 BEGIN
-    POPUP "Menú Pared"
+    POPUP "Menï¿½ Pared"
     BEGIN
-        MENUITEM "Simetría &X",                 ID_WALLMENU_MIRROR
-        MENUITEM "Simetría &Y",                 ID_WALLMENU_FLIP
+        MENUITEM "Simetrï¿½a &X",                 ID_WALLMENU_MIRROR
+        MENUITEM "Simetrï¿½a &Y",                 ID_WALLMENU_FLIP
         MENUITEM "&Girar",                      ID_WALLMENU_ROTATE
         MENUITEM "&Escala",                     ID_WALLMENU_SCALE
         MENUITEM "&Desplazar",                  ID_WALLMENU_TRANSLATE
-        MENUITEM "Añadir &Punto",               ID_WALLMENU_ADDPOINT
+        MENUITEM "Aï¿½adir &Punto",               ID_WALLMENU_ADDPOINT
     END
 END
 
 IDR_MULTIMENU MENU 
 BEGIN
-    POPUP "Menú Pared"
+    POPUP "Menï¿½ Pared"
     BEGIN
-        MENUITEM "Simetría &X",                 ID_WALLMENU_MIRROR
-        MENUITEM "Simetría &Y",                 ID_WALLMENU_FLIP
+        MENUITEM "Simetrï¿½a &X",                 ID_WALLMENU_MIRROR
+        MENUITEM "Simetrï¿½a &Y",                 ID_WALLMENU_FLIP
         MENUITEM "&Girar",                      ID_WALLMENU_ROTATE
         MENUITEM "&Escala",                     ID_WALLMENU_SCALE
         MENUITEM "&Desplazar",                  ID_WALLMENU_TRANSLATE
@@ -229,7 +228,7 @@ BEGIN
     BEGIN
         MENUITEM "&Compilar",                   ID_COMPILE
     END
-    POPUP "&Edición"
+    POPUP "&Ediciï¿½n"
     BEGIN
         MENUITEM "&Deshacer\tCtrl+Z",           ID_EDIT_UNDO
         MENUITEM SEPARATOR
@@ -336,7 +335,7 @@ END
 
 IDD_IMAGEDIALOG DIALOG  0, 0, 415, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Administrador de Imágenes"
+CAPTION "Administrador de Imï¿½genes"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,358,146,50,14
@@ -411,7 +410,7 @@ BEGIN
                     WS_TABSTOP,7,78,91,14
     CONTROL         "&Mostrar Rejilla",106,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,25,66,14
-    LTEXT           "Tamaño &Rejilla",IDC_STATIC,7,42,32,9
+    LTEXT           "Tamaï¿½o &Rejilla",IDC_STATIC,7,42,32,9
     EDITTEXT        109,41,41,40,12,ES_AUTOHSCROLL
     LTEXT           "I&magen",IDC_STATIC,7,97,20,8
     COMBOBOX        1500,31,95,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
@@ -446,7 +445,7 @@ BEGIN
     LTEXT           "&Y",IDC_STATIC,7,113,8,8
     EDITTEXT        7,17,111,49,12,ES_AUTOHSCROLL
     GROUPBOX        "Intermitencia",IDC_STATIC,7,126,89,40
-    LTEXT           "&Patrón",IDC_STATIC,14,137,24,9
+    LTEXT           "&Patrï¿½n",IDC_STATIC,14,137,24,9
     EDITTEXT        9,40,135,50,12,ES_AUTOHSCROLL
     LTEXT           "Inter&valo",IDC_STATIC,14,150,24,9
     EDITTEXT        10,40,149,31,12,ES_AUTOHSCROLL
@@ -599,7 +598,7 @@ BEGIN
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,203,11,10
     LTEXT           "&Temporizador",IDC_STATIC,19,204,44,9
     EDITTEXT        901,65,202,31,12,ES_AUTOHSCROLL
-    LTEXT           "Alin&eación",IDC_STATIC,7,121,32,8
+    LTEXT           "Alin&eaciï¿½n",IDC_STATIC,7,121,32,8
     COMBOBOX        11,41,119,55,55,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "T&ransparente",12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
@@ -638,7 +637,7 @@ BEGIN
     LTEXT           "&Estado",IDC_STATIC,7,115,18,8
     COMBOBOX        11,27,112,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "&Patrón Interm.",IDC_STATIC,7,131,43,9
+    LTEXT           "&Patrï¿½n Interm.",IDC_STATIC,7,131,43,9
     EDITTEXT        12,51,128,45,12,ES_AUTOHSCROLL
     LTEXT           "&Intervalo Interm.",IDC_STATIC,7,145,41,9
     EDITTEXT        13,51,144,31,12,ES_AUTOHSCROLL
@@ -718,7 +717,7 @@ BEGIN
     LTEXT           "I&magen",IDC_STATIC,7,100,20,8
     COMBOBOX        1500,31,97,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "&Rotación",IDC_STATIC,7,202,28,8
+    LTEXT           "&Rotaciï¿½n",IDC_STATIC,7,202,28,8
     EDITTEXT        1,37,200,31,12,ES_AUTOHSCROLL
     LTEXT           "&Texto",IDC_STATIC,7,26,20,9
     EDITTEXT        8,29,25,55,12,ES_AUTOHSCROLL
@@ -729,7 +728,7 @@ BEGIN
     LTEXT           "Ti&po",IDC_STATIC,7,9,17,8
     COMBOBOX        7,27,7,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "&Tamaño",IDC_STATIC,7,118,20,8
+    LTEXT           "&Tamaï¿½o",IDC_STATIC,7,118,20,8
     COMBOBOX        9,28,116,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "Texto &Vertical",13,"Button",BS_AUTOCHECKBOX | 
@@ -748,7 +747,7 @@ BEGIN
     EDITTEXT        6,31,40,31,12,ES_AUTOHSCROLL
     LTEXT           "&Longitud",IDC_STATIC,7,60,23,8
     EDITTEXT        3,31,56,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Rotación",IDC_STATIC,7,75,28,8
+    LTEXT           "&Rotaciï¿½n",IDC_STATIC,7,75,28,8
     EDITTEXT        4,37,73,31,12,ES_AUTOHSCROLL
     LTEXT           "&Base",IDC_STATIC,7,91,26,9
     COMBOBOX        1502,35,90,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
@@ -772,11 +771,11 @@ BEGIN
     EDITTEXT        3,31,56,31,12,ES_AUTOHSCROLL
     LTEXT           "Al&to",IDC_STATIC,7,75,22,8
     EDITTEXT        5,31,73,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Rotación",IDC_STATIC,7,92,28,8
+    LTEXT           "&Rotaciï¿½n",IDC_STATIC,7,92,28,8
     EDITTEXT        4,37,90,31,12,ES_AUTOHSCROLL
     LTEXT           "Re&salte",IDC_STATIC,7,109,32,8
     EDITTEXT        6,43,107,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Fricción",IDC_STATIC,7,126,24,8
+    LTEXT           "&Fricciï¿½n",IDC_STATIC,7,126,24,8
     EDITTEXT        7,43,124,44,12,ES_AUTOHSCROLL
     LTEXT           "Imagen &Fr.",IDC_STATIC,7,143,38,8
     COMBOBOX        1500,49,141,47,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
@@ -819,7 +818,7 @@ BEGIN
     LTEXT           "I&magen",IDC_STATIC,7,26,20,8
     COMBOBOX        1500,31,24,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "&Alineación Imagen",IDC_STATIC,7,41,59,9
+    LTEXT           "&Alineaciï¿½n Imagen",IDC_STATIC,7,41,59,9
     LTEXT           "&Color Sup.",IDC_STATIC,7,76,32,8
     LTEXT           "Co&lor Lados",IDC_STATIC,7,95,33,8
     LTEXT           "Altura Su&p.",IDC_STATIC,7,114,43,8
@@ -860,20 +859,20 @@ CAPTION "Acerca de Visual Pinball"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,165,162,50,14
-    CTEXT           "Esta aplicación usa Microsoft Visual Basic Scripting Edition",
+    CTEXT           "Esta aplicaciï¿½n usa Microsoft Visual Basic Scripting Edition",
                     IDC_STATIC,7,151,76,25
-    PUSHBUTTON      "Página Web",IDC_WEBSITE,165,121,50,14
+    PUSHBUTTON      "Pï¿½gina Web",IDC_WEBSITE,165,121,50,14
     CONTROL         IDB_LOGO,IDC_STATIC,"Static",SS_BITMAP,7,7,125,27
     CTEXT           "A Randy Davis Production",IDC_STATIC,7,39,98,12
-    CTEXT           "Versión (0.3.1314)",IDC_VERSION,147,7,68,8
-    LTEXT           "Randy Davis - diseño, desarrollo",IDC_STATIC,13,77,115,
+    CTEXT           "Versiï¿½n (0.3.1314)",IDC_VERSION,147,7,68,8
+    LTEXT           "Randy Davis - diseï¿½o, desarrollo",IDC_STATIC,13,77,115,
                     9
     LTEXT           "Mark Parris - prueba",IDC_STATIC,13,89,115,9
-    GROUPBOX        "Créditos",IDC_STATIC,7,62,126,65
-    LTEXT           "Jerry Rice - música",IDC_STATIC,13,101,115,9
+    GROUPBOX        "Crï¿½ditos",IDC_STATIC,7,62,126,65
+    LTEXT           "Jerry Rice - mï¿½sica",IDC_STATIC,13,101,115,9
     CTEXT           "Copyright (C) 2000-2001 Randy Davis.  Reservados todos los derechos",
                     IDC_STATIC,7,129,124,19
-    LTEXT           "Juaney - traducción",IDC_TRANSNAME,13,113,115,9
+    LTEXT           "Juaney - traducciï¿½n",IDC_TRANSNAME,13,113,115,9
     PUSHBUTTON      "TecnoPinball",IDC_TRANSLATEWEBSITE,165,142,50,14
     LTEXT           "http://perso.wanadoo.es/tecnopinball/",IDC_TRANSWEBSITE,
                     184,98,10,8,NOT WS_VISIBLE | WS_DISABLED
@@ -1041,14 +1040,14 @@ BEGIN
                     WS_TABSTOP,7,84,91,14
     CONTROL         "&Mostrar Rejilla",106,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,25,66,14
-    LTEXT           "Tamaño &Rejilla",IDC_STATIC,7,42,32,9
+    LTEXT           "Tamaï¿½o &Rejilla",IDC_STATIC,7,42,32,9
     EDITTEXT        109,41,41,40,12,ES_AUTOHSCROLL
     LTEXT           "I&magen",IDC_STATIC,7,102,20,8
     COMBOBOX        1501,31,100,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "&Color",IDC_STATIC,7,66,20,9
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,63,40,14
-    LTEXT           "&Inclinación",IDC_STATIC,7,120,32,9
+    LTEXT           "&Inclinaciï¿½n",IDC_STATIC,7,120,32,9
     EDITTEXT        104,41,120,40,12,ES_AUTOHSCROLL
     LTEXT           "&Perspectiva",IDC_STATIC,7,137,45,9
     EDITTEXT        105,53,136,40,12,ES_AUTOHSCROLL
@@ -1443,16 +1442,16 @@ BEGIN
     IDS_TB_RAMP             "Rampa"
     IDS_TB_SCRIPT           "Script"
     IDS_NAME                "Nombre"
-    IDS_IMPORTPATH          "Ruta Importación"
-    IDS_REPLACESOUND        "¿Seguro que quieres cambiar este sonido por uno nuevo?"
-    IDS_REMOVESOUND         "¿Seguro que quieres borrar este sonido?"
+    IDS_IMPORTPATH          "Ruta Importaciï¿½n"
+    IDS_REPLACESOUND        "ï¿½Seguro que quieres cambiar este sonido por uno nuevo?"
+    IDS_REMOVESOUND         "ï¿½Seguro que quieres borrar este sonido?"
     IDS_IMAGE_PREVIEW       "Vista\nPrevia"
-    IDS_REMOVEIMAGE         "¿Seguro que quieres borrar esta imagen?"
-    IDS_REPLACEIMAGE        "¿Seguro que quieres cambiar esta imagen por una nueva?"
+    IDS_REMOVEIMAGE         "ï¿½Seguro que quieres borrar esta imagen?"
+    IDS_REPLACEIMAGE        "ï¿½Seguro que quieres cambiar esta imagen por una nueva?"
     IDS_TABLE               "Mesa"
     IDS_SCRIPT              "Script"
     IDS_SAVE_CHANGES1       "La mesa '"
-    IDS_SAVE_CHANGES2       "ha cambiado. ¿Quieres salvar los cambios antes de salir?"
+    IDS_SAVE_CHANGES2       "ha cambiado. ï¿½Quieres salvar los cambios antes de salir?"
     IDS_DRAWINFRONT         "Editar en Pri&mer Plano"
 END
 
@@ -1461,13 +1460,13 @@ BEGIN
     IDS_DRAWINBACK          "Editar en &Segundo Plano"
     IDS_SAVEERROR           "Hubo un error al salvar la mesa"
     IDS_TB_BACKGLASS        "Cabezal"
-    IDS_WRONGFILEVERSION    "Visual Pinball no puede cargar una mesa de esa versión"
-    IDS_NOPASTEINVIEW       "Uno o más de los objetos del portapapeles no pueden ponerse en la vista actual"
+    IDS_WRONGFILEVERSION    "Visual Pinball no puede cargar una mesa de esa versiï¿½n"
+    IDS_NOPASTEINVIEW       "Uno o mï¿½s de los objetos del portapapeles no pueden ponerse en la vista actual"
     IDS_FINDLOOPED          "Alcanzado el final del archivo"
     IDS_FINDFAILED          "No se puede encontrar la cadena '"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Punto de Control"
-    IDS_CORRUPTFILE         "Este archivo está corrompido y no puede cargarse."
+    IDS_CORRUPTFILE         "Este archivo estï¿½ corrompido y no puede cargarse."
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object is not marked as being safe, and may represent a security threat.  Do you want to allow this object to be created?  Only answer Yes if you completely trust the source of this table."
     IDS_COLLECTION          "Collection"
