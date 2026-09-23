@@ -62,6 +62,35 @@ MSGPI_INT_VAL_SETTING(serumIgnoreUnknownFramesTimeoutProp, "IgnoreUnknownFramesT
    "Milliseconds to keep the last colorized frame while frames cannot be identified (0 disables)", true, 0, 65535, 0);
 MSGPI_INT_VAL_SETTING(serumMaxUnknownFramesToSkipProp, "MaximumUnknownFramesToSkip", "Maximum unknown frames to skip",
    "How many consecutive unidentified frames may be skipped (0 disables)", true, 0, 255, 0);
+// How often the colorizer looks for a new DMD frame to identify.
+//
+// The default is the 60 Hz the original PinMAME code evaluated frames at, and
+// what this plugin has always used. Nothing depends on the rate: rotation
+// timing runs off the wall clock, so it only decides which frames are seen.
+//
+// It is a setting because which frames are seen is ROM-dependent. A ROM that
+// emits a frame every 2-4 ms -- transitional runs, a wipe or a fade -- is
+// sampled once in four to eight here, and GetIdentifyFrame is a latest-value
+// register with no history, so the rest are gone. Usually that is what the
+// colorization wants, those frames being ones no author colorized. But the
+// convention is to identify the first frame of such a run and let it start a
+// rotation scene standing in for the sequence, and that frame is the newest one
+// for only as long as the run's own frame time. A 60 Hz poll lands inside a 4 ms
+// window roughly one time in four; when it misses, the scene never starts and
+// the transition sits on the last good frame instead of animating.
+//
+// Lowering this catches those frames, at the price of running Serum_Colorize on
+// every distinct frame rather than one in several -- and an unidentified frame
+// takes libserum's full-search path. Whether that is affordable depends on the
+// host, which is the other reason this is not simply lowered for everyone: a
+// desktop absorbs it and a Raspberry Pi or Android device may not.
+//
+// PUP triggers do not depend on this. Authors put those on clearly identifiable
+// frames outside the fast runs, which stay newest long enough to be sampled at
+// any of these rates.
+MSGPI_INT_VAL_SETTING(serumIdentifyPollIntervalProp, "IdentifyPollInterval", "Identify poll interval (microseconds)",
+   "How often to look for a new DMD frame to colorize. 16666 is 60Hz, the historical rate. Lower values catch the short-lived frames that start a rotation scene, at a higher CPU cost.",
+   true, 250, 50000, 16666);
 // A Serum v2 colorization can carry a 32 row and a 64 row output, and by
 // default both are requested and both are published. Two things go wrong with
 // that in a host driving one fixed panel:
@@ -383,14 +412,38 @@ private:
    {
       SetThreadName("Serum.ColorizeThread"s);
       constexpr uint32_t SERUM_MAX_ROTATION_DELAY_MS = 2048;
+      // How far behind its own schedule an animation may fall before it gives
+      // up on catching up and resynchronises to the present.
+      //
+      // A pass that was late -- the thread descheduled, the host busy -- would
+      // otherwise compute every step it missed in one go, which is a CPU burst
+      // on exactly the hosts least able to absorb it. Nobody can see a colour
+      // rotation that was due a tenth of a second ago, so those steps are not
+      // worth the time they cost.
+      //
+      // The bound is a lag and not a step count on purpose. A colorization is
+      // free to ask for steps every few milliseconds, and a pass legitimately
+      // owes several of them; capping the count would run such an animation in
+      // slow motion. Capping the lag only ever discards work that is already
+      // too old to display.
+      //
+      // Nothing but appearance is at stake either way: libserum sets
+      // mySerum.triggerID in Serum_Colorize's path and in Serum_Scene_Trigger
+      // alone, never in Serum_ApplyRotationsv1/v2 or Serum_RenderScene. Steps
+      // dropped here therefore cannot cost a trigger -- including the frames of
+      // a rotation scene, which is what a transitional run gets replaced by.
+      constexpr auto MAX_ROTATION_LAG = std::chrono::milliseconds(100);
       unsigned int lastFrameId = 0;
       bool hasAnimation = false;
       std::chrono::steady_clock::time_point animationTick;
       std::chrono::steady_clock::time_point animationNextTick;
       while (m_isRunning)
       {
-         // Original PinMAME code would evaluate DMD frames at a fixed 60 FPS and color rotation are also based on a 60FPS rate. So update at this pace.
-         std::this_thread::sleep_for(std::chrono::microseconds(16666));
+         // Re-read every pass, so the interval can be tuned on a running host.
+         // See serumIdentifyPollIntervalProp for what it trades. Floored at the
+         // setting's own minimum: a host that registered the setting but left
+         // the value at zero would otherwise turn this thread into a spin loop.
+         std::this_thread::sleep_for(std::chrono::microseconds(std::max(250, serumIdentifyPollIntervalProp_Get())));
 
          // No lock is taken around the colorization below. libserum's state is
          // reachable from this thread alone, and what consumers read is a copy
@@ -495,6 +548,11 @@ private:
          if (hasAnimation)
          {
             const auto now = std::chrono::steady_clock::now();
+            if (animationNextTick + MAX_ROTATION_LAG < now)
+            {
+               animationTick = now;
+               animationNextTick = now;
+            }
             while (animationNextTick < now)
             {
                const uint32_t nextrot = Serum_Rotate();
@@ -800,6 +858,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumPathProp);
    msgApi->RegisterSetting(endpointId, &serumIgnoreUnknownFramesTimeoutProp);
    msgApi->RegisterSetting(endpointId, &serumMaxUnknownFramesToSkipProp);
+   msgApi->RegisterSetting(endpointId, &serumIdentifyPollIntervalProp);
    msgApi->RegisterSetting(endpointId, &serumDisabledSizeProp);
    msgApi->RegisterSetting(endpointId, &serumPupTriggersProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
