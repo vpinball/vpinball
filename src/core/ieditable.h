@@ -171,20 +171,14 @@ public:
 #define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, curve)                                                                                                                     \
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type)                                                                                                                                                \
    dst->m_curve.ClearPoints();                                                                                                                                                               \
-   CComObject<DragPoint> *pdp;                                                                                                                                                               \
-   for (const auto dpt : curve.GetPoints())                                                                                                                                                    \
+   for (const auto &dpt : curve.GetPoints())                                                                                                                                                 \
    {                                                                                                                                                                                         \
-      CComObject<DragPoint>::CreateInstance(&pdp);                                                                                                                                           \
-      if (pdp)                                                                                                                                                                               \
-      {                                                                                                                                                                                      \
-         pdp->AddRef();                                                                                                                                                                      \
-         pdp->Init(&dst->curve, dpt->m_v.x, dpt->m_v.y, dpt->m_v.z, dpt->m_smooth);                                                                                                          \
-         pdp->m_slingshot = dpt->m_slingshot;                                                                                                                                                \
-         pdp->m_calcHeight = dpt->m_calcHeight;                                                                                                                                              \
-         pdp->m_autoTexture = dpt->m_autoTexture;                                                                                                                                            \
-         pdp->m_texturecoord = dpt->m_texturecoord;                                                                                                                                          \
-         dst->curve.PushPoint(pdp);                                                                                                                                                \
-      }                                                                                                                                                                                      \
+      auto pdp = std::make_unique<DragPoint>(&dst->curve, dpt->GetX(), dpt->GetY(), dpt->GetZ(), dpt->IsSmooth());                                                                           \
+      pdp->m_slingshot = dpt->m_slingshot;                                                                                                                                                   \
+      pdp->SetCalcHeight(dpt->GetCalcHeight());                                                                                                                                              \
+      pdp->SetAutoTextureCoordinate(dpt->IsAutoTextureCoordinate());                                                                                                                         \
+      pdp->SetTextureCoordinateU(dpt->GetTextureCoordinateU());                                                                                                                              \
+      dst->curve.PushPoint(std::move(pdp));                                                                                                                                                  \
    }
 
 

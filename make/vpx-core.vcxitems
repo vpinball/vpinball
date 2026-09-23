@@ -816,6 +816,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/input/PlungerHandler.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/math/dragpoint.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/HighPassFilter.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
@@ -825,7 +826,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/parts/Collection.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/decal.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/dispreel.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/parts/dragpoint.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/flasher.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/flipper.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/gate.cpp" />
@@ -1468,7 +1468,6 @@
     <None Include="$(SolutionDir)/../../src/ui/win/res/wall.cur" />
     <None Include="$(SolutionDir)/../../src/ui/win/res/magnify.cur" />
     <None Include="$(SolutionDir)/../../src/ui/win/res/dispreel.rgs" />
-    <None Include="$(SolutionDir)/../../src/ui/win/res/dragpoint.rgs" />
     <None Include="$(SolutionDir)/../../src/ui/win/res/flasher.rgs" />
     <None Include="$(SolutionDir)/../../src/ui/win/res/rubber.rgs" />
     <None Include="$(SolutionDir)/../../src/ui/win/res/flipper.rgs" />
@@ -1688,6 +1687,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/XRInputHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/dragpoint.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/ExponentialMovingAverage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/HighPassFilter.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/math.h" />
@@ -1727,7 +1727,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerSimpleMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerStarMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/PartGroup.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/parts/dragpoint.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/Material.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/pinbinary.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/ball.h" />

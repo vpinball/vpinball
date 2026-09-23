@@ -18,7 +18,6 @@
 #define IDR_BALL                        167
 #define IDR_BUMPER                      122
 #define IDR_DISP_REEL                   277
-#define IDR_DRAG_POINT                  103
 #define IDR_FLIPPER                     108
 #define IDR_Flasher                     393
 #define IDR_GATE                        139

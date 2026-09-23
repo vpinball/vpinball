@@ -5,7 +5,7 @@
 
 #include "parts/pintable.h"
 #include "parts/rubber.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 
 #include "doctest.h"
 
@@ -64,8 +64,8 @@ TEST_CASE("Rubber part")
 
       // The default 8-point rubber ring round-trips through the stream
       REQUIRE(copy->m_curve.GetPoints().size() == rubber->m_curve.GetPoints().size());
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.x == doctest::Approx(rubber->m_curve.GetPoints()[0]->m_v.x));
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.y == doctest::Approx(rubber->m_curve.GetPoints()[0]->m_v.y));
+      CHECK(copy->m_curve.GetPoints()[0]->GetX() == doctest::Approx(rubber->m_curve.GetPoints()[0]->GetX()));
+      CHECK(copy->m_curve.GetPoints()[0]->GetY() == doctest::Approx(rubber->m_curve.GetPoints()[0]->GetY()));
 
       CHECK(StreamsEqual(saved, SavePartToStream(copy)));
 

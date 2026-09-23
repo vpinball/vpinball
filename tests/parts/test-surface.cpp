@@ -5,7 +5,7 @@
 
 #include "parts/pintable.h"
 #include "parts/surface.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 
 #include "doctest.h"
 
@@ -80,8 +80,8 @@ TEST_CASE("Surface part")
 
       // The wall outline round-trips through the stream
       REQUIRE(copy->m_curve.GetPoints().size() == surface->m_curve.GetPoints().size());
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.x == doctest::Approx(surface->m_curve.GetPoints()[0]->m_v.x));
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.y == doctest::Approx(surface->m_curve.GetPoints()[0]->m_v.y));
+      CHECK(copy->m_curve.GetPoints()[0]->GetX() == doctest::Approx(surface->m_curve.GetPoints()[0]->GetX()));
+      CHECK(copy->m_curve.GetPoints()[0]->GetY() == doctest::Approx(surface->m_curve.GetPoints()[0]->GetY()));
 
       CHECK(StreamsEqual(saved, SavePartToStream(copy)));
 

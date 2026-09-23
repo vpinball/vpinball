@@ -32,24 +32,13 @@ HRESULT Ramp::Init(const float x, const float y, const bool fromMouseClick, cons
 
    const float length = 0.5f * g_app->m_settings.GetDefaultPropsRamp_Length();
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x, y + length, 0.f, true);
-      pdp->m_calcHeight = m_d.m_heightbottom;
-      m_curve.PushPoint(pdp);
-   }
+   auto pdp = std::make_unique<DragPoint>(&m_curve, x, y + length, 0.f, true);
+   pdp->SetCalcHeight(m_d.m_heightbottom);
+   m_curve.PushPoint(std::move(pdp));
 
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, x, y - length, 0.f, true);
-      pdp->m_calcHeight = m_d.m_heighttop;
-      m_curve.PushPoint(pdp);
-   }
+   pdp = std::make_unique<DragPoint>(&m_curve, x, y - length, 0.f, true);
+   pdp->SetCalcHeight(m_d.m_heighttop);
+   m_curve.PushPoint(std::move(pdp));
 
    return S_OK;
 }
@@ -175,8 +164,8 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float heigh
 {
    for (size_t i = 0; i < m_curve.GetPoints().size(); i++)
    {
-      if (m_curve.GetPoints()[i]->m_v.x == v.x && m_curve.GetPoints()[i]->m_v.y == v.y)
-         m_curve.GetPoints()[i]->m_calcHeight = height;
+      if (m_curve.GetPoints()[i]->GetX() == v.x && m_curve.GetPoints()[i]->GetY() == v.y)
+         m_curve.GetPoints()[i]->SetCalcHeight(height);
    }
 }
 
@@ -1175,10 +1164,7 @@ void Ramp::PrepareHabitrail()
 #pragma endregion
 
 
-void Ramp::ClearForOverwrite()
-{
-   m_curve.ClearPointsForOverwrite();
-}
+void Ramp::ClearForOverwrite() { m_curve.ClearPoints(); }
 
 void Ramp::Save(IObjectWriter& writer, const bool saveForUndo)
 {
@@ -1282,15 +1268,9 @@ void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
    //if (icp == 0) // need to add point after the last point
    //icp = m_curve.GetPoints().size();
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f, smooth); // Ramps are usually always smooth
-      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-      m_curve.OnPointsModified();
-   }
+   // Ramps are usually always smooth; push the second point forward, and replace it with this one. Should work when index2 wraps.
+   m_curve.InsertPoint(icp, std::make_unique<DragPoint>(&m_curve, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z) * 0.5f, smooth));
+   m_curve.OnPointsModified();
 }
 
 void Ramp::FlipY(const Vertex2D& pvCenter)

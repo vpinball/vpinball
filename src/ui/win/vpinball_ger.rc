@@ -94,7 +94,6 @@ END
 
 IDR_VPINBALL            REGISTRY                "res\\vpinball.rgs"
 IDR_SURFACE             REGISTRY                "res\\surface.rgs"
-IDR_DRAG_POINT          REGISTRY                "res\\dragpoint.rgs"
 IDR_FLIPPER             REGISTRY                "res\\flipper.rgs"
 IDR_TIMER               REGISTRY                "res\\timer.rgs"
 IDR_PLUNGER             REGISTRY                "res\\plunger.rgs"
@@ -121,8 +120,8 @@ BEGIN
     POPUP "&Datei"
     BEGIN
         MENUITEM "&Neu",                        IDM_NEW
-        MENUITEM "Ö&ffnen…\tCtrl-O",            IDM_OPEN
-        MENUITEM "S&chließen",                  IDM_CLOSE
+        MENUITEM "ï¿½&ffnenï¿½\tCtrl-O",            IDM_OPEN
+        MENUITEM "S&chlieï¿½en",                  IDM_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "&Speichern",                  IDM_SAVE
         MENUITEM "Speichern &unter...",         IDM_SAVEAS
@@ -136,17 +135,17 @@ BEGIN
     END
     POPUP "&Bearbeiten"
     BEGIN
-        MENUITEM "&Rückgängig\tCtrl+Z",         ID_EDIT_UNDO
+        MENUITEM "&Rï¿½ckgï¿½ngig\tCtrl+Z",         ID_EDIT_UNDO
         MENUITEM SEPARATOR
         MENUITEM "&Kopieren\tCtrl+C",           IDC_COPY
-        MENUITEM "&Einfügen\tCtrl+V",           IDC_PASTE
+        MENUITEM "&Einfï¿½gen\tCtrl+V",           IDC_PASTE
         MENUITEM "&Delete\tDel",                ID_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Gegenstand &Optionen",        ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
         MENUITEM "Ansicht Hintergrundglas",     ID_EDIT_BACKGLASSVIEW
     END
-    POPUP "Einfügen"
+    POPUP "Einfï¿½gen"
     BEGIN
         MENUITEM "&Wand\tCtrl+W",               ID_INSERT_WALL
         MENUITEM "&Gate\tCtrl+G",               ID_INSERT_GATE
@@ -172,7 +171,7 @@ BEGIN
         MENUITEM "&Zeichensatz Manager...",     ID_TABLE_FONTMANAGER, GRAYED
         MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
         MENUITEM SEPARATOR
-        MENUITEM "Vergrössern",                 ID_TABLE_MAGNIFY
+        MENUITEM "Vergrï¿½ssern",                 ID_TABLE_MAGNIFY
     END
     POPUP "&Optionen"
     BEGIN
@@ -180,40 +179,40 @@ BEGIN
     POPUP "&Fenster"
     BEGIN
         MENUITEM "&Nebeneinander",              ID_WINDOW_TILE
-        MENUITEM "Ü&berlappend",                ID_WINDOW_CASCADE
+        MENUITEM "ï¿½&berlappend",                ID_WINDOW_CASCADE
         MENUITEM "Als &Icons anordnen",         ID_WINDOW_ARRANGEICONS
     END
     POPUP "&Hilfe"
     BEGIN
-        MENUITEM "Ü&ber Visual Pinball...",     ID_HELP_ABOUT
+        MENUITEM "ï¿½&ber Visual Pinball...",     ID_HELP_ABOUT
     END
 END
 
 IDR_POINTMENU MENU 
 BEGIN
-    POPUP "Punkte-Menü"
+    POPUP "Punkte-Menï¿½"
     BEGIN
-        MENUITEM "Weiche Linienverläufe",       ID_POINTMENU_SMOOTH
-        MENUITEM "Eckige Linienverläufe",       ID_POINTMENU_SLINGSHOT
+        MENUITEM "Weiche Linienverlï¿½ufe",       ID_POINTMENU_SMOOTH
+        MENUITEM "Eckige Linienverlï¿½ufe",       ID_POINTMENU_SLINGSHOT
     END
 END
 
 IDR_SURFACEMENU MENU 
 BEGIN
-    POPUP "Wand-Menü"
+    POPUP "Wand-Menï¿½"
     BEGIN
         MENUITEM "Spiegeln &X",                 ID_WALLMENU_MIRROR
         MENUITEM "Spiegeln &Y",                 ID_WALLMENU_FLIP
         MENUITEM "&Rotieren",                   ID_WALLMENU_ROTATE
         MENUITEM "&Skalieren",                  ID_WALLMENU_SCALE
         MENUITEM "&Verschieben",                ID_WALLMENU_TRANSLATE
-        MENUITEM "&Punkt hinzufügen",           ID_WALLMENU_ADDPOINT
+        MENUITEM "&Punkt hinzufï¿½gen",           ID_WALLMENU_ADDPOINT
     END
 END
 
 IDR_MULTIMENU MENU 
 BEGIN
-    POPUP "Wand-Menü"
+    POPUP "Wand-Menï¿½"
     BEGIN
         MENUITEM "Spiegeln &X",                 ID_WALLMENU_MIRROR
         MENUITEM "Spiegeln &Y",                 ID_WALLMENU_FLIP
@@ -227,15 +226,15 @@ IDR_SCRIPTMENU MENU
 BEGIN
     POPUP "&Script"
     BEGIN
-        MENUITEM "Ü&bersetzen",                 ID_COMPILE
+        MENUITEM "ï¿½&bersetzen",                 ID_COMPILE
     END
     POPUP "&Bearbeiten"
     BEGIN
-        MENUITEM "&Rückgängig\tCtrl+Z",         ID_EDIT_UNDO
+        MENUITEM "&Rï¿½ckgï¿½ngig\tCtrl+Z",         ID_EDIT_UNDO
         MENUITEM SEPARATOR
         MENUITEM "&Kopieren\tCrtl+C",           ID_EDIT_COPY
         MENUITEM "&Ausschneiden\tCtrl+X",       ID_EDIT_CUT
-        MENUITEM "&Einfügen\tCtrl+V",           ID_EDIT_PASTE
+        MENUITEM "&Einfï¿½gen\tCtrl+V",           ID_EDIT_PASTE
         MENUITEM SEPARATOR
         MENUITEM "&Suchen...",                  ID_FIND
         MENUITEM "Weitersuchen",                ID_EDIT_FINDNEXT
@@ -330,7 +329,7 @@ BEGIN
     PUSHBUTTON      "&Reimportieren",IDC_REIMPORT,259,25,50,14
     PUSHBUTTON      "Reimport. &von",IDC_REIMPORTFROM,259,43,50,14
     PUSHBUTTON      "&Abspielen",IDC_PLAY,259,98,50,14
-    PUSHBUTTON      "&Löschen",IDC_DELETE,259,61,50,14
+    PUSHBUTTON      "&Lï¿½schen",IDC_DELETE,259,61,50,14
     PUSHBUTTON      "&Umbenennen",IDC_RENAME,259,79,50,14
 END
 
@@ -346,7 +345,7 @@ BEGIN
     PUSHBUTTON      "&Importieren",IDC_IMPORT,358,7,50,14
     PUSHBUTTON      "&Reimportieren",IDC_REIMPORT,358,26,50,14
     PUSHBUTTON      "Reimport. &von",IDC_REIMPORTFROM,358,44,50,14
-    PUSHBUTTON      "&Löschen",IDC_DELETE,358,62,50,14
+    PUSHBUTTON      "&Lï¿½schen",IDC_DELETE,358,62,50,14
     PUSHBUTTON      "&Umbenennen",IDC_RENAME,358,80,50,14
     CONTROL         "Button1",IDC_PICTUREPREVIEW,"Button",BS_OWNERDRAW | 
                     WS_TABSTOP,252,14,101,140
@@ -411,14 +410,14 @@ BEGIN
                     WS_TABSTOP,7,78,91,14
     CONTROL         "Zeige &Konstruktionsgitter",106,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,25,66,14
-    LTEXT           "&Gittergröße",IDC_STATIC,7,42,32,9
+    LTEXT           "&Gittergrï¿½ï¿½e",IDC_STATIC,7,42,32,9
     EDITTEXT        109,41,41,40,12,ES_AUTOHSCROLL
     LTEXT           "&Bild",IDC_STATIC,7,97,20,8
     COMBOBOX        1500,31,95,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "Glas&höhe",IDC_STATIC,7,153,41,8
+    LTEXT           "Glas&hï¿½he",IDC_STATIC,7,153,41,8
     EDITTEXT        3,49,151,40,12,ES_AUTOHSCROLL
-    LTEXT           "Höhe",IDC_STATIC,7,137,22,8
+    LTEXT           "Hï¿½he",IDC_STATIC,7,137,22,8
     EDITTEXT        13,49,135,40,12,ES_AUTOHSCROLL
     LTEXT           "Breite",IDC_STATIC,7,122,20,8
     EDITTEXT        14,49,119,40,12,ES_AUTOHSCROLL
@@ -455,7 +454,7 @@ BEGIN
     EDITTEXT        12,39,177,28,12,ES_AUTOHSCROLL
     LTEXT           "F&arbe",IDC_STATIC,13,198,17,8
     CONTROL         "Custom2",11,"ColorControl",WS_TABSTOP,33,195,40,14
-    LTEXT           "&Oberfläche",IDC_STATIC,7,220,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,220,26,9
     COMBOBOX        1502,35,219,61,84,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,240,11,10
@@ -477,9 +476,9 @@ BEGIN
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
     LTEXT           "&Typ",IDC_STATIC,7,26,17,8
     LTEXT           "Farbe",IDC_STATIC,7,46,17,8
-    LTEXT           "&Obere Höhe",IDC_STATIC,7,64,43,8
+    LTEXT           "&Obere Hï¿½he",IDC_STATIC,7,64,43,8
     EDITTEXT        2,59,64,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Untere Höhe",IDC_STATIC,7,81,47,8
+    LTEXT           "&Untere Hï¿½he",IDC_STATIC,7,81,47,8
     EDITTEXT        1,59,80,31,12,ES_AUTOHSCROLL
     LTEXT           "Obere &Breite",IDC_STATIC,7,104,43,8
     EDITTEXT        4,59,101,31,12,ES_AUTOHSCROLL
@@ -521,7 +520,7 @@ BEGIN
     EDITTEXT        13,17,79,31,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,53,81,8,8
     EDITTEXT        14,63,79,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Oberfläche",IDC_STATIC,7,228,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,228,26,9
     COMBOBOX        1502,33,227,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,247,11,10
@@ -531,7 +530,7 @@ BEGIN
     EDITTEXT        1,54,96,31,12,ES_AUTOHSCROLL
     LTEXT           "&End-Radius",IDC_STATIC,7,113,38,8
     EDITTEXT        2,54,111,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Länge",IDC_STATIC,7,128,23,8
+    LTEXT           "&Lï¿½nge",IDC_STATIC,7,128,23,8
     EDITTEXT        3,54,126,31,12,ES_AUTOHSCROLL
     LTEXT           "&Startwinkel",IDC_STATIC,7,143,36,8
     EDITTEXT        4,54,141,31,12,ES_AUTOHSCROLL
@@ -542,9 +541,9 @@ BEGIN
     EDITTEXT        16,37,173,48,12,ES_AUTOHSCROLL
     LTEXT           "Radiergummi-Farbe",IDC_STATIC,7,45,43,9
     CONTROL         "Custom2",17,"ColorControl",WS_TABSTOP,54,42,40,14
-    LTEXT           "Radiergummi-Stärke",IDC_STATIC,7,63,59,8
+    LTEXT           "Radiergummi-Stï¿½rke",IDC_STATIC,7,63,59,8
     EDITTEXT        18,69,61,25,12,ES_AUTOHSCROLL
-    LTEXT           "Stärke",IDC_STATIC,7,188,28,8
+    LTEXT           "Stï¿½rke",IDC_STATIC,7,188,28,8
     EDITTEXT        19,37,186,48,12,ES_AUTOHSCROLL
     CONTROL         "Sichtbar",20,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
                     213,36,10
@@ -566,7 +565,7 @@ BEGIN
     EDITTEXT        8,17,60,31,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,53,62,8,8
     EDITTEXT        9,63,60,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Oberfläche",IDC_STATIC,7,82,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,82,26,9
     COMBOBOX        1502,35,81,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,102,11,10
@@ -594,7 +593,7 @@ BEGIN
     EDITTEXT        10,31,154,31,12,ES_AUTOHSCROLL
     LTEXT           "Breite",IDC_STATIC,7,172,20,8
     EDITTEXT        5,31,170,31,12,ES_AUTOHSCROLL
-    LTEXT           "Höhe",IDC_STATIC,7,188,22,8
+    LTEXT           "Hï¿½he",IDC_STATIC,7,188,22,8
     EDITTEXT        6,31,186,31,12,ES_AUTOHSCROLL
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,203,11,10
     LTEXT           "&Zeit-Intervall",IDC_STATIC,19,204,44,9
@@ -615,7 +614,7 @@ BEGIN
     LTEXT           "Farbe",IDC_STATIC,7,27,20,9
     LTEXT           "&Radius",IDC_STATIC,7,78,23,9
     EDITTEXT        8,44,77,31,12,ES_AUTOHSCROLL
-    LTEXT           "Über&hang",IDC_STATIC,7,95,36,9
+    LTEXT           "ï¿½ber&hang",IDC_STATIC,7,95,36,9
     EDITTEXT        6,44,94,31,12,ES_AUTOHSCROLL
     LTEXT           "X",IDC_STATIC,7,165,8,8
     EDITTEXT        9,17,163,31,12,ES_AUTOHSCROLL
@@ -628,7 +627,7 @@ BEGIN
     LTEXT           "&Bild",IDC_STATIC,7,63,20,8
     COMBOBOX        1500,31,62,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "&Oberfläche",IDC_STATIC,7,212,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,212,26,9
     COMBOBOX        1502,35,212,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,242,11,10
@@ -664,7 +663,7 @@ BEGIN
     EDITTEXT        4,19,93,31,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,55,95,8,8
     EDITTEXT        5,65,93,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Oberfläche",IDC_STATIC,7,112,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,112,26,9
     COMBOBOX        1502,35,111,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,132,11,10
@@ -687,7 +686,7 @@ BEGIN
     EDITTEXT        6,17,77,31,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,53,79,8,8
     EDITTEXT        7,63,77,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Oberfläche",IDC_STATIC,7,97,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,97,26,9
     COMBOBOX        1502,35,97,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,119,11,10
@@ -710,9 +709,9 @@ BEGIN
     EDITTEXT        6,31,151,31,12,ES_AUTOHSCROLL
     LTEXT           "Breite",IDC_STATIC,7,170,20,8
     EDITTEXT        3,31,167,31,12,ES_AUTOHSCROLL
-    LTEXT           "Höhe",IDC_STATIC,7,186,22,8
+    LTEXT           "Hï¿½he",IDC_STATIC,7,186,22,8
     EDITTEXT        4,31,183,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Oberfläche",IDC_STATIC,7,218,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,218,26,9
     COMBOBOX        1502,35,217,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "&Bild",IDC_STATIC,7,100,20,8
@@ -746,11 +745,11 @@ BEGIN
     EDITTEXT        5,31,24,31,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,7,42,8,8
     EDITTEXT        6,31,40,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Länge",IDC_STATIC,7,60,23,8
+    LTEXT           "&Lï¿½nge",IDC_STATIC,7,60,23,8
     EDITTEXT        3,31,56,31,12,ES_AUTOHSCROLL
     LTEXT           "Rotation",IDC_STATIC,7,75,28,8
     EDITTEXT        4,37,73,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Oberfläche",IDC_STATIC,7,91,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,91,26,9
     COMBOBOX        1502,35,90,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,110,12,8
@@ -768,13 +767,13 @@ BEGIN
     EDITTEXT        11,31,24,31,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,7,41,8,8
     EDITTEXT        12,31,40,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Länge",IDC_STATIC,7,58,23,8
+    LTEXT           "&Lï¿½nge",IDC_STATIC,7,58,23,8
     EDITTEXT        3,31,56,31,12,ES_AUTOHSCROLL
-    LTEXT           "Höhe",IDC_STATIC,7,75,22,8
+    LTEXT           "Hï¿½he",IDC_STATIC,7,75,22,8
     EDITTEXT        5,31,73,31,12,ES_AUTOHSCROLL
     LTEXT           "Rotation",IDC_STATIC,7,92,28,8
     EDITTEXT        4,37,90,31,12,ES_AUTOHSCROLL
-    LTEXT           "Über&hang",IDC_STATIC,7,109,32,8
+    LTEXT           "ï¿½ber&hang",IDC_STATIC,7,109,32,8
     EDITTEXT        6,43,107,31,12,ES_AUTOHSCROLL
     LTEXT           "Reibung",IDC_STATIC,7,126,24,8
     EDITTEXT        7,43,124,44,12,ES_AUTOHSCROLL
@@ -785,7 +784,7 @@ BEGIN
     COMBOBOX        1501,49,159,47,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "Farbe",IDC_STATIC,7,180,20,9
-    LTEXT           "&Oberfläche",IDC_STATIC,7,199,26,9
+    LTEXT           "&Oberflï¿½che",IDC_STATIC,7,199,26,9
     COMBOBOX        1502,35,197,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,216,12,8
@@ -802,7 +801,7 @@ BEGIN
     EDITTEXT        1,31,7,49,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,7,25,8,8
     EDITTEXT        2,31,23,49,12,ES_AUTOHSCROLL
-    CONTROL         "&Weiche Linienverläufe",3,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "&Weiche Linienverlï¿½ufe",3,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,40,40,10
 END
 
@@ -822,9 +821,9 @@ BEGIN
     LTEXT           "Bild-&Ausrichtung",IDC_STATIC,7,41,59,9
     LTEXT           "&Farbe oben",IDC_STATIC,7,76,32,8
     LTEXT           "Farbe &Seite",IDC_STATIC,7,95,33,8
-    LTEXT           "&Obere Höhe",IDC_STATIC,7,114,43,8
+    LTEXT           "&Obere Hï¿½he",IDC_STATIC,7,114,43,8
     EDITTEXT        9,59,112,31,12,ES_AUTOHSCROLL
-    LTEXT           "&Untere Höhe",IDC_STATIC,7,130,47,8
+    LTEXT           "&Untere Hï¿½he",IDC_STATIC,7,130,47,8
     EDITTEXT        8,59,129,31,12,ES_AUTOHSCROLL
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,233,11,10
     LTEXT           "&Zeit-Intervall",IDC_STATIC,19,233,44,9
@@ -846,7 +845,7 @@ STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Script"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "Übersetzen",ID_COMPILE,275,7,50,14
+    DEFPUSHBUTTON   "ï¿½bersetzen",ID_COMPILE,275,7,50,14
     PUSHBUTTON      "Suchen",ID_FIND,275,24,50,14
     COMBOBOX        IDC_ITEMLIST,7,7,94,14,CBS_DROPDOWN | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
@@ -856,7 +855,7 @@ END
 
 IDD_ABOUT DIALOG  0, 0, 222, 183
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Über Visual-Pinball"
+CAPTION "ï¿½ber Visual-Pinball"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,165,162,50,14
@@ -873,9 +872,9 @@ BEGIN
     LTEXT           "Jerry Rice - Musik",IDC_STATIC,13,101,115,9
     CTEXT           "Copyright (C) 2000-2001 Randy Davis.  All rights reserved",
                     IDC_STATIC,7,129,124,19
-    LTEXT           "Kai Kruschinski - Deutsche Übersetzung",IDC_TRANSNAME,
+    LTEXT           "Kai Kruschinski - Deutsche ï¿½bersetzung",IDC_TRANSNAME,
                     13,113,115,9
-    PUSHBUTTON      "Website des Übersetzters",IDC_TRANSLATEWEBSITE,165,142,
+    PUSHBUTTON      "Website des ï¿½bersetzters",IDC_TRANSLATEWEBSITE,165,142,
                     50,14
     LTEXT           "Web-Adresse",IDC_TRANSWEBSITE,184,98,10,8,NOT 
                     WS_VISIBLE | WS_DISABLED
@@ -893,7 +892,7 @@ BEGIN
     PUSHBUTTON      "&Importieren",IDC_IMPORT,259,7,50,14
     PUSHBUTTON      "&Reimportieren",IDC_REIMPORT,259,43,50,14
     PUSHBUTTON      "Reimport. &von",IDC_REIMPORTFROM,259,61,50,14
-    PUSHBUTTON      "&Löschen",IDC_DELETE,259,79,50,14
+    PUSHBUTTON      "&Lï¿½schen",IDC_DELETE,259,79,50,14
     PUSHBUTTON      "&Umbenennen",IDC_RENAME,259,97,50,14,WS_DISABLED
 END
 
@@ -1068,7 +1067,7 @@ BEGIN
                     WS_TABSTOP,7,84,91,14
     CONTROL         "Zeige &Konstruktionsgitter",106,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,25,66,14
-    LTEXT           "&Gittergröße",IDC_STATIC,7,42,32,9
+    LTEXT           "&Gittergrï¿½ï¿½e",IDC_STATIC,7,42,32,9
     EDITTEXT        109,41,41,40,12,ES_AUTOHSCROLL
     LTEXT           "&Bild",IDC_STATIC,7,102,20,8
     COMBOBOX        1501,31,100,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
@@ -1093,7 +1092,7 @@ BEGIN
     PUSHBUTTON      "&New",IDC_NEW,259,7,50,14
     PUSHBUTTON      "&Create From Selection",IDC_CREATEFROMSELECTION,259,25,
                     50,31,BS_CENTER | BS_VCENTER | BS_MULTILINE
-    PUSHBUTTON      "&Löschen",IDC_DELETE,259,79,50,14
+    PUSHBUTTON      "&Lï¿½schen",IDC_DELETE,259,79,50,14
     PUSHBUTTON      "&Umbenennen",IDC_RENAME,259,97,50,14
     PUSHBUTTON      "&Edit",IDC_EDIT,259,60,50,14
 END
@@ -1427,7 +1426,7 @@ BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
     IDS_DRAGPOINT_DESC      "DragPoint Class"
-    IDS_TB_SELECT           "Auswählen"
+    IDS_TB_SELECT           "Auswï¿½hlen"
     IDS_TB_WALL             "Wand"
     IDS_TB_FLIPPER          "Flipper"
     IDS_TB_PLAY             "Spielen"
@@ -1472,14 +1471,14 @@ BEGIN
     IDS_NAME                "Name"
     IDS_IMPORTPATH          "Import-Pfad"
     IDS_REPLACESOUND        "Diesen Sound durch einen neuen ersetzen?"
-    IDS_REMOVESOUND         "Diesen Sound wirklich löschen?"
+    IDS_REMOVESOUND         "Diesen Sound wirklich lï¿½schen?"
     IDS_IMAGE_PREVIEW       "Bild\n\nVorschau"
-    IDS_REMOVEIMAGE         "Dieses Bild wirklich löschen?"
+    IDS_REMOVEIMAGE         "Dieses Bild wirklich lï¿½schen?"
     IDS_REPLACEIMAGE        "Dieses Bild wirklich durch ein anderes ersetzen?"
     IDS_TABLE               "Tisch"
     IDS_SCRIPT              "Script"
     IDS_SAVE_CHANGES1       "Tisch '"
-    IDS_SAVE_CHANGES2       "wurde verändert. Speichern?"
+    IDS_SAVE_CHANGES2       "wurde verï¿½ndert. Speichern?"
     IDS_DRAWINFRONT         "In den Vordergrund"
 END
 
@@ -1489,17 +1488,17 @@ BEGIN
     IDS_SAVEERROR           "Fehler beim Speichern der Datei."
     IDS_TB_BACKGLASS        "Backdrop/POV"
     IDS_WRONGFILEVERSION    "Diese Datei wurde mit einer neueren Version von Visual Pinball erstellt."
-    IDS_NOPASTEINVIEW       "Eines oder mehrere Elemente in der Zwischenablage konnte nicht eingefügt werden."
+    IDS_NOPASTEINVIEW       "Eines oder mehrere Elemente in der Zwischenablage konnte nicht eingefï¿½gt werden."
     IDS_FINDLOOPED          "Dateiende erreicht"
     IDS_FINDFAILED          "Kann Suchbegriff nicht finden: '"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Kontrollpunkt"
     IDS_CORRUPTFILE         "Diese Datei ist defekt und kann nicht geladen werden!"
-    IDS_REMOVEMATERIAL      "Ausgewählte Materialien wirklich löschen?"
-    IDS_UNSECURECONTROL1    "Dieser Tisch möche ein '"
-    IDS_UNSECURECONTROL2    "' Objekt erstellen. Dieses Objekt stellt möglicherweise ein Sicherheitsrisiko dar.  Soll es wirklich erstellt werden?"
+    IDS_REMOVEMATERIAL      "Ausgewï¿½hlte Materialien wirklich lï¿½schen?"
+    IDS_UNSECURECONTROL1    "Dieser Tisch mï¿½che ein '"
+    IDS_UNSECURECONTROL2    "' Objekt erstellen. Dieses Objekt stellt mï¿½glicherweise ein Sicherheitsrisiko dar.  Soll es wirklich erstellt werden?"
     IDS_COLLECTION          "Collection"
-    IDS_DEFAULTPHYSICS      "Sollen die Physikeinstellungen wirklich zurückgesetzt werden?"
+    IDS_DEFAULTPHYSICS      "Sollen die Physikeinstellungen wirklich zurï¿½ckgesetzt werden?"
 END
 
 STRINGTABLE 

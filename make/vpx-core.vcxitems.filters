@@ -255,6 +255,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/input/XRInputHandler.h">
       <Filter>input</Filter>
     </ClInclude>
+    <ClCompile Include="$(SolutionDir)/../../src/math/dragpoint.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/math/HighPassFilter.cpp">
       <Filter>math</Filter>
     </ClCompile>
@@ -286,9 +289,6 @@
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/flipper.cpp">
-      <Filter>parts</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/parts/dragpoint.cpp">
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/pinbinary.cpp">
@@ -1157,6 +1157,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h">
       <Filter>math</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/dragpoint.h">
+      <Filter>math</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/math/ExponentialMovingAverage.h">
       <Filter>math</Filter>
     </ClInclude>
@@ -1287,9 +1290,6 @@
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/parts/pinbinary.h">
-      <Filter>parts</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/parts/dragpoint.h">
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/parts/dispreel.h">
@@ -3089,9 +3089,6 @@
       <Filter>ui\win\res</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/ui/win/res/dispreel.rgs">
-      <Filter>ui\win\res</Filter>
-    </None>
-    <None Include="$(SolutionDir)/../../src/ui/win/res/dragpoint.rgs">
       <Filter>ui\win\res</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/ui/win/res/flasher.cur">

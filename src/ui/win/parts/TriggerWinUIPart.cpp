@@ -62,9 +62,9 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
       if (!drawDragpoints)
       {
          // if any of the dragpoints of this object are selected then draw all the dragpoints
-         for (const CComObject<DragPoint>* const pdp : m_trigger->m_curve.GetPoints())
+         for (const auto& pdp : m_trigger->m_curve.GetPoints())
          {
-            if (m_pointParts.IsSelected(pdp))
+            if (m_pointParts.IsSelected(pdp.get()))
             {
                drawDragpoints = true;
                break;
@@ -74,13 +74,13 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
 
       if (drawDragpoints)
       {
-         for (CComObject<DragPoint>* const pdp : m_trigger->m_curve.GetPoints())
+         for (const auto& pdp : m_trigger->m_curve.GetPoints())
          {
             psur->SetFillColor(-1);
-            psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
-            psur->SetObject(m_pointParts.Get(pdp));
+            psur->SetBorderColor(m_pointParts.IsDragging(pdp.get()) ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
+            psur->SetObject(m_pointParts.Get(pdp.get()));
 
-            psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+            psur->Ellipse2(pdp->GetX(), pdp->GetY(), 8);
          }
       }
    }
@@ -182,14 +182,8 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
       //if (icp == 0) // need to add point after the last point
       //icp = m_trigger->m_curve.GetPoints().size();
 
-      CComObject<DragPoint>* pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_trigger->m_curve, vOut.x, vOut.y, 0.f, false);
-         m_trigger->m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-      }
+      m_trigger->m_curve.InsertPoint(
+         icp, std::make_unique<DragPoint>(&m_trigger->m_curve, vOut.x, vOut.y, 0.f, false)); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 
       m_editor->EndUndo();
       if (m_trigger->GetPTable())

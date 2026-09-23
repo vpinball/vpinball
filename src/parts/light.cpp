@@ -184,7 +184,7 @@ void Light::UpdateBounds()
    m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, m_initSurfaceHeight);
 }
 
-void Light::ClearForOverwrite() { m_curve.ClearPointsForOverwrite(); }
+void Light::ClearForOverwrite() { m_curve.ClearPoints(); }
 
 void Light::UpdateAnimation(const float diff_time_msec)
 {
@@ -881,14 +881,7 @@ void Light::AddPoint(const Vertex2D &v, const bool smooth)
    //if (icp == 0) // need to add point after the last point
    //icp = m_curve.GetPoints().size();
 
-   CComObject<DragPoint> *pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(&m_curve, vOut.x, vOut.y, 0.f, smooth);
-      m_curve.InsertPoint(icp, pdp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-   }
+   m_curve.InsertPoint(icp, std::make_unique<DragPoint>(&m_curve, vOut.x, vOut.y, 0.f, smooth)); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 }
 
 STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
@@ -1064,14 +1057,7 @@ void Light::InitShape()
          const float angle = (float)(M_PI*2.0 / 8.0)*(float)i;
          const float xx = x + sinf(angle)*m_d.m_falloff;
          const float yy = y - cosf(angle)*m_d.m_falloff;
-         CComObject<DragPoint> *pdp;
-         CComObject<DragPoint>::CreateInstance(&pdp);
-         if (pdp)
-         {
-            pdp->AddRef();
-            pdp->Init(&m_curve, xx, yy, 0.f, true);
-            m_curve.PushPoint(pdp);
-         }
+         m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, xx, yy, 0.f, true));
       }
    }
 }

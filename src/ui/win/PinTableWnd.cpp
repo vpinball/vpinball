@@ -7,7 +7,7 @@
 #include "core/VPApp.h"
 #include "core/vpversion.h"
 #include "parts/Collection.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 #include "parts/flipper.h"
 #include "parts/PartGroup.h"
 #include "parts/primitive.h"

@@ -58,9 +58,9 @@ void SurfaceWinUIPart::UIRenderPass2(Sur* const psur)
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (const CComObject<DragPoint>* const pdp : m_surface->m_curve.GetPoints())
+      for (const auto& pdp : m_surface->m_curve.GetPoints())
       {
-         if (m_pointParts.IsSelected(pdp))
+         if (m_pointParts.IsSelected(pdp.get()))
          {
             drawDragpoints = true;
             break;
@@ -70,25 +70,25 @@ void SurfaceWinUIPart::UIRenderPass2(Sur* const psur)
 
    for (size_t i = 0; i < m_surface->m_curve.GetPoints().size(); i++)
    {
-      CComObject<DragPoint>* const pdp = m_surface->m_curve.GetPoints()[i];
+      const auto& pdp = m_surface->m_curve.GetPoints()[i];
       if (!(drawDragpoints || pdp->m_slingshot))
          continue;
       psur->SetFillColor(-1);
-      psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+      psur->SetBorderColor(m_pointParts.IsDragging(pdp.get()) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
 
       if (drawDragpoints)
       {
-         psur->SetObject(m_pointParts.Get(pdp));
-         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+         psur->SetObject(m_pointParts.Get(pdp.get()));
+         psur->Ellipse2(pdp->GetX(), pdp->GetY(), 8);
       }
 
       if (pdp->m_slingshot)
       {
          psur->SetObject(nullptr);
-         const CComObject<DragPoint>* const pdp2 = m_surface->m_curve.GetPoints()[(i < m_surface->m_curve.GetPoints().size() - 1) ? (i + 1) : 0];
+         const auto& pdp2 = m_surface->m_curve.GetPoints()[(i < m_surface->m_curve.GetPoints().size() - 1) ? (i + 1) : 0];
          psur->SetLineColor(RGB(0, 0, 0), false, 3);
 
-         psur->Line(pdp->m_v.x, pdp->m_v.y, pdp2->m_v.x, pdp2->m_v.y);
+         psur->Line(pdp->GetX(), pdp->GetY(), pdp2->GetX(), pdp2->GetY());
       }
    }
 }

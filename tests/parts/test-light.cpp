@@ -89,8 +89,8 @@ TEST_CASE("Light part")
 
       // The custom shape's drag points round-trip through the stream
       REQUIRE(copy->m_curve.GetPoints().size() == light->m_curve.GetPoints().size());
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.x == doctest::Approx(light->m_curve.GetPoints()[0]->m_v.x));
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.y == doctest::Approx(light->m_curve.GetPoints()[0]->m_v.y));
+      CHECK(copy->m_curve.GetPoints()[0]->GetX() == doctest::Approx(light->m_curve.GetPoints()[0]->GetX()));
+      CHECK(copy->m_curve.GetPoints()[0]->GetY() == doctest::Approx(light->m_curve.GetPoints()[0]->GetY()));
 
       CHECK(StreamsEqual(saved, SavePartToStream(copy)));
 

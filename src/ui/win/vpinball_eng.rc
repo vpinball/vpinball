@@ -2613,7 +2613,6 @@ IDR_VPINBALL            REGISTRY                "res\\vpinball.rgs"
 
 IDR_SURFACE             REGISTRY                "res\\surface.rgs"
 
-IDR_DRAG_POINT          REGISTRY                "res\\dragpoint.rgs"
 
 IDR_FLIPPER             REGISTRY                "res\\flipper.rgs"
 

@@ -49,11 +49,11 @@ void EditorUIPart::UpdateCurveSection(PropertyPane& props)
       ImGui::PushID(point);
       props.InputFloat2<DragPoint>(
          point, "Position"s, //
-         [](const DragPoint* p) { return Vertex2D(p->m_v.x, p->m_v.y); }, //
+         [](const DragPoint* p) { return Vertex2D(p->GetX(), p->GetY()); }, //
          [this](DragPoint* p, const Vertex2D& v)
          {
-            p->m_v.x = v.x;
-            p->m_v.y = v.y;
+            p->SetX(v.x);
+            p->SetY(v.y);
             GetDragPointCurve()->OnPointsModified();
          },
          PropertyPane::Unit::VPLength, 1);
@@ -61,13 +61,13 @@ void EditorUIPart::UpdateCurveSection(PropertyPane& props)
       if (HasPointAutoTexture())
          props.Checkbox<DragPoint>(
             point, "Auto Texture Coord."s, //
-            [](const DragPoint* p) { return p->m_autoTexture; }, //
-            [](DragPoint* p, bool v) { p->m_autoTexture = v; });
+            [](const DragPoint* p) { return p->IsAutoTextureCoordinate(); }, //
+            [](DragPoint* p, bool v) { p->SetAutoTextureCoordinate(v); });
       if (HasPointTextureCoord())
          props.InputFloat<DragPoint>(
             point, "Texture Coord."s, //
-            [](const DragPoint* p) { return p->m_texturecoord; }, //
-            [](DragPoint* p, float v) { p->m_texturecoord = v; }, PropertyPane::Unit::None, 2);
+            [](const DragPoint* p) { return p->GetTextureCoordinateU(); }, //
+            [](DragPoint* p, float v) { p->SetTextureCoordinateU(v); }, PropertyPane::Unit::None, 2);
       ImGui::PopID();
    }
    else if (sel.size() > 1)
@@ -104,7 +104,7 @@ void EditorUIPart::SetSelectedPointsSmooth(bool smooth)
 {
    m_pointEditCtx->BeginPointEdit();
    for (DragPoint* point : m_pointEditCtx->GetSelectedPoints())
-      if (point->m_smooth != smooth)
+      if (point->IsSmooth() != smooth)
          point->ToggleSmooth(); // ToggleSmooth also maintains slingshot flag coherence
    m_pointEditCtx->EndPointEdit();
 }
@@ -115,19 +115,19 @@ void EditorUIPart::FlipSelectedPoints(bool flipX)
    float minX = FLT_MAX, maxX = -FLT_MAX, minY = FLT_MAX, maxY = -FLT_MAX;
    for (const DragPoint* point : sel)
    {
-      minX = min(minX, point->m_v.x);
-      maxX = max(maxX, point->m_v.x);
-      minY = min(minY, point->m_v.y);
-      maxY = max(maxY, point->m_v.y);
+      minX = min(minX, point->GetX());
+      maxX = max(maxX, point->GetX());
+      minY = min(minY, point->GetY());
+      maxY = max(maxY, point->GetY());
    }
    const Vertex2D center(0.5f * (minX + maxX), 0.5f * (minY + maxY));
    m_pointEditCtx->BeginPointEdit();
    for (DragPoint* point : sel)
    {
       if (flipX)
-         point->m_v.x = 2.f * center.x - point->m_v.x;
+         point->SetX(2.f * center.x - point->GetX());
       else
-         point->m_v.y = 2.f * center.y - point->m_v.y;
+         point->SetY(2.f * center.y - point->GetY());
    }
    m_pointEditCtx->EndPointEdit();
 }
@@ -137,14 +137,14 @@ void EditorUIPart::AlignSelectedPoints(bool onX, bool toMax)
    const vector<DragPoint*>& sel = m_pointEditCtx->GetSelectedPoints();
    float v = toMax ? -FLT_MAX : FLT_MAX;
    for (const DragPoint* point : sel)
-      v = toMax ? max(v, onX ? point->m_v.x : point->m_v.y) : min(v, onX ? point->m_v.x : point->m_v.y);
+      v = toMax ? max(v, onX ? point->GetX() : point->GetY()) : min(v, onX ? point->GetX() : point->GetY());
    m_pointEditCtx->BeginPointEdit();
    for (DragPoint* point : sel)
    {
       if (onX)
-         point->m_v.x = v;
+         point->SetX(v);
       else
-         point->m_v.y = v;
+         point->SetY(v);
    }
    m_pointEditCtx->EndPointEdit();
 }
@@ -169,15 +169,15 @@ DragPoint* EditorUIPart::AddPointOnCurve(const Vertex2D& pos)
    // Return the curve point nearest to the given position (the newly inserted one)
    DragPoint* nearest = nullptr;
    float nearestDist = FLT_MAX;
-   for (CComObject<DragPoint>* point : curve->GetPoints())
+   for (const auto& point : curve->GetPoints())
    {
-      const float dx = point->m_v.x - pos.x;
-      const float dy = point->m_v.y - pos.y;
+      const float dx = point->GetX() - pos.x;
+      const float dy = point->GetY() - pos.y;
       const float dist = dx * dx + dy * dy;
       if (dist < nearestDist)
       {
          nearestDist = dist;
-         nearest = point;
+         nearest = point.get();
       }
    }
    return nearest;
@@ -200,13 +200,7 @@ void EditorUIPart::InsertPointOnCurve(const Vertex2D& pos)
    for (int i = 0; i < (iSeg + 1); i++)
       if (vvertex[i].controlPoint)
          icp++;
-   CComObject<DragPoint>* pdp;
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp == nullptr)
-      return;
-   pdp->AddRef();
-   pdp->Init(curve, vOut.x, vOut.y, 0.f, IsNewPointSmooth());
-   curve->InsertPoint(icp, pdp);
+   curve->InsertPoint(icp, std::make_unique<DragPoint>(curve, vOut.x, vOut.y, 0.f, IsNewPointSmooth()));
 }
 
 }

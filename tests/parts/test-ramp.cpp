@@ -5,7 +5,7 @@
 
 #include "parts/pintable.h"
 #include "parts/ramp.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 
 #include "doctest.h"
 
@@ -74,9 +74,9 @@ TEST_CASE("Ramp part")
 
       // The default 2-point ramp curve round-trips through the stream
       REQUIRE(copy->m_curve.GetPoints().size() == ramp->m_curve.GetPoints().size());
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.x == doctest::Approx(ramp->m_curve.GetPoints()[0]->m_v.x));
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.y == doctest::Approx(ramp->m_curve.GetPoints()[0]->m_v.y));
-      CHECK(copy->m_curve.GetPoints()[0]->m_calcHeight == doctest::Approx(ramp->m_curve.GetPoints()[0]->m_calcHeight));
+      CHECK(copy->m_curve.GetPoints()[0]->GetX() == doctest::Approx(ramp->m_curve.GetPoints()[0]->GetX()));
+      CHECK(copy->m_curve.GetPoints()[0]->GetY() == doctest::Approx(ramp->m_curve.GetPoints()[0]->GetY()));
+      CHECK(copy->m_curve.GetPoints()[0]->GetCalcHeight() == doctest::Approx(ramp->m_curve.GetPoints()[0]->GetCalcHeight()));
 
       CHECK(StreamsEqual(saved, SavePartToStream(copy)));
 
@@ -110,8 +110,8 @@ TEST_CASE("Ramp part")
       ramp->m_d.m_heighttop = 90.f;
       const auto& points = ramp->m_curve.GetPoints();
       REQUIRE(points.size() == 2);
-      const Vertex2D start(points[0]->m_v.x, points[0]->m_v.y);
-      const Vertex2D end(points[1]->m_v.x, points[1]->m_v.y);
+      const Vertex2D start(points[0]->GetX(), points[0]->GetY());
+      const Vertex2D end(points[1]->GetX(), points[1]->GetY());
 
       CHECK(ramp->GetSurfaceHeight(start.x, start.y) == doctest::Approx(10.f));
       CHECK(ramp->GetSurfaceHeight(end.x, end.y) == doctest::Approx(90.f));

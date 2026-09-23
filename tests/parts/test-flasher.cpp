@@ -83,8 +83,8 @@ TEST_CASE("Flasher part")
 
       // The default flasher shape is a 100x100 quad centered on the init position
       REQUIRE(copy->m_curve.GetPoints().size() == flasher->m_curve.GetPoints().size());
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.x == flasher->m_curve.GetPoints()[0]->m_v.x);
-      CHECK(copy->m_curve.GetPoints()[0]->m_v.y == flasher->m_curve.GetPoints()[0]->m_v.y);
+      CHECK(copy->m_curve.GetPoints()[0]->GetX() == flasher->m_curve.GetPoints()[0]->GetX());
+      CHECK(copy->m_curve.GetPoints()[0]->GetY() == flasher->m_curve.GetPoints()[0]->GetY());
 
       CHECK(StreamsEqual(saved, SavePartToStream(copy)));
 

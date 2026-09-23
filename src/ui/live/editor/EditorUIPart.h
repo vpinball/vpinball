@@ -2,7 +2,7 @@
 
 #include "PropertyPane.h"
 #include "core/ieditable.h"
-#include "parts/dragpoint.h"
+#include "math/dragpoint.h"
 
 #include <functional>
 #include <initializer_list>
@@ -99,7 +99,7 @@ public:
 
    // Returns the Z coordinate at which a point of this part's drag point curve should be displayed
    // (drag point curves are 2D in the table XY plane, the display height is part specific)
-   virtual float GetDragPointZ(const DragPoint* point) const { return point->m_v.z; }
+   virtual float GetDragPointZ(const DragPoint* point) const { return point->GetZ(); }
 
    // Drag point edit mode: the editor sets the context while this part's curve is being edited
    void SetPointEditContext(DragPointEditContext* ctx) { m_pointEditCtx = ctx; }
