@@ -76,6 +76,23 @@ To build specific plugins, name their targets:
 cmake --build build --target PinMAMEPlugin SerumPlugin
 ```
 
+### Building and running the tests
+
+The `vpx-test` target (a doctest runner sharing the application sources, equivalent of the
+MSVC `vpx-test` project) is excluded from the default build and available on windows,
+windows-mingw, macos and linux:
+
+```bash
+cmake --build build --target vpx-test
+```
+
+The content of `tests/assets` is copied to a `test-assets` folder next to the executable.
+Run it from there; tests tagged `[render]` need a GPU/display, the rest are headless:
+
+```bash
+./build/vpx-test --test-case-exclude="*[render]*"
+```
+
 * A relative `PLUGINS_DIR` is resolved against the build directory.
 * `PLUGINS_DIR` is ignored when the application is built, and on iOS, tvOS and Android, where the plugins are static libraries linked into the application.
 
