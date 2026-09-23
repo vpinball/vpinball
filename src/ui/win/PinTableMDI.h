@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ui/win/resource.h" // win32xx related IDW_*
 #include <wxx_mdi.h>
 
 #include "PinTableWnd.h"

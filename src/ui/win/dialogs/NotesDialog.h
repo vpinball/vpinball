@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
-#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
+#include "ui/win/resource.h" // win32xx related IDW_*
+#include <wxx_appcore.h>     // Add CCriticalSection, CObject, CWinThread, CWinApp
+#include <wxx_commondlg.h>   // Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include <wxx_docking.h>
 
 class NotesEdit final : public CEdit
