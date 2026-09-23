@@ -942,11 +942,10 @@ HRESULT PinTable::SaveInfo(InMemStructuredStorage *pstg, TableHash *const hash)
    tm local_hour;
    localtime_s(&local_hour, &hour_machine);
    char buffer[256];
-   asctime_s(buffer, &local_hour);
+   asctime_s(buffer, std::size(buffer), &local_hour);
    buffer[strnlen_s(buffer,std::size(buffer))-1] = '\0'; // remove line break
-   WriteInfoValue(pstg, "TableSaveDate"s, buffer, NULL);
-   _itoa_s(++m_numTimesSaved, buffer, 10);
-   WriteInfoValue(pstg, "TableSaveRev"s, buffer, NULL);
+   WriteInfoValue(pstg, "TableSaveDate"s, buffer, nullptr);
+   WriteInfoValue(pstg, "TableSaveRev"s, std::to_string(++m_numTimesSaved), nullptr);
 
    Texture * const pin = GetImage(m_screenShot);
    if (pin)
@@ -1014,10 +1013,10 @@ void PinTable::LoadInfo(POLE::Storage& storage, TableHash *const hash, int versi
    ReadInfoValue(storage, "TableInfo/TableBlurb"s, m_blurb, hash);
    ReadInfoValue(storage, "TableInfo/TableDescription"s, m_description, hash);
    ReadInfoValue(storage, "TableInfo/TableRules"s, m_rules, hash);
-   ReadInfoValue(storage, "TableInfo/TableSaveDate"s, m_dateSaved, NULL);
+   ReadInfoValue(storage, "TableInfo/TableSaveDate"s, m_dateSaved, nullptr);
 
    string numTimesSaved;
-   ReadInfoValue(storage, "TableInfo/TableSaveRev"s, numTimesSaved, NULL);
+   ReadInfoValue(storage, "TableInfo/TableSaveRev"s, numTimesSaved, nullptr);
    m_numTimesSaved = 0;
    if (!numTimesSaved.empty())
       std::from_chars(numTimesSaved.c_str(), numTimesSaved.c_str() + numTimesSaved.length(), m_numTimesSaved);

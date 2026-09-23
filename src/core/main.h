@@ -106,6 +106,9 @@ using std::wstring;
    #ifndef __MINGW32__
       #define localtime_s(x, y) localtime_r(y, x)
       #define gmtime_s(x, y) gmtime_r(y, x)
+      // asctime_r needs at least 26 bytes and takes no size, so that argument is dropped
+      #define asctime_s(x, size, y) asctime_r(y, x)
+      #define strnlen_s strnlen
       #define _aligned_malloc(size, align) aligned_alloc(align, size)
       #define _aligned_free free
    #endif
