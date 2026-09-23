@@ -1,11 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="audio">
+      <UniqueIdentifier>{5D3E8A2B-1C4F-4E7A-9B2D-3F6A8C1E5D7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{7C2F9E4A-3B5D-4A8C-8E1F-5A9C2D4E6F8A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="misc">
       <UniqueIdentifier>{EAB1B43C-C816-414B-83EE-832B6FB7BCBB}</UniqueIdentifier>
     </Filter>
     <Filter Include="parts">
       <UniqueIdentifier>{986E94B9-EE61-46C2-8BE2-A7B8B48168F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{9E4A6C2F-5D7B-4C9E-A3F8-7B1D3E5F9A2C}</UniqueIdentifier>
     </Filter>
     <Filter Include="render">
       <UniqueIdentifier>{07AAEE0E-5F1F-4D1F-885D-15C36E60C7A8}</UniqueIdentifier>
@@ -14,6 +23,21 @@
   <ItemGroup>
     <ClCompile Include="../gen/vpinball_i.c" />
     <ClCompile Include="../../tests/vpx-test.cpp" />
+    <ClCompile Include="../../tests/audio/test-audioplayer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/input/test-buttonmapping.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/input/test-plunger-kalman.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/input/test-scancodes.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/input/test-sensormapping.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/misc/test-collection.cpp">
       <Filter>misc</Filter>
     </ClCompile>
@@ -100,6 +124,21 @@
     </ClCompile>
     <ClCompile Include="../../tests/parts/test-trigger.cpp">
       <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/physics/test-cabinet.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/physics/test-collide.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/physics/test-hittimer.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/physics/test-motion-kalman.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/physics/test-quadtree.cpp">
+      <Filter>physics</Filter>
     </ClCompile>
     <ClCompile Include="../../tests/render/test-base-render.cpp">
       <Filter>render</Filter>

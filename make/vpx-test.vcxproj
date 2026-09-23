@@ -35,6 +35,11 @@
         <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="../../tests/vpx-test.cpp" />
+    <ClCompile Include="../../tests/audio/test-audioplayer.cpp" />
+    <ClCompile Include="../../tests/input/test-buttonmapping.cpp" />
+    <ClCompile Include="../../tests/input/test-plunger-kalman.cpp" />
+    <ClCompile Include="../../tests/input/test-scancodes.cpp" />
+    <ClCompile Include="../../tests/input/test-sensormapping.cpp" />
     <ClCompile Include="../../tests/misc/test-collection.cpp" />
     <ClCompile Include="../../tests/misc/test-material.cpp" />
     <ClCompile Include="../../tests/misc/test-pinbinary.cpp" />
@@ -64,6 +69,11 @@
     <ClCompile Include="../../tests/parts/test-textbox.cpp" />
     <ClCompile Include="../../tests/parts/test-timer.cpp" />
     <ClCompile Include="../../tests/parts/test-trigger.cpp" />
+    <ClCompile Include="../../tests/physics/test-cabinet.cpp" />
+    <ClCompile Include="../../tests/physics/test-collide.cpp" />
+    <ClCompile Include="../../tests/physics/test-hittimer.cpp" />
+    <ClCompile Include="../../tests/physics/test-motion-kalman.cpp" />
+    <ClCompile Include="../../tests/physics/test-quadtree.cpp" />
     <ClCompile Include="../../tests/render/test-base-render.cpp" />
   </ItemGroup>
   <ItemGroup>
