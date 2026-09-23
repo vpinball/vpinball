@@ -11,9 +11,36 @@
 # the test runner looks for it (FileLocator::AppSubFolder::Root / "test-assets").
 
 set(VPX_TEST_SOURCES
-   tests/test-base-render.cpp
-   tests/test-plugin-arrays.cpp
-   tests/test-table-io.cpp
+   tests/misc/test-collection.cpp
+   tests/misc/test-material.cpp
+   tests/misc/test-pinbinary.cpp
+   tests/misc/test-pintable.cpp
+   tests/misc/test-plugin-arrays.cpp
+   tests/misc/test-sound.cpp
+   tests/misc/test-table-io.cpp
+   tests/parts/test-ball.cpp
+   tests/parts/test-bumper.cpp
+   tests/parts/test-decal.cpp
+   tests/parts/test-dispreel.cpp
+   tests/parts/test-dragpoint.cpp
+   tests/parts/test-flasher.cpp
+   tests/parts/test-flipper.cpp
+   tests/parts/test-gate.cpp
+   tests/parts/test-hittarget.cpp
+   tests/parts/test-kicker.cpp
+   tests/parts/test-light.cpp
+   tests/parts/test-lightseq.cpp
+   tests/parts/test-partgroup.cpp
+   tests/parts/test-plunger.cpp
+   tests/parts/test-primitive.cpp
+   tests/parts/test-ramp.cpp
+   tests/parts/test-rubber.cpp
+   tests/parts/test-spinner.cpp
+   tests/parts/test-surface.cpp
+   tests/parts/test-textbox.cpp
+   tests/parts/test-timer.cpp
+   tests/parts/test-trigger.cpp
+   tests/render/test-base-render.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
 )

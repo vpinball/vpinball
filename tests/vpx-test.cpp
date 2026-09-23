@@ -11,8 +11,13 @@
 
 #include "core/VPApp.h"
 #include "core/AppCommands.h"
+#include "core/vpversion.h"
 #include "renderer/Renderer.h"
 #include "renderer/Texture.h"
+
+#include "parts/pintable.h"
+#include "utils/BiffReader.h"
+#include "utils/BiffWriter.h"
 
 #include "plugins/MsgPluginManager.h"
 
@@ -159,6 +164,46 @@ void ResetVPX()
    settings.SetPlayer_PlayfieldHeight(1080, false);
    settings.SetPlayer_NumberOfTimesToShowTouchMessage(0, false);
    settings.SetPlayer_DisableAO(true, false);
+}
+
+PinTable* CreateTestTable()
+{
+   CComObject<PinTable>* table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   return table;
+}
+
+InMemStream SavePartToStream(IEditable* part)
+{
+   InMemStream stream;
+   // GameItem streams start with the raw item type, followed by the BIFF part data
+   const ItemTypeEnum type = part->GetItemType();
+   stream.Write(&type, sizeof(int));
+   BiffWriter writer(&stream, nullptr);
+   part->Save(writer, false);
+   CHECK_FALSE(writer.HasError());
+   return stream;
+}
+
+void LoadPartFromStream(IEditable* part, const InMemStream& stream)
+{
+   // Skip the raw item type that starts every GameItem stream
+   BiffReader reader(stream.Data() + sizeof(int), static_cast<uint32_t>(stream.Size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, nullptr, 0);
+   part->Load(reader);
+   CHECK_FALSE(reader.HasError());
+}
+
+bool StreamsEqual(const InMemStream& a, const InMemStream& b)
+{
+   return a.Size() == b.Size() && memcmp(a.Data(), b.Data(), a.Size()) == 0;
+}
+
+std::filesystem::path GetTestTmpDir()
+{
+   const std::filesystem::path dir = GetAssetPath() / "tmp";
+   std::filesystem::create_directories(dir);
+   return dir;
 }
 
 

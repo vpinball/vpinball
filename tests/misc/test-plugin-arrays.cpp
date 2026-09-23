@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "vpx-test.h"
+#include "../vpx-test.h"
 #include "doctest.h"
 
 #include "core/DynamicScript.h"
@@ -30,7 +30,12 @@ static ScriptArray* MakeStringArray2D(unsigned int rows, unsigned int cols, cons
       const size_t n = strlen(strings[i]) + 1;
       char* s = new char[n];
       memcpy(s, strings[i], n);
-      pData[i] = { [](ScriptString* str) { delete[] str->string; ++g_stringElemReleaseCount; }, s };
+      pData[i] = { [](ScriptString* str)
+         {
+            delete[] str->string;
+            ++g_stringElemReleaseCount;
+         },
+         s };
    }
    return array;
 }
@@ -50,7 +55,8 @@ static ScriptArray* MakeBoolArray2D(unsigned int rows, unsigned int cols, const 
 }
 
 // Handlers for the test plugin class
-namespace TestPluginArrays {
+namespace TestPluginArrays
+{
 
 static void TestAddRef(void*, int, ScriptVariant*, ScriptVariant*) { }
 static void TestRelease(void*, int, ScriptVariant*, ScriptVariant*) { }
@@ -74,10 +80,10 @@ static ScriptArrayDef boolArray2DDef = { { "TestBoolArray2D" }, { "bool" }, 2, {
 // Class definition — flexible array member requires static storage
 static ScriptClassDef testClass = { { "TestArrayClass" }, []() { return static_cast<void*>(new int(0)); }, 4,
    {
-      { { "AddRef" },        { "ulong" },              0, {}, TestAddRef },
-      { { "Release" },       { "ulong" },              0, {}, TestRelease },
-      { { "StringArray2D" }, { "TestStringArray2D" },   0, {}, get_StringArray2D },
-      { { "BoolArray2D" },   { "TestBoolArray2D" },     0, {}, get_BoolArray2D },
+      { { "AddRef" }, { "ulong" }, 0, {}, TestAddRef },
+      { { "Release" }, { "ulong" }, 0, {}, TestRelease },
+      { { "StringArray2D" }, { "TestStringArray2D" }, 0, {}, get_StringArray2D },
+      { { "BoolArray2D" }, { "TestBoolArray2D" }, 0, {}, get_BoolArray2D },
    } };
 
 } // namespace TestPluginArrays

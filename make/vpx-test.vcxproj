@@ -35,9 +35,36 @@
         <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="../../tests/vpx-test.cpp" />
-    <ClCompile Include="../../tests/test-base-render.cpp" />
-    <ClCompile Include="../../tests/test-plugin-arrays.cpp" />
-    <ClCompile Include="../../tests/test-table-io.cpp" />
+    <ClCompile Include="../../tests/misc/test-collection.cpp" />
+    <ClCompile Include="../../tests/misc/test-material.cpp" />
+    <ClCompile Include="../../tests/misc/test-pinbinary.cpp" />
+    <ClCompile Include="../../tests/misc/test-pintable.cpp" />
+    <ClCompile Include="../../tests/misc/test-plugin-arrays.cpp" />
+    <ClCompile Include="../../tests/misc/test-sound.cpp" />
+    <ClCompile Include="../../tests/misc/test-table-io.cpp" />
+    <ClCompile Include="../../tests/parts/test-ball.cpp" />
+    <ClCompile Include="../../tests/parts/test-bumper.cpp" />
+    <ClCompile Include="../../tests/parts/test-decal.cpp" />
+    <ClCompile Include="../../tests/parts/test-dispreel.cpp" />
+    <ClCompile Include="../../tests/parts/test-dragpoint.cpp" />
+    <ClCompile Include="../../tests/parts/test-flasher.cpp" />
+    <ClCompile Include="../../tests/parts/test-flipper.cpp" />
+    <ClCompile Include="../../tests/parts/test-gate.cpp" />
+    <ClCompile Include="../../tests/parts/test-hittarget.cpp" />
+    <ClCompile Include="../../tests/parts/test-kicker.cpp" />
+    <ClCompile Include="../../tests/parts/test-light.cpp" />
+    <ClCompile Include="../../tests/parts/test-lightseq.cpp" />
+    <ClCompile Include="../../tests/parts/test-partgroup.cpp" />
+    <ClCompile Include="../../tests/parts/test-plunger.cpp" />
+    <ClCompile Include="../../tests/parts/test-primitive.cpp" />
+    <ClCompile Include="../../tests/parts/test-ramp.cpp" />
+    <ClCompile Include="../../tests/parts/test-rubber.cpp" />
+    <ClCompile Include="../../tests/parts/test-spinner.cpp" />
+    <ClCompile Include="../../tests/parts/test-surface.cpp" />
+    <ClCompile Include="../../tests/parts/test-textbox.cpp" />
+    <ClCompile Include="../../tests/parts/test-timer.cpp" />
+    <ClCompile Include="../../tests/parts/test-trigger.cpp" />
+    <ClCompile Include="../../tests/render/test-base-render.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../tests/vpx-test.h" />

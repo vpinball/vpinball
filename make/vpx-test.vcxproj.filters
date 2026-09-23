@@ -1,5 +1,111 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="misc">
+      <UniqueIdentifier>{EAB1B43C-C816-414B-83EE-832B6FB7BCBB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="parts">
+      <UniqueIdentifier>{986E94B9-EE61-46C2-8BE2-A7B8B48168F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render">
+      <UniqueIdentifier>{07AAEE0E-5F1F-4D1F-885D-15C36E60C7A8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="../gen/vpinball_i.c" />
+    <ClCompile Include="../../tests/vpx-test.cpp" />
+    <ClCompile Include="../../tests/misc/test-collection.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/misc/test-material.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/misc/test-pinbinary.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/misc/test-pintable.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/misc/test-plugin-arrays.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/misc/test-sound.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/misc/test-table-io.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-ball.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-bumper.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-decal.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-dispreel.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-dragpoint.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-flasher.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-flipper.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-gate.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-hittarget.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-kicker.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-light.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-lightseq.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-partgroup.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-plunger.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-primitive.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-ramp.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-rubber.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-spinner.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-surface.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-textbox.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-timer.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/parts/test-trigger.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/render/test-base-render.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../tests/vpx-test.h" />
   </ItemGroup>
 </Project>
