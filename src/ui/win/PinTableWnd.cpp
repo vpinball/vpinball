@@ -1514,14 +1514,14 @@ IWinUIPart *PinTableWnd::HitTest(const int x, const int y)
       m_allHitElements.push_back(tmp);
    };
    for (IEditable *const ptr : m_table->GetParts())
-      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->IsUIVisible(false))
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
          {
             uiPart->UIRenderPass1(&phs2);
             collectHit();
          }
    for (IEditable *const ptr : m_table->GetParts())
-      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->IsUIVisible(false))
          if (IWinUIPart *const uiPart = GetUIPart(ptr))
          {
             uiPart->UIRenderPass2(&phs2);
