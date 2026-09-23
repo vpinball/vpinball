@@ -94,6 +94,18 @@ TableHash::TableHash()
 #endif
 }
 
+// Recording for backwards compatible loadin does not digest anything, so it needs neither the self test nor the CryptoAPI reference: those belong to the hash the recording is later replayed into
+TableHash::TableHash(RecordOnly)
+   : m_recording(true)
+{
+}
+
+void TableHash::ReplayInto(TableHash &target) const
+{
+   assert(m_recording);
+   target.Update(m_recorded.data(), m_recorded.size());
+}
+
 TableHash::~TableHash()
 {
 #ifdef VPX_HAS_CRYPTOAPI
@@ -106,6 +118,15 @@ TableHash::~TableHash()
 
 void TableHash::Update(const void *const data, const size_t size)
 {
+   m_bytes += size;
+
+   if (m_recording)
+   {
+      const uint8_t *const p = static_cast<const uint8_t *>(data);
+      m_recorded.insert(m_recorded.end(), p, p + size);
+      return;
+   }
+
    m_md2.Update(data, size);
 
 #ifdef VPX_HAS_CRYPTOAPI
@@ -121,6 +142,7 @@ void TableHash::Update(const void *const data, const size_t size)
 
 bool TableHash::Finish(uint8_t (&digest)[MD2::DIGEST_SIZE])
 {
+   assert(!m_recording); // a recording hash has no digest of its own
    m_md2.Finish(digest);
 
 #ifdef VPX_HAS_CRYPTOAPI

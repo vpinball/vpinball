@@ -241,6 +241,9 @@ public:
    virtual void Save(IObjectWriter &writer, const bool saveForUndo) = 0;
    virtual void ClearForOverwrite() { }
    virtual void Load(IObjectReader &partReader) = 0;
+   // Called once the part has been added to its table, for the few load fix ups that need
+   // the table itself: m_ptable is only set by PinTable::AddPart, so it is still null while Load runs (see Surface)
+   virtual void InitPostLoad() { }
 
    // if legacy_bounds != nullptr, can return pre-10.8 bounds, too (depending on which editable exactly)
    virtual void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) { }

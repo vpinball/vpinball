@@ -1286,9 +1286,9 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
    HRESULT hr = S_OK;
 
-   // Hashing (to ensure file integrity), can be disabled for slightly faster loading
-   TableHash tableHash;
-   TableHash *const hch = g_app->m_settings.GetEditor_DisableHash() ? nullptr : &tableHash;
+   // Hashing (to ensure file integrity), can be disabled for slightly faster loading. Not constructed at all when disabled
+   const std::unique_ptr<TableHash> tableHash = g_app->m_settings.GetEditor_DisableHash() ? nullptr : std::make_unique<TableHash>();
+   TableHash *const hch = tableHash.get();
    TableHash::Update(hch, TABLE_KEY, 14);
 
    #ifdef VPX_HAS_CRYPTOAPI
@@ -1337,7 +1337,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
          #endif
       }
-
       LoadInfo(rootStorage, hch, loadfileversion);
       LoadCustomInfo(rootStorage, hch, loadfileversion);
 
@@ -1356,6 +1355,16 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
          std::atomic_int nLoadedItems = 0;
 
+         // Legacy: Up to file version 1000 the game items and the collections are part of the table
+         // hash, in the order they were written: every game item, then every collection.
+         // Neither can be digested where it is read any more - collections are now read
+         // ahead of the items to resolve name conflicts, and the items are read
+         // concurrently in storage order - so record their bytes here and replay them into
+         // the hash in the original order once everything is in (see below)
+         const bool itemsFeedTheHash = (hch != nullptr) && (loadfileversion < 1000);
+         vector<std::unique_ptr<TableHash>> itemHashRec(itemsFeedTheHash ? csubobj : 0);
+         vector<std::unique_ptr<TableHash>> colHashRec(itemsFeedTheHash ? ccollection : 0);
+
          // Load collection before resolving part names to handle name conflicts
          for (int i = 0; i < ccollection; i++)
          {
@@ -1366,7 +1375,17 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             CComObject<Collection>::CreateInstance(&pcol);
             pcol->AddRef();
             POLE::Stream gameStream(&rootStorage, streamName);
-            BiffReader reader(&gameStream, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
+
+            // Recorded, not for threading reasons like the items below, but because
+            // collections are read ahead of them yet belong behind them in the digest
+            TableHash *colHash = hch;
+            if (itemsFeedTheHash)
+            {
+               colHashRec[i] = std::make_unique<TableHash>(TableHash::RecordOnly {});
+               colHash = colHashRec[i].get();
+            }
+
+            BiffReader reader(&gameStream, loadfileversion, colHash, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
             pcol->Load(reader);
             AddCollection(pcol);
             pcol->Release();
@@ -1389,7 +1408,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                continue;
 
             loadQueue.emplace_back(streamName,
-               [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems, &hch, &hkey, &parts]
+               [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems, &hkey, &parts, itemsFeedTheHash, &itemHashRec]
                {
                   POLE::Stream stream(&rootStorage, streamName);
 
@@ -1401,13 +1420,24 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      return;
 
                   piedit->m_onLoadExpectedPartGroup.clear();
-                  BiffReader reader(&stream, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
+
+                  // Recorded rather than digested: this runs on a worker thread and out
+                  // of index order. A stream that fails to open, or whose type is not
+                  // known, leaves its slot null and so contributes nothing, as before
+                  TableHash *itemHash = nullptr;
+                  if (itemsFeedTheHash)
+                  {
+                     itemHashRec[i] = std::make_unique<TableHash>(TableHash::RecordOnly {});
+                     itemHash = itemHashRec[i].get();
+                  }
+
+                  BiffReader reader(&stream, loadfileversion, itemHash, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
                   piedit->Load(reader);
                   if (reader.HasError())
                      return;
 
                   parts[i] = piedit;
-                  nLoadedItems++;
+                  ++nLoadedItems;
                });
          }
 
@@ -1425,7 +1455,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   POLE::Stream stream(&rootStorage, streamName);
                   VPX::Sound *pps = VPX::Sound::CreateFromStream(stream, loadfileversion);
                   m_vsound[i] = pps;
-                  nLoadedItems++;
+                  ++nLoadedItems;
                });
          }
 
@@ -1443,7 +1473,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   POLE::Stream stream(&rootStorage, streamName);
                   BiffReader reader(&stream, loadfileversion, nullptr, 0);
                   m_vimage[i] = Texture::CreateFromObjectReader(reader, this);
-                  nLoadedItems++;
+                  ++nLoadedItems;
                });
          }
 
@@ -1462,20 +1492,14 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   BiffReader reader(&stream, loadfileversion, nullptr, 0);
                   m_vfont[i] = new PinFont();
                   m_vfont[i]->Load(reader);
-                  nLoadedItems++;
+                  ++nLoadedItems;
                });
          }
 
          // Sort tasks by storage offset to limit read back and get better reading performance
          std::ranges::sort(loadQueue, [&rootStorage](const LoadTask &a, const LoadTask &b) { return rootStorage.streamOffset(a.name) < rootStorage.streamOffset(b.name); });
  
-         // Before file version 1000 the game items took part in the table hash (see the
-         // BiffReader above). MD2 is order dependent and TableHash is not thread safe, so
-         // those have to be read one at a time or the digest differs on every load. Legacy
-         // tables only, where load time does not matter anyway; the queue is already sorted by
-         // stream offset, which is the order they were written in
-         const bool itemsFeedTheHash = (hch != nullptr) && (loadfileversion < 1000);
-         ThreadPool pool(IsNetworkPath(m_filename) || itemsFeedTheHash ? 1 : g_app->GetLogicalNumberOfProcessors());
+         ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
 
          // Dispatch all load tasks & wait, updating the progress bar on UI thread
          feedback.SetLength(static_cast<unsigned int>(loadQueue.size()));
@@ -1486,6 +1510,18 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             SDL_Delay(10);
             feedback.SetProgress(nLoadedItems);
          };
+
+         // Legacy: Everything is loaded, so replay the recordings into the hash in the order the file
+         // was written: game items by index, then collections; as MD2 checksumming is order dependent
+         if (itemsFeedTheHash)
+         {
+            for (const auto &rec : itemHashRec)
+               if (rec)
+                  rec->ReplayInto(*hch);
+            for (const auto &rec : colHashRec)
+               if (rec)
+                  rec->ReplayInto(*hch);
+         }
 
          // Handle failed loading & duplicates
          if (!parts.empty())
@@ -1512,6 +1548,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      PLOGW << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetIScriptable()->m_wzName);
                   }
                   AddPart(part);
+                  part->InitPostLoad(); // m_ptable is set now
                   part->Release();
                   i++;
                }
@@ -1785,8 +1822,22 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             static_assert(HASHLENGTH == static_cast<int>(MD2::DIGEST_SIZE));
             // Finish() reports an implementation mismatch itself. Either way we cannot
             // vouch for the file, so refuse it rather than load it and hope
-            if (!hch->Finish(hashval) || memcmp(hashval, hashvalOld, HASHLENGTH) != 0)
+            const bool ok = hch->Finish(hashval);
+            if (!ok || memcmp(hashval, hashvalOld, HASHLENGTH) != 0)
+            {
+               // Log both digests: a mismatch is either a damaged file or a reader that
+               // no longer feeds the hash what it was built from, and the two are only
+               // told apart by comparing against the file itself
+               const auto hex = [](const uint8_t (&d)[MD2::DIGEST_SIZE])
+               {
+                  string s;
+                  for (const uint8_t b : d) s += std::format("{:02x}", b);
+                  return s;
+               };
+               PLOGE << "Table hash mismatch over " << hch->BytesHashed() << " bytes: got " << hex(hashval)
+                     << ", file says " << hex(hashvalOld) << " (file version " << loadfileversion << ')';
                hr = APPX_E_BLOCK_HASH_INVALID;
+            }
          }
          else
             hr = APPX_E_CORRUPT_CONTENT; // Error

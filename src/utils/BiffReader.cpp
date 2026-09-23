@@ -42,6 +42,12 @@ uint64_t BiffReader::ReadSource(unsigned char *pv, const uint32_t count)
 
 void BiffReader::ReadBytes(void * const pv, const uint32_t count)
 {
+   ReadBytesNoHash(pv, count);
+   TableHash::Update(m_hash, pv, count);
+}
+
+void BiffReader::ReadBytesNoHash(void * const pv, const uint32_t count)
+{
    const bool iow = IsOnWine();
    if (iow)
       mtx.lock();
@@ -50,8 +56,6 @@ void BiffReader::ReadBytes(void * const pv, const uint32_t count)
 
    if (iow)
       mtx.unlock();
-
-   TableHash::Update(m_hash, pv, count);
 }
 
 int BiffReader::GetIntNoHash()
@@ -203,16 +207,21 @@ string BiffReader::AsScript(bool isScriptProtected)
 
 FontDesc BiffReader::AsFontDescriptor()
 {
+   // This descriptor is deliberately kept out of the table hash. Fonts used to be read
+   // straight off the stream with IPersistStream::Load, which bypassed the reader, so no
+   // MAC was ever computed over these bytes: hashing them reports every (legacy) table holding a
+   // textbox or decal as corrupt. The tag itself is hashed, as it always was
+   // (The standalone build did read them through the reader and so did hash them, which made the two disagree on exactly those tables. Both skip them now)
    FontDesc fontdesc;
-   ReadBytes(&fontdesc.version, 1); // Should always be equal to 1
-   ReadBytes(&fontdesc.charset, 2);
-   ReadBytes(&fontdesc.attributes, 1);
-   ReadBytes(&fontdesc.weight, 2);
-   ReadBytes(&fontdesc.size, 4);
+   ReadBytesNoHash(&fontdesc.version, 1); // Should always be equal to 1
+   ReadBytesNoHash(&fontdesc.charset, 2);
+   ReadBytesNoHash(&fontdesc.attributes, 1);
+   ReadBytesNoHash(&fontdesc.weight, 2);
+   ReadBytesNoHash(&fontdesc.size, 4);
    uint8_t nameLen;
-   ReadBytes(&nameLen, 1);
+   ReadBytesNoHash(&nameLen, 1);
    fontdesc.name.resize(nameLen, '\0');
-   ReadBytes(fontdesc.name.data(), nameLen);
+   ReadBytesNoHash(fontdesc.name.data(), nameLen);
    return fontdesc;
 }
 

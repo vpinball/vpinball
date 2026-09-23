@@ -28,6 +28,8 @@ public:
    void EndObject() override;
 
    void WriteBytes(const void* pv, const size_t count);
+   // Writes without feeding the table hash, for the few fields the *legacy) hash was never built from (see WriteFontDescriptor)
+   void WriteBytesNoHash(const void* pv, const size_t count);
    void WriteRecordSize(const int size);
 
    InMemStream* m_stream;

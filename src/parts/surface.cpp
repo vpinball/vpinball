@@ -1021,10 +1021,9 @@ void Surface::ClearForOverwrite()
 
 void Surface::Load(IObjectReader& reader)
 {
-   bool inner = true;
    SetDefaults(false);
    reader.AsObject(
-      [this, &inner](int tag, IObjectReader& reader)
+      [this](int tag, IObjectReader &reader)
       {
          switch (tag)
          {
@@ -1045,7 +1044,9 @@ void Surface::Load(IObjectReader& reader)
          case FID(SLMA): m_d.m_szSlingShotMaterial = reader.AsString(); break;
          case FID(HTBT): m_d.m_heightbottom = reader.AsFloat(); break;
          case FID(HTTP): m_d.m_heighttop = reader.AsFloat(); break;
-         case FID(INNR): inner = reader.AsBool(); break; //!! Deprecated, do not use anymore
+         // Deprecated and no longer written. An outer wall (not inner) needs the table
+         // bounds to be squared off, which are out of reach here, so InitPostLoad does it
+         case FID(INNR): m_onLoadInsideOutOuterWall = !reader.AsBool(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
          case FID(DSPT): m_d.m_displayTexture = reader.AsBool(); break;
          case FID(SLGF): m_d.m_slingshotforce = reader.AsFloat(); break;
@@ -1074,78 +1075,86 @@ void Surface::Load(IObjectReader& reader)
          }
          return true;
       });
+}
 
-   // Pure backwards-compatibility code:
-   // On some tables, the outer wall is still modelled/copy-pasted 'inside-out',
-   // this tries to compensate for that
-   if (!inner) {
-      const size_t cvertex = m_curve.GetPoints().size();
+// Pure backwards-compatibility code:
+// On some tables, the outer wall is still modelled/copy-pasted 'inside-out', this tries
+// to compensate for that by closing the shape over the table border. Runs from here
+// rather than from Load because it needs the table bounds, and a part only reaches its
+// table once PinTable::AddPart has taken it
+void Surface::InitPostLoad()
+{
+   if (!m_onLoadInsideOutOuterWall)
+      return;
+   m_onLoadInsideOutOuterWall = false; // one shot, the points are inserted for good
+   assert(m_ptable != nullptr);
 
-      float miny = FLT_MAX;
-      size_t minyindex = 0;
+   const size_t cvertex = m_curve.GetPoints().size();
 
-      // Find smallest y point - use it to connect with surrounding border
-      for (size_t i = 0; i < cvertex; i++)
-      {
-         float y;
-         m_curve.GetPoints()[i]->get_Y(&y);
-         if (y < miny)
-         {
-            miny = y;
-            minyindex = i;
-         }
-      }
+   float miny = FLT_MAX;
+   size_t minyindex = 0;
 
-      float tmpx;
-      m_curve.GetPoints()[minyindex]->get_X(&tmpx);
-      const float tmpy = miny /*- 1.0f*/; // put tiny gap in to avoid errors
+   // Find smallest y point - use it to connect with surrounding border
+   for (size_t i = 0; i < cvertex; i++)
+   {
+      float y;
+      m_curve.GetPoints()[i]->get_Y(&y);
+      if (y < miny)
+      {
+         miny = y;
+         minyindex = i;
+      }
+   }
 
-      // swap list around
-      m_curve.ReverseOrder();
+   float tmpx;
+   m_curve.GetPoints()[minyindex]->get_X(&tmpx);
+   const float tmpy = miny /*- 1.0f*/; // put tiny gap in to avoid errors
 
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_top, 0.f, false);
-         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, m_ptable->m_right, m_ptable->m_top, 0.f, false);
-         m_curve.InsertPoint((cvertex - minyindex - 1), pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, m_ptable->m_right + 1.0f, m_ptable->m_bottom, 0.f, false); //!!! +1 needed for whatever reason (triangulation screwed up)
-         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_bottom, 0.f, false);
-         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, m_ptable->m_left - 1.0f, m_ptable->m_top, 0.f, false); //!!! -1 needed for whatever reason (triangulation screwed up)
-         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-      }
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(&m_curve, tmpx, tmpy, 0.f, false);
-         m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
-      }
+   // swap list around
+   m_curve.ReverseOrder();
+
+   CComObject<DragPoint> *pdp;
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_top, 0.f, false);
+      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(&m_curve, m_ptable->m_right, m_ptable->m_top, 0.f, false);
+      m_curve.InsertPoint((cvertex - minyindex - 1), pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(&m_curve, m_ptable->m_right + 1.0f, m_ptable->m_bottom, 0.f, false); //!!! +1 needed for whatever reason (triangulation screwed up)
+      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(&m_curve, m_ptable->m_left, m_ptable->m_bottom, 0.f, false);
+      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(&m_curve, m_ptable->m_left - 1.0f, m_ptable->m_top, 0.f, false); //!!! -1 needed for whatever reason (triangulation screwed up)
+      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(&m_curve, tmpx, tmpy, 0.f, false);
+      m_curve.InsertPoint(cvertex - minyindex - 1, pdp);
    }
 }
 

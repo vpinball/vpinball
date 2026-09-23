@@ -27,9 +27,13 @@ void BiffWriter::WriteRecordSize(const int size)
 
 void BiffWriter::WriteBytes(const void *pv, const size_t count)
 {
-   m_stream->Write(pv, count);
-
+   WriteBytesNoHash(pv, count);
    TableHash::Update(m_hash, pv, count);
+}
+
+void BiffWriter::WriteBytesNoHash(const void *pv, const size_t count)
+{
+   m_stream->Write(pv, count);
 }
 
 void BiffWriter::BeginObject(const int objectId, bool isArray, bool isSkippable)
@@ -157,13 +161,15 @@ void BiffWriter::WriteFontDescriptor(int fieldId, const FontDesc &fontdesc)
    const uint8_t nameLen = static_cast<uint8_t>(fontdesc.name.size());
    WriteRecordSize(sizeof(int32_t)); // Invalid BIFF file format: the size does not include the data blob and fields are untagged
    WriteBytes(&fieldId, sizeof(int32_t));
-   WriteBytes(&fontdesc.version, 1); // Should always be equal to 1
-   WriteBytes(&fontdesc.charset, 2);
-   WriteBytes(&fontdesc.attributes, 1);
-   WriteBytes(&fontdesc.weight, 2);
-   WriteBytes(&fontdesc.size, 4);
-   WriteBytes(&nameLen, 1);
-   WriteBytes(fontdesc.name.c_str(), nameLen);
+   // Left out of the hash to stay symmetric with BiffReader::AsFontDescriptor, which
+   // explains why. Tables are still written with fonts, so without this a table saved here would no longer load
+   WriteBytesNoHash(&fontdesc.version, 1); // Should always be equal to 1
+   WriteBytesNoHash(&fontdesc.charset, 2);
+   WriteBytesNoHash(&fontdesc.attributes, 1);
+   WriteBytesNoHash(&fontdesc.weight, 2);
+   WriteBytesNoHash(&fontdesc.size, 4);
+   WriteBytesNoHash(&nameLen, 1);
+   WriteBytesNoHash(fontdesc.name.c_str(), nameLen);
 }
 
 void BiffWriter::EndObject()

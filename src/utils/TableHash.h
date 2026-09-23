@@ -27,6 +27,13 @@ public:
    TableHash();
    ~TableHash();
 
+   // A recording hash for backwards compatible loading digests nothing. It only keeps the bytes handed to Update() so they
+   // can be replayed into a real hash afterwards, in an order the reader cannot produce itself: up to file version 1000 the game items are part of the digest and have to
+   // reach it by index, but they are read concurrently and in storage order
+   struct RecordOnly { };
+   explicit TableHash(RecordOnly);
+   void ReplayInto(TableHash &target) const;
+
    TableHash(const TableHash &) = delete;
    TableHash &operator=(const TableHash &) = delete;
 
@@ -44,6 +51,10 @@ public:
          hash->Update(data, size);
    }
 
+   // Bytes handed to Update() so far, recorded ones included. Reported alongside a
+   // digest mismatch, where it narrows the cause down to the stream that diverges
+   size_t BytesHashed() const { return m_bytes; }
+
    // Runs the RFC 1319 test vectors. Without CryptoAPI there is nothing to cross check
    // against, so on those targets this is the only thing standing between a mistyped
    // S-box and silently corrupt files. Result is cached; safe to call often
@@ -52,6 +63,9 @@ public:
 private:
    MD2 m_md2;
    bool m_failed = false; // sticky: once set, Finish() can no longer vouch for the digest
+   size_t m_bytes = 0;
+   bool m_recording = false;
+   vector<uint8_t> m_recorded; // only used while recording
 
 #ifdef VPX_HAS_CRYPTOAPI
    // Reference implementation, kept only to cross check m_md2. Null if unavailable, which costs us the cross check but not the digest

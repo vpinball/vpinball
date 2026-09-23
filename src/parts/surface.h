@@ -74,6 +74,8 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Surface, eItemSurface, WALL)
 
+   void InitPostLoad() final;
+
    BEGIN_COM_MAP(Surface)
       COM_INTERFACE_ENTRY(IWall)
       COM_INTERFACE_ENTRY(IDispatch)
@@ -149,6 +151,9 @@ public:
 
    SurfaceData m_d;
    bool m_disabled = false;
+
+   // Set while loading an old table whose outer wall was modelled 'inside-out', so that InitPostLoad can compensate once the table (and so its bounds) is reachable
+   bool m_onLoadInsideOutOuterWall = false;
 
    // The wall outline curve (drag points defining the wall shape)
    DragPointCurve m_curve;

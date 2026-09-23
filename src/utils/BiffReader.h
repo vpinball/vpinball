@@ -32,6 +32,8 @@ public:
    void AsObject(const std::function<bool(const int tag, IObjectReader &reader)> &processToken, bool isSkippable = false) override;
 
    void ReadBytes(void *const pv, const uint32_t count);
+   // Reads without feeding the (legacy) table hash, for the few fields the hash was never built from (see AsFontDescriptor)
+   void ReadBytesNoHash(void *const pv, const uint32_t count);
 
    POLE::Stream *m_stream = nullptr;
    TableHash *m_hash; // null to read without contributing to the table hash
