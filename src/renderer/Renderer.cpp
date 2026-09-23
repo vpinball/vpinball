@@ -1694,6 +1694,9 @@ void Renderer::DrawWireframe(IEditable* const renderable, const vec4& fillColor,
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, withDepthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_renderDevice->m_basicShader->SetTechnique(ShaderTechnique::unshaded_without_texture);
+   // Render commands of a pass are sorted with opaque commands before transparent ones, so mark the wireframe commands
+   // as transparent to ensure they are rendered in submission order (fill, then edges, both sharing the same sort depth)
+   size_t cmdBase = m_renderDevice->GetCurrentPass()->m_commands.size();
    if (fillColor.w > 0.f)
    {
       m_render_mask = Renderer::RenderMask::UI_FILL;
@@ -1704,14 +1707,14 @@ void Renderer::DrawWireframe(IEditable* const renderable, const vec4& fillColor,
    }
    if (edgeColor.w > 0.f)
    {
-      //UpdateBasicShaderMatrix(Matrix3D::MatrixTranslate(-GetMVP().GetModelView().GetOrthoNormalDir()));
       m_render_mask = Renderer::RenderMask::UI_EDGES;
       m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
       m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, edgeColor.w == 1.f ? RenderState::RS_FALSE : RenderState::RS_TRUE);
       m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, &edgeColor);
       RenderItem(renderable, false);
-      //UpdateBasicShaderMatrix();
    }
+   for (size_t i = cmdBase; i < m_renderDevice->GetCurrentPass()->m_commands.size(); i++)
+      m_renderDevice->GetCurrentPass()->m_commands[i]->SetTransparent(true);
    m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
    m_render_mask = prevRenderMask;
 }
