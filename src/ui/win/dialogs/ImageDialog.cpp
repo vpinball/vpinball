@@ -248,7 +248,6 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   Texture * const ppi = (Texture *)lvitem.lParam;
                   if (ppi != nullptr)
                   {
-                     ppi->GetGDIBitmap();
                      SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(255.f * ppi->m_alphaTestValue).c_str());
                      GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(!ppi->IsOpaque());
                      GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(!ppi->IsOpaque());
@@ -332,10 +331,10 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                const int x = (xsize - width) / 2;
                const int y = (ysize - height) / 2;
 
-               if (ppi->GetGDIBitmap())
+               if (HBITMAP hbmp = ppi->GetGDIBitmap())
                {
                   HDC hdcDD = CreateCompatibleDC(nullptr);
-                  HBITMAP oldHBM = (HBITMAP)SelectObject(hdcDD, ppi->GetGDIBitmap());
+                  HBITMAP oldHBM = (HBITMAP)SelectObject(hdcDD, hbmp);
                   SetStretchBltMode(pdis->hDC, HALFTONE); // somehow enables filtering
                   StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
                   SelectObject(hdcDD, oldHBM);
