@@ -4,9 +4,6 @@
 #include "math/dragpoint.h"
 
 
-Vertex3Ds DragPoint::m_copyPoint;
-bool DragPoint::m_pointCopied = false;
-
 DragPointCurve::~DragPointCurve() { ClearPoints(); }
 
 void DragPointCurve::UpdateBounds() const
@@ -330,14 +327,3 @@ void DragPoint::ToggleSlingshot()
    }
 }
 
-void DragPoint::Copy()
-{
-   m_copyPoint = m_v;
-   m_pointCopied = true;
-}
-
-void DragPoint::Paste()
-{
-   if (m_pointCopied)
-      m_v = m_copyPoint;
-}

@@ -6,6 +6,7 @@
 #include "core/editablereg.h"
 #include "core/VPApp.h"
 #include "core/vpversion.h"
+#include "ui/EditorClipboard.h"
 #include "parts/Collection.h"
 #include "math/dragpoint.h"
 #include "parts/flipper.h"
@@ -22,7 +23,6 @@
 #include "ui/win/worker.h"
 #include "ui/win/WinUIPartRegistry.h"
 #include "utils/BiffReader.h"
-#include "utils/BiffWriter.h"
 
 #include "ui/win/dialogs/SearchSelectDialog.h"
 #include "ui/win/dialogs/Win32ProgressBar.h"
@@ -1303,36 +1303,23 @@ void PinTableWnd::Copy(int x, int y)
       IWinUIPart *const pItem = HitTest(x, y);
       if (pItem->GetItemType() == eItemDragPoint)
       {
-         DragPoint *pPoint = pItem->GetDragPoint();
-         pPoint->Copy();
+         VPX::EditorClipboard::CopyPoint(pItem->GetDragPoint()->GetVertex());
          return;
       }
    }
 
-   vector<InMemStream *> vstm;
-   vector<IEditable *> copied;
-   //m_vstmclipboard
+   vector<IEditable *> parts;
    for (IWinUIPart *const psel : GetSelectedParts())
    {
       IEditable *const pe = psel->GetEditable();
 
       // Multi-select may contain a part together with its sub parts (drag points, light centers): copy each part only once
-      if (FindIndexOf(copied, pe) != -1)
+      if (FindIndexOf(parts, pe) != -1)
          continue;
-      copied.push_back(pe);
-
-      InMemStream *const pstm = new InMemStream();
-
-      const int type = pe->GetItemType();
-      pstm->Write(&type, sizeof(int));
-
-      BiffWriter writer(pstm, nullptr);
-      pe->Save(writer, false);
-
-      vstm.push_back(pstm);
+      parts.push_back(pe);
    }
 
-   m_vpxEditor->SetClipboard(&vstm);
+   VPX::EditorClipboard::CopyParts(parts);
 }
 
 void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
@@ -1346,24 +1333,35 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
       IWinUIPart *const pItem = HitTest(x, y);
       if (pItem->GetItemType() == eItemDragPoint)
       {
-         DragPoint *const pPoint = pItem->GetDragPoint();
-         pPoint->Paste();
-         m_table->SetDirtyDraw();
+         Vertex3Ds pos;
+         if (VPX::EditorClipboard::GetPoint(pos))
+         {
+            DragPoint *const pPoint = pItem->GetDragPoint();
+            pPoint->SetX(pos.x);
+            pPoint->SetY(pos.y);
+            pPoint->SetZ(pos.z);
+            m_table->SetDirtyDraw();
+         }
          return;
       }
    }
 
+   const vector<vector<uint8_t>> parts = VPX::EditorClipboard::GetParts();
    const IWinUIPart::AllowedViews currentView = m_vpxEditor->m_desktopBackdropView ? IWinUIPart::AllowedViews::Backglass : IWinUIPart::AllowedViews::Playfield;
 
    // Do a backwards loop, so that the primary selection we had when
    // copying will again be the primary selection, since it will be
    // selected last.  Purely cosmetic.
-   for (SSIZE_T i = m_vpxEditor->m_vstmclipboard.size() - 1; i >= 0; i--)
-   //for (size_t i=0; i<m_vpxEditor->m_vstmclipboard.size(); i++)
+   for (SSIZE_T i = parts.size() - 1; i >= 0; i--)
    {
-      InMemStream *const pstm = m_vpxEditor->m_vstmclipboard[i];
+      const vector<uint8_t> &partData = parts[i];
+      if (partData.size() <= sizeof(int))
+      {
+         error = true;
+         continue;
+      }
 
-      const ItemTypeEnum type = *reinterpret_cast<const ItemTypeEnum *>(pstm->Data());
+      const ItemTypeEnum type = *reinterpret_cast<const ItemTypeEnum *>(partData.data());
 
       if (!IWinUIPart::IsViewAllowed(WinUIPartRegistry::GetAllowedViews(type), currentView))
       {
@@ -1374,7 +1372,7 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
          IEditable *const peditNew = EditableRegistry::Create(type);
          if (peditNew)
          {
-            BiffReader reader(pstm->Data() + sizeof(int), static_cast<uint32_t>(pstm->Size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, nullptr, NULL);
+            BiffReader reader(partData.data() + sizeof(int), static_cast<uint32_t>(partData.size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, nullptr, NULL);
             peditNew->Load(reader);
             peditNew->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
             //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet
@@ -1391,7 +1389,7 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
 
             m_table->AddPart(peditNew);
 
-            AddMultiSel(GetUIPart(peditNew), (i != m_vpxEditor->m_vstmclipboard.size() - 1), true, false);
+            AddMultiSel(GetUIPart(peditNew), (i != parts.size() - 1), true, false);
             cpasted++;
          }
          else

@@ -22,6 +22,7 @@ class Player;
 class InputManager;
 class Renderer;
 class DragPoint;
+class PartGroup;
 class FRect3D;
 
 namespace VPX::EditorUI
@@ -150,6 +151,11 @@ private:
    void DeleteSelection();
    ItemTypeEnum m_addPartType = eItemInvalid; // Part type pending placement (eItemInvalid when not in add part mode)
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
+   PartGroup *GetPartGroupForNewPart() const;
+
+   // Clipboard (copy/paste of parts through the OS clipboard, and of drag point coordinates in point edit mode)
+   void CopySelection();
+   void PasteSelection(const ImVec2 &pos);
 
    // Rendering
    enum class PhysicOverlay
