@@ -46,13 +46,19 @@ void PointOfViewSettingsPage::Close(bool isBackwardAnimation)
       m_player->m_renderer->DisableStaticPrePass(false);
 }
 
+bool PointOfViewSettingsPage::IsPovEditAction() const
+{
+   // POV edit playtests from the editor run on a live copy of the edited table: only standalone sessions
+   // (PovEdit command line action) are meant to close the application once the user is done
+   return m_player->m_playMode == Player::PlayMode::EditPOV && m_player->m_ptable->m_liveBaseTable == nullptr;
+}
+
 void PointOfViewSettingsPage::Save()
 {
    InGameUIPage::Save();
 
-   // FIXME this should be part of the action, not of the ingameui
-   /* FIXME if (g_app->m_commandLineProcessor.m_povEdit)
-      g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP); */
+   if (IsPovEditAction())
+      m_player->SetCloseState(Player::CS_CLOSE_APP);
 }
 
 void PointOfViewSettingsPage::ResetToStoredValues()
@@ -62,9 +68,8 @@ void PointOfViewSettingsPage::ResetToStoredValues()
    UpdateDefaults();
    RequestRebuild();
 
-   // FIXME this should be part of the action, not of the ingameui
-   /* FIXME if (g_app->m_commandLineProcessor.m_povEdit)
-      g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);*/
+   if (IsPovEditAction())
+      m_player->SetCloseState(Player::CS_CLOSE_APP);
 }
 
 void PointOfViewSettingsPage::ResetToDefaults()

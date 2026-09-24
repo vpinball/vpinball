@@ -27,6 +27,7 @@ private:
    void OnPointOfViewChanged();
    void UpdateDefaults();
    void BuildPage() override;
+   bool IsPovEditAction() const;
 
    ViewSetup& GetCurrentViewSetup() const;
 
