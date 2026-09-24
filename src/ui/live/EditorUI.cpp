@@ -1398,6 +1398,35 @@ void EditorUI::SelectPartsInGroup(const PartGroup *group)
    m_outlinerAnchor.reset();
 }
 
+void EditorUI::MoveSelectionToPartGroup(PartGroup *group)
+{
+   // Gather the parts that can be moved to the target group: a part can not be moved to itself, and a
+   // group can not be moved to itself or one of its descendants (this would create a cycle). Only part
+   // groups may be moved to the root of the hierarchy (group-less parts are live objects).
+   vector<IEditable *> moved;
+   for (const auto &uiPart : m_multiSel)
+   {
+      IEditable *const editable = uiPart->GetEditable();
+      if (editable == nullptr || editable == group || editable->GetPartGroup() == group)
+         continue;
+      if (editable->GetItemType() == eItemPartGroup && group != nullptr && group->IsChild(static_cast<PartGroup *>(editable)))
+         continue;
+      if (group == nullptr && editable->GetItemType() != eItemPartGroup)
+         continue;
+      moved.push_back(editable);
+   }
+   if (moved.empty())
+      return;
+   m_undo.BeginUndo();
+   for (IEditable *const editable : moved)
+   {
+      m_undo.MarkForUndo(editable);
+      editable->SetPartGroup(group);
+   }
+   m_undo.EndUndo();
+   UpdateEditableList(); // Refresh the outliner paths and ordering
+}
+
 void EditorUI::RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const
 {
    // Compute mouse position in clip space
@@ -1732,14 +1761,10 @@ void EditorUI::UpdateEditableList()
          m_editableMap[edit] = std::move(uiPart);
          needSort = true;
       }
-      else if (!it->second->GetOutlinerPath().ends_with(edit->GetName())) // Name and therefore outliner path has changed
+      else if (it->second->GetOutlinerPath() != edit->GetPathString(false)) // Name or parent group has changed
       {
          needSort = true;
-         if (edit->GetItemType() == eItemPartGroup) // Also update all children
-            for (const auto &uiPart : m_editables)
-               uiPart->SetOutlinerPath(uiPart->GetEditable()->GetPathString(false));
-         else
-            it->second->SetOutlinerPath(edit->GetPathString(false));
+         it->second->SetOutlinerPath(edit->GetPathString(false));
       }
    }
    // Win32 UI does not manage PartGroup UI hidden/shown state, so we lazily initialize new groups in a

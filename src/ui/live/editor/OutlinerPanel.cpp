@@ -139,7 +139,38 @@ void OutlinerPanel::Render(float topBarHeight)
       }
       ImGui::TreePop();
    }
-   if (ImGui::TreeNodeEx("Scene Parts", ImGuiTreeNodeFlags_DefaultOpen))
+   // Drag & drop of parts and part groups to move them between groups (not supported in inspection
+   // mode as the inspected table is a live copy). The drag payload is just a marker: the moved parts
+   // are the multi selection (the dragged part is selected first if it was not part of it). The move
+   // is applied after the tree iteration since it mutates the ordering of the iterated part list.
+   const bool canReparent = editor.m_table->m_liveBaseTable == nullptr;
+   PartGroup *dropGroup = nullptr;
+   bool dropRequested = false;
+   const auto partDragSource = [&editor, canReparent](const std::shared_ptr<EditorUIPart> &uiPart)
+   {
+      if (!canReparent || !ImGui::BeginDragDropSource())
+         return;
+      if (!editor.IsPartSelected(uiPart))
+         editor.SetSelection(Selection(uiPart));
+      const IEditable *editable = uiPart->GetEditable();
+      ImGui::SetDragDropPayload("VPX_PART", &editable, sizeof(editable));
+      ImGui::Text("Move %d part%s", (int)editor.m_multiSel.size(), editor.m_multiSel.size() > 1 ? "s" : "");
+      ImGui::EndDragDropSource();
+   };
+   const auto partDropTarget = [&dropGroup, &dropRequested, canReparent](PartGroup *group)
+   {
+      if (!canReparent || !ImGui::BeginDragDropTarget())
+         return;
+      if (ImGui::AcceptDragDropPayload("VPX_PART") != nullptr)
+      {
+         dropGroup = group;
+         dropRequested = true;
+      }
+      ImGui::EndDragDropTarget();
+   };
+   const bool scenePartsOpened = ImGui::TreeNodeEx("Scene Parts", ImGuiTreeNodeFlags_DefaultOpen);
+   partDropTarget(nullptr); // Dropping on the scene root ungroups part groups
+   if (scenePartsOpened)
    {
       // Table definition parts
       struct Node
@@ -202,28 +233,34 @@ void OutlinerPanel::Render(float topBarHeight)
          if (edit->GetEditable()->GetItemType() == eItemPartGroup)
          {
             PartGroup *group = static_cast<PartGroup *>(edit->GetEditable());
-            if (revealPart && revealPart->GetEditable()->IsChild(group))
-               ImGui::SetNextItemOpen(true);
-            const bool opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowOverlap | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0));
-            if (edit == revealPart && !ImGui::IsItemVisible())
-               ImGui::SetScrollHereY();
-            if (ImGui::BeginPopupContextItem())
+            bool opened = false;
+            if (stack.empty() || stack.back().opened)
             {
-               if (ImGui::MenuItem("Select"))
-                  editor.SetSelection(Selection(edit));
-               if (ImGui::MenuItem("Select Contents"))
-                  editor.SelectPartsInGroup(group);
-               ImGui::EndPopup();
+               if (revealPart && revealPart->GetEditable()->IsChild(group))
+                  ImGui::SetNextItemOpen(true);
+               opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowOverlap | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0));
+               partDragSource(edit);
+               partDropTarget(group);
+               if (edit == revealPart && !ImGui::IsItemVisible())
+                  ImGui::SetScrollHereY();
+               if (ImGui::BeginPopupContextItem())
+               {
+                  if (ImGui::MenuItem("Select"))
+                     editor.SetSelection(Selection(edit));
+                  if (ImGui::MenuItem("Select Contents"))
+                     editor.SelectPartsInGroup(group);
+                  ImGui::EndPopup();
+               }
+               if (editor.m_table->m_liveBaseTable == nullptr)
+               {
+                  ImGui::SameLine(eyeX);
+                  ImGui::PushStyleColor(ImGuiCol_Text, group->IsUIVisible(false) ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
+                  if (ImGui::SmallButton(((group->IsUIVisible(false) ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
+                     group->SetUIVisible(!group->IsUIVisible(false));
+                  ImGui::PopStyleColor();
+               }
             }
-            if (editor.m_table->m_liveBaseTable == nullptr)
-            {
-               ImGui::SameLine(eyeX);
-               ImGui::PushStyleColor(ImGuiCol_Text, group->IsUIVisible(false) ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
-               if (ImGui::SmallButton(((group->IsUIVisible(false) ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
-                  group->SetUIVisible(!group->IsUIVisible(false));
-               ImGui::PopStyleColor();
-            }
-            stack.emplace_back(static_cast<PartGroup *>(edit->GetEditable()), (stack.empty() || stack.back().opened) ? opened : false);
+            stack.emplace_back(group, opened);
          }
          else
          {
@@ -234,6 +271,7 @@ void OutlinerPanel::Render(float topBarHeight)
                if (revealPart && revealPart->GetEditable()->GetPartGroup() == nullptr)
                   ImGui::SetNextItemOpen(true);
                stack.push_back({ nullptr, ImGui::TreeNodeEx("[Live Objects]", ImGuiTreeNodeFlags_AllowOverlap) });
+               partDropTarget(nullptr);
             }
             if (!stack.empty() && stack.back().opened)
             {
@@ -257,6 +295,8 @@ void OutlinerPanel::Render(float topBarHeight)
                         editor.m_outlinerAnchor = edit;
                      }
                   }
+                  partDragSource(edit);
+                  partDropTarget(edit->GetEditable()->GetPartGroup()); // Dropping on a part moves to its group (same as the Win32 layer dialog)
                   if (edit == revealPart && !ImGui::IsItemVisible())
                      ImGui::SetScrollHereY();
                   IEditable *editable = edit->GetEditable();
@@ -280,6 +320,8 @@ void OutlinerPanel::Render(float topBarHeight)
       }
       ImGui::TreePop();
    }
+   if (dropRequested)
+      editor.MoveSelectionToPartGroup(dropGroup);
 
    ImGui::End();
    ImGui::PopStyleVar(3);

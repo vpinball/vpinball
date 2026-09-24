@@ -6,6 +6,7 @@
 
 #include "vpversion.h"
 #include "parts/ball.h"
+#include "parts/PartGroup.h"
 #include "parts/pintable.h"
 #include "ui/live/LiveUI.h"
 #include "utils/fileio.h"
@@ -179,9 +180,23 @@ std::any PinUndo::Undo()
       IEditable *const pie = *reinterpret_cast<IEditable *const *>(pstm->Data());
       pie->ClearForOverwrite();
 
-      // Note that we do not process the loaded PartGroup parenting. This is not an issue as we do not support undoing reparenting (yet)
+      // Process the loaded PartGroup parenting to support undoing reparenting
+      pie->m_onLoadExpectedPartGroup.clear();
       BiffReader reader(pstm->Data() + sizeof(IEditable *), static_cast<uint32_t>(pstm->Size() - sizeof(IEditable *)), CURRENT_FILE_FORMAT_VERSION, nullptr, 0);
       pie->Load(reader);
+      // The record holds the name of the part's group (empty when it had none, which is only valid for part groups)
+      if (!pie->m_onLoadExpectedPartGroup.empty())
+      {
+         const wstring groupName = pie->m_onLoadExpectedPartGroup;
+         for (IEditable *const edit : m_table->GetParts())
+            if (edit->GetItemType() == eItemPartGroup && edit->GetIScriptable()->m_wzName == groupName)
+            {
+               pie->SetPartGroup(static_cast<PartGroup *>(edit));
+               break;
+            }
+      }
+      else if (pie->GetItemType() == eItemPartGroup)
+         pie->SetPartGroup(nullptr);
       if (g_pplayer)
       {
          if (pie->GetIRenderable())

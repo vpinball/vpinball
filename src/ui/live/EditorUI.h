@@ -99,6 +99,7 @@ private:
    void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
    void SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part);
    void SelectPartsInGroup(const PartGroup *group);
+   void MoveSelectionToPartGroup(PartGroup *group); // Move all selected parts/groups to the given group (nullptr = root, part groups only)
    void RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const;
    bool IsEditablePickable(const IEditable *editable) const;
    void BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
