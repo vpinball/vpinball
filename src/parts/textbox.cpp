@@ -26,8 +26,8 @@ Textbox *Textbox::CopyForPlay() const
 HRESULT Textbox::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    SetDefaults(fromMouseClick);
-   const float width  = g_app->GetSettings().GetDefaultPropsTextbox_Width();
-   const float height = g_app->GetSettings().GetDefaultPropsTextbox_Height();
+   const float width  = g_settingsService.GetAppSettings().GetDefaultPropsTextbox_Width();
+   const float height = g_settingsService.GetAppSettings().GetDefaultPropsTextbox_Height();
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + width;
@@ -37,7 +37,7 @@ HRESULT Textbox::Init(const float x, const float y, const bool fromMouseClick, c
 
 void Textbox::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsTextbox_##prop() : Settings::GetDefaultPropsTextbox_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsTextbox_##prop() : Settings::GetDefaultPropsTextbox_##prop##_Default()
    m_d.m_visible = true;
    LinkProp(m_d.m_backcolor, BackColor);
    LinkProp(m_d.m_fontcolor, FontColor);
@@ -66,7 +66,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
 
 void Textbox::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsTextbox_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsTextbox_##prop(field, false)
    LinkProp(m_d.m_backcolor, BackColor);
    LinkProp(m_d.m_fontcolor, FontColor);
    LinkProp(m_d.m_transparent, Transparent);

@@ -18,22 +18,22 @@ void LoggingSettingsPage::BuildPage()
 {
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propGlobal_EnableLog, //
-      [this]() { return m_player->m_ptable->GetSettings().GetGlobal_EnableLog(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetGlobal_EnableLog(); }, //
       [this](bool v)
       {
-         m_player->m_ptable->GetSettings().SetGlobal_EnableLog(v, false);
+         g_settingsService.GetActiveSettings().SetGlobal_EnableLog(v, false);
          Logger::SetupLogger(v);
       }));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propGlobal_LogScriptOutput, //
-      [this]() { return m_player->m_ptable->GetSettings().GetGlobal_LogScriptOutput(); }, //
-      [this](bool v) { m_player->m_ptable->GetSettings().SetGlobal_LogScriptOutput(v, false); }));
+      [this]() { return g_settingsService.GetActiveSettings().GetGlobal_LogScriptOutput(); }, //
+      [this](bool v) { g_settingsService.GetActiveSettings().SetGlobal_LogScriptOutput(v, false); }));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propGlobal_ResetLogOnPlay, //
-      [this]() { return m_player->m_ptable->GetSettings().GetGlobal_ResetLogOnPlay(); }, //
-      [this](bool v) { m_player->m_ptable->GetSettings().SetGlobal_ResetLogOnPlay(v, false); }));
+      [this]() { return g_settingsService.GetActiveSettings().GetGlobal_ResetLogOnPlay(); }, //
+      [this](bool v) { g_settingsService.GetActiveSettings().SetGlobal_ResetLogOnPlay(v, false); }));
 }
 
 }

@@ -121,7 +121,7 @@ HRESULT HitTarget::Init(const float x, const float y, const bool fromMouseClick,
    return S_OK;
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsHitTarget_##prop() : Settings::GetDefaultPropsHitTarget_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsHitTarget_##prop() : Settings::GetDefaultPropsHitTarget_##prop##_Default()
 void HitTarget::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_legacy, LegacyMode);
@@ -157,7 +157,7 @@ void HitTarget::SetDefaultPhysics(const bool fromMouseClick)
 
 void HitTarget::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsHitTarget_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsHitTarget_##prop(field, false)
    LinkProp(m_d.m_legacy, LegacyMode);
    LinkProp(m_d.m_visible, Visible);
    LinkProp(m_d.m_isDropped, IsDropped);

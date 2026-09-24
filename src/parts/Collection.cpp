@@ -10,7 +10,7 @@ Collection::Collection()
    m_fireEvents = false;
    m_stopSingleEvents = false;
 
-   m_groupElements = g_app->GetSettings().GetEditor_GroupElementsInCollection();
+   m_groupElements = g_settingsService.GetAppSettings().GetEditor_GroupElementsInCollection();
 }
 
 void Collection::Save(IObjectWriter& writer, const bool saveForUndo)

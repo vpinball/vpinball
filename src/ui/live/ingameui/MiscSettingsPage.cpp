@@ -43,100 +43,100 @@ void MiscSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFContactors, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFContactors(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFContactors(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFContactors(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFContactors(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFKnocker, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFKnocker(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFKnocker(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFKnocker(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFKnocker(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFChimes, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFChimes(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFChimes(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFChimes(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFChimes(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFBell, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFBell(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFBell(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFBell(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFBell(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFGear, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFGear(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFGear(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFGear(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFGear(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFShaker, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFShaker(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFShaker(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFShaker(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFShaker(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFFlippers, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFFlippers(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFFlippers(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFFlippers(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFFlippers(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFTargets, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFTargets(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFTargets(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFTargets(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFTargets(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFDropTargets, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_DOFDropTargets(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_DOFDropTargets(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->GetSettings().SetController_DOFDropTargets(v, false);
+         g_settingsService.GetActiveSettings().SetController_DOFDropTargets(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_ForceDisableB2S, //
-      [this]() { return m_player->m_ptable->GetSettings().GetController_ForceDisableB2S(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetController_ForceDisableB2S(); }, //
       [this](bool v)
       {
-         m_player->m_ptable->GetSettings().SetController_ForceDisableB2S(v, false);
+         g_settingsService.GetActiveSettings().SetController_ForceDisableB2S(v, false);
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
 }

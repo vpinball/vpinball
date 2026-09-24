@@ -45,27 +45,27 @@ void CVPreference::ReadCheckBox(const HWND hwndDlg)
 
 void CVPreference::GetPrefsFromReg()
 {
-   m_highlight = g_app->GetSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value());
-   m_rgb = g_app->GetSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value());
-   m_pointSize = g_app->GetSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value());
-   string tmp = g_app->GetSettings().GetString(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value());
+   m_highlight = g_settingsService.GetAppSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value());
+   m_rgb = g_settingsService.GetAppSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value());
+   m_pointSize = g_settingsService.GetAppSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value());
+   string tmp = g_settingsService.GetAppSettings().GetString(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value());
    strncpy_s(m_logFont.lfFaceName, std::size(m_logFont.lfFaceName), tmp.c_str());
-   m_logFont.lfWeight = g_app->GetSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value());
-   m_logFont.lfItalic = g_app->GetSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value());
-   m_logFont.lfUnderline = g_app->GetSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value());
-   m_logFont.lfStrikeOut = g_app->GetSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontStrike").value());
+   m_logFont.lfWeight = g_settingsService.GetAppSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value());
+   m_logFont.lfItalic = g_settingsService.GetAppSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value());
+   m_logFont.lfUnderline = g_settingsService.GetAppSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value());
+   m_logFont.lfStrikeOut = g_settingsService.GetAppSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontStrike").value());
 }
 
 void CVPreference::SetPrefsToReg()
 {
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value(), m_highlight, false);
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value(), (int)m_rgb, false);
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value(), m_pointSize, false);
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value(), string(m_logFont.lfFaceName), false);
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value(), (int)m_logFont.lfWeight, false);
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value(), m_logFont.lfItalic, false);
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value(), m_logFont.lfUnderline, false);
-   g_app->GetSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontStrike").value(), m_logFont.lfStrikeOut, false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value(), m_highlight, false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value(), (int)m_rgb, false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value(), m_pointSize, false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value(), string(m_logFont.lfFaceName), false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value(), (int)m_logFont.lfWeight, false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value(), m_logFont.lfItalic, false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value(), m_logFont.lfUnderline, false);
+   g_settingsService.GetAppSettings().Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontStrike").value(), m_logFont.lfStrikeOut, false);
 }
 
 void CVPreference::SetDefaultFont(const HWND hwndDlg)

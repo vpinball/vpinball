@@ -87,9 +87,9 @@ void MSGPIAPI VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
    view->viewVOfs = viewSetup.mViewVOfs;
    view->windowTopZOfs = viewSetup.mWindowTopZOfs;
    view->windowBottomZOfs = viewSetup.mWindowBottomZOfs;
-   view->screenWidth = g_pplayer->m_ptable->GetSettings().GetPlayer_ScreenWidth();
-   view->screenHeight = g_pplayer->m_ptable->GetSettings().GetPlayer_ScreenHeight();
-   view->screenInclination = g_pplayer->m_ptable->GetSettings().GetPlayer_ScreenInclination();
+   view->screenWidth = g_settingsService.GetActiveSettings().GetPlayer_ScreenWidth();
+   view->screenHeight = g_settingsService.GetActiveSettings().GetPlayer_ScreenHeight();
+   view->screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
    view->realToVirtualScale = viewSetup.GetRealToVirtualScale(g_pplayer->m_ptable);
 }
 
@@ -458,7 +458,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
       m_pluginSettings, [&pluginId, &settingDef](const PluginSetting& setting) { return setting.pluginId == pluginId && setting.setting->propId == settingDef->propId; });
 
    // Register property and get or set value
-   Settings& settings = g_pplayer ? g_pplayer->m_ptable->GetSettings() : g_app->GetSettings();
+   Settings& settings = g_settingsService.GetActiveSettings();
    const bool asTableOverride = g_pplayer != nullptr;
    const std::string sectionName = "Plugin."s + pluginId;
    switch (settingDef->type)

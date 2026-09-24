@@ -230,7 +230,7 @@ void Win32EditCommand::Execute()
       if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName) && vpxEditor.GetActiveTable())
          vpxEditor.GetActiveTable()->SetSettingsFileName(m_tableIniFileName);
    }
-   else if (g_app->GetSettings().GetEditor_SelectTableOnStart())
+   else if (g_settingsService.GetAppSettings().GetEditor_SelectTableOnStart())
    {
       vpxEditor.m_table_played_via_SelectTableOnStart = vpxEditor.LoadFile(false);
       if (vpxEditor.m_table_played_via_SelectTableOnStart)

@@ -56,7 +56,7 @@ InGameUIItem& InGameUIPage::AddItem(std::unique_ptr<InGameUIItem> item)
    return *m_items.back();
 }
 
-Settings& InGameUIPage::GetSettings() { return m_player->m_ptable->GetSettings(); }
+Settings& InGameUIPage::GetSettings() { return g_settingsService.GetActiveSettings(); }
 
 bool InGameUIPage::IsAdjustable() const
 {
@@ -193,12 +193,12 @@ void InGameUIPage::Save()
 void InGameUIPage::SaveGlobally()
 {
    // First reset any table override
-   Settings& tableSettings = m_player->m_ptable->GetSettings();
+   Settings& tableSettings = g_settingsService.GetActiveSettings();
    for (const auto& item : m_items)
       item->ResetSave(tableSettings);
    tableSettings.Save();
    // Then save to application settings
-   Settings& appSettings = g_app->GetSettings();
+   Settings& appSettings = g_settingsService.GetAppSettings();
    for (const auto& item : m_items)
       item->Save(appSettings, false);
    appSettings.Save();
@@ -207,7 +207,7 @@ void InGameUIPage::SaveGlobally()
 void InGameUIPage::SaveTableOverride()
 {
    // First reset any table override (to start from a clear ground if saved items depends on user selection, note that some item may impact multiple settings so we save them afterward)
-   Settings& tableSettings = m_player->m_ptable->GetSettings();
+   Settings& tableSettings = g_settingsService.GetActiveSettings();
    for (const auto& item : m_items)
       item->ResetSave(tableSettings);
    // Then save to table override
@@ -796,7 +796,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (item->IsOverriden(g_app->GetSettings(), m_player->m_ptable->GetSettings()))
+            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -833,7 +833,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (item->IsOverriden(g_app->GetSettings(), m_player->m_ptable->GetSettings()))
+            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -864,7 +864,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (item->IsOverriden(g_app->GetSettings(), m_player->m_ptable->GetSettings()))
+            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -888,7 +888,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (item->IsOverriden(g_app->GetSettings(), m_player->m_ptable->GetSettings()))
+            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -911,7 +911,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (item->IsOverriden(g_app->GetSettings(), m_player->m_ptable->GetSettings()))
+            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);

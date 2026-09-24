@@ -78,7 +78,7 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 #endif
 
 PinTable::PinTable()
-   : m_settings(&(g_app->GetSettings()))
+   : m_settings(&(g_settingsService.GetAppSettings()))
 {
    m_renderSolid = m_settings.GetEditor_RenderSolid();
 
@@ -106,7 +106,7 @@ PinTable::PinTable()
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
 
    m_dummyMaterial = std::make_unique<Material>();
-   m_dummyMaterial->m_cBase = g_app->GetSettings().GetEditor_DefaultMaterialColor();
+   m_dummyMaterial->m_cBase = g_settingsService.GetAppSettings().GetEditor_DefaultMaterialColor();
 }
 
 PinTable::~PinTable()
@@ -1029,7 +1029,7 @@ void PinTable::LoadInfo(POLE::Storage& storage, TableHash *const hash, int versi
       std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
       const auto propId
          = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, true, m_version));
-      g_app->GetSettings().Set(propId, m_version, false);
+      g_settingsService.GetAppSettings().Set(propId, m_version, false);
    }
 
    if (storage.exists("TableInfo/Screenshot"))
@@ -1288,7 +1288,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    HRESULT hr = S_OK;
 
    // Hashing (to ensure file integrity), can be disabled for slightly faster loading. Not constructed at all when disabled
-   const std::unique_ptr<TableHash> tableHash = g_app->GetSettings().GetEditor_DisableHash() ? nullptr : std::make_unique<TableHash>();
+   const std::unique_ptr<TableHash> tableHash = g_settingsService.GetAppSettings().GetEditor_DisableHash() ? nullptr : std::make_unique<TableHash>();
    TableHash *const hch = tableHash.get();
    TableHash::Update(hch, TABLE_KEY, 14);
 

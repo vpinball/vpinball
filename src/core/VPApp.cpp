@@ -240,7 +240,7 @@ VPApp::~VPApp()
    g_pvp = nullptr;
    g_app = nullptr;
 
-   m_settings.Save();
+   g_settingsService.GetAppSettings().Save();
 
    #ifdef _CRTDBG_MAP_ALLOC
       _CrtDumpMemoryLeaks();
@@ -279,8 +279,8 @@ void VPApp::InitInstance(bool isPlay)
       else
          iniFileName = defaultPath;
    }
-   m_settings.SetIniPath(iniFileName);
-   m_settings.Load(true);
+   g_settingsService.GetAppSettings().SetIniPath(iniFileName);
+   g_settingsService.GetAppSettings().Load(true);
 
    // The file layout must be defined before loading the settings file, so we apply the following rules:
    // - if we have a settings location commandline override, we load it and use the setting in it (to locate other files than the ini)
@@ -319,12 +319,12 @@ void VPApp::InitInstance(bool isPlay)
    libwinevbs_init(&callbacks);
 #endif
 
-   Logger::SetupLogger(m_settings.GetGlobal_EnableLog());
-   if (isPlay && m_settings.GetGlobal_ResetLogOnPlay())
+   Logger::SetupLogger(g_settingsService.GetAppSettings().GetGlobal_EnableLog());
+   if (isPlay && g_settingsService.GetAppSettings().GetGlobal_ResetLogOnPlay())
       Logger::Truncate();
 
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
-   PLOGI << "Settings file was loaded from " << m_settings.GetIniPath();
+   PLOGI << "Settings file was loaded from " << g_settingsService.GetAppSettings().GetIniPath();
    PLOGI << "Number of logical CPU cores: " << GetLogicalNumberOfProcessors();
    PLOGI << "Application path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
    PLOGI << "Preference path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
@@ -338,12 +338,12 @@ void VPApp::InitInstance(bool isPlay)
    Settings::SetRecentDir_SoundDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
    Settings::SetRecentDir_POVDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
 
-   m_securitylevel = g_app->GetSettings().GetPlayer_SecurityLevel();
+   m_securitylevel = g_settingsService.GetAppSettings().GetPlayer_SecurityLevel();
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
 
-   m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
-   m_settings.Save();
+   g_settingsService.GetAppSettings().SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
+   g_settingsService.GetAppSettings().Save();
 }
 
 #ifndef __STANDALONE__

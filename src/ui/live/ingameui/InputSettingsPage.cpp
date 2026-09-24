@@ -76,11 +76,11 @@ void InputSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_EnableCameraModeFlyAround, //
-      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_EnableCameraModeFlyAround(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetPlayer_EnableCameraModeFlyAround(); }, //
       [this](bool v)
       {
          m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
-         m_player->m_ptable->GetSettings().SetPlayer_EnableCameraModeFlyAround(v, false);
+         g_settingsService.GetActiveSettings().SetPlayer_EnableCameraModeFlyAround(v, false);
       }));
 }
 

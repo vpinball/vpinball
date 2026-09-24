@@ -29,8 +29,8 @@ Surface *Surface::CopyForPlay() const
 }
 
 #define LinkProp(field, prop)                                                                                                                                                                \
-   field = m_isWall ? (fromMouseClick ? g_app->GetSettings().GetDefaultPropsWall_##prop() : Settings::GetDefaultPropsWall_##prop##_Default()) \
-                    : (fromMouseClick ? g_app->GetSettings().GetDefaultPropsTarget_##prop() : Settings::GetDefaultPropsTarget_##prop##_Default())
+   field = m_isWall ? (fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsWall_##prop() : Settings::GetDefaultPropsWall_##prop##_Default()) \
+                    : (fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsTarget_##prop() : Settings::GetDefaultPropsTarget_##prop##_Default())
 HRESULT Surface::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_isWall = true;
@@ -133,7 +133,7 @@ void Surface::SetDefaultPhysics(const bool fromMouseClick)
 
 void Surface::WriteRegDefaults()
 {
-#define LinkProp(field, prop) { if (m_isWall) g_app->GetSettings().SetDefaultPropsWall_##prop(field, false); else g_app->GetSettings().SetDefaultPropsTarget_##prop(field, false); }
+#define LinkProp(field, prop) { if (m_isWall) g_settingsService.GetAppSettings().SetDefaultPropsWall_##prop(field, false); else g_settingsService.GetAppSettings().SetDefaultPropsTarget_##prop(field, false); }
    LinkProp(m_d.m_hitEvent, HitEvent);
    LinkProp(m_d.m_threshold, HitThreshold);
    LinkProp(m_d.m_slingshot_threshold, SlingshotThreshold);

@@ -319,23 +319,23 @@ int VPinballLib::LoadValueInt(const string& sectionName, const string& key, int 
       if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Enum ||
           existingProp->m_type == VPX::Properties::PropertyDef::Type::Int ||
           existingProp->m_type == VPX::Properties::PropertyDef::Type::Bool)
-         return g_app->GetSettings().GetInt(existingId.value());
+         return g_settingsService.GetAppSettings().GetInt(existingId.value());
 
       PLOGW << "LoadValueInt: property " << sectionName << '.' << key << " exists but is not int-compatible type";
       return defaultValue;
    }
 
    const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(sectionName, key, ""s, ""s, true, INT_MIN, INT_MAX, defaultValue));
-   return g_app->GetSettings().GetInt(propId);
+   return g_settingsService.GetAppSettings().GetInt(propId);
 }
 
 void VPinballLib::SaveValueInt(const string& sectionName, const string& key, int value)
 {
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
-      g_app->GetSettings().Set(existingId.value(), value, false);
+      g_settingsService.GetAppSettings().Set(existingId.value(), value, false);
    else
-      g_app->GetSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(sectionName, key, ""s, ""s, true, INT_MIN, INT_MAX, value)), value, false);
-   g_app->GetSettings().Save();
+      g_settingsService.GetAppSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(sectionName, key, ""s, ""s, true, INT_MIN, INT_MAX, value)), value, false);
+   g_settingsService.GetAppSettings().Save();
 }
 
 float VPinballLib::LoadValueFloat(const string& sectionName, const string& key, float defaultValue)
@@ -344,23 +344,23 @@ float VPinballLib::LoadValueFloat(const string& sectionName, const string& key, 
    {
       const auto* existingProp = Settings::GetRegistry().GetProperty(existingId.value());
       if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Float)
-         return g_app->GetSettings().GetFloat(existingId.value());
+         return g_settingsService.GetAppSettings().GetFloat(existingId.value());
 
       PLOGW << "LoadValueFloat: property " << sectionName << '.' << key << " exists but is not float type";
       return defaultValue;
    }
 
    const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, true, -FLT_MAX, FLT_MAX, 0.f, defaultValue));
-   return g_app->GetSettings().GetFloat(propId);
+   return g_settingsService.GetAppSettings().GetFloat(propId);
 }
 
 void VPinballLib::SaveValueFloat(const string& sectionName, const string& key, float value)
 {
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
-      g_app->GetSettings().Set(existingId.value(), value, false);
+      g_settingsService.GetAppSettings().Set(existingId.value(), value, false);
    else
-      g_app->GetSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, true, -FLT_MAX, FLT_MAX, 0.f, value)), value, false);
-   g_app->GetSettings().Save();
+      g_settingsService.GetAppSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, true, -FLT_MAX, FLT_MAX, 0.f, value)), value, false);
+   g_settingsService.GetAppSettings().Save();
 }
 
 string VPinballLib::LoadValueString(const string& sectionName, const string& key, const string& defaultValue)
@@ -369,23 +369,23 @@ string VPinballLib::LoadValueString(const string& sectionName, const string& key
    {
       const auto* existingProp = Settings::GetRegistry().GetProperty(existingId.value());
       if (existingProp->m_type == VPX::Properties::PropertyDef::Type::String)
-         return g_app->GetSettings().GetString(existingId.value());
+         return g_settingsService.GetAppSettings().GetString(existingId.value());
 
       PLOGW << "LoadValueString: property " << sectionName << '.' << key << " exists but is not string type";
       return defaultValue;
    }
 
    const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, key, ""s, ""s, true, defaultValue));
-   return g_app->GetSettings().GetString(propId);
+   return g_settingsService.GetAppSettings().GetString(propId);
 }
 
 void VPinballLib::SaveValueString(const string& sectionName, const string& key, const string& value)
 {
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
-      g_app->GetSettings().Set(existingId.value(), value, false);
+      g_settingsService.GetAppSettings().Set(existingId.value(), value, false);
    else
-      g_app->GetSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, key, ""s, ""s, true, value)), value, false);
-   g_app->GetSettings().Save();
+      g_settingsService.GetAppSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, key, ""s, ""s, true, value)), value, false);
+   g_settingsService.GetAppSettings().Save();
 }
 
 bool VPinballLib::LoadValueBool(const string& sectionName, const string& key, bool defaultValue)
@@ -394,23 +394,23 @@ bool VPinballLib::LoadValueBool(const string& sectionName, const string& key, bo
    {
       const auto* existingProp = Settings::GetRegistry().GetProperty(existingId.value());
       if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Bool)
-         return g_app->GetSettings().GetBool(existingId.value());
+         return g_settingsService.GetAppSettings().GetBool(existingId.value());
 
       PLOGW << "LoadValueBool: property " << sectionName << '.' << key << " exists but is not bool type";
       return defaultValue;
    }
 
    const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, key, ""s, ""s, true, defaultValue));
-   return g_app->GetSettings().GetBool(propId);
+   return g_settingsService.GetAppSettings().GetBool(propId);
 }
 
 void VPinballLib::SaveValueBool(const string& sectionName, const string& key, bool value)
 {
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
-      g_app->GetSettings().Set(existingId.value(), value, false);
+      g_settingsService.GetAppSettings().Set(existingId.value(), value, false);
    else
-      g_app->GetSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, key, ""s, ""s, true, value)), value, false);
-   g_app->GetSettings().Save();
+      g_settingsService.GetAppSettings().Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, key, ""s, ""s, true, value)), value, false);
+   g_settingsService.GetAppSettings().Save();
 }
 
 VPINBALL_STATUS VPinballLib::ResetIni()
@@ -422,9 +422,9 @@ VPINBALL_STATUS VPinballLib::ResetIni()
       return VPINBALL_STATUS_FAILURE;
    }
 
-   g_app->GetSettings().SetIniPath(iniFilePath.string());
-   g_app->GetSettings().Load(true);
-   g_app->GetSettings().Save();
+   g_settingsService.GetAppSettings().SetIniPath(iniFilePath.string());
+   g_settingsService.GetAppSettings().Load(true);
+   g_settingsService.GetAppSettings().Save();
    return VPINBALL_STATUS_SUCCESS;
 }
 
@@ -456,7 +456,7 @@ VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
       m_pTable = nullptr;
    }
 
-   if (g_app->GetSettings().GetGlobal_ResetLogOnPlay())
+   if (g_settingsService.GetAppSettings().GetGlobal_ResetLogOnPlay())
       Logger::Truncate();
 
    CComObject<PinTable>::CreateInstance(&m_pTable);

@@ -556,10 +556,10 @@ void CodeViewer::SetVisible(const bool visible)
    if (!visible && !m_minimized)
    {
       const CRect rc = GetWindowRect();
-      g_app->GetSettings().SetEditor_CodeViewPosX((int)rc.left, false);
-      g_app->GetSettings().SetEditor_CodeViewPosY((int)rc.top, false);
-      g_app->GetSettings().SetEditor_CodeViewPosWidth(rc.right - rc.left, false);
-      g_app->GetSettings().SetEditor_CodeViewPosHeight(rc.bottom - rc.top, false);
+      g_settingsService.GetAppSettings().SetEditor_CodeViewPosX((int)rc.left, false);
+      g_settingsService.GetAppSettings().SetEditor_CodeViewPosY((int)rc.top, false);
+      g_settingsService.GetAppSettings().SetEditor_CodeViewPosWidth(rc.right - rc.left, false);
+      g_settingsService.GetAppSettings().SetEditor_CodeViewPosHeight(rc.bottom - rc.top, false);
    }
 
    if (m_findReplace.IsWindow() && !visible)
@@ -580,10 +580,10 @@ void CodeViewer::SetVisible(const bool visible)
    {
       if (!m_visible)
       {
-         const int x = g_app->GetSettings().GetEditor_CodeViewPosX();
-         const int y = g_app->GetSettings().GetEditor_CodeViewPosY();
-         const int w = g_app->GetSettings().GetEditor_CodeViewPosWidth();
-         const int h = g_app->GetSettings().GetEditor_CodeViewPosHeight();
+         const int x = g_settingsService.GetAppSettings().GetEditor_CodeViewPosX();
+         const int y = g_settingsService.GetAppSettings().GetEditor_CodeViewPosY();
+         const int w = g_settingsService.GetAppSettings().GetEditor_CodeViewPosWidth();
+         const int h = g_settingsService.GetAppSettings().GetEditor_CodeViewPosHeight();
          const POINT p { x, y };
          if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
             SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
@@ -613,26 +613,26 @@ void CodeViewer::SetCaption(const string& szCaption)
 
 void CodeViewer::UpdatePrefsfromReg()
 {
-   m_bgColor = g_app->GetSettings().GetCVEdit_BackGroundColor();
-   m_bgSelColor = g_app->GetSettings().GetCVEdit_BackGroundSelectionColor();
-   m_displayAutoComplete = g_app->GetSettings().GetCVEdit_DisplayAutoComplete();
-   m_displayAutoCompleteLength = g_app->GetSettings().GetCVEdit_DisplayAutoCompleteAfter();
-   m_dwellDisplay = g_app->GetSettings().GetCVEdit_DwellDisplay();
-   m_dwellHelp = g_app->GetSettings().GetCVEdit_DwellHelp();
-   m_dwellDisplayTime = g_app->GetSettings().GetCVEdit_DwellDisplayTime();
+   m_bgColor = g_settingsService.GetAppSettings().GetCVEdit_BackGroundColor();
+   m_bgSelColor = g_settingsService.GetAppSettings().GetCVEdit_BackGroundSelectionColor();
+   m_displayAutoComplete = g_settingsService.GetAppSettings().GetCVEdit_DisplayAutoComplete();
+   m_displayAutoCompleteLength = g_settingsService.GetAppSettings().GetCVEdit_DisplayAutoCompleteAfter();
+   m_dwellDisplay = g_settingsService.GetAppSettings().GetCVEdit_DwellDisplay();
+   m_dwellHelp = g_settingsService.GetAppSettings().GetCVEdit_DwellHelp();
+   m_dwellDisplayTime = g_settingsService.GetAppSettings().GetCVEdit_DwellDisplayTime();
    for (size_t i = 0; i < m_lPrefsList->size(); ++i)
       m_lPrefsList->at(i)->GetPrefsFromReg();
 }
 
 void CodeViewer::UpdateRegWithPrefs()
 {
-   g_app->GetSettings().SetCVEdit_BackGroundColor((int)m_bgColor, false);
-   g_app->GetSettings().SetCVEdit_BackGroundSelectionColor((int)m_bgSelColor, false);
-   g_app->GetSettings().SetCVEdit_DisplayAutoComplete(m_displayAutoComplete, false);
-   g_app->GetSettings().SetCVEdit_DisplayAutoCompleteAfter(m_displayAutoCompleteLength, false);
-   g_app->GetSettings().SetCVEdit_DwellDisplay(m_dwellDisplay, false);
-   g_app->GetSettings().SetCVEdit_DwellHelp(m_dwellHelp, false);
-   g_app->GetSettings().SetCVEdit_DwellDisplayTime(m_dwellDisplayTime, false);
+   g_settingsService.GetAppSettings().SetCVEdit_BackGroundColor((int)m_bgColor, false);
+   g_settingsService.GetAppSettings().SetCVEdit_BackGroundSelectionColor((int)m_bgSelColor, false);
+   g_settingsService.GetAppSettings().SetCVEdit_DisplayAutoComplete(m_displayAutoComplete, false);
+   g_settingsService.GetAppSettings().SetCVEdit_DisplayAutoCompleteAfter(m_displayAutoCompleteLength, false);
+   g_settingsService.GetAppSettings().SetCVEdit_DwellDisplay(m_dwellDisplay, false);
+   g_settingsService.GetAppSettings().SetCVEdit_DwellHelp(m_dwellHelp, false);
+   g_settingsService.GetAppSettings().SetCVEdit_DwellDisplayTime(m_dwellDisplayTime, false);
    for (size_t i = 0; i < m_lPrefsList->size(); i++)
       m_lPrefsList->at(i)->SetPrefsToReg();
 }
@@ -1634,10 +1634,10 @@ size_t CodeViewer::SureFindNoCase(const string &LineIn, const string &ToFind)
 
 void CodeViewer::PreCreate(CREATESTRUCT& cs)
 {
-   const int x = g_app->GetSettings().GetEditor_CodeViewPosX();
-   const int y = g_app->GetSettings().GetEditor_CodeViewPosY();
-   const int w = g_app->GetSettings().GetEditor_CodeViewPosWidth();
-   const int h = g_app->GetSettings().GetEditor_CodeViewPosHeight();
+   const int x = g_settingsService.GetAppSettings().GetEditor_CodeViewPosX();
+   const int y = g_settingsService.GetAppSettings().GetEditor_CodeViewPosY();
+   const int w = g_settingsService.GetAppSettings().GetEditor_CodeViewPosWidth();
+   const int h = g_settingsService.GetAppSettings().GetEditor_CodeViewPosHeight();
 
    cs.x = x;
    cs.y = y;
@@ -2429,8 +2429,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				pcv->m_lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->m_lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
-			pcv->m_bgColor = g_app->GetSettings().GetCVEdit_BackGroundColor();
-			pcv->m_bgSelColor = g_app->GetSettings().GetCVEdit_BackGroundSelectionColor();
+			pcv->m_bgColor = g_settingsService.GetAppSettings().GetCVEdit_BackGroundColor();
+			pcv->m_bgSelColor = g_settingsService.GetAppSettings().GetCVEdit_BackGroundSelectionColor();
 			pcv->UpdateScinFromPrefs();
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
@@ -2481,19 +2481,19 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_DISPLAYDWELL:
 				{
 					pcv->m_dwellDisplay = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
-					g_app->GetSettings().SetCVEdit_DwellDisplay(pcv->m_dwellDisplay, false);
+					g_settingsService.GetAppSettings().SetCVEdit_DwellDisplay(pcv->m_dwellDisplay, false);
 				}
 				break;
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-					g_app->GetSettings().SetCVEdit_DwellHelp(pcv->m_dwellHelp, false);
+					g_settingsService.GetAppSettings().SetCVEdit_DwellHelp(pcv->m_dwellHelp, false);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-					g_app->GetSettings().SetCVEdit_DisplayAutoComplete(pcv->m_displayAutoComplete, false);
+					g_settingsService.GetAppSettings().SetCVEdit_DisplayAutoComplete(pcv->m_displayAutoComplete, false);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:

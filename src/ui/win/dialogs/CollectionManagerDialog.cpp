@@ -299,8 +299,8 @@ void CollectionManagerDialog::OnCancel()
 
 void CollectionManagerDialog::LoadPosition()
 {
-   const int x = g_app->GetSettings().GetEditor_CollectionMngPosX();
-   const int y = g_app->GetSettings().GetEditor_CollectionMngPosY();
+   const int x = g_settingsService.GetAppSettings().GetEditor_CollectionMngPosX();
+   const int y = g_settingsService.GetAppSettings().GetEditor_CollectionMngPosY();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -309,8 +309,8 @@ void CollectionManagerDialog::LoadPosition()
 void CollectionManagerDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    g_app->GetSettings().SetEditor_CollectionMngPosX((int)rect.left, false);
-    g_app->GetSettings().SetEditor_CollectionMngPosY((int)rect.top, false);
+    g_settingsService.GetAppSettings().SetEditor_CollectionMngPosX((int)rect.left, false);
+    g_settingsService.GetAppSettings().SetEditor_CollectionMngPosY((int)rect.top, false);
 }
 
 //######################################## Collection Dialog ########################################

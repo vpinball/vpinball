@@ -71,7 +71,7 @@ Vertex2D Ball::GetCenter() const
 
 void Ball::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsBall_##prop() : Settings::GetDefaultPropsBall_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsBall_##prop() : Settings::GetDefaultPropsBall_##prop##_Default()
    LinkProp(m_hitBall.m_d.m_mass, Mass);
    LinkProp(m_hitBall.m_d.m_radius, Radius);
    LinkProp(m_d.m_forceReflection, ForceReflection);
@@ -90,7 +90,7 @@ void Ball::SetDefaults(const bool fromMouseClick)
 
 void Ball::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsBall_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsBall_##prop(field, false)
    LinkProp(m_hitBall.m_d.m_mass, Mass);
    LinkProp(m_hitBall.m_d.m_radius, Radius);
    LinkProp(m_d.m_forceReflection, ForceReflection);

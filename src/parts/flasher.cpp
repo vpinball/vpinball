@@ -54,7 +54,7 @@ HRESULT Flasher::Init(const float x, const float y, const bool fromMouseClick, c
 
 void Flasher::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsFlasher_##prop() : Settings::GetDefaultPropsFlasher_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsFlasher_##prop() : Settings::GetDefaultPropsFlasher_##prop##_Default()
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotX, RotX);
    LinkProp(m_d.m_rotY, RotY);
@@ -82,7 +82,7 @@ void Flasher::SetDefaults(const bool fromMouseClick)
 
 void Flasher::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsFlasher_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsFlasher_##prop(field, false)
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotX, RotX);
    LinkProp(m_d.m_rotY, RotY);

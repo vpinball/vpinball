@@ -91,7 +91,7 @@ HRESULT Spinner::Init(const float x, const float y, const bool fromMouseClick, c
 
 void Spinner::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsSpinner_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsSpinner_##prop(field, false)
    LinkProp(m_d.m_length, Length);
    LinkProp(m_d.m_rotation, Rotation);
    LinkProp(m_d.m_showBracket, ShowBracket);
@@ -109,7 +109,7 @@ void Spinner::WriteRegDefaults()
 #undef LinkProp
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsSpinner_##prop() : Settings::GetDefaultPropsSpinner_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsSpinner_##prop() : Settings::GetDefaultPropsSpinner_##prop##_Default()
 void Spinner::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_length, Length);

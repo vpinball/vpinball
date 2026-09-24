@@ -203,34 +203,34 @@ void WinEditor::InitTools()
 // Load editor behavior options from the settings
 void WinEditor::LoadEditorSetupFromSettings()
 {
-   m_alwaysDrawDragPoints = g_app->GetSettings().GetEditor_ShowDragPoints();
-   m_alwaysDrawLightCenters = g_app->GetSettings().GetEditor_DrawLightCenters();
-   m_gridSize = g_app->GetSettings().GetEditor_GridSize();
+   m_alwaysDrawDragPoints = g_settingsService.GetAppSettings().GetEditor_ShowDragPoints();
+   m_alwaysDrawLightCenters = g_settingsService.GetAppSettings().GetEditor_DrawLightCenters();
+   m_gridSize = g_settingsService.GetAppSettings().GetEditor_GridSize();
 
-   const bool autoSave = g_app->GetSettings().GetEditor_AutoSaveOn();
+   const bool autoSave = g_settingsService.GetAppSettings().GetEditor_AutoSaveOn();
    if (autoSave)
    {
-      m_autosaveTime = g_app->GetSettings().GetEditor_AutoSaveTime();
+      m_autosaveTime = g_settingsService.GetAppSettings().GetEditor_AutoSaveTime();
       SetAutoSaveMinutes(m_autosaveTime);
    }
    else
       m_autosaveTime = -1;
 
-   m_elemSelectColor = g_app->GetSettings().GetEditor_ElementSelectColor();
-   m_elemSelectLockedColor = g_app->GetSettings().GetEditor_ElementSelectLockedColor();
-   m_backgroundColor = g_app->GetSettings().GetEditor_BackGroundColor();
-   m_fillColor = g_app->GetSettings().GetEditor_FillColor();
+   m_elemSelectColor = g_settingsService.GetAppSettings().GetEditor_ElementSelectColor();
+   m_elemSelectLockedColor = g_settingsService.GetAppSettings().GetEditor_ElementSelectLockedColor();
+   m_backgroundColor = g_settingsService.GetAppSettings().GetEditor_BackGroundColor();
+   m_fillColor = g_settingsService.GetAppSettings().GetEditor_FillColor();
 
    m_recentTableList.clear();
    // get the list of the last n loaded tables
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
-      string szTableName = g_app->GetSettings().GetRecentDir_TableFileName(i);
+      string szTableName = g_settingsService.GetAppSettings().GetRecentDir_TableFileName(i);
       if (!szTableName.empty())
          m_recentTableList.push_back(std::move(szTableName));
    }
 
-   m_convertToUnit = g_app->GetSettings().GetEditor_Units();
+   m_convertToUnit = g_settingsService.GetAppSettings().GetEditor_Units();
 }
 
 void WinEditor::SetCursorCur(LPCTSTR lpCursorName)
@@ -321,7 +321,7 @@ void WinEditor::ResetAllDockers()
 {
    const bool createNotes = m_dockNotes != nullptr;
    CloseAllDockers();
-   // FIXME these are Windows only registry key. Move to g_app->GetSettings(). ?
+   // FIXME these are Windows only registry key. Move to g_settingsService.GetAppSettings(). ?
    // DeleteSubKey("Editor\\Dock Windows"s); // Old Win32xx
    // DeleteSubKey("Editor\\Dock Settings"s);// Win32xx 9+
    CreateDocker();
@@ -860,7 +860,7 @@ void WinEditor::DoPlay(const int playMode)
       return;
    }
 
-   if (playMode == 0 && g_app->GetSettings().GetGlobal_ResetLogOnPlay())
+   if (playMode == 0 && g_settingsService.GetAppSettings().GetGlobal_ResetLogOnPlay())
       Logger::Truncate();
 
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
@@ -941,7 +941,7 @@ void WinEditor::DoPlay(const int playMode)
 
 bool WinEditor::LoadFile(const bool updateEditor)
 {
-   const string& szInitialDir = g_app->GetSettings().GetRecentDir_LoadDir();
+   const string& szInitialDir = g_settingsService.GetAppSettings().GetRecentDir_LoadDir();
 
    vector<string> filename;
    if (!OpenFileDialog(szInitialDir, filename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -950,7 +950,7 @@ bool WinEditor::LoadFile(const bool updateEditor)
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      g_app->GetSettings().SetRecentDir_LoadDir(filename[0].substr(0, index), false);
+      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(filename[0].substr(0, index), false);
 
    LoadFileName(filename[0], updateEditor);
 
@@ -1001,7 +1001,7 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
 
       PLOGI << "UI Post Load Start";
 
-      g_app->GetSettings().SetRecentDir_LoadDir(tablePath.string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(tablePath.string(), false);
       UpdateRecentFileList(filename);
 
       ppt->AddMultiSel(ppt->GetUIPart(ppt->m_table), false, true, false);
@@ -1242,7 +1242,7 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
       {
          m_recentTableList.push_back(tableName);
          // write entry to the registry
-         g_app->GetSettings().SetRecentDir_TableFileName(i, tableName, false);
+         g_settingsService.GetAppSettings().SetRecentDir_TableFileName(i, tableName, false);
 
          if (++i == LAST_OPENED_TABLE_COUNT)
             break;
@@ -1355,11 +1355,11 @@ void WinEditor::OnClose()
 
       if (GetWindowPlacement(winpl))
       {
-         g_app->GetSettings().SetEditor_WindowLeft((int)winpl.rcNormalPosition.left, false);
-         g_app->GetSettings().SetEditor_WindowTop((int)winpl.rcNormalPosition.top, false);
-         g_app->GetSettings().SetEditor_WindowRight((int)winpl.rcNormalPosition.right, false);
-         g_app->GetSettings().SetEditor_WindowBottom((int)winpl.rcNormalPosition.bottom, false);
-         g_app->GetSettings().SetEditor_WindowMaximized(!!IsZoomed(), false);
+         g_settingsService.GetAppSettings().SetEditor_WindowLeft((int)winpl.rcNormalPosition.left, false);
+         g_settingsService.GetAppSettings().SetEditor_WindowTop((int)winpl.rcNormalPosition.top, false);
+         g_settingsService.GetAppSettings().SetEditor_WindowRight((int)winpl.rcNormalPosition.right, false);
+         g_settingsService.GetAppSettings().SetEditor_WindowBottom((int)winpl.rcNormalPosition.bottom, false);
+         g_settingsService.GetAppSettings().SetEditor_WindowMaximized(!!IsZoomed(), false);
       }
       if (!IsIconic()) // otherwise the window/dock settings are screwed up and have to be manually restored each time
          SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
@@ -1440,11 +1440,11 @@ void WinEditor::OnInitialUpdate()
 
    SendMessage(WM_SIZE, 0, 0);         // Make our window relay itself out
 
-   const int left = g_app->GetSettings().GetEditor_WindowLeft();
-   const int top = g_app->GetSettings().GetEditor_WindowTop();
-   const int right = g_app->GetSettings().GetEditor_WindowRight();
-   const int bottom = g_app->GetSettings().GetEditor_WindowBottom();
-   const bool maximized = g_app->GetSettings().GetEditor_WindowMaximized();
+   const int left = g_settingsService.GetAppSettings().GetEditor_WindowLeft();
+   const int top = g_settingsService.GetAppSettings().GetEditor_WindowTop();
+   const int right = g_settingsService.GetAppSettings().GetEditor_WindowRight();
+   const int bottom = g_settingsService.GetAppSettings().GetEditor_WindowBottom();
+   const bool maximized = g_settingsService.GetAppSettings().GetEditor_WindowMaximized();
    if (right > left && bottom > top)
    {
       WINDOWPLACEMENT winpl = {};
@@ -1690,7 +1690,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-      int security = g_app->GetSettings().GetPlayer_SecurityLevel();
+      int security = g_settingsService.GetAppSettings().GetPlayer_SecurityLevel();
       if (security < 0 || security > 4)
          security = 0;
 
@@ -1698,7 +1698,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
       SendMessage(GetDlgItem(hwndDlg, buttonid), BM_SETCHECK, BST_CHECKED, 0);
 
-      const bool hangdetect = g_app->GetSettings().GetPlayer_DetectHang();
+      const bool hangdetect = g_settingsService.GetAppSettings().GetPlayer_DetectHang();
       SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
 
       return TRUE;
@@ -1718,11 +1718,11 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             {
                const size_t checked = SendMessage(GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]), BM_GETCHECK, 0, 0);
                if (checked == BST_CHECKED)
-                  g_app->GetSettings().SetPlayer_SecurityLevel(i, false);
+                  g_settingsService.GetAppSettings().SetPlayer_SecurityLevel(i, false);
             }
 
             const bool hangdetect = (SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0) != 0);
-            g_app->GetSettings().SetPlayer_DetectHang(hangdetect, false);
+            g_settingsService.GetAppSettings().SetPlayer_DetectHang(hangdetect, false);
 
             EndDialog(hwndDlg, TRUE);
          }
@@ -1794,13 +1794,13 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            const string& szInitialDir = g_app->GetSettings().GetRecentDir_FontDir();
+            const string& szInitialDir = g_settingsService.GetAppSettings().GetRecentDir_FontDir();
             vector<string> filename;
             if (pt->m_vpxEditor->OpenFileDialog(szInitialDir, filename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
-                  g_app->GetSettings().SetRecentDir_FontDir(filename[0].substr(0, index), false);
+                  g_settingsService.GetAppSettings().SetRecentDir_FontDir(filename[0].substr(0, index), false);
 
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), filename[0]);
             }
@@ -1892,7 +1892,7 @@ void WinEditor::ToggleScriptEditor()
    const auto editor = GetActiveTableEditor();
    if (editor)
    {
-      const bool alwaysViewScript = g_app->GetSettings().GetEditor_AlwaysViewScript();
+      const bool alwaysViewScript = g_settingsService.GetAppSettings().GetEditor_AlwaysViewScript();
       editor->m_pcv->SetVisible(alwaysViewScript || !(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized));
       //SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized, 0));
    }
@@ -1931,7 +1931,7 @@ void WinEditor::SetViewSolidOutline(size_t viewId)
       GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
       ptCur->SetDirtyDraw();
-      g_app->GetSettings().SetEditor_RenderSolid(ptCur->m_renderSolid, false);
+      g_settingsService.GetAppSettings().SetEditor_RenderSolid(ptCur->m_renderSolid, false);
    }
 }
 
@@ -2167,7 +2167,7 @@ void WinEditor::SaveTable(const bool saveAs)
       // assign user selected file name as new internal filename, and save as new default
       ptCur->m_filename = fileName;
       ptCur->m_title = TitleFromFilename(ptCur->m_filename);
-      g_app->GetSettings().SetRecentDir_LoadDir(ptCur->m_filename.parent_path().string(), false); // truncate after folder(s)
+      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(ptCur->m_filename.parent_path().string(), false); // truncate after folder(s)
       SetCaption(ptCur->m_title.c_str());
    }
 

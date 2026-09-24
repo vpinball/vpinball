@@ -50,7 +50,7 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
    };
 
    const string prevMapping = m_sensor->GetMappingString();
-   m_sensor->LoadMapping(m_page->m_player->m_ptable->GetSettings(), m_settingId);
+   m_sensor->LoadMapping(g_settingsService.GetActiveSettings(), m_settingId);
    std::unique_ptr<SensorMapping> storedMapping = m_sensor->IsMapped() ? std::make_unique<SensorMapping>(m_sensor->GetMapping()) : nullptr;
    m_sensor->SetMapping(prevMapping);
 
