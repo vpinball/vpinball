@@ -2,9 +2,16 @@
 
 #pragma once
 
+#include <optional>
+
 class Material;
 class Texture;
 class RenderProbe;
+namespace VPX
+{
+class Sound;
+struct SoundSpec;
+}
 
 namespace VPX::EditorUI
 {
@@ -13,7 +20,7 @@ class EditorUI;
 class PropertyPane;
 
 // Right side panel displaying the properties of the current selection (table,
-// camera view setup, image, material, render probe or editable part).
+// camera view setup, image, material, render probe, sound or editable part).
 class PropertiesPanel
 {
 public:
@@ -33,9 +40,17 @@ private:
    void RenderProbeProperties(PropertyPane &props, RenderProbe *probe);
    void CameraProperties(PropertyPane &props, int bgSet);
    void MaterialProperties(PropertyPane &props, Material *material);
+   void SoundProperties(PropertyPane &props, VPX::Sound *sound);
 
    EditorUI &m_editor;
    bool m_selectLiveTab = true;
+
+   // Sound preview state: the sound whose playback was started from the pane, and whether
+   // playback was actually observed (PlaySound commands are dispatched asynchronously)
+   VPX::Sound *m_playingSound = nullptr;
+   bool m_playingSoundObserved = false;
+   VPX::Sound *m_soundInfoFor = nullptr;
+   std::optional<VPX::SoundSpec> m_soundInfo;
 };
 
 }

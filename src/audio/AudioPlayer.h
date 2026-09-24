@@ -93,6 +93,7 @@ public:
    // Sound, played from memory buffer to backglass or playfield device, applying 3D mode setup
    void PlaySound(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
    void StopSound(Sound* sound);
+   bool IsSoundPlaying(const Sound* sound) const;
    SoundSpec GetSoundInformations(const Sound* const sound) const;
 
    string GetBackglassDeviceName() const { const char * name = SDL_GetAudioDeviceName(m_backglassAudioDevice); return name ? string(name) : "Error"s; }

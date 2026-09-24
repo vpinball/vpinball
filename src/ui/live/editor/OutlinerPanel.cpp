@@ -6,6 +6,7 @@
 #include "fonts/IconsForkAwesome.h"
 #include "parts/Material.h"
 #include "parts/PartGroup.h"
+#include "parts/Sound.h"
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
@@ -140,6 +141,17 @@ void OutlinerPanel::Render(float topBarHeight)
       {
          Selection sel(image);
          if (MatchesFilter(image->m_name) && ImGui::Selectable(image->m_name.c_str(), editor.m_selection == sel))
+            editor.SetSelection(sel);
+      }
+      ImGui::TreePop();
+   }
+   if (ImGui::TreeNode("Sounds"))
+   {
+      const std::function<string(VPX::Sound *)> map = [](VPX::Sound *sound) -> string { return sound->GetName(); };
+      for (VPX::Sound *&sound : SortedCaseInsensitive(editor.m_table->m_vsound, map))
+      {
+         Selection sel(sound);
+         if (MatchesFilter(sound->GetName()) && ImGui::Selectable(sound->GetName().c_str(), editor.m_selection == sel))
             editor.SetSelection(sel);
       }
       ImGui::TreePop();
