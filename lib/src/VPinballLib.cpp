@@ -146,11 +146,25 @@ void VPinballLib::AppIterate()
 
       m_gameLoop = nullptr;
 
+      // If the session was ended by a table switch request to a different base table, take it over and
+      // restart a new player on the requested table (all played tables are CComObject<PinTable> instances)
+      Player::PlayMode nextMode = Player::PlayMode::Play;
+      PinTable* const nextTable = g_pplayer->TakeTableSwitch(nextMode);
+
       delete g_pplayer;
       g_pplayer = nullptr;
 
       m_pTable->Release();
       m_pTable = nullptr;
+
+      if (nextTable != nullptr)
+      {
+         m_pTable = static_cast<CComObject<PinTable>*>(nextTable);
+         static LoadProgress loadProgress;
+         new Player(m_pTable, nextMode, loadProgress);
+         if (g_pplayer)
+            g_pplayer->GameLoop();
+      }
    }
 }
 

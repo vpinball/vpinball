@@ -872,24 +872,39 @@ void WinEditor::DoPlay(const int playMode)
       m_table_played_via_SelectTableOnStart = false;
       return;
    }
-   // Only show the load progress dialog when the editor window is not minimized
-   ProgressDialog loadProgress;
-   if (!IsIconic())
-   {
-      loadProgress.Create(GetHwnd());
-      loadProgress.ShowWindow(SW_SHOWNORMAL);
-   }
+
+   Player::PlayMode sessionMode;
    switch (playMode)
    {
-   case 0: new Player(live_table, Player::PlayMode::Play, loadProgress); break;
-   case 1: new Player(live_table, Player::PlayMode::EditPOV, loadProgress); break;
-   case 2: new Player(live_table, Player::PlayMode::LiveEdit, loadProgress); break;
-   default: assert(false); break;
+   case 0: sessionMode = Player::PlayMode::Play; break;
+   case 1: sessionMode = Player::PlayMode::EditPOV; break;
+   case 2: sessionMode = Player::PlayMode::LiveEdit; break;
+   default:
+      assert(false);
+      sessionMode = Player::PlayMode::Play;
+      break;
    }
-   loadProgress.Destroy();
+
+   // The session loop takes a reference on the played table, released when the session ends. The
+   // live table's own reference is kept for the settings copy back below.
+   PinTable *sessionTable = live_table;
+   sessionTable->AddRef();
+
+   // Only show the load progress dialog when the editor window is not minimized
+   {
+      ProgressDialog loadProgress;
+      if (!IsIconic())
+      {
+         loadProgress.Create(GetHwnd());
+         loadProgress.ShowWindow(SW_SHOWNORMAL);
+      }
+      new Player(sessionTable, sessionMode, loadProgress);
+      loadProgress.Destroy();
+   }
 
    if (g_pplayer == nullptr)
    {
+      sessionTable->Release();
       m_table_played_via_SelectTableOnStart = false;
       return;
    }
@@ -903,10 +918,33 @@ void WinEditor::DoPlay(const int playMode)
    if (const auto pt = GetActiveTableEditor(); pt)
       pt->EnableWindow(FALSE);
 
-   // Switch to Player's main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop)
-   g_pplayer->GameLoop();
-   delete g_pplayer;
-   assert(g_pplayer == nullptr);
+   // Switch to Player's main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop).
+   // Consecutive sessions are run when the player ends on a table switch request to a different base table.
+   while (true)
+   {
+      g_pplayer->GameLoop();
+      PinTable *const nextTable = g_pplayer->TakeTableSwitch(sessionMode);
+      delete g_pplayer;
+      assert(g_pplayer == nullptr);
+      sessionTable->Release();
+      sessionTable = nextTable;
+      if (sessionTable == nullptr)
+         break;
+      // Only show the load progress dialog when the editor window is not minimized
+      ProgressDialog loadProgress;
+      if (!IsIconic())
+      {
+         loadProgress.Create(GetHwnd());
+         loadProgress.ShowWindow(SW_SHOWNORMAL);
+      }
+      new Player(sessionTable, sessionMode, loadProgress);
+      loadProgress.Destroy();
+      if (g_pplayer == nullptr)
+      {
+         sessionTable->Release();
+         break;
+      }
+   }
 
    // The table settings may have been edited during play (camera, rendering, ...), so copy them back to the editor table's settings
    table->GetSettings().Load(live_table->GetSettings());

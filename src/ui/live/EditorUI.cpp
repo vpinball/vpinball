@@ -205,6 +205,40 @@ void EditorUI::SaveTableAs()
       m_player->m_playfieldWnd->GetCore(), filters, 1, location.empty() ? nullptr : location.c_str());
 }
 
+void EditorUI::LoadTable()
+{
+   if (IsInspectMode() || m_player->m_playfieldWnd == nullptr)
+      return;
+   // Loading another table discards the edited table's unsaved changes: ask for confirmation first
+   if (m_table->FDirty())
+   {
+      m_confirmLoadTable = true;
+      return;
+   }
+   ShowLoadTableDialog();
+}
+
+void EditorUI::ShowLoadTableDialog()
+{
+   m_pendingLoadPath = std::make_shared<string>();
+   const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx;vpt" } };
+   // Start on the edited table's file (right folder, preselected file), falling back to the recent load dir
+   std::filesystem::path defaultLocation = m_table->m_filename;
+   if (defaultLocation.empty())
+      defaultLocation = std::filesystem::path(m_table->GetSettings().GetRecentDir_LoadDir()) / "";
+   const string location = defaultLocation.string();
+   SDL_ShowOpenFileDialog(
+      [](void *userdata, const char *const *filelist, int filter)
+      {
+         auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+         if (filelist != nullptr && filelist[0] != nullptr)
+            **res = filelist[0];
+         delete res;
+      },
+      new std::shared_ptr<string>(m_pendingLoadPath), //
+      m_player->m_playfieldWnd->GetCore(), filters, 1, location.empty() ? nullptr : location.c_str(), false);
+}
+
 void EditorUI::ResetCameraFromPlayer()
 {
    // Try to setup editor camera to match the used one, but only mostly since the EditorUI does not have some view setup features like off-center, ...
@@ -308,6 +342,30 @@ void EditorUI::RenderUI()
       SaveTable();
    }
 
+   // Apply the file picked by the asynchronous 'Load' file dialog (deferred to the main thread, in edit mode):
+   // the loaded table replaces the edited one through a player session switch (see Player::SetTable)
+   if (!IsInspectMode() && m_pendingLoadPath && !m_pendingLoadPath->empty())
+   {
+      const std::filesystem::path filename = *m_pendingLoadPath;
+      m_pendingLoadPath = nullptr;
+      CComObject<PinTable> *table;
+      CComObject<PinTable>::CreateInstance(&table);
+      table->AddRef();
+      VPXFileFeedback feedback;
+      const HRESULT hr = table->LoadGameFromFilename(filename, feedback);
+      // Same as the Win32 editor: hash/corrupt content errors still keep the loaded table
+      if (SUCCEEDED(hr) || (hr == APPX_E_BLOCK_HASH_INVALID) || (hr == APPX_E_CORRUPT_CONTENT))
+      {
+         g_settingsService.GetAppSettings().SetRecentDir_LoadDir(filename.parent_path().string(), false);
+         m_player->SetTable(table, Player::TableTransition::Replace);
+      }
+      else
+      {
+         table->Release();
+         m_liveUI.PushNotification("Failed to load table '" + filename.string() + '\'', 10000);
+      }
+   }
+
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
 
    const bool showFullUI = !m_inspectionModal.IsVisible() && !m_flyMode;
@@ -339,6 +397,30 @@ void EditorUI::RenderUI()
       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings
          | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
    ImDrawList *const overlayDrawList = ImGui::GetWindowDrawList();
+
+   // Confirmation popup for discarding unsaved changes when loading another table (OpenPopup must be
+   // called in the same window scope as the matching BeginPopupModal)
+   if (m_confirmLoadTable)
+   {
+      m_confirmLoadTable = false;
+      ImGui::OpenPopup("Load Table");
+   }
+   if (ImGui::BeginPopupModal("Load Table", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      ImGui::TextUnformatted("The current table has unsaved changes which will be lost.");
+      ImGui::NewLine();
+      if (ImGui::Button("Discard changes"))
+      {
+         ImGui::CloseCurrentPopup();
+         ShowLoadTableDialog();
+      }
+      ImGui::SameLine();
+      ImGui::SetItemDefaultFocus();
+      if (ImGui::Button("Cancel"))
+         ImGui::CloseCurrentPopup();
+      ImGui::EndPopup();
+   }
+
    ImGui::End();
    ImGui::PopStyleVar();
    ImGui::PopStyleColor(2);
