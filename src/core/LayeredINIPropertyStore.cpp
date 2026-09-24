@@ -39,6 +39,7 @@ bool LayeredINIPropertyStore::Load()
    {
       for (PropertyRegistry::PropId id : m_registry.get().GetPropertyIds())
          LoadFromINI(id);
+      SetModified(false);
       return true;
    }
    else

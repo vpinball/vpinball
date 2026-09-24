@@ -112,7 +112,7 @@ TEST_CASE("LayeredINIPropertyStore")
       CHECK(loaded.GetString(ids.stringProp) == "hello");
       CHECK(loaded.GetInt(ids.boolProp) == 0);
       CHECK(loaded.GetInt(ids.enumProp) == 1); // untouched stays at default
-      CHECK(loaded.IsModified()); // loading defines the persisted values, which marks the store modified
+      CHECK(!loaded.IsModified());
    }
 
    SUBCASE("undefined properties are persisted as empty values")
