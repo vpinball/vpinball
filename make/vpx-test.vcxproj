@@ -39,6 +39,15 @@
     </ClCompile>
     <ClCompile Include="../../tests/vpx-test.cpp" />
     <ClCompile Include="../../tests/audio/test-audioplayer.cpp" />
+    <ClCompile Include="../../tests/core/test-def.cpp" />
+    <ClCompile Include="../../tests/core/test-editablereg.cpp" />
+    <ClCompile Include="../../tests/core/test-filelocator.cpp" />
+    <ClCompile Include="../../tests/core/test-layeredinipropertystore.cpp" />
+    <ClCompile Include="../../tests/core/test-pinundo.cpp" />
+    <ClCompile Include="../../tests/core/test-propertydef.cpp" />
+    <ClCompile Include="../../tests/core/test-propertyregistry.cpp" />
+    <ClCompile Include="../../tests/core/test-settings.cpp" />
+    <ClCompile Include="../../tests/core/test-tabledb.cpp" />
     <ClCompile Include="../../tests/input/test-buttonmapping.cpp" />
     <ClCompile Include="../../tests/input/test-plunger-kalman.cpp" />
     <ClCompile Include="../../tests/input/test-scancodes.cpp" />
