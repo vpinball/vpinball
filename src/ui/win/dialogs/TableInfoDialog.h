@@ -4,10 +4,12 @@
 
 #include <wxx_listview.h> // Add CListView
 
+class PinTableWnd;
+
 class TableInfoDialog final : public CDialog
 {
 public:
-   TableInfoDialog();
+   explicit TableInfoDialog(PinTableWnd *tableEditor);
 
 protected:
    void OnClose() override;
@@ -18,6 +20,8 @@ protected:
    void OnCancel() override;
 
 private:
+   PinTableWnd *const m_tableEditor;
+
    int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);
    void VPGetDialogItemText(const CEdit &edit, string &psztext);
 

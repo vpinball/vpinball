@@ -5,6 +5,14 @@
 #include "core/pinundo.h"
 #include "parts/light.h"
 #include "parts/pintable.h"
+#include "ui/win/dialogs/CollectionManagerDialog.h"
+#include "ui/win/dialogs/DimensionDialog.h"
+#include "ui/win/dialogs/ImageDialog.h"
+#include "ui/win/dialogs/MaterialDialog.h"
+#include "ui/win/dialogs/PhysicsOptionsDialog.h"
+#include "ui/win/dialogs/RenderProbeDialog.h"
+#include "ui/win/dialogs/SoundDialog.h"
+#include "ui/win/dialogs/TableInfoDialog.h"
 #include "ui/win/parts/TableWinUIPart.h"
 #include "unordered_dense.h"
 
@@ -117,6 +125,9 @@ public:
 
    void ShowSearchSelectDlg();
 
+   // Destroy all the modeless/manager dialogs owned by this table editor
+   void CloseAllDialogs();
+
    void OnPartChanged(IEditable *part);
    void OnPartAdded(IEditable *part);
    void OnPartRemoved(IEditable *part);
@@ -141,6 +152,16 @@ public:
    // UI part of the table itself. Unlike the other UI parts, it is not created through WinUIPartRegistry
    // but is a direct member of this editor, sharing its lifecycle.
    TableWinUIPart m_tablePart;
+
+   // Dialogs editing this table, owned by its editor (the editor grants access to the hosting WinEditor if needed)
+   ImageDialog m_imageMngDlg;
+   SoundDialog m_soundMngDlg;
+   CollectionManagerDialog m_collectionMngDlg;
+   PhysicsOptionsDialog m_physicsOptDialog;
+   TableInfoDialog m_tableInfoDialog;
+   DimensionDialog m_dimensionDialog;
+   RenderProbeDialog m_renderProbeDialog;
+   MaterialDialog m_materialDialog;
 
 protected:
    // Overriden from CWnd

@@ -5,10 +5,12 @@
 #include "ui/win/resource.h" // win32xx related IDW_*
 #include <wxx_docking.h>
 
+class WinEditor;
+
 class ToolbarDialog final : public CDialog
 {
 public:
-   ToolbarDialog();
+   explicit ToolbarDialog(WinEditor *vpxEditor);
    ~ToolbarDialog() override;
    LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -24,6 +26,7 @@ protected:
    BOOL PreTranslateMessage(MSG &msg) override;
 
 private:
+   WinEditor *const m_vpxEditor;
    HWND m_hwnd;
    CResizer m_resizer;
    CToolTip m_tooltip;
@@ -61,7 +64,7 @@ private:
 class CContainToolbar final : public CDockContainer
 {
 public:
-   CContainToolbar();
+   explicit CContainToolbar(WinEditor *vpxEditor);
    ~CContainToolbar() override {}
 
    ToolbarDialog *GetToolbarDialog()
@@ -76,7 +79,7 @@ private:
 class CDockToolbar final : public CDocker
 {
 public:
-   CDockToolbar();
+   explicit CDockToolbar(WinEditor *vpxEditor);
    ~CDockToolbar() override {}
 
    void OnClose() override;

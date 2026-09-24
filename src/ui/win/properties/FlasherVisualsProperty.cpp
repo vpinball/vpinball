@@ -342,7 +342,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       case IDC_GLASS_DOT_LIGHT: CHECK_UPDATE_ITEM(flash->m_d.m_glassRoughness, PropertyDialog::GetFloatTextbox(m_glassRoughnessEdit), flash); break;
       case IDC_GLASS_AMBIENT:
       {
-         CComObject<PinTable> *const ptable = g_pvp->GetActiveTable();
+         CComObject<PinTable> *const ptable = GetTable();
          if (ptable == nullptr)
             break;
          CHOOSECOLOR cc = m_colorDialog.GetParameters();
@@ -405,7 +405,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       case 1: CHECK_UPDATE_ITEM(flash->m_d.m_rotZ, PropertyDialog::GetFloatTextbox(m_rotZEdit), flash); break;
       case IDC_COLOR_BUTTON1:
       {
-         CComObject<PinTable> *const ptable = g_pvp->GetActiveTable();
+         CComObject<PinTable> *const ptable = GetTable();
          if (ptable == nullptr)
             break;
          CHOOSECOLOR cc = m_colorDialog.GetParameters();

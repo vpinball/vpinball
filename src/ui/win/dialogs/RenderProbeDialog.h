@@ -3,11 +3,12 @@
 #pragma once
 
 class RenderProbe;
+class PinTableWnd;
 
 class RenderProbeDialog final : public CDialog
 {
 public:
-   RenderProbeDialog();
+   explicit RenderProbeDialog(PinTableWnd *tableEditor);
 
 protected:
    BOOL OnInitDialog() override;
@@ -17,6 +18,8 @@ protected:
    void OnClose() override;
 
 private:
+   PinTableWnd *const m_tableEditor;
+
    void UpdateList();
    void LoadProbeToUI(RenderProbe *const pb);
    void SaveProbeFromUI(RenderProbe *const pb);

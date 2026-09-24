@@ -17,10 +17,12 @@ protected:
    LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 };
 
+class WinEditor;
+
 class NotesDialog final : public CDialog
 {
 public:
-   NotesDialog();
+   explicit NotesDialog(WinEditor *vpxEditor);
    ~NotesDialog() override = default;
 
    string GetText() const
@@ -48,6 +50,7 @@ protected:
    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
+   WinEditor *const m_vpxEditor;
    CResizer  m_resizer;
    NotesEdit m_notesEdit;
 };
@@ -55,7 +58,7 @@ private:
 class CContainNotes final : public CDockContainer
 {
 public:
-   CContainNotes();
+   explicit CContainNotes(WinEditor *vpxEditor);
    ~CContainNotes() override = default;
    NotesDialog* GetNotesDialog()
    {
@@ -69,7 +72,7 @@ private:
 class CDockNotes final : public CDocker
 {
 public:
-   CDockNotes();
+   explicit CDockNotes(WinEditor *vpxEditor);
    ~CDockNotes() override = default;
 
    CContainNotes* GetContainNotes()
@@ -98,5 +101,6 @@ protected:
    void OnClose() override;
 
 private:
+   WinEditor *const m_vpxEditor;
    CContainNotes m_notesContainer;
 };

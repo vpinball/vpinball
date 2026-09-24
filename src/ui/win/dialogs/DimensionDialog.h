@@ -5,10 +5,12 @@
 #include <wxx_listview.h>		// Add CListView
 #include "core/TableDB.h"
 
+class PinTableWnd;
+
 class DimensionDialog final : public CDialog
 {
 public:
-   DimensionDialog();
+   explicit DimensionDialog(PinTableWnd *tableEditor);
 
 protected:
    BOOL OnInitDialog() override;
@@ -17,6 +19,8 @@ protected:
    LRESULT OnNotify(WPARAM wparam, LPARAM lparam) override;
 
 private:
+   PinTableWnd *const m_tableEditor;
+
    void UpdateApplyState();
 
    CListView m_listView;

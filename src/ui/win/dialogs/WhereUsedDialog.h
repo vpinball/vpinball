@@ -8,12 +8,16 @@ enum EnumWhereUsedSource // The 'Where Used' button appears on both the 'Image M
    MATERIALS
 };
 
+class PinTableWnd;
+
 class WhereUsedDialog final : public CDialog
 {
 public:
    WhereUsedDialog();
    ~WhereUsedDialog() override;
    EnumWhereUsedSource m_whereUsedSource;
+
+   void SetEditor(PinTableWnd* tableEditor) { m_tableEditor = tableEditor; }
 
 protected:
    void OnDestroy() override;
@@ -25,6 +29,7 @@ protected:
    void OnCancel() override;
 
 private:
+   PinTableWnd* m_tableEditor = nullptr;
    CResizer m_resizer;
 
    void LoadPosition();

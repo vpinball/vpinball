@@ -6,11 +6,13 @@
 #include "core/VPApp.h"
 #include "parts/pintable.h"
 #include "renderer/RenderProbe.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
-RenderProbeDialog::RenderProbeDialog()
+RenderProbeDialog::RenderProbeDialog(PinTableWnd *tableEditor)
    : CDialog(IDD_RENDERPROBE)
+   , m_tableEditor(tableEditor)
    , hListHwnd(nullptr)
 {
 }
@@ -54,7 +56,7 @@ BOOL RenderProbeDialog::OnInitDialog()
 
 void RenderProbeDialog::UpdateList()
 {
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    ListView_DeleteAllItems(hListHwnd);
    for (size_t i = 0; i < pt->GetRenderProbeList().size(); i++)
    {
@@ -238,14 +240,14 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
       pb->SetRoughness(roughness);
       pb->SetReflectionPlane(plane);
       pb->SetReflectionMode((RenderProbe::ReflectionMode)reflectionMode);
-      CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+      CCO(PinTable) *const pt = m_tableEditor->m_table;
       pt->SetNonUndoableDirty(eSaveDirty);
    }
 }
 
 BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    UNREFERENCED_PARAMETER(lParam);
 
    switch (LOWORD(wParam))

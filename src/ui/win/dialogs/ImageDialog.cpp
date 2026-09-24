@@ -42,7 +42,9 @@ int ImageDialog::m_columnSortOrder;
 bool ImageDialog::m_doNotChange;
 WhereUsedDialog ImageDialog::m_whereUsedDlg_Images;
 
-ImageDialog::ImageDialog() : CDialog(IDD_IMAGEDIALOG)
+ImageDialog::ImageDialog(PinTableWnd *tableEditor)
+   : CDialog(IDD_IMAGEDIALOG)
+   , m_tableEditor(tableEditor)
 {
    m_columnSortOrder = 1;
    m_doNotChange = false;
@@ -217,7 +219,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (ppi != nullptr)
                {
                   ppi->m_name = pinfo->item.pszText;
-                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+                  CCO(PinTable) *const pt = m_tableEditor->m_table;
                   if (pt)
                   {
                      pt->SetNonUndoableDirty(eSaveDirty);
@@ -275,7 +277,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (ppi->m_alphaTestValue != v)
                {
                   ppi->m_alphaTestValue = v;
-                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+                  CCO(PinTable) *const pt = m_tableEditor->m_table;
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
 
@@ -398,7 +400,7 @@ void ImageDialog::UpdateImages()
                 if (ppi->m_alphaTestValue != v)
                 {
                     ppi->m_alphaTestValue = v;
-                    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+                    CCO(PinTable) *const pt = m_tableEditor->m_table;
                     pt->SetNonUndoableDirty(eSaveDirty);
                 }
 
@@ -430,7 +432,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          {
             ::SetFocus(hImageList);
             ListView_EditLabel(hImageList, sel);
-            CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+            CCO(PinTable) *const pt = m_tableEditor->m_table;
             pt->SetNonUndoableDirty(eSaveDirty);
          }
          break;
@@ -468,9 +470,11 @@ void ImageDialog::Import()
    const string& szInitialDir = g_app->m_settings.GetRecentDir_ImageDir();
 
    vector<string> szFileName;
-   if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
+   if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName,
+          "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png",
+          OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
-      CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+      CCO(PinTable) *const pt = m_tableEditor->m_table;
       const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
       ListView_SetItemState(hImageList, -1, 0, LVIS_SELECTED); // select nothing
@@ -499,7 +503,7 @@ void ImageDialog::Import()
 
 void ImageDialog::Export()
 {
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    const int selectedItemsCount = ListView_GetSelectedCount(hImageList);
 
@@ -519,7 +523,7 @@ void ImageDialog::Export()
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_app->GetInstanceHandle();
-            ofn.hwndOwner = g_pvp->GetHwnd();
+            ofn.hwndOwner = m_tableEditor->m_vpxEditor->GetHwnd();
             char g_filename[MAXSTRING];
             g_filename[0] = '\0';
 
@@ -648,7 +652,7 @@ void ImageDialog::DeleteImage()
       const int ans = MessageBox(LocalString(IDS_REMOVEIMAGE).m_szbuffer /*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+         CCO(PinTable) *const pt = m_tableEditor->m_table;
          int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
          int lastsel = -1;
          while (sel != -1)
@@ -709,7 +713,7 @@ void ImageDialog::Reimport()
 
                if (std::filesystem::exists(filePath))
                {
-                  CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+                  CCO(PinTable) *const pt = m_tableEditor->m_table;
                   m_overallFilesize -= ppi->GetFileSize();
                   m_overallGPUsize -= ppi->GetEstimatedGPUSize();
                   Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
@@ -756,7 +760,7 @@ void ImageDialog::UpdateAll()
          const auto &filePath = ppi->GetFilePath();
          if (std::filesystem::exists(filePath))
          {
-            CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+            CCO(PinTable) *const pt = m_tableEditor->m_table;
             m_overallFilesize -= ppi->GetFileSize();
             m_overallGPUsize -= ppi->GetEstimatedGPUSize();
             Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
@@ -784,9 +788,10 @@ void ImageDialog::UpdateAll()
 
 void ImageDialog::ShowWhereUsed()
 {
-   CCO(PinTable) *const ptCur = g_pvp->GetActiveTable();
+   CCO(PinTable) *const ptCur = m_tableEditor->m_table;
    if (ptCur)
    {
+      m_whereUsedDlg_Images.SetEditor(m_tableEditor);
       m_whereUsedDlg_Images.m_whereUsedSource = IMAGES;
       if (m_whereUsedDlg_Images.DoModal() == IDOK)
       {
@@ -807,7 +812,8 @@ void ImageDialog::ReimportFrom()
       {
          const string& szInitialDir = g_app->m_settings.GetRecentDir_ImageDir();
          vector<string> szFileName;
-         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
+         if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName,
+                "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", 0))
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
@@ -821,7 +827,7 @@ void ImageDialog::ReimportFrom()
                if (index != string::npos)
                   g_app->m_settings.SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
-               CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+               CCO(PinTable) *const pt = m_tableEditor->m_table;
                m_overallFilesize -= ppi->GetFileSize();
                m_overallGPUsize -= ppi->GetEstimatedGPUSize();
                Texture* newImage = pt->ImportImage(szFileName[0], ppi->m_name);
@@ -872,7 +878,7 @@ void ImageDialog::UpdateSizeText()
 
 void ImageDialog::ListImages(HWND hwndListView)
 {
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    if (pt)
    {
       for (const auto img : pt->m_vimage)
@@ -908,7 +914,7 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
    const char *format = ppi->IsHDR() ? (ppi->IsOpaque() ? "RGB_ HDR" : "RGBA HDR") : (ppi->IsOpaque() ? "RGB_" : "RGBA");
    ListView_SetItemText_Safe(hwndListView, index, 6, format);
 
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    if (pt)
    {
       if (StrCompareNoCase(pt->m_image, ppi->m_name) || StrCompareNoCase(pt->m_ballImage, ppi->m_name)

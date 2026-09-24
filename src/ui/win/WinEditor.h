@@ -10,15 +10,7 @@
 
 #include <wxx_docking.h>
 #include <wxx_dockframe.h>
-#include "dialogs/ImageDialog.h"
-#include "dialogs/SoundDialog.h"
 #include "dialogs/EditorOptionsDialog.h"
-#include "dialogs/CollectionManagerDialog.h"
-#include "dialogs/PhysicsOptionsDialog.h"
-#include "dialogs/RenderProbeDialog.h"
-#include "dialogs/TableInfoDialog.h"
-#include "dialogs/DimensionDialog.h"
-#include "dialogs/MaterialDialog.h"
 #include "dialogs/AboutDialog.h"
 #include "dialogs/ToolbarDialog.h"
 #include "dialogs/LayersListDialog.h"
@@ -242,15 +234,7 @@ private:
    bool    m_closing;
    HMODULE m_scintillaDll;
 
-   ImageDialog m_imageMngDlg;
-   SoundDialog m_soundMngDlg;
    EditorOptionsDialog m_editorOptDialog;
-   CollectionManagerDialog m_collectionMngDlg;
-   PhysicsOptionsDialog m_physicsOptDialog;
-   TableInfoDialog m_tableInfoDialog;
-   DimensionDialog m_dimensionDialog;
-   RenderProbeDialog m_renderProbeDialog;
-   MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
 
    ToolbarDialog *m_toolbarDialog = nullptr;

@@ -12,7 +12,10 @@
 namespace VPX::WinUI
 {
 
-RotatePointsDialog::RotatePointsDialog(PinTableWnd *editor) { DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_ROTATE), g_pvp->GetHwnd(), RotateProc, (size_t)editor); }
+RotatePointsDialog::RotatePointsDialog(PinTableWnd *editor)
+{
+   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_ROTATE), editor->m_vpxEditor->GetHwnd(), RotateProc, (size_t)editor);
+}
 
 int RotatePointsDialog::m_applyCount = 0;
 
@@ -56,8 +59,8 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
             {
                if (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) != BST_CHECKED)
                {
-                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(g_pvp->m_mouseCursorPosition.x).c_str());
-                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(g_pvp->m_mouseCursorPosition.y).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(editor->m_vpxEditor->m_mouseCursorPosition.x).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(editor->m_vpxEditor->m_mouseCursorPosition.y).c_str());
                }
                else
                {
@@ -147,7 +150,10 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
 }
 
 
-ScalePointsDialog::ScalePointsDialog(PinTableWnd *editor) { DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_SCALE), g_pvp->GetHwnd(), ScaleProc, (size_t)editor); }
+ScalePointsDialog::ScalePointsDialog(PinTableWnd *editor)
+{
+   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_SCALE), editor->m_vpxEditor->GetHwnd(), ScaleProc, (size_t)editor);
+}
 
 int ScalePointsDialog::m_applyCount = 0;
 
@@ -198,8 +204,8 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
             {
                if (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) != BST_CHECKED)
                {
-                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(g_pvp->m_mouseCursorPosition.x).c_str());
-                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(g_pvp->m_mouseCursorPosition.y).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(editor->m_vpxEditor->m_mouseCursorPosition.x).c_str());
+                  SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(editor->m_vpxEditor->m_mouseCursorPosition.y).c_str());
                }
                else
                {
@@ -321,7 +327,7 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
 
 TranslatePointsDialog::TranslatePointsDialog(PinTableWnd *editor)
 {
-   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_TRANSLATE), g_pvp->GetHwnd(), TranslateProc, (size_t)editor);
+   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_TRANSLATE), editor->m_vpxEditor->GetHwnd(), TranslateProc, (size_t)editor);
 }
 
 int TranslatePointsDialog::m_applyCount = 0;

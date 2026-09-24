@@ -61,7 +61,7 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_app->GetInstanceHandle(), nullptr);
 
       //Get active pinball table (one currently selected...you can edit more than one at a time)
-      CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+      CCO(PinTable) *const pt = m_tableEditor->m_table;
       if (pt)
       {
          vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
@@ -294,7 +294,7 @@ void WhereUsedDialog::RefreshList()
 {
    //This method is very similar to the WhereUsedDialog WM_INITDIALOG code.  We don't need to build the dialog from scratch through.  Just need to delete existing items and re-add them.
    //Get active pinball table (one currently selected...you can edit more than one at a time)
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    if (pt)
    {
       vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
@@ -377,10 +377,10 @@ void WhereUsedDialog::EditObject(HWND hWhereListView)
       }
       else
       {
-         IEditable *const pedit = g_pvp->GetActiveTable()->GetElementByName(controlName);
+         IEditable *const pedit = m_tableEditor->m_table->GetElementByName(controlName);
          if (pedit != nullptr)
          {
-            CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+            CCO(PinTable) *const pt = m_tableEditor->m_table;
             if (IWinUIPart *const psel = pt->m_tableEditor->GetUIPart(pedit); psel != nullptr)
             {
                pt->m_tableEditor->AddMultiSel(psel, false, false, false);

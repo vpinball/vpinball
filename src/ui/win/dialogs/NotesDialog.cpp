@@ -23,7 +23,9 @@ LRESULT NotesEdit::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
    return WndProcDefault(msg, wparam, lparam);
 }
 
-NotesDialog::NotesDialog() : CDialog(IDD_NOTES_DIALOG)
+NotesDialog::NotesDialog(WinEditor* vpxEditor)
+   : CDialog(IDD_NOTES_DIALOG)
+   , m_vpxEditor(vpxEditor)
 {
 }
 
@@ -60,7 +62,7 @@ INT_PTR NotesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void NotesDialog::SetText()
 {
-   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+   CCO(PinTable)* const pt = m_vpxEditor->GetActiveTable();
    if (pt != nullptr)
    {
       m_notesEdit.SetWindowText(pt->GetNotesText().c_str());
@@ -69,19 +71,22 @@ void NotesDialog::SetText()
 
 void NotesDialog::UpdateText()
 {
-   CCO(PinTable)* const pt = g_pvp->GetActiveTable();
+   CCO(PinTable)* const pt = m_vpxEditor->GetActiveTable();
    if (pt != nullptr)
       pt->SetNotesText(GetText());
 }
 
-CContainNotes::CContainNotes()
+CContainNotes::CContainNotes(WinEditor* vpxEditor)
+   : m_notesDialog(vpxEditor)
 {
    SetView(m_notesDialog);
    SetTabText(_T("Notes"));
    SetDockCaption(_T("Notes"));
 }
 
-CDockNotes::CDockNotes()
+CDockNotes::CDockNotes(WinEditor* vpxEditor)
+   : m_vpxEditor(vpxEditor)
+   , m_notesContainer(vpxEditor)
 {
    SetView(m_notesContainer);
    SetBarWidth(4);
@@ -96,5 +101,5 @@ void CDockNotes::OnClose()
 {
    UpdateText();
    CDocker::OnClose();
-   g_pvp->DestroyNotesDocker();
+   m_vpxEditor->DestroyNotesDocker();
 }

@@ -5,10 +5,13 @@
 
 #include "parts/pintable.h"
 #include "renderer/Texture.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
-TableInfoDialog::TableInfoDialog() : CDialog(IDD_TABLEINFO)
+TableInfoDialog::TableInfoDialog(PinTableWnd *tableEditor)
+   : CDialog(IDD_TABLEINFO)
+   , m_tableEditor(tableEditor)
 {
 }
 
@@ -35,9 +38,9 @@ int TableInfoDialog::AddListItem(HWND hwndListView, const string& szName, const 
 
 BOOL TableInfoDialog::OnInitDialog()
 {
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
 
-/*
+   /*
    HWND hwndParent = GetParent().GetHwnd();
    CRect rcDlg;
    RECT rcMain;
@@ -189,7 +192,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       case IDC_ADD:
       {
-         CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+         CCO(PinTable) *const pt = m_tableEditor->m_table;
          string szCustomName;
          VPGetDialogItemText(m_customNameEdit, szCustomName);
          if (!szCustomName.empty())
@@ -233,7 +236,7 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void TableInfoDialog::OnOK()
 {
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
 
    pt->m_tableName = m_tableNameEdit.GetWindowText().GetString();
    pt->m_author = m_authorEdit.GetWindowText().GetString();

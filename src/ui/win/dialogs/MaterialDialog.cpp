@@ -62,8 +62,9 @@ void MaterialDialog::setItemText(int id, float value)
    SetDlgItemText(id, f2sz(value).c_str());
 }
 
-MaterialDialog::MaterialDialog()
+MaterialDialog::MaterialDialog(PinTableWnd *tableEditor)
    : CDialog(IDD_MATERIALDIALOG)
+   , m_tableEditor(tableEditor)
    , m_hMaterialList(nullptr)
 {
 }
@@ -71,7 +72,7 @@ MaterialDialog::MaterialDialog()
 BOOL MaterialDialog::OnInitDialog()
 {
    m_hMaterialList = GetDlgItem(IDC_MATERIAL_LIST).GetHwnd();
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
 
    m_columnSortOrder = 1;
    m_deletingItem = false;
@@ -164,7 +165,7 @@ BOOL MaterialDialog::OnInitDialog()
 
 BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    UNREFERENCED_PARAMETER(lParam);
 
    switch (LOWORD(wParam))
@@ -406,7 +407,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          const string& szInitialDir = g_app->m_settings.GetRecentDir_MaterialDir();
 
          vector<string> szFilename;
-         if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
+         if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
          {
             int materialCount = 0;
             int versionNumber = 0;
@@ -475,7 +476,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_app->GetInstanceHandle();
-            ofn.hwndOwner = g_pvp->GetHwnd();
+            ofn.hwndOwner = m_tableEditor->m_vpxEditor->GetHwnd();
             ofn.lpstrFile = szFileName;
             //TEXT
             ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
@@ -648,7 +649,7 @@ void MaterialDialog::SetEditedMaterial(const Material& mat)
 
 void MaterialDialog::SaveEditedMaterial(Material& mat)
 {
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    float fv;
    fv = saturate(getItemText(IDC_DIFFUSE_EDIT));
    if (mat.m_fWrapLighting != fv)
@@ -723,7 +724,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       break;
       case WM_NOTIFY:
       {
-         CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+         CCO(PinTable) *const pt = m_tableEditor->m_table;
          const LPNMHDR pnmhdr = (LPNMHDR)lParam;
          if (wParam == IDC_MATERIAL_LIST)
          {
@@ -881,7 +882,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MaterialDialog::OnOK()
 {
-   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    const int count = ListView_GetSelectedCount(m_hMaterialList);
    if (count > 0)
    {
@@ -998,20 +999,21 @@ void MaterialDialog::SavePosition()
 
 void MaterialDialog::ShowWhereUsed()
 {
-    CCO(PinTable) *const ptCur = g_pvp->GetActiveTable();
-    if (ptCur)
-    {
+   CCO(PinTable) *const ptCur = m_tableEditor->m_table;
+   if (ptCur)
+   {
+      m_whereUsedDlg_Materials.SetEditor(m_tableEditor);
       m_whereUsedDlg_Materials.m_whereUsedSource = MATERIALS;
       if (m_whereUsedDlg_Materials.DoModal() == IDOK)
       {
          SetFocus();
       }
-    }
+   }
 }
 
 void MaterialDialog::ListMaterials(HWND hwndListView)
 {
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    if (pt)
    {
       for (Material *const pmat : pt->GetMaterialList())
@@ -1034,7 +1036,7 @@ int MaterialDialog::AddListMaterial(HWND hwndListView, Material *const pmat)
    const int index = ListView_InsertItem(hwndListView, &lvitem);
    ListView_SetItemText_Safe(hwndListView, index, 1, usedStringNo);
 
-   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   CCO(PinTable) *const pt = m_tableEditor->m_table;
    if (pt)
    {
       if (pmat->m_name == pt->m_playfieldMaterial)

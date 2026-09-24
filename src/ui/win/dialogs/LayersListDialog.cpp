@@ -647,7 +647,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       auto existing = std::ranges::find_if(m_content, [pinfo](const TreeEntry& te) { return te.item == pinfo->item.hItem; });
       if (existing != m_content.end())
       {
-         g_pvp->RenameEditable(existing->editable, pinfo->item.pszText);
+         m_activeTable->m_tableEditor->m_vpxEditor->RenameEditable(existing->editable, pinfo->item.pszText);
          Update();
       }
       return TRUE;

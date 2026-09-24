@@ -7,6 +7,7 @@
 #include "parts/Collection.h"
 #include "parts/primitive.h"
 #include "parts/light.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
@@ -234,20 +235,20 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_COLOR_BUTTON1:
             {
-                CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
-                if (ptable == nullptr)
-                    break;
-                CHOOSECOLOR cc = m_colorDialog.GetParameters();
-                cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-                m_colorDialog.SetParameters(cc);
-                m_colorDialog.SetColor(prim->m_d.m_color);
-                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
-                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
-                {
-                    prim->m_d.m_color = m_colorDialog.GetColor();
-                    m_colorButton.SetColor(prim->m_d.m_color);
-                    memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
-                }
+               CComObject<PinTable> *const ptable = GetTable();
+               if (ptable == nullptr)
+                  break;
+               CHOOSECOLOR cc = m_colorDialog.GetParameters();
+               cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+               m_colorDialog.SetParameters(cc);
+               m_colorDialog.SetColor(prim->m_d.m_color);
+               m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
+               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+               {
+                  prim->m_d.m_color = m_colorDialog.GetColor();
+                  m_colorButton.SetColor(prim->m_d.m_color);
+                  memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+               }
                 break;
             }
             case IDC_LIGHTMAP:
@@ -397,8 +398,9 @@ INT_PTR PrimitiveVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lP
 class MeshImportDialog final : public CDialog
 {
 public:
-   MeshImportDialog(Primitive *const prim)
+   MeshImportDialog(PinTableWnd *const tableEditor, Primitive *const prim)
       : CDialog(IDD_MESH_IMPORT_DIALOG)
+      , m_tableEditor(tableEditor)
       , m_prim(prim)
    {
    }
@@ -454,7 +456,7 @@ protected:
          const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
 
          vector<string> szFileName;
-         if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
+         if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
          {
             SetDlgItemText(IDC_FILENAME_EDIT, szFileName[0].c_str());
 
@@ -474,20 +476,22 @@ protected:
    }
 
 private:
+   PinTableWnd *const m_tableEditor;
    Primitive *const m_prim;
 };
 
 void PrimitiveVisualsProperty::LoadMeshDialog(Primitive *const prim)
 {
-   MeshImportDialog dialog(prim);
-   dialog.DoModal(g_pvp->GetHwnd());
+   MeshImportDialog dialog(GetTableEditor(), prim);
+   dialog.DoModal(GetVpxEditor()->GetHwnd());
 }
 
 class MeshExportDialog final : public CDialog
 {
 public:
-   MeshExportDialog(Primitive *const prim)
+   MeshExportDialog(PinTableWnd *const tableEditor, Primitive *const prim)
       : CDialog(IDD_MESH_EXPORT_DIALOG)
+      , m_tableEditor(tableEditor)
       , m_prim(prim)
    {
    }
@@ -528,7 +532,7 @@ protected:
          const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
 
          vector<string> szFileName;
-         if (g_pvp->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
+         if (m_tableEditor->m_vpxEditor->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
          {
             SetDlgItemText(IDC_FILENAME_EDIT, szFileName[0].c_str());
 
@@ -545,11 +549,12 @@ protected:
    }
 
 private:
+   PinTableWnd *const m_tableEditor;
    Primitive *const m_prim;
 };
 
 void PrimitiveVisualsProperty::ExportMeshDialog(Primitive *const prim)
 {
-   MeshExportDialog dialog(prim);
-   dialog.DoModal(g_pvp->GetHwnd());
+   MeshExportDialog dialog(GetTableEditor(), prim);
+   dialog.DoModal(GetVpxEditor()->GetHwnd());
 }

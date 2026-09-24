@@ -91,7 +91,7 @@ void BallVisualsProperty::UpdateProperties(const int dispid)
       case IDC_RADIUS_EDIT: CHECK_UPDATE_ITEM(ball->m_hitBall.m_d.m_radius, PropertyDialog::GetFloatTextbox(m_radiusEdit), ball); break;
       case IDC_COLOR_BUTTON1:
       {
-         CComObject<PinTable> *const ptable = g_pvp->GetActiveTable();
+         CComObject<PinTable> *const ptable = GetTable();
          if (ptable == nullptr)
             break;
          CHOOSECOLOR cc = m_colorDialog.GetParameters();

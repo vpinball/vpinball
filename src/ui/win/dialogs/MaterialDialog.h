@@ -6,10 +6,12 @@
 #include "WhereUsedDialog.h"
 #include "ui/win/properties/PropertyDialog.h"
 
+class PinTableWnd;
+
 class MaterialDialog final : public CDialog
 {
 public:
-   MaterialDialog();
+   explicit MaterialDialog(PinTableWnd* tableEditor);
 
 protected:
    BOOL OnInitDialog() override;
@@ -19,6 +21,8 @@ protected:
    void OnClose() override;
 
 private:
+   PinTableWnd* const m_tableEditor;
+
    void EnableAllMaterialDialogItems(const BOOL e);
    void SetEditedMaterial(const Material& mat);
    void SaveEditedMaterial(Material& mat);
