@@ -693,7 +693,7 @@ void LiveUI::SetupImGuiStyle(const bool isEditor) const
    style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.216f, 1.0f);
    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.114f, 0.592f, 0.925f, 1.0f);
    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.114f, 0.592f, 0.925f, 1.0f);
-   style.Colors[ImGuiCol_Header] = isEditor ? ImColor(0xFF3d3d3d) : ImColor(0.2f, 0.2f, 0.216f, 1.0f);
+   style.Colors[ImGuiCol_Header] = isEditor ? ImColor(0xFF2B5A8C) : ImColor(0.2f, 0.2f, 0.216f, 1.0f);
    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.114f, 0.592f, 0.925f, 1.0f);
    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.467f, 0.784f, 1.0f);
    style.Colors[ImGuiCol_Separator] = ImVec4(0.306f, 0.306f, 0.306f, 1.0f);
