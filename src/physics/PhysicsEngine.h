@@ -19,10 +19,12 @@ public:
 
    // Only supported for UI for the time being
    void SetDynamic(IEditable *editable) { GetUIQuadTree()->SetDynamic(editable); }
-   void Update(IEditable *editable) { GetUIQuadTree()->Update(editable); }
    void SetStatic(IEditable *editable) { GetUIQuadTree()->SetStatic(editable); }
 
-   // Allow to add/remove parts after initial setup
+   // Allow to update/add/remove parts after initial setup (live edit). Editing suspends the simulation,
+   // immediately updates the colliders (they may be displayed in the editor), and defers the static
+   // quadtree rebuild to the next physics update (see FlushStaticQuadTree)
+   void Update(IEditable *editable);
    void Add(IEditable *editable);
    void Remove(IEditable *editable);
 
@@ -62,6 +64,12 @@ private:
 
    void ReleaseVHO(const vector<HitObject *> &vho, bool isUI);
 
+   void AddStaticColliders(IEditable *editable); // Create the gameplay colliders of an editable and add them to the static quadtree's hit object list
+   void ReleaseStaticColliders(IEditable *editable); // Release the gameplay colliders of an editable and remove them from the static quadtree's hit object list
+   void RegisterHitObject(HitObject *hitObject); // Register a collider with the simulation (flippers, plungers, movers)
+   void UnregisterHitObject(HitObject *hitObject); // Unregister a collider from the simulation (flippers, plungers, movers)
+   void FlushStaticQuadTree(); // Rebuild the static quadtree structure after its hit object list was modified (colliders are kept up to date)
+
    Vertex3Ds m_gravity;
 
    unsigned int m_physicsMaxLoops;
@@ -93,6 +101,7 @@ private:
    vector<HitObject *>* m_pendingHitObjects = nullptr; // Hit objects pending insertion in quadtree, only defined while collecting through AddCollider callback method
 
    /*HitKD*/ HitQuadtree m_hitoctree;
+   bool m_staticQuadTreeDirty = false; // Hit object list of m_hitoctree was modified without rebuilding its structure (rebuilt lazily, see FlushStaticQuadTree)
 #ifdef USE_EMBREE
    HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #else

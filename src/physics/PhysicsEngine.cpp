@@ -39,15 +39,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
 
    AddCabinetBoundingHitShapes(table);
    for (HitObject *const pho : *m_pendingHitObjects)
-   {
-      if (pho->GetType() == eFlipper)
-         m_vFlippers.push_back(static_cast<HitFlipper*>(pho));
-      else if (pho->GetType() == ePlunger)
-         m_vPlungers.push_back(static_cast<HitPlunger*>(pho));
-      MoverObject * const pmo = pho->GetMoverObject();
-      if (pmo && pmo->AddToList()) // Spinner, Gate, Flipper, Plunger (ball is added separately on each create ball)
-         m_vmover.push_back(pmo);
-   }
+      RegisterHitObject(pho);
 
    PLOGI << "Initializing octree"; // For profiling
    m_hitoctree.EndReset();
@@ -111,28 +103,35 @@ void PhysicsEngine::SetGravity(float slopeDeg, float strength)
    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
 }
 
+void PhysicsEngine::Update(IEditable *editable)
+{
+   // Modifying physics suspends the simulation, allowing for interactive edit with a deferred quadtree rebuild
+   if (g_pplayer)
+      g_pplayer->SetPlayState(false);
+
+   // The UI quadtree is updated immediately as it supports interactive picking
+   GetUIQuadTree()->Update(editable);
+
+   // The gameplay colliders are also updated immediately (they may be displayed in the editor)
+   // but the static quadtree rebuild is deferred as it is a lengthy operation (see FlushStaticQuadTree)
+   if (editable->GetItemType() != eItemBall) // Balls manage their own HitBall in the dynamic quadtree
+   {
+      ReleaseStaticColliders(editable);
+      AddStaticColliders(editable);
+      m_staticQuadTreeDirty = true;
+   }
+}
+
 void PhysicsEngine::Add(IEditable *editable)
 {
    assert(editable->GetIHitable() != nullptr);
 
-   // Add the editable's colliders to the gameplay quadtree (balls insert and own their HitBall through AddCollider)
-   vector<HitObject *> hitObjects;
-   CollectColliders(editable, &hitObjects, false);
-   for (HitObject *const pho : hitObjects)
-   {
-      if (pho->GetType() == eFlipper)
-         m_vFlippers.push_back(static_cast<HitFlipper *>(pho));
-      else if (pho->GetType() == ePlunger)
-         m_vPlungers.push_back(static_cast<HitPlunger *>(pho));
-      if (MoverObject *const pmo = pho->GetMoverObject(); pmo && pmo->AddToList())
-         m_vmover.push_back(pmo);
-   }
-   if (!hitObjects.empty())
-   {
-      vector<HitObject *> &vho = m_hitoctree.BeginReset();
-      vho.insert(vho.end(), hitObjects.begin(), hitObjects.end());
-      m_hitoctree.EndReset();
-   }
+   // Modifying physics suspends the simulation, allowing for interactive edit with a deferred quadtree rebuild
+   if (g_pplayer)
+      g_pplayer->SetPlayState(false);
+
+   AddStaticColliders(editable);
+   m_staticQuadTreeDirty = true;
 
    if (m_UIQuadTtree)
       m_UIQuadTtree->AddEditable(editable);
@@ -142,6 +141,30 @@ void PhysicsEngine::Remove(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
 
+   // Modifying physics suspends the simulation, allowing for interactive edit with a deferred quadtree rebuild
+   if (g_pplayer)
+      g_pplayer->SetPlayState(false);
+
+   ReleaseStaticColliders(editable);
+   m_staticQuadTreeDirty = true;
+
+   if (m_UIQuadTtree)
+      m_UIQuadTtree->Remove(editable);
+}
+
+void PhysicsEngine::AddStaticColliders(IEditable *editable)
+{
+   // Collect the editable's colliders and add them to the gameplay quadtree (balls insert and own their HitBall through AddCollider)
+   vector<HitObject *> hitObjects;
+   CollectColliders(editable, &hitObjects, false);
+   for (HitObject *const pho : hitObjects)
+      RegisterHitObject(pho);
+   vector<HitObject *> &vho = m_hitoctree.BeginReset();
+   vho.insert(vho.end(), hitObjects.begin(), hitObjects.end());
+}
+
+void PhysicsEngine::ReleaseStaticColliders(IEditable *editable)
+{
    editable->GetIHitable()->PhysicRelease(this, false); // Balls remove their HitBall from the dynamic quadtree through RemoveCollider
    vector<HitObject *> &vho = m_hitoctree.BeginReset();
    std::erase_if(vho,
@@ -149,21 +172,41 @@ void PhysicsEngine::Remove(IEditable* editable)
       {
          if (ho->m_editable == editable)
          {
-            if (ho->GetType() == eFlipper)
-               RemoveFromVectorSingle(m_vFlippers, static_cast<HitFlipper *>(ho));
-            else if (ho->GetType() == ePlunger)
-               RemoveFromVectorSingle(m_vPlungers, static_cast<HitPlunger *>(ho));
-            if (MoverObject *const pmo = ho->GetMoverObject(); pmo && pmo->AddToList())
-               RemoveFromVectorSingle(m_vmover, pmo);
+            UnregisterHitObject(ho);
             delete ho;
             return true;
          }
          return false;
       });
-   m_hitoctree.EndReset();
+}
 
-   if (m_UIQuadTtree)
-      m_UIQuadTtree->Remove(editable);
+void PhysicsEngine::RegisterHitObject(HitObject *hitObject)
+{
+   if (hitObject->GetType() == eFlipper)
+      m_vFlippers.push_back(static_cast<HitFlipper *>(hitObject));
+   else if (hitObject->GetType() == ePlunger)
+      m_vPlungers.push_back(static_cast<HitPlunger *>(hitObject));
+   if (MoverObject *const pmo = hitObject->GetMoverObject(); pmo && pmo->AddToList()) // Spinner, Gate, Flipper, Plunger (ball is added separately on each create ball)
+      m_vmover.push_back(pmo);
+}
+
+void PhysicsEngine::UnregisterHitObject(HitObject *hitObject)
+{
+   if (hitObject->GetType() == eFlipper)
+      RemoveFromVectorSingle(m_vFlippers, static_cast<HitFlipper *>(hitObject));
+   else if (hitObject->GetType() == ePlunger)
+      RemoveFromVectorSingle(m_vPlungers, static_cast<HitPlunger *>(hitObject));
+   if (MoverObject *const pmo = hitObject->GetMoverObject(); pmo && pmo->AddToList())
+      RemoveFromVectorSingle(m_vmover, pmo);
+}
+
+void PhysicsEngine::FlushStaticQuadTree()
+{
+   if (m_staticQuadTreeDirty)
+   {
+      m_staticQuadTreeDirty = false;
+      m_hitoctree.EndReset();
+   }
 }
 
 void PhysicsEngine::AddCollider(HitObject *collider, const bool isUI)
@@ -290,6 +333,7 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
    }
    else
    {
+      FlushStaticQuadTree();
       m_hitoctree_dynamic.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
       m_hitoctree.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    }
@@ -407,6 +451,9 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 
    if (m_nextPhysicsFrameTime < initial_time_usec)
       g_pplayer->m_pluginAPI.BroadcastVPXMsg(m_onUpdatePhysicsMsgId, nullptr);
+
+   // Rebuild the static quadtree if physics was edited while the simulation was suspended (live edit)
+   FlushStaticQuadTree();
 
    while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {
