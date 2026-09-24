@@ -38,6 +38,18 @@ void EditorChrome::RenderMenuBar()
    {
       if (!editor.IsInspectMode() && ImGui::BeginMenu("File"))
       {
+         if (ImGui::BeginMenu("New"))
+         {
+            if (ImGui::MenuItem("New Table", "Ctrl+N"))
+               editor.NewTable(EditorUI::NewTableTemplate::Blank);
+            if (ImGui::MenuItem("Completely Blank Table"))
+               editor.NewTable(EditorUI::NewTableTemplate::Stripped);
+            if (ImGui::MenuItem("Full Example Table"))
+               editor.NewTable(EditorUI::NewTableTemplate::Example);
+            if (ImGui::MenuItem("Light Sequence Demo Table"))
+               editor.NewTable(EditorUI::NewTableTemplate::LightSeq);
+            ImGui::EndMenu();
+         }
          if (ImGui::MenuItem("Load..."))
             editor.LoadTable();
          if (ImGui::MenuItem("Save", "Ctrl+S"))
