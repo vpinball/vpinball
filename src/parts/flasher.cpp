@@ -651,12 +651,14 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    const BaseTexture *const prev = g_pplayer->m_dmdFrame.get();
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    assert(unAdvertise || prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
-   // Convert from linear [0..100] luminance
+   // Convert from VPinMAME's [0..100] legacy brightness percentage, which is gamma encoded: it is
+   // built from the same dmd_perc0/33/66 settings that core_dmd_send_vpm turns into the sRGB
+   // components of RawDmdColoredPixels and of its own output window, so it decodes the same way
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    float *const data = static_cast<float*>(m_dmdFrame->data());
    for (int ofs = 0; ofs < size; ++ofs) // To be lock free, we accept a minor race condition here as we are writing the new frame while it may be read through the plugin API
-      data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
+      data[ofs] = InvsRGBPercent(V_UI1(&p[ofs]));
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
    g_pplayer->m_pluginAPI.OnDMDUpdated(this, m_dmdFrame);
