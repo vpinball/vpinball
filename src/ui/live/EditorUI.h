@@ -82,6 +82,14 @@ private:
    // active one (property pane target and gizmo pivot). Empty unless m_selection.GetType() == S_EDITABLE.
    vector<std::shared_ptr<EditorUIPart>> m_multiSel;
    std::shared_ptr<EditorUIPart> m_outlinerAnchor; // Anchor part for shift+click range selection in the outliner
+   // Multi selection of shared resources (images, sounds, materials): all selected items, with
+   // m_selection's payload being the active one. Empty unless m_selection has the matching type.
+   vector<Texture *> m_multiSelImages;
+   vector<VPX::Sound *> m_multiSelSounds;
+   vector<Material *> m_multiSelMaterials;
+   Texture *m_outlinerImageAnchor = nullptr; // Anchors for shift+click range selection in the outliner
+   VPX::Sound *m_outlinerSoundAnchor = nullptr;
+   Material *m_outlinerMaterialAnchor = nullptr;
    bool m_boxSelectActive = false;
    ImVec2 m_boxSelectStart;
    bool IsPartSelected(const std::shared_ptr<EditorUIPart> &part) const;

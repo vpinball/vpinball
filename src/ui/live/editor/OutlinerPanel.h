@@ -8,8 +8,8 @@ namespace VPX::EditorUI
 class EditorUI;
 class EditorUIPart;
 
-// Left side panel listing the view setups, materials, images, render probes and
-// the scene parts tree, used to select the edited object.
+// Left side panel listing the view setups, materials, images, sounds, render probes
+// and the scene parts tree, used to select the edited object.
 class OutlinerPanel
 {
 public:
@@ -25,6 +25,10 @@ public:
 
 private:
    bool MatchesFilter(const string &name) const;
+
+   // Render a resource list section (images, sounds, materials) with ctrl/shift multi selection.
+   // multiSel holds all the selected items, anchor is the last clicked one for range selection.
+   template <class T> void RenderResourceList(const char *label, vector<T *> &items, vector<T *> &multiSel, T *&anchor, const std::function<string(T *)> &nameOf);
 
    EditorUI &m_editor;
    string m_filter;

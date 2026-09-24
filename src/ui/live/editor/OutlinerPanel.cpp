@@ -123,39 +123,12 @@ void OutlinerPanel::Render(float topBarHeight)
       }
       ImGui::TreePop();
    }
-   if (ImGui::TreeNode("Materials"))
-   {
-      const std::function<string(Material *)> map = [](Material *image) -> string { return image->m_name; };
-      for (Material *&material : SortedCaseInsensitive(editor.m_table->m_materials, map))
-      {
-         Selection sel(material);
-         if (MatchesFilter(material->m_name) && ImGui::Selectable(material->m_name.c_str(), editor.m_selection == sel))
-            editor.SetSelection(sel);
-      }
-      ImGui::TreePop();
-   }
-   if (ImGui::TreeNode("Images"))
-   {
-      const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_name; };
-      for (Texture *&image : SortedCaseInsensitive(editor.m_table->m_vimage, map))
-      {
-         Selection sel(image);
-         if (MatchesFilter(image->m_name) && ImGui::Selectable(image->m_name.c_str(), editor.m_selection == sel))
-            editor.SetSelection(sel);
-      }
-      ImGui::TreePop();
-   }
-   if (ImGui::TreeNode("Sounds"))
-   {
-      const std::function<string(VPX::Sound *)> map = [](VPX::Sound *sound) -> string { return sound->GetName(); };
-      for (VPX::Sound *&sound : SortedCaseInsensitive(editor.m_table->m_vsound, map))
-      {
-         Selection sel(sound);
-         if (MatchesFilter(sound->GetName()) && ImGui::Selectable(sound->GetName().c_str(), editor.m_selection == sel))
-            editor.SetSelection(sel);
-      }
-      ImGui::TreePop();
-   }
+   const std::function<string(Material *)> materialName = [](Material *material) -> string { return material->m_name; };
+   RenderResourceList("Materials", editor.m_table->m_materials, editor.m_multiSelMaterials, editor.m_outlinerMaterialAnchor, materialName);
+   const std::function<string(Texture *)> imageName = [](Texture *image) -> string { return image->m_name; };
+   RenderResourceList("Images", editor.m_table->m_vimage, editor.m_multiSelImages, editor.m_outlinerImageAnchor, imageName);
+   const std::function<string(VPX::Sound *)> soundName = [](VPX::Sound *sound) -> string { return sound->GetName(); };
+   RenderResourceList("Sounds", editor.m_table->m_vsound, editor.m_multiSelSounds, editor.m_outlinerSoundAnchor, soundName);
    if (ImGui::TreeNode("Render Probes"))
    {
       for (RenderProbe *probe : editor.m_table->m_vrenderprobe)
@@ -312,4 +285,71 @@ void OutlinerPanel::Render(float topBarHeight)
    ImGui::PopStyleVar(3);
 }
 
+template <class T> void OutlinerPanel::RenderResourceList(const char *label, vector<T *> &items, vector<T *> &multiSel, T *&anchor, const std::function<string(T *)> &nameOf)
+{
+   if (!ImGui::TreeNode(label))
+      return;
+   EditorUI &editor = m_editor;
+   const std::vector<T *> sorted = SortedCaseInsensitive(items, nameOf);
+   int pos = 0;
+   for (T *const item : sorted)
+   {
+      if (!MatchesFilter(nameOf(item)))
+         continue;
+      ImGui::PushID(pos++);
+      const bool selected = std::ranges::find(multiSel, item) != multiSel.end();
+      const bool clicked = ImGui::Selectable(nameOf(item).c_str(), selected);
+      ImGui::PopID();
+      if (!clicked)
+         continue;
+      const ImGuiIO &selIO = ImGui::GetIO();
+      if (selIO.KeyCtrl)
+      {
+         const auto it = std::ranges::find(multiSel, item);
+         if (it == multiSel.end())
+         {
+            multiSel.push_back(item);
+            editor.m_selection = Selection(item);
+         }
+         else
+         {
+            const bool wasActive = editor.m_selection == Selection(item);
+            multiSel.erase(it);
+            if (multiSel.empty())
+               editor.m_selection = Selection();
+            else if (wasActive)
+               editor.m_selection = Selection(multiSel.back());
+         }
+         anchor = item;
+      }
+      else if (selIO.KeyShift && anchor != nullptr)
+      {
+         // Range selection between the anchor and the clicked item, restricted to the visible items
+         vector<T *> visible;
+         for (T *const v : sorted)
+            if (MatchesFilter(nameOf(v)))
+               visible.push_back(v);
+         const auto anchorIt = std::ranges::find(visible, anchor);
+         const auto itemIt = std::ranges::find(visible, item);
+         if (anchorIt == visible.end() || itemIt == visible.end())
+         {
+            editor.SetSelection(Selection(item));
+            anchor = item;
+         }
+         else
+         {
+            multiSel.clear();
+            for (auto it = std::min(anchorIt, itemIt); it != std::max(anchorIt, itemIt) + 1; ++it)
+               multiSel.push_back(*it);
+            editor.m_selection = Selection(item);
+         }
+      }
+      else
+      {
+         editor.SetSelection(Selection(item));
+         anchor = item;
+      }
+   }
+   ImGui::TreePop();
+}
 }

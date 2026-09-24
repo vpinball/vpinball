@@ -1225,7 +1225,13 @@ void EditorUI::ClearSelection()
 {
    m_selection = Selection();
    m_multiSel.clear();
+   m_multiSelImages.clear();
+   m_multiSelSounds.clear();
+   m_multiSelMaterials.clear();
    m_outlinerAnchor.reset();
+   m_outlinerImageAnchor = nullptr;
+   m_outlinerSoundAnchor = nullptr;
+   m_outlinerMaterialAnchor = nullptr;
 }
 
 EditorUI::UndoSelectionState EditorUI::CaptureUndoSelection() const
@@ -1276,6 +1282,10 @@ void EditorUI::RestoreUndoSelection(const UndoSelectionState &state)
    for (const auto &part : state.multiSel)
       if (std::shared_ptr<EditorUIPart> resolved = resolve(part))
          m_multiSel.push_back(resolved);
+   // Drop resources that no longer exist in the table
+   std::erase_if(m_multiSelImages, [this](const Texture *image) { return std::ranges::find(m_table->m_vimage, image) == m_table->m_vimage.end(); });
+   std::erase_if(m_multiSelSounds, [this](const VPX::Sound *sound) { return std::ranges::find(m_table->m_vsound, sound) == m_table->m_vsound.end(); });
+   std::erase_if(m_multiSelMaterials, [this](const Material *material) { return std::ranges::find(m_table->m_materials, material) == m_table->m_materials.end(); });
    switch (state.selection.GetType())
    {
    case Selection::S_EDITABLE:
@@ -1303,8 +1313,17 @@ void EditorUI::SetSelection(const Selection &selection)
 {
    m_selection = selection;
    m_multiSel.clear();
-   if (selection.GetType() == Selection::S_EDITABLE)
-      m_multiSel.push_back(selection.GetPart());
+   m_multiSelImages.clear();
+   m_multiSelSounds.clear();
+   m_multiSelMaterials.clear();
+   switch (selection.GetType())
+   {
+   case Selection::S_EDITABLE: m_multiSel.push_back(selection.GetPart()); break;
+   case Selection::S_IMAGE: m_multiSelImages.push_back(selection.GetImage()); break;
+   case Selection::S_SOUND: m_multiSelSounds.push_back(selection.GetSound()); break;
+   case Selection::S_MATERIAL: m_multiSelMaterials.push_back(selection.GetMaterial()); break;
+   default: break;
+   }
 }
 
 void EditorUI::TogglePartSelection(const std::shared_ptr<EditorUIPart> &part)

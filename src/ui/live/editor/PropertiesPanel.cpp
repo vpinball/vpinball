@@ -5,6 +5,7 @@
 
 #include "audio/AudioPlayer.h"
 #include "core/player.h"
+#include "core/SettingsService.h"
 #include "parts/Material.h"
 #include "parts/Sound.h"
 #include "parts/primitive.h"
@@ -37,6 +38,12 @@ void PropertiesPanel::Render(float topBarHeight)
 
    if (editor.m_multiSel.size() > 1)
       ImGui::TextDisabled("%d parts selected (editing the active one)", (int)editor.m_multiSel.size());
+   if (editor.m_multiSelImages.size() > 1)
+      ImGui::TextDisabled("%d images selected (editing the active one)", (int)editor.m_multiSelImages.size());
+   if (editor.m_multiSelSounds.size() > 1)
+      ImGui::TextDisabled("%d sounds selected (editing the active one)", (int)editor.m_multiSelSounds.size());
+   if (editor.m_multiSelMaterials.size() > 1)
+      ImGui::TextDisabled("%d materials selected (editing the active one)", (int)editor.m_multiSelMaterials.size());
 
    PropertyPane props(editor.m_table);
    switch (editor.m_units)
@@ -113,6 +120,8 @@ void PropertiesPanel::Render(float topBarHeight)
       case Selection::S_SOUND: SoundProperties(props, editor.m_selection.GetSound()); break;
       }
    }
+
+   RenderPopups();
 
    ImGui::End();
    ImGui::PopStyleVar(3);
@@ -511,6 +520,8 @@ void PropertiesPanel::ImageProperties(PropertyPane &props, Texture *texture)
 
    props.Header("Image"s, [texture]() { return MakeWString(texture->m_name); }, [texture](const wstring &v) { texture->m_name = MakeString(v); });
 
+   ImageActions(props);
+
    ImTextureID image = editor.m_renderer->m_renderDevice->m_texMan.LoadTexture(texture, false);
    if (image)
    {
@@ -599,6 +610,10 @@ void PropertiesPanel::MaterialProperties(PropertyPane &props, Material *material
    Material *editedMaterial = props.GetEditedPart<Material>(material);
    props.Header("Material"s, [editedMaterial]() { return MakeWString(editedMaterial->m_name); }, [editedMaterial](const wstring &v) { editedMaterial->m_name = MakeString(v); });
 
+   ImGui::BeginDisabled(m_editor.m_table->m_liveBaseTable != nullptr); // Material list actions are not supported in inspection mode
+   MaterialActions(props);
+   ImGui::EndDisabled();
+
    if (props.BeginSection("Visuals"s))
    {
       props.Combo<Material>(
@@ -665,7 +680,6 @@ void PropertiesPanel::MaterialProperties(PropertyPane &props, Material *material
    }
 }
 
-
 void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
 {
    EditorUI &editor = m_editor;
@@ -695,6 +709,10 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          sound->SetName(MakeString(v));
          editor.m_table->SetNonUndoableDirty(eSaveDirty);
       });
+
+   ImGui::BeginDisabled(editor.m_table->m_liveBaseTable != nullptr); // Sound list actions are not supported in inspection mode as sounds are shared
+   SoundActions(props);
+   ImGui::EndDisabled();
 
    ImGui::BeginDisabled(audioPlayer == nullptr);
    if (ImGui::Button(isPlaying ? (ICON_FK_STOP " Stop"s).c_str() : (ICON_FK_PLAY " Play"s).c_str()))
@@ -767,12 +785,653 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          m_soundInfo = audioPlayer ? audioPlayer->GetSoundInformations(sound) : std::optional<VPX::SoundSpec>();
       }
       ImGui::TextWrapped("%s", sound->GetImportPath().string().c_str());
-      ImGui::TextDisabled("Size: %s", SizeToReadable(sound->GetFileSize()).c_str());
+      ImGui::TextDisabled("Size: %s", SizeToReadable(sound->GetFileSize()).c_str()); //
       if (m_soundInfo)
          ImGui::TextDisabled("%.2f s, %u Hz, %u channel%s", m_soundInfo->lengthInSeconds, m_soundInfo->sampleFrequency, m_soundInfo->nChannels, m_soundInfo->nChannels > 1 ? "s" : "");
       props.EndSection();
    }
 
    ImGui::EndDisabled();
+}
+
+void PropertiesPanel::RequestConfirm(const string &message, const std::function<void()> &action)
+{
+   m_confirmMessage = message;
+   m_confirmAction = action;
+   ImGui::OpenPopup("Confirm Action");
+}
+
+void PropertiesPanel::RequestWhereUsed(bool images)
+{
+   m_whereUsedImages = images;
+   m_whereUsed.clear();
+   if (images)
+      m_editor.m_table->ShowWhereImagesUsed(m_whereUsed);
+   else
+      m_editor.m_table->ShowWhereMaterialsUsed(m_whereUsed);
+   ImGui::OpenPopup("Where Used");
+}
+
+void PropertiesPanel::RenderPopups()
+{
+   EditorUI &editor = m_editor;
+
+   // Confirmation popup for destructive resource actions (OpenPopup is called from this window's scope)
+   if (ImGui::BeginPopupModal("Confirm Action", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      ImGui::TextWrapped("%s", m_confirmMessage.c_str());
+      ImGui::Separator();
+      if (ImGui::Button("OK"))
+      {
+         if (m_confirmAction)
+            m_confirmAction();
+         m_confirmAction = nullptr;
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Cancel"))
+      {
+         m_confirmAction = nullptr;
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+   }
+
+   if (ImGui::BeginPopupModal("Where Used", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      const float dpi = editor.m_liveUI.GetDPI();
+      ImGui::TextDisabled("%s used by:", m_whereUsedImages ? "Images" : "Materials");
+      if (ImGui::BeginTable("WhereUsedTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(400.f * dpi, 300.f * dpi)))
+      {
+         ImGui::TableSetupColumn(m_whereUsedImages ? "Image" : "Material");
+         ImGui::TableSetupColumn("Used By");
+         ImGui::TableSetupColumn("Property");
+         ImGui::TableHeadersRow();
+         for (const WhereUsedInfo &where : m_whereUsed)
+         {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::PushID(&where);
+            // Clicking a row selects the using part in the editor, like the Win32 dialog's 'Edit Object' button
+            if (ImGui::Selectable(where.searchObjectName.c_str(), false, ImGuiSelectableFlags_SpanAllColumns))
+            {
+               if (IEditable *const editable = editor.m_table->GetElementByName(where.whereUsedObjectname.c_str()))
+                  if (const auto it = editor.m_editableMap.find(editable); it != editor.m_editableMap.end())
+                     editor.SetSelection(Selection(it->second));
+               ImGui::CloseCurrentPopup();
+            }
+            ImGui::PopID();
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(where.whereUsedObjectname.c_str());
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(where.whereUsedPropertyName.c_str());
+         }
+         ImGui::EndTable();
+      }
+      if (ImGui::Button("Close"))
+         ImGui::CloseCurrentPopup();
+      ImGui::EndPopup();
+   }
+}
+
+void PropertiesPanel::ImageActions(PropertyPane &props)
+{
+   EditorUI &editor = m_editor;
+   PinTable *const table = editor.m_table;
+   vector<Texture *> &sel = editor.m_multiSelImages;
+
+   // Update the selection when a reimport replaced an image (the old object is deleted)
+   const auto replaceImage = [&editor](Texture *oldImage, Texture *newImage)
+   {
+      std::replace(editor.m_multiSelImages.begin(), editor.m_multiSelImages.end(), oldImage, newImage);
+      if (editor.m_selection == Selection(oldImage))
+         editor.m_selection = (newImage != nullptr) ? Selection(newImage) : Selection();
+      if (editor.m_outlinerImageAnchor == oldImage)
+         editor.m_outlinerImageAnchor = newImage;
+   };
+
+   // Apply asynchronous file dialog results
+   if (m_pendingImageImport && !m_pendingImageImport->empty())
+   {
+      vector<Texture *> imported;
+      for (const string &file : *m_pendingImageImport)
+         if (Texture *const tex = table->ImportImage(file, ""s))
+            imported.push_back(tex);
+      g_settingsService.GetAppSettings().SetRecentDir_ImageDir(std::filesystem::path(m_pendingImageImport->front()).parent_path().string(), false);
+      m_pendingImageImport = nullptr;
+      if (!imported.empty())
+      {
+         sel = imported;
+         editor.m_selection = Selection(imported.back());
+         editor.m_outlinerImageAnchor = imported.back();
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      else
+         m_actionStatus = "Failed to import the selected file(s)"s;
+   }
+   if (m_pendingImageReimport && !m_pendingImageReimport->empty())
+   {
+      const string file = *m_pendingImageReimport;
+      m_pendingImageReimport = nullptr;
+      Texture *const old = m_pendingImageReimportTarget;
+      m_pendingImageReimportTarget = nullptr;
+      if (old != nullptr)
+      {
+         // ImportImage replaces and deletes the image that already uses this name
+         if (Texture *const tex = table->ImportImage(file, old->m_name))
+         {
+            replaceImage(old, tex);
+            table->SetNonUndoableDirty(eSaveDirty);
+         }
+         else
+            m_actionStatus = "Failed to reimport '"s + file + '\'';
+         g_settingsService.GetAppSettings().SetRecentDir_ImageDir(std::filesystem::path(file).parent_path().string(), false);
+      }
+   }
+   if (m_pendingImageExport && !m_pendingImageExport->empty())
+   {
+      const std::filesystem::path path = *m_pendingImageExport;
+      m_pendingImageExport = nullptr;
+      // Like the Win32 dialog: with multiple selected images, only the folder of the picked file is used
+      int failed = 0;
+      for (Texture *tex : m_pendingImageExportSel)
+      {
+         const std::filesystem::path file = (m_pendingImageExportSel.size() > 1)
+            ? path.parent_path() / (m_exportUseNames ? tex->m_name + tex->GetFilePath().extension().string() : tex->GetFilePath().filename().string())
+            : path;
+         if (!tex->SaveFile(file.string()))
+            failed++;
+      }
+      m_pendingImageExportSel.clear();
+      if (failed > 0)
+         m_actionStatus = "Failed to export "s + std::to_string(failed) + " image(s)"s;
+      g_settingsService.GetAppSettings().SetRecentDir_ImageDir(path.parent_path().string(), false);
+   }
+
+   if (props.BeginSection("Actions"s))
+   {
+      const bool canImport = editor.m_player->m_playfieldWnd != nullptr;
+      ImGui::BeginDisabled(!canImport);
+      if (ImGui::Button("Import"))
+      {
+         m_pendingImageImport = std::make_shared<vector<string>>();
+         const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
+         const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
+         SDL_ShowOpenFileDialog(
+            [](void *userdata, const char *const *filelist, int filter)
+            {
+               auto *res = static_cast<std::shared_ptr<vector<string>> *>(userdata);
+               if (filelist != nullptr)
+                  for (int i = 0; filelist[i] != nullptr; i++)
+                     (**res).push_back(filelist[i]);
+               delete res;
+            },
+            new std::shared_ptr<vector<string>>(m_pendingImageImport), //
+            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str(), true);
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty());
+      if (ImGui::Button("Reimport"))
+      {
+         RequestConfirm("Reimport the selected image(s) using their existing file path(s)?"s,
+            [this, replaceImage]()
+            {
+               EditorUI &editor = m_editor;
+               const vector<Texture *> sel = editor.m_multiSelImages;
+               int missing = 0;
+               for (Texture *const old : sel)
+                  if (std::filesystem::exists(old->GetFilePath()))
+                     replaceImage(old, m_editor.m_table->ImportImage(old->GetFilePath(), old->m_name));
+                  else
+                     missing++;
+               if (missing > 0)
+                  m_actionStatus = std::to_string(missing) + " file(s) not found"s;
+               m_editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            });
+      }
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.size() != 1);
+      if (ImGui::Button("Reimport From"))
+      {
+         RequestConfirm("Reimport the selected image using a different file path?"s,
+            [this]()
+            {
+               if (m_editor.m_player->m_playfieldWnd == nullptr)
+                  return;
+               m_pendingImageReimportTarget = m_editor.m_multiSelImages.empty() ? nullptr : m_editor.m_multiSelImages.back();
+               m_pendingImageReimport = std::make_shared<string>();
+               const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
+               const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
+               SDL_ShowOpenFileDialog(
+                  [](void *userdata, const char *const *filelist, int filter)
+                  {
+                     auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+                     if (filelist != nullptr && filelist[0] != nullptr)
+                        **res = filelist[0];
+                     delete res;
+                  },
+                  new std::shared_ptr<string>(m_pendingImageReimport), //
+                  m_editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str(), false);
+            });
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(table->m_vimage.empty());
+      if (ImGui::Button("Reimport All"))
+      {
+         const vector<Texture *> all = table->m_vimage;
+         int missing = 0;
+         for (Texture *const old : all)
+            if (std::filesystem::exists(old->GetFilePath()))
+               replaceImage(old, table->ImportImage(old->GetFilePath(), old->m_name));
+            else
+               missing++;
+         if (missing > 0)
+            m_actionStatus = std::to_string(missing) + " file(s) not found"s;
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      ImGui::EndDisabled();
+      ImGui::EndDisabled();
+
+      if (ImGui::Button("Where Used"))
+         RequestWhereUsed(true);
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty() || !canImport);
+      if (ImGui::Button("Export"))
+      {
+         m_pendingImageExportSel = sel;
+         m_pendingImageExport = std::make_shared<string>();
+         const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
+         const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
+         SDL_ShowSaveFileDialog(
+            [](void *userdata, const char *const *filelist, int filter)
+            {
+               auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+               if (filelist != nullptr && filelist[0] != nullptr)
+                  **res = filelist[0];
+               delete res;
+            },
+            new std::shared_ptr<string>(m_pendingImageExport), //
+            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str());
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty());
+      if (ImGui::Button("Delete"))
+      {
+         RequestConfirm("Delete the selected image(s)?"s,
+            [this]()
+            {
+               EditorUI &editor = m_editor;
+               for (Texture *const tex : editor.m_multiSelImages)
+                  editor.m_table->RemoveImage(tex);
+               editor.m_multiSelImages.clear();
+               editor.m_outlinerImageAnchor = nullptr;
+               editor.m_selection = Selection();
+               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            });
+      }
+      ImGui::EndDisabled();
+
+      ImGui::Checkbox("Use names on export", &m_exportUseNames);
+      if (!m_actionStatus.empty())
+         ImGui::TextColored(ImVec4(1.f, 0.4f, 0.4f, 1.f), "%s", m_actionStatus.c_str());
+      props.EndSection();
+   }
+}
+
+void PropertiesPanel::SoundActions(PropertyPane &props)
+{
+   EditorUI &editor = m_editor;
+   PinTable *const table = editor.m_table;
+   vector<VPX::Sound *> &sel = editor.m_multiSelSounds;
+
+   // Apply asynchronous file dialog results
+   if (m_pendingSoundImport && !m_pendingSoundImport->empty())
+   {
+      vector<VPX::Sound *> imported;
+      for (const string &file : *m_pendingSoundImport)
+         if (VPX::Sound *const sound = table->ImportSound(file))
+            imported.push_back(sound);
+      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(std::filesystem::path(m_pendingSoundImport->front()).parent_path().string(), false);
+      m_pendingSoundImport = nullptr;
+      if (!imported.empty())
+      {
+         sel = imported;
+         editor.m_selection = Selection(imported.back());
+         editor.m_outlinerSoundAnchor = imported.back();
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      else
+         m_actionStatus = "Failed to import the selected file(s)"s;
+   }
+   if (m_pendingSoundReimport && !m_pendingSoundReimport->empty())
+   {
+      const string file = *m_pendingSoundReimport;
+      m_pendingSoundReimport = nullptr;
+      if (m_pendingSoundReimportTarget != nullptr)
+      {
+         table->ReImportSound(m_pendingSoundReimportTarget, file);
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      m_pendingSoundReimportTarget = nullptr;
+      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(std::filesystem::path(file).parent_path().string(), false);
+   }
+   if (m_pendingSoundExport && !m_pendingSoundExport->empty())
+   {
+      const std::filesystem::path path = *m_pendingSoundExport;
+      m_pendingSoundExport = nullptr;
+      // Like the Win32 dialog: with multiple selected sounds, only the folder of the picked file is used
+      int failed = 0;
+      for (VPX::Sound *sound : m_pendingSoundExportSel)
+      {
+         const std::filesystem::path file = (m_pendingSoundExportSel.size() > 1)
+            ? path.parent_path() / (m_exportUseNames ? sound->GetName() + sound->GetImportPath().extension().string() : sound->GetImportPath().filename().string())
+            : path;
+         if (!table->ExportSound(sound, file))
+            failed++;
+      }
+      m_pendingSoundExportSel.clear();
+      if (failed > 0)
+         m_actionStatus = "Failed to export "s + std::to_string(failed) + " sound(s)"s;
+      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(path.parent_path().string(), false);
+   }
+
+   if (props.BeginSection("Actions"s))
+   {
+      const bool canImport = editor.m_player->m_playfieldWnd != nullptr;
+      ImGui::BeginDisabled(!canImport);
+      if (ImGui::Button("Import"))
+      {
+         m_pendingSoundImport = std::make_shared<vector<string>>();
+         const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
+         const string dir = g_settingsService.GetAppSettings().GetRecentDir_SoundDir();
+         SDL_ShowOpenFileDialog(
+            [](void *userdata, const char *const *filelist, int filter)
+            {
+               auto *res = static_cast<std::shared_ptr<vector<string>> *>(userdata);
+               if (filelist != nullptr)
+                  for (int i = 0; filelist[i] != nullptr; i++)
+                     (**res).push_back(filelist[i]);
+               delete res;
+            },
+            new std::shared_ptr<vector<string>>(m_pendingSoundImport), //
+            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str(), true);
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty());
+      if (ImGui::Button("Reimport"))
+      {
+         RequestConfirm("Reimport the selected sound(s) using their existing file path(s)?"s,
+            [this]()
+            {
+               int missing = 0;
+               for (VPX::Sound *const sound : m_editor.m_multiSelSounds)
+                  if (std::filesystem::exists(sound->GetImportPath()))
+                     m_editor.m_table->ReImportSound(sound, sound->GetImportPath());
+                  else
+                     missing++;
+               if (missing > 0)
+                  m_actionStatus = std::to_string(missing) + " file(s) not found"s;
+               m_editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            });
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.size() != 1);
+      if (ImGui::Button("Reimport From"))
+      {
+         RequestConfirm("Reimport the selected sound using a different file path?"s,
+            [this]()
+            {
+               if (m_editor.m_player->m_playfieldWnd == nullptr)
+                  return;
+               m_pendingSoundReimportTarget = m_editor.m_multiSelSounds.empty() ? nullptr : m_editor.m_multiSelSounds.back();
+               m_pendingSoundReimport = std::make_shared<string>();
+               const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
+               const string dir = g_settingsService.GetAppSettings().GetRecentDir_SoundDir();
+               SDL_ShowOpenFileDialog(
+                  [](void *userdata, const char *const *filelist, int filter)
+                  {
+                     auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+                     if (filelist != nullptr && filelist[0] != nullptr)
+                        **res = filelist[0];
+                     delete res;
+                  },
+                  new std::shared_ptr<string>(m_pendingSoundReimport), //
+                  m_editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str(), false);
+            });
+      }
+      ImGui::EndDisabled();
+
+      ImGui::BeginDisabled(sel.empty() || !canImport);
+      if (ImGui::Button("Export"))
+      {
+         m_pendingSoundExportSel = sel;
+         m_pendingSoundExport = std::make_shared<string>();
+         const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
+         const string dir = g_settingsService.GetAppSettings().GetRecentDir_SoundDir();
+         SDL_ShowSaveFileDialog(
+            [](void *userdata, const char *const *filelist, int filter)
+            {
+               auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+               if (filelist != nullptr && filelist[0] != nullptr)
+                  **res = filelist[0];
+               delete res;
+            },
+            new std::shared_ptr<string>(m_pendingSoundExport), //
+            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str());
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty());
+      if (ImGui::Button("Toggle Table/Backglass"))
+      {
+         for (VPX::Sound *const sound : sel)
+            sound->SetOutputTarget((sound->GetOutputTarget() != VPX::SNDOUT_BACKGLASS) ? VPX::SNDOUT_BACKGLASS : VPX::SNDOUT_TABLE);
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Delete"))
+      {
+         RequestConfirm("Delete the selected sound(s)?"s,
+            [this]()
+            {
+               EditorUI &editor = m_editor;
+               for (VPX::Sound *const sound : editor.m_multiSelSounds)
+                  editor.m_table->RemoveSound(sound);
+               editor.m_multiSelSounds.clear();
+               editor.m_outlinerSoundAnchor = nullptr;
+               editor.m_selection = Selection();
+               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            });
+      }
+      ImGui::EndDisabled();
+
+      ImGui::Checkbox("Use names on export", &m_exportUseNames);
+      if (!m_actionStatus.empty())
+         ImGui::TextColored(ImVec4(1.f, 0.4f, 0.4f, 1.f), "%s", m_actionStatus.c_str());
+      props.EndSection();
+   }
+}
+
+void PropertiesPanel::MaterialActions(PropertyPane &props)
+{
+   EditorUI &editor = m_editor;
+   PinTable *const table = editor.m_table;
+   vector<Material *> &sel = editor.m_multiSelMaterials;
+
+   // Apply asynchronous file dialog results
+   if (m_pendingMaterialImport && !m_pendingMaterialImport->empty())
+   {
+      const string file = *m_pendingMaterialImport;
+      m_pendingMaterialImport = nullptr;
+      std::ifstream f(file, std::ios::binary);
+      int version = 0, count = 0;
+      f.read(reinterpret_cast<char *>(&version), sizeof(version));
+      if (!f || version != MATERIAL_VERSION)
+         m_actionStatus = "Materials are not compatible with this version!"s;
+      else
+      {
+         f.read(reinterpret_cast<char *>(&count), sizeof(count));
+         for (int i = 0; i < count && f; i++)
+         {
+            SaveMaterial mat;
+            float elasticity = 0.f, elasticityFalloff = 0.f, friction = 0.f, scatterAngle = 0.f;
+            f.read(reinterpret_cast<char *>(&mat), sizeof(SaveMaterial));
+            f.read(reinterpret_cast<char *>(&elasticity), sizeof(float));
+            f.read(reinterpret_cast<char *>(&elasticityFalloff), sizeof(float));
+            f.read(reinterpret_cast<char *>(&friction), sizeof(float));
+            f.read(reinterpret_cast<char *>(&scatterAngle), sizeof(float));
+            if (!f)
+               break;
+            Material *const pmat = new Material(mat.bIsMetal ? Material::METAL : Material::BASIC, mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp),
+               dequantizeUnsigned<8>(mat.fThickness), mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat,
+               !!(mat.bOpacityActive_fEdgeAlpha & 1), elasticity, elasticityFalloff, friction, scatterAngle, 0xFFFFFFFF);
+            pmat->m_name = mat.szName;
+            table->AddMaterial(pmat);
+            sel.push_back(pmat);
+            editor.m_selection = Selection(pmat);
+            editor.m_outlinerMaterialAnchor = pmat;
+         }
+         table->SetNonUndoableDirty(eSaveDirty);
+         g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(std::filesystem::path(file).parent_path().string(), false);
+      }
+   }
+   if (m_pendingMaterialExport && !m_pendingMaterialExport->empty())
+   {
+      const string file = *m_pendingMaterialExport;
+      m_pendingMaterialExport = nullptr;
+      std::ofstream f(file, std::ios::binary | std::ios::trunc);
+      if (!f)
+         m_actionStatus = "Failed to export materials"s;
+      else
+      {
+         constexpr int mv = MATERIAL_VERSION;
+         const int count = static_cast<int>(m_pendingMaterialExportSel.size());
+         f.write(reinterpret_cast<const char *>(&mv), sizeof(mv));
+         f.write(reinterpret_cast<const char *>(&count), sizeof(count));
+         for (const Material *const pmat : m_pendingMaterialExportSel)
+         {
+            SaveMaterial mat;
+            mat.cBase = pmat->m_cBase;
+            mat.cGlossy = pmat->m_cGlossy;
+            mat.cClearcoat = pmat->m_cClearcoat;
+            mat.fRoughness = pmat->m_fRoughness;
+            mat.fGlossyImageLerp = quantizeUnsigned<8>(clamp(pmat->m_fGlossyImageLerp, 0.f, 1.f));
+            mat.fThickness = quantizeUnsigned<8>(clamp(pmat->m_fThickness, 0.f, 1.f));
+            mat.fEdge = pmat->m_fEdge;
+            mat.fWrapLighting = pmat->m_fWrapLighting;
+            mat.bIsMetal = pmat->m_type == Material::METAL;
+            mat.fOpacity = pmat->m_fOpacity;
+            mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
+            mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
+            strncpy_s(mat.szName, std::size(mat.szName), pmat->m_name.c_str());
+            f.write(reinterpret_cast<const char *>(&mat), sizeof(SaveMaterial));
+            f.write(reinterpret_cast<const char *>(&pmat->m_fElasticity), sizeof(float));
+            f.write(reinterpret_cast<const char *>(&pmat->m_fElasticityFalloff), sizeof(float));
+            f.write(reinterpret_cast<const char *>(&pmat->m_fFriction), sizeof(float));
+            f.write(reinterpret_cast<const char *>(&pmat->m_fScatterAngle), sizeof(float));
+         }
+         m_pendingMaterialExportSel.clear();
+         g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(std::filesystem::path(file).parent_path().string(), false);
+      }
+   }
+
+   if (props.BeginSection("Actions"s))
+   {
+      if (ImGui::Button("Add"))
+      {
+         Material *const pmat = new Material();
+         table->AddMaterial(pmat);
+         sel.clear();
+         sel.push_back(pmat);
+         editor.m_selection = Selection(pmat);
+         editor.m_outlinerMaterialAnchor = pmat;
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty());
+      if (ImGui::Button("Clone"))
+      {
+         vector<Material *> clones;
+         for (const Material *const mat : sel)
+         {
+            Material *const pmat = new Material(mat);
+            table->AddMaterial(pmat);
+            clones.push_back(pmat);
+         }
+         sel = clones;
+         editor.m_selection = Selection(clones.back());
+         editor.m_outlinerMaterialAnchor = clones.back();
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(editor.m_player->m_playfieldWnd == nullptr);
+      if (ImGui::Button("Import"))
+      {
+         m_pendingMaterialImport = std::make_shared<string>();
+         const SDL_DialogFileFilter filters[] = { { "Material Files", "mat" } };
+         const string dir = g_settingsService.GetAppSettings().GetRecentDir_MaterialDir();
+         SDL_ShowOpenFileDialog(
+            [](void *userdata, const char *const *filelist, int filter)
+            {
+               auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+               if (filelist != nullptr && filelist[0] != nullptr)
+                  **res = filelist[0];
+               delete res;
+            },
+            new std::shared_ptr<string>(m_pendingMaterialImport), //
+            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str(), false);
+      }
+      ImGui::EndDisabled();
+
+      if (ImGui::Button("Where Used"))
+         RequestWhereUsed(false);
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty() || editor.m_player->m_playfieldWnd == nullptr);
+      if (ImGui::Button("Export"))
+      {
+         m_pendingMaterialExportSel = sel;
+         m_pendingMaterialExport = std::make_shared<string>();
+         const SDL_DialogFileFilter filters[] = { { "Material Files", "mat" } };
+         const string dir = g_settingsService.GetAppSettings().GetRecentDir_MaterialDir();
+         SDL_ShowSaveFileDialog(
+            [](void *userdata, const char *const *filelist, int filter)
+            {
+               auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+               if (filelist != nullptr && filelist[0] != nullptr)
+                  **res = filelist[0];
+               delete res;
+            },
+            new std::shared_ptr<string>(m_pendingMaterialExport), //
+            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str());
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty());
+      if (ImGui::Button("Delete"))
+      {
+         RequestConfirm("Delete the selected material(s)?"s,
+            [this]()
+            {
+               EditorUI &editor = m_editor;
+               for (Material *const mat : editor.m_multiSelMaterials)
+                  editor.m_table->RemoveMaterial(mat);
+               editor.m_multiSelMaterials.clear();
+               editor.m_outlinerMaterialAnchor = nullptr;
+               editor.m_selection = Selection();
+               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            });
+      }
+      ImGui::EndDisabled();
+
+      if (!m_actionStatus.empty())
+         ImGui::TextColored(ImVec4(1.f, 0.4f, 0.4f, 1.f), "%s", m_actionStatus.c_str());
+      props.EndSection();
+   }
 }
 }
