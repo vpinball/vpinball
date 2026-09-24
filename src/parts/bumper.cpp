@@ -36,7 +36,7 @@ HRESULT Bumper::Init(const float x, const float y, const bool fromMouseClick, co
    return S_OK;
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsBumper_##prop() : Settings::GetDefaultPropsBumper_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsBumper_##prop() : Settings::GetDefaultPropsBumper_##prop##_Default()
 void Bumper::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_radius, Radius);
@@ -66,7 +66,7 @@ void Bumper::SetDefaultPhysics(const bool fromMouseClick)
 
 void Bumper::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsBumper_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsBumper_##prop(field, false)
    LinkProp(m_d.m_radius, Radius);
    LinkProp(m_d.m_heightScale, HeightScale);
    LinkProp(m_d.m_ringSpeed, RingSpeed);

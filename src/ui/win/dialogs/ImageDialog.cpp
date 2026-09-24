@@ -466,7 +466,7 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   const string& szInitialDir = g_app->GetSettings().GetRecentDir_ImageDir();
+   const string& szInitialDir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
 
    vector<string> szFileName;
    if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName,
@@ -492,7 +492,7 @@ void ImageDialog::Import()
 
       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
-         g_app->GetSettings().SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
+         g_settingsService.GetAppSettings().SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
       pt->SetNonUndoableDirty(eSaveDirty);
       pt->m_tableEditor->UpdatePropertyImageList();
@@ -584,7 +584,7 @@ void ImageDialog::Export()
             else if (defExt == "hdr")
                ofn.nFilterIndex = 12;
 
-            string g_initDir = g_app->GetSettings().GetRecentDir_ImageDir();
+            string g_initDir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
             ofn.lpstrInitialDir = g_initDir.c_str();
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
@@ -632,7 +632,7 @@ void ImageDialog::Export()
                   ppi = (Texture*)lvitem.lParam;
                }
 
-               g_app->GetSettings().SetRecentDir_ImageDir(pathName, false);
+               g_settingsService.GetAppSettings().SetRecentDir_ImageDir(pathName, false);
             } // finished all selected items
          }
       }
@@ -809,7 +809,7 @@ void ImageDialog::ReimportFrom()
       const int ans = MessageBox(LocalString(IDS_REPLACEIMAGE).m_szbuffer /*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         const string& szInitialDir = g_app->GetSettings().GetRecentDir_ImageDir();
+         const string& szInitialDir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
          vector<string> szFileName;
          if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName,
                 "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", 0))
@@ -824,7 +824,7 @@ void ImageDialog::ReimportFrom()
             {
                const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
-                  g_app->GetSettings().SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
+                  g_settingsService.GetAppSettings().SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
                CCO(PinTable) *const pt = m_tableEditor->m_table;
                m_overallFilesize -= ppi->GetFileSize();
@@ -852,10 +852,10 @@ void ImageDialog::ReimportFrom()
 
 void ImageDialog::LoadPosition()
 {
-   const int x = g_app->GetSettings().GetEditor_ImageMngPosX();
-   const int y = g_app->GetSettings().GetEditor_ImageMngPosY();
-   const int w = g_app->GetSettings().GetEditor_ImageMngWidth();
-   const int h = g_app->GetSettings().GetEditor_ImageMngHeight();
+   const int x = g_settingsService.GetAppSettings().GetEditor_ImageMngPosX();
+   const int y = g_settingsService.GetAppSettings().GetEditor_ImageMngPosY();
+   const int w = g_settingsService.GetAppSettings().GetEditor_ImageMngWidth();
+   const int h = g_settingsService.GetAppSettings().GetEditor_ImageMngHeight();
    POINT p {x, y};
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -864,10 +864,10 @@ void ImageDialog::LoadPosition()
 void ImageDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   g_app->GetSettings().SetEditor_ImageMngPosX((int)rect.left, false);
-   g_app->GetSettings().SetEditor_ImageMngPosY((int)rect.top, false);
-   g_app->GetSettings().SetEditor_ImageMngWidth(rect.right - rect.left, false);
-   g_app->GetSettings().SetEditor_ImageMngHeight(rect.bottom - rect.top, false);
+   g_settingsService.GetAppSettings().SetEditor_ImageMngPosX((int)rect.left, false);
+   g_settingsService.GetAppSettings().SetEditor_ImageMngPosY((int)rect.top, false);
+   g_settingsService.GetAppSettings().SetEditor_ImageMngWidth(rect.right - rect.left, false);
+   g_settingsService.GetAppSettings().SetEditor_ImageMngHeight(rect.bottom - rect.top, false);
 }
 
 void ImageDialog::UpdateSizeText()

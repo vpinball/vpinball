@@ -822,7 +822,7 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
       fEdge = 1.0f;
       fEdgeAlpha = 1.0f;
       fOpacity = 1.0f;
-      cBase = g_app->GetSettings().GetEditor_DefaultMaterialColor();
+      cBase = g_settingsService.GetAppSettings().GetEditor_DefaultMaterialColor();
       cGlossy = 0;
       cClearcoat = 0;
       bIsMetal = false;

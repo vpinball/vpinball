@@ -30,7 +30,7 @@ HRESULT Ramp::Init(const float x, const float y, const bool fromMouseClick, cons
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
-   const float length = 0.5f * g_app->GetSettings().GetDefaultPropsRamp_Length();
+   const float length = 0.5f * g_settingsService.GetAppSettings().GetDefaultPropsRamp_Length();
 
    auto pdp = std::make_unique<DragPoint>(&m_curve, x, y + length, 0.f, true);
    pdp->SetCalcHeight(m_d.m_heightbottom);
@@ -43,7 +43,7 @@ HRESULT Ramp::Init(const float x, const float y, const bool fromMouseClick, cons
    return S_OK;
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()
 void Ramp::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_heightbottom, HeightBottom);
@@ -79,7 +79,7 @@ void Ramp::SetDefaultPhysics(const bool fromMouseClick)
 
 void Ramp::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsRamp_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsRamp_##prop(field, false)
    LinkProp(m_d.m_heightbottom, HeightBottom);
    LinkProp(m_d.m_heighttop, HeightTop);
    LinkProp(m_d.m_widthbottom, WidthBottom);

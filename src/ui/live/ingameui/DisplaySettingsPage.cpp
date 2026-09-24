@@ -206,7 +206,7 @@ void DisplaySettingsPage::BuildPage()
          [this](const Settings& settings) { return settings.GetWindow_Mode(m_wndId) != VPX::RenderOutput::OM_DISABLED; }, // Stored
          [this](bool v)
          {
-            GetOutput(m_wndId).SetMode(m_player->m_ptable->GetSettings(), v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED);
+            GetOutput(m_wndId).SetMode(g_settingsService.GetActiveSettings(), v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED);
             RequestRebuild();
          }, //
          [this](Settings& settings) { settings.ResetWindow_Mode(m_wndId); }, //
@@ -225,7 +225,7 @@ void DisplaySettingsPage::BuildPage()
                     const bool windowWasCreated = GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW;
                     if (windowWasCreated && v != VPX::RenderOutput::OM_WINDOW)
                        m_player->m_renderer->m_renderDevice->RemoveWindow(GetOutput(m_wndId).GetWindow());
-                    GetOutput(m_wndId).SetMode(m_player->m_ptable->GetSettings(), static_cast<VPX::RenderOutput::OutputMode>(v));
+                    GetOutput(m_wndId).SetMode(g_settingsService.GetActiveSettings(), static_cast<VPX::RenderOutput::OutputMode>(v));
                     if (!windowWasCreated && v == VPX::RenderOutput::OM_WINDOW)
                     {
                        m_player->m_renderer->m_renderDevice->AddWindow(GetOutput(m_wndId).GetWindow());
@@ -317,16 +317,16 @@ void DisplaySettingsPage::BuildWindowPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
               Settings::m_propWindow_FullScreen[m_wndId], //
-              [this]() { return m_player->m_ptable->GetSettings().GetWindow_FullScreen(m_wndId); }, //
+              [this]() { return g_settingsService.GetActiveSettings().GetWindow_FullScreen(m_wndId); }, //
               [this](int, int v)
               {
                  m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-                 m_player->m_ptable->GetSettings().SetWindow_FullScreen(m_wndId, v, false);
+                 g_settingsService.GetActiveSettings().SetWindow_FullScreen(m_wndId, v, false);
                  RequestRebuild();
               }))
       .m_excludeFromDefault = true;
 
-   const bool isFullScreen = m_player->m_ptable->GetSettings().GetWindow_FullScreen(m_wndId);
+   const bool isFullScreen = g_settingsService.GetActiveSettings().GetWindow_FullScreen(m_wndId);
    if (isFullScreen)
    {
 #ifndef ENABLE_BGFX
@@ -348,10 +348,10 @@ void DisplaySettingsPage::BuildWindowPage()
          }
          if (mode == m_displays[wndDisplay].videomode)
             defaultMode = i;
-         if (mode.GetPixelWidth() == m_player->m_ptable->GetSettings().GetWindow_FSWidth(m_wndId) //
-            && mode.GetPixelHeight() == m_player->m_ptable->GetSettings().GetWindow_FSHeight(m_wndId) //
-            && mode.depth == m_player->m_ptable->GetSettings().GetWindow_FSColorDepth(m_wndId) //
-            && mode.refreshrate == m_player->m_ptable->GetSettings().GetWindow_FSRefreshRate(m_wndId))
+         if (mode.GetPixelWidth() == g_settingsService.GetActiveSettings().GetWindow_FSWidth(m_wndId) //
+            && mode.GetPixelHeight() == g_settingsService.GetActiveSettings().GetWindow_FSHeight(m_wndId) //
+            && mode.depth == g_settingsService.GetActiveSettings().GetWindow_FSColorDepth(m_wndId) //
+            && mode.refreshrate == g_settingsService.GetActiveSettings().GetWindow_FSRefreshRate(m_wndId))
             selectedMode = i;
          modeNames.push_back(string_format("%d x %d (%.1fHz %d:%d)", mode.GetPixelWidth(), mode.GetPixelHeight(), mode.refreshrate, max(bestAR.y, bestAR.x), min(bestAR.x, bestAR.y)));
          i++;
@@ -366,10 +366,10 @@ void DisplaySettingsPage::BuildWindowPage()
          {
             m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
             vector<Window::VideoMode> modes = VPX::Window::GetDisplayModes(m_displays[wndDisplay]);
-            m_player->m_ptable->GetSettings().SetWindow_FSWidth(m_wndId, modes[v].GetPixelWidth(), false);
-            m_player->m_ptable->GetSettings().SetWindow_FSHeight(m_wndId, modes[v].GetPixelHeight(), false);
-            m_player->m_ptable->GetSettings().SetWindow_FSColorDepth(m_wndId, modes[v].depth, false);
-            m_player->m_ptable->GetSettings().SetWindow_FSRefreshRate(m_wndId, modes[v].refreshrate, false);
+            g_settingsService.GetActiveSettings().SetWindow_FSWidth(m_wndId, modes[v].GetPixelWidth(), false);
+            g_settingsService.GetActiveSettings().SetWindow_FSHeight(m_wndId, modes[v].GetPixelHeight(), false);
+            g_settingsService.GetActiveSettings().SetWindow_FSColorDepth(m_wndId, modes[v].depth, false);
+            g_settingsService.GetActiveSettings().SetWindow_FSRefreshRate(m_wndId, modes[v].refreshrate, false);
          }, //
          [](Settings&) { /* Directly stored on change, nothing to do */ }, //
          [](int, Settings&, bool) { /* Directly stored on change, nothing to do */ }));
@@ -407,10 +407,10 @@ void DisplaySettingsPage::BuildWindowPage()
       if (m_isMainWindow)
       { // For main window, we do not dynamically change size as it is not supported and the UI breaks (would require to re-setup everything)
          // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(0, min(maxWidth, containerWidth - m_player->m_ptable->GetSettings().GetWindow_WndX(m_wndId))));
+         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(0, min(maxWidth, containerWidth - g_settingsService.GetActiveSettings().GetWindow_WndX(m_wndId))));
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Width[m_wndId], "%d"s, //
-                    [this]() { return m_player->m_ptable->GetSettings().GetWindow_Width(m_wndId); }, //
+                    [this]() { return g_settingsService.GetActiveSettings().GetWindow_Width(m_wndId); }, //
                     [this](int, int v)
                     {
                        m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
@@ -422,19 +422,19 @@ void DisplaySettingsPage::BuildWindowPage()
                              h = Settings::GetWindow_Height_Property(m_wndId)->m_max;
                              v = (h * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
                           }
-                          m_player->m_ptable->GetSettings().SetWindow_Height(m_wndId, h, false);
+                          g_settingsService.GetActiveSettings().SetWindow_Height(m_wndId, h, false);
                        }
-                       m_player->m_ptable->GetSettings().SetWindow_Width(m_wndId, v, false);
+                       g_settingsService.GetActiveSettings().SetWindow_Width(m_wndId, v, false);
                        RequestRebuild();
                     }))
             .m_excludeFromDefault = true;
 
          // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
          Settings::GetRegistry().Register(
-            Settings::GetWindow_Height_Property(m_wndId)->WithRange(0, min(maxHeight, containerHeight - m_player->m_ptable->GetSettings().GetWindow_WndY(m_wndId))));
+            Settings::GetWindow_Height_Property(m_wndId)->WithRange(0, min(maxHeight, containerHeight - g_settingsService.GetActiveSettings().GetWindow_WndY(m_wndId))));
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Height[m_wndId], "%d"s, //
-                    [this]() { return m_player->m_ptable->GetSettings().GetWindow_Height(m_wndId); }, //
+                    [this]() { return g_settingsService.GetActiveSettings().GetWindow_Height(m_wndId); }, //
                     [this](int, int v)
                     {
                        m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
@@ -446,9 +446,9 @@ void DisplaySettingsPage::BuildWindowPage()
                              w = Settings::GetWindow_Width_Property(m_wndId)->m_max;
                              v = (w * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
                           }
-                          m_player->m_ptable->GetSettings().SetWindow_Width(m_wndId, w, false);
+                          g_settingsService.GetActiveSettings().SetWindow_Width(m_wndId, w, false);
                        }
-                       m_player->m_ptable->GetSettings().SetWindow_Height(m_wndId, v, false);
+                       g_settingsService.GetActiveSettings().SetWindow_Height(m_wndId, v, false);
                        RequestRebuild();
                     }))
             .m_excludeFromDefault = true;

@@ -711,10 +711,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 
 void SearchSelectDialog::LoadPosition()
 {
-   const int x = g_app->GetSettings().GetEditor_SearchSelectPosX();
-   const int y = g_app->GetSettings().GetEditor_SearchSelectPosY();
-   const int w = g_app->GetSettings().GetEditor_SearchSelectWidth();
-   const int h = g_app->GetSettings().GetEditor_SearchSelectHeight();
+   const int x = g_settingsService.GetAppSettings().GetEditor_SearchSelectPosX();
+   const int y = g_settingsService.GetAppSettings().GetEditor_SearchSelectPosY();
+   const int w = g_settingsService.GetAppSettings().GetEditor_SearchSelectWidth();
+   const int h = g_settingsService.GetAppSettings().GetEditor_SearchSelectHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -723,8 +723,8 @@ void SearchSelectDialog::LoadPosition()
 void SearchSelectDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   g_app->GetSettings().SetEditor_SearchSelectPosX((int)rect.left, false);
-   g_app->GetSettings().SetEditor_SearchSelectPosY((int)rect.top, false);
-   g_app->GetSettings().SetEditor_SearchSelectWidth(rect.right - rect.left, false);
-   g_app->GetSettings().SetEditor_SearchSelectHeight(rect.bottom - rect.top, false);
+   g_settingsService.GetAppSettings().SetEditor_SearchSelectPosX((int)rect.left, false);
+   g_settingsService.GetAppSettings().SetEditor_SearchSelectPosY((int)rect.top, false);
+   g_settingsService.GetAppSettings().SetEditor_SearchSelectWidth(rect.right - rect.left, false);
+   g_settingsService.GetAppSettings().SetEditor_SearchSelectHeight(rect.bottom - rect.top, false);
 }

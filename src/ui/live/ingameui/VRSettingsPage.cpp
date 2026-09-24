@@ -72,20 +72,20 @@ void VRSettingsPage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_ScreenPlayerX(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenPlayerX(); }, //
       [this](float, float v)
       {
          m_notifId = m_player->m_liveUI->PushNotification("This change is directly persisted and is used when centering view"s, 5000, m_notifId);
-         m_player->m_ptable->GetSettings().SetPlayer_ScreenPlayerX(v, false);
+         g_settingsService.GetActiveSettings().SetPlayer_ScreenPlayerX(v, false);
       })).m_excludeFromDefault = true;
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_ScreenPlayerY(); }, //
+      [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenPlayerY(); }, //
       [this](float, float v)
       {
          m_notifId = m_player->m_liveUI->PushNotification("This change is directly persisted and is used when centering view"s, 5000, m_notifId);
-         m_player->m_ptable->GetSettings().SetPlayer_ScreenPlayerY(v, false);
+         g_settingsService.GetActiveSettings().SetPlayer_ScreenPlayerY(v, false);
       })).m_excludeFromDefault = true;
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Augmented Reality"s));
@@ -130,14 +130,14 @@ void VRSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_ControllerCabYOffset, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_ptable->GetSettings().GetPlayerVR_ControllerCabYOffset(); }, //
-      [this](float, float v) { m_player->m_ptable->GetSettings().SetPlayerVR_ControllerCabYOffset(v, false); }));
+      [this]() { return g_settingsService.GetActiveSettings().GetPlayerVR_ControllerCabYOffset(); }, //
+      [this](float, float v) { g_settingsService.GetActiveSettings().SetPlayerVR_ControllerCabYOffset(v, false); }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_ControllerLockbarScale, 100.f, "%4.1f %%"s, //
-      [this]() { return m_player->m_ptable->GetSettings().GetPlayerVR_ControllerLockbarScale(); }, //
-      [this](float, float v) { m_player->m_ptable->GetSettings().SetPlayerVR_ControllerLockbarScale(v, false); }));
+      [this]() { return g_settingsService.GetActiveSettings().GetPlayerVR_ControllerLockbarScale(); }, //
+      [this](float, float v) { g_settingsService.GetActiveSettings().SetPlayerVR_ControllerLockbarScale(v, false); }));
 
    const auto& action = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetVRControllerViewCenteringActionId()];
    AddItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));

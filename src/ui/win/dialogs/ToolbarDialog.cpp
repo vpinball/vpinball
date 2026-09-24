@@ -115,7 +115,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_vrCombo.AddString("Disabled");
     m_vrCombo.AddString("Autodetect");
     m_vrCombo.AddString("Enabled");
-    m_vrCombo.SetCurSel(2 - g_app->GetSettings().GetPlayerVR_AskToTurnOn());
+    m_vrCombo.SetCurSel(2 - g_settingsService.GetAppSettings().GetPlayerVR_AskToTurnOn());
 
     constexpr int iconSize = 24;
     HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_MAGNIFY), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
@@ -405,7 +405,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
            if (UINT notifyCode = HIWORD(wParam); notifyCode == CBN_SELCHANGE)
            {
-              g_app->GetSettings().SetPlayerVR_AskToTurnOn(2 - m_vrCombo.GetCurSel(), false);
+              g_settingsService.GetAppSettings().SetPlayerVR_AskToTurnOn(2 - m_vrCombo.GetCurSel(), false);
            }
            break;
         }

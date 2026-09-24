@@ -191,7 +191,7 @@ VRDevice::VRDevice(const Settings& settings)
       // VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
       // Renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
       #if BX_PLATFORM_WINDOWS
-         const string gfxBackend = g_pplayer->m_ptable->GetSettings().GetPlayer_GfxBackend();
+         const string gfxBackend = g_settingsService.GetActiveSettings().GetPlayer_GfxBackend();
          if (gfxBackend == "Vulkan"sv)
          #ifdef _DEBUG
             m_rendererType = bgfx::RendererType::Enum::Vulkan;
@@ -544,7 +544,7 @@ void VRDevice::SetupHMD()
    assert(m_viewConfigurationViews[0].recommendedSwapchainSampleCount == m_viewConfigurationViews[1].recommendedSwapchainSampleCount);
 
    // Let the user choose the down/super sampling
-   const float resFactor = g_pplayer ? g_pplayer->m_ptable->GetSettings().GetPlayerVR_ResFactor() : -1.f;
+   const float resFactor = g_pplayer ? g_settingsService.GetActiveSettings().GetPlayerVR_ResFactor() : -1.f;
    if (resFactor <= 0.1f || resFactor > 10.f)
    {
       m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
@@ -667,7 +667,7 @@ void VRDevice::CreateSession()
    assert(m_session);
 
    // Initialize passthrough if supported (Meta Quest MR feature)
-   if (m_passthroughExtensionSupported && g_pplayer && g_pplayer->m_ptable->GetSettings().GetPlayerVR_UsePassthroughColor())
+   if (m_passthroughExtensionSupported && g_pplayer && g_settingsService.GetActiveSettings().GetPlayerVR_UsePassthroughColor())
    {
       PFN_xrCreatePassthroughFB xrCreatePassthroughFB;
       OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrCreatePassthroughFB", (PFN_xrVoidFunction*)&xrCreatePassthroughFB), "Failed to get xrCreatePassthroughFB.");
@@ -1145,7 +1145,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             const float s = sinf(angle);
             const float dx = -VPUTOCM(medianPoseInVPU.position.x);
             const float dy = -VPUTOCM(medianPoseInVPU.position.z);
-            const Settings& settings = g_pplayer->m_ptable->GetSettings();
+            const Settings& settings = g_settingsService.GetActiveSettings();
 
             // Rotate the tracking-space translation into the table's yaw frame, just as
             // controller centering does. Player X/Y is the desired standing position

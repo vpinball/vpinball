@@ -50,6 +50,8 @@ set(VPX_SOURCES
    src/core/ScriptInterpreter.cpp
    src/core/Settings.cpp
    src/core/Settings.h
+   src/core/SettingsService.cpp
+   src/core/SettingsService.h
    src/core/TableDB.cpp
    src/core/TableDB.h
    src/core/TournamentFile.cpp

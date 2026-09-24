@@ -189,5 +189,6 @@ using std::wstring;
 #include "core/def.h"
 #include "core/dispid.h"
 #include "core/Settings.h"
+#include "core/SettingsService.h"
 #include "core/extern.h"
 #include "core/player.h"

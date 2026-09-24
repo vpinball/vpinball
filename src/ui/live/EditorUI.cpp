@@ -303,7 +303,7 @@ void EditorUI::RenderUI()
    {
       m_table->m_filename = *m_pendingSaveAsPath;
       m_table->m_title = TitleFromFilename(m_table->m_filename);
-      g_app->GetSettings().SetRecentDir_LoadDir(m_table->m_filename.parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(m_table->m_filename.parent_path().string(), false);
       m_pendingSaveAsPath = nullptr;
       SaveTable();
    }

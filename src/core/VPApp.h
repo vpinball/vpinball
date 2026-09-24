@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Settings.h"
 #include "FileLocator.h"
 
 
@@ -14,10 +13,6 @@ public:
 
    void SetCommandLineCustomSettingsFileName(const std::filesystem::path& path) { m_commandLineCustomSettingsFileName = path; } // Must be defined before InitInstance() is called, otherwise it will be ignored
    void InitInstance(bool isPlay = false);
-
-   // overall app settings
-   Settings& GetSettings() { return m_settings; }
-   const Settings& GetSettings() const { return m_settings; }
 
    FileLocator m_fileLocator;
 
@@ -52,7 +47,6 @@ public:
 #endif
 
 private:
-   Settings m_settings;
    std::filesystem::path m_commandLineCustomSettingsFileName; // Override default ini filename, must be defined before InitInstance
    int m_logicalNumberOfProcessors = -1;
 };

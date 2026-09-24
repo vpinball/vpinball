@@ -418,7 +418,7 @@ void PinTableWnd::ImportBackdropPOV()
       return;
    const std::filesystem::path file = fileNames[0];
    if (file.has_parent_path())
-      g_app->GetSettings().SetRecentDir_POVDir(file.parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_POVDir(file.parent_path().string(), false);
    m_table->ImportBackdropPOV(file, false);
 }
 
@@ -455,7 +455,7 @@ void PinTableWnd::ImportPhysics()
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      g_app->GetSettings().SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
+      g_settingsService.GetAppSettings().SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
 
    StartUndo();
    m_table->ImportVPP(filename[0]);
@@ -511,7 +511,7 @@ void PinTableWnd::ExportPhysics()
    if (index != string::npos)
    {
       const string newInitDir(filename.substr(0, index));
-      g_app->GetSettings().SetRecentDir_PhysicsDir(newInitDir, false);
+      g_settingsService.GetAppSettings().SetRecentDir_PhysicsDir(newInitDir, false);
    }
 
    m_table->ExportVPP(ofn.lpstrFile, flipper);

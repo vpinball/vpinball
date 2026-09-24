@@ -78,7 +78,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    if (const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer(); isHdr2020)
    {
-      m_exposure *= g_app->GetSettings().GetPlayer_HDRGlobalExposure();
+      m_exposure *= g_settingsService.GetAppSettings().GetPlayer_HDRGlobalExposure();
       m_bloomOff = true;
    }
 
@@ -311,7 +311,7 @@ void Renderer::ApplyTableSettings()
    // HDR2020 output disables bloom and boosts exposure
    if (m_renderDevice && (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer())
    {
-      m_exposure *= g_app->GetSettings().GetPlayer_HDRGlobalExposure();
+      m_exposure *= g_settingsService.GetAppSettings().GetPlayer_HDRGlobalExposure();
       m_bloomOff = true;
    }
 
@@ -1410,7 +1410,7 @@ void Renderer::UpdateStereoShaderState()
    if (IsAnaglyphStereoMode(m_stereo3D))
    {
       Anaglyph anaglyph;
-      anaglyph.LoadSetupFromRegistry(g_pplayer->m_ptable->GetSettings(), clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
+      anaglyph.LoadSetupFromRegistry(g_settingsService.GetActiveSettings(), clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
       anaglyph.SetupShader(m_renderDevice->m_stereoShader);
       // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
       m_stereo3DDefocus = m_table->GetSettings().GetPlayer_Stereo3DDefocus();

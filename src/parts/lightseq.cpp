@@ -26,7 +26,7 @@ HRESULT LightSeq::Init(const float x, const float y, const bool fromMouseClick, 
 
 void LightSeq::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsLightSeq_##prop() : Settings::GetDefaultPropsLightSeq_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsLightSeq_##prop() : Settings::GetDefaultPropsLightSeq_##prop##_Default()
    string tmp;
    LinkProp(m_d.m_updateinterval, UpdateInterval);
    LinkProp(tmp, Collection); 
@@ -40,7 +40,7 @@ void LightSeq::SetDefaults(const bool fromMouseClick)
 
 void LightSeq::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsLightSeq_##prop(field, false)
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsLightSeq_##prop(field, false)
    LinkProp(m_d.m_updateinterval, UpdateInterval);
    string tmp = MakeString(m_d.m_wzCollection);
    LinkProp(tmp, Collection);

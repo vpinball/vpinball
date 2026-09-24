@@ -190,8 +190,8 @@ void WebServer::Start()
 
    const auto addrPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Standalone"s, "WebServerAddr"s, ""s, ""s, false, "0.0.0.0"s));
    const auto portPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>("Standalone"s, "WebServerPort"s, ""s, ""s, false, INT_MIN, INT_MAX, 2112));
-   const string addr = g_app->GetSettings().GetString(addrPropId);
-   const int port = g_app->GetSettings().GetInt(portPropId);
+   const string addr = g_settingsService.GetAppSettings().GetString(addrPropId);
+   const int port = g_settingsService.GetAppSettings().GetInt(portPropId);
 
    string bindUrl = "http://" + addr + ':' + std::to_string(port);
 
@@ -257,7 +257,7 @@ void WebServer::Stop()
 void WebServer::Update()
 {
    const auto serverPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Standalone"s, "WebServer"s, ""s, ""s, false, false));
-   bool enabled = g_app->GetSettings().GetBool(serverPropId);
+   bool enabled = g_settingsService.GetAppSettings().GetBool(serverPropId);
 
    if (enabled && !m_run)
       Start();
@@ -416,9 +416,9 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
 
    if (mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), MAX_UPLOAD_SIZE) == length) {
       if (*q == '\0' && file == "VPinballX.ini") {
-         g_app->GetSettings().SetIniPath(path);
-         g_app->GetSettings().Load(true);
-         g_app->GetSettings().Save();
+         g_settingsService.GetAppSettings().SetIniPath(path);
+         g_settingsService.GetAppSettings().Load(true);
+         g_settingsService.GetAppSettings().Save();
       }
       SetLastUpdate();
    }

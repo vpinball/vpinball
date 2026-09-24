@@ -374,7 +374,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    // - OpenXR offers its own frame display time prediction that we use when in VR mode.
 
    init.swapChain.numBackBuffers = 2; // Simple flip model with 2 buffers: one locked for the GPU (rendering), one locked for the swapchain (displayed or queued)
-   init.swapChain.maxFrameLatency = clamp(g_pplayer->m_ptable->GetSettings().GetPlayer_MaxPrerenderedFrames(), 1, 3); // Default to 1 (User should set swapchain queue to 1 or 2 to limit latency)
+   init.swapChain.maxFrameLatency = clamp(g_settingsService.GetActiveSettings().GetPlayer_MaxPrerenderedFrames(), 1, 3); // Default to 1 (User should set swapchain queue to 1 or 2 to limit latency)
    init.reset = 0;
    init.reset |= BGFX_RESET_MAXANISOTROPY;
    //init.reset |= BGFX_RESET_FLUSH_AFTER_RENDER; // Not really needed as we are doing a present after submit which in turn triger sending the commands to the GPU
@@ -1265,7 +1265,7 @@ RenderDevice::RenderDevice(
    // Create preview in the render device as it holds the desktop swapchain (not really clean and should be refactored for all windows to be added/removed by the client)
    if (isVR && !g_isAndroid)
    {
-      VPX::Window* previewWnd = new VPX::Window("Visual Pinball VR Preview"s, g_pplayer->m_ptable->GetSettings(), VPXWindowId::VPXWINDOW_VRPreview);
+      VPX::Window* previewWnd = new VPX::Window("Visual Pinball VR Preview"s, g_settingsService.GetActiveSettings(), VPXWindowId::VPXWINDOW_VRPreview);
 #ifdef ENABLE_BGFX
       // Color and depth format are likely wrong => use the ones selected by the OpenXR backend
       RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, bgfx::TextureFormat::RGBA8, BGFX_INVALID_HANDLE,
@@ -1297,7 +1297,7 @@ RenderDevice::RenderDevice(
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
 
    // 0 means disable limiting of draw-ahead queue
-   int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->GetSettings().GetPlayer_MaxPrerenderedFrames();
+   int maxPrerenderedFrames = isVR ? 0 : g_settingsService.GetActiveSettings().GetPlayer_MaxPrerenderedFrames();
 
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
@@ -1309,7 +1309,7 @@ RenderDevice::RenderDevice(
       syncMode = VideoSyncMode::VSM_VSYNC;
    
    // Select backend
-   const string& gfxBackend = g_pplayer->m_ptable->GetSettings().GetPlayer_GfxBackend();
+   const string& gfxBackend = g_settingsService.GetActiveSettings().GetPlayer_GfxBackend();
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
    init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
@@ -1684,7 +1684,7 @@ RenderDevice::RenderDevice(
    else
       params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
-   const bool softwareVP = g_pplayer->m_ptable->GetSettings().GetPlayer_SoftwareVertexProcessing();
+   const bool softwareVP = g_settingsService.GetActiveSettings().GetPlayer_SoftwareVertexProcessing();
    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
    // Create the D3Dex device. This optionally goes to the proper fullscreen mode.
@@ -2221,10 +2221,10 @@ float RenderDevice::GetPredictedDisplayDelay() const
       if (delayToNextFrame < g_pplayer->m_renderProfiler->GetAvg(FrameProfiler::ProfileSection::PROFILE_RENDER_SUBMIT))
          delayToNextFrame += targetFrameLength;
       #endif
-      if (g_pplayer->GetVideoSyncMode() != VideoSyncMode::VSM_FRAME_PACING && g_pplayer->m_ptable->GetSettings().GetPlayer_MaxPrerenderedFrames() > 1)
+      if (g_pplayer->GetVideoSyncMode() != VideoSyncMode::VSM_FRAME_PACING && g_settingsService.GetActiveSettings().GetPlayer_MaxPrerenderedFrames() > 1)
       {
          const uint64_t displayFrameLength = static_cast<uint64_t>(1000000. / (double)m_outputWnd[0]->GetRefreshRate());
-         delayToNextFrame += (g_pplayer->m_ptable->GetSettings().GetPlayer_MaxPrerenderedFrames() - 1) * displayFrameLength;
+         delayToNextFrame += (g_settingsService.GetActiveSettings().GetPlayer_MaxPrerenderedFrames() - 1) * displayFrameLength;
       }
       // PLOGI << std::format("Display Delay: {:5.3f}ms / Now: {:5.3f}ms / VSync: {:5.3f}ms", delayToNextFrame / 1000., now / 1000., m_presentTimestampReference / 1000.);
       return static_cast<float>(static_cast<double>(delayToNextFrame) / 1000000.);

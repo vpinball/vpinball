@@ -290,7 +290,7 @@ void PointOfViewSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_playerPos.x = v;
-         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
+         const float screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
          GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
          RequestRebuild();
@@ -303,7 +303,7 @@ void PointOfViewSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_playerPos.y = v;
-         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
+         const float screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
          GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
          RequestRebuild();
@@ -316,7 +316,7 @@ void PointOfViewSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_playerPos.z = v;
-         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
+         const float screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
          GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
          RequestRebuild();
@@ -379,7 +379,7 @@ void PointOfViewSettingsPage::BuildPage()
       [this](float, float v)
       {
          GetCurrentViewSetup().mWindowTopZOfs = v;
-         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
+         const float screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
          m_player->m_ptable->GetViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
          RequestRebuild(); // As it changes the real to virtual world scale
@@ -391,7 +391,7 @@ void PointOfViewSettingsPage::BuildPage()
       [this](float, float v)
       {
          GetCurrentViewSetup().mWindowBottomZOfs = v;
-         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
+         const float screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
          m_player->m_ptable->GetViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
          RequestRebuild(); // As it changes the real to virtual world scale
@@ -484,7 +484,7 @@ void PointOfViewSettingsPage::Render(float elapsed)
 {
    if ((m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN) && (m_player->m_ptable->GetViewSetup().mMode == VLM_WINDOW))
    {
-      const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
+      const float screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
       m_playerPos = m_player->m_ptable->GetViewSetup().GetPlayerPositionFromViewPos(m_player->m_ptable, screenInclination);
    }
 

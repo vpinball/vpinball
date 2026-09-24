@@ -98,6 +98,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
    g_pplayer = this;
+   g_settingsService.SetTableOverride(&m_ptable->GetSettings());
    m_ptable->AddRef();
 
    constexpr float progressStartupLength = 5.f;
@@ -248,7 +249,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
          SDL_RegisterApp(WIN32_PLAYER_WND_CLASSNAME, 0, g_app->GetInstanceHandle());
       #endif
       
-      const Settings& settings = g_app->GetSettings(); // Always use main application settings (not overridable per table)
+      const Settings& settings = g_settingsService.GetAppSettings(); // Always use main application settings (not overridable per table)
       if (stereo3D == STEREO_VR)
       {
          m_playfieldWnd = new VPX::Window(m_vrDevice->GetEyeWidth(), m_vrDevice->GetEyeHeight());
@@ -409,10 +410,10 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off"s, 4000);
-   const int numberOfTimesToShowTouchMessage = g_app->GetSettings().GetPlayer_NumberOfTimesToShowTouchMessage();
+   const int numberOfTimesToShowTouchMessage = g_settingsService.GetAppSettings().GetPlayer_NumberOfTimesToShowTouchMessage();
    if (m_pininput.HasTouchInput() && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
    {
-      g_app->GetSettings().SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
+      g_settingsService.GetAppSettings().SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s,
          12000);
@@ -1131,6 +1132,7 @@ void Player::ApplyTableTransition(PinTable *const newTable, const bool stackTabl
    ShutdownTableSession();
 
    m_ptable = newTable; // The adopted reference becomes the player's one
+   g_settingsService.SetTableOverride(&m_ptable->GetSettings());
    m_playMode = restore ? restore->playMode : (newTable->m_liveBaseTable ? PlayMode::Play : PlayMode::FullEdit);
    m_renderer->SetTable(newTable);
    m_liveUI->m_editorUI.SetTable(newTable);
@@ -1195,7 +1197,7 @@ Player::~Player()
 
    // Save adjusted VR settings
    if (m_renderer->m_stereo3D == STEREO_VR)
-      m_vrDevice->SaveVRSettings(g_app->GetSettings());
+      m_vrDevice->SaveVRSettings(g_settingsService.GetAppSettings());
 
    // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_shutdown();
@@ -1252,6 +1254,7 @@ Player::~Player()
    }
    g_frameProfiler = nullptr;
 
+   g_settingsService.ClearTableOverride(&m_ptable->GetSettings());
    g_pplayer = nullptr;
 
    restore_win_timer_resolution();
@@ -2489,7 +2492,7 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
             "A value that will be used to select if the '"s + renderer.name + "' renderer should be used on the " + section + " display. Higher values are priorized other lower ones.",
             false, 0, 100, 0));
          // Seed the live priority from settings, keeping any live (unsaved) adjustment made through the in game UI
-         priorities.try_emplace(renderer.id, me->m_ptable->GetSettings().GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)).value()));
+         priorities.try_emplace(renderer.id, g_settingsService.GetActiveSettings().GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)).value()));
       }
       std::ranges::stable_sort(me->m_ancillaryWndRenderers[window],
          [&](const AncillaryRendererDef &a, const AncillaryRendererDef &b)
@@ -2535,7 +2538,7 @@ void Player::OnAudioSrcChanged(const unsigned int msgId, void *userData, void *m
          const string propId = std::format("AudioSource.{}.Gain", endpointId);
          const auto propPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(
             "Player"s, propId, std::format("{} Gain", endpointName), std::format("Volume gain applied to audio from '{}'.", endpointName), true, 0.f, 2.f, 0.f, 1.f));
-         const float persistedVolume = me->m_ptable->GetSettings().GetFloat(propPropId);
+         const float persistedVolume = g_settingsService.GetActiveSettings().GetFloat(propPropId);
          me->m_audioLanes[audioSrc.id.id] = { audioSrc, false, persistedVolume };
       }
 
