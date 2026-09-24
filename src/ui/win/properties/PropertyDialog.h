@@ -4,6 +4,7 @@
 
 #include "ui/win/resource.h"
 
+#include <wxx_controls.h> // Add CComboBox
 #include <wxx_dialog.h>
 #include <wxx_docking.h>
 #include <wxx_stdcontrols.h>

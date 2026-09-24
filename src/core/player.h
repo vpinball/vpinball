@@ -16,22 +16,9 @@
 #include "plugins/VPXPlugin.h"
 #include "renderer/typedefs3D.h"
 #include "renderer/Window.h"
+#include "ui/LoadProgress.h"
 #include "utils/wintimer.h"
 #include "VPXPluginAPIImpl.h"
-
-// Load progress is shown in a dialog by the Win32 editor, and merely logged without it. Both offer the same
-// SetProgress/GetProgress pair so the choice is made here rather than at each call site, the few calls which are
-// specific to the dialog (Create, ShowWindow, IsWindow, Destroy) being made from Win32 editor only code.
-// This picks a type, so unlike most capability guards a missing macro would not fail to compile, it would pick
-// the wrong one: core/stdafx.h, which defines it, has to be included ahead of this header in every translation
-// unit (it is, as the precompiled prelude)
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   #include "ui/win/ProgressDialog.h"
-   using LoadProgressReporter = ProgressDialog;
-#else
-   #include "ui/LoadProgress.h"
-   using LoadProgressReporter = LoadProgress;
-#endif
 
 class Renderer;
 class VRDevice;
@@ -72,7 +59,7 @@ public:
       CaptureAttract
    };
 
-   Player(PinTable *const table, const PlayMode playMode);
+   Player(PinTable *const table, const PlayMode playMode, LoadProgress &loadProgress);
    ~Player();
 
    void LockForegroundWindow(const bool enable);
@@ -142,7 +129,7 @@ private:
    bool m_wantsToPlay = true; // If we want the player to play beside the player focus state
    bool m_playing = true; // If the player is actually playing or not
 
-   LoadProgressReporter m_loadProgress;
+   LoadProgress &m_loadProgress; // Load progress reporter provided by the caller (a dialog for the Win32 editor, logging elsewhere)
 
 #pragma region Main Loop
 public:

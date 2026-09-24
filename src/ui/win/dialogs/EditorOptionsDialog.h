@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
+#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog
+#include <wxx_controls.h> // Add CToolTip
 
 #include "ui/win/properties/PropertyDialog.h"
 

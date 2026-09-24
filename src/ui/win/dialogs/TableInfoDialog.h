@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <wxx_controls.h> // Add CComboBox
 #include <wxx_listview.h> // Add CListView
 
 class PinTableWnd;

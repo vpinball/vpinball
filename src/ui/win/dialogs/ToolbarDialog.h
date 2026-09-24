@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ui/win/resource.h" // win32xx related IDW_*
+#include <wxx_controls.h> // Add CComboBox, CToolTip
 #include <wxx_docking.h>
 
 class WinEditor;

@@ -10,6 +10,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "parts/pintable.h"
 #include "renderer/Renderer.h"
+#include "ui/LoadProgress.h"
 #include "VPXProgress.h"
 #include "WebServer.h"
 
@@ -501,7 +502,9 @@ VPINBALL_STATUS VPinballLib::Play()
 
    return SDL_RunOnMainThread([](void*) {
       auto& lib = VPinballLib::Instance();
-      new Player(lib.m_pTable, Player::PlayMode::Play);
+      // The player outlives this lambda, being stepped from AppIterate and deleted there
+      static LoadProgress loadProgress;
+      new Player(lib.m_pTable, Player::PlayMode::Play, loadProgress);
       if (g_pplayer)
          g_pplayer->GameLoop();
    }, nullptr, true) ? VPINBALL_STATUS_SUCCESS : VPINBALL_STATUS_FAILURE;
