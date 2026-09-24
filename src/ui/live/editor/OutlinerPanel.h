@@ -6,6 +6,7 @@ namespace VPX::EditorUI
 {
 
 class EditorUI;
+class EditorUIPart;
 
 // Left side panel listing the view setups, materials, images, render probes and
 // the scene parts tree, used to select the edited object.
@@ -27,6 +28,8 @@ private:
 
    EditorUI &m_editor;
    string m_filter;
+   bool m_syncToSelection = false; // When enabled, the tree is expanded & scrolled to reveal the selected part on selection change
+   std::shared_ptr<EditorUIPart> m_lastSyncedPart; // Last selection revealed in the tree while syncing
 };
 
 }
