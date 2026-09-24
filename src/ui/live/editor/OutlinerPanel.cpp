@@ -95,6 +95,8 @@ void OutlinerPanel::Render(float topBarHeight)
       if (ImGui::Selectable("Editor Camera"))
       {
          editor.ClearSelection();
+         editor.m_table->SetViewSetupOverride(BG_DESKTOP);
+         editor.m_table->SetViewSetupOverride(BG_INVALID);
          editor.m_camMode = ViewMode::EditorCam;
       }
       const Selection cam0 = Selection::Camera(0);
@@ -152,7 +154,7 @@ void OutlinerPanel::Render(float topBarHeight)
       }
       ImGui::TreePop();
    }
-   if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
+   if (ImGui::TreeNodeEx("Scene Parts", ImGuiTreeNodeFlags_DefaultOpen))
    {
       // Table definition parts
       struct Node
