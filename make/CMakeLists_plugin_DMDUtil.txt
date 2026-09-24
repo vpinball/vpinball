@@ -10,6 +10,8 @@ set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-$
 
 set(DMDUTIL_PLUGIN_SOURCES
    plugins/dmdutil/DMDUtilPlugin.cpp
+
+   plugins/plugins/ColorSpace.h
 )
 
 if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))

@@ -22,6 +22,7 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h" />
     <ClInclude Include="../../plugins/pinmame/common.h" />
     <ClInclude Include="../../plugins/pinmame/Controller.h" />
     <ClInclude Include="../../plugins/pinmame/ControllerSettings.h" />

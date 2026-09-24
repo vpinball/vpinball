@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD 99)
 set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}")
 
 set(INSPECTOR_PLUGIN_SOURCES
+   plugins/plugins/ColorSpace.h
    plugins/inspector/common.cpp
    plugins/inspector/common.h
    plugins/inspector/InspectorPlugin.cpp

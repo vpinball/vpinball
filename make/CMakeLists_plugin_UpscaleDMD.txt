@@ -13,6 +13,7 @@ set(UPSCALEDMD_PLUGIN_SOURCES
    plugins/upscaledmd/xbrz/xbrz.h
    plugins/upscaledmd/super-xbr/super-xbr.h
    plugins/upscaledmd/scalefx/scalefx.h
+   plugins/plugins/ColorSpace.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 )

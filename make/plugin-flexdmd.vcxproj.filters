@@ -137,6 +137,9 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/flexdmd/FlexDMD.h">
       <Filter>source</Filter>
     </ClInclude>

@@ -81,8 +81,8 @@ As for coding light sequences for original tables, please check this helper app:
 | | | |
 | DMDWidth | int | set width of DMD |
 | DMDHeight | int | set height of DMD |
-| DMDPixels | Variant | set array of (byte-)values (0..100), size needs to match the previously set width and height |
-| DMDColoredPixels | Variant |  set array of (long-)values (0..255,0..255,0..255), size needs to match the previously set width and height (see example below) |
+| DMDPixels | Variant | set array of (byte-)values (0..100), size needs to match the previously set width and height (in gamma space) |
+| DMDColoredPixels | Variant |  set array of (long-)values (0..255,0..255,0..255, in sRGB), size needs to match the previously set width and height (see example below) |
 | | | |
 | *RenderingMode | int | returns the rendering mode: 0 = Normal 2D, 1 = Stereo 3D, 2 = VR |
 | DisableStaticPrerendering | bool | Note that when setting to false, if needed, VPX will update the static prerender which can be lengthy |

@@ -10,6 +10,9 @@
     <ClCompile Include="../../plugins/dmdutil/DMDUtilPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="../../plugins/dmdutil/plugin.cfg">

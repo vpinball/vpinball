@@ -44,6 +44,9 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/pinmame/common.h">
       <Filter>source</Filter>
     </ClInclude>

@@ -20,6 +20,7 @@ set(PINMAME_PLUGIN_SOURCES
    plugins/pinmame/Roms.cpp
    plugins/pinmame/Settings.cpp
 
+   plugins/plugins/ColorSpace.h
    plugins/pinmame/common.h
    plugins/pinmame/Controller.h
    plugins/pinmame/ControllerSettings.h

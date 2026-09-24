@@ -11,6 +11,7 @@
     <ClCompile Include="../../third-party/include/mongoose/mongoose.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h" />
     <ClInclude Include="../../plugins/inspector/common.h" />
     <ClInclude Include="../../plugins/inspector/WebServer.h" />
     <ClInclude Include="../../third-party/include/mongoose/mongoose.h" />

@@ -43,6 +43,7 @@ set(FLEXDMD_PLUGIN_SOURCES
    plugins/flexdmd/scenes/SingleLineScene.cpp
    plugins/flexdmd/scenes/TwoLineScene.cpp
 
+   plugins/plugins/ColorSpace.h
    plugins/flexdmd/common.h
    plugins/flexdmd/FlexDMD.h
    plugins/flexdmd/SurfaceGraphics.h

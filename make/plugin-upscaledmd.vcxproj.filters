@@ -15,6 +15,9 @@
     <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
       <Filter>source</Filter>
     </ClInclude>

@@ -10,6 +10,7 @@
     <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../plugins/upscaledmd/xbrz/xbrz.h" />
     <ClInclude Include="../../plugins/upscaledmd/super-xbr/super-xbr.h" />

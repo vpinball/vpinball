@@ -162,7 +162,15 @@ typedef struct GetStateSrcMsg
 #define CTLPI_DISPLAY_GET_SRC_MSG                 "GetDisplays:1"
 
 // Render frame formats
+
+// LUM32F holds a *linear* luminance in [0..1].
+// Not gamma encoded: consumers scale the emitted dot color by it directly. A producer
+// starting from sRGB data must linearize first, since the Rec.709 weights (0.2126, 0.7152,
+// 0.0722) only give a luminance on linear components. Hardware driven sources should report
+// the physical quantity, typically the PWM duty cycle of the dot
+// (Note that this is unrelated to the legacy 0..100 brightness percentage of VPinMAME's interface, which is gamma encoded)
 #define CTLPI_DISPLAY_FORMAT_LUM32F               1u
+// SRGB888 holds three gamma encoded sRGB bytes per dot, SRGB565 one packed uint16
 #define CTLPI_DISPLAY_FORMAT_SRGB888              2u
 #define CTLPI_DISPLAY_FORMAT_SRGB565              3u
 

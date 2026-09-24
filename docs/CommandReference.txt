@@ -189,8 +189,8 @@ Variables
 
 DMDWidth(int) - set width of DMD
 DMDHeight(int) - set height of DMD
-DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height
-DMDColoredPixels(VARIANT) - set array of (long-)values (0..255,0..255,0..255), size needs to match the previously set width and height
+DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height (in gamma space)
+DMDColoredPixels(VARIANT) - set array of (long-)values (0..255,0..255,0..255, in sRGB), size needs to match the previously set width and height
                             example: Dim myDMDdata
                                      myDMDdata = Array(CLng(0),CLng(&hFFFFFF),CLng(&hFFFFFF),CLng(0)) 'set 4 fully black/white pixels
                                      DMDWidth = 2

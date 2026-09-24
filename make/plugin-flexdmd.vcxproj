@@ -41,6 +41,7 @@
     <ClCompile Include="../../plugins/flexdmd/UltraDMD.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h" />
     <ClInclude Include="../../plugins/flexdmd/bmfonts/BitmapFont.h" />
     <ClInclude Include="../../plugins/flexdmd/bmfonts/Character.h" />
     <ClInclude Include="../../plugins/flexdmd/bmfonts/Kerning.h" />

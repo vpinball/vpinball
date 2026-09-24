@@ -234,6 +234,13 @@ DMDOverlay::vec4<int> DMDOverlay::SearchDmdSubFrame(VPXTexture image, const VPXT
          unsigned int pos = (y * texInfo->width + searchFrame.x) * pos_step;
          for (int x = searchFrame.x; x < (searchFrame.x + searchFrame.z); ++x, pos += pos_step)
          {
+            // FIXME the two branches are not comparable, yet both are thresholded against the
+            // same lumLimit: BW32F is a linear luminance scaled by 255, the sRGB one a gamma
+            // encoded luma, with Rec.601 weights where the rest of the codebase uses Rec.709.
+            // A linear 0.5 and an sRGB 128 both land near 128 but are very different
+            // brightnesses (0.5 against 0.216 linear). Only used to find lit dots for
+            // cropping, and lumLimit was tuned against one of the two, so fixing this means
+            // revisiting that threshold rather than correcting the math on its own
             float lum = 0;
             switch (texInfo->format)
             {

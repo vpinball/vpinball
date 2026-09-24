@@ -8,6 +8,9 @@
     <ClCompile Include="../../plugins/dmdutil/DMDUtilPlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/ColorSpace.h" />
+  </ItemGroup>
+  <ItemGroup>
     <CopyFileToFolders Include="../../plugins/dmdutil/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>
