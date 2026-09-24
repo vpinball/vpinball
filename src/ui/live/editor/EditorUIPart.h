@@ -131,6 +131,17 @@ protected:
    // Renders the read only Z coordinate field of a single selected drag point in the curve section
    virtual void UpdatePointZField(PropertyPane& props, DragPoint* point);
 
+   // Gizmo transform support for parts defined by a drag point curve: the pivot is the part center and
+   // the in plane rotation & scale are baked into the curve points. The gizmo transform is absolute, so
+   // the rotation & scale applied to the points are tracked in m_curveRot/m_curveScale and reported in
+   // the transform, keeping the applied deltas consistent across the frames of a drag (the points have
+   // no persistent transform of their own).
+   TransformMask GetCurveTransform(Matrix3D& transform, float z) const;
+   void SetCurveTransform(const vec3& pos, const vec3& scale, const vec3& rot);
+   void SetCurveScale(const vec3& scale);
+   Vertex2D m_curveScale { 1.f, 1.f };
+   float m_curveRot = 0.f;
+
 private:
    void SetSelectedPointsSmooth(bool smooth);
    void FlipSelectedPoints(bool flipX);
