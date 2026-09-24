@@ -189,7 +189,8 @@ TEST_CASE("Nudge intent handler")
 
 TEST_CASE("Nudge handler")
 {
-   NudgeHandler handler(nullptr);
+   Settings settings;
+   NudgeHandler handler(nullptr, settings);
 
    SUBCASE("keyboard nudge mode round trip")
    {
