@@ -116,9 +116,37 @@ void EditorChrome::RenderToolbar()
       if (ImGui::Button(ICON_FK_PLAY))
          editor.PlayTest();
       if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Play table (F5)");
+         ImGui::SetTooltip("Play table\n[F5]");
       ImGui::EndDisabled();
       ImGui::SameLine();
+      ImGui::Separator();
+      ImGui::SameLine();
+
+      // Edit mode selection (same actions as the Esc, G, S and R keyboard shortcuts)
+      static const struct
+      {
+         ImGuizmo::OPERATION operation;
+         const char *icon;
+         const char *tooltip;
+      } editModes[] = {
+         { (ImGuizmo::OPERATION)0, ICON_FK_MOUSE_POINTER, "Select\n[Esc]" }, //
+         { ImGuizmo::TRANSLATE, ICON_FK_ARROWS, "Grab\n[G]" }, //
+         { ImGuizmo::SCALE, ICON_FK_EXPAND, "Scale\n[S]" }, //
+         { ImGuizmo::ROTATE, ICON_FK_REPEAT, "Rotate\n[R]" }, //
+      };
+      for (const auto &mode : editModes)
+      {
+         const bool active = (editor.m_gizmoOperation == mode.operation);
+         if (active)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+         if (ImGui::Button(mode.icon))
+            editor.SetGizmoOperation(mode.operation);
+         if (active)
+            ImGui::PopStyleColor();
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", mode.tooltip);
+         ImGui::SameLine();
+      }
       ImGui::Separator();
       ImGui::SameLine();
 
@@ -158,35 +186,27 @@ void EditorChrome::RenderToolbar()
             m_addPartButtons.push_back({ def.type, def.name, tex ? std::make_shared<Sampler>(editor.m_renderer->m_renderDevice, def.name, tex, false) : nullptr });
          }
       }
+      // Add part button, opening the part type picker popup (same as the Shift+A shortcut)
       ImGui::BeginDisabled(editor.m_pointEditPart != nullptr || editor.m_table->IsLocked());
-      for (const auto &button : m_addPartButtons)
-      {
-         if (button.icon == nullptr)
-            continue;
-         ImGui::SameLine();
-         const bool active = (editor.m_addPartType == button.type);
-         if (active)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-         if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
-            editor.m_addPartType = active ? eItemInvalid : button.type;
-         if (active)
-            ImGui::PopStyleColor();
-         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Add %s", button.name);
-      }
+      const bool addPartActive = (editor.m_addPartType != eItemInvalid);
+      if (addPartActive)
+         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+      if (ImGui::Button(ICON_FK_PLUS))
+         RequestAddPartPopup(ImGui::GetMousePos());
+      if (addPartActive)
+         ImGui::PopStyleColor();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Add part\n[Shift+A]");
       ImGui::EndDisabled();
 
-      if (editor.m_selection.GetType() == Selection::S_EDITABLE)
-      {
-         ImGui::SameLine();
-         ImGui::Separator();
-         ImGui::SameLine();
-         const float popupIconSize = iconSize + 2.f * ImGui::GetStyle().FramePadding.y;
-         if (ImGui::Button(ICON_FK_TRASH_O, ImVec2(popupIconSize, popupIconSize)))
-            editor.DeleteSelection();
-         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Delete selection");
-      }
+      // Delete selection button, always visible but only enabled when there are selected parts
+      ImGui::SameLine();
+      ImGui::BeginDisabled(editor.m_selection.GetType() != Selection::S_EDITABLE || editor.m_table->IsLocked());
+      if (ImGui::Button(ICON_FK_TRASH_O))
+         editor.DeleteSelection();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Delete selection\n[Delete]");
+      ImGui::EndDisabled();
 
       // Part type picker popup (Shift+A in standard mode): picking a type arms add part mode,
       // clicking outside of the popup dismisses it without arming add part mode
