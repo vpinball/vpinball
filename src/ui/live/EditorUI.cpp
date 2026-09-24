@@ -1668,12 +1668,16 @@ void EditorUI::DeleteSelection()
 
 void EditorUI::UpdateEditableList()
 {
-   // Remove UI parts of removed editables
+   // In full edit mode, parts without a part group are live objects generated at runtime (implicit
+   // playfield mesh, script created parts, ...): they are not part of the table file, so they are
+   // not listed in the outliner and can not be selected
+   const auto isLiveObject = [this](const IEditable *edit) { return (m_table->m_liveBaseTable == nullptr) && (edit->GetPartGroup() == nullptr) && (edit->GetItemType() != eItemPartGroup); };
+   // Remove UI parts of removed editables (or of live objects in full edit mode)
    const ankerl::unordered_dense::set<const IEditable *> liveParts(m_table->GetParts().begin(), m_table->GetParts().end());
    std::erase_if(m_editables,
-      [this, &liveParts](const auto &uiPart)
+      [this, &liveParts, &isLiveObject](const auto &uiPart)
       {
-         if (!liveParts.contains(uiPart->GetEditable()))
+         if (!liveParts.contains(uiPart->GetEditable()) || isLiveObject(uiPart->GetEditable()))
          {
             m_editableMap.erase(uiPart->GetEditable());
             return true;
@@ -1681,16 +1685,18 @@ void EditorUI::UpdateEditableList()
          return false;
       });
    // Drop removed parts from the multi selection, keeping a valid active part
-   std::erase_if(m_multiSel, [&liveParts](const auto &part) { return !liveParts.contains(part->GetEditable()); });
+   std::erase_if(m_multiSel, [&liveParts, &isLiveObject](const auto &part) { return !liveParts.contains(part->GetEditable()) || isLiveObject(part->GetEditable()); });
    if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
       m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
-   if (m_outlinerAnchor && !liveParts.contains(m_outlinerAnchor->GetEditable()))
+   if (m_outlinerAnchor && (!liveParts.contains(m_outlinerAnchor->GetEditable()) || isLiveObject(m_outlinerAnchor->GetEditable())))
       m_outlinerAnchor.reset();
    // Add UI parts for new editables
    bool needSort = false;
    ankerl::unordered_dense::set<PartGroup *> newGroups;
    for (const auto &edit : m_table->GetParts())
    {
+      if (isLiveObject(edit))
+         continue;
       const auto it = m_editableMap.find(edit);
       if (it == m_editableMap.end()) // New part
       {
