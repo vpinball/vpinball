@@ -1175,6 +1175,14 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
    if (m_rumblePulses[slot].endMs > now && low <= mixLow && high <= mixHigh && endMs <= mixEndMs)
       return;
    m_rumblePulses[slot] = { low, high, endMs };
+   // Start kick: a new pulse at hit level gets it when it raises the mix or when no kick is running any more. It
+   // is decided here, per event, and not from the size of a step of the mix: the physics delivers one hit as a
+   // ramp of contacts a few milliseconds apart, whose single steps never exceed any threshold on their own, and a
+   // second hit of the same strength as a running one must be felt as its own hit.
+   if (low >= RUMBLE_KICK_MIN_LEVEL && (low > m_rumbleMixLow || now >= m_rumbleKickLowEndMs))
+      m_rumbleKickLowEndMs = now + RUMBLE_KICK_MS;
+   if (high >= RUMBLE_KICK_MIN_LEVEL && (high > m_rumbleMixHigh || now >= m_rumbleKickHighEndMs))
+      m_rumbleKickHighEndMs = now + RUMBLE_KICK_MS;
    // A pulse that the new one covers on both motors is over: its event has been superseded, and letting it
    // resurface once the new pulse ends would play a vibration for something long past
    for (int i = 0; i < RUMBLE_PULSE_SLOTS; i++)
@@ -1215,16 +1223,11 @@ void InputManager::UpdateRumbleOutput(const uint32_t now)
       high = max(high, p.high);
       endMs = max(endMs, p.endMs);
    }
-   // Start kick: a step up of the mix is flagged as a kick for RUMBLE_KICK_MS, for handlers driving motors that
-   // need it to spin up. It goes with every step up, not only with the start from rest, so a ball hit that follows
-   // the flipper solenoid pulse still stands out; only levels meant as a hit get it, a light touch stays light.
-   if (low >= RUMBLE_KICK_MIN_LEVEL && low - m_rumbleMixLow >= RUMBLE_KICK_STEP)
-      m_rumbleKickLowEndMs = now + RUMBLE_KICK_MS;
-   else if (low < m_rumbleMixLow)
-      m_rumbleKickLowEndMs = 0; // the pulse that earned the kick is over; a weaker remainder must not be kicked
-   if (high >= RUMBLE_KICK_MIN_LEVEL && high - m_rumbleMixHigh >= RUMBLE_KICK_STEP)
-      m_rumbleKickHighEndMs = now + RUMBLE_KICK_MS;
-   else if (high < m_rumbleMixHigh)
+   // The kick (see PlayRumble) is flagged for RUMBLE_KICK_MS, for handlers driving motors that need it to spin up. It ends
+   // early when the mix falls: the pulse that earned it is over and a weaker remainder must not be kicked.
+   if (low < m_rumbleMixLow)
+      m_rumbleKickLowEndMs = 0;
+   if (high < m_rumbleMixHigh)
       m_rumbleKickHighEndMs = 0;
    m_rumbleMixLow = low;
    m_rumbleMixHigh = high;
@@ -1255,11 +1258,21 @@ void InputManager::PlayFlipperContactRumble(const float normalImpactSpeed)
    if (m_rumbleFlipperContact < RUMBLE_OFF_LEVEL)
       return;
 
-   // A relative normal velocity of roughly 17 units corresponds to a hard hit. Both motors are
-   // driven, since short pulses on the high frequency motor alone are barely noticeable on many
-   // gamepads.
-   const float impact = clamp(fabsf(normalImpactSpeed) * 0.06f, 0.05f, 1.f);
-   PlayRumble(impact * 0.8f * m_rumbleFlipperContact, impact * m_rumbleFlipperContact, 120);
+   // Impact speed summed over the contacts of a hit (see HitFlipper::Collide). Up to two units it is a light touch,
+   // a held ball rolling on the flipper, and stays a faint pulse. From 2 to 5 the scale is steeper so that a ball
+   // dropping back onto the flipper reaches the kick level at 5. Above that the level rises slowly up to 30, where
+   // only a ball arriving at full speed gets, so an ordinary contact stays below a slingshot and only those stand
+   // out. Both motors are driven,
+   // since short pulses on the high frequency motor alone are barely noticeable; the small one at 0.7 of the
+   // impact, like the plunger, so the click does not get sharper than the thump.
+   const float s = fabsf(normalImpactSpeed);
+   const float impact = clamp(s < 2.f ? s * 0.06f : s < 5.f ? 0.12f + (s - 2.f) * 0.14f : 0.54f + (s - 5.f) * (0.46f / 25.f), 0.05f, 1.f);
+   // The level saturates early, so above it the length carries the strength: the motors need longer than the
+   // short touch pulse to reach full amplitude, so that pulse is cut off before they get there. A touch stays
+   // short, a hit runs long enough for the motors to arrive, and the hardest ones run as long as the plunger
+   // strike.
+   const int ms = s < 5.f ? 120 : 150 + static_cast<int>(100.f * clamp((s - 5.f) * (1.f / 25.f), 0.f, 1.f));
+   PlayRumble(impact * 0.8f * m_rumbleFlipperContact, impact * 0.7f * m_rumbleFlipperContact, ms);
 }
 
 void InputManager::PlayBumperRumble()

@@ -308,13 +308,12 @@ private:
    uint32_t m_rumbleSentEndMs = 0;
    bool m_rumbleSentKickLow = false;
    bool m_rumbleSentKickHigh = false;
-   // A step up of the mix by RUMBLE_KICK_STEP to at least RUMBLE_KICK_MIN_LEVEL is flagged as a kick for
-   // RUMBLE_KICK_MS. Levels are the mix before any device mapping (see SDLInputHandler for the gamepad motor model).
+   // A new pulse at RUMBLE_KICK_MIN_LEVEL or above is flagged as a kick for RUMBLE_KICK_MS (see PlayRumble).
+   // Levels are the mix before any device mapping (see SDLInputHandler for the gamepad motor model).
    static constexpr float RUMBLE_OFF_LEVEL = 0.01f; // below this a strength setting or a pulse level counts as off
    static constexpr uint32_t RUMBLE_KICK_MS = 80;
    static constexpr float RUMBLE_KICK_MIN_LEVEL = (0.6f - 0.3f) / 0.7f; // level from which a pulse gets the kick; pulses meant as a light touch stay below it
-   static constexpr float RUMBLE_KICK_STEP = 0.2f / 0.7f; // minimum rise of the mix that triggers a kick
-   float m_rumbleMixLow = 0.f;
+   float m_rumbleMixLow = 0.f; // The mix before the kick, to tell a new hit from a kick ending
    float m_rumbleMixHigh = 0.f;
    uint32_t m_rumbleKickLowEndMs = 0;
    uint32_t m_rumbleKickHighEndMs = 0;
