@@ -6,6 +6,7 @@
 #include "core/TableDB.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "core/editablereg.h"
+#include "core/extern.h"
 #include "core/FileLocator.h"
 #include "core/VPApp.h"
 #include "core/vpversion.h"
@@ -164,6 +165,45 @@ void EditorUI::PlayTest()
    m_player->SetTable(liveTable, Player::TableTransition::Stack);
 }
 
+void EditorUI::SaveTable()
+{
+   if (IsInspectMode() || m_table->IsLocked())
+      return;
+   if (m_table->m_filename.empty())
+   {
+      SaveTableAs();
+      return;
+   }
+   // TODO cursor feedback
+   VPXFileFeedback feedback;
+   if (SUCCEEDED(m_table->Save(feedback)))
+      m_undo.SetCleanPoint(eSaveClean);
+}
+
+void EditorUI::SaveTableAs()
+{
+   if (IsInspectMode() || m_table->IsLocked() || m_player->m_playfieldWnd == nullptr)
+      return;
+   m_pendingSaveAsPath = std::make_shared<string>();
+   const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx" } };
+   std::filesystem::path defaultLocation = m_table->m_filename;
+   if (defaultLocation.empty())
+      defaultLocation = std::filesystem::path(m_table->m_settings.GetRecentDir_LoadDir()) / "new_table.vpx";
+   else
+      defaultLocation.replace_extension(".vpx");
+   const string location = defaultLocation.string();
+   SDL_ShowSaveFileDialog(
+      [](void *userdata, const char *const *filelist, int filter)
+      {
+         auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+         if (filelist != nullptr && filelist[0] != nullptr)
+            **res = filelist[0];
+         delete res;
+      },
+      new std::shared_ptr<string>(m_pendingSaveAsPath), //
+      m_player->m_playfieldWnd->GetCore(), filters, 1, location.empty() ? nullptr : location.c_str());
+}
+
 void EditorUI::ResetCameraFromPlayer()
 {
    // Try to setup editor camera to match the used one, but only mostly since the EditorUI does not have some view setup features like off-center, ...
@@ -255,6 +295,16 @@ void EditorUI::RenderUI()
       {
          std::erase_if(m_pointSel, [curve](const DragPoint *point) { return curve->GetPointIndex(point) < 0; });
       }
+   }
+
+   // Apply the file picked by the asynchronous 'Save As' file dialog (deferred to the main thread, in edit mode)
+   if (!IsInspectMode() && m_pendingSaveAsPath && !m_pendingSaveAsPath->empty())
+   {
+      m_table->m_filename = *m_pendingSaveAsPath;
+      m_table->m_title = TitleFromFilename(m_table->m_filename);
+      g_app->m_settings.SetRecentDir_LoadDir(m_table->m_filename.parent_path().string(), false);
+      m_pendingSaveAsPath = nullptr;
+      SaveTable();
    }
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
@@ -783,12 +833,7 @@ void EditorUI::RenderUI()
          if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
          {
             // Save table
-            if (!IsInspectMode() && !m_table->IsLocked())
-            {
-               VPXFileFeedback feedback;
-               if (SUCCEEDED(m_table->Save(feedback)))
-                  m_undo.SetCleanPoint(eSaveClean);
-            }
+            SaveTable();
          }
          else if (!io.KeyCtrl)
          {

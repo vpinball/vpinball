@@ -8,7 +8,6 @@
 #include "renderer/Sampler.h"
 #include "renderer/Texture.h"
 #include "ui/EditorClipboard.h"
-#include "ui/VPXFileFeedback.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
 
@@ -40,12 +39,9 @@ void EditorChrome::RenderMenuBar()
       if (!editor.IsInspectMode() && ImGui::BeginMenu("File"))
       {
          if (ImGui::MenuItem("Save", "Ctrl+S"))
-         {
-            // TODO cursor feedback
-            VPXFileFeedback feedback;
-            if (SUCCEEDED(editor.m_table->Save(feedback)))
-               editor.m_undo.SetCleanPoint(eSaveClean);
-         }
+            editor.SaveTable();
+         if (ImGui::MenuItem("Save As..."))
+            editor.SaveTableAs();
          ImGui::Separator();
          if (ImGui::MenuItem("Play", "F5", false, !editor.m_table->IsLocked()))
             editor.PlayTest();
