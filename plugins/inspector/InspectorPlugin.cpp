@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "common.h"
+#include "plugins/ColorSpace.h"
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "WebServer.h"
@@ -534,12 +535,8 @@ namespace
          const float* const __restrict src = static_cast<const float*>(frame);
          for (size_t i = 0; i < count; i++)
          {
-            float v = src[i];
-            if (v < 0.f)
-               v = 0.f;
-            if (v > 1.f)
-               v = 1.f;
-            const uint8_t l = static_cast<uint8_t>(v * 255.f + 0.5f);
+            // LUM32F is a linear luminance while the preview expects sRGB
+            const uint8_t l = VPXColorSpace::LinearToSRGB(src[i]);
             rgb[i * 3 + 0] = l;
             rgb[i * 3 + 1] = l;
             rgb[i * 3 + 2] = l;

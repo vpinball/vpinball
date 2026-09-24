@@ -8,6 +8,7 @@
 #include "actors/GIFImage.h"
 #include "actors/Video.h"
 #include "resources/AssetManager.h"
+#include "plugins/ColorSpace.h"
 
 #include <format>
 
@@ -461,13 +462,13 @@ float* FlexDMD::UpdateLumFP32Frame()
    SDL_LockSurface(surf);
    const uint8_t* __restrict pixels = static_cast<const uint8_t*>(surf->pixels);
    float* __restrict dst = m_lumFP32Frame;
-   constexpr float scale = static_cast<float>(1.0 / 255.0);
-   for (int o = 0; o < m_height * m_width; o++)
+   const int hw = m_height * m_width;
+   for (int o = 0; o < hw; o++)
    {
-      const float r = static_cast<float>(*pixels++);
-      const float g = static_cast<float>(*pixels++);
-      const float b = static_cast<float>(*pixels++);
-      *dst++ = (0.2126f * r + 0.7152f * g + 0.0722f * b) * scale;
+      // CTLPI_DISPLAY_FORMAT_LUM32F is a linear luminance (via VPX's BW_FP32, which the
+      // display shaders use as-is), and the Rec.709 weights only yield a luminance on linear values
+      *dst++ = VPXColorSpace::SRGBToLuminance(pixels[0], pixels[1], pixels[2]);
+      pixels += 3;
    }
    SDL_UnlockSurface(surf);
    return m_lumFP32Frame;

@@ -7,6 +7,7 @@
 #include <charconv>
 #include <format>
 
+#include "plugins/ColorSpace.h"
 #include "plugins/ControllerPlugin.h"
 #include "plugins/LoggingPlugin.h"
 
@@ -139,16 +140,21 @@ private:
          const float* const __restrict luminanceData = static_cast<const float*>(frame.frame);
          uint8_t* const __restrict rgb24Data = new uint8_t[dmdSource.width * dmdSource.height * 3];
 
-         const float tintR = static_cast<float>(lumTintRProp_Val);
-         const float tintG = static_cast<float>(lumTintGProp_Val);
-         const float tintB = static_cast<float>(lumTintBProp_Val);
+         const uint32_t tintR = (uint32_t)lumTintRProp_Val;
+         const uint32_t tintG = (uint32_t)lumTintGProp_Val;
+         const uint32_t tintB = (uint32_t)lumTintBProp_Val;
 
-         for (unsigned int i = 0; i < dmdSource.width * dmdSource.height; ++i)
+         // LUM32F is a linear luminance while UpdateRGB24Data seems to take gamma encoded components,
+         // at least the SRGB888 case below shows this by handing it a frame unconverted. So encode once
+         // per dot, then apply the (also gamma encoded) tint
+         // FIXME to be verified if the SRGB888 is really the reference, or if now both cases are wrong
+         const unsigned int wh = dmdSource.width * dmdSource.height;
+         for (unsigned int i = 0; i < wh; ++i)
          {
-            const float lum = luminanceData[i];
-            rgb24Data[i * 3] = (uint8_t)(lum * tintR);
-            rgb24Data[i * 3 + 1] = (uint8_t)(lum * tintG);
-            rgb24Data[i * 3 + 2] = (uint8_t)(lum * tintB);
+            const uint32_t lum = VPXColorSpace::LinearToSRGB(luminanceData[i]);
+            rgb24Data[i * 3    ] = (uint8_t)((lum * tintR + 127u) / 255u);
+            rgb24Data[i * 3 + 1] = (uint8_t)((lum * tintG + 127u) / 255u);
+            rgb24Data[i * 3 + 2] = (uint8_t)((lum * tintB + 127u) / 255u);
          }
 
          m_pDmd->UpdateRGB24Data(rgb24Data, dmdSource.width, dmdSource.height);

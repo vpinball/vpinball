@@ -11,6 +11,7 @@
 #include <format>
 #include <fstream>
 
+#include "plugins/ColorSpace.h"
 #include "plugins/VPXPlugin.h" // Only used for optional feature (visual feedback on error)
 #include <climits>
 
@@ -19,7 +20,9 @@ using json = nlohmann::json;
 namespace PinMAME
 {
 
-__forceinline uint8_t saturatedByte(float v) { return (uint8_t)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
+// [0..1] scaled to [0..scale], saturated and rounded. LUM32F is specified as [0..1] but
+// nothing stops a producer overshooting, and truncating would bias every shade down
+__forceinline uint8_t saturatedScale(const float v, const float scale) { return (uint8_t)(scale * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v) + 0.5f); }
 
 Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config, const std::filesystem::path& memmapPath)
    : m_vpmPath(config.vpmPath)
@@ -799,15 +802,23 @@ std::vector<uint8_t> Controller::GetRawDmdPixels()
    {
       pixels.resize(size);
       const float* const __restrict framef = static_cast<const float*>(frame.frame);
+      // Scaling the linear luminance is intended, and is not the sRGB encode the rest
+      // of this file does: it reproduces VPinMAME's legacy default dmd_perc0/33/66 curve, which sends
+      // the PWM duty cycles 0, 1/3, 2/3, 1 out as 0, 33, 67, 100 (see core_dmd_send_vpm).
+      // Consumers decode that with an sRGB EOTF, so encoding here too would brighten every mid
+      // shade (61 and 84 instead of 33 and 67). The one thing VPinMAME does differently though is to
+      // lift an unlit dot to dmd_perc0, 20 by default, which this side has no setting for
       for (int i = 0; i < size; i++)
-         pixels[i] = static_cast<uint8_t>(framef[i] * 100.f);
+         pixels[i] = saturatedScale(framef[i], 100.f);
    }
    else if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
    {
       pixels.resize(size);
       const uint8_t* const __restrict framef = static_cast<const uint8_t*>(frame.frame);
+      // Linearize, weight, then re-encode: the 0..100 percentage is itself gamma encoded,
+      // while the Rec.709 weights only give a luminance on linear values
       for (int i = 0; i < size; i++)
-         pixels[i] = static_cast<uint8_t>(21.26f * (float)framef[i * 3] + 71.52f * (float)framef[i * 3 + 1] + 7.22f * (float)framef[i * 3 + 2]);
+         pixels[i] = VPXColorSpace::LinearToPercent(VPXColorSpace::SRGBToLuminance(framef[i * 3], framef[i * 3 + 1], framef[i * 3 + 2]));
    }
    return pixels;
 }
@@ -827,7 +838,9 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
       for (int i = 0; i < size; i++)
       {
          // TODO implement original PinMAME / VPinMAME coloring
-         const uint32_t lum = static_cast<int32_t>(framef[i] * 255.f);
+
+         // Scaled, not sRGB encoded, for the same reason as GetRawDmdPixels above: VPinMAME emits tint * perc/100 per component
+         const uint32_t lum = saturatedScale(framef[i], 255.f);
          pixels[i] = (lum << 16) | (lum << 8) | lum;
       }
    }
