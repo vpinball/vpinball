@@ -5,9 +5,6 @@
 
 #include "math/math.h"
 #include "renderer/Renderer.h"
-#ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/WinEditor.h"
-#endif
 #include "utils/BiffReader.h"
 #include "utils/lzwreader.h"
 
@@ -1086,13 +1083,6 @@ Texture* Texture::CreateFromFile(const std::filesystem::path& filename, const bo
 Texture::~Texture()
 {
    delete m_ppb;
-   #ifdef VPX_ENABLE_WIN32_EDITOR
-      if (m_hbmGDIVersion)
-      {
-         if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
-             DeleteObject(m_hbmGDIVersion);
-      }
-   #endif
 }
 
 void Texture::Save(IObjectWriter& writer, PinTable* pt) const
@@ -1164,22 +1154,9 @@ HBITMAP Texture::GetGDIBitmap() const
    if (m_hbmGDIVersion)
       return m_hbmGDIVersion;
 
-   // GDI is only available and used by Win32 editor
-   assert(g_pvp);
-
-   // only do anything in here (and waste memory/time on it) if UI needed (i.e. if not just -Play via command line is triggered or selected on VPX start with the file popup!)
-   if (g_pvp->m_table_played_via_SelectTableOnStart)
-   {
-      m_hbmGDIVersion = g_pvp->m_hbmInPlayMode;
-      return m_hbmGDIVersion;
-   }
-
    const auto buffer = GetRawBitmap(false, 0);
    if (buffer == nullptr)
-   {
-      m_hbmGDIVersion = g_pvp->m_hbmInPlayMode; // We should return an error bitmap
-      return m_hbmGDIVersion;
-   }
+      return NULL;
 
    const HDC hdcScreen = GetDC(nullptr);
    m_hbmGDIVersion = CreateCompatibleBitmap(hdcScreen, m_width, m_height);

@@ -527,6 +527,23 @@ void PinTableWnd::RenderTable(Sur *const psur)
    FRect frect;
    GetViewRect(&frect);
 
+   if (m_vpxEditor->m_table_played_via_SelectTableOnStart)
+   {
+      BITMAP bm;
+      GetObject(m_vpxEditor->m_hbmInPlayMode, (int)sizeof bm, &bm);
+      CDC dc;
+      dc.CreateCompatibleDC(nullptr);
+      const CBitmap hbmOld = dc.SelectObject(m_vpxEditor->m_hbmInPlayMode);
+      const float scale = min((frect.right - frect.left) / bm.bmWidth, (frect.bottom - frect.top) / bm.bmHeight);
+      const float w = bm.bmWidth * scale;
+      const float h = bm.bmHeight * scale;
+      const float x = frect.left + (frect.right - frect.left - w) * 0.5f;
+      const float y = frect.top + (frect.bottom - frect.top - h) * 0.5f;
+      psur->Image(x, y, x + w, y + h, dc.GetHDC(), bm.bmWidth, bm.bmHeight);
+      dc.SelectObject(hbmOld);
+      return;
+   }
+
    if (GetDisplayBackdrop())
    {
       Texture *const ppi = m_table->GetImage((!m_vpxEditor->m_desktopBackdropView) ? m_table->m_image : m_table->m_BG_image[m_table->GetViewMode()]);
@@ -608,22 +625,6 @@ void PinTableWnd::RenderTable(Sur *const psur)
       psur->SetBorderColor(RGB(0, 0, 0), true, 0);
       psur->Rectangle(m_table->m_rcDragRect.left, m_table->m_rcDragRect.top, m_table->m_rcDragRect.right, m_table->m_rcDragRect.bottom);
    }
-
-   // display the layer string
-   //    psur->SetObject(nullptr);
-   //    SetTextColor( psur->m_hdc,RGB(180,180,180));
-   //    char text[64];
-   //    char number[8];
-   //    strncpy_s( text, std::size(text), "Layer_");
-   //    _itoa_s(activeLayer+1, number, 10 );
-   //    strcat_s( text, number);
-   //    RECT textRect;
-   //    SetRect( &textRect, rc.right-60,rc.top, rc.right, rc.top+30 );
-   //    DrawText( psur->m_hdc, text, -1, &textRect, DT_LEFT);
-   //
-   //    SetTextColor( psur->m_hdc,RGB(0,0,0));
-
-   //   psur->DrawText( text,rc.left+10, rc.top, 90,20);
 }
 
 // draws the backdrop content
