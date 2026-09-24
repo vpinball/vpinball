@@ -322,7 +322,7 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
 {
    const string sectionSz = MakeString(Section);
    const string settingSz = MakeString(SettingName);
-   Settings &settings = m_table->m_settings;
+   Settings &settings = m_table->GetSettings();
    const auto propId = Settings::GetRegistry().GetPropertyId(sectionSz, settingSz);
    if (propId.has_value())
    {
@@ -524,7 +524,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
 STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIANT *Value)
 {
-   Settings *const pSettings = &m_table->m_settings;
+   Settings *const pSettings = &m_table->GetSettings();
 
    mINI::INIStructure ini;
    mINI::INIFile file(g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, false) / "VPReg.ini"sv);
@@ -1112,7 +1112,7 @@ STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 #ifndef __STANDALONE__
       *pVal = 0; // 2D
 #else
-      int val = m_table->m_settings.GetStandalone_RenderingModeOverride();
+      int val = m_table->GetSettings().GetStandalone_RenderingModeOverride();
       *pVal = (val == -1) ? 0 : val;
 #endif
    }

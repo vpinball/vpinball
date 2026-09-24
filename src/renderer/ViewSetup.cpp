@@ -18,10 +18,10 @@ ViewSetup::ViewSetup()
 void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 {
    assert(mMode == VLM_WINDOW);
-   vec3 playerPos(table->m_settings.GetPlayer_ScreenPlayerX(),
-                  table->m_settings.GetPlayer_ScreenPlayerY(),
-                  table->m_settings.GetPlayer_ScreenPlayerZ());
-   float screenInclination = table->m_settings.GetPlayer_ScreenInclination();
+   vec3 playerPos(table->GetSettings().GetPlayer_ScreenPlayerX(),
+                  table->GetSettings().GetPlayer_ScreenPlayerY(),
+                  table->GetSettings().GetPlayer_ScreenPlayerZ());
+   float screenInclination = table->GetSettings().GetPlayer_ScreenInclination();
    SetViewPosFromPlayerPosition(table, playerPos, screenInclination);
 }
 
@@ -49,7 +49,7 @@ vec3 ViewSetup::GetPlayerPositionFromViewPos(const PinTable* const table, const 
 
 void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const float flipperPos, const bool allowNonUniformStretch, const std::function<void(string)>& glassNotification)
 {
-   const Settings& settings = table->m_settings; 
+   const Settings& settings = table->GetSettings(); 
    const float screenWidth = settings.GetPlayer_ScreenWidth();
    const float screenHeight = settings.GetPlayer_ScreenHeight();
    if (screenWidth <= 1.f || screenHeight <= 1.f)
@@ -87,7 +87,7 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
    mWindowBottomZOfs = bottomHeight;
    mWindowTopZOfs = topHeight;
 
-   SetViewPosFromPlayerPosition(table, playerPos, table->m_settings.GetPlayer_ScreenInclination());
+   SetViewPosFromPlayerPosition(table, playerPos, table->GetSettings().GetPlayer_ScreenInclination());
 
    if (allowNonUniformStretch)
    {
@@ -320,7 +320,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
    if (mMode == VLM_WINDOW)
    {
       const float windowBotZ = GetWindowBottomZOffset(), windowTopZ = GetWindowTopZOffset();
-      const float screenHeight = table->m_settings.GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
+      const float screenHeight = table->GetSettings().GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
       const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom - table->m_top);
       return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom - table->m_top) / cosf(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
@@ -537,7 +537,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
       const Vertex3Ds bottom = fit * Vertex3Ds{centerAxis, table->m_bottom, windowBotZ};
       const float xmin = zNear * min(bottom.x, top.x), xmax = zNear * max(bottom.x, top.x);
       const float ymin = zNear * min(bottom.y, top.y), ymax = zNear * max(bottom.y, top.y);
-      const float screenHeight = table->m_settings.GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
+      const float screenHeight = table->GetSettings().GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
       float offsetScale;
       if ((quadrant & 1) == 0) // 0 & 180
       {
@@ -577,7 +577,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
       // Since the table is scaled to 'real world units' (that is to say same scale as the user measures), we directly use the user settings for IPD,.. without any scaling
 
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children)
-      const float eyeSeparation = MMTOVPU(table->m_settings.GetPlayer_Stereo3DEyeSeparation());
+      const float eyeSeparation = MMTOVPU(table->GetSettings().GetPlayer_Stereo3DEyeSeparation());
 
       // Z where the stereo separation is 0:
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)

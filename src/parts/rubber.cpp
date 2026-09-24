@@ -42,7 +42,7 @@ HRESULT Rubber::Init(const float x, const float y, const bool fromMouseClick, co
    return S_OK;
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsRubber_##prop() : Settings::GetDefaultPropsRubber_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsRubber_##prop() : Settings::GetDefaultPropsRubber_##prop##_Default()
 void Rubber::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_height, Height);
@@ -74,7 +74,7 @@ void Rubber::SetDefaultPhysics(const bool fromMouseClick)
 
 void Rubber::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsRubber_##prop(field, false)
+#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsRubber_##prop(field, false)
    LinkProp(m_d.m_elasticity, Elasticity);
    LinkProp(m_d.m_elasticityFalloff, ElasticityFalloff);
    LinkProp(m_d.m_friction, Friction);

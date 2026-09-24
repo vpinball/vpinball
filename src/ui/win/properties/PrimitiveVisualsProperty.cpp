@@ -453,7 +453,7 @@ protected:
       {
          SetForegroundWindow();
 
-         const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
+         const string &szInitialDir = g_app->GetSettings().GetRecentDir_ImportDir();
 
          vector<string> szFileName;
          if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
@@ -463,7 +463,7 @@ protected:
             const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
             if (index != string::npos)
             {
-               g_app->m_settings.SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
+               g_app->GetSettings().SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
                m_prim->m_d.m_meshFileName = szFileName[0].substr(index + 1);
             }
 
@@ -529,7 +529,7 @@ protected:
       {
          SetForegroundWindow();
 
-         const string &szInitialDir = g_app->m_settings.GetRecentDir_ImportDir();
+         const string &szInitialDir = g_app->GetSettings().GetRecentDir_ImportDir();
 
          vector<string> szFileName;
          if (m_tableEditor->m_vpxEditor->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
@@ -538,7 +538,7 @@ protected:
 
             const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
             if (index != string::npos)
-               g_app->m_settings.SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
+               g_app->GetSettings().SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
 
             GetDlgItem(IDOK).EnableWindow(TRUE);
          }

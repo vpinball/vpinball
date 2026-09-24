@@ -272,10 +272,10 @@ void WhereUsedDialog::OnCancel() { }
 
 void WhereUsedDialog::LoadPosition()
 {
-   const int x = g_app->m_settings.GetEditor_WhereUsedPosX();
-   const int y = g_app->m_settings.GetEditor_WhereUsedPosY();
-   const int w = g_app->m_settings.GetEditor_WhereUsedWidth();
-   const int h = g_app->m_settings.GetEditor_WhereUsedHeight();
+   const int x = g_app->GetSettings().GetEditor_WhereUsedPosX();
+   const int y = g_app->GetSettings().GetEditor_WhereUsedPosY();
+   const int w = g_app->GetSettings().GetEditor_WhereUsedWidth();
+   const int h = g_app->GetSettings().GetEditor_WhereUsedHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -284,10 +284,10 @@ void WhereUsedDialog::LoadPosition()
 void WhereUsedDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   g_app->m_settings.SetEditor_WhereUsedPosX((int)rect.left, false);
-   g_app->m_settings.SetEditor_WhereUsedPosY((int)rect.top, false);
-   g_app->m_settings.SetEditor_WhereUsedWidth(rect.right - rect.left, false);
-   g_app->m_settings.SetEditor_WhereUsedHeight(rect.bottom - rect.top, false);
+   g_app->GetSettings().SetEditor_WhereUsedPosX((int)rect.left, false);
+   g_app->GetSettings().SetEditor_WhereUsedPosY((int)rect.top, false);
+   g_app->GetSettings().SetEditor_WhereUsedWidth(rect.right - rect.left, false);
+   g_app->GetSettings().SetEditor_WhereUsedHeight(rect.bottom - rect.top, false);
 }
 
 void WhereUsedDialog::RefreshList()

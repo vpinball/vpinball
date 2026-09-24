@@ -92,7 +92,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
    , m_pininput(this)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
-        table->m_settings.GetPlayer_SoundDeviceBG(), table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(table->m_settings.GetPlayer_Sound3D())))
+        table->GetSettings().GetPlayer_SoundDeviceBG(), table->GetSettings().GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(table->GetSettings().GetPlayer_Sound3D())))
    , m_resURIResolver(m_pluginManager.GetMsgAPI(), m_pluginAPI.GetVPXEndPointId(), true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
@@ -161,7 +161,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
       else
          enableId = Settings::GetRegistry().Register(
             std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin->m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin->m_name + '\'', true, false));
-      if (m_ptable->m_settings.GetBool(enableId))
+      if (m_ptable->GetSettings().GetBool(enableId))
       {
          plugin->Load(&m_pluginManager.GetMsgAPI());
       }
@@ -195,10 +195,10 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    bool useVR = false;
    #if defined(ENABLE_XR)
       // The live editor is not available in VR, so force VR off in the modes that open it (LiveEdit / FullEdit)
-      const int vrDetectionMode = (m_playMode == PlayMode::LiveEdit || m_playMode == PlayMode::FullEdit) ? 2 : m_ptable->m_settings.GetPlayerVR_AskToTurnOn();
+      const int vrDetectionMode = (m_playMode == PlayMode::LiveEdit || m_playMode == PlayMode::FullEdit) ? 2 : m_ptable->GetSettings().GetPlayerVR_AskToTurnOn();
       if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
       {
-         m_vrDevice = new VRDevice(m_ptable->m_settings);
+         m_vrDevice = new VRDevice(m_ptable->GetSettings());
          if (m_vrDevice->IsOpenXRReady())
          {
             m_vrDevice->SetupHMD();
@@ -224,12 +224,12 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    #ifdef ENABLE_DX9
    const StereoMode stereo3D = STEREO_OFF;
    #else
-   const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->m_settings.GetPlayer_Stereo3D();
+   const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->GetSettings().GetPlayer_Stereo3D();
    #endif
 
-   m_detectScriptHang = m_ptable->m_settings.GetPlayer_DetectHang();
+   m_detectScriptHang = m_ptable->GetSettings().GetPlayer_DetectHang();
 
-   m_minphyslooptime = m_ptable->m_settings.GetPlayer_MinPhysLoopTime();
+   m_minphyslooptime = m_ptable->GetSettings().GetPlayer_MinPhysLoopTime();
 
    PLOGI << "Creating main window"; // For profiling
    {
@@ -248,7 +248,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
          SDL_RegisterApp(WIN32_PLAYER_WND_CLASSNAME, 0, g_app->GetInstanceHandle());
       #endif
       
-      const Settings& settings = g_app->m_settings; // Always use main application settings (not overridable per table)
+      const Settings& settings = g_app->GetSettings(); // Always use main application settings (not overridable per table)
       if (stereo3D == STEREO_VR)
       {
          m_playfieldWnd = new VPX::Window(m_vrDevice->GetEyeWidth(), m_vrDevice->GetEyeHeight());
@@ -262,14 +262,14 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
          m_playfieldWnd = new VPX::Window("Visual Pinball Player"s, settings, VPXWindowId::VPXWINDOW_Playfield);
 
          const float pfRefreshRate = m_playfieldWnd->GetRefreshRate();
-         m_maxFramerate = m_ptable->m_settings.GetPlayer_MaxFramerate();
+         m_maxFramerate = m_ptable->GetSettings().GetPlayer_MaxFramerate();
          if (m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
             m_maxFramerate = 24.f;
          if (m_maxFramerate < 0.f) // Negative is display refresh rate
             m_maxFramerate = pfRefreshRate;
          if (m_maxFramerate == 0.f) // 0 is unbound refresh rate
             m_maxFramerate = 10000.f;
-         m_videoSyncMode = static_cast<VideoSyncMode>(m_ptable->m_settings.GetPlayer_SyncMode());
+         m_videoSyncMode = static_cast<VideoSyncMode>(m_ptable->GetSettings().GetPlayer_SyncMode());
          if (m_videoSyncMode != VideoSyncMode::VSM_NONE)
          {
             if (m_maxFramerate > pfRefreshRate)
@@ -314,9 +314,9 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
       throw hr;
    }
 
-   m_backglassOutput.SetMode(m_ptable->m_settings, static_cast<RenderOutput::OutputMode>(m_ptable->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_Backglass)));
-   m_scoreViewOutput.SetMode(m_ptable->m_settings, static_cast<RenderOutput::OutputMode>(m_ptable->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_ScoreView)));
-   m_topperOutput.SetMode(m_ptable->m_settings, static_cast<RenderOutput::OutputMode>(m_ptable->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_Topper)));
+   m_backglassOutput.SetMode(m_ptable->GetSettings(), static_cast<RenderOutput::OutputMode>(m_ptable->GetSettings().GetWindow_Mode(VPXWindowId::VPXWINDOW_Backglass)));
+   m_scoreViewOutput.SetMode(m_ptable->GetSettings(), static_cast<RenderOutput::OutputMode>(m_ptable->GetSettings().GetWindow_Mode(VPXWindowId::VPXWINDOW_ScoreView)));
+   m_topperOutput.SetMode(m_ptable->GetSettings(), static_cast<RenderOutput::OutputMode>(m_ptable->GetSettings().GetWindow_Mode(VPXWindowId::VPXWINDOW_Topper)));
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Ancillary windows are not yet supported while in VR mode
    {
@@ -409,10 +409,10 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off"s, 4000);
-   const int numberOfTimesToShowTouchMessage = g_app->m_settings.GetPlayer_NumberOfTimesToShowTouchMessage();
+   const int numberOfTimesToShowTouchMessage = g_app->GetSettings().GetPlayer_NumberOfTimesToShowTouchMessage();
    if (m_pininput.HasTouchInput() && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
    {
-      g_app->m_settings.SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
+      g_app->GetSettings().SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s,
          12000);
@@ -462,29 +462,29 @@ void Player::InitTableSession(const bool isInitial)
    // parse the (optional) override-physics-sets that can be set globally
    if (m_ptable->m_overridePhysics)
    {
-      m_ptable->m_fOverrideGravityConstant = GRAVITYCONST * m_ptable->m_settings.GetPlayer_TablePhysicsGravityConstant(m_ptable->m_overridePhysics - 1);
-      m_ptable->m_fOverrideContactFriction = m_ptable->m_settings.GetPlayer_TablePhysicsContactFriction(m_ptable->m_overridePhysics - 1);
-      m_ptable->m_fOverrideElasticity = m_ptable->m_settings.GetPlayer_TablePhysicsElasticity(m_ptable->m_overridePhysics - 1);
-      m_ptable->m_fOverrideElasticityFalloff = m_ptable->m_settings.GetPlayer_TablePhysicsElasticityFalloff(m_ptable->m_overridePhysics - 1);
-      m_ptable->m_fOverrideScatterAngle = m_ptable->m_settings.GetPlayer_TablePhysicsScatterAngle(m_ptable->m_overridePhysics - 1);
-      m_ptable->m_fOverrideMinSlope = m_ptable->m_settings.GetPlayer_TablePhysicsMinSlope(m_ptable->m_overridePhysics - 1);
-      m_ptable->m_fOverrideMaxSlope = m_ptable->m_settings.GetPlayer_TablePhysicsMaxSlope(m_ptable->m_overridePhysics - 1);
-      const float fOverrideContactScatterAngle = m_ptable->m_settings.GetPlayer_TablePhysicsContactScatterAngle(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideGravityConstant = GRAVITYCONST * m_ptable->GetSettings().GetPlayer_TablePhysicsGravityConstant(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideContactFriction = m_ptable->GetSettings().GetPlayer_TablePhysicsContactFriction(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideElasticity = m_ptable->GetSettings().GetPlayer_TablePhysicsElasticity(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideElasticityFalloff = m_ptable->GetSettings().GetPlayer_TablePhysicsElasticityFalloff(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideScatterAngle = m_ptable->GetSettings().GetPlayer_TablePhysicsScatterAngle(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideMinSlope = m_ptable->GetSettings().GetPlayer_TablePhysicsMinSlope(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideMaxSlope = m_ptable->GetSettings().GetPlayer_TablePhysicsMaxSlope(m_ptable->m_overridePhysics - 1);
+      const float fOverrideContactScatterAngle = m_ptable->GetSettings().GetPlayer_TablePhysicsContactScatterAngle(m_ptable->m_overridePhysics - 1);
       c_hardScatter = ANGTORAD(m_ptable->m_overridePhysics ? fOverrideContactScatterAngle : m_ptable->m_defaultScatter);
    }
 
    if (!IsEditorMode())
    {
       for (int i = 0; i < 3; i++)
-         m_ptable->mViewSetups[i].ApplyTableOverrideSettings(m_ptable->m_settings, (ViewSetupID)i);
+         m_ptable->mViewSetups[i].ApplyTableOverrideSettings(m_ptable->GetSettings(), (ViewSetupID)i);
    }
 
    // 'playfield' windowed mode is defined in the settings (not in the table file)
    if (ViewSetup &viewSetup = m_ptable->GetViewSetup(); viewSetup.mMode == VLM_WINDOW)
       viewSetup.SetWindowModeFromSettings(m_ptable);
 
-   m_backglassVolume = dequantizeUnsignedPercent(m_ptable->m_settings.GetPlayer_MusicVolume());
-   m_playfieldVolume = dequantizeUnsignedPercent(m_ptable->m_settings.GetPlayer_SoundVolume());
+   m_backglassVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_MusicVolume());
+   m_playfieldVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_SoundVolume());
    UpdateVolume();
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
@@ -563,7 +563,7 @@ void Player::InitTableSession(const bool isInitial)
          m_implicitVRBackglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
          m_implicitVRBackglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
          m_implicitVRBackglass->m_d.m_depthBias = 10000.0f; // Draw before other objects
-         m_implicitVRBackglass->m_d.m_isVisible = m_ptable->m_settings.GetPlayerVR_AddBackglass();
+         m_implicitVRBackglass->m_d.m_isVisible = m_ptable->GetSettings().GetPlayerVR_AddBackglass();
          m_ptable->AddPart(m_implicitVRBackglass);
          m_implicitVRBackglass->Release();
       }
@@ -587,7 +587,7 @@ void Player::InitTableSession(const bool isInitial)
    m_physics->SetGravity(slope, m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
 
    InitFPS();
-   m_liveUI->m_ballControl.LoadSettings(m_ptable->m_settings);
+   m_liveUI->m_ballControl.LoadSettings(m_ptable->GetSettings());
 
    // Reset per session runtime state
    m_timeUpdateTimeStamp = 0;
@@ -599,7 +599,7 @@ void Player::InitTableSession(const bool isInitial)
    m_nScriptErrorNotification = 0;
    m_pauseMusicRefCount = 0;
 
-   m_tblMirrorEnabled = m_ptable->m_settings.GetPlayer_Mirror();
+   m_tblMirrorEnabled = m_ptable->GetSettings().GetPlayer_Mirror();
 #ifndef __STANDALONE__
    if (isInitial)
    {
@@ -645,7 +645,7 @@ void Player::InitTableSession(const bool isInitial)
       // table and its live copies, so this is only needed for the first session)
       tinyxml2::XMLDocument xmlDoc;
       tinyxml2::XMLElement *preloadCache = nullptr;
-      if ((m_ptable->m_settings.GetPlayer_CacheMode() > 0) && FileExists(m_ptable->m_filename))
+      if ((m_ptable->GetSettings().GetPlayer_CacheMode() > 0) && FileExists(m_ptable->m_filename))
       {
          try
          {
@@ -672,7 +672,7 @@ void Player::InitTableSession(const bool isInitial)
       int nLoadPerformed = 0;
       int nLoadInProgress = 0;
       vector<Texture *> failedPreloads;
-      const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.GetPlayer_MaxTexDimension());
+      const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->GetSettings().GetPlayer_MaxTexDimension());
       auto loadImage = [progressPos = m_loadProgress.GetProgress() + progressPhysicLength, maxTexDim, &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](
                           Texture *image, bool resizeOnLowMem)
       {
@@ -795,7 +795,7 @@ void Player::InitTableSession(const bool isInitial)
    state.SetRenderState(RenderState::CULLMODE, m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
    m_renderer->m_renderDevice->CopyRenderStates(false, state);
    m_renderer->m_renderDevice->SetDefaultRenderState();
-   m_renderer->SetAnisoFiltering(m_ptable->m_settings.GetPlayer_ForceAnisotropicFiltering());
+   m_renderer->SetAnisoFiltering(m_ptable->GetSettings().GetPlayer_ForceAnisotropicFiltering());
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer.get());
    for (auto editable : m_ptable->GetParts())
@@ -844,8 +844,8 @@ void Player::InitTableSession(const bool isInitial)
    SetPlayState(false);
 
    // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
-   SetCabinetAutoFitMode(m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
-   SetCabinetAutoFitPos(m_ptable->m_settings.GetPlayer_CabinetAutofitPos());
+   SetCabinetAutoFitMode(m_ptable->GetSettings().GetPlayer_CabinetAutofitMode());
+   SetCabinetAutoFitPos(m_ptable->GetSettings().GetPlayer_CabinetAutofitPos());
    m_renderer->InitLayout();
 
    // Initialize stereo rendering
@@ -879,10 +879,10 @@ void Player::ShutdownTableSession()
    }
 
    // Save modified settings if any
-   m_ptable->m_settings.Save();
+   m_ptable->GetSettings().Save();
 
    // Save list of used textures to avoid stuttering in next play
-   if ((m_ptable->m_settings.GetPlayer_CacheMode() > 0) && FileExists(m_ptable->m_filename))
+   if ((m_ptable->GetSettings().GetPlayer_CacheMode() > 0) && FileExists(m_ptable->m_filename))
    {
       try
       {
@@ -1118,8 +1118,8 @@ void Player::ApplyTableTransition(PinTable *const newTable, const bool stackTabl
    // When leaving a live copy, copy back the settings edited during play to the base table (as the Win32 editor does)
    if (oldTable->m_liveBaseTable)
    {
-      oldTable->m_liveBaseTable->m_settings.Load(oldTable->m_settings);
-      oldTable->m_liveBaseTable->m_settings.SetModified(oldTable->m_settings.IsModified());
+      oldTable->m_liveBaseTable->GetSettings().Load(oldTable->GetSettings());
+      oldTable->m_liveBaseTable->GetSettings().SetModified(oldTable->GetSettings().IsModified());
    }
 
    if (stackTable)
@@ -1195,7 +1195,7 @@ Player::~Player()
 
    // Save adjusted VR settings
    if (m_renderer->m_stereo3D == STEREO_VR)
-      m_vrDevice->SaveVRSettings(g_app->m_settings);
+      m_vrDevice->SaveVRSettings(g_app->GetSettings());
 
    // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_shutdown();
@@ -1448,7 +1448,7 @@ void Player::SetCabinetAutoFitMode(int mode)
    m_cabinetAutoFitMode = mode;
    if (m_cabinetAutoFitMode != 0 && m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
    {
-      Vertex3Ds playerPos(m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_ptable->m_settings.GetPlayer_ScreenPlayerY(), m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
+      Vertex3Ds playerPos(m_ptable->GetSettings().GetPlayer_ScreenPlayerX(), m_ptable->GetSettings().GetPlayer_ScreenPlayerY(), m_ptable->GetSettings().GetPlayer_ScreenPlayerZ());
       m_ptable->GetViewSetup().SetWindowAutofit(m_ptable, playerPos, m_renderer->GetDisplayAspectRatio(), m_cabinetAutoFitPos, m_cabinetAutoFitMode == 2, [](string) { });
    }
 }
@@ -1458,7 +1458,7 @@ void Player::SetCabinetAutoFitPos(float pos)
    m_cabinetAutoFitPos = pos;
    if (m_cabinetAutoFitMode == 1 && m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
    {
-      Vertex3Ds playerPos(m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_ptable->m_settings.GetPlayer_ScreenPlayerY(), m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
+      Vertex3Ds playerPos(m_ptable->GetSettings().GetPlayer_ScreenPlayerX(), m_ptable->GetSettings().GetPlayer_ScreenPlayerY(), m_ptable->GetSettings().GetPlayer_ScreenPlayerZ());
       m_ptable->GetViewSetup().SetWindowAutofit(m_ptable, playerPos, m_renderer->GetDisplayAspectRatio(), m_cabinetAutoFitPos, m_cabinetAutoFitMode == 2, [](string) { });
    }
 }
@@ -2489,7 +2489,7 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
             "A value that will be used to select if the '"s + renderer.name + "' renderer should be used on the " + section + " display. Higher values are priorized other lower ones.",
             false, 0, 100, 0));
          // Seed the live priority from settings, keeping any live (unsaved) adjustment made through the in game UI
-         priorities.try_emplace(renderer.id, me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)).value()));
+         priorities.try_emplace(renderer.id, me->m_ptable->GetSettings().GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)).value()));
       }
       std::ranges::stable_sort(me->m_ancillaryWndRenderers[window],
          [&](const AncillaryRendererDef &a, const AncillaryRendererDef &b)
@@ -2535,7 +2535,7 @@ void Player::OnAudioSrcChanged(const unsigned int msgId, void *userData, void *m
          const string propId = std::format("AudioSource.{}.Gain", endpointId);
          const auto propPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(
             "Player"s, propId, std::format("{} Gain", endpointName), std::format("Volume gain applied to audio from '{}'.", endpointName), true, 0.f, 2.f, 0.f, 1.f));
-         const float persistedVolume = me->m_ptable->m_settings.GetFloat(propPropId);
+         const float persistedVolume = me->m_ptable->GetSettings().GetFloat(propPropId);
          me->m_audioLanes[audioSrc.id.id] = { audioSrc, false, persistedVolume };
       }
 

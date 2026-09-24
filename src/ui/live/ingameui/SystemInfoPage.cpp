@@ -32,7 +32,7 @@ void SystemInfoPage::BuildPage()
       outputWnd->GetPixelWidth(), outputWnd->GetPixelHeight(),
       (g_pplayer->m_pininput.HasTouchInput() ? "enabled" : "disabled"));
    info << std::format(" *App Root*: {}\n", g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root).string());
-   info << std::format(" *Settings*: {}\n", g_app->m_settings.GetIniPath().string());
+   info << std::format(" *Settings*: {}\n", g_app->GetSettings().GetIniPath().string());
    info << std::format(" *Scripts*: {}\n", g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, "core.vbs").parent_path().string());
    info << std::format(" *Table Path*: {}\n", g_pplayer->m_ptable->m_filename.string());
    info << std::format(" *Table Data Path*: {}\n", g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::Root, false).string());

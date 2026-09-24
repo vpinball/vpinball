@@ -146,8 +146,8 @@ void ExportPOVCommand::Execute()
 {
    CComObject<PinTable>* table = LoadTable();
    for (int i = 0; i < 3; i++)
-      table->mViewSetups[i].SaveToTableOverrideSettings(table->m_settings, (ViewSetupID)i);
-   table->m_settings.Save();
+      table->mViewSetups[i].SaveToTableOverrideSettings(table->GetSettings(), (ViewSetupID)i);
+   table->GetSettings().Save();
    table->Release();
 }
 
@@ -230,7 +230,7 @@ void Win32EditCommand::Execute()
       if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName) && vpxEditor.GetActiveTable())
          vpxEditor.GetActiveTable()->SetSettingsFileName(m_tableIniFileName);
    }
-   else if (g_app->m_settings.GetEditor_SelectTableOnStart())
+   else if (g_app->GetSettings().GetEditor_SelectTableOnStart())
    {
       vpxEditor.m_table_played_via_SelectTableOnStart = vpxEditor.LoadFile(false);
       if (vpxEditor.m_table_played_via_SelectTableOnStart)
@@ -278,7 +278,7 @@ void LiveEditCommand::Execute()
          table->m_rgcolorcustom[i] = RGB(0, 0, 0);
       table->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "blankTable.vpx"), feedback);
       table->m_title = "Table1"s;
-      table->m_settings.SetIniPath(std::filesystem::path());
+      table->GetSettings().SetIniPath(std::filesystem::path());
       table->m_filename.clear();
    }
 

@@ -551,7 +551,9 @@ public:
       return tableIni;
    }
 
-   Settings m_settings; // Settings for this table (apply overrides above application settings)
+   // Settings for this table (apply overrides above application settings)
+   Settings &GetSettings() { return m_settings; }
+   const Settings &GetSettings() const { return m_settings; }
 
    PinTable * m_liveBaseTable = nullptr; // Defined when this table is a live shallow copy of another table
    template <class T> T *GetLiveFromStartup(T *obj)
@@ -570,6 +572,7 @@ public:
    class PinTableWnd *m_tableEditor = nullptr;
 
 private:
+   Settings m_settings;
    std::filesystem::path m_iniFileName;
 
    ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...

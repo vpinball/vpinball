@@ -82,7 +82,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    NewFrame();
 
-   m_showTouchOverlay = g_app->m_settings.GetPlayer_TouchOverlay();
+   m_showTouchOverlay = g_app->GetSettings().GetPlayer_TouchOverlay();
 }
 
 LiveUI::~LiveUI()
@@ -595,8 +595,8 @@ void LiveUI::HideUI()
    if (m_inGameUI.IsOpened())
       m_inGameUI.Close();
    m_editorUI.Close();
-   m_player->m_ptable->m_settings.Save();
-   g_app->m_settings.Save();
+   m_player->m_ptable->GetSettings().Save();
+   g_app->GetSettings().Save();
    m_player->SetPlayState(true);
 }
 

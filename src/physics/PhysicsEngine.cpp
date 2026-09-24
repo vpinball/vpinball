@@ -23,7 +23,7 @@
 PhysicsEngine::PhysicsEngine(PinTable *const table)
    : m_hitPlayfield(table)
    , m_hitTopGlass(table)
-   , m_plumbHandler(table->m_settings)
+   , m_plumbHandler(table->GetSettings())
 {
    m_physicsMaxLoops = table->m_PhysicsMaxLoops == 0xFFFFFFFFu ? 0 : table->m_PhysicsMaxLoops * (10000 / PHYSICS_STEPTIME) /*2*/;
    m_contacts.reserve(8);

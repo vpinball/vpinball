@@ -50,7 +50,7 @@ void CabinetSettingsPage::ResetToDefaults()
    if (ViewSetup& viewSetup = GetCurrentViewSetup(); viewSetup.mMode == VLM_WINDOW)
    {
       const PinTable* table = m_player->m_ptable;
-      const float screenInclination = table->m_settings.GetPlayer_ScreenInclination();
+      const float screenInclination = table->GetSettings().GetPlayer_ScreenInclination();
       viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
    }
    OnPointOfViewChanged();
@@ -68,51 +68,51 @@ void CabinetSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenWidth, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenWidth(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_ScreenWidth(); }, //
       [this](float, float v)
       {
          m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-         m_player->m_ptable->m_settings.SetPlayer_ScreenWidth(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_ScreenWidth(v, false);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenHeight, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenHeight(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_ScreenHeight(); }, //
       [this](float, float v)
       {
          m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-         m_player->m_ptable->m_settings.SetPlayer_ScreenHeight(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_ScreenHeight(v, false);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenInclination, 1.f, "%4.2f deg"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenInclination(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination(); }, //
       [this](float, float v)
       {
          m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-         m_player->m_ptable->m_settings.SetPlayer_ScreenInclination(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_ScreenInclination(v, false);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_LockbarWidth(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_LockbarWidth(); }, //
       [this](float, float v)
       {
          m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-         m_player->m_ptable->m_settings.SetPlayer_LockbarWidth(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_LockbarWidth(v, false);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_LockbarHeight, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_LockbarHeight(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_LockbarHeight(); }, //
       [this](float, float v)
       {
          m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-         m_player->m_ptable->m_settings.SetPlayer_LockbarHeight(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_LockbarHeight(v, false);
       }));
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ void CabinetSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_playerPos.x = v;
-         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
          GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       }));
@@ -136,7 +136,7 @@ void CabinetSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_playerPos.y = v;
-         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
          GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       }));
@@ -147,7 +147,7 @@ void CabinetSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_playerPos.z = v;
-         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         const float screenInclination = m_player->m_ptable->GetSettings().GetPlayer_ScreenInclination();
          GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       }));

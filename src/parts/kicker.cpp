@@ -43,7 +43,7 @@ HRESULT Kicker::Init(const float x, const float y, const bool fromMouseClick, co
    return S_OK;
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Default()
 void Kicker::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_enabled, Enabled);
@@ -68,7 +68,7 @@ void Kicker::SetDefaultPhysics(const bool fromMouseClick)
 
 void Kicker::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsKicker_##prop(field, false)
+#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsKicker_##prop(field, false)
    LinkProp(m_d.m_enabled, Enabled);
    LinkProp(m_d.m_hitAccuracy, HitAccuracy);
    LinkProp(m_d.m_hit_height, HitHeight);

@@ -411,14 +411,14 @@ void PinTableWnd::ImportBackdropPOV()
 {
    if (m_table->IsLocked())
       return;
-   const string &initialDir = m_table->m_settings.GetRecentDir_POVDir();
+   const string &initialDir = m_table->GetSettings().GetRecentDir_POVDir();
    vector<string> fileNames;
    if (!m_vpxEditor->OpenFileDialog(
           initialDir, fileNames, "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0", "ini", 0, "Import POV to table properties"s))
       return;
    const std::filesystem::path file = fileNames[0];
    if (file.has_parent_path())
-      g_app->m_settings.SetRecentDir_POVDir(file.parent_path().string(), false);
+      g_app->GetSettings().SetRecentDir_POVDir(file.parent_path().string(), false);
    m_table->ImportBackdropPOV(file, false);
 }
 
@@ -448,14 +448,14 @@ void PinTableWnd::ExportBackdropPOV()
 
 void PinTableWnd::ImportPhysics()
 {
-   const string &szInitialDir = m_table->m_settings.GetRecentDir_PhysicsDir();
+   const string &szInitialDir = m_table->GetSettings().GetRecentDir_PhysicsDir();
    vector<string> filename;
    if (!m_vpxEditor->OpenFileDialog(szInitialDir, filename, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
       return;
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      g_app->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
+      g_app->GetSettings().SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
 
    StartUndo();
    m_table->ImportVPP(filename[0]);
@@ -498,7 +498,7 @@ void PinTableWnd::ExportPhysics()
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   string szInitialDir = m_table->m_settings.GetRecentDir_PhysicsDir();
+   string szInitialDir = m_table->GetSettings().GetRecentDir_PhysicsDir();
 
    ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -511,7 +511,7 @@ void PinTableWnd::ExportPhysics()
    if (index != string::npos)
    {
       const string newInitDir(filename.substr(0, index));
-      g_app->m_settings.SetRecentDir_PhysicsDir(newInitDir, false);
+      g_app->GetSettings().SetRecentDir_PhysicsDir(newInitDir, false);
    }
 
    m_table->ExportVPP(ofn.lpstrFile, flipper);

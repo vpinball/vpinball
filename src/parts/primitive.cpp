@@ -40,7 +40,7 @@ HRESULT Primitive::Init(const float x, const float y, const bool fromMouseClick,
    return S_OK;
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Default()
 void Primitive::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_SideColor, SideColor);
@@ -107,7 +107,7 @@ void Primitive::SetDefaultPhysics(const bool fromMouseClick)
 
 void Primitive::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsPrimitive_##prop(field, false)
+#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsPrimitive_##prop(field, false)
    LinkProp(m_d.m_SideColor, SideColor);
    LinkProp(m_d.m_visible, Visible);
    LinkProp(m_d.m_staticRendering, StaticRendering);

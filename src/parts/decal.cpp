@@ -37,7 +37,7 @@ HRESULT Decal::Init(const float x, const float y, const bool fromMouseClick, con
 
 void Decal::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsDecal_##prop() : Settings::GetDefaultPropsDecal_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsDecal_##prop() : Settings::GetDefaultPropsDecal_##prop##_Default()
    LinkProp(m_d.m_width, Width);
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotation, Rotation);
@@ -67,7 +67,7 @@ void Decal::SetDefaults(const bool fromMouseClick)
 
 void Decal::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsDecal_##prop(field, false)
+#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsDecal_##prop(field, false)
    LinkProp(m_d.m_width, Width);
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotation, Rotation);
