@@ -151,12 +151,10 @@ WinEditor::WinEditor(HINSTANCE appInstance)
    wintimer_init();
 }
 
-//deletes clipboard
 //Releases Resources for Script editor
 WinEditor::~WinEditor()
 {
    // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); // would only be needed if linking statically
-   SetClipboard(nullptr);
    FreeLibrary(m_scintillaDll);
 }
 
@@ -231,17 +229,6 @@ void WinEditor::LoadEditorSetupFromSettings()
    }
 
    m_convertToUnit = g_app->m_settings.GetEditor_Units();
-}
-
-void WinEditor::SetClipboard(vector<InMemStream *> *const pvstm)
-{
-   for (size_t i = 0; i < m_vstmclipboard.size(); i++)
-      delete m_vstmclipboard[i];
-   m_vstmclipboard.clear();
-
-   if (pvstm)
-      for (size_t i = 0; i < pvstm->size(); i++)
-         m_vstmclipboard.push_back((*pvstm)[i]);
 }
 
 void WinEditor::SetCursorCur(LPCTSTR lpCursorName)

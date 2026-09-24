@@ -5,6 +5,7 @@
 
 #include "math/dragpoint.h"
 #include "parts/timer.h"
+#include "ui/EditorClipboard.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "core/vpversion.h"
@@ -150,8 +151,12 @@ TEST_CASE("DragPoint curve")
       const auto p2 = AddPoint(curve, 10.f, 20.f, 30.f);
       AddPoint(curve, 5.f, 5.f);
 
-      p1->Copy();
-      p2->Paste();
+      VPX::EditorClipboard::CopyPoint(p1->GetVertex());
+      Vertex3Ds pos;
+      CHECK(VPX::EditorClipboard::GetPoint(pos));
+      p2->SetX(pos.x);
+      p2->SetY(pos.y);
+      p2->SetZ(pos.z);
       CHECK(p2->GetX() == 1.f);
       CHECK(p2->GetY() == 2.f);
       CHECK(p2->GetZ() == 3.f);

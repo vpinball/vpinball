@@ -4,6 +4,7 @@
 #include "DragpointVisualsProperty.h"
 
 #include "math/dragpoint.h"
+#include "ui/EditorClipboard.h"
 #include "ui/win/resource.h"
 
 
@@ -171,7 +172,7 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
             if ((SelCount() == 1) && (pItem->GetItemType() == eItemDragPoint))
             {
                 DragPoint * const pPoint = pItem->GetDragPoint();
-                pPoint->Copy();
+                VPX::EditorClipboard::CopyPoint(pPoint->GetVertex());
             }
             return TRUE;
         }
@@ -180,8 +181,14 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
             IWinUIPart *const pItem = SelAt(0);
             if ((SelCount() == 1) && (pItem->GetItemType() == eItemDragPoint))
             {
-                DragPoint * const pPoint = pItem->GetDragPoint();
-                pPoint->Paste();
+               Vertex3Ds pos;
+               if (VPX::EditorClipboard::GetPoint(pos))
+               {
+                  DragPoint *const pPoint = pItem->GetDragPoint();
+                  pPoint->SetX(pos.x);
+                  pPoint->SetY(pos.y);
+                  pPoint->SetZ(pos.z);
+               }
             }
             return TRUE;
         }

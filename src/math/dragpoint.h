@@ -35,9 +35,6 @@ public:
    DragPointCurve *GetCurve() { return m_pcurve; }
    const DragPointCurve *GetCurve() const { return m_pcurve; }
 
-   void Copy();
-   void Paste();
-
    void ToggleSmooth();
    void ToggleSlingshot();
 
@@ -74,9 +71,6 @@ private:
    float m_texturecoord = 0.f;
    bool m_smooth;
    bool m_autoTexture = true;
-
-   static Vertex3Ds m_copyPoint; // coordinates of a control point to copy
-   static bool m_pointCopied;
 };
 
 // A curve made of DragPoint control points

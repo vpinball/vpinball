@@ -8,6 +8,7 @@
 #include "core/editablereg.h"
 #include "core/FileLocator.h"
 #include "core/VPApp.h"
+#include "core/vpversion.h"
 
 #include "editor/EditorUIPart.h"
 #include "editor/EditorUIPartRegistry.h"
@@ -26,9 +27,11 @@
 #include "renderer/Shader.h"
 #include "renderer/VRDevice.h"
 
+#include "ui/EditorClipboard.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 
+#include "utils/BiffReader.h"
 #include "utils/color.h"
 
 #include "imgui/imgui.h"
@@ -715,6 +718,18 @@ void EditorUI::RenderUI()
                SelectAllParts();
          }
       }
+      else if (ImGui::IsKeyPressed(ImGuiKey_C))
+      {
+         // Copy the selected parts (or the coordinates of the selected drag point in point edit mode)
+         if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+            CopySelection();
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_V))
+      {
+         // Paste at the mouse position (or to the selected drag point in point edit mode)
+         if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+            PasteSelection(ImGui::GetMousePos());
+      }
       else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
       {
          if (!io.KeyAlt && !io.KeyCtrl && !io.KeyShift)
@@ -1230,16 +1245,7 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
       m_table->GetUniqueName(type, scriptable->m_wzName);
    pie->m_desktopBackdrop = (m_camMode == ViewMode::DesktopBackdrop);
    m_table->AddPart(pie);
-   // Assign the part to the group of the current selection, defaulting to the first root part group
-   PartGroup *partGroup = nullptr;
-   if (m_selection.GetType() == Selection::S_EDITABLE)
-      partGroup = m_selection.GetPart()->GetEditable()->GetItemType() == eItemPartGroup ? static_cast<PartGroup *>(m_selection.GetPart()->GetEditable())
-                                                                                     : m_selection.GetPart()->GetEditable()->GetPartGroup();
-   if (partGroup == nullptr)
-      for (IEditable *const part : m_table->GetParts())
-         if (part->GetItemType() == eItemPartGroup && part->GetPartGroup() == nullptr)
-            partGroup = static_cast<PartGroup *>(part);
-   pie->SetPartGroup(partGroup);
+   pie->SetPartGroup(GetPartGroupForNewPart());
 
    // Same player side setup as player initialization
    if (type == eItemBall)
@@ -1261,6 +1267,124 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
       SetSelection(Selection(it->second));
       m_outlinerAnchor = it->second;
    }
+}
+
+PartGroup *EditorUI::GetPartGroupForNewPart() const
+{
+   // Assign new parts to the group of the current selection, defaulting to the first root part group
+   PartGroup *partGroup = nullptr;
+   if (m_selection.GetType() == Selection::S_EDITABLE)
+      partGroup = m_selection.GetPart()->GetEditable()->GetItemType() == eItemPartGroup ? static_cast<PartGroup *>(m_selection.GetPart()->GetEditable())
+                                                                                        : m_selection.GetPart()->GetEditable()->GetPartGroup();
+   if (partGroup == nullptr)
+      for (IEditable *const part : m_table->GetParts())
+         if (part->GetItemType() == eItemPartGroup && part->GetPartGroup() == nullptr)
+            partGroup = static_cast<PartGroup *>(part);
+   return partGroup;
+}
+
+void EditorUI::CopySelection()
+{
+   if (m_pointEditPart)
+   {
+      // Copy the coordinates of the selected drag point
+      if (m_pointSel.size() == 1)
+         VPX::EditorClipboard::CopyPoint(m_pointSel.front()->GetVertex());
+      return;
+   }
+   vector<IEditable *> parts;
+   for (const auto &part : m_multiSel)
+      if (IEditable *const editable = part->GetEditable(); editable != nullptr)
+         parts.push_back(editable);
+   VPX::EditorClipboard::CopyParts(parts);
+}
+
+void EditorUI::PasteSelection(const ImVec2 &pos)
+{
+   if (m_table->IsLocked() || IsInspectMode())
+      return;
+   if (m_pointEditPart)
+   {
+      // Paste the copied coordinates to the selected drag point
+      Vertex3Ds pointPos;
+      if (m_pointSel.size() == 1 && VPX::EditorClipboard::GetPoint(pointPos))
+      {
+         BeginPointEdit();
+         m_pointSel.front()->SetX(pointPos.x);
+         m_pointSel.front()->SetY(pointPos.y);
+         m_pointSel.front()->SetZ(pointPos.z);
+         EndPointEdit();
+      }
+      return;
+   }
+   const vector<vector<uint8_t>> parts = VPX::EditorClipboard::GetParts();
+   if (parts.empty())
+      return;
+   const bool backdrop = (m_camMode == ViewMode::DesktopBackdrop);
+   PartGroup *const partGroup = GetPartGroupForNewPart();
+   vector<IEditable *> pasted;
+   Vertex2D pasteMin(FLT_MAX, FLT_MAX), pasteMax(-FLT_MAX, -FLT_MAX);
+   m_undo.BeginUndo();
+   for (const vector<uint8_t> &partData : parts)
+   {
+      if (partData.size() <= sizeof(int))
+         continue;
+      const ItemTypeEnum type = *reinterpret_cast<const ItemTypeEnum *>(partData.data());
+      IEditable *const editable = EditableRegistry::Create(type);
+      if (editable == nullptr)
+         continue;
+      BiffReader reader(partData.data() + sizeof(int), static_cast<uint32_t>(partData.size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, nullptr, NULL);
+      editable->Load(reader);
+      editable->m_desktopBackdrop = backdrop;
+      // If the original name is not yet used, use that one, otherwise add/increase the suffix until we find a name that's not used yet
+      if (!m_table->IsNameUnique(editable->GetWName()))
+      {
+         // First remove the existing suffix
+         const wstring input = editable->GetWName();
+         size_t lastNonDigit = input.length();
+         while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
+            --lastNonDigit;
+         editable->SetName(m_table->GetUniqueName(input.substr(0, lastNonDigit)));
+      }
+      editable->SetPartGroup(partGroup);
+      m_table->AddPart(editable);
+      m_undo.MarkForCreate(editable);
+      pasted.push_back(editable);
+      const Vertex2D center = editable->GetCenter();
+      pasteMin.x = min(pasteMin.x, center.x);
+      pasteMin.y = min(pasteMin.y, center.y);
+      pasteMax.x = max(pasteMax.x, center.x);
+      pasteMax.y = max(pasteMax.y, center.y);
+   }
+   m_undo.EndUndo();
+   if (pasted.empty())
+   {
+      m_undo.Discard();
+      return;
+   }
+   // Move the pasted parts so that their combined center lands at the given position (in the table XY plane, keeping their Z)
+   const Vertex2D target = UnprojectToPlane(pos, 0.f);
+   const Vertex2D offset(target.x - 0.5f * (pasteMin.x + pasteMax.x), target.y - 0.5f * (pasteMin.y + pasteMax.y));
+   for (IEditable *const editable : pasted)
+   {
+      editable->Translate(offset);
+      // Player side setup, same as part creation
+      if (editable->GetItemType() == eItemBall)
+         m_player->m_vball.push_back(static_cast<Ball *>(editable));
+      m_player->TimerSetup(editable);
+      if (auto *const renderable = editable->GetIRenderable(); renderable)
+         renderable->RenderSetup(m_renderer.get());
+      if (editable->GetIHitable())
+         m_player->m_physics->Add(editable);
+   }
+   // Select the pasted parts
+   UpdateEditableList();
+   m_multiSel.clear();
+   for (IEditable *const editable : pasted)
+      if (const auto it = m_editableMap.find(editable); it != m_editableMap.end())
+         m_multiSel.push_back(it->second);
+   m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+   m_outlinerAnchor = m_multiSel.empty() ? nullptr : m_multiSel.back();
 }
 
 void EditorUI::DeleteSelection()

@@ -7,6 +7,7 @@
 #include "core/VPApp.h"
 #include "renderer/Sampler.h"
 #include "renderer/Texture.h"
+#include "ui/EditorClipboard.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
@@ -197,6 +198,24 @@ void EditorChrome::RenderToolbar()
          ImGui::PopStyleColor();
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip("Add part\n[Shift+A]");
+      ImGui::EndDisabled();
+
+      // Copy/Paste buttons (same actions as the Ctrl+C and Ctrl+V keyboard shortcuts)
+      ImGui::SameLine();
+      const bool canCopy = editor.m_pointEditPart ? (editor.m_pointSel.size() == 1) : (editor.m_selection.GetType() == Selection::S_EDITABLE);
+      ImGui::BeginDisabled(!canCopy || editor.m_table->IsLocked());
+      if (ImGui::Button(ICON_FK_FILES_O))
+         editor.CopySelection();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Copy selection\n[Ctrl+C]");
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      const bool canPaste = editor.m_pointEditPart ? (editor.m_pointSel.size() == 1 && VPX::EditorClipboard::HasPoint()) : VPX::EditorClipboard::HasParts();
+      ImGui::BeginDisabled(!canPaste || editor.m_table->IsLocked());
+      if (ImGui::Button(ICON_FK_CLIPBOARD))
+         editor.PasteSelection(ImVec2(viewport->GetCenter().x, viewport->GetCenter().y));
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Paste\n[Ctrl+V]");
       ImGui::EndDisabled();
 
       // Delete selection button, always visible but only enabled when there are selected parts

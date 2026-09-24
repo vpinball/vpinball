@@ -262,6 +262,8 @@ set(VPX_SOURCES
    src/renderer/XRGraphicBackend.h
    src/renderer/XRVulkanBackend.h
 
+   src/ui/EditorClipboard.cpp
+   src/ui/EditorClipboard.h
    src/ui/VPXFileFeedback.h
 
    src/ui/live/BallControl.cpp
