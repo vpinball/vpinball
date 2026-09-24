@@ -153,6 +153,11 @@ private:
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
    PartGroup *GetPartGroupForNewPart() const;
 
+   // File operations (the 'Save As' file dialog is asynchronous: its result is applied in RenderUI)
+   void SaveTable();
+   void SaveTableAs();
+   std::shared_ptr<string> m_pendingSaveAsPath;
+
    // Clipboard (copy/paste of parts through the OS clipboard, and of drag point coordinates in point edit mode)
    void CopySelection();
    void PasteSelection(const ImVec2 &pos);
