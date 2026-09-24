@@ -61,6 +61,23 @@ inline float InvsRGB(const float x)
    return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f));
 }
 
+// Decodes the [0..100] brightness percentage that the legacy VPinMAME script interface
+// reports for DMD dots (see ScriptGlobalTable::put_DMDPixels) into a linear luminance (above 100 it extrapolates).
+// Note: the percentage is gamma encoded, so reading it as linear leaves the dark shades far too bright
+inline float InvsRGBPercent(const uint8_t percent)
+{
+   static const struct Table
+   {
+      float v[256];
+      Table()
+      {
+         for (int i = 0; i < 256; i++)
+            v[i] = InvsRGB(static_cast<float>(i) * 0.01f);
+      }
+   } table;
+   return table.v[percent];
+}
+
 constexpr inline float invGammaApprox(const float c)
 {
    return c * (c * (c * 0.305306011f + 0.682171111f) + 0.012522878f); /*pow(color,2.2f);*/ // pow does still matter on current CPUs (not GPUs though)

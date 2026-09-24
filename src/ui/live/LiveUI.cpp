@@ -468,8 +468,8 @@ void LiveUI::RenderUI()
       m_player->m_vrDevice ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f, // Stereo offset for VR (fake depth)
       0.f, // Unused
       0.f, // Unused
-      // A value of 1.0 should be sdrWhite * 80, while in the WCG colorspace 80 nits is 0.5
-      m_player->m_playfieldWnd->IsWCGBackBuffer() ? (2.0f / m_player->m_playfieldWnd->GetSDRWhitePoint()) : 1.f); // SDR color scaling
+      // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 = no conversion (sRGB backbuffer)
+      m_player->m_playfieldWnd->IsWCGBackBuffer() ? (m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.)) : 0.f);
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
    m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
