@@ -113,9 +113,27 @@ LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return WndProcDefault(msg, wparam, lparam);
 }
 
-PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType((ItemTypeEnum)0), m_desktopBackdropView(false), m_curTabIndex(0)
+PropertyDialog::PropertyDialog()
+   : CDialog(IDD_PROPERTY_DIALOG)
+   , m_previousType((ItemTypeEnum)0)
+   , m_desktopBackdropView(false)
+   , m_curTabIndex(0)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
+}
+
+PinTableWnd *BasePropertyDialog::GetTableEditor() const { return m_pvsel->empty() ? nullptr : (*m_pvsel)[0]->GetEditor(); }
+
+CComObject<PinTable> *BasePropertyDialog::GetTable() const
+{
+   PinTableWnd *const editor = GetTableEditor();
+   return editor ? editor->m_table : nullptr;
+}
+
+WinEditor *BasePropertyDialog::GetVpxEditor() const
+{
+   PinTableWnd *const editor = GetTableEditor();
+   return editor ? editor->m_vpxEditor : nullptr;
 }
 
 void PropertyDialog::CreateTabs(const vector<IWinUIPart *> &pvsel)
@@ -125,7 +143,7 @@ void PropertyDialog::CreateTabs(const vector<IWinUIPart *> &pvsel)
         return;
 
     int activePage = m_tab.m_activePage;
-    m_desktopBackdropView = g_pvp->m_desktopBackdropView;
+    m_desktopBackdropView = psel->GetEditor()->m_vpxEditor->m_desktopBackdropView;
     m_isPlayfieldMesh = false;
 
     while (m_tab.GetItemCount() > 0)
@@ -136,16 +154,16 @@ void PropertyDialog::CreateTabs(const vector<IWinUIPart *> &pvsel)
     {
     case eItemTable:
     {
-        if (g_pvp->m_desktopBackdropView)
-        {
-            m_elementTypeName.SetWindowText("Desktop Backdrop");
-            m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassVisualsProperty(&pvsel), _T("Visuals")));
-            m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
-            if (m_tab.m_activeTabText == "Visuals")
-                activePage = 0;
-            else if (m_tab.m_activeTabText == "Camera")
-                activePage = 1;
-        }
+       if (m_desktopBackdropView)
+       {
+          m_elementTypeName.SetWindowText("Desktop Backdrop");
+          m_tabs[0] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassVisualsProperty(&pvsel), _T("Visuals")));
+          m_tabs[1] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
+          if (m_tab.m_activeTabText == "Visuals")
+             activePage = 0;
+          else if (m_tab.m_activeTabText == "Camera")
+             activePage = 1;
+       }
         else
         {
             m_elementTypeName.SetWindowText("Table");
@@ -617,7 +635,8 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
    m_tab.ShowWindow();
 
    const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel->GetEditable())->IsPlayfield();
-   if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_desktopBackdropView != g_pvp->m_desktopBackdropView || m_multipleElementsStatic.IsWindowVisible())
+   if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_desktopBackdropView != psel->GetEditor()->m_vpxEditor->m_desktopBackdropView
+      || m_multipleElementsStatic.IsWindowVisible())
    {
       BasePropertyDialog::m_disableEvents = true;
       m_curTabIndex = m_tab.GetCurSel();
@@ -661,7 +680,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
        {
           switch (psel->GetItemType())
           {
-          case eItemTable: name = LocalString(g_pvp->m_desktopBackdropView ? IDS_TB_BACKGLASS : IDS_TABLE).m_szbuffer; break;
+          case eItemTable: name = LocalString(psel->GetEditor()->m_vpxEditor->m_desktopBackdropView ? IDS_TB_BACKGLASS : IDS_TABLE).m_szbuffer; break;
           case eItemLightCenter: name = LocalString(IDS_TB_LIGHT).m_szbuffer; break;
           case eItemDragPoint: name = LocalString(IDS_CONTROLPOINT).m_szbuffer; break;
           default: name = LocalString(EditableRegistry::GetTypeNameStringID(psel->GetItemType())).m_szbuffer; break;
@@ -708,7 +727,7 @@ void PropertyDialog::EndUndo(IEditable *const part)
 
 void PropertyDialog::UpdateStatusBarInfo(IEditable *const part)
 {
-   if (PinTableWnd *const editor = g_pvp->GetActiveTableEditor(); editor != nullptr)
+   if (PinTableWnd *const editor = part->GetPTable()->m_tableEditor; editor != nullptr)
       if (IWinUIPart *const uiPart = editor->GetUIPart(part); uiPart != nullptr)
          uiPart->UpdateStatusBarInfo();
 }
@@ -781,8 +800,8 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             if (m_tabs[0] && m_tabs[0]->SelAt(0) != nullptr)
             {
-                g_pvp->RenameEditable(m_tabs[0]->SelAt(0)->GetEditable(), m_nameEdit.GetWindowText().GetString());
-                m_nameEdit.SetWindowText(m_tabs[0]->SelAt(0)->GetEditable()->GetName().c_str()); // set it again in case it was truncated
+               m_tabs[0]->SelAt(0)->GetEditor()->m_vpxEditor->RenameEditable(m_tabs[0]->SelAt(0)->GetEditable(), m_nameEdit.GetWindowText().GetString());
+               m_nameEdit.SetWindowText(m_tabs[0]->SelAt(0)->GetEditable()->GetName().c_str()); // set it again in case it was truncated
             }
             return TRUE;
         }

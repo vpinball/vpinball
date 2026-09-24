@@ -27,8 +27,9 @@
 #include "ui/win/WinEditor.h"
 
 
-DrawingOrderDialog::DrawingOrderDialog(bool select)
+DrawingOrderDialog::DrawingOrderDialog(PinTableWnd *tableEditor, bool select)
    : CDialog(IDD_DRAWING_ORDER)
+   , m_tableEditor(tableEditor)
    , m_drawingOrderSelect(select)
    , hOrderList(nullptr)
 {
@@ -45,7 +46,7 @@ void DrawingOrderDialog::OnClose()
 
 BOOL DrawingOrderDialog::OnInitDialog()
 {
-   PinTableWnd *const ptw = g_pvp->GetActiveTableEditor();
+   PinTableWnd *const ptw = m_tableEditor;
    CComObject<PinTable> *const pt = ptw->m_table;
    hOrderList = GetDlgItem(IDC_DRAWING_ORDER_LIST).GetHwnd();
    LVITEM lv;
@@ -198,7 +199,7 @@ void DrawingOrderDialog::OnOK()
 
 void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
 {
-   PinTableWnd *const ptw = g_pvp->GetActiveTableEditor();
+   PinTableWnd *const ptw = m_tableEditor;
    CComObject<PinTable> *const pt = ptw->m_table;
    char text0[256], text1[256], text2[256];
    LVITEM lv;

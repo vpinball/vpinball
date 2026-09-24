@@ -108,6 +108,7 @@ SORTDATA SortData;
 
 WinEditor::WinEditor(HINSTANCE appInstance)
    : m_instance(appInstance)
+   , m_editorOptDialog(this)
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
    m_closing = false;
@@ -294,7 +295,7 @@ CDockProperty *WinEditor::GetPropertiesDocker()
       if (m_propertyDialog == nullptr || !m_dockProperties->IsWindow())
       {
          constexpr int dockStyle = DS_DOCKED_RIGHT | DS_CLIENTEDGE | DS_NO_CLOSE;
-         m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty, dockStyle, 280, IDD_PROPERTY_DIALOG);
+         m_dockProperties = (CDockProperty *)AddDockedChild(new CDockProperty(), dockStyle, 280, IDD_PROPERTY_DIALOG);
          assert(m_dockProperties->GetContainer());
          m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
          m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
@@ -307,7 +308,7 @@ CDockToolbar *WinEditor::GetToolbarDocker()
       if (m_dockToolbar == nullptr || !m_dockToolbar->IsWindow())
       {
          constexpr int dockStyle = DS_DOCKED_LEFT | DS_CLIENTEDGE | DS_NO_CLOSE;
-         m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar, dockStyle, 110, IDD_TOOLBAR);
+         m_dockToolbar = (CDockToolbar *)AddDockedChild(new CDockToolbar(this), dockStyle, 110, IDD_TOOLBAR);
          assert(m_dockToolbar->GetContainer());
          m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
          m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
@@ -335,7 +336,7 @@ CDockNotes* WinEditor::GetDefaultNotesDocker()
    rc.top = 0;
    rc.right = 480;
    rc.bottom = 380;
-   m_dockNotes = (CDockNotes*)AddUndockedChild(new CDockNotes, dockStyle, 200, rc, IDD_NOTES_DIALOG);
+   m_dockNotes = (CDockNotes *)AddUndockedChild(new CDockNotes(this), dockStyle, 200, rc, IDD_NOTES_DIALOG);
    assert(m_dockNotes->GetContainer());
    m_dockNotes->GetContainer()->SetHideSingleTab(TRUE);
    m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
@@ -447,8 +448,8 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
    pt->m_tableEditor->BeginUndo();
    pt->m_tableEditor->MarkForUndo(editable);
 
-   g_pvp->SetPropSel(pt->m_tableEditor->GetMultiSelParts());
-   g_pvp->GetLayersListDialog()->Update();
+   SetPropSel(pt->m_tableEditor->GetMultiSelParts());
+   GetLayersListDialog()->Update();
 
    if (editable->GetItemType() == eItemSurface)
    {
@@ -748,7 +749,8 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       return true;
 
    case ID_EDIT_PHYSICSOPTIONS:
-      m_physicsOptDialog.DoModal(GetHwnd());
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ptCur->m_physicsOptDialog.DoModal(GetHwnd());
       return true;
 
    case ID_EDIT_EDITOROPTIONS:
@@ -761,26 +763,26 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       return true;
 
    case ID_TABLE_TABLEINFO:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         m_tableInfoDialog.DoModal(GetHwnd());
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ptCur->m_tableInfoDialog.DoModal(GetHwnd());
       return true;
 
    case IDM_IMAGE_EDITOR:
    case ID_TABLE_IMAGEMANAGER:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ShowSubDialog(m_imageMngDlg, true);
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ShowSubDialog(ptCur->m_imageMngDlg, true);
       return true;
 
    case IDM_SOUND_EDITOR:
    case ID_TABLE_SOUNDMANAGER:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ShowSubDialog(m_soundMngDlg, true);
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ShowSubDialog(ptCur->m_soundMngDlg, true);
       return true;
 
    case IDM_MATERIAL_EDITOR:
    case ID_TABLE_MATERIALMANAGER:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ShowSubDialog(m_materialDialog, true);
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ShowSubDialog(ptCur->m_materialDialog, true);
       return true;
 
    case ID_TABLE_NOTES:
@@ -796,17 +798,19 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       return true;
 
    case ID_TABLE_DIMENSIONMANAGER:
-      ShowSubDialog(m_dimensionDialog, true);
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ShowSubDialog(ptCur->m_dimensionDialog, true);
       return true;
 
    case IDM_COLLECTION_EDITOR:
    case ID_TABLE_COLLECTIONMANAGER:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ShowSubDialog(m_collectionMngDlg, true);
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ShowSubDialog(ptCur->m_collectionMngDlg, true);
       return true;
 
    case ID_TABLE_RENDERPROBEMANAGER:
-      ShowSubDialog(m_renderProbeDialog, true);
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ShowSubDialog(ptCur->m_renderProbeDialog, true);
       return true;
 
    case ID_PREFERENCES_SECURITYOPTIONS:
@@ -1574,7 +1578,7 @@ Win32xx::DockPtr WinEditor::NewDockerFromID(int id)
       return DockPtr(m_dockProperties);
    case IDD_TOOLBAR:
       assert(m_dockToolbar == nullptr);
-      m_dockToolbar = new CDockToolbar();
+      m_dockToolbar = new CDockToolbar(this);
       m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
       return DockPtr(m_dockToolbar);
    case IDD_LAYERS:
@@ -1585,11 +1589,11 @@ Win32xx::DockPtr WinEditor::NewDockerFromID(int id)
    //   {
    //      if (m_dockNotes == nullptr)
    //      {
-   //         m_dockNotes = new CDockNotes();
-   //         m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
-   //      }
-   //      return DockPtr(m_dockNotes);
-   //   }
+      //         m_dockNotes = new CDockNotes(this);
+      //         m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
+      //      }
+      //      return DockPtr(m_dockNotes);
+      //   }
    }
    return nullptr;
 }
@@ -1783,7 +1787,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
             const string& szInitialDir = g_app->m_settings.GetRecentDir_FontDir();
             vector<string> filename;
-            if (g_pvp->OpenFileDialog(szInitialDir, filename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
+            if (pt->m_vpxEditor->OpenFileDialog(szInitialDir, filename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
@@ -1838,30 +1842,19 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 void WinEditor::ShowDrawingOrderDialog(bool select)
 {
-   DrawingOrderDialog orderDlg(select);
-   orderDlg.DoModal();
+   if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+   {
+      DrawingOrderDialog orderDlg(ptCur, select);
+      orderDlg.DoModal();
+   }
 }
 
 void WinEditor::CloseAllDialogs()
 {
-   if (m_imageMngDlg.IsWindow())
-      m_imageMngDlg.Destroy();
-   if (m_soundMngDlg.IsWindow())
-      m_soundMngDlg.Destroy();
+   for (PinTableWnd *const tableEditor : m_vtable)
+      tableEditor->CloseAllDialogs();
    if (m_editorOptDialog.IsWindow())
       m_editorOptDialog.Destroy();
-   if (m_collectionMngDlg.IsWindow())
-      m_collectionMngDlg.Destroy();
-   if (m_physicsOptDialog.IsWindow())
-      m_physicsOptDialog.Destroy();
-   if (m_tableInfoDialog.IsWindow())
-      m_tableInfoDialog.Destroy();
-   if (m_dimensionDialog.IsWindow())
-      m_dimensionDialog.Destroy();
-   if (m_renderProbeDialog.IsWindow())
-      m_renderProbeDialog.Destroy();
-   if (m_materialDialog.IsWindow())
-      m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())
       m_aboutDialog.Destroy();
 }

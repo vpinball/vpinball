@@ -35,6 +35,9 @@ public:
 
    IEditable* GetEditable() const { return m_editable; }
 
+   // The table editor this UI part belongs to (which owns the multi-selection containing it)
+   PinTableWnd* GetEditor() const { return m_editor; }
+
    // Type of the table part this UI part edits
    virtual ItemTypeEnum GetItemType() const = 0;
 

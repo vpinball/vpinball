@@ -2,10 +2,12 @@
 
 #pragma once
 
+class PinTableWnd;
+
 class DrawingOrderDialog final : public CDialog
 {
 public:
-   explicit DrawingOrderDialog(bool select);
+   DrawingOrderDialog(PinTableWnd *tableEditor, bool select);
    ~DrawingOrderDialog() override;
 
 protected:
@@ -17,6 +19,7 @@ protected:
    void UpdateDrawingOrder(IEditable *ptr, bool up);
 
 private:
+   PinTableWnd *const m_tableEditor;
    HWND hOrderList;
    bool m_drawingOrderSelect;
 };

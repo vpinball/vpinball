@@ -93,9 +93,9 @@ inline string ParseRemoveVBSLineComments(string& line)
 }
 
 
-CodeViewer::CodeViewer(PinTable* psh)
+CodeViewer::CodeViewer(PinTableWnd* tableEditor)
+   : m_tableEditor(tableEditor)
 {
-   m_table = psh;
 
    szCaretTextBuff[0] = '\0';
 }
@@ -194,7 +194,7 @@ static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData
 
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
-static size_t FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
+size_t CodeViewer::FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
 {
 	if (ListIn.empty()) // First in
 	{
@@ -219,17 +219,18 @@ static size_t FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
 		else
 		{
 			// detect/warn about duplicate subs/functions (at least rudimentary)
-			if (g_pvp && g_pvp->GetActiveTableEditor() && g_pvp->GetActiveTableEditor()->m_pcv->m_warn_on_dupes &&
-			    (udIn.eTyping == eSub || udIn.eTyping == eFunction) && // only check subs and functions
-			    (iterFound->m_lineNum != udIn.m_lineNum)) // use this simple check as dupe test: are the keys on different lines?
-			{
-				const Sci_Position dwellpos = SendMessage(g_pvp->GetActiveTableEditor()->m_pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-				SendMessage(g_pvp->GetActiveTableEditor()->m_pcv->m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
-				           (LPARAM)("Duplicate Definition found: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum+1) + ")\n                            " + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum+1) + ')').c_str());
-				g_pvp->GetActiveTableEditor()->m_pcv->m_warn_on_dupes = false;
-			}
+         if (m_warn_on_dupes && (udIn.eTyping == eSub || udIn.eTyping == eFunction) && // only check subs and functions
+            (iterFound->m_lineNum != udIn.m_lineNum)) // use this simple check as dupe test: are the keys on different lines?
+         {
+            const Sci_Position dwellpos = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+            SendMessage(m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
+               (LPARAM)("Duplicate Definition found: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum + 1) + ")\n                            "
+                  + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum + 1) + ')')
+                  .c_str());
+            m_warn_on_dupes = false;
+         }
 
-			// assign again, as e.g. line of func/sub/var could have been changed by other updates
+         // assign again, as e.g. line of func/sub/var could have been changed by other updates
 			ListIn[Pos] = udIn;
 		}
 		return Pos;
@@ -406,7 +407,7 @@ void CodeViewer::SetClean(const SaveDirtyState sds)
 {
    if (sds == eSaveClean)
       ::SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
-   m_table->SetDirtyScript(sds);
+   m_tableEditor->m_table->SetDirtyScript(sds);
 }
 
 void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
@@ -424,7 +425,7 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
       SetVisible(true);
       ShowWindow(SW_RESTORE);
       ColorError(line, column);
-      g_pvp->EnableWindow(TRUE);
+      GetVpxEditor()->EnableWindow(TRUE);
       ::SetFocus(m_hwndScintilla);
 
       if (g_pplayer == nullptr || g_pplayer->GetCloseState() != Player::CloseState::CS_CLOSE_APP)
@@ -441,14 +442,13 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
                errorStream << L"    " << MakeWString(callSite) << L"\r\n";
          }
          errorStream << L"\r\n";
-         g_pvp->EnableWindow(FALSE);
+         GetVpxEditor()->EnableWindow(FALSE);
          ScriptErrorDialog scriptErrorDialog(errorStream.str());
          scriptErrorDialog.DoModal();
          m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
-         g_pvp->EnableWindow(TRUE);
+         GetVpxEditor()->EnableWindow(TRUE);
 
-         if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-            ::SetFocus(pt->m_pcv->m_hwndScintilla);
+         ::SetFocus(m_hwndScintilla);
       }
    }
 }
@@ -604,8 +604,8 @@ void CodeViewer::SetEnabled(const bool enabled)
 void CodeViewer::SetCaption(const string& szCaption)
 {
    string szT;
-   if (!m_table->m_external_script_name.empty())
-      szT = "MODIFYING EXTERNAL SCRIPT: " + m_table->m_external_script_name.string();
+   if (!m_tableEditor->m_table->m_external_script_name.empty())
+      szT = "MODIFYING EXTERNAL SCRIPT: " + m_tableEditor->m_table->m_external_script_name.string();
    else
       szT = szCaption + ' ' + LocalString(IDS_SCRIPT).m_szbuffer;
    SetWindowText(szT.c_str());
@@ -918,13 +918,13 @@ void CodeViewer::Compile(const bool message)
    CComObject<ScriptInterpreter>* interpreter;
    CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
    interpreter->AddRef();
-   interpreter->Start(m_table);
+   interpreter->Start(m_tableEditor->m_table);
    interpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
       { OnScriptError(type, line, column, description, stackDump); });
-   interpreter->Evaluate(m_table->m_script_text, false);
+   interpreter->Evaluate(m_tableEditor->m_table->m_script_text, false);
    if (message && !interpreter->HasError())
       MessageBox("Compilation successful", "Compile", MB_OK);
-   interpreter->Stop(m_table);
+   interpreter->Stop(m_tableEditor->m_table);
    interpreter->Release();
 }
 
@@ -1110,7 +1110,7 @@ void CodeViewer::TellHostToSelectItem()
    const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
    IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
 
-   m_table->m_tableEditor->SelectItem(pscript);
+   m_tableEditor->SelectItem(pscript);
 }
 
 string CodeViewer::GetParamsFromEvent(const UINT iEvent) const
@@ -2118,6 +2118,11 @@ CodeViewer* CodeViewer::GetCodeViewerPtr()
    return (CodeViewer *)GetWindowLongPtr(GWLP_USERDATA);
 }
 
+WinEditor* CodeViewer::GetVpxEditor() const
+{
+   return m_tableEditor->m_vpxEditor;
+}
+
 BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
 {
    CodeViewer* const pcv = GetCodeViewerPtr();
@@ -2129,7 +2134,7 @@ BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
       case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
          SetLastErrorVisibility(!m_lastErrorWidgetVisible); return TRUE;
       case ID_SCRIPT_PREFERENCES:
-         DialogBox(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc); return TRUE;
+         DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc, (LPARAM)pcv); return TRUE;
       case ID_FIND:
          pcv->ShowFindDialog(); return TRUE;
       case ID_REPLACE:
@@ -2164,10 +2169,10 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
          pcv->ShowFindDialog();
          return TRUE;
       }
-      case ID_SAVE: g_pvp->ParseCommand(IDM_SAVE, false); return TRUE; // accelerator, the frame only knows the menu's save command, fixes ctrl+s in script editor
+      case ID_SAVE: pcv->GetVpxEditor()->ParseCommand(IDM_SAVE, false); return TRUE; // accelerator, the frame only knows the menu's save command, fixes ctrl+s in script editor
       case ID_TABLE_CAMERAMODE:
       case ID_TABLE_LIVEEDIT:
-      case ID_TABLE_PLAY: g_pvp->ParseCommand(id, false); return TRUE;
+      case ID_TABLE_PLAY: pcv->GetVpxEditor()->ParseCommand(id, false); return TRUE;
       case ID_EDIT_FINDNEXT:
          pcv->Find(); return TRUE;
       case ID_REPLACE:
@@ -2250,10 +2255,10 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          pcv->SetVisible(false); return TRUE;
       case WM_SYSCOMMAND:
       {
-         if (wParam == SC_MINIMIZE && g_pvp != nullptr)
+         if (wParam == SC_MINIMIZE && pcv->GetVpxEditor() != nullptr)
               pcv->m_minimized = true;
 
-         if (wParam == SC_RESTORE && g_pvp != nullptr)
+         if (wParam == SC_RESTORE && pcv->GetVpxEditor() != nullptr)
               pcv->m_minimized = false;
          break;
       }
@@ -2294,11 +2299,11 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
          //also see SCN_MODIFIED handling which does more finegrained updating calls
          if (pcv->m_errorLineNumber != -1)
             pcv->UncolorError();
-         pcv->m_table->SetDirtyScript(eSaveDirty);
+         pcv->m_tableEditor->m_table->SetDirtyScript(eSaveDirty);
 
          // Called on every single edit, so fetch straight into the table's script
          const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-         string& script = pcv->m_table->m_script_text;
+         string& script = pcv->m_tableEditor->m_table->m_script_text;
          script.resize(cchar + 1); // Scintilla expects a buffer with an extra byte for the null terminator
          ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)script.data());
          script.resize(cchar); // remove that terminator again
@@ -2334,12 +2339,12 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       // Scintilla tracks the save point itself, so undoing/redoing back across it also updates the table dirty state
       case SCN_SAVEPOINTREACHED:
       {
-         pcv->m_table->SetDirtyScript(eSaveClean);
+         pcv->m_tableEditor->m_table->SetDirtyScript(eSaveClean);
          break;
       }
       case SCN_SAVEPOINTLEFT:
       {
-         pcv->m_table->SetDirtyScript(eSaveDirty);
+         pcv->m_tableEditor->m_table->SetDirtyScript(eSaveDirty);
          break;
       }
       case SCN_DWELLSTART:
@@ -2401,7 +2406,9 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
 
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   std::unique_ptr<CodeViewer>& pcv = g_pvp->GetActiveTableEditor()->m_pcv;
+   if (uMsg == WM_INITDIALOG)
+      SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+   CodeViewer *const pcv = (CodeViewer *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
    switch (uMsg)
    {
    case WM_INITDIALOG:

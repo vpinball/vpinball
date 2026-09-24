@@ -4,10 +4,12 @@
 
 #include "audio/AudioPlayer.h"
 
+class PinTableWnd;
+
 class SoundDialog final : public CDialog
 {
 public:
-   SoundDialog();
+   explicit SoundDialog(PinTableWnd *tableEditor);
    ~SoundDialog() override;
 
 protected:
@@ -20,6 +22,8 @@ protected:
    void OnCancel() override;
 
 private:
+   PinTableWnd *const m_tableEditor;
+
    void ListSounds();
    int AddListSound(const VPX::Sound *const pps);
 

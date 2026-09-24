@@ -43,7 +43,7 @@ BackglassCameraProperty::BackglassCameraProperty(const vector<IWinUIPart *> *pvs
 void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
    PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
-   PinTableWnd *const tableEditor = g_pvp->GetActiveTableEditor();
+   PinTableWnd *const tableEditor = GetTableEditor();
    if (tableEditor == nullptr || tableEditor->m_table != table)
       return;
 
@@ -111,7 +111,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 void BackglassCameraProperty::UpdateProperties(const int dispid)
 {
    PinTable *const table = (PinTable *)SelAt(0)->GetEditable();
-   PinTableWnd *const tableEditor = g_pvp->GetActiveTableEditor();
+   PinTableWnd *const tableEditor = GetTableEditor();
    if (tableEditor == nullptr || tableEditor->m_table != table)
       return;
 

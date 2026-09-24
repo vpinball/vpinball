@@ -125,7 +125,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_COLOR_BUTTON1:
             {
-                CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
+                CComObject<PinTable>* const ptable = GetTable();
                 if (ptable == nullptr)
                     break;
                 CHOOSECOLOR cc = m_colorDialog.GetParameters();
@@ -164,7 +164,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                     const bool fStrikethrough = font.lfStrikeOut != 0;
                     decal->m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 
-                    const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY));
+                    const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(GetVpxEditor()->GetDC(), LOGPIXELSY));
                     decal->m_d.m_font.size = (uint32_t)(fontsize * 10000.0f);
 
                     decal->m_d.m_color = m_fontDialog.GetColor();

@@ -9,7 +9,9 @@
 #include "ui/win/WinEditor.h"
 
 
-DimensionDialog::DimensionDialog() : CDialog(IDD_DIMENSION_CALCULATOR)
+DimensionDialog::DimensionDialog(PinTableWnd* tableEditor)
+   : CDialog(IDD_DIMENSION_CALCULATOR)
+   , m_tableEditor(tableEditor)
 {
 }
 
@@ -28,7 +30,7 @@ BOOL DimensionDialog::OnInitDialog()
 
    int selectedItem = 0;
 
-   CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
+   CComObject<PinTable>* const pt = m_tableEditor->m_table;
    if (pt)
    {
       const float width = pt->GetTableWidth();
@@ -71,7 +73,7 @@ BOOL DimensionDialog::OnInitDialog()
 void DimensionDialog::UpdateApplyState()
 {
    GetDlgItem(IDC_APPLY_TO_TABLE).EnableWindow(false);
-   CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
+   CComObject<PinTable>* const pt = m_tableEditor->m_table;
    if (pt)
    {
       const float w = sz2f(GetDlgItemText(IDC_VP_WIDTH).GetString());
@@ -154,7 +156,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-   CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
+   CComObject<PinTable>* const pt = m_tableEditor->m_table;
    UNREFERENCED_PARAMETER(lParam);
    switch (LOWORD(wParam))
    {

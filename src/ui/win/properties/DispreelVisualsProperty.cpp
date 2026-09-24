@@ -99,20 +99,20 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_COLOR_BUTTON1:
             {
-                CComObject<PinTable>* const ptable = g_pvp->GetActiveTable();
-                if (ptable == nullptr)
-                    break;
-                CHOOSECOLOR cc = m_colorDialog.GetParameters();
-                cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-                m_colorDialog.SetParameters(cc);
-                m_colorDialog.SetColor(reel->m_d.m_backcolor);
-                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
-                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
-                {
-                    reel->m_d.m_backcolor= m_colorDialog.GetColor();
-                    m_colorButton.SetColor(reel->m_d.m_backcolor);
-                    memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
-                }
+               CComObject<PinTable> *const ptable = GetTable();
+               if (ptable == nullptr)
+                  break;
+               CHOOSECOLOR cc = m_colorDialog.GetParameters();
+               cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+               m_colorDialog.SetParameters(cc);
+               m_colorDialog.SetColor(reel->m_d.m_backcolor);
+               m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
+               if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+               {
+                  reel->m_d.m_backcolor = m_colorDialog.GetColor();
+                  m_colorButton.SetColor(reel->m_d.m_backcolor);
+                  memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
+               }
                 break;
             }
             default:

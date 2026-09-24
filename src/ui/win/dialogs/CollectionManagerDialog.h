@@ -2,6 +2,8 @@
 
 #pragma once
 
+class PinTableWnd;
+
 class CollectionDialogStruct final
 {
 public:
@@ -12,7 +14,7 @@ public:
 class CollectionManagerDialog final : public CDialog
 {
 public:
-    CollectionManagerDialog();
+    explicit CollectionManagerDialog(PinTableWnd *tableEditor);
 
 protected:
     BOOL OnInitDialog() override;
@@ -23,6 +25,8 @@ protected:
     void OnCancel() override;
 
 private:
+    PinTableWnd *const m_tableEditor;
+
     void EditCollection();
     void LoadPosition();
     void SavePosition();

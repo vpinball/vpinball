@@ -10,7 +10,9 @@
 #include "ui/win/WinEditor.h"
 #include "ui/win/WinUIPartRegistry.h"
 
-ToolbarDialog::ToolbarDialog() : CDialog(IDD_TOOLBAR)
+ToolbarDialog::ToolbarDialog(WinEditor* vpxEditor)
+   : CDialog(IDD_TOOLBAR)
+   , m_vpxEditor(vpxEditor)
 {
 }
 
@@ -251,7 +253,7 @@ void ToolbarDialog::EnableButtons()
 {
     if (!IsWindow())
         return;
-    CComObject<PinTable> * const ptCur = g_pvp->GetActiveTable();
+    CComObject<PinTable> * const ptCur = m_vpxEditor->GetActiveTable();
     if (ptCur == nullptr && !g_pplayer)
     {
         m_magnifyButton.EnableWindow(FALSE);
@@ -302,11 +304,11 @@ void ToolbarDialog::EnableButtons()
         m_lightseqButton.EnableWindow(lockable);
         m_flasherButton.EnableWindow(lockable);
 
-        BOOL lockableNo3D = g_pvp->m_desktopBackdropView ? lockable : FALSE;
+        BOOL lockableNo3D = m_vpxEditor->m_desktopBackdropView ? lockable : FALSE;
         m_textboxButton.EnableWindow(lockableNo3D);
         m_reelButton.EnableWindow(lockableNo3D);
 
-        BOOL lockableNoBG = g_pvp->m_desktopBackdropView ? FALSE : lockable;
+        BOOL lockableNoBG = m_vpxEditor->m_desktopBackdropView ? FALSE : lockable;
         m_wallButton.EnableWindow(lockableNoBG);
         m_gateButton.EnableWindow(lockableNoBG);
         m_rampButton.EnableWindow(lockableNoBG);
@@ -354,7 +356,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            const ItemTypeEnum type = WinUIPartRegistry::TypeFromToolID((int)id);
            if (type != eItemInvalid)
            {
-              g_pvp->m_ToolCur = (int)id;
+              m_vpxEditor->m_ToolCur = (int)id;
               return TRUE;
            }
             break;
@@ -362,7 +364,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_SELECT:
         case ID_TABLE_MAGNIFY:
         {
-            g_pvp->m_ToolCur = id;
+            m_vpxEditor->m_ToolCur = id;
             m_selectButton.SetCheck(BST_UNCHECKED);
             m_magnifyButton.SetCheck(BST_UNCHECKED);
             switch (HIWORD(wParam))
@@ -381,22 +383,22 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case ID_EDIT_SCRIPT:
         {
-            g_pvp->ToggleScriptEditor();
+            m_vpxEditor->ToggleScriptEditor();
             break;
         }
         case ID_EDIT_BACKGLASSVIEW:
         {
-            g_pvp->ToggleBackglassView();
+            m_vpxEditor->ToggleBackglassView();
             break;
         }
         case ID_TABLE_PLAY:
         {
-            g_pvp->DoPlay(0);
+            m_vpxEditor->DoPlay(0);
             break;
         }
         case ID_TABLE_PLAY_CAMERA:
         {
-            g_pvp->DoPlay(1);
+            m_vpxEditor->DoPlay(1);
             break;
         }
         case IDC_TURN_VR_ON:
@@ -423,15 +425,17 @@ BOOL ToolbarDialog::PreTranslateMessage(MSG& msg)
    return __super::PreTranslateMessage(msg);
 }
 
-CContainToolbar::CContainToolbar()
+CContainToolbar::CContainToolbar(WinEditor *vpxEditor)
+   : m_toolbar(vpxEditor)
 {
-    SetView(m_toolbar); 
+    SetView(m_toolbar);
     SetTabText(_T("Toolbar"));
     SetTabIcon(IDI_TOOLBAR);
     SetDockCaption(_T("Toolbar"));
 }
 
-CDockToolbar::CDockToolbar()
+CDockToolbar::CDockToolbar(WinEditor *vpxEditor)
+   : m_toolbarContainer(vpxEditor)
 {
     SetView(m_toolbarContainer);
     SetBarWidth(4);

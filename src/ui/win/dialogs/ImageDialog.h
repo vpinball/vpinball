@@ -4,10 +4,12 @@
 
 #include "WhereUsedDialog.h"
 
+class PinTableWnd;
+
 class ImageDialog final : public CDialog
 {
 public:
-   ImageDialog();
+   explicit ImageDialog(PinTableWnd *tableEditor);
    ~ImageDialog() override;
 
 protected:
@@ -20,6 +22,7 @@ protected:
    void OnCancel() override;
 
 private:
+   PinTableWnd *const m_tableEditor;
    CResizer m_resizer;
 
    void Import();

@@ -12,10 +12,12 @@
 
 #define MAX_FIND_LENGTH 81 // from MS docs: The buffer should be at least 80 characters long (for find/replace)
 
+class PinTableWnd;
+
 class CodeViewer final : public CWnd
 {
 public:
-   CodeViewer(PinTable *table);
+   explicit CodeViewer(PinTableWnd *tableEditor);
    ~CodeViewer() override;
 
    void SetVisible(const bool visible);
@@ -64,7 +66,7 @@ public:
 
    void SetScript(const string& script);
 
-   PinTable *m_table;
+   PinTableWnd *const m_tableEditor;
 
    class CodeViewDispatch final
    {
@@ -124,6 +126,8 @@ protected:
 
 private:
    CodeViewer* GetCodeViewerPtr();
+   // The main editor window hosting the table this code viewer belongs to, null while it is being torn down
+   class WinEditor *GetVpxEditor() const;
    BOOL ParseClickEvents(const int id, const SCNotification *pSCN);
    BOOL ParseSelChangeEvent(const int id, const SCNotification *pSCN);
 
@@ -145,6 +149,10 @@ private:
    void ReadLineToParseBrain(string wholeline, const int linecount, fi_vector<UserData> &ListIn);
 
    void GetMembers(const fi_vector<UserData> &ListIn, const string &StrIn);
+
+   //Assumes case insensitive sorted list
+   //Returns index or insertion point (-1 == error)
+   size_t FindOrInsertUD(fi_vector<UserData> &ListIn, const UserData &udIn);
 
    void InitPreferences();
 

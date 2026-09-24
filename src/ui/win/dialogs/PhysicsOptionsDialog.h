@@ -2,10 +2,12 @@
 
 #pragma once
 
+class PinTableWnd;
+
 class PhysicsOptionsDialog final : public CDialog
 {
 public:
-   PhysicsOptionsDialog();
+   explicit PhysicsOptionsDialog(PinTableWnd *tableEditor);
 
 protected:
    BOOL OnInitDialog() override;
@@ -14,6 +16,8 @@ protected:
    void OnOK() override;
 
 private:
+   PinTableWnd *const m_tableEditor;
+
    bool LoadSetting();
    string GetItemText(int id) const;
    void SetItemText(int id, float value);

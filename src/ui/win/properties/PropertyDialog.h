@@ -17,6 +17,7 @@
 class EditBox;
 class ComboBox;
 class Texture;
+class WinEditor;
 
 class BasePropertyDialog: public CDialog
 {
@@ -27,6 +28,12 @@ public:
 
     IWinUIPart *SelAt(const int i) const { return (*m_pvsel)[i]; }
     int SelCount() const { return (int)m_pvsel->size(); }
+
+    // The table editor owning the edited selection, the table it edits, and the main editor window
+    // (nullptr when the selection is empty)
+    class PinTableWnd *GetTableEditor() const;
+    CComObject<PinTable> *GetTable() const;
+    class WinEditor *GetVpxEditor() const;
 
     virtual void UpdateProperties(const int dispid) = 0;
     virtual void UpdateVisuals(const int dispid=-1) = 0;
@@ -258,30 +265,30 @@ public:
 class PropertyDialog final : public CDialog
 {
 public:
-    PropertyDialog();
+   PropertyDialog();
 
-    void CreateTabs(const vector<IWinUIPart *> &pvsel);
-    void DeleteAllTabs();
-    void UpdateTabs(const vector<IWinUIPart *> &pvsel);
+   void CreateTabs(const vector<IWinUIPart *> &pvsel);
+   void DeleteAllTabs();
+   void UpdateTabs(const vector<IWinUIPart *> &pvsel);
 
-    static void UpdateTextureComboBox(const vector<Texture*>& contentList, const CComboBox &combo, const string &selectName);
-    static void UpdateComboBox(const vector<string>& contentList, const CComboBox &combo, const string &selectName);
-    static void UpdateMaterialComboBox(const vector<class Material *>& contentList, const CComboBox &combo, const string &selectName);
-    static void UpdateSurfaceComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
-    static void UpdateSoundComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
-    static void UpdateCollectionComboBox(const PinTable *const ptable, const CComboBox &combo, const char *selectName);
+   static void UpdateTextureComboBox(const vector<Texture *> &contentList, const CComboBox &combo, const string &selectName);
+   static void UpdateComboBox(const vector<string> &contentList, const CComboBox &combo, const string &selectName);
+   static void UpdateMaterialComboBox(const vector<class Material *> &contentList, const CComboBox &combo, const string &selectName);
+   static void UpdateSurfaceComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
+   static void UpdateSoundComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
+   static void UpdateCollectionComboBox(const PinTable *const ptable, const CComboBox &combo, const char *selectName);
 
-    static void StartUndo(IEditable *const part);
+   static void StartUndo(IEditable *const part);
 
-    static void EndUndo(IEditable *const part);
+   static void EndUndo(IEditable *const part);
 
-    static void UpdateStatusBarInfo(IEditable *const part);
+   static void UpdateStatusBarInfo(IEditable *const part);
 
-    static bool GetCheckboxState(const HWND checkBoxHwnd)
-    {
-       const size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);
-       return selected != 0;
-    }
+   static bool GetCheckboxState(const HWND checkBoxHwnd)
+   {
+      const size_t selected = ::SendMessage(checkBoxHwnd, BM_GETCHECK, 0, 0);
+      return selected != 0;
+   }
 
     static void SetCheckboxState(const HWND checkBoxHwnd, const bool checked)
     {
@@ -346,17 +353,17 @@ protected:
     void OnCancel() override;
 
 private:
-    PropertyTab  m_tab;
-    BasePropertyDialog *m_tabs[PROPERTY_TABS];
-    ItemTypeEnum m_previousType;
-    bool         m_isPlayfieldMesh;
-    bool         m_desktopBackdropView;
+   PropertyTab m_tab;
+   BasePropertyDialog *m_tabs[PROPERTY_TABS];
+   ItemTypeEnum m_previousType;
+   bool m_isPlayfieldMesh;
+   bool m_desktopBackdropView;
 
-    int      m_curTabIndex;
-    CEdit    m_nameEdit;
-    CResizer m_resizer;
-    CStatic  m_multipleElementsStatic;
-    CStatic  m_elementTypeName;
+   int m_curTabIndex;
+   CEdit m_nameEdit;
+   CResizer m_resizer;
+   CStatic m_multipleElementsStatic;
+   CStatic m_elementTypeName;
 };
 #pragma endregion
 
@@ -412,13 +419,10 @@ private:
 class CContainProperties final : public CDockContainer
 {
 public:
-    CContainProperties();
-    ~CContainProperties() override {}
+   CContainProperties();
+   ~CContainProperties() override { }
 
-    PropertyDialog *GetPropertyDialog()
-    {
-        return &m_propertyDialog;
-    }
+   PropertyDialog *GetPropertyDialog() { return &m_propertyDialog; }
 
 private:
     PropertyDialog m_propertyDialog;
@@ -427,15 +431,12 @@ private:
 class CDockProperty final : public CDocker
 {
 public:
-    CDockProperty();
-    ~CDockProperty() override {}
+   CDockProperty();
+   ~CDockProperty() override { }
 
-    void OnClose() override;
+   void OnClose() override;
 
-    CContainProperties *GetContainProperties()
-    {
-        return &m_propContainer;
-    }
+   CContainProperties *GetContainProperties() { return &m_propContainer; }
 
 private:
     CContainProperties m_propContainer;

@@ -9,6 +9,7 @@
 
 #include "core/VPApp.h"
 #include "parts/pintable.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
@@ -18,7 +19,9 @@ static string physicsoptions[num_physicsoptions];
 static unsigned int physicsselection = 0;
 
 
-PhysicsOptionsDialog::PhysicsOptionsDialog() : CDialog(IDD_PHYSICS_OPTIONS)
+PhysicsOptionsDialog::PhysicsOptionsDialog(PinTableWnd* tableEditor)
+   : CDialog(IDD_PHYSICS_OPTIONS)
+   , m_tableEditor(tableEditor)
 {
 }
 
@@ -125,15 +128,15 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             if (tmp != physicsselection)
             {
-                int result = g_pvp->MessageBox("Save", "Save current physics set?", MB_YESNOCANCEL | MB_ICONQUESTION);
-                if (result == IDYES)
-                    SaveCurrentPhysicsSetting();
+               int result = m_tableEditor->m_vpxEditor->MessageBox("Save", "Save current physics set?", MB_YESNOCANCEL | MB_ICONQUESTION);
+               if (result == IDYES)
+                  SaveCurrentPhysicsSetting();
 
-                if (result != IDCANCEL)
-                {
-                    physicsselection = (unsigned int)tmp;
-                    SendMessage(WM_INITDIALOG, 0, 0); // reinit all boxes
-                }
+               if (result != IDCANCEL)
+               {
+                  physicsselection = (unsigned int)tmp;
+                  SendMessage(WM_INITDIALOG, 0, 0); // reinit all boxes
+               }
                 else
                     ::SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
             }
@@ -174,7 +177,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case 1112:
         {
             char szFileName[MAXSTRING];
-            /*CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
+            /*CComObject<PinTable>* const pt = m_tableEditor->m_table;
             if (pt)
             {
                strncpy_s(szFileName, std::size(szFileName), pt->m_filename.c_str());
@@ -189,7 +192,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_app->GetInstanceHandle();
-            ofn.hwndOwner = g_pvp->GetHwnd();
+            ofn.hwndOwner = m_tableEditor->m_vpxEditor->GetHwnd();
             // TEXT
             ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
             ofn.lpstrFile = szFileName;
@@ -327,8 +330,8 @@ bool PhysicsOptionsDialog::LoadSetting()
     const string& szInitialDir = g_app->m_settings.GetRecentDir_PhysicsDir();
 
     vector<string> szFileName;
-    if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
-        return false;
+    if (!m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
+       return false;
 
     const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
     if (index != string::npos)

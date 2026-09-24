@@ -11,7 +11,9 @@
 #include "ui/win/WinEditor.h"
 
 
-EditorOptionsDialog::EditorOptionsDialog() : CDialog(IDD_EDITOR_OPTIONS)
+EditorOptionsDialog::EditorOptionsDialog(WinEditor *vpxEditor)
+   : CDialog(IDD_EDITOR_OPTIONS)
+   , m_vpxEditor(vpxEditor)
 {
     m_toolTip = nullptr;
 }
@@ -46,10 +48,10 @@ BOOL EditorOptionsDialog::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON6, m_colorButton6);
     m_defaultMaterialColor = g_app->m_settings.GetEditor_DefaultMaterialColor(); 
     m_colorButton2.SetColor(m_defaultMaterialColor);
-    m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
-    m_colorButton4.SetColor(g_pvp->m_elemSelectLockedColor);
-    m_colorButton5.SetColor(g_pvp->m_fillColor);
-    m_colorButton6.SetColor(g_pvp->m_backgroundColor);
+    m_colorButton3.SetColor(m_vpxEditor->m_elemSelectColor);
+    m_colorButton4.SetColor(m_vpxEditor->m_elemSelectLockedColor);
+    m_colorButton5.SetColor(m_vpxEditor->m_fillColor);
+    m_colorButton6.SetColor(m_vpxEditor->m_backgroundColor);
 
     // drag points
     const bool fdrawpoints = g_app->m_settings.GetEditor_ShowDragPoints();
@@ -142,11 +144,11 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
-           m_colorDialog.SetColor(g_pvp->m_elemSelectColor);
+           m_colorDialog.SetColor(m_vpxEditor->m_elemSelectColor);
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
-               g_pvp->m_elemSelectColor = m_colorDialog.GetColor();
-               m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
+              m_vpxEditor->m_elemSelectColor = m_colorDialog.GetColor();
+              m_colorButton3.SetColor(m_vpxEditor->m_elemSelectColor);
            }
            break;
        }
@@ -155,11 +157,11 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
-           m_colorDialog.SetColor(g_pvp->m_elemSelectLockedColor);
+           m_colorDialog.SetColor(m_vpxEditor->m_elemSelectLockedColor);
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
-               g_pvp->m_elemSelectLockedColor = m_colorDialog.GetColor();
-               m_colorButton4.SetColor(g_pvp->m_elemSelectLockedColor);
+              m_vpxEditor->m_elemSelectLockedColor = m_colorDialog.GetColor();
+              m_colorButton4.SetColor(m_vpxEditor->m_elemSelectLockedColor);
            }
            break;
        }
@@ -168,11 +170,11 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
-           m_colorDialog.SetColor(g_pvp->m_fillColor);
+           m_colorDialog.SetColor(m_vpxEditor->m_fillColor);
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
-               g_pvp->m_fillColor = m_colorDialog.GetColor();
-               m_colorButton5.SetColor(g_pvp->m_fillColor);
+              m_vpxEditor->m_fillColor = m_colorDialog.GetColor();
+              m_colorButton5.SetColor(m_vpxEditor->m_fillColor);
            }
            break;
        }
@@ -181,11 +183,11 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
-           m_colorDialog.SetColor(g_pvp->m_backgroundColor);
+           m_colorDialog.SetColor(m_vpxEditor->m_backgroundColor);
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
-               g_pvp->m_backgroundColor = m_colorDialog.GetColor();
-               m_colorButton6.SetColor(g_pvp->m_backgroundColor);
+              m_vpxEditor->m_backgroundColor = m_colorDialog.GetColor();
+              m_colorButton6.SetColor(m_vpxEditor->m_backgroundColor);
            }
            break;
        }
@@ -194,17 +196,17 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           m_defaultMaterialColor = 0xB469FF;
           m_colorButton2.SetColor(m_defaultMaterialColor);
 
-          g_pvp->m_elemSelectColor = 0x00FF0000;
-          m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
+          m_vpxEditor->m_elemSelectColor = 0x00FF0000;
+          m_colorButton3.SetColor(m_vpxEditor->m_elemSelectColor);
 
-          g_pvp->m_elemSelectLockedColor = 0x00A7726D;
-          m_colorButton4.SetColor(g_pvp->m_elemSelectLockedColor);
+          m_vpxEditor->m_elemSelectLockedColor = 0x00A7726D;
+          m_colorButton4.SetColor(m_vpxEditor->m_elemSelectLockedColor);
 
-          g_pvp->m_fillColor = 0x00B1CFB3;
-          m_colorButton5.SetColor(g_pvp->m_fillColor);
+          m_vpxEditor->m_fillColor = 0x00B1CFB3;
+          m_colorButton5.SetColor(m_vpxEditor->m_fillColor);
 
-          g_pvp->m_backgroundColor = 0x008D8D8D;
-          m_colorButton6.SetColor(g_pvp->m_backgroundColor);
+          m_vpxEditor->m_backgroundColor = 0x008D8D8D;
+          m_colorButton6.SetColor(m_vpxEditor->m_backgroundColor);
           return TRUE;
        }
        case IDC_SET_DEFAULTS_BUTTON:
@@ -239,7 +241,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
        }
        case IDC_RESET_WINDOW_POS:
        {
-          g_pvp->ResetAllDockers();
+          m_vpxEditor->ResetAllDockers();
           return TRUE;
        }
     }
@@ -346,18 +348,18 @@ void EditorOptionsDialog::OnOK()
 
     // Go through and reset the autosave time on all the tables
     if (autosave)
-        g_pvp->SetAutoSaveMinutes(autosavetime);
+       m_vpxEditor->SetAutoSaveMinutes(autosavetime);
     else
-        g_pvp->m_autosaveTime = -1;
+       m_vpxEditor->m_autosaveTime = -1;
 
-    for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
-        g_pvp->m_vtable[i]->BeginAutoSaveCounter();
+    for (size_t i = 0; i < m_vpxEditor->m_vtable.size(); i++)
+       m_vpxEditor->m_vtable[i]->BeginAutoSaveCounter();
 
     g_app->m_settings.SetEditor_DefaultMaterialColor(m_defaultMaterialColor, false);
-    g_app->m_settings.SetEditor_ElementSelectColor((int)g_pvp->m_elemSelectColor, false);
-    g_app->m_settings.SetEditor_ElementSelectLockedColor((int)g_pvp->m_elemSelectLockedColor, false);
-    g_app->m_settings.SetEditor_BackGroundColor((int)g_pvp->m_backgroundColor, false);
-    g_app->m_settings.SetEditor_FillColor((int)g_pvp->m_fillColor, false);
+    g_app->m_settings.SetEditor_ElementSelectColor((int)m_vpxEditor->m_elemSelectColor, false);
+    g_app->m_settings.SetEditor_ElementSelectLockedColor((int)m_vpxEditor->m_elemSelectLockedColor, false);
+    g_app->m_settings.SetEditor_BackGroundColor((int)m_vpxEditor->m_backgroundColor, false);
+    g_app->m_settings.SetEditor_FillColor((int)m_vpxEditor->m_fillColor, false);
 
     checked = (IsDlgButtonChecked(IDC_START_VP_FILE_DIALOG) == BST_CHECKED);
     g_app->m_settings.SetEditor_SelectTableOnStart(checked, false);

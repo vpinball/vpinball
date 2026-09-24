@@ -31,9 +31,17 @@
 
 PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    : m_table(table)
-   , m_pcv(std::make_unique<CodeViewer>(table))
+   , m_pcv(std::make_unique<CodeViewer>(this))
    , m_vpxEditor(vpxEditor)
    , m_tablePart(this, table)
+   , m_imageMngDlg(this)
+   , m_soundMngDlg(this)
+   , m_collectionMngDlg(this)
+   , m_physicsOptDialog(this)
+   , m_tableInfoDialog(this)
+   , m_dimensionDialog(this)
+   , m_renderProbeDialog(this)
+   , m_materialDialog(this)
    , m_undo(table)
 {
    // Store the current selection in each undo record, so that undoing also restores it
@@ -2271,4 +2279,24 @@ void PinTableWnd::ShowSearchSelectDlg()
    }
    m_searchSelectDlg->ShowWindow();
    m_searchSelectDlg->SetForegroundWindow();
+}
+
+void PinTableWnd::CloseAllDialogs()
+{
+   if (m_imageMngDlg.IsWindow())
+      m_imageMngDlg.Destroy();
+   if (m_soundMngDlg.IsWindow())
+      m_soundMngDlg.Destroy();
+   if (m_collectionMngDlg.IsWindow())
+      m_collectionMngDlg.Destroy();
+   if (m_physicsOptDialog.IsWindow())
+      m_physicsOptDialog.Destroy();
+   if (m_tableInfoDialog.IsWindow())
+      m_tableInfoDialog.Destroy();
+   if (m_dimensionDialog.IsWindow())
+      m_dimensionDialog.Destroy();
+   if (m_renderProbeDialog.IsWindow())
+      m_renderProbeDialog.Destroy();
+   if (m_materialDialog.IsWindow())
+      m_materialDialog.Destroy();
 }

@@ -24,151 +24,154 @@ extern int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, 
 static CollectionDialogStruct cds;
 int CollectionManagerDialog::m_columnSortOrder;
 
-CollectionManagerDialog::CollectionManagerDialog() : CDialog(IDD_COLLECTDIALOG), hListHwnd(nullptr)
+CollectionManagerDialog::CollectionManagerDialog(PinTableWnd *tableEditor)
+   : CDialog(IDD_COLLECTDIALOG)
+   , m_tableEditor(tableEditor)
+   , hListHwnd(nullptr)
 {
 }
 
 BOOL CollectionManagerDialog::OnInitDialog()
 {
-    const auto pt = g_pvp->GetActiveTableEditor();
+   const auto pt = m_tableEditor;
 
-    hListHwnd = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   hListHwnd = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
-    m_columnSortOrder = 1;
-    LoadPosition();
+   m_columnSortOrder = 1;
+   LoadPosition();
 
-    ListView_SetExtendedListViewStyle(hListHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+   ListView_SetExtendedListViewStyle(hListHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-    LVCOLUMN lvcol = {};
-    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-    const LocalString ls(IDS_NAME);
-    lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
-    lvcol.cx = 280;
-    ListView_InsertColumn(hListHwnd, 0, &lvcol);
+   LVCOLUMN lvcol = {};
+   lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
+   const LocalString ls(IDS_NAME);
+   lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
+   lvcol.cx = 280;
+   ListView_InsertColumn(hListHwnd, 0, &lvcol);
 
-    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-    lvcol.fmt = LVCFMT_CENTER;
-    const LocalString ls2(IDS_SIZE);
-    lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Size";
-    lvcol.cx = 100;
-    ListView_InsertColumn(hListHwnd, 1, &lvcol);
+   lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
+   lvcol.fmt = LVCFMT_CENTER;
+   const LocalString ls2(IDS_SIZE);
+   lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Size";
+   lvcol.cx = 100;
+   ListView_InsertColumn(hListHwnd, 1, &lvcol);
 
-    pt->ListCollections(hListHwnd);
-    ListView_SetItemState(hListHwnd, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-    GotoDlgCtrl(hListHwnd);
-    return FALSE;
+   pt->ListCollections(hListHwnd);
+   ListView_SetItemState(hListHwnd, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+   GotoDlgCtrl(hListHwnd);
+   return FALSE;
 }
 
 
 void CollectionManagerDialog::EditCollection()
 {
-    const auto pt = g_pvp->GetActiveTableEditor();
+   const auto pt = m_tableEditor;
 
-    const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-    if (sel != -1)
-    {
-        LVITEM lvitem;
-        lvitem.mask = LVIF_PARAM;
-        lvitem.iItem = sel;
-        lvitem.iSubItem = 0;
-        ListView_GetItem(hListHwnd, &lvitem);
-        CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem.lParam;
+   const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
+   if (sel != -1)
+   {
+      LVITEM lvitem;
+      lvitem.mask = LVIF_PARAM;
+      lvitem.iItem = sel;
+      lvitem.iSubItem = 0;
+      ListView_GetItem(hListHwnd, &lvitem);
+      CComObject<Collection> *const pcol = (CComObject<Collection> *)lvitem.lParam;
 
-        cds.pcol = pcol;
-        cds.ppt = pt;
+      cds.pcol = pcol;
+      cds.ppt = pt;
 
-        CollectionDialog *colDlg = new CollectionDialog(cds);
-        if (colDlg->DoModal() >= 0)
-            pt->m_table->SetNonUndoableDirty(eSaveDirty);
+      CollectionDialog *colDlg = new CollectionDialog(cds);
+      if (colDlg->DoModal() >= 0)
+         pt->m_table->SetNonUndoableDirty(eSaveDirty);
 
-        ListView_SetItemText_Safe(hListHwnd, sel, 0, MakeString(pcol->m_wzName).c_str());
-        ListView_SetItemText_Safe(hListHwnd, sel, 1, std::to_string(pcol->GetParts().size()).c_str());
-    }
+      ListView_SetItemText_Safe(hListHwnd, sel, 0, MakeString(pcol->m_wzName).c_str());
+      ListView_SetItemText_Safe(hListHwnd, sel, 1, std::to_string(pcol->GetParts().size()).c_str());
+   }
 }
 
 INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    const auto pt = g_pvp->GetActiveTableEditor();
+   const auto pt = m_tableEditor;
 
-    switch(uMsg)
-    {
-        case WM_NOTIFY:
-        {
-            const LPNMHDR pnmhdr = (LPNMHDR)lParam;
-            if (wParam == IDC_SOUNDLIST)
+   switch (uMsg)
+   {
+   case WM_NOTIFY:
+   {
+      const LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      if (wParam == IDC_SOUNDLIST)
+      {
+         const LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+         if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
+         {
+            const int columnNumber = lpnmListView->iSubItem;
+            if (m_columnSortOrder == 1)
+               m_columnSortOrder = 0;
+            else
+               m_columnSortOrder = 1;
+            SortData.hwndList = hListHwnd;
+            SortData.subItemIndex = columnNumber;
+            SortData.sortUpDown = m_columnSortOrder;
+            if (columnNumber == 0)
+               ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+            else
+               ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
+            const int count = ListView_GetItemCount(hListHwnd);
+            for (int i = 0; i < count; i++)
             {
-                const LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
-                if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
-                {
-                    const int columnNumber = lpnmListView->iSubItem;
-                    if (m_columnSortOrder == 1)
-                       m_columnSortOrder = 0;
-                    else
-                       m_columnSortOrder = 1;
-                    SortData.hwndList = hListHwnd;
-                    SortData.subItemIndex = columnNumber;
-                    SortData.sortUpDown = m_columnSortOrder;
-                    if (columnNumber == 0)
-                        ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
-                    else
-                        ListView_SortItems(SortData.hwndList, MyCompProcIntValues, &SortData);
-                    const int count = ListView_GetItemCount(hListHwnd);
-                    for (int i = 0; i < count; i++)
-                    {
-                       LVITEM lvitem;
-                       lvitem.mask = LVIF_PARAM;
-                       lvitem.iItem = i;
-                       lvitem.iSubItem = 0;
-                       ListView_GetItem(hListHwnd, &lvitem);
-                       const Collection * const pcol = (Collection *)lvitem.lParam;
-                       ListView_SetItemText_Safe(hListHwnd, i, 1, std::to_string(pcol->GetParts().size()).c_str());
-                    }
-                }
+               LVITEM lvitem;
+               lvitem.mask = LVIF_PARAM;
+               lvitem.iItem = i;
+               lvitem.iSubItem = 0;
+               ListView_GetItem(hListHwnd, &lvitem);
+               const Collection *const pcol = (Collection *)lvitem.lParam;
+               ListView_SetItemText_Safe(hListHwnd, i, 1, std::to_string(pcol->GetParts().size()).c_str());
             }
-            if (pnmhdr->code == LVN_ENDLABELEDIT)
-            {
-                NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
-                if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
-                    return FALSE;
-                LVITEM lvitem;
-                lvitem.mask = LVIF_PARAM;
-                lvitem.iItem = pinfo->item.iItem;
-                lvitem.iSubItem = 0;
-                ListView_GetItem(hListHwnd, &lvitem);
-                Collection * const pcol = (Collection *)lvitem.lParam;
-                wstring newName = MakeWString(pinfo->item.pszText);
-                if (!pt->m_table->IsNameUnique(newName))
-                   newName = pt->m_table->GetUniqueName(newName);
-                pt->m_table->RenameCollection(pcol, newName);
-                if (hListHwnd)
-                   ListView_SetItemText_Safe(hListHwnd, pinfo->item.iItem, 0, MakeString(pcol->m_wzName).c_str());
-                pt->m_table->SetNonUndoableDirty(eSaveDirty);
-                return TRUE;
-            }
-            else if (pnmhdr->code == NM_DBLCLK)
-            {
-                EditCollection();
-                return TRUE;
-            }
-            break;
-        }
-    }
+         }
+      }
+      if (pnmhdr->code == LVN_ENDLABELEDIT)
+      {
+         NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
+         if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
+            return FALSE;
+         LVITEM lvitem;
+         lvitem.mask = LVIF_PARAM;
+         lvitem.iItem = pinfo->item.iItem;
+         lvitem.iSubItem = 0;
+         ListView_GetItem(hListHwnd, &lvitem);
+         Collection *const pcol = (Collection *)lvitem.lParam;
+         wstring newName = MakeWString(pinfo->item.pszText);
+         if (!pt->m_table->IsNameUnique(newName))
+            newName = pt->m_table->GetUniqueName(newName);
+         pt->m_table->RenameCollection(pcol, newName);
+         if (hListHwnd)
+            ListView_SetItemText_Safe(hListHwnd, pinfo->item.iItem, 0, MakeString(pcol->m_wzName).c_str());
+         pt->m_table->SetNonUndoableDirty(eSaveDirty);
+         return TRUE;
+      }
+      else if (pnmhdr->code == NM_DBLCLK)
+      {
+         EditCollection();
+         return TRUE;
+      }
+      break;
+   }
+   }
 
     return DialogProcDefault(uMsg, wParam, lParam);
 }
 
 BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-    const auto pt = g_pvp->GetActiveTableEditor();
-    UNREFERENCED_PARAMETER(lParam);
+   const auto pt = m_tableEditor;
+   UNREFERENCED_PARAMETER(lParam);
 
-    switch(LOWORD(wParam))
-    {
-        case IDCLOSE:
-        {
-            OnClose();
-            break;
-        }
+   switch (LOWORD(wParam))
+   {
+   case IDCLOSE:
+   {
+      OnClose();
+      break;
+   }
         case IDC_NEW:
         {
             pt->NewCollection(hListHwnd, false);
@@ -273,7 +276,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
         default:
             return FALSE;
-    }
+        }
     return TRUE;
 }
 

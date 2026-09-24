@@ -6,10 +6,12 @@
 
 #include "ui/win/properties/PropertyDialog.h"
 
+class WinEditor;
+
 class EditorOptionsDialog final : public CDialog
 {
 public:
-   EditorOptionsDialog();
+   explicit EditorOptionsDialog(WinEditor *vpxEditor);
 
 protected:
    BOOL OnInitDialog() override;
@@ -18,6 +20,8 @@ protected:
    void OnOK() override;
 
 private:
+   WinEditor *const m_vpxEditor;
+
    void AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
 
    int m_defaultMaterialColor;
