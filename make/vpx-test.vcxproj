@@ -34,6 +34,9 @@
         <PrecompiledHeader>NotUsing</PrecompiledHeader>
         <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
+    <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp">
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="../../tests/vpx-test.cpp" />
     <ClCompile Include="../../tests/audio/test-audioplayer.cpp" />
     <ClCompile Include="../../tests/input/test-buttonmapping.cpp" />
@@ -74,6 +77,11 @@
     <ClCompile Include="../../tests/physics/test-hittimer.cpp" />
     <ClCompile Include="../../tests/physics/test-motion-kalman.cpp" />
     <ClCompile Include="../../tests/physics/test-quadtree.cpp" />
+    <ClCompile Include="../../tests/plugins/alphadmd/test-alphanumeric.cpp" />
+    <ClCompile Include="../../tests/plugins/plugins/test-colorspace.cpp" />
+    <ClCompile Include="../../tests/plugins/plugins/test-msgpluginmanager.cpp" />
+    <ClCompile Include="../../tests/plugins/plugins/test-resuriresolver.cpp" />
+    <ClCompile Include="../../tests/plugins/upscaledmd/test-upscalers.cpp" />
     <ClCompile Include="../../tests/render/test-base-render.cpp" />
   </ItemGroup>
   <ItemGroup>

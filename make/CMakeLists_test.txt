@@ -11,6 +11,7 @@
 # the test runner looks for it (FileLocator::AppSubFolder::Root / "test-assets").
 
 set(VPX_TEST_SOURCES
+   plugins/upscaledmd/xbrz/xbrz.cpp
    tests/audio/test-audioplayer.cpp
    tests/input/test-buttonmapping.cpp
    tests/input/test-plunger-kalman.cpp
@@ -50,6 +51,11 @@ set(VPX_TEST_SOURCES
    tests/physics/test-hittimer.cpp
    tests/physics/test-motion-kalman.cpp
    tests/physics/test-quadtree.cpp
+   tests/plugins/alphadmd/test-alphanumeric.cpp
+   tests/plugins/plugins/test-colorspace.cpp
+   tests/plugins/plugins/test-msgpluginmanager.cpp
+   tests/plugins/plugins/test-resuriresolver.cpp
+   tests/plugins/upscaledmd/test-upscalers.cpp
    tests/render/test-base-render.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
