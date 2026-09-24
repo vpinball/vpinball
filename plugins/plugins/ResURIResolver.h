@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <deque>
 #include <string>
 #include <vector>
 #include <unordered_dense.h>
@@ -95,6 +96,9 @@ private:
    mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<SegSrcId>> m_segSources;
    using segCacheLambda = std::function<SegDisplayState(const std::string &)>;
    ankerl::unordered_dense::map<std::string, segCacheLambda> m_segCache;
+   // Fabricated single element sources for 'sub' queries, stored here so cached lambdas can
+   // safely point to them (deque elements never move). Cleared together with m_segCache.
+   std::deque<SegSrcId> m_subSegSources;
 
    mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<DisplaySrcId>> m_displaySources;
    using displayCacheLambda = std::function<DisplayState(const std::string &)>;
