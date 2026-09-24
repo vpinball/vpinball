@@ -4,6 +4,7 @@
 #include "RenderProbe.h"
 
 #include "math/bluenoise.h"
+#include "math/matrix.h"
 #include "parts/Collection.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/Renderer.h"

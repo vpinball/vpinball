@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "renderer/Renderer.h"
 
+#include "math/matrix.h"
 #include "parts/Collection.h"
 #include "utils/denormals.h"
 

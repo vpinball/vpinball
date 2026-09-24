@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "DisplayProfileSettingsPage.h"
 
+#include "math/matrix.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/Renderer.h"
 #include "utils/color.h"

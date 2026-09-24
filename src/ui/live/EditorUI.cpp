@@ -19,6 +19,7 @@
 #include "parts/ball.h"
 #include "parts/primitive.h"
 #include "math/dragpoint.h"
+#include "math/matrix.h"
 
 #include "plugins/VPXPlugin.h"
 

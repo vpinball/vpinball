@@ -5,6 +5,7 @@
 
 //#include "forsyth.h"
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "parts/Collection.h"
 #include "renderer/MeshBuffer.h"
 #include "renderer/RenderDevice.h"

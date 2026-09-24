@@ -3,6 +3,7 @@
 #pragma once
 
 #include "core/resourceid.h"
+#include "math/matrix.h"
 #include "parts/Collection.h"
 #include "parts/timer.h"
 #include "physics/hitable.h"

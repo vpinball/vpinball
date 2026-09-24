@@ -2,6 +2,8 @@
 
 #include "TimerUIPart.h"
 
+#include "math/matrix.h"
+
 namespace VPX::EditorUI
 {
 

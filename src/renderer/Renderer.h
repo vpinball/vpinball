@@ -3,6 +3,7 @@
 #pragma once
 
 #include "gpuprofiler.h"
+#include "math/matrix.h"
 #include "math/ModelViewProj.h"
 #include "renderer/Renderable.h"
 #include "renderer/RenderDevice.h"

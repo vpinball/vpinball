@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "math/MeshUtils.h"
+#include "math/matrix.h"
 #include "meshes/triggerButtonMesh.h"
 #include "meshes/triggerInderMesh.h"
 #include "meshes/triggerSimpleMesh.h"

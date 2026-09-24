@@ -7,6 +7,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "math/bluenoise.h"
 #include "math/math.h"
+#include "math/matrix.h"
 #include "meshes/ballMesh.h"
 #include "parts/ball.h"
 #include "parts/Collection.h"

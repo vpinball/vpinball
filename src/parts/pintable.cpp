@@ -8,6 +8,7 @@
 #include "core/ScriptGlobalTable.h"
 #include "core/VPApp.h"
 #include "core/vpversion.h"
+#include "math/matrix.h"
 #include "parts/ball.h"
 #include "parts/bumper.h"
 #include "parts/Collection.h"

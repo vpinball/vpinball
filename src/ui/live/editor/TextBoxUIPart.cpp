@@ -2,6 +2,7 @@
 
 #include "TextBoxUIPart.h"
 
+#include "math/matrix.h"
 #include "utils/color.h"
 
 namespace VPX::EditorUI

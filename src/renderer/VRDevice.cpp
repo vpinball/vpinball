@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "core/vpversion.h"
+#include "math/matrix.h"
 #include "parts/primitive.h"
 #include "renderer/MeshBuffer.h"
 #include "renderer/IndexBuffer.h"

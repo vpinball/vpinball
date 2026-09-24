@@ -4,6 +4,7 @@
 #include "light.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 #include "renderer/IndexBuffer.h"

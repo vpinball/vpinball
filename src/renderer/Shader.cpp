@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "core/vpversion.h"
+#include "math/matrix.h"
 #include "typedefs3D.h"
 #include "renderer/RenderDevice.h"
 #include "utils/color.h"

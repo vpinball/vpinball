@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "math/matrix.h"
+
 class ModelViewProj final
 {
 public:
