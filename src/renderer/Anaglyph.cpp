@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "Anaglyph.h"
 
+#include "math/matrix.h"
 #include "utils/color.h"
 
 

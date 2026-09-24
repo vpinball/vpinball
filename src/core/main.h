@@ -191,4 +191,3 @@ using std::wstring;
 #include "core/Settings.h"
 #include "core/extern.h"
 #include "core/player.h"
-#include "math/matrix.h"

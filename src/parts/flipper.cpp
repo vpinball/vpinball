@@ -4,6 +4,7 @@
 #include "flipper.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "meshes/flipperBase.h"
 #include "parts/Collection.h"
 #include "renderer/IndexBuffer.h"

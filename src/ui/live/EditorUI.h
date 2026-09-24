@@ -13,6 +13,7 @@
 #include "editor/OutlinerPanel.h"
 #include "editor/PropertiesPanel.h"
 #include "editor/RendererInspectionModal.h"
+#include "math/matrix.h"
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
 

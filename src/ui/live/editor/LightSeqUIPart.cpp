@@ -2,6 +2,8 @@
 
 #include "LightSeqUIPart.h"
 
+#include "math/matrix.h"
+
 namespace VPX::EditorUI
 {
 

@@ -4,6 +4,7 @@
 #include "hittarget.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"
 #include "meshes/dropTargetT4Mesh.h"

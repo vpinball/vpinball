@@ -4,6 +4,7 @@
 #include "primitive.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "parts/light.h"
 #include "parts/Collection.h"
 #include "renderer/Renderer.h"

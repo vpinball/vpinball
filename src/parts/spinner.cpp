@@ -4,6 +4,7 @@
 #include "spinner.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "meshes/spinnerBracketMesh.h"
 #include "meshes/spinnerPlateMesh.h"
 #include "parts/Collection.h"

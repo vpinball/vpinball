@@ -3,6 +3,7 @@
 #include "PropertyPane.h"
 #include "core/ieditable.h"
 #include "math/dragpoint.h"
+#include "math/matrix.h"
 
 #include <functional>
 #include <initializer_list>

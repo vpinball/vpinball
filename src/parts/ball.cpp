@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "math/matrix.h"
 #include "parts/light.h"
 #include "plugins/MsgPluginManager.h"
 #include "renderer/Renderer.h"

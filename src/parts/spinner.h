@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/resourceid.h"
+#include "math/matrix.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
 #include "renderer/Renderable.h"

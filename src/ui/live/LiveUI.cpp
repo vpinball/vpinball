@@ -9,6 +9,7 @@
 #include "fonts/DroidSansBold.h"
 #include "fonts/IconsForkAwesome.h"
 #include "fonts/ForkAwesome.h"
+#include "math/matrix.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
 #include "renderer/VRDevice.h"

@@ -5,6 +5,7 @@
 #include "core/resourceid.h"
 #include "math/Mesh.h"
 #include "math/MeshUtils.h"
+#include "math/matrix.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
 #include "renderer/Renderable.h"

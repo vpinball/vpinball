@@ -3,6 +3,7 @@
 
 #include "core/extern.h"
 #include "core/player.h"
+#include "math/matrix.h"
 #include "utils/color.h"
 
 

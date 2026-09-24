@@ -127,6 +127,7 @@
    #include "input/XRInputHandler.h"
 #endif
 
+#include "math/matrix.h"
 #include "parts/PartGroup.h"
 
 class MeshBuffer;

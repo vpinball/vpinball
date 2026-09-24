@@ -4,6 +4,7 @@
 #include "kicker.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "meshes/kickerCupMesh.h"
 #include "meshes/kickerGottlieb.h"
 #include "meshes/kickerHitMesh.h"

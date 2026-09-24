@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Shader.h"
+#include "math/matrix.h"
 
 class Anaglyph final
 {

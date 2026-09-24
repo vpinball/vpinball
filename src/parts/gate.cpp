@@ -4,6 +4,7 @@
 #include "gate.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "meshes/gateBracketMesh.h"
 #include "meshes/gateLongPlateMesh.h"
 #include "meshes/gatePlateMesh.h"

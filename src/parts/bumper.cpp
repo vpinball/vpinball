@@ -4,6 +4,7 @@
 #include "bumper.h"
 
 #include "core/VPApp.h"
+#include "math/matrix.h"
 #include "meshes/bumperBaseMesh.h"
 #include "meshes/bumperCapMesh.h"
 #include "meshes/bumperRingMesh.h"

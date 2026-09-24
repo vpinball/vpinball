@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "LiveRenderContext.h"
 
+#include "math/matrix.h"
 #include "renderer/Renderer.h"
 #include "utils/color.h"
 

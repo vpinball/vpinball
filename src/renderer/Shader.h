@@ -39,6 +39,7 @@
 #endif
 
 #include <string>
+#include "math/matrix.h"
 #include "Sampler.h"
 
 class Material;

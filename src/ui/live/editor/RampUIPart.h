@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EditorUIPart.h"
+#include "math/matrix.h"
 #include "parts/ramp.h"
 
 namespace VPX::EditorUI
