@@ -53,7 +53,12 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Light>(
          m_part, "Intensity"s, //
          [](const Light* light) { return light->m_d.m_intensity; }, //
-         [](Light* light, float v) { light->m_d.m_intensity = v; }, PropertyPane::Unit::None, 1);
+         [](Light* light, float v)
+         {
+            light->m_d.m_intensity = v;
+            light->m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_d.m_state;
+         },
+         PropertyPane::Unit::None, 1);
       props.InputFloat<Light>(
          m_part, "Fade Up (ms)"s, //
          [](const Light* light) { return light->m_d.m_fadeSpeedUp > 0.1f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedUp : 100000.0f; }, //
@@ -209,6 +214,7 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
             [](Light* light, float v)
             {
                light->m_d.m_state = v;
+               light->m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_d.m_state;
                light->setInPlayState(v > 1.f ? (float)LightStateBlinking : v);
             },
             PropertyPane::Unit::Percent, 1);
