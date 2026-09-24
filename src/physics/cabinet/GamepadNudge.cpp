@@ -20,7 +20,7 @@ namespace VPX::Physics
 //
 // Cabinet physics model is a simplified 2D second order oscillator fitted on real machine behavior.
 // Measurements show that modern (1990-2020) real pinball machines, weighting around 113kg,
-// oscillate at around 11Hz for a side nudge and 5.5Hz for a front nudge. Damping has also been
+// oscillate at around 4.5Hz for a side nudge and 4.3Hz for a front nudge. Damping has also been
 // fitted to correspond to the observed decay of oscillation amplitude.
 //
 // Older machines used to be fairly lighter and the model could be improved for these.
@@ -109,8 +109,8 @@ void GamepadNudge::StepOneMillisecond()
 {
    // Convert stick position to acceleration. Completely magic values here, evaluated from tests.
    constexpr float g = 9.80665f;
-   const float xSensor = m_xSensor.GetValue() * (m_nudgeStrengthScale * (g * 0.5f));
-   const float ySensor = m_ySensor.GetValue() * (m_nudgeStrengthScale * (g * 0.5f));
+   const float xSensor = m_xSensor.GetValue() * (m_nudgeStrengthScale * (g * 0.7f));
+   const float ySensor = m_ySensor.GetValue() * (m_nudgeStrengthScale * (g * 0.7f));
 
    static bool m_isImpulseInProgress = false;
    static Vertex2D m_initialCabinetPosition;
