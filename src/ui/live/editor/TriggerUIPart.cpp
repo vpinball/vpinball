@@ -15,15 +15,10 @@ TriggerUIPart::TriggerUIPart(Trigger* trigger)
 TriggerUIPart::TransformMask TriggerUIPart::GetTransform(Matrix3D& transform)
 {
    const float height = m_part->GetPTable()->GetSurfaceHeight(m_part->m_d.m_szSurface, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y);
-   transform = Matrix3D::MatrixTranslate(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, height);
-   return TM_TransAny;
+   return GetCurveTransform(transform, height);
 }
 
-void TriggerUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
-{
-   const Vertex2D offset(pos.x - m_part->m_d.m_vCenter.x, pos.y - m_part->m_d.m_vCenter.y);
-   m_part->Translate(offset);
-}
+void TriggerUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) { SetCurveTransform(pos, scale, rot); }
 
 void TriggerUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {

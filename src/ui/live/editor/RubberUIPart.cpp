@@ -12,17 +12,11 @@ RubberUIPart::RubberUIPart(Rubber* rubber)
 {
 }
 
-RubberUIPart::TransformMask RubberUIPart::GetTransform(Matrix3D& transform)
-{
-   const Vertex2D& center = m_part->m_curve.GetCenter();
-   transform = Matrix3D::MatrixTranslate(center.x, center.y, m_part->m_d.m_height);
-   return TM_TransAny;
-}
+RubberUIPart::TransformMask RubberUIPart::GetTransform(Matrix3D& transform) { return GetCurveTransform(transform, m_part->m_d.m_height); }
 
 void RubberUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
-   const Vertex2D& center = m_part->m_curve.GetCenter();
-   m_part->m_curve.TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
+   SetCurveTransform(pos, scale, rot);
    m_part->m_d.m_height += pos.z - m_part->m_d.m_height;
 }
 

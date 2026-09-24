@@ -12,17 +12,11 @@ RampUIPart::RampUIPart(Ramp* ramp)
 {
 }
 
-RampUIPart::TransformMask RampUIPart::GetTransform(Matrix3D& transform)
-{
-   const Vertex2D& center = m_part->m_curve.GetCenter();
-   transform = Matrix3D::MatrixTranslate(center.x, center.y, 0.5f * (m_part->m_d.m_heightbottom + m_part->m_d.m_heighttop));
-   return TM_TransAny;
-}
+RampUIPart::TransformMask RampUIPart::GetTransform(Matrix3D& transform) { return GetCurveTransform(transform, 0.5f * (m_part->m_d.m_heightbottom + m_part->m_d.m_heighttop)); }
 
 void RampUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
-   const Vertex2D& center = m_part->m_curve.GetCenter();
-   m_part->m_curve.TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
+   SetCurveTransform(pos, scale, rot);
    const float pz = 0.5f * (m_part->m_d.m_heightbottom + m_part->m_d.m_heighttop);
    m_part->m_d.m_heightbottom += pos.z - pz;
    m_part->m_d.m_heighttop += pos.z - pz;

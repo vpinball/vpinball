@@ -16,24 +16,27 @@ FlasherUIPart::FlasherUIPart(Flasher* flasher)
 FlasherUIPart::TransformMask FlasherUIPart::GetTransform(Matrix3D& transform)
 {
    const Vertex2D center = m_part->GetCenter();
+   const Matrix3D scaleM = Matrix3D::MatrixScale(m_curveScale.x, m_curveScale.y, 1.f);
    if (m_part->m_desktopBackdrop)
    {
       // Backdrop flashers are flat, in the 2D backdrop XY plane (only in plane rotation applies)
-      transform = Matrix3D::MatrixRotateZ(ANGTORAD(m_part->m_d.m_rotZ)) * Matrix3D::MatrixTranslate(center.x, center.y, 0.f);
-      return static_cast<TransformMask>(TM_TransAny | TM_RotZ);
+      transform = scaleM * Matrix3D::MatrixRotateZ(ANGTORAD(m_part->m_d.m_rotZ)) * Matrix3D::MatrixTranslate(center.x, center.y, 0.f);
+      return static_cast<TransformMask>(TM_TransAny | TM_RotZ | TM_ScaleX | TM_ScaleY | TM_ScaleAll);
    }
    const Matrix3D trans = Matrix3D::MatrixTranslate(center.x, center.y, m_part->m_d.m_height);
    const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(m_part->m_d.m_rotX));
    const Matrix3D roty = Matrix3D::MatrixRotateY(ANGTORAD(m_part->m_d.m_rotY));
    const Matrix3D rotz = Matrix3D::MatrixRotateZ(ANGTORAD(m_part->m_d.m_rotZ));
-   transform = rotz * roty * rotx * trans;
-   return static_cast<TransformMask>(TM_TransAny | TM_RotAny);
+   transform = scaleM * rotz * roty * rotx * trans;
+   return static_cast<TransformMask>(TM_TransAny | TM_RotAny | TM_ScaleX | TM_ScaleY | TM_ScaleAll);
 }
 
 void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
    const Vertex2D center = m_part->GetCenter();
-   m_part->m_curve.TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
+   // In plane scaling is applied to the drag points (in the part local frame, before the render rotation)
+   SetCurveScale(scale);
+   m_part->Translate(Vertex2D { pos.x - center.x, pos.y - center.y });
    if (m_part->m_desktopBackdrop)
    {
       m_part->put_RotZ(rot.z);

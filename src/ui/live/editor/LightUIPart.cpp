@@ -15,30 +15,22 @@ LightUIPart::LightUIPart(Light* light)
 
 LightUIPart::TransformMask LightUIPart::GetTransform(Matrix3D& transform)
 {
+   // Backdrop lights are flat, in the 2D backdrop XY plane
    if (m_part->m_desktopBackdrop)
-   {
-      // Backdrop lights are flat, in the 2D backdrop XY plane
-      transform = Matrix3D::MatrixTranslate(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, 0.f);
-      return TM_TransAny;
-   }
+      return GetCurveTransform(transform, 0.f);
    const float height = m_part->GetPTable()->GetSurfaceHeight(m_part->m_d.m_szSurface, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y);
-   transform = Matrix3D::MatrixTranslate(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, height + m_part->m_d.m_height);
-   return TM_TransAny;
+   return GetCurveTransform(transform, height + m_part->m_d.m_height);
 }
 
 void LightUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
-   if (m_part->m_desktopBackdrop)
+   if (!m_part->m_desktopBackdrop)
    {
-      m_part->m_d.m_vCenter.x = pos.x;
-      m_part->m_d.m_vCenter.y = pos.y;
-      return;
+      const float pz = pos.z - m_part->GetPTable()->GetSurfaceHeight(m_part->m_d.m_szSurface, pos.x, pos.y);
+      m_part->m_d.m_bulbHaloHeight = m_part->m_d.m_bulbHaloHeight + (pz - m_part->m_d.m_height);
+      m_part->m_d.m_height = pz;
    }
-   const float pz = pos.z - m_part->GetPTable()->GetSurfaceHeight(m_part->m_d.m_szSurface, pos.x, pos.y);
-   m_part->m_d.m_bulbHaloHeight = m_part->m_d.m_bulbHaloHeight + (pz - m_part->m_d.m_height);
-   m_part->m_d.m_vCenter.x = pos.x;
-   m_part->m_d.m_vCenter.y = pos.y;
-   m_part->m_d.m_height = pz;
+   SetCurveTransform(pos, scale, rot);
 }
 
 void LightUIPart::RenderOverlay(const EditorRenderContext& ctx)
