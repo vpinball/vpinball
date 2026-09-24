@@ -61,15 +61,34 @@ void OutlinerPanel::Render(float topBarHeight)
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
    ImGui::Begin("OUTLINER", nullptr, window_flags);
-
-   const float clearFilterWidth = ImGui::CalcTextSize(ICON_FK_TIMES).x + ImGui::GetStyle().FramePadding.x * 2.0f;
-   ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - clearFilterWidth - ImGui::GetStyle().ItemSpacing.x);
-   ImGui::InputTextWithHint("##OutlinerFilter", "Name part filter", &m_filter);
-   ImGui::SameLine();
-   ImGui::BeginDisabled(m_filter.empty());
-   if (ImGui::Button(ICON_FK_TIMES "##ClearOutlinerFilter"))
-      m_filter.clear();
-   ImGui::EndDisabled();
+   {
+      const bool popStyle = m_syncToSelection;
+      if (popStyle)
+         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+      if (ImGui::Button(ICON_FK_LINK "##SyncTree"))
+      {
+         m_syncToSelection = !m_syncToSelection;
+         m_lastSyncedPart = nullptr; // Reveal the current selection on next render
+      }
+      if (popStyle)
+         ImGui::PopStyleColor();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Sync tree with selection");
+   }
+   {
+      ImGui::SameLine();
+      const float clearFilterWidth = ImGui::CalcTextSize(ICON_FK_TIMES).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+      ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - clearFilterWidth - ImGui::GetStyle().ItemSpacing.x);
+      ImGui::InputTextWithHint("##OutlinerFilter", "Name part filter", &m_filter);
+   }
+   {
+      ImGui::SameLine();
+      ImGui::BeginDisabled(m_filter.empty());
+      if (ImGui::Button(ICON_FK_TIMES "##ClearOutlinerFilter"))
+         m_filter.clear();
+      ImGui::EndDisabled();
+   }
+   ImGui::Separator();
 
    if (ImGui::TreeNodeEx("View Setups"))
    {
@@ -170,6 +189,9 @@ void OutlinerPanel::Render(float topBarHeight)
       vector<Node> stack;
       int outlinerItem = 0;
       const float eyeX = ImGui::GetContentRegionAvail().x;
+      // When 'sync tree with selection' is enabled, reveal the newly selected part in the tree
+      const std::shared_ptr<EditorUIPart> revealPart = (m_syncToSelection && editor.m_selection.GetPart() != m_lastSyncedPart) ? editor.m_selection.GetPart() : nullptr;
+      m_lastSyncedPart = editor.m_selection.GetPart();
       for (const auto &edit : editor.m_editables)
       {
          const PartGroup *parent = edit->GetEditable()->GetPartGroup();
@@ -193,7 +215,11 @@ void OutlinerPanel::Render(float topBarHeight)
          if (edit->GetEditable()->GetItemType() == eItemPartGroup)
          {
             PartGroup *group = static_cast<PartGroup *>(edit->GetEditable());
-            const bool opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowOverlap);
+            if (revealPart && revealPart->GetEditable()->IsChild(group))
+               ImGui::SetNextItemOpen(true);
+            const bool opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowOverlap | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0));
+            if (edit == revealPart && !ImGui::IsItemVisible())
+               ImGui::SetScrollHereY();
             if (editor.m_table->m_liveBaseTable == nullptr)
             {
                ImGui::SameLine(eyeX);
@@ -209,7 +235,11 @@ void OutlinerPanel::Render(float topBarHeight)
             const bool show = MatchesFilter(edit->GetEditable()->GetName())
                || std::ranges::any_of(stack, [&matchedGroups](const Node &node) { return node.group != nullptr && matchedGroups.contains(node.group); });
             if (parent == nullptr && stack.empty() && show)
+            {
+               if (revealPart && revealPart->GetEditable()->GetPartGroup() == nullptr)
+                  ImGui::SetNextItemOpen(true);
                stack.push_back({ nullptr, ImGui::TreeNodeEx("[Live Objects]", ImGuiTreeNodeFlags_AllowOverlap) });
+            }
             if (!stack.empty() && stack.back().opened)
             {
                Selection sel(edit);
@@ -232,6 +262,8 @@ void OutlinerPanel::Render(float topBarHeight)
                         editor.m_outlinerAnchor = edit;
                      }
                   }
+                  if (edit == revealPart && !ImGui::IsItemVisible())
+                     ImGui::SetScrollHereY();
                   IEditable *editable = edit->GetEditable();
                   if (editable && editor.m_table->m_liveBaseTable == nullptr)
                   {
