@@ -258,11 +258,6 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowMode == Windowed && SDL_GetCurrentVideoDriver() == "wayland"sv)
       SDL_SetWindowHitTest(m_nwnd, [](SDL_Window*, const SDL_Point*, void*) -> SDL_HitTestResult { return SDL_HITTEST_DRAGGABLE; }, nullptr);
 
-   props = SDL_GetWindowProperties(m_nwnd);
-   m_wcgDisplay = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
-   m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
-   m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
-
    // Define exclusive fullscreen mode if any, then switch to fullscreen
    SDL_SetWindowFullscreenMode(m_nwnd, fullscreenDisplayMode);
    if (m_windowMode != WindowMode::Windowed)
@@ -277,6 +272,14 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       PLOGE << "Failed to get pixel density, defaulting to 1";
       m_pixelDensity = 1.f;
    }
+
+   // Needs to happen after the fullscreen switch: SDL derives all three from the display the window is on, and
+   // a window that has not been placed yet, may report HDR as disabled. NOTE: These are a snapshot, as
+   // SDL_EVENT_WINDOW_HDR_STATE_CHANGED is not handled yet, so toggling HDR in the OS,etc, needs a VPX/player restart
+   props = SDL_GetWindowProperties(m_nwnd);
+   m_wcgDisplay = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
+   m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+   m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 
    if (auto icon = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "vpinball.png")); icon)
    {

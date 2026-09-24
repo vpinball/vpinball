@@ -383,7 +383,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    // somewhat deprecated anyway as some OS do not offer it at all, and others implement it through GPU multiplane overlay to actually achieve zero-overhead backbuffer flips)
    assert(rd->m_outputWnd[0]->GetWindowMode() != VPX::Window::WindowMode::ExclusiveFullscreen);
 
+   // Note: BGFX_CAPS_HDR10 below is a backend capability, not a display one, so the display state has to be
+   // checked as well: a 10 bit SDR display would otherwise be driven with PQ, and SDL then reports
+   // neither an SDR white point nor a headroom for the tonemapper to target, too
    const bool allowHDR10ColorSpace = true //
+      && rd->m_outputWnd[0]->IsWCGDisplay() // Display must be in HDR mode
       && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract // Disable WCG colorspace as it causes issues with video recording for the time being
       && !rd->m_isAnaglyph // Anaglyph stereo requires an sRGB colorspace
       && !g_pplayer->IsVR(); // Not yet supported (not sure if there exists HDR headset)
@@ -2040,7 +2044,11 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #if defined(ENABLE_BGFX)
    if ((bgfx::getCaps()->supported & BGFX_CAPS_SWAP_CHAIN) == 0)
       return;
+   // HDR10 is not requested here, but SelectBackBufferFormat reuses the format of any backbuffer
+   // already on this display, so the playfield window can still hand back RGB10A2 - and BGFX derives
+   // the swapchain colorspace from the format. Such a window is HDR10/BT.2100 and has to report it
    bgfx::TextureFormat::Enum bgfxFormat = SelectBackBufferFormat(wnd, bgfx::TextureFormat::Count, false);
+   const bool wcgBackBuffer = bgfxFormat == bgfx::TextureFormat::RGB10A2;
    colorFormat vpxFormat = BGFXtoVPXTextureFormat(bgfxFormat);
    PLOGD << "Creating BGFX swap chain for window " << SDL_GetWindowTitle(wnd->GetCore()) << " (" << wnd->GetPixelWidth() << 'x' << wnd->GetPixelHeight() << " "
          << bimg::getName(bimg::TextureFormat::Enum(bgfxFormat)) << ')';
@@ -2080,7 +2088,11 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(swapChainDesc);
    m_outputWnd.push_back(wnd);
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfxFormat, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
-      "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), vpxFormat));
+      "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), vpxFormat), wcgBackBuffer);
+   // Ancillary windows compose directly in sRGB (see Renderer::RenderAncillaryWindow), which only suits an sRGB backbuffer
+   // FIXME Correcting it needs the per window tonemapping pass, still disabled
+   if (wcgBackBuffer)
+      PLOGW << "Window " << SDL_GetWindowTitle(wnd->GetCore()) << " shares an HDR10 display with the playfield window, its content may be too bright";
 #endif
 }
 
