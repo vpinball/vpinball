@@ -81,10 +81,11 @@ using namespace VPX;
 #define WIN32_PLAYER_WND_CLASSNAME _T("VPPlayer")
 
 
-Player::Player(PinTable *const table, const PlayMode playMode)
+Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loadProgress)
    : m_ptable(table)
    , m_playMode(playMode)
    , m_pluginAPI(m_pluginManager)
+   , m_loadProgress(loadProgress)
    , m_osThreadId(std::this_thread::get_id())
    , m_backglassOutput(VPXWindowId::VPXWINDOW_Backglass)
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
@@ -174,15 +175,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_renderProfiler = new FrameProfiler();
    m_renderProfiler->NewFrame(0);
    g_frameProfiler = &m_logicProfiler;
-
-   // Only show the progress dialog in the not minimized Win32 editor mode
-   #ifdef VPX_ENABLE_WIN32_EDITOR
-   if (g_pvp && !g_pvp->IsIconic())
-   {
-      m_loadProgress.Create(g_pvp->GetHwnd());
-      m_loadProgress.ShowWindow(SW_SHOWNORMAL);
-   }
-   #endif
 
    m_loadProgress.SetProgress("Creating Player..."s, 0.f);
 
@@ -395,10 +387,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    FinishFrame();
    LockRenderThread();
    m_renderer->DisableStaticPrePass(false);
-
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   m_loadProgress.Destroy();
-#endif
 
    // Show the window (before rendering static part to avoid delaying too long)
    m_playfieldWnd->Show();
@@ -1233,9 +1221,6 @@ Player::~Player()
    m_changed_vht.clear();
 
 #ifdef VPX_ENABLE_WIN32_EDITOR
-   if (m_loadProgress.IsWindow())
-      m_loadProgress.Destroy();
-
    // Close application if requested
    if (appExitRequested && g_pvp)
       g_pvp->PostMessage(WM_CLOSE, 0, 0);

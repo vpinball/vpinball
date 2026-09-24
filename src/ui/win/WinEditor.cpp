@@ -33,6 +33,7 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableMDI.h"
+#include "ui/win/ProgressDialog.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/worker.h"
@@ -871,13 +872,21 @@ void WinEditor::DoPlay(const int playMode)
       m_table_played_via_SelectTableOnStart = false;
       return;
    }
+   // Only show the load progress dialog when the editor window is not minimized
+   ProgressDialog loadProgress;
+   if (!IsIconic())
+   {
+      loadProgress.Create(GetHwnd());
+      loadProgress.ShowWindow(SW_SHOWNORMAL);
+   }
    switch (playMode)
    {
-   case 0: new Player(live_table, Player::PlayMode::Play); break;
-   case 1: new Player(live_table, Player::PlayMode::EditPOV); break;
-   case 2: new Player(live_table, Player::PlayMode::LiveEdit); break;
+   case 0: new Player(live_table, Player::PlayMode::Play, loadProgress); break;
+   case 1: new Player(live_table, Player::PlayMode::EditPOV, loadProgress); break;
+   case 2: new Player(live_table, Player::PlayMode::LiveEdit, loadProgress); break;
    default: assert(false); break;
    }
+   loadProgress.Destroy();
 
    if (g_pplayer == nullptr)
    {

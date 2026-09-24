@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <wxx_controls.h> // Add CSlider
+
 #include "audio/AudioPlayer.h"
 
 class PinTableWnd;

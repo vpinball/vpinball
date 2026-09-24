@@ -8,6 +8,7 @@
 #include "core/VPApp.h"
 #include "parts/Material.h"
 #include "parts/pintable.h"
+#include "ui/LoadProgress.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 #ifdef VPX_ENABLE_WIN32_EDITOR
@@ -159,7 +160,8 @@ PlayTableCommand::PlayTableCommand(const std::filesystem::path& tableFilename)
 void PlayTableCommand::Execute()
 {
    CComObject<PinTable>* table = LoadTable();
-   auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
+   LoadProgress loadProgress;
+   auto player = std::make_unique<Player>(table, Player::PlayMode::Play, loadProgress);
    {
       ScopedUserMessageSink msgSink(player->m_liveUI);
       player->GameLoop();
@@ -190,7 +192,8 @@ PovEditCommand::PovEditCommand(const std::filesystem::path& tableFilename)
 void PovEditCommand::Execute()
 {
    CComObject<PinTable>* table = LoadTable();
-   auto player = std::make_unique<Player>(table, Player::PlayMode::EditPOV);
+   LoadProgress loadProgress;
+   auto player = std::make_unique<Player>(table, Player::PlayMode::EditPOV, loadProgress);
    {
       ScopedUserMessageSink msgSink(player->m_liveUI);
       player->GameLoop();
@@ -282,7 +285,8 @@ void LiveEditCommand::Execute()
    if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName))
       table->SetSettingsFileName(m_tableIniFileName);
 
-   auto player = std::make_unique<Player>(table, Player::PlayMode::FullEdit);
+   LoadProgress loadProgress;
+   auto player = std::make_unique<Player>(table, Player::PlayMode::FullEdit, loadProgress);
    {
       ScopedUserMessageSink msgSink(player->m_liveUI);
       if (loadFailed)
@@ -307,7 +311,8 @@ void CaptureAttractCommand::Execute()
    PLOGI << "Video capture mode requested for " << m_nFrames << " frames at " << m_framesPerSecond << "FPS from table '" << m_tableFilename << "' " << (m_cutToLoop ? "with " : "without ")
          << "loop truncation";
    CComObject<PinTable>* table = LoadTable();
-   auto player = std::make_unique<Player>(table, Player::PlayMode::CaptureAttract);
+   LoadProgress loadProgress;
+   auto player = std::make_unique<Player>(table, Player::PlayMode::CaptureAttract, loadProgress);
    ScopedUserMessageSink msgSink(nullptr); // Batch capture: report user messages to the log only
    player->m_nFrameToCapture = m_nFrames;
    player->m_frameCaptureFPS = m_framesPerSecond;

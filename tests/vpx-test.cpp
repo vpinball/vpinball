@@ -144,7 +144,8 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    CHECK(SUCCEEDED(hr));
    CHECK(feedback.m_isMonotonic);
    CHECK(feedback.m_lastProgress <= feedback.m_length);
-   auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
+   LoadProgress loadProgress;
+   auto player = std::make_unique<Player>(table, Player::PlayMode::Play, loadProgress);
    const unsigned int onPrepareFrameMsgId = player->m_pluginManager.GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    player->m_pluginManager.GetMsgAPI().SubscribeMsg(player->m_pluginAPI.GetVPXEndPointId(), onPrepareFrameMsgId, onPrepareFrame, &state);
    player->GameLoop();

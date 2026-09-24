@@ -5,22 +5,21 @@
 #include <wxx_controls.h>
 #include <wxx_dialog.h>
 
-// Shows table load progress in a dialog. Offers the same SetProgress/GetProgress pair as LoadProgress, which is
-// what Player falls back to when built without this editor, see Player::m_loadProgress
-class ProgressDialog final : public CDialog
+#include "ui/LoadProgress.h"
+
+// Shows table load progress in a dialog: the LoadProgress implementation the Win32 editor hands to Player
+class ProgressDialog final : public CDialog, public LoadProgress
 {
 public:
    ProgressDialog();
 
-   void SetProgress(const string &text, const float value = -1.f);
-   float GetProgress() const { return m_progress; }
+   void SetProgress(const string &text, const float value = -1.f) override;
 
 protected:
    BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
    BOOL OnInitDialog() override;
 
 private:
-   float m_progress = 0.f;
    CProgressBar m_progressBar;
    CStatic m_progressName;
 };
