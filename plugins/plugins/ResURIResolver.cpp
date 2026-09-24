@@ -33,7 +33,11 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
       m_segSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<SegSrcId>>(
          &m_msgAPI, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG,
          nullptr, // No filtering
-         [this]() { m_segCache.clear(); },
+         [this]()
+         {
+            m_segCache.clear();
+            m_subSegSources.clear();
+         },
          nullptr); // No setup
       m_segSources->Subscribe();
    }
@@ -225,11 +229,11 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
                   {
                      if (try_parse_int(subIdPart->second, subId) && subId < static_cast<int>(segSource->nElements))
                      {
-                        SegSrcId subSegSrc = *segSource;
+                        SegSrcId &subSegSrc = m_subSegSources.emplace_back(*segSource);
                         subSegSrc.GetState = nullptr;
                         subSegSrc.nElements = 1;
                         subSegSrc.elementType[0] = segSource->elementType[subId];
-                        lambda = [segSource, subSegSrc, subId](const string &)
+                        lambda = [segSource, &subSegSrc, subId](const string &)
                         {
                            SegDisplayFrame state = segSource->GetState(segSource->callContext);
                            return SegDisplayState { &subSegSrc, { state.frameId, state.frame + subId * 16 } };
