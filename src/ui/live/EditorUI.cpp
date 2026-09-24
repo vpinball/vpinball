@@ -404,6 +404,41 @@ void EditorUI::RenderUI()
          else if (gizmoOperation == ImGuizmo::SCALE)
             gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Y);
       }
+      else if (m_camMode == ViewMode::EditorCam)
+      {
+         // Predefined views are axis aligned 2D views: restrict gizmo operations to the view plane
+         switch (m_predefinedView)
+         {
+         case EditorUI::PredefinedView::None: break;
+         case EditorUI::PredefinedView::Left:
+         case EditorUI::PredefinedView::Right:
+            if (gizmoOperation == ImGuizmo::TRANSLATE)
+               gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::TRANSLATE_Y | ImGuizmo::TRANSLATE_Z);
+            else if (gizmoOperation == ImGuizmo::ROTATE)
+               gizmoOperation = ImGuizmo::ROTATE_X;
+            else if (gizmoOperation == ImGuizmo::SCALE)
+               gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::SCALE_Y | ImGuizmo::SCALE_Z);
+            break;
+         case EditorUI::PredefinedView::Top:
+         case EditorUI::PredefinedView::Bottom:
+            if (gizmoOperation == ImGuizmo::TRANSLATE)
+               gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::TRANSLATE_X | ImGuizmo::TRANSLATE_Y);
+            else if (gizmoOperation == ImGuizmo::ROTATE)
+               gizmoOperation = ImGuizmo::ROTATE_Z;
+            else if (gizmoOperation == ImGuizmo::SCALE)
+               gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Y);
+            break;
+         case EditorUI::PredefinedView::Front:
+         case EditorUI::PredefinedView::Back:
+            if (gizmoOperation == ImGuizmo::TRANSLATE)
+               gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::TRANSLATE_X | ImGuizmo::TRANSLATE_Z);
+            else if (gizmoOperation == ImGuizmo::ROTATE)
+               gizmoOperation = ImGuizmo::ROTATE_Y;
+            else if (gizmoOperation == ImGuizmo::SCALE)
+               gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Z);
+            break;
+         }
+      }
       ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), gizmoOperation, m_gizmoMode, (float *)(transform.m));
       if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
       {
