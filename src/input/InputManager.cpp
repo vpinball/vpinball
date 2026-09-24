@@ -25,13 +25,14 @@
 #endif
 
 
-InputManager::InputManager(Player* player)
+InputManager::InputManager(Player* player, Settings& appSettings)
    : m_player(player)
+   , m_appSettings(appSettings)
    , m_onActionEventMsgId(m_player->m_pluginAPI.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED))
    , m_keyboardDeviceId(RegisterDevice("Key"s, InputManager::DeviceType::Keyboard, "Keyboards"s)) // Base device: merge inputs from all connected keyboards
    , m_mouseDeviceId(RegisterDevice("Mouse"s, InputManager::DeviceType::Mouse, "Mouse"s)) // Base device: merge inputs from all connected mice
 {
-   const Settings& settings = g_app->GetSettings();
+   const Settings& settings = m_appSettings;
 
    m_inputDevices[m_keyboardDeviceId].m_connected = true;
    m_inputDevices[m_mouseDeviceId].m_connected = true;
@@ -67,14 +68,14 @@ InputManager::InputManager(Player* player)
    addTouchRegion(RECT { 0, 90, 30, 100 }, GetStartActionId());
    addTouchRegion(RECT { 70, 90, 100, 100 }, GetLaunchBallActionId());
 
-   m_rumbleMode = g_app->GetSettings().GetPlayer_RumbleMode();
-   m_rumbleFlipperContact = g_app->GetSettings().GetPlayer_RumbleFlipperContact();
-   m_rumbleBumper = g_app->GetSettings().GetPlayer_RumbleBumper();
-   m_rumbleSlingshot = g_app->GetSettings().GetPlayer_RumbleSlingshot();
-   m_rumblePlunger = g_app->GetSettings().GetPlayer_RumblePlunger();
-   m_rumbleFlipperButton = g_app->GetSettings().GetPlayer_RumbleFlipperButton();
-   m_rumbleNudge = g_app->GetSettings().GetPlayer_RumbleNudge();
-   m_rumbleBallBall = g_app->GetSettings().GetPlayer_RumbleBallBall();
+   m_rumbleMode = m_appSettings.GetPlayer_RumbleMode();
+   m_rumbleFlipperContact = m_appSettings.GetPlayer_RumbleFlipperContact();
+   m_rumbleBumper = m_appSettings.GetPlayer_RumbleBumper();
+   m_rumbleSlingshot = m_appSettings.GetPlayer_RumbleSlingshot();
+   m_rumblePlunger = m_appSettings.GetPlayer_RumblePlunger();
+   m_rumbleFlipperButton = m_appSettings.GetPlayer_RumbleFlipperButton();
+   m_rumbleNudge = m_appSettings.GetPlayer_RumbleNudge();
+   m_rumbleBallBall = m_appSettings.GetPlayer_RumbleBallBall();
 
    // Load settings
    LoadDevicesFromSettings();
@@ -82,9 +83,9 @@ InputManager::InputManager(Player* player)
    for (const auto& action : m_inputActions)
       action->LoadMapping(settings);
 
-   m_nudgeHandler = std::make_unique<VPX::Physics::NudgeHandler>(this);
+   m_nudgeHandler = std::make_unique<VPX::Physics::NudgeHandler>(this, m_appSettings);
 
-   m_plungerHandler = std::make_unique<PlungerHandler>(this);
+   m_plungerHandler = std::make_unique<PlungerHandler>(this, m_appSettings);
 
    // Initialize device handlers
    m_inputHandlers.push_back(std::make_unique<SDLInputHandler>(*this));
@@ -200,7 +201,7 @@ void InputManager::ClearDeviceMappings(uint16_t deviceId)
    for (const auto& action : m_inputActions)
    {
       action->UnmapDevice(deviceId);
-      action->SaveMapping(g_app->GetSettings());
+      action->SaveMapping(m_appSettings);
    }
    m_plungerHandler->UnmapDevice(deviceId);
    m_nudgeHandler->UnmapDevice(deviceId);
@@ -247,7 +248,7 @@ void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
       void MapAction(const vector<ButtonMapping>& input, unsigned int action) override
       {
          m_manager.m_inputActions[action]->AddMapping(input);
-         m_manager.m_inputActions[action]->SaveMapping(g_app->GetSettings());
+         m_manager.m_inputActions[action]->SaveMapping(m_manager.m_appSettings);
       }
       void MapPlunger(std::unique_ptr<PlungerSensor> sensor) override { m_manager.m_plungerHandler->AddSensor(sensor); }
       void MapNudge(std::unique_ptr<VPX::Physics::NudgeSensor> sensor) override { m_manager.m_nudgeHandler->AddSensor(sensor); }
@@ -260,7 +261,7 @@ void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
 
 void InputManager::LoadDevicesFromSettings()
 {
-   const Settings& settings = g_app->GetSettings();
+   const Settings& settings = m_appSettings;
    std::istringstream deviceStream(settings.GetInput_Devices());
    std::string deviceSettingId;
    while (std::getline(deviceStream, deviceSettingId, ';'))
@@ -304,7 +305,7 @@ void InputManager::LoadDevicesFromSettings()
 
 void InputManager::SaveDevicesToSettings() const
 {
-   Settings& settings = g_app->GetSettings();
+   Settings& settings = m_appSettings;
    std::stringstream deviceList;
    bool first = true;
    for (const auto& device : m_inputDevices)
@@ -482,7 +483,7 @@ void InputManager::ProcessInput()
          if (!device.m_hasPendingLayoutApply)
             continue;
          const auto noAutoLayoutId = Settings::GetRegistry().GetPropertyId("Input"s, "Device." + device.m_settingsId + ".NoAutoLayout").value();
-         if (g_app->GetSettings().GetBool(noAutoLayoutId))
+         if (m_appSettings.GetBool(noAutoLayoutId))
             device.m_hasPendingLayoutApply = false;
          else if (device.m_type == DeviceType::VRController)
          {
@@ -508,7 +509,7 @@ void InputManager::ProcessInput()
                       if (isOk)
                          ApplyDefaultDeviceMapping(deviceId);
                       if (isDontAskAnymore)
-                         g_app->GetSettings().Set(noAutoLayoutId, true, false);
+                         m_appSettings.Set(noAutoLayoutId, true, false);
                       m_hasPendingLayoutApply = false;
                       for (auto& device : m_inputDevices)
                       {

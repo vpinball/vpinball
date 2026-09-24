@@ -9,6 +9,7 @@
 #include "input/PhysicsSensor.h"
 #include "math/vector.h"
 
+class Settings;
 class PlungerSensor;
 class PlungerHandler;
 namespace VPX::Physics
@@ -23,7 +24,7 @@ class InputManager final
    , public SensorMapping::AxisInputEventManager
 {
 public:
-   InputManager(class Player* player);
+   InputManager(class Player* player, Settings& appSettings);
    InputManager(const InputManager&) = delete;
    InputManager& operator=(const InputManager&) = delete;
    ~InputManager() override;
@@ -195,6 +196,7 @@ public:
 
 private:
    class Player* m_player;
+   Settings& m_appSettings; // Input configuration is an application wide setting (not overridable per table)
 
    void CreateInputActions();
    InputAction* AddAction(std::unique_ptr<InputAction>&& action);

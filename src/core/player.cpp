@@ -90,7 +90,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    , m_backglassOutput(VPXWindowId::VPXWINDOW_Backglass)
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
-   , m_pininput(this)
+   , m_pininput(this, g_settingsService.GetAppSettings())
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
         table->GetSettings().GetPlayer_SoundDeviceBG(), table->GetSettings().GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(table->GetSettings().GetPlayer_Sound3D())))
    , m_resURIResolver(m_pluginManager.GetMsgAPI(), m_pluginAPI.GetVPXEndPointId(), true, true, true)

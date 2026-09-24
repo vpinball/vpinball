@@ -16,10 +16,11 @@
 namespace VPX::Physics
 {
 
-NudgeHandler::NudgeHandler(InputManager* inputManager)
+NudgeHandler::NudgeHandler(InputManager* inputManager, Settings& appSettings)
+   : m_appSettings(appSettings)
 {
-   const Settings& settings = g_app->GetSettings();
-   
+   const Settings& settings = m_appSettings;
+
    SetKeyboardNudgeMode((KeyboardNudgeMode)settings.GetPlayer_KeyboardNudgeMode());
 
    const int nNudgeSensors = settings.GetInput_NudgeSensorCount();
@@ -28,7 +29,7 @@ NudgeHandler::NudgeHandler(InputManager* inputManager)
       std::unique_ptr<NudgeSensor> sensor;
       AddSensor(sensor);
       auto typePropId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Mapping.Nudge{}.Type", i));
-      switch (g_app->GetSettings().GetInt(typePropId.value()))
+      switch (m_appSettings.GetInt(typePropId.value()))
       {
       case 0: sensor = std::make_unique<GamepadNudge>(inputManager); break;
       case 1: sensor = std::make_unique<CabinetNudgeSensor>(inputManager); break;
@@ -89,7 +90,7 @@ void NudgeHandler::SetKeyboardNudgeMode(KeyboardNudgeMode mode)
 {
    if (m_keyboardNudge != nullptr && m_keyboardNudgeMode == mode)
       return;
-   const float strength = m_keyboardNudge ? m_keyboardNudge->GetStrengthScale() : g_app->GetSettings().GetPlayer_KeyboardNudgeStrength();
+   const float strength = m_keyboardNudge ? m_keyboardNudge->GetStrengthScale() : m_appSettings.GetPlayer_KeyboardNudgeStrength();
    m_keyboardNudgeMode = mode;
    switch (m_keyboardNudgeMode)
    {
@@ -125,9 +126,9 @@ void NudgeHandler::AddSensor(std::unique_ptr<NudgeSensor>& sensor)
 
    if (sensor)
    {
-      sensor->Save(g_app->GetSettings(), sensorIndex);
-      g_app->GetSettings().SetInput_NudgeSensorCount(sensorIndex + 1, false);
-      g_app->GetSettings().Save();
+      sensor->Save(m_appSettings, sensorIndex);
+      m_appSettings.SetInput_NudgeSensorCount(sensorIndex + 1, false);
+      m_appSettings.Save();
    }
 
    m_sensors.push_back(std::move(sensor));
@@ -156,9 +157,9 @@ void NudgeHandler::RemoveSensor(int index) {
                   {
                      switch (Settings::GetRegistry().GetStoreType(propDef->m_type))
                      {
-                     case VPX::Properties::PropertyRegistry::StoreType::Float: g_app->GetSettings().Set(idNew, g_app->GetSettings().GetFloat(id), false); break;
-                     case VPX::Properties::PropertyRegistry::StoreType::Int: g_app->GetSettings().Set(idNew, g_app->GetSettings().GetInt(id), false); break;
-                     case VPX::Properties::PropertyRegistry::StoreType::String: g_app->GetSettings().Set(idNew, g_app->GetSettings().GetString(id), false); break;
+                     case VPX::Properties::PropertyRegistry::StoreType::Float: m_appSettings.Set(idNew, m_appSettings.GetFloat(id), false); break;
+                     case VPX::Properties::PropertyRegistry::StoreType::Int: m_appSettings.Set(idNew, m_appSettings.GetInt(id), false); break;
+                     case VPX::Properties::PropertyRegistry::StoreType::String: m_appSettings.Set(idNew, m_appSettings.GetString(id), false); break;
                      }
                      break;
                   }
@@ -168,8 +169,8 @@ void NudgeHandler::RemoveSensor(int index) {
       }
    }
    m_sensors.erase(m_sensors.begin() + index);
-   g_app->GetSettings().SetInput_NudgeSensorCount(static_cast<int>(m_sensors.size()), false);
-   g_app->GetSettings().Save();
+   m_appSettings.SetInput_NudgeSensorCount(static_cast<int>(m_sensors.size()), false);
+   m_appSettings.Save();
 }
 
 bool NudgeHandler::HasSensor(const std::unique_ptr<NudgeSensor>& sensor) const

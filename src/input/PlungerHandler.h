@@ -4,6 +4,7 @@
 #include "math/vector.h"
 #include "PlungerKalmanFilter.h"
 
+class Settings;
 class InputManager;
 class PhysicsSensor;
 class PlungerSensor;
@@ -12,7 +13,7 @@ class PlungerSensor;
 class PlungerHandler final
 {
 public:
-   PlungerHandler(InputManager* inputManager);
+   PlungerHandler(InputManager* inputManager, Settings& appSettings);
 
    void StepOneMillisecond();
 
@@ -36,6 +37,7 @@ public:
    void SetExternalPlunger(bool enableOverride, const float velocity, const float displacement);
 
 private:
+   Settings& m_appSettings; // Sensor mapping is an application wide setting (not overridable per table)
    vector<std::unique_ptr<PlungerSensor>> m_sensors;
 
    bool m_isPullBackAndRetract = false; // enable 1s retract phase for button/key plunger
