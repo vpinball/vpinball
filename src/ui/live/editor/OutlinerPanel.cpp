@@ -220,6 +220,14 @@ void OutlinerPanel::Render(float topBarHeight)
             const bool opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowOverlap | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0));
             if (edit == revealPart && !ImGui::IsItemVisible())
                ImGui::SetScrollHereY();
+            if (ImGui::BeginPopupContextItem())
+            {
+               if (ImGui::MenuItem("Select"))
+                  editor.SetSelection(Selection(edit));
+               if (ImGui::MenuItem("Select Contents"))
+                  editor.SelectPartsInGroup(group);
+               ImGui::EndPopup();
+            }
             if (editor.m_table->m_liveBaseTable == nullptr)
             {
                ImGui::SameLine(eyeX);

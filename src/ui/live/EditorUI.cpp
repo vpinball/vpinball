@@ -1364,6 +1364,20 @@ void EditorUI::SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part)
    m_selection = Selection(part);
 }
 
+void EditorUI::SelectPartsInGroup(const PartGroup *group)
+{
+   // Select all the parts contained in the given group (and in its sub groups, recursively)
+   m_multiSel.clear();
+   for (const auto &uiPart : m_editables)
+   {
+      IEditable *const editable = uiPart->GetEditable();
+      if (editable->GetItemType() != eItemPartGroup && editable->IsChild(group) && (editable->m_desktopBackdrop == (m_camMode == ViewMode::DesktopBackdrop)))
+         m_multiSel.push_back(uiPart);
+   }
+   m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+   m_outlinerAnchor.reset();
+}
+
 void EditorUI::RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const
 {
    // Compute mouse position in clip space
