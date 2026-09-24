@@ -1293,6 +1293,7 @@ void EditorUI::RestoreUndoSelection(const UndoSelectionState &state)
    case Selection::S_RENDERPROBE:
       m_selection = std::ranges::find(m_table->GetRenderProbeList(), state.selection.GetProbe()) != m_table->GetRenderProbeList().end() ? state.selection : Selection();
       break;
+   case Selection::S_SOUND: m_selection = std::ranges::find(m_table->m_vsound, state.selection.GetSound()) != m_table->m_vsound.end() ? state.selection : Selection(); break;
    default: m_selection = state.selection; break; // S_NONE, S_CAMERA
    }
    m_outlinerAnchor = resolve(state.outlinerAnchor);

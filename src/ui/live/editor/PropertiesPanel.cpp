@@ -3,7 +3,10 @@
 #include "core/stdafx.h"
 #include "PropertiesPanel.h"
 
+#include "audio/AudioPlayer.h"
+#include "core/player.h"
 #include "parts/Material.h"
+#include "parts/Sound.h"
 #include "parts/primitive.h"
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
@@ -42,7 +45,8 @@ void PropertiesPanel::Render(float topBarHeight)
    case EditorUI::Units::Metric: props.SetLengthUnit(PropertyPane::Unit::Millimeters); break;
    case EditorUI::Units::Imperial: props.SetLengthUnit(PropertyPane::Unit::Inches); break;
    }
-   if (editor.IsInspectMode() && editor.m_selection.GetType() != Selection::S_IMAGE) // Images are shared between live and startup instance, so they do not have 2 states
+   if (editor.IsInspectMode() && editor.m_selection.GetType() != Selection::S_IMAGE
+      && editor.m_selection.GetType() != Selection::S_SOUND) // Images & sounds are shared between live and startup instance, so they do not have 2 states
    {
       if (ImGui::BeginTabBar("Startup/Live", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
       {
@@ -69,6 +73,7 @@ void PropertiesPanel::Render(float topBarHeight)
                case Selection::S_CAMERA: CameraProperties(props, editor.m_selection.GetCamera()); break;
                case Selection::S_MATERIAL: MaterialProperties(props, editor.m_selection.GetMaterial()); break;
                case Selection::S_RENDERPROBE: RenderProbeProperties(props, editor.m_selection.GetProbe()); break;
+               case Selection::S_SOUND: SoundProperties(props, editor.m_selection.GetSound()); break;
                }
                ImGui::EndTabItem();
             }
@@ -105,6 +110,7 @@ void PropertiesPanel::Render(float topBarHeight)
       case Selection::S_CAMERA: CameraProperties(props, editor.m_selection.GetCamera()); break;
       case Selection::S_MATERIAL: MaterialProperties(props, editor.m_selection.GetMaterial()); break;
       case Selection::S_RENDERPROBE: RenderProbeProperties(props, editor.m_selection.GetProbe()); break;
+      case Selection::S_SOUND: SoundProperties(props, editor.m_selection.GetSound()); break;
       }
    }
 
@@ -659,4 +665,114 @@ void PropertiesPanel::MaterialProperties(PropertyPane &props, Material *material
    }
 }
 
+
+void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
+{
+   EditorUI &editor = m_editor;
+   VPX::AudioPlayer *const audioPlayer = editor.m_player->m_audioPlayer.get();
+
+   // Track the playback state of the selected sound: playback commands are dispatched asynchronously
+   // so the button keeps the "stop" state until playback is actually observed, and reverts to "play"
+   // when the sound reaches its end.
+   if (m_playingSound != sound)
+   {
+      m_playingSound = nullptr;
+      m_playingSoundObserved = false;
+   }
+   const bool playing = audioPlayer && audioPlayer->IsSoundPlaying(sound);
+   m_playingSoundObserved |= playing;
+   if (m_playingSoundObserved && !playing)
+   {
+      m_playingSound = nullptr;
+      m_playingSoundObserved = false;
+   }
+   const bool isPlaying = playing || (m_playingSound == sound);
+
+   props.Header(
+      "Sound"s, [sound]() { return MakeWString(sound->GetName()); },
+      [&editor, sound](const wstring &v)
+      {
+         sound->SetName(MakeString(v));
+         editor.m_table->SetNonUndoableDirty(eSaveDirty);
+      });
+
+   ImGui::BeginDisabled(audioPlayer == nullptr);
+   if (ImGui::Button(isPlaying ? (ICON_FK_STOP " Stop"s).c_str() : (ICON_FK_PLAY " Play"s).c_str()))
+   {
+      if (isPlaying)
+      {
+         audioPlayer->StopSound(sound);
+         m_playingSound = nullptr;
+         m_playingSoundObserved = false;
+      }
+      else
+      {
+         int  volume = sound->GetVolume();
+         sound->SetVolume(100);
+         audioPlayer->PlaySound(sound, volume, 0.f, 0, 0.f, 0.f, 0, false, true);
+         m_playingSound = sound;
+         m_playingSoundObserved = false;
+         sound->SetVolume(volume);
+      }
+   }
+   ImGui::EndDisabled();
+
+   ImGui::BeginDisabled(editor.m_table->m_liveBaseTable != nullptr); // Disable edition in inspection mode as sounds are shared between startup & inspected table
+
+   if (props.BeginSection("Audio Positioning"s))
+   {
+      props.Combo<VPX::Sound>(
+         sound, "Output Target"s, vector { "Table"s, "Backglass"s }, //
+         [](const VPX::Sound *s) { return static_cast<int>(s->GetOutputTarget()); }, //
+         [&editor](VPX::Sound *s, int v)
+         {
+            s->SetOutputTarget(static_cast<VPX::SoundOutTypes>(v));
+            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+         });
+      props.InputFloat<VPX::Sound>(
+         sound, "Volume"s, //
+         [](const VPX::Sound *s) { return dequantizeSignedPercent(s->GetVolume()); }, //
+         [&editor](VPX::Sound *s, float v)
+         {
+            s->SetVolume(quantizeSignedPercent(v));
+            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+         },
+         PropertyPane::Unit::None, 2);
+      props.InputFloat<VPX::Sound>(
+         sound, "Pan"s, //
+         [](const VPX::Sound *s) { return dequantizeSignedPercent(s->GetPan()); }, //
+         [&editor](VPX::Sound *s, float v)
+         {
+            s->SetPan(quantizeSignedPercent(v));
+            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+         },
+         PropertyPane::Unit::None, 2);
+      props.InputFloat<VPX::Sound>(
+         sound, "Front/Rear Fade"s, //
+         [](const VPX::Sound *s) { return dequantizeSignedPercent(s->GetFrontRearFade()); }, //
+         [&editor](VPX::Sound *s, float v)
+         {
+            s->SetFrontRearFade(quantizeSignedPercent(v));
+            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+         },
+         PropertyPane::Unit::None, 2);
+      props.EndSection();
+   }
+
+   if (props.BeginSection("File"s))
+   {
+      if (m_soundInfoFor != sound)
+      {
+         m_soundInfoFor = sound;
+         m_soundInfo = audioPlayer ? audioPlayer->GetSoundInformations(sound) : std::optional<VPX::SoundSpec>();
+      }
+      ImGui::TextWrapped("%s", sound->GetImportPath().string().c_str());
+      ImGui::TextDisabled("Size: %s", SizeToReadable(sound->GetFileSize()).c_str());
+      if (m_soundInfo)
+         ImGui::TextDisabled("%.2f s, %u Hz, %u channel%s", m_soundInfo->lengthInSeconds, m_soundInfo->sampleFrequency, m_soundInfo->nChannels, m_soundInfo->nChannels > 1 ? "s" : "");
+      props.EndSection();
+   }
+
+   ImGui::EndDisabled();
+}
 }

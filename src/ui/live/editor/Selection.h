@@ -8,6 +8,10 @@
 class Material;
 class Texture;
 class RenderProbe;
+namespace VPX
+{
+class Sound;
+}
 
 namespace VPX::EditorUI
 {
@@ -15,7 +19,7 @@ namespace VPX::EditorUI
 class EditorUIPart;
 
 // Current editor selection: either nothing, a camera view setup, a material, an image,
-// an editable part (the active part of the multi selection) or a render probe.
+// an editable part (the active part of the multi selection), a render probe or a sound.
 struct Selection
 {
    enum SelectionType
@@ -25,7 +29,8 @@ struct Selection
       S_MATERIAL,
       S_IMAGE,
       S_EDITABLE,
-      S_RENDERPROBE
+      S_RENDERPROBE,
+      S_SOUND
    };
    struct CameraSel
    {
@@ -34,8 +39,8 @@ struct Selection
    };
 
    // Alternative order must match SelectionType (GetType relies on it)
-   using Payload = std::variant<std::monostate, CameraSel, Material *, Texture *, std::shared_ptr<EditorUIPart>, RenderProbe *>;
-   static_assert(std::variant_size_v<Payload> == S_RENDERPROBE + 1);
+   using Payload = std::variant<std::monostate, CameraSel, Material *, Texture *, std::shared_ptr<EditorUIPart>, RenderProbe *, VPX::Sound *>;
+   static_assert(std::variant_size_v<Payload> == S_SOUND + 1);
    Payload payload;
 
    Selection() = default;
@@ -53,6 +58,10 @@ struct Selection
    }
    Selection(RenderProbe *probe)
       : payload(probe)
+   {
+   }
+   Selection(VPX::Sound *sound)
+      : payload(sound)
    {
    }
    static Selection Camera(int viewSetup)
@@ -86,6 +95,11 @@ struct Selection
    RenderProbe *GetProbe() const
    {
       const auto *p = std::get_if<RenderProbe *>(&payload);
+      return p ? *p : nullptr;
+   }
+   VPX::Sound *GetSound() const
+   {
+      const auto *p = std::get_if<VPX::Sound *>(&payload);
       return p ? *p : nullptr;
    }
 

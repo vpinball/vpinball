@@ -528,6 +528,12 @@ void AudioPlayer::StopSound(Sound* sound)
       player->Stop();
 }
 
+bool AudioPlayer::IsSoundPlaying(const Sound* sound) const
+{
+   const auto it = m_soundPlayers.find(const_cast<Sound*>(sound));
+   return it != m_soundPlayers.end() && std::ranges::any_of(it->second, [](const auto& player) { return player->IsPlaying(); });
+}
+
 SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
 {
    SoundSpec specs {};
