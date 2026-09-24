@@ -1042,7 +1042,44 @@ void Player::SetTable(PinTable *const table, const TableTransition transition)
 {
    if (table == nullptr)
       return;
-   if (m_pendingTable != nullptr)
+   PinTable *const baseTable = m_ptable->m_liveBaseTable ? m_ptable->m_liveBaseTable : m_ptable;
+   if (table != baseTable && table->m_liveBaseTable != baseTable)
+   {
+      // Switching to a table of a different base table can not be done in-place: record the request and
+      // end this session, then the host takes it over (see TakeTableSwitch) and creates a new player
+      if (transition == TableTransition::Stack)
+      {
+         PLOGE << "Player::SetTable: stacking a session is not supported for tables of a different base table";
+         table->Release(); // Release the adopted reference
+         return;
+      }
+      if (m_pendingSwitchTable != nullptr)
+      {
+         PLOGE << "Player::SetTable: a table switch is already pending, dropping the new request";
+         table->Release(); // Release the adopted reference
+         return;
+      }
+      if (m_closing != CS_PLAYING && m_closing != CS_USER_INPUT)
+      {
+         // The session is already ending: the request can not be honored, drop it
+         table->Release(); // Release the adopted reference
+         return;
+      }
+      if (m_pendingTable != nullptr) // A pending in-place transition is superseded by the session switch
+      {
+         m_pendingTable->Release();
+         m_pendingTable = nullptr;
+         m_pendingTableStack = false;
+      }
+      m_pendingTablePop = false; // A pending stacked session pop is superseded as well (the stack is released with the player)
+      m_pendingSwitchTable = table;
+      m_pendingSwitchMode = m_playMode;
+      // Set the closing state directly, bypassing SetCloseState's stacked session handling which would
+      // pop back to the previous table instead of ending the session
+      m_closing = CS_STOP_PLAY;
+      return;
+   }
+   if (m_pendingTable != nullptr || m_pendingSwitchTable != nullptr)
    {
       PLOGE << "Player::SetTable: a table switch is already pending, dropping the new request";
       table->Release(); // Release the adopted reference
@@ -1050,6 +1087,23 @@ void Player::SetTable(PinTable *const table, const TableTransition transition)
    }
    m_pendingTable = table;
    m_pendingTableStack = (transition == TableTransition::Stack);
+}
+
+PinTable *Player::TakeTableSwitch(PlayMode &playMode)
+{
+   playMode = m_pendingSwitchMode;
+   PinTable *const table = m_pendingSwitchTable;
+   m_pendingSwitchTable = nullptr;
+   if (table == nullptr)
+      return nullptr;
+   // Only honor the request if the session was ended for it: a later close request (e.g. QuitPlayer
+   // with CS_CLOSE_APP) overrides it and the table is released here
+   if (m_closing != CS_STOP_PLAY)
+   {
+      table->Release();
+      return nullptr;
+   }
+   return table;
 }
 
 void Player::SetCloseState(const CloseState state)
@@ -1179,6 +1233,11 @@ Player::~Player()
    {
       m_pendingTable->Release();
       m_pendingTable = nullptr;
+   }
+   if (m_pendingSwitchTable)
+   {
+      m_pendingSwitchTable->Release();
+      m_pendingSwitchTable = nullptr;
    }
 
    // Release plugin message Ids

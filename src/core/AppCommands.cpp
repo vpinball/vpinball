@@ -79,6 +79,32 @@ CComObject<PinTable>* TableBasedCommand::LoadTable()
 }
 
 
+// Runs consecutive player sessions on the given table, following the table switch requests made
+// through Player::SetTable with a table of a different base table (each switch ends the session and
+// restarts a new player on the requested table). The given reference on the table is adopted and
+// released by this function.
+static void RunPlayerSessions(PinTable* table, Player::PlayMode playMode, const std::function<void(Player*)>& onSessionStart = nullptr)
+{
+   while (table != nullptr)
+   {
+      PinTable* nextTable = nullptr;
+      {
+         LoadProgress loadProgress;
+         auto player = std::make_unique<Player>(table, playMode, loadProgress);
+         {
+            ScopedUserMessageSink msgSink(player->m_liveUI);
+            if (onSessionStart)
+               onSessionStart(player.get());
+            player->GameLoop();
+         }
+         nextTable = player->TakeTableSwitch(playMode);
+      }
+      table->Release();
+      table = nextTable;
+   }
+}
+
+
 ExportVBSCommand::ExportVBSCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
@@ -157,18 +183,7 @@ PlayTableCommand::PlayTableCommand(const std::filesystem::path& tableFilename)
 {
 }
 
-void PlayTableCommand::Execute()
-{
-   CComObject<PinTable>* table = LoadTable();
-   LoadProgress loadProgress;
-   auto player = std::make_unique<Player>(table, Player::PlayMode::Play, loadProgress);
-   {
-      ScopedUserMessageSink msgSink(player->m_liveUI);
-      player->GameLoop();
-   }
-   player = nullptr;
-   table->Release();
-}
+void PlayTableCommand::Execute() { RunPlayerSessions(LoadTable(), Player::PlayMode::Play); }
 
 
 AuditTableCommand::AuditTableCommand(const std::filesystem::path& tableFilename)
@@ -189,18 +204,7 @@ PovEditCommand::PovEditCommand(const std::filesystem::path& tableFilename)
 {
 }
 
-void PovEditCommand::Execute()
-{
-   CComObject<PinTable>* table = LoadTable();
-   LoadProgress loadProgress;
-   auto player = std::make_unique<Player>(table, Player::PlayMode::EditPOV, loadProgress);
-   {
-      ScopedUserMessageSink msgSink(player->m_liveUI);
-      player->GameLoop();
-   }
-   player = nullptr;
-   table->Release();
-}
+void PovEditCommand::Execute() { RunPlayerSessions(LoadTable(), Player::PlayMode::EditPOV); }
 
 
 #ifdef VPX_ENABLE_WIN32_EDITOR
@@ -285,16 +289,13 @@ void LiveEditCommand::Execute()
    if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName))
       table->SetSettingsFileName(m_tableIniFileName);
 
-   LoadProgress loadProgress;
-   auto player = std::make_unique<Player>(table, Player::PlayMode::FullEdit, loadProgress);
-   {
-      ScopedUserMessageSink msgSink(player->m_liveUI);
-      if (loadFailed)
-         player->m_liveUI->PushNotification("Failed to load table '" + m_tableFilename.string() + "', starting with a new table"s, 10000);
-      player->GameLoop();
-   }
-   player = nullptr;
-   table->Release();
+   bool notifyLoadFailed = loadFailed;
+   RunPlayerSessions(table, Player::PlayMode::FullEdit,
+      [&](Player* player)
+      {
+         if (std::exchange(notifyLoadFailed, false))
+            player->m_liveUI->PushNotification("Failed to load table '" + m_tableFilename.string() + "', starting with a new table"s, 10000);
+      });
 }
 
 

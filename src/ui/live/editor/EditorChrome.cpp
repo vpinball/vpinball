@@ -38,6 +38,8 @@ void EditorChrome::RenderMenuBar()
    {
       if (!editor.IsInspectMode() && ImGui::BeginMenu("File"))
       {
+         if (ImGui::MenuItem("Load..."))
+            editor.LoadTable();
          if (ImGui::MenuItem("Save", "Ctrl+S"))
             editor.SaveTable();
          if (ImGui::MenuItem("Save As..."))

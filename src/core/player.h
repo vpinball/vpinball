@@ -79,18 +79,27 @@ public:
    bool IsEditorMode() const { return m_playMode == PlayMode::FullEdit; }
    PlayMode m_playMode;
 
-   // Request to replace the played table with a new one. The transition is performed at the beginning
-   // of the next game loop iteration, so it is safe to call this at any time (including from a UI or a
-   // script callback). The given reference on the table is adopted by the player.
-   // For the time being, only tables of a same base table / live copy pair are supported (i.e. the new
-   // table must be a shallow copy created with PinTable::CopyForPlay, or the base table of one).
+   // Request to replace the played table with a new one. The given reference on the table is adopted by
+   // the player. It is safe to call this at any time (including from a UI or a script callback).
+   // - Tables of the same base table / live copy pair (i.e. a shallow copy created with
+   //   PinTable::CopyForPlay, or the base table of one) are swapped in-place at the beginning of the
+   //   next game loop iteration.
+   // - Tables of a different base table require recreating the player: the request is recorded and the
+   //   session is ended, then the host takes the request over with TakeTableSwitch and creates a new
+   //   player. Only Replace is supported in this case (a suspended session can not survive the player
+   //   destruction).
    enum class TableTransition
    {
       Replace, // Discard the current table session and switch to the new table
-      Stack    // Suspend the current table session and switch to the new table (restored when the new session ends)
+      Stack    // Suspend the current table session and switch to the new table (restored when the new session ends, same base table / live copy pair only)
    };
    void SetTable(PinTable *table, TableTransition transition);
    bool HasStackedTableSession() const { return !m_tableStack.empty(); }
+
+   // To be called by the host after the game loop has ended: if the session was ended by a SetTable
+   // request for a table of a different base table, returns that table (the caller adopts its
+   // reference) and the play mode to use for its session. Returns nullptr otherwise.
+   PinTable *TakeTableSwitch(PlayMode &playMode);
 
 private:
    // A table session suspended by a stacked SetTable, restored when the newer session ends
@@ -102,6 +111,8 @@ private:
    };
    vector<StackedTable> m_tableStack;
    PinTable *m_pendingTable = nullptr; // Table requested through SetTable (a reference is owned until applied)
+   PinTable *m_pendingSwitchTable = nullptr; // Table of a different base table requested through SetTable (a reference is owned until taken by the host)
+   PlayMode m_pendingSwitchMode = PlayMode::Play; // Play mode to use for the m_pendingSwitchTable session
    bool m_pendingTableStack = false;
    volatile bool m_pendingTablePop = false;
    bool m_frameMutexHeld = false; // True while the game thread owns the render frame mutex, in which case table transitions must be deferred (BGFX only)
