@@ -524,7 +524,7 @@ void EditorUI::RenderUI()
             const vec3 pos = viewInverse.GetOrthoNormalPos();
             const vec3 right = viewInverse.GetOrthoNormalRight();
             vec3 camTarget = pos - dir * m_camDistance;
-            if (io.KeyShift || m_camMode == ViewMode::DesktopBackdrop)
+            if (io.KeyShift || m_camMode == ViewMode::DesktopBackdrop || m_orbitLock)
             {
                if (!m_perspectiveCam || m_camMode == ViewMode::DesktopBackdrop)
                {
@@ -943,6 +943,10 @@ void EditorUI::RenderUI()
             const vec3 newEye = newTarget + dir * m_camDistance;
             m_camView = Matrix3D::MatrixLookAtRH(newEye, newTarget, up);
          }
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_KeypadDivide))
+      {
+         m_orbitLock = !m_orbitLock;
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
       {

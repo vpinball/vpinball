@@ -211,6 +211,7 @@ private:
    {
       None, Front, Back, Right, Left, Top, Bottom
    } m_predefinedView = PredefinedView::None;
+   bool m_orbitLock = false; // When locked, camera drags pan instead of orbiting
    bool m_fitPlayfieldCamera = false;
    Matrix3D m_camView, m_camProj;
    float m_camDistance;

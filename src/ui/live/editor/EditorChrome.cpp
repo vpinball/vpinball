@@ -319,10 +319,31 @@ void EditorChrome::RenderStatusOverlay()
    const ImGuiIO &io = ImGui::GetIO();
 
    // Overlay Info Text
+   const ImVec2 overlayPos(OutlinerPanel::PaneWidth * editor.m_liveUI.GetDPI(), m_toolBarHeight + m_menuBarHeight + 5.f * editor.m_liveUI.GetDPI());
+
+   // Camera orbit lock toggle (drawn in its own window as the status overlay does not capture inputs)
+   ImGui::SetNextWindowPos(overlayPos);
+   ImGui::Begin("orbit lock toggle", nullptr,
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
+         | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoNav);
+   const bool stylePushed = editor.m_orbitLock;
+   if (stylePushed)
+      ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+   if (ImGui::Button(editor.m_orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK))
+      editor.m_orbitLock = !editor.m_orbitLock;
+   if (stylePushed)
+      ImGui::PopStyleColor();
+   if (ImGui::IsItemHovered())
+      ImGui::SetTooltip("Lock camera orbit\n[Keypad /]");
+   const float lockToggleWidth = ImGui::GetItemRectSize().x;
+   ImGui::End();
+
    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - OutlinerPanel::PaneWidth * editor.m_liveUI.GetDPI(),
       io.DisplaySize.y - m_toolBarHeight - m_menuBarHeight - 5.f * editor.m_liveUI.GetDPI())); // Fixed outliner width (to be adjusted when moving ImGui to the docking branch)
-   ImGui::SetNextWindowPos(ImVec2(OutlinerPanel::PaneWidth * editor.m_liveUI.GetDPI(), m_toolBarHeight + m_menuBarHeight + 5.f * editor.m_liveUI.GetDPI()));
+   ImGui::SetNextWindowPos(overlayPos);
    ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
+   const float labelAlign = ImGui::GetCursorPosX() + lockToggleWidth + ImGui::GetStyle().ItemSpacing.x;
+   ImGui::SetCursorPos(ImVec2(labelAlign, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
    switch (editor.m_camMode)
    {
    case ViewMode::PreviewCam: ImGui::TextUnformatted("Preview Camera"); break;
@@ -344,12 +365,29 @@ void EditorChrome::RenderStatusOverlay()
    }
    case ViewMode::DesktopBackdrop: ImGui::TextUnformatted("Desktop Backdrop"); break;
    }
+   ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + ImGui::GetStyle().FramePadding.x, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
    switch (editor.m_gizmoOperation)
    {
-   case ImGuizmo::OPERATION(0): ImGui::TextUnformatted("Select"); break;
-   case ImGuizmo::TRANSLATE: ImGui::TextUnformatted("Grab"); break;
-   case ImGuizmo::ROTATE: ImGui::TextUnformatted("Rotate"); break;
-   case ImGuizmo::SCALE: ImGui::TextUnformatted("Scale"); break;
+   case ImGuizmo::OPERATION(0):
+      ImGui::TextUnformatted(ICON_FK_MOUSE_POINTER);
+      ImGui::SameLine(labelAlign);
+      ImGui::TextUnformatted("Select");
+      break;
+   case ImGuizmo::TRANSLATE:
+      ImGui::TextUnformatted(ICON_FK_ARROWS);
+      ImGui::SameLine(labelAlign);
+      ImGui::TextUnformatted("Grab");
+      break;
+   case ImGuizmo::SCALE:
+      ImGui::TextUnformatted(ICON_FK_EXPAND);
+      ImGui::SameLine(labelAlign);
+      ImGui::TextUnformatted("Scale");
+      break;
+   case ImGuizmo::ROTATE:
+      ImGui::TextUnformatted(ICON_FK_REPEAT);
+      ImGui::SameLine(labelAlign);
+      ImGui::TextUnformatted("Rotate");
+      break;
    default: break;
    }
    if (editor.m_pointEditPart)
