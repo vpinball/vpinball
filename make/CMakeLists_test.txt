@@ -13,6 +13,15 @@
 set(VPX_TEST_SOURCES
    plugins/upscaledmd/xbrz/xbrz.cpp
    tests/audio/test-audioplayer.cpp
+   tests/core/test-def.cpp
+   tests/core/test-editablereg.cpp
+   tests/core/test-filelocator.cpp
+   tests/core/test-layeredinipropertystore.cpp
+   tests/core/test-pinundo.cpp
+   tests/core/test-propertydef.cpp
+   tests/core/test-propertyregistry.cpp
+   tests/core/test-settings.cpp
+   tests/core/test-tabledb.cpp
    tests/input/test-buttonmapping.cpp
    tests/input/test-plunger-kalman.cpp
    tests/input/test-scancodes.cpp

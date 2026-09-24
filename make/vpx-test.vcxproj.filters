@@ -4,6 +4,9 @@
     <Filter Include="audio">
       <UniqueIdentifier>{5D3E8A2B-1C4F-4E7A-9B2D-3F6A8C1E5D7B}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{B3E7F1A2-9C4D-4E6B-A8F1-2D5C7E9B4A6D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="input">
       <UniqueIdentifier>{7C2F9E4A-3B5D-4A8C-8E1F-5A9C2D4E6F8A}</UniqueIdentifier>
     </Filter>
@@ -31,6 +34,33 @@
     <ClCompile Include="../../tests/vpx-test.cpp" />
     <ClCompile Include="../../tests/audio/test-audioplayer.cpp">
       <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-def.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-editablereg.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-filelocator.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-layeredinipropertystore.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-pinundo.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-propertydef.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-propertyregistry.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-settings.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/core/test-tabledb.cpp">
+      <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="../../tests/input/test-buttonmapping.cpp">
       <Filter>input</Filter>
