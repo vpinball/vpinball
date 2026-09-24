@@ -519,7 +519,7 @@ void Player::InitTableSession(const bool isInitial)
          m_implicitPlayfieldMesh->m_d.m_depthBias = 100000.0f; // Draw before the other objects
          m_implicitPlayfieldMesh->m_mesh.m_vertices.resize(4);
          m_implicitPlayfieldMesh->m_d.m_disableLightingBelow = 1.0f;
-         m_implicitPlayfieldMesh->m_d.m_displayTexture = true;
+         m_implicitPlayfieldMesh->m_d.m_displayTexture = m_ptable->m_winEditorBackdrop;
          for (unsigned int y = 0; y <= 1; ++y)
             for (unsigned int x = 0; x <= 1; ++x)
             {
