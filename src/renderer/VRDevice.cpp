@@ -191,7 +191,7 @@ VRDevice::VRDevice(const Settings& settings)
       // VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
       // Renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
       #if BX_PLATFORM_WINDOWS
-         const string gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
+         const string gfxBackend = g_pplayer->m_ptable->GetSettings().GetPlayer_GfxBackend();
          if (gfxBackend == "Vulkan"sv)
          #ifdef _DEBUG
             m_rendererType = bgfx::RendererType::Enum::Vulkan;
@@ -544,7 +544,7 @@ void VRDevice::SetupHMD()
    assert(m_viewConfigurationViews[0].recommendedSwapchainSampleCount == m_viewConfigurationViews[1].recommendedSwapchainSampleCount);
 
    // Let the user choose the down/super sampling
-   const float resFactor = g_pplayer ? g_pplayer->m_ptable->m_settings.GetPlayerVR_ResFactor() : -1.f;
+   const float resFactor = g_pplayer ? g_pplayer->m_ptable->GetSettings().GetPlayerVR_ResFactor() : -1.f;
    if (resFactor <= 0.1f || resFactor > 10.f)
    {
       m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
@@ -667,7 +667,7 @@ void VRDevice::CreateSession()
    assert(m_session);
 
    // Initialize passthrough if supported (Meta Quest MR feature)
-   if (m_passthroughExtensionSupported && g_pplayer && g_pplayer->m_ptable->m_settings.GetPlayerVR_UsePassthroughColor())
+   if (m_passthroughExtensionSupported && g_pplayer && g_pplayer->m_ptable->GetSettings().GetPlayerVR_UsePassthroughColor())
    {
       PFN_xrCreatePassthroughFB xrCreatePassthroughFB;
       OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrCreatePassthroughFB", (PFN_xrVoidFunction*)&xrCreatePassthroughFB), "Failed to get xrCreatePassthroughFB.");
@@ -1109,7 +1109,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                const vec3 lockbarAxis = rightPos - leftPos;
                const float lockbarAngle = atan2f(-lockbarAxis.z, lockbarAxis.x);
                m_headsetViewCentering = false;
-               m_lockbarWidth = lockbarAxis.Length() * 100.f * table->m_settings.GetPlayerVR_ControllerLockbarScale();
+               m_lockbarWidth = lockbarAxis.Length() * 100.f * table->GetSettings().GetPlayerVR_ControllerLockbarScale();
                
                // Update fixed scaling, considering lockbar size to be the width of the playfield + 2"1/4
                const float tableWidth = VPUTOCM(table->m_right - table->m_left) + 2.25f * 2.54f;
@@ -1122,7 +1122,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                m_lockbarHeight = -centerPos.y;
                m_orientation = RADTOANG(lockbarAngle);
                m_tablePos.x = dx * c - dy * s;
-               m_tablePos.y = dx * s + dy * c + table->m_settings.GetPlayerVR_ControllerCabYOffset() + lockbarToPlayfield * scale;
+               m_tablePos.y = dx * s + dy * c + table->GetSettings().GetPlayerVR_ControllerCabYOffset() + lockbarToPlayfield * scale;
                m_tablePos.z = 0.f;
                m_worldDirty = true;
             }
@@ -1145,7 +1145,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             const float s = sinf(angle);
             const float dx = -VPUTOCM(medianPoseInVPU.position.x);
             const float dy = -VPUTOCM(medianPoseInVPU.position.z);
-            const Settings& settings = g_pplayer->m_ptable->m_settings;
+            const Settings& settings = g_pplayer->m_ptable->GetSettings();
 
             // Rotate the tracking-space translation into the table's yaw frame, just as
             // controller centering does. Player X/Y is the desired standing position

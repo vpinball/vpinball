@@ -13,7 +13,7 @@
 //
 PlungerHandler::PlungerHandler(InputManager* inputManager)
 {
-   const Settings& settings = g_app->m_settings;
+   const Settings& settings = g_app->GetSettings();
 
    m_isPullBackAndRetract = settings.GetPlayer_PlungerRetract();
 
@@ -92,9 +92,9 @@ void PlungerHandler::AddSensor(std::unique_ptr<PlungerSensor>& sensor)
    const int sensorIndex = static_cast<int>(m_sensors.size());
    if (sensor)
    {
-      sensor->Save(g_app->m_settings, sensorIndex);
-      g_app->m_settings.SetInput_PlungerSensorCount(sensorIndex + 1, false);
-      g_app->m_settings.Save();
+      sensor->Save(g_app->GetSettings(), sensorIndex);
+      g_app->GetSettings().SetInput_PlungerSensorCount(sensorIndex + 1, false);
+      g_app->GetSettings().Save();
    }
    m_sensors.push_back(std::move(sensor));
 }
@@ -123,9 +123,9 @@ void PlungerHandler::RemoveSensor(int index)
                   {
                      switch (Settings::GetRegistry().GetStoreType(propDef->m_type))
                      {
-                     case VPX::Properties::PropertyRegistry::StoreType::Float: g_app->m_settings.Set(idNew, g_app->m_settings.GetFloat(id), false); break;
-                     case VPX::Properties::PropertyRegistry::StoreType::Int: g_app->m_settings.Set(idNew, g_app->m_settings.GetInt(id), false); break;
-                     case VPX::Properties::PropertyRegistry::StoreType::String: g_app->m_settings.Set(idNew, g_app->m_settings.GetString(id), false); break;
+                     case VPX::Properties::PropertyRegistry::StoreType::Float: g_app->GetSettings().Set(idNew, g_app->GetSettings().GetFloat(id), false); break;
+                     case VPX::Properties::PropertyRegistry::StoreType::Int: g_app->GetSettings().Set(idNew, g_app->GetSettings().GetInt(id), false); break;
+                     case VPX::Properties::PropertyRegistry::StoreType::String: g_app->GetSettings().Set(idNew, g_app->GetSettings().GetString(id), false); break;
                      }
                      break;
                   }
@@ -135,8 +135,8 @@ void PlungerHandler::RemoveSensor(int index)
       }
    }
    m_sensors.erase(m_sensors.begin() + index);
-   g_app->m_settings.SetInput_PlungerSensorCount(static_cast<int>(m_sensors.size()), false);
-   g_app->m_settings.Save();
+   g_app->GetSettings().SetInput_PlungerSensorCount(static_cast<int>(m_sensors.size()), false);
+   g_app->GetSettings().Save();
 }
 
 bool PlungerHandler::HasSensor(const std::unique_ptr<PlungerSensor>& sensor) const

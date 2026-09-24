@@ -92,8 +92,8 @@ void AudioSettingsPage::BuildPage()
               {
                  m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
                     m_devices[v], //
-                    m_player->m_ptable->m_settings.GetPlayer_SoundDevice(), //
-                    static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->m_settings.GetPlayer_Sound3D()));
+                    m_player->m_ptable->GetSettings().GetPlayer_SoundDevice(), //
+                    static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->GetSettings().GetPlayer_Sound3D()));
               }, //
               [](Settings& settings) { settings.ResetPlayer_SoundDeviceBG(); }, //
               [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDeviceBG(m_devices[v], isTableOverride); }))
@@ -114,9 +114,9 @@ void AudioSettingsPage::BuildPage()
       [this](int, int v)
       {
          m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
-            m_player->m_ptable->m_settings.GetPlayer_SoundDeviceBG(), //
+            m_player->m_ptable->GetSettings().GetPlayer_SoundDeviceBG(), //
             m_devices[v], //
-            static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->m_settings.GetPlayer_Sound3D()));
+            static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->GetSettings().GetPlayer_Sound3D()));
       }, //
       [](Settings& settings) { settings.ResetPlayer_SoundDevice(); }, //
       [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDevice(m_devices[v], isTableOverride); })).m_excludeFromDefault = true;
@@ -126,8 +126,8 @@ void AudioSettingsPage::BuildPage()
       [this]() { return m_player->m_audioPlayer->GetSoundMode3D(); }, //
       [this](int, int v) {
          m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
-            m_player->m_ptable->m_settings.GetPlayer_SoundDeviceBG(), //
-            m_player->m_ptable->m_settings.GetPlayer_SoundDevice(), //
+            m_player->m_ptable->GetSettings().GetPlayer_SoundDeviceBG(), //
+            m_player->m_ptable->GetSettings().GetPlayer_SoundDevice(), //
             static_cast<VPX::SoundConfigTypes>(v));
       }));
 }

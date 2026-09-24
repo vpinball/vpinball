@@ -338,7 +338,7 @@ void VPApp::InitInstance(bool isPlay)
    Settings::SetRecentDir_SoundDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
    Settings::SetRecentDir_POVDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
 
-   m_securitylevel = g_app->m_settings.GetPlayer_SecurityLevel();
+   m_securitylevel = g_app->GetSettings().GetPlayer_SecurityLevel();
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
 

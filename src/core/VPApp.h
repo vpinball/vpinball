@@ -16,7 +16,8 @@ public:
    void InitInstance(bool isPlay = false);
 
    // overall app settings
-   Settings m_settings;
+   Settings& GetSettings() { return m_settings; }
+   const Settings& GetSettings() const { return m_settings; }
 
    FileLocator m_fileLocator;
 
@@ -51,6 +52,7 @@ public:
 #endif
 
 private:
+   Settings m_settings;
    std::filesystem::path m_commandLineCustomSettingsFileName; // Override default ini filename, must be defined before InitInstance
    int m_logicalNumberOfProcessors = -1;
 };

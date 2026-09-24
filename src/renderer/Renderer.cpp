@@ -54,16 +54,16 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    #if defined(ENABLE_BGFX)
    constexpr int MSAASamples[] = { 1, 4, 6, 8, 16 };
-   const int nMSAASamples = MSAASamples[m_table->m_settings.GetPlayer_MSAASamples()];
+   const int nMSAASamples = MSAASamples[m_table->GetSettings().GetPlayer_MSAASamples()];
    #elif defined(ENABLE_OPENGL)
    constexpr int MSAASamples[] = { 1, 4, 6, 8, 16 };
-   int nMSAASamples = MSAASamples[m_table->m_settings.GetPlayer_MSAASamples()];
+   int nMSAASamples = MSAASamples[m_table->GetSettings().GetPlayer_MSAASamples()];
    #elif defined(ENABLE_DX9)
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable
    constexpr int nMSAASamples = 1;
    #endif
-   const bool useNvidiaApi = m_table->m_settings.GetPlayer_UseNVidiaAPI();
-   const bool compressTextures = m_table->m_settings.GetPlayer_CompressTextures();
+   const bool useNvidiaApi = m_table->GetSettings().GetPlayer_UseNVidiaAPI();
+   const bool compressTextures = m_table->GetSettings().GetPlayer_CompressTextures();
    const int nEyes = (m_stereo3D == STEREO_VR || m_stereo3D != STEREO_OFF) ? 2 : 1;
    try {
       m_renderDevice = new RenderDevice(wnd, 
@@ -78,7 +78,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    if (const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer(); isHdr2020)
    {
-      m_exposure *= g_app->m_settings.GetPlayer_HDRGlobalExposure();
+      m_exposure *= g_app->GetSettings().GetPlayer_HDRGlobalExposure();
       m_bloomOff = true;
    }
 
@@ -106,7 +106,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderWidth = wnd->GetPixelWidth();
       m_renderHeight = wnd->GetPixelHeight();
    }
-   const float AAfactor = m_table->m_settings.GetPlayer_AAFactor();
+   const float AAfactor = m_table->GetSettings().GetPlayer_AAFactor();
    const int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
    const int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
 
@@ -161,7 +161,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), // UV Offset for sampling reflections
       1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(),
       0.f, 0.f);
-   DisableBallLighting(m_table->m_settings.GetPlayer_DisableLightingForBalls());
+   DisableBallLighting(m_table->GetSettings().GetPlayer_DisableLightingForBalls());
 
    // alloc bloom tex at 1/4 x 1/4 res (allows for simple HQ downscale of clipped input while saving memory)
    m_pBloomBufferTexture = new RenderTarget(m_renderDevice, 
@@ -277,58 +277,58 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
 void Renderer::ApplyTableSettings()
 {
-   m_stereo3Denabled = true; // m_table->m_settings.GetPlayer_Stereo3DEnabled();
-   m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
-   m_HDRforceDisableToneMapper = m_table->m_settings.GetPlayer_HDRDisableToneMapper();
+   m_stereo3Denabled = true; // m_table->GetSettings().GetPlayer_Stereo3DEnabled();
+   m_toneMapper = (ToneMapper)m_table->GetSettings().GetTableOverride_ToneMapper();
+   m_HDRforceDisableToneMapper = m_table->GetSettings().GetPlayer_HDRDisableToneMapper();
    Settings::SetTableOverride_Exposure_Default(m_table->GetExposure());
-   m_exposure = m_table->m_settings.GetTableOverride_Exposure();
-   m_dynamicAO = m_table->m_settings.GetPlayer_DynamicAO();
-   m_disableAO = m_table->m_settings.GetPlayer_DisableAO();
+   m_exposure = m_table->GetSettings().GetTableOverride_Exposure();
+   m_dynamicAO = m_table->GetSettings().GetPlayer_DynamicAO();
+   m_disableAO = m_table->GetSettings().GetPlayer_DisableAO();
    for (int wnd = VPXWindowId::VPXWINDOW_Backglass; wnd <= VPXWindowId::VPXWINDOW_Topper; wnd++)
-      m_ancillaryWndRotation[wnd] = 90 * clamp(m_table->m_settings.GetWindow_Rotation(wnd), 0, 3); // Setting is an index in the 0 / 90 / 180 / 270 literals
-   m_vrPreview = (VRPreviewMode)m_table->m_settings.GetPlayer_VRPreview();
-   m_vrPreviewShrink = m_table->m_settings.GetPlayerVR_ShrinkPreview();
-   m_FXAA = m_table->m_settings.GetPlayer_FXAA();
-   m_sharpen = m_table->m_settings.GetPlayer_Sharpen();
-   m_ss_refl = m_table->m_settings.GetPlayer_SSRefl();
-   m_bloomOff = m_table->m_settings.GetPlayer_ForceBloomOff();
-   m_motionBlurOff = m_table->m_settings.GetPlayer_ForceMotionBlurOff();
-   m_maxReflectionMode = (RenderProbe::ReflectionMode)m_table->m_settings.GetPlayer_PFReflection();
-   m_trailForBalls = m_table->m_settings.GetPlayer_BallTrail();
-   m_ballTrailStrength = m_table->m_settings.GetPlayer_BallTrailStrength();
-   m_ballAntiStretch = m_table->m_settings.GetPlayer_BallAntiStretch();
+      m_ancillaryWndRotation[wnd] = 90 * clamp(m_table->GetSettings().GetWindow_Rotation(wnd), 0, 3); // Setting is an index in the 0 / 90 / 180 / 270 literals
+   m_vrPreview = (VRPreviewMode)m_table->GetSettings().GetPlayer_VRPreview();
+   m_vrPreviewShrink = m_table->GetSettings().GetPlayerVR_ShrinkPreview();
+   m_FXAA = m_table->GetSettings().GetPlayer_FXAA();
+   m_sharpen = m_table->GetSettings().GetPlayer_Sharpen();
+   m_ss_refl = m_table->GetSettings().GetPlayer_SSRefl();
+   m_bloomOff = m_table->GetSettings().GetPlayer_ForceBloomOff();
+   m_motionBlurOff = m_table->GetSettings().GetPlayer_ForceMotionBlurOff();
+   m_maxReflectionMode = (RenderProbe::ReflectionMode)m_table->GetSettings().GetPlayer_PFReflection();
+   m_trailForBalls = m_table->GetSettings().GetPlayer_BallTrail();
+   m_ballTrailStrength = m_table->GetSettings().GetPlayer_BallTrailStrength();
+   m_ballAntiStretch = m_table->GetSettings().GetPlayer_BallAntiStretch();
    m_ballImage = nullptr;
    m_decalImage = nullptr;
-   m_overwriteBallImages = m_table->m_settings.GetPlayer_OverwriteBallImage();
+   m_overwriteBallImages = m_table->GetSettings().GetPlayer_OverwriteBallImage();
    if (m_overwriteBallImages)
    {
-      m_ballImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_BallImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
-      m_decalImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_DecalImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
+      m_ballImage = BaseTexture::CreateFromFile(m_table->GetSettings().GetPlayer_BallImage(), m_table->GetSettings().GetPlayer_MaxTexDimension());
+      m_decalImage = BaseTexture::CreateFromFile(m_table->GetSettings().GetPlayer_DecalImage(), m_table->GetSettings().GetPlayer_MaxTexDimension());
    }
-   m_vrApplyColorKey = m_stereo3D == STEREO_VR && m_table->m_settings.GetPlayerVR_UsePassthroughColor();
-   m_visualNudgeStrength = m_table->m_settings.GetPlayer_NudgeStrength();
+   m_vrApplyColorKey = m_stereo3D == STEREO_VR && m_table->GetSettings().GetPlayerVR_UsePassthroughColor();
+   m_visualNudgeStrength = m_table->GetSettings().GetPlayer_NudgeStrength();
 
    // HDR2020 output disables bloom and boosts exposure
    if (m_renderDevice && (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer())
    {
-      m_exposure *= g_app->m_settings.GetPlayer_HDRGlobalExposure();
+      m_exposure *= g_app->GetSettings().GetPlayer_HDRGlobalExposure();
       m_bloomOff = true;
    }
 
    // Cache DMD renderer properties
    for (int profile = 0; profile < (int)std::size(m_dmdUseLegacyRenderer); profile++)
    {
-      m_dmdUseLegacyRenderer[profile] = m_table->m_settings.GetDMD_ProfileLegacy(profile);
+      m_dmdUseLegacyRenderer[profile] = m_table->GetSettings().GetDMD_ProfileLegacy(profile);
       #if !defined(ENABLE_BGFX)
          m_dmdUseLegacyRenderer[profile] = false; // Only available for BGFX
       #endif
       m_dmdDotColor[profile] = convertColor(
-         m_table->m_settings.GetDMD_ProfileDotTint(profile),
-         m_table->m_settings.GetDMD_ProfileDotBrightness(profile));
-      m_dmdDotProperties[profile].x = m_table->m_settings.GetDMD_ProfileDotSize(profile);
-      m_dmdDotProperties[profile].y = m_table->m_settings.GetDMD_ProfileDotSharpness(profile);
-      m_dmdDotProperties[profile].w = m_table->m_settings.GetDMD_ProfileDiffuseGlow(profile);
-      m_dmdUnlitDotColor[profile] = convertColor(m_table->m_settings.GetDMD_ProfileUnlitDotColor(profile), 1.f);
+         m_table->GetSettings().GetDMD_ProfileDotTint(profile),
+         m_table->GetSettings().GetDMD_ProfileDotBrightness(profile));
+      m_dmdDotProperties[profile].x = m_table->GetSettings().GetDMD_ProfileDotSize(profile);
+      m_dmdDotProperties[profile].y = m_table->GetSettings().GetDMD_ProfileDotSharpness(profile);
+      m_dmdDotProperties[profile].w = m_table->GetSettings().GetDMD_ProfileDiffuseGlow(profile);
+      m_dmdUnlitDotColor[profile] = convertColor(m_table->GetSettings().GetDMD_ProfileUnlitDotColor(profile), 1.f);
       // Convert color as settings are sRGB color while shader needs linear RGB color
       m_dmdDotColor[profile].x = InvsRGB(m_dmdDotColor[profile].x);
       m_dmdDotColor[profile].y = InvsRGB(m_dmdDotColor[profile].y);
@@ -341,8 +341,8 @@ void Renderer::ApplyTableSettings()
    // Cache Seg display renderer properties
    for (int profile = 0; profile < (int)std::size(m_segColor); profile++)
    {
-      m_segColor[profile] = convertColor(m_table->m_settings.GetAlpha_ProfileColor(profile), m_table->m_settings.GetAlpha_ProfileBrightness(profile));
-      m_segUnlitColor[profile] = convertColor(m_table->m_settings.GetAlpha_ProfileUnlit(profile), m_table->m_settings.GetAlpha_ProfileDiffuseGlow(profile));
+      m_segColor[profile] = convertColor(m_table->GetSettings().GetAlpha_ProfileColor(profile), m_table->GetSettings().GetAlpha_ProfileBrightness(profile));
+      m_segUnlitColor[profile] = convertColor(m_table->GetSettings().GetAlpha_ProfileUnlit(profile), m_table->GetSettings().GetAlpha_ProfileDiffuseGlow(profile));
       // Convert color as settings are sRGB color while shader needs linear RGB color
       m_segColor[profile].x = InvsRGB(m_segColor[profile].x);
       m_segColor[profile].y = InvsRGB(m_segColor[profile].y);
@@ -364,7 +364,7 @@ void Renderer::SetTable(PinTable *const table)
 
    // Re-evaluate the cached table settings (they may have been edited during the previous session)
    ApplyTableSettings();
-   DisableBallLighting(m_table->m_settings.GetPlayer_DisableLightingForBalls());
+   DisableBallLighting(m_table->GetSettings().GetPlayer_DisableLightingForBalls());
 
    // Static prerendering must be fully re-evaluated for the new table
    m_isStaticPrepassDirty = true;
@@ -413,12 +413,12 @@ Renderer::~Renderer()
 Renderer::SceneLighting::SceneLighting(PinTable* const table)
    : m_table(table)
 {
-   m_mode = m_table->m_settings.GetPlayer_OverrideTableEmissionScale() ?
-      m_table->m_settings.GetPlayer_DynamicDayNight() ? Mode::DayNight : Mode::User
+   m_mode = m_table->GetSettings().GetPlayer_OverrideTableEmissionScale() ?
+      m_table->GetSettings().GetPlayer_DynamicDayNight() ? Mode::DayNight : Mode::User
       : Mode::Table;
-   m_latitude = m_table->m_settings.GetPlayer_Latitude();
-   m_longitude = m_table->m_settings.GetPlayer_Longitude();
-   m_userLightLevel = m_table->m_settings.GetPlayer_EmissionScale();
+   m_latitude = m_table->GetSettings().GetPlayer_Latitude();
+   m_longitude = m_table->GetSettings().GetPlayer_Longitude();
+   m_userLightLevel = m_table->GetSettings().GetPlayer_EmissionScale();
    Update();
 }
 
@@ -1410,10 +1410,10 @@ void Renderer::UpdateStereoShaderState()
    if (IsAnaglyphStereoMode(m_stereo3D))
    {
       Anaglyph anaglyph;
-      anaglyph.LoadSetupFromRegistry(g_pplayer->m_ptable->m_settings, clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
+      anaglyph.LoadSetupFromRegistry(g_pplayer->m_ptable->GetSettings(), clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
       anaglyph.SetupShader(m_renderDevice->m_stereoShader);
       // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
-      m_stereo3DDefocus = m_table->m_settings.GetPlayer_Stereo3DDefocus();
+      m_stereo3DDefocus = m_table->GetSettings().GetPlayer_Stereo3DDefocus();
       const float leftFilterLuminance = VPX::Colors::LuminanceFromLinearRGB(anaglyph.GetLeftEyeGlassFilter(true));
       const float rightFilterLuminance = VPX::Colors::LuminanceFromLinearRGB(anaglyph.GetRightEyeGlassFilter(true));
       // We defocus the channel which is the most darkened one (channel for which the luminance of the filter is the lowest)

@@ -189,7 +189,7 @@ void EditorUI::SaveTableAs()
    const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx" } };
    std::filesystem::path defaultLocation = m_table->m_filename;
    if (defaultLocation.empty())
-      defaultLocation = std::filesystem::path(m_table->m_settings.GetRecentDir_LoadDir()) / "new_table.vpx";
+      defaultLocation = std::filesystem::path(m_table->GetSettings().GetRecentDir_LoadDir()) / "new_table.vpx";
    else
       defaultLocation.replace_extension(".vpx");
    const string location = defaultLocation.string();
@@ -303,7 +303,7 @@ void EditorUI::RenderUI()
    {
       m_table->m_filename = *m_pendingSaveAsPath;
       m_table->m_title = TitleFromFilename(m_table->m_filename);
-      g_app->m_settings.SetRecentDir_LoadDir(m_table->m_filename.parent_path().string(), false);
+      g_app->GetSettings().SetRecentDir_LoadDir(m_table->m_filename.parent_path().string(), false);
       m_pendingSaveAsPath = nullptr;
       SaveTable();
    }

@@ -40,7 +40,7 @@ STDMETHODIMP PartGroup::InterfaceSupportsErrorInfo(REFIID riid)
 
 void PartGroup::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsPartGroup_##prop() : Settings::GetDefaultPropsPartGroup_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsPartGroup_##prop() : Settings::GetDefaultPropsPartGroup_##prop##_Default()
    LinkProp(m_timerEnabled, TimerEnabled);
    LinkProp(m_timerInterval, TimerInterval);
 #undef LinkProp
@@ -48,7 +48,7 @@ void PartGroup::SetDefaults(const bool fromMouseClick)
 
 void PartGroup::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsPartGroup_##prop(field, false)
+#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsPartGroup_##prop(field, false)
    LinkProp(m_timerEnabled, TimerEnabled);
    LinkProp(m_timerInterval, TimerInterval);
 #undef LinkProp

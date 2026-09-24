@@ -210,7 +210,7 @@ bool InGameUIItem::IsSameValue(float a, float b) const
 
 bool InGameUIItem::IsModified() const
 {
-   const Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_app->m_settings;
+   const Settings& settings = g_pplayer ? g_pplayer->m_ptable->GetSettings() : g_app->GetSettings();
    switch (m_type)
    {
    case Type::Property:
@@ -269,7 +269,7 @@ bool InGameUIItem::IsDefaultValue() const
 
 void InGameUIItem::ResetToStoredValue()
 {
-   Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_app->m_settings;
+   Settings& settings = g_pplayer ? g_pplayer->m_ptable->GetSettings() : g_app->GetSettings();
    switch (m_type)
    {
    case Type::Property:

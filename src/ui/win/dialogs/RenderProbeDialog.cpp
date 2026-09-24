@@ -352,10 +352,10 @@ void RenderProbeDialog::OnClose()
 
 void RenderProbeDialog::LoadPosition()
 {
-   const int x = g_app->m_settings.GetEditor_RenderProbePosX();
-   const int y = g_app->m_settings.GetEditor_RenderProbePosY();
-   const int w = g_app->m_settings.GetEditor_RenderProbeWidth();
-   const int h = g_app->m_settings.GetEditor_RenderProbeHeight();
+   const int x = g_app->GetSettings().GetEditor_RenderProbePosX();
+   const int y = g_app->GetSettings().GetEditor_RenderProbePosY();
+   const int w = g_app->GetSettings().GetEditor_RenderProbeWidth();
+   const int h = g_app->GetSettings().GetEditor_RenderProbeHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -364,8 +364,8 @@ void RenderProbeDialog::LoadPosition()
 void RenderProbeDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   g_app->m_settings.SetEditor_RenderProbePosX((int)rect.left, false);
-   g_app->m_settings.SetEditor_RenderProbePosY((int)rect.top, false);
-   g_app->m_settings.SetEditor_RenderProbeWidth(rect.right - rect.left, false);
-   g_app->m_settings.SetEditor_RenderProbeHeight(rect.bottom - rect.top, false);
+   g_app->GetSettings().SetEditor_RenderProbePosX((int)rect.left, false);
+   g_app->GetSettings().SetEditor_RenderProbePosY((int)rect.top, false);
+   g_app->GetSettings().SetEditor_RenderProbeWidth(rect.right - rect.left, false);
+   g_app->GetSettings().SetEditor_RenderProbeHeight(rect.bottom - rect.top, false);
 }

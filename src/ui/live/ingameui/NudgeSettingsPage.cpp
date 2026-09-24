@@ -81,10 +81,10 @@ void NudgeSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_NudgeStrength, 100.f, "%4.1f %%"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_NudgeStrength(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_NudgeStrength(); }, //
       [this](float, float v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_NudgeStrength(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_NudgeStrength(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 

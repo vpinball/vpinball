@@ -23,14 +23,14 @@ void InputDevicePage::BuildPage()
    if (noAutoLayoutId.has_value())
       AddItem(std::make_unique<InGameUIItem>( //
          noAutoLayoutId.value(), //
-         [noAutoLayoutId]() { return g_app->m_settings.GetBool(noAutoLayoutId.value()); }, //
-         [noAutoLayoutId](bool v) { g_app->m_settings.Set(noAutoLayoutId.value(), v, false); }));
+         [noAutoLayoutId]() { return g_app->GetSettings().GetBool(noAutoLayoutId.value()); }, //
+         [noAutoLayoutId](bool v) { g_app->GetSettings().Set(noAutoLayoutId.value(), v, false); }));
 
    AddItem(std::make_unique<InGameUIItem>("Erase this device"s, "Clean all mappings using this device."s,
       [this, noAutoLayoutId]()
       {
          if (noAutoLayoutId.has_value())
-            g_app->m_settings.Set(noAutoLayoutId.value(), false, false);
+            g_app->GetSettings().Set(noAutoLayoutId.value(), false, false);
          m_player->m_pininput.ClearDeviceMappings(m_deviceId);
          m_player->m_liveUI->m_inGameUI.NavigateBack();
          RequestRebuild();

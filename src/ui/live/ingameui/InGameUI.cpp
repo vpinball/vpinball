@@ -308,7 +308,7 @@ void InGameUI::HandlePageInput()
 // FIXME Remove
 void InGameUI::HandleLegacyFlyOver()
 {
-   if (!m_player->m_ptable->m_settings.GetPlayer_EnableCameraModeFlyAround())
+   if (!m_player->m_ptable->GetSettings().GetPlayer_EnableCameraModeFlyAround())
       return;
 
    if (!ImGui::IsKeyDown(ImGuiKey_LeftAlt) && !ImGui::IsKeyDown(ImGuiKey_RightAlt))

@@ -54,7 +54,7 @@ HRESULT Flasher::Init(const float x, const float y, const bool fromMouseClick, c
 
 void Flasher::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsFlasher_##prop() : Settings::GetDefaultPropsFlasher_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsFlasher_##prop() : Settings::GetDefaultPropsFlasher_##prop##_Default()
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotX, RotX);
    LinkProp(m_d.m_rotY, RotY);
@@ -82,7 +82,7 @@ void Flasher::SetDefaults(const bool fromMouseClick)
 
 void Flasher::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsFlasher_##prop(field, false)
+#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsFlasher_##prop(field, false)
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotX, RotX);
    LinkProp(m_d.m_rotY, RotY);
@@ -584,7 +584,7 @@ bool Flasher::CanAbsorbBlend() const
    case FlasherData::EXT_RENDER: return false;
    case FlasherData::DMD:
       #if defined(ENABLE_BGFX)
-         return !m_ptable->m_settings.GetDMD_ProfileLegacy(clamp(m_d.m_renderStyle, 0, 6));
+         return !m_ptable->GetSettings().GetDMD_ProfileLegacy(clamp(m_d.m_renderStyle, 0, 6));
       #else
          return false; // The legacy renderer is the only one available outside of BGFX, see Renderer::IsLegacyDMDRenderer
       #endif

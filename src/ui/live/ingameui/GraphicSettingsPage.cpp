@@ -51,8 +51,8 @@ void GraphicSettingsPage::BuildPage()
       [this](int, int v)
       {
          m_player->m_ptable->SetViewSetupOverride((ViewSetupID)v);
-         m_player->SetCabinetAutoFitMode(m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
-         m_player->SetCabinetAutoFitPos(m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitPos());
+         m_player->SetCabinetAutoFitMode(m_player->m_ptable->GetSettings().GetPlayer_CabinetAutofitMode());
+         m_player->SetCabinetAutoFitPos(m_player->m_ptable->GetSettings().GetPlayer_CabinetAutofitPos());
          OnStaticRenderDirty();
          RequestRebuild();
       },
@@ -106,11 +106,11 @@ void GraphicSettingsPage::BuildPage()
       renderers.insert(renderers.begin(), "Default"s);
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Graphics Backend"s, ""s, false, 0, 0, renderers),
-         [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->m_settings.GetPlayer_GfxBackend())); }, // Live
+         [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->GetSettings().GetPlayer_GfxBackend())); }, // Live
          [this, renderers](const Settings& settings) { return max(0, FindIndexOf(renderers, settings.GetPlayer_GfxBackend())); }, // Stored (same)
          [this, renderers](int, int v)
          {
-            m_player->m_ptable->m_settings.SetPlayer_GfxBackend(renderers[v], false);
+            m_player->m_ptable->GetSettings().SetPlayer_GfxBackend(renderers[v], false);
             m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
          },
          [](Settings&) { /* Nothing to do as this is directly persisted for the time being */ },
@@ -237,10 +237,10 @@ void GraphicSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MaxPrerenderedFrames, "%4d Frames"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_MaxPrerenderedFrames(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_MaxPrerenderedFrames(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_MaxPrerenderedFrames(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 #endif
@@ -253,10 +253,10 @@ void GraphicSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_AAFactor, 100.f, "%4.1f %%"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_AAFactor(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_AAFactor(); }, //
       [this](float, float v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_AAFactor(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_AAFactor(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
@@ -264,10 +264,10 @@ void GraphicSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MSAASamples, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_MSAASamples(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_MSAASamples(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_MSAASamples(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_MSAASamples(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 #endif
@@ -303,9 +303,9 @@ void GraphicSettingsPage::BuildPage()
          vector { "Disabled"s, "Static"s, "Dynamic"s }),
       [this]()
       {
-         if (m_player->m_ptable->m_settings.GetPlayer_DisableAO())
+         if (m_player->m_ptable->GetSettings().GetPlayer_DisableAO())
             return 0;
-         if (m_player->m_ptable->m_settings.GetPlayer_DynamicAO())
+         if (m_player->m_ptable->GetSettings().GetPlayer_DynamicAO())
             return 2;
          return 1;
       }, // Live
@@ -319,10 +319,10 @@ void GraphicSettingsPage::BuildPage()
       }, // Stored
       [this](int, int v)
       {
-         m_player->m_ptable->m_settings.ResetPlayer_DisableAO();
-         m_player->m_ptable->m_settings.ResetPlayer_DynamicAO();
-         m_player->m_ptable->m_settings.SetPlayer_DisableAO(v == 0, false);
-         m_player->m_ptable->m_settings.SetPlayer_DynamicAO(v == 2, false);
+         m_player->m_ptable->GetSettings().ResetPlayer_DisableAO();
+         m_player->m_ptable->GetSettings().ResetPlayer_DynamicAO();
+         m_player->m_ptable->GetSettings().SetPlayer_DisableAO(v == 0, false);
+         m_player->m_ptable->GetSettings().SetPlayer_DynamicAO(v == 2, false);
       },
       [](Settings&) { /* Nothing to do as this is directly persisted for the time being */ },
       [](int, Settings&, bool) { /* Nothing to do as this is directly persisted for the time being */ }));
@@ -331,20 +331,20 @@ void GraphicSettingsPage::BuildPage()
    // Maybe setup a combo with a few preset values ?
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MaxTexDimension, "%4d"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_MaxTexDimension(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_MaxTexDimension(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_MaxTexDimension(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_PFReflection, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_PFReflection(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_PFReflection(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_PFReflection(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_PFReflection(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
@@ -352,10 +352,10 @@ void GraphicSettingsPage::BuildPage()
    // Maybe setup a combo with a few preset values ?
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_AlphaRampAccuracy, "%4d"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_AlphaRampAccuracy(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_AlphaRampAccuracy(); }, //
       [this](int, int v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_AlphaRampAccuracy(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_AlphaRampAccuracy(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
@@ -367,30 +367,30 @@ void GraphicSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_HDRGlobalExposure, 1.f, "%4.2f"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_HDRGlobalExposure(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_HDRGlobalExposure(); }, //
       [this](float, float v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_HDRGlobalExposure(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_HDRGlobalExposure(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_CompressTextures, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_CompressTextures(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_CompressTextures(); }, //
       [this](bool v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_CompressTextures(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_CompressTextures(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_UseNVidiaAPI, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_UseNVidiaAPI(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_UseNVidiaAPI(); }, //
       [this](bool v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_UseNVidiaAPI(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_UseNVidiaAPI(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
@@ -414,10 +414,10 @@ void GraphicSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_SoftwareVertexProcessing, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_SoftwareVertexProcessing(); }, //
+      [this]() { return m_player->m_ptable->GetSettings().GetPlayer_SoftwareVertexProcessing(); }, //
       [this](bool v)
       {
-         m_player->m_ptable->m_settings.SetPlayer_SoftwareVertexProcessing(v, false);
+         m_player->m_ptable->GetSettings().SetPlayer_SoftwareVertexProcessing(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 #endif
@@ -453,8 +453,8 @@ void GraphicSettingsPage::BuildPage()
          m_player->m_renderer->m_overwriteBallImages = v;
          if (m_player->m_renderer->m_overwriteBallImages)
          {
-            m_player->m_renderer->m_ballImage = BaseTexture::CreateFromFile(m_player->m_ptable->m_settings.GetPlayer_BallImage(), m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension());
-            m_player->m_renderer->m_decalImage = BaseTexture::CreateFromFile(m_player->m_ptable->m_settings.GetPlayer_DecalImage(), m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension());
+            m_player->m_renderer->m_ballImage = BaseTexture::CreateFromFile(m_player->m_ptable->GetSettings().GetPlayer_BallImage(), m_player->m_ptable->GetSettings().GetPlayer_MaxTexDimension());
+            m_player->m_renderer->m_decalImage = BaseTexture::CreateFromFile(m_player->m_ptable->GetSettings().GetPlayer_DecalImage(), m_player->m_ptable->GetSettings().GetPlayer_MaxTexDimension());
          }
          RequestRebuild();
       }));
@@ -464,20 +464,20 @@ void GraphicSettingsPage::BuildPage()
       // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
       AddItem(std::make_unique<InGameUIItem>(
          Settings::m_propPlayer_BallImage, //
-         [this]() { return m_player->m_ptable->m_settings.GetPlayer_BallImage(); }, //
+         [this]() { return m_player->m_ptable->GetSettings().GetPlayer_BallImage(); }, //
          [this](const string&, const string& v)
          {
-            m_player->m_ptable->m_settings.SetPlayer_BallImage(v, false);
+            m_player->m_ptable->GetSettings().SetPlayer_BallImage(v, false);
             m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
          }));
 
       // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
       AddItem(std::make_unique<InGameUIItem>(
          Settings::m_propPlayer_DecalImage, //
-         [this]() { return m_player->m_ptable->m_settings.GetPlayer_DecalImage(); }, //
+         [this]() { return m_player->m_ptable->GetSettings().GetPlayer_DecalImage(); }, //
          [this](const string&, const string& v)
          {
-            m_player->m_ptable->m_settings.SetPlayer_DecalImage(v, false);
+            m_player->m_ptable->GetSettings().SetPlayer_DecalImage(v, false);
             m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
          }));
    }

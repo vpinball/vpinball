@@ -60,12 +60,12 @@ void HomePage::BuildPage()
          }));
 
    if (isTouch && !m_player->m_vrDevice)
-      AddItem(std::make_unique<InGameUIItem>(g_app->m_settings.GetPlayer_TouchOverlay() ? "Disable Touch Overlay"s : "Enable Touch Overlay"s, ""s,
+      AddItem(std::make_unique<InGameUIItem>(g_app->GetSettings().GetPlayer_TouchOverlay() ? "Disable Touch Overlay"s : "Enable Touch Overlay"s, ""s,
          [this]()
          {
-            bool showTouchOverlay = !g_app->m_settings.GetPlayer_TouchOverlay();
-            g_app->m_settings.ResetPlayer_TouchOverlay();
-            g_app->m_settings.SetPlayer_TouchOverlay(showTouchOverlay, false);
+            bool showTouchOverlay = !g_app->GetSettings().GetPlayer_TouchOverlay();
+            g_app->GetSettings().ResetPlayer_TouchOverlay();
+            g_app->GetSettings().SetPlayer_TouchOverlay(showTouchOverlay, false);
             m_player->m_liveUI->ShowTouchOverlay(showTouchOverlay);
             ImGui::GetIO().MousePos.x = 0;
             ImGui::GetIO().MousePos.y = 0;

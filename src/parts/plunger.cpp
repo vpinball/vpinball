@@ -34,7 +34,7 @@ HRESULT Plunger::Init(const float x, const float y, const bool fromMouseClick, c
    return S_OK;
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsPlunger_##prop() : Settings::GetDefaultPropsPlunger_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->GetSettings().GetDefaultPropsPlunger_##prop() : Settings::GetDefaultPropsPlunger_##prop##_Default()
 void Plunger::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_height, Height);
@@ -77,7 +77,7 @@ void Plunger::SetDefaultPhysics(const bool fromMouseClick)
 
 void Plunger::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsPlunger_##prop(field, false)
+#define LinkProp(field, prop) g_app->GetSettings().SetDefaultPropsPlunger_##prop(field, false)
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_width, Width);
    LinkProp(m_d.m_zAdjust, ZAdjust);

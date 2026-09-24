@@ -158,8 +158,8 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
 void ResetVPX()
 {
    // Reset settings
-   g_app->m_settings.Reset();
-   Settings& settings = g_app->m_settings;
+   g_app->GetSettings().Reset();
+   Settings& settings = g_app->GetSettings();
    settings.SetPlayerVR_AskToTurnOn(2, false);
    settings.SetPlayer_PlayfieldWidth(1920, false);
    settings.SetPlayer_PlayfieldHeight(1080, false);
