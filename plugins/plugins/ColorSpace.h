@@ -66,8 +66,8 @@ struct Tables
          bt[i] = sRGBToLinearF((static_cast<float>(i) + 0.5f) * (float)(1. / 255.));
       for (int i = 0; i < 100; i++)
          pt[i] = sRGBToLinearF((static_cast<float>(i) + 0.5f) * 0.01f);
-      bt[-1]  = pt[-1]  = -FLT_MAX; // no value is below it, so the step down never fires
-      bt[255] = pt[100] =  FLT_MAX; // no value reaches it, so the step up never fires
+      bt[-1] = pt[-1] = -INFINITY; // no value is below it, so the step down never fires
+      bt[255] = pt[100] = INFINITY; // no value reaches it, so the step up never fires
 
       // The thresholds are monotonic, so the code for each bin comes from walking them forward once rather than searching per entry
       for (int i = 0, b = 0, p = 0; i < LUT_SIZE; i++)
