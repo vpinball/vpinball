@@ -761,10 +761,7 @@ void EditorUI::RenderUI()
                SetSelectionTransform(tmp, true, false, false);
          }
          else if (!io.KeyCtrl)
-         {
-            m_gizmoOperation = ImGuizmo::TRANSLATE;
-            m_gizmoMode = m_gizmoOperation == ImGuizmo::TRANSLATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
-         }
+            SetGizmoOperation(ImGuizmo::TRANSLATE);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_S))
       {
@@ -790,10 +787,7 @@ void EditorUI::RenderUI()
                   SetSelectionTransform(tmp, false, true, false);
             }
             else
-            {
-               m_gizmoOperation = ImGuizmo::SCALE;
-               m_gizmoMode = m_gizmoOperation == ImGuizmo::SCALE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
-            }
+               SetGizmoOperation(ImGuizmo::SCALE);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_R))
@@ -808,10 +802,7 @@ void EditorUI::RenderUI()
                SetSelectionTransform(tmp, false, false, true);
          }
          else if (!io.KeyCtrl)
-         {
-            m_gizmoOperation = ImGuizmo::ROTATE;
-            m_gizmoMode = m_gizmoOperation == ImGuizmo::ROTATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
-         }
+            SetGizmoOperation(ImGuizmo::ROTATE);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Z))
       {
@@ -1376,6 +1367,20 @@ void EditorUI::UpdateEditableList()
             const bool isRootB = b->GetEditable()->GetPartGroup() == nullptr && b->GetEditable()->GetItemType() != eItemPartGroup;
             return (isRootA != isRootB) ? isRootA : (a->GetOutlinerPath() < b->GetOutlinerPath());
          });
+}
+
+void EditorUI::SetGizmoOperation(ImGuizmo::OPERATION operation)
+{
+   if (operation == ImGuizmo::OPERATION(0))
+   {
+      m_gizmoOperation = operation;
+      return;
+   }
+   if (m_camMode == ViewMode::PreviewCam)
+      m_camMode = ViewMode::EditorCam;
+   // Repeating the same operation toggles between world and local coordinates, switching to another one resets to world
+   m_gizmoMode = m_gizmoOperation == operation ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
+   m_gizmoOperation = operation;
 }
 
 bool EditorUI::GetSelectionTransform(Matrix3D &transform) const

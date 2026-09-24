@@ -186,6 +186,7 @@ private:
    // 3D editor
    ImGuizmo::OPERATION m_gizmoOperation = (ImGuizmo::OPERATION)0;
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
+   void SetGizmoOperation(ImGuizmo::OPERATION operation); // Edit mode actions of the Esc (select), G (grab), S (scale) and R (rotate) shortcuts
    bool GetSelectionTransform(Matrix3D &transform) const;
    bool GetSelectionBounds(FRect3D &bounds) const;
    void SetSelectionTransform(const Matrix3D &transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
