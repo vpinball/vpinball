@@ -80,7 +80,7 @@ int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 
 void PinTableMDI::OnClose()
 {
-   if (m_vpxEditor->IsClosing() || CanClose())
+   if (m_vpxEditor->IsClosing() || m_vpxEditor->IsUnloadingTable() || CanClose())
    {
       if(m_vpxEditor->GetNotesDocker() != nullptr)
       {

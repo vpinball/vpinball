@@ -108,7 +108,7 @@ public:
    void SetActionCur(const string& szaction);
    void SetCursorCur(LPCTSTR lpCursorName);
 
-   void CloseTable(PinTableWnd * ppt);
+   bool CloseTable(PinTableWnd * ppt);
 
    void ToggleToolbar();
    void SetEnableMenuItems();
@@ -175,6 +175,7 @@ public:
    void CreateDocker();
    LayersListDialog* GetLayersListDialog() { return GetLayersDocker()->GetContainLayers()->GetLayersDialog(); }
    bool IsClosing() const { return m_closing; }
+   bool IsUnloadingTable() const { return m_unloadingTable; }
 
    ULONG m_cref;
 

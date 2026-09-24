@@ -1031,17 +1031,18 @@ bool WinEditor::CloseWhatIsPossible()
 {
    while (!m_vtable.empty())
    {
-      if (!m_vtable[0]->GetMDITable()->CanClose())
+      if (!CloseTable(m_vtable[0]))
          return false;
-
-      CloseTable(m_vtable[0]);
    }
 
    return true;
 }
 
-void WinEditor::CloseTable(PinTableWnd * ppt)
+bool WinEditor::CloseTable(PinTableWnd *ppt)
 {
+   if (!ppt->GetMDITable()->CanClose())
+      return false;
+
    m_unloadingTable = true;
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
    m_unloadingTable = false;
@@ -1054,6 +1055,7 @@ void WinEditor::CloseTable(PinTableWnd * ppt)
       if (m_notesDialog && m_notesDialog->IsWindow())
          m_notesDialog->Disable();
    }
+   return true;
 }
 
 void WinEditor::SetEnableMenuItems()
@@ -1351,6 +1353,8 @@ void WinEditor::OnClose()
 
       CWnd::OnClose();
    }
+   else
+      m_closing = false;
 }
 
 void WinEditor::OnDestroy()
