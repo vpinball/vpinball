@@ -212,6 +212,7 @@ void EditorUI::LoadTable()
    // Loading another table discards the edited table's unsaved changes: ask for confirmation first
    if (m_table->FDirty())
    {
+      m_pendingNewTable.reset();
       m_confirmLoadTable = true;
       return;
    }
@@ -237,6 +238,55 @@ void EditorUI::ShowLoadTableDialog()
       },
       new std::shared_ptr<string>(m_pendingLoadPath), //
       m_player->m_playfieldWnd->GetCore(), filters, 1, location.empty() ? nullptr : location.c_str(), false);
+}
+
+void EditorUI::NewTable(const NewTableTemplate templateType)
+{
+   if (IsInspectMode())
+      return;
+   // Creating a new table discards the edited table's unsaved changes: ask for confirmation first
+   if (m_table->FDirty())
+   {
+      m_pendingNewTable = templateType;
+      m_confirmLoadTable = true;
+      return;
+   }
+   LoadTableTemplate(templateType);
+}
+
+void EditorUI::LoadTableTemplate(const NewTableTemplate templateType)
+{
+   string path;
+   switch (templateType)
+   {
+   case NewTableTemplate::Stripped: path = "strippedTable.vpx"s; break;
+   case NewTableTemplate::Example: path = "exampleTable.vpx"s; break;
+   case NewTableTemplate::LightSeq: path = "lightSeqTable.vpx"s; break;
+   case NewTableTemplate::Blank:
+   default: path = "blankTable.vpx"s;
+   }
+   CComObject<PinTable> *table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   // Same initial table setup as the Win32 editor (WinEditor::OpenNewTable)
+   table->m_glassTopHeight = table->m_glassBottomHeight = 210;
+   for (int i = 0; i < 16; i++)
+      table->m_rgcolorcustom[i] = RGB(0, 0, 0);
+   VPXFileFeedback feedback;
+   const HRESULT hr = table->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path), feedback);
+   // Same as the Win32 editor: hash/corrupt content errors still keep the loaded table
+   if (SUCCEEDED(hr) || (hr == APPX_E_BLOCK_HASH_INVALID) || (hr == APPX_E_CORRUPT_CONTENT))
+   {
+      table->m_title = "New Table"s;
+      table->GetSettings().SetIniPath(std::filesystem::path());
+      table->m_filename.clear();
+      m_player->SetTable(table, Player::TableTransition::Replace);
+   }
+   else
+   {
+      table->Release();
+      m_liveUI.PushNotification("Failed to create new table from '" + path + '\'', 10000);
+   }
 }
 
 void EditorUI::ResetCameraFromPlayer()
@@ -403,21 +453,30 @@ void EditorUI::RenderUI()
    if (m_confirmLoadTable)
    {
       m_confirmLoadTable = false;
-      ImGui::OpenPopup("Load Table");
+      ImGui::OpenPopup(m_pendingNewTable ? "New Table" : "Load Table");
    }
-   if (ImGui::BeginPopupModal("Load Table", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   if (ImGui::BeginPopupModal(m_pendingNewTable ? "New Table" : "Load Table", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
    {
       ImGui::TextUnformatted("The current table has unsaved changes which will be lost.");
       ImGui::NewLine();
       if (ImGui::Button("Discard changes"))
       {
          ImGui::CloseCurrentPopup();
-         ShowLoadTableDialog();
+         if (m_pendingNewTable)
+         {
+            LoadTableTemplate(*m_pendingNewTable);
+            m_pendingNewTable.reset();
+         }
+         else
+            ShowLoadTableDialog();
       }
       ImGui::SameLine();
       ImGui::SetItemDefaultFocus();
       if (ImGui::Button("Cancel"))
+      {
+         m_pendingNewTable.reset();
          ImGui::CloseCurrentPopup();
+      }
       ImGui::EndPopup();
    }
 
@@ -843,6 +902,12 @@ void EditorUI::RenderUI()
          // Play a shallow copy of the edited table
          if (!IsInspectMode() && !m_table->IsLocked())
             PlayTest();
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_N))
+      {
+         // New table from the default blank template
+         if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+            NewTable(NewTableTemplate::Blank);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       {

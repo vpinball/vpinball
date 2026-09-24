@@ -17,6 +17,8 @@
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
 
+#include <optional>
+
 class LiveUI;
 class PinTable;
 class Player;
@@ -154,13 +156,24 @@ private:
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
    PartGroup *GetPartGroupForNewPart() const;
 
+   enum class NewTableTemplate
+   {
+      Blank,
+      Stripped,
+      Example,
+      LightSeq
+   };
+
    // File operations (the 'Save As' and 'Load' file dialogs are asynchronous: their result is applied in RenderUI)
    void SaveTable();
    void SaveTableAs();
    void LoadTable();
+   void NewTable(NewTableTemplate templateType);
    void ShowLoadTableDialog();
+   void LoadTableTemplate(NewTableTemplate templateType);
    std::shared_ptr<string> m_pendingSaveAsPath;
    std::shared_ptr<string> m_pendingLoadPath;
+   std::optional<NewTableTemplate> m_pendingNewTable; // New table template awaiting the 'discard unsaved changes' confirmation
    bool m_confirmLoadTable = false; // Request the 'discard unsaved changes' confirmation popup in RenderUI
 
    // Clipboard (copy/paste of parts through the OS clipboard, and of drag point coordinates in point edit mode)
