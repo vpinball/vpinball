@@ -90,11 +90,15 @@ static ScriptClassDef testClass = { { "TestArrayClass" }, []() { return static_c
 
 
 // Helper: invoke a property getter by name on a DynamicDispatch and return the VARIANT result.
+// The member name must be a real BSTR: GetIDsOfNames takes LPOLESTR which binds to the
+// MakeString(BSTR) overload relying on SysStringLen, so a plain literal reads garbage length.
 static VARIANT InvokePropertyGet(DynamicDispatch* disp, const wchar_t* name)
 {
    DISPID dispId = -1;
-   LPOLESTR names[] = { const_cast<LPOLESTR>(name) };
+   BSTR bstrName = SysAllocString(name);
+   LPOLESTR names[] = { bstrName };
    HRESULT hr = disp->GetIDsOfNames(IID_NULL, names, 1, 0, &dispId);
+   SysFreeString(bstrName);
    assert(hr == S_OK);
    (void)hr;
 
@@ -114,6 +118,32 @@ static VARIANT SafeArrayGet2D(SAFEARRAY* psa, LONG row, LONG col)
    LONG ix[2] = { row, col };
    SafeArrayGetElement(psa, ix, &val);
    return val;
+}
+
+// Helper: invoke a property setter by name on a DynamicDispatch with a single BSTR argument.
+static HRESULT InvokePropertyPut(DynamicDispatch* disp, const wchar_t* name, const wchar_t* value)
+{
+   DISPID dispId = -1;
+   BSTR bstrName = SysAllocString(name);
+   LPOLESTR names[] = { bstrName };
+   HRESULT hr = disp->GetIDsOfNames(IID_NULL, names, 1, 0, &dispId);
+   SysFreeString(bstrName);
+   assert(hr == S_OK);
+   (void)hr;
+
+   VARIANT arg;
+   VariantInit(&arg);
+   V_VT(&arg) = VT_BSTR;
+   V_BSTR(&arg) = SysAllocString(value);
+   DISPID putId = DISPID_PROPERTYPUT;
+   DISPPARAMS params = { &arg, &putId, 1, 1 };
+   VARIANT result;
+   VariantInit(&result);
+   UINT argErr = 0;
+   hr = disp->Invoke(dispId, IID_NULL, 0, DISPATCH_PROPERTYPUT, &params, &result, nullptr, &argErr);
+   VariantClear(&arg);
+   VariantClear(&result);
+   return hr;
 }
 
 
@@ -229,4 +259,69 @@ TEST_CASE("Plugin 2D string and bool array marshalling")
    typeLib.UnregisterScriptClass(&testClass);
    typeLib.UnregisterScriptArray(&stringArray2DDef);
    typeLib.UnregisterScriptArray(&boolArray2DDef);
+}
+
+
+// Handlers for UTF-8 string marshalling checks
+namespace TestPluginStrings
+{
+
+static std::string g_receivedString;
+
+static void put_Name(void*, int, ScriptVariant* pArgs, ScriptVariant*) { g_receivedString = pArgs[0].vString.string; }
+
+static void get_Name(void*, int, ScriptVariant*, ScriptVariant* pRet)
+{
+   // UTF-8 encoding of "STAR FOX – BATTLE FOR LYLAT.vpx" (en-dash)
+   static const char* value = "STAR FOX \xE2\x80\x93 BATTLE FOR LYLAT.vpx";
+   const size_t n = strlen(value) + 1;
+   char* s = new char[n];
+   memcpy(s, value, n);
+   pRet->vString = { [](ScriptString* str) { delete[] str->string; }, s };
+}
+
+// Class definition — "Name" is registered both as a getter (string, 0 args) and a setter (void, 1 arg)
+static ScriptClassDef testStringClass = { { "TestStringClass" }, []() { return static_cast<void*>(new int(0)); }, 4,
+   {
+      { { "AddRef" }, { "ulong" }, 0, {}, TestPluginArrays::TestAddRef },
+      { { "Release" }, { "ulong" }, 0, {}, TestPluginArrays::TestRelease },
+      { { "Name" }, { "string" }, 0, {}, get_Name },
+      { { "Name" }, { "void" }, 1, { { "string" } }, put_Name },
+   } };
+
+} // namespace TestPluginStrings
+
+
+TEST_CASE("Plugin string marshalling uses UTF-8")
+{
+   using namespace TestPluginStrings;
+
+   // Script strings are marshalled to plugins as UTF-8 (as the rest of the plugin API expects),
+   // otherwise non-ASCII strings like a table filename containing a U+2013 en-dash get mangled
+   // by the ANSI codepage and fail downstream (e.g. FlexDMD's "bad conversion" from POLE).
+   DynamicTypeLibrary typeLib;
+   typeLib.RegisterScriptClass(&testStringClass);
+   typeLib.ResolveAllClasses();
+
+   void* obj = testStringClass.CreateObject();
+   DynamicDispatch* disp = new DynamicDispatch(&typeLib, &testStringClass, obj);
+
+   SUBCASE("script to plugin")
+   {
+      CHECK(InvokePropertyPut(disp, L"Name", L"STAR FOX \u2013 BATTLE FOR LYLAT.vpx") == S_OK);
+      CHECK(g_receivedString == "STAR FOX \xE2\x80\x93 BATTLE FOR LYLAT.vpx");
+   }
+
+   SUBCASE("plugin to script")
+   {
+      VARIANT result = InvokePropertyGet(disp, L"Name");
+      CHECK(V_VT(&result) == VT_BSTR);
+      if (V_VT(&result) == VT_BSTR)
+         CHECK(wstring(V_BSTR(&result)) == L"STAR FOX \u2013 BATTLE FOR LYLAT.vpx");
+      VariantClear(&result);
+   }
+
+   disp->Release();
+   delete static_cast<int*>(obj);
+   typeLib.UnregisterScriptClass(&testStringClass);
 }
