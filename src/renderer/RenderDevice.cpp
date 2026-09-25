@@ -2091,8 +2091,9 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
       "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), vpxFormat), wcgBackBuffer);
    // Ancillary windows compose directly in sRGB (see Renderer::RenderAncillaryWindow), which only suits an sRGB backbuffer
    // FIXME Correcting it needs the per window tonemapping pass, still disabled
-   if (wcgBackBuffer)
+   if (wcgBackBuffer) {
       PLOGW << "Window " << SDL_GetWindowTitle(wnd->GetCore()) << " shares an HDR10 display with the playfield window, its content may be too bright";
+   }
 #endif
 }
 
