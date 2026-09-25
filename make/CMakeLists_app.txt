@@ -193,6 +193,7 @@ if(PLATFORM STREQUAL "windows")
          $<IF:$<STREQUAL:${ARCH},x64>,openxr_loader64.lib,openxr_loader.lib>
          $<IF:$<STREQUAL:${ARCH},x64>,bgfx64.lib,bgfx.lib>
          $<IF:$<STREQUAL:${ARCH},x64>,bimg64.lib,bimg.lib>
+         $<IF:$<STREQUAL:${ARCH},x64>,bimg_encode64.lib,bimg_encode.lib>
          $<IF:$<STREQUAL:${ARCH},x64>,bx64.lib,bx.lib>
       )
    elseif(RENDERER STREQUAL "GL")
@@ -334,6 +335,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
    target_link_libraries(vpinball
       bgfx64
       bimg64
+      bimg_encode64
       bx64
       SDL364
       SDL3_image64
@@ -445,9 +447,11 @@ elseif(PLATFORM STREQUAL "macos")
       $<$<AND:$<STREQUAL:${ARCH},x64>,$<STREQUAL:${RENDERER},GL>>:-mssse3>
    )
 
+   set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/macos-${ARCH}")
    set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/macos-${ARCH}")
 
    target_link_directories(vpinball PUBLIC
+      "${BUILD_LIBS_DIR}"
       "${RUNTIME_LIBS_DIR}"
    )
 
@@ -461,7 +465,7 @@ elseif(PLATFORM STREQUAL "macos")
       "-framework AppKit"
    )
 
-   target_link_libraries(vpinball PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
+   target_link_libraries(vpinball PUBLIC "$<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx;bimg_encode,glad>")
 
    set(RUNTIME_OUTPUT_NAME "$<IF:$<STREQUAL:${RENDERER},BGFX>,VPinballX_BGFX,VPinballX_GL>")
 
@@ -576,9 +580,11 @@ elseif(PLATFORM STREQUAL "linux")
       COMPILE_FLAGS "$<$<CXX_COMPILER_ID:GNU>:-fno-tree-pta>"
    )
 
+   set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/linux-${ARCH}")
    set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${ARCH}")
 
    target_link_directories(vpinball PUBLIC
+      "${BUILD_LIBS_DIR}"
       "${RUNTIME_LIBS_DIR}"
    )
 
@@ -591,7 +597,7 @@ elseif(PLATFORM STREQUAL "linux")
       winevbs
    )
 
-   target_link_libraries(vpinball PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
+   target_link_libraries(vpinball PUBLIC "$<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx;bimg_encode,glad>")
 
    set(RUNTIME_OUTPUT_NAME "$<IF:$<STREQUAL:${RENDERER},BGFX>,VPinballX_BGFX,VPinballX_GL>")
 
@@ -715,8 +721,8 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
 
    target_link_libraries(vpinball PUBLIC
       bgfx
+      bimg_encode
       bimg
-      bimg_decode
       bx
       SDL3
       SDL3_image

@@ -45,7 +45,7 @@ public:
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, bgfx::TextureFormat::Enum bgfxFormat, unsigned int width, unsigned int height, bool ownTexture);
    bgfx::TextureHandle GetCoreTexture(bool withMipmaps);
-   bool IsUploadPending() const { return (m_textureUpdate != nullptr) || m_pendingMipMapGen; }
+   bool IsUploadPending() const { return (m_textureUpdate != nullptr) || m_pendingMipMapGen || m_compressedUploadPending; }
    class RenderTarget* m_msaaDepthResolve = nullptr;
 
 #elif defined(ENABLE_OPENGL)
@@ -83,6 +83,9 @@ private:
    std::mutex m_textureUpdateMutex;
    bool m_isTextureUpdateLinear;
    const bgfx::Memory* m_textureUpdate = nullptr;
+   std::shared_ptr<const struct CompressedTexture> m_compressed;
+   bool m_compressedUploadPending = false;
+   bool m_usePrecompressed = false;
 #elif defined(ENABLE_OPENGL)
    GLenum m_texTarget = 0;
    GLuint m_texture = 0;

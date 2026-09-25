@@ -5,11 +5,11 @@
 #include "RenderDevice.h"
 
 #if defined(ENABLE_BGFX)
+#include "TextureCompressor.h"
 #include <bx/allocator.h>
 #include <bx/readerwriter.h>
 #include <bx/endian.h>
 #include <bx/math.h>
-#include <bimg/decode.h>
 #endif
 
 Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
@@ -24,7 +24,10 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
    assert(surf != nullptr);
 
 #if defined(ENABLE_BGFX)
-   switch (surf->m_format)
+   m_usePrecompressed = surf->m_compressed && m_rd->m_compressTextures;
+   if (m_usePrecompressed)
+      m_bgfx_format = surf->m_compressed->format;
+   else switch (surf->m_format)
    {
    case BaseTexture::BW: m_bgfx_format = bgfx::TextureFormat::Enum::R8; break;
    case BaseTexture::BW_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::R32F; break;
@@ -200,6 +203,39 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
    // If this is an external render target texture, just return it (no update or mipmap generation allowed)
    if (!m_ownTexture)
       return m_nomipsTexture;
+
+   if (m_usePrecompressed)
+   {
+      const std::lock_guard lock(m_textureUpdateMutex);
+      const uint64_t flags = m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
+      if (m_compressedUploadPending)
+      {
+         if (bgfx::isValid(m_mipsTexture))
+            bgfx::destroy(m_mipsTexture);
+         if (bgfx::isValid(m_nomipsTexture))
+            bgfx::destroy(m_nomipsTexture);
+         m_nomipsTexture = BGFX_INVALID_HANDLE;
+         const bgfx::Memory* mem = bgfx::makeRef(m_compressed->data.data(), static_cast<uint32_t>(m_compressed->data.size()),
+            [](void*, void* userData) { delete static_cast<std::shared_ptr<const CompressedTexture>*>(userData); }, new std::shared_ptr<const CompressedTexture>(m_compressed));
+         m_mipsTexture = bgfx::createTexture2D(m_width, m_height, m_compressed->numMips > 1, 1, m_bgfx_format, flags, mem);
+         bgfx::setName(m_mipsTexture, m_name.c_str());
+         m_compressed = nullptr;
+         m_compressedUploadPending = false;
+      }
+      if (withMipmaps)
+         return m_mipsTexture;
+      if (!bgfx::isValid(m_nomipsTexture))
+      {
+         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags | BGFX_TEXTURE_BLIT_DST);
+         bgfx::setName(m_nomipsTexture, (m_name + ".NoMipMap").c_str());
+         bgfx::TextureRegion src;
+         src.init(m_mipsTexture);
+         bgfx::TextureRegion dst;
+         dst.init(m_nomipsTexture);
+         bgfx::blit(m_rd->m_activeViewId, dst, src);
+      }
+      return m_nomipsTexture;
+   }
 
    // Flag to keep a variant without mipmaps (discarded otherwise when a texture is both used with and without mipmap sampling)
    m_useNoMip |= !withMipmaps;
@@ -396,6 +432,21 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    };
 
    m_isTextureUpdateLinear = BaseTexture::IsLinearFormat(surf->m_format) || force_linear_rgb;
+   if (m_usePrecompressed)
+   {
+      delete ref;
+      std::shared_ptr<const CompressedTexture> compressed = surf->m_compressed;
+      if (compressed == nullptr || compressed->format != m_bgfx_format || compressed->width != m_width || compressed->height != m_height)
+         compressed = TextureCompressor::Compress(*surf, m_bgfx_format);
+      if (compressed == nullptr)
+      {
+         PLOGE << "Failed to update compressed texture '" << m_name << '\'';
+         return;
+      }
+      m_compressed = compressed;
+      m_compressedUploadPending = true;
+      return;
+   }
    switch (surf->m_format)
    {
    case BaseTexture::BW: assert(m_bgfx_format == bgfx::TextureFormat::Enum::R8); break;

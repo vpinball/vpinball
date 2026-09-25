@@ -39,7 +39,7 @@ enum VPinballMaxTexDimension: CInt {
     case max1536 = 1536
     case max1792 = 1792
     case max2048 = 2048
-    case max3172 = 3172
+    case max3072 = 3072
     case max4096 = 4096
 
     static let all: [VPinballMaxTexDimension] = [.max256,
@@ -51,7 +51,7 @@ enum VPinballMaxTexDimension: CInt {
                                                  .max1536,
                                                  .max1792,
                                                  .max2048,
-                                                 .max3172,
+                                                 .max3072,
                                                  .max4096,
                                                  .unlimited]
 

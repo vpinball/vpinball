@@ -51,7 +51,7 @@ class SettingsModel: ObservableObject {
 
         maxTexDimensionIndex = VPinballMaxTexDimension(rawValue: vpinballManager.loadValue(.player,
                                                                                            "MaxTexDimension",
-                                                                                           1024))
+                                                                                           3072))
             .flatMap { VPinballMaxTexDimension.all.firstIndex(of: $0) } ?? 0
 
         // Web Server

@@ -20,6 +20,7 @@
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
+#include "renderer/TextureCompressor.h"
 #include "renderer/trace.h"
 #include "renderer/typedefs3D.h"
 #include "renderer/VRDevice.h"
@@ -674,8 +675,22 @@ void Player::InitTableSession(const bool isInitial)
       int nLoadInProgress = 0;
       vector<Texture *> failedPreloads;
       const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->GetSettings().GetPlayer_MaxTexDimension());
-      auto loadImage = [progressPos = m_loadProgress.GetProgress() + progressPhysicLength, maxTexDim, &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](
-                          Texture *image, bool resizeOnLowMem)
+#ifdef ENABLE_BGFX
+      const bool compressTextures = m_renderer->m_renderDevice->m_compressTextures;
+      std::filesystem::path texCacheFolder;
+      if (compressTextures && FileExists(m_ptable->m_filename))
+      {
+         texCacheFolder = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true) / "textures"sv;
+         std::error_code ec;
+         std::filesystem::create_directories(texCacheFolder, ec);
+      }
+      TextureCompressor::ResetStats();
+#endif
+      auto loadImage = [progressPos = m_loadProgress.GetProgress() + progressPhysicLength, maxTexDim,
+#ifdef ENABLE_BGFX
+                          compressTextures, &texCacheFolder,
+#endif
+                          &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](Texture *image, bool resizeOnLowMem)
       {
          bool readyToLoad = false;
          while (!readyToLoad)
@@ -707,12 +722,38 @@ void Player::InitTableSession(const bool isInitial)
                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             else
             {
-               const auto buffer = image->GetRawBitmap(resizeOnLowMem, maxTexDim);
+               std::shared_ptr<const BaseTexture> buffer;
+#ifdef ENABLE_BGFX
+               std::filesystem::path cacheFile;
+               if (compressTextures && !texCacheFolder.empty())
+               {
+                  std::stringstream key;
+                  key << std::hex << std::setfill('0');
+                  for (int i = 0; i < 16; i++)
+                     key << std::setw(2) << static_cast<int>(image->GetMD5Hash()[i]);
+                  key << std::dec << '_' << maxTexDim << '_' << TextureCompressor::GetFormatName(TextureCompressor::SelectFormat(false)) << ".vpxtex";
+                  cacheFile = texCacheFolder / key.str();
+                  if (const auto cached = TextureCompressor::LoadCached(cacheFile); cached)
+                  {
+                     cached->SetName(image->m_name);
+                     image->SetIsOpaque(cached->IsOpaque());
+                     buffer = cached;
+                  }
+               }
+#endif
+               if (buffer == nullptr)
+                  buffer = image->GetRawBitmap(resizeOnLowMem, maxTexDim);
+#ifdef ENABLE_BGFX
+               if (buffer && compressTextures && buffer->m_compressed == nullptr)
+                  buffer->m_compressed = TextureCompressor::LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile);
+#endif
                const std::lock_guard<std::mutex> lock(mutex);
                if (buffer)
                {
                   image->IsOpaque();
-                  bool uploaded = false;
+                  // We could upload all images, but this would need support for dynamic change of 'force linear' and would lead to load all VR textures on lower end systems
+                  // Instead we register it to the texture manager that will hold a strong reference and upload when needed
+                  m_renderer->m_renderDevice->m_texMan.AddPendingUpload(image, buffer);
                   if (preloadCache)
                      for (auto node = preloadCache->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
                      {
@@ -725,16 +766,9 @@ void Player::InitTableSession(const bool isInitial)
                            const std::lock_guard<std::mutex> lock2(mutex);
                            #endif
                            m_renderer->m_renderDevice->UploadTexture(image, linearRGB);
-                           uploaded = true;
                            break;
                         }
                      }
-                  if (!uploaded)
-                  {
-                     // We could upload all images, but this would need support for dynamic change of 'force linear' and would lead to load all VR textures on lower end systems
-                     // Instead we register it to the texture manager that will hold a strong reference and upload when needed
-                     m_renderer->m_renderDevice->m_texMan.AddPendingUpload(image);
-                  }
                   if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
                   {
                      PLOG(buffer->m_resizedOnLowMem ? plog::Severity::error : plog::Severity::info) << "Image '" << image->m_name << "' was downsized from " << image->m_width << 'x' << image->m_height << " to " << buffer->width() << 'x' << buffer->height()
@@ -784,6 +818,11 @@ void Player::InitTableSession(const bool isInitial)
       // Due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
       for (auto image : failedPreloads)
          loadImage(image, true);
+
+#ifdef ENABLE_BGFX
+      if (compressTextures)
+         TextureCompressor::LogStats();
+#endif
    }
 
    //----------------------------------------------------------------------------------

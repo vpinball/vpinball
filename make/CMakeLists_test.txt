@@ -175,6 +175,7 @@ if(PLATFORM STREQUAL "windows")
          $<IF:$<STREQUAL:${ARCH},x64>,openxr_loader64.lib,openxr_loader.lib>
          $<IF:$<STREQUAL:${ARCH},x64>,bgfx64.lib,bgfx.lib>
          $<IF:$<STREQUAL:${ARCH},x64>,bimg64.lib,bimg.lib>
+         $<IF:$<STREQUAL:${ARCH},x64>,bimg_encode64.lib,bimg_encode.lib>
          $<IF:$<STREQUAL:${ARCH},x64>,bx64.lib,bx.lib>
       )
    elseif(RENDERER STREQUAL "GL")
@@ -298,6 +299,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
    target_link_libraries(vpx-test
       bgfx64
       bimg64
+      bimg_encode64
       bx64
       SDL364
       SDL3_image64
@@ -397,6 +399,7 @@ elseif(PLATFORM STREQUAL "macos")
    )
 
    target_link_directories(vpx-test PUBLIC
+      "${BUILD_LIBS_DIR}"
       "${RUNTIME_LIBS_DIR}"
    )
 
@@ -410,7 +413,7 @@ elseif(PLATFORM STREQUAL "macos")
       "-framework AppKit"
    )
 
-   target_link_libraries(vpx-test PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
+   target_link_libraries(vpx-test PUBLIC "$<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx;bimg_encode,glad>")
 
    set_target_properties(vpx-test PROPERTIES
       RUNTIME_OUTPUT_NAME "vpx-test"
@@ -495,6 +498,7 @@ elseif(PLATFORM STREQUAL "linux")
    )
 
    target_link_directories(vpx-test PUBLIC
+      "${BUILD_LIBS_DIR}"
       "${RUNTIME_LIBS_DIR}"
    )
 
@@ -507,7 +511,7 @@ elseif(PLATFORM STREQUAL "linux")
       winevbs
    )
 
-   target_link_libraries(vpx-test PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
+   target_link_libraries(vpx-test PUBLIC "$<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx;bimg_encode,glad>")
 
    set_target_properties(vpx-test PROPERTIES
       RUNTIME_OUTPUT_NAME "vpx-test"

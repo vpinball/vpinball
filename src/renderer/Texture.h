@@ -44,6 +44,9 @@ public:
    ~BaseTexture() override;
 
    static std::shared_ptr<BaseTexture> Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
+#if defined(ENABLE_BGFX)
+   static std::shared_ptr<BaseTexture> CreateCompressedOnly(std::shared_ptr<const struct CompressedTexture> compressed, const Format format, const bool isOpaque) noexcept;
+#endif
    static std::shared_ptr<BaseTexture> CreateFromFile(const std::filesystem::path &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromData(const void *data, const size_t size, const bool isImageData = true, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
@@ -107,6 +110,10 @@ public:
    unsigned int m_realWidth, m_realHeight;
    const Format m_format;
 
+#if defined(ENABLE_BGFX)
+   mutable std::shared_ptr<const struct CompressedTexture> m_compressed;
+#endif
+
    bool IsMD5HashComputed() const { return !m_isMD5Dirty; }
    uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
    void SetMD5Hash(uint8_t* md5) const { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
@@ -116,7 +123,7 @@ public:
    void SetIsOpaque(const bool v) const { m_isOpaque = v; m_isOpaqueDirty = false; }
 
 private:
-   BaseTexture(const unsigned int w, const unsigned int h, const Format format);
+   BaseTexture(const unsigned int w, const unsigned int h, const Format format, const bool allocate = true);
    static std::shared_ptr<BaseTexture> CreateFromFreeImage(struct FIBITMAP *dib, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
 
    void UpdateMD5() const;
@@ -156,6 +163,7 @@ public:
 
    uint64_t GetLiveHash() const override { return m_liveHash; }
    const string& GetName() const override { return m_name; }
+   void SetIsOpaque(const bool v) const;
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override; // Lazily created view of the image, suitable for GPU sampling
@@ -184,7 +192,6 @@ private:
    void SetMD5Hash(uint8_t *md5) const;
 
    void UpdateOpaque() const;
-   void SetIsOpaque(const bool v) const;
 
    PinBinary *const m_ppb; // Original data blob of the image, always defined
    const uint64_t m_liveHash;

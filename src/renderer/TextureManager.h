@@ -22,7 +22,7 @@ public:
    }
 
    void AddPlaceHolder(ITexManCacheable* memtex);
-   void AddPendingUpload(ITexManCacheable* memtex);
+   void AddPendingUpload(ITexManCacheable* memtex, std::shared_ptr<const BaseTexture> bitmap = nullptr);
    std::shared_ptr<Sampler> LoadTexture(ITexManCacheable* const memtex, const bool force_linear_rgb);
    void SetDirty(ITexManCacheable* memtex);
    void UnloadTexture(ITexManCacheable* memtex);

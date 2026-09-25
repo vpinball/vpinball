@@ -161,7 +161,7 @@ PropFloat(Player, HDRGlobalExposure, "HDR Display Global Exposure"s, "Global exp
 PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter"s, false);
 PropBool(Player, ForceMotionBlurOff, "Disable Motion Blur"s, "Disable ball motion blur.\nThis feature is BGFX only (and not supported in VR or headtracking)"s, false);
 PropBool(Player, ForceAnisotropicFiltering, "Force Anisotropic Filtering"s, "Force anisotropic filtering for better rendering quality/texture clarity at the cost of a bit of performance"s, true);
-PropBool(Player, CompressTextures, "Compress Textures"s, "Automatically compress textures at game startup (slow) for better performance"s, false);
+PropBool(Player, CompressTextures, "Compress Textures"s, "Compress textures to GPU formats to reduce memory use (slow on first load, cached afterwards)"s, g_isMobile);
 PropBool(Player, UseNVidiaAPI, "Alternative Depth Buffer"s, "Use NVidia API to manage Depth Buffer on a DirectX 9 build. May solve some rendering issues"s, false);
 PropBool(Player, SoftwareVertexProcessing, "Software Vertex Processing"s, "Activate this on a DirectX 9 build, if you have issues using an old Intel graphics chip"s, false);
 PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
@@ -169,7 +169,7 @@ PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
 PropEnum(Player, PFReflection, "Reflection Quality"s,
    "Limit the quality of reflections for better performance.\n'Dynamic' is recommended and will give the best results, but may harm performance.\n'Static Only' has no performance cost (except for VR rendering).\nOther options feature different trade-offs between quality and performance."s,
    int, 5, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
-PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load"s, 512, 16384, g_isMobile ? 1536 : 16384);
+PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load"s, 512, 16384, g_isMobile ? 3072 : 16384);
 PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Level of detail for balls and ramps"s, 1, 10, 10);
 PropEnum(Player, BGSet, "View Mode"s, "Select between desktop, cabinet or 'full single screen' viewing mode configurations (if a table has set them up correctly)"s, int, 0, "Desktop / Full Single Screen"s, "Cabinet"s, "Full Single Screen"s);
 PropEnum(Player, CabinetAutofitMode, "Cabinet Autofit Mode"s, "Select between manual setup, automatic fitting without visual stretch or automatic fitting with table stretching"s, int, 0,
