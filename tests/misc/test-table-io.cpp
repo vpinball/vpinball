@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "../vpx-test.h"
 
+#include "core/VPApp.h"
 #include "parts/pintable.h"
 #include "utils/fileio.h"
 #include "utils/BiffReader.h"
@@ -425,4 +426,20 @@ TEST_CASE("Table file save/load round-trip")
 
    reloaded->Release();
    table->Release();
+}
+
+
+TEST_CASE("Bundled table templates pass hash validation")
+{
+   for (const char *file : { "blankTable.vpx", "strippedTable.vpx", "exampleTable.vpx", "lightSeqTable.vpx" })
+   {
+      CComObject<PinTable> *table;
+      CComObject<PinTable>::CreateInstance(&table);
+      table->AddRef();
+      TestFileFeedback feedback;
+      const std::filesystem::path filePath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, file);
+      INFO("Loading bundled table '", file, "'");
+      CHECK(SUCCEEDED(table->LoadGameFromFilename(filePath, feedback)));
+      table->Release();
+   }
 }

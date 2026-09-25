@@ -284,7 +284,7 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
       const int sizeRead = static_cast<int>(newpos - pos);
       if (const int toSkip = recordSize - sizeRead; toSkip > 0)
       {
-         if (m_stream)
+         if (m_stream && !m_hash)
          {
             m_stream->seek(newpos + toSkip);
          }
