@@ -37,6 +37,14 @@ template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T> &l
    return sorted;
 }
 
+// Push a dimmed selection color, used to highlight the non active elements of a multi selection
+// less than the active one (the element edited in the property pane keeps the normal selection color)
+static void PushInactiveSelectionColor()
+{
+   const ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Header);
+   ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(color.x, color.y, color.z, color.w * 0.4f));
+}
+
 bool OutlinerPanel::MatchesFilter(const string &name) const
 {
    if (m_filter.empty())
@@ -238,7 +246,12 @@ void OutlinerPanel::Render(float topBarHeight)
             {
                if (revealPart && revealPart->GetEditable()->IsChild(group))
                   ImGui::SetNextItemOpen(true);
+               const bool inactiveSel = editor.IsPartSelected(edit) && edit != editor.m_selection.GetPart();
+               if (inactiveSel)
+                  PushInactiveSelectionColor();
                opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowOverlap | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0));
+               if (inactiveSel)
+                  ImGui::PopStyleColor();
                partDragSource(edit);
                partDropTarget(group);
                if (edit == revealPart && !ImGui::IsItemVisible())
@@ -278,8 +291,14 @@ void OutlinerPanel::Render(float topBarHeight)
                Selection sel(edit);
                if (show)
                {
-                  if (ImGui::Selectable(
-                         (edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), editor.IsPartSelected(edit), ImGuiSelectableFlags_AllowOverlap))
+                  const bool inactiveSel = editor.IsPartSelected(edit) && edit != editor.m_selection.GetPart();
+                  if (inactiveSel)
+                     PushInactiveSelectionColor();
+                  const bool clicked = ImGui::Selectable(
+                     (edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), editor.IsPartSelected(edit), ImGuiSelectableFlags_AllowOverlap);
+                  if (inactiveSel)
+                     ImGui::PopStyleColor();
+                  if (clicked)
                   {
                      const ImGuiIO &selIO = ImGui::GetIO();
                      if (selIO.KeyCtrl)
@@ -340,7 +359,12 @@ template <class T> void OutlinerPanel::RenderResourceList(const char *label, vec
          continue;
       ImGui::PushID(pos++);
       const bool selected = std::ranges::find(multiSel, item) != multiSel.end();
+      const bool inactiveSel = selected && editor.m_selection != Selection(item);
+      if (inactiveSel)
+         PushInactiveSelectionColor();
       const bool clicked = ImGui::Selectable(nameOf(item).c_str(), selected);
+      if (inactiveSel)
+         ImGui::PopStyleColor();
       ImGui::PopID();
       if (!clicked)
          continue;
