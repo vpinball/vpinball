@@ -99,7 +99,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = Not inverseKeyCoinDoor
 			Case keySoundDiag    .Switch(swSoundDiag)     = Not .Switch(swSoundDiag)
 			Case keyMasterEnter  .Switch(swBoxDoor)       = Not .Switch(swBoxDoor)
-			Case keyBangBack     vpmNudge.DoNudge   0,6
+			Case keyBangBack     vpmNudge.DoMechTilt
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
