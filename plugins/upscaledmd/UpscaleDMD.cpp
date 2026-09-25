@@ -429,8 +429,8 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
                   upscaler = std::make_unique<DMDUpscaler>(items.front());
             });
       });
-   msgApi->RegisterSetting(endpointId, &upscaleModeProp);
    dmdSource->Subscribe();
+   msgApi->RegisterSetting(endpointId, &upscaleModeProp);
 }
 
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload()
