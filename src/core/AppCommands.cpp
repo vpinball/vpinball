@@ -701,6 +701,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             #ifdef VPX_ENABLE_WIN32_EDITOR
             case OPTION_EDIT: commands.push_back(std::make_unique<Win32EditCommand>(tableFileName)); break;
             #endif
+            default: break;
             }
          }
          break;

@@ -380,29 +380,33 @@ void EditorChrome::RenderStatusOverlay()
    case ViewMode::DesktopBackdrop: ImGui::TextUnformatted("Desktop Backdrop"); break;
    }
    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + ImGui::GetStyle().FramePadding.x, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
-   switch (editor.m_gizmoOperation)
+   const char *gizmoIcon = nullptr;
+   const char *gizmoLabel = nullptr;
+   if (editor.m_gizmoOperation == ImGuizmo::OPERATION(0))
    {
-   case ImGuizmo::OPERATION(0):
-      ImGui::TextUnformatted(ICON_FK_MOUSE_POINTER);
+      gizmoIcon = ICON_FK_MOUSE_POINTER;
+      gizmoLabel = "Select";
+   }
+   else if (editor.m_gizmoOperation == ImGuizmo::TRANSLATE)
+   {
+      gizmoIcon = ICON_FK_ARROWS;
+      gizmoLabel = "Grab";
+   }
+   else if (editor.m_gizmoOperation == ImGuizmo::SCALE)
+   {
+      gizmoIcon = ICON_FK_EXPAND;
+      gizmoLabel = "Scale";
+   }
+   else if (editor.m_gizmoOperation == ImGuizmo::ROTATE)
+   {
+      gizmoIcon = ICON_FK_REPEAT;
+      gizmoLabel = "Rotate";
+   }
+   if (gizmoIcon)
+   {
+      ImGui::TextUnformatted(gizmoIcon);
       ImGui::SameLine(labelAlign);
-      ImGui::TextUnformatted("Select");
-      break;
-   case ImGuizmo::TRANSLATE:
-      ImGui::TextUnformatted(ICON_FK_ARROWS);
-      ImGui::SameLine(labelAlign);
-      ImGui::TextUnformatted("Grab");
-      break;
-   case ImGuizmo::SCALE:
-      ImGui::TextUnformatted(ICON_FK_EXPAND);
-      ImGui::SameLine(labelAlign);
-      ImGui::TextUnformatted("Scale");
-      break;
-   case ImGuizmo::ROTATE:
-      ImGui::TextUnformatted(ICON_FK_REPEAT);
-      ImGui::SameLine(labelAlign);
-      ImGui::TextUnformatted("Rotate");
-      break;
-   default: break;
+      ImGui::TextUnformatted(gizmoLabel);
    }
    if (editor.m_pointEditPart)
       ImGui::TextUnformatted("Drag Point Edit (Tab to exit)");
