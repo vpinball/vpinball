@@ -25,10 +25,8 @@ class PropertyPane;
 class PropertiesPanel
 {
 public:
-   explicit PropertiesPanel(EditorUI &editor)
-      : m_editor(editor)
-   {
-   }
+   explicit PropertiesPanel(EditorUI &editor);
+   ~PropertiesPanel();
 
    void Render(float topBarHeight);
 
