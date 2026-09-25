@@ -19,6 +19,13 @@
 namespace VPX::EditorUI
 {
 
+PropertiesPanel::PropertiesPanel(EditorUI &editor)
+   : m_editor(editor)
+{
+}
+
+PropertiesPanel::~PropertiesPanel() = default;
+
 void PropertiesPanel::Render(float topBarHeight)
 {
    EditorUI &editor = m_editor;
