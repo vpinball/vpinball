@@ -1808,19 +1808,19 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
 {
    if (m_pointEditPart)
    {
-      // In drag point edit mode, the gizmo operates on the selected points (positioned at their bounding box center)
+      // In drag point edit mode, the gizmo operates on the selected points (positioned at their centroid,
+      // which stays fixed when rotating or scaling the points around it, unlike the bounding box center)
       if (m_pointSel.empty())
          return false;
-      float minX = FLT_MAX, maxX = -FLT_MAX, minY = FLT_MAX, maxY = -FLT_MAX, z = 0.f;
+      Vertex2D center(0.f, 0.f);
+      float z = 0.f;
       for (const DragPoint *point : m_pointSel)
       {
-         minX = min(minX, point->GetX());
-         maxX = max(maxX, point->GetX());
-         minY = min(minY, point->GetY());
-         maxY = max(maxY, point->GetY());
+         center += Vertex2D(point->GetX(), point->GetY());
          z += m_pointEditPart->GetDragPointZ(point);
       }
-      transform = Matrix3D::MatrixTranslate(0.5f * (minX + maxX), 0.5f * (minY + maxY), z / (float)m_pointSel.size());
+      const float invCount = 1.f / (float)m_pointSel.size();
+      transform = Matrix3D::MatrixTranslate(center.x * invCount, center.y * invCount, z * invCount);
       return true;
    }
    if (m_selection.GetType() == Selection::S_EDITABLE)
@@ -1878,7 +1878,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
       GetSelectionTransform(oldTransform);
       Matrix3D invOldTransform(oldTransform);
       invOldTransform.Invert();
-      const Matrix3D delta = newTransform * invOldTransform;
+      const Matrix3D delta = invOldTransform * newTransform;
       for (DragPoint *point : m_pointSel)
       {
          const Vertex3Ds v = delta * point->GetVertex();
