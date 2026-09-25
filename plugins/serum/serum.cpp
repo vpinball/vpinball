@@ -8,6 +8,8 @@
 #include "common.h"
 #include "serum-decode.h"
 
+#include <array>
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cstdlib>
@@ -60,6 +62,35 @@ MSGPI_INT_VAL_SETTING(serumIgnoreUnknownFramesTimeoutProp, "IgnoreUnknownFramesT
    "Milliseconds to keep the last colorized frame while frames cannot be identified (0 disables)", true, 0, 65535, 0);
 MSGPI_INT_VAL_SETTING(serumMaxUnknownFramesToSkipProp, "MaximumUnknownFramesToSkip", "Maximum unknown frames to skip",
    "How many consecutive unidentified frames may be skipped (0 disables)", true, 0, 255, 0);
+// How often the colorizer looks for a new DMD frame to identify.
+//
+// The default is the 60 Hz the original PinMAME code evaluated frames at, and
+// what this plugin has always used. Nothing depends on the rate: rotation
+// timing runs off the wall clock, so it only decides which frames are seen.
+//
+// It is a setting because which frames are seen is ROM-dependent. A ROM that
+// emits a frame every 2-4 ms -- transitional runs, a wipe or a fade -- is
+// sampled once in four to eight here, and GetIdentifyFrame is a latest-value
+// register with no history, so the rest are gone. Usually that is what the
+// colorization wants, those frames being ones no author colorized. But the
+// convention is to identify the first frame of such a run and let it start a
+// rotation scene standing in for the sequence, and that frame is the newest one
+// for only as long as the run's own frame time. A 60 Hz poll lands inside a 4 ms
+// window roughly one time in four; when it misses, the scene never starts and
+// the transition sits on the last good frame instead of animating.
+//
+// Lowering this catches those frames, at the price of running Serum_Colorize on
+// every distinct frame rather than one in several -- and an unidentified frame
+// takes libserum's full-search path. Whether that is affordable depends on the
+// host, which is the other reason this is not simply lowered for everyone: a
+// desktop absorbs it and a Raspberry Pi or Android device may not.
+//
+// PUP triggers do not depend on this. Authors put those on clearly identifiable
+// frames outside the fast runs, which stay newest long enough to be sampled at
+// any of these rates.
+MSGPI_INT_VAL_SETTING(serumIdentifyPollIntervalProp, "IdentifyPollInterval", "Identify poll interval (microseconds)",
+   "How often to look for a new DMD frame to colorize. 16666 is 60Hz, the historical rate. Lower values catch the short-lived frames that start a rotation scene, at a higher CPU cost.",
+   true, 250, 50000, 16666);
 // A Serum v2 colorization can carry a 32 row and a 64 row output, and by
 // default both are requested and both are published. Two things go wrong with
 // that in a host driving one fixed panel:
@@ -140,6 +171,100 @@ static void SERUM_CALLBACK OnSerumLog(const char* format, va_list args, const vo
    vsnprintf(buffer, sizeof(buffer), format, args);
    LOGI(buffer);
 }
+
+// A colorized frame handed to consumers without blocking the colorize thread.
+//
+// The colorizer writes the slot it is not handing out and then flips an atomic
+// index, so GetRenderFrame is an atomic load and a pointer. It can no longer
+// wait on a colorize pass, which is what allowed a long pass -- a scene
+// trigger, or a run of rotations -- to stall the host's main loop for as long
+// as it took. Publishing a copy is also what lets the pass run outside any
+// lock at all: libserum's state is then touched only by the colorize thread.
+//
+// Two slots are enough. A consumer copies the frame it is given straight away,
+// and the slot it was handed is not written again until the pass after next --
+// 33 ms at the colorizer's 60 Hz. Buffers only ever grow, so a consumer still
+// holding a pointer from an older and larger advertised size cannot read past
+// the end of it; that is the hazard the previous FIXME described, where a
+// resize could pull the buffer out from under a frame already handed out.
+class PublishedFrame
+{
+public:
+   // The slot to fill, sized for this frame. Only ever the one not being
+   // handed out, so a consumer reading the published slot is untouched.
+   uint8_t* Prepare(size_t size)
+   {
+      m_preparedSize = size;
+      std::vector<uint8_t>& buffer = m_buffers[1 - m_slot.load(std::memory_order_relaxed)];
+      if (buffer.size() < size)
+         buffer.resize(size);
+      return buffer.data();
+   }
+
+   // Makes the prepared slot the one consumers get. The frame id is stored
+   // before the flip and read after it, so a consumer never pairs one frame's
+   // id with another frame's pixels.
+   void Commit(unsigned int frameId)
+   {
+      const unsigned int next = 1 - m_slot.load(std::memory_order_relaxed);
+      m_frameIds[next] = frameId;
+      m_sizes[next] = m_preparedSize;
+      m_slot.store(next, std::memory_order_release);
+   }
+
+   // Commits only when the prepared frame differs from the one already on
+   // offer, and reports whether it did.
+   //
+   // The colorize pass knows that *something* happened -- a frame identified, a
+   // scene matched, a rotation step applied -- but not that the pixels differ,
+   // and those are not the same question. Two distinct DMD frames can colorize
+   // to the same output, and a rotation can come back reporting a rotation
+   // whose visible result is identical. Handing the host a fresh frame id for
+   // identical pixels makes it re-render and, on a host driving real hardware,
+   // re-transmit them: ZeDMD gets the frame over a serial link whose bandwidth
+   // is the thing that limits the panel.
+   //
+   // A frame-sized memcmp is far cheaper than either.
+   bool CommitIfChanged(unsigned int frameId)
+   {
+      const unsigned int current = m_slot.load(std::memory_order_relaxed);
+      if (m_sizes[current] == m_preparedSize && m_preparedSize != 0
+         && memcmp(m_buffers[current].data(), m_buffers[1 - current].data(), m_preparedSize) == 0)
+         return false;
+      Commit(frameId);
+      return true;
+   }
+
+   bool Publish(const void* data, size_t size, unsigned int frameId)
+   {
+      memcpy(Prepare(size), data, size);
+      return CommitIfChanged(frameId);
+   }
+
+   [[nodiscard]] DisplayFrame Get() const
+   {
+      const unsigned int slot = m_slot.load(std::memory_order_acquire);
+      return { m_frameIds[slot], m_buffers[slot].data() };
+   }
+
+   void Reset()
+   {
+      m_buffers[0].clear();
+      m_buffers[1].clear();
+      m_frameIds = { 0, 0 };
+      m_sizes = { 0, 0 };
+      m_preparedSize = 0;
+      m_slot.store(0, std::memory_order_release);
+   }
+
+private:
+   std::array<std::vector<uint8_t>, 2> m_buffers;
+   std::array<unsigned int, 2> m_frameIds { 0, 0 };
+   // Frame sizes, which are not the buffer sizes: buffers only grow.
+   std::array<size_t, 2> m_sizes { 0, 0 };
+   size_t m_preparedSize = 0;
+   std::atomic<unsigned int> m_slot { 0 };
+};
 
 class SerumColorizer
 {
@@ -244,7 +369,7 @@ public:
    // shared event letter.
    void QueueSceneTrigger(uint16_t event)
    {
-      std::lock_guard targetLock(m_stateMutex);
+      std::lock_guard scenesLock(m_scenesMutex);
       if (std::find(m_pendingScenes.begin(), m_pendingScenes.end(), event) == m_pendingScenes.end())
          m_pendingScenes.push_back(event);
    }
@@ -277,25 +402,53 @@ private:
       m_colorizedDmd.ClearItems();
       m_advertisedWidth32 = 0;
       m_advertisedWidth64 = 0;
-      m_colorFrameV1.clear();
+      m_advertisedV1Size = 0;
+      m_publishedV1.Reset();
+      m_published32.Reset();
+      m_published64.Reset();
    }
 
    void ColorizeThread(DisplaySrcId dmdId)
    {
       SetThreadName("Serum.ColorizeThread"s);
       constexpr uint32_t SERUM_MAX_ROTATION_DELAY_MS = 2048;
+      // How far behind its own schedule an animation may fall before it gives
+      // up on catching up and resynchronises to the present.
+      //
+      // A pass that was late -- the thread descheduled, the host busy -- would
+      // otherwise compute every step it missed in one go, which is a CPU burst
+      // on exactly the hosts least able to absorb it. Nobody can see a colour
+      // rotation that was due a tenth of a second ago, so those steps are not
+      // worth the time they cost.
+      //
+      // The bound is a lag and not a step count on purpose. A colorization is
+      // free to ask for steps every few milliseconds, and a pass legitimately
+      // owes several of them; capping the count would run such an animation in
+      // slow motion. Capping the lag only ever discards work that is already
+      // too old to display.
+      //
+      // Nothing but appearance is at stake either way: libserum sets
+      // mySerum.triggerID in Serum_Colorize's path and in Serum_Scene_Trigger
+      // alone, never in Serum_ApplyRotationsv1/v2 or Serum_RenderScene. Steps
+      // dropped here therefore cannot cost a trigger -- including the frames of
+      // a rotation scene, which is what a transitional run gets replaced by.
+      constexpr auto MAX_ROTATION_LAG = std::chrono::milliseconds(100);
       unsigned int lastFrameId = 0;
       bool hasAnimation = false;
       std::chrono::steady_clock::time_point animationTick;
       std::chrono::steady_clock::time_point animationNextTick;
       while (m_isRunning)
       {
-         // Original PinMAME code would evaluate DMD frames at a fixed 60 FPS and color rotation are also based on a 60FPS rate. So update at this pace.
-         std::this_thread::sleep_for(std::chrono::microseconds(16666));
+         // Re-read every pass, so the interval can be tuned on a running host.
+         // See serumIdentifyPollIntervalProp for what it trades. Floored at the
+         // setting's own minimum: a host that registered the setting but left
+         // the value at zero would otherwise turn this thread into a spin loop.
+         std::this_thread::sleep_for(std::chrono::microseconds(std::max(250, serumIdentifyPollIntervalProp_Get())));
 
-         // Lock stateMutex as we directly returns internal Serum colorized frames (which may be modified by the calls here after)
-         std::unique_lock targetLock(m_stateMutex);
-
+         // No lock is taken around the colorization below. libserum's state is
+         // reachable from this thread alone, and what consumers read is a copy
+         // published at the end of the pass -- so a pass of any length cannot
+         // hold up a consumer.
          bool updated = false;
 
          // Process incoming frames from DMD source
@@ -334,18 +487,40 @@ private:
                // another library to keep zeroing a sentinel, and because the
                // setting says "do not put these on the bus" -- which is worth
                // saying where the bus message is sent.
+               //
+               // The value is copied rather than pointed at. This runnable is
+               // queued, not run: it executes on the main thread whenever the
+               // host next drains its timers, by which time this thread has
+               // colorized further frames and libserum's triggerID holds one
+               // of them. Passing &m_pSerum->triggerID therefore broadcast a
+               // trigger the frame never carried -- and, if the colorization
+               // was torn down in between, read it through a colorizer that no
+               // longer existed. The plugin API says as much: "if a plugin
+               // uses multithreading, it must perform all needed
+               // synchronization and data copies".
                if (serumPupTriggersProp_Get() && m_pSerum->triggerID != 0xffffffff)
-                  msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &colorizer->m_pSerum->triggerID); }, nullptr);
+                  msgApi->RunOnMainThread(
+                     endpointId, 0,
+                     [](void* userData)
+                     {
+                        unsigned int* triggerId = static_cast<unsigned int*>(userData);
+                        msgApi->BroadcastMsg(endpointId, onDmdTrigger, triggerId);
+                        delete triggerId;
+                     },
+                     new unsigned int(m_pSerum->triggerID));
 
                updated = true;
             });
 
          // Apply any scene triggers before the animation catch-up below, so a
          // scene that starts a rotation gets its timer set in this same pass.
-         if (!m_pendingScenes.empty())
+         std::vector<uint16_t> scenes;
          {
-            std::vector<uint16_t> scenes;
+            std::lock_guard scenesLock(m_scenesMutex);
             scenes.swap(m_pendingScenes);
+         }
+         if (!scenes.empty())
+         {
             for (const uint16_t scene : scenes)
             {
                const uint32_t result = Serum_Scene_Trigger(scene);
@@ -373,6 +548,11 @@ private:
          if (hasAnimation)
          {
             const auto now = std::chrono::steady_clock::now();
+            if (animationNextTick + MAX_ROTATION_LAG < now)
+            {
+               animationTick = now;
+               animationNextTick = now;
+            }
             while (animationNextTick < now)
             {
                const uint32_t nextrot = Serum_Rotate();
@@ -391,23 +571,29 @@ private:
          if (!updated)
             continue;
 
+         const unsigned int frameId = ++m_colorizedframeId;
          if (m_pSerum->SerumVersion == SERUM_V1)
          {
             const unsigned int size = dmdId.width * dmdId.height;
-            if (m_colorFrameV1.size() != size * 3)
+            uint8_t* const out = m_publishedV1.Prepare(static_cast<size_t>(size) * 3);
+            for (unsigned int i = 0; i < size; i++)
+               memcpy(&out[i * 3], &m_pSerum->palette[m_pSerum->frame[i] * 3], 3);
+            m_publishedV1.CommitIfChanged(frameId);
+            // Advertised only once a frame has been published, so a consumer
+            // asking the moment the source appears is never handed an empty
+            // buffer. The buffers themselves belong to this thread now, which
+            // is what removes the invalid access the old FIXME described: the
+            // main thread no longer resizes memory a frame was handed out of.
+            if (m_advertisedV1Size != size)
             {
-               // Blocks on the main thread, which may be waiting for m_stateMutex in GetRenderFrame
-               targetLock.unlock();
                msgApi->RunOnMainThread(
                   endpointId, -1,
                   [](void* userData)
                   {
                      SerumColorizer* colorizer = static_cast<SerumColorizer*>(userData);
                      DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
-                     const unsigned int size = dmdId.width * dmdId.height;
+                     colorizer->m_advertisedV1Size = dmdId.width * dmdId.height;
                      colorizer->m_colorizedDmd.ClearItems();
-                     // FIXME if a concurrent GetRenderFrame has been done returning the previous backing buffer, this will discard it and lead to an invalid mem access
-                     colorizer->m_colorFrameV1.resize(size * 3);
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 0 } }, //
                         .overrideId = dmdId.id, //
@@ -420,97 +606,97 @@ private:
                      });
                   },
                   this);
-               targetLock.lock();
             }
-            for (unsigned int i = 0; i < size; i++)
-               memcpy(&(m_colorFrameV1[i * 3]), &m_pSerum->palette[m_pSerum->frame[i] * 3], 3);
          }
-         // Widths are per frame (0 when a size is missing), so advertise each size once and keep it
-         else if ((m_pSerum->width32 != 0 && m_advertisedWidth32 != m_pSerum->width32) || (m_pSerum->width64 != 0 && m_advertisedWidth64 != m_pSerum->width64))
+         else
          {
-            // Blocks on the main thread, which may be waiting for m_stateMutex in GetRenderFrame
-            targetLock.unlock();
-            msgApi->RunOnMainThread(
-               endpointId, -1,
-               [](void* userData)
-               {
-                  SerumColorizer* colorizer = static_cast<SerumColorizer*>(userData);
-                  DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
-                  colorizer->m_colorizedDmd.ClearItems();
-                  if (colorizer->m_pSerum->width32 != 0)
-                     colorizer->m_advertisedWidth32 = colorizer->m_pSerum->width32;
-                  if (colorizer->m_pSerum->width64 != 0)
-                     colorizer->m_advertisedWidth64 = colorizer->m_pSerum->width64;
-                  LOGI(std::format("Publishing colorized output: {}{}",
-                     (colorizer->m_advertisedWidth32 > 0 && IsResolutionRequested(32)) ? std::format("{}x32 ", colorizer->m_advertisedWidth32) : ""s,
-                     (colorizer->m_advertisedWidth64 > 0 && IsResolutionRequested(64)) ? std::format("{}x64", colorizer->m_advertisedWidth64) : ""s));
-                  if (colorizer->m_advertisedWidth32 > 0 && IsResolutionRequested(32))
+            if (m_pSerum->width32 != 0 && m_pSerum->frame32 != nullptr)
+               m_published32.Publish(m_pSerum->frame32, static_cast<size_t>(m_pSerum->width32) * 32 * sizeof(uint16_t), frameId);
+            if (m_pSerum->width64 != 0 && m_pSerum->frame64 != nullptr)
+               m_published64.Publish(m_pSerum->frame64, static_cast<size_t>(m_pSerum->width64) * 64 * sizeof(uint16_t), frameId);
+            // Widths are per frame (0 when a size is missing), so advertise each size once and keep it
+            if ((m_pSerum->width32 != 0 && m_advertisedWidth32 != m_pSerum->width32) || (m_pSerum->width64 != 0 && m_advertisedWidth64 != m_pSerum->width64))
+            {
+               msgApi->RunOnMainThread(
+                  endpointId, -1,
+                  [](void* userData)
                   {
-                     colorizer->m_colorizedDmd.AddItem({
-                        .id = { { endpointId, 1 } }, //
-                        .overrideId = dmdId.id, //
-                        .width = colorizer->m_advertisedWidth32, //
-                        .height = 32, //
-                        .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
-                        .callContext = colorizer, //
-                        .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565, //
-                        .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV2_32>::Call //
-                     });
-                  }
-                  if (colorizer->m_advertisedWidth64 > 0 && IsResolutionRequested(64))
-                  {
-                     colorizer->m_colorizedDmd.AddItem({
-                        .id = { { endpointId, 2 } }, //
-                        .overrideId = dmdId.id, //
-                        .width = colorizer->m_advertisedWidth64, //
-                        .height = 64, //
-                        .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
-                        .callContext = colorizer, //
-                        .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565, //
-                        .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV2_64>::Call //
-                     });
-                  }
-               },
-               this);
-            targetLock.lock();
+                     SerumColorizer* colorizer = static_cast<SerumColorizer*>(userData);
+                     DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
+                     colorizer->m_colorizedDmd.ClearItems();
+                     if (colorizer->m_pSerum->width32 != 0)
+                        colorizer->m_advertisedWidth32 = colorizer->m_pSerum->width32;
+                     if (colorizer->m_pSerum->width64 != 0)
+                        colorizer->m_advertisedWidth64 = colorizer->m_pSerum->width64;
+                     LOGI(std::format("Publishing colorized output: {}{}",
+                        (colorizer->m_advertisedWidth32 > 0 && IsResolutionRequested(32)) ? std::format("{}x32 ", colorizer->m_advertisedWidth32) : ""s,
+                        (colorizer->m_advertisedWidth64 > 0 && IsResolutionRequested(64)) ? std::format("{}x64", colorizer->m_advertisedWidth64) : ""s));
+                     if (colorizer->m_advertisedWidth32 > 0 && IsResolutionRequested(32))
+                     {
+                        colorizer->m_colorizedDmd.AddItem({
+                           .id = { { endpointId, 1 } }, //
+                           .overrideId = dmdId.id, //
+                           .width = colorizer->m_advertisedWidth32, //
+                           .height = 32, //
+                           .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
+                           .callContext = colorizer, //
+                           .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565, //
+                           .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV2_32>::Call //
+                        });
+                     }
+                     if (colorizer->m_advertisedWidth64 > 0 && IsResolutionRequested(64))
+                     {
+                        colorizer->m_colorizedDmd.AddItem({
+                           .id = { { endpointId, 2 } }, //
+                           .overrideId = dmdId.id, //
+                           .width = colorizer->m_advertisedWidth64, //
+                           .height = 64, //
+                           .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
+                           .callContext = colorizer, //
+                           .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565, //
+                           .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV2_64>::Call //
+                        });
+                     }
+                  },
+                  this);
+            }
          }
-         m_colorizedframeId++;
       }
       m_isRunning = false;
    }
 
-   // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
-   DisplayFrame GetRenderFrameSerumV1()
-   {
-      std::lock_guard targetLock(m_stateMutex);
-      return { m_colorizedframeId, m_colorFrameV1.data() };
-   }
-   DisplayFrame GetRenderFrameSerumV2_32()
-   {
-      std::lock_guard targetLock(m_stateMutex);
-      return { m_colorizedframeId, reinterpret_cast<uint8_t*>(m_pSerum->frame32) };
-   }
-   DisplayFrame GetRenderFrameSerumV2_64()
-   {
-      std::lock_guard targetLock(m_stateMutex);
-      return { m_colorizedframeId, reinterpret_cast<uint8_t*>(m_pSerum->frame64) };
-   }
+   // These are the copies the colorize thread published, not libserum's own
+   // buffers, so they are neither mutated while a consumer reads them nor
+   // guarded by a lock the colorize thread holds across its work.
+   DisplayFrame GetRenderFrameSerumV1() { return m_publishedV1.Get(); }
+   DisplayFrame GetRenderFrameSerumV2_32() { return m_published32.Get(); }
+   DisplayFrame GetRenderFrameSerumV2_64() { return m_published64.Get(); }
 
    Serum_Frame_Struc* const m_pSerum;
    const uint32_t m_controllerEndpointId;
 
    CtrlItemProvider<DisplaySrcId> m_colorizedDmd;
 
-   bool m_isRunning = false;
+   // Written by the colorize thread when its source disappears, and by
+   // whichever thread stops it; read by the colorize thread every pass.
+   std::atomic<bool> m_isRunning { false };
    std::thread m_colorizeThread;
 
-   std::mutex m_stateMutex;
-   // Scene triggers waiting to be applied, guarded by m_stateMutex.
-   // Serum_Scene_Trigger mutates libserum's own animation state, so it has to
-   // run where Serum_Colorize and Serum_Rotate run -- on the colorize thread,
-   // under the same lock -- rather than on whichever thread delivered the event.
+   // Scene triggers waiting to be applied. The only state this plugin shares
+   // between threads, and the lock is held just long enough to add one or to
+   // take the list away: Serum_Scene_Trigger itself mutates libserum's
+   // animation state, so it still has to run where Serum_Colorize and
+   // Serum_Rotate run -- on the colorize thread -- rather than on whichever
+   // thread delivered the event.
+   std::mutex m_scenesMutex;
    std::vector<uint16_t> m_pendingScenes;
-   std::vector<uint8_t> m_colorFrameV1;
+
+   // Written by the colorize thread, read by consumers on any thread.
+   PublishedFrame m_publishedV1;
+   PublishedFrame m_published32;
+   PublishedFrame m_published64;
+
+   unsigned int m_advertisedV1Size = 0;
    unsigned int m_advertisedWidth32 = 0;
    unsigned int m_advertisedWidth64 = 0;
 
@@ -672,6 +858,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumPathProp);
    msgApi->RegisterSetting(endpointId, &serumIgnoreUnknownFramesTimeoutProp);
    msgApi->RegisterSetting(endpointId, &serumMaxUnknownFramesToSkipProp);
+   msgApi->RegisterSetting(endpointId, &serumIdentifyPollIntervalProp);
    msgApi->RegisterSetting(endpointId, &serumDisabledSizeProp);
    msgApi->RegisterSetting(endpointId, &serumPupTriggersProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
@@ -691,6 +878,12 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
    controllers->Unsubscribe();
    controllers = nullptr;
    dmdTriggers = nullptr;
+   // Required by the plugin API: stop submitting runnables, then flush. The
+   // colorizer is gone by now, so nothing new is queued, and flushing runs the
+   // trigger broadcasts still pending -- which is also what frees the value
+   // each one carries. Without it they would be dropped on an msgApi this
+   // function is about to null.
+   msgApi->FlushPendingCallbacks(endpointId);
    msgApi->UnsubscribeMsg(onTriggerScene, OnTriggerScene, nullptr);
    msgApi->ReleaseMsgID(onTriggerScene);
    msgApi->ReleaseMsgID(onDmdTrigger);
