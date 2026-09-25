@@ -478,7 +478,7 @@ VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
 
    VPXProgress progress;
    const HRESULT hr = m_pTable->LoadGameFromFilename(tablePath, progress);
-   if (!SUCCEEDED(hr)) {
+   if (FAILED(hr) && hr != APPX_E_BLOCK_HASH_INVALID && hr != APPX_E_CORRUPT_CONTENT) {
       m_pTable->Release();
       m_pTable = nullptr;
       return VPINBALL_STATUS_FAILURE;
