@@ -398,7 +398,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
       case TypeID::TYPEID_UINT64: CHANGE_TYPE(VT_UI8);  sv.vUInt64 = V_UI8(&v); break;
       case TypeID::TYPEID_STRING: CHANGE_TYPE(VT_BSTR);
          {
-            int sizeNeeded = WideCharToMultiByte(CP_ACP, 0, V_BSTR(&v), -1, nullptr, 0, nullptr, nullptr);
+            int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, V_BSTR(&v), -1, nullptr, 0, nullptr, nullptr);
             if (sizeNeeded <= 0) 
             {
                // TODO raise an error and prevent further processing
@@ -407,7 +407,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
                return false;
             }
             char* charStr = new char[sizeNeeded];
-            WideCharToMultiByte(CP_ACP, 0, V_BSTR(&v), -1, charStr, sizeNeeded, nullptr, nullptr);
+            WideCharToMultiByte(CP_UTF8, 0, V_BSTR(&v), -1, charStr, sizeNeeded, nullptr, nullptr);
             sv.vString = { [](ScriptString* s) { delete[] s->string; }, charStr };
          }
          break;
@@ -606,9 +606,9 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       case TypeID::TYPEID_STRING:
       {
          V_VT(cv) = VT_BSTR;
-         const int len = MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, nullptr, 0);
+         const int len = MultiByteToWideChar(CP_UTF8, 0, sv.vString.string, -1, nullptr, 0);
          V_BSTR(cv) = SysAllocStringLen(nullptr, len - 1);
-         MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, V_BSTR(cv), len);
+         MultiByteToWideChar(CP_UTF8, 0, sv.vString.string, -1, V_BSTR(cv), len);
          break;
       }
       default: assert(false);
@@ -667,9 +667,9 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
             {
                VariantInit(&pData[i]);
                V_VT(&pData[i]) = VT_BSTR;
-               const int len = MultiByteToWideChar(CP_ACP, 0, pSrc[i].string, -1, nullptr, 0);
+               const int len = MultiByteToWideChar(CP_UTF8, 0, pSrc[i].string, -1, nullptr, 0);
                V_BSTR(&pData[i]) = SysAllocStringLen(nullptr, len - 1);
-               MultiByteToWideChar(CP_ACP, 0, pSrc[i].string, -1, V_BSTR(&pData[i]), len);
+               MultiByteToWideChar(CP_UTF8, 0, pSrc[i].string, -1, V_BSTR(&pData[i]), len);
             }
             break;
          }
@@ -737,9 +737,9 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
                   VariantInit(&varValue);
                   V_VT(&varValue) = VT_BSTR;
                   const char* str = pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]].string;
-                  const int len = MultiByteToWideChar(CP_ACP, 0, str, -1, nullptr, 0);
+                  const int len = MultiByteToWideChar(CP_UTF8, 0, str, -1, nullptr, 0);
                   V_BSTR(&varValue) = SysAllocStringLen(nullptr, len - 1);
-                  MultiByteToWideChar(CP_ACP, 0, str, -1, V_BSTR(&varValue), len);
+                  MultiByteToWideChar(CP_UTF8, 0, str, -1, V_BSTR(&varValue), len);
                   SafeArrayPutElement(psa, ix, &varValue);
                   VariantClear(&varValue);
                }
