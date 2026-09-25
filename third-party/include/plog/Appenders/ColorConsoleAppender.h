@@ -95,7 +95,7 @@ namespace plog
 #ifdef _WIN32
                 SetConsoleTextAttribute(this->m_outputHandle, m_originalAttr);
 #else
-                this->m_outputStream << "\x1B[0m\x1B[0K";
+                this->m_outputStream << "\x1B[0m\x1B[0K" << std::flush;
 #endif
             }
         }
