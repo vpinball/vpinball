@@ -4,6 +4,7 @@
 #include "PropertiesPanel.h"
 
 #include "audio/AudioPlayer.h"
+#include "core/editablereg.h"
 #include "core/player.h"
 #include "core/SettingsService.h"
 #include "parts/Material.h"
@@ -543,7 +544,10 @@ void PropertiesPanel::ImageProperties(PropertyPane &props, Texture *texture)
          props.EndSection();
 
          const float w = ImGui::GetWindowWidth();
-         ImGui::Image(image, ImVec2(w, static_cast<float>(image->GetHeight()) * w / static_cast<float>(image->GetWidth())));
+         const float scale = w / static_cast<float>(std::max(image->GetWidth(), image->GetHeight()));
+         const float imgW = static_cast<float>(image->GetWidth()) * scale;
+         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (w - imgW) * 0.5f);
+         ImGui::Image(image, ImVec2(imgW, static_cast<float>(image->GetHeight()) * scale));
       }
    }
    else
@@ -552,6 +556,10 @@ void PropertiesPanel::ImageProperties(PropertyPane &props, Texture *texture)
    }
 
    ImGui::EndDisabled();
+
+   vector<WhereUsedInfo> whereUsed;
+   editor.m_table->ShowWhereImageUsed(whereUsed, texture);
+   UsersSection(props, whereUsed);
 }
 
 void PropertiesPanel::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
@@ -678,6 +686,10 @@ void PropertiesPanel::MaterialProperties(PropertyPane &props, Material *material
          [](Material *material, const vec3 &v) { material->m_cRefractionTint = convertColorRGB(v); });
       props.EndSection();
    }
+
+   vector<WhereUsedInfo> whereUsed;
+   m_editor.m_table->ShowWhereMaterialUsed(whereUsed, material);
+   UsersSection(props, whereUsed);
 }
 
 void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
@@ -725,7 +737,7 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
       }
       else
       {
-         int  volume = sound->GetVolume();
+         float volume = (float)sound->GetVolume();
          sound->SetVolume(100);
          audioPlayer->PlaySound(sound, volume, 0.f, 0, 0.f, 0.f, 0, false, true);
          m_playingSound = sound;
@@ -801,21 +813,39 @@ void PropertiesPanel::RequestConfirm(const string &message, const std::function<
    ImGui::OpenPopup("Confirm Action");
 }
 
-void PropertiesPanel::RequestWhereUsed(bool images)
+void PropertiesPanel::UsersSection(PropertyPane &props, const vector<WhereUsedInfo> &whereUsed)
 {
-   m_whereUsedImages = images;
-   m_whereUsed.clear();
-   if (images)
-      m_editor.m_table->ShowWhereImagesUsed(m_whereUsed);
-   else
-      m_editor.m_table->ShowWhereMaterialsUsed(m_whereUsed);
-   ImGui::OpenPopup("Where Used");
+   EditorUI &editor = m_editor;
+   if (props.BeginSection("Users"s))
+   {
+      if (whereUsed.empty())
+         ImGui::TextDisabled("Not used by any part");
+      for (const WhereUsedInfo &where : whereUsed)
+      {
+         IEditable * editable = editor.m_table->GetElementByName(where.whereUsedObjectname.c_str());
+         if (editable == nullptr && where.whereUsedObjectname == MakeString(m_editor.m_table->m_wzName))
+            editable = m_editor.m_table;
+         ImGui::PushID(&where);
+         // Clicking an entry selects the using part in the editor, like the Win32 dialog's 'Edit Object' button
+         if (ImGui::Selectable(where.whereUsedObjectname.c_str()))
+            if (editable != nullptr)
+               if (const auto it = editor.m_editableMap.find(editable); it != editor.m_editableMap.end())
+                  editor.SetSelection(Selection(it->second));
+         ImGui::PopID();
+         ImGui::SameLine();
+         string type = "";
+         if (editable != nullptr && editable->GetItemType() == eItemTable)
+            type = "Table";
+         else if (editable != nullptr)
+            type = LocalString(EditableRegistry::GetTypeNameStringID(editable->GetItemType())).m_szbuffer;
+         ImGui::TextDisabled("[%s - %s]", type.c_str(), where.whereUsedPropertyName.c_str());
+      }
+      props.EndSection();
+   }
 }
 
 void PropertiesPanel::RenderPopups()
 {
-   EditorUI &editor = m_editor;
-
    // Confirmation popup for destructive resource actions (OpenPopup is called from this window's scope)
    if (ImGui::BeginPopupModal("Confirm Action", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
    {
@@ -834,42 +864,6 @@ void PropertiesPanel::RenderPopups()
          m_confirmAction = nullptr;
          ImGui::CloseCurrentPopup();
       }
-      ImGui::EndPopup();
-   }
-
-   if (ImGui::BeginPopupModal("Where Used", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      const float dpi = editor.m_liveUI.GetDPI();
-      ImGui::TextDisabled("%s used by:", m_whereUsedImages ? "Images" : "Materials");
-      if (ImGui::BeginTable("WhereUsedTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(400.f * dpi, 300.f * dpi)))
-      {
-         ImGui::TableSetupColumn(m_whereUsedImages ? "Image" : "Material");
-         ImGui::TableSetupColumn("Used By");
-         ImGui::TableSetupColumn("Property");
-         ImGui::TableHeadersRow();
-         for (const WhereUsedInfo &where : m_whereUsed)
-         {
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
-            ImGui::PushID(&where);
-            // Clicking a row selects the using part in the editor, like the Win32 dialog's 'Edit Object' button
-            if (ImGui::Selectable(where.searchObjectName.c_str(), false, ImGuiSelectableFlags_SpanAllColumns))
-            {
-               if (IEditable *const editable = editor.m_table->GetElementByName(where.whereUsedObjectname.c_str()))
-                  if (const auto it = editor.m_editableMap.find(editable); it != editor.m_editableMap.end())
-                     editor.SetSelection(Selection(it->second));
-               ImGui::CloseCurrentPopup();
-            }
-            ImGui::PopID();
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(where.whereUsedObjectname.c_str());
-            ImGui::TableNextColumn();
-            ImGui::TextUnformatted(where.whereUsedPropertyName.c_str());
-         }
-         ImGui::EndTable();
-      }
-      if (ImGui::Button("Close"))
-         ImGui::CloseCurrentPopup();
       ImGui::EndPopup();
    }
 }
@@ -970,8 +964,50 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
             editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str(), true);
       }
       ImGui::EndDisabled();
+
+      ImGui::SameLine();
+      ImGui::BeginDisabled(sel.empty() || !canImport);
+      if (ImGui::Button("Export"))
+      {
+         m_pendingImageExportSel = sel;
+         m_pendingImageExport = std::make_shared<string>();
+         const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
+         const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
+         SDL_ShowSaveFileDialog(
+            [](void *userdata, const char *const *filelist, int filter)
+            {
+               auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+               if (filelist != nullptr && filelist[0] != nullptr)
+                  **res = filelist[0];
+               delete res;
+            },
+            new std::shared_ptr<string>(m_pendingImageExport), //
+            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str());
+      }
+      ImGui::EndDisabled();
+
       ImGui::SameLine();
       ImGui::BeginDisabled(sel.empty());
+      if (ImGui::Button("Delete"))
+      {
+         RequestConfirm("Delete the selected image(s)?"s,
+            [this]()
+            {
+               EditorUI &editor = m_editor;
+               for (Texture *const tex : editor.m_multiSelImages)
+                  editor.m_table->RemoveImage(tex);
+               editor.m_multiSelImages.clear();
+               editor.m_outlinerImageAnchor = nullptr;
+               editor.m_selection = Selection();
+               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            });
+      }
+      ImGui::EndDisabled();
+
+      // --
+
+      ImGui::BeginDisabled(sel.empty());
+
       if (ImGui::Button("Reimport"))
       {
          RequestConfirm("Reimport the selected image(s) using their existing file path(s)?"s,
@@ -990,6 +1026,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
                m_editor.m_table->SetNonUndoableDirty(eSaveDirty);
             });
       }
+
       ImGui::SameLine();
       ImGui::BeginDisabled(sel.size() != 1);
       if (ImGui::Button("Reimport From"))
@@ -1016,6 +1053,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
             });
       }
       ImGui::EndDisabled();
+
       ImGui::SameLine();
       ImGui::BeginDisabled(table->m_vimage.empty());
       if (ImGui::Button("Reimport All"))
@@ -1032,48 +1070,10 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
          table->SetNonUndoableDirty(eSaveDirty);
       }
       ImGui::EndDisabled();
+
       ImGui::EndDisabled();
 
-      if (ImGui::Button("Where Used"))
-         RequestWhereUsed(true);
-      ImGui::SameLine();
-      ImGui::BeginDisabled(sel.empty() || !canImport);
-      if (ImGui::Button("Export"))
-      {
-         m_pendingImageExportSel = sel;
-         m_pendingImageExport = std::make_shared<string>();
-         const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
-         const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
-         SDL_ShowSaveFileDialog(
-            [](void *userdata, const char *const *filelist, int filter)
-            {
-               auto *res = static_cast<std::shared_ptr<string> *>(userdata);
-               if (filelist != nullptr && filelist[0] != nullptr)
-                  **res = filelist[0];
-               delete res;
-            },
-            new std::shared_ptr<string>(m_pendingImageExport), //
-            editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str());
-      }
-      ImGui::EndDisabled();
-      ImGui::SameLine();
-      ImGui::BeginDisabled(sel.empty());
-      if (ImGui::Button("Delete"))
-      {
-         RequestConfirm("Delete the selected image(s)?"s,
-            [this]()
-            {
-               EditorUI &editor = m_editor;
-               for (Texture *const tex : editor.m_multiSelImages)
-                  editor.m_table->RemoveImage(tex);
-               editor.m_multiSelImages.clear();
-               editor.m_outlinerImageAnchor = nullptr;
-               editor.m_selection = Selection();
-               editor.m_table->SetNonUndoableDirty(eSaveDirty);
-            });
-      }
-      ImGui::EndDisabled();
-
+      // --
       ImGui::Checkbox("Use names on export", &m_exportUseNames);
       if (!m_actionStatus.empty())
          ImGui::TextColored(ImVec4(1.f, 0.4f, 0.4f, 1.f), "%s", m_actionStatus.c_str());
@@ -1352,6 +1352,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
          editor.m_outlinerMaterialAnchor = pmat;
          table->SetNonUndoableDirty(eSaveDirty);
       }
+
       ImGui::SameLine();
       ImGui::BeginDisabled(sel.empty());
       if (ImGui::Button("Clone"))
@@ -1369,6 +1370,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
          table->SetNonUndoableDirty(eSaveDirty);
       }
       ImGui::EndDisabled();
+
       ImGui::SameLine();
       ImGui::BeginDisabled(editor.m_player->m_playfieldWnd == nullptr);
       if (ImGui::Button("Import"))
@@ -1389,8 +1391,6 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
       }
       ImGui::EndDisabled();
 
-      if (ImGui::Button("Where Used"))
-         RequestWhereUsed(false);
       ImGui::SameLine();
       ImGui::BeginDisabled(sel.empty() || editor.m_player->m_playfieldWnd == nullptr);
       if (ImGui::Button("Export"))
@@ -1411,6 +1411,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
             editor.m_player->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str());
       }
       ImGui::EndDisabled();
+
       ImGui::SameLine();
       ImGui::BeginDisabled(sel.empty());
       if (ImGui::Button("Delete"))

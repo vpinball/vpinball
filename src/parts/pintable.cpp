@@ -5406,112 +5406,103 @@ void PinTable::ShowWhereImagesUsed(vector<WhereUsedInfo> &vWhereUsed)
       ShowWhereImageUsed(vWhereUsed, m_vimage[i]);
 }
 
-// also change decal special cases below when changing this snippet
-#define INSERT_WHERE_USED(x) \
-{ \
-   whereUsed.searchObjectName = searchObjectName; \
-   whereUsed.whereUsedObjectname = pEdit->GetName(); \
-   whereUsed.whereUsedPropertyName = (x); \
-   vWhereUsed.push_back(whereUsed); \
-}
-
 void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *const ppi)
 {
+   const string &searchObjectName = ppi->m_name; //searchObjectName will be an image or material that we want to find table objects that are using it.
+
    for (const auto pEdit : m_vedit)
    {
       if (pEdit == nullptr)
          continue;
 
       WhereUsedInfo whereUsed;
-      const string& searchObjectName = ppi->m_name; //searchObjectName will be an image or material that we want to find table objects that are using it.
+
+      auto insertUser = [&](const string &field, const string &propertyName)
+      {
+         if (StrCompareNoCase(field, searchObjectName))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            whereUsed.whereUsedObjectname = pEdit->GetName();
+            whereUsed.whereUsedPropertyName = propertyName;
+            vWhereUsed.push_back(whereUsed);
+         }
+      };
 
       switch (pEdit->GetItemType())
       {
       case eItemDispReel:
       {
          const DispReel *const pReel = (const DispReel *)pEdit;
-         if (StrCompareNoCase(pReel->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pReel->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemPrimitive:
       {
          const Primitive *const pPrim = (const Primitive *)pEdit;
-         const bool image = StrCompareNoCase(pPrim->m_d.m_szImage, searchObjectName);
-         if (image || StrCompareNoCase(pPrim->m_d.m_szNormalMap, searchObjectName))
-            INSERT_WHERE_USED(image ? "Image"s : "Normal Map"s);
+         insertUser(pPrim->m_d.m_szImage, "Image"s);
+         insertUser(pPrim->m_d.m_szNormalMap, "Normal Map"s);
          break;
       }
       case eItemRamp:
       {
          const Ramp *const pRamp = (const Ramp *)pEdit;
-         if (StrCompareNoCase(pRamp->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pRamp->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemSurface:
       {
          const Surface *const pSurf = (const Surface *)pEdit;
-         const bool image = StrCompareNoCase(pSurf->m_d.m_szImage, searchObjectName);
-         if (image || StrCompareNoCase(pSurf->m_d.m_szSideImage, searchObjectName))
-            INSERT_WHERE_USED(image ? "Image"s : "Side Image"s);
+         insertUser(pSurf->m_d.m_szImage, "Top Image"s);
+         insertUser(pSurf->m_d.m_szSideImage, "Side Image"s);
          break;
       }
       case eItemDecal:
       {
          const Decal *const pDecal = (const Decal *)pEdit;
-         if (StrCompareNoCase(pDecal->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pDecal->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemFlasher:
       {
          const Flasher *const pFlash = (const Flasher *)pEdit;
-         const bool imageA = StrCompareNoCase(pFlash->m_d.m_szImageA, searchObjectName);
-         if (imageA || StrCompareNoCase(pFlash->m_d.m_szImageB, searchObjectName))
-            INSERT_WHERE_USED(imageA ? "ImageA"s : "ImageB"s);
+         insertUser(pFlash->m_d.m_szImageA, "Image A"s);
+         insertUser(pFlash->m_d.m_szImageB, "Image B"s);
          break;
       }
       case eItemFlipper:
       {
          const Flipper *const pFlip = (const Flipper *)pEdit;
-         if (StrCompareNoCase(pFlip->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pFlip->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemHitTarget:
       {
          const HitTarget *const pHit = (const HitTarget *)pEdit;
-         if (StrCompareNoCase(pHit->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pHit->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemLight:
       {
          const Light *const pLight = (const Light *)pEdit;
-         if (StrCompareNoCase(pLight->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pLight->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemPlunger:
       {
          const Plunger *const pPlung = (const Plunger *)pEdit;
-         if (StrCompareNoCase(pPlung->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pPlung->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemRubber:
       {
          const Rubber *const pRub = (const Rubber *)pEdit;
-         if (StrCompareNoCase(pRub->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pRub->m_d.m_szImage, "Image"s);
          break;
       }
       case eItemSpinner:
       {
          const Spinner *const pSpin = (const Spinner *)pEdit;
-         if (StrCompareNoCase(pSpin->m_d.m_szImage, searchObjectName))
-            INSERT_WHERE_USED("Image"s);
+         insertUser(pSpin->m_d.m_szImage, "Image"s);
          break;
       }
       default:
@@ -5519,6 +5510,29 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
          break;
       }
       }
+   }
+
+   // The table itself also references images
+   {
+      WhereUsedInfo whereUsed;
+      const string tableName = MakeString(m_wzName);
+
+      auto insertUser = [&](const string &propertyName)
+      {
+         whereUsed.searchObjectName = searchObjectName;
+         whereUsed.whereUsedObjectname = tableName;
+         whereUsed.whereUsedPropertyName = propertyName;
+         vWhereUsed.push_back(whereUsed);
+      };
+
+      if (StrCompareNoCase(m_image, searchObjectName))
+         insertUser("Playfield Image"s);
+      if (StrCompareNoCase(m_ballImage, searchObjectName))
+         insertUser("Ball Image"s);
+      if (StrCompareNoCase(m_ballImageDecal, searchObjectName))
+         insertUser("Ball Decal"s);
+      if (StrCompareNoCase(m_envImage, searchObjectName))
+         insertUser("Environment Image"s);
    }
 }
 
@@ -5530,110 +5544,110 @@ void PinTable::ShowWhereMaterialsUsed(vector<WhereUsedInfo> &vWhereUsed)
 
 void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material *const ppi)
 {
+   const string &searchObjectName = ppi->m_name; //searchObjectName will be an image or material that we want to find table objects that are using it.
+
    for (const auto pEdit : m_vedit)
    {
       if (pEdit == nullptr)
          continue;
 
       WhereUsedInfo whereUsed;
-      const string& searchObjectName = ppi->m_name; //searchObjectName will be an image or material that we want to find table objects that are using it.
+
+      auto insertUser = [&](const string& field, const string &propertyName)
+      {
+         if (StrCompareNoCase(field, searchObjectName))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            whereUsed.whereUsedObjectname = pEdit->GetName();
+            whereUsed.whereUsedPropertyName = propertyName;
+            vWhereUsed.push_back(whereUsed);
+         }
+      };
 
       switch (pEdit->GetItemType())
       {
       case eItemBumper:
       {
          const Bumper *const pBumper = (const Bumper *)pEdit;
-         const bool capmat   = StrCompareNoCase(pBumper->m_d.m_szCapMaterial, searchObjectName);
-         const bool basemat  = StrCompareNoCase(pBumper->m_d.m_szBaseMaterial, searchObjectName);
-         const bool skirtmat = StrCompareNoCase(pBumper->m_d.m_szSkirtMaterial, searchObjectName);
-         if (capmat || basemat || skirtmat || StrCompareNoCase(pBumper->m_d.m_szRingMaterial, searchObjectName))
-            INSERT_WHERE_USED(capmat ? "Cap Material"s : (basemat ? "Base Material"s : (skirtmat ? "Skirt Material"s : "Ring Material"s)));
+         insertUser(pBumper->m_d.m_szCapMaterial, "Cap Material"s);
+         insertUser(pBumper->m_d.m_szBaseMaterial, "Base Material"s);
+         insertUser(pBumper->m_d.m_szSkirtMaterial, "Skirt Material"s);
+         insertUser(pBumper->m_d.m_szRingMaterial, "Ring Material"s);
          break;
       }
       case eItemPrimitive:
       {
          const Primitive *const pPrim = (const Primitive *)pEdit;
-         const bool mat = StrCompareNoCase(pPrim->m_d.m_szMaterial, searchObjectName);
-         if (mat || StrCompareNoCase(pPrim->m_d.m_szPhysicsMaterial, searchObjectName))
-            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
+         insertUser(pPrim->m_d.m_szMaterial, "Material"s);
+         insertUser(pPrim->m_d.m_szPhysicsMaterial, "Physics Material"s);
          break;
       }
       case eItemRamp:
       {
          const Ramp *const pRamp = (const Ramp *)pEdit;
-         const bool mat = StrCompareNoCase(pRamp->m_d.m_szMaterial, searchObjectName);
-         if (mat || StrCompareNoCase(pRamp->m_d.m_szPhysicsMaterial, searchObjectName))
-            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
+         insertUser(pRamp->m_d.m_szMaterial, "Material"s);
+         insertUser(pRamp->m_d.m_szPhysicsMaterial, "Physics Material"s);
          break;
       }
       case eItemSurface: //'Wall' table objects are surfaces
       {
          const Surface *const pSurf = (const Surface *)pEdit;
-         const bool topmat   = StrCompareNoCase(pSurf->m_d.m_szTopMaterial, searchObjectName);
-         const bool sidemat  = StrCompareNoCase(pSurf->m_d.m_szSideMaterial, searchObjectName);
-         const bool slingmat = StrCompareNoCase(pSurf->m_d.m_szSlingShotMaterial, searchObjectName);
-         if (topmat || sidemat || slingmat || StrCompareNoCase(pSurf->m_d.m_szPhysicsMaterial, searchObjectName))
-            INSERT_WHERE_USED(topmat ? "Top Material"s : (sidemat ? "Side Material"s : (slingmat ? "Slingshot Material"s : "Physics Material"s)));
+         insertUser(pSurf->m_d.m_szTopMaterial, "Top Material"s);
+         insertUser(pSurf->m_d.m_szSideMaterial, "Side Material"s);
+         insertUser(pSurf->m_d.m_szSlingShotMaterial, "Slingshot Material"s);
+         insertUser(pSurf->m_d.m_szPhysicsMaterial, "Physics Material"s);
          break;
       }
       case eItemDecal:
       {
          const Decal *const pDecal = (const Decal *)pEdit;
-         if (StrCompareNoCase(pDecal->m_d.m_szMaterial, searchObjectName))
-            INSERT_WHERE_USED("Material"s);
+         insertUser(pDecal->m_d.m_szMaterial, "Material"s);
          break;
       }
       case eItemFlipper:
       {
          const Flipper *const pFlip = (const Flipper *)pEdit;
-         const bool mat = StrCompareNoCase(pFlip->m_d.m_szMaterial, searchObjectName);
-         if (mat || StrCompareNoCase(pFlip->m_d.m_szRubberMaterial, searchObjectName))
-            INSERT_WHERE_USED(mat ? "Material"s : "Rubber Material"s);
+         insertUser(pFlip->m_d.m_szMaterial, "Bat Material"s);
+         insertUser(pFlip->m_d.m_szRubberMaterial, "Rubber Material"s);
          break;
       }
       case eItemHitTarget:
       {
          const HitTarget *const pHit = (const HitTarget *)pEdit;
-         const bool mat = StrCompareNoCase(pHit->m_d.m_szMaterial, searchObjectName);
-         if (mat || StrCompareNoCase(pHit->m_d.m_szPhysicsMaterial, searchObjectName))
-            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
+         insertUser(pHit->m_d.m_szMaterial, "Material"s);
+         insertUser(pHit->m_d.m_szPhysicsMaterial, "Physics Material"s);
          break;
       }
       case eItemPlunger:
       {
          const Plunger *const pPlung = (const Plunger *)pEdit;
-         if (StrCompareNoCase(pPlung->m_d.m_szMaterial, searchObjectName))
-            INSERT_WHERE_USED("Material"s);
+         insertUser(pPlung->m_d.m_szMaterial, "Material"s);
          break;
       }
       case eItemRubber:
       {
          const Rubber *const pRub = (const Rubber *)pEdit;
-         const bool mat = StrCompareNoCase(pRub->m_d.m_szMaterial, searchObjectName);
-         if (mat || StrCompareNoCase(pRub->m_d.m_szPhysicsMaterial, searchObjectName))
-            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
+         insertUser(pRub->m_d.m_szMaterial, "Material"s);
+         insertUser(pRub->m_d.m_szPhysicsMaterial, "Physics Material"s);
          break;
       }
       case eItemSpinner:
       {
          const Spinner *const pSpin = (const Spinner *)pEdit;
-         const bool mat = StrCompareNoCase(pSpin->m_d.m_szMaterial, searchObjectName);
-         if (mat || StrCompareNoCase(pSpin->m_d.m_szPhysicsMaterial, searchObjectName))
-            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
+         insertUser(pSpin->m_d.m_szMaterial, "Material"s);
+         insertUser(pSpin->m_d.m_szPhysicsMaterial, "Physics Material"s);
          break;
       }
       case eItemKicker:
       {
          const Kicker *const pKicker = (const Kicker *)pEdit;
-         if (StrCompareNoCase(pKicker->m_d.m_szMaterial, searchObjectName))
-            INSERT_WHERE_USED("Material"s);
+         insertUser(pKicker->m_d.m_szMaterial, "Material"s);
          break;
       }
       case eItemTrigger:
       {
          const Trigger *const pTrigger = (const Trigger *)pEdit;
-         if (StrCompareNoCase(pTrigger->m_d.m_szMaterial, searchObjectName))
-            INSERT_WHERE_USED("Material"s);
+         insertUser(pTrigger->m_d.m_szMaterial, "Material"s);
          break;
       }
       default:
@@ -5641,6 +5655,23 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
          break;
       }
       }
+   }
+
+   // The table itself also references a material for the playfield
+   {
+      WhereUsedInfo whereUsed;
+      const string tableName = MakeString(m_wzName);
+
+      auto insertUser = [&](const string &propertyName)
+      {
+         whereUsed.searchObjectName = searchObjectName;
+         whereUsed.whereUsedObjectname = tableName;
+         whereUsed.whereUsedPropertyName = propertyName;
+         vWhereUsed.push_back(whereUsed);
+      };
+
+      if (StrCompareNoCase(m_playfieldMaterial, searchObjectName))
+         insertUser("Playfield Material"s);
    }
 }
 

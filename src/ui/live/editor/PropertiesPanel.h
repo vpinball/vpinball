@@ -49,7 +49,7 @@ private:
    void SoundActions(PropertyPane &props);
    void MaterialActions(PropertyPane &props);
    void RequestConfirm(const string &message, const std::function<void()> &action);
-   void RequestWhereUsed(bool images);
+   void UsersSection(PropertyPane &props, const vector<WhereUsedInfo> &whereUsed);
    void RenderPopups();
 
    EditorUI &m_editor;
@@ -74,10 +74,6 @@ private:
    // Pending destructive action confirmation popup
    string m_confirmMessage;
    std::function<void()> m_confirmAction;
-
-   // Where-used popup content (computed when the popup is opened)
-   vector<WhereUsedInfo> m_whereUsed;
-   bool m_whereUsedImages = false;
 
    // When enabled, exported resource files are named after the object name instead of the import file name
    bool m_exportUseNames = false;
