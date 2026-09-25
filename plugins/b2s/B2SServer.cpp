@@ -70,7 +70,7 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
 B2SServer::~B2SServer()
 {
    if (m_loadedB2S.valid())
-      m_loadedB2S.get();
+      m_loadedB2S.wait();
    m_renderer = nullptr;
 
    m_gameRunning = false;
