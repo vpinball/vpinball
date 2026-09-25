@@ -249,6 +249,8 @@ set(VPX_SOURCES
    src/renderer/Shader.h
    src/renderer/Texture.cpp
    src/renderer/Texture.h
+   src/renderer/TextureCompressor.cpp
+   src/renderer/TextureCompressor.h
    src/renderer/TextureManager.cpp
    src/renderer/TextureManager.h
    src/renderer/VertexBuffer.cpp

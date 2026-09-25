@@ -426,6 +426,7 @@ cp -a freeimage/freeimage/build/libfreeimage.{dylib,*.dylib} ../../../third-part
 cp freeimage/freeimage/Source/FreeImage.h ../../../third-party/include
 
 cp -a bgfx/bgfx.cmake/build/cmake/bgfx/libbgfx.dylib ../../../third-party/runtime-libs/macos-x64
+cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg_encode.a ../../../third-party/build-libs/macos-x64
 cp -r bgfx/bgfx.cmake/bgfx/include/bgfx ../../../third-party/include/
 cp -r bgfx/bgfx.cmake/bimg/include/bimg ../../../third-party/include/
 cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/

@@ -5,6 +5,7 @@
 
 #include "math/math.h"
 #include "renderer/Renderer.h"
+#include "renderer/TextureCompressor.h"
 #include "utils/BiffReader.h"
 #include "utils/lzwreader.h"
 
@@ -58,14 +59,14 @@ static inline uint64_t NextLiveHash()
    return s_counter.fetch_add(1, std::memory_order_relaxed);
 }
 
-BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
+BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format, const bool allocate)
    : m_realWidth(w)
    , m_realHeight(h)
    , m_format(format)
    , m_width(w)
    , m_height(h)
    , m_liveHash(NextLiveHash())
-   , m_data(reinterpret_cast<uint8_t*>(SDL_aligned_alloc(16, w * h * GetPixelSize(format))))
+   , m_data(allocate ? reinterpret_cast<uint8_t*>(SDL_aligned_alloc(16, w * h * GetPixelSize(format))) : nullptr)
 {
 }
 
@@ -96,6 +97,17 @@ std::shared_ptr<BaseTexture> BaseTexture::Create(const unsigned int w, const uns
    tex->m_selfPointer = result;
    return result;
 }
+
+#if defined(ENABLE_BGFX)
+std::shared_ptr<BaseTexture> BaseTexture::CreateCompressedOnly(std::shared_ptr<const CompressedTexture> compressed, const Format format, const bool isOpaque) noexcept
+{
+   auto result = std::shared_ptr<BaseTexture>(new BaseTexture(compressed->width, compressed->height, format, false));
+   result->m_selfPointer = result;
+   result->m_compressed = std::move(compressed);
+   result->SetIsOpaque(isOpaque);
+   return result;
+}
+#endif
 
 std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const std::filesystem::path& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {

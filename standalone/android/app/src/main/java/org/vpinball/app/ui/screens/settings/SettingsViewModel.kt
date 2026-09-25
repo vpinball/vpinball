@@ -39,7 +39,7 @@ class SettingsViewModel : ViewModel() {
 
     // Performance
 
-    var maxTexDimension by mutableStateOf(VPinballMaxTexDimension.MAX_768)
+    var maxTexDimension by mutableStateOf(VPinballMaxTexDimension.MAX_3072)
         private set
 
     // External DMD
@@ -92,7 +92,7 @@ class SettingsViewModel : ViewModel() {
         // Performance
 
         maxTexDimension =
-            VPinballMaxTexDimension.fromInt(VPinballManager.loadValue(PLAYER, "MaxTexDimension", VPinballMaxTexDimension.MAX_1024.value))
+            VPinballMaxTexDimension.fromInt(VPinballManager.loadValue(PLAYER, "MaxTexDimension", VPinballMaxTexDimension.MAX_3072.value))
 
         // External DMD
 

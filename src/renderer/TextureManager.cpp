@@ -46,13 +46,13 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
    }
 }
 
-void TextureManager::AddPendingUpload(ITexManCacheable* memtex)
+void TextureManager::AddPendingUpload(ITexManCacheable* memtex, std::shared_ptr<const BaseTexture> bitmap)
 {
    const CIter it = m_map.find(memtex->GetLiveHash());
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.pendingUpload = memtex->GetRawBitmap(false, 0);
+      entry.pendingUpload = bitmap ? std::move(bitmap) : memtex->GetRawBitmap(false, 0);
       entry.tex = memtex;
       m_map[memtex->GetLiveHash()] = entry;
    }

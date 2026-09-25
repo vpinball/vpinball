@@ -50,7 +50,7 @@ enum class VPinballMaxTexDimension(val value: Int, override val text: String) : 
     MAX_1536(1536, "1536"),
     MAX_1792(1792, "1792"),
     MAX_2048(2048, "2048"),
-    MAX_3172(3172, "3172"),
+    MAX_3072(3072, "3072"),
     MAX_4096(4096, "4096"),
     UNLIMITED(0, "Unlimited");
 

@@ -441,6 +441,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Texture.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/TextureCompressor.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/TextureManager.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
@@ -1478,6 +1481,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Texture.h">
       <Filter>renderer</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/TextureCompressor.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/TextureManager.h">
       <Filter>renderer</Filter>
     </ClInclude>
@@ -2339,7 +2345,7 @@
     <ClInclude Include="$(SolutionDir)/../../third-party\include\bimg\bimg.h">
       <Filter>third-party\bimg</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party\include\bimg\decode.h">
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bimg\encode.h">
       <Filter>third-party\bimg</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\bgfx.h">
