@@ -161,7 +161,7 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const
          return nullptr;
       }
       // Load
-      FIBITMAP * const dib = FreeImage_LoadFromMemory(fif, dataHandle, fif == FIF_PNG ? PNG_IGNOREGAMMA : 0);
+      FIBITMAP * const dib = FreeImage_LoadFromMemory(fif, dataHandle, (fif == FIF_PNG ? PNG_IGNOREGAMMA : 0) | (fif == FIF_EXR ? EXR_ALLOW_FOR_FP16 : 0));
       FreeImage_CloseMemory(dataHandle);
       tex = dib ? BaseTexture::CreateFromFreeImage(dib, isImageData, maxTexDimension, resizeOnLowMem) : nullptr;
    }
