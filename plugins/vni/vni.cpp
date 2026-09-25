@@ -299,6 +299,58 @@ private:
    CtrlItemConsumer<DisplaySrcId> m_dmdSource;
 };
 
+// Locate the .pal (mandatory) and .vni (optional) files for a game id in a
+// single per-game folder, rom-named first then pin2dmd-named.
+static bool FindColorizationIn(const std::filesystem::path& gameDir, const std::string_view& gameId, std::filesystem::path& palPath, std::filesystem::path& vniPath)
+{
+   const std::string rom = std::string(gameId);
+   if (auto pal = find_case_insensitive_file_path(gameDir / (rom + ".pal")); !pal.empty())
+   {
+      palPath = pal;
+      vniPath = find_case_insensitive_file_path(gameDir / (rom + ".vni"));
+      return true;
+   }
+   if (auto pal = find_case_insensitive_file_path(gameDir / "pin2dmd.pal"sv); !pal.empty())
+   {
+      palPath = pal;
+      vniPath = find_case_insensitive_file_path(gameDir / "pin2dmd.vni"sv);
+      return true;
+   }
+   return false;
+}
+
+// Locate a colorization for a controller game id (format: ns::rom). Each base
+// folder is searched under an optional intermediate namespace folder first --
+// base/ns/rom/... -- then directly -- base/rom/... -- so legacy layouts keep
+// working. pinmame/altcolor is a legacy base only defined for pinmame
+// controllers, so it is searched for them alone, directly (the pinmame folder
+// already carries the namespace).
+static bool GetColorization(const std::string_view& gameNs, const std::string_view& gameId, std::filesystem::path& palPath, std::filesystem::path& vniPath)
+{
+   VPXTableInfo tableInfo;
+   vpxApi->GetTableInfo(&tableInfo);
+   const std::filesystem::path tablePath = tableInfo.path;
+   const std::filesystem::path vniBasePath = vniPathProp_Get();
+
+   std::vector<std::filesystem::path> gameDirs;
+   const auto addBases = [&gameDirs](const std::filesystem::path& base, const std::string_view& ns, const std::string_view& rom)
+   {
+      if (!ns.empty())
+         gameDirs.push_back(base / ns / rom);
+      gameDirs.push_back(base / rom);
+   };
+   addBases(tablePath.parent_path() / "vni"sv, gameNs, gameId);
+   if (gameNs == "pinmame"sv)
+      gameDirs.push_back(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId);
+   if (!vniBasePath.empty())
+      addBases(vniBasePath, gameNs, gameId);
+
+   for (const std::filesystem::path& gameDir : gameDirs)
+      if (FindColorizationIn(gameDir, gameId, palPath, vniPath))
+         return true;
+   return false;
+}
+
 static void OnControllersChanged()
 {
    controllers->With(
@@ -310,76 +362,13 @@ static void OnControllersChanged()
             return;
          }
 
-         // Simply select first controller exposing a PinMAME compatible game (should be only one anyway)
          const ControllerDef& selectedController = items.front();
-         constexpr std::string_view pinmamePrefix(PMPI_GAMEID_PREFIX);
-         const string currentGameId = string(selectedController.gameId).substr(pinmamePrefix.size());
-
-         if (currentGameId.empty())
-            return;
-
-         VPXTableInfo tableInfo;
-         vpxApi->GetTableInfo(&tableInfo);
-         std::filesystem::path tablePath = tableInfo.path;
-
-         std::filesystem::path vniBasePath = vniPathProp_Get();
-         const std::filesystem::path palFile = currentGameId + ".pal";
-         const std::filesystem::path vniFile = currentGameId + ".vni";
-         const std::filesystem::path pin2dmdPal = "pin2dmd.pal"sv;
-         const std::filesystem::path pin2dmdVni = "pin2dmd.vni"sv;
+         const std::string_view currentGameId = PinballPlugin::Controller::CtrlGetGameKey(selectedController.gameId);
 
          std::filesystem::path palPath, vniPath;
-
-         // Priority 1: vni/<rom>/<rom>.pal and vni/<rom>/<rom>.vni
-         if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / palFile); !palTestPath.empty())
+         if (!GetColorization(PinballPlugin::Controller::CtrlGetGameNamespace(selectedController.gameId), currentGameId, palPath, vniPath))
          {
-            palPath = palTestPath;
-            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / vniFile); !vniTestPath.empty())
-               vniPath = vniTestPath;
-         }
-         // Priority 2: vni/<rom>/pin2dmd.pal and vni/<rom>/pin2dmd.vni
-         else if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdPal); !palTestPath.empty())
-         {
-            palPath = palTestPath;
-            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdVni); !vniTestPath.empty())
-               vniPath = vniTestPath;
-         }
-         // Priority 3: pinmame/altcolor/<rom>/<rom>.pal and pinmame/altcolor/<rom>/<rom>.vni
-         else if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / palFile); !palTestPath.empty())
-         {
-            palPath = palTestPath;
-            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / vniFile); !vniTestPath.empty())
-               vniPath = vniTestPath;
-         }
-         // Priority 4: pinmame/altcolor/<rom>/pin2dmd.pal and pinmame/altcolor/<rom>/pin2dmd.vni
-         else if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdPal); !palTestPath.empty())
-         {
-            palPath = palTestPath;
-            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdVni); !vniTestPath.empty())
-               vniPath = vniTestPath;
-         }
-         else if (!vniBasePath.empty())
-         {
-            // Priority 5: global setting: path/<rom>/<rom>.vni
-            if (auto palTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / palFile); !palTestPath.empty())
-            {
-               palPath = palTestPath;
-               if (auto vniTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / vniFile); !vniTestPath.empty())
-                  vniPath = vniTestPath;
-            }
-            // Priority 6: global setting: path/<rom>/pin2dmd.vni
-            else if (auto palTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / pin2dmdPal); !palTestPath.empty())
-            {
-               palPath = palTestPath;
-               if (auto vniTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / pin2dmdVni); !vniTestPath.empty())
-                  vniPath = vniTestPath;
-            }
-         }
-
-
-         if (palPath.empty())
-         {
-            LOGI("No PAL file found for " + currentGameId);
+            LOGI(std::format("No PAL file found for {}", selectedController.gameId));
             return;
          }
 
@@ -413,8 +402,27 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPlug
       msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
       [](std::vector<ControllerDef>& items)
       {
-         constexpr std::string_view pinmamePrefix(PMPI_GAMEID_PREFIX); // Keep only controllers exposing a PinMAME compatible game
-         std::erase_if(items, [pinmamePrefix](const ControllerDef& controller) { return !string(controller.gameId).starts_with(pinmamePrefix); });
+         // Keep only controllers for which we actually have the assets, a
+         // pinmame:: one winning over other namespaces when several match the
+         // same game key (selection order is otherwise undefined).
+         const ControllerDef* selected = nullptr;
+         for (const ControllerDef& controller : items)
+         {
+            const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+            std::filesystem::path palPath, vniPath;
+            if (gameId.empty() || !GetColorization(PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId), gameId, palPath, vniPath))
+               continue;
+            if (PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId) == "pinmame"sv)
+            {
+               selected = &controller;
+               break;
+            }
+            if (selected == nullptr)
+               selected = &controller;
+         }
+         items.clear();
+         if (selected != nullptr)
+            items.push_back(*selected);
       },
       []() { colorizer = nullptr; }, []() { OnControllersChanged(); });
    controllers->Subscribe();

@@ -44,12 +44,6 @@ static std::minstd_rand std_rand;
 static std::unique_ptr<CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<class SerumColorizer> colorizer;
 
-// Claims the game whose DMD frames this plugin identifies. Held here rather
-// than by the colorizer because it is published before the colorization is
-// loaded -- see OnControllerChanged.
-static std::unique_ptr<CtrlItemProvider<ControllerDef>> dmdTriggers;
-static std::string dmdTriggerGameId;
-
 MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
 // Serum skips frames it cannot identify. How long to keep showing the last
 // known-good colorized frame before giving up on the unknown run, and how many
@@ -94,13 +88,33 @@ MSGPI_ENUM_VAL_SETTING(serumDisabledSizeProp, "DisabledSize", "Disabled size",
 MSGPI_BOOL_VAL_SETTING(serumPupTriggersProp, "PupTriggers", "Report colorization PUP triggers",
    "Forward PUP triggers embedded in the colorization onto the bus", true, true);
 
-// What this plugin advertises as a ControllerDef while it holds a colorization
-// carrying DMD triggers. The suffix is the game id, so a consumer answers "are
-// there Serum triggers for the game I loaded?" by a plain string comparison.
+// DMD event source: this plugin advertises that it identifies DMD frames for
+// a controller and broadcasts the corresponding triggers on an event message.
+// Advertised like the other controller resources (GetSrc/OnSrcChanged messages
+// resolved in the CTLPI_NAMESPACE namespace by the CtrlItem helpers).
 //
-// Consumers carry their own copy of this prefix -- see B2SPluginEventStream.h.
+// Consumers carry their own copy of this contract -- see B2SPluginEventStream.h.
 // It is part of the wire contract, so it changes in both places or neither.
-static constexpr std::string_view serumGameIdPrefix = "serum::"sv;
+static constexpr const char* dmdEventSrcGetMsgName = "GetDmdEventSrc:1";
+static constexpr const char* dmdEventSrcOnChangeMsgName = "OnDmdEventSrcChanged:1";
+
+struct DMDEventSrcId
+{
+   ControllerDef covered; // Controller whose DMD frames this source identifies
+   const char* triggerEventName; // Trigger event message name, in the "Serum" message namespace, carrying a pointer to an unsigned int (trigger id) as message data
+};
+
+inline bool operator==(const DMDEventSrcId& a, const DMDEventSrcId& b)
+{
+   return a.covered == b.covered //
+      && a.triggerEventName == b.triggerEventName; // pointer identity, not string content
+}
+
+// Claims the game whose DMD frames this plugin identifies. Held here rather
+// than by the colorizer because it is published before the colorization is
+// loaded -- see OnControllerChanged.
+static std::unique_ptr<CtrlItemProvider<DMDEventSrcId>> dmdEventSrc;
+static std::string dmdEventSrcGameId;
 
 // The setting names the size to skip, so every size it does not name is
 // produced. A value outside the enum degrades to "skip nothing" rather than to
@@ -519,7 +533,14 @@ private:
    CtrlItemConsumer<DisplaySrcId> m_dmdSource;
 };
 
-static std::filesystem::path GetColorization(const std::string_view& gameId)
+// Locate a colorization for a controller game id (format: ns::rom). Each base
+// folder is searched under an optional intermediate namespace folder first --
+// base/ns/rom/rom.cromc -- then directly -- base/rom/rom.cromc -- so legacy
+// layouts keep working. pinmame/altcolor is a legacy base only defined for
+// pinmame controllers, so it is searched for them alone, directly (the
+// pinmame folder already carries the namespace). Returns the directory under
+// which rom/ sits.
+static std::filesystem::path GetColorization(const std::string_view& gameNs, const std::string_view& gameId)
 {
    const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
    const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
@@ -537,49 +558,51 @@ static std::filesystem::path GetColorization(const std::string_view& gameId)
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
       std::filesystem::path tablePath = tableInfo.path;
+      const std::filesystem::path serumBase = tablePath.parent_path() / "serum"sv;
 
-      // Priority 1: serum/rom/rom.cromc or .crz along VPX table
-      if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / cromc); !path1.empty())
-         return path1.parent_path().parent_path();
-      else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / crz); !path2.empty())
-         return path2.parent_path().parent_path();
-
-      // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz along VPX table
-      else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / cromc); !path3.empty())
-         return path3.parent_path().parent_path();
-      else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / crz); !path4.empty())
-         return path4.parent_path().parent_path();
+      std::vector<std::filesystem::path> bases = { serumBase / gameNs, serumBase };
+      if (gameNs == "pinmame"sv)
+         bases.push_back(tablePath.parent_path() / "pinmame"sv / "altcolor"sv);
+      for (const std::filesystem::path& base : bases)
+      {
+         if (auto path = find_case_insensitive_file_path(base / gameId / cromc); !path.empty())
+            return path.parent_path().parent_path();
+         else if (path = find_case_insensitive_file_path(base / gameId / crz); !path.empty())
+            return path.parent_path().parent_path();
+      }
    }
 
    // Priority 3: global setting path
-   if (std::filesystem::path serumPath = serumPathProp_Get();
-      !serumPath.empty() && (!find_case_insensitive_file_path(serumPath / gameId / cromc).empty() || !find_case_insensitive_file_path(serumPath / gameId / crz).empty()))
-      return serumPath;
+   if (std::filesystem::path serumPath = serumPathProp_Get(); !serumPath.empty())
+      for (const std::filesystem::path& base : { serumPath / gameNs, serumPath })
+         if (!find_case_insensitive_file_path(base / gameId / cromc).empty() || !find_case_insensitive_file_path(base / gameId / crz).empty())
+            return base;
 
    return std::filesystem::path();
 }
 
-// Select the first controller exposing a game for which we have the corresponding assets
+// Select the first controller exposing a game for which we have the
+// corresponding assets, a pinmame:: one winning over other namespaces when
+// several match the same game key (selection order is otherwise undefined).
 static void SelectController(std::vector<ControllerDef>& items)
 {
+   const ControllerDef* selected = nullptr;
    for (const ControllerDef& controller : items)
    {
-      // Never select our own trigger claim. It is a ControllerDef so consumers
-      // can match it by game id, but this plugin colorizes a controller and is
-      // never one itself. The claim carries the same game id as the controller
-      // it was made for, so it satisfies the test below: selecting it would
-      // tear the colorizer down and rebuild it against this endpoint, which
-      // republishes the claim, which selects it again.
-      if (controller.endpointId == endpointId)
+      const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+      if (gameId.empty() || GetColorization(PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId), gameId).empty())
          continue;
-      if (const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId); !gameId.empty() && !GetColorization(gameId).empty())
+      if (PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId) == "pinmame"sv)
       {
-         items.clear();
-         items.push_back(controller);
-         return;
+         selected = &controller;
+         break;
       }
+      if (selected == nullptr)
+         selected = &controller;
    }
    items.clear();
+   if (selected != nullptr)
+      items.push_back(*selected);
 }
 
 static void OnControllerChanged()
@@ -594,8 +617,8 @@ static void OnControllerChanged()
          }
          const ControllerDef& selectedController = items.front();
          const std::string_view currentGameId = PinballPlugin::Controller::CtrlGetGameKey(selectedController.gameId);
-         const std::filesystem::path serumPath = GetColorization(currentGameId);
-         LOGI(std::format("Loading from '{}' for '{}'", serumPath.string(), currentGameId));
+         const std::filesystem::path serumPath = GetColorization(PinballPlugin::Controller::CtrlGetGameNamespace(selectedController.gameId), currentGameId);
+         LOGI(std::format("Loading from '{}' for '{}'", serumPath.string(), selectedController.gameId));
 
          // Claim the game before loading it, not after.
          //
@@ -620,15 +643,15 @@ static void OnControllerChanged()
          // SelectController reduces the controller list to one entry, so the
          // change this broadcasts does not survive our own filter and cannot
          // recurse back into here.
-         dmdTriggerGameId = std::format("{}{}", serumGameIdPrefix, currentGameId);
-         dmdTriggers->SetItem({ .endpointId = endpointId, .gameId = dmdTriggerGameId.c_str() });
+         dmdEventSrcGameId = selectedController.gameId;
+         dmdEventSrc->SetItem({ .covered = { selectedController.endpointId, dmdEventSrcGameId.c_str() }, .triggerEventName = "OnDmdTrigger:1" });
 
          colorizer = std::make_unique<SerumColorizer>(serumPath, currentGameId, selectedController.endpointId);
 
          if (colorizer->ProvidesDmdTriggers())
-            LOGI(std::format("Providing {} DMD trigger(s) as '{}'", colorizer->TriggerCount(), dmdTriggerGameId));
+            LOGI(std::format("Providing {} DMD trigger(s) for '{}'", colorizer->TriggerCount(), dmdEventSrcGameId));
          else
-            dmdTriggers->ClearItems();
+            dmdEventSrc->ClearItems();
       });
 }
 
@@ -679,9 +702,14 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    Serum_SetLogCallback(OnSerumLog, nullptr);
    onTriggerScene = msgApi->GetMsgID("Serum", "TriggerScene:1");
    msgApi->SubscribeMsg(endpointId, onTriggerScene, OnTriggerScene, nullptr);
-   dmdTriggers = std::make_unique<CtrlItemProvider<ControllerDef>>(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG);
+   dmdEventSrc = std::make_unique<CtrlItemProvider<DMDEventSrcId>>(msgApi, endpointId, dmdEventSrcGetMsgName, dmdEventSrcOnChangeMsgName);
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
-      msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { colorizer = nullptr; dmdTriggers->ClearItems(); },
+      msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); },
+      []()
+      {
+         colorizer = nullptr;
+         dmdEventSrc->ClearItems();
+      },
       []() { OnControllerChanged(); });
    controllers->Subscribe();
 }
@@ -690,7 +718,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
 {
    controllers->Unsubscribe();
    controllers = nullptr;
-   dmdTriggers = nullptr;
+   dmdEventSrc = nullptr;
    msgApi->UnsubscribeMsg(onTriggerScene, OnTriggerScene, nullptr);
    msgApi->ReleaseMsgID(onTriggerScene);
    msgApi->ReleaseMsgID(onDmdTrigger);

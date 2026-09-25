@@ -60,6 +60,8 @@ Moreover, to simplify and unify the way things are managed between the VPX appli
 - then search along the table file, with a name matching the name of the folder containing the played table file,
 - finally, eventually search in a custom legacy folder (custom behavior is defined by each component).
 
+Game-driven content (DMD colorizations, pinup videos, ...) is bound to a controller, which advertises the game it emulates with a unique id of the form `namespace::gameId` (for example `pinmame::afm_113`). To keep several controllers for the same game id from colliding, each content plugin searches its base folder under an optional intermediate namespace folder first (`base/namespace/gameId/...`), then directly (`base/gameId/...`). This applies to the `serum`, `vni` and `pupvideos` plugins: for example a `pinmame::afm_113` controller would be served by `serum/pinmame/afm_113/` before `serum/afm_113/`. The legacy `pinmame/altcolor` folder is inherently pinmame-scoped, so it is only searched for `pinmame::` games, directly as `pinmame/altcolor/gameId/...`.
+
 
 
 The following tree is an example of this file organization:

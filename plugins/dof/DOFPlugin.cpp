@@ -4,7 +4,6 @@
 #include "plugins/B2SPluginEventStream.h"
 #include "plugins/ControllerPlugin.h"
 #include "plugins/LoggingPlugin.h"
-#include "pinmame/PinMAMEPlugin.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4251) // xxx needs dll-interface
@@ -19,10 +18,17 @@
 #include <cstdio>
 #include <cassert>
 #include <cstdlib>
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <charconv>
+#include <cctype>
+#include <filesystem>
 #include <format>
+#include <fstream>
+#include <sstream>
+#include <unordered_set>
+#include <vector>
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
 #include <pthread.h>
 #endif
@@ -110,13 +116,145 @@ void LIBDOFCALLBACK OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list 
    }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// DOF rom list
+//
+// libDOF resolves the rom name given to Init against the table configuration
+// lines of the ledcontrol ini files it loads (first CSV column of the
+// [Config DOF] / [Config outs] section, see LedControlConfigList). Its public
+// API does not expose that list, so the plugin parses the same files to pick
+// the rom name handed to Init: ns::rom resolves to "ns_rom" when that name is
+// declared, "rom" otherwise. Kept self-contained so a future libDOF query API
+// can replace it whole.
+
+static std::string DofToUpper(const std::string_view& s)
+{
+   std::string r(s);
+   std::transform(r.begin(), r.end(), r.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+   return r;
+}
+
+static std::string_view TrimSv(const std::string_view& s)
+{
+   const auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)) != 0; };
+   const size_t begin = s.find_first_not_of(" \t\r\n");
+   if (begin == std::string_view::npos)
+      return {};
+   const size_t end = s.find_last_not_of(" \t\r\n");
+   return s.substr(begin, end - begin + 1);
+}
+
+// Collect the short rom names declared by the ledcontrol ini files libDOF
+// would load for this table: directoutputconfig*.ini, ledcontrol*.ini
+// otherwise, looked up in IniFilesPath, the table folder, the global config
+// folder and the current directory, the first folder with any match winning
+// (mirrors DOF.cpp / GlobalConfig::GetIniFilesDictionary).
+static std::unordered_set<std::string> LoadDofRomList(const std::filesystem::path& tablePath)
+{
+   std::filesystem::path globalConfigPath = std::filesystem::path(DOF::Config::GetInstance()->GetBasePath()) / "directoutputconfig" / "GlobalConfig_B2SServer.xml";
+   if (!std::filesystem::exists(globalConfigPath))
+      globalConfigPath = std::filesystem::path("directoutputconfig") / "GlobalConfig_B2SServer.xml";
+
+   // IniFilesPath is the only global config setting that changes file lookup
+   std::string iniFilesPath;
+   {
+      std::ifstream xml(globalConfigPath);
+      std::stringstream content;
+      content << xml.rdbuf();
+      const std::string str = content.str();
+      constexpr std::string_view openTag = "<IniFilesPath>"sv;
+      constexpr std::string_view closeTag = "</IniFilesPath>"sv;
+      if (const size_t open = str.find(openTag); open != std::string::npos)
+         if (const size_t close = str.find(closeTag, open + openTag.size()); close != std::string::npos)
+            iniFilesPath = std::string(TrimSv(std::string_view(str).substr(open + openTag.size(), close - open - openTag.size())));
+   }
+
+   std::vector<std::filesystem::path> lookupPaths;
+   if (!iniFilesPath.empty() && std::filesystem::is_directory(iniFilesPath))
+      lookupPaths.push_back(iniFilesPath);
+   if (tablePath.has_parent_path())
+      lookupPaths.push_back(tablePath.parent_path());
+   if (globalConfigPath.has_parent_path())
+      lookupPaths.push_back(globalConfigPath.parent_path());
+   lookupPaths.push_back(std::filesystem::current_path());
+
+   std::vector<std::filesystem::path> iniFiles;
+   for (const std::string_view prefix : { "directoutputconfig"sv, "ledcontrol"sv })
+   {
+      const std::string upperPrefix = DofToUpper(prefix);
+      for (const std::filesystem::path& dir : lookupPaths)
+      {
+         std::error_code ec;
+         if (!std::filesystem::is_directory(dir, ec))
+            continue;
+         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(dir, ec))
+         {
+            if (!entry.is_regular_file(ec))
+               continue;
+            const std::string name = DofToUpper(entry.path().filename().string());
+            if (!name.starts_with(upperPrefix) || !name.ends_with(".INI"))
+               continue;
+            // Same filter as libDOF: unnumbered file, or numeric ledwiz suffix
+            if (name != upperPrefix + ".INI"
+               && !std::ranges::all_of(name.substr(upperPrefix.size(), name.size() - upperPrefix.size() - 4), [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; }))
+               continue;
+            iniFiles.push_back(entry.path());
+         }
+         if (!iniFiles.empty())
+            break;
+      }
+      if (!iniFiles.empty())
+         break;
+   }
+
+   std::unordered_set<std::string> romList;
+   for (const std::filesystem::path& iniFile : iniFiles)
+   {
+      std::ifstream file(iniFile);
+      bool inConfigSection = false;
+      std::string line;
+      while (std::getline(file, line))
+      {
+         const std::string_view trimmed = TrimSv(line);
+         if (trimmed.empty())
+            continue;
+         if (trimmed.front() == '[')
+         {
+            inConfigSection = trimmed == "[Config DOF]"sv || trimmed == "[Config outs]"sv;
+            continue;
+         }
+         if (inConfigSection)
+            if (const std::string_view shortRom = TrimSv(trimmed.substr(0, trimmed.find(','))); !shortRom.empty())
+               romList.insert(DofToUpper(shortRom));
+      }
+   }
+   return romList;
+}
+
+// Whether a rom name is declared in the rom list. Exact case-insensitive
+// match only: anything looser would let ns_rom bind a config declared for ns,
+// which is not the game this name was built for.
+static bool DofRomListContains(const std::unordered_set<std::string>& romList, const std::string_view& romName) { return romList.contains(DofToUpper(romName)); }
+
+static std::string ResolveDofRomName(const std::string_view& gameNs, const std::string_view& gameKey, const std::unordered_set<std::string>& romList)
+{
+   if (!gameNs.empty())
+   {
+      const std::string nsRom = std::string(gameNs) + "_" + std::string(gameKey);
+      if (DofRomListContains(romList, nsRom))
+         return nsRom;
+   }
+   return std::string(gameKey);
+}
+
 class DOFEventConsumer
 {
 public:
-   DOFEventConsumer(const string& tablePath, const string& gameId)
+   DOFEventConsumer(const string& tablePath, const string& gameId, const ControllerDef& controller)
       : m_tablePath(tablePath)
       , m_gameId(gameId)
-      , b2sPluginEventStream(std::make_unique<B2SPluginEventStream>(msgApi, endpointId, [this](char type, int index, int value) { PostEvent({ static_cast<uint8_t>(type), index, value }); }))
+      , b2sPluginEventStream(
+           std::make_unique<B2SPluginEventStream>(msgApi, endpointId, controller, [this](char type, int index, int value) { PostEvent({ static_cast<uint8_t>(type), index, value }); }))
    {
       m_thread = std::thread(&DOFEventConsumer::Run, this);
    }
@@ -199,16 +337,18 @@ static void SetupDOF()
    const ControllerDef controller = controllers->With([](const std::vector<ControllerDef>& items) { return items.empty() ? ControllerDef { } : items.front(); });
    if (controller.gameId == nullptr || controller.endpointId == 0)
       return;
-   const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-   const string gameId = string(controller.gameId).substr(pinmamePrefix.length());
-   if (gameId.empty())
+   const std::string_view gameNs = PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId);
+   const std::string_view gameKey = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+   if (gameKey.empty())
       return;
-   
-   LOGI("New PinMAME game started: gameId=" + gameId);
+
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
-   string path = tableInfo.path;
-   dofThread = std::make_unique<DOFEventConsumer>(path, gameId);
+   const string path = tableInfo.path;
+   const string romName = ResolveDofRomName(gameNs, gameKey, LoadDofRomList(path));
+
+   LOGI("New game started: gameId="s + controller.gameId + ", romName=" + romName);
+   dofThread = std::make_unique<DOFEventConsumer>(path, romName, controller);
 }
 
 }
@@ -239,11 +379,43 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
       msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
       [](std::vector<ControllerDef>& items)
       {
-         const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-         std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
+         // Select the controller for which a DOF table config is declared
+         // (ns_rom or rom in the rom list), a pinmame:: one winning over other
+         // namespaces on ties (selection order is otherwise undefined). When no
+         // controller resolves to a declared config, keep the legacy behavior
+         // of binding the first pinmame one, then any controller: DOF can still
+         // find table-filename mappings the rom list does not describe.
+         const std::unordered_set<std::string> romList = LoadDofRomList(
+            []
+            {
+               VPXTableInfo tableInfo;
+               vpxApi->GetTableInfo(&tableInfo);
+               return std::filesystem::path(tableInfo.path);
+            }());
+         const ControllerDef* selected = nullptr;
+         int bestScore = -1;
+         for (const ControllerDef& controller : items)
+         {
+            const std::string_view gameNs = PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId);
+            const std::string_view gameKey = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+            if (gameKey.empty())
+               continue;
+            const bool pinmame = gameNs == "pinmame"sv;
+            const bool match = (!gameNs.empty() && DofRomListContains(romList, std::string(gameNs) + "_" + std::string(gameKey))) || DofRomListContains(romList, gameKey);
+            const int score = (match ? 2 : 0) + (pinmame ? 1 : 0);
+            if (score > bestScore)
+            {
+               bestScore = score;
+               selected = &controller;
+               if (score == 3)
+                  break;
+            }
+         }
+         items.clear();
+         if (selected != nullptr)
+            items.push_back(*selected);
       },
-      []() { dofThread = nullptr; },
-      []() { SetupDOF(); });
+      []() { dofThread = nullptr; }, []() { SetupDOF(); });
    controllers->Subscribe();
 }
 

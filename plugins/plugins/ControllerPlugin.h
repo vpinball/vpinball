@@ -481,13 +481,23 @@ struct Trampoline<MemFn>
    }
 };
 
-// Extract get game from controller gameId (format is layout :: gameid)
-inline const std::string_view CtrlGetGameKey(const char* gameId)
+// Extract get game from controller gameId (format is namespace :: gameid)
+inline const std::string_view CtrlGetGameKey(const std::string_view id)
 {
-   const std::string_view id(gameId);
    const size_t sep = id.find("::");
    return sep == std::string_view::npos ? id : id.substr(sep + 2);
 }
+
+inline const std::string_view CtrlGetGameKey(const char* gameId) { return CtrlGetGameKey(gameId != nullptr ? std::string_view(gameId) : std::string_view()); }
+
+// Extract namespace from controller gameId (format is namespace :: gameid, empty when no namespace separator is present)
+inline const std::string_view CtrlGetGameNamespace(const std::string_view id)
+{
+   const size_t sep = id.find("::");
+   return sep == std::string_view::npos ? std::string_view() : id.substr(0, sep);
+}
+
+inline const std::string_view CtrlGetGameNamespace(const char* gameId) { return CtrlGetGameNamespace(gameId != nullptr ? std::string_view(gameId) : std::string_view()); }
 
 template <class T> struct GetCtrlSrcMsg
 {

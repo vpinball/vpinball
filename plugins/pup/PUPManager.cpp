@@ -92,7 +92,7 @@ void PUPManager::Start()
 {
    LOGI("PUP Manager start"s);
    assert(!IsRunning());
-   m_B2SPluginEventStream = std::make_unique<B2SPluginEventStream>(m_msgApi, m_endpointId, [this](char c, int id, int value) { QueueDOFEvent(c, id, value); });
+   m_B2SPluginEventStream = std::make_unique<B2SPluginEventStream>(m_msgApi, m_endpointId, m_controller, [this](char c, int id, int value) { QueueDOFEvent(c, id, value); });
    m_B2SPluginEventStream->SetDMDHandler(
       [](const GetDisplaySrcMsg& sources)
       {
@@ -126,7 +126,52 @@ void PUPManager::Stop()
    m_B2SPluginEventStream = nullptr;
 }
 
-void PUPManager::SetGameDir(const string& szRomName)
+std::filesystem::path PUPManager::FindGameDir(const std::string_view& gameNs, const std::string_view& gameId) const
+{
+   if (gameId.empty())
+      return {};
+
+   // First search for pupvideos along the table file
+   if (m_vpxApi != nullptr)
+   {
+      VPXTableInfo tableInfo;
+      m_vpxApi->GetTableInfo(&tableInfo);
+      const std::filesystem::path pupBase = std::filesystem::path(tableInfo.path).parent_path() / "pupvideos"sv;
+      if (!gameNs.empty())
+         if (std::filesystem::path path = find_case_insensitive_directory_path(pupBase / gameNs / gameId); !path.empty())
+            return path;
+      if (std::filesystem::path path = find_case_insensitive_directory_path(pupBase / gameId); !path.empty())
+         return path;
+   }
+
+   // If we did not find the pup folder along the table, search for it in the global 'pupvideos' path if defined
+   if (!m_szRootPath.empty())
+   {
+      if (!gameNs.empty())
+         if (std::filesystem::path path = find_case_insensitive_directory_path(m_szRootPath / gameNs / gameId); !path.empty())
+            return path;
+      return find_case_insensitive_directory_path(m_szRootPath / gameId);
+   }
+
+   return {};
+}
+
+void PUPManager::ApplyGameDir(const std::filesystem::path& path, const std::string_view& gameId, const ControllerDef& controller)
+{
+   if (path.empty() || path == m_szPath)
+      return;
+
+   m_szPath = path;
+   m_szRomName = gameId;
+   m_controllerGameId = controller.gameId != nullptr ? controller.gameId : "";
+   m_controller = { controller.endpointId, m_controllerGameId.c_str() };
+   LOGI("PUP path: " + m_szPath.string());
+
+   // Load Fonts
+   LoadFonts();
+}
+
+void PUPManager::SetGameDir(const ControllerDef& controller)
 {
    assert(!IsRunning());
 
@@ -135,45 +180,36 @@ void PUPManager::SetGameDir(const string& szRomName)
    // With an empty component, `pupvideos` / "" resolves to the pupvideos parent directory which
    // then satisfies the directory-exists check in find_case_insensitive_directory_path and
    // wrongly becomes m_szPath.
+   const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+   if (gameId.empty())
+      return;
+
+   ApplyGameDir(FindGameDir(PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId), gameId), gameId, controller);
+}
+
+void PUPManager::SetGameDir(const string& szRomName)
+{
+   assert(!IsRunning());
    if (szRomName.empty())
       return;
 
-   std::filesystem::path path;
-
-   // First search for pupvideos along the table file
-   if (m_vpxApi != nullptr)
-   {
-      VPXTableInfo tableInfo;
-      m_vpxApi->GetTableInfo(&tableInfo);
-      std::filesystem::path tablePath = tableInfo.path;
-      path = find_case_insensitive_directory_path(tablePath.parent_path() / "pupvideos"sv / szRomName);
-   }
-
-   // If we did not find the pup folder along the table, search for it in the global 'pupvideos' path if defined
-   if (path.empty() && !m_szRootPath.empty())
-      path = find_case_insensitive_directory_path(m_szRootPath / szRomName);
-
-   if (path.empty())
-      return;
-
-   if (path == m_szPath)
-      return;
-
-   m_szPath = path;
-   m_szRomName = szRomName;
-   LOGI("PUP path: " + m_szPath.string());
-
-   // Load Fonts
-   LoadFonts();
+   // The script only hands over a rom name: bind to the controller exposing it
+   // when there is one, otherwise keep the legacy folder lookup bound to none.
+   ControllerDef controller = SelectControllerForGame(szRomName);
+   if (controller.endpointId == 0)
+      controller = { 0, szRomName.c_str() };
+   SetGameDir(controller);
 }
 
-void PUPManager::LoadConfig(const string& szRomName)
+void PUPManager::LoadConfig(const ControllerDef& controller)
 {
+   const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+
    // Tables commonly call B2SInit multiple times, and some tables configure PuP
    // entirely from script (PuPlayer.Init / playlistadd) before B2SInit ever fires.
    // In both cases, if we already have state for this ROM, keep it - just make
    // sure the manager is running and the initial DOF event has been queued.
-   if (!m_szPath.empty() && lowerCase(szRomName) == lowerCase(m_szRomName))
+   if (!m_szPath.empty() && lowerCase(string(gameId)) == lowerCase(m_szRomName) && m_controller.endpointId == controller.endpointId)
    {
       LOGI("Same ROM, skipping re-init"s);
       if (!IsRunning())
@@ -186,7 +222,7 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    Unload();
 
-   SetGameDir(szRomName);
+   SetGameDir(controller);
 
    // Set game dir will define the path to the pup files, or empty it if not found
    if (m_szPath.empty())
@@ -242,6 +278,45 @@ void PUPManager::LoadConfig(const string& szRomName)
    QueueDOFEvent('D', 0, 1);
 }
 
+void PUPManager::LoadConfig(const string& szRomName)
+{
+   if (szRomName.empty())
+      return;
+   ControllerDef controller = SelectControllerForGame(szRomName);
+   if (controller.endpointId == 0)
+      controller = { 0, szRomName.c_str() };
+   LoadConfig(controller);
+}
+
+// Select the controller exposing the given game key, a pinmame:: one winning
+// over other namespaces when several match (selection order is otherwise
+// undefined). Returns an empty ControllerDef when none does.
+ControllerDef PUPManager::SelectControllerForGame(const std::string_view& gameKey)
+{
+   const unsigned int getControllersId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
+   const std::vector<ControllerDef> controllers = PinballPlugin::Controller::GetCtrlItems<ControllerDef>(m_msgApi, m_endpointId, getControllersId);
+   m_msgApi->ReleaseMsgID(getControllersId);
+
+   const ControllerDef* selected = nullptr;
+   for (const ControllerDef& controller : controllers)
+   {
+      if (PinballPlugin::Controller::CtrlGetGameKey(controller.gameId) != gameKey)
+         continue;
+      if (PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId) == "pinmame"sv)
+      {
+         selected = &controller;
+         break;
+      }
+      if (selected == nullptr)
+         selected = &controller;
+   }
+   if (selected == nullptr)
+      return {};
+
+   m_controllerGameId = selected->gameId;
+   return { selected->endpointId, m_controllerGameId.c_str() };
+}
+
 void PUPManager::Unload()
 {
    // Run any still-queued trigger invokes (see QueueDOFEvent) while the triggers
@@ -267,6 +342,8 @@ void PUPManager::Unload()
 
    m_szPath.clear();
    m_szRomName.clear();
+   m_controller = {};
+   m_controllerGameId.clear();
 }
 
 void PUPManager::UnloadFonts()
