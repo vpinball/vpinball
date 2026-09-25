@@ -5,7 +5,6 @@
 
 #include "plugins/MsgPlugin.h"
 #include "plugins/ControllerPlugin.h"
-#include "pinmame/PinMAMEPlugin.h"
 
 #include "PUPManager.h"
 #include "PUPScreen.h"
@@ -210,16 +209,22 @@ void StopAudioStream(uint32_t streamId)
 
 static void OnControllersChanged(const unsigned int eventId, void* userData, void* msgData)
 {
-   // Enumerate and select the first controller exposing a PinMAME compatible game
+   // Select the controller for which we actually have a pupvideos folder, a
+   // pinmame:: one winning over other namespaces when several match the same
+   // game key (selection order is otherwise undefined).
+   ControllerDef selected {};
    string selectedGameId;
-   const string pinmamePrefix(PMPI_GAMEID_PREFIX);
    for (const auto& controller : PinballPlugin::Controller::GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId))
    {
-      string gameId = controller.gameId;
-      if (gameId.starts_with(pinmamePrefix))
+      const std::string_view gameNs = PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId);
+      const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+      if (gameId.empty() || pupManager->FindGameDir(gameNs, gameId).empty())
+         continue;
+      if (gameNs == "pinmame"sv || selected.endpointId == 0)
       {
-         selectedGameId = gameId.substr(pinmamePrefix.length());
-         if (!selectedGameId.empty())
+         selected = controller;
+         selectedGameId = controller.gameId;
+         if (gameNs == "pinmame"sv)
             break;
       }
    }
@@ -236,7 +241,8 @@ static void OnControllersChanged(const unsigned int eventId, void* userData, voi
          return;
       }
 
-      pupManager->LoadConfig(currentGameId);
+      selected.gameId = selectedGameId.c_str();
+      pupManager->LoadConfig(selected);
    }
 }
 

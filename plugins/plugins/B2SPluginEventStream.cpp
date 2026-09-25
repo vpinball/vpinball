@@ -13,7 +13,7 @@ using namespace std::string_view_literals;
 
 using std::vector;
 
-B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::function<void(char, int, int)>& eventHandler)
+B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t endpointId, const ControllerDef& controller, const std::function<void(char, int, int)>& eventHandler)
    : m_endpointId(endpointId)
    , m_msgApi(msgApi)
    , m_eventHandler(eventHandler)
@@ -21,86 +21,36 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
    , m_onSegSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG))
    , m_getDmdSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
    , m_onDmdSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
-   , m_onSerumTriggerId(m_msgApi->GetMsgID("Serum", "OnDmdTrigger:1"))
    , m_onB2SStateChangeId(m_msgApi->GetMsgID("B2S", "OnStateChange:1"))
-   , m_controllers(
-        msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
-        [this](std::vector<ControllerDef>& controllers)
+   , m_controllerEndPoint(controller.endpointId)
+   , m_dmdEventSources(
+        msgApi, endpointId, DMDESPI_GET_SRC_MSG, DMDESPI_ON_SRC_CHG_MSG,
+        [this](std::vector<DMDEventSrcId>& items)
         {
-           const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-           const string b2sPrefix("b2s::");
-           // serum:: is not a controller to poll but a statement that a
-           // colorization identifies DMD frames for a game. It is kept through
-           // the filter so the change callback below can see it, and skipped
-           // everywhere a controller is actually used.
-           const string serumPrefix(serumGameIdPrefix);
-           std::erase_if(controllers,
-              [this, &pinmamePrefix, &b2sPrefix, &serumPrefix](const ControllerDef& controller)
-              {
-                 const std::string_view gameId = controller.gameId;
-                 return !gameId.starts_with(pinmamePrefix) && !gameId.starts_with(b2sPrefix) && !gameId.starts_with(serumPrefix);
-              });
+           // Keep only sources identifying frames for the controller this stream
+           // is bound to (no selection rule if several match)
+           std::erase_if(items, [this](const DMDEventSrcId& src) { return src.covered.endpointId != m_controllerEndPoint; });
         },
-        [this]() {
-           if (m_stateSources.IsSubscribed())
-              m_stateSources.Unsubscribe();
-        },
-        [this]()
-        {
-           m_controllers.With(
-              [this](const std::vector<ControllerDef>& controllers)
-              {
-                 m_b2sEndPoint = 0;
-                 m_pinmameEndPoint = 0;
-                 const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-                 const string b2sPrefix("b2s::");
-                 const string serumPrefix(serumGameIdPrefix);
-                 std::string_view pinmameGame;
-                 std::string_view serumGame;
-                 for (const auto& controller : controllers)
-                 {
-                    string gameId = controller.gameId;
-                    if (m_pinmameEndPoint == 0 && gameId.starts_with(pinmamePrefix))
-                    {
-                       m_pinmameEndPoint = controller.endpointId;
-                       pinmameGame = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
-                    }
-                    else if (m_b2sEndPoint == 0 && gameId.starts_with(b2sPrefix))
-                       m_b2sEndPoint = controller.endpointId;
-                    else if (serumGame.empty() && gameId.starts_with(serumPrefix))
-                       serumGame = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
-                 }
-                 // Both halves matter. A colorization loaded for another game
-                 // identifies nothing here, and this is re-evaluated on every
-                 // controller change rather than once, which is what makes the
-                 // load order between the two plugins stop mattering: Serum
-                 // only says so once it has read the file, which is necessarily
-                 // after both plugins saw the game appear.
-                 const bool identified = !serumGame.empty() && serumGame == pinmameGame;
-                 if (identified != m_serumIdentifiesFrames.exchange(identified))
-                    m_onDmdIdentificationChanged(identified);
-              });
-           OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
-           if (m_pinmameEndPoint != 0)
-              m_stateSources.Subscribe();
-        })
+        nullptr, // onItemsAboutToChange
+        [this]() { OnDmdEventSourcesChanged(); })
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
-        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_pinmameEndPoint; }); }, //
+        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_controllerEndPoint; }); }, //
         nullptr, // onItemsAboutToChange
         [this]()
         {
            for (auto& buffer : m_pmStates)
               buffer.clear();
         })
-   {
+{
    m_msgApi->SubscribeMsg(m_endpointId, m_onSegSrcChangedId, OnSegSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdSrcChangedId, OnDMDSrcChanged, this);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onSerumTriggerId, OnSerumTrigger, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onB2SStateChangeId, OnB2SStateChange, this);
    OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
    OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
-   m_controllers.Subscribe();
+   if (m_controllerEndPoint != 0)
+      m_stateSources.Subscribe();
+   m_dmdEventSources.Subscribe();
 
    m_thread = std::thread(&B2SPluginEventStream::StatePollingThread, this);
 }
@@ -111,17 +61,20 @@ B2SPluginEventStream::~B2SPluginEventStream()
    if (m_thread.joinable())
       m_thread.join();
 
-   m_controllers.Unsubscribe();
-   assert(!m_stateSources.IsSubscribed());
+   m_dmdEventSources.Unsubscribe();
+   if (m_stateSources.IsSubscribed())
+      m_stateSources.Unsubscribe();
 
    m_msgApi->UnsubscribeMsg(m_onSegSrcChangedId, OnSegSrcChanged, this);
    m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged, this);
-   m_msgApi->UnsubscribeMsg(m_onSerumTriggerId, OnSerumTrigger, this);
+   if (m_dmdTriggerMsgId != 0)
+   {
+      m_msgApi->UnsubscribeMsg(m_dmdTriggerMsgId, OnDmdTrigger, this);
+      m_msgApi->ReleaseMsgID(m_dmdTriggerMsgId);
+   }
    m_msgApi->UnsubscribeMsg(m_onB2SStateChangeId, OnB2SStateChange, this);
 
    m_msgApi->ReleaseMsgID(m_onB2SStateChangeId);
-
-   m_msgApi->ReleaseMsgID(m_onSerumTriggerId);
 
    m_msgApi->ReleaseMsgID(m_getSegSrcId);
    m_msgApi->ReleaseMsgID(m_onSegSrcChangedId);
@@ -169,11 +122,11 @@ void B2SPluginEventStream::OnSegSrcChanged(const unsigned int eventId, void* use
    me->m_pmSegSrc.clear();
    me->m_pmLastSegFrame.clear();
    me->m_pmLastSegFrameId.clear();
-   if (me->m_pinmameEndPoint)
+   if (me->m_controllerEndPoint != 0)
    {
       me->m_pmSegSrc.resize(1024);
       GetSegSrcMsg getSrcMsg = { static_cast<unsigned int>(me->m_pmSegSrc.size()), 0, me->m_pmSegSrc.data() };
-      me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcId, me->m_pinmameEndPoint, &getSrcMsg);
+      me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcId, me->m_controllerEndPoint, &getSrcMsg);
       me->m_pmSegSrc.resize(std::min(getSrcMsg.count, static_cast<unsigned int>(me->m_pmSegSrc.size())));
       me->m_pmLastSegFrameId.resize(me->m_pmSegSrc.size());
       size_t nElements = 0;
@@ -197,8 +150,42 @@ void B2SPluginEventStream::OnB2SStateChange(const unsigned int eventId, void* us
    me->QueueEvent(event->type, event->index, event->value);
 }
 
-// Broadcasted by Serum plugin when frame triggers are identified
-void B2SPluginEventStream::OnSerumTrigger(const unsigned int eventId, void* userData, void* eventData)
+// Called on the MsgAPI thread when the DMD event source list changes. Selects
+// a source identifying frames for the controller this stream is bound to, and
+// binds the trigger event subscription to it.
+void B2SPluginEventStream::OnDmdEventSourcesChanged()
+{
+   std::string triggerName;
+   const bool identified = m_dmdEventSources.With(
+      [&triggerName](const std::vector<DMDEventSrcId>& items)
+      {
+         if (items.empty())
+            return false;
+         if (items.front().triggerEventName != nullptr)
+            triggerName = items.front().triggerEventName;
+         return true;
+      });
+   if (identified != m_serumIdentifiesFrames.exchange(identified))
+      m_onDmdIdentificationChanged(identified);
+
+   if (triggerName == m_dmdTriggerName)
+      return;
+   if (m_dmdTriggerMsgId != 0)
+   {
+      m_msgApi->UnsubscribeMsg(m_dmdTriggerMsgId, OnDmdTrigger, this);
+      m_msgApi->ReleaseMsgID(m_dmdTriggerMsgId);
+      m_dmdTriggerMsgId = 0;
+   }
+   m_dmdTriggerName = triggerName;
+   if (!m_dmdTriggerName.empty())
+   {
+      m_dmdTriggerMsgId = m_msgApi->GetMsgID("Serum", m_dmdTriggerName.c_str());
+      m_msgApi->SubscribeMsg(m_endpointId, m_dmdTriggerMsgId, OnDmdTrigger, this);
+   }
+}
+
+// Broadcasted by the selected DMD event source when frame triggers are identified
+void B2SPluginEventStream::OnDmdTrigger(const unsigned int eventId, void* userData, void* eventData)
 {
    auto me = static_cast<B2SPluginEventStream*>(userData);
    auto trigger = static_cast<unsigned int*>(eventData);
@@ -220,12 +207,12 @@ void B2SPluginEventStream::StatePollingThread()
 
       // D: DMD frame identification
       //
-      // Skipped outright while Serum identifies frames for this game: it has
-      // already matched them to produce its colorization, and it reports what
-      // it found on "Serum"/"OnDmdTrigger:1", which OnSerumTrigger turns into
-      // the same 'D' events this block would. Running both is how a pack ends
-      // up firing every trigger twice, and it costs a second full match of
-      // every frame to do it.
+      // Skipped outright while a DMD event source identifies frames for this
+      // game: it has already matched them to produce its colorization, and it
+      // reports what it found on its trigger event, which OnDmdTrigger turns
+      // into the same 'D' events this block would. Running both is how a pack
+      // ends up firing every trigger twice, and it costs a second full match
+      // of every frame to do it.
       if (m_dmdId.id.id != 0 && !m_serumIdentifiesFrames.load(std::memory_order_relaxed))
       {
          DisplayFrame dmdFrame = m_dmdId.GetIdentifyFrame(m_dmdId.callContext);

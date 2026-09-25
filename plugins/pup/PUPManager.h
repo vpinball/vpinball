@@ -90,7 +90,13 @@ public:
    const MsgPluginAPI* GetMsgAPI() const { return m_msgApi; }
    const std::filesystem::path& GetRootPath() const { return m_szRootPath; }
 
+   // Locate the pupvideos folder for a game id (format: ns::rom), searching
+   // each base under an optional intermediate namespace folder first --
+   // base/ns/rom -- then directly -- base/rom.
+   std::filesystem::path FindGameDir(const std::string_view& gameNs, const std::string_view& gameId) const;
+   void SetGameDir(const ControllerDef& controller);
    void SetGameDir(const string& szRomName);
+   void LoadConfig(const ControllerDef& controller);
    void LoadConfig(const string& szRomName);
    void Unload();
    bool IsRunning() const { return m_B2SPluginEventStream != nullptr; }
@@ -109,6 +115,8 @@ public:
    void Unduck();
 
 private:
+   void ApplyGameDir(const std::filesystem::path& path, const std::string_view& gameId, const ControllerDef& controller);
+   ControllerDef SelectControllerForGame(const std::string_view& gameKey);
    void UnloadFonts();
    void LoadFonts();
    void LoadPlaylists();
@@ -120,6 +128,9 @@ private:
    std::filesystem::path m_szRootPath;
    std::filesystem::path m_szPath;
    string m_szRomName;
+   // Controller the event stream is bound to, m_controllerGameId backing its gameId pointer
+   ControllerDef m_controller {};
+   string m_controllerGameId;
    vector<std::shared_ptr<PUPScreen>> m_screenOrder;
    ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
    vector<std::unique_ptr<PUPFont>> m_fonts;
