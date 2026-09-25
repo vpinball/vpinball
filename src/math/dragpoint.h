@@ -97,6 +97,7 @@ public:
    void LoadPointToken(IObjectReader &reader);
 
    const Vertex2D &GetCenter() const;
+   const Vertex2D &GetCentroid() const;
    const Vertex2D &GetMinBound() const;
    const Vertex2D &GetMaxBound() const;
 
@@ -208,10 +209,11 @@ private:
 
    vector<std::unique_ptr<DragPoint>> m_dragpoints;
 
-   // Lazily updated bounds & center
-   void UpdateBounds() const;
+   // Lazily updated bounds, center & centroid
+   void UpdateBoundsAndCentroid() const;
    mutable bool m_boundsDirty = true;
    mutable Vertex2D m_minBound;
    mutable Vertex2D m_maxBound;
    mutable Vertex2D m_center;
+   mutable Vertex2D m_centroid;
 };

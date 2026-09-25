@@ -6,7 +6,7 @@
 
 DragPointCurve::~DragPointCurve() { ClearPoints(); }
 
-void DragPointCurve::UpdateBounds() const
+void DragPointCurve::UpdateBoundsAndCentroid() const
 {
    if (m_boundsDirty)
    {
@@ -34,24 +34,35 @@ void DragPointCurve::UpdateBounds() const
       }
       */
       m_center = 0.5f * (m_maxBound + m_minBound);
+      m_centroid.SetZero();
+      for (const auto &v : m_dragpoints)
+         m_centroid += Vertex2D(v->GetX(), v->GetY());
+      if (!m_dragpoints.empty())
+         m_centroid /= (float)m_dragpoints.size();
    }
 }
 
 const Vertex2D &DragPointCurve::GetCenter() const
 {
-   UpdateBounds();
+   UpdateBoundsAndCentroid();
    return m_center;
+}
+
+const Vertex2D &DragPointCurve::GetCentroid() const
+{
+   UpdateBoundsAndCentroid();
+   return m_centroid;
 }
 
 const Vertex2D &DragPointCurve::GetMinBound() const
 {
-   UpdateBounds();
+   UpdateBoundsAndCentroid();
    return m_minBound;
 }
 
 const Vertex2D &DragPointCurve::GetMaxBound() const
 {
-   UpdateBounds();
+   UpdateBoundsAndCentroid();
    return m_maxBound;
 }
 

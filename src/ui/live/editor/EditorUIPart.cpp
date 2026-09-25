@@ -13,9 +13,15 @@ namespace VPX::EditorUI
 // side effects through the DragPointEditContext interface.
 //
 
+Vertex2D EditorUIPart::GetCurvePivot() const
+{
+   const DragPointCurve* const curve = GetDragPointCurve();
+   return curve ? curve->GetCentroid() : GetEditable()->GetCenter();
+}
+
 EditorUIPart::TransformMask EditorUIPart::GetCurveTransform(Matrix3D& transform, float z) const
 {
-   const Vertex2D pivot = GetEditable()->GetCenter();
+   const Vertex2D pivot = GetCurvePivot();
    transform = Matrix3D::MatrixScale(m_curveScale.x, m_curveScale.y, 1.f) * Matrix3D::MatrixRotateZ(ANGTORAD(m_curveRot)) * Matrix3D::MatrixTranslate(pivot.x, pivot.y, z);
    return static_cast<TransformMask>(TM_TransAny | TM_RotZ | TM_ScaleX | TM_ScaleY | TM_ScaleAll);
 }
@@ -23,9 +29,9 @@ EditorUIPart::TransformMask EditorUIPart::GetCurveTransform(Matrix3D& transform,
 void EditorUIPart::SetCurveTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
    IEditable* const part = GetEditable();
-   const Vertex2D pivot = part->GetCenter();
+   const Vertex2D pivot = GetCurvePivot();
    // The gizmo transform is absolute, so the delta of each component is applied to the points around the
-   // part center (the reported transform carries the rotation & scale already applied to the points).
+   // pivot (the reported transform carries the rotation & scale already applied to the points).
    if (rot.z != m_curveRot)
       part->Rotate(rot.z - m_curveRot, pivot, false);
    SetCurveScale(scale);
@@ -36,7 +42,7 @@ void EditorUIPart::SetCurveTransform(const vec3& pos, const vec3& scale, const v
 void EditorUIPart::SetCurveScale(const vec3& scale)
 {
    IEditable* const part = GetEditable();
-   const Vertex2D pivot = part->GetCenter();
+   const Vertex2D pivot = GetCurvePivot();
    if (scale.x != m_curveScale.x || scale.y != m_curveScale.y)
    {
       // The gizmo scales in the reported local frame: unrotate the points, scale, then rotate back
