@@ -19,7 +19,7 @@ public:
    void SetObjects(const float len);
 
    void PullBack(float speed);
-   void Fire(float startPos); // startPos is a relative position (1.0 = fully retracted)
+   void Fire(float startPos); // startPos is a relative position (1 = fully retracted, 0 = fully extended, rest position is somewhere in between likely near 0)
    void Fire() { Fire((m_pos - m_frameEnd) / (m_frameStart - m_frameEnd)); }
 
    void PullBackandRetract(float speed);
@@ -38,11 +38,11 @@ public:
    HitLineZ m_jointBase[2];
    HitLineZ m_jointEnd[2];
 
-   // Current rod position, in table distance units.  This represents
-   // the location of the tip of the plunger.
+   // Current rod position, in VPU (location of the tip of the plunger)
    float m_pos;
 
-   // current rod speed, in table distance units per second(?)
+   // Current rod speed, in VPU/VPT
+   // FIXME validate this unit as it used tobe advertised VPU/s but the code say otherwise
    float m_speed;
 
    // Forward travel limit.  When we're about to collide with a ball,
@@ -75,7 +75,7 @@ public:
    // explicitly prevent the plunger from going past that until the
    // next displacement update, when the ball will have been moved
    // as well.
-   float m_travelLimit;
+   float m_travelLimit; // VPU
 
    // Mass of the moving parts.  This is in arbitrary units, and serves
    // as a scaling factor in some of the plunger speed calculations.
@@ -186,19 +186,16 @@ public:
    // spring (or, if already in the bounce, the next reversal).
    float m_fireBounce;
 
-   // Relative rest position, as a fraction of the full range.  For
-   // historical reasons, this is the park position if "mech enabled"
-   // is true in the plunger's properties, or the maximum forward
-   // position if not.
+   // Relative rest position as a fraction of the full frame range (0 is maximum forward position, 1 is maximum retracted position). Prior to VP10.0, non-mech plungers parked at 0.0 instead.
    float m_restPos;
 
-   // maximum retracted position, in absolute table coordinates
+   // Maximum retracted position, in VPU
    float m_frameStart;
 
-   // maximum forward position, in absolute table coordinates
+   // Maximum forward position, in VPU
    float m_frameEnd;
 
-   // frame length
+   // Frame length between maximym forward and retracted positions in VPU
    float m_frameLen;
 
    // Stroke Events are armed.  We use this for a hysteresis system

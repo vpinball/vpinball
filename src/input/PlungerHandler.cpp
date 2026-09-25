@@ -41,7 +41,7 @@ void PlungerHandler::StepOneMillisecond()
    {
       if (sensor->IsActive())
       {
-         m_position = sensor->GetPosition();
+         m_position = sensor->GetRawPosition();
          m_rawVelocity = sensor->GetRawVelocity();
          break;
       }
@@ -340,14 +340,19 @@ float PlungerSensor::GetHitVelocity(float restPos) const
       // . the actual hit position that we guess to be at the park position
       // So we figure the release speed as a fraction of the fire speed property, linearly proportional to the starting distance.
       // The 100/13 factor is a magic conversion factor that matches what is used for keyboard driven plunger.
-      const float releaseApex = *std::max_element(m_prevPosition.begin(), m_prevPosition.end());
-      const float hitSpeed = -max(0.f, releaseApex - restPos) * 100.f / 13.0f;
 
-      // If the plunger is not far enough from the release apex, then we're not in a fire situation
-      const float currentPos = clamp(lerp(restPos, 1.f, GetPosition()), 0.f, 1.f);
-      if (currentPos > releaseApex - 0.1f)
+      // Apex of the pull, in sensor units (p.u.: 0 = rest, +1 = fully retracted)
+      const float releaseApexPu = *std::max_element(m_prevPosition.begin(), m_prevPosition.end());
+
+      // If the plunger is not far enough from the release apex (evaluated in p.u.), then we're not in a fire situation
+      if (GetRawPosition() > releaseApexPu - 0.1f)
          return 0.f;
 
-      return hitSpeed;
+      // Pull distance in t.u.: the apex mapped to table space is lerp(restPos, 1, releaseApexPu)
+      // (same form as Fire()'s dx = startPos - m_restPos)
+      const float dx = lerp(restPos, 1.f, releaseApexPu) - restPos; // t.u.
+
+      // Impact speed in t.u./s under the spring launch model
+      return -max(0.f, dx) * (100.f / 13.f);
    }
 }

@@ -2463,7 +2463,7 @@ void PinTable::Load(IObjectReader& reader)
          case FID(MAXS): reader.AsFloat(); break; // Fake stereo max eye separation
          case FID(ZPD): reader.AsFloat(); break; // Fake stereo convergence distance
          case FID(STO): reader.AsFloat(); break; // Fake stereo 3D offset
-         case FID(MPGC): reader.AsFloat(); break; // Plunger Normalize
+         case FID(MPGC): reader.AsInt(); break; // Plunger Normalize
          case FID(MPDF): reader.AsFloat(); break; // Plunger Filter
          case FID(TBLH): reader.AsFloat(); break; // Table Height
          }

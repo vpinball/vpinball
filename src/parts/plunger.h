@@ -18,21 +18,28 @@ class MeshBuffer;
 class PlungerData final : public BaseProperty
 {
 public:
-   COLORREF m_color;
-   Vertex2D m_v;
-   float m_width;
-   float m_height;
-   float m_stroke;
-   float m_zAdjust;
+   Vertex2D m_v; // Origin in VPU (plunger are always flat and axis aligned, with rod pointing toward lower y)
+   float m_width; // Physical & visual **half** width in VPU
+   float m_height; // Physical length in VPU that the plunger hit box extends behind the rod span. Also determine 'Flat' & 'Modern' type plunger lower y bound.
+   float m_stroke; // Physical plunger frame length in VPU. Plunger goes from extended = (m_v.y - m_stroke) to retracted = m_v.y, collider extends behind to (m_v.y + m_height)
+   float m_parkPosition; // Relative park position (0 = parked at fully extended, 1 = parked at fully retracted)
+   string m_szSurface; // Physical & visual plunger z origin (a plunger always has a 50 VPU high hitbox)
    float m_speedPull;
    float m_speedFire;
    float m_mechStrength;
-   PlungerType m_type;
-   int m_animFrames;
-   float m_parkPosition;
-   string m_szSurface;
    float m_scatterVelocity;
    float m_momentumXfer;
+   bool m_autoPlunger;
+   bool m_mechPlunger;
+
+   // Global render properties
+   PlungerType m_type;
+   float m_zAdjust; // Offset height in VPU to apply when rendering the plunger rod
+
+   // PlungerTypeFlat render properties
+   int m_animFrames; // Number of images in the texture atlas
+
+   // PlungerTypeCustom render properties (all expressed in VPU)
    string m_szTipShape;
    float m_rodDiam;
    float m_ringGap;
@@ -42,8 +49,6 @@ public:
    float m_springGauge;
    float m_springLoops;
    float m_springEndLoops;
-   bool m_mechPlunger;
-   bool m_autoPlunger;
 };
 
 /////////////////////////////////////////////////////////////////////////////

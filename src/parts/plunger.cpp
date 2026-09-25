@@ -44,7 +44,6 @@ void Plunger::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_speedPull, PullSpeed);
    LinkProp(m_d.m_type, PlungerType);
    LinkProp(m_d.m_animFrames, AnimFrames);
-   LinkProp(m_d.m_color, Color);
    LinkProp(m_d.m_szImage, Image);
    LinkProp(m_d.m_szSurface, Surface);
    LinkProp(m_d.m_mechPlunger, MechPlunger);
@@ -85,7 +84,6 @@ void Plunger::WriteRegDefaults()
    LinkProp(m_d.m_speedPull, PullSpeed);
    LinkProp(m_d.m_type, PlungerType);
    LinkProp(m_d.m_animFrames, AnimFrames);
-   LinkProp(m_d.m_color, Color);
    LinkProp(m_d.m_szImage, Image);
    LinkProp(m_d.m_szSurface, Surface);
    LinkProp(m_d.m_mechPlunger, MechPlunger);
@@ -867,7 +865,6 @@ void Plunger::Save(IObjectWriter& writer, const bool saveForUndo)
 
 void Plunger::Load(IObjectReader& reader)
 {
-   m_d.m_color = RGB(76, 76, 76); //initialize color for new plunger
    SetDefaults(false);
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
@@ -943,8 +940,9 @@ return S_OK;
 }
 
 // Returns the position of the plunger as a value between 0 and 25
-// Note that g_pplayer->m_curMechPlungerPos is 0 at park position, which usually correspond to something like 4 or 5 here,
-// leading to value from 5 to 25 when pulling the plunger, with value below 5 being when the plunger pass the park position.
+// 0 = fully forward (frame end), 25 = fully retracted (frame start); the park position sits at 25 * parkPosition (~4-5).
+// This is the *simulated* plunger position. VPX <= 10.8 reported the raw mechanical sensor position when a mech
+// device was attached; scripts now observe the filtered, spring-chased virtual plunger instead.
 STDMETHODIMP Plunger::Position(float *pVal)
 {
    const PlungerMoverObject &pa = m_phitplunger->m_plungerMover;
