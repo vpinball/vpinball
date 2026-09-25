@@ -100,7 +100,7 @@ static const char* upscalerNames[] = { "Disabled", "ScaleFX AA 1x", "ScaleFX 3x"
 static constexpr int scaleFactors[] = { 1, 1, 3, 2, 2, 3, 4, 5, 6, 2 };
 static UpscalerMode upscalerMode = UM_Disabled;
 static UpscalerMode nextUpscalerMode = UM_Disabled;
-static int GetUpscalerMode() { return (int)upscalerMode; }
+static int GetUpscalerMode() { return (int)nextUpscalerMode; }
 static void SetUpscalerMode(int v)
 {
    const UpscalerMode mode = static_cast<UpscalerMode>(v);
