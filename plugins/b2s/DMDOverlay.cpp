@@ -8,6 +8,7 @@
 #include <stack>
 #include <algorithm>
 #include <string>
+#include <tuple>
 #include <format>
 #include <vector>
 
@@ -47,7 +48,7 @@ DMDOverlay::~DMDOverlay()
 {
    m_stopSearching = true;
    if (m_frameSearch.valid())
-      m_frameSearch.get();
+      m_frameSearch.wait();
 }
 
 void DMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
@@ -123,7 +124,7 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
       {
          m_stopSearching = true;
          if (m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-            m_frameSearch.get();
+            std::ignore = m_frameSearch.get();
          return;
       }
       else
