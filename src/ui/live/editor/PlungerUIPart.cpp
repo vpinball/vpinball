@@ -58,63 +58,64 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Image"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_szImage; }, //
          [](Plunger* plunger, const string& v) { plunger->m_d.m_szImage = v; });
-      props.InputInt<Plunger>(
-         m_part, "Flat Frames"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_animFrames; }, //
-         [](Plunger* plunger, int v) { plunger->m_d.m_animFrames = v; });
       props.InputFloat<Plunger>(
-         m_part, "Width"s, //
+         m_part, "Half Width"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_width; }, //
          [](Plunger* plunger, float v) { plunger->m_d.m_width = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Plunger>(
-         m_part, "Height"s, //
+         m_part, "Bottom Margin"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_height; }, //
          [](Plunger* plunger, float v) { plunger->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
       props.Checkbox<Plunger>(
          m_part, "Reflection Enabled"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_reflectionEnabled; }, //
          [](Plunger* plunger, bool v) { plunger->m_d.m_reflectionEnabled = v; });
-      props.EndSection();
-   }
 
-   if (props.BeginSection("Custom Settings"s))
-   {
-      props.InputFloat<Plunger>(
-         m_part, "Rod Diameter"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_rodDiam; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_rodDiam = v; }, PropertyPane::Unit::VPLength, 1);
-      props.InputString<Plunger>(
-         m_part, "Tip Shape"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_szTipShape; }, //
-         [](Plunger* plunger, const string& v) { plunger->m_d.m_szTipShape = v; });
-      props.InputFloat<Plunger>(
-         m_part, "Ring Gap"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_ringGap; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_ringGap = v; }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Plunger>(
-         m_part, "Ring Diameter"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_ringDiam; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_ringDiam = v; }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Plunger>(
-         m_part, "Ring Width"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_ringWidth; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_ringWidth = v; }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Plunger>(
-         m_part, "Spring Diameter"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_springDiam; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_springDiam = v; }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Plunger>(
-         m_part, "Spring Gauge"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_springGauge; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_springGauge = v; }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Plunger>(
-         m_part, "Spring Loops"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_springLoops; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_springLoops = v; }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Plunger>(
-         m_part, "End Loops"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_springEndLoops; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_springEndLoops = v; }, PropertyPane::Unit::VPLength, 1);
+      if (m_part->m_d.m_type == PlungerType::PlungerTypeFlat)
+         props.InputInt<Plunger>(
+            m_part, "Flat Frames"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_animFrames; }, //
+            [](Plunger* plunger, int v) { plunger->m_d.m_animFrames = v; });
+      else if (m_part->m_d.m_type == PlungerType::PlungerTypeCustom)
+      {
+         props.InputFloat<Plunger>(
+            m_part, "Rod Diameter"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_rodDiam; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_rodDiam = v; }, PropertyPane::Unit::VPLength, 1);
+         props.InputString<Plunger>(
+            m_part, "Tip Shape"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_szTipShape; }, //
+            [](Plunger* plunger, const string& v) { plunger->m_d.m_szTipShape = v; });
+         props.InputFloat<Plunger>(
+            m_part, "Ring Gap"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_ringGap; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_ringGap = v; }, PropertyPane::Unit::VPLength, 1);
+         props.InputFloat<Plunger>(
+            m_part, "Ring Diameter"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_ringDiam; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_ringDiam = v; }, PropertyPane::Unit::VPLength, 1);
+         props.InputFloat<Plunger>(
+            m_part, "Ring Width"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_ringWidth; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_ringWidth = v; }, PropertyPane::Unit::VPLength, 1);
+         props.InputFloat<Plunger>(
+            m_part, "Spring Diameter"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_springDiam; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_springDiam = v; }, PropertyPane::Unit::VPLength, 1);
+         props.InputFloat<Plunger>(
+            m_part, "Spring Gauge"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_springGauge; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_springGauge = v; }, PropertyPane::Unit::VPLength, 1);
+         props.InputFloat<Plunger>(
+            m_part, "Spring Loops"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_springLoops; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_springLoops = v; }, PropertyPane::Unit::VPLength, 1);
+         props.InputFloat<Plunger>(
+            m_part, "End Loops"s, //
+            [](const Plunger* plunger) { return plunger->m_d.m_springEndLoops; }, //
+            [](Plunger* plunger, float v) { plunger->m_d.m_springEndLoops = v; }, PropertyPane::Unit::VPLength, 1);
+      }
+
       props.EndSection();
    }
 
