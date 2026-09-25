@@ -4,8 +4,6 @@
 #include <cstdio>
 #include <algorithm>	// sort
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
 #include <windows.h>
 
 // Very slim version, just to make it compile & run w/o RDE.

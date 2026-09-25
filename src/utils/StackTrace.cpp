@@ -1,8 +1,6 @@
 #include "core/stdafx.h"
 #include "StackTrace.h"
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
 #include <windows.h>
 #include <dbghelp.h>
 #include <cstdlib>
