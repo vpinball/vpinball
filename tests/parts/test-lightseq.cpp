@@ -74,5 +74,31 @@ TEST_CASE("LightSeq part")
       CHECK(seq->GetCenter().y == 17.f);
    }
 
+   SUBCASE("CenterX/CenterY are bounded by the table size")
+   {
+      table->m_right = 1500.f;
+      table->m_bottom = 3000.f;
+
+      LightSeq* const seq = LightSeq::COMCreate();
+      seq->Init(10.f, 20.f, false);
+      seq->SetName(L"LightSeq4");
+      table->AddPart(seq);
+      seq->Release();
+
+      // Beyond the legacy editor limits (1000x2000) but within the table
+      CHECK(seq->put_CenterX(1200.f) == S_OK);
+      CHECK(seq->GetX() == 1200.f);
+      CHECK(seq->put_CenterY(2096.f) == S_OK);
+      CHECK(seq->GetY() == 2096.f);
+
+      // Outside the table bounds
+      CHECK(seq->put_CenterX(-1.f) == E_FAIL);
+      CHECK(seq->GetX() == 1200.f);
+      CHECK(seq->put_CenterX(1500.f) == E_FAIL);
+      CHECK(seq->put_CenterY(-1.f) == E_FAIL);
+      CHECK(seq->GetY() == 2096.f);
+      CHECK(seq->put_CenterY(3000.f) == E_FAIL);
+   }
+
    table->Release();
 }
