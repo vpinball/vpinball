@@ -19,6 +19,7 @@ PushRetractKeyboardNudge::PushRetractKeyboardNudge(float nudgeStrength)
 {
    m_cabinetAcceleration.SetZero();
    m_cabinetPosition.SetZero();
+   m_impulse.SetZero();
 }
 
 PushRetractKeyboardNudge::~PushRetractKeyboardNudge() { }
@@ -85,6 +86,8 @@ BoxModelKeyboardNudge::BoxModelKeyboardNudge(float nudgeStrength)
    : m_strength(nudgeStrength)
 {
    m_cabinetAcceleration.SetZero();
+   m_cabinetVelocity.SetZero();
+   m_cabinetPrevVelocity.SetZero();
    m_cabinetPositionVPU.SetZero();
    m_cabinetPosition.SetZero();
 
