@@ -24,6 +24,38 @@ Refer to [make README](../make/README.md#compiling).
 /Applications/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play /Applications/VPinballX_BGFX.app/Contents/Resources/assets/exampleTable.vpx
 ```
 
+### No audio with Linux release binaries on NixOS
+
+If a table runs without sound and the log repeatedly reports
+`Failed to create stream: Parameter 'dst_spec->format' is invalid`, SDL may
+be unable to load an audio backend. On NixOS, a running PipeWire service does
+not necessarily mean that the bundled SDL library can find
+`libpipewire-0.3.so.0`.
+
+If that library is available at
+`/run/current-system/sw/lib/libpipewire-0.3.so.0`, try launching from the
+extracted VPX directory with:
+
+```bash
+LD_LIBRARY_PATH="/run/current-system/sw/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+  ./VPinballX_BGFX -play /path/to/table.vpx
+```
+
+For a persistent fix limited to the bundled SDL library, back it up once and
+add the library search path with `patchelf` (run from the same directory):
+
+```bash
+cp -pL --no-clobber libSDL3.so.0 libSDL3.so.0.before-nixos-audio-fix
+nix shell nixpkgs#patchelf --command patchelf \
+  --add-rpath /run/current-system/sw/lib "$(readlink -f libSDL3.so.0)"
+```
+
+This preserves any existing library search paths. Restart VPX normally and
+check that the log contains `Audio device initialized` with `Driver: pipewire`.
+If it is still silent, check which output device the log names and its volume
+in the system sound settings. Replacing the bundled SDL library during an
+update may require applying the fix again.
+
 ### Command Line Options
 
 **Linux:**
