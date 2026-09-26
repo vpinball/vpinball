@@ -98,7 +98,7 @@ private:
 
       bool IsInProgress() const { return m_impulseElapsed <= m_impulseLength; }
       void StepOneMillisecond() { m_impulseElapsed++; }
-      Vertex2D GetImpulseAceleration() const; // m/s^2
+      Vertex2D GetImpulseAcceleration() const; // m/s^2
 
    private:
       int m_impulseLength;

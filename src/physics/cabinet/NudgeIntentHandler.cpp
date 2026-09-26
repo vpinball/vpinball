@@ -25,7 +25,7 @@ NudgeIntentHandler::NudgeIntentHandler(bool isGamepad)
    m_impulse.SetZero();
 }
 
-Vertex2D NudgeIntentHandler::GetImpulseAceleration() const
+Vertex2D NudgeIntentHandler::GetImpulseAcceleration() const
 {
    if (!IsImpulseInProgress() || m_impulseElapsed < m_impulseDelay)
       return { 0.f, 0.f };
