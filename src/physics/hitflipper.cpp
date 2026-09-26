@@ -240,7 +240,7 @@ void HitFlipper::CalcHitBBox()
    aabb = ExtendBoundsAtPosition(aabb, c, m_flipperMover.m_flipperradius, r2, a0);
    aabb = ExtendBoundsAtPosition(aabb, c, m_flipperMover.m_flipperradius, r2, a1);
 
-   // extend with extremes (-90°, 0°, 90° and 180°)
+   // extend with extremes (-90, 0, 90 and 180)
    aabb = ExtendBoundsAtExtreme(aabb, c, m_flipperMover.m_flipperradius, r2, r3, a0, a1, -90.f);
    aabb = ExtendBoundsAtExtreme(aabb, c, m_flipperMover.m_flipperradius, r2, r3, a0, a1, 0.f);
    aabb = ExtendBoundsAtExtreme(aabb, c, m_flipperMover.m_flipperradius, r2, r3, a0, a1, 90.f);
@@ -1141,7 +1141,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
          numer = -slipDir.Dot(arel);
          crossF = CrossProduct(rF, slipDir);
-         denomF = slipDir.Dot(CrossProduct(crossF / -m_flipperMover.m_inertia, rF));
+         denomF = slipDir.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF));
       }
       else // nonzero slip speed - dynamic friction case
       {
