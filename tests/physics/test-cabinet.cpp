@@ -177,8 +177,8 @@ TEST_CASE("Nudge intent handler")
       for (int i = 0; i < 100; ++i)
          handler.StepOneMillisecond(Vertex2D(0.f, 0.f));
       CHECK(!handler.IsImpulseInProgress());
-      CHECK(handler.GetImpulseAceleration().x == doctest::Approx(0.f));
-      CHECK(handler.GetImpulseAceleration().y == doctest::Approx(0.f));
+      CHECK(handler.GetImpulseAcceleration().x == doctest::Approx(0.f));
+      CHECK(handler.GetImpulseAcceleration().y == doctest::Approx(0.f));
    }
 
    SUBCASE("sustained negative acceleration triggers a delayed impulse")
@@ -192,10 +192,10 @@ TEST_CASE("Nudge intent handler")
       for (int i = 0; i < 40; ++i)
       {
          handler.StepOneMillisecond(Vertex2D(0.f, 0.f));
-         sawImpulse |= std::fabs(handler.GetImpulseAceleration().y) > 0.f;
+         sawImpulse |= std::fabs(handler.GetImpulseAcceleration().y) > 0.f;
       }
       CHECK(sawImpulse);
-      CHECK(handler.GetImpulseAceleration().x == doctest::Approx(0.f));
+      CHECK(handler.GetImpulseAcceleration().x == doctest::Approx(0.f));
    }
 
    SUBCASE("positive y acceleration is filtered out")

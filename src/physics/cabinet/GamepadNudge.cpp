@@ -115,7 +115,7 @@ void GamepadNudge::StepOneMillisecond()
    m_nudgeIntentHandler.StepOneMillisecond({ xSensor, ySensor });
    if (m_nudgeIntentHandler.IsImpulseInProgress())
    {
-      m_cabinetModel.StepOneMillisecond(m_cabinetModel.GetMass() * m_nudgeIntentHandler.GetImpulseAceleration());
+      m_cabinetModel.StepOneMillisecond(m_cabinetModel.GetMass() * m_nudgeIntentHandler.GetImpulseAcceleration());
       m_deactivationDelay = 10000;
    }
    else
@@ -126,7 +126,7 @@ void GamepadNudge::StepOneMillisecond()
    }
 
    // Log for debugging purposes as CSV: Sensor;Intent acceleration (m/s^2);Cab acceleration (m/s^2);Cab position (mm)
-   PLOGD_IF(false) << std::format(";{:8.5f};{:8.5f};{:8.5f};{:8.5f}", m_ySensor.GetValue(), m_nudgeIntentHandler.GetImpulseAceleration().y, m_cabinetModel.GetCabinetAcceleration().y,
+   PLOGD_IF(false) << std::format(";{:8.5f};{:8.5f};{:8.5f};{:8.5f}", m_ySensor.GetValue(), m_nudgeIntentHandler.GetImpulseAcceleration().y, m_cabinetModel.GetCabinetAcceleration().y,
       m_cabinetModel.GetCabinetOffset().y * 1000.f);
    /* static float maxDisp = 0.f;
    if (m_cabinetModel.GetCabinetOffset().y > maxDisp)

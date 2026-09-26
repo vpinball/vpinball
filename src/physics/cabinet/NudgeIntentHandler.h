@@ -17,7 +17,7 @@ public:
 
    bool IsImpulseInProgress() const { return m_impulseElapsed <= (m_impulseLength + m_impulseDelay); }
 
-   Vertex2D GetImpulseAceleration() const; // m/s^2
+   Vertex2D GetImpulseAcceleration() const; // m/s^2
 
 private:
    const bool m_isGamepad;

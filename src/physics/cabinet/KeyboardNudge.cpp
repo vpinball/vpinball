@@ -179,7 +179,7 @@ CabModelKeyboardNudge::Impulse::Impulse(const int length, Vertex2D impulse)
 {
 }
 
-Vertex2D CabModelKeyboardNudge::Impulse::GetImpulseAceleration() const
+Vertex2D CabModelKeyboardNudge::Impulse::GetImpulseAcceleration() const
 {
    if (!IsInProgress())
       return { 0.f, 0.f };
@@ -198,7 +198,7 @@ void CabModelKeyboardNudge::StepOneMillisecond()
       it->StepOneMillisecond();
       if (it->IsInProgress())
       {
-         impulse += it->GetImpulseAceleration();
+         impulse += it->GetImpulseAcceleration();
          it++;
       }
       else

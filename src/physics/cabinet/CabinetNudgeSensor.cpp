@@ -273,7 +273,7 @@ void CabinetNudgeSensor::StepOneMillisecond()
       m_nudgeIntentHandler->StepOneMillisecond(Vertex2D(m_kalmanX.GetAcceleration() * m_nudgeStrengthScale * (float)(4. / 3.), m_kalmanY.GetAcceleration() * m_nudgeStrengthScale));
 
       if (m_nudgeIntentHandler->IsImpulseInProgress())
-         m_cabinetModel.StepOneMillisecond(m_cabinetModel.GetMass() * m_nudgeIntentHandler->GetImpulseAceleration());
+         m_cabinetModel.StepOneMillisecond(m_cabinetModel.GetMass() * m_nudgeIntentHandler->GetImpulseAcceleration());
       else
          m_cabinetModel.StepOneMillisecond({ 0.f, 0.f });
 
@@ -282,7 +282,7 @@ void CabinetNudgeSensor::StepOneMillisecond()
       // Log for debugging purposes as CSV
       PLOGD_IF(false) << std::format(";{:6d};{:8.5f};{:8.5f};{:8.5f};{:8.5f};{:8.5f};{:8.5f};{:8.5f}", //
          m_timeNs / 1000000, // Time (ms)
-         m_yAccSensor.m_sensor.GetValue(), m_kalmanY.GetAcceleration(), m_nudgeIntentHandler->GetImpulseAceleration().y, m_cabinetAcceleration.y, // Accelerations
+         m_yAccSensor.m_sensor.GetValue(), m_kalmanY.GetAcceleration(), m_nudgeIntentHandler->GetImpulseAcceleration().y, m_cabinetAcceleration.y, // Accelerations
          m_cabinetModel.GetCabinetOffset().y, // Offset
          m_yVelSensor.m_sensor.GetValue(), m_yGainCalibrator.GetGain()); // Velocity
    }
