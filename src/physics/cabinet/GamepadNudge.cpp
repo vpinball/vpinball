@@ -112,20 +112,14 @@ void GamepadNudge::StepOneMillisecond()
    const float xSensor = m_xSensor.GetValue() * (m_nudgeStrengthScale * (g * 0.7f));
    const float ySensor = m_ySensor.GetValue() * (m_nudgeStrengthScale * (g * 0.7f));
 
-   static bool m_isImpulseInProgress = false;
-   static Vertex2D m_initialCabinetPosition;
    m_nudgeIntentHandler.StepOneMillisecond({ xSensor, ySensor });
    if (m_nudgeIntentHandler.IsImpulseInProgress())
    {
-      if (!m_isImpulseInProgress)
-         m_initialCabinetPosition = m_cabinetModel.GetCabinetOffset();
-      m_isImpulseInProgress = true;
       m_cabinetModel.StepOneMillisecond(m_cabinetModel.GetMass() * m_nudgeIntentHandler.GetImpulseAceleration());
       m_deactivationDelay = 10000;
    }
    else
    {
-      m_isImpulseInProgress = false;
       m_cabinetModel.StepOneMillisecond({ 0.f, 0.f });
       if (m_deactivationDelay > 0)
          m_deactivationDelay--;
