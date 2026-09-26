@@ -92,6 +92,26 @@ TEST_CASE("Cabinet physics")
 
 TEST_CASE("Keyboard nudge implementations")
 {
+   SUBCASE("fresh push/retract nudge reports zero state")
+   {
+      PushRetractKeyboardNudge nudge(1.f);
+      nudge.StepOneMillisecond();
+      CHECK(nudge.GetCabinetOffset().x == doctest::Approx(0.f));
+      CHECK(nudge.GetCabinetOffset().y == doctest::Approx(0.f));
+      CHECK(nudge.GetCabinetAcceleration().x == doctest::Approx(0.f));
+      CHECK(nudge.GetCabinetAcceleration().y == doctest::Approx(0.f));
+   }
+
+   SUBCASE("fresh box model nudge reports zero state")
+   {
+      BoxModelKeyboardNudge nudge(1.f);
+      nudge.StepOneMillisecond();
+      CHECK(nudge.GetCabinetOffset().x == doctest::Approx(0.f));
+      CHECK(nudge.GetCabinetOffset().y == doctest::Approx(0.f));
+      CHECK(nudge.GetCabinetAcceleration().x == doctest::Approx(0.f));
+      CHECK(nudge.GetCabinetAcceleration().y == doctest::Approx(0.f));
+   }
+
    SUBCASE("push/retract nudge produces a short impulse then settles")
    {
       PushRetractKeyboardNudge nudge(1.f);
