@@ -196,10 +196,10 @@ float HitBall::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
 	   return -1.0f; // .. was some time previous || beyond the next physics tick
 
-   const Vertex3Ds hitPos = ball.m_pos + hittime * dv; // new ball position
+   const Vertex3Ds hitPos = ball.m_pos + hittime * ball.m_vel; // new ball position
 
    //calc unit normal of collision
-   const Vertex3Ds hitnormal = hitPos - m_d.m_pos;
+   const Vertex3Ds hitnormal = hitPos - (m_d.m_pos + hittime * m_d.m_vel);
    if (fabsf(hitnormal.x) <= FLT_MIN && fabsf(hitnormal.y) <= FLT_MIN && fabsf(hitnormal.z) <= FLT_MIN)
       return -1.f;
 
