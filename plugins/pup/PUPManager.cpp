@@ -31,6 +31,24 @@ MSGPI_INT_VAL_SETTING(pupTopperPadTop, "TopperPadTop", "Topper Top Pad", "Top Pa
 MSGPI_INT_VAL_SETTING(pupTopperPadBottom, "TopperPadBottom", "Topper Bottom Pad", "Bottom Padding of topper", true, 0, 4096, 0);
 MSGPI_STRING_VAL_SETTING(pupTopperFrameOverlayPath, "TopperFrameOverlay", "Topper Frame Overlay", "Path to an image that will be rendered as an overlay on the topper display", true, "", 1024);
 
+// DMD overlay: render the default DMD (e.g. FlexDMD) on top of the PUP video, inside a manually
+// positioned rectangle. Position and size are expressed as a percentage of the target window (matching
+// the PuP screen CustomPos convention), so they survive a window resize. This lets a pack that reserves
+// a blank area for the DMD (and drives it purely through FlexDMD, which otherwise loses the window on
+// priority) show the DMD dots in that area without the DMD winning the window outright.
+// Setting names match the B2S plugin's DMD overlay keys for cross-plugin consistency.
+MSGPI_BOOL_VAL_SETTING(pupBGDMDOverlay, "BackglassDMDOverlay", "Backglass DMD Overlay", "Render the default DMD on top of the backglass PUP video", true, false);
+MSGPI_FLOAT_VAL_SETTING(pupBGDMDOverlayX, "BackglassDMDX", "Backglass DMD X", "DMD overlay left position, as a percentage of the backglass width", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(pupBGDMDOverlayY, "BackglassDMDY", "Backglass DMD Y", "DMD overlay top position, as a percentage of the backglass height", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(pupBGDMDOverlayW, "BackglassDMDW", "Backglass DMD Width", "DMD overlay width, as a percentage of the backglass width", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(pupBGDMDOverlayH, "BackglassDMDH", "Backglass DMD Height", "DMD overlay height, as a percentage of the backglass height", true, 0.f, 100.f, 0.1f, 0.f);
+
+MSGPI_BOOL_VAL_SETTING(pupSVDMDOverlay, "ScoreViewDMDOverlay", "Score View DMD Overlay", "Render the default DMD on top of the Score View PUP video", true, false);
+MSGPI_FLOAT_VAL_SETTING(pupSVDMDOverlayX, "ScoreViewDMDX", "Score View DMD X", "DMD overlay left position, as a percentage of the Score View width", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(pupSVDMDOverlayY, "ScoreViewDMDY", "Score View DMD Y", "DMD overlay top position, as a percentage of the Score View height", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(pupSVDMDOverlayW, "ScoreViewDMDW", "Score View DMD Width", "DMD overlay width, as a percentage of the Score View width", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(pupSVDMDOverlayH, "ScoreViewDMDH", "Score View DMD Height", "DMD overlay height, as a percentage of the Score View height", true, 0.f, 100.f, 0.1f, 0.f);
+
 PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::filesystem::path& rootPath)
    : m_szRootPath(rootPath)
    , m_endpointId(endpointId)
@@ -60,6 +78,17 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const st
    msgApi->RegisterSetting(endpointId, &pupTopperPadBottom);
    //msgApi->RegisterSetting(endpointId, &pupTopperFrameOverlayPath);
 
+   msgApi->RegisterSetting(endpointId, &pupBGDMDOverlay);
+   msgApi->RegisterSetting(endpointId, &pupBGDMDOverlayX);
+   msgApi->RegisterSetting(endpointId, &pupBGDMDOverlayY);
+   msgApi->RegisterSetting(endpointId, &pupBGDMDOverlayW);
+   msgApi->RegisterSetting(endpointId, &pupBGDMDOverlayH);
+   msgApi->RegisterSetting(endpointId, &pupSVDMDOverlay);
+   msgApi->RegisterSetting(endpointId, &pupSVDMDOverlayX);
+   msgApi->RegisterSetting(endpointId, &pupSVDMDOverlayY);
+   msgApi->RegisterSetting(endpointId, &pupSVDMDOverlayW);
+   msgApi->RegisterSetting(endpointId, &pupSVDMDOverlayH);
+
    m_msgApi->SubscribeMsg(m_endpointId, m_getAudioSrcId, OnGetAudioSrc, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAudioSrcChangedId, nullptr);
 
@@ -67,6 +96,9 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const st
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
 
    m_msgApi->BroadcastMsg(m_endpointId, m_getVpxApiId, &m_vpxApi);
+
+   // Track display sources so the optional DMD overlay can fetch the default DMD frame.
+   m_resURIResolver = std::make_unique<PinballPlugin::ResURIResolver>(*m_msgApi, m_endpointId, true, false, false);
 }
 
 PUPManager::~PUPManager()
@@ -84,6 +116,13 @@ PUPManager::~PUPManager()
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
    m_msgApi->ReleaseMsgID(m_getVpxApiId);
+
+   m_resURIResolver.reset();
+   if (m_dmdOverlayTex && m_vpxApi)
+   {
+      m_vpxApi->DeleteTexture(m_dmdOverlayTex);
+      m_dmdOverlayTex = nullptr;
+   }
 
    m_msgApi->FlushPendingCallbacks(m_endpointId);
 }
@@ -871,6 +910,9 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    renderScreens(false, true, 2, 3);
    renderScreens(true, true, 0, 3);
 
+   // Draw the optional DMD overlay last, on top of all PUP content for this window.
+   me->RenderDMDOverlay(renderCtx);
+
    // Set Game time after rendering to avoid updating while rendering if the decode thread are waiting for it
    if (me->m_vpxApi)
    {
@@ -882,6 +924,85 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    return true;
 }
 
+void PUPManager::RenderDMDOverlay(VPXRenderContext2D* const renderCtx)
+{
+   if (m_vpxApi == nullptr || !m_resURIResolver)
+      return;
+
+   // Per-window enable + rectangle (percentages of the target window).
+   bool enable = false;
+   float xPct = 0.f, yPct = 0.f, wPct = 0.f, hPct = 0.f;
+   switch (renderCtx->window)
+   {
+   case VPXWindowId::VPXWINDOW_Backglass:
+      enable = pupBGDMDOverlay_Get() != 0;
+      xPct = pupBGDMDOverlayX_Get(); yPct = pupBGDMDOverlayY_Get();
+      wPct = pupBGDMDOverlayW_Get(); hPct = pupBGDMDOverlayH_Get();
+      break;
+   case VPXWindowId::VPXWINDOW_ScoreView:
+      enable = pupSVDMDOverlay_Get() != 0;
+      xPct = pupSVDMDOverlayX_Get(); yPct = pupSVDMDOverlayY_Get();
+      wPct = pupSVDMDOverlayW_Get(); hPct = pupSVDMDOverlayH_Get();
+      break;
+   default: return;
+   }
+   if (!enable || wPct <= 0.f || hPct <= 0.f)
+      return;
+
+   // Fetch the current default DMD frame (rejecting LCD/CRT video displays). This resolves to the
+   // active DMD source (e.g. FlexDMD) regardless of ancillary window priority, since sources are
+   // advertised independently of which renderer wins the window.
+   PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver->GetDisplayState("ctrl://default/display?dmd_only=1"s);
+   if (dmd.source == nullptr || dmd.state.frame == nullptr || dmd.source->width == 0 || dmd.source->height == 0)
+      return;
+
+   // Upload the frame to our texture.
+   switch (dmd.source->frameFormat)
+   {
+   case CTLPI_DISPLAY_FORMAT_LUM32F:
+      m_vpxApi->UpdateTexture(&m_dmdOverlayTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame);
+      break;
+   case CTLPI_DISPLAY_FORMAT_SRGB888:
+      m_vpxApi->UpdateTexture(&m_dmdOverlayTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame);
+      break;
+   case CTLPI_DISPLAY_FORMAT_SRGB565:
+      m_vpxApi->UpdateTexture(&m_dmdOverlayTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame);
+      break;
+   default:
+      return;
+   }
+
+   // Pick a DMD emitter style from the source hardware, matching the B2S DMD overlay behavior.
+   VPXDisplayRenderStyle style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma;
+   switch (dmd.source->hardware & 0xFFFF0000)
+   {
+   case CTLPI_DISPLAY_HARDWARE_NEON_PLASMA: style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma; break;
+   case CTLPI_DISPLAY_HARDWARE_RED_LED: style = VPXDisplayRenderStyle::VPXDMDStyle_RedLED; break;
+   case CTLPI_DISPLAY_HARDWARE_RGB_LED: style = VPXDisplayRenderStyle::VPXDMDStyle_GenLED; break;
+   case CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY: style = VPXDisplayRenderStyle::VPXDMDStyle_CRT; break;
+   }
+
+   // Percentages map to source-surface coordinates (srcWidth/srcHeight were set to the window output
+   // size at the top of Render). The settings use a top-left origin (Y grows downward, matching how a
+   // user reads the window and how PUP's own DrawImage screens are placed), but DrawDisplay expects a
+   // bottom-left origin (it internally computes 1 - y/height), so flip Y here.
+   const float x = xPct * 0.01f * renderCtx->srcWidth;
+   const float w = wPct * 0.01f * renderCtx->srcWidth;
+   const float h = hPct * 0.01f * renderCtx->srcHeight;
+   const float y = renderCtx->srcHeight - (yPct * 0.01f * renderCtx->srcHeight) - h;
+
+   renderCtx->DrawDisplay(renderCtx, style,
+      // First layer: no glass
+      nullptr, 1.f, 1.f, 1.f, 0.f, // glass texture, tint, roughness
+      0.f, 0.f, 0.f, 0.f, // glass texture coordinates
+      1.f, 1.f, 1.f, // glass ambient
+      // Second layer: DMD emitter
+      m_dmdOverlayTex, 1.f, 1.f, 1.f, 1.f, 1.f, // emitter texture, tint, brightness, alpha
+      0.f, 0.f, 0.f, 0.f, // emitter padding from glass border
+      // Render quad
+      x, y, w, h);
+}
+
 void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* msgData)
 {
    auto me = static_cast<PUPManager*>(context);
@@ -889,7 +1010,7 @@ void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* 
    static constexpr AncillaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", nullptr, Render };
    if (msg->window == VPXWindowId::VPXWINDOW_Backglass || msg->window == VPXWindowId::VPXWINDOW_ScoreView || msg->window == VPXWindowId::VPXWINDOW_Topper)
    {
-      if (msg->count < msg->maxEntryCount) 
+      if (msg->count < msg->maxEntryCount)
       {
          msg->entries[msg->count] = entry;
          msg->entries[msg->count].context = me;
@@ -902,7 +1023,7 @@ void PUPManager::OnGetAudioSrc(const unsigned int eventId, void* context, void* 
 {
    auto me = static_cast<PUPManager*>(context);
    auto msg = static_cast<GetAudioSrcMsg*>(msgData);
-   if (msg->count < msg->maxEntryCount) 
+   if (msg->count < msg->maxEntryCount)
       msg->entries[msg->count] = me->m_audioSrcDef;
    msg->count++;
 }
