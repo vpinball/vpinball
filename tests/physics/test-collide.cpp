@@ -193,6 +193,25 @@ TEST_CASE("Hit ball")
       CHECK(coll.m_hitdistance == doctest::Approx(50.f));
    }
 
+   SUBCASE("contact normal is evaluated at contact time")
+   {
+      // Still ball at (60,40), moving ball at (0,0) going +x at 100 U/T:
+      // surfaces touch at t=0.3 with centers separated by (-30,-40)
+      HitBall moving;
+      moving.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
+      moving.m_d.m_vel = Vertex3Ds(100.f, 0.f, 0.f);
+      HitBall still;
+      still.m_d.m_pos = Vertex3Ds(60.f, 40.f, 25.f);
+      still.m_d.m_vel = Vertex3Ds(0.f, 0.f, 0.f);
+
+      CollisionEvent coll;
+      const float hittime = still.HitTest(moving.m_d, 1.f, coll);
+      CHECK(hittime == doctest::Approx(0.3f));
+      CHECK(coll.m_hitnormal.x == doctest::Approx(-0.6f));
+      CHECK(coll.m_hitnormal.y == doctest::Approx(-0.8f));
+      CHECK(coll.m_hitnormal.z == doctest::Approx(0.f));
+   }
+
    SUBCASE("receding balls do not collide")
    {
       HitBall moving;
