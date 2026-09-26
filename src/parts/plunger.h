@@ -26,11 +26,15 @@ public:
    string m_szSurface; // Physical & visual plunger z origin (a plunger always has a 50 VPU high hitbox)
    float m_speedPull;
    float m_speedFire;
-   float m_mechStrength;
    float m_scatterVelocity;
    float m_momentumXfer;
    bool m_autoPlunger;
    bool m_mechPlunger;
+   // Stiffness between mech sensor and virtual plunger, i.e. tracking lag between sensor and simulation.
+   // Unused for release speed in all 10.x versions, except 10.8's velocity-sensor path where it scaled
+   // the launch impulse, creating a discrepancy between setups (in VP9 it was the release force itself).
+   // FIXME this should be part of the sensor setup, not a plunger prop
+   float m_mechStrength; 
 
    // Global render properties
    PlungerType m_type;

@@ -449,22 +449,37 @@ void PlungerMoverObject::UpdateVelocities()
       const float target = autoPlunger ? m_restPos : mech;
       const float dx = target - pos;
 
-      // Model the software plunger as though it were connected to the mechanical plunger by a spring with spring constant 'mech
-      // strength'.  The force from a stretched spring is -kx (spring constant times displacement); in this case, the displacement
-      // is the distance between the physical and virtual plunger tip positions ('error').  The force from an acceleration is ma,
-      // so the acceleration from the spring force is -kx/m.  Apply this acceleration to the current plunger speed.  While we're
-      // at it, apply some damping to the current speed to simulate friction.
-      //
-      // Old versions applied a 1/13 adjustment factor, which appears to have been empirically chosen to get the speed in the right range.
-      //
-      // The 'dt' factor represents the amount of time that we're applying this acceleration.  This is in "VP 9 physics frame" units, where
-      // 1.0 equals the amount of real time in one VP 9 physics frame. The other normalization factors were originally chosen for VP 9
-      // timing, so we need to adjust for the new VP 10 time base.  VP 10 runs physics frames at roughly 10x the rate of VP 9, so the time
-      // per frame is about 1/10 the VP 9 time.
-      constexpr float plungerFriction = 0.95f;
-      constexpr float dt = 0.1f; // 1ms in VPT
-      m_speed *= plungerFriction;
-      m_speed += dt * m_plunger->m_d.m_mechStrength * dx * m_frameLen / (m_mass * 13.0f);
+      // If a release motion is under way on the mechanical plunger, drive the simulated plunger to the target
+      // position at the model launch speed instead of relying on the 'mech strength' spring.  The hit velocity
+      // estimate only stays valid for a short time after the release (~100ms), and with a weak spring the tip
+      // would reach the ball too late (or too slowly) for the launch impulse to be applied.  Driving the tip at
+      // the launch speed also makes the fallback impulse (m_speed) consistent with the hit velocity model, and
+      // lets the tip overshoot its target and bounce back like a real released plunger once it gets there.
+      const float hitVelocity = g_pplayer->m_pininput.m_plungerHandler->GetHitVelocity(m_restPos);
+      if (hitVelocity < 0.f && dx < 0.f)
+      {
+         // Drive at the launch speed, using the same conversion as the ball hit impulse
+         m_speed = hitVelocity * m_frameLen * (m_plunger->m_d.m_speedFire / 100.f) / m_mass;
+      }
+      else
+      {
+         // Model the software plunger as though it were connected to the mechanical plunger by a spring with spring constant 'mech
+         // strength'.  The force from a stretched spring is -kx (spring constant times displacement); in this case, the displacement
+         // is the distance between the physical and virtual plunger tip positions ('error').  The force from an acceleration is ma,
+         // so the acceleration from the spring force is -kx/m.  Apply this acceleration to the current plunger speed.  While we're
+         // at it, apply some damping to the current speed to simulate friction.
+         //
+         // Old versions applied a 1/13 adjustment factor, which appears to have been empirically chosen to get the speed in the right range.
+         //
+         // The 'dt' factor represents the amount of time that we're applying this acceleration.  This is in "VP 9 physics frame" units, where
+         // 1.0 equals the amount of real time in one VP 9 physics frame. The other normalization factors were originally chosen for VP 9
+         // timing, so we need to adjust for the new VP 10 time base.  VP 10 runs physics frames at roughly 10x the rate of VP 9, so the time
+         // per frame is about 1/10 the VP 9 time.
+         constexpr float plungerFriction = 0.95f;
+         constexpr float dt = 0.1f; // 1ms in VPT
+         m_speed *= plungerFriction;
+         m_speed += dt * m_plunger->m_d.m_mechStrength * dx * m_frameLen / (m_mass * 13.0f);
+      }
 
       // add any reverse impulse to the result
       m_speed += m_reverseImpulse;
