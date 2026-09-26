@@ -397,7 +397,7 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
    for (unsigned i=m_start; i<m_start+org_items; i++)
    {
       #ifdef DEBUGPHYSICS
-         g_pplayer->c_tested++;
+         g_pplayer->m_physics->c_tested++;
       #endif
       HitObject * const pho = hitoct->GetItemAt(i);
       if ((pball != pho) // ball can not hit itself
@@ -421,7 +421,7 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
          if (pball->m_hitBBox.right >= vcenter)
             m_children[1].HitTestBall(hitoct, pball, coll);
       }
-      else f (axis == 1)
+      else if (axis == 1)
       {
          const float vcenter = (m_rectbounds.top+m_rectbounds.bottom)*0.5f;
          if (pball->m_hitBBox.top <= vcenter)
