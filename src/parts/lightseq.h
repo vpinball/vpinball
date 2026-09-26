@@ -125,8 +125,8 @@ private:
    uint32_t       m_timeNextUpdate;
    float          m_GridXCenter;
    float          m_GridYCenter;
-   int            m_lightSeqGridHeight;
-   int            m_lightSeqGridWidth;
+   int            m_lightSeqGridHeight = 0;
+   int            m_lightSeqGridWidth = 0;
    int            m_GridXCenterAdjust;
    int            m_GridYCenterAdjust;
    _tracer        m_th1, m_th2, m_tt1, m_tt2;
@@ -158,7 +158,8 @@ public:
    float    GetX() const { return m_d.m_vCenter.x; }
    void     SetX(const float value)
    {
-       if ((value < 0.f) || (value >= (float)EDITOR_BG_WIDTH))
+       const float maxX = (m_ptable != nullptr) ? (m_ptable->m_right - m_ptable->m_left) : (float)EDITOR_BG_WIDTH;
+       if ((value < 0.f) || (value >= maxX))
            return;
 
        m_d.m_vCenter.x = value;
@@ -169,7 +170,8 @@ public:
    float    GetY() const { return m_d.m_vCenter.y; }
    void     SetY(const float value)
    {
-       if ((value < 0.f) || (value >= (float)(2 * EDITOR_BG_WIDTH)))
+       const float maxY = (m_ptable != nullptr) ? (m_ptable->m_bottom - m_ptable->m_top) : (float)(2 * EDITOR_BG_WIDTH);
+       if ((value < 0.f) || (value >= maxY))
            return;
 
        m_d.m_vCenter.y = value;

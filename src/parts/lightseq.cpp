@@ -333,7 +333,8 @@ STDMETHODIMP LightSeq::get_CenterX(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterX(float newVal)
 {
-   if ((newVal < 0.f) || (newVal >= (float)EDITOR_BG_WIDTH))
+   const float maxX = (m_ptable != nullptr) ? (m_ptable->m_right - m_ptable->m_left) : (float)EDITOR_BG_WIDTH;
+   if ((newVal < 0.f) || (newVal >= maxX))
       return E_FAIL;
    
    SetX(newVal);
@@ -348,7 +349,8 @@ STDMETHODIMP LightSeq::get_CenterY(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterY(float newVal)
 {
-   if ((newVal < 0.f) || (newVal >= (float)(2 * EDITOR_BG_WIDTH)))
+   const float maxY = (m_ptable != nullptr) ? (m_ptable->m_bottom - m_ptable->m_top) : (float)(2 * EDITOR_BG_WIDTH);
+   if ((newVal < 0.f) || (newVal >= maxY))
       return E_FAIL;
    
    SetY(newVal);
