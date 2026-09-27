@@ -139,14 +139,14 @@ typedef enum {
 } eSnippitRotationStopBehaviour;
 
 typedef enum {
-    SegmentNumberType_7Seg = 0,
-    SegmentNumberType_10Seg = 1,
-    SegmentNumberType_14Seg = 2,
-    SegmentNumberType_16Seg = 3,
-    SegmentNumberType_SevenSegment = 0,
-    SegmentNumberType_TenSegment = 1,
-    SegmentNumberType_FourteenSegment = 2,
-    SegmentNumberType_SixteenSegment = 3
+    SegmentNumberType_7Seg = 7,
+    SegmentNumberType_10Seg = 10,
+    SegmentNumberType_14Seg = 14,
+    SegmentNumberType_16Seg = 16,
+    SegmentNumberType_SevenSegment = 7,
+    SegmentNumberType_TenSegment = 10,
+    SegmentNumberType_FourteenSegment = 14,
+    SegmentNumberType_SixteenSegment = 16
 } SegmentNumberType;
 
 typedef enum {
