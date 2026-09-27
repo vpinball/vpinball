@@ -1155,6 +1155,7 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
       PLOGE << "Corrupted file: image '" << m_name << "' height (" << buffer->m_realHeight << ") does not match the height (" << m_height << ") of the image datablock.";
       const_cast<Texture*>(this)->m_height = buffer->m_realHeight;
    }
+   buffer->SetName(GetName());
    m_imageBuffer = buffer;
    UpdateOpaque();
    return buffer;
