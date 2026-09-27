@@ -2289,17 +2289,29 @@ void RenderDevice::ResetActiveView()
 void RenderDevice::SubmitAndFlipFrame(bool present)
 {
    // Process pending texture upload/mipmap generation before flipping the frame
-   for (auto it = m_pendingTextureUploads.cbegin(); it != m_pendingTextureUploads.cend();)
+   // The list is written by the logic thread under its own mutex: swap it out then process without holding the
+   // mutex, as GetCoreTexture may block on a sampler's update mutex (e.g. while a compression is in progress)
+   vector<std::shared_ptr<Sampler>> pendingUploads;
+   {
+      std::lock_guard lock(m_pendingTextureUploadsMutex);
+      pendingUploads.swap(m_pendingTextureUploads);
+   }
+   for (auto it = pendingUploads.cbegin(); it != pendingUploads.cend();)
    {
       (*it)->GetCoreTexture(true);
       if (!(*it)->IsUploadPending())
       {
-         it = m_pendingTextureUploads.erase(it);
+         it = pendingUploads.erase(it);
       }
       else
       {
          ++it;
       }
+   }
+   if (!pendingUploads.empty())
+   {
+      std::lock_guard lock(m_pendingTextureUploadsMutex);
+      m_pendingTextureUploads.insert(m_pendingTextureUploads.end(), pendingUploads.begin(), pendingUploads.end());
    }
    const uint32_t frameIdx = bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
    if (present)
@@ -2464,7 +2476,10 @@ void RenderDevice::UploadTexture(ITexManCacheable* texture, const bool linearRGB
       g_pplayer->ProcessOSMessages();
       Sleep(0);
    }
-   m_pendingTextureUploads.push_back(sampler);
+   {
+      std::lock_guard lock(m_pendingTextureUploadsMutex);
+      m_pendingTextureUploads.push_back(sampler);
+   }
    SubmitRenderFrame(); // Submit texture upload to render thread
    SubmitRenderFrame(); // Block until render thread has processed the pending texture uploads and mipmap generations
    m_frameMutex.unlock();
