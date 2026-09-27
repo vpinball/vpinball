@@ -79,6 +79,28 @@ FormBackglass::~FormBackglass()
    delete m_pFormDMD;
    delete m_pB2SScreen;
 
+   // unload backglass form stuff
+   for (const auto& [key, pPicbox] : *m_pB2SData->GetIlluminations()) {
+      if (pPicbox) {
+         const bool isRotating = std::ranges::any_of(*m_pB2SData->GetRotatingPictureBox(), [pPicbox](const auto& entry) { return entry.second == pPicbox; });
+         if (pPicbox->GetBackgroundImage() && !isRotating) {
+            m_vpxApi->DeleteTexture(pPicbox->GetBackgroundImage());
+            pPicbox->SetBackgroundImage(nullptr);
+         }
+         delete pPicbox;
+      }
+   }
+   for (const auto& [key, pPicbox] : *m_pB2SData->GetDMDIlluminations()) {
+      if (pPicbox) {
+         const bool isRotating = std::ranges::any_of(*m_pB2SData->GetRotatingPictureBox(), [pPicbox](const auto& entry) { return entry.second == pPicbox; });
+         if (pPicbox->GetBackgroundImage() && !isRotating) {
+            m_vpxApi->DeleteTexture(pPicbox->GetBackgroundImage());
+            pPicbox->SetBackgroundImage(nullptr);
+         }
+         delete pPicbox;
+      }
+   }
+
    if (m_pDarkImage4Authentic)
       m_vpxApi->DeleteTexture(m_pDarkImage4Authentic);
    if (m_pTopLightImage4Authentic)
@@ -548,6 +570,12 @@ void FormBackglass::LoadB2SData()
                   m_pB2SData->SetUseDMDZOrder(true);
                   m_pB2SData->GetZOrderDMDImages()->Add(pPicbox);
                }
+            }
+            else {
+               if (pImage)
+                  m_vpxApi->DeleteTexture(pImage);
+               delete pPicbox;
+               continue;
             }
          }
          pPicbox->BringToFront();
