@@ -157,6 +157,9 @@ namespace
 
    bool IsHdr(BaseTexture::Format format) { return format == BaseTexture::RGB_FP16 || format == BaseTexture::RGB_FP32; }
 
+   // Bytes per pixel of the uncompressed GPU upload (LDR goes to RGBA8, RGB_FP16 to RGBA16F, RGB_FP32 to RGBA32F)
+   uint64_t UncompressedPixelSize(BaseTexture::Format format) { return format == BaseTexture::RGB_FP32 ? 16 : IsHdr(format) ? 8 : 4; }
+
    bool IsFormatUsable(bgfx::TextureFormat::Enum format, bool needSrgb)
    {
       const uint32_t needed = BGFX_CAPS_FORMAT_TEXTURE_2D | (needSrgb ? BGFX_CAPS_FORMAT_TEXTURE_2D_SRGB : 0);
@@ -355,7 +358,7 @@ std::shared_ptr<BaseTexture> TextureCompressor::LoadCached(const std::filesystem
       return nullptr;
    s_nLoaded++;
    s_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
-   s_rawBytes += (static_cast<uint64_t>(header.width) * header.height * (IsHdr(static_cast<BaseTexture::Format>(header.srcFormat)) ? 8 : 4) * 4) / 3;
+   s_rawBytes += (static_cast<uint64_t>(header.width) * header.height * UncompressedPixelSize(static_cast<BaseTexture::Format>(header.srcFormat)) * 4) / 3;
    s_compressedBytes += compressed->data.size();
    return BaseTexture::CreateCompressedOnly(std::move(compressed), static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0);
 }
@@ -368,7 +371,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
    const bgfx::TextureFormat::Enum format = SelectFormatFor(tex.m_format, opaque);
    if (format == bgfx::TextureFormat::Unknown)
       return nullptr;
-   const uint64_t rawBytes = (static_cast<uint64_t>(tex.width()) * tex.height() * (IsHdr(tex.m_format) ? 8 : 4) * 4) / 3;
+   const uint64_t rawBytes = (static_cast<uint64_t>(tex.width()) * tex.height() * UncompressedPixelSize(tex.m_format) * 4) / 3;
 
    if (!cacheFile.empty())
    {
