@@ -1295,6 +1295,7 @@ Player::~Player()
       m_vrDevice->DiscardVisibilityMask();
    #endif
    m_renderer = nullptr;
+   m_pluginManager.GetMsgAPI().FlushPendingCallbacks(m_pluginAPI.GetVPXEndPointId());
    LockForegroundWindow(false);
    delete m_playfieldWnd;
    m_playfieldWnd = nullptr;
