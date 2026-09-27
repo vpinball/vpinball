@@ -122,9 +122,6 @@ void InGameUI::Close()
 {
    if (GetActivePage())
       GetActivePage()->Close(false);
-   m_navigationHistory.clear();
-   if (m_player->m_isLoading)
-      return; // The game is not running yet: no play state or option event to dispatch
    if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true);
    m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::EndOfEdit);
@@ -155,7 +152,7 @@ void InGameUI::Update()
    if (const InGameUIPage *const activePage = GetActivePage(); activePage && activePage->IsActive())
    {
       // Only pause player if balls are moving to keep attract mode if possible
-      if (!m_player->m_isLoading && m_player->IsPlaying(false))
+      if (m_player->IsPlaying(false))
       {
          if (activePage->IsPlayerPauseAllowed())
          {
@@ -174,14 +171,13 @@ void InGameUI::Update()
             }
          }
       }
-      else if (!activePage->IsPlayerPauseAllowed() && !m_player->m_isLoading)
+      else if (!activePage->IsPlayerPauseAllowed())
       {
          m_player->SetPlayState(true);
       }
 
       HandlePageInput();
-      if (!m_player->m_isLoading)
-         HandleLegacyFlyOver();
+      HandleLegacyFlyOver();
    }
 
    // Copy list as it may be modified when the page is updated (for example when a navigation event is triggered)
