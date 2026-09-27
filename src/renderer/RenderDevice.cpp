@@ -2458,11 +2458,17 @@ void RenderDevice::UploadTexture(ITexManCacheable* texture, const bool linearRGB
    std::shared_ptr<Sampler> sampler = m_texMan.LoadTexture(texture, linearRGB);
    #if defined(ENABLE_BGFX)
    // BGFX dispatch operations to the render thread, so the texture manager does not actually loads data to the GPU nor perform mipmap generation
-   std::lock_guard lock(m_frameMutex);
+   // The frame mutex must only be acquired when no frame is pending: the render thread needs it to consume a pending frame
+   while (m_framePending || !m_frameMutex.try_lock())
+   {
+      g_pplayer->ProcessOSMessages();
+      Sleep(0);
+   }
    m_pendingTextureUploads.push_back(sampler);
    SubmitRenderFrame(); // Submit texture upload to render thread
    SubmitRenderFrame(); // Block until render thread has processed the pending texture uploads and mipmap generations
-   #endif
+   m_frameMutex.unlock();
+#endif
 }
 
 void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v)

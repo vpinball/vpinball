@@ -383,7 +383,7 @@ void LiveUI::RenderUI()
    // Tweak UI (aligned to playfield view, using custom flipper controls)
    m_inGameUI.Update();
 
-   if (!m_player->IsPlaying() && !m_editorUI.IsOpened())
+   if (!m_player->IsPlaying() && !m_player->m_isLoading && !m_editorUI.IsOpened())
    {
       ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 24 * m_uiScale, 4 * m_uiScale));
       ImGui::Begin("PauseOverlay", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
@@ -433,6 +433,7 @@ void LiveUI::RenderUI()
                tex->BackendUserData = new std::shared_ptr<BaseTexture>();
             auto texture = static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
             BaseTexture::Update(*texture, tex->Width, tex->Height, BaseTexture::RGBA, static_cast<const uint8_t *>(tex->GetPixels()));
+            (*texture)->SetName(std::format("ImGui.Tex{}", tex->UniqueID));
             tex->SetTexID(m_renderer->m_renderDevice->m_texMan.LoadTexture(texture->get(), false));
             tex->SetStatus(ImTextureStatus_OK);
          }

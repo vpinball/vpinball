@@ -4,6 +4,9 @@
 
 #if defined(ENABLE_BGFX)
 
+#include <atomic>
+#include <functional>
+
 #include "Texture.h"
 
 struct CompressedTexture final
@@ -17,22 +20,50 @@ struct CompressedTexture final
    size_t GetMipSize(unsigned int mip) const;
 };
 
-namespace TextureCompressor
+// Compresses textures to GPU formats, eventually backed by a per table disk cache.
+// An instance is scoped to a texture loading session: its statistics start clean on
+// construction and can be reported at the end of the session with LogStats.
+class TextureCompressor final
 {
-   bool IsSupported(const BaseTexture& tex);
+public:
+   // cacheFolder is the folder holding the disk compressed texture cache (empty to disable caching)
+   // maxTexDim is the maximum texture dimension applied when loading images (0 = no limit)
+   TextureCompressor(std::filesystem::path cacheFolder, unsigned int maxTexDim);
 
-   bgfx::TextureFormat::Enum SelectFormatFor(BaseTexture::Format srcFormat, bool opaque, unsigned int width, unsigned int height);
+   // Path of the disk cache file of an image (empty when disk caching is disabled)
+   std::filesystem::path GetCacheFile(const Texture* image) const;
 
-   const char* GetFormatName(bgfx::TextureFormat::Enum format);
+   // Loads an image, eventually resolving it from the compressed disk cache, otherwise decoding
+   // it and compressing the result (saved to the disk cache when enabled). startCompression is
+   // evaluated when the image is about to be compressed; returning false skips the compression.
+   std::shared_ptr<const BaseTexture> Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& startCompression);
 
-   std::shared_ptr<const CompressedTexture> Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format);
+   static bool IsSupported(const BaseTexture& tex);
+
+   static bgfx::TextureFormat::Enum SelectFormatFor(BaseTexture::Format srcFormat, bool opaque, unsigned int width, unsigned int height);
+
+   static const char* GetFormatName(bgfx::TextureFormat::Enum format);
+
+   // Compresses a texture to the given format. Static since it is also used outside of loading
+   // sessions (runtime texture updates), where it is not accounted in the session statistics
+   static std::shared_ptr<const CompressedTexture> Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format);
 
    std::shared_ptr<const CompressedTexture> LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile);
 
    std::shared_ptr<BaseTexture> LoadCached(const std::filesystem::path& cacheFile);
 
-   void ResetStats();
-   void LogStats();
-}
+   void LogStats() const;
+
+private:
+   const std::filesystem::path m_cacheFolder;
+   const unsigned int m_maxTexDim;
+
+   std::atomic<uint64_t> m_nCompressed { 0 };
+   std::atomic<uint64_t> m_nLoaded { 0 };
+   std::atomic<uint64_t> m_compressMs { 0 };
+   std::atomic<uint64_t> m_loadMs { 0 };
+   std::atomic<uint64_t> m_rawBytes { 0 };
+   std::atomic<uint64_t> m_compressedBytes { 0 };
+};
 
 #endif

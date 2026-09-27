@@ -445,6 +445,19 @@ void Player::UnlockRenderThread()
 #endif
 }
 
+void Player::RenderLoadingFrame()
+{
+   LockRenderThread();
+   RenderDevice *const rd = m_renderer->m_renderDevice;
+   if (RenderTarget *const backBuffer = rd->GetOutputBackBuffer())
+   {
+      rd->SetRenderTarget("Loading"s, backBuffer, false, true);
+      rd->Clear(clearType::TARGET, 0xFF000000);
+      m_liveUI->RenderUI();
+   }
+   SubmitFrame(); // Hands the recorded frame over to the render thread and releases the render frame mutex (BGFX)
+}
+
 void Player::InitTableSession(const bool isInitial)
 {
    constexpr float progressPhysicLength = 10.f;
@@ -675,20 +688,23 @@ void Player::InitTableSession(const bool isInitial)
       int nLoadInProgress = 0;
       vector<Texture *> failedPreloads;
       const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->GetSettings().GetPlayer_MaxTexDimension());
+      m_texLoadStats.Reset();
+      m_texLoadStats.nImagesTotal = static_cast<int>(m_ptable->m_vimage.size());
+
 #ifdef ENABLE_BGFX
-      const bool compressTextures = m_renderer->m_renderDevice->m_compressTextures;
-      std::filesystem::path texCacheFolder;
-      if (compressTextures && FileExists(m_ptable->m_filename))
+      std::unique_ptr<TextureCompressor> texCompressor;
+      if (m_renderer->m_renderDevice->m_compressTextures && FileExists(m_ptable->m_filename))
       {
-         texCacheFolder = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true) / "textures"sv;
+         std::filesystem::path texCacheFolder = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true) / "textures"sv;
          std::error_code ec;
          std::filesystem::create_directories(texCacheFolder, ec);
+         texCompressor = std::make_unique<TextureCompressor>(std::move(texCacheFolder), maxTexDim);
       }
-      TextureCompressor::ResetStats();
 #endif
+
       auto loadImage = [progressPos = m_loadProgress.GetProgress() + progressPhysicLength, maxTexDim,
 #ifdef ENABLE_BGFX
-                          compressTextures, &texCacheFolder,
+                          texCompressor = texCompressor.get(),
 #endif
                           &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](Texture *image, bool resizeOnLowMem)
       {
@@ -702,18 +718,18 @@ void Player::InitTableSession(const bool isInitial)
                else
                {
                   size_t neededMem= image->GetEstimatedGPUSize() * 3; // 3x the estimated size is one for the image loader, one for the BaseTexture instance and one for the rendering API copy
-                  #ifdef _MSC_VER
-                     MEMORYSTATUSEX statex;
-                     statex.dwLength = sizeof(statex);
-                     GlobalMemoryStatusEx(&statex);
-                     readyToLoad = statex.ullAvailPhys > neededMem;
-                  #else
+#ifdef _MSC_VER
+                  MEMORYSTATUSEX statex;
+                  statex.dwLength = sizeof(statex);
+                  GlobalMemoryStatusEx(&statex);
+                  readyToLoad = statex.ullAvailPhys > neededMem;
+#else
                      // TODO implement for other platforms
                      // struct sysinfo memInfo;
                      // sysinfo(&memInfo);
                      // readyToLoad = memInfo.freeram > neededMem;
                      readyToLoad = true;
-                  #endif
+#endif
                }
                if (readyToLoad)
                   nLoadInProgress++;
@@ -722,35 +738,30 @@ void Player::InitTableSession(const bool isInitial)
                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             else
             {
+               {
+                  const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
+                  m_texLoadStats.inFlight.emplace_back(image, false);
+               }
                std::shared_ptr<const BaseTexture> buffer;
 #ifdef ENABLE_BGFX
-               std::filesystem::path cacheFile;
-               if (compressTextures && !texCacheFolder.empty())
-               {
-                  std::stringstream key;
-                  key << std::hex << std::setfill('0');
-                  for (int i = 0; i < 16; i++)
-                     key << std::setw(2) << static_cast<int>(image->GetMD5Hash()[i]);
-                  key << std::dec;
-                  // Only downscaled textures have their compressed content depend on the maxTexDim setting
-                  if (maxTexDim > 0 && (image->m_width > maxTexDim || image->m_height > maxTexDim))
-                     key << "_MaxTex" << maxTexDim;
-                  key << ".vpxtex";
-                  cacheFile = texCacheFolder / key.str();
-                  if (const auto cached = TextureCompressor::LoadCached(cacheFile); cached)
-                  {
-                     cached->SetName(image->m_name);
-                     image->SetIsOpaque(cached->IsOpaque());
-                     buffer = cached;
-                  }
-               }
+               if (texCompressor)
+                  buffer = texCompressor->Load(image, resizeOnLowMem,
+                     [this, image]()
+                     {
+                        if (m_texLoadStats.skipCompression.load(std::memory_order_relaxed))
+                           return false;
+                        {
+                           const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
+                           for (auto &[tex, compressing] : m_texLoadStats.inFlight)
+                              if (tex == image)
+                                 compressing = true;
+                        }
+                        m_texLoadStats.nCompressed.fetch_add(1, std::memory_order_relaxed);
+                        return true;
+                     });
 #endif
                if (buffer == nullptr)
                   buffer = image->GetRawBitmap(resizeOnLowMem, maxTexDim);
-#ifdef ENABLE_BGFX
-               if (buffer && compressTextures && buffer->m_compressed == nullptr)
-                  buffer->m_compressed = TextureCompressor::LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile);
-#endif
                const std::lock_guard<std::mutex> lock(mutex);
                if (buffer)
                {
@@ -765,10 +776,6 @@ void Player::InitTableSession(const bool isInitial)
                         const char *name = node->GetText();
                         if (name != nullptr && image->m_name == name && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
                         {
-                           #ifdef ENABLE_OPENGL
-                           // Uploading texture in OpenGL uses the state machine which will be wrong if done concurrently
-                           const std::lock_guard<std::mutex> lock2(mutex);
-                           #endif
                            m_renderer->m_renderDevice->UploadTexture(image, linearRGB);
                            break;
                         }
@@ -793,6 +800,11 @@ void Player::InitTableSession(const bool isInitial)
                   failedPreloads.push_back(image);
                }
                nLoadPerformed++;
+               m_texLoadStats.nImagesDone.fetch_add(1, std::memory_order_relaxed);
+               {
+                  const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
+                  std::erase_if(m_texLoadStats.inFlight, [image](const std::pair<const Texture *, bool> &e) { return e.first == image; });
+               }
                m_loadProgress.SetProgress("Loading Textures..."s, progressPos + progressTextureLength * static_cast<float>(nLoadPerformed) / (static_cast<float>(m_ptable->m_vimage.size()) - 1.f));
             }
          }
@@ -802,7 +814,7 @@ void Player::InitTableSession(const bool isInitial)
          }
       };
 
-// Try to load all image concurrently. Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
+      // Try to load all image concurrently. Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
 #ifdef ENABLE_BGFX
       m_frameMutexHeld = false;
       m_renderer->m_renderDevice->m_frameMutex.unlock();
@@ -810,10 +822,45 @@ void Player::InitTableSession(const bool isInitial)
       ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
       for (auto image : m_ptable->m_vimage)
          pool.enqueue(loadImage, image, false);
+
+      bool showLoadingUI = false;
+      uint32_t nextLoadingFrameMs = 0;
       while (pool.has_work_in_flight())
       {
          ProcessOSMessages();
-         Sleep(0);
+         if (showLoadingUI)
+         {
+            m_pininput.ProcessInput();
+            if (msec() >= nextLoadingFrameMs)
+            {
+               RenderLoadingFrame();
+               nextLoadingFrameMs = msec() + 33; // Throttle to ~30fps to keep the render resources mostly available for texture uploads
+            }
+            else
+               Sleep(1);
+         }
+         else
+         {
+#ifdef ENABLE_BGFX
+            // Enable a dedicated loading UI while the worker threads load & compress textures, giving the user progress feedback and a way to skip compression
+            // (the OpenXR swapchain image is only valid inside the render thread frame callback so the loading UI is not available in VR)
+            showLoadingUI = (m_vrDevice == nullptr) && (m_playMode != PlayMode::CaptureAttract) && (m_texLoadStats.nCompressed > 0);
+            if (showLoadingUI)
+            {
+               m_isLoading = true;
+               if (!m_liveUI->m_inGameUI.IsOpened())
+                  m_liveUI->m_inGameUI.Open("loading"s);
+               m_playfieldWnd->Show();
+               m_playfieldWnd->RaiseAndFocus();
+            }
+#endif
+            Sleep(0);
+         }
+      }
+      if (showLoadingUI)
+      {
+         m_liveUI->m_inGameUI.Close(); // Page is erased once its closing animation completes, during the first gameplay frames
+         m_isLoading = false;
       }
       pool.wait_until_empty();
       pool.wait_until_nothing_in_flight();
@@ -824,8 +871,8 @@ void Player::InitTableSession(const bool isInitial)
          loadImage(image, true);
 
 #ifdef ENABLE_BGFX
-      if (compressTextures)
-         TextureCompressor::LogStats();
+      if (texCompressor)
+         texCompressor->LogStats();
 #endif
    }
 

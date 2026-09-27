@@ -544,18 +544,23 @@ void InGameUIPage::Render(float elapsedS)
    }
 
    // Get back to previous page or to game
-   m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::Back));
-   const bool highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
-   if (highlighted)
-      ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-   if (ImGui::Button(ICON_FK_REPLY))
+   if (m_player->m_isLoading)
+      ImGui::NewLine();
+   else
    {
-      m_selectedItem = static_cast<int>(m_items.size()) - 1;
-      AdjustItem(1.f, true);
+      m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::Back));
+      const bool highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
+      if (highlighted)
+         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+      if (ImGui::Button(ICON_FK_REPLY))
+      {
+         m_selectedItem = static_cast<int>(m_items.size()) - 1;
+         AdjustItem(1.f, true);
+      }
+      if (highlighted)
+         ImGui::PopStyleColor();
    }
-   if (highlighted)
-      ImGui::PopStyleColor();
-   const bool backHovered = ImGui::IsItemHovered();
+   const bool backHovered = !m_player->m_isLoading && ImGui::IsItemHovered();
 
    // As we may have changed the number of selectable items, ensure m_selectedItem is still valid and pointing to a selectable item
    {
