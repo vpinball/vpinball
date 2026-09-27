@@ -3,6 +3,7 @@
 #ifndef SIMPLE_URI_PARSER_LIBRARY_H
 #define SIMPLE_URI_PARSER_LIBRARY_H
 
+#include <cstdlib>
 #include <string>
 #include <unordered_map>
 #include <algorithm>

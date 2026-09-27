@@ -8,6 +8,7 @@
 #include "common.h"
 #include "vni.h"
 
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cstdlib>
