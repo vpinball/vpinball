@@ -598,15 +598,16 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       exit(-1);
    #endif
 
-   // Evaluate state size for this shader
+   // Evaluate state size for this shader, 16 byte slots first, then 4 byte ones, then bools, so each slot is naturally aligned
    memset(m_stateOffsets, -1, sizeof(m_stateOffsets));
-   for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
-      for (ShaderUniform uniform : m_uniforms[i])
-         if (m_stateOffsets[static_cast<unsigned int>(uniform)] == -1)
-         {
-            m_stateOffsets[static_cast<unsigned int>(uniform)] = m_stateSize;
-            m_stateSize += ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].stateSize;
-         }
+   for (const unsigned int alignment : { 16u, 4u, 1u })
+      for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
+         for (ShaderUniform uniform : m_uniforms[i])
+            if (m_stateOffsets[static_cast<unsigned int>(uniform)] == -1 && (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].stateSize % alignment) == 0)
+            {
+               m_stateOffsets[static_cast<unsigned int>(uniform)] = m_stateSize;
+               m_stateSize += ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].stateSize;
+            }
    m_state = new ShaderState(this, m_renderDevice->UseLowPrecision());
    m_state->Clear();
 
