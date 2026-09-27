@@ -13,6 +13,8 @@ SegmentNumber::SegmentNumber(Dream7Display* pDisplay)
 
 SegmentNumber::~SegmentNumber()
 {
+   for (Segment* pSegment : m_segments)
+      delete pSegment;
 }
 
 void SegmentNumber::OnInvalidated()
