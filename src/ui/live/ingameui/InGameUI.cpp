@@ -13,6 +13,7 @@
 #include "HomePage.h"
 #include "InputProfilePage.h"
 #include "InputSettingsPage.h"
+#include "LoadingPage.h"
 #include "LoggingSettingsPage.h"
 #include "MiscSettingsPage.h"
 #include "NudgeSettingsPage.h"
@@ -35,6 +36,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    : m_player(g_pplayer)
 {
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
+   AddPage("loading"s, []() { return std::make_unique<LoadingPage>(); });
    AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });
    AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
    AddPage("settings/display_profiles"s, []() { return std::make_unique<DisplayProfileSettingsPage>(); });
@@ -92,6 +94,10 @@ void InGameUI::NavigateBack()
    assert(IsOpened());
    assert(!m_navigationHistory.empty());
 
+   // The loading page is the navigation root while loading: it cannot be closed until the table is loaded
+   if (m_player->m_isLoading && m_navigationHistory.size() == 1)
+      return;
+
    m_navigationHistory.pop_back();
    if (m_navigationHistory.empty())
    {
@@ -116,6 +122,9 @@ void InGameUI::Close()
 {
    if (GetActivePage())
       GetActivePage()->Close(false);
+   m_navigationHistory.clear();
+   if (m_player->m_isLoading)
+      return; // The game is not running yet: no play state or option event to dispatch
    if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true);
    m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::EndOfEdit);
@@ -146,7 +155,7 @@ void InGameUI::Update()
    if (const InGameUIPage *const activePage = GetActivePage(); activePage && activePage->IsActive())
    {
       // Only pause player if balls are moving to keep attract mode if possible
-      if (m_player->IsPlaying(false))
+      if (!m_player->m_isLoading && m_player->IsPlaying(false))
       {
          if (activePage->IsPlayerPauseAllowed())
          {
@@ -165,13 +174,14 @@ void InGameUI::Update()
             }
          }
       }
-      else if (!activePage->IsPlayerPauseAllowed())
+      else if (!activePage->IsPlayerPauseAllowed() && !m_player->m_isLoading)
       {
          m_player->SetPlayState(true);
       }
 
       HandlePageInput();
-      HandleLegacyFlyOver();
+      if (!m_player->m_isLoading)
+         HandleLegacyFlyOver();
    }
 
    // Copy list as it may be modified when the page is updated (for example when a navigation event is triggered)

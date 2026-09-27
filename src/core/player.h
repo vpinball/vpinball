@@ -25,6 +25,7 @@ class VRDevice;
 class LiveUI;
 class BaseTexture;
 class IEditable;
+class Texture;
 
 enum InfoMode
 {
@@ -116,6 +117,7 @@ private:
    bool m_pendingTableStack = false;
    volatile bool m_pendingTablePop = false;
    bool m_frameMutexHeld = false; // True while the game thread owns the render frame mutex, in which case table transitions must be deferred (BGFX only)
+   void RenderLoadingFrame(); // Records and submits a frame containing only the loading UI
    void ProcessTableTransitions();
    void ApplyTableTransition(PinTable *newTable, bool stackTable, const StackedTable *restore);
    void InitTableSession(bool isInitial);
@@ -124,6 +126,26 @@ private:
    void UnlockRenderThread(); // Release render frame ownership, letting the game loop resume (BGFX only)
 
 public:
+   // Stats shared between the texture loading worker threads and the loading UI
+   struct TextureLoadStats
+   {
+      void Reset()
+      {
+         nImagesTotal = 0;
+         nImagesDone = 0;
+         nCompressed = 0;
+         skipCompression = false;
+         inFlight.clear();
+      }
+      std::atomic<int> nImagesTotal { 0 }; // Total number of images in the table
+      std::atomic<int> nImagesDone { 0 }; // Images processed so far (loaded, cached, or failed)
+      std::atomic<int> nCompressed { 0 }; // Images that went through the compression path
+      std::atomic<bool> skipCompression { false }; // Set by the user to discard all pending texture compressions
+      std::mutex inFlightMutex;
+      vector<std::pair<const Texture *, bool>> inFlight; // Images being processed by the worker threads (flagged once in the compression phase)
+   };
+   TextureLoadStats m_texLoadStats;
+   bool m_isLoading = false; // True while the initial table content is being loaded (the loading UI is displayed instead of the game)
 
    uint64_t m_timeUpdateTimeStamp = 0; // Timestamp in computer time that correspond to last update of game time
    double m_time_sec = 0.0; // current physics time

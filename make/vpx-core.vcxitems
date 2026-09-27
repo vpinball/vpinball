@@ -935,6 +935,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputDevicePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/LoadingPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/LoggingSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSensorSettingsPage.cpp" />
@@ -1863,6 +1864,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputDevicePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/LoadingPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/LoggingSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSensorSettingsPage.h" />

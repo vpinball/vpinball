@@ -16,6 +16,8 @@
 #include <atomic>
 #include <chrono>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 
 namespace
 {
@@ -69,13 +71,6 @@ namespace
          return nullptr;
       return result;
    }
-
-   std::atomic<uint64_t> s_nCompressed = 0;
-   std::atomic<uint64_t> s_nLoaded = 0;
-   std::atomic<uint64_t> s_compressMs = 0;
-   std::atomic<uint64_t> s_loadMs = 0;
-   std::atomic<uint64_t> s_rawBytes = 0;
-   std::atomic<uint64_t> s_compressedBytes = 0;
 
    const bool s_bc7eInit = []()
    {
@@ -238,7 +233,7 @@ bool TextureCompressor::IsSupported(const BaseTexture& tex)
    case BaseTexture::SRGB565:
    case BaseTexture::RGB_FP16:
    case BaseTexture::RGB_FP32:
-      return tex.width() >= 64 && tex.height() >= 64;
+      return tex.width() >= 64 && tex.height() >= 64 && SelectFormatFor(tex.m_format, tex.IsOpaque(), tex.width(), tex.height()) != bgfx::TextureFormat::Unknown;
    default:
       return false;
    }
@@ -249,9 +244,8 @@ const char* TextureCompressor::GetFormatName(bgfx::TextureFormat::Enum format)
    return bimg::getName(static_cast<bimg::TextureFormat::Enum>(format));
 }
 
-static std::shared_ptr<const CompressedTexture> CompressHdr(const BaseTexture& tex, bgfx::TextureFormat::Enum format)
+static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& tex, bgfx::TextureFormat::Enum format)
 {
-   const auto start = std::chrono::steady_clock::now();
    auto result = std::make_shared<CompressedTexture>();
    result->format = format;
    result->width = tex.width();
@@ -335,8 +329,6 @@ static std::shared_ptr<const CompressedTexture> CompressHdr(const BaseTexture& t
    }
    assert(offset == result->data.size());
 
-   s_nCompressed++;
-   s_compressMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
    return result;
 }
 
@@ -346,9 +338,8 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
       return nullptr;
 
    if (IsHdr(tex.m_format))
-      return CompressHdr(tex, format);
+      return CompressHDR(tex, format);
 
-   const auto start = std::chrono::steady_clock::now();
    const bool isSrgb = !BaseTexture::IsLinearFormat(tex.m_format);
    std::shared_ptr<const BaseTexture> converted;
    if (tex.m_format != BaseTexture::RGBA && tex.m_format != BaseTexture::SRGBA)
@@ -413,8 +404,6 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
    }
    assert(offset == result->data.size());
 
-   s_nCompressed++;
-   s_compressMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
    return result;
 }
 
@@ -425,10 +414,10 @@ std::shared_ptr<BaseTexture> TextureCompressor::LoadCached(const std::filesystem
    std::shared_ptr<const CompressedTexture> compressed = ReadCacheFile(cacheFile, header);
    if (compressed == nullptr || header.format != static_cast<uint32_t>(SelectFormatFor(static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0, header.width, header.height)))
       return nullptr;
-   s_nLoaded++;
-   s_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
-   s_rawBytes += (static_cast<uint64_t>(header.width) * header.height * UncompressedPixelSize(static_cast<BaseTexture::Format>(header.srcFormat)) * 4) / 3;
-   s_compressedBytes += compressed->data.size();
+   m_nLoaded++;
+   m_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+   m_rawBytes += (static_cast<uint64_t>(header.width) * header.height * UncompressedPixelSize(static_cast<BaseTexture::Format>(header.srcFormat)) * 4) / 3;
+   m_compressedBytes += compressed->data.size();
    return BaseTexture::CreateCompressedOnly(std::move(compressed), static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0);
 }
 
@@ -437,8 +426,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
    if (!IsSupported(tex))
       return nullptr;
 
-   const bool opaque = tex.IsOpaque();
-   const bgfx::TextureFormat::Enum format = SelectFormatFor(tex.m_format, opaque, tex.width(), tex.height());
+   const bgfx::TextureFormat::Enum format = SelectFormatFor(tex.m_format, tex.IsOpaque(), tex.width(), tex.height());
    if (format == bgfx::TextureFormat::Unknown)
       return nullptr;
    const uint64_t rawBytes = (static_cast<uint64_t>(tex.width()) * tex.height() * UncompressedPixelSize(tex.m_format) * 4) / 3;
@@ -450,19 +438,22 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
       std::shared_ptr<const CompressedTexture> result = ReadCacheFile(cacheFile, header);
       if (result && result->format == format && result->width == tex.width() && result->height == tex.height())
       {
-         s_nLoaded++;
-         s_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
-         s_rawBytes += rawBytes;
-         s_compressedBytes += result->data.size();
+         m_nLoaded++;
+         m_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+         m_rawBytes += rawBytes;
+         m_compressedBytes += result->data.size();
          return result;
       }
    }
 
+   const auto start = std::chrono::steady_clock::now();
    auto result = Compress(tex, format);
    if (result == nullptr)
       return nullptr;
-   s_rawBytes += rawBytes;
-   s_compressedBytes += result->data.size();
+   m_nCompressed++;
+   m_compressMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+   m_rawBytes += rawBytes;
+   m_compressedBytes += result->data.size();
    PLOGI << std::format("Texture '{}' was compressed ({}x{} {})", tex.GetName(), tex.width(), tex.height(), GetFormatName(format));
 
    if (!cacheFile.empty())
@@ -470,7 +461,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
       CacheHeader header;
       header.format = static_cast<uint32_t>(result->format);
       header.srcFormat = static_cast<uint32_t>(tex.m_format);
-      header.opaque = opaque ? 1 : 0;
+      header.opaque = tex.IsOpaque() ? 1 : 0;
       header.width = result->width;
       header.height = result->height;
       header.numMips = result->numMips;
@@ -491,20 +482,56 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
    return result;
 }
 
-void TextureCompressor::ResetStats()
+TextureCompressor::TextureCompressor(std::filesystem::path cacheFolder, unsigned int maxTexDim)
+   : m_cacheFolder(std::move(cacheFolder))
+   , m_maxTexDim(maxTexDim)
 {
-   s_nCompressed = 0;
-   s_nLoaded = 0;
-   s_compressMs = 0;
-   s_loadMs = 0;
-   s_rawBytes = 0;
-   s_compressedBytes = 0;
+   // Statistics are scoped to the compressor lifetime, so a texture loading session starts with clean stats
 }
 
-void TextureCompressor::LogStats()
+std::filesystem::path TextureCompressor::GetCacheFile(const Texture* image) const
 {
-   PLOGI << "Texture compression: " << s_nCompressed << " compressed (" << s_compressMs << "ms cumulated), " << s_nLoaded << " loaded from cache (" << s_loadMs << "ms cumulated), GPU memory "
-         << (s_rawBytes / (1024 * 1024)) << "MB uncompressed -> " << (s_compressedBytes / (1024 * 1024)) << "MB compressed";
+   std::filesystem::path path;
+   if (!m_cacheFolder.empty())
+   {
+      std::stringstream key;
+      key << std::hex << std::setfill('0');
+      for (int i = 0; i < 16; i++)
+         key << std::setw(2) << static_cast<int>(image->GetMD5Hash()[i]);
+      key << std::dec;
+      // Only downscaled textures have their compressed content depend on the maxTexDim setting
+      if (m_maxTexDim > 0 && (image->m_width > m_maxTexDim || image->m_height > m_maxTexDim))
+         key << "_MaxTex" << m_maxTexDim;
+      key << ".vpxtex";
+      path = m_cacheFolder / key.str();
+   }
+   return path;
+}
+
+std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& startCompression)
+{
+   std::shared_ptr<const BaseTexture> buffer;
+   const std::filesystem::path cacheFile = GetCacheFile(image);
+   if (!cacheFile.empty())
+   {
+      if (std::shared_ptr<BaseTexture> cached = LoadCached(cacheFile))
+      {
+         cached->SetName(image->m_name);
+         image->SetIsOpaque(cached->IsOpaque());
+         buffer = std::move(cached);
+      }
+   }
+   if (buffer == nullptr)
+      buffer = image->GetRawBitmap(resizeOnLowMem, m_maxTexDim);
+   if (buffer && buffer->m_compressed == nullptr && IsSupported(*buffer) && (!startCompression || startCompression()))
+      buffer->m_compressed = LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile);
+   return buffer;
+}
+
+void TextureCompressor::LogStats() const
+{
+   PLOGI << "Texture compression: " << m_nCompressed << " compressed (" << m_compressMs << "ms cumulated), " << m_nLoaded << " loaded from cache (" << m_loadMs
+         << "ms cumulated), GPU memory " << (m_rawBytes / (1024 * 1024)) << "MB uncompressed -> " << (m_compressedBytes / (1024 * 1024)) << "MB compressed";
 }
 
 #endif
