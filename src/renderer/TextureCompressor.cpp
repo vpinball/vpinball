@@ -492,7 +492,9 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
             std::error_code ec;
             std::filesystem::rename(tmpFile, cacheFile, ec);
             if (ec)
+	    {
                PLOGE << "Failed to write compressed texture cache " << cacheFile;
+	    }
          }
          else
          {
@@ -588,7 +590,9 @@ void TextureCompressor::CleanCache()
       }
    }
    if (nRemoved > 0)
+   {
       PLOGI << "Texture cache: removed " << nRemoved << " stale file(s), freeing " << (freedBytes / (1024 * 1024)) << "MB in " << m_cacheFolder;
+   }
 }
 
 #endif
