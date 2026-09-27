@@ -37,6 +37,8 @@ namespace
       {
       case bgfx::TextureFormat::BC1:
       case bgfx::TextureFormat::BC3:
+      case bgfx::TextureFormat::BC6H:
+      case bgfx::TextureFormat::BC7:
       case bgfx::TextureFormat::ASTC4x4:
       case bgfx::TextureFormat::ASTC6x6:
       case bgfx::TextureFormat::ETC2:
@@ -160,17 +162,16 @@ namespace
    // Bytes per pixel of the uncompressed GPU upload (LDR goes to RGBA8, RGB_FP16 to RGBA16F, RGB_FP32 to RGBA32F)
    uint64_t UncompressedPixelSize(BaseTexture::Format format) { return format == BaseTexture::RGB_FP32 ? 16 : IsHdr(format) ? 8 : 4; }
 
-   bool IsFormatUsable(bgfx::TextureFormat::Enum format, bool needSrgb)
-   {
-      const uint32_t needed = BGFX_CAPS_FORMAT_TEXTURE_2D | (needSrgb ? BGFX_CAPS_FORMAT_TEXTURE_2D_SRGB : 0);
-      return (bgfx::getCaps()->formats[format] & needed) == needed;
-   }
-
-   // D3D11/D3D12 cannot create block-compressed textures whose base dimensions are not multiples of the block size
-   bool IsBlockAligned(unsigned int width, unsigned int height, bgfx::TextureFormat::Enum format)
+   bool IsFormatUsable(bgfx::TextureFormat::Enum format, unsigned int width, unsigned int height, bool needSrgb)
    {
       if (format == bgfx::TextureFormat::Unknown)
          return false;
+
+      const uint32_t needed = BGFX_CAPS_FORMAT_TEXTURE_2D | (needSrgb ? BGFX_CAPS_FORMAT_TEXTURE_2D_SRGB : 0);
+      if ((bgfx::getCaps()->formats[format] & needed) != needed)
+         return false;
+
+      // D3D11/D3D12 cannot create block-compressed textures whose base dimensions are not multiples of the block size
       switch (bgfx::getRendererType())
       {
       case bgfx::RendererType::Direct3D11:
@@ -183,19 +184,34 @@ namespace
       }
    }
 
-   bgfx::TextureFormat::Enum SelectFormatFor(BaseTexture::Format srcFormat, bool opaque, unsigned int width, unsigned int height)
+   }
+
+   bgfx::TextureFormat::Enum TextureCompressor::SelectFormatFor(BaseTexture::Format srcFormat, bool opaque, unsigned int width, unsigned int height)
    {
-      if (!IsHdr(srcFormat))
+      // Selection logic:
+      // - Desktop: BC7/BC6H, BC3/BC1 as a fallback
+      // - Mobile: ASTC 4x4 (equiv as BC7), could use ASTC 5x5, ASTC 6x6, ASTC 8x8 or even ASTC 10x10/12x12 as a user selection for highly memory constrained devices
+      // - Mobile Legacy: ETC2/ETC2A as a fallback format
+      if (IsHdr(srcFormat))
       {
-         const auto format = TextureCompressor::SelectFormat(!opaque, !BaseTexture::IsLinearFormat(srcFormat));
-         return IsBlockAligned(width, height, format) ? format : bgfx::TextureFormat::Unknown;
+         for (const auto format : { bgfx::TextureFormat::BC6H, bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
+            if (IsFormatUsable(format, width, height, false))
+               return format;
       }
-      for (const auto format : { bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
-         if (IsFormatUsable(format, false) && IsBlockAligned(width, height, format))
-            return format;
+      else if (opaque)
+      {
+         for (const auto format : { bgfx::TextureFormat::BC7, bgfx::TextureFormat::BC1, bgfx::TextureFormat::ASTC4x4, bgfx::TextureFormat::ETC2 })
+            if (IsFormatUsable(format, width, height, !BaseTexture::IsLinearFormat(srcFormat)))
+               return format;
+      }
+      else
+      {
+         for (const auto format : { bgfx::TextureFormat::BC7, bgfx::TextureFormat::BC3, bgfx::TextureFormat::ASTC4x4, bgfx::TextureFormat::ETC2A })
+            if (IsFormatUsable(format, width, height, !BaseTexture::IsLinearFormat(srcFormat)))
+               return format;
+      }
       return bgfx::TextureFormat::Unknown;
    }
-}
 
 size_t CompressedTexture::GetMipSize(unsigned int mip) const
 {
@@ -219,16 +235,6 @@ bool TextureCompressor::IsSupported(const BaseTexture& tex)
    default:
       return false;
    }
-}
-
-bgfx::TextureFormat::Enum TextureCompressor::SelectFormat(bool hasAlpha, bool needSrgb)
-{
-   static constexpr bgfx::TextureFormat::Enum opaqueFormats[] = { bgfx::TextureFormat::BC1, bgfx::TextureFormat::ASTC6x6, bgfx::TextureFormat::ETC2 };
-   static constexpr bgfx::TextureFormat::Enum alphaFormats[] = { bgfx::TextureFormat::BC3, bgfx::TextureFormat::ASTC4x4, bgfx::TextureFormat::ETC2A };
-   for (const auto format : hasAlpha ? alphaFormats : opaqueFormats)
-      if (IsFormatUsable(format, needSrgb))
-         return format;
-   return bgfx::TextureFormat::Unknown;
 }
 
 const char* TextureCompressor::GetFormatName(bgfx::TextureFormat::Enum format)
@@ -295,6 +301,12 @@ static std::shared_ptr<const CompressedTexture> CompressHdr(const BaseTexture& t
             dst[i] = PackRgb9E5(&src[i * 4]);
          ok = true;
       }
+      else if (format == bgfx::TextureFormat::BC6H || format == bgfx::TextureFormat::BC7)
+      {
+         bx::Error err;
+         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, src, w, h, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
+         ok = err.isOk();
+      }
       else
          ok = bimg::imageConvert(&allocator, result->data.data() + offset, static_cast<bimg::TextureFormat::Enum>(format), src, bimg::TextureFormat::RGBA32F, w, h, 1);
       if (!ok)
@@ -313,7 +325,7 @@ static std::shared_ptr<const CompressedTexture> CompressHdr(const BaseTexture& t
 
 std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format)
 {
-   if (format == bgfx::TextureFormat::Unknown || !IsSupported(tex) || !IsBlockAligned(tex.width(), tex.height(), format))
+   if (!IsFormatUsable(format, tex.width(), tex.height(), !BaseTexture::IsLinearFormat(tex.m_format)))
       return nullptr;
 
    if (IsHdr(tex.m_format))
@@ -354,7 +366,16 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
          w = nw;
          h = nh;
       }
-      bimg::imageEncodeFromRgba8(&allocator, result->data.data() + offset, src, w, h, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
+      if (format == bgfx::TextureFormat::BC7)
+      {
+         // BC7 is only encodable from RGBA32F input
+         vector<float> rgba32f(static_cast<size_t>(w) * h * 4);
+         for (size_t i = 0; i < rgba32f.size(); i++)
+            rgba32f[i] = src[i] * (1.f / 255.f);
+         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, rgba32f.data(), w, h, 1, bimg::TextureFormat::BC7, bimg::Quality::Fastest, &err);
+      }
+      else
+         bimg::imageEncodeFromRgba8(&allocator, result->data.data() + offset, src, w, h, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
       if (!err.isOk())
       {
          PLOGE << "Failed to compress texture '" << tex.GetName() << "' to " << bimg::getName(static_cast<bimg::TextureFormat::Enum>(format));
@@ -387,6 +408,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
 {
    if (!IsSupported(tex))
       return nullptr;
+
    const bool opaque = tex.IsOpaque();
    const bgfx::TextureFormat::Enum format = SelectFormatFor(tex.m_format, opaque, tex.width(), tex.height());
    if (format == bgfx::TextureFormat::Unknown)
@@ -413,6 +435,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
       return nullptr;
    s_rawBytes += rawBytes;
    s_compressedBytes += result->data.size();
+   PLOGI << std::format("Texture '{}' was compressed ({}x{} {})", tex.GetName(), tex.width(), tex.height(), GetFormatName(format));
 
    if (!cacheFile.empty())
    {
