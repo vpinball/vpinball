@@ -731,7 +731,11 @@ void Player::InitTableSession(const bool isInitial)
                   key << std::hex << std::setfill('0');
                   for (int i = 0; i < 16; i++)
                      key << std::setw(2) << static_cast<int>(image->GetMD5Hash()[i]);
-                  key << std::dec << '_' << maxTexDim << ".vpxtex";
+                  key << std::dec;
+                  // Only downscaled textures have their compressed content depend on the maxTexDim setting
+                  if (maxTexDim > 0 && (image->m_width > maxTexDim || image->m_height > maxTexDim))
+                     key << "_MaxTex" << maxTexDim;
+                  key << ".vpxtex";
                   cacheFile = texCacheFolder / key.str();
                   if (const auto cached = TextureCompressor::LoadCached(cacheFile); cached)
                   {
