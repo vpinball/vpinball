@@ -55,15 +55,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    #if defined(ENABLE_BGFX)
    constexpr int MSAASamples[] = { 1, 4, 6, 8, 16 };
    const int nMSAASamples = MSAASamples[m_table->GetSettings().GetPlayer_MSAASamples()];
+   const bool compressTextures = m_table->GetSettings().GetPlayer_CompressTextures();
    #elif defined(ENABLE_OPENGL)
    constexpr int MSAASamples[] = { 1, 4, 6, 8, 16 };
    int nMSAASamples = MSAASamples[m_table->GetSettings().GetPlayer_MSAASamples()];
+   const bool compressTextures = false;
    #elif defined(ENABLE_DX9)
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable
    constexpr int nMSAASamples = 1;
+   const bool compressTextures = false;
    #endif
    const bool useNvidiaApi = m_table->GetSettings().GetPlayer_UseNVidiaAPI();
-   const bool compressTextures = m_table->GetSettings().GetPlayer_CompressTextures();
    const int nEyes = (m_stereo3D == STEREO_VR || m_stereo3D != STEREO_OFF) ? 2 : 1;
    try {
       m_renderDevice = new RenderDevice(wnd, 
