@@ -106,6 +106,9 @@
     <Filter Include="third-party\scintilla">
       <UniqueIdentifier>{b8b61905-2d58-4daf-92fd-b57d299e5dd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third-party\bc7e">
+      <UniqueIdentifier>{55c5b039-5f27-4002-809b-850a2ebf2b74}</UniqueIdentifier>
+    </Filter>
     <Filter Include="third-party\gpuprofiler">
       <UniqueIdentifier>{8aacfaf1-764f-4635-b401-c610ca901d7e}</UniqueIdentifier>
     </Filter>
@@ -1037,6 +1040,9 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.cpp">
       <Filter>third-party\tinyxml2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/bc7e/basisu_bc7e_scalar.cpp">
+      <Filter>third-party\bc7e</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/gpuprofiler.cpp">
       <Filter>third-party\gpuprofiler</Filter>
@@ -2302,6 +2308,9 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidusage.h">
       <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bc7e/basisu_bc7e_scalar.h">
+      <Filter>third-party\bc7e</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/gpuprofiler.h">
       <Filter>third-party\gpuprofiler</Filter>

@@ -433,6 +433,8 @@ set(VPX_SOURCES
    src/utils/Logger.cpp
    src/utils/Logger.h
 
+   third-party/include/bc7e/basisu_bc7e_scalar.cpp
+   third-party/include/bc7e/basisu_bc7e_scalar.h
    third-party/include/forsyth.h
    third-party/include/gpuprofiler.cpp
    third-party/include/gpuprofiler.h
