@@ -731,7 +731,7 @@ void Player::InitTableSession(const bool isInitial)
                   key << std::hex << std::setfill('0');
                   for (int i = 0; i < 16; i++)
                      key << std::setw(2) << static_cast<int>(image->GetMD5Hash()[i]);
-                  key << std::dec << '_' << maxTexDim << '_' << TextureCompressor::GetFormatName(TextureCompressor::SelectFormat(false)) << ".vpxtex";
+                  key << std::dec << '_' << maxTexDim << '_' << TextureCompressor::GetFormatName(TextureCompressor::SelectFormat(false, true)) << ".vpxtex";
                   cacheFile = texCacheFolder / key.str();
                   if (const auto cached = TextureCompressor::LoadCached(cacheFile); cached)
                   {
