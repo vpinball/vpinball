@@ -169,7 +169,7 @@ namespace
    bgfx::TextureFormat::Enum SelectFormatFor(BaseTexture::Format srcFormat, bool opaque)
    {
       if (!IsHdr(srcFormat))
-         return TextureCompressor::SelectFormat(!opaque);
+         return TextureCompressor::SelectFormat(!opaque, !BaseTexture::IsLinearFormat(srcFormat));
       for (const auto format : { bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
          if (IsFormatUsable(format, false))
             return format;
@@ -201,12 +201,12 @@ bool TextureCompressor::IsSupported(const BaseTexture& tex)
    }
 }
 
-bgfx::TextureFormat::Enum TextureCompressor::SelectFormat(bool hasAlpha)
+bgfx::TextureFormat::Enum TextureCompressor::SelectFormat(bool hasAlpha, bool needSrgb)
 {
    static constexpr bgfx::TextureFormat::Enum opaqueFormats[] = { bgfx::TextureFormat::BC1, bgfx::TextureFormat::ASTC6x6, bgfx::TextureFormat::ETC2 };
    static constexpr bgfx::TextureFormat::Enum alphaFormats[] = { bgfx::TextureFormat::BC3, bgfx::TextureFormat::ASTC4x4, bgfx::TextureFormat::ETC2A };
    for (const auto format : hasAlpha ? alphaFormats : opaqueFormats)
-      if (IsFormatUsable(format, true))
+      if (IsFormatUsable(format, needSrgb))
          return format;
    return bgfx::TextureFormat::Unknown;
 }

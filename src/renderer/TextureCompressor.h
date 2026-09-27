@@ -20,7 +20,7 @@ struct CompressedTexture final
 namespace TextureCompressor
 {
    bool IsSupported(const BaseTexture& tex);
-   bgfx::TextureFormat::Enum SelectFormat(bool hasAlpha);
+   bgfx::TextureFormat::Enum SelectFormat(bool hasAlpha, bool needSrgb);
    const char* GetFormatName(bgfx::TextureFormat::Enum format);
    std::shared_ptr<const CompressedTexture> Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format);
 
