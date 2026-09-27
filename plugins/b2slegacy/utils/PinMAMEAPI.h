@@ -8,7 +8,7 @@ class Server;
 
 class PinMAMEAPI {
 public:
-   PinMAMEAPI(MsgPluginAPI* msgApi, uint32_t endpointId, Server* server, ScriptClassDef* serverClassDef);
+   PinMAMEAPI(const MsgPluginAPI* msgApi, uint32_t endpointId, Server* server, ScriptClassDef* serverClassDef);
    ~PinMAMEAPI();
 
    ScriptArray* GetChangedLamps();

@@ -12,7 +12,7 @@ class Server;
 class Form : public Control
 {
 public:
-   Form(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData, const string& overlayType = ""s);
+   Form(VPXPluginAPI* vpxApi, const MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData, const string& overlayType = ""s);
    ~Form() override;
 
    void Show();
@@ -23,7 +23,7 @@ public:
    void OnPaint(VPXRenderContext2D* const ctx) override;
 
 protected:
-   MsgPluginAPI* m_msgApi = nullptr;
+   const MsgPluginAPI* m_msgApi = nullptr;
    B2SData* m_pB2SData = nullptr;
    uint32_t m_endpointId = 0;
 

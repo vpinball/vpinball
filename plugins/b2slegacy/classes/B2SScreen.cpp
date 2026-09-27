@@ -21,7 +21,7 @@ MSGPI_INT_VAL_SETTING(dmdWidthProp, "B2SDMDWidth", "B2SDMDWidth", "", true, 0, 1
 MSGPI_INT_VAL_SETTING(dmdHeightProp, "B2SDMDHeight", "B2SDMDHeight", "", true, 0, 16384, 128);
 MSGPI_BOOL_VAL_SETTING(dmdFlipYProp, "B2SDMDFlipY", "B2SDMDFlipY", "", true, false);
 
-B2SScreen::B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, unsigned int endpointId)
+B2SScreen::B2SScreen(B2SData* pB2SData, const MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, unsigned int endpointId)
    : m_pB2SData(pB2SData),
      m_msgApi(msgApi),
      m_vpxApi(vpxApi),

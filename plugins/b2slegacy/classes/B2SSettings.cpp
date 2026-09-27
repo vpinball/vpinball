@@ -10,7 +10,7 @@ MSGPI_BOOL_VAL_SETTING(hideB2SBackglassProp, "B2SHideB2SBackglass", "B2SHideB2SB
 MSGPI_BOOL_VAL_SETTING(hideDMDProp, "B2SHideDMD", "B2SHideDMD", "", true, true); // VB uses CheckedState_Indeterminate
 MSGPI_INT_VAL_SETTING(dualModeProp, "B2SDualMode", "B2SDualMode", "", true, eDualMode_2_Authentic, eDualMode_2_Fantasy, eDualMode_2_Authentic);
 
-B2SSettings::B2SSettings(MsgPluginAPI* msgApi, unsigned int endpointId)
+B2SSettings::B2SSettings(const MsgPluginAPI* msgApi, unsigned int endpointId)
    : m_msgApi(msgApi)
    , m_endpointId(endpointId)
 {
