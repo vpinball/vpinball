@@ -12,11 +12,13 @@
 #include <bimg/bimg.h>
 #include <bimg/encode.h>
 #include <bc7e/basisu_bc7e_scalar.h>
+#include <miniz/miniz.h>
 
 #include <atomic>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 
 namespace
@@ -24,14 +26,15 @@ namespace
    struct CacheHeader
    {
       char magic[4] = { 'V', 'P', 'X', 'T' };
-      uint32_t version = 3;
+      uint32_t version = 4;
       uint32_t format = 0;
       uint32_t srcFormat = 0;
       uint32_t opaque = 0;
       uint32_t width = 0;
       uint32_t height = 0;
       uint32_t numMips = 0;
-      uint64_t dataSize = 0;
+      uint64_t dataSize = 0; // Size of the uncompressed texture data
+      uint64_t packedSize = 0; // Size of the deflated data stored in the file
    };
 
    bool IsCacheFormat(uint32_t format)
@@ -59,7 +62,11 @@ namespace
          return nullptr;
       if (!IsCacheFormat(header.format) || header.width == 0 || header.height == 0 || header.width > 16384 || header.height > 16384
          || header.numMips != static_cast<uint32_t>(1 + static_cast<int>(floor(log2(max(header.width, header.height)))))
-         || header.dataSize != bimg::imageGetSize(nullptr, header.width, header.height, 1, false, true, 1, static_cast<bimg::TextureFormat::Enum>(header.format)))
+         || header.dataSize != bimg::imageGetSize(nullptr, header.width, header.height, 1, false, true, 1, static_cast<bimg::TextureFormat::Enum>(header.format))
+         || header.dataSize > std::numeric_limits<mz_ulong>::max() || header.packedSize == 0 || header.packedSize > compressBound(static_cast<mz_ulong>(header.dataSize)))
+         return nullptr;
+      vector<uint8_t> packed(static_cast<size_t>(header.packedSize));
+      if (!in.read(reinterpret_cast<char*>(packed.data()), static_cast<std::streamsize>(header.packedSize)))
          return nullptr;
       auto result = std::make_shared<CompressedTexture>();
       result->format = static_cast<bgfx::TextureFormat::Enum>(header.format);
@@ -67,7 +74,8 @@ namespace
       result->height = header.height;
       result->numMips = static_cast<uint8_t>(header.numMips);
       result->data.resize(header.dataSize);
-      if (!in.read(reinterpret_cast<char*>(result->data.data()), static_cast<std::streamsize>(header.dataSize)))
+      mz_ulong unpackedSize = static_cast<mz_ulong>(header.dataSize);
+      if (uncompress(result->data.data(), &unpackedSize, packed.data(), static_cast<mz_ulong>(header.packedSize)) != Z_OK || unpackedSize != header.dataSize)
          return nullptr;
       return result;
    }
@@ -458,25 +466,42 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
 
    if (!cacheFile.empty())
    {
-      CacheHeader header;
-      header.format = static_cast<uint32_t>(result->format);
-      header.srcFormat = static_cast<uint32_t>(tex.m_format);
-      header.opaque = tex.IsOpaque() ? 1 : 0;
-      header.width = result->width;
-      header.height = result->height;
-      header.numMips = result->numMips;
-      header.dataSize = result->data.size();
-      const std::filesystem::path tmpFile = std::filesystem::path(cacheFile).concat(".tmp");
+      // The payload is stored deflated to limit disk space (f.e. VPW Jurassic Park goes from 1.89Go to 0.92Go)
+      if (result->data.size() <= std::numeric_limits<mz_ulong>::max())
       {
-         std::ofstream out(tmpFile, std::ios::binary | std::ios::trunc);
-         out.write(reinterpret_cast<const char*>(&header), sizeof(header));
-         out.write(reinterpret_cast<const char*>(result->data.data()), static_cast<std::streamsize>(result->data.size()));
+         const mz_ulong dataSize = static_cast<mz_ulong>(result->data.size());
+         mz_ulong packedSize = compressBound(dataSize);
+         vector<uint8_t> packed(packedSize);
+         if (compress2(packed.data(), &packedSize, result->data.data(), dataSize, MZ_BEST_COMPRESSION) == Z_OK)
+         {
+            CacheHeader header;
+            header.format = static_cast<uint32_t>(result->format);
+            header.srcFormat = static_cast<uint32_t>(tex.m_format);
+            header.opaque = tex.IsOpaque() ? 1 : 0;
+            header.width = result->width;
+            header.height = result->height;
+            header.numMips = result->numMips;
+            header.dataSize = result->data.size();
+            header.packedSize = packedSize;
+            const std::filesystem::path tmpFile = std::filesystem::path(cacheFile).concat(".tmp");
+            {
+               std::ofstream out(tmpFile, std::ios::binary | std::ios::trunc);
+               out.write(reinterpret_cast<const char*>(&header), sizeof(header));
+               out.write(reinterpret_cast<const char*>(packed.data()), static_cast<std::streamsize>(packedSize));
+            }
+            std::error_code ec;
+            std::filesystem::rename(tmpFile, cacheFile, ec);
+            if (ec)
+               PLOGE << "Failed to write compressed texture cache " << cacheFile;
+         }
+         else
+         {
+            PLOGE << "Failed to deflate compressed texture cache data for '" << tex.GetName() << '\'';
+         }
       }
-      std::error_code ec;
-      std::filesystem::rename(tmpFile, cacheFile, ec);
-      if (ec)
+      else
       {
-         PLOGE << "Failed to write compressed texture cache " << cacheFile;
+         PLOGW << "Compressed texture '" << tex.GetName() << "' is too large to be cached";
       }
    }
    return result;
