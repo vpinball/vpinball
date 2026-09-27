@@ -539,6 +539,10 @@ std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool 
    const std::filesystem::path cacheFile = GetCacheFile(image);
    if (!cacheFile.empty())
    {
+      {
+         const std::lock_guard lock(m_usedCacheFilesMutex);
+         m_usedCacheFiles.insert(cacheFile.filename());
+      }
       if (std::shared_ptr<BaseTexture> cached = LoadCached(cacheFile))
       {
          cached->SetName(image->m_name);
@@ -557,6 +561,34 @@ void TextureCompressor::LogStats() const
 {
    PLOGI << "Texture compression: " << m_nCompressed << " compressed (" << m_compressMs << "ms cumulated), " << m_nLoaded << " loaded from cache (" << m_loadMs
          << "ms cumulated), GPU memory " << (m_rawBytes / (1024 * 1024)) << "MB uncompressed -> " << (m_compressedBytes / (1024 * 1024)) << "MB compressed";
+}
+
+void TextureCompressor::CleanCache()
+{
+   if (m_cacheFolder.empty())
+      return;
+   std::unordered_set<std::filesystem::path> expected;
+   {
+      const std::lock_guard lock(m_usedCacheFilesMutex);
+      expected = m_usedCacheFiles;
+   }
+   uint64_t nRemoved = 0;
+   uint64_t freedBytes = 0;
+   std::error_code ec;
+   for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(m_cacheFolder, ec))
+   {
+      const std::filesystem::path& path = entry.path();
+      if (!entry.is_regular_file(ec) || (path.extension() != ".tmp" && (path.extension() != ".vpxtex" || expected.contains(path.filename()))))
+         continue;
+      const uint64_t size = entry.file_size(ec);
+      if (std::filesystem::remove(path, ec))
+      {
+         ++nRemoved;
+         freedBytes += size;
+      }
+   }
+   if (nRemoved > 0)
+      PLOGI << "Texture cache: removed " << nRemoved << " stale file(s), freeing " << (freedBytes / (1024 * 1024)) << "MB in " << m_cacheFolder;
 }
 
 #endif

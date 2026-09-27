@@ -872,7 +872,10 @@ void Player::InitTableSession(const bool isInitial)
 
 #ifdef ENABLE_BGFX
       if (texCompressor)
+      {
          texCompressor->LogStats();
+         texCompressor->CleanCache();
+      }
 #endif
    }
 

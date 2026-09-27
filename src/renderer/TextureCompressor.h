@@ -6,6 +6,8 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
+#include <unordered_set>
 
 #include "Texture.h"
 
@@ -54,9 +56,16 @@ public:
 
    void LogStats() const;
 
+   // Removes cache files that are not referenced by the images loaded during this session, as well as leftover temporary files
+   void CleanCache();
+
 private:
    const std::filesystem::path m_cacheFolder;
    const unsigned int m_maxTexDim;
+
+   // Cache files referenced while loading this session (written by the loading threads), used by CleanCache to detect stale entries
+   std::mutex m_usedCacheFilesMutex;
+   std::unordered_set<std::filesystem::path> m_usedCacheFiles;
 
    std::atomic<uint64_t> m_nCompressed { 0 };
    std::atomic<uint64_t> m_nLoaded { 0 };
