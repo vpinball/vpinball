@@ -10,7 +10,7 @@ namespace B2SLegacy {
 class B2SSettings final
 {
 public:
-   B2SSettings(MsgPluginAPI* msgApi, unsigned int endpointId);
+   B2SSettings(const MsgPluginAPI* msgApi, unsigned int endpointId);
    ~B2SSettings();
 
    static const string& GetMinimumDirectB2SVersion() { static const string ver = "1.0"s; return ver; }
@@ -95,7 +95,7 @@ private:
    bool m_formToFront = true;
    bool m_formToBack = false;
    bool m_formNoFocus = false;
-   MsgPluginAPI* m_msgApi = nullptr;
+   const MsgPluginAPI* m_msgApi = nullptr;
    unsigned int m_endpointId = 0;
 };
 

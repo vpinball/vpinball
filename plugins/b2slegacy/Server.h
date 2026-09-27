@@ -18,7 +18,7 @@ class PinMAMEAPI;
 class Server : public PinballPlugin::Scriptable::IScriptProxy
 {
 public:
-   Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef);
+   Server(const MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef);
    ~Server();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -214,7 +214,7 @@ private:
    static void MSGPIAPI GetPlayerScore(void* callContext, void* pResult);
    static void MSGPIAPI GetScoreDigit(void* callContext, void* pResult);
 
-   MsgPluginAPI* const m_msgApi;
+   const MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;
    const uint32_t m_endpointId;
 

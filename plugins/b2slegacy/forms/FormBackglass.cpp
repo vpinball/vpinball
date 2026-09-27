@@ -26,7 +26,7 @@
 
 namespace B2SLegacy {
 
-FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi,uint32_t endpointId, B2SData* pB2SData)
+FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, const MsgPluginAPI* msgApi,uint32_t endpointId, B2SData* pB2SData)
    : Form(vpxApi, msgApi, endpointId, pB2SData, "Backglass"s),
      m_pB2SSettings(pB2SData->GetB2SSettings())
 {

@@ -5,7 +5,7 @@
 
 namespace B2SLegacy {
 
-PinMAMEAPI::PinMAMEAPI(MsgPluginAPI* msgApi, uint32_t endpointId, Server* server, ScriptClassDef* serverClassDef)
+PinMAMEAPI::PinMAMEAPI(const MsgPluginAPI* msgApi, uint32_t endpointId, Server* server, ScriptClassDef* serverClassDef)
    : m_server(server),
      m_serverClassDef(serverClassDef),
      m_controllerClassProxy(msgApi, endpointId, "PinMAME_", "PinMAME_Controller", "B2SLegacy_", serverClassDef),

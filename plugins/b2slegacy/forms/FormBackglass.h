@@ -15,7 +15,7 @@ class Server;
 class FormBackglass final : public Form
 {
 public:
-   FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData);
+   FormBackglass(VPXPluginAPI* vpxApi, const MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData);
    ~FormBackglass() override;
 
    void Start();
