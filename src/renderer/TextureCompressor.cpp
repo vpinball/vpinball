@@ -166,12 +166,32 @@ namespace
       return (bgfx::getCaps()->formats[format] & needed) == needed;
    }
 
-   bgfx::TextureFormat::Enum SelectFormatFor(BaseTexture::Format srcFormat, bool opaque)
+   // D3D11/D3D12 cannot create block-compressed textures whose base dimensions are not multiples of the block size
+   bool IsBlockAligned(unsigned int width, unsigned int height, bgfx::TextureFormat::Enum format)
+   {
+      if (format == bgfx::TextureFormat::Unknown)
+         return false;
+      switch (bgfx::getRendererType())
+      {
+      case bgfx::RendererType::Direct3D11:
+      case bgfx::RendererType::Direct3D12:
+      {
+         const bimg::ImageBlockInfo& block = bimg::getBlockInfo(static_cast<bimg::TextureFormat::Enum>(format));
+         return width % block.blockWidth == 0 && height % block.blockHeight == 0;
+      }
+      default: return true;
+      }
+   }
+
+   bgfx::TextureFormat::Enum SelectFormatFor(BaseTexture::Format srcFormat, bool opaque, unsigned int width, unsigned int height)
    {
       if (!IsHdr(srcFormat))
-         return TextureCompressor::SelectFormat(!opaque, !BaseTexture::IsLinearFormat(srcFormat));
+      {
+         const auto format = TextureCompressor::SelectFormat(!opaque, !BaseTexture::IsLinearFormat(srcFormat));
+         return IsBlockAligned(width, height, format) ? format : bgfx::TextureFormat::Unknown;
+      }
       for (const auto format : { bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
-         if (IsFormatUsable(format, false))
+         if (IsFormatUsable(format, false) && IsBlockAligned(width, height, format))
             return format;
       return bgfx::TextureFormat::Unknown;
    }
@@ -293,7 +313,7 @@ static std::shared_ptr<const CompressedTexture> CompressHdr(const BaseTexture& t
 
 std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format)
 {
-   if (format == bgfx::TextureFormat::Unknown || !IsSupported(tex))
+   if (format == bgfx::TextureFormat::Unknown || !IsSupported(tex) || !IsBlockAligned(tex.width(), tex.height(), format))
       return nullptr;
 
    if (IsHdr(tex.m_format))
@@ -354,7 +374,7 @@ std::shared_ptr<BaseTexture> TextureCompressor::LoadCached(const std::filesystem
    const auto start = std::chrono::steady_clock::now();
    CacheHeader header;
    std::shared_ptr<const CompressedTexture> compressed = ReadCacheFile(cacheFile, header);
-   if (compressed == nullptr || header.format != static_cast<uint32_t>(SelectFormatFor(static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0)))
+   if (compressed == nullptr || header.format != static_cast<uint32_t>(SelectFormatFor(static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0, header.width, header.height)))
       return nullptr;
    s_nLoaded++;
    s_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
@@ -368,7 +388,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
    if (!IsSupported(tex))
       return nullptr;
    const bool opaque = tex.IsOpaque();
-   const bgfx::TextureFormat::Enum format = SelectFormatFor(tex.m_format, opaque);
+   const bgfx::TextureFormat::Enum format = SelectFormatFor(tex.m_format, opaque, tex.width(), tex.height());
    if (format == bgfx::TextureFormat::Unknown)
       return nullptr;
    const uint64_t rawBytes = (static_cast<uint64_t>(tex.width()) * tex.height() * UncompressedPixelSize(tex.m_format) * 4) / 3;
