@@ -1145,7 +1145,27 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
             text.insert(pos + 1, 1, ' ');
       }
    }
-   std::replace_if(text.begin(), text.end(), [pTTFFont](char c) { return c != '\n' && !TTF_FontHasGlyph(pTTFFont, c); }, ' ');
+
+   // Replace any codepoint the font cannot render with a space, keeping newlines. This must
+   // walk UTF-8 by codepoint: TTF_FontHasGlyph takes a Unicode codepoint, so testing raw bytes
+   // would reject every byte of a multibyte character (e.g. the 'é' in "Crédits") and drop it.
+   {
+      string sanitized;
+      sanitized.reserve(text.size());
+      const char* p = text.c_str();
+      size_t remaining = text.size();
+      while (remaining > 0)
+      {
+         const char* const start = p;
+         const uint32_t cp = SDL_StepUTF8(&p, &remaining);
+         const size_t bytes = static_cast<size_t>(p - start);
+         if (cp == '\n' || (cp != SDL_INVALID_UNICODE_CODEPOINT && TTF_FontHasGlyph(pTTFFont, cp)))
+            sanitized.append(start, bytes);
+         else
+            sanitized += ' ';
+      }
+      text = std::move(sanitized);
+   }
 
    const int lineCount = 1 + static_cast<int>(std::count(text.begin(), text.end(), '\n'));
    rs.m_logicalHeight = fontHeight * static_cast<float>(lineCount);
