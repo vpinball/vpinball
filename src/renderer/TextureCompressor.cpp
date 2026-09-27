@@ -196,12 +196,12 @@ namespace
    bgfx::TextureFormat::Enum TextureCompressor::SelectFormatFor(BaseTexture::Format srcFormat, bool opaque, unsigned int width, unsigned int height)
    {
       // Selection logic:
-      // - Desktop: BC7/BC6H, BC3/BC1 as a fallback
+      // - Desktop: BC7/BC6H, BC3/BC1 as a fallback. Sadly NVTT BC6H compression is too slow to be used in production
       // - Mobile: ASTC 4x4 (equiv as BC7), could use ASTC 5x5, ASTC 6x6, ASTC 8x8 or even ASTC 10x10/12x12 as a user selection for highly memory constrained devices
       // - Mobile Legacy: ETC2/ETC2A as a fallback format
       if (IsHdr(srcFormat))
       {
-         for (const auto format : { bgfx::TextureFormat::BC6H, bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
+         for (const auto format : { /* bgfx::TextureFormat::BC6H,*/ bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
             if (IsFormatUsable(format, width, height, false))
                return format;
       }
