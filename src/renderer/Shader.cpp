@@ -779,6 +779,13 @@ void Shader::SetVector(const ShaderUniform uniformName, const float x, const flo
 }
 vec4 Shader::GetVector(const ShaderUniform uniformName) const { return m_state->GetVector(uniformName); }
 void Shader::SetFloat4v(const ShaderUniform uniformName, const vec4* const pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
+void Shader::SetFloat4v(const ShaderUniform uniformName, const float* const pData, const unsigned int count)
+{
+   vec4 data[16];
+   assert(count <= std::size(data));
+   memcpy(data, pData, count * sizeof(vec4));
+   m_state->SetVector(uniformName, data, count);
+}
 void Shader::SetTexture(const ShaderUniform uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV)
 {
    m_state->SetTexture(uniformName, sampler, filter, clampU, clampV);
