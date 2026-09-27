@@ -33,7 +33,7 @@ private:
    Dream7Display* m_pDisplay = nullptr;
    SegmentList m_segments;
    SegmentStyle m_pStyle;
-   SegmentNumberType m_type = (SegmentNumberType)-1;
+   SegmentNumberType m_type = (SegmentNumberType)0;
    float m_thickness = 16.0f;
    Matrix m_numberMatrix;
    string m_szCharacter;
