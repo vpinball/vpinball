@@ -251,14 +251,35 @@ void WinEditor::SetStatusBarElementInfo(const string& info)
 
 bool WinEditor::OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
 {
-   CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
+   CFileDialog fileDlg(
+      TRUE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
    if (fileDlg.DoModal(GetHwnd()) == IDOK)
    {
-      int pos = 0;
-      while (pos != -1)
-         filename.emplace_back(fileDlg.GetNextPathName(pos));
+      if (flags & OFN_ALLOWMULTISELECT)
+      {
+         // win32xx 10.3 GetNextPathName truncates at the first NUL, so parse lpstrFile
+         // directly: "dir\0file1\0file2\0\0" for multiple files, full path otherwise.
+         const char *pos = fileDlg.GetParameters().lpstrFile;
+         const string dir(pos);
+         pos += dir.length() + 1;
+         if (*pos == '\0')
+            filename.emplace_back(dir);
+         else
+            while (*pos != '\0')
+            {
+               const string name(pos);
+               filename.emplace_back(dir + (dir.back() == '\\' ? "" : "\\") + name);
+               pos += name.length() + 1;
+            }
+      }
+      else
+      {
+         int pos = 0;
+         while (pos != -1)
+            filename.emplace_back(fileDlg.GetNextPathName(pos));
+      }
 
       return true;
    }
