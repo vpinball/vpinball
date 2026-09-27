@@ -31,12 +31,28 @@ namespace
       uint64_t dataSize = 0;
    };
 
+   bool IsCacheFormat(uint32_t format)
+   {
+      switch (static_cast<bgfx::TextureFormat::Enum>(format))
+      {
+      case bgfx::TextureFormat::BC1:
+      case bgfx::TextureFormat::BC3:
+      case bgfx::TextureFormat::ASTC4x4:
+      case bgfx::TextureFormat::ASTC6x6:
+      case bgfx::TextureFormat::ETC2:
+      case bgfx::TextureFormat::ETC2A:
+      case bgfx::TextureFormat::RGB9E5F:
+      case bgfx::TextureFormat::RG11B10F: return true;
+      default: return false;
+      }
+   }
+
    std::shared_ptr<const CompressedTexture> ReadCacheFile(const std::filesystem::path& cacheFile, CacheHeader& header)
    {
       std::ifstream in(cacheFile, std::ios::binary);
       if (!in || !in.read(reinterpret_cast<char*>(&header), sizeof(header)) || memcmp(header.magic, CacheHeader().magic, 4) != 0 || header.version != CacheHeader().version)
          return nullptr;
-      if (header.format >= bgfx::TextureFormat::Count || header.width == 0 || header.height == 0 || header.width > 16384 || header.height > 16384
+      if (!IsCacheFormat(header.format) || header.width == 0 || header.height == 0 || header.width > 16384 || header.height > 16384
          || header.numMips != static_cast<uint32_t>(1 + static_cast<int>(floor(log2(max(header.width, header.height)))))
          || header.dataSize != bimg::imageGetSize(nullptr, header.width, header.height, 1, false, true, 1, static_cast<bimg::TextureFormat::Enum>(header.format)))
          return nullptr;
@@ -165,6 +181,8 @@ size_t CompressedTexture::GetMipSize(unsigned int mip) const
 
 bool TextureCompressor::IsSupported(const BaseTexture& tex)
 {
+   if (tex.datac() == nullptr) // Compressed-only textures have no pixel data to encode
+      return false;
    switch (tex.m_format)
    {
    case BaseTexture::RGB:
