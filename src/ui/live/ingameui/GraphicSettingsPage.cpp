@@ -375,6 +375,7 @@ void GraphicSettingsPage::BuildPage()
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+#if defined(ENABLE_BGFX)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_CompressTextures, //
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_CompressTextures(); }, //
@@ -383,6 +384,7 @@ void GraphicSettingsPage::BuildPage()
          g_settingsService.GetActiveSettings().SetPlayer_CompressTextures(v, false);
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
+#endif
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
