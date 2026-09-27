@@ -155,12 +155,10 @@ BOOL SoundDialog::OnInitDialog()
 void SoundDialog::ListSounds()
 {
    ListView_DeleteAllItems(hSoundList);
-   CCO(PinTable) *const pt = m_tableEditor->m_table;
-   if (pt)
+   if (CCO(PinTable) *const pt = m_tableEditor->m_table)
       for (const auto sound : pt->m_vsound)
          AddListSound(sound);
 }
-
 
 int SoundDialog::AddListSound(const VPX::Sound *const pps)
 {
@@ -365,11 +363,8 @@ void SoundDialog::Import()
    {
       g_settingsService.GetAppSettings().SetRecentDir_SoundDir(std::filesystem::path(szFileName[0]).parent_path().string(), false);
       for (const string &file : szFileName)
-      {
-         VPX::Sound* sound = pt->ImportSound(file);
-         const int indexs = AddListSound(sound);
-         ListView_SetItemState(hSoundList, indexs, LVIS_SELECTED, LVIS_SELECTED);
-      }
+         if (VPX::Sound* sound = pt->ImportSound(file))
+            ListView_SetItemState(hSoundList, AddListSound(sound), LVIS_SELECTED, LVIS_SELECTED);
 
       pt->SetNonUndoableDirty(eSaveDirty);
    }
