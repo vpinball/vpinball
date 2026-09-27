@@ -171,7 +171,9 @@ void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdVie
 
       // maybe rotate DMD image
       if (m_dmdFlipY && m_pFormDMD && m_pFormDMD->GetBackgroundImage()) {
-         m_pFormDMD->SetBackgroundImage(FlipImage(m_pFormDMD->GetBackgroundImage()));
+         VPXTexture pImage = m_pFormDMD->GetBackgroundImage();
+         m_pFormDMD->SetBackgroundImage(FlipImage(pImage));
+         m_vpxApi->DeleteTexture(pImage);
       }
    }
 }
@@ -327,7 +329,10 @@ void B2SScreen::ScaleControl(B2SBaseBox* pControl, float rescaleX, float rescale
             pPicbox->SetRectangleF({ pPicbox->GetRectangleF().x, newY, pPicbox->GetRectangleF().w, pPicbox->GetRectangleF().h });
             // flip the images
             if (pPicbox->GetBackgroundImage()) {
-               pPicbox->SetBackgroundImage(FlipImage(pPicbox->GetBackgroundImage()));
+               VPXTexture pImage = pPicbox->GetBackgroundImage();
+               pPicbox->SetBackgroundImage(FlipImage(pImage));
+               if (pPicbox->GetPictureBoxType() == ePictureBoxType_StandardImage)
+                  m_vpxApi->DeleteTexture(pImage);
             }
             if (pPicbox->GetOffImage()) {
                pPicbox->SetOffImage(FlipImage(pPicbox->GetOffImage()));

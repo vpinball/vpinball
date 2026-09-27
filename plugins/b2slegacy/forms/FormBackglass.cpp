@@ -1332,6 +1332,7 @@ void FormBackglass::ResizeSomeImages()
                SDL_FRect frect = { 0.0f, 0.0f, (float)m_vpxApi->GetTextureInfo(pImage)->width / xResizeFactor, (float)m_vpxApi->GetTextureInfo(pImage)->height / yResizeFactor };
                SDL_Rect rect = { 0, 0, (int)frect.w, (int)frect.h };
                pPicbox->SetBackgroundImage(ResizeTexture(pImage, rect.w, rect.h));
+               m_vpxApi->DeleteTexture(pImage);
                if (pPicbox->GetOffImage())
                   pPicbox->SetOffImage(ResizeTexture(pPicbox->GetOffImage(), rect.w, rect.h));
             }
@@ -1402,6 +1403,9 @@ void FormBackglass::RotateImage(B2SPictureBox* pPicbox, int rotationsteps, eSnip
          rotatingAngle += m_rotateAngle;
          index++;
       }
+      VPXTexture pImage = pPicbox->GetBackgroundImage();
+      pPicbox->SetBackgroundImage((*m_pB2SData->GetRotatingImages())[romid][0]);
+      m_vpxApi->DeleteTexture(pImage);
    }
 }
 
