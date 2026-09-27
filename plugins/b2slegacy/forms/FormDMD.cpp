@@ -17,6 +17,8 @@ FormDMD::FormDMD(VPXPluginAPI* vpxApi, const MsgPluginAPI* msgApi, uint32_t endp
 
 FormDMD::~FormDMD()
 {
+   if (GetBackgroundImage())
+      m_vpxApi->DeleteTexture(GetBackgroundImage());
 }
 
 void FormDMD::OnPaint(VPXRenderContext2D* const ctx)
