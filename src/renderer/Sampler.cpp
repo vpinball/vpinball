@@ -10,6 +10,28 @@
 #include <bx/readerwriter.h>
 #include <bx/endian.h>
 #include <bx/math.h>
+
+namespace
+{
+bgfx::TextureFormat::Enum UncompressedBgfxFormat(BaseTexture::Format format)
+{
+   switch (format)
+   {
+   case BaseTexture::BW: return bgfx::TextureFormat::Enum::R8;
+   case BaseTexture::BW_FP32: return bgfx::TextureFormat::Enum::R32F;
+   case BaseTexture::RGB: return bgfx::TextureFormat::Enum::RGB8;
+   case BaseTexture::SRGB: return bgfx::TextureFormat::Enum::RGBA8;
+   case BaseTexture::RGBA: return bgfx::TextureFormat::Enum::RGBA8;
+   case BaseTexture::SRGBA: return bgfx::TextureFormat::Enum::RGBA8;
+   case BaseTexture::SRGB565: return bgfx::TextureFormat::Enum::RGBA8;
+   case BaseTexture::RGB_FP16: return bgfx::TextureFormat::Enum::RGBA16F;
+   case BaseTexture::RGBA_FP16: return bgfx::TextureFormat::Enum::RGBA16F;
+   case BaseTexture::RGB_FP32: return bgfx::TextureFormat::Enum::RGBA32F;
+   case BaseTexture::RGBA_FP32: return bgfx::TextureFormat::Enum::RGBA32F;
+   default: assert(false); return bgfx::TextureFormat::Enum::RGBA8; // Unsupported texture format
+   }
+}
+}
 #endif
 
 Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
@@ -25,23 +47,7 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
 
 #if defined(ENABLE_BGFX)
    m_usePrecompressed = surf->m_compressed && m_rd->m_compressTextures;
-   if (m_usePrecompressed)
-      m_bgfx_format = surf->m_compressed->format;
-   else switch (surf->m_format)
-   {
-   case BaseTexture::BW: m_bgfx_format = bgfx::TextureFormat::Enum::R8; break;
-   case BaseTexture::BW_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::R32F; break;
-   case BaseTexture::RGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
-   case BaseTexture::SRGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
-   case BaseTexture::RGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
-   case BaseTexture::SRGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
-   case BaseTexture::SRGB565: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
-   case BaseTexture::RGB_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
-   case BaseTexture::RGBA_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
-   case BaseTexture::RGB_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; break;
-   case BaseTexture::RGBA_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; break;
-   default: assert(false); // Unsupported texture format
-   }
+   m_bgfx_format = m_usePrecompressed ? surf->m_compressed->format : UncompressedBgfxFormat(surf->m_format);
    UpdateTexture(surf, force_linear_rgb);
 
 #elif defined(ENABLE_OPENGL)
@@ -434,18 +440,36 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    m_isTextureUpdateLinear = BaseTexture::IsLinearFormat(surf->m_format) || force_linear_rgb;
    if (m_usePrecompressed)
    {
-      delete ref;
       std::shared_ptr<const CompressedTexture> compressed = surf->m_compressed;
       if (compressed == nullptr || compressed->format != m_bgfx_format || compressed->width != m_width || compressed->height != m_height)
          compressed = TextureCompressor::Compress(*surf, m_bgfx_format);
-      if (compressed == nullptr)
+      if (compressed != nullptr)
       {
+         delete ref;
+         m_compressed = compressed;
+         m_compressedUploadPending = true;
+         return;
+      }
+      if (surf->datac() == nullptr)
+      {
+         // Compressed-only texture we can neither reuse nor recompress: nothing uploadable, keep previous content
+         delete ref;
          PLOGE << "Failed to update compressed texture '" << m_name << '\'';
          return;
       }
-      m_compressed = compressed;
-      m_compressedUploadPending = true;
-      return;
+      // Compression is unsupported for this texture: permanently fall back to plain uncompressed uploads
+      PLOGW << "Texture '" << m_name << "' cannot be compressed, falling back to uncompressed upload";
+      m_usePrecompressed = false;
+      m_compressed = nullptr;
+      m_compressedUploadPending = false;
+      m_bgfx_format = UncompressedBgfxFormat(surf->m_format);
+      // Previous GPU textures were created with the compressed format, they must be recreated
+      if (bgfx::isValid(m_mipsTexture))
+         bgfx::destroy(m_mipsTexture);
+      m_mipsTexture = BGFX_INVALID_HANDLE;
+      if (bgfx::isValid(m_nomipsTexture))
+         bgfx::destroy(m_nomipsTexture);
+      m_nomipsTexture = BGFX_INVALID_HANDLE;
    }
    switch (surf->m_format)
    {
