@@ -18,6 +18,7 @@ if(PLATFORM STREQUAL "windows")
    set_source_files_properties(
       third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
       third-party/include/hidapi/windows/hid.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+      third-party/include/bc7e/basisu_bc7e_scalar.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON
    )
 
    set_source_files_properties(

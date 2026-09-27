@@ -11,6 +11,7 @@
 #include <bx/error.h>
 #include <bimg/bimg.h>
 #include <bimg/encode.h>
+#include <bc7e/basisu_bc7e_scalar.h>
 
 #include <atomic>
 #include <chrono>
@@ -75,6 +76,12 @@ namespace
    std::atomic<uint64_t> s_loadMs = 0;
    std::atomic<uint64_t> s_rawBytes = 0;
    std::atomic<uint64_t> s_compressedBytes = 0;
+
+   const bool s_bc7eInit = []()
+   {
+      bc7e_scalar::bc7e_compress_block_init();
+      return true;
+   }();
 
    float s_srgbToLinear[256];
    const bool s_lutInit = []()
@@ -360,6 +367,8 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
 
    bx::DefaultAllocator allocator;
    bx::Error err;
+   bc7e_scalar::bc7e_compress_block_params bc7eParams;
+   bc7e_scalar::bc7e_compress_block_params_init_fast(&bc7eParams, isSrgb);
    vector<uint8_t> mipA, mipB;
    const uint8_t* src = static_cast<const uint8_t*>(converted ? converted->datac() : tex.datac());
    unsigned int w = tex.width(), h = tex.height();
@@ -378,19 +387,20 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
       }
       if (format == bgfx::TextureFormat::BC7)
       {
-         // BC7 is only encodable from RGBA32F input, and the NVTT encoder reads whole 4x4 tiles:
-         // pad to the block size with clamped edge pixels to avoid an out of bounds read
-         const unsigned int pw = (w + 3) & ~3u, ph = (h + 3) & ~3u;
-         vector<float> rgba32f(static_cast<size_t>(pw) * ph * 4);
-         for (unsigned int y = 0; y < ph; y++)
-            for (unsigned int x = 0; x < pw; x++)
-            {
-               const uint8_t* s = &src[(min(y, h - 1) * w + min(x, w - 1)) * 4];
-               float* d = &rgba32f[(static_cast<size_t>(y) * pw + x) * 4];
-               for (int c = 0; c < 4; c++)
-                  d[c] = s[c] * (1.f / 255.f);
-            }
-         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, rgba32f.data(), pw, ph, 1, bimg::TextureFormat::BC7, bimg::Quality::Fastest, &err);
+         // bc7e takes one 4x4 RGBA block per output block: extract with clamped edge pixels
+         // (NVTT's encoder is far slower and reads out of bounds on partial edge tiles)
+         const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
+         vector<uint32_t> blockPixels(static_cast<size_t>(bw) * bh * 16);
+         uint32_t* bp = blockPixels.data();
+         for (unsigned int by = 0; by < bh; by++)
+            for (unsigned int bx = 0; bx < bw; bx++)
+               for (unsigned int py = 0; py < 4; py++)
+                  for (unsigned int px = 0; px < 4; px++)
+                  {
+                     const uint8_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 4];
+                     *bp++ = s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24);
+                  }
+         bc7e_scalar::bc7e_compress_blocks(bw * bh, reinterpret_cast<uint64_t*>(result->data.data() + offset), blockPixels.data(), &bc7eParams);
       }
       else
          bimg::imageEncodeFromRgba8(&allocator, result->data.data() + offset, src, w, h, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
