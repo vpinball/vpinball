@@ -303,8 +303,18 @@ static std::shared_ptr<const CompressedTexture> CompressHdr(const BaseTexture& t
       }
       else if (format == bgfx::TextureFormat::BC6H || format == bgfx::TextureFormat::BC7)
       {
+         // The NVTT encoder reads whole 4x4 tiles: pad the input to the block size with clamped edge pixels to avoid an out of bounds read
+         const unsigned int pw = (w + 3) & ~3u, ph = (h + 3) & ~3u;
+         vector<float> padded;
+         if (pw != w || ph != h)
+         {
+            padded.resize(static_cast<size_t>(pw) * ph * 4);
+            for (unsigned int y = 0; y < ph; y++)
+               for (unsigned int x = 0; x < pw; x++)
+                  memcpy(&padded[(static_cast<size_t>(y) * pw + x) * 4], &src[(min(y, h - 1) * w + min(x, w - 1)) * 4], 4 * sizeof(float));
+         }
          bx::Error err;
-         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, src, w, h, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
+         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, padded.empty() ? src : padded.data(), pw, ph, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
          ok = err.isOk();
       }
       else
@@ -368,11 +378,19 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
       }
       if (format == bgfx::TextureFormat::BC7)
       {
-         // BC7 is only encodable from RGBA32F input
-         vector<float> rgba32f(static_cast<size_t>(w) * h * 4);
-         for (size_t i = 0; i < rgba32f.size(); i++)
-            rgba32f[i] = src[i] * (1.f / 255.f);
-         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, rgba32f.data(), w, h, 1, bimg::TextureFormat::BC7, bimg::Quality::Fastest, &err);
+         // BC7 is only encodable from RGBA32F input, and the NVTT encoder reads whole 4x4 tiles:
+         // pad to the block size with clamped edge pixels to avoid an out of bounds read
+         const unsigned int pw = (w + 3) & ~3u, ph = (h + 3) & ~3u;
+         vector<float> rgba32f(static_cast<size_t>(pw) * ph * 4);
+         for (unsigned int y = 0; y < ph; y++)
+            for (unsigned int x = 0; x < pw; x++)
+            {
+               const uint8_t* s = &src[(min(y, h - 1) * w + min(x, w - 1)) * 4];
+               float* d = &rgba32f[(static_cast<size_t>(y) * pw + x) * 4];
+               for (int c = 0; c < 4; c++)
+                  d[c] = s[c] * (1.f / 255.f);
+            }
+         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, rgba32f.data(), pw, ph, 1, bimg::TextureFormat::BC7, bimg::Quality::Fastest, &err);
       }
       else
          bimg::imageEncodeFromRgba8(&allocator, result->data.data() + offset, src, w, h, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
