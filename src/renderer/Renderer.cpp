@@ -1518,7 +1518,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::staticColor_Alpha,
       m_segUnlitColor[profile].x, m_segUnlitColor[profile].y, m_segUnlitColor[profile].z, // Unlit segment color (ambient)
       static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
-   m_renderDevice->m_DMDShader->SetFloat4v(ShaderUniform::alphaSegState, reinterpret_cast<const vec4*>(segs), 4);
+   m_renderDevice->m_DMDShader->SetFloat4v(ShaderUniform::alphaSegState, segs, 4);
    m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::displayTex, segSDF, true, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
    m_renderDevice->m_DMDShader->SetTechnique(ShaderTechnique::display_Seg_world);
 }

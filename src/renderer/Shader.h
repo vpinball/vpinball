@@ -552,6 +552,7 @@ public:
    void SetVector(const ShaderUniform uniformName, const float x, const float y, const float z, const float w);
    vec4 GetVector(const ShaderUniform uniformName) const;
    void SetFloat4v(const ShaderUniform uniformName, const vec4* const pData, const unsigned int count);
+   void SetFloat4v(const ShaderUniform uniformName, const float* const pData, const unsigned int count);
    void SetTexture(const ShaderUniform uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
       const SamplerAddressMode clampU = SamplerAddressMode::SA_UNDEFINED, const SamplerAddressMode clampV = SamplerAddressMode::SA_UNDEFINED);
    void SetTexture(const ShaderUniform uniformName, ITexManCacheable* const texel, const bool force_linear_rgb = false, const SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
