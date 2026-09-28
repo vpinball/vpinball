@@ -678,7 +678,7 @@ void InGameUIPage::Render(float elapsedS)
          switch (item->m_labelType)
          {
          case InGameUIItem::LabelType::Info:
-            ImGui::Text("%s", item->m_label.c_str());
+            ImGui::TextWrapped("%s", item->m_label.c_str());
             ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
             break;
          case InGameUIItem::LabelType::Header:

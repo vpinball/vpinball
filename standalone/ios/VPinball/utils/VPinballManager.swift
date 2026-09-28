@@ -12,8 +12,7 @@ class VPinballManager {
             let event = VPinballEvent(rawValue: value)
             switch event {
             case .extractScript,
-                 .loading,
-                 .prerendering:
+                 .loading:
                 if let data = data {
                     let json = String(cString: UnsafePointer<CChar>(data))
                     if let jsonData = json.data(using: .utf8),
@@ -22,26 +21,31 @@ class VPinballManager {
                     {
                         let progress = progressData.progress
                         let eventName = event?.name
-                        Task { @MainActor in
+                        VPinballManager.runOnMain {
                             if let name = eventName {
                                 VPinballModel.shared.updateHUD(progress: progress,
                                                                status: name)
                             } else {
                                 VPinballModel.shared.updateHUD(progress: progress)
                             }
-                            CATransaction.flush()
                         }
                     }
                 }
-            case .playerStarted:
-                Task { @MainActor in
+            case .playerReady:
+                VPinballManager.runOnMain {
                     VPinballModel.shared.isPlaying = true
+                    VPinballModel.shared.hideHUD()
+                }
+            case .playerFailed:
+                Task { @MainActor in
+                    VPinballManager.onPlayerFailed(message: "Unable to load table")
                 }
             case .playerClosed:
                 Task { @MainActor in
                     let table = VPinballModel.shared.activeTable
                     VPinballModel.shared.activeTable = nil
                     VPinballModel.shared.isPlaying = false
+                    VPinballModel.shared.hideHUD()
                     MainViewModel.shared.setAction(.stopped)
 
                     if let table {
@@ -93,6 +97,15 @@ class VPinballManager {
         })
     }
 
+    private static func runOnMain(_ body: @escaping @MainActor () -> Void) {
+        if Thread.isMainThread {
+            MainActor.assumeIsolated(body)
+            CATransaction.flush()
+        } else {
+            Task { @MainActor in body() }
+        }
+    }
+
     static func log(_ level: VPinballLogLevel, _ message: String) {
         VPinballLog(level.rawValue, message.cstring)
     }
@@ -137,9 +150,9 @@ class VPinballManager {
         VPinballSaveValueString(section.rawValue.cstring, key.cstring, value.cstring)
     }
 
-    func play(table: Table) async -> Bool {
+    func play(table: Table) async {
         if await MainActor.run(body: { VPinballModel.shared.activeTable != nil }) {
-            return false
+            return
         }
 
         await MainActor.run {
@@ -151,48 +164,23 @@ class VPinballManager {
                                          status: "Launching")
         }
 
-        var success = true
-
-        if let tablePath = await TableManager.shared.getLoadedTablePath(table: table) {
-            if await Task.detached(
-                priority: .userInitiated,
-                operation: { [tablePath] in
-                    VPinballStatus(rawValue: VPinballLoadTable(tablePath.cstring))
-                }
-            ).value == .success {
-                if await MainActor.run(body: { VPinballStatus(rawValue: VPinballPlay()) }) != .success {
-                    try? await Task.sleep(nanoseconds: 500_000_000)
-
-                    await MainActor.run { VPinballModel.shared.activeTable = nil }
-
-                    success = false
-
-                    VPinballManager.log(.error, "unable to start table")
-                }
-            } else {
-                try? await Task.sleep(nanoseconds: 500_000_000)
-
-                await MainActor.run { VPinballModel.shared.activeTable = nil }
-
-                success = false
-
-                VPinballManager.log(.error, "unable to load table")
-            }
-
-            await MainActor.run {
-                VPinballModel.shared.hideHUD()
-            }
-
-            return success
-        } else {
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            await MainActor.run {
-                VPinballModel.shared.activeTable = nil
-                VPinballModel.shared.hideHUD()
-            }
-            VPinballManager.log(.error, "unable to stage table")
-            return false
+        if let tablePath = await TableManager.shared.getLoadedTablePath(table: table),
+           await MainActor.run(body: { VPinballStatus(rawValue: VPinballPlay(tablePath.cstring)) }) == .success
+        {
+            return
         }
+
+        VPinballManager.log(.error, "unable to play table")
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        await VPinballManager.onPlayerFailed(message: "Unable to load table")
+    }
+
+    @MainActor
+    static func onPlayerFailed(message: String) {
+        VPinballModel.shared.activeTable = nil
+        VPinballModel.shared.isPlaying = false
+        VPinballModel.shared.hideHUD()
+        MainViewModel.shared.handleShowError(message: message)
     }
 
     func stop() {

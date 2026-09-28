@@ -11,13 +11,17 @@ static bool IsExcludedPath(const string& path)
    return path.rfind("__MACOSX", 0) == 0 || path.find("/__MACOSX") != string::npos;
 }
 
+static bool IsExcludedFromZip(const std::filesystem::path& relativePath)
+{
+   return IsExcludedPath(relativePath.string()) || (!relativePath.empty() && *relativePath.begin() == "cache");
+}
+
 static int CountEntriesInDirectory(const std::filesystem::path& dirPath)
 {
    int count = 0;
    std::error_code ec;
    for (auto it = std::filesystem::recursive_directory_iterator(dirPath, ec); !ec && it != std::filesystem::recursive_directory_iterator(); it.increment(ec)) {
-      const string relativePath = std::filesystem::relative(it->path(), dirPath, ec).string();
-      if (!IsExcludedPath(relativePath))
+      if (!IsExcludedFromZip(std::filesystem::relative(it->path(), dirPath, ec)))
          count++;
    }
    return count;
@@ -51,10 +55,15 @@ bool ZipUtils::Zip(const std::filesystem::path& sourcePath, const std::filesyste
 
    for (auto it = std::filesystem::recursive_directory_iterator(sourcePath, ec); !ec && it != std::filesystem::recursive_directory_iterator(); it.increment(ec)) {
       const auto& entry = *it;
-      const string relativePath = std::filesystem::relative(entry.path(), sourcePath, ec).string();
+      const std::filesystem::path relative = std::filesystem::relative(entry.path(), sourcePath, ec);
 
-      if (IsExcludedPath(relativePath))
+      if (IsExcludedFromZip(relative)) {
+         if (entry.is_directory(ec))
+            it.disable_recursion_pending();
          continue;
+      }
+
+      const string relativePath = relative.string();
 
       if (entry.is_directory(ec)) {
          const string dirPath = relativePath + "/";

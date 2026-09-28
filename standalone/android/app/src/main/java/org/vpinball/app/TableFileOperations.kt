@@ -172,11 +172,7 @@ class TableFileOperations(private val getTablesPath: () -> String) {
         return files
     }
 
-    fun copyDirectory(from: String, to: String, onProgress: ((Int, String) -> Unit)? = null): Boolean {
-        if (SAFFileSystem.isSAFPath(from) && !SAFFileSystem.isSAFPath(to)) {
-            return SAFFileSystem.copyToFilesystem(toRelativePath(from), to, onProgress)
-        }
-
+    fun copyDirectory(from: String, to: String): Boolean {
         if (!SAFFileSystem.isSAFPath(from) && SAFFileSystem.isSAFPath(to)) {
             return SAFFileSystem.copyDirectory(from, toRelativePath(to))
         }

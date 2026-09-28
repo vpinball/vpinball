@@ -398,10 +398,6 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
 
    PLOGI << "Startup done"; // For profiling
 
-#ifdef __LIBVPINBALL__
-   VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PLAYER_STARTED, nullptr);
-#endif
-
 #ifdef _MSC_VER
    LockForegroundWindow(true);
    // Broadcast a message to notify front-ends that it is time to reveal the playfield.
@@ -1423,10 +1419,6 @@ Player::~Player()
 
    SDL_ShowCursor();
    PLOGI << "Player closed.";
-
-#ifdef __LIBVPINBALL__
-   VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PLAYER_CLOSED, nullptr);
-#endif
 }
 
 void Player::InitFPS()

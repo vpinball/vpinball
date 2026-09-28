@@ -95,9 +95,9 @@ enum class VPinballEvent(val value: Int) {
     INIT_COMPLETE(0),
     EXTRACT_SCRIPT(1),
     LOADING(2),
-    PRERENDERING(3),
-    PLAYER_STARTED(4),
-    PLAYER_CLOSED(5),
+    PLAYER_READY(3),
+    PLAYER_CLOSED(4),
+    PLAYER_FAILED(5),
     WEB_SERVER(6),
     COMMAND(7);
 
@@ -106,7 +106,6 @@ enum class VPinballEvent(val value: Int) {
             when (this) {
                 EXTRACT_SCRIPT -> "Extracting Script"
                 LOADING -> "Loading"
-                PRERENDERING -> "Prerendering Static Parts"
                 else -> null
             }
 }

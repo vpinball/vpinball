@@ -263,7 +263,7 @@ object SAFFileSystem {
                     currentUri = foundUri
                 } else if (createIfMissing) {
                     val mimeType =
-                        if (isLastSegment && segment.contains(".")) {
+                        if (isLastSegment) {
                             "application/octet-stream"
                         } else {
                             DocumentsContract.Document.MIME_TYPE_DIR
@@ -298,116 +298,73 @@ object SAFFileSystem {
         }
     }
 
-    fun copyToFilesystem(relativePath: String, destPath: String, onProgress: ((Int, String) -> Unit)? = null): Boolean {
-        val uri = getExternalStorageUri()
-        if (uri == null) {
+    data class TreeEntry(val uri: Uri, val size: Long, val lastModified: Long)
+
+    fun listTree(relativePath: String): Map<String, TreeEntry>? {
+        val treeUri = getExternalStorageUri()
+        if (treeUri == null) {
             VPinballManager.log(VPinballLogLevel.ERROR, "No external storage URI")
-            return false
+            return null
         }
 
-        var totalFiles: Int
-        var copiedFiles = 0
+        val rootUri = buildDocumentUri(treeUri, relativePath)
+        if (rootUri == null) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Source not found: $relativePath")
+            return null
+        }
 
-        fun countFiles(srcRelPath: String): Int {
-            val srcUri = buildDocumentUri(uri, srcRelPath) ?: return 0
-            var count = 0
+        val projection =
+            arrayOf(
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_SIZE,
+                DocumentsContract.Document.COLUMN_LAST_MODIFIED,
+            )
+        val entries = mutableMapOf<String, TreeEntry>()
 
-            try {
-                context.contentResolver.query(srcUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
-                        val mimeType = cursor.getString(mimeIndex)
-
-                        if (mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
-                            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(srcUri))
-
-                            context.contentResolver
-                                .query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
-                                ?.use { childCursor ->
-                                    val nameIndex = childCursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-
-                                    while (childCursor.moveToNext()) {
-                                        val name = childCursor.getString(nameIndex)
-                                        val childPath = if (srcRelPath.isEmpty()) name else "$srcRelPath/$name"
-                                        count += countFiles(childPath)
-                                    }
-                                }
-                        } else {
-                            count = 1
-                        }
+        fun scan(documentId: String, path: String) {
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, documentId)
+            val cursor =
+                context.contentResolver.query(childrenUri, projection, null, null, null) ?: throw IllegalStateException("Failed to list: $path")
+            cursor.use {
+                val idIndex = it.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+                val nameIndex = it.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                val mimeIndex = it.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+                val sizeIndex = it.getColumnIndex(DocumentsContract.Document.COLUMN_SIZE)
+                val modifiedIndex = it.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED)
+                while (it.moveToNext()) {
+                    val childId = it.getString(idIndex)
+                    val name = it.getString(nameIndex)
+                    val childPath = if (path.isEmpty()) name else "$path/$name"
+                    if (it.getString(mimeIndex) == DocumentsContract.Document.MIME_TYPE_DIR) {
+                        scan(childId, childPath)
+                    } else {
+                        val size = if (sizeIndex >= 0 && !it.isNull(sizeIndex)) it.getLong(sizeIndex) else -1L
+                        val modified = if (modifiedIndex >= 0 && !it.isNull(modifiedIndex)) it.getLong(modifiedIndex) else 0L
+                        entries[childPath] = TreeEntry(DocumentsContract.buildDocumentUriUsingTree(treeUri, childId), size, modified)
                     }
                 }
-            } catch (e: Exception) {
-                VPinballManager.log(VPinballLogLevel.ERROR, "Exception: ${e.message}")
             }
-
-            return count
         }
 
-        totalFiles = countFiles(relativePath)
-        onProgress?.invoke(0, "Copying table files... (0/$totalFiles)")
-
-        fun copyRecursive(srcRelPath: String, dstPath: String): Boolean {
-            val srcUri = buildDocumentUri(uri, srcRelPath)
-            if (srcUri == null) {
-                VPinballManager.log(VPinballLogLevel.ERROR, "Source not found: $srcRelPath")
-                return false
-            }
-
-            try {
-                context.contentResolver.query(srcUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
-                        val mimeType = cursor.getString(mimeIndex)
-
-                        if (mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
-                            File(dstPath).mkdirs()
-
-                            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(srcUri))
-
-                            context.contentResolver
-                                .query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
-                                ?.use { childCursor ->
-                                    val nameIndex = childCursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-
-                                    while (childCursor.moveToNext()) {
-                                        val name = childCursor.getString(nameIndex)
-                                        val childSrcPath = if (srcRelPath.isEmpty()) name else "$srcRelPath/$name"
-                                        val childDstPath = "$dstPath/$name"
-
-                                        if (!copyRecursive(childSrcPath, childDstPath)) {
-                                            return false
-                                        }
-                                    }
-                                }
-
-                            return true
-                        } else {
-                            context.contentResolver.openInputStream(srcUri)?.use { input ->
-                                FileOutputStream(dstPath).use { output -> input.copyTo(output) }
-                            }
-                            copiedFiles++
-                            val progressPercent = if (totalFiles > 0) (copiedFiles * 100) / totalFiles else 0
-                            onProgress?.invoke(progressPercent, "Copying table files... ($copiedFiles/$totalFiles)")
-                            return true
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                VPinballManager.log(VPinballLogLevel.ERROR, "Exception: ${e.message}")
-                return false
-            }
-
-            return false
+        return try {
+            scan(DocumentsContract.getDocumentId(rootUri), "")
+            entries
+        } catch (e: Exception) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to list $relativePath: ${e.message}")
+            null
         }
+    }
 
-        val result = copyRecursive(relativePath, destPath)
-
-        if (result) {
-            onProgress?.invoke(100, "Copy complete")
+    fun copyToFile(uri: Uri, dest: File): Boolean {
+        return try {
+            dest.parentFile?.mkdirs()
+            context.contentResolver.openInputStream(uri)?.use { input -> FileOutputStream(dest).use { output -> input.copyTo(output) } } != null
+        } catch (e: Exception) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy ${dest.name}: ${e.message}")
+            false
         }
-
-        return result
     }
 
     fun copyDirectory(sourcePath: String, destPath: String): Boolean {

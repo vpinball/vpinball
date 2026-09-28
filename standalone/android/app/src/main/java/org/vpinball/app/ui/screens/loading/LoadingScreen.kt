@@ -7,13 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.painterResource
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.vpinball.app.R
@@ -25,19 +24,19 @@ import org.vpinball.app.util.loadImage
 
 @Composable
 fun LoadingScreen(table: Table, progress: Int, status: String?, modifier: Modifier = Modifier) {
-    val hazeState = remember { HazeState() }
+    val hazeState = rememberHazeState()
 
     val bitmap by
         produceState<ImageBitmap?>(null, table.uuid, table.image, table.modifiedAt) { value = withContext(Dispatchers.IO) { table.loadImage() } }
 
     Box(modifier = modifier.fillMaxSize().background(Color.LightBlack)) {
         if (bitmap != null) {
-            Image(bitmap = bitmap!!, contentDescription = null, modifier = Modifier.fillMaxSize().haze(state = hazeState))
+            Image(bitmap = bitmap!!, contentDescription = null, modifier = Modifier.fillMaxSize().hazeSource(hazeState))
         } else {
             Image(
                 painter = painterResource(R.drawable.img_table_placeholder),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize().haze(state = hazeState).drawWithGradient(),
+                modifier = Modifier.fillMaxSize().hazeSource(hazeState).drawWithGradient(),
             )
         }
 

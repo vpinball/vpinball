@@ -714,6 +714,28 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
       if (!m_framePending)
          continue;
 
+#if defined(__ANDROID__)
+      void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+      if (nwh == nullptr)
+      {
+         std::lock_guard lock(m_frameMutex);
+         m_renderFrame->Discard();
+         m_frameNoPresent = false;
+         m_framePending = false;
+         continue;
+      }
+      static void* prevNwh = init.swapChain.nwh;
+      if (nwh != prevNwh)
+      {
+         prevNwh = nwh;
+         bgfx::SwapChain swapChain = init.swapChain;
+         swapChain.width = m_outputWnd[0]->GetBackBuffer()->GetWidth();
+         swapChain.height = m_outputWnd[0]->GetBackBuffer()->GetHeight();
+         swapChain.nwh = nwh;
+         bgfx::reset(init.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), &swapChain);
+      }
+#endif
+
       if (m_frameNoPresent)
       {
          std::lock_guard lock(m_frameMutex);
@@ -776,20 +798,6 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          
       // Handle backbuffer resize, surface lost and VSync toggling
       {
-#if defined(__ANDROID__)
-         void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-         static void* prevNwh = nwh;
-         if (nwh != prevNwh)
-         {
-            prevNwh = nwh;
-            if (nwh == nullptr)
-               continue;
-
-            bgfxVSync = !needsVSync; // Force reset (which will apply the new native window handle) by making VSync state appear changed
-         }
-         if (nwh == nullptr)
-            continue;
-#endif
          if (bgfxVSync != needsVSync)
          {
             bgfxVSync = needsVSync;
@@ -860,6 +868,9 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
                   bgfx::SwapChain swapChain = init.swapChain;
                   swapChain.width = windowWidth;
                   swapChain.height = windowHeight;
+#if defined(__ANDROID__)
+                  swapChain.nwh = nwh;
+#endif
                   bgfx::reset(init.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), &swapChain);
                   m_outputWnd[0]->GetBackBuffer()->SetSize(windowWidth, windowHeight);
                }

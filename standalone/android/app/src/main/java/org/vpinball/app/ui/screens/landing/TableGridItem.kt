@@ -27,11 +27,12 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dev.chrisbanes.haze.HazeDefaults
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.HazeInput
+import dev.chrisbanes.haze.blur.HazeBlurStyle
+import dev.chrisbanes.haze.blur.HazeColorEffect
+import dev.chrisbanes.haze.blur.hazeBlur
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import org.vpinball.app.Table
 
 @Composable
@@ -50,7 +51,7 @@ fun TableGridItem(
     val contextMenuExpanded = remember { mutableStateOf(false) }
     var globalTouchOffset by remember { mutableStateOf(Offset.Zero) }
 
-    val hazeState = remember { HazeState() }
+    val hazeState = rememberHazeState()
 
     Box {
         Box(
@@ -73,16 +74,23 @@ fun TableGridItem(
                         globalTouchOffset = layoutCoordinates.localToRoot(globalTouchOffset)
                     }
         ) {
-            Column(modifier = Modifier.haze(state = hazeState)) { TableImageView(table = table) }
+            Column(modifier = Modifier.hazeSource(hazeState)) { TableImageView(table = table) }
 
             Box(
                 modifier =
-                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(6.dp)).hazeChild(state = hazeState) {
-                        backgroundColor = Color.Black
-                        tints = listOf(HazeTint(Color.White.copy(alpha = 0.1f)))
-                        blurRadius = 40.dp
-                        noiseFactor = HazeDefaults.noiseFactor
-                    }
+                    Modifier.align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .hazeBlur(
+                            input = HazeInput.Sources(hazeState),
+                            style =
+                                HazeBlurStyle {
+                                    blurRadius(40.dp)
+                                    backgroundColor(Color.Black)
+                                    colorEffects(listOf(HazeColorEffect.tint(Color.White.copy(alpha = 0.1f))))
+                                    noiseFactor(0.15f)
+                                },
+                        )
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 7.dp, vertical = 5.dp),

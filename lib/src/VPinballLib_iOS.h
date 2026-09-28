@@ -18,6 +18,7 @@ void VPinball_CallIOSOpenURLHandler(const char* url);
 namespace VPinballLib {
 
 bool InitIOS(void* pWindow);
+void PumpIOSEvents();
 
 }
 #endif
