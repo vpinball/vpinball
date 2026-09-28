@@ -11,7 +11,8 @@
 #include <bx/error.h>
 #include <bimg/bimg.h>
 #include <bimg/encode.h>
-#include <bc7e/basisu_bc7e_scalar.h>
+#include <bc6h/basisu_bc6h.h>
+#include <bc7f/basisu_bc7f.h>
 #include <miniz/miniz.h>
 
 #include <atomic>
@@ -43,7 +44,7 @@ namespace
       {
       case bgfx::TextureFormat::BC1:
       case bgfx::TextureFormat::BC3:
-      case bgfx::TextureFormat::BC6H:
+      case bgfx::TextureFormat::BC6HU:
       case bgfx::TextureFormat::BC7:
       case bgfx::TextureFormat::ASTC4x4:
       case bgfx::TextureFormat::ASTC6x6:
@@ -80,9 +81,10 @@ namespace
       return result;
    }
 
-   const bool s_bc7eInit = []()
+   const bool s_encodersInit = []()
    {
-      bc7e_scalar::bc7e_compress_block_init();
+      basist::bc7f::init();
+      basist::astc_6x6_hdr::fast_encode_bc6h_init();
       return true;
    }();
 
@@ -199,12 +201,12 @@ namespace
    bgfx::TextureFormat::Enum TextureCompressor::SelectFormatFor(BaseTexture::Format srcFormat, bool opaque, unsigned int width, unsigned int height)
    {
       // Selection logic:
-      // - Desktop: BC7/BC6H, BC3/BC1 as a fallback. Sadly NVTT BC6H compression is too slow to be used in production
+      // - Desktop: BC7/BC6HU, BC3/BC1 as a fallback.
       // - Mobile: ASTC 4x4 (equiv as BC7), could use ASTC 5x5, ASTC 6x6, ASTC 8x8 or even ASTC 10x10/12x12 as a user selection for highly memory constrained devices
       // - Mobile Legacy: ETC2/ETC2A as a fallback format
       if (IsHdr(srcFormat))
       {
-         for (const auto format : { /* bgfx::TextureFormat::BC6H,*/ bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
+         for (const auto format : { bgfx::TextureFormat::BC6HU, bgfx::TextureFormat::RGB9E5F, bgfx::TextureFormat::RG11B10F })
             if (IsFormatUsable(format, width, height, false))
                return format;
       }
@@ -316,21 +318,39 @@ static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& t
          }
          ok = true;
       }
-      else if (format == bgfx::TextureFormat::BC6H || format == bgfx::TextureFormat::BC7)
+      else if (format == bgfx::TextureFormat::BC6HU)
       {
-         // The NVTT encoder reads whole 4x4 tiles: pad the input to the block size with clamped edge pixels to avoid an out of bounds read
-         const unsigned int pw = (w + 3) & ~3u, ph = (h + 3) & ~3u;
-         vector<float> padded;
-         if (pw != w || ph != h)
+         // bc6hf takes one 4x4 RGB half-float block per output block: extract with clamped edge pixels
+         const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
+         vector<basist::half_float> blockPixels(static_cast<size_t>(bw) * bh * 48);
+         basist::half_float* bp = blockPixels.data();
+         for (unsigned int by = 0; by < bh; by++)
+            for (unsigned int bx = 0; bx < bw; bx++)
+               for (unsigned int py = 0; py < 4; py++)
+                  for (unsigned int px = 0; px < 4; px++)
+                  {
+                     const float* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 4];
+                     for (int c = 0; c < 3; c++)
+                     {
+                        // Bit test for Inf/NaN on purpose: the GNU build uses -ffast-math which makes isfinite() unreliable
+                        const float v = s[c];
+                        uint32_t bits;
+                        memcpy(&bits, &v, sizeof(bits));
+                        const float clamped = (bits & 0x7F800000u) == 0x7F800000u ? 0.f : clamp(v, 0.f, static_cast<float>(basist::MAX_HALF_FLOAT));
+                        *bp++ = float2half(clamped == 0.f ? 0.f : clamped); // normalize -0.0f to +0.0f: half 0x8000 is signed and rejected by the encoder
+                     }
+                  }
+         // Encode one row of blocks at a time to be able to abort an ongoing compression
+         const basist::astc_6x6_hdr::fast_bc6h_params params;
+         basist::bc6h_block* const dst = reinterpret_cast<basist::bc6h_block*>(result->data.data() + offset);
+         for (unsigned int by = 0; by < bh; by++)
          {
-            padded.resize(static_cast<size_t>(pw) * ph * 4);
-            for (unsigned int y = 0; y < ph; y++)
-               for (unsigned int x = 0; x < pw; x++)
-                  memcpy(&padded[(static_cast<size_t>(y) * pw + x) * 4], &src[(min(y, h - 1) * w + min(x, w - 1)) * 4], 4 * sizeof(float));
+            if (isCompressionDiscarded && isCompressionDiscarded())
+               return nullptr;
+            for (unsigned int bx = 0; bx < bw; bx++)
+               basist::astc_6x6_hdr::fast_encode_bc6h(blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 48, dst + static_cast<size_t>(by) * bw + bx, params);
          }
-         bx::Error err;
-         bimg::imageEncodeFromRgba32f(&allocator, result->data.data() + offset, padded.empty() ? src : padded.data(), pw, ph, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
-         ok = err.isOk();
+         ok = true;
       }
       else
          ok = bimg::imageConvert(&allocator, result->data.data() + offset, static_cast<bimg::TextureFormat::Enum>(format), src, bimg::TextureFormat::RGBA32F, w, h, 1);
@@ -375,8 +395,6 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
 
    bx::DefaultAllocator allocator;
    bx::Error err;
-   bc7e_scalar::bc7e_compress_block_params bc7eParams;
-   bc7e_scalar::bc7e_compress_block_params_init_fast(&bc7eParams, isSrgb);
    vector<uint8_t> mipA, mipB;
    const uint8_t* src = static_cast<const uint8_t*>(converted ? converted->datac() : tex.datac());
    unsigned int w = tex.width(), h = tex.height();
@@ -397,26 +415,32 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
       }
       if (format == bgfx::TextureFormat::BC7)
       {
-         // bc7e takes one 4x4 RGBA block per output block: extract with clamped edge pixels
+         // bc7f takes one 4x4 RGBA block per output block: extract with clamped edge pixels
          // (NVTT's encoder is far slower and reads out of bounds on partial edge tiles)
          const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
-         vector<uint32_t> blockPixels(static_cast<size_t>(bw) * bh * 16);
-         uint32_t* bp = blockPixels.data();
+         vector<basist::color_rgba> blockPixels(static_cast<size_t>(bw) * bh * 16);
+         basist::color_rgba* bp = blockPixels.data();
          for (unsigned int by = 0; by < bh; by++)
             for (unsigned int bx = 0; bx < bw; bx++)
                for (unsigned int py = 0; py < 4; py++)
                   for (unsigned int px = 0; px < 4; px++)
                   {
                      const uint8_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 4];
-                     *bp++ = s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24);
+                     bp->r = s[0];
+                     bp->g = s[1];
+                     bp->b = s[2];
+                     bp->a = s[3];
+                     bp++;
                   }
          // Encode one row of blocks at a time to be able to abort an ongoing compression
-         uint64_t* const dst = reinterpret_cast<uint64_t*>(result->data.data() + offset);
+         uint8_t* const dst = result->data.data() + offset;
          for (unsigned int by = 0; by < bh; by++)
          {
             if (isCompressionDiscarded && isCompressionDiscarded())
                return nullptr;
-            bc7e_scalar::bc7e_compress_blocks(bw, dst + static_cast<size_t>(by) * bw * 2, blockPixels.data() + static_cast<size_t>(by) * bw * 16, &bc7eParams);
+            for (unsigned int bx = 0; bx < bw; bx++)
+               basist::bc7f::fast_pack_bc7_auto_rgba(
+                  dst + (static_cast<size_t>(by) * bw + bx) * 16, blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 16, basist::bc7f::cPackBC7FlagDefault);
          }
       }
       else
