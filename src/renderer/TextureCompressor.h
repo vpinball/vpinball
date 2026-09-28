@@ -36,9 +36,9 @@ public:
    std::filesystem::path GetCacheFile(const Texture* image) const;
 
    // Loads an image, eventually resolving it from the compressed disk cache, otherwise decoding
-   // it and compressing the result (saved to the disk cache when enabled). startCompression is
-   // evaluated when the image is about to be compressed; returning false skips the compression.
-   std::shared_ptr<const BaseTexture> Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& startCompression);
+   // it and compressing the result (saved to the disk cache when enabled). isCompressionDiscarded is
+   // queried before and during compression; returning true skips or aborts the compression.
+   std::shared_ptr<const BaseTexture> Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& isCompressionDiscarded);
 
    static bool IsSupported(const BaseTexture& tex);
 
@@ -47,10 +47,11 @@ public:
    static const char* GetFormatName(bgfx::TextureFormat::Enum format);
 
    // Compresses a texture to the given format. Static since it is also used outside of loading
-   // sessions (runtime texture updates), where it is not accounted in the session statistics
-   static std::shared_ptr<const CompressedTexture> Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format);
+   // sessions (runtime texture updates), where it is not accounted in the session statistics.
+   // isCompressionDiscarded is queried while compressing; returning true aborts the compression.
+   static std::shared_ptr<const CompressedTexture> Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format, const std::function<bool()>& isCompressionDiscarded = nullptr);
 
-   std::shared_ptr<const CompressedTexture> LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile);
+   std::shared_ptr<const CompressedTexture> LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded = nullptr);
 
    std::shared_ptr<BaseTexture> LoadCached(const std::filesystem::path& cacheFile);
 

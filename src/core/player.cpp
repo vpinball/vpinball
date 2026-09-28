@@ -746,18 +746,22 @@ void Player::InitTableSession(const bool isInitial)
 #ifdef ENABLE_BGFX
                if (texCompressor)
                   buffer = texCompressor->Load(image, resizeOnLowMem,
-                     [this, image]()
+                     [this, image, compressionStarted = false]() mutable
                      {
                         if (m_texLoadStats.skipCompression.load(std::memory_order_relaxed))
-                           return false;
+                           return true;
+                        if (!compressionStarted)
                         {
-                           const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
-                           for (auto &[tex, compressing] : m_texLoadStats.inFlight)
-                              if (tex == image)
-                                 compressing = true;
+                           compressionStarted = true;
+                           {
+                              const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
+                              for (auto &[tex, compressing] : m_texLoadStats.inFlight)
+                                 if (tex == image)
+                                    compressing = true;
+                           }
+                           m_texLoadStats.nCompressed.fetch_add(1, std::memory_order_relaxed);
                         }
-                        m_texLoadStats.nCompressed.fetch_add(1, std::memory_order_relaxed);
-                        return true;
+                        return false;
                      });
 #endif
                if (buffer == nullptr)
