@@ -690,6 +690,8 @@ void Player::InitTableSession(const bool isInitial)
       const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->GetSettings().GetPlayer_MaxTexDimension());
       m_texLoadStats.Reset();
       m_texLoadStats.nImagesTotal = static_cast<int>(m_ptable->m_vimage.size());
+      for (const Texture *image : m_ptable->m_vimage)
+         m_texLoadStats.nPixelsTotal += static_cast<uint64_t>(image->m_width) * image->m_height;
 
 #ifdef ENABLE_BGFX
       std::unique_ptr<TextureCompressor> texCompressor;
@@ -805,6 +807,7 @@ void Player::InitTableSession(const bool isInitial)
                }
                nLoadPerformed++;
                m_texLoadStats.nImagesDone.fetch_add(1, std::memory_order_relaxed);
+               m_texLoadStats.nPixelsDone.fetch_add(static_cast<uint64_t>(image->m_width) * image->m_height, std::memory_order_relaxed);
                {
                   const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
                   std::erase_if(m_texLoadStats.inFlight, [image](const std::pair<const Texture *, bool> &e) { return e.first == image; });

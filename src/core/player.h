@@ -133,12 +133,16 @@ public:
       {
          nImagesTotal = 0;
          nImagesDone = 0;
+         nPixelsTotal = 0;
+         nPixelsDone = 0;
          nCompressed = 0;
          skipCompression = false;
          inFlight.clear();
       }
       std::atomic<int> nImagesTotal { 0 }; // Total number of images in the table
       std::atomic<int> nImagesDone { 0 }; // Images processed so far (loaded, cached, or failed)
+      std::atomic<uint64_t> nPixelsTotal { 0 }; // Sum of image sizes (width*height) in the table, used as the progress denominator
+      std::atomic<uint64_t> nPixelsDone { 0 }; // Sum of the image sizes processed so far
       std::atomic<int> nCompressed { 0 }; // Images that went through the compression path
       std::atomic<bool> skipCompression { false }; // Set by the user to discard all pending texture compressions
       std::mutex inFlightMutex;
