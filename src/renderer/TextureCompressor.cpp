@@ -27,7 +27,7 @@ namespace
    struct CacheHeader
    {
       char magic[4] = { 'V', 'P', 'X', 'T' };
-      uint32_t version = 4;
+      uint32_t version = 5;
       uint32_t format = 0;
       uint32_t srcFormat = 0;
       uint32_t opaque = 0;
@@ -555,7 +555,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
                return nullptr;
             for (unsigned int bx = 0; bx < bw; bx++)
                basist::bc7f::fast_pack_bc7_auto_rgba(
-                  dst + (static_cast<size_t>(by) * bw + bx) * 16, blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 16, basist::bc7f::cPackBC7FlagDefault);
+                  dst + (static_cast<size_t>(by) * bw + bx) * 16, blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 16, basist::bc7f::cPackBC7FlagDefault & ~basist::bc7f::cPackBC7FlagPBitOptMode6);
          }
       }
       else
