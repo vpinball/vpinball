@@ -141,11 +141,33 @@ namespace
             const unsigned int x1 = min(x * 2 + 1, sw - 1);
             const float* p[4] = { &src[(y0 * sw + x0) * 4], &src[(y0 * sw + x1) * 4], &src[(y1 * sw + x0) * 4], &src[(y1 * sw + x1) * 4] };
             float* d = &dst[(y * dw + x) * 4];
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+            const __m128 sum = _mm_add_ps(_mm_add_ps(_mm_add_ps(_mm_loadu_ps(p[0]), _mm_loadu_ps(p[1])), _mm_loadu_ps(p[2])), _mm_loadu_ps(p[3]));
+            _mm_storeu_ps(d, _mm_mul_ps(sum, _mm_set1_ps(0.25f)));
+#else
             for (int c = 0; c < 4; c++)
                d[c] = 0.25f * (p[0][c] + p[1][c] + p[2][c] + p[3][c]);
+#endif
          }
       }
    }
+
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+   // Expands a RGB half-float pixel to 4 float lanes (lane 3 is 0). Matches half2float exactly,
+   // including denormals, Inf and NaN.
+   inline __m128 Half3ToFloat(const uint16_t* s)
+   {
+      int32_t lo; // 6 byte read: avoids reading past the end of the buffer on the last pixel
+      memcpy(&lo, s, sizeof(lo));
+      const __m128i d = _mm_unpacklo_epi16(_mm_insert_epi16(_mm_cvtsi32_si128(lo), s[2], 2), _mm_setzero_si128());
+      const __m128i shifted = _mm_slli_epi32(_mm_and_si128(d, _mm_set1_epi32(0x7FFF)), 13);
+      __m128 f = _mm_mul_ps(_mm_castsi128_ps(shifted), _mm_castsi128_ps(_mm_set1_epi32(0x77800000))); // * 2^112
+      const __m128i isInfNan = _mm_cmpeq_epi32(_mm_and_si128(d, _mm_set1_epi32(0x7C00)), _mm_set1_epi32(0x7C00));
+      const __m128 fInfNan = _mm_castsi128_ps(_mm_or_si128(_mm_and_si128(shifted, _mm_set1_epi32(0x007FFFFF)), _mm_set1_epi32(0x7F800000)));
+      f = _mm_or_ps(_mm_and_ps(_mm_castsi128_ps(isInfNan), fInfNan), _mm_andnot_ps(_mm_castsi128_ps(isInfNan), f));
+      return _mm_or_ps(f, _mm_castsi128_ps(_mm_slli_epi32(_mm_and_si128(d, _mm_set1_epi32(0x8000)), 16)));
+   }
+#endif
 
    void DownsampleHalf(const uint16_t* src, unsigned int sw, unsigned int sh, uint16_t* dst, unsigned int dw, unsigned int dh)
    {
@@ -159,8 +181,16 @@ namespace
             const unsigned int x1 = min(x * 2 + 1, sw - 1);
             const uint16_t* p[4] = { &src[(y0 * sw + x0) * 3], &src[(y0 * sw + x1) * 3], &src[(y1 * sw + x0) * 3], &src[(y1 * sw + x1) * 3] };
             uint16_t* d = &dst[(y * dw + x) * 3];
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+            float f[4];
+            const __m128 sum = _mm_add_ps(_mm_add_ps(_mm_add_ps(Half3ToFloat(p[0]), Half3ToFloat(p[1])), Half3ToFloat(p[2])), Half3ToFloat(p[3]));
+            _mm_storeu_ps(f, _mm_mul_ps(sum, _mm_set1_ps(0.25f)));
+            for (int c = 0; c < 3; c++)
+               d[c] = float2half(f[c]);
+#else
             for (int c = 0; c < 3; c++)
                d[c] = float2half(0.25f * (half2float(p[0][c]) + half2float(p[1][c]) + half2float(p[2][c]) + half2float(p[3][c])));
+#endif
          }
       }
    }
