@@ -147,6 +147,24 @@ namespace
       }
    }
 
+   void DownsampleHalf(const uint16_t* src, unsigned int sw, unsigned int sh, uint16_t* dst, unsigned int dw, unsigned int dh)
+   {
+      for (unsigned int y = 0; y < dh; y++)
+      {
+         const unsigned int y0 = min(y * 2, sh - 1);
+         const unsigned int y1 = min(y * 2 + 1, sh - 1);
+         for (unsigned int x = 0; x < dw; x++)
+         {
+            const unsigned int x0 = min(x * 2, sw - 1);
+            const unsigned int x1 = min(x * 2 + 1, sw - 1);
+            const uint16_t* p[4] = { &src[(y0 * sw + x0) * 3], &src[(y0 * sw + x1) * 3], &src[(y1 * sw + x0) * 3], &src[(y1 * sw + x1) * 3] };
+            uint16_t* d = &dst[(y * dw + x) * 3];
+            for (int c = 0; c < 3; c++)
+               d[c] = float2half(0.25f * (half2float(p[0][c]) + half2float(p[1][c]) + half2float(p[2][c]) + half2float(p[3][c])));
+         }
+      }
+   }
+
    uint32_t PackRgb9E5(const float* rgb)
    {
       constexpr float maxValue = 65408.f;
@@ -254,8 +272,75 @@ const char* TextureCompressor::GetFormatName(bgfx::TextureFormat::Enum format)
    return bimg::getName(static_cast<bimg::TextureFormat::Enum>(format));
 }
 
+// Dedicated RGB16F -> BC6HU path: mip generation and block extraction are done in half-float,
+// avoiding the FP16 -> FP32 -> FP16 conversions of the generic HDR compression path.
+static std::shared_ptr<const CompressedTexture> CompressRGB16FToBC6H(const BaseTexture& tex, const std::function<bool()>& isCompressionDiscarded)
+{
+   auto result = std::make_shared<CompressedTexture>();
+   result->format = bgfx::TextureFormat::BC6HU;
+   result->width = tex.width();
+   result->height = tex.height();
+   result->numMips = static_cast<uint8_t>(1 + static_cast<int>(floor(log2(max(tex.width(), tex.height())))));
+   result->data.resize(static_cast<size_t>(bimg::imageGetSize(nullptr, tex.width(), tex.height(), 1, false, true, 1, static_cast<bimg::TextureFormat::Enum>(bgfx::TextureFormat::BC6HU))));
+
+   vector<uint16_t> mipA, mipB;
+   const uint16_t* src = static_cast<const uint16_t*>(tex.datac());
+   unsigned int w = tex.width(), h = tex.height();
+   size_t offset = 0;
+   for (unsigned int mip = 0; mip < result->numMips; mip++)
+   {
+      if (isCompressionDiscarded && isCompressionDiscarded())
+         return nullptr;
+      if (mip > 0)
+      {
+         const unsigned int nw = max(1u, w >> 1), nh = max(1u, h >> 1);
+         vector<uint16_t>& dst = (mip & 1) ? mipB : mipA;
+         dst.resize(static_cast<size_t>(nw) * nh * 3);
+         DownsampleHalf(src, w, h, dst.data(), nw, nh);
+         src = dst.data();
+         w = nw;
+         h = nh;
+      }
+      // bc6hf takes one 4x4 RGB half-float block per output block: extract with clamped edge pixels
+      const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
+      vector<basist::half_float> blockPixels(static_cast<size_t>(bw) * bh * 48);
+      basist::half_float* bp = blockPixels.data();
+      for (unsigned int by = 0; by < bh; by++)
+         for (unsigned int bx = 0; bx < bw; bx++)
+            for (unsigned int py = 0; py < 4; py++)
+               for (unsigned int px = 0; px < 4; px++)
+               {
+                  const uint16_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 3];
+                  for (int c = 0; c < 3; c++)
+                  {
+                     // The encoder only accepts unsigned finite halfs: halfs >= 0x7C00 (Inf/NaN and all
+                     // signed values, also normalizing -0.0 to +0.0) map to +0.0
+                     const uint16_t v = s[c];
+                     *bp++ = v < 0x7C00u ? v : static_cast<basist::half_float>(0);
+                  }
+               }
+      // Encode one row of blocks at a time to be able to abort an ongoing compression
+      const basist::astc_6x6_hdr::fast_bc6h_params params;
+      basist::bc6h_block* const dst = reinterpret_cast<basist::bc6h_block*>(result->data.data() + offset);
+      for (unsigned int by = 0; by < bh; by++)
+      {
+         if (isCompressionDiscarded && isCompressionDiscarded())
+            return nullptr;
+         for (unsigned int bx = 0; bx < bw; bx++)
+            basist::astc_6x6_hdr::fast_encode_bc6h(blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 48, dst + static_cast<size_t>(by) * bw + bx, params);
+      }
+      offset += result->GetMipSize(mip);
+   }
+   assert(offset == result->data.size());
+
+   return result;
+}
+
 static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& tex, bgfx::TextureFormat::Enum format, const std::function<bool()>& isCompressionDiscarded)
 {
+   if (tex.m_format == BaseTexture::RGB_FP16 && format == bgfx::TextureFormat::BC6HU)
+      return CompressRGB16FToBC6H(tex, isCompressionDiscarded);
+
    auto result = std::make_shared<CompressedTexture>();
    result->format = format;
    result->width = tex.width();
