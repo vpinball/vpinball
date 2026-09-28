@@ -1096,7 +1096,13 @@
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
       <FileType>CppCode</FileType>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/bc6h/basisu_bc6h.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/bc7e/basisu_bc7e_scalar.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/bc7f/basisu_bc7f.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/gpuprofiler.cpp" />
@@ -2063,7 +2069,9 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot_internal.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bc6h/basisu_bc6h.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/bc7e/basisu_bc7e_scalar.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bc7f/basisu_bc7f.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/forsyth.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/freeimage.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/glad/include/glad/gl.h" />
