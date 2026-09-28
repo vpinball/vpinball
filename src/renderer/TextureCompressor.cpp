@@ -252,7 +252,7 @@ const char* TextureCompressor::GetFormatName(bgfx::TextureFormat::Enum format)
    return bimg::getName(static_cast<bimg::TextureFormat::Enum>(format));
 }
 
-static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& tex, bgfx::TextureFormat::Enum format)
+static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& tex, bgfx::TextureFormat::Enum format, const std::function<bool()>& isCompressionDiscarded)
 {
    auto result = std::make_shared<CompressedTexture>();
    result->format = format;
@@ -292,6 +292,8 @@ static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& t
    size_t offset = 0;
    for (unsigned int mip = 0; mip < result->numMips; mip++)
    {
+      if (isCompressionDiscarded && isCompressionDiscarded())
+         return nullptr;
       if (mip > 0)
       {
          const unsigned int nw = max(1u, w >> 1), nh = max(1u, h >> 1);
@@ -307,7 +309,11 @@ static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& t
       {
          uint32_t* dst = reinterpret_cast<uint32_t*>(result->data.data() + offset);
          for (size_t i = 0; i < static_cast<size_t>(w) * h; i++)
+         {
+            if ((i & 0xFFFF) == 0 && isCompressionDiscarded && isCompressionDiscarded())
+               return nullptr;
             dst[i] = PackRgb9E5(&src[i * 4]);
+         }
          ok = true;
       }
       else if (format == bgfx::TextureFormat::BC6H || format == bgfx::TextureFormat::BC7)
@@ -340,13 +346,16 @@ static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& t
    return result;
 }
 
-std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format)
+std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format, const std::function<bool()>& isCompressionDiscarded)
 {
    if (!IsFormatUsable(format, tex.width(), tex.height(), !BaseTexture::IsLinearFormat(tex.m_format)))
       return nullptr;
 
+   if (isCompressionDiscarded && isCompressionDiscarded())
+      return nullptr;
+
    if (IsHdr(tex.m_format))
-      return CompressHDR(tex, format);
+      return CompressHDR(tex, format, isCompressionDiscarded);
 
    const bool isSrgb = !BaseTexture::IsLinearFormat(tex.m_format);
    std::shared_ptr<const BaseTexture> converted;
@@ -374,6 +383,8 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
    size_t offset = 0;
    for (unsigned int mip = 0; mip < result->numMips; mip++)
    {
+      if (isCompressionDiscarded && isCompressionDiscarded())
+         return nullptr;
       if (mip > 0)
       {
          const unsigned int nw = max(1u, w >> 1), nh = max(1u, h >> 1);
@@ -399,7 +410,14 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
                      const uint8_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 4];
                      *bp++ = s[0] | (s[1] << 8) | (s[2] << 16) | (s[3] << 24);
                   }
-         bc7e_scalar::bc7e_compress_blocks(bw * bh, reinterpret_cast<uint64_t*>(result->data.data() + offset), blockPixels.data(), &bc7eParams);
+         // Encode one row of blocks at a time to be able to abort an ongoing compression
+         uint64_t* const dst = reinterpret_cast<uint64_t*>(result->data.data() + offset);
+         for (unsigned int by = 0; by < bh; by++)
+         {
+            if (isCompressionDiscarded && isCompressionDiscarded())
+               return nullptr;
+            bc7e_scalar::bc7e_compress_blocks(bw, dst + static_cast<size_t>(by) * bw * 2, blockPixels.data() + static_cast<size_t>(by) * bw * 16, &bc7eParams);
+         }
       }
       else
          bimg::imageEncodeFromRgba8(&allocator, result->data.data() + offset, src, w, h, 1, static_cast<bimg::TextureFormat::Enum>(format), bimg::Quality::Fastest, &err);
@@ -429,7 +447,7 @@ std::shared_ptr<BaseTexture> TextureCompressor::LoadCached(const std::filesystem
    return BaseTexture::CreateCompressedOnly(std::move(compressed), static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0);
 }
 
-std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile)
+std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded)
 {
    if (!IsSupported(tex))
       return nullptr;
@@ -455,7 +473,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
    }
 
    const auto start = std::chrono::steady_clock::now();
-   auto result = Compress(tex, format);
+   auto result = Compress(tex, format, isCompressionDiscarded);
    if (result == nullptr)
       return nullptr;
    m_nCompressed++;
@@ -535,7 +553,7 @@ std::filesystem::path TextureCompressor::GetCacheFile(const Texture* image) cons
    return path;
 }
 
-std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& startCompression)
+std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& isCompressionDiscarded)
 {
    std::shared_ptr<const BaseTexture> buffer;
    const std::filesystem::path cacheFile = GetCacheFile(image);
@@ -554,8 +572,8 @@ std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool 
    }
    if (buffer == nullptr)
       buffer = image->GetRawBitmap(resizeOnLowMem, m_maxTexDim);
-   if (buffer && buffer->m_compressed == nullptr && IsSupported(*buffer) && (!startCompression || startCompression()))
-      buffer->m_compressed = LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile);
+   if (buffer && buffer->m_compressed == nullptr && IsSupported(*buffer) && (!isCompressionDiscarded || !isCompressionDiscarded()))
+      buffer->m_compressed = LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile, isCompressionDiscarded);
    return buffer;
 }
 
