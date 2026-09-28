@@ -5,6 +5,7 @@
 #include "VPinballLib.h"
 
 #include <SDL3/SDL.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 static void (*s_iosStartupHandler)(void*) = nullptr;
 static void (*s_iosOpenURLHandler)(const char*) = nullptr;
@@ -49,6 +50,15 @@ bool InitIOS(void* pWindow)
    }
 
    return true;
+}
+
+
+void PumpIOSEvents()
+{
+   SInt32 result;
+   do {
+      result = CFRunLoopRunInMode(CFSTR("UITrackingRunLoopMode"), 0.000002, true);
+   } while (result == kCFRunLoopRunHandledSource);
 }
 
 }

@@ -134,7 +134,6 @@
             android:alwaysRetainTaskState="true"
             android:launchMode="singleTop"
             android:configChanges="layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-            android:enableOnBackInvokedCallback="false"
             android:preferMinimalPostProcessing="true"
             android:theme="@style/Theme.VPinball.Fullscreen"
             android:exported="false"

@@ -98,7 +98,7 @@ void LoadingPage::BuildPage()
          ImGui::ProgressBar(totalPixels > 0 ? 0.001f * static_cast<float>(1000 * donePixels / totalPixels) : 0.f, ImVec2(-FLT_MIN, 0.f));
          const bool discarded = stats.skipCompression.load(std::memory_order_relaxed);
          if (discarded)
-            ImGui::Text("Loading table images: %d / %d (texture compression skip requested)", done, total);
+            ImGui::TextWrapped("Loading table images: %d / %d (texture compression skip requested)", done, total);
          else
             ImGui::Text("Loading table images: %d / %d", done, total);
 
@@ -113,7 +113,7 @@ void LoadingPage::BuildPage()
          for (size_t i = 0; i < inFlight.size() && i < maxListed; ++i)
          {
             const Texture* const tex = inFlight[i].first;
-            ImGui::Text("%s (%ux%u %s)%s", tex->m_name.c_str(), tex->m_width, tex->m_height, tex->IsHDR() ? "HDR" : "LDR", inFlight[i].second ? (discarded ? " - discarded" : " - compressing") : " - pending");
+            ImGui::TextWrapped("%s (%ux%u %s)%s", tex->m_name.c_str(), tex->m_width, tex->m_height, tex->IsHDR() ? "HDR" : "LDR", inFlight[i].second ? (discarded ? " - discarded" : " - compressing") : " - pending");
          }
          if (inFlight.size() > maxListed)
             ImGui::Text("... and %d more", static_cast<int>(inFlight.size() - maxListed));

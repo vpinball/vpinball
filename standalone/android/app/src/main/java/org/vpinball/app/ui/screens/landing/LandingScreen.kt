@@ -61,8 +61,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import androidx.lifecycle.viewModelScope
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.CoroutineScope
@@ -75,6 +76,7 @@ import org.vpinball.app.SAFFileSystem
 import org.vpinball.app.Table
 import org.vpinball.app.TableManager
 import org.vpinball.app.TableViewMode
+import org.vpinball.app.VPinballManager
 import org.vpinball.app.VPinballModel
 import org.vpinball.app.ui.screens.common.ProgressOverlay
 import org.vpinball.app.ui.screens.settings.SettingsBottomSheet
@@ -171,7 +173,7 @@ fun LandingScreen(
     var showProgress by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf<String?>(null) }
 
-    val hazeState = remember { HazeState() }
+    val hazeState = rememberHazeState()
 
     val launcher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri ->
@@ -228,7 +230,7 @@ fun LandingScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize().haze(state = hazeState),
+        modifier = modifier.fillMaxSize().hazeSource(hazeState),
         containerColor = Color.LightBlack,
         topBar = {
             if (!isSearching) {
@@ -361,13 +363,10 @@ fun LandingScreen(
                         viewMode = tableViewMode,
                         gridSize = tableGridSize,
                         onPlay = { table ->
-                            if (vpinballModel.activeTable != null) return@TablesList
                             focusManager.clearFocus()
-                            val current = filteredTables.firstOrNull { it.uuid == table.uuid } ?: table
-                            vpinballModel.activeTable = current
-                            vpinballModel.showHUD(current.name, "Launching")
+                            VPinballManager.play(filteredTables.firstOrNull { it.uuid == table.uuid } ?: table)
                         },
-                        onRename = { table, name -> vpinballModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) } },
+                        onRename = { table, name -> viewModel.viewModelScope.launch { TableManager.getInstance().renameTable(table, name) } },
                         onViewScript = { table ->
                             val viewScriptFile: () -> Unit = {
                                 val file =

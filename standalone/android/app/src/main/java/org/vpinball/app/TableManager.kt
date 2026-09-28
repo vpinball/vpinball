@@ -31,6 +31,7 @@ class TableManager(private val context: Context) {
     private var requiresStaging: Boolean = false
     private var loadedTable: Table? = null
     private var loadedTableWorkingDir: String = ""
+    private var stagedFiles: Map<String, Pair<Long, Long>> = emptyMap()
     private val fileOps = TableFileOperations { tablesPath }
 
     init {
@@ -643,20 +644,9 @@ class TableManager(private val context: Context) {
                 if (requiresStaging) {
                     withContext(Dispatchers.Main) { onProgress?.invoke(10, "Copying files") }
 
-                    val stagingBaseDir = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf")
-                    val stagingTableDir = File(stagingBaseDir, tableDir)
+                    val stagingTableDir = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf/$tableDir")
 
-                    if (stagingTableDir.exists()) {
-                        fileOps.deleteDirectory(stagingTableDir.absolutePath)
-                    }
-
-                    if (!fileOps.createDirectory(stagingTableDir.absolutePath)) {
-                        return null
-                    }
-
-                    val sourceTableDir = buildPath(tableDir)
-
-                    if (!fileOps.copyDirectory(sourceTableDir, stagingTableDir.absolutePath)) {
+                    if (!syncToStaging(tableDir, stagingTableDir, null)) {
                         return null
                     }
 
@@ -708,40 +698,105 @@ class TableManager(private val context: Context) {
         return fullPath
     }
 
-    private fun cleanupSafCache(maxCached: Int = 10) {
+    private fun cleanupSafCache() {
         val safDir = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf")
         if (!safDir.exists()) return
 
         val folders = safDir.listFiles()?.filter { it.isDirectory } ?: return
-        if (folders.size <= maxCached) return
+        if (folders.size <= MAX_STAGED_TABLES) return
 
-        folders.sortedBy { it.lastModified() }.take(folders.size - maxCached).forEach { fileOps.deleteDirectory(it.absolutePath) }
+        folders
+            .sortedBy { it.lastModified() }
+            .take(folders.size - MAX_STAGED_TABLES)
+            .forEach {
+                fileOps.deleteDirectory(it.absolutePath)
+                syncManifestFile(it).delete()
+            }
+    }
+
+    private fun syncManifestFile(stagingDir: File) = File(stagingDir.parentFile, "${stagingDir.name}$SYNC_MANIFEST_EXTENSION")
+
+    @Serializable private data class SyncedFile(val safSize: Long, val safModified: Long, val localModified: Long)
+
+    private fun readSyncManifest(stagingDir: File): Map<String, SyncedFile> =
+        try {
+            Json.decodeFromString<Map<String, SyncedFile>>(syncManifestFile(stagingDir).readText())
+        } catch (_: Exception) {
+            emptyMap()
+        }
+
+    private fun writeSyncManifest(stagingDir: File, safFiles: Map<String, SAFFileSystem.TreeEntry>) {
+        val manifest =
+            safFiles
+                .mapNotNull { (path, entry) ->
+                    val local = File(stagingDir, path)
+                    if (local.isFile && local.length() == entry.size) path to SyncedFile(entry.size, entry.lastModified, local.lastModified())
+                    else null
+                }
+                .toMap()
+        try {
+            syncManifestFile(stagingDir).writeText(Json.encodeToString(manifest))
+        } catch (e: Exception) {
+            VPinballManager.log(VPinballLogLevel.WARN, "Failed to write sync manifest: ${e.message}")
+        }
+    }
+
+    private fun snapshotFiles(stagingDir: File): Map<String, Pair<Long, Long>> =
+        stagingDir
+            .walkTopDown()
+            .filter { it.isFile && it.extension != "tmp" }
+            .associate { it.relativeTo(stagingDir).path to (it.length() to it.lastModified()) }
+
+    private fun syncToStaging(tableDir: String, stagingDir: File, onProgress: ((Int, String) -> Unit)?): Boolean {
+        onProgress?.invoke(10, "Checking table files...")
+        val safFiles = SAFFileSystem.listTree(tableDir) ?: return false
+        val manifest = readSyncManifest(stagingDir)
+        stagingDir.mkdirs()
+
+        snapshotFiles(stagingDir).keys.filter { it !in safFiles }.forEach { File(stagingDir, it).delete() }
+        stagingDir.walkBottomUp().filter { it != stagingDir && it.isDirectory && it.list()?.isEmpty() == true }.forEach { it.delete() }
+
+        val toCopy = safFiles.filter { (path, entry) ->
+            val local = File(stagingDir, path)
+            val synced = manifest[path]
+            synced == null ||
+                synced.safSize != entry.size ||
+                synced.safModified != entry.lastModified ||
+                !local.isFile ||
+                local.length() != entry.size ||
+                local.lastModified() != synced.localModified
+        }
+
+        var copiedCount = 0
+        for ((path, entry) in toCopy) {
+            if (!SAFFileSystem.copyToFile(entry.uri, File(stagingDir, path))) {
+                return false
+            }
+            copiedCount++
+            onProgress?.invoke(10 + (copiedCount * 85) / toCopy.size, "Copying table files... ($copiedCount/${toCopy.size})")
+        }
+
+        writeSyncManifest(stagingDir, safFiles)
+        stagingDir.setLastModified(System.currentTimeMillis())
+        return true
     }
 
     private fun performStageToCache(table: Table, onProgress: ((Int, String) -> Unit)?): String? {
-        cleanupSafCache()
-
         val tableDir = File(table.path).parent ?: ""
         val fileName = File(table.path).name
+        val stagingDir = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf/$tableDir")
 
-        onProgress?.invoke(10, "Staging table...")
-        val cachePath = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf/$tableDir").absolutePath
-
-        if (fileOps.exists(cachePath)) {
-            fileOps.deleteDirectory(cachePath)
-        }
-        fileOps.createDirectory(cachePath)
-
-        onProgress?.invoke(30, "Copying table files...")
-        if (!fileOps.copyDirectory(buildPath(tableDir), cachePath)) {
+        if (!syncToStaging(tableDir, stagingDir, onProgress)) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy to staging cache")
             return null
         }
+        cleanupSafCache()
 
         onProgress?.invoke(100, "Ready")
         loadedTable = table
-        loadedTableWorkingDir = cachePath
-        return File(cachePath, fileName).absolutePath
+        loadedTableWorkingDir = stagingDir.absolutePath
+        stagedFiles = snapshotFiles(stagingDir)
+        return File(stagingDir, fileName).absolutePath
     }
 
     private fun performCleanup(table: Table, onProgress: ((Int, String) -> Unit)? = null) {
@@ -752,36 +807,40 @@ class TableManager(private val context: Context) {
         if (requiresStaging && loadedTableWorkingDir.isNotEmpty()) {
             onProgress?.invoke(10, "Saving changes...")
             val tableDir = File(table.path).parent ?: ""
+            val stagingDir = File(loadedTableWorkingDir)
+            val currentFiles = snapshotFiles(stagingDir)
+            val changedFiles = currentFiles.filter { (path, state) -> stagedFiles[path] != state }.keys.toList()
+            val removedFiles = stagedFiles.keys - currentFiles.keys
 
-            val changedFileExtensions = listOf("txt", "ini", "cfg", "xml", "nv", "jpg", "png")
-            val workingDirFile = File(loadedTableWorkingDir)
-            val filesToCopy =
-                workingDirFile.walkTopDown().filter { file -> file.isFile && changedFileExtensions.contains(file.extension.lowercase()) }.toList()
+            removedFiles.forEach { path ->
+                if (!fileOps.delete(buildPath("$tableDir/$path"))) {
+                    VPinballManager.log(VPinballLogLevel.WARN, "Failed to delete removed file: $path")
+                }
+            }
 
-            if (filesToCopy.isNotEmpty()) {
-                onProgress?.invoke(30, "Copying ${filesToCopy.size} file(s)...")
+            if (changedFiles.isNotEmpty()) {
+                onProgress?.invoke(30, "Copying ${changedFiles.size} file(s)...")
                 var copiedCount = 0
                 var failedCount = 0
 
-                filesToCopy.forEach { file ->
-                    val relativePath = file.relativeTo(workingDirFile).path
-                    val destPath = buildPath("$tableDir/$relativePath")
-
-                    if (fileOps.copy(file.absolutePath, destPath)) {
+                changedFiles.forEach { path ->
+                    if (fileOps.copy(File(stagingDir, path).absolutePath, buildPath("$tableDir/$path"))) {
                         copiedCount++
-                        val progress = 30 + ((copiedCount * 60) / filesToCopy.size)
-                        onProgress?.invoke(progress, "Copied $copiedCount/${filesToCopy.size}")
+                        onProgress?.invoke(30 + ((copiedCount * 60) / changedFiles.size), "Copied $copiedCount/${changedFiles.size}")
                     } else {
                         failedCount++
-                        VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy back: $relativePath")
+                        VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy back: $path")
                     }
                 }
-
-                onProgress?.invoke(100, "Complete")
 
                 if (failedCount > 0) {
                     VPinballManager.log(VPinballLogLevel.WARN, "Sync complete: $copiedCount succeeded, $failedCount failed")
                 }
+            }
+
+            if (changedFiles.isNotEmpty() || removedFiles.isNotEmpty()) {
+                SAFFileSystem.listTree(tableDir)?.let { writeSyncManifest(stagingDir, it) }
+                onProgress?.invoke(100, "Complete")
             } else {
                 onProgress?.invoke(100, "No changes to save")
             }
@@ -789,6 +848,7 @@ class TableManager(private val context: Context) {
 
         loadedTable = null
         loadedTableWorkingDir = ""
+        stagedFiles = emptyMap()
     }
 
     private fun performExtractScript(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
@@ -801,53 +861,34 @@ class TableManager(private val context: Context) {
         }
 
         val fullPath: String
-        val cachePath: String?
+        val stagingDir: File?
 
         if (requiresStaging) {
-            onProgress?.invoke(10, "Staging table...")
-            cachePath = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf/$tableDir").absolutePath
-
-            if (fileOps.exists(cachePath)) {
-                fileOps.deleteDirectory(cachePath)
-            }
-
-            fileOps.createDirectory(cachePath)
-
-            onProgress?.invoke(30, "Copying table...")
-            val tableFileName = File(table.path).name
-            val sourceTablePath = buildPath(table.path)
-            val stagedTablePath = File(cachePath, tableFileName).absolutePath
-            if (!fileOps.copy(sourceTablePath, stagedTablePath)) {
-                VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy table to staging cache")
+            stagingDir = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf/$tableDir")
+            if (!syncToStaging(tableDir, stagingDir, onProgress)) {
+                VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy to staging cache")
                 return false
             }
-
             onProgress?.invoke(70, "Extracting script...")
-            fullPath = stagedTablePath
+            fullPath = File(stagingDir, File(table.path).name).absolutePath
         } else {
             onProgress?.invoke(50, "Extracting script...")
             fullPath = buildPath(table.path)
-            cachePath = null
+            stagingDir = null
         }
 
         if (VPinballManager.vpinballJNI.VPinballExtractTableScript(fullPath) != VPinballStatus.SUCCESS.value) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Failed to extract script from table: $fullPath")
-            cachePath?.let { fileOps.deleteDirectory(it) }
             return false
         }
 
-        if (requiresStaging && cachePath != null) {
+        if (stagingDir != null) {
             onProgress?.invoke(90, "Copying script back...")
-            val stagedScriptPath = File(cachePath, "$baseName.vbs").absolutePath
-
-            val destScriptPath = buildPath("$tableDir/$baseName.vbs")
-            if (!fileOps.copy(stagedScriptPath, destScriptPath)) {
+            if (!fileOps.copy(File(stagingDir, "$baseName.vbs").absolutePath, scriptPath)) {
                 VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy script back to SAF")
-                fileOps.deleteDirectory(cachePath)
                 return false
             }
-
-            fileOps.deleteDirectory(cachePath)
+            SAFFileSystem.listTree(tableDir)?.let { writeSyncManifest(stagingDir, it) }
         }
 
         onProgress?.invoke(100, "Complete")
@@ -861,6 +902,9 @@ class TableManager(private val context: Context) {
     }
 
     companion object {
+        private const val SYNC_MANIFEST_EXTENSION = ".sync.json"
+        private const val MAX_STAGED_TABLES = 12
+
         @SuppressLint("StaticFieldLeak") private var instance: TableManager? = null
 
         fun initialize(context: Context) {

@@ -32,20 +32,6 @@ class VPinballActivity : ComponentActivity() {
         setContent {
             LaunchedEffect(Unit) { viewModel.startSplashTimer() }
 
-            LaunchedEffect(viewModel.showHUD, viewModel.activeTable) {
-                if (viewModel.showHUD && viewModel.activeTable != null) {
-                    val table = viewModel.activeTable!!
-
-                    val success = VPinballManager.load(table) { progress, status -> lifecycleScope.launch { viewModel.updateHUD(progress, status) } }
-
-                    if (success) {
-                        val intent = Intent(this@VPinballActivity, VPinballPlayerActivity::class.java)
-                        startActivity(intent)
-                        @Suppress("DEPRECATION") overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                    }
-                }
-            }
-
             VPinballContent(viewModel = viewModel)
         }
     }
@@ -66,8 +52,7 @@ class VPinballActivity : ComponentActivity() {
             VPinballManager.whenReady {
                 lifecycleScope.launch {
                     val table = TableManager.getInstance().tables.map { list -> list.firstOrNull { it.name == name } }.filterNotNull().first()
-                    viewModel.activeTable = table
-                    viewModel.showHUD(table.name, "Launching")
+                    VPinballManager.play(table)
                 }
             }
         }

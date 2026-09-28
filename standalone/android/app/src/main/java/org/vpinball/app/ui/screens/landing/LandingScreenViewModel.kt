@@ -210,39 +210,37 @@ class LandingScreenViewModel : ViewModel() {
 
     private fun fetchTables() {
         tableJob?.cancel()
-        tableJob =
-            viewModelScope.launch {
-                try {
-                    _isFetchingTables.update { true }
-                    _fetchProgress.update { 0 }
-                    _fetchStatus.update { "" }
+        tableJob = viewModelScope.launch {
+            try {
+                _isFetchingTables.update { true }
+                _fetchProgress.update { 0 }
+                _fetchStatus.update { "" }
 
-                    val tables =
-                        TableManager.loadTables { progress, status ->
-                            _fetchProgress.update { progress }
-                            _fetchStatus.update { status }
-                        }
-
-                    val sortedTables =
-                        when (_tableListSortOrder.value) {
-                            TableListSortOrder.A_Z -> tables.sortedBy { it.name }
-                            TableListSortOrder.Z_A -> tables.sortedByDescending { it.name }
-                        }.distinctBy { it.uuid }
-
-                    withContext(Dispatchers.Main) {
-                        vpinballModel.tables = sortedTables
-                        _filteredTables.update { sortedTables }
-                        search(search.value)
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        vpinballModel.tables = emptyList()
-                        _filteredTables.update { emptyList() }
-                    }
-                } finally {
-                    _isFetchingTables.update { false }
+                val tables = TableManager.loadTables { progress, status ->
+                    _fetchProgress.update { progress }
+                    _fetchStatus.update { status }
                 }
+
+                val sortedTables =
+                    when (_tableListSortOrder.value) {
+                        TableListSortOrder.A_Z -> tables.sortedBy { it.name }
+                        TableListSortOrder.Z_A -> tables.sortedByDescending { it.name }
+                    }.distinctBy { it.uuid }
+
+                withContext(Dispatchers.Main) {
+                    vpinballModel.tables = sortedTables
+                    _filteredTables.update { sortedTables }
+                    search(search.value)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    vpinballModel.tables = emptyList()
+                    _filteredTables.update { emptyList() }
+                }
+            } finally {
+                _isFetchingTables.update { false }
             }
+        }
     }
 
     private fun loadSettings() {

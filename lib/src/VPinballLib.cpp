@@ -103,7 +103,9 @@ int VPinballLib::AppInit(int argc, char** argv)
 void VPinballLib::AppIterate()
 {
    if (m_gameLoop) {
+      m_inAppIterate = true;
       m_gameLoop();
+      m_inAppIterate = false;
 
       if (g_pplayer && (g_pplayer->GetCloseState() == Player::CS_PLAYING
          || g_pplayer->GetCloseState() == Player::CS_USER_INPUT))
@@ -153,6 +155,7 @@ void VPinballLib::AppIterate()
 
       delete g_pplayer;
       g_pplayer = nullptr;
+      SendEvent(VPINBALL_EVENT_PLAYER_CLOSED, nullptr);
 
       m_pTable->Release();
       m_pTable = nullptr;
@@ -161,9 +164,9 @@ void VPinballLib::AppIterate()
       {
          m_pTable = static_cast<CComObject<PinTable>*>(nextTable);
          static LoadProgress loadProgress;
+         m_playerReadySent = false;
          new Player(m_pTable, nextMode, loadProgress);
-         if (g_pplayer)
-            g_pplayer->GameLoop();
+         OnPlayerCreated();
       }
    }
 }
@@ -186,15 +189,56 @@ void VPinballLib::AppEvent(SDL_Event* event)
    }
 }
 
+void VPinballLib::OnPlayerCreated()
+{
+   if (g_pplayer == nullptr) {
+      SendEvent(VPINBALL_EVENT_PLAYER_FAILED, nullptr);
+      return;
+   }
+   g_pplayer->GameLoop();
+   if (!m_playerReadySent) {
+      m_playerReadySent = true;
+      SendEvent(VPINBALL_EVENT_PLAYER_READY, nullptr);
+   }
+}
+
 bool VPinballLib::PollAppEvent(SDL_Event& event)
 {
-   std::lock_guard<std::mutex> lock(m_eventMutex);
-   if (m_eventQueue.empty())
+   {
+      std::lock_guard<std::mutex> lock(m_eventMutex);
+      if (!m_eventQueue.empty()) {
+         event = m_eventQueue.front();
+         m_eventQueue.pop();
+         return true;
+      }
+   }
+
+   if (m_inAppIterate)
       return false;
 
-   event = m_eventQueue.front();
-   m_eventQueue.pop();
-   return true;
+   if (!m_playerReadySent && g_pplayer && g_pplayer->m_isLoading) {
+      m_playerReadySent = true;
+      SendEvent(VPINBALL_EVENT_PLAYER_READY, nullptr);
+   }
+
+   const uint64_t now = SDL_GetTicksNS();
+   if (now - m_lastPumpNs >= 2000000) {
+      m_lastPumpNs = now;
+#ifdef __APPLE__
+      PumpIOSEvents();
+#endif
+      SDL_PumpEvents();
+   }
+   while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0) {
+#ifdef __APPLE__
+      if (event.type == SDL_EVENT_DROP_FILE && event.drop.data) {
+         VPinball_CallIOSOpenURLHandler(event.drop.data);
+         continue;
+      }
+#endif
+      return true;
+   }
+   return false;
 }
 
 void VPinballLib::Init(VPinballEventCallback eventCallback, VPinballRumbleCallback rumbleCallback)
@@ -225,7 +269,6 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
       if (data != nullptr) {
          switch(event) {
             case VPINBALL_EVENT_LOADING:
-            case VPINBALL_EVENT_PRERENDERING:
             case VPINBALL_EVENT_EXTRACT_SCRIPT: {
                ProgressData* progressData = (ProgressData*)data;
                j["progress"] = progressData->progress;
@@ -271,7 +314,7 @@ void VPinballLib::SendEvent(VPINBALL_EVENT event, void* data)
    if (callback)
       callback(event, data);
 
-   if (event == VPINBALL_EVENT_PLAYER_STARTED || event == VPINBALL_EVENT_PLAYER_CLOSED)
+   if (event == VPINBALL_EVENT_PLAYER_READY || event == VPINBALL_EVENT_PLAYER_CLOSED)
       WebServer::BroadcastStatus();
 }
 
@@ -506,22 +549,29 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript(const string& tablePath)
    return VPINBALL_STATUS_SUCCESS;
 }
 
-VPINBALL_STATUS VPinballLib::Play()
+VPINBALL_STATUS VPinballLib::Play(const string& tablePath)
 {
-   if (m_gameLoop)
+   if (m_gameLoop || m_playPending.exchange(true))
       return VPINBALL_STATUS_FAILURE;
 
-   if (!m_pTable)
-      return VPINBALL_STATUS_FAILURE;
+   std::thread([this, tablePath]() {
+      if ((!tablePath.empty() && LoadTable(tablePath) != VPINBALL_STATUS_SUCCESS) || !m_pTable) {
+         m_playPending = false;
+         SendEvent(VPINBALL_EVENT_PLAYER_FAILED, nullptr);
+         return;
+      }
+      SDL_RunOnMainThread([](void*) {
+         auto& lib = VPinballLib::Instance();
+         // The player outlives this lambda, being stepped from AppIterate and deleted there
+         static LoadProgress loadProgress;
+         lib.m_playerReadySent = false;
+         new Player(lib.m_pTable, Player::PlayMode::Play, loadProgress);
+         lib.OnPlayerCreated();
+         lib.m_playPending = false;
+      }, nullptr, false);
+   }).detach();
 
-   return SDL_RunOnMainThread([](void*) {
-      auto& lib = VPinballLib::Instance();
-      // The player outlives this lambda, being stepped from AppIterate and deleted there
-      static LoadProgress loadProgress;
-      new Player(lib.m_pTable, Player::PlayMode::Play, loadProgress);
-      if (g_pplayer)
-         g_pplayer->GameLoop();
-   }, nullptr, true) ? VPINBALL_STATUS_SUCCESS : VPINBALL_STATUS_FAILURE;
+   return VPINBALL_STATUS_SUCCESS;
 }
 
 VPINBALL_STATUS VPinballLib::Stop()

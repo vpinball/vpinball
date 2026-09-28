@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.kotlinx.serialization)
@@ -29,7 +28,6 @@ val versionCodeValue: Int by lazy {
     value
 }
 
-
 val versionFilename: String by lazy {
     val (maj, min, rev, build) = parseVersion(versionNameValue)
     val shaShort = project.findProperty("sha_short")?.toString()
@@ -38,48 +36,40 @@ val versionFilename: String by lazy {
     value
 }
 
+val repoDir: File = rootProject.projectDir.parentFile.parentFile
+
 tasks {
-    val copyLibs by registering(Copy::class) {
-        val destinationDir = file("$projectDir/src/main/jniLibs/arm64-v8a")
-        destinationDir.listFiles()?.forEach { it.deleteRecursively() }
-        from("${layout.buildDirectory}/../../../../build/android-arm64-v8a") { include("**.so") }
-        into(destinationDir)
-    }
+    val copyLibs by
+        registering(Copy::class) {
+            val destinationDir = file("$projectDir/src/main/jniLibs/arm64-v8a")
+            doFirst { destinationDir.listFiles()?.forEach { it.deleteRecursively() } }
+            from(repoDir.resolve("build/android-arm64-v8a")) { include("**.so") }
+            into(destinationDir)
+        }
 
-    val copyAssets by registering(Copy::class) {
-        val destinationDir = file("$projectDir/src/main/assets")
-        destinationDir.listFiles()?.forEach { it.deleteRecursively() }
-        from("${layout.buildDirectory}/../../../../src/assets") {
-            into("assets")
+    val copyAssets by
+        registering(Copy::class) {
+            val destinationDir = file("$projectDir/src/main/assets")
+            doFirst { destinationDir.listFiles()?.forEach { it.deleteRecursively() } }
+            from(repoDir.resolve("src/assets")) { into("assets") }
+            from(repoDir.resolve("scripts")) { into("scripts") }
+            from(repoDir.resolve("plugins/scoreview/layouts")) { into("plugins/scoreview/layouts") }
+            from(repoDir.resolve("plugins/flexdmd/assets")) { into("plugins/flexdmd/assets") }
+            from(repoDir.resolve("plugins/inspector/assets")) { into("plugins/inspector/assets") }
+            into(destinationDir)
         }
-        from("${layout.buildDirectory}/../../../../scripts") {
-            into("scripts")
-        }
-        from("${layout.buildDirectory}/../../../../plugins/scoreview/layouts") {
-           into("plugins/scoreview/layouts")
-        }
-        from("${layout.buildDirectory}/../../../../plugins/flexdmd/assets") {
-           into("plugins/flexdmd/assets")
-        }
-        from("${layout.buildDirectory}/../../../../plugins/inspector/assets") {
-           into("plugins/inspector/assets")
-        }
-        into(destinationDir)
-    }
 
-    preBuild {
-        dependsOn(copyLibs, copyAssets)
-    }
+    preBuild { dependsOn(copyLibs, copyAssets) }
 }
 
 android {
     namespace = "org.vpinball.app"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "org.vpinball.vpinball_bgfx"
         minSdk = 33
-        targetSdk = 35
+        targetSdk = 36
         versionCode = versionCodeValue
         versionName = versionNameValue
 
@@ -131,15 +121,7 @@ android {
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
 }
 
-base {
-    archivesName.set("VPinballX_BGFX-$versionFilename")
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-    }
-}
+base { archivesName.set("VPinballX_BGFX-$versionFilename") }
 
 ktfmt {
     kotlinLangStyle()
@@ -158,6 +140,7 @@ dependencies {
 
     implementation(libs.androidx.browser)
     implementation(libs.haze)
+    implementation(libs.haze.blur)
 
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)

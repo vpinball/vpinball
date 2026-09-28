@@ -528,8 +528,8 @@ private fun SliderRow(
 }
 
 @Composable
-private fun <T> EnumMenuRow(label: String, options: List<T>, option: T, onOptionChanged: (T) -> Unit, sameLine: Boolean = true) where
-T : VPinballDisplayText {
+private fun <T> EnumMenuRow(label: String, options: List<T>, option: T, onOptionChanged: (T) -> Unit, sameLine: Boolean = true)
+    where T : VPinballDisplayText {
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier) {
@@ -586,8 +586,8 @@ T : VPinballDisplayText {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun <T> EnumSliderRow(label: String, options: List<T>, value: T, onValueChange: (T) -> Unit, description: String? = null) where
-T : VPinballDisplayText {
+private fun <T> EnumSliderRow(label: String, options: List<T>, value: T, onValueChange: (T) -> Unit, description: String? = null)
+    where T : VPinballDisplayText {
     Column(modifier = Modifier) {
         Text(
             text = label,

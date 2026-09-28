@@ -156,14 +156,6 @@ JNIEXPORT jstring JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballGetPath(
    return env->NewStringUTF(VPinballGetPath(static_cast<VPINBALL_PATH>(pathType)));
 }
 
-JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadTable(JNIEnv* env, jobject obj, jstring path)
-{
-   const char* pPath = env->GetStringUTFChars(path, nullptr);
-   VPINBALL_STATUS status = VPinballLoadTable(pPath);
-   env->ReleaseStringUTFChars(path, pPath);
-   return status;
-}
-
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballExtractTableScript(JNIEnv* env, jobject obj, jstring path)
 {
    const char* pPath = env->GetStringUTFChars(path, nullptr);
@@ -172,9 +164,14 @@ JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballExtractTabl
    return status;
 }
 
-JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballPlay(JNIEnv* env, jobject obj)
+JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballPlay(JNIEnv* env, jobject obj, jstring path)
 {
-   return VPinballPlay();
+   if (path == nullptr)
+      return VPinballPlay(nullptr);
+   const char* pPath = env->GetStringUTFChars(path, nullptr);
+   VPINBALL_STATUS status = VPinballPlay(pPath);
+   env->ReleaseStringUTFChars(path, pPath);
+   return status;
 }
 
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballStop(JNIEnv* env, jobject obj)

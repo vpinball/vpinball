@@ -13,9 +13,7 @@ import kotlinx.coroutines.launch
 class VPinballModel : ViewModel() {
     var tables by mutableStateOf(emptyList<Table>())
     var activeTable: Table? = null
-    var isPlaying by mutableStateOf(false)
     var webServerURL by mutableStateOf<String?>(null)
-    var hudTitle by mutableStateOf<String?>(null)
     var hudProgress by mutableIntStateOf(0)
     var hudStatus by mutableStateOf<String?>(null)
     var showSplash by mutableStateOf(true)
@@ -33,8 +31,7 @@ class VPinballModel : ViewModel() {
         }
     }
 
-    fun showHUD(title: String, status: String) {
-        hudTitle = title
+    fun showHUD(status: String) {
         hudProgress = 0
         hudStatus = status
         showHUD = true
@@ -51,10 +48,6 @@ class VPinballModel : ViewModel() {
 
     fun hideHUD() {
         showHUD = false
-    }
-
-    fun launchInViewModelScope(block: suspend () -> Unit) {
-        viewModelScope.launch { block() }
     }
 
     companion object {

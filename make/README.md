@@ -185,7 +185,7 @@ open standalone/ios/VPinball.xcodeproj
 <details>
 <summary>android-arm64-v8a (Mobile)</summary>
 
-> Minimum supported version: Android 13 (API level 33)
+> Minimum supported version: Android 13 (API level 33). Targets Android 16 (API level 36) and compiles against API level 37, so the `android-37` platform must be installed in the Android SDK.
 
 ```
 brew install cmake bison curl
@@ -204,6 +204,8 @@ cd standalone/android
 
 <details>
 <summary>android-arm64-v8a (Quest)</summary>
+
+> Same SDK requirements as the mobile build: minimum Android 13 (API level 33), targets API level 36, compiles against API level 37.
 
 ```
 brew install cmake bison curl

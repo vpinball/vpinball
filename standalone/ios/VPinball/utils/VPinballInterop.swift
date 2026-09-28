@@ -87,9 +87,9 @@ enum VPinballEvent: CInt {
     case initComplete
     case extractScript
     case loading
-    case prerendering
-    case playerStarted
+    case playerReady
     case playerClosed
+    case playerFailed
     case webServer
     case command
 
@@ -99,8 +99,6 @@ enum VPinballEvent: CInt {
             return "Extracting Script"
         case .loading:
             return "Loading"
-        case .prerendering:
-            return "Prerendering Static Parts"
         default:
             return nil
         }
@@ -171,14 +169,11 @@ func VPinballUpdateWebServer()
 @_silgen_name("VPinballGetPath")
 func VPinballGetPath(_ pathType: CInt) -> UnsafePointer<CChar>
 
-@_silgen_name("VPinballLoadTable")
-func VPinballLoadTable(_ pPath: UnsafePointer<CChar>) -> CInt
-
 @_silgen_name("VPinballExtractTableScript")
 func VPinballExtractTableScript(_ pPath: UnsafePointer<CChar>) -> CInt
 
 @_silgen_name("VPinballPlay")
-func VPinballPlay() -> CInt
+func VPinballPlay(_ pPath: UnsafePointer<CChar>?) -> CInt
 
 @_silgen_name("VPinballStop")
 func VPinballStop()

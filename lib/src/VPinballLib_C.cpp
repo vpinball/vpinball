@@ -132,14 +132,6 @@ VPINBALLAPI const char* VPinballGetPath(VPINBALL_PATH pathType)
    return path.c_str();
 }
 
-VPINBALLAPI VPINBALL_STATUS VPinballLoadTable(const char* pPath)
-{
-   if (pPath == nullptr)
-      return VPINBALL_STATUS_FAILURE;
-
-   return VPinballLib::VPinballLib::Instance().LoadTable(pPath);
-}
-
 VPINBALLAPI VPINBALL_STATUS VPinballExtractTableScript(const char* pPath)
 {
    if (pPath == nullptr)
@@ -148,9 +140,9 @@ VPINBALLAPI VPINBALL_STATUS VPinballExtractTableScript(const char* pPath)
    return VPinballLib::VPinballLib::Instance().ExtractTableScript(pPath);
 }
 
-VPINBALLAPI VPINBALL_STATUS VPinballPlay()
+VPINBALLAPI VPINBALL_STATUS VPinballPlay(const char* pPath)
 {
-   return VPinballLib::VPinballLib::Instance().Play();
+   return VPinballLib::VPinballLib::Instance().Play(pPath ? string(pPath) : string());
 }
 
 VPINBALLAPI VPINBALL_STATUS VPinballStop()

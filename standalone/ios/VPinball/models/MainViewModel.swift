@@ -258,16 +258,9 @@ class MainViewModel: ObservableObject {
     }
 
     func handlePlayTable() {
-        if VPinballModel.shared.activeTable != nil {
-            return
-        }
-
         if let selectedTable = selectedTable {
             Task {
-                if await VPinballManager.shared.play(table: selectedTable) != true {
-                    VPinballModel.shared.activeTable = nil
-                    handleShowError(message: "Unable to load table")
-                }
+                await VPinballManager.shared.play(table: selectedTable)
             }
         }
     }
