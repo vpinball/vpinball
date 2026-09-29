@@ -216,7 +216,7 @@ void WMPAudioPlayer::SetVolume(float volume)
 
 void WMPAudioPlayer::UpdateVolume(int volume, bool mute)
 {
-   const int clampedVolume = std::clamp(volume, 0, 100);
+   const int clampedVolume = clamp(volume, 0, 100);
 
    float audioVolume = static_cast<float>(clampedVolume) / 100.0f;
    if (mute)

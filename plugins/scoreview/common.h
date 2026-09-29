@@ -48,8 +48,8 @@ namespace ScoreView
 #define PATH_SEPARATOR_CHAR '/'
 #endif
 
-template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
-template <typename T> constexpr __forceinline T saturate(const T x) { return std::max(std::min(x, T { 1 }), T { 0 }); }
+template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
+template <typename T> constexpr __forceinline T saturate(const T x) { const T c = x < T { 1 } ? x : T { 1 }; return c < T { 0 } ? T { 0 } : c; }
 
 string TrimLeading(const string& str, const string& whitespace);
 string TrimTrailing(const string& str, const string& whitespace);

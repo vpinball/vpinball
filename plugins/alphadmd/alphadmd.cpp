@@ -87,7 +87,7 @@ typedef enum {
    Layout_4x6_2x2_1x6,
 } DmdLayouts;
 
-template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
 
 #ifdef _WIN32
 static void SetThreadName(const std::string& name)

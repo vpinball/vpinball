@@ -75,9 +75,9 @@ PSC_USE_ERROR();
 #define CONSTEXPR constexpr
 #endif
 
-template <typename T> constexpr T clamp(const T x, const T mn, const T mx) { return x < mn ? mn : x > mx ? mx : x; }
+template <typename T> constexpr T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
 template <typename T> constexpr T lerp(const T x1, const T x2, const float alpha) { return (1.f - alpha) * x1 + alpha * x2; }
-template <typename T> constexpr T saturate(const T x) { return std::max(std::min(x, T { 1 }), T { 0 }); }
+template <typename T> constexpr T saturate(const T x) { const T c = x < T { 1 } ? x : T { 1 }; return c < T { 0 } ? T { 0 } : c; }
 
 // Rendering provided through plugin messages
 extern VPXTexture CreateTexture(SDL_Surface* surf);

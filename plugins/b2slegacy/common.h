@@ -244,7 +244,7 @@ bool is_string_numeric(const string& str, int* const __restrict result);
 
 }
 
-template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
 
 class vec3 final
 {

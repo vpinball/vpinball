@@ -27,6 +27,9 @@ using namespace xbrz;
 
 namespace
 {
+// Same as VPX clamp (branchless, requires mn <= mx)
+template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
+
 //blend front color with opacity M / N over opaque background: https://en.wikipedia.org/wiki/Alpha_compositing
 //Limitation: alpha should be applied in gamma-decoded linear RGB space: https://ssp.impulsetrain.com/gamma-premult.html
 template <unsigned int M, unsigned int N> inline
@@ -518,15 +521,15 @@ class OobReaderDuplicate
 {
 public:
     OobReaderDuplicate(const uint32_t* src, int srcWidth, int srcHeight, int y) :
-        s_m1(src + srcWidth * std::clamp(y - 1, 0, srcHeight - 1)),
-        s_0 (src + srcWidth * std::clamp(y,     0, srcHeight - 1)),
-        s_p1(src + srcWidth * std::clamp(y + 1, 0, srcHeight - 1)),
-        s_p2(src + srcWidth * std::clamp(y + 2, 0, srcHeight - 1)),
+        s_m1(src + srcWidth * clamp(y - 1, 0, srcHeight - 1)),
+        s_0 (src + srcWidth * clamp(y,     0, srcHeight - 1)),
+        s_p1(src + srcWidth * clamp(y + 1, 0, srcHeight - 1)),
+        s_p2(src + srcWidth * clamp(y + 2, 0, srcHeight - 1)),
         srcWidth_(srcWidth) {}
 
     void readPonm(Kernel_4x4& ker, int x) const //(x, y) is at kernel position E
     {
-        const int x_p2 = std::clamp(x + 2, 0, srcWidth_ - 1);
+        const int x_p2 = clamp(x + 2, 0, srcWidth_ - 1);
         ker.p = s_m1[x_p2];
         ker.o = s_0 [x_p2];
         ker.n = s_p1[x_p2];

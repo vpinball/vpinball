@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <cassert>
 #include <cmath>
 
 namespace superxbr
@@ -71,6 +72,7 @@ static inline float max4(float a, float b, float c, float d)
 template<class T>
 inline T clamp(T x, T floor, T ceil)
 {
+	assert(!(ceil < floor));
 	return max(min(x,ceil),floor);
 }
 

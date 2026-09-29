@@ -91,9 +91,14 @@ TEST_CASE("ColorSpace sRGB transfer helpers")
       CHECK(LinearToSRGB(-FLT_MAX) == 0);
       CHECK(LinearToSRGB(2.f) == 255);
       CHECK(LinearToSRGB(FLT_MAX) == 255);
+      CHECK(LinearToSRGB(INFINITY) == 255);
+      CHECK(LinearToSRGB(-INFINITY) == 0);
       CHECK(LinearToSRGB(std::nanf("")) == 0);
       CHECK(LinearToPercent(-0.5f) == 0);
       CHECK(LinearToPercent(2.f) == 100);
+      CHECK(LinearToPercent(FLT_MAX) == 100);
+      CHECK(LinearToPercent(INFINITY) == 100);
+      CHECK(LinearToPercent(-INFINITY) == 0);
       CHECK(LinearToPercent(std::nanf("")) == 0);
    }
 }

@@ -30,12 +30,15 @@ inline float sRGBToLinearF(const float c) { return (c <= 0.04045f) ? (c * (1.f /
 // 1/(100*12.92) = 1/1292 for the 0..100 ones, both wider than the 1/4095 bins below
 constexpr int LUT_SIZE = 4096;
 
-// Clamped, for out of range and NaN inputs (NaN should fail both comparisons -> 0)
-inline int LutIndex(const float linear)
+// Clamp to 0..1, for out of range and NaN inputs (NaN should fail both comparisons -> 0) (maps to minss/maxss on x86)
+inline float Clamp01(const float linear)
 {
-   const float c = (linear > 0.f) ? ((linear < 1.f) ? linear : 1.f) : 0.f;
-   return static_cast<int>(c * static_cast<float>(LUT_SIZE - 1) + 0.5f);
+   const float c = (linear > 0.f) ? linear : 0.f; // NaN -> 0
+   return (c < 1.f) ? c : 1.f;
 }
+
+// For a value already clamped to 0..1
+inline int LutIndex(const float c) { return static_cast<int>(c * static_cast<float>(LUT_SIZE - 1) + 0.5f); }
 
 struct Tables
 {
@@ -108,7 +111,8 @@ inline float SRGBToLuminance(const uint8_t r, const uint8_t g, const uint8_t b)
 inline uint8_t LinearToSRGB(const float linear)
 {
    const detail::Tables &t = detail::g_tables;
-   return static_cast<uint8_t>(detail::Correct(t.linearToByte[detail::LutIndex(linear)], linear, t.ByteThreshold()));
+   const float c = detail::Clamp01(linear); // Correct() must see the clamped value too, or +INF steps past the end sentinel
+   return static_cast<uint8_t>(detail::Correct(t.linearToByte[detail::LutIndex(c)], c, t.ByteThreshold()));
 }
 
 // Nearest 0..100 brightness percentage for a linear value, clamped to 0..1. Exact.
@@ -117,7 +121,8 @@ inline uint8_t LinearToSRGB(const float linear)
 inline uint8_t LinearToPercent(const float linear)
 {
    const detail::Tables &t = detail::g_tables;
-   return static_cast<uint8_t>(detail::Correct(t.linearToPercent[detail::LutIndex(linear)], linear, t.PercentThreshold()));
+   const float c = detail::Clamp01(linear); // See LinearToSRGB
+   return static_cast<uint8_t>(detail::Correct(t.linearToPercent[detail::LutIndex(c)], c, t.PercentThreshold()));
 }
 
 }

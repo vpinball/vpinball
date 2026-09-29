@@ -15,6 +15,9 @@ using std::string;
 #include <format>
 
 #include <memory>
+#include <cassert>
+
+template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
 
 #ifdef _WIN32
 #define PATH_SEPARATOR_CHAR '\\'

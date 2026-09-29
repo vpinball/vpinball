@@ -779,14 +779,14 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)
       m_plineseg->m_enabled = false;
 
    if (speed <= 0.0f)
-      speed = 0.2f;                     // default gate angle speed
+      speed = 0.2f;                   // default gate angle speed
    else
-      speed *= (float)(M_PI / 180.0);   // convert to radians
+      speed *= (float)(M_PI / 180.0); // convert to radians
 
    if (dir == 0 || angle != 0) // if no direction or non-zero angle
    {
       angle = clamp(angle * (float)(M_PI / 180.0), m_d.m_angleMin, m_d.m_angleMax);
-      const float da = angle - m_phitgate->m_gateMover.m_angle; //calc true direction
+      const float da = angle - m_phitgate->m_gateMover.m_angle; // calc true direction
       if (da > 1.0e-5f)
          dir = +1;
       else if (da < -1.0e-5f)
@@ -794,7 +794,7 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)
       else
       {
          dir = 0;                                  // do nothing
-         m_phitgate->m_gateMover.m_anglespeed = 0; //stop 
+         m_phitgate->m_gateMover.m_anglespeed = 0; // stop
       }
    }
    else

@@ -3,6 +3,8 @@
   Available under the MIT license.
 */
 
+#include <cassert>
+
 typedef uint32_t ABGR8;
 
 namespace mmpx {
@@ -15,7 +17,7 @@ protected:
     mutable int m_srcMaxX;
     mutable int m_srcMaxY;
 
-    template <typename T> constexpr static inline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+    template <typename T> constexpr static inline T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
 
     FORCE_INLINE ABGR8 src(int x, int y) const {
         // Clamp to border

@@ -409,7 +409,7 @@ private:
       if (!m_config.enablePositionLimits)
          return;
 
-      m_x.x = std::clamp(m_x.x, m_config.minPosition, m_config.maxPosition);
+      m_x.x = clamp(m_x.x, m_config.minPosition, m_config.maxPosition);
 
       // If the state is clamped against a physical stop, remove velocity
       // pushing further outside the valid range.

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <cmath>
 
 namespace scalefx
@@ -21,6 +22,7 @@ template <typename T> constexpr inline T max(const T x, const T y) { return x < 
 
 template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx)
 {
+   assert(!(mx < mn));
    return max(min(x,mx),mn);
 }
 

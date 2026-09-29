@@ -156,6 +156,7 @@ __forceinline double max<double>(const double x, const double y)
 template <typename T>
 constexpr __forceinline T clamp(const T x, const T mn, const T mx)
 {
+   assert(!(mx < mn));
    return max(min(x,mx),mn);
 }
 
@@ -167,7 +168,8 @@ constexpr __forceinline T lerp(const T x1, const T x2, const float alpha)
 
 constexpr __forceinline int clamp(const int x, const int mn, const int mx)
 {
-   if (x < mn) return mn; else if (x > mx) return mx; else return x;
+   assert(mn <= mx);
+   return max(min(x,mx),mn);
 }
 
 template <typename T>
