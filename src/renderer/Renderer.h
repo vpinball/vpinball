@@ -58,7 +58,8 @@ public:
    void SetShadeMode(ShadeMode mode) { m_shadeMode = mode; };
    ShadeMode GetShadeMode() const { return m_shadeMode; };
 
-   void RenderFrame();
+   void Render3DScene(); // Records the passes of a full frame rendering the 3D scene to the output backbuffer
+   void RenderUIScene(); // Records a frame containing only the LiveUI (used while the initial table content is being loaded)
 
    enum ColorSpace
    {
