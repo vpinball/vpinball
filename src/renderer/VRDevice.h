@@ -200,6 +200,7 @@ public:
    bgfx::RendererType::Enum GetGraphicContextType() const;
    void PollEvents();
    void RenderFrame(class RenderDevice* rd, const std::function<void(RenderTarget* vrRenderTarget)>& submitFrame);
+   RenderTarget* GetUIRenderTarget() const { return m_uiRenderTarget; } // Acquired swapchain target for the UI composition layer (or nullptr if unsupported/not acquired yet)
    void UpdateVisibilityMask(class RenderDevice* rd);
    bool UseDepthBuffer() const { return m_depthExtensionSupported; }
    bgfx::TextureFormat::Enum GetDepthFormat() const { return m_depthSwapchainInfo.format; }
@@ -252,13 +253,17 @@ private:
 
    SwapchainInfo m_colorSwapchainInfo = {};
    SwapchainInfo m_depthSwapchainInfo = {};
+   SwapchainInfo m_uiSwapchainInfo = {};
    std::vector<std::unique_ptr<RenderTarget>> m_swapchainRenderTargets;
+   std::vector<std::unique_ptr<RenderTarget>> m_uiRenderTargets;
+   RenderTarget* m_uiRenderTarget = nullptr; // Written by the render thread before releasing the frame semaphore, read by the logic thread while recording the frame
    std::vector<XrEnvironmentBlendMode> m_applicationEnvironmentBlendModes = { XR_ENVIRONMENT_BLEND_MODE_OPAQUE, XR_ENVIRONMENT_BLEND_MODE_ADDITIVE };
    std::vector<XrEnvironmentBlendMode> m_environmentBlendModes = {};
    XrEnvironmentBlendMode m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM;
 
    XrSpace m_referenceSpace = XR_NULL_HANDLE;
-   
+   XrSpace m_viewSpace = XR_NULL_HANDLE; // Head-locked space for the UI quad layer
+
    bool m_headsetViewCentering = false;
    bool m_controllerViewCentering = false;
    XrSpace m_leftControllerSpace = XR_NULL_HANDLE;
@@ -271,6 +276,7 @@ private:
       XrCompositionLayerProjection layerProjection = { XR_TYPE_COMPOSITION_LAYER_PROJECTION };
       std::vector<XrCompositionLayerProjectionView> layerProjectionViews;
       std::vector<XrCompositionLayerDepthInfoKHR> depthInfoViews;
+      XrCompositionLayerQuad layerQuad = { XR_TYPE_COMPOSITION_LAYER_QUAD };
       XrCompositionLayerPassthroughFB layerPassthrough = { XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB };
    };
 

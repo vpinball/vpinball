@@ -841,8 +841,8 @@ void Player::InitTableSession(const bool isInitial)
          {
 #ifdef ENABLE_BGFX
             // Enable a dedicated loading UI while the worker threads load & compress textures, giving the user progress feedback and a way to skip compression
-            // (the OpenXR swapchain image is only valid inside the render thread frame callback so the loading UI is not available in VR)
-            showLoadingUI = (m_vrDevice == nullptr) && (m_playMode != PlayMode::CaptureAttract) && (m_texLoadStats.nCompressed > 0);
+            // (in VR, the UI is rendered to a dedicated OpenXR composition layer which is acquired by the render thread inside its frame callback)
+            showLoadingUI = (m_playMode != PlayMode::CaptureAttract) && (m_texLoadStats.nCompressed > 0);
             if (showLoadingUI)
             {
                m_isLoading = true;

@@ -2930,6 +2930,42 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             m_renderDevice->m_FBShader->SetInt(ShaderUniform::layer, 1);
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
          }
+
+         // Composite the UI on the preview, as it is submitted to the headset as a dedicated composition layer
+         if (RenderTarget* const uiLayer = g_pplayer->m_vrDevice->GetUIRenderTarget(); uiLayer != nullptr && m_vrPreview != VRPREVIEW_DISABLED)
+         {
+            m_renderDevice->AddRenderTargetDependency(uiLayer);
+            const float uiW = static_cast<float>(uiLayer->GetWidth()), uiH = static_cast<float>(uiLayer->GetHeight());
+            // Same cropping as the mirrored eye texture (uv span), with position mapped through a pixel ortho transform
+            const float tu1 = static_cast<float>(x) / w, tv1 = static_cast<float>(y) / h;
+            const float tu2 = static_cast<float>(x + fw) / w, tv2 = static_cast<float>(y + fh) / h;
+            const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, uiW, uiH, 0.f, 0.f, 1.f);
+            m_renderDevice->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
+            m_renderDevice->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &ortho, 2);
+            m_renderDevice->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 0.f);
+            m_renderDevice->m_uiShader->SetVector(ShaderUniform::clip_plane, 0.f, 0.f, uiW, uiH);
+            m_renderDevice->m_uiShader->SetTexture(ShaderUniform::tex_base_color, uiLayer->GetColorSampler());
+            Vertex3D_NoTex2 overlay[4] = {
+               { 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, tu1, tv1 },
+               { uiW, 0.f, 1.f, 1.f, 1.f, 1.f, tu2, tv1 },
+               { 0.f, uiH, 1.f, 1.f, 1.f, 1.f, tu1, tv2 },
+               { uiW, uiH, 1.f, 1.f, 1.f, 1.f, tu2, tv2 }
+            };
+            m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+            m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+            if (m_vrPreview == VRPREVIEW_BOTH)
+            {
+               overlay[0].x = overlay[2].x = 0.f;
+               overlay[1].x = overlay[3].x = uiW * 0.5f;
+               m_renderDevice->DrawTexturedQuad(m_renderDevice->m_uiShader, overlay, true);
+               overlay[0].x = overlay[2].x = uiW * 0.5f;
+               overlay[1].x = overlay[3].x = uiW;
+            }
+            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_uiShader, overlay, true);
+            m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+         }
       }
 
       if (m_vrApplyColorKey)
@@ -2993,11 +3029,23 @@ void Renderer::RenderUIScene()
    // per view with the correct orientation (same render path as Render3DScene)
    const bool uiBeforeStero = m_stereo3Denabled && (m_renderDevice->m_stereoShader != nullptr) && (GetBackBufferTexture() != nullptr)
       && (m_stereo3D == STEREO_SBS || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT);
-   RenderTarget* const uiRT = uiBeforeStero ? GetBackBufferTexture() : backBuffer;
+   // For OpenXR, the LiveUI is rendered to a dedicated mono render target submitted as a view locked quad composition layer (see Render3DScene)
+   RenderTarget* xrUILayer = nullptr;
+   #ifdef ENABLE_XR
+   if (m_stereo3Denabled && m_stereo3D == STEREO_VR)
+      xrUILayer = g_pplayer->m_vrDevice->GetUIRenderTarget();
+   #endif
+   RenderTarget* const uiRT = xrUILayer != nullptr ? xrUILayer : uiBeforeStero ? GetBackBufferTexture() : backBuffer;
+   if (xrUILayer != nullptr)
+   {
+      // The projection layer below the UI quad has no scene content while loading, so clear it to black
+      m_renderDevice->SetRenderTarget("Loading"s, backBuffer, false, true);
+      m_renderDevice->Clear(clearType::TARGET, 0xFF000000);
+   }
    m_renderDevice->SetRenderTarget("Loading"s, uiRT, false, true);
-   m_renderDevice->Clear(clearType::TARGET, 0xFF000000);
+   m_renderDevice->Clear(clearType::TARGET, xrUILayer != nullptr ? 0x00000000 : 0xFF000000); // The XR UI quad layer is alpha blended over the projection layer
    g_pplayer->m_liveUI->RenderUI();
-   if (uiRT != backBuffer)
+   if (uiRT != backBuffer && xrUILayer == nullptr)
    {
       UpdateStereoShaderState();
       ApplyStereo(uiRT, backBuffer);
@@ -3156,10 +3204,25 @@ void Renderer::Render3DScene()
       g_pplayer->m_liveUI->RenderUI();
    }
 
+   // For OpenXR, the LiveUI is rendered to a dedicated mono render target submitted as a view locked quad composition
+   // layer (a head locked overlay rendered inside the world locked projection layer was shaken by the compositor
+   // reprojection). It is recorded before stereo to allow compositing it on the preview window.
+   RenderTarget* xrUILayer = nullptr;
+   #ifdef ENABLE_XR
+   if (m_stereo3D == STEREO_VR && m_stereo3Denabled)
+      xrUILayer = g_pplayer->m_vrDevice->GetUIRenderTarget();
+   #endif
+   if (xrUILayer != nullptr)
+   {
+      m_renderDevice->SetRenderTarget("LiveUI"s, xrUILayer, false, true);
+      m_renderDevice->Clear(clearType::TARGET, 0x00000000);
+      g_pplayer->m_liveUI->RenderUI();
+   }
+
    // Apply stereo
    renderedRT = ApplyStereo(renderedRT, m_renderDevice->GetOutputBackBuffer());
 
-   if (!uiBeforeStero)
+   if (!uiBeforeStero && xrUILayer == nullptr)
    {
       m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
       g_pplayer->m_liveUI->RenderUI();
