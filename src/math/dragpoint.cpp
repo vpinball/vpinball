@@ -301,6 +301,7 @@ void DragPoint::Translate(const Vertex2D &offset)
 {
    m_v.x += offset.x;
    m_v.y += offset.y;
+   m_pcurve->OnPointsModified();
 }
 
 Vertex2D DragPoint::GetCenter() const { return { m_v.x, m_v.y }; }
@@ -325,6 +326,7 @@ void DragPoint::ToggleSmooth()
    {
       m_pcurve->GetPoints()[index2]->m_slingshot = false;
    }
+   m_pcurve->OnPointsModified();
 }
 
 void DragPoint::ToggleSlingshot()
@@ -336,5 +338,6 @@ void DragPoint::ToggleSlingshot()
       const int index2 = (m_pcurve->GetPointIndex(this) + 1) % m_pcurve->GetPoints().size();
       m_pcurve->GetPoints()[index2]->m_smooth = false;
    }
+   m_pcurve->OnPointsModified();
 }
 

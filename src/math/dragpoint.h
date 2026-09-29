@@ -45,16 +45,17 @@ public:
 
    // Point properties
    inline const Vertex3Ds &GetVertex() const { return m_v; }
+   // Setters that change the curve shape invalidate its cached bounds (defined after DragPointCurve)
    inline float GetX() const { return m_v.x; }
-   inline void SetX(const float v) { m_v.x = v; }
+   inline void SetX(const float v);
    inline float GetY() const { return m_v.y; }
-   inline void SetY(const float v) { m_v.y = v; }
+   inline void SetY(const float v);
    inline float GetZ() const { return m_v.z; }
    inline void SetZ(const float v) { m_v.z = v; }
    inline float GetCalcHeight() const { return m_calcHeight; }
    inline void SetCalcHeight(const float v) { m_calcHeight = v; }
    inline bool IsSmooth() const { return m_smooth; }
-   inline void SetSmooth(const bool v) { m_smooth = v; }
+   inline void SetSmooth(const bool v);
    inline bool IsAutoTextureCoordinate() const { return m_autoTexture; }
    inline void SetAutoTextureCoordinate(const bool v) { m_autoTexture = v; }
    inline float GetTextureCoordinateU() const { return m_texturecoord; }
@@ -217,3 +218,7 @@ private:
    mutable Vertex2D m_center;
    mutable Vertex2D m_centroid;
 };
+
+inline void DragPoint::SetX(const float v) { m_v.x = v; m_pcurve->OnPointsModified(); }
+inline void DragPoint::SetY(const float v) { m_v.y = v; m_pcurve->OnPointsModified(); }
+inline void DragPoint::SetSmooth(const bool v) { m_smooth = v; m_pcurve->OnPointsModified(); }
