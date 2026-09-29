@@ -355,7 +355,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
    const SyncField<T> sync = BeginSyncField(obj);
    ImGui::PushID(label.c_str());
    int value = getter(sync.display);
-   const int displayIndex = values.empty() ? -1 : std::clamp(value, 0, static_cast<int>(values.size()) - 1);
+   const int displayIndex = values.empty() ? -1 : clamp(value, 0, static_cast<int>(values.size()) - 1);
    if (ImGui::BeginCombo(("##" + label).c_str(), displayIndex < 0 ? "" : values[displayIndex].c_str()))
    {
       for (size_t i = 0; i < values.size(); i++)

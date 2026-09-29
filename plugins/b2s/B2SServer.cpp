@@ -218,7 +218,7 @@ void B2SServer::UpdateStateSrc()
       {
          const auto id = m_lampStateIds[index].id;
          m_lampStateNames[index] = std::format("Illumination #{}", id);
-         if (m_defaultStateNameMask & (1ull << id))
+         if (id >= 0 && id < 64 && (m_defaultStateNameMask & (1ull << id))) // Script provided ids may be out of the mask range
          {
             switch (id)
             {
@@ -252,7 +252,7 @@ void B2SServer::UpdateStateSrc()
       {
          const auto id = m_playerScoreIds[index].id;
          m_playerScoreNames[index] = std::format("Player Score #{}", id);
-         if (id == 29 && m_defaultStateNameMask & (1ull << id))
+         if (id == 29 && (m_defaultStateNameMask & (1ull << 29)))
             m_playerScoreNames[index] = "Credits"sv;
          m_playerScoreStateDefs.emplace_back(StateDef {
             m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_playerScoreIds[index], GetPlayerScore, nullptr });

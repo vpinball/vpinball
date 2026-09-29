@@ -1888,8 +1888,9 @@ void Player::ProcessOSMessages(const bool isInitialized)
                   {
                      SDL_Rect bounds;
                      SDL_GetDisplayBounds(display, &bounds);
-                     point.x = clamp(point.x, bounds.x, bounds.x + bounds.w - wnd->GetWidth());
-                     point.y = clamp(point.y, bounds.y, bounds.y + bounds.h - wnd->GetHeight());
+                     // A window larger than the display stays aligned to its top left corner
+                     point.x = clamp(point.x, bounds.x, max(bounds.x, bounds.x + bounds.w - wnd->GetWidth()));
+                     point.y = clamp(point.y, bounds.y, max(bounds.y, bounds.y + bounds.h - wnd->GetHeight()));
                   }
                   if (dragging > 1)
                      wnd->SetPos(point.x, point.y);

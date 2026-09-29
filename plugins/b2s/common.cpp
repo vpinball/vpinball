@@ -120,11 +120,13 @@ bool is_string_numeric(const string& str, int* const __restrict result)
    if (tmp.empty())
       return false;
    char* end = nullptr;
-   const double valued = std::strtod(tmp.c_str(), &end);
-   const int valuei = static_cast<int>(std::nearbyint(valued));
+   const double valued = std::nearbyint(std::strtod(tmp.c_str(), &end));
+   if (infNaN(valued) || valued < static_cast<double>(INT_MIN) || valued > static_cast<double>(INT_MAX))
+      return false;
+   const int valuei = static_cast<int>(valued);
    if (result)
       *result = valuei;
-   return (end == tmp.c_str() + tmp.length()) && !infNaN(valued) && (valuei >= INT_MIN) && (valuei <= INT_MAX);
+   return end == tmp.c_str() + tmp.length();
 }
 
 }

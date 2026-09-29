@@ -486,10 +486,11 @@ void DisplaySettingsPage::BuildWindowPage()
                        wnd->GetPixelPos(pos.x, pos.y);
                        const int displayLeft = wnd->LogicalToPixel(m_displays[wndDisplay].left);
                        const int displayTop = wnd->LogicalToPixel(m_displays[wndDisplay].top);
-                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, displayLeft, displayLeft + containerWidth - size.x);
-                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, displayTop, displayTop + containerHeight - size.y);
+                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, displayLeft, max(displayLeft, displayLeft + containerWidth - size.x));
+                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, displayTop, max(displayTop, displayTop + containerHeight - size.y));
                        wnd->SetPixelPos(pos.x, pos.y);
                        wnd->SetPixelSize(size.x, size.y);
+
                        OnStaticRenderDirty();
                        RequestRebuild();
                     }))
@@ -524,8 +525,8 @@ void DisplaySettingsPage::BuildWindowPage()
                        wnd->GetPixelPos(pos.x, pos.y);
                        const int displayLeft = wnd->LogicalToPixel(m_displays[wndDisplay].left);
                        const int displayTop = wnd->LogicalToPixel(m_displays[wndDisplay].top);
-                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, displayLeft, displayLeft + containerWidth - size.x);
-                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, displayTop, displayTop + containerHeight - size.y);
+                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, displayLeft, max(displayLeft, displayLeft + containerWidth - size.x));
+                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, displayTop, max(displayTop, displayTop + containerHeight - size.y));
                        wnd->SetPixelPos(pos.x, pos.y);
                        wnd->SetPixelSize(size.x, size.y);
 
@@ -744,8 +745,8 @@ void DisplaySettingsPage::Render(float elapsedS)
          default: assert(false);
          }
 
-         pos.x = clamp(pos.x, displayBounds.x, displayBounds.x + displayBounds.w - m_player->m_playfieldWnd->GetWidth());
-         pos.y = clamp(pos.y, displayBounds.y, displayBounds.y + displayBounds.h - m_player->m_playfieldWnd->GetHeight());
+         pos.x = clamp(pos.x, displayBounds.x, max(displayBounds.x, displayBounds.x + displayBounds.w - m_player->m_playfieldWnd->GetWidth()));
+         pos.y = clamp(pos.y, displayBounds.y, max(displayBounds.y, displayBounds.y + displayBounds.h - m_player->m_playfieldWnd->GetHeight()));
          m_player->m_playfieldWnd->SetPos(pos.x, pos.y);
       }
       else if (GetOutput(m_wndId).GetMode() == RenderOutput::OM_EMBEDDED)
@@ -755,8 +756,8 @@ void DisplaySettingsPage::Render(float elapsedS)
          GetOutput(m_wndId).GetPos(pos.x, pos.y);
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
          ImGui::ResetMouseDragDelta();
-         pos.x = clamp(pos.x + static_cast<int>(drag.x), 0, m_player->m_playfieldWnd->GetWidth() - GetOutput(m_wndId).GetWidth());
-         pos.y = clamp(pos.y + static_cast<int>(drag.y), 0, m_player->m_playfieldWnd->GetHeight() - GetOutput(m_wndId).GetHeight());
+         pos.x = clamp(pos.x + static_cast<int>(drag.x), 0, max(0, m_player->m_playfieldWnd->GetWidth() - GetOutput(m_wndId).GetWidth()));
+         pos.y = clamp(pos.y + static_cast<int>(drag.y), 0, max(0, m_player->m_playfieldWnd->GetHeight() - GetOutput(m_wndId).GetHeight()));
          GetOutput(m_wndId).SetPos(pos.x, pos.y);
       }
    }
