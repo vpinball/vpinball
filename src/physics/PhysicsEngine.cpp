@@ -105,6 +105,10 @@ void PhysicsEngine::SetGravity(float slopeDeg, float strength)
 
 void PhysicsEngine::Update(IEditable *editable)
 {
+   // Editable parts without physics (timers, light sequencers, part groups,...)
+   if (editable->GetIHitable() == nullptr)
+      return;
+
    // Modifying physics suspends the simulation, allowing for interactive edit with a deferred quadtree rebuild
    if (g_pplayer)
       g_pplayer->SetPlayState(false);

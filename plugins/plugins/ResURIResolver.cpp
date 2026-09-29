@@ -227,7 +227,7 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
                   int subId = 0;
                   if (auto subIdPart = uri.query.find("sub"s); subIdPart != uri.query.end())
                   {
-                     if (try_parse_int(subIdPart->second, subId) && subId < static_cast<int>(segSource->nElements))
+                     if (try_parse_int(subIdPart->second, subId) && subId >= 0 && subId < static_cast<int>(segSource->nElements))
                      {
                         SegSrcId &subSegSrc = m_subSegSources.emplace_back(*segSource);
                         subSegSrc.GetState = nullptr;

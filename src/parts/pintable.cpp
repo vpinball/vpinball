@@ -435,13 +435,13 @@ void PinTable::ReorderParts(bool isDrawingOrder)
    if (!selection.empty())
    {
       SetNonUndoableDirty(eSaveDirty);
-      for (size_t i = selection.size() - 1; i >= 0; i--)
+      for (int i = (int)selection.size() - 1; i >= 0; i--)
       {
          IEditable *const pedit = selection[i]->GetEditable();
          RemoveFromVectorSingle(m_vedit, pedit);
       }
 
-      for (size_t i = selection.size() - 1; i >= 0; i--)
+      for (int i = (int)selection.size() - 1; i >= 0; i--)
       {
          IEditable *const pedit = selection[i]->GetEditable();
          if (FindIndexOf(m_vedit, pedit) != -1)
@@ -1666,16 +1666,20 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                }
             }
          }
+         // Drop failed loads before searching for duplicates (the name is stored in the stream, so identify them by stream)
+         for (size_t i = 0; i < m_vsound.size(); i++)
+            if (m_vsound[i] == nullptr)
+               PLOGE << "Failed to load table sound from stream GameStg/Sound" << i;
+         std::erase(m_vsound, nullptr);
+         for (size_t i = 0; i < m_vimage.size(); i++)
+            if (m_vimage[i] == nullptr)
+               PLOGE << "Failed to load table image from stream GameStg/Image" << i;
+         std::erase(m_vimage, nullptr);
          if (!m_vsound.empty())
             for (size_t i = 0; i < m_vsound.size(); ++i)
             {
-               if (const VPX::Sound *sound = m_vsound[i]; sound == nullptr)
-               {
-                  PLOGE << "Failed to load one of the table sounds";
-                  m_vsound.erase(m_vsound.begin() + i);
-                  --i;
-               }
-               else if (i < m_vsound.size() - 1)
+               const VPX::Sound *sound = m_vsound[i];
+               if (i < m_vsound.size() - 1)
                {
                   for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
                      if (StrCompareNoCase(sound->GetName(), m_vsound[i2]->GetName()))
@@ -1690,13 +1694,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          if (!m_vimage.empty())
             for (size_t i = 0; i < m_vimage.size(); ++i)
             {
-               if (const Texture *image = m_vimage[i]; image == nullptr)
-               {
-                  PLOGE << "Failed to load one of the table images";
-                  m_vimage.erase(m_vimage.begin() + i);
-                  --i;
-               }
-               else if (i < m_vimage.size() - 1)
+               const Texture *image = m_vimage[i];
+               if (i < m_vimage.size() - 1)
                {
                   for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
                      if (StrCompareNoCase(image->m_name, m_vimage[i2]->m_name))
@@ -2574,7 +2573,7 @@ void PinTable::ComputeNearFarPlane(const vector<Vertex3Ds> &bounds, const Matrix
    zFar *= 1.1f;
    // Clip to sensible value to fix tables with parts far far away breaking depth buffer precision
    zNear = max(zNear, scale * CMTOVPU(5.f)); // Avoid wasting depth buffer precision for parts too near to be useful
-   zFar = clamp(zFar, zNear + 1.f, scale * CMTOVPU(100000.f)); // 1 km (yes some VR room do really need this...)
+   zFar = clamp(zFar, zNear + 1.f, max(zNear + 1.f, scale * CMTOVPU(100000.f))); // 1 km (yes some VR room do really need this...), but always beyond zNear
    // Could not reproduce, so I disabled it for the sake of avoiding to pass inc to the method which is not really meaningful here (we would have to compute it from the matWorldView)
    //!! magic threshold, otherwise kicker holes are missing for inclination ~0
    //if (fabsf(inc) < 0.0075f)

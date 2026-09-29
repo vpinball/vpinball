@@ -1035,6 +1035,8 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
             if (reader.HasError())
             {
                assert(!"Invalid binary image file");
+               delete ppb; // Partially loaded, do not create a texture from it
+               ppb = nullptr;
                return false;
             }
             break;
@@ -1062,7 +1064,10 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
       });
 
    if (ppb == nullptr)
+   {
+      PLOGE << "Failed to load image '" << name << "': no image data";
       return nullptr;
+   }
 
    Texture* const tex = new Texture(name, ppb, width, height);
    tex->m_alphaTestValue = alphaTestValue;
@@ -1145,12 +1150,14 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
       return buffer;
    //PLOGD << "Decoding image " << m_name;
    buffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
-   if (buffer && m_width != buffer->m_realWidth)
+   if (buffer == nullptr)
+      return nullptr;
+   if (m_width != buffer->m_realWidth)
    {
       PLOGE << "Corrupted file: image '" << m_name << "' width (" << buffer->m_realWidth << ") does not match the width (" << m_width << ") of the image datablock.";
       const_cast<Texture*>(this)->m_width = buffer->m_realWidth;
    }
-   if (buffer && m_height != buffer->m_realHeight)
+   if (m_height != buffer->m_realHeight)
    {
       PLOGE << "Corrupted file: image '" << m_name << "' height (" << buffer->m_realHeight << ") does not match the height (" << m_height << ") of the image datablock.";
       const_cast<Texture*>(this)->m_height = buffer->m_realHeight;

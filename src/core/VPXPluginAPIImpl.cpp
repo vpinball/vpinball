@@ -177,8 +177,10 @@ void MSGPIAPI VPXPluginAPIImpl::SetInputState(VPXInputState* state)
 
 double MSGPIAPI VPXPluginAPIImpl::GetGameTime()
 {
+   if (!g_pplayer)
+      return 0.0;
    g_pplayer->m_pluginManager.AssertAPIThread();
-   return g_pplayer ? g_pplayer->m_time_sec : 0.0;
+   return g_pplayer->m_time_sec;
 }
 
 
@@ -272,6 +274,11 @@ void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 
 void MSGPIAPI VPXPluginAPIImpl::RunScript(const char* script)
 {
+   if (!g_pplayer)
+   {
+      PLOGE << "Invalid VPX API call 'RunScript' while no game is running";
+      return;
+   }
    g_pplayer->m_pluginManager.AssertAPIThread();
    if (script == nullptr)
    {
