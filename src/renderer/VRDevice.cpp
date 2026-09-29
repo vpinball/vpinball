@@ -320,6 +320,8 @@ VRDevice::~VRDevice()
          OPENXR_CHECK(xrDestroySpace(m_rightControllerSpace), "Failed to destroy Right Controller Space.")
       // Destroy the reference XrSpace.
       OPENXR_CHECK(xrDestroySpace(m_referenceSpace), "Failed to destroy Space.")
+      if (m_viewSpace != XR_NULL_HANDLE)
+         OPENXR_CHECK(xrDestroySpace(m_viewSpace), "Failed to destroy View Space.")
 
       if (m_passthroughLayer != XR_NULL_HANDLE)
       {
@@ -695,14 +697,22 @@ void VRDevice::CreateSession()
    XrReferenceSpaceType* referenceSpaces = new XrReferenceSpaceType[referenceSpaceCount];
    xrEnumerateReferenceSpaces(m_session, referenceSpaceCount, &referenceSpaceCount, referenceSpaces);
    XrReferenceSpaceCreateInfo referenceSpaceCI { XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
+   bool viewSpaceSupported = false;
    for (uint32_t i = 0; i < referenceSpaceCount; i++)
       if (referenceSpaces[i] == XR_REFERENCE_SPACE_TYPE_STAGE)
          referenceSpaceCI.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
       else if ((referenceSpaces[i] == XR_REFERENCE_SPACE_TYPE_LOCAL) && (referenceSpaceCI.referenceSpaceType != XR_REFERENCE_SPACE_TYPE_STAGE))
          referenceSpaceCI.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
+      else if (referenceSpaces[i] == XR_REFERENCE_SPACE_TYPE_VIEW)
+         viewSpaceSupported = true;
    referenceSpaceCI.poseInReferenceSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
    OPENXR_CHECK(xrCreateReferenceSpace(m_session, &referenceSpaceCI, &m_referenceSpace), "Failed to create ReferenceSpace.");
    delete[] referenceSpaces;
+   if (viewSpaceSupported)
+   {
+      referenceSpaceCI.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_VIEW;
+      OPENXR_CHECK(xrCreateReferenceSpace(m_session, &referenceSpaceCI, &m_viewSpace), "Failed to create View Space.");
+   }
 
    // Get the supported swapchain formats as an array of int64_t and ordered by runtime preference.
    uint32_t formatCount = 0;
@@ -744,6 +754,43 @@ void VRDevice::CreateSession()
    }
    m_swapchainRenderTargets.resize(m_colorSwapchainInfo.imageViews.size() * m_depthSwapchainInfo.imageViews.size());
 
+   // Create a dedicated mono swapchain for the LiveUI, submitted as a view-locked quad composition layer. This avoids
+   // the compositor reprojection shaking the (head-locked) UI, as well as the fake stereo offset that made it unfocusable.
+   if (m_viewSpace != XR_NULL_HANDLE)
+   {
+      m_uiSwapchainInfo.backendFormat = m_backend->SelectColorSwapchainFormat(formats);
+      m_uiSwapchainInfo.width = m_eyeWidth;
+      m_uiSwapchainInfo.height = m_eyeHeight;
+      m_uiSwapchainInfo.arraySize = 1;
+
+      XrSwapchainCreateInfo swapchainCreateInfo { XR_TYPE_SWAPCHAIN_CREATE_INFO };
+      swapchainCreateInfo.arraySize = 1;
+      swapchainCreateInfo.format = m_uiSwapchainInfo.backendFormat;
+      swapchainCreateInfo.width = m_uiSwapchainInfo.width;
+      swapchainCreateInfo.height = m_uiSwapchainInfo.height;
+      swapchainCreateInfo.mipCount = 1;
+      swapchainCreateInfo.faceCount = 1;
+      swapchainCreateInfo.sampleCount = 1;
+      swapchainCreateInfo.createFlags = 0;
+      swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
+      OPENXR_CHECK(xrCreateSwapchain(m_session, &swapchainCreateInfo, &m_uiSwapchainInfo.swapchain), "Failed to create UI Swapchain");
+      if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE)
+      {
+         uint32_t swapchainImageCount;
+         OPENXR_CHECK(xrEnumerateSwapchainImages(m_uiSwapchainInfo.swapchain, 0, &swapchainImageCount, nullptr), "Failed to enumerate UI Swapchain Images.");
+         XrSwapchainImageBaseHeader* swapchainImages = m_backend->AllocateSwapchainImageData(m_uiSwapchainInfo.swapchain, SwapchainType::COLOR, swapchainImageCount);
+         OPENXR_CHECK(xrEnumerateSwapchainImages(m_uiSwapchainInfo.swapchain, swapchainImageCount, &swapchainImageCount, swapchainImages), "Failed to enumerate UI Swapchain Images.");
+         m_backend->CreateImageViews(m_uiSwapchainInfo);
+         m_uiRenderTargets.resize(m_uiSwapchainInfo.imageViews.size());
+         if (m_uiSwapchainInfo.imageViews.empty())
+         { // Image enumeration failed, release the swapchain and fallback to rendering the UI inside the projection layer
+            m_backend->FreeSwapchainImageData(m_uiSwapchainInfo.swapchain);
+            OPENXR_CHECK(xrDestroySwapchain(m_uiSwapchainInfo.swapchain), "Failed to destroy UI Swapchain");
+            m_uiSwapchainInfo.swapchain = XR_NULL_HANDLE;
+         }
+      }
+   }
+
    auto inputHandler = std::make_unique<XRInputHandler>(g_pplayer->m_pininput, m_xrInstance, m_session);
    XrAction leftPoseAction = inputHandler->GetAction("/user/hand/left/input/grip/pose");
    if (leftPoseAction != XR_NULL_HANDLE)
@@ -774,9 +821,13 @@ void VRDevice::ReleaseSession()
 
    // Destroy the swapchian render targets, and color/depth image views
    m_swapchainRenderTargets.clear();
+   m_uiRenderTarget = nullptr;
+   m_uiRenderTargets.clear();
    for (const auto& imageView : m_colorSwapchainInfo.imageViews)
       bgfx::destroy(imageView);
    for (const auto& imageView : m_depthSwapchainInfo.imageViews)
+      bgfx::destroy(imageView);
+   for (const auto& imageView : m_uiSwapchainInfo.imageViews)
       bgfx::destroy(imageView);
 
    // Free the Swapchain Image Data.
@@ -784,12 +835,18 @@ void VRDevice::ReleaseSession()
       m_backend->FreeSwapchainImageData(m_colorSwapchainInfo.swapchain);
    if (m_depthSwapchainInfo.swapchain)
       m_backend->FreeSwapchainImageData(m_depthSwapchainInfo.swapchain);
+   if (m_uiSwapchainInfo.swapchain)
+      m_backend->FreeSwapchainImageData(m_uiSwapchainInfo.swapchain);
 
    // Destroy the swapchains.
    if (m_colorSwapchainInfo.swapchain)
       OPENXR_CHECK(xrDestroySwapchain(m_colorSwapchainInfo.swapchain), "Failed to destroy Color Swapchain");
    if (m_depthSwapchainInfo.swapchain)
       OPENXR_CHECK(xrDestroySwapchain(m_depthSwapchainInfo.swapchain), "Failed to destroy Depth Swapchain");
+   if (m_uiSwapchainInfo.swapchain)
+      OPENXR_CHECK(xrDestroySwapchain(m_uiSwapchainInfo.swapchain), "Failed to destroy UI Swapchain");
+   m_uiSwapchainInfo.swapchain = XR_NULL_HANDLE;
+   m_uiSwapchainInfo.imageViews.clear();
 
    DiscardVisibilityMask();
 }
@@ -1298,14 +1355,19 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // Acquire and wait for an image from the swapchains (the timeout is infinite)
          uint32_t colorImageIndex = 0;
          uint32_t depthImageIndex = 0;
+         uint32_t uiImageIndex = 0;
          constexpr XrSwapchainImageAcquireInfo acquireInfo { XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, nullptr };
          OPENXR_CHECK(xrAcquireSwapchainImage(m_colorSwapchainInfo.swapchain, &acquireInfo, &colorImageIndex), "Failed to acquire Image from the Color Swapchian");
          OPENXR_CHECK(xrAcquireSwapchainImage(m_depthSwapchainInfo.swapchain, &acquireInfo, &depthImageIndex), "Failed to acquire Image from the Depth Swapchian");
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE)
+            OPENXR_CHECK(xrAcquireSwapchainImage(m_uiSwapchainInfo.swapchain, &acquireInfo, &uiImageIndex), "Failed to acquire Image from the UI Swapchain");
 
          XrSwapchainImageWaitInfo waitInfo = { XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO };
          waitInfo.timeout = XR_INFINITE_DURATION;
          OPENXR_CHECK(xrWaitSwapchainImage(m_colorSwapchainInfo.swapchain, &waitInfo), "Failed to wait for Image from the Color Swapchain");
          OPENXR_CHECK(xrWaitSwapchainImage(m_depthSwapchainInfo.swapchain, &waitInfo), "Failed to wait for Image from the Depth Swapchain");
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE)
+            OPENXR_CHECK(xrWaitSwapchainImage(m_uiSwapchainInfo.swapchain, &waitInfo), "Failed to wait for Image from the UI Swapchain");
 
          // Use the full range of recommended image size to achieve optimum resolution
          const XrRect2Di imageRect = { { 0, 0 }, { (int32_t)m_colorSwapchainInfo.width, (int32_t)m_colorSwapchainInfo.height } };
@@ -1352,6 +1414,26 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                   std::format("VRSwapchain [{}/{}]", colorImageIndex, depthImageIndex), m_colorSwapchainInfo.width, m_colorSwapchainInfo.height, colorFormat::RGBA);
             vrRenderTarget = m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()].get();
          }
+
+         // Wrap the acquired UI swapchain image as a render target. This must be done before submitFrame since the
+         // submitted frame is recorded by the logic thread which reads GetUIRenderTarget() once unblocked.
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE)
+         {
+            RenderTarget* uiRenderTarget = m_uiRenderTargets[uiImageIndex].get();
+            if (uiRenderTarget == nullptr)
+            {
+               bgfx::Attachment uiAttachment;
+               uiAttachment.init(m_uiSwapchainInfo.imageViews[uiImageIndex], bgfx::Access::Write, 0, 1, 0, BGFX_ATTACHMENT_NONE);
+               const bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(1, &uiAttachment);
+               bgfx::TextureHandle depthHandle = BGFX_INVALID_HANDLE;
+               m_uiRenderTargets[uiImageIndex] = std::make_unique<RenderTarget>(rd, SurfaceType::RT_DEFAULT, fbh, uiAttachment.handle, m_uiSwapchainInfo.format, 
+                  depthHandle, bgfx::TextureFormat::Enum::Unknown, std::format("VRUILayer [{}]", uiImageIndex), m_uiSwapchainInfo.width, m_uiSwapchainInfo.height,
+                  colorFormat::RGBA);
+               uiRenderTarget = m_uiRenderTargets[uiImageIndex].get();
+            }
+            m_uiRenderTarget = uiRenderTarget;
+         }
+
          submitFrame(vrRenderTarget);
 
          // Fill out the XrCompositionLayerProjection structure for usage with xrEndFrame().
@@ -1364,6 +1446,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          constexpr XrSwapchainImageReleaseInfo releaseInfo { XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO, nullptr };
          OPENXR_CHECK(xrReleaseSwapchainImage(m_colorSwapchainInfo.swapchain, &releaseInfo), "Failed to release Image back to the Color Swapchain");
          OPENXR_CHECK(xrReleaseSwapchainImage(m_depthSwapchainInfo.swapchain, &releaseInfo), "Failed to release Image back to the Depth Swapchain");
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE)
+         {
+            m_uiRenderTarget = nullptr;
+            OPENXR_CHECK(xrReleaseSwapchainImage(m_uiSwapchainInfo.swapchain, &releaseInfo), "Failed to release Image back to the UI Swapchain");
+         }
 
          // Add passthrough layer first (background)
          if (m_passthroughEnabled && m_passthroughLayer != XR_NULL_HANDLE)
@@ -1375,6 +1462,24 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          }
 
          renderLayerInfo.layers.push_back(reinterpret_cast<XrCompositionLayerBaseHeader*>(&renderLayerInfo.layerProjection));
+
+         // Submit the LiveUI as a separate view-locked quad layer on top of the scene. Rendering the UI inside the
+         // projection layer made it shake since a head locked overlay was reprojected as world locked geometry, and the
+         // fake stereo offset applied per eye made it appear unfocused.
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE)
+         {
+            constexpr float uiDistance = 0.5f; // meter in front of the player
+            const float uiHeight = static_cast<float>(m_uiSwapchainInfo.width) / static_cast<float>(m_uiSwapchainInfo.height);
+            renderLayerInfo.layerQuad.layerFlags= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT | XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT | XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
+            renderLayerInfo.layerQuad.space = m_viewSpace;
+            renderLayerInfo.layerQuad.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
+            renderLayerInfo.layerQuad.subImage.swapchain = m_uiSwapchainInfo.swapchain;
+            renderLayerInfo.layerQuad.subImage.imageRect = { { 0, 0 }, { (int32_t)m_uiSwapchainInfo.width, (int32_t)m_uiSwapchainInfo.height } };
+            renderLayerInfo.layerQuad.subImage.imageArrayIndex = 0;
+            renderLayerInfo.layerQuad.pose = { { 0.f, 0.f, 0.f, 1.f }, { 0.f, -0.05f * uiHeight, -uiDistance } };
+            renderLayerInfo.layerQuad.size = { 1.f, uiHeight };
+            renderLayerInfo.layers.push_back(reinterpret_cast<XrCompositionLayerBaseHeader*>(&renderLayerInfo.layerQuad));
+         }
       }
    }
 
