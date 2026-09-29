@@ -55,6 +55,22 @@ inline std::filesystem::path PathFromString(const std::string& s)
 inline std::filesystem::path PathFromString(const std::string& s) { return s; }
 #endif
 
+// Counterpart of PathFromString (settings, titles, messages,...). With MSVC, narrow paths use the ANSI code page and path::string() throws
+// for characters it can not represent: they are replaced by '_' instead (valid in file names), so the result may only approximate the path
+#ifdef _MSC_VER
+std::string PathToString(const std::filesystem::path& path);
+#else
+inline std::string PathToString(const std::filesystem::path& path) { return path.string(); }
+#endif
+
+// UTF-8 paths, as used by SDL and ImGui (narrow paths use the ANSI code page with MSVC)
+inline std::string PathToUTF8(const std::filesystem::path& path)
+{
+   const std::u8string utf8 = path.u8string();
+   return std::string(utf8.begin(), utf8.end());
+}
+inline std::filesystem::path PathFromUTF8(const std::string& utf8) { return std::filesystem::path(std::u8string(utf8.begin(), utf8.end())); }
+
 #ifdef __STANDALONE__
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
@@ -158,6 +174,14 @@ constexpr __forceinline T clamp(const T x, const T mn, const T mx)
 {
    assert(!(mx < mn));
    return max(min(x,mx),mn);
+}
+
+// clamp inbetween -abs(mnmx) and abs(mnmx)
+template <typename T>
+constexpr __forceinline T clamppm(const T x, T mnmx)
+{
+   mnmx = abs(mnmx);
+   return max(min(x,mnmx),-mnmx);
 }
 
 template <typename T>
@@ -731,6 +755,7 @@ string SizeToReadable(const size_t bytes);
 
 #ifndef MINIMAL_DEF_H
 BSTR MakeWideBSTR(const string& sz, const UINT codepage = CP_ACP);
+BSTR MakeWideBSTR(const char* const sz, const size_t length, const UINT codepage); // sz does not need to be zero terminated
 BSTR MakeWideBSTR(const wstring& wz);
 #endif
 WCHAR* MakeWide(const string& sz, const UINT codepage = CP_ACP);
@@ -739,6 +764,7 @@ string MakeString(const WCHAR* const wz, const UINT codepage = CP_ACP);
 #ifndef MINIMAL_DEF_H
 string MakeString(const BSTR wz, const UINT codepage = CP_ACP);
 #endif
+char* MakeCharArray(const WCHAR* const wz, const int length, const UINT codepage); // Zero terminated, new[] allocated (nullptr if the conversion failed)
 wstring MakeWString(const string& sz, const UINT codepage = CP_ACP);
 wstring MakeWString(const char* const sz, const UINT codepage = CP_ACP);
 
@@ -973,11 +999,11 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 #endif
 
 vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary = true);
-void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
+void write_file(const std::filesystem::path& filename, const vector<uint8_t>& data, const bool binary = true);
 inline bool DirExists(const std::filesystem::path& dirPath) { return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath); }
 inline bool FileExists(const std::filesystem::path& filePath) { return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath); }
 bool IsNetworkPath(const std::filesystem::path& path);
-inline string TitleFromFilename(const std::filesystem::path& filename) { return filename.stem().string(); }
+inline string TitleFromFilename(const std::filesystem::path& filename) { return PathToString(filename.stem()); }
 inline std::filesystem::path PathFromFilename(const std::filesystem::path& filename) { return filename.parent_path(); }
 string normalize_path_separators(const string& szPath);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);

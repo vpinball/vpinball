@@ -11,7 +11,7 @@ bool PinBinary::ReadFromFile(const std::filesystem::path& filename)
    return true;
 }
 
-bool PinBinary::WriteToFile(const string& filename) const
+bool PinBinary::WriteToFile(const std::filesystem::path& filename) const
 {
    write_file(filename, m_buffer);
    return true;

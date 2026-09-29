@@ -1292,7 +1292,7 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
    if (!filename.empty())
    {
       vector<string> newList;
-      newList.push_back(filename.string());
+      newList.push_back(PathToString(filename)); // Stored in settings as a native narrow string
 
       for (const string &tableName : m_recentTableList)
       {
@@ -2190,50 +2190,51 @@ void WinEditor::SaveTable(const bool saveAs)
       return;
    
    HRESULT hr;
+   // The table is saved through its filename: 'Save As' sets it for the save, and restores it if the save fails
+   const std::filesystem::path previousFilename = ptCur->m_filename;
+   const string previousTitle = ptCur->m_title;
+   bool renamed = false;
    if (saveAs || ptCur->m_filename.empty())
    {
-      //need to get a file name
-      OPENFILENAME ofn = {};
-      ofn.lStructSize = sizeof(OPENFILENAME);
+      // Need to get a file name: wide dialog, so that any file name can be used
+      OPENFILENAMEW ofn = {};
+      ofn.lStructSize = sizeof(OPENFILENAMEW);
       ofn.hInstance = g_app->GetInstanceHandle();
       ofn.hwndOwner = GetHwnd();
-      // TEXT
-      ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
+      ofn.lpstrFilter = L"Visual Pinball Tables (*.vpx)\0*.vpx\0";
 
       std::filesystem::path vpxPath = ptCur->m_filename;
       vpxPath.replace_extension(".vpx");
-      char fileName[MAXSTRING];
-      strncpy_s(fileName, std::size(fileName), vpxPath.string().c_str());
+      wchar_t fileName[MAXSTRING];
+      wcsncpy_s(fileName, std::size(fileName), vpxPath.c_str(), _TRUNCATE);
       ofn.lpstrFile = fileName;
-      ofn.nMaxFile = std::size(fileName);
-      ofn.lpstrDefExt = "vpx";
+      ofn.nMaxFile = static_cast<DWORD>(std::size(fileName));
+      ofn.lpstrDefExt = L"vpx";
       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
       {
-         string szInitialDir;
          // First, use dir of current table
-         std::filesystem::path currentTablePath = ptCur->m_filename.parent_path();
-         if (!currentTablePath.empty())
-            szInitialDir = currentTablePath.string();
+         std::filesystem::path initialDir = ptCur->m_filename.parent_path();
          // Or try with the standard last-used dir
-         else
+         if (initialDir.empty())
          {
-            Settings::SetRecentDir_LoadDir_Default(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-            szInitialDir = ptCur->GetSettings().GetRecentDir_LoadDir();
+            Settings::SetRecentDir_LoadDir_Default(PathToString(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables)) + PATH_SEPARATOR_CHAR);
+            initialDir = PathFromString(ptCur->GetSettings().GetRecentDir_LoadDir());
          }
-         ofn.lpstrInitialDir = szInitialDir.c_str();
+         const std::wstring initialDirW = initialDir.wstring();
+         ofn.lpstrInitialDir = initialDirW.c_str();
 
-         const int ret = GetSaveFileName(&ofn);
+         const int ret = GetSaveFileNameW(&ofn);
          // user cancelled
          if (ret == 0)
             return;
       }
 
-      // assign user selected file name as new internal filename, and save as new default
-      ptCur->m_filename = fileName;
+      // assign user selected file name as new internal filename
+      ptCur->m_filename = std::filesystem::path(fileName);
       ptCur->m_title = TitleFromFilename(ptCur->m_filename);
-      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(ptCur->m_filename.parent_path().string(), false); // truncate after folder(s)
       SetCaption(ptCur->m_title.c_str());
+      renamed = true;
    }
 
    Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
@@ -2243,7 +2244,17 @@ void WinEditor::SaveTable(const bool saveAs)
    SetActionCur(string());
    SetCursorCur(IDC_ARROW);
    if (hr == S_OK)
+   {
       UpdateRecentFileList(ptCur->m_filename);
+      if (renamed)
+         g_settingsService.GetAppSettings().SetRecentDir_LoadDir(PathToString(ptCur->m_filename.parent_path()), false); // save as new default, truncated after folder(s)
+   }
+   else if (renamed) // Save reports the error
+   {
+      ptCur->m_filename = previousFilename;
+      ptCur->m_title = previousTitle;
+      SetCaption(ptCur->m_title.c_str());
+   }
 }
 
 void WinEditor::OpenNewTable(size_t tableId)

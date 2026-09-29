@@ -173,7 +173,7 @@ public:
    size_t GetFileSize() const { return m_ppb->m_buffer.size(); }
    const uint8_t *GetFileRaw() const { return m_ppb->m_buffer.data(); }
    const std::filesystem::path& GetFilePath() const { return m_ppb->m_path; }
-   bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename); }
+   bool SaveFile(const std::filesystem::path &filename) const { return m_ppb->WriteToFile(filename); }
 
    const uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
    bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }

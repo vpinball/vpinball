@@ -309,22 +309,27 @@ WCHAR *MakeWide(const string& sz, const UINT codepage)
 
 BSTR MakeWideBSTR(const string& sz, const UINT codepage)
 {
+   return MakeWideBSTR(sz.c_str(), sz.length(), codepage);
+}
+
+BSTR MakeWideBSTR(const char* const sz, const size_t length, const UINT codepage)
+{
    // assume that we usually deal with (mostly) ASCII, so then the following over-allocation is (mostly) exact
    // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), works for all codepages (not just CP_ACP), thus saving one Win-API call
    //!! note that this BSTR variant only reaches about 1.1x-1.9x speed up, due to more Win-API overhead
    //   and in the non-ASCII case an additional alloc+copy, but this also removes the overallocation
-   const int szlen = (int)sz.length();
+   const int szlen = (int)length;
    if (szlen == 0)
       return SysAllocString(L"");
 
    BSTR result = SysAllocStringLen(nullptr, szlen);
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
-   if (HelperConvertASCII(sz.c_str(), szlen, result)) // all ASCII? -> done
+   if (HelperConvertASCII(sz, szlen, result)) // all ASCII? -> done
       return result;
 #endif
 
-   const int len = MultiByteToWideChar(codepage, 0, sz.c_str(), szlen, result, szlen+1);
+   const int len = MultiByteToWideChar(codepage, 0, sz, szlen, result, szlen+1);
    if (len < szlen) // shrink the BSTR if the actual conversion produced fewer WCHARs (or if above call errors with 0)
    {
       BSTR trimmed = SysAllocStringLen(result, len);
@@ -401,6 +406,27 @@ static bool HelperIsASCII(const WCHAR* const __restrict wzcstr, const int len)
 }
 #endif
 
+#ifdef _MSC_VER
+std::string PathToString(const std::filesystem::path& path)
+{
+   const std::wstring& wide = path.native();
+   if (wide.empty())
+      return {};
+#ifdef ENABLE_SSE_OPTIMIZATIONS // All ANSI code pages are ASCII supersets
+#pragma warning(push)
+#pragma warning(disable : 4244) // conversion from wchar to char
+   if (HelperIsASCII(wide.c_str(), static_cast<int>(wide.size())))
+      return std::string(wide.begin(), wide.end());
+#pragma warning(pop)
+#endif
+   const char* const defaultChar = (GetACP() == CP_UTF8) ? nullptr : "_"; // A default char makes the UTF-8 code page (Windows beta option) fail
+   const int len = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), static_cast<int>(wide.size()), nullptr, 0, defaultChar, nullptr);
+   std::string narrow(len, '\0');
+   WideCharToMultiByte(CP_ACP, 0, wide.c_str(), static_cast<int>(wide.size()), narrow.data(), len, defaultChar, nullptr);
+   return narrow;
+}
+#endif
+
 string MakeString(const wstring& wz, const UINT codepage)
 {
 #ifdef ENABLE_SSE_OPTIMIZATIONS // 1.5x-8.5x faster for all ASCII cases
@@ -463,6 +489,30 @@ string MakeString(const BSTR wz, const UINT codepage)
       return string();
    string result(len-1, '\0');
    WideCharToMultiByte(codepage, 0, wz, -1, result.data(), len, nullptr, nullptr);
+   return result;
+}
+
+char* MakeCharArray(const WCHAR* const wz, const int length, const UINT codepage)
+{
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+   if (HelperIsASCII(wz, length))
+   {
+      char* const result = new char[length + 1];
+      for (int i = 0; i < length; ++i)
+         result[i] = static_cast<char>(wz[i]);
+      result[length] = '\0';
+      return result;
+   }
+#endif
+
+   // non-ASCII found
+   const int len = (length > 0) ? WideCharToMultiByte(codepage, 0, wz, length, nullptr, 0, nullptr, nullptr) : 0;
+   if (len <= 0 && length > 0)
+      return nullptr;
+   char* const result = new char[len + 1];
+   if (len > 0)
+      WideCharToMultiByte(codepage, 0, wz, length, result, len, nullptr, nullptr);
+   result[len] = '\0';
    return result;
 }
 
@@ -622,12 +672,12 @@ vector<uint8_t> read_file(const std::filesystem::path& filename, const bool bina
    return data;
 }
 
-void write_file(const string& filename, const vector<uint8_t>& data, const bool binary)
+void write_file(const std::filesystem::path& filename, const vector<uint8_t>& data, const bool binary)
 {
    std::ofstream file(filename, binary ? (std::ios::binary | std::ios::trunc) : std::ios::trunc);
    if (!file)
    {
-      const string text = "The file \"" + filename + "\" could not be opened for writing.";
+      const string text = "The file \"" + PathToString(filename) + "\" could not be opened for writing.";
       ShowError(text);
       return;
    }

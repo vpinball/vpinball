@@ -97,7 +97,7 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
 
       // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
       const float maxFric = friction * reactionImpulse;
-      const float jt = clamp(-vt / kt, -maxFric, maxFric);
+      const float jt = clamppm(-vt / kt, maxFric);
 
       if (!infNaN(jt))
          ApplySurfaceImpulse(jt * cross, jt * tangent);
@@ -367,7 +367,7 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
 
    const Vertex3Ds cp = CrossProduct(surfP, slipDir);
    const float denom = 1.0f/m_d.m_mass + slipDir.Dot(CrossProduct(cp / Inertia(), surfP));
-   const float fric = clamp(numer / denom, -maxFric, maxFric);
+   const float fric = clamppm(numer / denom, maxFric);
 
    if (!infNaN(fric))
       ApplySurfaceImpulse((dtime * fric) * cp, (dtime * fric) * slipDir);

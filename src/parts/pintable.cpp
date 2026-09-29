@@ -746,9 +746,11 @@ void PinTable::SetupLookUpTables(bool isPlaying)
 HRESULT PinTable::Save(VPXFileFeedback &feedback)
 {
    HRESULT hr = S_OK;
-   // Get file name if needed
+   // Tables are saved in the VPX format, so a legacy .vpt table is saved to a .vpx file (keeping the case of an existing .vpx extension,
+   // as changing it would write another file on case sensitive file systems)
    std::filesystem::path vpxPath = m_filename;
-   vpxPath.replace_extension(".vpx");
+   if (lowerCase(PathToString(vpxPath.extension())) != ".vpx")
+      vpxPath.replace_extension(".vpx");
 
    RemoveInvalidReferences();
 
@@ -800,13 +802,20 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
       }
 #endif
       SetNonUndoableDirty(eSaveClean);
-   }
 
-   // Save user custom settings file (if any) along the table file
-   // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
-   m_settings.SetModified(true);
-   m_settings.SetIniPath(GetSettingsFileName());
-   m_settings.Save();
+      // A legacy .vpt table was saved as .vpx: from now on, the table is this file
+      if (vpxPath != m_filename)
+      {
+         m_filename = vpxPath;
+         m_title = TitleFromFilename(m_filename);
+      }
+
+      // Save user custom settings file (if any) along the table file, only once saved (a failed 'Save As' must not leave an orphan settings file)
+      // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
+      m_settings.SetModified(true);
+      m_settings.SetIniPath(GetSettingsFileName());
+      m_settings.Save();
+   }
 
    return hr;
 }
@@ -1295,7 +1304,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    rootStorage.open();
    if (rootStorage.result() != POLE::Storage::Ok)
    {
-      const string msg = std::format("Error #{} loading \"{}\"", rootStorage.result(), m_filename.string());
+      const string msg = std::format("Error #{} loading \"{}\"", rootStorage.result(), PathToString(m_filename));
       ShowError(msg);
       return STG_E_FILENOTFOUND;
    }
@@ -4102,6 +4111,40 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 
    PLOGE << "Failed to find part '" << name << "' to set other part height";
    return 0.f;
+}
+
+void PinTable::UpdateSurfaceReferences(const IEditable *surface, const string &oldName, const std::function<void(IEditable *)> &beforeChange)
+{
+   if (surface->GetItemType() != eItemSurface && surface->GetItemType() != eItemRamp)
+      return;
+   const string newName = MakeString(surface->GetIScriptable()->m_wzName);
+   if (newName == oldName)
+      return;
+   const auto surfaceRef = [](IEditable *const pedit) -> string *
+   {
+      switch (pedit->GetItemType())
+      {
+      case eItemBumper: return &static_cast<Bumper *>(pedit)->m_d.m_szSurface;
+      case eItemDecal: return &static_cast<Decal *>(pedit)->m_d.m_szSurface;
+      case eItemFlipper: return &static_cast<Flipper *>(pedit)->m_d.m_szSurface;
+      case eItemGate: return &static_cast<Gate *>(pedit)->m_d.m_szSurface;
+      case eItemKicker: return &static_cast<Kicker *>(pedit)->m_d.m_szSurface;
+      case eItemLight: return &static_cast<Light *>(pedit)->m_d.m_szSurface;
+      case eItemPlunger: return &static_cast<Plunger *>(pedit)->m_d.m_szSurface;
+      case eItemSpinner: return &static_cast<Spinner *>(pedit)->m_d.m_szSurface;
+      case eItemTrigger: return &static_cast<Trigger *>(pedit)->m_d.m_szSurface;
+      default: return nullptr;
+      }
+   };
+   for (IEditable *const pedit : m_vedit)
+   {
+      if (string *const ref = surfaceRef(pedit); ref && *ref == oldName)
+      {
+         if (beforeChange)
+            beforeChange(pedit);
+         *ref = newName;
+      }
+   }
 }
 
 Material* PinTable::GetSurfaceMaterial(const wstring& name) const

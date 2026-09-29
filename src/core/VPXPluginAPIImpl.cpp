@@ -29,7 +29,7 @@ void MSGPIAPI VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
    {
       // static as it needs to survive as C string after this function returns
       static string filepath;
-      filepath = g_pplayer->m_ptable->m_filename.string();
+      filepath = PathToString(g_pplayer->m_ptable->m_filename); // Native narrow path, as plugins build paths from it
       info->path = filepath.c_str();
       info->tableWidth = g_pplayer->m_ptable->m_right;
       info->tableHeight = g_pplayer->m_ptable->m_bottom;

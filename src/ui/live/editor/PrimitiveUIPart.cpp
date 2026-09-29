@@ -93,8 +93,9 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          ImGui::Separator();
          if (ImGui::Button("Import"))
          {
-            m_part->m_d.m_meshFileName = std::filesystem::path(m_meshImportFileName).filename().string();
-            m_meshImportFailed = !m_part->LoadMesh(m_meshImportFileName, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits, m_meshImportAbsolutePosition, m_meshImportCenterMesh,
+            // The dialog returns UTF-8, while the mesh loader uses native narrow paths (see PathToString)
+            m_part->m_d.m_meshFileName = PathToString(PathFromUTF8(m_meshImportFileName).filename());
+            m_meshImportFailed = !m_part->LoadMesh(PathToString(PathFromUTF8(m_meshImportFileName)), m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits, m_meshImportAbsolutePosition, m_meshImportCenterMesh,
                m_meshImportMaterial, m_meshImportAnimation, !m_meshImportNoForsyth);
             if (!m_meshImportFailed)
             {
@@ -126,7 +127,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          if (ImGui::Button("Export"))
          {
             m_part->m_mesh.SaveWavefrontObj(
-               m_meshExportFileName, m_part->m_d.m_use3DMesh ? MakeString(m_part->m_wzName) : "Primitive"s, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits);
+               PathToString(PathFromUTF8(m_meshExportFileName)), m_part->m_d.m_use3DMesh ? MakeString(m_part->m_wzName) : "Primitive"s, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits);
             m_meshExportFileName.clear();
             ImGui::CloseCurrentPopup();
          }

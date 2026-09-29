@@ -31,11 +31,12 @@ void SystemInfoPage::BuildPage()
       hdrState, g_pplayer->m_playfieldWnd->GetRefreshRate(),
       outputWnd->GetPixelWidth(), outputWnd->GetPixelHeight(),
       (g_pplayer->m_pininput.HasTouchInput() ? "enabled" : "disabled"));
-   info << std::format(" *App Root*: {}\n", g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root).string());
-   info << std::format(" *Settings*: {}\n", g_settingsService.GetAppSettings().GetIniPath().string());
-   info << std::format(" *Scripts*: {}\n", g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, "core.vbs").parent_path().string());
-   info << std::format(" *Table Path*: {}\n", g_pplayer->m_ptable->m_filename.string());
-   info << std::format(" *Table Data Path*: {}\n", g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::Root, false).string());
+   // ImGui displays UTF-8
+   info << std::format(" *App Root*: {}\n", PathToUTF8(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root)));
+   info << std::format(" *Settings*: {}\n", PathToUTF8(g_settingsService.GetAppSettings().GetIniPath()));
+   info << std::format(" *Scripts*: {}\n", PathToUTF8(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, "core.vbs").parent_path()));
+   info << std::format(" *Table Path*: {}\n", PathToUTF8(g_pplayer->m_ptable->m_filename));
+   info << std::format(" *Table Data Path*: {}\n", PathToUTF8(g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::Root, false)));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Markdown, info.str()));
 }

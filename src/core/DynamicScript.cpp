@@ -28,6 +28,12 @@ enum TypeID
 // Set to 1 to log all COM Invoke
 #define LOG_INVOKES 0
 
+// Plugin strings are UTF-8 (a null string is an empty one)
+static BSTR ScriptStringToBSTR(const char* const str)
+{
+   return str ? MakeWideBSTR(str, strlen(str), CP_UTF8) : SysAllocString(L"");
+}
+
 DynamicTypeLibrary::DynamicTypeLibrary() { Reset(); }
 
 DynamicTypeLibrary::~DynamicTypeLibrary()
@@ -398,16 +404,14 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
       case TypeID::TYPEID_UINT64: CHANGE_TYPE(VT_UI8);  sv.vUInt64 = V_UI8(&v); break;
       case TypeID::TYPEID_STRING: CHANGE_TYPE(VT_BSTR);
          {
-            int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, V_BSTR(&v), -1, nullptr, 0, nullptr, nullptr);
-            if (sizeNeeded <= 0) 
+            char* const charStr = MakeCharArray(V_BSTR(&v), static_cast<int>(SysStringLen(V_BSTR(&v))), CP_UTF8);
+            if (charStr == nullptr)
             {
                // TODO raise an error and prevent further processing
                PLOGE << "Failed to convert COM's BSTR to char*";
                assert(false);
                return false;
             }
-            char* charStr = new char[sizeNeeded];
-            WideCharToMultiByte(CP_UTF8, 0, V_BSTR(&v), -1, charStr, sizeNeeded, nullptr, nullptr);
             sv.vString = { [](ScriptString* s) { delete[] s->string; }, charStr };
          }
          break;
@@ -606,9 +610,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       case TypeID::TYPEID_STRING:
       {
          V_VT(cv) = VT_BSTR;
-         const int len = MultiByteToWideChar(CP_UTF8, 0, sv.vString.string, -1, nullptr, 0);
-         V_BSTR(cv) = SysAllocStringLen(nullptr, len - 1);
-         MultiByteToWideChar(CP_UTF8, 0, sv.vString.string, -1, V_BSTR(cv), len);
+         V_BSTR(cv) = ScriptStringToBSTR(sv.vString.string);
          break;
       }
       default: assert(false);
@@ -667,9 +669,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
             {
                VariantInit(&pData[i]);
                V_VT(&pData[i]) = VT_BSTR;
-               const int len = MultiByteToWideChar(CP_UTF8, 0, pSrc[i].string, -1, nullptr, 0);
-               V_BSTR(&pData[i]) = SysAllocStringLen(nullptr, len - 1);
-               MultiByteToWideChar(CP_UTF8, 0, pSrc[i].string, -1, V_BSTR(&pData[i]), len);
+               V_BSTR(&pData[i]) = ScriptStringToBSTR(pSrc[i].string);
             }
             break;
          }
@@ -736,10 +736,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
                {
                   VariantInit(&varValue);
                   V_VT(&varValue) = VT_BSTR;
-                  const char* str = pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]].string;
-                  const int len = MultiByteToWideChar(CP_UTF8, 0, str, -1, nullptr, 0);
-                  V_BSTR(&varValue) = SysAllocStringLen(nullptr, len - 1);
-                  MultiByteToWideChar(CP_UTF8, 0, str, -1, V_BSTR(&varValue), len);
+                  V_BSTR(&varValue) = ScriptStringToBSTR(pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]].string);
                   SafeArrayPutElement(psa, ix, &varValue);
                   VariantClear(&varValue);
                }

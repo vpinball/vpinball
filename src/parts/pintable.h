@@ -438,6 +438,9 @@ private:
 
 public:
    float GetSurfaceHeight(const string &name, float x, float y) const;
+   // Parts placed on a surface or ramp reference it by name: retarget them after it was renamed from oldName.
+   // beforeChange is called for each part before it is modified (e.g. to mark it for undo)
+   void UpdateSurfaceReferences(const IEditable *surface, const string &oldName, const std::function<void(IEditable *)> &beforeChange);
 
    void SetLoadDefaults();
 

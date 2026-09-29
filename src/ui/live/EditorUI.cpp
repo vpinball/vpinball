@@ -189,10 +189,10 @@ void EditorUI::SaveTableAs()
    const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx" } };
    std::filesystem::path defaultLocation = m_table->m_filename;
    if (defaultLocation.empty())
-      defaultLocation = std::filesystem::path(m_table->GetSettings().GetRecentDir_LoadDir()) / "new_table.vpx";
+      defaultLocation = PathFromString(m_table->GetSettings().GetRecentDir_LoadDir()) / "new_table.vpx";
    else
       defaultLocation.replace_extension(".vpx");
-   const string location = defaultLocation.string();
+   const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
    SDL_ShowSaveFileDialog(
       [](void *userdata, const char *const *filelist, int filter)
       {
@@ -226,8 +226,8 @@ void EditorUI::ShowLoadTableDialog()
    // Start on the edited table's file (right folder, preselected file), falling back to the recent load dir
    std::filesystem::path defaultLocation = m_table->m_filename;
    if (defaultLocation.empty())
-      defaultLocation = std::filesystem::path(m_table->GetSettings().GetRecentDir_LoadDir()) / "";
-   const string location = defaultLocation.string();
+      defaultLocation = PathFromString(m_table->GetSettings().GetRecentDir_LoadDir()) / "";
+   const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
    SDL_ShowOpenFileDialog(
       [](void *userdata, const char *const *filelist, int filter)
       {
@@ -385,18 +385,26 @@ void EditorUI::RenderUI()
    // Apply the file picked by the asynchronous 'Save As' file dialog (deferred to the main thread, in edit mode)
    if (!IsInspectMode() && m_pendingSaveAsPath && !m_pendingSaveAsPath->empty())
    {
-      m_table->m_filename = *m_pendingSaveAsPath;
+      // The table is saved through its filename: set it for the save, and restore it if the save fails (which reports the error)
+      const std::filesystem::path previousFilename = m_table->m_filename;
+      const string previousTitle = m_table->m_title;
+      m_table->m_filename = PathFromUTF8(*m_pendingSaveAsPath);
       m_table->m_title = TitleFromFilename(m_table->m_filename);
-      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(m_table->m_filename.parent_path().string(), false);
       m_pendingSaveAsPath = nullptr;
-      SaveTable();
+      if (SaveTable())
+         g_settingsService.GetAppSettings().SetRecentDir_LoadDir(PathToString(m_table->m_filename.parent_path()), false);
+      else
+      {
+         m_table->m_filename = previousFilename;
+         m_table->m_title = previousTitle;
+      }
    }
 
    // Apply the file picked by the asynchronous 'Load' file dialog (deferred to the main thread, in edit mode):
    // the loaded table replaces the edited one through a player session switch (see Player::SetTable)
    if (!IsInspectMode() && m_pendingLoadPath && !m_pendingLoadPath->empty())
    {
-      const std::filesystem::path filename = *m_pendingLoadPath;
+      const std::filesystem::path filename = PathFromUTF8(*m_pendingLoadPath);
       m_pendingLoadPath = nullptr;
       CComObject<PinTable> *table;
       CComObject<PinTable>::CreateInstance(&table);
@@ -406,13 +414,13 @@ void EditorUI::RenderUI()
       // Same as the Win32 editor: hash/corrupt content errors still keep the loaded table
       if (SUCCEEDED(hr) || (hr == APPX_E_BLOCK_HASH_INVALID) || (hr == APPX_E_CORRUPT_CONTENT))
       {
-         g_settingsService.GetAppSettings().SetRecentDir_LoadDir(filename.parent_path().string(), false);
+         g_settingsService.GetAppSettings().SetRecentDir_LoadDir(PathToString(filename.parent_path()), false);
          m_player->SetTable(table, Player::TableTransition::Replace);
       }
       else
       {
          table->Release();
-         m_liveUI.PushNotification("Failed to load table '" + filename.string() + '\'', 10000);
+         m_liveUI.PushNotification("Failed to load table '" + PathToUTF8(filename) + '\'', 10000);
       }
    }
 

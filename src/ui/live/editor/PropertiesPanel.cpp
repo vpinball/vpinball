@@ -744,9 +744,9 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
       }
       else
       {
-         float volume = (float)sound->GetVolume();
+         int volume = sound->GetVolume();
          sound->SetVolume(100);
-         audioPlayer->PlaySound(sound, volume, 0.f, 0, 0.f, 0.f, 0, false, true);
+         audioPlayer->PlaySound(sound, (float)volume, 0.f, 0, 0.f, 0.f, 0, false, true);
          m_playingSound = sound;
          m_playingSoundObserved = false;
          sound->SetVolume(volume);
@@ -803,7 +803,7 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          m_soundInfoFor = sound;
          m_soundInfo = audioPlayer ? audioPlayer->GetSoundInformations(sound) : std::optional<VPX::SoundSpec>();
       }
-      ImGui::TextWrapped("%s", sound->GetImportPath().string().c_str());
+      ImGui::TextWrapped("%s", PathToUTF8(sound->GetImportPath()).c_str());
       ImGui::TextDisabled("Size: %s", SizeToReadable(sound->GetFileSize()).c_str()); //
       if (m_soundInfo)
          ImGui::TextDisabled("%.2f s, %u Hz, %u channel%s", m_soundInfo->lengthInSeconds, m_soundInfo->sampleFrequency, m_soundInfo->nChannels, m_soundInfo->nChannels > 1 ? "s" : "");
@@ -896,9 +896,9 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
    {
       vector<Texture *> imported;
       for (const string &file : *m_pendingImageImport)
-         if (Texture *const tex = table->ImportImage(file, ""s))
+         if (Texture *const tex = table->ImportImage(PathFromUTF8(file), ""s))
             imported.push_back(tex);
-      g_settingsService.GetAppSettings().SetRecentDir_ImageDir(std::filesystem::path(m_pendingImageImport->front()).parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(PathFromUTF8(m_pendingImageImport->front()).parent_path()), false);
       m_pendingImageImport = nullptr;
       if (!imported.empty())
       {
@@ -919,34 +919,34 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
       if (old != nullptr)
       {
          // ImportImage replaces and deletes the image that already uses this name
-         if (Texture *const tex = table->ImportImage(file, old->m_name))
+         if (Texture *const tex = table->ImportImage(PathFromUTF8(file), old->m_name))
          {
             replaceImage(old, tex);
             table->SetNonUndoableDirty(eSaveDirty);
          }
          else
             m_actionStatus = "Failed to reimport '"s + file + '\'';
-         g_settingsService.GetAppSettings().SetRecentDir_ImageDir(std::filesystem::path(file).parent_path().string(), false);
+         g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(PathFromUTF8(file).parent_path()), false);
       }
    }
    if (m_pendingImageExport && !m_pendingImageExport->empty())
    {
-      const std::filesystem::path path = *m_pendingImageExport;
+      const std::filesystem::path path = PathFromUTF8(*m_pendingImageExport);
       m_pendingImageExport = nullptr;
       // Like the Win32 dialog: with multiple selected images, only the folder of the picked file is used
       int failed = 0;
       for (Texture *tex : m_pendingImageExportSel)
       {
          const std::filesystem::path file = (m_pendingImageExportSel.size() > 1)
-            ? path.parent_path() / (m_exportUseNames ? tex->m_name + tex->GetFilePath().extension().string() : tex->GetFilePath().filename().string())
+            ? path.parent_path() / (m_exportUseNames ? (PathFromString(tex->m_name) += tex->GetFilePath().extension()) : tex->GetFilePath().filename())
             : path;
-         if (!tex->SaveFile(file.string()))
+         if (!tex->SaveFile(file))
             failed++;
       }
       m_pendingImageExportSel.clear();
       if (failed > 0)
          m_actionStatus = "Failed to export "s + std::to_string(failed) + " image(s)"s;
-      g_settingsService.GetAppSettings().SetRecentDir_ImageDir(path.parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(path.parent_path()), false);
    }
 
    if (props.BeginSection("Actions"s))
@@ -957,7 +957,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
       {
          m_pendingImageImport = std::make_shared<vector<string>>();
          const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
-         const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
+         const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_ImageDir())); // SDL expects UTF-8
          SDL_ShowOpenFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
@@ -979,7 +979,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
          m_pendingImageExportSel = sel;
          m_pendingImageExport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
-         const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
+         const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_ImageDir())); // SDL expects UTF-8
          SDL_ShowSaveFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
@@ -1048,7 +1048,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
                m_pendingImageReimportTarget = m_editor.m_multiSelImages.empty() ? nullptr : m_editor.m_multiSelImages.back();
                m_pendingImageReimport = std::make_shared<string>();
                const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
-               const string dir = g_settingsService.GetAppSettings().GetRecentDir_ImageDir();
+               const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_ImageDir())); // SDL expects UTF-8
                SDL_ShowOpenFileDialog(
                   [](void *userdata, const char *const *filelist, int filter)
                   {
@@ -1103,9 +1103,9 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
    {
       vector<VPX::Sound *> imported;
       for (const string &file : *m_pendingSoundImport)
-         if (VPX::Sound *const sound = table->ImportSound(file))
+         if (VPX::Sound *const sound = table->ImportSound(PathFromUTF8(file)))
             imported.push_back(sound);
-      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(std::filesystem::path(m_pendingSoundImport->front()).parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(PathToString(PathFromUTF8(m_pendingSoundImport->front()).parent_path()), false);
       m_pendingSoundImport = nullptr;
       if (!imported.empty())
       {
@@ -1123,22 +1123,22 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
       m_pendingSoundReimport = nullptr;
       if (m_pendingSoundReimportTarget != nullptr)
       {
-         table->ReImportSound(m_pendingSoundReimportTarget, file);
+         table->ReImportSound(m_pendingSoundReimportTarget, PathFromUTF8(file));
          table->SetNonUndoableDirty(eSaveDirty);
       }
       m_pendingSoundReimportTarget = nullptr;
-      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(std::filesystem::path(file).parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(PathToString(PathFromUTF8(file).parent_path()), false);
    }
    if (m_pendingSoundExport && !m_pendingSoundExport->empty())
    {
-      const std::filesystem::path path = *m_pendingSoundExport;
+      const std::filesystem::path path = PathFromUTF8(*m_pendingSoundExport);
       m_pendingSoundExport = nullptr;
       // Like the Win32 dialog: with multiple selected sounds, only the folder of the picked file is used
       int failed = 0;
       for (VPX::Sound *sound : m_pendingSoundExportSel)
       {
          const std::filesystem::path file = (m_pendingSoundExportSel.size() > 1)
-            ? path.parent_path() / (m_exportUseNames ? sound->GetName() + sound->GetImportPath().extension().string() : sound->GetImportPath().filename().string())
+            ? path.parent_path() / (m_exportUseNames ? (PathFromString(sound->GetName()) += sound->GetImportPath().extension()) : sound->GetImportPath().filename())
             : path;
          if (!table->ExportSound(sound, file))
             failed++;
@@ -1146,7 +1146,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
       m_pendingSoundExportSel.clear();
       if (failed > 0)
          m_actionStatus = "Failed to export "s + std::to_string(failed) + " sound(s)"s;
-      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(path.parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(PathToString(path.parent_path()), false);
    }
 
    if (props.BeginSection("Actions"s))
@@ -1157,7 +1157,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
       {
          m_pendingSoundImport = std::make_shared<vector<string>>();
          const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
-         const string dir = g_settingsService.GetAppSettings().GetRecentDir_SoundDir();
+         const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
          SDL_ShowOpenFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
@@ -1202,7 +1202,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
                m_pendingSoundReimportTarget = m_editor.m_multiSelSounds.empty() ? nullptr : m_editor.m_multiSelSounds.back();
                m_pendingSoundReimport = std::make_shared<string>();
                const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
-               const string dir = g_settingsService.GetAppSettings().GetRecentDir_SoundDir();
+               const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
                SDL_ShowOpenFileDialog(
                   [](void *userdata, const char *const *filelist, int filter)
                   {
@@ -1223,7 +1223,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
          m_pendingSoundExportSel = sel;
          m_pendingSoundExport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
-         const string dir = g_settingsService.GetAppSettings().GetRecentDir_SoundDir();
+         const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
          SDL_ShowSaveFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
@@ -1279,7 +1279,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
    {
       const string file = *m_pendingMaterialImport;
       m_pendingMaterialImport = nullptr;
-      std::ifstream f(file, std::ios::binary);
+      std::ifstream f(PathFromUTF8(file), std::ios::binary);
       int version = 0, count = 0;
       f.read(reinterpret_cast<char *>(&version), sizeof(version));
       if (!f || version != MATERIAL_VERSION)
@@ -1308,14 +1308,14 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
             editor.m_outlinerMaterialAnchor = pmat;
          }
          table->SetNonUndoableDirty(eSaveDirty);
-         g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(std::filesystem::path(file).parent_path().string(), false);
+         g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(PathToString(PathFromUTF8(file).parent_path()), false);
       }
    }
    if (m_pendingMaterialExport && !m_pendingMaterialExport->empty())
    {
       const string file = *m_pendingMaterialExport;
       m_pendingMaterialExport = nullptr;
-      std::ofstream f(file, std::ios::binary | std::ios::trunc);
+      std::ofstream f(PathFromUTF8(file), std::ios::binary | std::ios::trunc);
       if (!f)
          m_actionStatus = "Failed to export materials"s;
       else
@@ -1347,7 +1347,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
             f.write(reinterpret_cast<const char *>(&pmat->m_fScatterAngle), sizeof(float));
          }
          m_pendingMaterialExportSel.clear();
-         g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(std::filesystem::path(file).parent_path().string(), false);
+         g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(PathToString(PathFromUTF8(file).parent_path()), false);
       }
    }
 
@@ -1388,7 +1388,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
       {
          m_pendingMaterialImport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Material Files", "mat" } };
-         const string dir = g_settingsService.GetAppSettings().GetRecentDir_MaterialDir();
+         const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_MaterialDir())); // SDL expects UTF-8
          SDL_ShowOpenFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
@@ -1409,7 +1409,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
          m_pendingMaterialExportSel = sel;
          m_pendingMaterialExport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Material Files", "mat" } };
-         const string dir = g_settingsService.GetAppSettings().GetRecentDir_MaterialDir();
+         const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_MaterialDir())); // SDL expects UTF-8
          SDL_ShowSaveFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {

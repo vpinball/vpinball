@@ -16,7 +16,7 @@ public:
    void Load(IObjectReader& reader);
 
    bool ReadFromFile(const std::filesystem::path& filename);
-   bool WriteToFile(const string& filename) const;
+   bool WriteToFile(const std::filesystem::path& filename) const;
 
    string m_name;
    std::filesystem::path m_path;

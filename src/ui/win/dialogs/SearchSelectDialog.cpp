@@ -147,7 +147,7 @@ BOOL SearchSelectDialog::OnInitDialog()
 {
    m_hElementList = GetDlgItem(IDC_ELEMENT_LIST).GetHwnd();
 
-   const string windowName = "Search/Select Element - " + m_curTable->m_table->m_filename.string();
+   const string windowName = "Search/Select Element - " + PathToString(m_curTable->m_table->m_filename);
    SetWindowText(windowName.c_str());
 
    m_switchSortOrder = false;

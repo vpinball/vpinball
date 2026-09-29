@@ -980,7 +980,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
 
       // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
       const float maxFric = m_friction * impulse;
-      const float jt = clamp(-vt / kt, -maxFric, maxFric);
+      const float jt = clamppm(-vt / kt, maxFric);
 
       pball->ApplySurfaceImpulse(jt * crossB, jt * tangent);
       m_flipperMover.ApplyImpulse(-jt * crossF);
@@ -1154,7 +1154,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
       const Vertex3Ds crossB = CrossProduct(rB, slipDir);
       const float denomB = invMass + slipDir.Dot(CrossProduct(crossB / pball->Inertia(), rB));
-      const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
+      const float fric = clamppm(numer / (denomB + denomF), maxFric);
 
       pball->ApplySurfaceImpulse((dtime * fric) * crossB, (dtime * fric) * slipDir);
       m_flipperMover.ApplyImpulse(-(dtime * fric) * crossF);

@@ -213,7 +213,7 @@ void GenerateTournamentFile()
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
 
    FILE *f;
-   if (fopen_s(&f, (g_pplayer->m_ptable->m_filename.string() + ".txt").c_str(), "w") == 0 && f)
+   if (fopen_s(&f, (PathToString(g_pplayer->m_ptable->m_filename) + ".txt").c_str(), "w") == 0 && f)
    {
       fprintf(f, "%03X", g_pplayer->m_dmdSize.x);
       fprintf(f, "%03X", g_pplayer->m_dmdSize.y);
@@ -232,7 +232,7 @@ void GenerateTournamentFile()
          fprintf(f, "%02X", dmd_data[i]);
       fclose(f);
 
-      g_pplayer->m_liveUI->PushNotification("Tournament file saved as " + g_pplayer->m_ptable->m_filename.string() + ".txt", 4000);
+      g_pplayer->m_liveUI->PushNotification("Tournament file saved as " + PathToUTF8(g_pplayer->m_ptable->m_filename) + ".txt", 4000);
    }
    else
       g_pplayer->m_liveUI->PushNotification("Cannot save Tournament file"s, 4000);
