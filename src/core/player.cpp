@@ -814,22 +814,28 @@ void Player::InitTableSession(const bool isInitial)
          pool.enqueue(loadImage, image, false);
 
       bool showLoadingUI = false;
-      uint32_t nextLoadingFrameMs = 0;
       while (pool.has_work_in_flight())
       {
          ProcessOSMessages();
          if (showLoadingUI)
          {
             m_pininput.ProcessInput();
-            if (msec() >= nextLoadingFrameMs)
+
+            if (GetCloseState() != CS_PLAYING && GetCloseState() != CS_USER_INPUT && GetCloseState() != CS_CLOSE_CAPTURE_SCREENSHOT)
+               m_texLoadStats.skipCompression.store(true, std::memory_order_relaxed);
+
+            // If rendering thread is ready, push a new frame as soon as possible
+            if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
             {
-               LockRenderThread();
+               m_frameMutexHeld = true;
                m_renderer->RenderUIScene();
                SubmitFrame(); // Hands the recorded frame over to the render thread and releases the render frame mutex (BGFX)
-               nextLoadingFrameMs = msec() + 33; // Throttle to ~30fps to keep the render resources mostly available for texture uploads
+               m_frameMutexHeld = false;
             }
             else
-               Sleep(1);
+            {
+               uOverSleep(100000);
+            }
          }
          else
          {
