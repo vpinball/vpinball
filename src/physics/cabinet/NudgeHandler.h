@@ -29,6 +29,9 @@ public:
 class NudgeSensor : public NudgeSource
 {
 public:
+   // Peak cabinet acceleration (in m/s^2) of a strong nudge, for the keyboard and gamepad nudge models (from real world recordings)
+   static constexpr float StrongNudgeAcceleration = 0.7f * 9.80665f;
+
    virtual ~NudgeSensor() = default;
 
    virtual void Load(const Settings& settings, int sensorIndex) = 0;

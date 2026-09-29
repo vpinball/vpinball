@@ -2165,6 +2165,7 @@ void Player::UpdateGameLogic()
       if (IsPlaying())
       {
          m_physics->UpdatePhysics(usec()); // Update physics (also triggering events, syncing with controller)
+         m_pininput.UpdateRumble(); // Send the rumble triggered by the physics update
          // TODO These updates should also be done directly in the physics engine after collision events
          FireTimers(-2); // Trigger script sync event (to sync solenoids back)
       }

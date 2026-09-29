@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "NudgeIntentHandler.h"
+#include "NudgeHandler.h"
 
 namespace VPX::Physics
 {
@@ -43,7 +44,7 @@ float NudgeIntentHandler::GetImpulseStrengthFactor() const
 
 int NudgeIntentHandler::GetImpulseDelay(float impulseStrength) const
 {
-   constexpr float noDelayStrength = 5.f; // 5m/s^2 is a 0.5g strong nudge, do not delay if we are already near a tilt threshold
+   constexpr float noDelayStrength = NudgeSensor::StrongNudgeAcceleration; // Do not delay a strong nudge, as we are already near a tilt threshold
    const float firmness = clamp(impulseStrength / noDelayStrength, 0.f, 1.f);
    // Delay impulse to avoid missing the input apex. The length is pure magic here (if we knew the sensor update rate, we could do better)
    const float inputPollPeriod = m_isGamepad ? 16.f : 8.f;

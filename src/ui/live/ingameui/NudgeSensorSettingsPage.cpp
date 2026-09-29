@@ -61,10 +61,12 @@ void NudgeSensorSettingsPage::BuildPage()
             sensor->SetStrengthScale(GetSensor()->GetStrengthScale());
             if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
             {
-               if (cabSensor->GetXAccSensor().IsMapped())
-                  sensor->GetXSensor().SetMapping(cabSensor->GetXAccSensor().GetMapping());
-               if (cabSensor->GetYAccSensor().IsMapped())
-                  sensor->GetYSensor().SetMapping(cabSensor->GetYAccSensor().GetMapping());
+               // Convert the acceleration mapping (m/s^2) to a stick position mapping, keeping the same resulting acceleration
+               constexpr float toStick = 1.f / VPX::Physics::GamepadNudge::FullDeflectionAcceleration;
+               if (const auto &axis = cabSensor->GetXAccSensor(); axis.IsMapped())
+                  sensor->GetXSensor().SetMapping(axis.GetMapping().WithScale(axis.GetMapping().GetScale() * toStick));
+               if (const auto &axis = cabSensor->GetYAccSensor(); axis.IsMapped())
+                  sensor->GetYSensor().SetMapping(axis.GetMapping().WithScale(axis.GetMapping().GetScale() * toStick));
             }
             m_player->m_pininput.m_nudgeHandler->ReplaceSensor(m_sensorIndex, std::move(sensor));
             break;
@@ -89,10 +91,12 @@ void NudgeSensorSettingsPage::BuildPage()
             }
             else if (VPX::Physics::GamepadNudge* gamepadSensor = dynamic_cast<VPX::Physics::GamepadNudge*>(GetSensor().get()); gamepadSensor)
             {
-               if (gamepadSensor->GetXSensor().IsMapped())
-                  sensor->GetXAccSensor().SetMapping(gamepadSensor->GetXSensor().GetMapping());
-               if (gamepadSensor->GetYSensor().IsMapped())
-                  sensor->GetYAccSensor().SetMapping(gamepadSensor->GetYSensor().GetMapping());
+               // Convert the stick position mapping to an acceleration mapping (m/s^2), keeping the same resulting acceleration
+               constexpr float toAcc = VPX::Physics::GamepadNudge::FullDeflectionAcceleration;
+               if (const auto &axis = gamepadSensor->GetXSensor(); axis.IsMapped())
+                  sensor->GetXAccSensor().SetMapping(axis.GetMapping().WithScale(axis.GetMapping().GetScale() * toAcc));
+               if (const auto &axis = gamepadSensor->GetYSensor(); axis.IsMapped())
+                  sensor->GetYAccSensor().SetMapping(axis.GetMapping().WithScale(axis.GetMapping().GetScale() * toAcc));
             }
             m_player->m_pininput.m_nudgeHandler->ReplaceSensor(m_sensorIndex, std::move(sensor));
             break;

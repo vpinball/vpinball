@@ -162,9 +162,8 @@ bool CabModelKeyboardNudge::IsActive() const { return m_deactivationDelay > 0; }
 
 void CabModelKeyboardNudge::Nudge(float angle, float force)
 {
-   constexpr float g = 9.80665f;
    constexpr float coreScriptStrength = 2.f; // Value hardcoded in core script, also used by most tables as a reference (no unit)
-   constexpr float baseScale = 0.7f * g / coreScriptStrength; // Scale to match the base script force value to a 0.7g max peak acceleration on strong nudge
+   constexpr float baseScale = NudgeSensor::StrongNudgeAcceleration / coreScriptStrength; // Scale to match the base script force value to the peak acceleration of a strong nudge
    const float actualStrength = force * m_strength * baseScale;
    const float a = ANGTORAD(angle);
    const float xForce =  sinf(a) * actualStrength;

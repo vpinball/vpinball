@@ -18,6 +18,9 @@ namespace VPX::Physics
 class GamepadNudge final : public NudgeSensor
 {
 public:
+   // Axes are mapped to a unitless stick position, a full deflection corresponding to a strong nudge (in m/s^2), while cabinet sensors map their axes directly in m/s^2
+   static constexpr float FullDeflectionAcceleration = StrongNudgeAcceleration;
+
    GamepadNudge(InputManager* inputManager);
    ~GamepadNudge() override;
 

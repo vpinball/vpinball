@@ -1192,7 +1192,8 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
    for (int i = 0; i < RUMBLE_PULSE_SLOTS; i++)
       if (i != slot && m_rumblePulses[i].endMs > now && m_rumblePulses[i].low <= low && m_rumblePulses[i].high <= high)
          m_rumblePulses[i].endMs = now;
-   UpdateRumbleOutput(now);
+   // The output is sent by UpdateRumble (after each physics update and on input processing), not from here: most pulses come from
+   // the physics steps, which must not wait on the synchronous device call (HID report, possibly over Bluetooth)
 }
 
 void InputManager::UpdateRumble()
@@ -1350,10 +1351,10 @@ void InputManager::PlayNudgeRumble(const Vertex2D& cabinetAcceleration)
    if (m_rumbleNudge < RUMBLE_OFF_LEVEL)
       return;
 
-   // The nudge models settle on 0.5g as the peak of a strong nudge, and the intent handler ignores anything below
-   // 1 m/s^2, so the same bounds are used here. The cooldown keeps the decaying cabinet oscillation from retriggering.
+   // Full rumble at the peak acceleration of a strong nudge, and nothing below 1 m/s^2 which the intent handler ignores.
+   // The cooldown keeps the decaying cabinet oscillation from retriggering
    constexpr float thresholdAcceleration = 1.f; // m/s^2
-   constexpr float fullAcceleration = 0.5f * 9.80665f; // m/s^2
+   constexpr float fullAcceleration = VPX::Physics::NudgeSensor::StrongNudgeAcceleration; // m/s^2
    const float acceleration = cabinetAcceleration.Length();
    if (acceleration < thresholdAcceleration)
       return;

@@ -151,9 +151,9 @@ public:
    bool OnInputActionStateChanged(InputAction* action);
 
    // Speed: 0..1. Pulses are mixed, not replaced: the device plays the strongest active pulse per motor, and
-   // falls back to the next one when that runs out (see UpdateRumble).
+   // falls back to the next one when that runs out. The devices are driven by UpdateRumble.
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
-   void UpdateRumble(); // Called once per frame: drops expired pulses and re-evaluates the output
+   void UpdateRumble(); // Called after each physics update and on input processing: sends the mix to the devices when it changed
 
    // Rumble on flipper/ball contact, scaled by the relative normal velocity of the impact
    void PlayFlipperContactRumble(const float normalImpactSpeed);
