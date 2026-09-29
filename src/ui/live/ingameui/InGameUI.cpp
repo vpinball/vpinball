@@ -120,6 +120,7 @@ void InGameUI::Open(const string& page)
 
 void InGameUI::Close()
 {
+   m_navigationHistory.clear();
    if (GetActivePage())
       GetActivePage()->Close(false);
    if (!m_player->IsPlaying(false))

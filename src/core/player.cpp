@@ -441,19 +441,6 @@ void Player::UnlockRenderThread()
 #endif
 }
 
-void Player::RenderLoadingFrame()
-{
-   LockRenderThread();
-   RenderDevice *const rd = m_renderer->m_renderDevice;
-   if (RenderTarget *const backBuffer = rd->GetOutputBackBuffer())
-   {
-      rd->SetRenderTarget("Loading"s, backBuffer, false, true);
-      rd->Clear(clearType::TARGET, 0xFF000000);
-      m_liveUI->RenderUI();
-   }
-   SubmitFrame(); // Hands the recorded frame over to the render thread and releases the render frame mutex (BGFX)
-}
-
 void Player::InitTableSession(const bool isInitial)
 {
    constexpr float progressPhysicLength = 10.f;
@@ -836,7 +823,9 @@ void Player::InitTableSession(const bool isInitial)
             m_pininput.ProcessInput();
             if (msec() >= nextLoadingFrameMs)
             {
-               RenderLoadingFrame();
+               LockRenderThread();
+               m_renderer->RenderUIScene();
+               SubmitFrame(); // Hands the recorded frame over to the render thread and releases the render frame mutex (BGFX)
                nextLoadingFrameMs = msec() + 33; // Throttle to ~30fps to keep the render resources mostly available for texture uploads
             }
             else
@@ -2481,7 +2470,7 @@ void Player::PrepareFrame()
    #endif
 
    // Prepare main 3D scene frame, then apply screenspace transforms, including ancillary window rendering (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
-   m_renderer->RenderFrame();
+   m_renderer->Render3DScene();
 
    m_physics->ResetPerFrameStats();
 

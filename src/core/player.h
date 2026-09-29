@@ -117,7 +117,6 @@ private:
    bool m_pendingTableStack = false;
    volatile bool m_pendingTablePop = false;
    bool m_frameMutexHeld = false; // True while the game thread owns the render frame mutex, in which case table transitions must be deferred (BGFX only)
-   void RenderLoadingFrame(); // Records and submits a frame containing only the loading UI
    void ProcessTableTransitions();
    void ApplyTableTransition(PinTable *newTable, bool stackTable, const StackedTable *restore);
    void InitTableSession(bool isInitial);

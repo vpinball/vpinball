@@ -2982,7 +2982,29 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
 
 #pragma endregion
 
-void Renderer::RenderFrame()
+void Renderer::RenderUIScene()
+{
+   RenderTarget* const backBuffer = m_renderDevice->GetOutputBackBuffer();
+   if (backBuffer == nullptr)
+      return;
+
+   // For stereo modes that pack the 2 eye views inside the output frame (side by side, top/bottom, interlaced),
+   // the UI must be rendered to the per eye render buffer, then packed to the output, so that it is duplicated
+   // per view with the correct orientation (same render path as Render3DScene)
+   const bool uiBeforeStero = m_stereo3Denabled && (m_renderDevice->m_stereoShader != nullptr) && (GetBackBufferTexture() != nullptr)
+      && (m_stereo3D == STEREO_SBS || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT);
+   RenderTarget* const uiRT = uiBeforeStero ? GetBackBufferTexture() : backBuffer;
+   m_renderDevice->SetRenderTarget("Loading"s, uiRT, false, true);
+   m_renderDevice->Clear(clearType::TARGET, 0xFF000000);
+   g_pplayer->m_liveUI->RenderUI();
+   if (uiRT != backBuffer)
+   {
+      UpdateStereoShaderState();
+      ApplyStereo(uiRT, backBuffer);
+   }
+}
+
+void Renderer::Render3DScene()
 {
    // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    SwapBackBufferRenderTargets();
@@ -3006,7 +3028,7 @@ void Renderer::RenderFrame()
    m_renderableToInit.clear();
 
    // Update backdrop visibility and visibility mask
-   // For the time being, the RenderFrame only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
+   // For the time being, the Render3DScene only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
    m_noBackdrop = !g_pplayer->m_liveUI->IsEditorBackdropViewMode() // Force backdrop rendering if its being edited
       && ((g_pplayer->m_vrDevice != nullptr) || (m_table->GetViewMode() == BG_FULLSCREEN)  || g_pplayer->m_liveUI->IsEditorViewMode());
    if (g_pplayer->m_vrDevice)
