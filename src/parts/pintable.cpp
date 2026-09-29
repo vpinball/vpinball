@@ -756,21 +756,38 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
    hr = SaveToStorage(&storage, feedback);
    if (SUCCEEDED(hr))
    {
-      POLE::Storage fileStorage(vpxPath.string().c_str());
-      if (!fileStorage.open(true, true, true) || fileStorage.result() != POLE::Storage::Ok)
+      // Write to a temporary file first, so that a failed save (disk full,...) does not destroy the existing table file
+      std::filesystem::path tmpPath = vpxPath;
+      tmpPath += ".tmp";
+      bool written = false;
       {
+         POLE::Storage fileStorage(POLE::PathToFilename(tmpPath).c_str());
+         if (fileStorage.open(true, true, true) && fileStorage.result() == POLE::Storage::Ok)
+         {
+            written = storage.WriteToStorage(fileStorage);
+            fileStorage.close();
+            written &= !fileStorage.hasWriteError();
+         }
+      }
+      std::error_code ec;
+      if (written)
+      {
+         std::filesystem::rename(tmpPath, vpxPath, ec);
+         if (ec)
+         {
+            // Renaming fails if the file is held open, fall back to overwriting it
+            PLOGW << "Failed to replace table file by renaming (" << ec.message() << "), overwriting it instead";
+            std::filesystem::copy_file(tmpPath, vpxPath, std::filesystem::copy_options::overwrite_existing, ec);
+            written = !ec;
+         }
+      }
+      if (!written)
+      {
+         PLOGE << "Failed to save table to " << vpxPath << (ec ? " (" + ec.message() + ')' : ""s);
          ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
          hr = E_FAIL;
       }
-      else
-      {
-         if (!storage.WriteToStorage(fileStorage))
-         {
-            ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
-            hr = E_FAIL;
-         }
-         fileStorage.close();
-      }
+      std::filesystem::remove(tmpPath, ec); // No-op if renamed
    }
 
    if (SUCCEEDED(hr))
@@ -1273,7 +1290,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          m_settings.Load(false);
    }
 
-   const string loadedFile = m_filename.string();
+   const string loadedFile = POLE::PathToFilename(m_filename);
    POLE::Storage rootStorage(loadedFile.c_str());
    rootStorage.open();
    if (rootStorage.result() != POLE::Storage::Ok)

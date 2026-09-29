@@ -113,7 +113,7 @@ ExportVBSCommand::ExportVBSCommand(const std::filesystem::path& tableFilename)
 void ExportVBSCommand::Execute()
 {
    string script;
-   POLE::Storage rootStorage(m_tableFilename.string().c_str());
+   POLE::Storage rootStorage(POLE::PathToFilename(m_tableFilename).c_str());
    rootStorage.open();
    if (rootStorage.result() == POLE::Storage::Ok && rootStorage.exists("GameStg/Version") && rootStorage.exists("GameStg/GameData"))
    {

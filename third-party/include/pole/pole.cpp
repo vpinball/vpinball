@@ -209,7 +209,8 @@ class StorageIO final
     bool opened;              // true if file is opened
     uint64 filesize;   // size of the file
     bool writeable;           // true if the file can be modified
-    
+    bool writeError;          // true if any write failed since opening
+
     std::mutex readMutex;
 
     Header* header;           // storage header 
@@ -230,6 +231,7 @@ class StorageIO final
     bool open(bool bWriteAccess = false, bool bCreate = false, bool bLargeSectors = false);
     void close();
     void flush();
+    void writeCheck();        // like fileCheck, but records failures
     void load(bool bWriteAccess);
     void create();
     void init();
@@ -565,6 +567,8 @@ std::vector<uint64> AllocTable::follow( uint64 start ) const
   uint64 p = start;
   while( p < count() )
   {
+    // A longer chain loops on itself (corrupted file)
+    if( chain.size() >= count() ) { chain.clear(); break; }
     if( p == (uint64)Eof ) break;
     if( p == (uint64)Bat ) break;
     if( p == (uint64)MetaBat ) break;
@@ -633,7 +637,9 @@ void AllocTable::markAsDirty(uint64 dataIndex, int64 bigBlockSize)
 void AllocTable::flush(const std::vector<uint64>& blocks, StorageIO *const io, uint64 bigBlockSize)
 {
     assert(bigBlockSize * blocks.size() <= std::numeric_limits<size_t>::max());
-    unsigned char *buffer = new unsigned char[size_t(bigBlockSize * blocks.size())];
+    const size_t bufferSize = size_t(bigBlockSize * blocks.size());
+    unsigned char *buffer = new unsigned char[bufferSize];
+    memset(buffer, 0xff, bufferSize); // Entries past count() are free (FREESECT)
     save(buffer);
     for (size_t idx = 0; idx < blocks.size(); idx++)
     {
@@ -907,17 +913,33 @@ DirEntry* DirTree::entry( const std::string& name, bool create, int64 bigBlockSi
    return entry( index );
 }
 
-// helper function: recursively find siblings of index
-static void dirtree_find_siblings( DirTree* dirtree, std::vector<uint64>& result, 
+// helper function: find siblings of index (in-order walk)
+// Iterative and bounded, as a corrupted file may hold cycles or very deep trees
+static void dirtree_find_siblings( DirTree* dirtree, std::vector<uint64>& result,
   uint64 index )
 {
-    DirEntry* e = dirtree->entry( index );
-    if (!e) return;
-    if (e->prev != DirTree::End)
-        dirtree_find_siblings(dirtree, result, e->prev);
-    result.push_back(index);
-    if (e->next != DirTree::End)
-        dirtree_find_siblings(dirtree, result, e->next);
+    const uint64 count = dirtree->entryCount();
+    uint64 visits = 0; // A valid tree visits each entry at most once
+    std::vector<uint64> stack;
+    uint64 current = index;
+    while (true)
+    {
+        // Walk down the 'prev' branch
+        while (current < count)
+        {
+            if (++visits > count) return;
+            DirEntry* e = dirtree->entry( current );
+            if (!e) break;
+            stack.push_back(current);
+            current = e->prev;
+        }
+        if (stack.empty())
+            break;
+        current = stack.back();
+        stack.pop_back();
+        result.push_back(current);
+        current = dirtree->entry( current )->next;
+    }
 }
 
 std::vector<uint64> DirTree::children( uint64 index )
@@ -933,21 +955,19 @@ std::vector<uint64> DirTree::children( uint64 index )
 
 static uint64 dirtree_find_sibling( DirTree* dirtree, uint64 index, const std::string& name, uint64& closest ) {
 
-    uint64 count = dirtree->entryCount();
-    DirEntry* e = dirtree->entry( index );
-    if (!e || !e->valid) return 0;
-    int cval = e->compare(name);
-    if (cval == 0)
-        return index;
-    if (cval > 0)
+    const uint64 count = dirtree->entryCount();
+    // Bounded, as a corrupted file may hold cycles
+    for (uint64 steps = 0; steps < count; steps++)
     {
-        if (e->prev > 0 && e->prev < count)
-            return dirtree_find_sibling( dirtree, e->prev, name, closest );
-    }
-    else
-    {
-        if (e->next > 0 && e->next < count)
-            return dirtree_find_sibling( dirtree, e->next, name, closest );
+        DirEntry* e = dirtree->entry( index );
+        if (!e || !e->valid) return 0;
+        const int cval = e->compare(name);
+        if (cval == 0)
+            return index;
+        const uint64 next = (cval > 0) ? e->prev : e->next;
+        if (next == 0 || next >= count)
+            break;
+        index = next;
     }
     closest = index;
     return 0;
@@ -1322,16 +1342,17 @@ void DirTree::debug()
 // =========== StorageIO ==========
 
 StorageIO::StorageIO( Storage* st, const char* fname )
-: storage(st),        
+: storage(st),
   filename(fname),
-  file(), 
-  result(Storage::Ok),        
-  opened(false),        
-  filesize(0),        
-  writeable(false),        
-  header(new Header()),        
-  dirtree(new DirTree(1ull << header->b_shift)),        
-  bbat(new AllocTable()),        
+  file(),
+  result(Storage::Ok),
+  opened(false),
+  filesize(0),
+  writeable(false),
+  writeError(false),
+  header(new Header()),
+  dirtree(new DirTree(1ull << header->b_shift)),
+  bbat(new AllocTable()),
   sbat(new AllocTable()),
   sb_blocks(),
   mbat_blocks(),
@@ -1357,6 +1378,7 @@ bool StorageIO::open(bool bWriteAccess, bool bCreate, bool bLargeSectors)
   // already opened ? close first
   if (opened)
       close();
+  writeError = false;
   if (bCreate)
   {
       header->b_shift = bLargeSectors ? 12 : 9;
@@ -1405,8 +1427,8 @@ void StorageIO::load(bool bWriteAccess)
   file.seekg(0, std::ios::end );
   filesize = static_cast<uint64>(file.tellg());
 
-  // load header
-  buffer = new unsigned char[512];
+  // load header (zeroed, as a truncated file may not fill it)
+  buffer = new unsigned char[512]();
   file.seekg( 0 ); 
   file.read( (char*)buffer, 512 );
   fileCheck(file);
@@ -1429,7 +1451,11 @@ void StorageIO::load(bool bWriteAccess)
   // important block size
   bbat->blockSize = (uint64) 1 << header->b_shift;
   sbat->blockSize = (uint64) 1 << header->s_shift;
-  
+
+  // Allocation table sectors are stored in the file, so bounded by its size (corrupted header)
+  const uint64 fileBlocks = filesize / bbat->blockSize;
+  if( header->num_bat > fileBlocks || header->num_mbat > fileBlocks ) return;
+
   blocks = getbbatBlocks(true);
   
   // load big bat
@@ -1437,11 +1463,11 @@ void StorageIO::load(bool bWriteAccess)
   if( buflen > 0 )
   {
     assert(buflen <= std::numeric_limits<size_t>::max());
-    buffer = new unsigned char[ (size_t)buflen ];  
+    buffer = new unsigned char[ (size_t)buflen ]();  // zeroed, as a truncated file may not fill it
     loadBigBlocks( blocks, buffer, buflen );
     bbat->load( buffer, buflen );
     delete[] buffer;
-  }  
+  }
 
   // load small bat
   blocks.clear();
@@ -1450,26 +1476,27 @@ void StorageIO::load(bool bWriteAccess)
   if( buflen > 0 )
   {
     assert(buflen <= std::numeric_limits<size_t>::max());
-    buffer = new unsigned char[ (size_t)buflen ];  
+    buffer = new unsigned char[ (size_t)buflen ]();  // zeroed, as a truncated file may not fill it
     loadBigBlocks( blocks, buffer, buflen );
     sbat->load( buffer, buflen );
     delete[] buffer;
-  }  
-  
+  }
+
   // load directory tree
   blocks.clear();
   blocks = bbat->follow( header->dirent_start );
   buflen = static_cast<uint64>(blocks.size())*bbat->blockSize;
+  if( buflen < 128 ) return; // Root entry needed (mini stream start read below)
   assert(buflen <= std::numeric_limits<size_t>::max());
-  buffer = new unsigned char[ (size_t)buflen ];  
+  buffer = new unsigned char[ (size_t)buflen ]();  // zeroed, as a truncated file may not fill it
   loadBigBlocks( blocks, buffer, buflen );
   dirtree->load( buffer, buflen );
   unsigned sb_start = readU32( buffer + 0x74 );
   delete[] buffer;
-  
+
   // fetch block chain as data for small-files
   sb_blocks = bbat->follow( sb_start ); // small files
-  
+
   // for troubleshooting, just enable this block
 #if 0
   header->debug();
@@ -1477,7 +1504,7 @@ void StorageIO::load(bool bWriteAccess)
   bbat->debug();
   dirtree->debug();
 #endif
-  
+
   // so far so good
   result = Storage::Ok;
   opened = true;
@@ -1542,7 +1569,7 @@ void StorageIO::flush()
         header->save( buffer );
         file.seekp( 0 ); 
         file.write( (char*)buffer, (std::streamsize)bbat->blockSize );
-        fileCheck(file);
+        writeCheck();
         if (filesize < bbat->blockSize)
             filesize = bbat->blockSize;
         delete[] buffer;
@@ -1601,11 +1628,11 @@ void StorageIO::flush()
         std::vector<char> zeros(static_cast<size_t>(alignedSize - filesize), 0);
         file.seekp(filesize);
         file.write(zeros.data(), static_cast<std::streamsize>(zeros.size()));
-        fileCheck(file);
+        writeCheck();
         filesize = alignedSize;
     }
     file.flush();
-    fileCheck(file);
+    writeCheck();
 
   /* Note on Microsoft implementation:
      - directory entries are stored in the last block(s)
@@ -1617,17 +1644,26 @@ void StorageIO::flush()
 void StorageIO::close()
 {
   if( !opened ) return;
-  
+
   std::lock_guard lock(readMutex);
 
   file.close(); 
+  if (writeable && file.fail()) // closing flushes buffered data, which may fail
+    writeError = true;
   opened = false;
-  
+
   std::list<Stream*>::iterator it;
   for( it = streams.begin(); it != streams.end(); ++it )
     delete *it;
 }
 
+
+void StorageIO::writeCheck()
+{
+  if (file.fail())
+    writeError = true;
+  file.clear();
+}
 
 StreamIO* StorageIO::streamIO( const std::string& name, bool bCreate, int64 streamSize )
 {
@@ -1796,7 +1832,7 @@ uint64 StorageIO::saveBigBlocks( const std::vector<uint64>& blocks, uint64 offse
         tobeWritten = maxWrite;
     file.seekp( pos );
     file.write( (char*)data + bytes, tobeWritten );
-    fileCheck(file);
+    writeCheck();
 
     bytes += tobeWritten;
     offset = 0;
@@ -1973,7 +2009,7 @@ std::vector<uint64> StorageIO::getbbatBlocks(bool bLoading)
         if( (header->num_bat > 109) && (header->num_mbat > 0) ) 
         {
             assert(bbat->blockSize <= std::numeric_limits<size_t>::max());
-            unsigned char* buffer2 = new unsigned char[ (size_t)bbat->blockSize ];
+            unsigned char* buffer2 = new unsigned char[ (size_t)bbat->blockSize ](); // zeroed, as a truncated file may not fill it
             size_t k = 109;
             uint64 sector;
             size_t mdidx = 0;
@@ -2203,9 +2239,10 @@ uint64 StreamIO::read( uint64 pos, unsigned char* data, uint64 maxlen )
   if( maxlen == 0 ) return 0;
 
   uint64 totalbytes = 0;
-  
+
   DirEntry *entry = io->dirtree->entry(entryIdx);
-  if (pos + maxlen > entry->size)
+  if (pos >= entry->size) return 0; // also guards the subtraction below
+  if (maxlen > entry->size - pos)
       maxlen = entry->size - pos;
   if ( entry->size < io->header->threshold )
   {
@@ -2420,6 +2457,11 @@ Storage::~Storage()
 int Storage::result() const
 {
   return (int) io->result;
+}
+
+bool Storage::hasWriteError() const
+{
+  return io->writeError;
 }
 
 bool Storage::open(bool bWriteAccess, bool bCreate, bool bLargeSectors)

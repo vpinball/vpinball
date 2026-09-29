@@ -545,7 +545,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
       {
          const std::filesystem::path path = g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, false) / "VPReg.stg"sv;
 
-         POLE::Storage storage(path.string().c_str());
+         POLE::Storage storage(POLE::PathToFilename(path).c_str());
          if (!storage.open() || storage.result() != POLE::Storage::Ok)
          {
             SetVarBstr(Value, SysAllocString(L""));

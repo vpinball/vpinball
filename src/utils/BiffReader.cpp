@@ -40,6 +40,16 @@ uint64_t BiffReader::ReadSource(unsigned char *pv, const uint32_t count)
    return read;
 }
 
+bool BiffReader::ValidateLength(const int32_t len)
+{
+   const uint64_t size = m_stream ? m_stream->size() : m_dataSize;
+   const uint64_t pos = m_stream ? m_stream->tell() : m_dataPos; // May be past the end after skipping a corrupted record
+   const uint64_t remaining = pos < size ? size - pos : 0;
+   if (len < 0 || static_cast<uint64_t>(len) > remaining)
+      m_hasError = true;
+   return !m_hasError;
+}
+
 void BiffReader::ReadBytes(void * const pv, const uint32_t count)
 {
    ReadBytesNoHash(pv, count);
@@ -108,7 +118,7 @@ string BiffReader::AsString()
 {
    int32_t len;
    ReadBytes(&len, sizeof(int32_t));
-   if (m_hasError)
+   if (!ValidateLength(len))
       return string();
    m_bytesinrecordremaining -= len + (int)sizeof(int32_t);
    string value(len, '\0');
@@ -121,7 +131,7 @@ wstring BiffReader::AsWideString()
    // TODO it seems there used to be a bug in collection that would save string twice as long as they should => do we need special processing (truncation ?)
    int32_t len;
    ReadBytes(&len, sizeof(int32_t));
-   if (m_hasError)
+   if (!ValidateLength(len))
       return wstring();
    m_bytesinrecordremaining -= len + (int)sizeof(int32_t);
    const int numChars = len / 2;
@@ -168,6 +178,8 @@ string BiffReader::AsScript(bool isScriptProtected)
    string script;
    int32_t cchar;
    m_hasError |= ReadSource(reinterpret_cast<unsigned char *>(&cchar), sizeof(cchar)) != sizeof(cchar);
+   if (!ValidateLength(cchar))
+      return script;
 
    char *szText = new char[cchar + 1];
    m_hasError |= ReadSource(reinterpret_cast<unsigned char *>(szText), cchar) != cchar;
@@ -270,6 +282,8 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
          {
             PLOGI << "While reading tag " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF) << " " << m_bytesinrecordremaining
                   << " were not read and therefore skipped";
+            if (!ValidateLength(m_bytesinrecordremaining))
+               return;
             vector<uint8_t> tmp(m_bytesinrecordremaining);
             ReadBytes(tmp.data(), m_bytesinrecordremaining);
             if (m_hasError)
@@ -288,7 +302,7 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
          {
             m_stream->seek(newpos + toSkip);
          }
-         else
+         else if (ValidateLength(toSkip))
          {
             vector<uint8_t> tmp(toSkip);
             ReadBytes(tmp.data(), toSkip);

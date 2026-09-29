@@ -61,20 +61,41 @@ struct WaveHeader
 
 Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
 {
+   string name; // Declared first so that errors can report it once read
+
+   // Read a length, validated against the remaining data (the file may be corrupted)
+   const auto readLength = [&stream, &name](int32_t& len)
+   {
+      len = 0;
+      const bool read = stream.read(reinterpret_cast<unsigned char*>(&len), sizeof(len)) == sizeof(len);
+      const uint64_t size = stream.size();
+      const uint64_t pos = stream.tell(); // May be past the end
+      const uint64_t remaining = pos < size ? size - pos : 0;
+      if (!read || len < 0 || static_cast<uint64_t>(len) > remaining)
+      {
+         PLOGE << "Corrupted sound data in stream " << stream.fullName() << (name.empty() ? ""s : " (sound '" + name + "')");
+         return false;
+      }
+      return true;
+   };
+
    int32_t len;
 
    // Name (length, then string)
-   stream.read(reinterpret_cast<unsigned char*>(&len), sizeof(len));
-   string name(len, '\0');
+   if (!readLength(len))
+      return nullptr;
+   name.resize(len);
    stream.read(reinterpret_cast<unsigned char*>(name.data()), len);
 
    // Filename (length, then string) including path (// full filename, incl. path)
-   stream.read(reinterpret_cast<unsigned char*>(&len), sizeof(len));
+   if (!readLength(len))
+      return nullptr;
    string path(len, '\0');
    stream.read(reinterpret_cast<unsigned char*>(path.data()), len);
 
    // Was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
-   stream.read(reinterpret_cast<unsigned char*>(&len), sizeof(len));
+   if (!readLength(len))
+      return nullptr;
    string dummy(len, '\0');
    stream.read(reinterpret_cast<unsigned char*>(dummy.data()), len);
 
@@ -90,8 +111,9 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
       WAVEFORMATEX wfx;
       stream.read(reinterpret_cast<unsigned char*>(&wfx), sizeof(wfx));
 
-      int32_t cdata = 0;
-      stream.read(reinterpret_cast<unsigned char*>(&cdata), sizeof(cdata));
+      int32_t cdata;
+      if (!readLength(cdata))
+         return nullptr;
 
       const size_t waveFileSize = sizeof(WaveHeader) + cdata;
       data.resize(waveFileSize);
@@ -117,8 +139,9 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
    }
    else
    {
-      int32_t cdata = 0;
-      stream.read(reinterpret_cast<unsigned char*>(&cdata), sizeof(cdata));
+      int32_t cdata;
+      if (!readLength(cdata))
+         return nullptr;
       data.resize(cdata);
       stream.read(data.data(), data.size());
    }

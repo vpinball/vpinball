@@ -71,6 +71,7 @@ wide string into utf8 char*:
 #define POLE_H
 
 #include <cstdio>
+#include <filesystem>
 #include <string>
 #include <list>
 
@@ -98,6 +99,17 @@ std::string UTF16toUTF8(const std::wstring &utf16);
 std::wstring UTF8toUTF16(const std::string &utf8);
 #endif //POLE_USE_UTF16_FILENAMES
 
+// Filename for Storage: UTF-8 with POLE_USE_UTF16_FILENAMES (path::string() gives the ANSI code page), native otherwise
+inline std::string PathToFilename(const std::filesystem::path &path)
+{
+#ifdef POLE_USE_UTF16_FILENAMES
+  const std::u8string utf8 = path.u8string();
+  return std::string(utf8.begin(), utf8.end());
+#else
+  return path.string();
+#endif
+}
+
 class StorageIO;
 class Stream;
 class StreamIO;
@@ -121,7 +133,7 @@ public:
    * Destroys the storage.
    **/
   ~Storage();
-  
+
   /**
    * Opens the storage. Returns true if no error occurs.
    **/
@@ -131,17 +143,22 @@ public:
    * Closes the storage.
    **/
   void close();
-  
+
   /**
    * Returns the error code of last operation.
    **/
   int result() const;
 
   /**
+   * Returns true if any write failed since opening (disk full,...), including on close().
+   **/
+  bool hasWriteError() const;
+
+  /**
    * Finds all stream and directories in given path.
    **/
   std::list<std::string> entries( const std::string& path = "/" );
-  
+
   /**
    * Returns true if specified entry name is a directory.
    */

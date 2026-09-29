@@ -86,11 +86,12 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
    const std::filesystem::path fn = g_app->m_fileLocator.GetTablePath(pasp->table, FileLocator::TableSubFolder::AutoSave, true) / std::format("AutoSave{}.vpx", pasp->tableindex);
 
    HRESULT hr = E_FAIL;
-   POLE::Storage storage(fn.string().c_str());
+   POLE::Storage storage(POLE::PathToFilename(fn).c_str());
    if (storage.open(true, true, true) && storage.result() == POLE::Storage::Ok)
    {
-      hr = pstgroot->WriteToStorage(storage) ? S_OK : E_FAIL;
+      const bool written = pstgroot->WriteToStorage(storage);
       storage.close();
+      hr = (written && !storage.hasWriteError()) ? S_OK : E_FAIL;
    }
 
    delete pstgroot;

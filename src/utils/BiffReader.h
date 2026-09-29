@@ -41,6 +41,7 @@ public:
 
 private:
    uint64_t ReadSource(unsigned char *pv, const uint32_t count);
+   bool ValidateLength(const int32_t len); // Flags an error if a length read from the file exceeds the remaining data
    int GetIntNoHash();
 
    const uint8_t *m_data = nullptr;
