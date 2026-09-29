@@ -58,6 +58,8 @@ public:
    virtual void BuildPage() = 0;
 
 private:
+   bool HasSelectableItem() const; // Selection loops search for a selectable item, so they must not run without one
+
    const string m_title;
    const string m_info;
    const SaveMode m_saveMode;

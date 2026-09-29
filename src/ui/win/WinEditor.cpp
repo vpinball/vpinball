@@ -450,6 +450,12 @@ float WinEditor::ConvertToUnit(const float value) const
    return 0;
 }
 
+void WinEditor::ReleasePropSel(const vector<IWinUIPart *> &pvsel)
+{
+   if (m_propertyDialog && m_propertyDialog->IsWindow())
+      m_propertyDialog->ReleaseSelection(pvsel);
+}
+
 void WinEditor::SetPropSel(const vector<IWinUIPart *> &pvsel)
 {
    if (m_propertyDialog && m_propertyDialog->IsWindow())

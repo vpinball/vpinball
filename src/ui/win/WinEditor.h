@@ -94,6 +94,7 @@ public:
    void ClearObjectPosCur();
    float ConvertToUnit(const float value) const;
    void SetPropSel(const vector<IWinUIPart *> &pvsel);
+   void ReleasePropSel(const vector<IWinUIPart *> &pvsel); // Call before destroying a selection the property pane may point to
 
    void RenameEditable(IEditable* editable, const string& newName);
 

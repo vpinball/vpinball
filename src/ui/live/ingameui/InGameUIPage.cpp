@@ -216,8 +216,15 @@ void InGameUIPage::SaveTableOverride()
    tableSettings.Save();
 }
 
+bool InGameUIPage::HasSelectableItem() const
+{
+   return std::ranges::any_of(m_items, [](const auto &item) { return item->IsSelectable(); });
+}
+
 void InGameUIPage::SelectNextItem()
 {
+   if (!HasSelectableItem())
+      return;
    m_pressedItemScroll = 0.f; // Start from top of item
    const int nItems = static_cast<int>(m_items.size());
    do
@@ -227,6 +234,8 @@ void InGameUIPage::SelectNextItem()
 
 void InGameUIPage::SelectPrevItem()
 {
+   if (!HasSelectableItem())
+      return;
    m_pressedItemScroll = 10000.f; // Start from bottom of item
    const int nItems = static_cast<int>(m_items.size());
    do
@@ -563,6 +572,9 @@ void InGameUIPage::Render(float elapsedS)
    const bool backHovered = !m_player->m_isLoading && ImGui::IsItemHovered();
 
    // As we may have changed the number of selectable items, ensure m_selectedItem is still valid and pointing to a selectable item
+   if (!HasSelectableItem())
+      m_selectedItem = -1; // Nothing to select (AdjustItem checks the range)
+   else
    {
       m_selectedItem = clamp(m_selectedItem, 0, static_cast<int>(m_items.size()) - 1);
       while (!m_items[m_selectedItem]->IsSelectable())

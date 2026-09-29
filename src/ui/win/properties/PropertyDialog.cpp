@@ -481,8 +481,17 @@ void PropertyDialog::DeleteAllTabs()
             m_tab.RemoveTabPage(m_tab.GetTabIndex(m_tabs[i]));
             m_tabs[i] = nullptr;
         }
+    m_tabsSelection = nullptr;
     m_previousType = (ItemTypeEnum)0;
     m_desktopBackdropView = false;
+}
+
+void PropertyDialog::ReleaseSelection(const vector<IWinUIPart *> &pvsel)
+{
+   if (m_tabsSelection != &pvsel)
+      return;
+   DeleteAllTabs();
+   m_nameEdit.EnableWindow(FALSE);
 }
 
 void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const string &selectName)
@@ -624,6 +633,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
       while (m_tab.GetItemCount() > 0)
          m_tab.RemoveTabPage(0);
       memset(m_tabs, 0, sizeof(m_tabs));
+      m_tabsSelection = nullptr;
       m_previousType = eItemInvalid;
       return;
    }
@@ -635,14 +645,16 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
    m_tab.ShowWindow();
 
    const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel->GetEditable())->IsPlayfield();
+   // Tabs point to their selection, so also recreate them when it changes (switching table)
    if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_desktopBackdropView != psel->GetEditor()->m_vpxEditor->m_desktopBackdropView
-      || m_multipleElementsStatic.IsWindowVisible())
+      || m_multipleElementsStatic.IsWindowVisible() || m_tabsSelection != &pvsel)
    {
       BasePropertyDialog::m_disableEvents = true;
       m_curTabIndex = m_tab.GetCurSel();
       while (m_tab.GetItemCount() > 0)
          m_tab.RemoveTabPage(0);
       memset(m_tabs, 0, sizeof(m_tabs));
+      m_tabsSelection = nullptr;
 
         for (int i = 0; i < (int)pvsel.size(); i++)
         {
@@ -668,6 +680,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
         }
 
         CreateTabs(pvsel);
+        m_tabsSelection = &pvsel;
     }
 
 

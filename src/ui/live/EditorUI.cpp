@@ -1684,7 +1684,7 @@ void EditorUI::PasteSelection(const ImVec2 &pos)
 
 void EditorUI::DeleteSelection()
 {
-   if (m_table->IsLocked())
+   if (m_table->IsLocked() || IsInspectMode())
       return;
    const vector<std::shared_ptr<EditorUIPart>> parts(m_multiSel); // Work on a copy since parts are removed while iterating
    for (const auto &part : parts)
@@ -2126,7 +2126,7 @@ void EditorUI::BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, boo
 
 void EditorUI::DeleteSelectedPoints()
 {
-   if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked())
+   if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked() || IsInspectMode())
       return;
    DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
    vector<DragPoint *> deletable;

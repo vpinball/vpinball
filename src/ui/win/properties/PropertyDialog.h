@@ -271,6 +271,7 @@ public:
    void CreateTabs(const vector<IWinUIPart *> &pvsel);
    void DeleteAllTabs();
    void UpdateTabs(const vector<IWinUIPart *> &pvsel);
+   void ReleaseSelection(const vector<IWinUIPart *> &pvsel); // Delete the tabs if they point to this selection (about to be destroyed)
 
    static void UpdateTextureComboBox(const vector<Texture *> &contentList, const CComboBox &combo, const string &selectName);
    static void UpdateComboBox(const vector<string> &contentList, const CComboBox &combo, const string &selectName);
@@ -356,6 +357,7 @@ protected:
 private:
    PropertyTab m_tab;
    BasePropertyDialog *m_tabs[PROPERTY_TABS];
+   const vector<IWinUIPart *> *m_tabsSelection = nullptr; // Selection the tabs point to
    ItemTypeEnum m_previousType;
    bool m_isPlayfieldMesh;
    bool m_desktopBackdropView;

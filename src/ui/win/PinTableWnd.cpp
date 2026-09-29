@@ -59,6 +59,8 @@ PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
 
 PinTableWnd::~PinTableWnd()
 {
+   // The property pane may still point to our selection and UI parts
+   m_vpxEditor->ReleasePropSel(m_vmultisel);
    m_uiParts.clear();
    m_table->m_tableEditor = nullptr;
    m_table->Release();
@@ -1417,41 +1419,39 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
 
 void PinTableWnd::DeleteSelection()
 {
-   vector<IWinUIPart *> m_vseldelete;
-   const vector<IWinUIPart *> selection = GetMultiSelParts();
-   m_vseldelete.reserve(selection.size());
+   if (m_table->IsLocked())
+      return;
 
-   for (IWinUIPart *const psel : selection)
+   // Resolve UI parts to parts & drag points first, as deleting a part destroys its UI parts (sub parts included)
+   vector<IEditable *> partsToDelete;
+   vector<std::pair<IEditable *, DragPoint *>> pointsToDelete;
+   const auto addPart = [&partsToDelete](IEditable *part)
    {
-      // Sub parts (drag points, light centers) are deleted together with their owning part
-      if (IsSubPartOfSelectedPart(psel))
-         continue;
-      // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
-      m_vseldelete.push_back(psel);
-      if (psel->GetItemType() == ItemTypeEnum::eItemPartGroup)
-         for (const auto part : m_table->GetParts())
-            if (part->GetPartGroup() == psel->GetEditable() && std::ranges::find(m_vseldelete, GetUIPart(part)) == m_vseldelete.end())
-               m_vseldelete.push_back(GetUIPart(part));
+      if (std::ranges::find(partsToDelete, part) == partsToDelete.end())
+         partsToDelete.push_back(part);
+   };
+   for (const IWinUIPart *const psel : GetMultiSelParts())
+   {
+      IEditable *const part = psel->GetEditable();
+      if (part == nullptr || part == m_table || psel->GetItemType() == ItemTypeEnum::eItemTable)
+         continue; // The table is selected when nothing else is, it can't be deleted
+      if (psel->GetItemType() == ItemTypeEnum::eItemDragPoint)
+         pointsToDelete.emplace_back(part, psel->GetDragPoint());
+      else
+         addPart(part); // Other sub parts (light center,...) delete their owner
    }
+   // Delete group content, nested groups included (partsToDelete grows while iterating)
+   for (size_t i = 0; i < partsToDelete.size(); i++)
+      if (partsToDelete[i]->GetItemType() == ItemTypeEnum::eItemPartGroup)
+         for (IEditable *const part : m_table->GetParts())
+            if (part->GetPartGroup() == partsToDelete[i])
+               addPart(part);
+   // Drag points of deleted parts are deleted with them
+   std::erase_if(pointsToDelete, [&partsToDelete](const auto &point) { return std::ranges::find(partsToDelete, point.first) != partsToDelete.end(); });
+   if (partsToDelete.empty() && std::ranges::none_of(pointsToDelete, [](const auto &point) { return point.second->CanDelete(); }))
+      return;
 
-   bool inCollection = false;
-   for (IWinUIPart *const ptr : m_vseldelete)
-   {
-      for (auto pcol : m_table->GetCollections())
-      {
-         if (inCollection)
-            break;
-         for (const IEditable *const part : pcol->GetParts())
-         {
-            // Identify Editable in collection, as well as sub part of collection's editable (like light center for example)
-            if (ptr->GetEditable() == part)
-            {
-               inCollection = true;
-               break;
-            }
-         }
-      }
-   }
+   const bool inCollection = std::ranges::any_of(partsToDelete, [](const IEditable *part) { return !part->m_vCollection.empty(); });
    if (inCollection)
    {
       const int ans = MessageBox(LocalString(IDS_DELETE_ELEMENTS).m_szbuffer /*"Selected elements are part of one or more collections.\nDo you really want to delete them?"*/,
@@ -1464,25 +1464,21 @@ void PinTableWnd::DeleteSelection()
    // (undoing the deletion restores the deleted parts as selected)
    BeginUndo();
    ClearMultiSel();
-   for (IWinUIPart *const ptr : m_vseldelete)
+   for (const auto &[owner, dpoint] : pointsToDelete)
    {
-      if (ptr->GetItemType() == ItemTypeEnum::eItemDragPoint)
+      // Deleting a drag point modifies its owning part
+      if (dpoint->CanDelete())
       {
-         // Deleting a drag point modifies its owning part
-         if (DragPoint *const dpoint = ptr->GetDragPoint(); dpoint->CanDelete())
-         {
-            MarkForUndo(ptr->GetEditable());
-            dpoint->Delete();
-         }
+         MarkForUndo(owner);
+         dpoint->Delete();
       }
-      else
-      {
-         IEditable *part = ptr->GetEditable();
-         MarkForDelete(part);
-         m_table->RemovePart(part);
-         for (Collection *const pcollection : part->m_vCollection)
-            pcollection->RemovePart(part);
-      }
+   }
+   for (IEditable *const part : partsToDelete)
+   {
+      MarkForDelete(part);
+      for (Collection *const pcollection : part->m_vCollection)
+         pcollection->RemovePart(part);
+      m_table->RemovePart(part); // Last, as it may release the last reference
    }
    EndUndo();
 
