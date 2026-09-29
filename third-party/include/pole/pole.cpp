@@ -152,16 +152,17 @@ class DirEntry final
 {
   public:
     DirEntry(): valid(), dir(), size(), start(), prev(), next(), child() {}
-    bool valid;          // false if invalid (should be skipped)
-    std::string name;    // the name, not in unicode anymore 
-    bool dir;            // true if directory   
-    uint64 size;         // size (not valid if directory)
-    uint64 start;        // starting block
-    uint64 prev;         // previous sibling
-    uint64 next;         // next sibling
-    uint64 child;        // first child
-    int compare(const DirEntry& de);
-    int compare(const std::string& name2) const;
+    bool valid;            // false if invalid (should be skipped)
+    std::string name;      // the name (UTF-8, or as given when created)
+    std::u16string name16; // the name as stored in the file (UTF-16, at most 31 code units)
+    bool dir;              // true if directory   
+    uint64 size;           // size (not valid if directory)
+    uint64 start;          // starting block
+    uint64 prev;           // previous sibling
+    uint64 next;           // next sibling
+    uint64 child;          // first child
+    int compare(const DirEntry& de) const;
+    int compare(const std::u16string& name2) const;
 
 };
 
@@ -179,7 +180,7 @@ class DirTree final
     int64 parent( uint64 index );
     std::string fullName( uint64 index );
     std::vector<uint64> children( uint64 index );
-    uint64 find_child( uint64 index, const std::string& name, uint64 &closest );
+    uint64 find_child( uint64 index, const std::string& name, const std::u16string& name16, uint64 &closest, bool scanSiblings );
     void load( unsigned char* buffer, uint64 len );
     void save( unsigned char* buffer );
     uint64 size();
@@ -372,6 +373,121 @@ static inline void writeU32( unsigned char* ptr, uint32 data )
   ptr[1] = (unsigned char)((data >> 8) & 0xff);
   ptr[2] = (unsigned char)((data >> 16) & 0xff);
   ptr[3] = (unsigned char)((data >> 24) & 0xff);
+}
+
+// Directory entry names are stored as UTF-16, at most 31 code units plus a terminator (MS-CFB 2.6.1), and are UTF-8 in memory
+static const size_t MaxNameUnits = 31;
+
+// Bytes that are not valid UTF-8 are taken as Latin-1 code units, as earlier versions stored names one byte per code unit
+static std::u16string NameToUTF16(const std::string& name)
+{
+    std::u16string result;
+    result.reserve(name.size());
+    const size_t n = name.size();
+    for (size_t i = 0; i < n;)
+    {
+        const unsigned char c = static_cast<unsigned char>(name[i]);
+        uint32 cp = c;
+        size_t len = 1;
+        if (c >= 0xC2 && c <= 0xF4)
+        {
+            len = (c < 0xE0) ? 2 : (c < 0xF0) ? 3 : 4;
+            cp = c & ((c < 0xE0) ? 0x1F : (c < 0xF0) ? 0x0F : 0x07);
+            bool valid = i + len <= n;
+            for (size_t k = 1; valid && k < len; k++)
+            {
+                const unsigned char cc = static_cast<unsigned char>(name[i + k]);
+                valid = (cc & 0xC0) == 0x80;
+                cp = (cp << 6) | (cc & 0x3F);
+            }
+            // Reject overlong forms, surrogates and code points past U+10FFFF
+            if (!valid || (len == 3 && cp < 0x800) || (len == 4 && (cp < 0x10000 || cp > 0x10FFFF)) || (cp >= 0xD800 && cp <= 0xDFFF))
+            {
+                cp = c;
+                len = 1;
+            }
+        }
+        if (cp >= 0x10000)
+        {
+            cp -= 0x10000;
+            result.push_back(static_cast<char16_t>(0xD800 + (cp >> 10)));
+            result.push_back(static_cast<char16_t>(0xDC00 + (cp & 0x3FF)));
+        }
+        else
+            result.push_back(static_cast<char16_t>(cp));
+        i += len;
+    }
+    return result;
+}
+
+static std::string NameFromUTF16(const std::u16string& name)
+{
+    std::string result;
+    result.reserve(name.size());
+    for (size_t i = 0; i < name.size(); i++)
+    {
+        uint32 cp = name[i];
+        if (cp >= 0xD800 && cp <= 0xDBFF && i + 1 < name.size() && name[i + 1] >= 0xDC00 && name[i + 1] <= 0xDFFF)
+            cp = 0x10000 + ((cp - 0xD800) << 10) + (name[++i] - 0xDC00);
+        else if (cp >= 0xD800 && cp <= 0xDFFF)
+            cp = 0xFFFD; // Unpaired surrogate
+        if (cp < 0x80)
+            result += static_cast<char>(cp);
+        else if (cp < 0x800)
+        {
+            result += static_cast<char>(0xC0 | (cp >> 6));
+            result += static_cast<char>(0x80 | (cp & 0x3F));
+        }
+        else if (cp < 0x10000)
+        {
+            result += static_cast<char>(0xE0 | (cp >> 12));
+            result += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+            result += static_cast<char>(0x80 | (cp & 0x3F));
+        }
+        else
+        {
+            result += static_cast<char>(0xF0 | (cp >> 18));
+            result += static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
+            result += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+            result += static_cast<char>(0x80 | (cp & 0x3F));
+        }
+    }
+    return result;
+}
+
+static std::u16string TruncateName(std::u16string name)
+{
+    if (name.size() > MaxNameUnits)
+    {
+        size_t len = MaxNameUnits;
+        if (name[len - 1] >= 0xD800 && name[len - 1] <= 0xDBFF) // Do not split a surrogate pair
+            len--;
+        name.resize(len);
+    }
+    return name;
+}
+
+// Whether a stored name matches a looked up one, also accepting the forms written by earlier versions:
+// names truncated to 32 code units, and names stored one byte per code unit (compared as bytes, truncated to 32)
+static bool NameMatches(const std::u16string& stored, const std::u16string& name16, const std::string& name)
+{
+    size_t len = stored.size();
+    if (len > MaxNameUnits)
+        len = (stored[MaxNameUnits - 1] >= 0xD800 && stored[MaxNameUnits - 1] <= 0xDBFF) ? MaxNameUnits - 1 : MaxNameUnits;
+    if (len == name16.size() && stored.compare(0, len, name16) == 0)
+        return true;
+    if (stored.size() != std::min<size_t>(name.size(), 32))
+        return false;
+    for (size_t i = 0; i < stored.size(); i++)
+        if (stored[i] != static_cast<unsigned char>(name[i]))
+            return false;
+    return true;
+}
+
+// Simple uppercase for ASCII and Latin-1 (Windows uses a full Unicode table: other letters keep their case here)
+static inline char16_t UpcaseNameUnit(const char16_t c)
+{
+    return ((c >= u'a' && c <= u'z') || (c >= 0xE0 && c <= 0xFE && c != 0xF7)) ? static_cast<char16_t>(c - 0x20) : c;
 }
 
 static const unsigned char pole_magic[] = 
@@ -675,22 +791,35 @@ void AllocTable::debug()
 }
 
 // =========== DirEntry ==========
-// "A node with a shorter name is less than a node with a inter name"
-// "For nodes with the same length names, compare the two names." 
-// --Windows Compound Binary File Format Specification, Section 2.5
-int DirEntry::compare(const DirEntry& de)
+// "A node with a shorter name is less than a node with a longer name"
+// "For nodes with the same length names, compare the two names" after converting them to uppercase
+// --Windows Compound Binary File Format Specification (MS-CFB), Section 2.6.4
+// Names only differing by case (not valid, but written by earlier versions) are then compared exactly, to keep a total order
+int DirEntry::compare(const DirEntry& de) const
 {
-    return compare(de.name);
+    return compare(de.name16);
 }
 
-int DirEntry::compare(const std::string& name2) const
+int DirEntry::compare(const std::u16string& name2) const
 {
-    if (name.length() < name2.length())
-        return -1;
-    else if (name.length() > name2.length())
-        return 1;
-    else
-        return name.compare(name2);
+    if (name16.size() != name2.size())
+        return name16.size() < name2.size() ? -1 : 1;
+    // Units before the first exact difference are equal once uppercased too (names often share long prefixes, e.g. GameItem123)
+    auto a = name16.begin();
+    auto b = name2.begin();
+    while (a != name16.end() && *a == *b)
+        ++a, ++b;
+    if (a == name16.end())
+        return 0;
+    const int exact = (*a < *b) ? -1 : 1;
+    for (; a != name16.end(); ++a, ++b)
+    {
+        const char16_t ua = UpcaseNameUnit(*a);
+        const char16_t ub = UpcaseNameUnit(*b);
+        if (ua != ub)
+            return ua < ub ? -1 : 1;
+    }
+    return exact;
 }
 
 
@@ -711,6 +840,7 @@ void DirTree::clear(int64 bigBlockSize)
   entries.resize( 1 );
   entries[0].valid = true;
   entries[0].name = "Root Entry";
+  entries[0].name16 = u"Root Entry";
   entries[0].dir = true;
   entries[0].size = 0;
   entries[0].start = End;
@@ -843,7 +973,9 @@ DirEntry* DirTree::entry( const std::string& name, bool create, int64 bigBlockSi
      */
      // dima: performance optimisation of the previous
      uint64 closest = End;
-     child = find_child( index, *it, closest );
+     const std::u16string fullName16 = NameToUTF16( *it );
+     const std::u16string name16 = TruncateName( fullName16 ); // Names longer than the format allows are consistently truncated
+     child = find_child( index, *it, name16, closest, !create );
      
      // traverse to the child
      if( child > 0 ) index = child;
@@ -857,7 +989,8 @@ DirEntry* DirTree::entry( const std::string& name, bool create, int64 bigBlockSi
        index = unused();
        DirEntry* e = entry( index );
        e->valid = true;
-       e->name = *it;
+       e->name = (name16.size() < fullName16.size()) ? NameFromUTF16( name16 ) : *it;
+       e->name16 = name16;
        e->dir = (levelsLeft > 0);
        if (!e->dir)
            e->size = streamSize;
@@ -953,7 +1086,7 @@ std::vector<uint64> DirTree::children( uint64 index )
   return result;
 }
 
-static uint64 dirtree_find_sibling( DirTree* dirtree, uint64 index, const std::string& name, uint64& closest ) {
+static uint64 dirtree_find_sibling( DirTree* dirtree, uint64 index, const std::u16string& name, uint64& closest ) {
 
     const uint64 count = dirtree->entryCount();
     // Bounded, as a corrupted file may hold cycles
@@ -973,13 +1106,27 @@ static uint64 dirtree_find_sibling( DirTree* dirtree, uint64 index, const std::s
     return 0;
 }
 
-uint64 DirTree::find_child( uint64 index, const std::string& name, uint64& closest ) {
+uint64 DirTree::find_child( uint64 index, const std::string& name, const std::u16string& name16, uint64& closest, bool scanSiblings ) {
 
   uint64 count = entryCount();
   DirEntry* p = entry( index );
-  if (p && p->valid && p->child < count )
-    return dirtree_find_sibling( this, p->child, name, closest );
-  
+  if (!p || !p->valid || p->child >= count )
+    return 0;
+
+  if (const uint64 found = dirtree_find_sibling( this, p->child, name16, closest ); found || !scanSiblings)
+    return found;
+
+  // Not found in the tree order: the file may have been written in another order (earlier versions compared case sensitively)
+  // or with names in an earlier form (see NameMatches), so look for the name among all the siblings. Not done when creating
+  // entries (saving), as it would make it quadratic: files are written from scratch, only holding entries created by this version
+  std::vector<uint64> siblings;
+  dirtree_find_siblings( this, siblings, p->child );
+  for (const uint64 sib : siblings)
+  {
+    const DirEntry* const e = entry( sib );
+    if (e && e->valid && !e->name16.empty() && NameMatches( e->name16, name16, name ))
+      return sib;
+  }
   return 0;
 }
 
@@ -994,18 +1141,22 @@ void DirTree::load( unsigned char* buffer, uint64 size )
     // would be < 32 if first char in the name isn't printable
     unsigned prefix = 32;
     
-    // parse name of this entry, which stored as Unicode 16-bit
-    std::string name;
+    // parse name of this entry, stored as UTF-16 (length in bytes, terminator included)
+    std::u16string name;
     int name_len = readU16( buffer + 0x40+p );
     if( name_len > 64 ) name_len = 64;
-    for( int j=0; ( buffer[j+p]) && (j<name_len); j+= 2 )
-      name.append( 1, buffer[j+p] );
-      
+    for( int j=0; j+1 < name_len; j+= 2 )
+    {
+      const char16_t c = static_cast<char16_t>( readU16( buffer + j+p ) );
+      if( c == 0 ) break;
+      name.push_back( c );
+    }
+
     // first char isn't printable ? remove it...
-    if( buffer[p] < 32 )
-    { 
-      prefix = buffer[0]; 
-      name.erase( 0,1 ); 
+    if( !name.empty() && name[0] < 32 )
+    {
+      prefix = buffer[0];
+      name.erase( 0,1 );
     }
     
     // 2 = file (aka stream), 1 = directory (aka storage), 5 = root
@@ -1013,7 +1164,8 @@ void DirTree::load( unsigned char* buffer, uint64 size )
     
     DirEntry e;
     e.valid = ( type != 0 );
-    e.name = name;
+    e.name = NameFromUTF16( name );
+    e.name16 = name;
     e.start = readU32( buffer + 0x74+p );
     e.size = readU32( buffer + 0x78+p );
     e.prev = readU32( buffer + 0x44+p );
@@ -1064,16 +1216,12 @@ void DirTree::save( unsigned char* buffer )
       e->size = 0;
     }
     
-    // max length for name is 32 chars
-    name = e->name;
-    if( name.length() > 32 )
-      name.erase( 32, name.length() );
-      
-    // write name as Unicode 16-bit
-    for( unsigned j = 0; j < name.length(); j++ )
-      buffer[ i*128 + j*2 ] = name[j];
+    // write name as UTF-16 (at most 31 code units, entries loaded from files written by earlier versions may hold 32)
+    const std::u16string name16 = TruncateName( e->name16 );
+    for( size_t j = 0; j < name16.size(); j++ )
+      writeU16( buffer + i*128 + j*2, name16[j] );
 
-    writeU16( buffer + i*128 + 0x40, static_cast<uint32>(name.length()*2 + 2) );
+    writeU16( buffer + i*128 + 0x40, static_cast<uint32>(name16.size()*2 + 2) );
     writeU32( buffer + i*128 + 0x74, (uint32) e->start );
     writeU32( buffer + i*128 + 0x78, (uint32) e->size );
     writeU32( buffer + i*128 + 0x44, (uint32) e->prev );
