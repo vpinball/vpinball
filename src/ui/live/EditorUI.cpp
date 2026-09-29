@@ -166,19 +166,20 @@ void EditorUI::PlayTest()
    m_player->SetTable(liveTable, Player::TableTransition::Stack);
 }
 
-void EditorUI::SaveTable()
+bool EditorUI::SaveTable()
 {
    if (IsInspectMode() || m_table->IsLocked())
-      return;
+      return false;
    if (m_table->m_filename.empty())
    {
       SaveTableAs();
-      return;
+      return false;
    }
    // TODO cursor feedback
    VPXFileFeedback feedback;
    if (SUCCEEDED(m_table->Save(feedback)))
       m_undo.SetCleanPoint(eSaveClean);
+   return true;
 }
 
 void EditorUI::SaveTableAs()

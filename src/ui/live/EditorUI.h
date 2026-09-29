@@ -175,7 +175,7 @@ private:
    };
 
    // File operations (the 'Save As' and 'Load' file dialogs are asynchronous: their result is applied in RenderUI)
-   void SaveTable();
+   bool SaveTable(); // Returns true if the table was saved
    void SaveTableAs();
    void LoadTable();
    void NewTable(NewTableTemplate templateType);
