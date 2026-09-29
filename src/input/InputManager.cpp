@@ -908,8 +908,8 @@ void InputManager::CreateInputActions()
    auto vrDown = addVRPositionAction("VRDown"s, "Move VR view down"s, SDL_SCANCODE_KP_2, vec3(0.f, 0.f, -1.f));
    auto vrFront = addVRPositionAction("VRFront"s, "Move VR view to the front"s, SDL_SCANCODE_UNKNOWN, vec3(0.f, 1.f, 0.f));
    auto vrBack = addVRPositionAction("VRBack"s, "Move VR view to the back"s, SDL_SCANCODE_UNKNOWN, vec3(0.f, -1.f, 0.f));
-   auto vrLeft = addVRPositionAction("VRFront"s, "Move VR view to the left"s, SDL_SCANCODE_UNKNOWN, vec3(-1.f, 0.f, 0.f));
-   auto vrRight = addVRPositionAction("VRBack"s, "Move VR view to the right"s, SDL_SCANCODE_UNKNOWN, vec3(1.f, -0.f, 0.f));
+   auto vrLeft = addVRPositionAction("VRLeft"s, "Move VR view to the left"s, SDL_SCANCODE_UNKNOWN, vec3(-1.f, 0.f, 0.f));
+   auto vrRight = addVRPositionAction("VRRight"s, "Move VR view to the right"s, SDL_SCANCODE_UNKNOWN, vec3(1.f, 0.f, 0.f));
    m_vrViewCenterActionId = vrCenter->GetActionId();
    m_vrViewUpActionId = vrUp;
    m_vrViewDownActionId = vrDown;
