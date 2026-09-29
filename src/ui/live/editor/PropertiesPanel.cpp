@@ -1024,12 +1024,14 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
                const vector<Texture *> sel = editor.m_multiSelImages;
                int missing = 0;
                for (Texture *const old : sel)
-                  if (std::filesystem::exists(old->GetFilePath()))
-                     replaceImage(old, m_editor.m_table->ImportImage(old->GetFilePath(), old->m_name));
+                  if (!std::filesystem::exists(old->GetFilePath()))
+                     missing++;
+                  else if (Texture *const tex = m_editor.m_table->ImportImage(old->GetFilePath(), old->m_name)) // On failure, the old image is kept
+                     replaceImage(old, tex);
                   else
                      missing++;
                if (missing > 0)
-                  m_actionStatus = std::to_string(missing) + " file(s) not found"s;
+                  m_actionStatus = std::to_string(missing) + " file(s) not found or failed to load";
                m_editor.m_table->SetNonUndoableDirty(eSaveDirty);
             });
       }
@@ -1068,12 +1070,14 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
          const vector<Texture *> all = table->m_vimage;
          int missing = 0;
          for (Texture *const old : all)
-            if (std::filesystem::exists(old->GetFilePath()))
-               replaceImage(old, table->ImportImage(old->GetFilePath(), old->m_name));
+            if (!std::filesystem::exists(old->GetFilePath()))
+               missing++;
+            else if (Texture *const tex = table->ImportImage(old->GetFilePath(), old->m_name)) // On failure, the old image is kept
+               replaceImage(old, tex);
             else
                missing++;
          if (missing > 0)
-            m_actionStatus = std::to_string(missing) + " file(s) not found"s;
+            m_actionStatus = std::to_string(missing) + " file(s) not found or failed to load";
          table->SetNonUndoableDirty(eSaveDirty);
       }
       ImGui::EndDisabled();
@@ -1297,7 +1301,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
             Material *const pmat = new Material(mat.bIsMetal ? Material::METAL : Material::BASIC, mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp),
                dequantizeUnsigned<8>(mat.fThickness), mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat,
                !!(mat.bOpacityActive_fEdgeAlpha & 1), elasticity, elasticityFalloff, friction, scatterAngle, 0xFFFFFFFF);
-            pmat->m_name = mat.szName;
+            pmat->m_name = string(mat.szName, strnlen(mat.szName, std::size(mat.szName))); // May not be null terminated in a corrupted file
             table->AddMaterial(pmat);
             sel.push_back(pmat);
             editor.m_selection = Selection(pmat);
