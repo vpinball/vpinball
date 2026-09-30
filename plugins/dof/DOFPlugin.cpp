@@ -25,8 +25,6 @@
 #include <cctype>
 #include <filesystem>
 #include <format>
-#include <fstream>
-#include <sstream>
 #include <unordered_set>
 #include <vector>
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
@@ -121,11 +119,9 @@ void LIBDOFCALLBACK OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list 
 //
 // libDOF resolves the rom name given to Init against the table configuration
 // lines of the ledcontrol ini files it loads (first CSV column of the
-// [Config DOF] / [Config outs] section, see LedControlConfigList). Its public
-// API does not expose that list, so the plugin parses the same files to pick
-// the rom name handed to Init: ns::rom resolves to "ns_rom" when that name is
-// declared, "rom" otherwise. Kept self-contained so a future libDOF query API
-// can replace it whole.
+// [Config DOF] / [Config outs] section, see LedControlConfigList). The plugin
+// asks libDOF for that list to pick the rom name handed to Init: ns::rom
+// resolves to "ns_rom" when that name is declared, "rom" otherwise.
 
 static std::string DofToUpper(const std::string_view& s)
 {
@@ -134,100 +130,11 @@ static std::string DofToUpper(const std::string_view& s)
    return r;
 }
 
-static std::string_view TrimSv(const std::string_view& s)
-{
-   const auto isSpace = [](char c) { return std::isspace(static_cast<unsigned char>(c)) != 0; };
-   const size_t begin = s.find_first_not_of(" \t\r\n");
-   if (begin == std::string_view::npos)
-      return {};
-   const size_t end = s.find_last_not_of(" \t\r\n");
-   return s.substr(begin, end - begin + 1);
-}
-
-// Collect the short rom names declared by the ledcontrol ini files libDOF
-// would load for this table: directoutputconfig*.ini, ledcontrol*.ini
-// otherwise, looked up in IniFilesPath, the table folder, the global config
-// folder and the current directory, the first folder with any match winning
-// (mirrors DOF.cpp / GlobalConfig::GetIniFilesDictionary).
 static std::unordered_set<std::string> LoadDofRomList(const std::filesystem::path& tablePath)
 {
-   std::filesystem::path globalConfigPath = std::filesystem::path(DOF::Config::GetInstance()->GetBasePath()) / "directoutputconfig" / "GlobalConfig_B2SServer.xml";
-   if (!std::filesystem::exists(globalConfigPath))
-      globalConfigPath = std::filesystem::path("directoutputconfig") / "GlobalConfig_B2SServer.xml";
-
-   // IniFilesPath is the only global config setting that changes file lookup
-   std::string iniFilesPath;
-   {
-      std::ifstream xml(globalConfigPath);
-      std::stringstream content;
-      content << xml.rdbuf();
-      const std::string str = content.str();
-      constexpr std::string_view openTag = "<IniFilesPath>"sv;
-      constexpr std::string_view closeTag = "</IniFilesPath>"sv;
-      if (const size_t open = str.find(openTag); open != std::string::npos)
-         if (const size_t close = str.find(closeTag, open + openTag.size()); close != std::string::npos)
-            iniFilesPath = std::string(TrimSv(std::string_view(str).substr(open + openTag.size(), close - open - openTag.size())));
-   }
-
-   std::vector<std::filesystem::path> lookupPaths;
-   if (!iniFilesPath.empty() && std::filesystem::is_directory(iniFilesPath))
-      lookupPaths.push_back(iniFilesPath);
-   if (tablePath.has_parent_path())
-      lookupPaths.push_back(tablePath.parent_path());
-   if (globalConfigPath.has_parent_path())
-      lookupPaths.push_back(globalConfigPath.parent_path());
-   lookupPaths.push_back(std::filesystem::current_path());
-
-   std::vector<std::filesystem::path> iniFiles;
-   for (const std::string_view prefix : { "directoutputconfig"sv, "ledcontrol"sv })
-   {
-      const std::string upperPrefix = DofToUpper(prefix);
-      for (const std::filesystem::path& dir : lookupPaths)
-      {
-         std::error_code ec;
-         if (!std::filesystem::is_directory(dir, ec))
-            continue;
-         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(dir, ec))
-         {
-            if (!entry.is_regular_file(ec))
-               continue;
-            const std::string name = DofToUpper(entry.path().filename().string());
-            if (!name.starts_with(upperPrefix) || !name.ends_with(".INI"))
-               continue;
-            // Same filter as libDOF: unnumbered file, or numeric ledwiz suffix
-            if (name != upperPrefix + ".INI"
-               && !std::ranges::all_of(name.substr(upperPrefix.size(), name.size() - upperPrefix.size() - 4), [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; }))
-               continue;
-            iniFiles.push_back(entry.path());
-         }
-         if (!iniFiles.empty())
-            break;
-      }
-      if (!iniFiles.empty())
-         break;
-   }
-
    std::unordered_set<std::string> romList;
-   for (const std::filesystem::path& iniFile : iniFiles)
-   {
-      std::ifstream file(iniFile);
-      bool inConfigSection = false;
-      std::string line;
-      while (std::getline(file, line))
-      {
-         const std::string_view trimmed = TrimSv(line);
-         if (trimmed.empty())
-            continue;
-         if (trimmed.front() == '[')
-         {
-            inConfigSection = trimmed == "[Config DOF]"sv || trimmed == "[Config outs]"sv;
-            continue;
-         }
-         if (inConfigSection)
-            if (const std::string_view shortRom = TrimSv(trimmed.substr(0, trimmed.find(','))); !shortRom.empty())
-               romList.insert(DofToUpper(shortRom));
-      }
-   }
+   for (const std::string& romName : pDOF->GetLedControlRomNames(tablePath.string().c_str()))
+      romList.insert(DofToUpper(romName));
    return romList;
 }
 
