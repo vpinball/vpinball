@@ -810,7 +810,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             if (oldPos0.x == FLT_MAX)
                continue;
 
-            const Vertex3Ds oldPos1 = hitBall->GetOldPosition(g_pplayer->m_time_msec - 80); // Position 80ms ago
+            const Vertex3Ds oldPos1 = hitBall->GetOldPosition(m_time_msec - 80); // Position 80ms ago
             if (oldPos1.x == FLT_MAX)
                continue;
 

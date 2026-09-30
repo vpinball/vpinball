@@ -81,10 +81,12 @@
     <ClCompile Include="../../tests/parts/test-textbox.cpp" />
     <ClCompile Include="../../tests/parts/test-timer.cpp" />
     <ClCompile Include="../../tests/parts/test-trigger.cpp" />
+    <ClCompile Include="../../tests/physics/physics-harness.cpp" />
     <ClCompile Include="../../tests/physics/test-cabinet.cpp" />
     <ClCompile Include="../../tests/physics/test-collide.cpp" />
     <ClCompile Include="../../tests/physics/test-hittimer.cpp" />
     <ClCompile Include="../../tests/physics/test-motion-kalman.cpp" />
+    <ClCompile Include="../../tests/physics/test-physics-engine.cpp" />
     <ClCompile Include="../../tests/physics/test-quadtree.cpp" />
     <ClCompile Include="../../tests/plugins/alphadmd/test-alphanumeric.cpp" />
     <ClCompile Include="../../tests/plugins/plugins/test-colorspace.cpp" />
@@ -94,6 +96,7 @@
     <ClCompile Include="../../tests/render/test-base-render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../tests/physics/physics-harness.h" />
     <ClInclude Include="../../tests/vpx-test.h" />
   </ItemGroup>
   <ItemGroup>

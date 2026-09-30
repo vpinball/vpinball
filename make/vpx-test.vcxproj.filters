@@ -161,6 +161,9 @@
     <ClCompile Include="../../tests/parts/test-trigger.cpp">
       <Filter>parts</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/physics/physics-harness.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/physics/test-cabinet.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -171,6 +174,9 @@
       <Filter>physics</Filter>
     </ClCompile>
     <ClCompile Include="../../tests/physics/test-motion-kalman.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/physics/test-physics-engine.cpp">
       <Filter>physics</Filter>
     </ClCompile>
     <ClCompile Include="../../tests/physics/test-quadtree.cpp">
@@ -196,6 +202,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../tests/physics/physics-harness.h">
+      <Filter>physics</Filter>
+    </ClInclude>
     <ClInclude Include="../../tests/vpx-test.h" />
   </ItemGroup>
 </Project>
