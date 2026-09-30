@@ -347,6 +347,7 @@ public:
       CS_CLOSE_CAPTURE_SCREENSHOT = 6 // Close and capture screenshot for table image
    };
    void SetCloseState(CloseState state);
+   void RequestCloseFromOS(); // Window close or quit requested by the OS
    CloseState GetCloseState() const { return m_closing; }
 private:
    volatile CloseState m_closing = CS_PLAYING;

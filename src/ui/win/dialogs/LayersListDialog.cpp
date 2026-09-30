@@ -712,7 +712,7 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
       }
       if (m_activeTable != nullptr)
       {
-         m_activeTable->SetDirty(eSaveDirty);
+         m_activeTable->SetNonUndoableDirty(eSaveDirty); // Visibility changes are not recorded for undo
          m_activeTable->SetDirtyDraw();
       }
       Update();

@@ -864,11 +864,13 @@ void Player::InitTableSession(const bool isInitial)
       }
       pool.wait_until_empty();
       pool.wait_until_nothing_in_flight();
-      LockRenderThread();
 
       // Due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
+      // (before locking the render thread, like the parallel load, as uploading a preloaded texture acquires the frame mutex)
       for (auto image : failedPreloads)
          loadImage(image, true);
+
+      LockRenderThread();
 
 #ifdef ENABLE_BGFX
       if (texCompressor)
@@ -1197,6 +1199,15 @@ PinTable *Player::TakeTableSwitch(PlayMode &playMode)
       return nullptr;
    }
    return table;
+}
+
+void Player::RequestCloseFromOS()
+{
+   // Let an open editor ask to discard its unsaved changes first
+   if (m_liveUI && m_liveUI->IsEditorUIOpened())
+      m_liveUI->m_editorUI.RequestClose(CS_STOP_PLAY);
+   else
+      SetCloseState(CS_STOP_PLAY);
 }
 
 void Player::SetCloseState(const CloseState state)
@@ -1795,7 +1806,7 @@ void Player::ProcessOSMessages(const bool isInitialized)
       switch (e.type)
       {
       case SDL_EVENT_QUIT:
-         SetCloseState(Player::CloseState::CS_STOP_PLAY);
+         RequestCloseFromOS();
          break;
 
       case SDL_EVENT_WINDOW_FOCUS_GAINED:
@@ -1806,7 +1817,7 @@ void Player::ProcessOSMessages(const bool isInitialized)
 
       case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
          isPFWnd = (SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore()) || IsVR();
-         SetCloseState(Player::CloseState::CS_STOP_PLAY);
+         RequestCloseFromOS();
          break;
 
       case SDL_EVENT_WINDOW_RESIZED:
