@@ -60,6 +60,7 @@ public:
    void MarkForCreate(IEditable *editable);
    void MarkForDelete(IEditable *editable);
    void EndUndo();
+   void DiscardUndo(); // Drop the last (ended) record, leaving no trace
    void Undo();
    void SetCleanPoint(SaveDirtyState sds);
    void StartUndo();

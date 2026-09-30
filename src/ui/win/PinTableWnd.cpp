@@ -97,6 +97,8 @@ void PinTableWnd::MarkForDelete(IEditable *editable) { m_undo.MarkForDelete(edit
 
 void PinTableWnd::EndUndo() { m_undo.EndUndo(); }
 
+void PinTableWnd::DiscardUndo() { m_undo.Discard(); }
+
 void PinTableWnd::Undo()
 {
    if (m_undo.IsUndoPastCleanPoint())
