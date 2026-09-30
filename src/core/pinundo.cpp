@@ -13,7 +13,7 @@
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 
-#define MAXUNDO 16
+#define MAXUNDO 16 // Kept records, plus the one being recorded
 
 
 class UndoRecord final
@@ -113,11 +113,13 @@ void PinUndo::BeginUndo()
    m_nUndoLayer++;
    if (m_nUndoLayer == 1)
    {
-      if (m_undoRecords.size() == MAXUNDO)
+      // Only drop the oldest record once the history exceeds its size, so that a record that ends up being discarded (see Discard) does not cost a real one
+      if (m_undoRecords.size() > MAXUNDO)
       {
          m_undoRecords.erase(m_undoRecords.begin());
          m_cleanpoint--;
       }
+      m_dirtyStateAtBegin = m_dirtyState;
       m_undoRecords.push_back(std::make_unique<UndoRecord>());
       if (m_editorStateCapture)
          m_undoRecords.back()->m_editorState = m_editorStateCapture();
@@ -171,19 +173,40 @@ std::any PinUndo::Undo()
 
    for (IEditable *editable : m_undoRecords.back()->m_vieDelete)
    {
-      m_table->Undelete(editable);
-      editable->AddRef(); // As undelete does not add the reference on the undeleted part (should be fixed there ?)
+      m_table->Undelete(editable); // Adds the table reference; the record's one is released with the record below
+      if (g_pplayer && (g_pplayer->m_ptable == m_table))
+      {
+         // Deleted through the LiveUI: restore the player side resources it released (same setup as part creation)
+         g_pplayer->TimerSetup(editable);
+         if (IRenderable *const renderable = editable->GetIRenderable(); renderable)
+            renderable->RenderSetup(g_pplayer->m_renderer.get());
+         if (editable->GetIHitable())
+            g_pplayer->m_physics->Add(editable);
+      }
    }
 
    for (const auto &pstm : m_undoRecords.back()->m_vstm)
    {
       IEditable *const pie = *reinterpret_cast<IEditable *const *>(pstm->Data());
+      IScriptable *const scriptable = pie->GetIScriptable();
+      const wstring nameBefore = scriptable ? scriptable->m_wzName : wstring();
       pie->ClearForOverwrite();
 
       // Process the loaded PartGroup parenting to support undoing reparenting
       pie->m_onLoadExpectedPartGroup.clear();
       BiffReader reader(pstm->Data() + sizeof(IEditable *), static_cast<uint32_t>(pstm->Size() - sizeof(IEditable *)), CURRENT_FILE_FORMAT_VERSION, nullptr, 0);
       pie->Load(reader);
+
+      // Load writes the name directly: apply a restored name through the table to keep its name registry (and code view) in sync
+      if (scriptable && scriptable->m_wzName != nameBefore && m_table->HasPart(pie))
+      {
+         const wstring restoredName = scriptable->m_wzName;
+         scriptable->m_wzName = nameBefore;
+         if (lowerCase(restoredName) == lowerCase(nameBefore) || m_table->IsNameUnique(restoredName))
+            m_table->RenamePart(pie, restoredName);
+         else
+            PLOGW << "Undo could not restore the name '" << MakeString(restoredName) << "' of '" << MakeString(nameBefore) << "' as it is now used by another part";
+      }
       // The record holds the name of the part's group (empty when it had none, which is only valid for part groups)
       if (!pie->m_onLoadExpectedPartGroup.empty())
       {
@@ -262,6 +285,13 @@ void PinUndo::Discard()
       return;
 
    m_undoRecords.pop_back();
+
+   // A discarded record leaves no trace: restore the dirty state it changed when ended
+   if (m_dirtyState != m_dirtyStateAtBegin)
+   {
+      m_dirtyState = m_dirtyStateAtBegin;
+      m_table->SetDirty(m_dirtyState);
+   }
 }
 
 

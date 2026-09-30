@@ -35,6 +35,7 @@ private:
    vector<std::unique_ptr<class UndoRecord>> m_undoRecords;
    int m_nUndoLayer = 0;
    SaveDirtyState m_dirtyState = eSaveClean;
+   SaveDirtyState m_dirtyStateAtBegin = eSaveClean; // Dirty state when the last record was begun, restored if it is discarded
    size_t m_cleanpoint = 0; // Undo record at which table is in a non-dirty state (if bigger than undo records size, clean state can not be reached)
    std::function<std::any()> m_editorStateCapture;
 };
