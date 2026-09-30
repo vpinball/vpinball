@@ -118,23 +118,30 @@ private:
       m_isRunning = false;
       if (m_colorizeThread.joinable())
          m_colorizeThread.join();
+      // Run a queued advertisement while this instance is alive (a no-op once stopped)
+      msgApi->FlushPendingCallbacks(endpointId);
       {
          std::lock_guard lock(m_consoleDataMutex);
          m_consoleDataSize = 0;
       }
       m_colorizedDmd.ClearItems();
+      m_pendingAdvertisement = false;
       m_advertisedWidth = 0;
       m_advertisedHeight = 0;
    }
 
    void ColorizeThread(DisplaySrcId dmdId)
    {
-      m_pVNI = Vni_LoadFromPaths(m_palPath.string().c_str(), m_vniPath.empty() ? nullptr : m_vniPath.string().c_str(), nullptr, nullptr);
-      if (m_pVNI == nullptr)
+      Vni_Context* const pVNI = Vni_LoadFromPaths(m_palPath.string().c_str(), m_vniPath.empty() ? nullptr : m_vniPath.string().c_str(), nullptr, nullptr);
+      if (pVNI == nullptr)
       {
          LOGE("Failed to load colorization data");
          m_isRunning = false;
          return;
+      }
+      {
+         std::lock_guard stateLock(m_stateMutex); // OnConsoleData uses the context from the main thread
+         m_pVNI = pVNI;
       }
 
       SetThreadName("VNI.ColorizeThread"s);
@@ -180,9 +187,10 @@ private:
 
             if (vniFrame->width != m_advertisedWidth || vniFrame->height != m_advertisedHeight)
             {
+               // Frames are skipped until the main thread has resized the buffer and advertised it
+               // (StopColorizeThread flushes the callback, so it never outlives this instance)
                m_pendingAdvertisement = true;
-               DisplaySrcId* coloredDmd = new DisplaySrcId();
-               *coloredDmd = {
+               m_pendingDmd = {
                   .id = { { endpointId, 0 } }, //
                   .overrideId = dmdId.id, //
                   .width = vniFrame->width, //
@@ -192,21 +200,7 @@ private:
                   .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888, //
                   .GetRenderFrame = &Trampoline<&VNIColorizer::GetRenderFrame>::Call //
                };
-               msgApi->RunOnMainThread(
-                  endpointId, 0,
-                  [](void* userData)
-                  {
-                     std::lock_guard stateLock(colorizer->m_stateMutex);
-                     auto coloredDmd = static_cast<const DisplaySrcId*>(userData);
-                     DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
-                     colorizer->m_advertisedWidth = coloredDmd->width;
-                     colorizer->m_advertisedHeight = coloredDmd->height;
-                     colorizer->m_pendingAdvertisement = false;
-                     colorizer->m_colorFrame.resize(coloredDmd->width * coloredDmd->height * 3);
-                     colorizer->m_colorizedDmd.SetItem(*coloredDmd);
-                     delete coloredDmd;
-                  },
-                  coloredDmd);
+               msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { static_cast<VNIColorizer*>(userData)->AdvertiseColorizedDmd(); }, this);
                continue;
             }
 
@@ -215,9 +209,31 @@ private:
             m_colorizedframeId++;
          }
       }
-      Vni_Dispose(m_pVNI);
-      m_pVNI = nullptr;
+      {
+         std::lock_guard stateLock(m_stateMutex);
+         Vni_Dispose(m_pVNI);
+         m_pVNI = nullptr;
+      }
       m_isRunning = false;
+   }
+
+   // Main thread: publish the output requested by the colorize thread
+   void AdvertiseColorizedDmd()
+   {
+      if (!m_isRunning) // Stopped meanwhile (flushed from StopColorizeThread, or the thread ended on its own)
+         return;
+      // Broadcast without m_stateMutex, as consumers call GetRenderFrame under their own lock. The output is withdrawn first, so that no consumer uses the frame buffer while it is reallocated
+      m_colorizedDmd.ClearItems();
+      DisplaySrcId coloredDmd;
+      {
+         std::lock_guard stateLock(m_stateMutex);
+         coloredDmd = m_pendingDmd;
+         m_colorFrame.resize(coloredDmd.width * coloredDmd.height * 3);
+         m_advertisedWidth = coloredDmd.width;
+         m_advertisedHeight = coloredDmd.height;
+         m_pendingAdvertisement = false;
+      }
+      m_colorizedDmd.SetItem(coloredDmd);
    }
 
    // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
@@ -293,6 +309,7 @@ private:
    std::mutex m_stateMutex;
    std::vector<uint8_t> m_colorFrame;
    bool m_pendingAdvertisement = false;
+   DisplaySrcId m_pendingDmd { };
    unsigned int m_advertisedWidth = 0;
    unsigned int m_advertisedHeight = 0;
    unsigned int m_colorizedframeId = 0;
@@ -433,5 +450,6 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginUnload()
 {
    controllers->Unsubscribe();
    controllers = nullptr;
+   msgApi->FlushPendingCallbacks(endpointId);
    msgApi = nullptr;
 }

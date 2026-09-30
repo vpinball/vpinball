@@ -19,12 +19,13 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
    : m_msgAPI(msgAPI)
    , m_endpointId(endpointId)
 {
+   // Getters use the caches from any thread under the consumer list lock (inside With), so they are cleared under it too
    if (trackDisplays)
    {
       m_displaySources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<DisplaySrcId>>(
          &m_msgAPI, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG,
          nullptr, // No filtering
-         [this]() { m_displayCache.clear(); },
+         [this]() { m_displaySources->With([this](const auto &) { m_displayCache.clear(); }); },
          nullptr); // No setup
       m_displaySources->Subscribe();
    }
@@ -35,8 +36,12 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
          nullptr, // No filtering
          [this]()
          {
-            m_segCache.clear();
-            m_subSegSources.clear();
+            m_segSources->With(
+               [this](const auto &)
+               {
+                  m_segCache.clear();
+                  m_subSegSources.clear();
+               });
          },
          nullptr); // No setup
       m_segSources->Subscribe();
@@ -46,7 +51,7 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
       m_stateSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>>(
          &m_msgAPI, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
          nullptr, // No filtering
-         [this]() { m_floatCache.clear(); },
+         [this]() { m_stateSources->With([this](const auto &) { m_floatCache.clear(); }); },
          nullptr); // No setup
       m_stateSources->Subscribe();
    }

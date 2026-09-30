@@ -294,6 +294,13 @@ private:
       m_colorFrameV1.clear();
    }
 
+   // Advertisement request, run on the main thread while the colorize thread blocks. It carries the source the thread was started for, as the source list may have been cleared meanwhile
+   struct AdvertiseContext
+   {
+      SerumColorizer* colorizer;
+      DisplaySrcId dmdId;
+   };
+
    void ColorizeThread(DisplaySrcId dmdId)
    {
       SetThreadName("Serum.ColorizeThread"s);
@@ -349,7 +356,14 @@ private:
                // setting says "do not put these on the bus" -- which is worth
                // saying where the bus message is sent.
                if (serumPupTriggersProp_Get() && m_pSerum->triggerID != 0xffffffff)
-                  msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &colorizer->m_pSerum->triggerID); }, nullptr);
+                  // The id is passed by value, as the colorizer may be gone (or triggerID overwritten) when this runs
+                  msgApi->RunOnMainThread(endpointId, 0,
+                     [](void* userData)
+                     {
+                        uint32_t triggerID = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(userData));
+                        msgApi->BroadcastMsg(endpointId, onDmdTrigger, &triggerID);
+                     },
+                     reinterpret_cast<void*>(static_cast<uintptr_t>(m_pSerum->triggerID)));
 
                updated = true;
             });
@@ -412,12 +426,13 @@ private:
             {
                // Blocks on the main thread, which may be waiting for m_stateMutex in GetRenderFrame
                targetLock.unlock();
+               AdvertiseContext context { this, dmdId };
                msgApi->RunOnMainThread(
                   endpointId, -1,
                   [](void* userData)
                   {
-                     SerumColorizer* colorizer = static_cast<SerumColorizer*>(userData);
-                     DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
+                     SerumColorizer* colorizer = static_cast<AdvertiseContext*>(userData)->colorizer;
+                     const DisplaySrcId& dmdId = static_cast<AdvertiseContext*>(userData)->dmdId;
                      const unsigned int size = dmdId.width * dmdId.height;
                      colorizer->m_colorizedDmd.ClearItems();
                      // FIXME if a concurrent GetRenderFrame has been done returning the previous backing buffer, this will discard it and lead to an invalid mem access
@@ -433,7 +448,7 @@ private:
                         .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV1>::Call //
                      });
                   },
-                  this);
+                  &context);
                targetLock.lock();
             }
             for (unsigned int i = 0; i < size; i++)
@@ -444,12 +459,13 @@ private:
          {
             // Blocks on the main thread, which may be waiting for m_stateMutex in GetRenderFrame
             targetLock.unlock();
+            AdvertiseContext context { this, dmdId };
             msgApi->RunOnMainThread(
                endpointId, -1,
                [](void* userData)
                {
-                  SerumColorizer* colorizer = static_cast<SerumColorizer*>(userData);
-                  DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
+                  SerumColorizer* colorizer = static_cast<AdvertiseContext*>(userData)->colorizer;
+                  const DisplaySrcId& dmdId = static_cast<AdvertiseContext*>(userData)->dmdId;
                   colorizer->m_colorizedDmd.ClearItems();
                   if (colorizer->m_pSerum->width32 != 0)
                      colorizer->m_advertisedWidth32 = colorizer->m_pSerum->width32;
@@ -485,7 +501,7 @@ private:
                      });
                   }
                },
-               this);
+               &context);
             targetLock.lock();
          }
          m_colorizedframeId++;
@@ -721,6 +737,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
    dmdEventSrc = nullptr;
    msgApi->UnsubscribeMsg(onTriggerScene, OnTriggerScene, nullptr);
    msgApi->ReleaseMsgID(onTriggerScene);
+   msgApi->FlushPendingCallbacks(endpointId); // Deliver queued triggers while onDmdTrigger is still valid
    msgApi->ReleaseMsgID(onDmdTrigger);
    msgApi = nullptr;
 }
