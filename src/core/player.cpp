@@ -824,15 +824,17 @@ void Player::InitTableSession(const bool isInitial)
             if (GetCloseState() != CS_PLAYING && GetCloseState() != CS_USER_INPUT && GetCloseState() != CS_CLOSE_CAPTURE_SCREENSHOT)
                m_texLoadStats.skipCompression.store(true, std::memory_order_relaxed);
 
+#ifdef ENABLE_BGFX // The loading UI is onöy shown there (see below)
             // If rendering thread is ready, push a new frame as soon as possible
             if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
             {
                m_frameMutexHeld = true;
                m_renderer->RenderUIScene();
-               SubmitFrame(); // Hands the recorded frame over to the render thread and releases the render frame mutex (BGFX)
+               SubmitFrame(); // Hands the recorded frame over to the render thread and releases the render frame mutex
                m_frameMutexHeld = false;
             }
             else
+#endif
             {
                uOverSleep(100000);
             }
