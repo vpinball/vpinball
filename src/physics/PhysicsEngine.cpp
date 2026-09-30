@@ -21,15 +21,18 @@
 #include "parts/ball.h"
 
 PhysicsEngine::PhysicsEngine(PinTable *const table)
-   : m_hitPlayfield(table)
+   : m_plumbHandler(table->GetSettings())
+   , m_table(table)
+   , m_hitPlayfield(table)
    , m_hitTopGlass(table)
-   , m_plumbHandler(table->GetSettings())
+   , m_hitoctree(this)
+   , m_hitoctree_dynamic(this)
 {
    m_physicsMaxLoops = table->m_PhysicsMaxLoops == 0xFFFFFFFFu ? 0 : table->m_PhysicsMaxLoops * (10000 / PHYSICS_STEPTIME) /*2*/;
    m_contacts.reserve(8);
 
    // Collect all hit objects
-   const FRect3D tableBounds = g_pplayer->m_ptable->GetBoundingBox();
+   const FRect3D tableBounds = table->GetBoundingBox();
    m_hitoctree.SetBounds(FRect(tableBounds.left, tableBounds.right, tableBounds.top, tableBounds.bottom)); // Limit to table bounds as we don't expect to play outside of it
    m_pendingHitObjects = &m_hitoctree.BeginReset();
    m_pendingHitObjects->clear();
@@ -49,7 +52,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
       m_hitoctree.DumpTree(0);
    #endif
 
-   m_onUpdatePhysicsMsgId = g_pplayer->m_pluginAPI.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS);
+   m_onUpdatePhysicsMsgId = g_pplayer ? g_pplayer->m_pluginAPI.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS) : 0;
 
 #ifdef DEBUGPHYSICS
    c_hitcnts = 0;
@@ -74,9 +77,10 @@ PhysicsEngine::~PhysicsEngine()
    if (m_pendingHitObjects)
       ReleaseVHO(*m_pendingHitObjects, false);
    ReleaseVHO(m_hitoctree.GetHitObjects(), false);
-   
-   g_pplayer->m_pluginAPI.ReleaseMsgID(m_onUpdatePhysicsMsgId);
-   
+
+   if (g_pplayer)
+      g_pplayer->m_pluginAPI.ReleaseMsgID(m_onUpdatePhysicsMsgId);
+
    // We should release objects from the dynamic tree except HitBall (but there are only HitBall...)
 }
 
@@ -216,10 +220,15 @@ void PhysicsEngine::FlushStaticQuadTree()
 void PhysicsEngine::AddCollider(HitObject *collider, const bool isUI)
 {
    assert(collider->m_editable != nullptr);
+   collider->m_physics = this;
+   if (MoverObject *const mover = collider->GetMoverObject())
+      mover->m_physics = this;
    collider->CalcHitBBox();
    if (!isUI && (collider->GetType() == eBall))
    {
-      m_vmover.push_back(&static_cast<HitBall*>(collider)->m_mover); // balls are always added separately to this list!
+      HitBall *const hitBall = static_cast<HitBall *>(collider);
+      m_vmover.push_back(&hitBall->m_mover); // balls are always added separately to this list!
+      m_vballs.push_back(hitBall);
       m_hitoctree_dynamic.Insert(collider);
    }
    else
@@ -236,6 +245,7 @@ void PhysicsEngine::RemoveCollider(HitObject * collider, const bool isUI)
    if (!isUI)
    {
       RemoveFromVectorSingle<MoverObject *>(m_vmover, &static_cast<HitBall *>(collider)->m_mover);
+      RemoveFromVectorSingle(m_vballs, static_cast<HitBall *>(collider));
       m_hitoctree_dynamic.Remove(collider);
    }
 }
@@ -284,6 +294,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
 
    // playfield:
    m_hitPlayfield = HitPlane(table, Vertex3Ds(0, 0, 1), 0.f);
+   m_hitPlayfield.m_physics = this; // copy assignment above does not preserve it
    m_hitPlayfield.SetFriction(table->m_overridePhysics ? table->m_fOverrideContactFriction : table->m_friction);
    m_hitPlayfield.m_elasticity = table->m_overridePhysics ? table->m_fOverrideElasticity : table->m_elasticity;
    m_hitPlayfield.m_elasticityFalloff = table->m_overridePhysics ? table->m_fOverrideElasticityFalloff : table->m_elasticityFalloff;
@@ -293,6 +304,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    Vertex3Ds glassNormal(0, table->m_bottom - table->m_top, table->m_glassBottomHeight - table->m_glassTopHeight);
    glassNormal.Normalize();
    m_hitTopGlass = HitPlane(table, Vertex3Ds(0, glassNormal.z, -glassNormal.y), -table->m_glassTopHeight);
+   m_hitTopGlass.m_physics = this; // copy assignment above does not preserve it
    m_hitTopGlass.m_elasticity = 0.2f;
 }
 
@@ -312,7 +324,7 @@ bool PhysicsEngine::RecordContact(const CollisionEvent& newColl)
 AsyncDynamicQuadTree *PhysicsEngine::GetUIQuadTree()
 {
    if (m_UIQuadTtree == nullptr)
-      m_UIQuadTtree = new AsyncDynamicQuadTree(this, g_pplayer->m_ptable, true);
+      m_UIQuadTtree = new AsyncDynamicQuadTree(this, m_table, true);
    return m_UIQuadTtree;
 }
 
@@ -395,16 +407,14 @@ void PhysicsEngine::StartPhysics()
 
 void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 {
-   if (!g_pplayer) //!! meh, we have a race condition somewhere where we delete g_pplayer while still in use (e.g. if we have a script compile error and cancel the table start)
-      return;
-
-   g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
+   if (g_pplayer)
+      g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    uint64_t initial_time_usec = targetTimeUs;
 
    // DJRobX's crazy latency-reduction code
    uint64_t delta_frame = 0;
    #if !defined(ENABLE_BGFX)
-   if (g_pplayer->m_minphyslooptime > 0 && m_lastFlipTime > 0)
+   if (g_pplayer && g_pplayer->m_minphyslooptime > 0 && m_lastFlipTime > 0)
    {
       // We want the physics loops to sync up to the frames, not
       // the post-render period, as that can cause some judder.
@@ -415,9 +425,9 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 
    // When paused or after debugging, shift whole game forward in time
    // TODO not sure why we would need noTimeCorrect, as pause should already have shifted the timings
-   if (!g_pplayer->IsPlaying() || g_pplayer->m_noTimeCorrect)
+   if (g_pplayer && (!g_pplayer->IsPlaying() || g_pplayer->m_noTimeCorrect))
    {
-      const uint64_t curPhysicsFrameTime = m_startTime_usec + (uint64_t)(g_pplayer->m_time_sec * 1000000.0);
+      const uint64_t curPhysicsFrameTime = m_startTime_usec + (uint64_t)(m_time_sec * 1000000.0);
       if (initial_time_usec > curPhysicsFrameTime)
       {
          const uint64_t timeShift = initial_time_usec - curPhysicsFrameTime;
@@ -429,7 +439,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
    }
 
    // Walk a single physics step forward
-   if (g_pplayer->m_step)
+   if (g_pplayer && g_pplayer->m_step)
    {
       m_curPhysicsFrameTime -= PHYSICS_STEPTIME;
       g_pplayer->m_step = false;
@@ -453,7 +463,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
    PLOGD.printf("End Frame");
 #endif
 
-   if (m_nextPhysicsFrameTime < initial_time_usec)
+   if (g_pplayer && m_nextPhysicsFrameTime < initial_time_usec)
       g_pplayer->m_pluginAPI.BroadcastVPXMsg(m_onUpdatePhysicsMsgId, nullptr);
 
    // Rebuild the static quadtree if physics was edited while the simulation was suspended (live edit)
@@ -461,9 +471,14 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 
    while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {
-      g_pplayer->m_timeUpdateTimeStamp = usec();
-      g_pplayer->m_time_sec = max(g_pplayer->m_time_sec, (double)(m_curPhysicsFrameTime - m_startTime_usec) / 1000000.0); // First iteration is done before precise time
-      g_pplayer->m_time_msec = (uint32_t)((m_curPhysicsFrameTime - m_startTime_usec) / 1000); // Get time in milliseconds for timers
+      m_time_sec = max(m_time_sec, (double)(m_curPhysicsFrameTime - m_startTime_usec) / 1000000.0); // First iteration is done before precise time
+      m_time_msec = (uint32_t)((m_curPhysicsFrameTime - m_startTime_usec) / 1000); // Get time in milliseconds for timers
+      if (g_pplayer)
+      {
+         g_pplayer->m_timeUpdateTimeStamp = usec();
+         g_pplayer->m_time_sec = m_time_sec;
+         g_pplayer->m_time_msec = m_time_msec;
+      }
 
       m_phys_iterations++;
 
@@ -487,7 +502,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
       // FIXME the initial idea of this implementation is somewhat defeated by the fact that in single threaded mode, the main thread is mostly stalled waiting for GPU (solved in multithreaded mode) => remove ?
       #if !defined(ENABLE_BGFX)
-      if (g_pplayer->m_minphyslooptime > 0)
+      if (g_pplayer && g_pplayer->m_minphyslooptime > 0)
       {
          const uint64_t basetime = usec();
          const uint64_t targettime = ((uint64_t)g_pplayer->m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
@@ -505,7 +520,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       // end DJRobX's crazy code
 
       // Anti hung mechanism
-      if (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
+      if (g_pplayer && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
       {
          const uint64_t cur_time_usec = usec()
             - delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
@@ -522,33 +537,39 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
          //const uint32_t sim_msec = (uint32_t)(m_curPhysicsFrameTime / 1000);
          const uint32_t cur_time_msec = (uint32_t)(cur_time_usec / 1000);
 
-         #if !defined(ENABLE_BGFX)
+#if !defined(ENABLE_BGFX)
          // FIXME remove ? To be done correctly, we should process OS messages and sync back controller
-         g_pplayer->m_pininput.ProcessInput();
-         #endif
+         if (g_pplayer)
+            g_pplayer->m_pininput.ProcessInput();
+#endif
 
          // FIXME remove or at least move legacy ushock to a plugin
          ushock_output_update(/*sim_msec*/ cur_time_msec);
       }
 
-      #ifdef ACCURATETIMERS
-         #if !defined(ENABLE_BGFX)
-         if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING
+#ifdef ACCURATETIMERS
+      if (g_pplayer
+#if !defined(ENABLE_BGFX)
+         && (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING
             || g_pplayer->m_logicProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
-         #endif
+#endif
+      )
          g_pplayer->FireTimers(0);
-      #endif
+#endif
 
       // Since we are deriving forces/accelerations from velocities by doing a simple substract without scaling by delta time, we need dtime to be constant
       assert(fabs(physics_diff_time - ((double)PHYSICS_STEPTIME / (double)DEFAULT_STEPTIME)) < 1e-5);
 
-      g_pplayer->m_pininput.m_nudgeHandler->StepOneMillisecond();
+      if (g_pplayer)
+      {
+         g_pplayer->m_pininput.m_nudgeHandler->StepOneMillisecond();
+         g_pplayer->m_pininput.m_plungerHandler->StepOneMillisecond();
+      }
 
-      g_pplayer->m_pininput.m_plungerHandler->StepOneMillisecond();
-
-      const Vertex2D &cabinetAcceleration = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration();
+      const Vertex2D cabinetAcceleration = GetCabinetAcceleration();
       m_plumbHandler.StepOneMillisecond(cabinetAcceleration);
-      g_pplayer->m_pininput.PlayNudgeRumble(cabinetAcceleration);
+      if (g_pplayer)
+         g_pplayer->m_pininput.PlayNudgeRumble(cabinetAcceleration);
 
       for (size_t i = 0; i < m_vmover.size(); i++)
          m_vmover[i]->UpdateVelocities();      // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)
@@ -557,8 +578,8 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       PhysicsSimulateCycle(physics_diff_time); // main simulator call
 
       // Store new position of balls for ball trails
-      for (const auto ball : g_pplayer->m_vball)
-         ball->m_hitBall.OnPhysicStepProcessed(g_pplayer->m_time_msec);
+      for (HitBall *const ball : m_vballs)
+         ball->OnPhysicStepProcessed(m_time_msec);
 
       //PLOGD << "PT: " << physics_diff_time << ' ' << physics_to_graphic_diff_time << ' ' << (uint32_t)(m_curPhysicsFrameTime/1000) << ' ' << (uint32_t)(initial_time_usec/1000) << ' ' << cur_time_msec;
 
@@ -571,11 +592,14 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
    assert(initial_time_usec <= m_nextPhysicsFrameTime);
 
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
-   g_pplayer->m_time_sec = (double)(initial_time_usec - m_startTime_usec) / 1000000.0;
-   //g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000000.0;
-   // g_pplayer->m_time_msec = (uint32_t)((max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
+   m_time_sec = (double)(initial_time_usec - m_startTime_usec) / 1000000.0;
+   //m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000000.0;
+   // m_time_msec = (uint32_t)((max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
+   if (g_pplayer)
+      g_pplayer->m_time_sec = m_time_sec;
 
-   g_pplayer->m_logicProfiler.ExitProfileSection();
+   if (g_pplayer)
+      g_pplayer->m_logicProfiler.ExitProfileSection();
 }
 
 void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to this time
@@ -607,27 +631,27 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
       m_contacts.clear();
 
       #ifdef USE_EMBREE
-            for (size_t i = 0; i < m_vball.size(); i++)
-               if (!m_vball[i]->m_d.m_lockedInKicker
-         #ifdef C_DYNAMIC
-                   && m_vball[i]->m_dynamic > 0
-         #endif
+            for (size_t i = 0; i < m_vballs.size(); i++)
+               if (!m_vballs[i]->m_d.m_lockedInKicker
+#ifdef C_DYNAMIC
+                  && m_vballs[i]->m_dynamic > 0
+#endif
                   ) // don't play with frozen balls
                {
-                  m_vball[i]->m_coll.m_hittime = hittime; // search upto current hittime
-                  m_vball[i]->m_coll.m_obj = nullptr;
+                  m_vballs[i]->m_coll.m_hittime = hittime; // search upto current hittime
+                  m_vballs[i]->m_coll.m_obj = nullptr;
                }
 
-            if (!m_vball.empty())
+            if (!m_vballs.empty())
             {
-               m_hitoctree.HitTestBall(m_vball);         // find the hit objects hit times
-               m_hitoctree_dynamic.HitTestBall(m_vball); // dynamic objects !! should reuse the same embree scene created already in m_hitoctree.HitTestBall!
+               m_hitoctree.HitTestBall(m_vballs); // find the hit objects hit times
+               m_hitoctree_dynamic.HitTestBall(m_vballs); // dynamic objects !! should reuse the same embree scene created already in m_hitoctree.HitTestBall!
             }
       #endif
 
-      for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+      for (size_t i = 0; i < m_vballs.size(); i++)
       {
-         HitBall *const pball = &(g_pplayer->m_vball[i]->m_hitBall);
+         HitBall *const pball = m_vballs[i];
 
          if (!pball->m_d.m_lockedInKicker
          #ifdef C_DYNAMIC
@@ -641,7 +665,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             #endif
 
             // always check for playfield and top glass
-            if (g_pplayer->m_implicitPlayfieldMesh)
+            if (m_implicitPlayfieldMesh)
                DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
             DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
 
@@ -700,9 +724,9 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       // find balls that need to be collided and script'ed (generally there will be one, but more are possible)
 
-      for (size_t i = 0; i < g_pplayer->m_vball.size(); i++) // use m_vball.size(), in case script deletes a ball
+      for (size_t i = 0; i < m_vballs.size(); i++) // use m_vballs.size(), in case script deletes a ball
       {
-         HitBall *const pball = &(g_pplayer->m_vball[i]->m_hitBall);
+         HitBall *const pball = m_vballs[i];
 
          if (
          #ifdef C_DYNAMIC
@@ -712,16 +736,17 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
          {
             // now collision, contact and script reactions on active ball (object)+++++++++
             HitObject * const pho = pball->m_coll.m_obj; // object that ball hit in trials
-            g_pplayer->m_pactiveball = pball->m_pBall; // For script that wants the ball doing the collision
-            #ifdef DEBUGPHYSICS
-               c_collisioncnt++;
-            #endif
+            if (g_pplayer)
+               g_pplayer->m_pactiveball = pball->m_pBall; // For script that wants the ball doing the collision
+#ifdef DEBUGPHYSICS
+            c_collisioncnt++;
+#endif
             pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
             pball->m_coll.m_obj = nullptr;               // remove trial hit object pointer
 
             // Collide may have changed the velocity of the ball, 
             // and therefore the bounding box for the next hit cycle
-            if (i >= g_pplayer->m_vball.size() || g_pplayer->m_vball[i] != pball->m_pBall) // Ball still exists? may have been deleted from list
+            if (i >= m_vballs.size() || m_vballs[i] != pball) // Ball still exists? may have been deleted from list
             {
                // collision script deleted the ball, back up one count
                --i;
@@ -776,14 +801,12 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       #ifdef C_BALL_SPIN_HACK
          // hacky killing of ball spin on resting balls (very low and very high spinning)
-         for (Ball *const pBall : g_pplayer->m_vball)
+         for (HitBall *const hitBall : m_vballs)
          {
-            HitBall* hitBall = &(pBall->m_hitBall);
-            
             if (hitBall->m_coll.m_hitdistance >= (float)PHYS_TOUCH)
                continue;
 
-            const Vertex3Ds oldPos0 = hitBall->GetOldPosition(g_pplayer->m_time_msec - 90); // Position 90ms ago
+            const Vertex3Ds oldPos0 = hitBall->GetOldPosition(m_time_msec - 90); // Position 90ms ago
             if (oldPos0.x == FLT_MAX)
                continue;
 
@@ -827,8 +850,9 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
 string PhysicsEngine::GetPerfInfo(bool resetMax)
 {
-   if (resetMax || g_pplayer->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS) > m_phys_max)
-      m_phys_max = g_pplayer->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS);
+   const uint32_t lastPhysTime = g_pplayer ? g_pplayer->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS) : 0;
+   if (resetMax || lastPhysTime > m_phys_max)
+      m_phys_max = lastPhysTime;
 
    if (resetMax || m_phys_iterations > m_phys_max_iterations)
       m_phys_max_iterations = m_phys_iterations;
@@ -869,4 +893,42 @@ void PhysicsEngine::OnBallWallHit(const HitBall& ball, const Vertex3Ds& hitNorma
 {
    for (HitPlunger* const plunger : m_vPlungers)
       plunger->OnBallWallHit(ball, hitNormal, impactSpeed);
+}
+
+Vertex2D PhysicsEngine::GetCabinetAcceleration() const { return g_pplayer ? g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration() : Vertex2D(0.f, 0.f); }
+
+BallControl *PhysicsEngine::GetBallControl() const { return (g_pplayer && g_pplayer->m_liveUI) ? &g_pplayer->m_liveUI->m_ballControl : nullptr; }
+
+PlungerHandler *PhysicsEngine::GetPlungerHandler() const { return g_pplayer ? g_pplayer->m_pininput.m_plungerHandler.get() : nullptr; }
+
+InputAction *PhysicsEngine::GetLaunchBallAction() const { return g_pplayer ? g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()].get() : nullptr; }
+
+void PhysicsEngine::PlayBallBallRumble(const float speed) const
+{
+   if (g_pplayer)
+      g_pplayer->m_pininput.PlayBallBallRumble(speed);
+}
+
+void PhysicsEngine::PlaySlingshotRumble() const
+{
+   if (g_pplayer)
+      g_pplayer->m_pininput.PlaySlingshotRumble();
+}
+
+void PhysicsEngine::PlayFlipperContactRumble(const float speed) const
+{
+   if (g_pplayer)
+      g_pplayer->m_pininput.PlayFlipperContactRumble(speed);
+}
+
+void PhysicsEngine::PlayPlungerRumble(const float amplitude) const
+{
+   if (g_pplayer)
+      g_pplayer->m_pininput.PlayPlungerRumble(amplitude);
+}
+
+void PhysicsEngine::PlayPlungerLaunchRumble(const float amplitude) const
+{
+   if (g_pplayer)
+      g_pplayer->m_pininput.PlayPlungerLaunchRumble(amplitude);
 }

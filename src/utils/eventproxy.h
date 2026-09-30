@@ -90,7 +90,7 @@ public:
    final
    #endif
    {
-      if (dispid != DISPID_TimerEvents_Timer)
+      if (dispid != DISPID_TimerEvents_Timer && g_frameProfiler)
          g_frameProfiler->EnterScriptSection(dispid, string());
       T* const pT = static_cast<T*>(this);
       pT->Lock();
@@ -105,7 +105,7 @@ public:
          ++pp;
       }
       pT->Unlock();
-      if (dispid != DISPID_TimerEvents_Timer)
+      if (dispid != DISPID_TimerEvents_Timer && g_frameProfiler)
          g_frameProfiler->ExitScriptSection(string());
 
       return S_OK;

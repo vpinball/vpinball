@@ -148,7 +148,7 @@ void PlungerMoverObject::UpdateDisplacements(const float dtime)
    if (m_fireTimer != 0 && dtime != 0.0f
       && ((m_fireSpeed < 0.0f ? relPos <= bouncePos : relPos >= bouncePos)))
    {
-      g_pplayer->m_pininput.PlayPlungerRumble(m_fireSpeed);
+      m_physics->PlayPlungerRumble(m_fireSpeed);
 
       // stop at the bounce position
       m_pos = m_frameEnd + bouncePos*m_frameLen;
@@ -277,15 +277,15 @@ void PlungerMoverObject::Fire(float startPos)
 
 void PlungerMoverObject::UpdateVelocities()
 {
-   if (g_pplayer == nullptr)
-      return;
-
    // figure our current position in relative coordinates (0.0-1.0, where 0.0 is the maximum forward position and 1.0 is the maximum retracted position)
    const float pos = (m_pos - m_frameEnd) / m_frameLen;
 
    const bool isMech = m_plunger->m_d.m_mechPlunger;
 
    const bool autoPlunger = m_plunger->m_d.m_autoPlunger;
+
+   PlungerHandler* const plungerHandler = m_physics->GetPlungerHandler();
+   InputAction* const launchBallAction = m_physics->GetLaunchBallAction();
 
    // Evaluate plunger speed
    if (m_fireTimer > 0)
@@ -305,10 +305,10 @@ void PlungerMoverObject::UpdateVelocities()
       // a Launch Ball event when the user pulls back and releases the mechanical plunger and we're operating as an auto plunger.
       // When the timer reaches zero, we'll send the corresponding KeyUp event and cancel the timer.
       m_autoFireTimer--;
-      if ((m_autoFireTimerInputStateSlot != -1) && (m_autoFireTimer == 0))
-         g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->SetDirectState(m_autoFireTimerInputStateSlot, false);
+      if ((m_autoFireTimerInputStateSlot != -1) && (m_autoFireTimer == 0) && launchBallAction)
+         launchBallAction->SetDirectState(m_autoFireTimerInputStateSlot, false);
    }
-   else if (isMech && autoPlunger && g_pplayer->m_pininput.m_plungerHandler->GetRawVelocity() * VPUTOM(INCHESTOVPU(3.f)) < -1.f)
+   else if (isMech && autoPlunger && plungerHandler && plungerHandler->GetRawVelocity() * VPUTOM(INCHESTOVPU(3.f)) < -1.f)
    {
       // Release motion detected in Auto Plunger mode.
       //
@@ -360,9 +360,12 @@ void PlungerMoverObject::UpdateVelocities()
 
       // Send a KeyDown to the table script. This will allow the script to set ROM switch levels or
       // perform any other tasks it normally does when the actual Launch Ball button is pressed.
-      if (m_autoFireTimerInputStateSlot < 0)
-         m_autoFireTimerInputStateSlot = g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->NewDirectStateSlot();
-      g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->SetDirectState(m_autoFireTimerInputStateSlot, true);
+      if (launchBallAction)
+      {
+         if (m_autoFireTimerInputStateSlot < 0)
+            m_autoFireTimerInputStateSlot = launchBallAction->NewDirectStateSlot();
+         launchBallAction->SetDirectState(m_autoFireTimerInputStateSlot, true);
+      }
       m_autoFireTimer = 101; // start the timer to send the corresponding KeyUp in 100ms
    }
    else if (m_pullForce != 0.0f)
@@ -443,7 +446,7 @@ void PlungerMoverObject::UpdateVelocities()
       //
       // So instead, sync up the positions by setting the software plunger in motion on a course for syncing up with the
       // physical plunger, as fast as we can while maintaining a realistic speed in the simulation.
-      const float mech = g_pplayer->m_pininput.m_plungerHandler->GetPosition(m_restPos);
+      const float mech = plungerHandler ? plungerHandler->GetPosition(m_restPos) : m_restPos;
 
       // for an auto-plunger, go to the rest position; otherwise, sync to the mechanical plunger input
       const float target = autoPlunger ? m_restPos : mech;
@@ -455,7 +458,7 @@ void PlungerMoverObject::UpdateVelocities()
       // would reach the ball too late (or too slowly) for the launch impulse to be applied.  Driving the tip at
       // the launch speed also makes the fallback impulse (m_speed) consistent with the hit velocity model, and
       // lets the tip overshoot its target and bounce back like a real released plunger once it gets there.
-      const float hitVelocity = g_pplayer->m_pininput.m_plungerHandler->GetHitVelocity(m_restPos);
+      const float hitVelocity = plungerHandler ? plungerHandler->GetHitVelocity(m_restPos) : 0.f;
       if (hitVelocity < 0.f && dx < 0.f)
       {
          // Drive at the launch speed, using the same conversion as the ball hit impulse
@@ -491,9 +494,6 @@ void PlungerMoverObject::UpdateVelocities()
 
 float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   if (g_pplayer == nullptr)
-      return -1.0f;
-
    float hittime = dtime; //start time
    bool hit = false;
 
@@ -632,10 +632,11 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
    // rate to accurate track the speed, so we use its speed reports if they're
    // available in preference to our internal speed calculations, which are
    // unreliable at best.
-   if (m_plungerMover.m_fireTimer == 0 && m_plungerMover.m_plunger->m_d.m_mechPlunger && g_pplayer->m_pininput.m_plungerHandler->HasPlungerSensor())
+   PlungerHandler* const plungerHandler = m_physics->GetPlungerHandler();
+   if (m_plungerMover.m_fireTimer == 0 && m_plungerMover.m_plunger->m_d.m_mechPlunger && plungerHandler && plungerHandler->HasPlungerSensor())
    {
       // Only apply if there is an actual hit velocity to apply, if not, use the plunger speed (resulting from following the target sensor)
-      if (const float hitVelocity = g_pplayer->m_pininput.m_plungerHandler->GetHitVelocity(m_plungerMover.m_restPos); hitVelocity != 0.f)
+      if (const float hitVelocity = plungerHandler->GetHitVelocity(m_plungerMover.m_restPos); hitVelocity != 0.f)
       {
          impulseSpeed = hitVelocity // Acquired/derived velocity from sensor in per unit/s
             * m_plungerMover.m_frameLen // Convert to VPU/s (as the 'per unit' correspond to the plunger travel length)
@@ -673,7 +674,7 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
 
    // Save the last hit time for LiveUI feedback and legacy UShock light feedback
    if (hit)
-      g_pplayer->m_LastPlungerHit = g_pplayer->m_time_msec;
+      m_physics->NotifyPlungerBallContact();
 
    // check only if the plunger is not in a controlled retract motion
    // and check for a hit
@@ -732,7 +733,7 @@ void HitPlunger::PlayContactRumble(const float impactSpeed)
    // A ball landing on the tip or the lane end bounces a few times within a third of a second. That is one
    // landing, so within half a second a further contact only plays when it is stronger than the last one played
    // (the launch right after a landing is), and never inside 150 ms.
-   const uint32_t now = g_pplayer->m_time_msec;
+   const uint32_t now = m_physics->GetTimeMsec();
    const uint32_t sinceLast = now - m_lastStrikeRumbleMs;
    if (sinceLast <= 150 || (sinceLast < 500 && impactSpeed <= m_lastContactImpact))
       return;
@@ -740,7 +741,7 @@ void HitPlunger::PlayContactRumble(const float impactSpeed)
    m_lastContactImpact = impactSpeed;
    // Below half a unit it is the ball settling on the tip; a ball rolling back is a light clack, a launch the
    // full strike
-   g_pplayer->m_pininput.PlayPlungerLaunchRumble(clamp((impactSpeed - 0.5f) * (1.f / 16.5f), 0.f, 1.f));
+   m_physics->PlayPlungerLaunchRumble(clamp((impactSpeed - 0.5f) * (1.f / 16.5f), 0.f, 1.f));
 }
 
 void HitPlunger::OnBallWallHit(const HitBall& ball, const Vertex3Ds& hitNormal, const float impactSpeed)
@@ -777,10 +778,11 @@ void HitPlunger::Collide(const CollisionEvent& coll)
          return;
 #endif
    }
-   g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball->m_pBall); // Ball control most recently collided with plunger
+   if (BallControl* const ballControl = m_physics->GetBallControl())
+      ballControl->SetDraggedBall(pball->m_pBall); // Ball control most recently collided with plunger
 
-#ifdef C_DISP_GAIN 
-   // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing     
+#ifdef C_DISP_GAIN
+   // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
    float hdist = -C_DISP_GAIN * coll.m_hitdistance; // distance found in hit detection
    if (hdist > 1.0e-4f)
    {                                                // magnitude of jump
@@ -838,7 +840,7 @@ void HitPlunger::Collide(const CollisionEvent& coll)
 
    pball->m_d.m_vel *= 0.999f; //friction all axes     //!! TODO: fix this
 
-   const float scatter_vel = m_plungerMover.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty; // apply difficulty weighting
+   const float scatter_vel = m_plungerMover.m_scatterVelocity * m_physics->GetTable()->m_globalDifficulty; // apply difficulty weighting
 
    if (scatter_vel > 0.f && fabsf(pball->m_d.m_vel.y) > scatter_vel) // skip if low velocity 
    {

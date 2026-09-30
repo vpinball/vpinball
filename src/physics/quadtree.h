@@ -45,7 +45,7 @@ private:
 class HitQuadtree final
 {
 public:
-   HitQuadtree();
+   HitQuadtree(PhysicsEngine* physics = nullptr);
    ~HitQuadtree();
 
    void SetBounds(const FRect& bounds) { m_bounds = bounds; }
@@ -75,6 +75,9 @@ public:
 
 private:
    void Initialize();
+
+   PhysicsEngine* const m_physics;
+
    vector<HitObject*> m_vho; // all items
    FRect m_bounds;
 

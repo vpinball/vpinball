@@ -323,11 +323,11 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
 #ifdef DEBUG_FLIPPERS
          if (m_startTime)
          {
-            const uint32_t dur = g_pplayer->m_time_msec - m_startTime;
+            const uint32_t dur = m_physics->GetTimeMsec() - m_startTime;
             m_startTime = 0;
             PLOGD << "Stroke duration: " << dur << " ms";
             PLOGD << "Ang. velocity: " << m_angleSpeed;
-            PLOGD << "Ball velocity: " << g_pplayer->m_vball[0]->GetVelocity().Length();
+            PLOGD << "Ball velocity: " << (!m_physics->GetBalls().empty() ? m_physics->GetBalls()[0]->m_d.m_vel.Length() : 0.f);
          }
 #endif
          handle_event = true;
@@ -431,7 +431,7 @@ void FlipperMoverObject::SetSolenoidState(const bool s) // true = button pressed
    m_solState = s;
 #ifdef DEBUG_FLIPPERS
    if (m_angleCur == m_angleStart)
-      m_startTime = g_pplayer->m_time_msec;
+      m_startTime = m_physics->GetTimeMsec();
 #endif
 }
 
@@ -884,10 +884,10 @@ void HitFlipper::Collide(const CollisionEvent& coll)
       else return;
 #endif
    }
-   if (g_pplayer->m_liveUI)
-      g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball->m_pBall); // Ball control most recently collided with flipper
+   if (BallControl* const ballControl = m_physics->GetBallControl())
+      ballControl->SetDraggedBall(pball->m_pBall); // Ball control most recently collided with flipper
 
-#ifdef C_DISP_GAIN 
+#ifdef C_DISP_GAIN
    // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
    float hdist = -C_DISP_GAIN * coll.m_hitdistance; // distance found in hit detection
    if (hdist > 1.0e-4f)
@@ -990,7 +990,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
    pball->m_dynamic = C_DYNAMIC; // reactive ball if quenched
 #endif
 
-   if ((bnv < -0.25f) && (g_pplayer->m_time_msec - m_last_hittime) > 250) // limit rate to 250 milliseconds per event
+   if ((bnv < -0.25f) && (m_physics->GetTimeMsec() - m_last_hittime) > 250) // limit rate to 250 milliseconds per event
    {
       //!! unused const float distance = coll.m_hitmoment;                // moment .... and the flipper response
       const float flipperHit = /*(distance == 0.0f)*/ coll.m_hitmoment_bit ? -1.0f : -bnv; // move event processing to end of collision handler...
@@ -1000,7 +1000,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
          m_flipperMover.m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide, flipperHit); // collision velocity (normal to face)
    }
 
-   m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
+   m_last_hittime = m_physics->GetTimeMsec(); // keep resetting until idle for 250 milliseconds
 
    // Haptics use their own trigger rather than the script event gate above: that gate counts from the last
    // contact of any kind, and a ball resting on the raised flipper touches it every few milliseconds, so the
@@ -1021,7 +1021,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
    const float arrival = -normal.Dot(vB); // the ball's own speed towards the face, positive when approaching
    if (bnv < -0.25f && arrival > 0.25f)
    {
-      const uint32_t now = g_pplayer->m_time_msec;
+      const uint32_t now = m_physics->GetTimeMsec();
       while (m_rumbleContactCount > 0 && now - m_rumbleContactMs[m_rumbleContactTail] > RUMBLE_WINDOW_MS)
       {
          m_rumbleContactTail = (m_rumbleContactTail + 1) % RUMBLE_CONTACTS;
@@ -1043,7 +1043,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
       if (firstOfRun || (sum > m_rumblePlayed + 1.f && m_rumblePlayed < RUMBLE_FULL_IMPACT))
       {
          m_rumblePlayed = sum;
-         g_pplayer->m_pininput.PlayFlipperContactRumble(-sum);
+         m_physics->PlayFlipperContactRumble(-sum);
       }
    }
 

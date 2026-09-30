@@ -43,7 +43,9 @@ void HitTimer::Update(const unsigned int simulationTime)
 
 void HitTimer::Fire()
 {
-   g_pplayer->m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, m_name);
+   if (g_pplayer)
+      g_pplayer->m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, m_name);
    m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-   g_pplayer->m_logicProfiler.ExitScriptSection(m_name);
+   if (g_pplayer)
+      g_pplayer->m_logicProfiler.ExitScriptSection(m_name);
 }

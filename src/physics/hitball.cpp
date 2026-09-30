@@ -44,8 +44,8 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
 {
    //speed normal to wall
    float dot = m_d.m_vel.Dot(hitNormal);
-   if (dot < -C_LOWNORMVEL)
-      g_pplayer->m_physics->OnBallWallHit(*this, hitNormal, -dot);
+   if (dot < -C_LOWNORMVEL && m_physics)
+      m_physics->OnBallWallHit(*this, hitNormal, -dot);
 
    if (dot >= -C_LOWNORMVEL)                          // nearly receding ... make sure of conditions
    {                                                  // otherwise if clearly approaching .. process the collision
@@ -104,7 +104,7 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
    }
 
    if (scatter_angle < 0.0f) scatter_angle = c_hardScatter;  // if < 0 use global value
-   scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty; // apply difficulty weighting
+   scatter_angle *= m_physics->GetTable()->m_globalDifficulty; // apply difficulty weighting
 
    if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity
    {
@@ -224,9 +224,8 @@ void HitBall::Collide(const CollisionEvent& coll)
 
    // make sure we process each ball/ball collision only once
    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
-   if (((g_pplayer->m_physics->IsBallCollisionHandlingSwapped() && pball >= this) ||
-       (!g_pplayer->m_physics->IsBallCollisionHandlingSwapped() && pball <= this)) &&
-        !m_d.m_lockedInKicker)
+   const bool swapCollisionHandling = m_physics->IsBallCollisionHandlingSwapped();
+   if (((swapCollisionHandling && pball >= this) || (!swapCollisionHandling && pball <= this)) && !m_d.m_lockedInKicker)
       return;
 
    // target ball to object ball delta velocity
@@ -248,8 +247,8 @@ void HitBall::Collide(const CollisionEvent& coll)
    // send ball/ball collision event to script function
    if (dot < -0.25f) // only collisions with at least some small true impact velocity (no contacts)
    {
-      g_pplayer->m_ptable->InvokeBallBallCollisionCallback(this, pball, -dot);
-      g_pplayer->m_pininput.PlayBallBallRumble(-dot);
+      m_physics->GetTable()->InvokeBallBallCollisionCallback(this, pball, -dot);
+      m_physics->PlayBallBallRumble(-dot);
    }
 
 #ifdef C_DISP_GAIN
@@ -297,7 +296,7 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
    // If some collision has changed the ball's velocity, we may not have to do anything.
    if (normVel <= C_CONTACTVEL)
    {
-      const Vertex3Ds fe = m_d.m_mass * g_pplayer->m_physics->GetGravity(); // external forces (only gravity for now)
+      const Vertex3Ds fe = m_d.m_mass * m_physics->GetGravity(); // external forces (only gravity for now)
       const float dot = fe.Dot(coll.m_hitnormal);
       const float normalForce = std::max(0.0f, -(dot*dtime + coll.m_hit_org_normalvelocity)); // normal force is always nonnegative
 
@@ -330,7 +329,7 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
    const Vertex3Ds surfVel = SurfaceVelocity(surfP);
    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal; // calc the tangential slip velocity
 
-   const float maxFric = fmaxf(fricCoeff, 0.f) * m_d.m_mass * fmaxf(-g_pplayer->m_physics->GetGravity().Dot(hitnormal), 0.f);
+   const float maxFric = fmaxf(fricCoeff, 0.f) * m_d.m_mass * fmaxf(-m_physics->GetGravity().Dot(hitnormal), 0.f);
 
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
@@ -382,7 +381,7 @@ Vertex3Ds HitBall::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    const Vertex3Ds angularvelocity = m_angularmomentum / Inertia();
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
-   return g_pplayer->m_physics->GetGravity() / m_d.m_mass // linear acceleration
+   return m_physics->GetGravity() / m_d.m_mass // linear acceleration
       + CrossProduct(angularvelocity, CrossProduct(angularvelocity, surfP)); // centripetal acceleration
 }
 
@@ -480,25 +479,26 @@ void HitBall::UpdateVelocities()
 {
    if (!m_d.m_lockedInKicker) // Gravity
    {
-      if (m_pBall == g_pplayer->m_liveUI->m_ballControl.GetDraggedBall())
+      BallControl* const ballControl = m_physics->GetBallControl();
+      if (ballControl && m_pBall == ballControl->GetDraggedBall())
       {
          m_d.m_vel.x *= 0.5f; // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
          m_d.m_vel.y *= 0.5f;
-         m_d.m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_liveUI->m_ballControl.GetDraggedBallTarget().x - m_d.m_pos.x) * (float)(1./10.))),
-                                max(-10.0f, min(10.0f, (g_pplayer->m_liveUI->m_ballControl.GetDraggedBallTarget().y - m_d.m_pos.y) * (float)(1./10.))),
-                                -2.0f);
+         m_d.m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (ballControl->GetDraggedBallTarget().x - m_d.m_pos.x) * (float)(1. / 10.))),
+            max(-10.0f, min(10.0f, (ballControl->GetDraggedBallTarget().y - m_d.m_pos.y) * (float)(1. / 10.))), -2.0f);
       }
       else
       {
          // Apply forces (expressed in VPU/VPT) integrated on one physic step (PHYS_FACTOR is one physic step time expressed in VPX time unit)
          // This is standard Newton physics: A = dV/dt = (1/m).(Sum of F) therefore dV = (1/m).(Sum of F).dt
-         m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_physics->GetGravity() /* * m_d.m_mass / m_d.m_mass */; // Gravity F = m.G
+         m_d.m_vel += (float)PHYS_FACTOR * m_physics->GetGravity() /* * m_d.m_mass / m_d.m_mass */; // Gravity F = m.G
 
          // Table velocity due to nudge (fictitious force due to change of reference frame, therefore mass is not applied)
          const float slope = ANGTORAD(m_pBall->GetPTable()->GetPlayfieldSlope()); // nudge acceleration is in the horizontal cabinet plane, reference frame is the playfield
-         m_d.m_vel.x -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x);
-         m_d.m_vel.y -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y) * cosf(slope);
-         m_d.m_vel.z -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y) * sinf(slope);
+         const Vertex2D cabinetAcceleration = m_physics->GetCabinetAcceleration();
+         m_d.m_vel.x -= (float)PHYS_FACTOR * MS2TOVPUVPT2(cabinetAcceleration.x);
+         m_d.m_vel.y -= (float)PHYS_FACTOR * MS2TOVPUVPT2(cabinetAcceleration.y) * cosf(slope);
+         m_d.m_vel.z -= (float)PHYS_FACTOR * MS2TOVPUVPT2(cabinetAcceleration.y) * sinf(slope);
       }
    }
 

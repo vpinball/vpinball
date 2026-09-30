@@ -106,7 +106,7 @@ void PlungerSettingsPage::Render(float elapsed)
    AppendPlot();
 
    const float now = static_cast<float>(static_cast<double>(msec()) / 1000.);
-   const float lastHitDelayMs = static_cast<float>(static_cast<double>(g_pplayer->m_time_msec - m_player->m_LastPlungerHit) / 1000.);
+   const float lastHitDelayMs = static_cast<float>(static_cast<double>(g_pplayer->m_time_msec - m_player->m_physics->GetLastPlungerHit()) / 1000.);
    const float tLastHit = (lastHitDelayMs < m_positionPlot.m_timeSpan) && (fmodf(now, m_positionPlot.m_timeSpan) >= fmodf(now - lastHitDelayMs, m_positionPlot.m_timeSpan))
       ? fmodf(now - lastHitDelayMs, m_positionPlot.m_timeSpan)
       : 0.f;

@@ -45,8 +45,8 @@
 #endif
 
 
-
-HitQuadtree::HitQuadtree()
+HitQuadtree::HitQuadtree(PhysicsEngine* physics)
+  : m_physics(physics)
 {
    m_bounds.Clear();
 #ifdef USE_EMBREE
@@ -585,9 +585,9 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
 
    for (unsigned int i = m_start; i < m_start + m_items; i++)
    {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->m_physics->c_tested++;
-      #endif
+#ifdef DEBUGPHYSICS
+      quadTree->m_physics->c_tested++;
+#endif
       HitObject* pho = quadTree->m_vho[i];
       if ((pball != pho) // ball can not hit itself
          && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)
@@ -599,9 +599,9 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
 
    if (m_children != nullptr)
    {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->m_physics->c_tested++;
-      #endif
+#ifdef DEBUGPHYSICS
+      quadTree->m_physics->c_tested++;
+#endif
       const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
       if (pball->m_hitBBox.top <= m_vcenter.y) // Top
@@ -623,17 +623,17 @@ void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBa
 
    for (unsigned int i = m_start; i < m_start + m_items; i++)
    {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->m_physics->c_tested++;
-      #endif
+#ifdef DEBUGPHYSICS
+      quadTree->m_physics->c_tested++;
+#endif
       HitObject* pho = quadTree->m_vho[i];
       if ((pho != nullptr) && (pball != pho) // ball can not hit itself
          && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)
          && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
          #ifdef DEBUGPHYSICS
-            g_pplayer->m_physics->c_deepTested++;
-         #endif
+         quadTree->m_physics->c_deepTested++;
+#endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
             pvhoHit.emplace_back(pho, newtime);
@@ -642,9 +642,9 @@ void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBa
 
    if (m_children != nullptr)
    {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->m_physics->c_tested++;
-      #endif
+#ifdef DEBUGPHYSICS
+      quadTree->m_physics->c_tested++;
+#endif
       const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
       if (pball->m_hitBBox.top <= m_vcenter.y) // Top
