@@ -160,6 +160,8 @@ public:
 
    float GetPredictedDisplayTimestamp() const { return m_predictedDisplayTimestamp; }
 
+   void SetShowUILayer(bool show) { m_showUILayer = show; }
+
 private:
    unsigned int m_eyeWidth = 1080;
    unsigned int m_eyeHeight = 1020;
@@ -186,6 +188,8 @@ private:
    Viewpoint m_roomWorld;
    Matrix3D m_roomProj[2];
    Matrix3D m_sceneProj[2];
+
+   bool m_showUILayer = false;
 
 #ifdef ENABLE_XR
 public:

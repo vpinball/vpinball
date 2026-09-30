@@ -3218,7 +3218,7 @@ void Renderer::Render3DScene()
    // reprojection). It is recorded before stereo to allow compositing it on the preview window.
    RenderTarget* xrUILayer = nullptr;
    #ifdef ENABLE_XR
-   if (m_stereo3D == STEREO_VR && m_stereo3Denabled)
+   if (m_stereo3D == STEREO_VR)
       xrUILayer = g_pplayer->m_vrDevice->GetUIRenderTarget();
    #endif
    if (xrUILayer != nullptr)
@@ -3226,6 +3226,8 @@ void Renderer::Render3DScene()
       m_renderDevice->SetRenderTarget("LiveUI"s, xrUILayer, false, true);
       m_renderDevice->Clear(clearType::TARGET, 0x00000000);
       g_pplayer->m_liveUI->RenderUI();
+      if (m_renderDevice->GetCurrentPass()->GetCommandCount() <= 1)
+         m_renderDevice->GetCurrentPass()->ClearCommands();
    }
 
    // Apply stereo
