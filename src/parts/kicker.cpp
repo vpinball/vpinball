@@ -1003,7 +1003,7 @@ void KickerHitCircle::DoChangeBallVelocity(HitBall *const pball, const Vertex3Ds
 
             // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
             const float maxFric = friction * reactionImpulse;
-            const float jt = clamppm(-vt / kt, maxFric);
+            const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
             pball->ApplySurfaceImpulse(jt * cross, jt * tangent);
         }

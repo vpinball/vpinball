@@ -176,14 +176,6 @@ constexpr __forceinline T clamp(const T x, const T mn, const T mx)
    return max(min(x,mx),mn);
 }
 
-// clamp inbetween -abs(mnmx) and abs(mnmx)
-template <typename T>
-constexpr __forceinline T clamppm(const T x, T mnmx)
-{
-   mnmx = abs(mnmx);
-   return max(min(x,mnmx),-mnmx);
-}
-
 template <typename T>
 constexpr __forceinline T lerp(const T x1, const T x2, const float alpha)
 {

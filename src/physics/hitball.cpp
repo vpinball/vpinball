@@ -96,8 +96,8 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
       const float kt = 1.0f/m_d.m_mass + tangent.Dot(CrossProduct(cross / Inertia(), surfP));
 
       // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
-      const float maxFric = friction * reactionImpulse;
-      const float jt = clamppm(-vt / kt, maxFric);
+      const float maxFric = fmaxf(friction, 0.f) * reactionImpulse;
+      const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
       if (!infNaN(jt))
          ApplySurfaceImpulse(jt * cross, jt * tangent);
@@ -330,7 +330,7 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
    const Vertex3Ds surfVel = SurfaceVelocity(surfP);
    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal; // calc the tangential slip velocity
 
-   const float maxFric = fricCoeff * m_d.m_mass * -g_pplayer->m_physics->GetGravity().Dot(hitnormal);
+   const float maxFric = fmaxf(fricCoeff, 0.f) * m_d.m_mass * fmaxf(-g_pplayer->m_physics->GetGravity().Dot(hitnormal), 0.f);
 
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
@@ -367,7 +367,7 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
 
    const Vertex3Ds cp = CrossProduct(surfP, slipDir);
    const float denom = 1.0f/m_d.m_mass + slipDir.Dot(CrossProduct(cp / Inertia(), surfP));
-   const float fric = clamppm(numer / denom, maxFric);
+   const float fric = clamp(numer / denom, -maxFric, maxFric);
 
    if (!infNaN(fric))
       ApplySurfaceImpulse((dtime * fric) * cp, (dtime * fric) * slipDir);

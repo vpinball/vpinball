@@ -979,8 +979,8 @@ void HitFlipper::Collide(const CollisionEvent& coll)
       kt += tangent.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF)); // flipper only has angular response
 
       // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
-      const float maxFric = m_friction * impulse;
-      const float jt = clamppm(-vt / kt, maxFric);
+      const float maxFric = fmaxf(m_friction, 0.f) * fmaxf(impulse, 0.f);
+      const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
       pball->ApplySurfaceImpulse(jt * crossB, jt * tangent);
       m_flipperMover.ApplyImpulse(-jt * crossF);
@@ -1123,7 +1123,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       // first check for slippage
       const Vertex3Ds slip = vrel - normVel * normal; // calc the tangential slip velocity
 
-      const float maxFric = j * m_friction;
+      const float maxFric = j * fmaxf(m_friction, 0.f);
 
       const float slipspeed = slip.Length();
       Vertex3Ds slipDir,crossF;
@@ -1154,7 +1154,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
       const Vertex3Ds crossB = CrossProduct(rB, slipDir);
       const float denomB = invMass + slipDir.Dot(CrossProduct(crossB / pball->Inertia(), rB));
-      const float fric = clamppm(numer / (denomB + denomF), maxFric);
+      const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
 
       pball->ApplySurfaceImpulse((dtime * fric) * crossB, (dtime * fric) * slipDir);
       m_flipperMover.ApplyImpulse(-(dtime * fric) * crossF);
