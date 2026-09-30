@@ -470,39 +470,24 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
    if (name == oldName)
       return;
 
-   editable->SetName(MakeWString(name));
-
+   // Mark for undo before changing anything, so that undo restores the old name (and the surface references below)
    PinTable *const pt = editable->GetPTable();
    pt->m_tableEditor->BeginUndo();
    pt->m_tableEditor->MarkForUndo(editable);
 
+   editable->SetName(MakeWString(name));
+   const string newName = MakeString(editable->GetIScriptable()->m_wzName); // SetName may adjust it (length, uniqueness)
+   if (newName == oldName)
+   {
+      pt->m_tableEditor->EndUndo();
+      pt->m_tableEditor->DiscardUndo();
+      return;
+   }
+
    SetPropSel(pt->m_tableEditor->GetMultiSelParts());
    GetLayersListDialog()->Update();
 
-   if (editable->GetItemType() == eItemSurface)
-   {
-      for (IEditable *const pedit : pt->GetParts())
-      {
-         if (pedit->GetItemType() == ItemTypeEnum::eItemBumper && ((Bumper *)pedit)->m_d.m_szSurface == oldName)
-            ((Bumper *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemDecal && ((Decal *)pedit)->m_d.m_szSurface == oldName)
-            ((Decal *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemFlipper && ((Flipper *)pedit)->m_d.m_szSurface == oldName)
-            ((Flipper *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemGate && ((Gate *)pedit)->m_d.m_szSurface == oldName)
-            ((Gate *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemKicker && ((Kicker *)pedit)->m_d.m_szSurface == oldName)
-            ((Kicker *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemLight && ((Light *)pedit)->m_d.m_szSurface == oldName)
-            ((Light *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemPlunger && ((Plunger *)pedit)->m_d.m_szSurface == oldName)
-            ((Plunger *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemSpinner && ((Spinner *)pedit)->m_d.m_szSurface == oldName)
-            ((Spinner *)pedit)->m_d.m_szSurface = name;
-         else if (pedit->GetItemType() == ItemTypeEnum::eItemTrigger && ((Trigger *)pedit)->m_d.m_szSurface == oldName)
-            ((Trigger *)pedit)->m_d.m_szSurface = name;
-      }
-   }
+   pt->UpdateSurfaceReferences(editable, oldName, [pt](IEditable *part) { pt->m_tableEditor->MarkForUndo(part); });
 
    pt->m_tableEditor->EndUndo();
    pt->SetDirtyDraw();

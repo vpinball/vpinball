@@ -147,6 +147,7 @@ private:
    vector<std::shared_ptr<EditorUIPart>> m_editables;
    ankerl::unordered_dense::map<const IEditable *, std::shared_ptr<EditorUIPart>> m_editableMap;
    void UpdateEditableList();
+   void RestorePartsVisibility() const; // Revert the editor visibility overrides of the table parts (reapplied on next render)
 
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void ResetCameraFromPlayer();
@@ -185,6 +186,11 @@ private:
    std::shared_ptr<string> m_pendingLoadPath;
    std::optional<NewTableTemplate> m_pendingNewTable; // New table template awaiting the 'discard unsaved changes' confirmation
    bool m_confirmLoadTable = false; // Request the 'discard unsaved changes' confirmation popup in RenderUI
+public:
+   // Closes the session with the given Player::CloseState, first asking to discard unsaved changes when they would be lost
+   void RequestClose(int closeState);
+private:
+   std::optional<int> m_pendingClose; // Close state awaiting the 'discard unsaved changes' confirmation
 
    // Clipboard (copy/paste of parts through the OS clipboard, and of drag point coordinates in point edit mode)
    void CopySelection();

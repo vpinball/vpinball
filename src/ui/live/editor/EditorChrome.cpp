@@ -61,7 +61,7 @@ void EditorChrome::RenderMenuBar()
             editor.PlayTest();
          ImGui::Separator();
          if (ImGui::MenuItem("Quit"))
-            editor.m_player->SetCloseState(Player::CS_CLOSE_APP);
+            editor.RequestClose(Player::CS_CLOSE_APP);
          ImGui::EndMenu();
       }
       if (editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
@@ -89,7 +89,7 @@ void EditorChrome::RenderMenuBar()
             ImGui::SetTooltip("Get back to player");
       }
       if (ImGui::Button(ICON_FK_WINDOW_CLOSE))
-         editor.m_table->QuitPlayer(editor.IsInspectMode() ? Player::CS_STOP_PLAY : Player::CS_CLOSE_APP);
+         editor.RequestClose(editor.IsInspectMode() ? Player::CS_STOP_PLAY : Player::CS_CLOSE_APP);
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip("Close editor");
       m_menuBarHeight = ImGui::GetWindowSize().y;

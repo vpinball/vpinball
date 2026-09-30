@@ -15,6 +15,7 @@
 #include "editor/EditorUIPartRegistry.h"
 #include "editor/LiveRenderContext.h"
 
+#include "parts/Collection.h"
 #include "parts/PartGroup.h"
 #include "parts/ball.h"
 #include "parts/primitive.h"
@@ -82,7 +83,11 @@ EditorUI::EditorUI(LiveUI &liveUI)
    ImGuizmo::AllowAxisFlip(false);
 }
 
-EditorUI::~EditorUI() { }
+EditorUI::~EditorUI()
+{
+   // The table outlives the editor (Player deletes the UI first)
+   RestorePartsVisibility();
+}
 
 void EditorUI::Open()
 {
@@ -122,6 +127,7 @@ void EditorUI::Close()
    m_isOpened = false;
    m_flyMode = false;
    ExitPointEditMode(false);
+   RestorePartsVisibility();
    m_inspectionModal.Close();
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
@@ -157,11 +163,8 @@ void EditorUI::PlayTest()
 {
    if (IsInspectMode())
       return;
-   // Restore the authored visibility of all parts: the editor continuously overrides the parts' m_d
-   // visibility fields to reflect the outliner state (see EditableUIPart::Render), and this editor
-   // state must not leak into the duplicated table used for the play session
-   for (const auto &uiPart : m_editables)
-      uiPart->RestorePartVisibility();
+   // The editor visibility overrides must not leak into the duplicated table used for the play session
+   RestorePartsVisibility();
    PinTable *const liveTable = m_table->CopyForPlay();
    m_player->SetTable(liveTable, Player::TableTransition::Stack);
 }
@@ -177,8 +180,13 @@ bool EditorUI::SaveTable()
    }
    // TODO cursor feedback
    VPXFileFeedback feedback;
-   if (SUCCEEDED(m_table->Save(feedback)))
-      m_undo.SetCleanPoint(eSaveClean);
+   RestorePartsVisibility(); // Save the authored visibility, not the editor display state
+   if (FAILED(m_table->Save(feedback)))
+      return false;
+   m_undo.SetCleanPoint(eSaveClean);
+   // Start a new undo record on next edit (instead of merging it with the previous one), so that the table gets marked dirty again
+   m_lastUndoPart = nullptr;
+   m_lastUndoId = 0;
    return true;
 }
 
@@ -214,10 +222,24 @@ void EditorUI::LoadTable()
    if (m_table->FDirty())
    {
       m_pendingNewTable.reset();
+      m_pendingClose.reset();
       m_confirmLoadTable = true;
       return;
    }
    ShowLoadTableDialog();
+}
+
+void EditorUI::RequestClose(const int closeState)
+{
+   // Only closing a full editor session loses the edited table (a live edit started from the Win32 editor or a play test gets back to its editor)
+   if (m_player->IsEditorMode() && !IsInspectMode() && m_table->FDirty())
+   {
+      m_pendingNewTable.reset();
+      m_pendingClose = closeState;
+      m_confirmLoadTable = true;
+      return;
+   }
+   m_player->SetCloseState(static_cast<Player::CloseState>(closeState));
 }
 
 void EditorUI::ShowLoadTableDialog()
@@ -249,6 +271,7 @@ void EditorUI::NewTable(const NewTableTemplate templateType)
    if (m_table->FDirty())
    {
       m_pendingNewTable = templateType;
+      m_pendingClose.reset();
       m_confirmLoadTable = true;
       return;
    }
@@ -457,21 +480,28 @@ void EditorUI::RenderUI()
          | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
    ImDrawList *const overlayDrawList = ImGui::GetWindowDrawList();
 
-   // Confirmation popup for discarding unsaved changes when loading another table (OpenPopup must be
+   // Confirmation popup for discarding unsaved changes when loading another table or closing (OpenPopup must be
    // called in the same window scope as the matching BeginPopupModal)
+   // All variants share one popup id, so that a request arriving while it is open retargets it
+   const char *const confirmTitle = m_pendingClose ? "Quit###ConfirmDiscard" : m_pendingNewTable ? "New Table###ConfirmDiscard" : "Load Table###ConfirmDiscard";
    if (m_confirmLoadTable)
    {
       m_confirmLoadTable = false;
-      ImGui::OpenPopup(m_pendingNewTable ? "New Table" : "Load Table");
+      ImGui::OpenPopup(confirmTitle);
    }
-   if (ImGui::BeginPopupModal(m_pendingNewTable ? "New Table" : "Load Table", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   if (ImGui::BeginPopupModal(confirmTitle, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
    {
       ImGui::TextUnformatted("The current table has unsaved changes which will be lost.");
       ImGui::NewLine();
       if (ImGui::Button("Discard changes"))
       {
          ImGui::CloseCurrentPopup();
-         if (m_pendingNewTable)
+         if (m_pendingClose)
+         {
+            m_player->SetCloseState(static_cast<Player::CloseState>(*m_pendingClose));
+            m_pendingClose.reset();
+         }
+         else if (m_pendingNewTable)
          {
             LoadTableTemplate(*m_pendingNewTable);
             m_pendingNewTable.reset();
@@ -484,6 +514,7 @@ void EditorUI::RenderUI()
       if (ImGui::Button("Cancel"))
       {
          m_pendingNewTable.reset();
+         m_pendingClose.reset();
          ImGui::CloseCurrentPopup();
       }
       ImGui::EndPopup();
@@ -1600,6 +1631,7 @@ void EditorUI::CopySelection()
    for (const auto &part : m_multiSel)
       if (IEditable *const editable = part->GetEditable(); editable != nullptr)
          parts.push_back(editable);
+   RestorePartsVisibility(); // Copy the authored visibility, not the editor display state
    VPX::EditorClipboard::CopyParts(parts);
 }
 
@@ -1695,33 +1727,73 @@ void EditorUI::DeleteSelection()
 {
    if (m_table->IsLocked() || IsInspectMode())
       return;
-   const vector<std::shared_ptr<EditorUIPart>> parts(m_multiSel); // Work on a copy since parts are removed while iterating
-   for (const auto &part : parts)
+   if (m_pointEditPart) // Toolbar delete while editing drag points: delete the points, the edited part must stay alive
    {
-      if (part->GetEditable()->GetItemType() == eItemBall || part->GetEditable()->GetPartGroup() == nullptr)
-         continue;
-      IEditable *const edit = part->GetEditable();
-      RemoveFromVectorSingle(m_editables, part);
-      m_editableMap.erase(edit);
+      DeleteSelectedPoints();
+      return;
+   }
+   // Balls are runtime objects, parts without a part group are live objects or root groups: they can not be deleted (and stay selected)
+   vector<IEditable *> partsToDelete;
+   for (const auto &part : m_multiSel)
+      if (IEditable *const edit = part->GetEditable(); edit->GetItemType() != eItemBall && edit->GetPartGroup() != nullptr && std::ranges::find(partsToDelete, edit) == partsToDelete.end())
+         partsToDelete.push_back(edit);
+   // Delete group content, nested groups included (partsToDelete grows while iterating)
+   for (size_t i = 0; i < partsToDelete.size(); i++)
+      if (partsToDelete[i]->GetItemType() == eItemPartGroup)
+         for (IEditable *const edit : m_table->GetParts())
+            if (edit->GetPartGroup() == partsToDelete[i] && edit->GetItemType() != eItemBall && std::ranges::find(partsToDelete, edit) == partsToDelete.end())
+               partsToDelete.push_back(edit);
+   if (partsToDelete.empty())
+      return;
+
+   // Begun before the selection changes, so that undoing restores the deleted parts as selected
+   m_undo.BeginUndo();
+   for (IEditable *const edit : partsToDelete)
+   {
+      if (const auto it = m_editableMap.find(edit); it != m_editableMap.end())
+      {
+         const std::shared_ptr<EditorUIPart> uiPart = it->second;
+         uiPart->RestorePartVisibility(); // While the part is alive, so that it is authored when undeleted
+         m_editableMap.erase(it);
+         RemoveFromVectorSingle(m_editables, uiPart);
+      }
+      // Release the player side resources (restored by PinUndo::Undo), the render ones at the end of the frame as the render thread may still use them
       if (edit->GetIHitable())
          m_player->m_physics->Remove(edit);
-      m_table->RemovePart(edit);
-      m_renderer->m_renderDevice->AddEndOfFrameCmd([edit, player=m_player]()
+      if (edit->m_phittimer)
+         m_player->TimerRelease(edit);
+      edit->AddRef(); // Keep the part alive until its deferred render release has been processed
+      m_renderer->m_renderDevice->AddEndOfFrameCmd([edit]()
          {
-            if (edit->GetIRenderable())
+            if (edit->m_ptable == nullptr && edit->GetIRenderable()) // Unless undeleted meanwhile
                edit->GetIRenderable()->RenderRelease();
-            if (edit->m_phittimer && edit->m_timerEnabled)
-               player->TimerStateChange(edit->m_phittimer.get(), false);
-            edit->m_phittimer = nullptr;
             edit->Release();
          });
+      m_undo.MarkForDelete(edit); // The undo record keeps the part alive (until undone or dropped)
+      for (Collection *const collection : edit->m_vCollection) // m_vCollection is kept for Undelete
+         collection->RemovePart(edit);
+      m_table->RemovePart(edit);
    }
+   m_undo.EndUndo();
+   m_lastUndoPart = nullptr; // Start a new record on next edit (a deleted part's address may be reused)
+   m_lastUndoId = 0;
+
    // Remove the deleted parts from the selection (non deletable parts stay selected)
    std::erase_if(m_multiSel, [this](const auto &part) { return std::ranges::find(m_editables, part) == m_editables.end(); });
    if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
       m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
    if (m_outlinerAnchor && std::ranges::find(m_editables, m_outlinerAnchor) == m_editables.end())
       m_outlinerAnchor.reset();
+}
+
+void EditorUI::RestorePartsVisibility() const
+{
+   // The editor keeps overriding the parts' m_d visibility fields with the outliner state (see EditableUIPart::Render).
+   // Only parts still in the table are known to be alive: UI parts of removed parts are only dropped by UpdateEditableList
+   const ankerl::unordered_dense::set<const IEditable *> liveParts(m_table->GetParts().begin(), m_table->GetParts().end());
+   for (const auto &uiPart : m_editables)
+      if (liveParts.contains(uiPart->GetEditable()))
+         uiPart->RestorePartVisibility();
 }
 
 void EditorUI::UpdateEditableList()
