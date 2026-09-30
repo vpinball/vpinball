@@ -55,10 +55,13 @@ set(VPX_TEST_SOURCES
    tests/parts/test-textbox.cpp
    tests/parts/test-timer.cpp
    tests/parts/test-trigger.cpp
+   tests/physics/physics-harness.cpp
+   tests/physics/physics-harness.h
    tests/physics/test-cabinet.cpp
    tests/physics/test-collide.cpp
    tests/physics/test-hittimer.cpp
    tests/physics/test-motion-kalman.cpp
+   tests/physics/test-physics-engine.cpp
    tests/physics/test-quadtree.cpp
    tests/plugins/alphadmd/test-alphanumeric.cpp
    tests/plugins/plugins/test-colorspace.cpp
