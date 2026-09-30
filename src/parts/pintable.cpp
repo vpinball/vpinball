@@ -5287,7 +5287,7 @@ STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
 std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOption(
    BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values)
 {
-   const string name = MakeString(optionName);
+   const string name = MakeString(optionName, CP_UTF8);
 
    if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
    {
@@ -5335,7 +5335,7 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
       SafeArrayAccessData(psa, (void **)&p);
       literals.reserve(nValues);
       for (int i = 0; i < nValues; i++)
-         literals.push_back(MakeString(V_BSTR(&p[i])));
+         literals.push_back(MakeString(V_BSTR(&p[i]), CP_UTF8));
       SafeArrayUnaccessData(psa);
    }
 

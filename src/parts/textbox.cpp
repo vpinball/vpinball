@@ -505,13 +505,13 @@ STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 {
-   *pVal = MakeWideBSTR(m_d.m_text);
+   *pVal = MakeWideBSTR(m_d.m_text, CP_UTF8);
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
-   m_d.m_text = MakeString(newVal);
+   m_d.m_text = MakeString(newVal, CP_UTF8);
    m_textureDirty = true;
 
    return S_OK;

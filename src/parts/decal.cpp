@@ -716,13 +716,13 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
 {
-   *pVal = MakeWideBSTR(m_d.m_text);
+   *pVal = MakeWideBSTR(m_d.m_text, CP_UTF8);
    return S_OK;
 }
 
 STDMETHODIMP Decal::put_Text(BSTR newVal)
 {
-   m_d.m_text = MakeString(newVal);
+   m_d.m_text = MakeString(newVal, CP_UTF8);
    EnsureSize();
 
    return S_OK;

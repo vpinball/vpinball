@@ -174,7 +174,7 @@ void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const 
 {
    if (auto it = m_scriptItemMap.find(name); it != m_scriptItemMap.end())
    {
-      PLOGE << "Script item with name '" << MakeString(name) << "' already exists. Skipping addition of this item.";
+      PLOGE << "Script item with name '" << MakeString(name, CP_UTF8) << "' already exists. Skipping addition of this item.";
       return;
    }
 
@@ -207,7 +207,7 @@ void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)
    if (m_pScriptParse)
    {
       EXCEPINFO exception {};
-      m_pScriptParse->ParseScriptText(MakeWString(script).c_str(), isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
+      m_pScriptParse->ParseScriptText(MakeWString(script, CP_UTF8).c_str(), isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
          isDebugStatement ? 0 : SCRIPTTEXT_ISVISIBLE, nullptr, &exception);
    }
    if (m_pScript)
@@ -287,7 +287,7 @@ void ScriptInterpreter::HandleScriptError(IActiveScriptError *pScriptError, IAct
 
                stackFrames[i].pdsf->Release();
 
-               stackDump.push_back(MakeString(callSite.str()));
+               stackDump.push_back(MakeString(callSite.str(), CP_UTF8));
             }
 
             stackFramesEnum->Release();
@@ -308,7 +308,7 @@ void ScriptInterpreter::HandleScriptError(IActiveScriptError *pScriptError, IAct
 
    EXCEPINFO exception = {};
    pScriptError->GetExceptionInfo(&exception);
-   const string description = exception.bstrDescription ? MakeString(exception.bstrDescription) : "Description unavailable"s;
+   const string description = exception.bstrDescription ? MakeString(exception.bstrDescription, CP_UTF8) : "Description unavailable"s;
    SysFreeString(exception.bstrDescription);
    SysFreeString(exception.bstrSource);
    SysFreeString(exception.bstrHelpFile);
@@ -626,7 +626,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::Print(VARIANT *pvar)
       return S_OK;
    }
 
-   PLOGI << "Script.Print '" << MakeString(V_BSTR(&varT)) << '\'';
+   PLOGI << "Script.Print '" << MakeString(V_BSTR(&varT), CP_UTF8) << '\'';
 
    return S_OK;
 }

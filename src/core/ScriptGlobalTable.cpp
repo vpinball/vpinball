@@ -118,7 +118,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
    {
       EndMusic();
 
-      const string musicNameStr = MakeString(str);
+      const string musicNameStr = MakeString(str, CP_UTF8);
       if (musicNameStr.empty())
          return S_OK;
 
@@ -320,8 +320,8 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(LONG index, BSTR *param)
 
 STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR *param)
 {
-   const string sectionSz = MakeString(Section);
-   const string settingSz = MakeString(SettingName);
+   const string sectionSz = MakeString(Section, CP_UTF8);
+   const string settingSz = MakeString(SettingName, CP_UTF8);
    Settings &settings = m_table->GetSettings();
    const auto propId = Settings::GetRegistry().GetPropertyId(sectionSz, settingSz);
    if (propId.has_value())
@@ -333,7 +333,7 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
       case VPX::Properties::PropertyDef::Type::Int: value = std::to_wstring(settings.GetInt(propId.value())); break;
       case VPX::Properties::PropertyDef::Type::Bool: value = settings.GetBool(propId.value()) ? L"1"sv : L"0"sv; break;
       case VPX::Properties::PropertyDef::Type::Enum: value = std::to_wstring(settings.GetInt(propId.value())); break;
-      case VPX::Properties::PropertyDef::Type::String: value = MakeWide(settings.GetString(propId.value())); break;
+      case VPX::Properties::PropertyDef::Type::String: value = MakeWide(settings.GetString(propId.value()), CP_UTF8); break;
       default: return E_FAIL;
       }
       *param = MakeWideBSTR(value);
@@ -505,12 +505,12 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    mINI::INIFile file(g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, true) / "VPReg.ini"sv);
    file.read(ini);
 
-   string szTableName = MakeString(TableName);
-   string szValueName = MakeString(ValueName);
+   string szTableName = MakeString(TableName, CP_UTF8);
+   string szValueName = MakeString(ValueName, CP_UTF8);
    string szValue;
    if (BSTR bstr = BstrFromVariant(&Value, 0x409); bstr)
    {
-      szValue = MakeString(bstr);
+      szValue = MakeString(bstr, CP_UTF8);
       SysFreeString(bstr);
    }
 
@@ -530,12 +530,12 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    mINI::INIFile file(g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, false) / "VPReg.ini"sv);
    file.read(ini);
 
-   string szTableName = MakeString(TableName);
-   string szValueName = MakeString(ValueName);
+   string szTableName = MakeString(TableName, CP_UTF8);
+   string szValueName = MakeString(ValueName, CP_UTF8);
 
    if (ini.has(szTableName) && ini[szTableName].has(szValueName))
    {
-      SetVarBstr(Value, MakeWideBSTR(ini[szTableName][szValueName]));
+      SetVarBstr(Value, MakeWideBSTR(ini[szTableName][szValueName], CP_UTF8));
    }
    else
    {
@@ -574,7 +574,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 #endif
    }
 
-   PLOGD << "TableName=" << szTableName << ", ValueName=" << szValueName << ", Value=" << MakeString(V_BSTR(Value));
+   PLOGD << "TableName=" << szTableName << ", ValueName=" << szValueName << ", Value=" << MakeString(V_BSTR(Value), CP_UTF8);
 
    return S_OK;
 }
