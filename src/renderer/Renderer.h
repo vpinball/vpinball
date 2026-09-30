@@ -315,12 +315,13 @@ private:
    Matrix3D m_playfieldView[2]; // Base playfield view matrices of m_initialMVP from which all views are derived in desktop mode (unused in VR)
 
    bool m_isStaticPrepassDirty = true;
+   bool m_wasUsingStaticPrepass = false; // Static prepass use on the previous frame (see RenderStatics)
    int m_disableStaticPrepass = 0;
    RenderTarget* m_staticPrepassRT = nullptr;
    int m_staticPrepassAccumCount = 0; // Number of samples accumulated so far by the temporal static prerendering
    unsigned int m_statsDrawnStaticTriangles = 0;
    RenderProbe::ReflectionMode m_maxReflectionMode;
-   
+
    bool m_noBackdrop = false;
    unsigned int m_visibilityMask = 0xFFFF;
 

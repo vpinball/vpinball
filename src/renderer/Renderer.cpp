@@ -1850,7 +1850,12 @@ bool Renderer::IsTemporalAccumulationInProgress() const
 
 void Renderer::RenderStatics()
 {
-   if (!IsUsingStaticPrepass())
+   // Static parts may have changed while the prepass was not used (e.g. edited in the editor, which disables it): refresh it when it is used again
+   const bool useStaticPrepass = IsUsingStaticPrepass();
+   m_isStaticPrepassDirty |= useStaticPrepass && !m_wasUsingStaticPrepass;
+   m_wasUsingStaticPrepass = useStaticPrepass;
+
+   if (!useStaticPrepass)
    {
       m_renderDevice->SetRenderTarget("Render Background"s, GetMSAABackBufferTexture());
       DrawBackground();
@@ -3121,6 +3126,10 @@ void Renderer::Render3DScene()
    m_render_mask = Renderer::DEFAULT;
 
    RenderStatics();
+
+   // While static parts are being accumulated, the static pass renders probes with static parts only: re-render them for the dynamic pass
+   for (auto probe : m_table->m_vrenderprobe)
+      probe->MarkDirty();
 
    m_renderDevice->m_noMovingBalls = true;
 
