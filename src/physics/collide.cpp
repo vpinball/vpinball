@@ -610,9 +610,9 @@ void DoHitTest(const HitBall*const pball, const HitObject *const pho, CollisionE
       || (pho->m_ObjType == eHitTarget && ((HitTarget*)pho->m_obj)->m_d.m_isDropped)) //!! why is this done here and not in corresponding HitTest()?
       return;
 
-   #ifdef DEBUGPHYSICS
-      g_pplayer->m_physics->c_deepTested++; //!! atomic needed if USE_EMBREE
-   #endif
+#ifdef DEBUGPHYSICS
+   pho->m_physics->c_deepTested++; //!! atomic needed if USE_EMBREE
+#endif
 
    CollisionEvent newColl;
    const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, newColl);
@@ -622,7 +622,7 @@ void DoHitTest(const HitBall*const pball, const HitObject *const pho, CollisionE
       newColl.m_ball = const_cast<HitBall*>(pball); //!! meh, but will not be changed in here
       newColl.m_obj = const_cast<HitObject*>(pho);  //!! meh, but will not be changed in here
       newColl.m_hittime = newtime;
-      if (!newColl.m_isContact || !g_pplayer->m_physics->RecordContact(newColl))
+      if (!newColl.m_isContact || !pho->m_physics->RecordContact(newColl))
          coll = newColl; // record first collision event
    }
 }

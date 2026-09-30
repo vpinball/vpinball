@@ -579,6 +579,7 @@ void Player::InitTableSession(const bool isInitial)
    m_loadProgress.SetProgress("Initializing Physics..."s, m_loadProgress.GetProgress() + progressRendererLength);
    // Need to set timecur here, for init functions that set timers
    m_physics = new PhysicsEngine(m_ptable);
+   m_physics->SetImplicitPlayfieldMesh(m_implicitPlayfieldMesh != nullptr);
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
    const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
    const float slope = lerp(minSlope, maxSlope, m_ptable->m_globalDifficulty);
@@ -2465,7 +2466,7 @@ void Player::PrepareFrame()
    FireTimers(-1);
 
    // Check if we should turn animate the plunger light.
-   ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
+   ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_physics->GetLastPlungerHit()) < 512) && ((m_time_msec & 512) > 0));
 
    #if defined(ENABLE_DX9)
    // Kill the profiler so that it does not affect performance

@@ -203,12 +203,6 @@ private:
 #pragma endregion
 
 
-#pragma region MechPlunger
-public:
-   uint32_t m_LastPlungerHit = 0; // the last time the plunger was in contact (at least the vicinity) of the ball
-#pragma endregion
-
-
 #pragma region Physics
 public:
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass);

@@ -36,7 +36,7 @@ private:
 class HitKD final
 {
 public:
-   HitKD();
+   HitKD(PhysicsEngine* physics = nullptr);
    ~HitKD();
 
    void Reset(const vector<HitObject*> &vho);
@@ -60,6 +60,8 @@ public:
 private:
    void Initialize();
    void InitSseArrays();
+
+   PhysicsEngine* const m_physics;
 
    vector<HitObject*> m_vho; // all items
    unsigned int m_num_items = 0; // alias of m_vho.size()

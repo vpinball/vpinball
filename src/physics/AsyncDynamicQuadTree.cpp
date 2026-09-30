@@ -14,7 +14,7 @@
 AsyncDynamicQuadTree::AsyncDynamicQuadTree(PhysicsEngine* const physics, PinTable* const table, bool isUI)
    : m_physics(physics)
    , m_isUI(isUI)
-   , m_quadTree(new HitQuadtree())
+   , m_quadTree(new HitQuadtree(physics))
 {
    vector<HitObject*>* hitObjects = &m_quadTree->BeginReset();
    for (IEditable* const pe : table->GetParts())
@@ -286,7 +286,7 @@ void AsyncDynamicQuadTree::UpdateAsync()
          // > but only to nullify a cell, so maybe we could move this (lengthy) copy to the update thread
          // > we could also avoid the copy by keeping track of the update before this one and reusing the array from m_pendingQuadTree
          if (m_pendingQuadTree == nullptr)
-            m_pendingQuadTree = new HitQuadtree();
+            m_pendingQuadTree = new HitQuadtree(m_physics);
          m_quadTreeHitobjects = &m_pendingQuadTree->BeginReset();
          *m_quadTreeHitobjects = m_quadTree->GetHitObjects();
 
@@ -387,9 +387,9 @@ void AsyncDynamicQuadTree::DynamicEditable::HitTestBall(const HitBall* const pba
    const float rcHitRadiusSqr = pball->HitRadiusSqr();
    for (const HitObject* const pho : hitObjects)
    {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->m_physics->c_tested++;
-      #endif
+#ifdef DEBUGPHYSICS
+      m_physics->c_tested++;
+#endif
       if ((pball != pho) // ball can not hit itself
          && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)
          && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
@@ -405,16 +405,16 @@ void AsyncDynamicQuadTree::DynamicEditable::HitTestXRay(const HitBall* const pba
    const float rcHitRadiusSqr = pball->HitRadiusSqr();
    for (HitObject* const pho : hitObjects)
    {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->m_physics->c_tested++;
-      #endif
+#ifdef DEBUGPHYSICS
+      m_physics->c_tested++;
+#endif
       if ((pball != pho) // ball can not hit itself
          && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)
          && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
-         #ifdef DEBUGPHYSICS
-            g_pplayer->m_physics->c_deepTested++;
-         #endif
+#ifdef DEBUGPHYSICS
+         m_physics->c_deepTested++;
+#endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
             pvhoHit.push_back({pho, newtime});

@@ -37,6 +37,7 @@ extern float c_hardScatter;
 struct BallS;
 class HitBall;
 class HitObject;
+class PhysicsEngine;
 struct ImDrawList;
 class IEditable;
 
@@ -46,6 +47,8 @@ public:
    virtual bool AddToList() const = 0;
    virtual void UpdateDisplacements(const float dtime) = 0;
    virtual void UpdateVelocities() = 0;
+
+   PhysicsEngine* m_physics = nullptr;
 };
 
 // Ported at: VisualPinball.Engine/Math/Functions.cs
@@ -113,6 +116,8 @@ public:
    // Editable that created this hitobject, used for by UI for selecting editables.
    // An hitobject is only valid if this part is not null (so a new HitObject is not valid at creation until this is set...)
    IEditable* m_editable = nullptr;
+
+   PhysicsEngine* m_physics = nullptr;
 
    // Collision events
    bool  m_fe = false;  // FireEvents for m_obj?

@@ -47,11 +47,14 @@ void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
    // Consequently NudgePlugIn_xxx scripts were also removed, support VBS script were also adapted to handle nudging and tilting separately.
    //
    // In 10.8.1 the cabinet physics was rewritten, using an angular pendulum model.
-   
-   if (fabsf(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
-      g_pplayer->m_ptable->m_tblNudgeRead.x = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x;
-   if (fabsf(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
-      g_pplayer->m_ptable->m_tblNudgeRead.y = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y;
+
+   if (g_pplayer)
+   {
+      if (fabsf(cabAcceleration.x) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
+         g_pplayer->m_ptable->m_tblNudgeRead.x = cabAcceleration.x;
+      if (fabsf(cabAcceleration.y) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
+         g_pplayer->m_ptable->m_tblNudgeRead.y = cabAcceleration.y;
+   }
 
    if (!m_enablePlumbTilt || m_plumbTiltThreshold <= 0.0f)
       return;
@@ -124,8 +127,7 @@ void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
       }
    }
 
-   PLOGD_IF(false) << std::format(
-      ";{:8.5f};{:8.5f};{:8.5f};{:8.5f}", g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y, m_plumbPos.x, m_plumbPos.y, psi * (float)(180. / M_PI));
+   PLOGD_IF(false) << std::format(";{:8.5f};{:8.5f};{:8.5f};{:8.5f}", cabAcceleration.y, m_plumbPos.x, m_plumbPos.y, psi * (float)(180. / M_PI));
 
    // Fire event (same as keyboard tilt)
    if (m_plumbTiltHigh != tilted)
@@ -133,19 +135,25 @@ void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
       m_plumbTiltHigh = tilted;
       if (tilted)
          m_plumbTiltIndex++;
-      if (m_plumbTiltInputSlot == -1)
-         m_plumbTiltInputSlot = g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->NewDirectStateSlot();
-      g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->SetDirectState(m_plumbTiltInputSlot, m_plumbTiltHigh);
+      if (g_pplayer)
+      {
+         if (m_plumbTiltInputSlot == -1)
+            m_plumbTiltInputSlot = g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->NewDirectStateSlot();
+         g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->SetDirectState(m_plumbTiltInputSlot, m_plumbTiltHigh);
+      }
    }
 
    // Update player for diagnostic/table script visibility. Only update if input value is larger than what's there.
    // When the table script reads the values, they will reset to 0.
-   if (tiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
-      g_pplayer->m_ptable->m_tblNudgeReadTilt = tiltPerc;
-   if (fabsf(m_plumbPos.x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.x))
-      g_pplayer->m_ptable->m_tblNudgePlumb.x = m_plumbPos.x;
-   if (fabsf(m_plumbPos.y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.y))
-      g_pplayer->m_ptable->m_tblNudgePlumb.y = m_plumbPos.y;
+   if (g_pplayer)
+   {
+      if (tiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
+         g_pplayer->m_ptable->m_tblNudgeReadTilt = tiltPerc;
+      if (fabsf(m_plumbPos.x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.x))
+         g_pplayer->m_ptable->m_tblNudgePlumb.x = m_plumbPos.x;
+      if (fabsf(m_plumbPos.y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.y))
+         g_pplayer->m_ptable->m_tblNudgePlumb.y = m_plumbPos.y;
+   }
 }
 
 }
