@@ -11,6 +11,7 @@
 #include "MsgPlugin.h"
 
 #include <chrono>
+#include <condition_variable>
 #include <list>
 #include <vector>
 #include <string>
@@ -164,14 +165,17 @@ private:
       msgpi_timer_callback callback;
       void* userData;
       std::chrono::steady_clock::time_point time;
+      bool* done = nullptr; // Blocking request: flag on the waiting caller's stack, set under m_timerListMutex once the callback has run
    };
+   void RunTimer(const TimerEntry& timer);
    std::list<TimerEntry> m_timers;
    std::mutex m_timerListMutex;
+   std::condition_variable m_timerDone;
 
    std::function<void(const std::string& pluginId, SettingAction action, MsgSettingDef* settingDef)> m_settingHandler;
 
    MsgPluginAPI m_api;
-   
+
    std::function<void*(const std::string&, const std::string&)> m_dllLink;
    std::function<void(void*)> m_dllUnlink;
    std::function<void*(void*, const std::string&)> m_dllGetMethod;

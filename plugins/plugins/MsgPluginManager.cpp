@@ -262,22 +262,14 @@ void MsgPluginManager::RunOnMainThread(const uint32_t endpointId, const double d
    std::unique_lock lock(pm.m_timerListMutex);
    if (delayInS < 0.)
    {
-      pm.m_timers.emplace(pm.m_timers.begin(), endpointId, callback, userData, std::chrono::steady_clock::now());
+      bool done = false;
+      pm.m_timers.emplace(pm.m_timers.begin(), endpointId, callback, userData, std::chrono::steady_clock::now(), &done);
 #ifdef _MSC_VER
       // Wake up message loop
       PostThreadMessage(GetCurrentThreadId(), WM_NULL, 0, 0);
 #endif
-      // FIXME block cleanly until processed
-      lock.unlock();
-      for (;;)
-      {
-         {
-            const std::lock_guard waitLock(pm.m_timerListMutex);
-            if (pm.m_timers.empty())
-               break;
-         }
-         std::this_thread::sleep_for(std::chrono::nanoseconds(100));
-      }
+      // Wait for this callback only, not for the other pending ones
+      pm.m_timerDone.wait(lock, [&done] { return done; });
    }
    else
    {
@@ -316,39 +308,42 @@ void MsgPluginManager::FlushPendingCallbacks(const uint32_t endpointId)
       }
       // Release lock before calling callbacks to avoid deadlock
       for (const auto& it : timers)
-         it.callback(it.userData);
+         pm.RunTimer(it);
    }
 }
 
 void MsgPluginManager::ProcessAsyncCallbacks()
 {
    AssertAPIThread();
-   // Collect timers to process (under mutex) eventually returning
-   std::unique_lock lock(m_timerListMutex);
-   if (m_timers.empty())
-      return;
-   std::list<TimerEntry> timers;
-   const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-   for (auto it = m_timers.begin(); it != m_timers.end(); ++it)
+   // Take due timers one at a time, removing each before running it unlocked, as callbacks may queue or flush timers, or nest this call.
+   // Timers queued meanwhile are not earlier than 'start', so this ends
+   const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+   for (;;)
    {
-      if (it->time > now)
-         break;
-      timers.push_back(*it);
-   }
-   lock.unlock();
-   // Release lock before calling callbacks to avoid deadlock
-   for (const auto& it : timers)
-      it.callback(it.userData);
-   // Remove only after timer have been fired
-   if (!timers.empty())
-   {
-      const std::lock_guard lock(m_timerListMutex);
-      for (auto it = m_timers.begin(); it != m_timers.end();)
+      TimerEntry timer {};
       {
-         if (it->time > now)
-            break;
-         it = m_timers.erase(it);
+         const std::lock_guard lock(m_timerListMutex);
+         // Not always the front one: blocking requests are queued first, whatever their time
+         const auto it = std::ranges::find_if(m_timers, [start](const TimerEntry& entry) { return entry.time < start; });
+         if (it == m_timers.end())
+            return;
+         timer = *it;
+         m_timers.erase(it);
       }
+      RunTimer(timer);
+   }
+}
+
+void MsgPluginManager::RunTimer(const TimerEntry& timer)
+{
+   timer.callback(timer.userData);
+   if (timer.done)
+   {
+      {
+         const std::lock_guard lock(m_timerListMutex);
+         *timer.done = true; // The waiter may return (and discard 'done') as soon as the lock is released
+      }
+      m_timerDone.notify_all();
    }
 }
 
