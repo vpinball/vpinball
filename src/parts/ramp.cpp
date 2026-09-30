@@ -501,10 +501,6 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             // left ramp floor triangle, CCW order
             const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv2->x, pv2->y, rgheight1[i]), Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]) };
 
-            // add joint for starting edge of ramp
-            if (i == 0)
-               AddJoint(physics, rgv3D[0], rgv3D[1], isUI);
-
             // add joint for left edge
             AddJoint(physics, rgv3D[0], rgv3D[2], isUI);
 
@@ -513,6 +509,30 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             if (ph3dpoly->IsDegenerate()) // degenerate triangles happen if width is 0 at some point
             {
                delete ph3dpoly;
+               ph3dpolyOld = nullptr;
+            }
+            else
+            {
+               SetupHitObject(physics, ph3dpoly, isUI);
+
+               // Add joint between this tri and the previous (or joint for starting edge of ramp for the first tri, or after a degenrate)
+               CheckJoint(physics, ph3dpolyOld, ph3dpoly, isUI);
+               ph3dpolyOld = ph3dpoly;
+            }
+         }
+
+         {
+            // right ramp floor triangle, CCW order
+            const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]), Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1]) };
+
+            // add joint for right edge
+            AddJoint(physics, rgv3D[1], rgv3D[2], isUI);
+
+            HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
+            if (ph3dpoly->IsDegenerate())
+            {
+               delete ph3dpoly;
+               ph3dpolyOld = nullptr;
             }
             else
             {
@@ -521,25 +541,6 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
                CheckJoint(physics, ph3dpolyOld, ph3dpoly, isUI);
                ph3dpolyOld = ph3dpoly;
             }
-         }
-
-         // right ramp floor triangle, CCW order
-         const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]), Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1]) };
-
-         // add joint for right edge
-         AddJoint(physics, rgv3D[1], rgv3D[2], isUI);
-
-         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
-         if (ph3dpoly->IsDegenerate())
-         {
-            delete ph3dpoly;
-         }
-         else
-         {
-            SetupHitObject(physics, ph3dpoly, isUI);
-
-            CheckJoint(physics, ph3dpolyOld, ph3dpoly, isUI);
-            ph3dpolyOld = ph3dpoly;
          }
       }
 
@@ -579,18 +580,19 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             SetupHitObject(physics, ph3dpoly, isUI);
          }
       }
-
-      // right ramp triangle, order CW
-      const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]), Vertex3Ds(pv4.x, pv4.y, rgheight1[i + 1]), Vertex3Ds(pv1.x, pv1.y, rgheight1[i]) };
-
-      HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
-      if (ph3dpoly->IsDegenerate())
       {
-         delete ph3dpoly;
-      }
-      else
-      {
-         SetupHitObject(physics, ph3dpoly, isUI);
+         // right ramp triangle, order CW
+         const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]), Vertex3Ds(pv4.x, pv4.y, rgheight1[i + 1]), Vertex3Ds(pv1.x, pv1.y, rgheight1[i]) };
+
+         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
+         if (ph3dpoly->IsDegenerate())
+         {
+            delete ph3dpoly;
+         }
+         else
+         {
+            SetupHitObject(physics, ph3dpoly, isUI);
+         }
       }
    }
 
