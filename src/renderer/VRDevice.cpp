@@ -1466,7 +1466,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // Submit the LiveUI as a separate view-locked quad layer on top of the scene. Rendering the UI inside the
          // projection layer made it shake since a head locked overlay was reprojected as world locked geometry, and the
          // fake stereo offset applied per eye made it appear unfocused.
-         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE)
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE && m_showUILayer)
          {
             constexpr float uiDistance = 0.5f; // meter in front of the player
             const float uiHeight = static_cast<float>(m_uiSwapchainInfo.width) / static_cast<float>(m_uiSwapchainInfo.height);

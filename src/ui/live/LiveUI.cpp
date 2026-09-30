@@ -495,11 +495,13 @@ void LiveUI::RenderUI()
    if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
    int depthSort = -10000;
+   bool hasContent = false;
    for (int n = 0; n < draw_data->CmdListsCount; n++)
    {
       const ImDrawList * const cmd_list = draw_data->CmdLists[n];
       const unsigned int numVertices = cmd_list->VtxBuffer.size();
       const unsigned int numIndices = cmd_list->IdxBuffer.size();
+      hasContent |= numIndices > 0;
 
       if ((numVertices != 0) && (numIndices != 0))
       {
@@ -543,6 +545,9 @@ void LiveUI::RenderUI()
          }
       }
    }
+
+   if (m_player->m_vrDevice)
+      m_player->m_vrDevice->SetShowUILayer(hasContent);
 
    NewFrame();
 }
