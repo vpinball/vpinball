@@ -102,10 +102,15 @@ void PropertiesPanel::Render(float topBarHeight)
       {
       case Selection::S_NONE: TableProperties(props); break;
       case Selection::S_EDITABLE:
+      {
+         IEditable *const editable = editor.m_selection.GetPart()->GetEditable();
+         const string nameBefore = MakeString(editable->GetWName());
          editor.m_undo.BeginUndo();
-         editor.m_undo.MarkForUndo(editor.m_selection.GetPart()->GetEditable());
-         editor.m_undo.EndUndo();
+         editor.m_undo.MarkForUndo(editable);
          editor.m_selection.GetPart()->UpdatePropertyPane(props);
+         // A renamed surface or ramp retargets the parts placed on it, recorded in the same undo record
+         editor.m_table->UpdateSurfaceReferences(editable, nameBefore, [&editor](IEditable *part) { editor.m_undo.MarkForUndo(part); });
+         editor.m_undo.EndUndo();
          if (props.GetModifiedField() > 0 && (editor.m_lastUndoPart != editor.m_selection.GetPart()->GetEditable() || editor.m_lastUndoId != (0x2000 | props.GetModifiedField())))
          {
             editor.m_lastUndoPart = editor.m_selection.GetPart()->GetEditable();
@@ -121,6 +126,7 @@ void PropertiesPanel::Render(float topBarHeight)
             editor.m_player->m_physics->Update(editor.m_selection.GetPart()->GetEditable());
          }
          break;
+      }
       case Selection::S_IMAGE: ImageProperties(props, editor.m_selection.GetImage()); break;
       case Selection::S_CAMERA: CameraProperties(props, editor.m_selection.GetCamera()); break;
       case Selection::S_MATERIAL: MaterialProperties(props, editor.m_selection.GetMaterial()); break;

@@ -56,12 +56,17 @@ void PropertyPane::Header(const string& typeName, const std::function<wstring()>
 {
    ImGui::NewLine();
    LiveUI::CenteredText(typeName);
+   m_modifyFieldId++;
    ImGui::BeginDisabled(m_table->m_liveBaseTable); // Do not edit name of live objects as it would break the script
    PropertyLabel("Name"s);
    const wstring wname = getName();
    string name = MakeString(wname);
-   if ( ImGui::InputText("##Name", &name))
+   // Apply on Enter only: renaming on each keystroke would make each intermediate name unique, corrupting the name being typed
+   if (ImGui::InputText("##Name", &name, ImGuiInputTextFlags_EnterReturnsTrue))
+   {
       setName(MakeWString(name));
+      m_modified = m_modifyFieldId; // Makes the rename undoable and marks the table as modified
+   }
    ImGui::EndDisabled();
    ImGui::Separator();
 }
