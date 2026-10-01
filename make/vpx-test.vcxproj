@@ -32,7 +32,7 @@
   <ItemDefinitionGroup>
     <Manifest>
       <!-- UTF-8 process code page (see the manifest file) -->
-      <AdditionalManifestFiles>$(MSBuildThisFileDirectory)..\src\ui\win\res\utf8.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <AdditionalManifestFiles>$(MSBuildThisFileDirectory)..\..\src\ui\win\res\utf8.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
