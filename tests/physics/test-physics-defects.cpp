@@ -407,10 +407,11 @@ TEST_CASE("A ball spawned inside a wall joint is ejected" * doctest::should_fail
 }
 
 // ---------------------------------------------------------------------------
-// The KD-tree SSE leaf loop scans 4-item groups covering [0, start+items+3)
-// instead of the node's own [start, start+items) range, so items at group
-// boundaries are HitTest'ed multiple times per query. For contact events that
-// multiplies recorded contacts (and therefore contact impulses).
+// The KD-tree SSE leaf loop used to scan 4-item groups covering
+// [0, start+items+3) instead of the node's own [start, start+items) range, so
+// items at group boundaries were HitTest'ed multiple times per query. For
+// contact events that multiplied recorded contacts (and therefore contact
+// impulses).
 // ---------------------------------------------------------------------------
 
 namespace
@@ -452,12 +453,8 @@ void CheckKdLeafVisitsItemsOnce()
 
 } // namespace
 
-// The duplicate visits only happen under the SSE leaf path.
-#ifdef KDTREE_SSE_LEAFTEST
-TEST_CASE("KD leaf scan visits each overlapping item exactly once" * doctest::should_fail())
-#else
+// The duplicate visits only happened under the SSE leaf path.
 TEST_CASE("KD leaf scan visits each overlapping item exactly once")
-#endif
 {
    CheckKdLeafVisitsItemsOnce();
 }
