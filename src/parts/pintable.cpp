@@ -1695,11 +1695,15 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          // Drop failed loads before searching for duplicates (the name is stored in the stream, so identify them by stream)
          for (size_t i = 0; i < m_vsound.size(); i++)
             if (m_vsound[i] == nullptr)
+	    {
                PLOGE << "Failed to load table sound from stream GameStg/Sound" << i;
+	    }
          std::erase(m_vsound, nullptr);
          for (size_t i = 0; i < m_vimage.size(); i++)
             if (m_vimage[i] == nullptr)
+	    {
                PLOGE << "Failed to load table image from stream GameStg/Image" << i;
+	    }
          std::erase(m_vimage, nullptr);
          if (!m_vsound.empty())
             for (size_t i = 0; i < m_vsound.size(); ++i)
