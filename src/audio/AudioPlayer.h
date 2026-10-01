@@ -82,7 +82,7 @@ public:
    void CloseAudioStream(const AudioStreamID& stream, bool afterEndOfStream);
 
    // Music streamed from a file to audio device, respecting channel assignment, applying backglass global volume
-   bool PlayMusic(const string& filename);
+   bool PlayMusic(const std::filesystem::path& filename);
    void PauseMusic();
    void UnpauseMusic();
    float GetMusicPosition() const;

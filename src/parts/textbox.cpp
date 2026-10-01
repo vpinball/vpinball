@@ -102,7 +102,7 @@ void Textbox::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(TEXT), m_d.m_text);
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteInt(FID(ALGN), m_d.m_talign);
    writer.WriteBool(FID(TRNS), m_d.m_transparent);
    writer.WriteBool(FID(IDMD), m_d.m_isDMD);
@@ -128,7 +128,7 @@ void Textbox::Load(IObjectReader& reader)
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
          case FID(TEXT): m_d.m_text = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(ALGN): m_d.m_talign = static_cast<TextAlignment>(reader.AsInt()); break;
          case FID(TRNS): m_d.m_transparent = reader.AsBool(); break;
          case FID(IDMD): m_d.m_isDMD = reader.AsBool(); break;
@@ -511,8 +511,11 @@ STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 
 STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
-   m_d.m_text = MakeString(newVal);
-   m_textureDirty = true;
+   if (string text = MakeString(newVal); text != m_d.m_text)
+   {
+      m_d.m_text = std::move(text);
+      m_textureDirty = true; // Scripts often set the same text again (e.g. the score on each timer tick)
+   }
 
    return S_OK;
 }
@@ -701,9 +704,9 @@ TTF_Font* Textbox::LoadFont()
    for (const auto& szStyle : styles) {
       path = find_case_insensitive_file_path(tablePath / (fontName + szStyle + ".ttf"));
       if (!path.empty()) {
-         pFont = TTF_OpenFont(path.string().c_str(), (float)(m_d.m_font.size / 10000.));
+         pFont = TTF_OpenFont(PathToUTF8(path).c_str(), (float)(m_d.m_font.size / 10000.)); // SDL expects UTF-8
          if (pFont) {
-            PLOGI << "Font loaded: path=" << path.string();
+            PLOGI << "Font loaded: path=" << PathToUTF8(path);
             break;
          }
       }
@@ -711,15 +714,15 @@ TTF_Font* Textbox::LoadFont()
 
    if (!pFont) {
       path = tablePath / (fontName + styles[0] + ".ttf");
-      PLOGW << "Unable to locate font: path=" << path.string();
+      PLOGW << "Unable to locate font: path=" << PathToUTF8(path);
 
       path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets) / "LiberationSans-Regular.ttf"sv;
-      pFont = TTF_OpenFont(path.string().c_str(), (float)(m_d.m_font.size / 10000.));
+      pFont = TTF_OpenFont(PathToUTF8(path).c_str(), (float)(m_d.m_font.size / 10000.)); // SDL expects UTF-8
       if (pFont) {
-         PLOGW << "Default font loaded: path=" << path.string();
+         PLOGW << "Default font loaded: path=" << PathToUTF8(path);
       }
       else {
-         PLOGW << "Unable to load font: path=" << path.string();
+         PLOGW << "Unable to load font: path=" << PathToUTF8(path);
          TTF_Quit();
          return nullptr;
       }

@@ -530,11 +530,11 @@ void ImageDialog::Export()
 
             if (!renameOnExport)
             {
-               const int len0 = (int)ppi->GetFilePath().string().length();
+               const int len0 = (int)PathToString(ppi->GetFilePath()).length();
                int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
-                  if (ppi->GetFilePath().string()[begin] == '\\' || ppi->GetFilePath().string()[begin] == '/')
+                  if (PathToString(ppi->GetFilePath())[begin] == '\\' || PathToString(ppi->GetFilePath())[begin] == '/')
                   {
                      begin++;
                      break;
@@ -542,15 +542,15 @@ void ImageDialog::Export()
                }
                if (begin > 0)
                {
-                  memcpy(g_filename, ppi->GetFilePath().string().c_str() + begin, len0 - begin);
+                  memcpy(g_filename, PathToString(ppi->GetFilePath()).c_str() + begin, len0 - begin);
                   g_filename[len0 - begin] = '\0';
                }
             }
             else
             {
                strncat_s(g_filename, ppi->m_name.c_str(), std::size(g_filename)-strnlen_s(g_filename, std::size(g_filename))-1);
-               const size_t idx = ppi->GetFilePath().string().find_last_of('.');
-               strncat_s(g_filename, ppi->GetFilePath().string().c_str() + idx, std::size(g_filename)-strnlen_s(g_filename, std::size(g_filename))-1);
+               const size_t idx = PathToString(ppi->GetFilePath()).find_last_of('.');
+               strncat_s(g_filename, PathToString(ppi->GetFilePath()).c_str() + idx, std::size(g_filename)-strnlen_s(g_filename, std::size(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = std::size(g_filename);
@@ -605,21 +605,21 @@ void ImageDialog::Export()
                      if (!renameOnExport)
                      {
                         int begin;
-                        for (begin = (int)ppi->GetFilePath().string().length(); begin >= 0; begin--)
+                        for (begin = (int)PathToString(ppi->GetFilePath()).length(); begin >= 0; begin--)
                         {
-                           if (ppi->GetFilePath().string()[begin] == PATH_SEPARATOR_CHAR)
+                           if (PathToString(ppi->GetFilePath())[begin] == PATH_SEPARATOR_CHAR)
                            {
                               begin++;
                               break;
                            }
                         }
-                        filename += ppi->GetFilePath().string().c_str() + begin;
+                        filename += PathToString(ppi->GetFilePath()).c_str() + begin;
                      }
                      else
                      {
                         filename += ppi->m_name;
-                        const size_t idx = ppi->GetFilePath().string().find_last_of('.');
-                        filename += ppi->GetFilePath().string().c_str() + idx;
+                        const size_t idx = PathToString(ppi->GetFilePath()).find_last_of('.');
+                        filename += PathToString(ppi->GetFilePath()).c_str() + idx;
                      }
                   }
 
@@ -728,7 +728,7 @@ void ImageDialog::Reimport()
                   pt->m_tableEditor->UpdatePropertyImageList();
                }
                else
-                  MessageBox(filePath.string().c_str(), "FILE NOT FOUND!", MB_OK);
+                  MessageBox(PathToString(filePath).c_str(), "FILE NOT FOUND!", MB_OK);
 
                sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
             }
@@ -901,7 +901,7 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText_Safe(hwndListView, index, 1, ppi->GetFilePath().string().c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 1, PathToString(ppi->GetFilePath()).c_str());
    ListView_SetItemText_Safe(hwndListView, index, 2, (std::to_string(ppi->m_width) + 'x' + std::to_string(ppi->m_height)).c_str());
    ListView_SetItemText_Safe(hwndListView, index, 3, usedStringNo);
 

@@ -15,9 +15,9 @@ void MSGPIAPI VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
 {
    // statics as they need to survive as C string after this function returns
    static string path;
-   path = (g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / ""sv).string();
+   path = PathToString(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / ""sv); // Native narrow path, as plugins build paths from it
    static string prefPath;
-   prefPath = (g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / ""sv).string();
+   prefPath = PathToString(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / ""sv);
    info->path = path.c_str();
    info->prefPath = prefPath.c_str();
 }

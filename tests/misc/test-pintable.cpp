@@ -8,6 +8,7 @@
 #include "parts/bumper.h"
 #include "parts/Collection.h"
 #include "parts/Material.h"
+#include "parts/surface.h"
 
 #include "doctest.h"
 
@@ -20,7 +21,7 @@ TEST_CASE("PinTable part")
 
       Timer* const timer = Timer::COMCreate();
       timer->Init(10.f, 20.f, false);
-      timer->SetName(L"Part1");
+      timer->SetName("Part1");
 
       // AddPart takes its own reference on the part and registers the script name
       table->AddPart(timer);
@@ -46,13 +47,13 @@ TEST_CASE("PinTable part")
 
       Timer* const t1 = Timer::COMCreate();
       t1->Init(0.f, 0.f, false);
-      t1->SetName(L"A");
+      t1->SetName("A");
       table->AddPart(t1);
       t1->Release();
 
       Bumper* const b1 = Bumper::COMCreate();
       b1->Init(0.f, 0.f, false);
-      b1->SetName(L"B");
+      b1->SetName("B");
       table->AddPart(b1);
       b1->Release();
 
@@ -61,6 +62,60 @@ TEST_CASE("PinTable part")
       CHECK(table->GetParts()[1] == b1);
       CHECK(table->GetParts()[0]->GetItemType() == eItemTimer);
       CHECK(table->GetParts()[1]->GetItemType() == eItemBumper);
+
+      table->Release();
+   }
+
+   SUBCASE("part names are UTF-8, length limited and unique")
+   {
+      PinTable* const table = CreateTestTable();
+
+      Timer* const t1 = Timer::COMCreate();
+      t1->Init(0.f, 0.f, false);
+      t1->SetName("Caf\xC3\xA9Timer"s);
+      table->AddPart(t1);
+      t1->Release();
+      CHECK(t1->GetName() == "Caf\xC3\xA9Timer");
+      CHECK(table->GetElementByName("Caf\xC3\xA9Timer") == t1);
+      CHECK_FALSE(table->IsNameUnique("CAF\xC3\xA9TIMER"s)); // Case insensitive (ASCII only)
+
+      // Changing only the letter case keeps the name (no unique suffix), and keeps it registered
+      t1->SetName("CAF\xC3\xA9TIMER"s);
+      CHECK(t1->GetName() == "CAF\xC3\xA9TIMER");
+      CHECK(table->GetElementByName("CAF\xC3\xA9TIMER") == t1);
+      CHECK_FALSE(table->IsNameUnique("caf\xC3\xA9timer"s));
+      t1->SetName("Caf\xC3\xA9Timer"s);
+
+      // Limited to MAXNAMEBUFFER - 1 UTF-16 units, cut on a character boundary
+      Timer* const t2 = Timer::COMCreate();
+      t2->Init(0.f, 0.f, false);
+      t2->SetName(string(MAXNAMEBUFFER - 2, 'x') + "\xC3\xA9\xC3\xA9");
+      CHECK(t2->GetName() == string(MAXNAMEBUFFER - 2, 'x') + "\xC3\xA9");
+      t2->Release();
+
+      // The 3 digit suffix of unique names stays within the limit
+      CHECK(table->GetUniqueName(string(40, 'y')) == string(MAXNAMEBUFFER - 4, 'y') + "001");
+      CHECK(table->GetUniqueName("Caf\xC3\xA9Timer"s) == "Caf\xC3\xA9Timer001");
+
+      table->Release();
+   }
+
+   SUBCASE("name lookups ignore case, like VBScript")
+   {
+      PinTable* const table = CreateTestTable();
+
+      Surface* const wall = Surface::COMCreate();
+      wall->Init(0.f, 0.f, false);
+      wall->SetName("Wall1"s);
+      wall->m_d.m_heighttop = 42.f;
+      table->AddPart(wall);
+      wall->Release();
+
+      CHECK(table->GetElementByName("wall1") == wall);
+      CHECK(table->GetElementByName("WALL1") == wall);
+      CHECK(table->GetElementByName("Wall2") == nullptr);
+      CHECK(table->GetSurfaceHeight("wALL1"s, 0.f, 0.f) == 42.f);
+      CHECK(table->GetSurfaceHeight("Wall2"s, 0.f, 0.f) == 0.f);
 
       table->Release();
    }
@@ -106,12 +161,12 @@ TEST_CASE("PinTable part")
       CComObject<Collection>* col;
       CComObject<Collection>::CreateInstance(&col);
       col->AddRef();
-      col->m_wzName = L"Col1";
+      col->m_name = "Col1";
       table->AddCollection(col);
       col->Release(); // the table now owns the only reference
 
       REQUIRE(table->GetCollections().size() == 1);
-      CHECK(table->GetCollections()[0]->m_wzName == L"Col1");
+      CHECK(table->GetCollections()[0]->m_name == "Col1");
 
       table->Release();
    }

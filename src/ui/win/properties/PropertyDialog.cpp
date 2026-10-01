@@ -586,7 +586,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (auto pcol : ptable->GetCollections())
-           combo.AddString(MakeString(pcol->m_wzName).c_str());
+           combo.AddString(pcol->m_name.c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
@@ -686,8 +686,7 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
 
     if (pvsel.size() > 1)
     {
-       const wstring &wzName = psel->GetEditable()->GetPTable()->GetCollectionNameByElement(psel->GetEditable());
-       const string collection = MakeString(wzName);
+       const string &collection = psel->GetEditable()->GetPTable()->GetCollectionNameByElement(psel->GetEditable());
 
        string name;
        {
@@ -1009,7 +1008,7 @@ void BasePropertyDialog::UpdateBaseProperties(IEditable *part, BaseProperty *pro
             CHECK_UPDATE_ITEM(property->m_reflectionEnabled, PropertyDialog::GetCheckboxState(m_hReflectionEnabledCheck), part);
             break;
         case IDC_FRICTION_EDIT:
-            CHECK_UPDATE_ITEM(property->m_friction, PropertyDialog::GetFloatTextbox(*m_baseFrictionEdit), part);
+            CHECK_UPDATE_ITEM(property->m_friction, max(PropertyDialog::GetFloatTextbox(*m_baseFrictionEdit), 0.f), part); // Friction can not be negative
             break;
         case IDC_SCATTER_ANGLE_EDIT:
             CHECK_UPDATE_ITEM(property->m_scatter, PropertyDialog::GetFloatTextbox(*m_baseScatterAngleEdit), part);

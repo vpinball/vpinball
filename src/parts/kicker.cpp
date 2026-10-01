@@ -350,7 +350,7 @@ void Kicker::ExportMesh(ObjLoader& loader)
    if (m_d.m_kickertype == KickerInvisible)
       return;
 
-   const string name = MakeString(m_wzName);
+   const string& name = m_name;
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    int num_vertices;
@@ -510,7 +510,7 @@ void Kicker::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
    writer.WriteBool(FID(EBLD), m_d.m_enabled);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteInt(FID(TYPE), m_d.m_kickertype);
    writer.WriteFloat(FID(KSCT), m_d.m_scatter);
    writer.WriteFloat(FID(KHAC), m_d.m_hitAccuracy);
@@ -556,7 +556,7 @@ void Kicker::Load(IObjectReader& reader)
             break;
          }
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(FATH): m_d.m_fallThrough = reader.AsBool(); break;
          case FID(LEMO): m_d.m_legacyMode = reader.AsBool(); break;
          default: LoadSharedEditableField(tag, reader); break;

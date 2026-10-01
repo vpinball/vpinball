@@ -631,7 +631,7 @@ void Rubber::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteString(FID(IMAG), m_d.m_szImage);
    writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
    writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
@@ -670,7 +670,7 @@ void Rubber::Load(IObjectReader& reader)
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
          case FID(ELFO): m_d.m_elasticityFalloff = reader.AsFloat(); break;
          case FID(RFCT): m_d.m_friction = reader.AsFloat(); break;
@@ -852,7 +852,7 @@ STDMETHODIMP Rubber::get_Friction(float *pVal)
 
 STDMETHODIMP Rubber::put_Friction(float newVal)
 {
-   newVal = saturate(newVal);
+   newVal = max(newVal, 0.f); // Friction can not be negative, but may exceed 1
    m_d.m_friction = newVal;
 
    return S_OK;
@@ -1024,7 +1024,7 @@ void Rubber::ExportMesh(ObjLoader& loader)
       GenerateMesh();
       UpdateRubber(false, m_d.m_height);
 
-      loader.WriteObjectName(MakeString(m_wzName));
+      loader.WriteObjectName(m_name);
       loader.WriteVertexInfo(m_vertices.data(), m_numVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       loader.WriteMaterial(m_d.m_szMaterial, string(), mat);

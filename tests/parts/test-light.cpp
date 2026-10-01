@@ -16,7 +16,7 @@ TEST_CASE("Light part")
    {
       Light* const light = Light::COMCreate();
       light->Init(100.f, 200.f, false);
-      light->SetName(L"Light1");
+      light->SetName("Light1");
       light->m_d.m_height = 40.f;
       light->m_d.m_szSurface = "surface1";
       light->m_d.m_falloff = 60.f;
@@ -54,7 +54,7 @@ TEST_CASE("Light part")
       Light* const copy = Light::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Light1");
+      CHECK(copy->GetName() == "Light1");
       CHECK(copy->m_d.m_vCenter.x == 100.f);
       CHECK(copy->m_d.m_vCenter.y == 200.f);
       CHECK(copy->m_d.m_height == 40.f);
@@ -101,7 +101,7 @@ TEST_CASE("Light part")
    {
       Light* const light = Light::COMCreate();
       light->Init(50.f, 60.f, false);
-      light->SetName(L"Light2");
+      light->SetName("Light2");
       light->m_d.m_intensity = 7.f;
       table->AddPart(light);
       light->Release();
@@ -115,7 +115,7 @@ TEST_CASE("Light part")
    {
       Light* const light = Light::COMCreate();
       light->Init(10.f, 20.f, false);
-      light->SetName(L"Light3");
+      light->SetName("Light3");
       table->AddPart(light);
       light->Release();
 

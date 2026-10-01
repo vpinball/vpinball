@@ -29,6 +29,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|Win32'">
     <TargetName>VPXTest_BGFX</TargetName>
   </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Manifest>
+      <!-- UTF-8 process code page (see the manifest file) -->
+      <AdditionalManifestFiles>$(MSBuildThisFileDirectory)..\src\ui\win\res\utf8.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="../gen/vpinball_i.c">
         <PrecompiledHeader>NotUsing</PrecompiledHeader>

@@ -17,7 +17,7 @@ TEST_CASE("Ramp part")
    {
       Ramp* const ramp = Ramp::COMCreate();
       ramp->Init(100.f, 200.f, false);
-      ramp->SetName(L"Ramp1");
+      ramp->SetName("Ramp1");
       ramp->m_d.m_heightbottom = 10.f;
       ramp->m_d.m_heighttop = 90.f;
       ramp->m_d.m_widthbottom = 80.f;
@@ -48,7 +48,7 @@ TEST_CASE("Ramp part")
       Ramp* const copy = Ramp::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Ramp1");
+      CHECK(copy->GetName() == "Ramp1");
       CHECK(copy->m_d.m_heightbottom == 10.f);
       CHECK(copy->m_d.m_heighttop == 90.f);
       CHECK(copy->m_d.m_widthbottom == 80.f);
@@ -87,7 +87,7 @@ TEST_CASE("Ramp part")
    {
       Ramp* const ramp = Ramp::COMCreate();
       ramp->Init(50.f, 60.f, false);
-      ramp->SetName(L"Ramp2");
+      ramp->SetName("Ramp2");
       ramp->m_d.m_type = RampType1Wire;
       table->AddPart(ramp);
       ramp->Release();
@@ -101,7 +101,7 @@ TEST_CASE("Ramp part")
    {
       Ramp* const ramp = Ramp::COMCreate();
       ramp->Init(0.f, 0.f, false);
-      ramp->SetName(L"Ramp3");
+      ramp->SetName("Ramp3");
       table->AddPart(ramp);
       ramp->Release();
 
@@ -122,7 +122,7 @@ TEST_CASE("Ramp part")
    {
       Ramp* const ramp = Ramp::COMCreate();
       ramp->Init(100.f, 100.f, false);
-      ramp->SetName(L"Ramp4");
+      ramp->SetName("Ramp4");
       table->AddPart(ramp);
       ramp->Release();
 

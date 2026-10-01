@@ -93,8 +93,8 @@ public:
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	IFireEvents *GetIFireEvents() final {return (IFireEvents *)this;} \
 	EventProxyBase *GetEventProxyBase() final {return (EventProxyBase *)this;} \
-	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) { *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length())); return S_OK; } \
-	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(newVal); return S_OK; } \
+	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) { *pVal = MakeWideBSTR(m_name); return S_OK; } \
+	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(MakeString(newVal)); return S_OK; } \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ LONG *pVal) {*pVal = m_timerInterval; return S_OK;} \
 	STDMETHOD(put_TimerInterval)(/*[in]*/ LONG newVal) {return IEditable::put_TimerInterval(newVal, &m_timerInterval);} \
 	STDMETHOD(get_TimerEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal) {*pVal = FTOVB(m_timerEnabled); return S_OK;} \
@@ -160,7 +160,7 @@ public:
 #define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type) \
    type *dst = type::COMCreate(); \
    dst->Init(0.f, 0.f, false, true); \
-   dst->m_wzName = m_wzName; \
+   dst->m_name = m_name; \
    dst->m_desktopBackdrop = m_desktopBackdrop; \
    dst->SetUILock(IsUILocked()); \
    dst->SetUIVisible(IsUIVisible(false)); \
@@ -267,11 +267,10 @@ protected:
    void SaveSharedEditableFields(IObjectWriter &writer);
 
 public:
-   wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
+   string m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
 
-   string GetName() const;
-   const wstring& GetWName() const;
-   void SetName(const wstring& name);
+   const string& GetName() const; // Script name (UTF-8), empty if not scriptable
+   void SetName(const string& name);
 
    void SetPartGroup(class PartGroup *partGroup);
    class PartGroup* GetPartGroup() const { return m_partGroup; }

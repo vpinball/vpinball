@@ -16,7 +16,7 @@ TEST_CASE("Bumper part")
    {
       Bumper* const bumper = Bumper::COMCreate();
       bumper->Init(100.f, 200.f, false);
-      bumper->SetName(L"Bumper1");
+      bumper->SetName("Bumper1");
       bumper->m_d.m_radius = 45.f;
       bumper->m_d.m_force = 12.5f;
       bumper->m_d.m_heightScale = 90.f;
@@ -48,7 +48,7 @@ TEST_CASE("Bumper part")
       Bumper* const copy = Bumper::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Bumper1");
+      CHECK(copy->GetName() == "Bumper1");
       CHECK(copy->m_d.m_vCenter.x == 100.f);
       CHECK(copy->m_d.m_vCenter.y == 200.f);
       CHECK(copy->m_d.m_radius == 45.f);
@@ -82,7 +82,7 @@ TEST_CASE("Bumper part")
    {
       Bumper* const bumper = Bumper::COMCreate();
       bumper->Init(50.f, 60.f, false);
-      bumper->SetName(L"Bumper2");
+      bumper->SetName("Bumper2");
       bumper->m_d.m_radius = 25.f;
       bumper->m_d.m_ringVisible = false;
       table->AddPart(bumper);
@@ -97,7 +97,7 @@ TEST_CASE("Bumper part")
    {
       Bumper* const bumper = Bumper::COMCreate();
       bumper->Init(10.f, 20.f, false);
-      bumper->SetName(L"Bumper3");
+      bumper->SetName("Bumper3");
       table->AddPart(bumper);
       bumper->Release();
 

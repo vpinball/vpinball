@@ -123,7 +123,7 @@ string BiffReader::AsString()
    m_bytesinrecordremaining -= len + (int)sizeof(int32_t);
    string value(len, '\0');
    ReadBytes(value.data(), len);
-   return value;
+   return string_from_utf8_or_cp1252(std::move(value)); // Text is UTF-8, older files may contain legacy ANSI
 }
 
 wstring BiffReader::AsWideString()

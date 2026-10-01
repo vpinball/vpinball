@@ -16,7 +16,7 @@ TEST_CASE("Primitive part")
    {
       Primitive* const prim = Primitive::COMCreate();
       prim->Init(100.f, 200.f, false);
-      prim->SetName(L"Prim1");
+      prim->SetName("Prim1");
       prim->m_d.m_Sides = 6;
       prim->m_d.m_vPosition.z = 10.f;
       prim->m_d.m_vSize = Vertex3Ds(120.f, 130.f, 140.f);
@@ -60,7 +60,7 @@ TEST_CASE("Primitive part")
       Primitive* const copy = Primitive::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Prim1");
+      CHECK(copy->GetName() == "Prim1");
       CHECK(copy->m_d.m_Sides == 6);
       CHECK(copy->m_d.m_vPosition.x == 100.f);
       CHECK(copy->m_d.m_vPosition.y == 200.f);
@@ -110,7 +110,7 @@ TEST_CASE("Primitive part")
    {
       Primitive* const prim = Primitive::COMCreate();
       prim->Init(50.f, 60.f, false);
-      prim->SetName(L"Prim2");
+      prim->SetName("Prim2");
       prim->put_Sides(8);
       table->AddPart(prim);
       prim->Release();
@@ -124,7 +124,7 @@ TEST_CASE("Primitive part")
    {
       Primitive* const prim = Primitive::COMCreate();
       prim->Init(0.f, 0.f, false);
-      prim->SetName(L"Prim3");
+      prim->SetName("Prim3");
       table->AddPart(prim);
       prim->Release();
 
@@ -151,11 +151,38 @@ TEST_CASE("Primitive part")
       CHECK(newSides == (sides == 4 ? 8 : 4));
    }
 
+   SUBCASE("OBJ export/import with a non-ASCII file name")
+   {
+      Primitive* const prim = Primitive::COMCreate();
+      prim->Init(0.f, 0.f, false);
+      prim->SetName("Prim5");
+      table->AddPart(prim);
+      prim->Release();
+
+      // Characters outside Windows-1252 check that no legacy ANSI API is used on the way
+      const std::filesystem::path objPath = GetTestTmpDir() / PathFromUTF8("Mesh \xD0\x96\xE2\x98\x85.obj"s);
+      prim->m_mesh.SaveWavefrontObj(objPath, "Prim5"s, MeshUnits::VPUnits);
+      CHECK(FileExists(objPath));
+      CHECK(FileExists(std::filesystem::path(objPath).replace_extension(".mtl")));
+
+      Mesh loaded;
+      REQUIRE(loaded.LoadWavefrontObj(objPath, MeshUnits::VPUnits));
+      CHECK(loaded.NumVertices() > 0); // Vertices are merged on import, so only the triangle count is kept exactly
+      CHECK(loaded.NumIndices() == prim->m_mesh.NumIndices());
+
+      std::error_code ec;
+      std::filesystem::remove(objPath, ec);
+      std::filesystem::remove(std::filesystem::path(objPath).replace_extension(".mtl"), ec);
+
+      // A file that can not be written fails the export (it used to write through a null file handle)
+      CHECK_FALSE(prim->m_mesh.SaveWavefrontObj(GetTestTmpDir() / "missing_folder" / "mesh.obj", "Prim5"s, MeshUnits::VPUnits));
+   }
+
    SUBCASE("editor transforms")
    {
       Primitive* const prim = Primitive::COMCreate();
       prim->Init(10.f, 20.f, false);
-      prim->SetName(L"Prim4");
+      prim->SetName("Prim4");
       table->AddPart(prim);
       prim->Release();
 

@@ -16,7 +16,7 @@ TEST_CASE("Kicker part")
    {
       Kicker* const kicker = Kicker::COMCreate();
       kicker->Init(100.f, 200.f, false);
-      kicker->SetName(L"Kicker1");
+      kicker->SetName("Kicker1");
       kicker->m_d.m_radius = 30.f;
       kicker->m_d.m_szSurface = "surface1";
       kicker->m_d.m_kickertype = KickerHole;
@@ -36,7 +36,7 @@ TEST_CASE("Kicker part")
       Kicker* const copy = Kicker::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Kicker1");
+      CHECK(copy->GetName() == "Kicker1");
       CHECK(copy->m_d.m_vCenter.x == 100.f);
       CHECK(copy->m_d.m_vCenter.y == 200.f);
       CHECK(copy->m_d.m_radius == 30.f);
@@ -60,7 +60,7 @@ TEST_CASE("Kicker part")
    {
       Kicker* const kicker = Kicker::COMCreate();
       kicker->Init(50.f, 60.f, false);
-      kicker->SetName(L"Kicker2");
+      kicker->SetName("Kicker2");
       kicker->m_d.m_kickertype = KickerCup;
       table->AddPart(kicker);
       kicker->Release();
@@ -74,7 +74,7 @@ TEST_CASE("Kicker part")
    {
       Kicker* const kicker = Kicker::COMCreate();
       kicker->Init(10.f, 20.f, false);
-      kicker->SetName(L"Kicker3");
+      kicker->SetName("Kicker3");
       table->AddPart(kicker);
       kicker->Release();
 

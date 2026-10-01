@@ -20,44 +20,42 @@ void Mesh::Clear()
    m_validBounds = false;
 }
 
-bool Mesh::LoadAnimation(const char* fname, const MeshUnits units)
+bool Mesh::LoadAnimation(const std::filesystem::path& fname, const MeshUnits units)
 {
    m_validBounds = false;
-   string name(fname);
-   size_t idx = name.find_last_of('_');
+   const string stem = PathToUTF8(fname.stem());
+   const size_t idx = stem.find_last_of('_');
    if (idx == string::npos)
    {
       ShowError("Can't find sequence of obj files! The file name of the sequence must be <meshname>_x.obj where x is the frame number!");
       return false;
    }
-#ifndef __STANDALONE__
-   idx++;
-   name.erase(idx);
-   string sname = name + "*.obj";
-   WIN32_FIND_DATA data;
-   const HANDLE h = FindFirstFile(sname.c_str(), &data);
-   vector<string> allFiles;
-   int frameCounter = 0;
-   if (h != INVALID_HANDLE_VALUE)
+   // Frames are the '<meshname>_*.obj' files of the folder, in name order (matched ignoring ASCII case, like the Windows file search did)
+   const string prefix = lowerCase(stem.substr(0, idx + 1));
+   const std::filesystem::path folder = fname.parent_path();
+   vector<std::filesystem::path> allFiles;
+   std::error_code ec;
+   for (auto it = std::filesystem::directory_iterator(folder.empty() ? std::filesystem::path(".") : folder, ec); !ec && it != std::filesystem::directory_iterator(); it.increment(ec))
    {
-      do
-      {
-         allFiles.push_back(data.cFileName);
-         frameCounter++;
-      } while (FindNextFile(h, &data));
+      const string name = lowerCase(PathToUTF8(it->path().filename()));
+      std::error_code typeError;
+      if (name.starts_with(prefix) && name.ends_with(".obj"sv) && it->is_regular_file(typeError))
+         allFiles.push_back(it->path());
    }
+   std::ranges::sort(allFiles, [](const std::filesystem::path& a, const std::filesystem::path& b) { return lowerCase(PathToUTF8(a.filename())) < lowerCase(PathToUTF8(b.filename())); });
+   const int frameCounter = static_cast<int>(allFiles.size());
    m_animationFrames.resize(frameCounter);
    for (size_t i = 0; i < allFiles.size(); i++)
    {
-      sname = allFiles[i];
       ObjLoader loader;
-      if (loader.Load(sname, units))
+      if (loader.Load(allFiles[i], units))
       {
          const vector<Vertex3D_NoTex2>& verts = loader.GetVertices();
          const vector<unsigned int>& indices = loader.GetIndices();
          if ((m_indices.size() != indices.size()) || (m_vertices.size() != verts.size()) || (memcmp(m_indices.data(), indices.data(), indices.size()*sizeof(unsigned int)) != 0))
          {
             ShowError("Error: frames of animation do not share the same data layout.");
+            m_animationFrames.clear(); // No partial animation (frames without vertices)
             return false;
          }
          for (size_t t = 0; t < verts.size(); t++)
@@ -70,19 +68,17 @@ bool Mesh::LoadAnimation(const char* fname, const MeshUnits units)
       }
       else
       {
-         name = "Unable to load file " + sname;
-         ShowError(name);
+         ShowError("Unable to load file " + PathToUTF8(allFiles[i]));
+         m_animationFrames.clear(); // No partial animation (frames without vertices)
          return false;
       }
 
    }
-   sname = std::to_string(frameCounter)+" frames imported!";
-   ShowMessage(MsgSeverity::Info, sname);
-#endif
+   ShowMessage(MsgSeverity::Info, std::to_string(frameCounter) + " frames imported!");
    return true;
 }
 
-bool Mesh::LoadWavefrontObj(const string& fname, const MeshUnits units)
+bool Mesh::LoadWavefrontObj(const std::filesystem::path& fname, const MeshUnits units)
 {
    m_validBounds = false;
    Clear();
@@ -114,10 +110,10 @@ bool Mesh::LoadWavefrontObj(const string& fname, const MeshUnits units)
       return false;
 }
 
-void Mesh::SaveWavefrontObj(const string& fname, const string& description, const MeshUnits units)
+bool Mesh::SaveWavefrontObj(const std::filesystem::path& fname, const string& description, const MeshUnits units)
 {
    ObjLoader loader;
-   loader.Save(fname, description.empty() ? fname : description, *this, units);
+   return loader.Save(fname, description.empty() ? PathToUTF8(fname) : description, *this, units);
 }
 
 void Mesh::UploadToVB(std::shared_ptr<VertexBuffer> vb, const float frame) 

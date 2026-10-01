@@ -107,6 +107,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 add_compile_definitions($<$<CONFIG:Release>:IMGUI_DISABLE_DEBUG_TOOLS>)
+# Log messages are UTF-8 like all narrow strings (the default on other platforms), must be the same for all sources using plog
+if(WIN32)
+   add_compile_definitions(PLOG_CHAR_IS_UTF8=1)
+endif()
 add_compile_options(
    $<$<CXX_COMPILER_ID:MSVC>:/we4172>
    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Werror=return-local-addr>

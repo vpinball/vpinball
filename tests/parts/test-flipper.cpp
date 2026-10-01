@@ -16,7 +16,7 @@ TEST_CASE("Flipper part")
    {
       Flipper* const flipper = Flipper::COMCreate();
       flipper->Init(100.f, 200.f, false);
-      flipper->SetName(L"Flipper1");
+      flipper->SetName("Flipper1");
       flipper->m_d.m_BaseRadius = 20.f;
       flipper->m_d.m_EndRadius = 12.f;
       flipper->m_d.m_FlipperRadiusMin = 100.f;
@@ -64,7 +64,7 @@ TEST_CASE("Flipper part")
       Flipper* const copy = Flipper::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Flipper1");
+      CHECK(copy->GetName() == "Flipper1");
       CHECK(copy->m_d.m_Center.x == 100.f);
       CHECK(copy->m_d.m_Center.y == 200.f);
       CHECK(copy->m_d.m_BaseRadius == 20.f);
@@ -112,7 +112,7 @@ TEST_CASE("Flipper part")
    {
       Flipper* const flipper = Flipper::COMCreate();
       flipper->Init(50.f, 60.f, false);
-      flipper->SetName(L"Flipper2");
+      flipper->SetName("Flipper2");
       flipper->m_d.m_StartAngle = 121.f;
       table->AddPart(flipper);
       flipper->Release();
@@ -126,7 +126,7 @@ TEST_CASE("Flipper part")
    {
       Flipper* const flipper = Flipper::COMCreate();
       flipper->Init(10.f, 20.f, false);
-      flipper->SetName(L"Flipper3");
+      flipper->SetName("Flipper3");
       table->AddPart(flipper);
       flipper->Release();
 

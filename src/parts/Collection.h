@@ -55,7 +55,7 @@ public:
 
 private:
    vector<IEditable *> m_parts;
-   vector<wstring> m_tmp_isel_name;
+   vector<string> m_tmp_isel_name;
 };
 
 

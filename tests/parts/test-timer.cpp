@@ -17,7 +17,7 @@ TEST_CASE("Timer part")
    {
       Timer* const timer = Timer::COMCreate();
       timer->Init(100.f, 200.f, false);
-      timer->SetName(L"Timer1");
+      timer->SetName("Timer1");
       timer->m_timerEnabled = true;
       timer->m_timerInterval = 250;
       timer->m_desktopBackdrop = true;
@@ -31,7 +31,7 @@ TEST_CASE("Timer part")
       Timer* const copy = Timer::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Timer1");
+      CHECK(copy->GetName() == "Timer1");
       CHECK(copy->m_d.m_v.x == 100.f);
       CHECK(copy->m_d.m_v.y == 200.f);
       CHECK(copy->m_timerEnabled == true);
@@ -50,7 +50,7 @@ TEST_CASE("Timer part")
    {
       Timer* const timer = Timer::COMCreate();
       timer->Init(30.f, 40.f, false);
-      timer->SetName(L"Timer2");
+      timer->SetName("Timer2");
       timer->m_timerEnabled = true;
       timer->m_timerInterval = 42;
       timer->m_desktopBackdrop = true;
@@ -66,13 +66,13 @@ TEST_CASE("Timer part")
    {
       PartGroup* const group = PartGroup::COMCreate();
       group->Init(0.f, 0.f, false);
-      group->SetName(L"Layer_01");
+      group->SetName("Layer_01");
       table->AddPart(group);
       group->Release();
 
       Timer* const timer = Timer::COMCreate();
       timer->Init(10.f, 10.f, false);
-      timer->SetName(L"Timer3");
+      timer->SetName("Timer3");
       timer->SetPartGroup(group);
       table->AddPart(timer);
       timer->Release();
@@ -83,7 +83,7 @@ TEST_CASE("Timer part")
       LoadPartFromStream(copy, saved);
 
       // The group is resolved by name after the whole table has been loaded
-      CHECK(copy->m_onLoadExpectedPartGroup == L"Layer_01");
+      CHECK(copy->m_onLoadExpectedPartGroup == "Layer_01");
 
       copy->Release();
    }
@@ -92,7 +92,7 @@ TEST_CASE("Timer part")
    {
       Timer* const timer = Timer::COMCreate();
       timer->Init(10.f, 20.f, false);
-      timer->SetName(L"Timer4");
+      timer->SetName("Timer4");
       table->AddPart(timer);
       timer->Release();
 

@@ -336,6 +336,8 @@ public:
 
    void ParseScript(const string &script, vector<string> &functions, vector<string> &identifiers, const std::function<void(const string &, int)>& onDuplicate) const;
    string AuditTable(bool log) const;
+   void SanitizePhysicsData(); // Fix invalid physics values of a loaded table, noted for the audit
+   vector<string> m_loadFixes; // Invalid data fixed when the table was loaded (reported by AuditTable)
 
    void AddFont(PinFont *const ppf);
    void RemoveFont(PinFont *const ppf);
@@ -415,7 +417,8 @@ public:
    bool HasPart(IEditable *part) const { return std::ranges::find(m_vedit, part) != m_vedit.end(); }
    void AddPart(IEditable *part);
    void RemovePart(IEditable *part);
-   void RenamePart(IEditable *part, const wstring& newName);
+   void RenamePart(IEditable *part, const string& newName); // Part or the table itself (see HasRegisteredName)
+   bool HasRegisteredName(IEditable *part) const { return part == this ? m_nameRegistered : HasPart(part); }
    void MovePartToFront(IEditable *part);
    void MovePartToBack(IEditable *part);
    IEditable *GetElementByName(const char *const name) const;
@@ -427,12 +430,13 @@ private:
 
 #pragma region Unique name ids
 public:
-   bool IsNameUnique(const wstring &wzName) const;
-   void GetUniqueName(const ItemTypeEnum type, wstring &wzUniqueName) const;
-   wstring GetUniqueName(const wstring &wzRoot) const;
+   bool IsNameUnique(const string &name) const;
+   void GetUniqueName(const ItemTypeEnum type, string &uniqueName) const;
+   string GetUniqueName(const string &root) const;
 
 private:
-   ankerl::unordered_dense::set<wstring> m_scriptableNames;
+   ankerl::unordered_dense::set<string> m_scriptableNames; // Lower case names taken in the script: table, parts, collections, global methods
+   bool m_nameRegistered = false; // The table's own name is registered once loaded (not in a live copy)
 #pragma endregion
 
 
@@ -480,8 +484,8 @@ public:
    void AddMaterial(Material *const pmat);
    bool IsMaterialNameUnique(const string &name) const;
    Material *GetMaterial(const string &name) const;
-   Material *GetSurfaceMaterial(const wstring &name) const;
-   Texture *GetSurfaceImage(const wstring &name) const;
+   Material *GetSurfaceMaterial(const string &name) const;
+   Texture *GetSurfaceImage(const string &name) const;
    bool IsDummyMaterial(const Material *const mat) const { return mat == m_dummyMaterial.get(); }
 
 private:
@@ -493,13 +497,13 @@ private:
 public:
    void AddCollection(CComObject<Collection> *collection);
    void RemoveCollection(CComObject<Collection> *collection);
-   void RenameCollection(Collection *collection, const wstring &newName);
+   void RenameCollection(Collection *collection, const string &newName);
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
    const vector<CComObject<Collection> *> &GetCollections() const { return m_vcollection; }
    bool GetCollectionIndex(const IEditable *const element, int &collectionIndex, int &elementIndex);
    void ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection);
-   const wstring &GetCollectionNameByElement(const IEditable *const element) const;
+   const string &GetCollectionNameByElement(const IEditable *const element) const;
 
 private:
    vector<CComObject<Collection> *> m_vcollection;

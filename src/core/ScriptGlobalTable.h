@@ -136,7 +136,7 @@ public:
 
    STDMETHOD(CreatePluginObject)(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch **pVal);
 
-   ScriptGlobalTable() { m_wzName = L"Global"sv; }
+   ScriptGlobalTable() { m_name = "Global"s; }
    void Init(PinTable *pt);
    ~ScriptGlobalTable();
 

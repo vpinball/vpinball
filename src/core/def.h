@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <charconv>
 #include <filesystem>
+#include <cwchar>
 
 #include <vector>
 using std::vector;
@@ -41,35 +42,46 @@ using std::wstring;
 #undef max
 #endif
 
-// MinGW's filesystem::path validates UTF-8 and throws on invalid sequences.
-// VPX files may store paths as legacy ANSI. Try UTF-8 first, fall back to
-// Latin-1 (1:1 byte-to-wchar widening) which doesn't need codepage support.
-#ifdef __MINGW32__
-inline std::filesystem::path PathFromString(const std::string& s)
-{
-   int len = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s.c_str(), -1, nullptr, 0);
-   if (len > 0) { std::wstring ws(len - 1, L'\0'); MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, ws.data(), len); return ws; }
-   return std::wstring(s.begin(), s.end());
-}
+// String contract (read before changing string, path or name handling)
+// - Narrow strings are UTF-8 everywhere (table data, ImGui, SDL, logs, settings, plugins, scripts). Do not rely on a UTF-8 process
+//   code page: Windows before 10 1903 ignores the UTF-8 manifest, so narrow 'A' APIs see legacy ANSI there.
+// - Wide strings are UTF-16 (UTF-32 off Windows), used only at boundaries: COM/BSTR, Win32 'W' APIs, path::native(), part names in
+//   files. Convert with MakeString / MakeWString / MakeWideBSTR / MakeWide / MakeCharArray (invalid input becomes U+FFFD, nullptr is
+//   accepted). BSTRs use the zero terminated WCHAR* overloads: never measure a plain WCHAR* buffer with SysStringLen.
+// - Paths are std::filesystem::path: no path::string() (ANSI with MSVC, throws) nor path(std::string) (decoded as ANSI with MSVC).
+//   PathToUTF8 / PathFromUTF8 for UI, logs, SDL, table data and settings; PathToString / PathFromString (lossy) only for narrow
+//   APIs without a wide variant, plugin API paths and legacy settings. Open files with open_file, read/write_file, fstream(path) or wide APIs.
+// - Table files: text fields are UTF-8 since format 1090 (AsString converts older Windows-1252 text). Part names are UTF-16 in the
+//   file and UTF-8 in memory (IScriptable::m_name), at most MAXNAMEBUFFER - 1 UTF-16 units (TruncateToUTF16Length).
+// - Names are case insensitive like VBScript: unique and looked up ignoring (ASCII) case (lowerCase, StrCompareNoCase, cLower, ...).
+// - Never pass a plain char to tolower / isalnum / ... (undefined for bytes >= 0x80), nor split a UTF-8 character when truncating.
+
+// Native narrow paths (settings, narrow OS file APIs): with MSVC in the process code page (legacy ANSI, or UTF-8 with the manifest on
+// Windows 10 1903+), with MinGW in UTF-8. On Windows, strings not valid in it are decoded with the user's legacy ANSI code page (old settings)
+#ifdef _WIN32
+std::filesystem::path PathFromString(const std::string& s);
 #else
 inline std::filesystem::path PathFromString(const std::string& s) { return s; }
 #endif
 
-// Counterpart of PathFromString (settings, titles, messages,...). With MSVC, narrow paths use the ANSI code page and path::string() throws
-// for characters it can not represent: they are replaced by '_' instead (valid in file names), so the result may only approximate the path
+// Counterpart of PathFromString. With MSVC, path::string() throws for characters the code page can not represent:
+// they are replaced by '_' instead (valid in file names), so the result may only approximate the path
 #ifdef _MSC_VER
 std::string PathToString(const std::filesystem::path& path);
 #else
 inline std::string PathToString(const std::filesystem::path& path) { return path.string(); }
 #endif
 
-// UTF-8 paths, as used by SDL and ImGui (narrow paths use the ANSI code page with MSVC)
-inline std::string PathToUTF8(const std::filesystem::path& path)
-{
-   const std::u8string utf8 = path.u8string();
-   return std::string(utf8.begin(), utf8.end());
-}
-inline std::filesystem::path PathFromUTF8(const std::string& utf8) { return std::filesystem::path(std::u8string(utf8.begin(), utf8.end())); }
+// UTF-8 paths, the encoding of all text in memory (table data, UI, SDL, plugins). Invalid characters are replaced, not thrown.
+#ifdef _WIN32
+inline std::string PathToUTF8(const std::filesystem::path& path); // Defined after MakeString/MakeWString below
+inline std::filesystem::path PathFromUTF8(const std::string& utf8);
+std::filesystem::path PathFromUTF8OrString(const std::string& s); // UTF-8, or else a native narrow path (stored by older versions)
+#else
+inline std::string PathToUTF8(const std::filesystem::path& path) { return path.native(); } // Native narrow paths are UTF-8
+inline std::filesystem::path PathFromUTF8(const std::string& utf8) { return utf8; }
+inline std::filesystem::path PathFromUTF8OrString(const std::string& s) { return s; }
+#endif
 
 #ifdef __STANDALONE__
 #if defined(__APPLE__)
@@ -745,20 +757,24 @@ wstring f2wz(const float f, const bool can_convert_decimal_point = true);
 
 string SizeToReadable(const size_t bytes);
 
+// Text conversions between UTF-8 and wide strings (see the string contract at the top of this file)
 #ifndef MINIMAL_DEF_H
-BSTR MakeWideBSTR(const string& sz, const UINT codepage = CP_ACP);
-BSTR MakeWideBSTR(const char* const sz, const size_t length, const UINT codepage); // sz does not need to be zero terminated
+BSTR MakeWideBSTR(const string& sz);
+BSTR MakeWideBSTR(const char* const sz, const size_t length); // sz does not need to be zero terminated
 BSTR MakeWideBSTR(const wstring& wz);
 #endif
-WCHAR* MakeWide(const string& sz, const UINT codepage = CP_ACP);
-string MakeString(const wstring& wz, const UINT codepage = CP_ACP);
-string MakeString(const WCHAR* const wz, const UINT codepage = CP_ACP);
-#ifndef MINIMAL_DEF_H
-string MakeString(const BSTR wz, const UINT codepage = CP_ACP);
+WCHAR* MakeWide(const string& sz); // Zero terminated, new[] allocated
+string MakeString(const WCHAR* const wz, const size_t length); // wz does not need to be zero terminated
+inline string MakeString(const wstring& wz) { return MakeString(wz.c_str(), wz.length()); }
+inline string MakeString(const WCHAR* const wz) { return wz ? MakeString(wz, wcslen(wz)) : string(); } // Zero terminated or nullptr (also for BSTRs: embedded zeros end the text). //!! wcslen penalties the non-ASCII case, dropping perf to 0.8x-0.9x instead of ~1x
+char* MakeCharArray(const WCHAR* const wz, const int length); // Zero terminated, new[] allocated (nullptr if the conversion failed)
+wstring MakeWString(const char* const sz, const size_t length); // sz does not need to be zero terminated
+inline wstring MakeWString(const string& sz) { return MakeWString(sz.c_str(), sz.length()); }
+inline wstring MakeWString(const char* const sz) { return sz ? MakeWString(sz, strlen(sz)) : wstring(); } // Zero terminated or nullptr
+#ifdef _WIN32
+inline std::string PathToUTF8(const std::filesystem::path& path) { return MakeString(path.native()); }
+inline std::filesystem::path PathFromUTF8(const std::string& utf8) { return MakeWString(utf8); }
 #endif
-char* MakeCharArray(const WCHAR* const wz, const int length, const UINT codepage); // Zero terminated, new[] allocated (nullptr if the conversion failed)
-wstring MakeWString(const string& sz, const UINT codepage = CP_ACP);
-wstring MakeWString(const char* const sz, const UINT codepage = CP_ACP);
 
 // in case the incoming string length is >= the maximum char length of the outgoing one, WideCharToMultiByte will not produce a zero terminated string
 // this variant always makes sure that the outgoing string is zero terminated
@@ -916,6 +932,15 @@ inline bool StrCompareNoCase(const string& strA, const char* const strB)
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
+inline constexpr bool IsASCIIAlnum(char c) { return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'); }
+
+// Case insensitive (ASCII) order, other bytes by value (UTF-8 text after ASCII)
+inline bool StrLessNoCase(const string& strA, const string& strB)
+{
+   return std::lexicographical_compare(strA.begin(), strA.end(), strB.begin(), strB.end(),
+      [](char a, char b) { return static_cast<unsigned char>(cLower(a)) < static_cast<unsigned char>(cLower(b)); });
+}
+
 CONSTEXPR inline string lowerCase(string input)
 {
    StrToLower(input);
@@ -990,12 +1015,13 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 #define GetExecutablePathW() GetModulePath<wstring>(nullptr)
 #endif
 
+FILE* open_file(const std::filesystem::path& path, const char* mode); // fopen for any path (wide API on Windows), nullptr on failure
 vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary = true);
 void write_file(const std::filesystem::path& filename, const vector<uint8_t>& data, const bool binary = true);
 inline bool DirExists(const std::filesystem::path& dirPath) { return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath); }
 inline bool FileExists(const std::filesystem::path& filePath) { return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath); }
 bool IsNetworkPath(const std::filesystem::path& path);
-inline string TitleFromFilename(const std::filesystem::path& filename) { return PathToString(filename.stem()); }
+inline string TitleFromFilename(const std::filesystem::path& filename) { return PathToUTF8(filename.stem()); }
 inline std::filesystem::path PathFromFilename(const std::filesystem::path& filename) { return filename.parent_path(); }
 string normalize_path_separators(const string& szPath);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
@@ -1048,7 +1074,10 @@ inline void wcsncpy_s(WCHAR* const __restrict dest, const size_t dest_size, cons
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
-string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize);
+string string_from_utf8_or_cp1252(const char* src, size_t srcSize); // UTF-8 text is kept, anything else is taken as legacy Western ANSI
+string string_from_utf8_or_cp1252(string&& src); // Same, returning src itself when it is valid UTF-8
+string TruncateToUTF16Length(const string& utf8, size_t maxUnits); // Longest prefix (on a character boundary) of at most maxUnits UTF-16 code units
+string TruncateToUTF8Length(const string& utf8, size_t maxBytes); // Longest prefix (on a character boundary) of at most maxBytes bytes
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);
 #endif

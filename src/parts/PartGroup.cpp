@@ -93,7 +93,7 @@ PartGroupData::SpaceReference PartGroup::GetReferenceSpace() const
 
 void PartGroup::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteVector2(FID(VCEN), m_d.m_v);
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
@@ -115,7 +115,7 @@ void PartGroup::Load(IObjectReader& reader)
          case FID(VCEN): m_d.m_v = reader.AsVector2(); break;
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(PMSK): m_d.m_playerModeVisibilityMask = reader.AsUInt(); break;
          case FID(SPRF): m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(reader.AsInt()); break;
          default: LoadSharedEditableField(tag, reader); break;

@@ -39,6 +39,7 @@ private:
    // Export option dialog state, mirroring the WinUI 'Wavefront OBJ Exporter' dialog
    std::shared_ptr<string> m_pendingMeshExport;
    string m_meshExportFileName;
+   bool m_meshExportFailed = false;
 };
 
 }

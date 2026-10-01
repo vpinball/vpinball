@@ -432,7 +432,7 @@ void AudioPlayer::CloseAudioStream(const AudioStreamID& stream, bool afterEndOfS
    }
 }
 
-bool AudioPlayer::PlayMusic(const string& filename)
+bool AudioPlayer::PlayMusic(const std::filesystem::path& filename)
 {
    m_music = std::unique_ptr<SoundPlayer>(SoundPlayer::Create(this, filename));
    if (m_music)

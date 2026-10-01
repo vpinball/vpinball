@@ -17,7 +17,7 @@ TEST_CASE("Rubber part")
    {
       Rubber* const rubber = Rubber::COMCreate();
       rubber->Init(100.f, 200.f, false);
-      rubber->SetName(L"Rubber1");
+      rubber->SetName("Rubber1");
       rubber->m_d.m_height = 30.f;
       rubber->m_d.m_hitHeight = 25.f;
       rubber->m_d.m_thickness = 12;
@@ -43,7 +43,7 @@ TEST_CASE("Rubber part")
       Rubber* const copy = Rubber::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Rubber1");
+      CHECK(copy->GetName() == "Rubber1");
       CHECK(copy->m_d.m_height == 30.f);
       CHECK(copy->m_d.m_hitHeight == 25.f);
       CHECK(copy->m_d.m_thickness == 12);
@@ -76,7 +76,7 @@ TEST_CASE("Rubber part")
    {
       Rubber* const rubber = Rubber::COMCreate();
       rubber->Init(50.f, 60.f, false);
-      rubber->SetName(L"Rubber2");
+      rubber->SetName("Rubber2");
       rubber->m_d.m_thickness = 4;
       table->AddPart(rubber);
       rubber->Release();
@@ -90,7 +90,7 @@ TEST_CASE("Rubber part")
    {
       Rubber* const rubber = Rubber::COMCreate();
       rubber->Init(100.f, 100.f, false);
-      rubber->SetName(L"Rubber3");
+      rubber->SetName("Rubber3");
       table->AddPart(rubber);
       rubber->Release();
 

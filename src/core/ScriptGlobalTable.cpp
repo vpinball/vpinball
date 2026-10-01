@@ -122,11 +122,11 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       if (musicNameStr.empty())
          return S_OK;
 
-      const std::filesystem::path musicPath = normalize_path_separators(musicNameStr);
+      const std::filesystem::path musicPath = PathFromUTF8(normalize_path_separators(musicNameStr));
 
       const std::filesystem::path musicDir = g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::Music, false);
       const std::filesystem::path path = find_case_insensitive_file_path(musicDir / musicPath.relative_path());
-      if (!path.empty() && !path.lexically_relative(musicDir).empty() && g_pplayer->m_audioPlayer->PlayMusic(path.string()))
+      if (!path.empty() && !path.lexically_relative(musicDir).empty() && g_pplayer->m_audioPlayer->PlayMusic(path))
       {
          g_pplayer->m_audioPlayer->SetMusicVolume(m_table->m_TableMusicVolume * volume);
       }
@@ -154,7 +154,7 @@ STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
 
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 {
-   *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length()));
+   *pVal = MakeWideBSTR(m_name);
    return S_OK;
 }
 
@@ -333,7 +333,7 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
       case VPX::Properties::PropertyDef::Type::Int: value = std::to_wstring(settings.GetInt(propId.value())); break;
       case VPX::Properties::PropertyDef::Type::Bool: value = settings.GetBool(propId.value()) ? L"1"sv : L"0"sv; break;
       case VPX::Properties::PropertyDef::Type::Enum: value = std::to_wstring(settings.GetInt(propId.value())); break;
-      case VPX::Properties::PropertyDef::Type::String: value = MakeWide(settings.GetString(propId.value())); break;
+      case VPX::Properties::PropertyDef::Type::String: value = MakeWString(settings.GetString(propId.value())); break;
       default: return E_FAIL;
       }
       *param = MakeWideBSTR(value);
@@ -347,7 +347,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
    if (g_pplayer == nullptr)
       return E_FAIL;
    const string szFileName = MakeString(FileName);
-   const std::filesystem::path filepath = normalize_path_separators(szFileName);
+   const std::filesystem::path filepath = PathFromUTF8(normalize_path_separators(szFileName));
    if (std::filesystem::path file = g_app->m_fileLocator.SearchScript(m_table, filepath); !file.empty())
    {
       std::ifstream scriptFile;
@@ -357,9 +357,12 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
          std::stringstream buffer;
          buffer << scriptFile.rdbuf();
          string content = buffer.str();
-         if (szFileName.ends_with(".vbs"))
+         if (content.starts_with("\xEF\xBB\xBF"sv)) // UTF-8 BOM
+            content.erase(0, 3);
+         content = string_from_utf8_or_cp1252(std::move(content)); // Script files are UTF-8, or legacy ANSI
+         if (path_has_extension(szFileName, "vbs"s)) // Ignoring case
          {
-            PLOGI << "Reading script: " << file.string();
+            PLOGI << "Reading script: " << PathToUTF8(file);
             content = g_pplayer->m_pluginAPI.ApplyScriptCOMObjectOverrides(content);
          }
          *pContents = MakeWideBSTR(content);
@@ -668,7 +671,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, fl
       pMat->m_bOpacityActive = VBTOb(opacityActive);
       pMat->m_fElasticity = elasticity;
       pMat->m_fElasticityFalloff = elasticityFalloff;
-      pMat->m_fFriction = friction;
+      pMat->m_fFriction = max(friction, 0.f); // Friction can not be negative
       pMat->m_fScatterAngle = scatterAngle;
       return S_OK;
    }
@@ -712,7 +715,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticit
    {
       pMat->m_fElasticity = elasticity;
       pMat->m_fElasticityFalloff = elasticityFalloff;
-      pMat->m_fFriction = friction;
+      pMat->m_fFriction = max(friction, 0.f); // Friction can not be negative
       pMat->m_fScatterAngle = scatterAngle;
       return S_OK;
    }
@@ -941,10 +944,10 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   const std::wstring_view wname(name, SysStringLen(name));
+   const string sname = MakeString(name);
    for (IEditable *const pie : m_table->GetParts())
    {
-      if (wname == pie->GetIScriptable()->m_wzName)
+      if (StrCompareNoCase(pie->GetIScriptable()->m_name, sname))
       {
          IDispatch * const id = pie->GetIScriptable()->GetIDispatch();
          id->AddRef();

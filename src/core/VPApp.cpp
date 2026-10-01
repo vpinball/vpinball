@@ -329,14 +329,14 @@ void VPApp::InitInstance(bool isPlay)
    PLOGI << "Application path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
    PLOGI << "Preference path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
 
-   Settings::SetRecentDir_ImportDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
-   Settings::SetRecentDir_LoadDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
-   Settings::SetRecentDir_FontDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
-   Settings::SetRecentDir_PhysicsDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
-   Settings::SetRecentDir_ImageDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
-   Settings::SetRecentDir_MaterialDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
-   Settings::SetRecentDir_SoundDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
-   Settings::SetRecentDir_POVDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_ImportDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
+   Settings::SetRecentDir_LoadDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
+   Settings::SetRecentDir_FontDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
+   Settings::SetRecentDir_PhysicsDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
+   Settings::SetRecentDir_ImageDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
+   Settings::SetRecentDir_MaterialDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
+   Settings::SetRecentDir_SoundDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
+   Settings::SetRecentDir_POVDir_Default(PathToString(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv));
 
    m_securitylevel = g_settingsService.GetAppSettings().GetPlayer_SecurityLevel();
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)

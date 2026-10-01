@@ -16,7 +16,7 @@ TEST_CASE("Flasher part")
    {
       Flasher* const flasher = Flasher::COMCreate();
       flasher->Init(100.f, 200.f, false);
-      flasher->SetName(L"Flasher1");
+      flasher->SetName("Flasher1");
       flasher->m_d.m_color = RGB(255, 64, 32);
       flasher->m_d.m_height = 60.f;
       flasher->m_d.m_rotX = 10.f;
@@ -52,7 +52,7 @@ TEST_CASE("Flasher part")
       Flasher* const copy = Flasher::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Flasher1");
+      CHECK(copy->GetName() == "Flasher1");
       CHECK(copy->m_d.m_color == RGB(255, 64, 32));
       CHECK(copy->m_d.m_height == 60.f);
       CHECK(copy->m_d.m_rotX == 10.f);
@@ -95,7 +95,7 @@ TEST_CASE("Flasher part")
    {
       Flasher* const flasher = Flasher::COMCreate();
       flasher->Init(50.f, 60.f, false);
-      flasher->SetName(L"Flasher2");
+      flasher->SetName("Flasher2");
       flasher->m_d.m_alpha = 10;
       table->AddPart(flasher);
       flasher->Release();
@@ -109,7 +109,7 @@ TEST_CASE("Flasher part")
    {
       Flasher* const flasher = Flasher::COMCreate();
       flasher->Init(100.f, 100.f, false);
-      flasher->SetName(L"Flasher3");
+      flasher->SetName("Flasher3");
       table->AddPart(flasher);
       flasher->Release();
 

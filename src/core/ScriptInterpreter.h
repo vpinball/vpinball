@@ -29,7 +29,7 @@ public:
 
    void Start(PinTable *table);
    void Stop(PinTable *table, bool interruptDirectly = false);
-   void AddItem(IScriptable *scriptable, const bool global) { AddItem(scriptable->get_Name(), scriptable->GetIDispatch(), global); }
+   void AddItem(IScriptable *scriptable, const bool global) { AddItem(MakeWString(scriptable->get_Name()), scriptable->GetIDispatch(), global); }
    void AddItem(const wstring& name, IDispatch *dispatch, const bool global);
    void RemoveItem(IScriptable *const piscript);
    void Evaluate(const string &script, bool isDebugStatement);
@@ -138,13 +138,13 @@ private:
       STDMETHOD(Print)(VARIANT *pvar) override;
 
    public:
-      DebuggerModule() { m_wzName = L"Debug"sv; }
+      DebuggerModule() { m_name = "Debug"s; }
       IDispatch *GetIDispatch() final { return (IDispatch *)this; }
       const IDispatch *GetIDispatch() const final { return (const IDispatch *)this; }
 
       STDMETHOD(get_Name)(BSTR *pVal) override
       {
-         *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length()));
+         *pVal = MakeWideBSTR(m_name);
          return S_OK;
       }
    };

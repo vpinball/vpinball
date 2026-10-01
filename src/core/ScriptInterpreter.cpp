@@ -199,7 +199,7 @@ void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const 
 void ScriptInterpreter::RemoveItem(IScriptable *const piscript)
 {
    piscript->GetIDispatch()->Release();
-   m_scriptItemMap.erase(piscript->get_Name());
+   m_scriptItemMap.erase(MakeWString(piscript->get_Name()));
 }
 
 void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)

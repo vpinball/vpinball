@@ -17,7 +17,7 @@ TEST_CASE("PartGroup part")
    {
       PartGroup* const group = PartGroup::COMCreate();
       group->Init(11.f, 22.f, false);
-      group->SetName(L"Group1");
+      group->SetName("Group1");
       group->m_timerEnabled = true;
       group->m_timerInterval = 33;
       group->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_DESKTOP | PartGroupData::PMVM_CABINET;
@@ -31,7 +31,7 @@ TEST_CASE("PartGroup part")
       PartGroup* const copy = PartGroup::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Group1");
+      CHECK(copy->GetName() == "Group1");
       CHECK(copy->m_d.m_v.x == 11.f);
       CHECK(copy->m_d.m_v.y == 22.f);
       CHECK(copy->m_timerEnabled == true);
@@ -49,7 +49,7 @@ TEST_CASE("PartGroup part")
    {
       PartGroup* const group = PartGroup::COMCreate();
       group->Init(5.f, 6.f, false);
-      group->SetName(L"Group2");
+      group->SetName("Group2");
       group->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_VIRTUAL_REALITY;
       group->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_ROOM;
       table->AddPart(group);
@@ -64,7 +64,7 @@ TEST_CASE("PartGroup part")
    {
       PartGroup* const root = PartGroup::COMCreate();
       root->Init(0.f, 0.f, false);
-      root->SetName(L"Root");
+      root->SetName("Root");
       root->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_DESKTOP | PartGroupData::PMVM_FSS;
       root->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_CABINET;
       table->AddPart(root);
@@ -72,7 +72,7 @@ TEST_CASE("PartGroup part")
 
       PartGroup* const child = PartGroup::COMCreate();
       child->Init(0.f, 0.f, false);
-      child->SetName(L"Child");
+      child->SetName("Child");
       child->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_FSS | PartGroupData::PMVM_CABINET;
       child->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_INHERIT;
       table->AddPart(child);
@@ -81,7 +81,7 @@ TEST_CASE("PartGroup part")
 
       Timer* const part = Timer::COMCreate();
       part->Init(1.f, 2.f, false);
-      part->SetName(L"GroupedPart");
+      part->SetName("GroupedPart");
       table->AddPart(part);
       part->Release();
       part->SetPartGroup(child);
@@ -118,7 +118,7 @@ TEST_CASE("PartGroup part")
    {
       PartGroup* const group = PartGroup::COMCreate();
       group->Init(10.f, 20.f, false);
-      group->SetName(L"Group3");
+      group->SetName("Group3");
       table->AddPart(group);
       group->Release();
 

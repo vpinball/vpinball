@@ -149,7 +149,7 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Surface>(
          m_part, "Friction"s, //
          [](const Surface* surface) { return surface->m_d.m_friction; }, //
-         [](Surface* surface, float v) { surface->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
+         [](Surface* surface, float v) { surface->m_d.m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 3);
       props.InputFloat<Surface>(
          m_part, "Scatter Angle"s, //
          [](const Surface* surface) { return surface->m_d.m_scatter; }, //

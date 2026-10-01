@@ -28,7 +28,7 @@ public:
 
    HRESULT AddItem(IScriptable * const piscript, const bool global);
    void RemoveItem(IScriptable * const piscript);
-   HRESULT ReplaceName(IScriptable * const piscript, const wstring& wzNew);
+   HRESULT ReplaceName(IScriptable * const piscript, const string& newName); // Must be called before the item is renamed
    void SelectItem(IScriptable * const piscript);
 
    void Compile(const bool message);

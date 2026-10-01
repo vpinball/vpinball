@@ -453,7 +453,8 @@ void Player::InitTableSession(const bool isInitial)
    PLOGI << "Compiling script"; // For profiling
 
    // make sure the load directory is the active directory
-   SetCurrentDirectory(m_ptable->m_filename.parent_path().string().c_str());
+   std::error_code cwdError; // Ignored, as before
+   std::filesystem::current_path(m_ptable->m_filename.parent_path(), cwdError);
 
    m_ptable->SetupLookUpTables(true);
 
@@ -461,7 +462,7 @@ void Player::InitTableSession(const bool isInitial)
    if (m_ptable->m_overridePhysics)
    {
       m_ptable->m_fOverrideGravityConstant = GRAVITYCONST * m_ptable->GetSettings().GetPlayer_TablePhysicsGravityConstant(m_ptable->m_overridePhysics - 1);
-      m_ptable->m_fOverrideContactFriction = m_ptable->GetSettings().GetPlayer_TablePhysicsContactFriction(m_ptable->m_overridePhysics - 1);
+      m_ptable->m_fOverrideContactFriction = max(m_ptable->GetSettings().GetPlayer_TablePhysicsContactFriction(m_ptable->m_overridePhysics - 1), 0.f); // The setting is unbounded, but friction can not be negative
       m_ptable->m_fOverrideElasticity = m_ptable->GetSettings().GetPlayer_TablePhysicsElasticity(m_ptable->m_overridePhysics - 1);
       m_ptable->m_fOverrideElasticityFalloff = m_ptable->GetSettings().GetPlayer_TablePhysicsElasticityFalloff(m_ptable->m_overridePhysics - 1);
       m_ptable->m_fOverrideScatterAngle = m_ptable->GetSettings().GetPlayer_TablePhysicsScatterAngle(m_ptable->m_overridePhysics - 1);
@@ -505,7 +506,7 @@ void Player::InitTableSession(const bool isInitial)
       m_implicitPlayfieldMesh = (Primitive *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemPrimitive, m_ptable, 0, 0);
       if (m_implicitPlayfieldMesh)
       {
-         m_implicitPlayfieldMesh->SetName(L"playfield_mesh"s);
+         m_implicitPlayfieldMesh->SetName("playfield_mesh"s);
          m_implicitPlayfieldMesh->m_desktopBackdrop = false;
          m_implicitPlayfieldMesh->m_d.m_staticRendering = true;
          m_implicitPlayfieldMesh->m_d.m_reflectionEnabled = true;
@@ -549,7 +550,7 @@ void Player::InitTableSession(const bool isInitial)
       m_implicitVRBackglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, m_ptable, 0.5f * (m_ptable->m_right - m_ptable->m_left), 0.f);
       if (m_implicitVRBackglass)
       {
-         m_implicitVRBackglass->SetName(m_ptable->GetUniqueName(L"vr_backglass"s));
+         m_implicitVRBackglass->SetName(m_ptable->GetUniqueName("vr_backglass"s));
          constexpr float flasherWidth = 100.f; // We should gather this from the object instead of guessing the default size
          constexpr float flasherHeight = 100.f;
          constexpr float backglassScale = 1.2f;
@@ -825,7 +826,7 @@ void Player::InitTableSession(const bool isInitial)
             if (GetCloseState() != CS_PLAYING && GetCloseState() != CS_USER_INPUT && GetCloseState() != CS_CLOSE_CAPTURE_SCREENSHOT)
                m_texLoadStats.skipCompression.store(true, std::memory_order_relaxed);
 
-#ifdef ENABLE_BGFX // The loading UI is onöy shown there (see below)
+#ifdef ENABLE_BGFX // The loading UI is only shown there (see below)
             // If rendering thread is ready, push a new frame as soon as possible
             if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
             {
@@ -1550,7 +1551,7 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
       SetCloseState(Player::CloseState::CS_STOP_PLAY);
 
    const string errorType = (type == ScriptInterpreter::ErrorType::Runtime) ? "Runtime" : "Compile";
-   const string desc = string_from_utf8_or_iso8859_1(description.c_str(), description.length());
+   const string desc = string_from_utf8_or_cp1252(description.c_str(), description.length());
    PLOGE << errorType << " error on line " << line << ", col " << column << ": " << desc;
    if (m_liveUI && m_nScriptErrorNotification < 200)
    {

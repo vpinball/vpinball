@@ -81,7 +81,7 @@ TEST_CASE("PinUndo")
       PinUndo undo(table);
       Bumper* const bumper = Bumper::COMCreate();
       bumper->Init(100.f, 200.f, false);
-      bumper->SetName(L"UndoDeleteBumper");
+      bumper->SetName("UndoDeleteBumper");
       table->AddPart(bumper);
       bumper->Release();
 
@@ -100,7 +100,7 @@ TEST_CASE("PinUndo")
       PinUndo undo(table);
       Bumper* const bumper = Bumper::COMCreate();
       bumper->Init(100.f, 200.f, false);
-      bumper->SetName(L"UndoCreateBumper");
+      bumper->SetName("UndoCreateBumper");
       table->AddPart(bumper);
       // Keep the creation reference: Uncreate releases both the table's and the creator's
 
@@ -117,7 +117,7 @@ TEST_CASE("PinUndo")
       PinUndo undo(table);
       Bumper* const bumper = Bumper::COMCreate();
       bumper->Init(100.f, 200.f, false);
-      bumper->SetName(L"UndoMarkBumper");
+      bumper->SetName("UndoMarkBumper");
       bumper->m_d.m_radius = 45.f;
       table->AddPart(bumper);
       bumper->Release();

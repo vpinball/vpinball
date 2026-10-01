@@ -43,7 +43,7 @@ public:
    static void ResolveUnit(Unit from, Unit& to, int& nDecimalAdjust); // Resolves display unit & decimals without converting a value
    void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
 
-   void Header(const string& typeName, const std::function<wstring()>& getName, const std::function<void(const wstring&)>& setName);
+   void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName);
    void EditableHeader(const string& typeName, IEditable* editable);
    void Separator(const string& label) const;
    template <class T> void Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter);
@@ -378,8 +378,7 @@ template <class T> inline void PropertyPane::ImageCombo(T* obj, const string& la
    std::vector<string> images(m_table->m_vimage.size());
    const std::function<string(Texture*)> map = [](const Texture* image) -> string { return image->m_name; };
    std::ranges::transform(m_table->m_vimage.begin(), m_table->m_vimage.end(), images.begin(), map);
-   std::sort(images.begin(), images.end(), [](const std::string& a, const std::string& b)
-      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   std::sort(images.begin(), images.end(), StrLessNoCase);
    images.insert(images.begin(), ""s);
    Combo<T>(obj, label, images, [&](const T* obj) { return max(0, FindIndexOf(images, getter(obj))); }, [&](T* obj, int v) { setter(obj, images[v]); });
 }
@@ -389,8 +388,7 @@ template <class T> inline void PropertyPane::MaterialCombo(T* obj, const string&
    std::vector<string> materials(m_table->m_materials.size());
    const std::function<string(Material*)> map = [](const Material* material) { return material->m_name; };
    std::ranges::transform(m_table->m_materials.begin(), m_table->m_materials.end(), materials.begin(), map);
-   std::sort(materials.begin(), materials.end(), [](const std::string& a, const std::string& b)
-      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   std::sort(materials.begin(), materials.end(), StrLessNoCase);
    materials.insert(materials.begin(), ""s);
    Combo<T>(obj, label, materials, [&](const T* obj) { return max(0, FindIndexOf(materials, getter(obj))); }, [&](T* obj, int v) { setter(obj, materials[v]); });
 }
@@ -401,8 +399,7 @@ template <class T> inline void PropertyPane::SurfaceCombo(T* obj, const string& 
    for (const IEditable* pe : m_table->GetParts())
       if (pe->GetItemType() == ItemTypeEnum::eItemSurface || pe->GetItemType() == ItemTypeEnum::eItemRamp || pe->GetItemType() == ItemTypeEnum::eItemFlasher)
          surfaces.push_back(pe->GetName());
-   std::sort(surfaces.begin(), surfaces.end(), [](const std::string& a, const std::string& b)
-      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   std::sort(surfaces.begin(), surfaces.end(), StrLessNoCase);
    surfaces.insert(surfaces.begin(), ""s);
    Combo<T>(obj, label, surfaces, [&](const T* obj) { return max(0, FindIndexOf(surfaces, getter(obj))); }, [&](T* obj, int v) { setter(obj, surfaces[v]); });
 }
@@ -413,8 +410,7 @@ template <class T> inline void PropertyPane::LightmapCombo(T* obj, const string&
    for (const IEditable* pe : m_table->GetParts())
       if (pe->GetItemType() == ItemTypeEnum::eItemLight)
          lightmaps.push_back(pe->GetName());
-   std::sort(lightmaps.begin(), lightmaps.end(), [](const std::string& a, const std::string& b)
-      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   std::sort(lightmaps.begin(), lightmaps.end(), StrLessNoCase);
    lightmaps.insert(lightmaps.begin(), ""s);
    Combo<T>(obj, label, lightmaps, [&](const T* obj) { return max(0, FindIndexOf(lightmaps, getter(obj))); }, [&](T* obj, int v) { setter(obj, lightmaps[v]); });
 }
@@ -425,8 +421,7 @@ inline void PropertyPane::RenderProbeCombo(T* obj, const string& label, const st
    std::vector<string> renderprobes;
    for (const RenderProbe* probe : m_table->m_vrenderprobe)
       renderprobes.push_back(probe->GetName());
-   std::sort(renderprobes.begin(), renderprobes.end(), [](const std::string& a, const std::string& b)
-      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   std::sort(renderprobes.begin(), renderprobes.end(), StrLessNoCase);
    renderprobes.insert(renderprobes.begin(), ""s);
    Combo<T>(obj, label, renderprobes, [&](const T* obj) { return max(0, FindIndexOf(renderprobes, getter(obj))); }, [&](T* obj, int v) { setter(obj, renderprobes[v]); });
 }
@@ -435,9 +430,8 @@ template <class T> void PropertyPane::CollectionCombo(T* obj, const string& labe
 {
    std::vector<string> collections;
    for (auto pcol : m_table->GetCollections())
-      collections.push_back(MakeString(pcol->m_wzName));
-   std::sort(collections.begin(), collections.end(), [](const std::string& a, const std::string& b)
-      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+      collections.push_back(pcol->m_name);
+   std::sort(collections.begin(), collections.end(), StrLessNoCase);
    collections.insert(collections.begin(), ""s);
    Combo<T>(obj, label, collections, [&](const T* obj) { return max(0, FindIndexOf(collections, getter(obj))); }, [&](T* obj, int v) { setter(obj, collections[v]); });
 }
@@ -447,8 +441,7 @@ template <class T> void PropertyPane::SoundCombo(T* obj, const string& label, co
    std::vector<string> sounds;
    for (const VPX::Sound* sound : m_table->m_vsound)
       sounds.push_back(sound->GetName());
-   std::sort(sounds.begin(), sounds.end(), [](const std::string& a, const std::string& b)
-      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   std::sort(sounds.begin(), sounds.end(), StrLessNoCase);
    sounds.insert(sounds.begin(), ""s);
    Combo<T>(obj, label, sounds, [&](const T* obj) { return max(0, FindIndexOf(sounds, getter(obj))); }, [&](T* obj, int v) { setter(obj, sounds[v]); });
 }

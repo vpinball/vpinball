@@ -139,9 +139,9 @@ TEST_CASE("Audio player")
       AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
 
       const std::filesystem::path musicFile = GetTestTmpDir() / "test-music.wav";
-      write_file(musicFile.string(), MakeSineWav(0.5f), true);
+      write_file(musicFile, MakeSineWav(0.5f), true);
 
-      CHECK(player.PlayMusic(musicFile.string()));
+      CHECK(player.PlayMusic(musicFile));
       CHECK(player.GetMusicPosition() >= 0.f);
       player.PauseMusic();
       player.UnpauseMusic();

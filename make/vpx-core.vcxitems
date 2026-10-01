@@ -35,6 +35,10 @@
     <IntDir>$(SolutionDir)..\obj\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
+    <ClCompile>
+      <!-- Log messages are UTF-8 like all narrow strings, must be the same for all sources using plog -->
+      <PreprocessorDefinitions>PLOG_CHAR_IS_UTF8=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
     <Midl>
       <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
       <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>

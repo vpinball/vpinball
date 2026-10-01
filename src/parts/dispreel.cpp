@@ -394,7 +394,7 @@ void DispReel::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(TRNS), m_d.m_transparent);
    writer.WriteString(FID(IMAG), m_d.m_szImage);
    writer.WriteString(FID(SOUN), m_d.m_szSound);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteFloat(FID(WDTH), m_d.m_width);
    writer.WriteFloat(FID(HIGH), m_d.m_height);
    writer.WriteFloat(FID(RCNT), (float)m_d.m_reelcount);
@@ -425,7 +425,7 @@ void DispReel::Load(IObjectReader& reader)
          case FID(CLRB): m_d.m_backcolor = reader.AsInt(); break;
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(TRNS): m_d.m_transparent = reader.AsBool(); break;
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
          case FID(RCNT):

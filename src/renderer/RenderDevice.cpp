@@ -136,7 +136,7 @@ void RenderDevice::OnScreenshotCaptured(const char* _filePath, uint32_t _width, 
       // The screenshot state is concurrently written by the logic thread in CaptureScreenshot
       std::lock_guard lock(m_screenshotMutex);
 
-      const std::filesystem::path path(_filePath);
+      const std::filesystem::path path = PathFromUTF8(_filePath); // Screenshot requests pass the file name as UTF-8
       int index = -1;
       for (int i = 0; i < (int)m_screenshotFilename.size(); i++)
          if (m_screenshotFilename[i] == path)
@@ -190,7 +190,7 @@ void RenderDevice::OnScreenshotCaptured(const char* _filePath, uint32_t _width, 
          {
             if (_yflip)
                tex->FlipY();
-            success = tex->Save(_filePath);
+            success = tex->Save(path);
          }
       }
       m_screenshotSuccess &= success;
@@ -600,7 +600,7 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
                         if (m_screenshotWindow[i] == m_outputWnd[0])
                            RequestVRScreenshot(vrRenderTarget, m_screenshotFilename[i]);
                         else if (RenderTarget* const bb = m_screenshotWindow[i]->GetBackBuffer(); bb)
-                           bgfx::requestScreenShot(bb->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+                           bgfx::requestScreenShot(bb->GetCoreFrameBuffer(), PathToUTF8(m_screenshotFilename[i]).c_str()); // Passed back as is to OnScreenshotCaptured
                      }
                   }
                }
@@ -666,7 +666,7 @@ void RenderDevice::ProcessVRScreenshot()
       return;
    const std::filesystem::path filename = m_vrScreenshotFilename;
    m_vrScreenshotFilename.clear();
-   const string path = filename.string();
+   const string path = PathToUTF8(filename);
    OnScreenshotCaptured(path.c_str(), m_vrScreenshotWidth, m_vrScreenshotHeight, m_vrScreenshotWidth * 4, bgfx::TextureFormat::RGBA8, m_vrScreenshotData.data(),
       static_cast<uint32_t>(m_vrScreenshotData.size()), false);
 }
@@ -1017,13 +1017,13 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
             m_screenshotFrameDelay--;
             if (m_screenshotFrameDelay == 0)
                for (size_t i = 0; i < m_screenshotWindow.size(); i++)
-                  bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+                  bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), PathToUTF8(m_screenshotFilename[i]).c_str());
             else if (m_screenshotFrameDelay < -60)
             {
                // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
                PLOGE << "Screenshot capture timed out. Requesting it again";
                for (size_t i = 0; i < m_screenshotWindow.size(); i++)
-                  bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+                  bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), PathToUTF8(m_screenshotFilename[i]).c_str());
             }
          }
       }

@@ -104,7 +104,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Rubber>(
          m_part, "Friction"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_friction; }, //
-         [](Rubber* rubber, float v) { rubber->m_d.m_friction = v; }, PropertyPane::Unit::None, 2);
+         [](Rubber* rubber, float v) { rubber->m_d.m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 2);
       props.InputFloat<Rubber>(
          m_part, "Scatter Angle"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_scatter; }, //

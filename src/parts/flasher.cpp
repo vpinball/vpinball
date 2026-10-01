@@ -206,7 +206,7 @@ void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(COLR), m_d.m_color);
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteString(FID(IMAG), m_d.m_szImageA);
    writer.WriteString(FID(IMAB), m_d.m_szImageB);
    writer.WriteInt(FID(FALP), m_d.m_alpha);
@@ -259,7 +259,7 @@ void Flasher::Load(IObjectReader& reader)
          case FID(IMAB): m_d.m_szImageB = reader.AsString(); break;
          case FID(FALP): m_d.m_alpha = max(0, reader.AsInt()); break;
          case FID(MOVA): m_d.m_modulate_vs_add = reader.AsFloat(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(FVIS): m_d.m_isVisible = reader.AsBool(); break;
          case FID(ADDB): m_d.m_addBlend = clamp(reader.AsInt(), (int)FlasherData::AB_NONE, (int)FlasherData::AB_ABSORB); break;
          case FID(IDMD):

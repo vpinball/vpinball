@@ -351,7 +351,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 
 void Flipper::ExportMesh(ObjLoader& loader)
 {
-   const string name = MakeString(m_wzName);
+   const string& name = m_name;
 
    Matrix3D matTrafo = Matrix3D::MatrixIdentity();
    matTrafo._41 = m_d.m_Center.x;
@@ -664,7 +664,7 @@ void Flipper::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(TMIN), m_timerInterval);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
    writer.WriteInt(FID(RTHK), (int)m_d.m_rubberthickness); //!! deprecated, remove
    writer.WriteFloat(FID(RTHF), m_d.m_rubberthickness);
@@ -714,7 +714,7 @@ void Flipper::Load(IObjectReader& reader)
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
          case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
          case FID(RUMA): m_d.m_szRubberMaterial = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(RTHK): //!! deprecated, remove
          {
             int rt;
@@ -1115,6 +1115,7 @@ STDMETHODIMP Flipper::get_Friction(float *pVal)
 
 STDMETHODIMP Flipper::put_Friction(float newVal)
 {
+   newVal = max(newVal, 0.f); // Friction can not be negative, but may exceed 1
    if (m_phitflipper)
       m_phitflipper->SetFriction(newVal);
    else

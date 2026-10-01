@@ -259,9 +259,8 @@ void Light::RenderSetup(Renderer *renderer)
    m_iblinkframe = 0;
 
    m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const wstring wSurface = MakeWString(m_d.m_szSurface); 
-   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(wSurface);
-   m_surfaceTexture = m_ptable->GetSurfaceImage(wSurface);
+   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
+   m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
 
    m_surfaceHeight = m_initSurfaceHeight;
 
@@ -347,7 +346,7 @@ void Light::RenderSetup(Renderer *renderer)
 
    if (vtri.empty())
    {
-      ShowError(MakeString(m_wzName) + " has an invalid shape! It can not be rendered!");
+      ShowError(m_name + " has an invalid shape! It can not be rendered!");
       return;
    }
 
@@ -757,7 +756,7 @@ void Light::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(BWTH), m_d.m_intensity);
    writer.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteBool(FID(BGLS), m_desktopBackdrop);
    writer.WriteFloat(FID(LIDB), m_d.m_depthBias);
    writer.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
@@ -838,7 +837,7 @@ void Light::Load(IObjectReader& reader)
          case FID(BWTH): m_d.m_intensity = reader.AsFloat(); break;
          case FID(TRMS): m_d.m_transmissionScale = reader.AsFloat(); break;
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
          case FID(LIDB): m_d.m_depthBias = reader.AsFloat(); break;
          case FID(FASP): m_d.m_fadeSpeedUp = reader.AsFloat(); break;

@@ -15,11 +15,11 @@ Collection::Collection()
 
 void Collection::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    for (const IEditable *const part : m_parts)
    {
       const IScriptable * const piscript = part->GetIScriptable();
-      writer.WriteWideString(FID(ITEM), piscript->m_wzName);
+      writer.WriteWideString(FID(ITEM), MakeWString(piscript->m_name));
    }
    writer.WriteBool(FID(EVNT), m_fireEvents);
    writer.WriteBool(FID(SSNG), m_stopSingleEvents);
@@ -36,14 +36,12 @@ void Collection::Load(IObjectReader& reader)
          {
          case FID(NAME):
             //!! workaround: due to a bug in earlier versions, it can happen that the string written was one char too long
-            m_wzName = reader.AsWideString();
-            if (m_wzName.length() >= MAXNAMEBUFFER)
-               m_wzName.erase(MAXNAMEBUFFER - 1);
+            m_name = TruncateToUTF16Length(MakeString(reader.AsWideString()), MAXNAMEBUFFER - 1);
             break;
          case FID(EVNT): m_fireEvents = reader.AsBool(); break;
          case FID(SSNG): m_stopSingleEvents = reader.AsBool(); break;
          case FID(GREL): m_groupElements = reader.AsBool(); break;
-         case FID(ITEM): m_tmp_isel_name.push_back(reader.AsWideString()); break;
+         case FID(ITEM): m_tmp_isel_name.push_back(MakeString(reader.AsWideString())); break;
          }
          return true;
       });
@@ -51,13 +49,13 @@ void Collection::Load(IObjectReader& reader)
 
 HRESULT Collection::InitPostLoad(const PinTable *const pt)
 {
-   for (const wstring& tmp_isel_name : m_tmp_isel_name)
+   for (const string& tmp_isel_name : m_tmp_isel_name)
    {
       for (IEditable* editable : pt->GetParts())
       {
          if (IScriptable *const piscript = editable->GetIScriptable(); piscript) // skip decals
          {
-            if (piscript->m_wzName == tmp_isel_name)
+            if (StrCompareNoCase(piscript->m_name, tmp_isel_name))
             {
                editable->m_vCollection.push_back(this);
                editable->m_viCollection.push_back((int)m_parts.size());

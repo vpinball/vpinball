@@ -112,7 +112,7 @@ void SearchSelectDialog::Update()
       lv.iItem = idx;
       lv.iSubItem = 0;
       lv.lParam = (LPARAM)pcol;
-      string name = MakeString(pcol->m_wzName);
+      string name = pcol->m_name;
       lv.pszText = name.data();
       ListView_InsertItem(m_hElementList, &lv);
       ListView_SetItemText_Safe(m_hElementList, idx, 1, "Collection");

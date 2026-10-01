@@ -292,8 +292,8 @@ void PinTableWnd::ExportBlueprint()
    ofn.hwndOwner = m_vpxEditor->GetHwnd();
    ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
    char szBlueprintFileName[MAXSTRING];
-   strncpy_s(szBlueprintFileName, std::size(szBlueprintFileName), m_table->m_filename.string().c_str());
-   const size_t idx = m_table->m_filename.string().find_last_of('.');
+   strncpy_s(szBlueprintFileName, std::size(szBlueprintFileName), PathToString(m_table->m_filename).c_str());
+   const size_t idx = PathToString(m_table->m_filename).find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
       szBlueprintFileName[idx] = '\0';
    ofn.lpstrFile = szBlueprintFileName;
@@ -422,7 +422,7 @@ void PinTableWnd::ImportBackdropPOV()
       return;
    const std::filesystem::path file = fileNames[0];
    if (file.has_parent_path())
-      g_settingsService.GetAppSettings().SetRecentDir_POVDir(file.parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_POVDir(PathToString(file.parent_path()), false);
    m_table->ImportBackdropPOV(file, false);
 }
 
@@ -435,8 +435,8 @@ void PinTableWnd::ExportBackdropPOV()
    // TEXT
    ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
    char szFileName[MAXSTRING];
-   strncpy_s(szFileName, std::size(szFileName), m_table->m_filename.string().c_str());
-   const size_t idx = m_table->m_filename.string().find_last_of('.');
+   strncpy_s(szFileName, std::size(szFileName), PathToString(m_table->m_filename).c_str());
+   const size_t idx = PathToString(m_table->m_filename).find_last_of('.');
    if (idx != string::npos && idx < std::size(szFileName))
       szFileName[idx] = '\0';
    ofn.lpstrFile = szFileName;
@@ -486,8 +486,8 @@ void PinTableWnd::ExportPhysics()
    }
 
    char szFileName[MAXSTRING];
-   strncpy_s(szFileName, std::size(szFileName), m_table->m_filename.string().c_str());
-   const size_t idx = m_table->m_filename.string().find_last_of('.');
+   strncpy_s(szFileName, std::size(szFileName), PathToString(m_table->m_filename).c_str());
+   const size_t idx = PathToString(m_table->m_filename).find_last_of('.');
    if (idx != string::npos && idx < std::size(szFileName))
       szFileName[idx] = '\0';
 
@@ -726,7 +726,7 @@ POINT PinTableWnd::GetScreenPoint() const
 void PinTableWnd::OnInitialUpdate()
 {
    BeginAutoSaveCounter();
-   SetWindowText(m_table->m_filename.string().c_str());
+   SetWindowText(PathToString(m_table->m_filename).c_str());
    SetCaption(m_table->m_title);
    m_vpxEditor->SetEnableMenuItems();
 }
@@ -1389,12 +1389,12 @@ void PinTableWnd::Paste(const bool atLocation, const int x, const int y)
             peditNew->Load(reader);
             peditNew->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
             //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet
-            if (!m_table->IsNameUnique(peditNew->GetWName()))
+            if (!m_table->IsNameUnique(peditNew->GetName()))
             {
                //first remove the existing suffix
-               const wstring input = peditNew->GetWName();
+               const string input = peditNew->GetName();
                size_t lastNonDigit = input.length();
-               while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
+               while (lastNonDigit > 0 && input[lastNonDigit - 1] >= '0' && input[lastNonDigit - 1] <= '9')
                   --lastNonDigit;
                peditNew->SetName(m_table->GetUniqueName(input.substr(0, lastNonDigit)));
             }
@@ -1663,7 +1663,7 @@ void PinTableWnd::UseTool(int x, int y, int tool)
    if (pie)
    {
       if (auto scriptable = pie->GetIScriptable(); scriptable)
-         m_table->GetUniqueName(type, scriptable->m_wzName);
+         m_table->GetUniqueName(type, scriptable->m_name);
       pie->m_desktopBackdrop = m_vpxEditor->m_desktopBackdropView;
       m_table->AddPart(pie);
       pie->SetPartGroup(m_vpxEditor->GetLayersListDialog()->GetSelectedPartGroup());
@@ -1897,7 +1897,7 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
       UINT flags = MF_POPUP | MF_UNCHECKED;
       if ((maxItems - i) % 32 == 0) // add new column each 32 entries
          flags |= MF_MENUBREAK;
-      colSubMenu.AppendMenu(flags, 0x40000 + i, MakeString(m_table->GetCollections()[i]->get_Name()).c_str());
+      colSubMenu.AppendMenu(flags, 0x40000 + i, m_table->GetCollections()[i]->get_Name().c_str());
    }
    if (m_vmultisel.size() == 1)
    {
@@ -1933,7 +1933,7 @@ void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelectio
    CComObject<Collection>::CreateInstance(&pcol);
    pcol->AddRef();
 
-   pcol->m_wzName = m_table->GetUniqueName(LocalStringW(IDS_COLLECTION).m_buffer);
+   pcol->m_name = m_table->GetUniqueName(MakeString(LocalStringW(IDS_COLLECTION).m_buffer));
 
    if (fromSelection && !MultiSelIsEmpty())
    {
@@ -1966,7 +1966,7 @@ int PinTableWnd::AddListCollection(HWND hwndListView, CComObject<Collection> *pc
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   string name = MakeString(pcol->m_wzName);
+   string name = pcol->m_name;
    lvitem.pszText = name.data();
    lvitem.lParam = (size_t)pcol;
 
@@ -2017,7 +2017,7 @@ int PinTableWnd::AddListBinary(HWND hwndListView, PinBinary *ppb)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText_Safe(hwndListView, index, 1, ppb->m_path.string().c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 1, PathToString(ppb->m_path).c_str());
 
    return index;
 }

@@ -459,7 +459,7 @@ void HitTarget::GetEditorWireframe(vector<Vertex2D> &edges) const
 
 void HitTarget::ExportMesh(ObjLoader& loader)
 {
-   const string name = MakeString(m_wzName);
+   const string& name = m_name;
 
    SetMeshType(m_d.m_targetType);
 
@@ -716,7 +716,7 @@ void HitTarget::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(ROTZ), m_d.m_rotZ);
    writer.WriteString(FID(IMAG), m_d.m_szImage);
    writer.WriteInt(FID(TRTY), m_d.m_targetType);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
    writer.WriteBool(FID(TVIS), m_d.m_visible);
    writer.WriteBool(FID(LEMO), m_d.m_legacy);
@@ -756,7 +756,7 @@ void HitTarget::Load(IObjectReader& reader)
          case FID(ROTZ): m_d.m_rotZ = reader.AsFloat(); break;
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
          case FID(TRTY): m_d.m_targetType = static_cast<TargetType>(reader.AsInt()); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
          case FID(TVIS): m_d.m_visible = reader.AsBool(); break;
          case FID(LEMO): m_d.m_legacy = reader.AsBool(); break;
@@ -989,7 +989,7 @@ STDMETHODIMP HitTarget::get_Friction(float *pVal)
 
 STDMETHODIMP HitTarget::put_Friction(float newVal)
 {
-   m_d.m_friction = saturate(newVal);
+   m_d.m_friction = max(newVal, 0.f); // Friction can not be negative, but may exceed 1
    return S_OK;
 }
 

@@ -19,21 +19,7 @@ namespace VPX::EditorUI
 template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T> &list, const std::function<string(T)> &map)
 {
    std::vector<T> sorted(list.begin(), list.end());
-   std::ranges::sort(sorted,
-      [map](const T &a, const T &b) -> bool
-      {
-         const string str1 = map(a), str2 = map(b);
-         for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end() && c2 != str2.end(); ++c1, ++c2)
-         {
-            const auto cl1 = cLower(*c1);
-            const auto cl2 = cLower(*c2);
-            if (cl1 > cl2)
-               return false;
-            if (cl1 < cl2)
-               return true;
-         }
-         return str1.size() > str2.size();
-      });
+   std::ranges::sort(sorted, [&map](const T &a, const T &b) { return StrLessNoCase(map(a), map(b)); });
    return sorted;
 }
 

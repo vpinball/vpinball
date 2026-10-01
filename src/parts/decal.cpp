@@ -27,7 +27,7 @@ Decal *Decal::CopyForPlay() const
 
 HRESULT Decal::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_wzName = L"Decal"sv;
+   m_name = "Decal"s;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -215,7 +215,7 @@ void Decal::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(ROTA), m_d.m_rotation);
    writer.WriteString(FID(IMAG), m_d.m_szImage);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteString(FID(TEXT), m_d.m_text);
    writer.WriteInt(FID(TYPE), m_d.m_decaltype);
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
@@ -242,7 +242,7 @@ void Decal::Load(IObjectReader& reader)
          case FID(ROTA): m_d.m_rotation = reader.AsFloat(); break;
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(TEXT): m_d.m_text = reader.AsString(); break;
          case FID(TYPE): m_d.m_decaltype = static_cast<DecalType>(reader.AsInt()); break;
          case FID(COLR): m_d.m_color = reader.AsInt(); break;

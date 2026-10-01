@@ -16,7 +16,7 @@ TEST_CASE("DispReel part")
    {
       DispReel* const reel = DispReel::COMCreate();
       reel->Init(100.f, 200.f, false);
-      reel->SetName(L"Reel1");
+      reel->SetName("Reel1");
       reel->m_d.m_v2 = Vertex2D(300.f, 400.f);
       reel->m_d.m_imagesPerGridRow = 10;
       reel->m_d.m_reelcount = 5;
@@ -41,7 +41,7 @@ TEST_CASE("DispReel part")
       DispReel* const copy = DispReel::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Reel1");
+      CHECK(copy->GetName() == "Reel1");
       CHECK(copy->m_d.m_v1.x == 100.f);
       CHECK(copy->m_d.m_v1.y == 200.f);
       CHECK(copy->m_d.m_v2.x == 300.f);
@@ -71,7 +71,7 @@ TEST_CASE("DispReel part")
    {
       DispReel* const reel = DispReel::COMCreate();
       reel->Init(10.f, 20.f, false);
-      reel->SetName(L"Reel2");
+      reel->SetName("Reel2");
       reel->m_d.m_reelcount = 3;
       table->AddPart(reel);
       reel->Release();
@@ -85,7 +85,7 @@ TEST_CASE("DispReel part")
    {
       DispReel* const reel = DispReel::COMCreate();
       reel->Init(10.f, 20.f, false);
-      reel->SetName(L"Reel3");
+      reel->SetName("Reel3");
       table->AddPart(reel);
       reel->Release();
 

@@ -16,7 +16,7 @@ TEST_CASE("Decal part")
    {
       Decal* const decal = Decal::COMCreate();
       decal->Init(100.f, 200.f, false);
-      decal->SetName(L"Decal1");
+      decal->SetName("Decal1");
       decal->m_d.m_width = 300.f;
       decal->m_d.m_height = 50.f;
       decal->m_d.m_rotation = 45.f;
@@ -41,7 +41,7 @@ TEST_CASE("Decal part")
       Decal* const copy = Decal::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Decal1");
+      CHECK(copy->GetName() == "Decal1");
       CHECK(copy->m_d.m_vCenter.x == 100.f);
       CHECK(copy->m_d.m_vCenter.y == 200.f);
       CHECK(copy->m_d.m_width == 300.f);
@@ -70,7 +70,7 @@ TEST_CASE("Decal part")
    {
       Decal* const decal = Decal::COMCreate();
       decal->Init(10.f, 20.f, false);
-      decal->SetName(L"Decal2");
+      decal->SetName("Decal2");
       decal->m_d.m_text = "TEST";
       decal->m_d.m_decaltype = DecalText;
       table->AddPart(decal);
@@ -85,7 +85,7 @@ TEST_CASE("Decal part")
    {
       Decal* const decal = Decal::COMCreate();
       decal->Init(10.f, 20.f, false);
-      decal->SetName(L"Decal3");
+      decal->SetName("Decal3");
       table->AddPart(decal);
       decal->Release();
 

@@ -20,7 +20,7 @@ bool PinBinary::WriteToFile(const std::filesystem::path& filename) const
 void PinBinary::Save(IObjectWriter& writer) const
 {
    writer.WriteString(FID(NAME), m_name);
-   writer.WriteString(FID(PATH), m_path.string());
+   writer.WriteString(FID(PATH), PathToUTF8(m_path));
    writer.WriteInt(FID(SIZE), static_cast<int>(m_buffer.size()));
    writer.WriteRaw(FID(DATA), m_buffer.data(), static_cast<int>(m_buffer.size()));
    writer.EndObject();
@@ -34,7 +34,7 @@ void PinBinary::Load(IObjectReader& reader)
          switch (tag)
          {
          case FID(NAME): m_name = reader.AsString(); break;
-         case FID(PATH): m_path = PathFromString(reader.AsString()); break;
+         case FID(PATH): m_path = PathFromUTF8(reader.AsString()); break;
          case FID(SIZE): m_buffer.resize(reader.AsInt()); break;
          // Size must come before data, otherwise our structure won't be allocated
          case FID(DATA): reader.AsRaw(m_buffer.data(), static_cast<int>(m_buffer.size())); break;
@@ -45,10 +45,10 @@ void PinBinary::Load(IObjectReader& reader)
 
 #ifndef __STANDALONE__
 int CALLBACK EnumFontFamExProc(
-   ENUMLOGFONTEX *lpelfe,    // logical-font data
-   NEWTEXTMETRICEX *lpntme,  // physical-font data
-   DWORD FontType,           // type of font
-   LPARAM lParam             // application-defined data
+   ENUMLOGFONTEX *lpelfe,   // logical-font data
+   NEWTEXTMETRICEX *lpntme, // physical-font data
+   DWORD FontType,          // type of font
+   LPARAM lParam            // application-defined data
    )
 {
    return 1;

@@ -16,9 +16,9 @@ TEST_CASE("LightSeq part")
    {
       LightSeq* const seq = LightSeq::COMCreate();
       seq->Init(100.f, 200.f, false);
-      seq->SetName(L"LightSeq1");
+      seq->SetName("LightSeq1");
       seq->m_d.m_vCenter = Vertex2D(150.f, 250.f);
-      seq->m_d.m_wzCollection = L"MyLights";
+      seq->m_d.m_collection = "MyLights";
       seq->m_d.m_updateinterval = 40;
       seq->m_timerEnabled = true;
       seq->m_timerInterval = 99;
@@ -30,12 +30,12 @@ TEST_CASE("LightSeq part")
       LightSeq* const copy = LightSeq::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"LightSeq1");
+      CHECK(copy->GetName() == "LightSeq1");
       CHECK(copy->m_d.m_v.x == 100.f);
       CHECK(copy->m_d.m_v.y == 200.f);
       CHECK(copy->m_d.m_vCenter.x == 150.f);
       CHECK(copy->m_d.m_vCenter.y == 250.f);
-      CHECK(copy->m_d.m_wzCollection == L"MyLights");
+      CHECK(copy->m_d.m_collection == "MyLights");
       CHECK(copy->m_d.m_updateinterval == 40);
       CHECK(copy->m_timerEnabled == true);
       CHECK(copy->m_timerInterval == 99);
@@ -49,8 +49,8 @@ TEST_CASE("LightSeq part")
    {
       LightSeq* const seq = LightSeq::COMCreate();
       seq->Init(10.f, 20.f, false);
-      seq->SetName(L"LightSeq2");
-      seq->m_d.m_wzCollection = L"Col";
+      seq->SetName("LightSeq2");
+      seq->m_d.m_collection = "Col";
       table->AddPart(seq);
       seq->Release();
 
@@ -63,7 +63,7 @@ TEST_CASE("LightSeq part")
    {
       LightSeq* const seq = LightSeq::COMCreate();
       seq->Init(10.f, 20.f, false);
-      seq->SetName(L"LightSeq3");
+      seq->SetName("LightSeq3");
       table->AddPart(seq);
       seq->Release();
 
@@ -81,7 +81,7 @@ TEST_CASE("LightSeq part")
 
       LightSeq* const seq = LightSeq::COMCreate();
       seq->Init(10.f, 20.f, false);
-      seq->SetName(L"LightSeq4");
+      seq->SetName("LightSeq4");
       table->AddPart(seq);
       seq->Release();
 

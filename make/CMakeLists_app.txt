@@ -77,6 +77,7 @@ if(PLATFORM STREQUAL "windows")
 
    add_executable(vpinball WIN32
       ${VPX_WINDOWS_SOURCES}
+      src/ui/win/res/utf8.manifest # UTF-8 process code page, merged into the application manifest
    )
 
    target_precompile_headers(vpinball PUBLIC
@@ -281,8 +282,13 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
    )
 
+   # UTF-8 process code page: MinGW's linker does not handle manifests, so the manifest is embedded as a resource
+   enable_language(RC)
+   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/utf8_manifest.rc" "1 24 \"${CMAKE_SOURCE_DIR}/src/ui/win/res/utf8.manifest\"\n")
+
    add_executable(vpinball
       ${VPX_STANDALONE_SOURCES}
+      "${CMAKE_CURRENT_BINARY_DIR}/utf8_manifest.rc"
 
       src/utils/StackTrace.cpp
       src/utils/StackTrace.h

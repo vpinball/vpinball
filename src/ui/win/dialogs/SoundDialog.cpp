@@ -171,7 +171,7 @@ int SoundDialog::AddListSound(const VPX::Sound *const pps)
 
    const int index = ListView_InsertItem(hSoundList, &lvitem);
 
-   ListView_SetItemText_Safe(hSoundList, index, 1, pps->GetImportPath().string().c_str());
+   ListView_SetItemText_Safe(hSoundList, index, 1, PathToString(pps->GetImportPath()).c_str());
 
    const string pan = f2sz(dequantizeSignedPercent(pps->GetPan()));
    ListView_SetItemText_Safe(hSoundList, index, 3, pan.c_str());
@@ -361,7 +361,7 @@ void SoundDialog::Import()
    vector<string> szFileName;
    if (m_tableEditor->m_vpxEditor->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3/.flac)\0*.wav;*.ogg;*.mp3;*.flac\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
-      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(std::filesystem::path(szFileName[0]).parent_path().string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_SoundDir(PathToString(std::filesystem::path(szFileName[0]).parent_path()), false);
       for (const string &file : szFileName)
          if (VPX::Sound* sound = pt->ImportSound(file))
             ListView_SetItemState(hSoundList, AddListSound(sound), LVIS_SELECTED, LVIS_SELECTED);
@@ -398,7 +398,7 @@ void SoundDialog::ReImport()
                pt->SetNonUndoableDirty(eSaveDirty);
             }
             else
-               MessageBox(importPath.string().c_str(), "FILE NOT FOUND!", MB_OK);
+               MessageBox(PathToString(importPath).c_str(), "FILE NOT FOUND!", MB_OK);
 
             sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
          }
@@ -469,11 +469,11 @@ void SoundDialog::Export()
 
          char filename[MAXSTRING];
          if (!renameOnExport)
-            strncpy_s(filename, std::size(filename), pps->GetImportPath().filename().string().c_str());
+            strncpy_s(filename, std::size(filename), PathToString(pps->GetImportPath().filename()).c_str());
          else
          {
             const auto ext = pps->GetImportPath().extension();
-            const string filename2 = pps->GetName() + (ext.empty() ? ".ogg"s : ext.string());
+            const string filename2 = pps->GetName() + (ext.empty() ? ".ogg"s : PathToString(ext));
             strncpy_s(filename, std::size(filename), filename2.c_str());
          }
          ofn.lpstrFile = filename;
@@ -501,12 +501,12 @@ void SoundDialog::Export()
                   filen = pathName;
                   if (!renameOnExport)
                   {
-                     filen += pps->GetImportPath().filename().string();
+                     filen += PathToString(pps->GetImportPath().filename());
                   }
                   else
                   {
                      filen += pps->GetName();
-                     filen += pps->GetImportPath().extension().string();
+                     filen += PathToString(pps->GetImportPath().extension());
                   }
                }
 

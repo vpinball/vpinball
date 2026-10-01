@@ -62,10 +62,18 @@ static void NormalizeNormals()
 }
 #endif
 
-bool ObjLoader::Load(const string& filename, const MeshUnits units)
+// fscanf_s takes the sizes of string buffers, but standalone builds map it to fscanf (see main.h) which does not:
+// the widths in the formats bound the reads there
+#ifdef __STANDALONE__
+#define SCANF_BUFFER_SIZE(buffer)
+#else
+#define SCANF_BUFFER_SIZE(buffer) , static_cast<unsigned int>(std::size(buffer))
+#endif
+
+bool ObjLoader::Load(const std::filesystem::path& filename, const MeshUnits units)
 {
-   FILE* f;
-   if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
+   FILE* const f = open_file(filename, "r");
+   if (!f)
       return false;
 
    // Convert from the file's convention to VPX's (left-handed, X to the right, Y toward the player, Z up, in VP units)
@@ -97,11 +105,7 @@ bool ObjLoader::Load(const string& filename, const MeshUnits units)
    while (true)
    {
       char lineHeader[256];
-      const int res = fscanf_s(f, "\n%s", lineHeader
-#ifndef __STANDALONE__
-      ,static_cast<unsigned int>(std::size(lineHeader))
-#endif
-      );
+      const int res = fscanf_s(f, "\n%255s", lineHeader SCANF_BUFFER_SIZE(lineHeader));
       if (res == EOF)
       {
          fclose(f);
@@ -292,7 +296,7 @@ Error:
    return false;
 }
 
-void ObjLoader::Save(const string& filename, const string& description, const Mesh& mesh, const MeshUnits units)
+bool ObjLoader::Save(const std::filesystem::path& filename, const string& description, const Mesh& mesh, const MeshUnits units)
 {
    /*
    f = fopen(filename.c_str(), "wt");
@@ -326,7 +330,8 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
    */
    if (mesh.m_animationFrames.empty())
    {
-      ExportStart(filename);
+      if (!ExportStart(filename))
+         return false;
       fprintf_s(m_fHandle, "# Visual Pinball OBJ file\n");
       fprintf_s(m_fHandle, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices());
       WriteObjectName(description);
@@ -336,9 +341,7 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
    }
    else
    {
-      const std::size_t pos = filename.find_last_of('.');
-      assert(pos != string::npos);
-      const string name = filename.substr(0, pos);
+      const std::filesystem::path name = std::filesystem::path(filename).replace_extension();
       for (unsigned int i = 0; i < (unsigned int)mesh.m_animationFrames.size(); i++)
       {
          vector<Vertex3D_NoTex2> vertsTmp = mesh.m_vertices;
@@ -353,8 +356,9 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
             vertsTmp[t].ny = vi.ny;
             vertsTmp[t].nz = vi.nz;
          }
-         const string fname = name + '_' + std::format("{:05}", i) + ".obj";
-         ExportStart(fname);
+         const std::filesystem::path fname = std::filesystem::path(name) += std::format("_{:05}.obj", i);
+         if (!ExportStart(fname))
+            return false;
          fprintf_s(m_fHandle, "# Visual Pinball OBJ file\n");
          fprintf_s(m_fHandle, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices());
          WriteObjectName(description);
@@ -363,24 +367,27 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
          ExportEnd();
       }
    }
+   return true;
 }
 
-bool ObjLoader::ExportStart(const string& filename)
+bool ObjLoader::ExportStart(const std::filesystem::path& filename)
 {
-#ifndef __STANDALONE__
-   const string matname = filename.substr(0, filename.find_last_of('.')) + ".mtl";
-   if ((fopen_s(&m_matFile, matname.c_str(), "wt") != 0) || !m_matFile)
+   const std::filesystem::path matname = std::filesystem::path(filename).replace_extension(".mtl");
+   m_matFile = open_file(matname, "wt");
+   if (m_matFile == nullptr)
       return false;
+   m_fHandle = open_file(filename, "wt");
+   if (m_fHandle == nullptr)
+   {
+      ExportEnd();
+      std::error_code ec;
+      std::filesystem::remove(matname, ec); // No material file without its mesh
+      return false;
+   }
    fprintf_s(m_matFile, "# Visual Pinball table mat file\n");
-
-   if ((fopen_s(&m_fHandle, filename.c_str(), "wt") != 0) || !m_fHandle)
-      return false;
    m_faceIndexOffset = 0;
    fprintf_s(m_fHandle, "# Visual Pinball table OBJ file\n");
-   const size_t pos = matname.find_last_of(PATH_SEPARATOR_CHAR);
-   const string nameonly = pos != string::npos ? matname.substr(pos+1) : matname;
-   fprintf_s(m_fHandle, "mtllib %s\n", nameonly.c_str());
-#endif
+   fprintf_s(m_fHandle, "mtllib %s\n", PathToUTF8(matname.filename()).c_str()); // OBJ text is UTF-8
    return true;
 }
 
@@ -462,17 +469,16 @@ void ObjLoader::WriteFaceInfoList(const WORD* faces, const unsigned int numIndic
    }
 }
 
-bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
+bool ObjLoader::LoadMaterial(const std::filesystem::path& filename, Material* const mat)
 {
-#ifndef __STANDALONE__
-   FILE* f;
-   if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
+   FILE* const f = open_file(filename, "r");
+   if (!f)
       return false;
 
    while (true)
    {
       char lineHeader[256];
-      const int res = fscanf_s(f, "\n%s", lineHeader, static_cast<unsigned int>(std::size(lineHeader)));
+      const int res = fscanf_s(f, "\n%255s", lineHeader SCANF_BUFFER_SIZE(lineHeader));
       if (res == EOF)
       {
          fclose(f);
@@ -480,8 +486,9 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       }
       if (lineHeader == "newmtl"sv)
       {
-         char buf[MAXSTRING];
-         fscanf_s(f, "%s\n", buf, MAXSTRING);
+         char buf[256];
+         buf[0] = '\0';
+         fscanf_s(f, "%255s\n", buf SCANF_BUFFER_SIZE(buf));
          mat->m_name = buf;
       }
       else if (lineHeader == "Ns"sv)
@@ -537,7 +544,6 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       }
    }
    fclose(f);
-#endif
    return true;
 }
 
@@ -561,3 +567,5 @@ void ObjLoader::WriteMaterial(string texelName, string texelFilename, const Mate
       fprintf_s(m_matFile, "map_ka %s\n\n", texelFilename.c_str());
    }
 }
+
+#undef SCANF_BUFFER_SIZE

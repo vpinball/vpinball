@@ -436,7 +436,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                Material *const pmat = new Material(mat.bIsMetal ? Material::METAL : Material::BASIC ,mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp), dequantizeUnsigned<8>(mat.fThickness),
                   mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat, !!(mat.bOpacityActive_fEdgeAlpha & 1),
                   elasticity, elasticityFalloff, friction, scatterAngle, 0xFFFFFFFF);
-               pmat->m_name = string(mat.szName, strnlen(mat.szName, std::size(mat.szName))); // May not be null terminated in a corrupted file
+               pmat->m_name = string_from_utf8_or_cp1252(mat.szName, strnlen(mat.szName, std::size(mat.szName))); // May not be null terminated in a corrupted file
 
                pt->AddMaterial(pmat);
                AddListMaterial(m_hMaterialList, pmat);
@@ -517,7 +517,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-                  strncpy_s(mat.szName, std::size(mat.szName), pmat->m_name.c_str());
+                  strncpy_s(mat.szName, std::size(mat.szName), TruncateToUTF8Length(pmat->m_name, std::size(mat.szName) - 1).c_str()); // Do not split a UTF-8 character
 
                   fwrite(&mat, sizeof(SaveMaterial), 1, f);
                   fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);
@@ -696,7 +696,7 @@ void MaterialDialog::SaveEditedMaterial(Material& mat)
    if (mat.m_fElasticityFalloff != fv)
          pt->SetNonUndoableDirty(eSaveDirty);
    mat.m_fElasticityFalloff = fv;
-   fv = getItemText(IDC_MAT_FRICTION);
+   fv = max(getItemText(IDC_MAT_FRICTION), 0.f); // Friction can not be negative
    if (mat.m_fFriction != fv)
          pt->SetNonUndoableDirty(eSaveDirty);
    mat.m_fFriction = fv;
@@ -951,7 +951,7 @@ void MaterialDialog::OnOK()
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_fElasticityFalloff = fv;
 
-         fv = getItemText(IDC_MAT_FRICTION);
+         fv = max(getItemText(IDC_MAT_FRICTION), 0.f); // Friction can not be negative
          if (pmat->m_fFriction != fv)
             pt->SetNonUndoableDirty(eSaveDirty);
          pmat->m_fFriction = fv;

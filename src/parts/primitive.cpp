@@ -706,7 +706,7 @@ void Primitive::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
    {
-      const string name = MakeString(m_wzName);
+      const string& name = m_name;
       Vertex3D_NoTex2 *const buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
       RecalculateMatrices();
       for (size_t i = 0; i < m_mesh.NumVertices(); i++)
@@ -1191,7 +1191,7 @@ void Primitive::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(IMAG), m_d.m_szImage);
    writer.WriteString(FID(NRMA), m_d.m_szNormalMap);
    writer.WriteInt(FID(SIDS), m_d.m_Sides);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
    writer.WriteInt(FID(SCOL), m_d.m_SideColor);
    writer.WriteBool(FID(TVIS), m_d.m_visible);
@@ -1333,7 +1333,7 @@ void Primitive::Load(IObjectReader& reader)
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
          case FID(NRMA): m_d.m_szNormalMap = reader.AsString(); break;
          case FID(SIDS): m_d.m_Sides = reader.AsInt(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
          case FID(SCOL): m_d.m_SideColor = reader.AsInt(); break;
          case FID(TVIS): m_d.m_visible = reader.AsBool(); break;
@@ -1499,7 +1499,7 @@ void Primitive::Load(IObjectReader& reader)
 }
 
 bool Primitive::LoadMesh(
-   const string &filename, const MeshUnits units, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation, const bool doForsyth)
+   const std::filesystem::path &filename, const MeshUnits units, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation, const bool doForsyth)
 {
    m_mesh.Clear();
    m_d.m_use3DMesh = false;
@@ -1508,13 +1508,14 @@ bool Primitive::LoadMesh(
 
    if (importMaterial)
    {
-      std::filesystem::path szMatName = std::filesystem::path(filename).replace_extension(".mtl");
       Material *const mat = new Material();
-      if (ObjLoader::LoadMaterial(szMatName.string(), mat))
+      if (ObjLoader::LoadMaterial(std::filesystem::path(filename).replace_extension(".mtl"), mat))
       {
          GetPTable()->AddMaterial(mat);
          m_d.m_szMaterial = mat->m_name;
       }
+      else
+         delete mat;
    }
    if (!m_mesh.LoadWavefrontObj(filename, units))
       return false;
@@ -1547,7 +1548,7 @@ bool Primitive::LoadMesh(
    }
    if (importAnimation)
    {
-      if (m_mesh.LoadAnimation(filename.c_str(), units))
+      if (m_mesh.LoadAnimation(filename, units))
       {
          if (centerMesh)
          {
@@ -2112,7 +2113,7 @@ STDMETHODIMP Primitive::get_Friction(float *pVal)
 
 STDMETHODIMP Primitive::put_Friction(float newVal)
 {
-   m_d.m_friction = saturate(newVal);
+   m_d.m_friction = max(newVal, 0.f); // Friction can not be negative, but may exceed 1
    return S_OK;
 }
 

@@ -16,7 +16,7 @@ TEST_CASE("Plunger part")
    {
       Plunger* const plunger = Plunger::COMCreate();
       plunger->Init(100.f, 200.f, false);
-      plunger->SetName(L"Plunger1");
+      plunger->SetName("Plunger1");
       // plunger->m_d.m_color = ...; // TODO refactor unused property
       plunger->m_d.m_width = 30.f;
       plunger->m_d.m_height = 60.f;
@@ -53,7 +53,7 @@ TEST_CASE("Plunger part")
       Plunger* const copy = Plunger::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Plunger1");
+      CHECK(copy->GetName() == "Plunger1");
       CHECK(copy->m_d.m_v.x == 100.f);
       CHECK(copy->m_d.m_v.y == 200.f);
       CHECK(copy->m_d.m_width == 30.f);
@@ -93,7 +93,7 @@ TEST_CASE("Plunger part")
    {
       Plunger* const plunger = Plunger::COMCreate();
       plunger->Init(50.f, 60.f, false);
-      plunger->SetName(L"Plunger2");
+      plunger->SetName("Plunger2");
       plunger->m_d.m_autoPlunger = true;
       table->AddPart(plunger);
       plunger->Release();
@@ -107,7 +107,7 @@ TEST_CASE("Plunger part")
    {
       Plunger* const plunger = Plunger::COMCreate();
       plunger->Init(10.f, 20.f, false);
-      plunger->SetName(L"Plunger3");
+      plunger->SetName("Plunger3");
       table->AddPart(plunger);
       plunger->Release();
 

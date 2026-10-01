@@ -27,10 +27,8 @@ HRESULT LightSeq::Init(const float x, const float y, const bool fromMouseClick, 
 void LightSeq::SetDefaults(const bool fromMouseClick)
 {
 #define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsLightSeq_##prop() : Settings::GetDefaultPropsLightSeq_##prop##_Default()
-   string tmp;
    LinkProp(m_d.m_updateinterval, UpdateInterval);
-   LinkProp(tmp, Collection); 
-   m_d.m_wzCollection = MakeWString(tmp);
+   LinkProp(m_d.m_collection, Collection);
    LinkProp(m_d.m_vCenter.x, CenterX);
    LinkProp(m_d.m_vCenter.y, CenterY);
    LinkProp(m_timerEnabled, TimerEnabled);
@@ -42,8 +40,7 @@ void LightSeq::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsLightSeq_##prop(field, false)
    LinkProp(m_d.m_updateinterval, UpdateInterval);
-   string tmp = MakeString(m_d.m_wzCollection);
-   LinkProp(tmp, Collection);
+   LinkProp(m_d.m_collection, Collection);
    LinkProp(m_d.m_vCenter.x, CenterX);
    LinkProp(m_d.m_vCenter.y, CenterY);
    LinkProp(m_timerEnabled, TimerEnabled);
@@ -83,7 +80,7 @@ void LightSeq::RenderSetup(Renderer *renderer)
    for (auto pcol : m_ptable->GetCollections())
    {
       // is the name of this collection the one we are to use?
-      if (pcol->m_wzName == m_d.m_wzCollection)
+      if (StrCompareNoCase(pcol->m_name, m_d.m_collection))
       {
          // yep, set a pointer to this sub-collection
          m_pcollection = pcol;
@@ -277,13 +274,13 @@ STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
 void LightSeq::Save(IObjectWriter& writer, const bool saveForUndo)
 {
    writer.WriteVector2(FID(VCEN), m_d.m_v);
-   writer.WriteWideString(FID(COLC), m_d.m_wzCollection);
+   writer.WriteWideString(FID(COLC), MakeWString(m_d.m_collection));
    writer.WriteFloat(FID(CTRX), m_d.m_vCenter.x);
    writer.WriteFloat(FID(CTRY), m_d.m_vCenter.y);
    writer.WriteInt(FID(UPTM), m_d.m_updateinterval);
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteBool(FID(BGLS), m_desktopBackdrop);
    SaveSharedEditableFields(writer);
    writer.EndObject();
@@ -299,13 +296,13 @@ void LightSeq::Load(IObjectReader& reader)
          {
          case FID(PIID): reader.AsInt(); break;
          case FID(VCEN): m_d.m_v = reader.AsVector2(); break;
-         case FID(COLC): m_d.m_wzCollection = reader.AsWideString(); break;
+         case FID(COLC): m_d.m_collection = MakeString(reader.AsWideString()); break;
          case FID(CTRX): m_d.m_vCenter.x = reader.AsFloat(); break;
          case FID(CTRY): m_d.m_vCenter.y = reader.AsFloat(); break;
          case FID(UPTM): m_d.m_updateinterval = reader.AsInt(); break;
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
@@ -315,13 +312,13 @@ void LightSeq::Load(IObjectReader& reader)
 
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 {
-   *pVal = SysAllocStringLen(m_d.m_wzCollection.c_str(), static_cast<UINT>(m_d.m_wzCollection.length()));
+   *pVal = MakeWideBSTR(m_d.m_collection);
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::put_Collection(BSTR newVal)
 {
-   m_d.m_wzCollection = newVal;
+   m_d.m_collection = MakeString(newVal);
    return S_OK;
 }
 

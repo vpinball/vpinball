@@ -57,6 +57,10 @@
     <TargetName>VPinballX_BGFX64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
+    <Manifest>
+      <!-- UTF-8 process code page (see the manifest file) -->
+      <AdditionalManifestFiles>$(MSBuildThisFileDirectory)..\src\ui\win\res\utf8.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
     <PostBuildEvent>
       <Command>%40echo off
         if ".%25VPIN_DIR%25" == "." (

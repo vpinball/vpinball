@@ -564,7 +564,7 @@ public class IDLParserToCpp {
 		buffer.append("while(min <= max) {\n");
 		buffer.append("i = (min + max) / 2;\n");
 		buffer.append("if (idsNamesList[i].dispId == dispid) {\n");
-		buffer.append("wcscpy(wzName, m_wzName.c_str());\n");
+		buffer.append("wcscpy(wzName, MakeWString(m_name).c_str());\n");
 		buffer.append("wcscat(wzName, idsNamesList[i].name);\n");
 		buffer.append("LPOLESTR fnNames = (LPOLESTR)wzName;\n");
 		buffer.append("DISPID tDispid;\n");

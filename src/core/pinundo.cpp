@@ -189,7 +189,7 @@ std::any PinUndo::Undo()
    {
       IEditable *const pie = *reinterpret_cast<IEditable *const *>(pstm->Data());
       IScriptable *const scriptable = pie->GetIScriptable();
-      const wstring nameBefore = scriptable ? scriptable->m_wzName : wstring();
+      const string nameBefore = scriptable ? scriptable->m_name : string();
       pie->ClearForOverwrite();
 
       // Process the loaded PartGroup parenting to support undoing reparenting
@@ -198,21 +198,21 @@ std::any PinUndo::Undo()
       pie->Load(reader);
 
       // Load writes the name directly: apply a restored name through the table to keep its name registry (and code view) in sync
-      if (scriptable && scriptable->m_wzName != nameBefore && m_table->HasPart(pie))
+      if (scriptable && scriptable->m_name != nameBefore && m_table->HasRegisteredName(pie))
       {
-         const wstring restoredName = scriptable->m_wzName;
-         scriptable->m_wzName = nameBefore;
+         const string restoredName = scriptable->m_name;
+         scriptable->m_name = nameBefore;
          if (lowerCase(restoredName) == lowerCase(nameBefore) || m_table->IsNameUnique(restoredName))
             m_table->RenamePart(pie, restoredName);
          else
-            PLOGW << "Undo could not restore the name '" << MakeString(restoredName) << "' of '" << MakeString(nameBefore) << "' as it is now used by another part";
+            PLOGW << "Undo could not restore the name '" << restoredName << "' of '" << nameBefore << "' as it is now used by another part";
       }
       // The record holds the name of the part's group (empty when it had none, which is only valid for part groups)
       if (!pie->m_onLoadExpectedPartGroup.empty())
       {
-         const wstring groupName = pie->m_onLoadExpectedPartGroup;
+         const string groupName = pie->m_onLoadExpectedPartGroup;
          for (IEditable *const edit : m_table->GetParts())
-            if (edit->GetItemType() == eItemPartGroup && edit->GetIScriptable()->m_wzName == groupName)
+            if (edit->GetItemType() == eItemPartGroup && StrCompareNoCase(edit->GetIScriptable()->m_name, groupName))
             {
                pie->SetPartGroup(static_cast<PartGroup *>(edit));
                break;

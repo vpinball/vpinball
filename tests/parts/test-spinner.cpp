@@ -16,7 +16,7 @@ TEST_CASE("Spinner part")
    {
       Spinner* const spinner = Spinner::COMCreate();
       spinner->Init(100.f, 200.f, false);
-      spinner->SetName(L"Spinner1");
+      spinner->SetName("Spinner1");
       spinner->m_d.m_length = 85.f;
       spinner->m_d.m_rotation = 30.f;
       spinner->m_d.m_height = 70.f;
@@ -38,7 +38,7 @@ TEST_CASE("Spinner part")
       Spinner* const copy = Spinner::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Spinner1");
+      CHECK(copy->GetName() == "Spinner1");
       CHECK(copy->m_d.m_vCenter.x == 100.f);
       CHECK(copy->m_d.m_vCenter.y == 200.f);
       CHECK(copy->m_d.m_length == 85.f);
@@ -63,7 +63,7 @@ TEST_CASE("Spinner part")
    {
       Spinner* const spinner = Spinner::COMCreate();
       spinner->Init(50.f, 60.f, false);
-      spinner->SetName(L"Spinner2");
+      spinner->SetName("Spinner2");
       spinner->m_d.m_angleMin = -0.5f;
       table->AddPart(spinner);
       spinner->Release();
@@ -77,7 +77,7 @@ TEST_CASE("Spinner part")
    {
       Spinner* const spinner = Spinner::COMCreate();
       spinner->Init(10.f, 20.f, false);
-      spinner->SetName(L"Spinner3");
+      spinner->SetName("Spinner3");
       table->AddPart(spinner);
       spinner->Release();
 

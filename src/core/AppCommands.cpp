@@ -72,7 +72,7 @@ CComObject<PinTable>* TableBasedCommand::LoadTable()
    CComObject<PinTable>::CreateInstance(&table);
    table->AddRef();
    VPXFileFeedback feedback;
-   table->LoadGameFromFilename(m_tableFilename.string(), feedback);
+   table->LoadGameFromFilename(m_tableFilename, feedback);
    if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName))
       table->SetSettingsFileName(m_tableIniFileName);
    return table;
@@ -230,7 +230,7 @@ void Win32EditCommand::Execute()
    vpxEditor.LoadEditorSetupFromSettings();
    if (!m_tableFilename.empty() && FileExists(m_tableFilename))
    {
-      vpxEditor.LoadFileName(m_tableFilename.string(), true);
+      vpxEditor.LoadFileName(m_tableFilename, true);
       if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName) && vpxEditor.GetActiveTable())
          vpxEditor.GetActiveTable()->SetSettingsFileName(m_tableIniFileName);
    }
@@ -294,7 +294,7 @@ void LiveEditCommand::Execute()
       [&](Player* player)
       {
          if (std::exchange(notifyLoadFailed, false))
-            player->m_liveUI->PushNotification("Failed to load table '" + m_tableFilename.string() + "', starting with a new table"s, 10000);
+            player->m_liveUI->PushNotification("Failed to load table '" + PathToUTF8(m_tableFilename) + "', starting with a new table", 10000);
       });
 }
 
@@ -441,7 +441,7 @@ std::filesystem::path CommandLineProcessor::GetPathFromArg(const string& arg)
    if (pathString.length() >= 2 && pathString[0] == '"') // Remove " "
       pathString = pathString.substr(1, pathString.size() - 2);
 
-   std::filesystem::path path(pathString);
+   std::filesystem::path path = PathFromUTF8(pathString);
    path = std::filesystem::absolute(path);
    path = std::filesystem::weakly_canonical(path);
    return path;
@@ -466,7 +466,8 @@ void CommandLineProcessor::ProcessCommandLine()
 {
 #ifndef __STANDALONE__
    int nArgs;
-   const char** szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
+   const string commandLine = MakeString(GetCommandLineW()); // UTF-8 like all strings (the narrow command line is in the ANSI code page)
+   const char** szArglist = CommandLineToArgvA(commandLine.c_str(), &nArgs);
    ProcessCommandLine(nArgs, szArglist);
    free(szArglist);
 #else
@@ -505,12 +506,12 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             std::filesystem::path filename = GetPathFromArg(szArglist[i]);
             if (!std::filesystem::exists(filename))
             {
-               OnCommandLineError("Command Line Error"s, "Table file '" + filename.string() + "' was not found");
+               OnCommandLineError("Command Line Error"s, "Table file '" + PathToUTF8(filename) + "' was not found");
                exit(1);
             }
             if (!IsTableFile(filename))
             {
-               OnCommandLineError("Command Line Error"s, "'" + filename.string() + "' is not a Visual Pinball table (.vpx)");
+               OnCommandLineError("Command Line Error"s, '\'' + PathToUTF8(filename) + "' is not a Visual Pinball table (.vpx)");
                exit(1);
             }
             commands.push_back(std::make_unique<PlayTableCommand>(filename));
@@ -681,12 +682,12 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
 
          if (!FileExists(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName.string() + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Table file '" + PathToUTF8(tableFileName) + "' was not found");
             exit(1);
          }
          else if (!IsTableFile(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "'" + tableFileName.string() + "' is not a Visual Pinball table (.vpx)");
+            OnCommandLineError("Command Line Error"s, '\'' + PathToUTF8(tableFileName) + "' is not a Visual Pinball table (.vpx)");
             exit(1);
          }
          else
@@ -729,12 +730,12 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          const std::filesystem::path tableFileName = GetPathFromArg(szArglist[i + 3]);
          if (!FileExists(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName.string() + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Table file '" + PathToUTF8(tableFileName) + "' was not found");
             exit(1);
          }
          if (!IsTableFile(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "'" + tableFileName.string() + "' is not a Visual Pinball table (.vpx)");
+            OnCommandLineError("Command Line Error"s, '\'' + PathToUTF8(tableFileName) + "' is not a Visual Pinball table (.vpx)");
             exit(1);
          }
          bool captureAttractLoop = true;
@@ -763,19 +764,19 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          i++;
          if (!FileExists(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName.string() + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Table file '" + PathToUTF8(tableFileName) + "' was not found");
             exit(1);
          }
          if (!IsTableFile(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "'" + tableFileName.string() + "' is not a Visual Pinball table (.vpx)");
+            OnCommandLineError("Command Line Error"s, '\'' + PathToUTF8(tableFileName) + "' is not a Visual Pinball table (.vpx)");
             exit(1);
          }
          const std::filesystem::path tournamentFileName = GetPathFromArg(szArglist[i + 2]);
          i++;
          if (!FileExists(tournamentFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Tournament file '" + tournamentFileName.string() + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Tournament file '" + PathToUTF8(tournamentFileName) + "' was not found");
             exit(1);
          }
          commands.push_back(std::make_unique<ValidateTournamentCommand>(tableFileName, tournamentFileName));
@@ -854,7 +855,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       }
       if (!FileExists(tableIniFileName))
       {
-         OnCommandLineError("Command Line Error"s, "Table ini file '" + tableIniFileName.string() + "' was not found");
+         OnCommandLineError("Command Line Error"s, "Table ini file '" + PathToUTF8(tableIniFileName) + "' was not found");
          exit(1);
       }
       tableCmd->SetTableIniFileName(tableIniFileName);

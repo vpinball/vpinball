@@ -108,7 +108,7 @@ void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
    case FID(LAYR): // Old layer style (limited number of unnamed layers)
    {
       int layerIndex = reader.AsInt();
-      m_onLoadExpectedPartGroup = (layerIndex < 9 ? L"Layer_0" : L"Layer_") + std::to_wstring(layerIndex + 1);
+      m_onLoadExpectedPartGroup = (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1);
       break;
    }
    case FID(LANR): // 10.7 layers (limited number of named layers)
@@ -116,13 +116,12 @@ void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
       string layerName = reader.AsString();
       std::ranges::transform(
          layerName.begin(), layerName.end(), layerName.begin(), [](char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_'; });
-      m_onLoadExpectedPartGroup = MakeWString(layerName);
+      m_onLoadExpectedPartGroup = std::move(layerName);
       break;
    }
    case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
    {
-      string layerName = reader.AsString();
-      m_onLoadExpectedPartGroup = MakeWString(layerName);
+      m_onLoadExpectedPartGroup = reader.AsString();
       break;
    }
    default:
@@ -219,48 +218,38 @@ void IEditable::TimerRelease(vector<HitTimer *> &pvht)
    m_phittimer = nullptr;
 }
 
-string IEditable::GetName() const
+const string& IEditable::GetName() const
 {
    const IScriptable *const pscript = const_cast<IEditable*>(this)->GetIScriptable();
-   if (pscript)
-      return MakeString(pscript->get_Name());
-   return string();
+   static const string emptyString;
+   return pscript ? pscript->get_Name() : emptyString;
 }
 
-const wstring& IEditable::GetWName() const
-{
-   const IScriptable *const pscript = const_cast<IEditable*>(this)->GetIScriptable();
-   if (pscript)
-      return pscript->get_Name();
-   static const wstring emptyString;
-   return emptyString;
-}
-
-void IEditable::SetName(const wstring& name)
+void IEditable::SetName(const string& name)
 {
    IScriptable *const scriptable = GetIScriptable();
    if (name.empty() || scriptable == nullptr)
       return;
 
-   wstring newName = name;
-   if (newName.length() >= MAXNAMEBUFFER)
-      newName.erase(MAXNAMEBUFFER - 1);
+   string newName = TruncateToUTF16Length(name, MAXNAMEBUFFER - 1);
 
-   if (newName == scriptable->m_wzName)
+   if (newName == scriptable->m_name)
       return;
 
    if (PinTable* const pt = GetPTable(); pt)
    {
-      if (!pt->IsNameUnique(newName))
+      // A registered name takes itself, so a change of letter case only must not get a suffix
+      const bool registered = pt->HasRegisteredName(this);
+      if ((!registered || lowerCase(newName) != lowerCase(scriptable->m_name)) && !pt->IsNameUnique(newName))
          newName = pt->GetUniqueName(newName);
 
-      if (pt->HasPart(this))
+      if (registered)
          pt->RenamePart(this, newName);
       else
-         scriptable->m_wzName = newName;
+         scriptable->m_name = newName;
    }
    else
    {
-      scriptable->m_wzName = newName;
+      scriptable->m_name = newName;
    }
 }

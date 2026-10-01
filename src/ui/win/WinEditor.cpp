@@ -225,9 +225,9 @@ void WinEditor::LoadEditorSetupFromSettings()
    // get the list of the last n loaded tables
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
-      string szTableName = g_settingsService.GetAppSettings().GetRecentDir_TableFileName(i);
-      if (!szTableName.empty())
-         m_recentTableList.push_back(std::move(szTableName));
+      const string& tableName = g_settingsService.GetAppSettings().GetRecentDir_TableFileName(i);
+      if (!tableName.empty())
+         m_recentTableList.push_back(PathFromUTF8OrString(tableName)); // UTF-8, older versions stored native narrow paths
    }
 
    m_convertToUnit = g_settingsService.GetAppSettings().GetEditor_Units();
@@ -466,7 +466,7 @@ void WinEditor::SetPropSel(const vector<IWinUIPart *> &pvsel)
 
 void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
-   const string oldName = MakeString(editable->GetIScriptable()->m_wzName);
+   const string oldName = editable->GetIScriptable()->m_name;
    if (name == oldName)
       return;
 
@@ -475,8 +475,8 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
    pt->m_tableEditor->BeginUndo();
    pt->m_tableEditor->MarkForUndo(editable);
 
-   editable->SetName(MakeWString(name));
-   const string newName = MakeString(editable->GetIScriptable()->m_wzName); // SetName may adjust it (length, uniqueness)
+   editable->SetName(name);
+   const string newName = editable->GetIScriptable()->m_name; // SetName may adjust it (length, uniqueness)
    if (newName == oldName)
    {
       pt->m_tableEditor->EndUndo();
@@ -1002,12 +1002,12 @@ bool WinEditor::LoadFile(const bool updateEditor)
    if (index != string::npos)
       g_settingsService.GetAppSettings().SetRecentDir_LoadDir(filename[0].substr(0, index), false);
 
-   LoadFileName(filename[0], updateEditor);
+   LoadFileName(PathFromString(filename[0]), updateEditor); // Native narrow path from the dialog
 
    return true;
 }
 
-void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
+void WinEditor::LoadFileName(const std::filesystem::path& filename, const bool updateEditor)
 {
    if (m_vtable.size() == MAX_OPEN_TABLES)
    {
@@ -1017,7 +1017,7 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
 
    if (!FileExists(filename))
    {
-      ShowError("File not found \"" + filename + '"');
+      ShowError("File not found \"" + PathToUTF8(filename) + '"');
       return;
    }
 
@@ -1047,11 +1047,12 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor)
 
       // make sure the load directory is the active directory
       const std::filesystem::path tablePath = PathFromFilename(filename);
-      SetCurrentDirectory(tablePath.string().c_str());
+      std::error_code cwdError; // Ignored, as before
+      std::filesystem::current_path(tablePath, cwdError);
 
       PLOGI << "UI Post Load Start";
 
-      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(tablePath.string(), false);
+      g_settingsService.GetAppSettings().SetRecentDir_LoadDir(PathToString(tablePath), false);
       UpdateRecentFileList(filename);
 
       ppt->AddMultiSel(ppt->GetUIPart(ppt->m_table), false, true, false);
@@ -1276,10 +1277,10 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
    // if the loaded file name is a valid one then add it to the top of the list
    if (!filename.empty())
    {
-      vector<string> newList;
-      newList.push_back(PathToString(filename)); // Stored in settings as a native narrow string
+      vector<std::filesystem::path> newList;
+      newList.push_back(filename);
 
-      for (const string &tableName : m_recentTableList)
+      for (const std::filesystem::path &tableName : m_recentTableList)
       {
          if (tableName != newList[0]) // does this file name already exist in the list?
             newList.push_back(tableName);
@@ -1288,11 +1289,11 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
       m_recentTableList.clear();
 
       int i = 0;
-      for (const string &tableName : newList)
+      for (const std::filesystem::path &tableName : newList)
       {
          m_recentTableList.push_back(tableName);
-         // write entry to the registry
-         g_settingsService.GetAppSettings().SetRecentDir_TableFileName(i, tableName, false);
+         // write entry to the settings, as UTF-8 so that any path can be stored
+         g_settingsService.GetAppSettings().SetRecentDir_TableFileName(i, PathToUTF8(tableName), false);
 
          if (++i == LAST_OPENED_TABLE_COUNT)
             break;
@@ -1318,19 +1319,19 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
       for (size_t i = 0; i < m_recentTableList.size(); i++)
       {
          // now search for filenames with & and replace with && so that these display correctly, and add shortcut 1..X in front
-         const string recentMenuname = '&' + std::to_string(i+1) + "  " + string_replace_all(m_recentTableList[i], '&', "&&"s);
+         const wstring recentMenuname = MakeWString('&' + std::to_string(i+1) + "  " + string_replace_all(PathToUTF8(m_recentTableList[i]), '&', "&&"s));
 
          // set the IDM of this menu item
-         // set up the menu info block
-         MENUITEMINFO menuInfo = {};
-         menuInfo.cbSize = sizeof(MENUITEMINFO);
+         // set up the menu info block (wide, to show any path)
+         MENUITEMINFOW menuInfo = {};
+         menuInfo.cbSize = sizeof(MENUITEMINFOW);
          menuInfo.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
          menuInfo.fState = MFS_ENABLED;
          menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;
-         menuInfo.dwTypeData = (char*)recentMenuname.c_str();
+         menuInfo.dwTypeData = const_cast<LPWSTR>(recentMenuname.c_str());
          menuInfo.cch = (UINT)recentMenuname.length();
 
-         menuFile.InsertMenuItem(count, menuInfo, TRUE);
+         ::InsertMenuItemW(menuFile.GetHandle(), count, TRUE, &menuInfo);
          //or: menuFile.InsertMenu(count, MF_BYPOSITION | MF_ENABLED | MF_STRING, RECENT_FIRST_MENU_IDM + (UINT)i, recentMenuname);
          count++;
       }
@@ -2145,7 +2146,7 @@ void WinEditor::ExportTableMesh()
    std::filesystem::path objPath = ptCur->m_filename;
    objPath.replace_extension(".obj");
    char szObjFileName[MAXSTRING];
-   strncpy_s(szObjFileName, std::size(szObjFileName), objPath.string().c_str());
+   strncpy_s(szObjFileName, std::size(szObjFileName), PathToString(objPath).c_str());
    ofn.lpstrFile = szObjFileName;
    ofn.nMaxFile = std::size(szObjFileName);
    ofn.lpstrDefExt = "obj";
@@ -2158,7 +2159,11 @@ void WinEditor::ExportTableMesh()
       return;
 
    ObjLoader loader;
-   loader.ExportStart(szObjFileName);
+   if (!loader.ExportStart(PathFromString(szObjFileName))) // Native narrow path from the dialog
+   {
+      ShowError("The file \"" + PathToUTF8(PathFromString(szObjFileName)) + "\" could not be written.");
+      return;
+   }
    ptCur->ExportMesh(loader);
    for (const auto pedit : ptCur->GetParts())
       if (pedit->IsUIVisible(false) && pedit->m_desktopBackdrop == m_desktopBackdropView)
@@ -2292,8 +2297,10 @@ void WinEditor::OpenRecentFile(const size_t menuId)
 {
    // get the index into the recent list menu
    const size_t Index = menuId - RECENT_FIRST_MENU_IDM;
-   // copy it into a temporary string so it can be correctly processed
-   LoadFileName(m_recentTableList[Index], true);
+   if (Index >= m_recentTableList.size())
+      return;
+   const std::filesystem::path filename = m_recentTableList[Index]; // A copy, as loading updates the list
+   LoadFileName(filename, true);
 }
 
 void WinEditor::CopyPasteElement(const CopyPasteModes mode)

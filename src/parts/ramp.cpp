@@ -1178,7 +1178,7 @@ void Ramp::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
    writer.WriteInt(FID(TYPE), m_d.m_type);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteString(FID(IMAG), m_d.m_szImage);
    writer.WriteInt(FID(ALGN), m_d.m_imagealignment);
    writer.WriteBool(FID(IMGW), m_d.m_imageWalls);
@@ -1225,7 +1225,7 @@ void Ramp::Load(IObjectReader& reader)
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
          case FID(ALGN): m_d.m_imagealignment = static_cast<RampImageAlignment>(reader.AsInt()); break;
          case FID(IMGW): m_d.m_imageWalls = reader.AsBool(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(WLHL): m_d.m_leftwallheight = reader.AsFloat(); break;
          case FID(WLHR): m_d.m_rightwallheight = reader.AsFloat(); break;
          case FID(WVHL): m_d.m_leftwallheightvisible = reader.AsFloat(); break;
@@ -1560,7 +1560,7 @@ STDMETHODIMP Ramp::get_Friction(float *pVal)
 
 STDMETHODIMP Ramp::put_Friction(float newVal)
 {
-   newVal = saturate(newVal);
+   newVal = max(newVal, 0.f); // Friction can not be negative, but may exceed 1
    m_d.m_friction = newVal;
 
    return S_OK;
@@ -1738,7 +1738,7 @@ void Ramp::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
    {
-      const string name = MakeString(m_wzName);
+      const string& name = m_name;
       loader.WriteObjectName(name);
       if (!IsHabitrail())
       {

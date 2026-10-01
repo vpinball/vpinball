@@ -153,7 +153,7 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Ramp>(
          m_part, "Friction"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_friction; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
+         [](Ramp* ramp, float v) { ramp->m_d.m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 3);
       props.InputFloat<Ramp>(
          m_part, "Scatter Angle"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_scatter; }, //

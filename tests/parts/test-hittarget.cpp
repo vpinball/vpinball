@@ -16,7 +16,7 @@ TEST_CASE("HitTarget part")
    {
       HitTarget* const target = HitTarget::COMCreate();
       target->Init(100.f, 200.f, false);
-      target->SetName(L"Target1");
+      target->SetName("Target1");
       target->m_d.m_vPosition.z = 30.f;
       target->m_d.m_vSize = Vertex3Ds(40.f, 50.f, 60.f);
       target->m_d.m_rotZ = 45.f;
@@ -45,7 +45,7 @@ TEST_CASE("HitTarget part")
       HitTarget* const copy = HitTarget::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Target1");
+      CHECK(copy->GetName() == "Target1");
       CHECK(copy->m_d.m_vPosition.x == 100.f);
       CHECK(copy->m_d.m_vPosition.y == 200.f);
       CHECK(copy->m_d.m_vPosition.z == 30.f);
@@ -80,7 +80,7 @@ TEST_CASE("HitTarget part")
    {
       HitTarget* const target = HitTarget::COMCreate();
       target->Init(50.f, 60.f, false);
-      target->SetName(L"Target2");
+      target->SetName("Target2");
       target->m_d.m_targetType = HitTargetRectangle;
       table->AddPart(target);
       target->Release();
@@ -94,7 +94,7 @@ TEST_CASE("HitTarget part")
    {
       HitTarget* const target = HitTarget::COMCreate();
       target->Init(10.f, 20.f, false);
-      target->SetName(L"Target3");
+      target->SetName("Target3");
       target->m_d.m_targetType = HitTargetRectangle;
       target->m_d.m_vSize = Vertex3Ds(10.f, 20.f, 30.f);
       target->m_d.m_rotZ = 0.f;

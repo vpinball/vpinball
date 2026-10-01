@@ -71,7 +71,7 @@ void Timer::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteVector2(FID(VCEN), m_d.m_v);
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteBool(FID(BGLS), m_desktopBackdrop);
    SaveSharedEditableFields(writer);
    writer.EndObject();
@@ -89,7 +89,7 @@ void Timer::Load(IObjectReader& reader)
          case FID(VCEN): m_d.m_v = reader.AsVector2(); break;
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
          default: LoadSharedEditableField(tag, reader); break;
          }

@@ -63,7 +63,7 @@ public:
    void SetFrontRearFade(const int front_rear_fade) { m_frontRearFade = front_rear_fade; }
 
 private:
-   static bool isWav(const std::filesystem::path& path) { return lowerCase(path.extension().string()) == ".wav"; }
+   static bool isWav(const std::filesystem::path& path) { return lowerCase(PathToUTF8(path.extension())) == ".wav"; }
 
    string m_name;
    std::filesystem::path m_path; // Original file import path

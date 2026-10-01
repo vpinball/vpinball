@@ -156,7 +156,7 @@ HRESULT Collection::FireDispID(const DISPID dispid, DISPPARAMS * const pdisppara
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -5092,7 +5092,7 @@ HRESULT PinTable::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -6091,7 +6091,7 @@ HRESULT Surface::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -6982,7 +6982,7 @@ HRESULT Flipper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -7180,7 +7180,7 @@ HRESULT Timer::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -8075,7 +8075,7 @@ HRESULT Plunger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -8565,7 +8565,7 @@ HRESULT Textbox::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -9310,7 +9310,7 @@ HRESULT Bumper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -9827,7 +9827,7 @@ HRESULT Trigger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -10707,7 +10707,7 @@ HRESULT Light::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -11371,7 +11371,7 @@ HRESULT Kicker::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -11794,7 +11794,7 @@ HRESULT Decal::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -13315,7 +13315,7 @@ HRESULT Primitive::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -14175,7 +14175,7 @@ HRESULT HitTarget::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -14854,7 +14854,7 @@ HRESULT Gate::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -15396,7 +15396,7 @@ HRESULT Spinner::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -18161,7 +18161,7 @@ HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -18198,7 +18198,7 @@ HRESULT Ramp::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -18236,7 +18236,7 @@ HRESULT Flasher::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -18275,7 +18275,7 @@ HRESULT Rubber::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -18890,7 +18890,7 @@ HRESULT DispReel::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -19088,7 +19088,7 @@ HRESULT PartGroup::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;
@@ -19416,7 +19416,7 @@ HRESULT LightSeq::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName.c_str());
+			wcscpy(wzName, MakeWString(m_name).c_str());
 			wcscat(wzName, idsNamesList[i].name);
 			LPOLESTR fnNames = (LPOLESTR)wzName;
 			DISPID tDispid;

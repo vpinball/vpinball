@@ -22,7 +22,7 @@ unsigned int Ball::GetNextBallID() { unsigned int id = Ball::m_nextBallID; Ball:
 
 Ball::Ball() : m_id(GetNextBallID())
 {
-   m_wzName = std::format(L"LiveBall{}", m_id); // Default name
+   m_name = std::format("LiveBall{}", m_id); // Default name
    m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, DEFAULT_BALL_SIZE);
    m_hitBall.m_d.m_radius = DEFAULT_BALL_SIZE;
    m_hitBall.m_d.m_mass = 1.f;
@@ -123,7 +123,7 @@ void Ball::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    writer.WriteBool(FID(TMON), m_timerEnabled);
    writer.WriteInt(FID(TMIN), m_timerInterval);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    SaveSharedEditableFields(writer);
    writer.EndObject();
 }
@@ -150,7 +150,7 @@ void Ball::Load(IObjectReader& reader)
          case FID(SPHR): m_d.m_pinballEnvSphericalMapping = reader.AsBool(); break;
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
          default: LoadSharedEditableField(tag, reader); break;
          }

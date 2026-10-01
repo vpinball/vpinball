@@ -16,7 +16,7 @@ TEST_CASE("Textbox part")
    {
       Textbox* const textbox = Textbox::COMCreate();
       textbox->Init(100.f, 200.f, false);
-      textbox->SetName(L"Text1");
+      textbox->SetName("Text1");
       textbox->m_d.m_v2 = Vertex2D(300.f, 400.f);
       textbox->m_d.m_backcolor = RGB(5, 10, 15);
       textbox->m_d.m_fontcolor = RGB(250, 240, 230);
@@ -39,7 +39,7 @@ TEST_CASE("Textbox part")
       Textbox* const copy = Textbox::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Text1");
+      CHECK(copy->GetName() == "Text1");
       CHECK(copy->m_d.m_v1.x == 100.f);
       CHECK(copy->m_d.m_v1.y == 200.f);
       CHECK(copy->m_d.m_v2.x == 300.f);
@@ -65,7 +65,7 @@ TEST_CASE("Textbox part")
    {
       Textbox* const textbox = Textbox::COMCreate();
       textbox->Init(10.f, 20.f, false);
-      textbox->SetName(L"Text2");
+      textbox->SetName("Text2");
       textbox->m_d.m_text = "HELLO";
       table->AddPart(textbox);
       textbox->Release();
@@ -79,7 +79,7 @@ TEST_CASE("Textbox part")
    {
       Textbox* const textbox = Textbox::COMCreate();
       textbox->Init(10.f, 20.f, false);
-      textbox->SetName(L"Text3");
+      textbox->SetName("Text3");
       table->AddPart(textbox);
       textbox->Release();
 

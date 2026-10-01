@@ -6,8 +6,8 @@ public:
    IScriptable() = default;
    virtual ~IScriptable() = default;
 
-   const wstring& get_Name() const { return m_wzName; }
-   STDMETHOD(get_Name)(BSTR *pVal) { *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length())); return S_OK; }
+   const string& get_Name() const { return m_name; }
+   STDMETHOD(get_Name)(BSTR *pVal) { *pVal = MakeWideBSTR(m_name); return S_OK; }
 
    virtual IDispatch *GetIDispatch() = 0;
    virtual const IDispatch *GetIDispatch() const = 0;
@@ -15,5 +15,5 @@ public:
    vector<wstring> GetMethodNames();
    vector<wstring> GetEventNames();
 
-   wstring m_wzName;
+   string m_name; // Script name, UTF-8 (UTF-16 in table files), at most MAXNAMEBUFFER - 1 UTF-16 units
 };

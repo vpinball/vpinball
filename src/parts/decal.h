@@ -49,7 +49,7 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Decal() { m_wzName = L"Decal"sv; }
+   Decal() { m_name = "Decal"s; }
    virtual ~Decal();
 
    BEGIN_COM_MAP(Decal)

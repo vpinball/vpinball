@@ -31,7 +31,7 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_updateIntervalEdit, lightseq->GetUpdateInterval());
         if (dispid == DISPID_Collection || dispid == -1)
-            PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, MakeString(lightseq->m_d.m_wzCollection).c_str());
+            PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, lightseq->m_d.m_collection.c_str());
 
         // only show the first element on multi-select
         break;
@@ -59,7 +59,7 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
             case DISPID_Collection:
             {
                 PropertyDialog::StartUndo(lightseq);
-                lightseq->m_d.m_wzCollection = MakeWString(PropertyDialog::GetComboBoxText(m_collectionCombo));
+                lightseq->m_d.m_collection = PropertyDialog::GetComboBoxText(m_collectionCombo);
                 PropertyDialog::EndUndo(lightseq);
                 break;
             }

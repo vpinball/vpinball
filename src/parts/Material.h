@@ -86,7 +86,7 @@ public:
        , m_bOpacityActive(opacityActive)
        , m_fElasticity(elasticity)
        , m_fElasticityFalloff(elasticityFalloff)
-       , m_fFriction(friction)
+       , m_fFriction(max(friction, 0.f)) // Friction can not be negative
        , m_fScatterAngle(scatterAngle)
        , m_cRefractionTint(refractionTint)
    {

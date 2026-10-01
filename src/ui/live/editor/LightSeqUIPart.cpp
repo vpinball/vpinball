@@ -37,8 +37,8 @@ void LightSeqUIPart::UpdatePropertyPane(PropertyPane& props)
    {
       props.CollectionCombo<LightSeq>(
          m_part, "Collection"s, //
-         [](const LightSeq* lightSeq) { return MakeString(lightSeq->m_d.m_wzCollection); }, //
-         [](LightSeq* lightSeq, const string& v) { lightSeq->m_d.m_wzCollection = MakeWString(v); });
+         [](const LightSeq* lightSeq) { return lightSeq->m_d.m_collection; }, //
+         [](LightSeq* lightSeq, const string& v) { lightSeq->m_d.m_collection = v; });
       props.InputFloat2<LightSeq>(
          m_part, "Animation Center"s, //
          [](const LightSeq* lightSeq) { return lightSeq->m_d.m_vCenter; }, //

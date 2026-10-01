@@ -86,6 +86,7 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
       return nullptr;
    name.resize(len);
    stream.read(reinterpret_cast<unsigned char*>(name.data()), len);
+   name = string_from_utf8_or_cp1252(std::move(name)); // Text is UTF-8, older files may contain legacy ANSI
 
    // Filename (length, then string) including path (// full filename, incl. path)
    if (!readLength(len))
@@ -101,7 +102,7 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
 
    // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs to the waveformatex.
    // This header is stored for WAV files, identified by their filename extension, instead of the regular WAV file format.
-   const auto fsPath = PathFromString(path);
+   const auto fsPath = PathFromUTF8(string_from_utf8_or_cp1252(path.data(), path.size()));
 
    // WAV files are stored with a special format, while others are just the raw imported file.
    // We detect and (re)create the appropriate header for WAV files so that they can be treated as other sounds.
@@ -187,8 +188,7 @@ void Sound::SetFromFileData(const std::filesystem::path& filename, vector<uint8_
 
 bool Sound::SaveToFile(const std::filesystem::path& filename) const
 {
-   FILE* f;
-   if ((fopen_s(&f, filename.string().c_str(), "wb") == 0) && f)
+   if (FILE* f = open_file(filename, "wb"); f)
    {
       fwrite(m_data.data(), 1, m_data.size(), f);
       fclose(f);
@@ -200,13 +200,14 @@ bool Sound::SaveToFile(const std::filesystem::path& filename) const
 void Sound::SaveToStream(InMemStream* pstm) const
 {
    const int32_t nameLen = static_cast<int32_t>(m_name.length());
-   const int32_t pathLen = static_cast<int32_t>(m_path.string().length());
+   const string path = PathToUTF8(m_path);
+   const int32_t pathLen = static_cast<int32_t>(path.length());
    constexpr int32_t dummyLen = 1;
    constexpr char dummyPath = '\0';
    pstm->Write(&nameLen, sizeof(int32_t));
    pstm->Write(m_name.c_str(), nameLen);
    pstm->Write(&pathLen, sizeof(int32_t));
-   pstm->Write(m_path.string().c_str(), pathLen);
+   pstm->Write(path.c_str(), pathLen);
    pstm->Write(&dummyLen, sizeof(int32_t)); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
    pstm->Write(&dummyPath, dummyLen);
    if (isWav(m_path))

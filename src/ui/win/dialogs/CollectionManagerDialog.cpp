@@ -84,7 +84,7 @@ void CollectionManagerDialog::EditCollection()
       if (colDlg->DoModal() >= 0)
          pt->m_table->SetNonUndoableDirty(eSaveDirty);
 
-      ListView_SetItemText_Safe(hListHwnd, sel, 0, MakeString(pcol->m_wzName).c_str());
+      ListView_SetItemText_Safe(hListHwnd, sel, 0, pcol->m_name.c_str());
       ListView_SetItemText_Safe(hListHwnd, sel, 1, std::to_string(pcol->GetParts().size()).c_str());
    }
 }
@@ -139,13 +139,24 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
          lvitem.iSubItem = 0;
          ListView_GetItem(hListHwnd, &lvitem);
          Collection *const pcol = (Collection *)lvitem.lParam;
-         wstring newName = MakeWString(pinfo->item.pszText);
-         if (!pt->m_table->IsNameUnique(newName))
-            newName = pt->m_table->GetUniqueName(newName);
-         pt->m_table->RenameCollection(pcol, newName);
+         // The list view is ANSI: read the text from its edit control as UTF-16 instead of pszText
+         const HWND hwndEdit = ListView_GetEditControl(hListHwnd);
+         if (hwndEdit == nullptr)
+            return FALSE;
+         wstring wzName(::GetWindowTextLengthW(hwndEdit), L'\0');
+         wzName.resize(::GetWindowTextW(hwndEdit, wzName.data(), static_cast<int>(wzName.size()) + 1));
+         string newName = TruncateToUTF16Length(MakeString(wzName), MAXNAMEBUFFER - 1);
+         if (newName.empty())
+            return FALSE;
+         if (newName != pcol->m_name)
+         {
+            if (lowerCase(newName) != lowerCase(pcol->m_name) && !pt->m_table->IsNameUnique(newName)) // Its own name takes itself
+               newName = pt->m_table->GetUniqueName(newName);
+            pt->m_table->RenameCollection(pcol, newName);
+            pt->m_table->SetNonUndoableDirty(eSaveDirty);
+         }
          if (hListHwnd)
-            ListView_SetItemText_Safe(hListHwnd, pinfo->item.iItem, 0, MakeString(pcol->m_wzName).c_str());
-         pt->m_table->SetNonUndoableDirty(eSaveDirty);
+            ListView_SetItemText_Safe(hListHwnd, pinfo->item.iItem, 0, pcol->m_name.c_str());
          return TRUE;
       }
       else if (pnmhdr->code == NM_DBLCLK)
@@ -216,7 +227,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx - 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
-                ListView_SetItemText_Safe(hListHwnd, idx - 1, 0, MakeString(pcol->m_wzName).c_str());
+                ListView_SetItemText_Safe(hListHwnd, idx - 1, 0, pcol->m_name.c_str());
                 ListView_SetItemText_Safe(hListHwnd, idx - 1, 1, std::to_string(pcol->GetParts().size()).c_str());
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
@@ -242,7 +253,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx + 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
-                ListView_SetItemText_Safe(hListHwnd, idx + 1, 0, MakeString(pcol->m_wzName).c_str());
+                ListView_SetItemText_Safe(hListHwnd, idx + 1, 0, pcol->m_name.c_str());
                 ListView_SetItemText_Safe(hListHwnd, idx + 1, 1, std::to_string(pcol->GetParts().size()).c_str());
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
@@ -322,7 +333,7 @@ CollectionDialog::CollectionDialog(CollectionDialogStruct &pcds) : CDialog(IDD_C
 BOOL CollectionDialog::OnInitDialog()
 {
     Collection * const pcol = pCurCollection.pcol;
-    SetWindowTextW(GetDlgItem(IDC_NAME), pcol->m_wzName.c_str());
+    SetWindowTextW(GetDlgItem(IDC_NAME), MakeWString(pcol->m_name).c_str());
 
     SendDlgItemMessage(IDC_FIRE, BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
     SendDlgItemMessage(IDC_SUPPRESS, BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -337,8 +348,7 @@ BOOL CollectionDialog::OnInitDialog()
         IScriptable * const piscript = piedit->GetIScriptable();
         if (piscript)
         {
-            string name = MakeString(piscript->m_wzName);
-            const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)name.data());
+            const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)piscript->m_name.c_str());
             ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piedit);
         }
     }
@@ -360,8 +370,7 @@ BOOL CollectionDialog::OnInitDialog()
         if ((l == pcol->GetParts().size()) && piscript)
         //if (!piedit->m_pcollection)
         {
-            string name = MakeString(piscript->m_wzName);
-            const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)name.data());
+            const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)piscript->m_name.c_str());
             ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piedit);
         }
     }
@@ -485,9 +494,13 @@ void CollectionDialog::OnOK()
     const size_t groupElements = GetDlgItem(IDC_GROUP_CHECK).SendMessage(BM_GETCHECK, 0, 0);
     pcol->m_groupElements = !!groupElements;
 
-    if (wstring newName = MakeWString(GetDlgItem(IDC_NAME).GetWindowText().GetString()); newName != pcol->get_Name())
+    // Read back as UTF-16 like it was set (the narrow window text is ANSI)
+    const HWND hwndName = GetDlgItem(IDC_NAME).GetHwnd();
+    wstring wzName(::GetWindowTextLengthW(hwndName), L'\0');
+    wzName.resize(::GetWindowTextW(hwndName, wzName.data(), static_cast<int>(wzName.size()) + 1));
+    if (string newName = TruncateToUTF16Length(MakeString(wzName), MAXNAMEBUFFER - 1); !newName.empty() && newName != pcol->get_Name())
     {
-       if (!pCurCollection.ppt->m_table->IsNameUnique(newName))
+       if (lowerCase(newName) != lowerCase(pcol->get_Name()) && !pCurCollection.ppt->m_table->IsNameUnique(newName)) // Its own name takes itself
           newName = pCurCollection.ppt->m_table->GetUniqueName(newName);
        pCurCollection.ppt->m_table->RenameCollection(pcol, newName);
     }

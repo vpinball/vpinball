@@ -435,7 +435,7 @@ protected:
       const bool importAnimation = IsDlgButtonChecked(IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
       const bool doForsyth = IsDlgButtonChecked(IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
 
-      if (m_prim->LoadMesh(filename, units, importAbsolutePosition, centerMesh, importMaterial, importAnimation, doForsyth))
+      if (m_prim->LoadMesh(PathFromString(filename), units, importAbsolutePosition, centerMesh, importMaterial, importAnimation, doForsyth)) // Native narrow path from the dialog
       {
          PropertyDialog::UpdateStatusBarInfo(m_prim);
          EndDialog(TRUE);
@@ -464,7 +464,7 @@ protected:
             if (index != string::npos)
             {
                g_settingsService.GetAppSettings().SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
-               m_prim->m_d.m_meshFileName = szFileName[0].substr(index + 1);
+               m_prim->m_d.m_meshFileName = PathToUTF8(PathFromString(szFileName[0]).filename()); // Table text is UTF-8, the dialog result native narrow
             }
 
             GetDlgItem(IDOK).EnableWindow(TRUE);
@@ -516,7 +516,11 @@ protected:
       }
 
       const MeshUnits units = IsDlgButtonChecked(IDC_EXPORT_METERS_RADIO) == BST_CHECKED ? MeshUnits::Meters : MeshUnits::VPUnits;
-      m_prim->m_mesh.SaveWavefrontObj(filename, m_prim->m_d.m_use3DMesh ? MakeString(m_prim->m_wzName) : "Primitive"s, units);
+      if (!m_prim->m_mesh.SaveWavefrontObj(PathFromString(filename), m_prim->m_d.m_use3DMesh ? m_prim->m_name : "Primitive"s, units)) // Native narrow path from the dialog
+      {
+         ShowError("The file \"" + PathToUTF8(PathFromString(filename)) + "\" could not be written.");
+         return;
+      }
       EndDialog(TRUE);
    }
 

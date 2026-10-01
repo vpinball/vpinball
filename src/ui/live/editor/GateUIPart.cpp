@@ -113,7 +113,7 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Gate>(
          m_part, "Friction"s, //
          [](const Gate* gate) { return gate->m_d.m_friction; }, //
-         [](Gate* gate, float v) { gate->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
+         [](Gate* gate, float v) { gate->m_d.m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 3);
       props.InputFloat<Gate>(
          m_part, "Damping"s, //
          [](const Gate* gate) { return gate->m_d.m_damping; }, //

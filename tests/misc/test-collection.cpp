@@ -18,13 +18,13 @@ TEST_CASE("Collection")
 
    Bumper* const bump1 = Bumper::COMCreate();
    bump1->Init(0.f, 0.f, false);
-   bump1->SetName(L"Bump1");
+   bump1->SetName("Bump1");
    table->AddPart(bump1);
    bump1->Release();
 
    Bumper* const bump2 = Bumper::COMCreate();
    bump2->Init(0.f, 0.f, false);
-   bump2->SetName(L"Bump2");
+   bump2->SetName("Bump2");
    table->AddPart(bump2);
    bump2->Release();
 
@@ -33,7 +33,7 @@ TEST_CASE("Collection")
       CComObject<Collection>* col;
       CComObject<Collection>::CreateInstance(&col);
       col->AddRef();
-      col->m_wzName = L"Col1";
+      col->m_name = "Col1";
 
       col->AddPart(bump1);
       col->AddPart(bump2);
@@ -103,7 +103,7 @@ TEST_CASE("Collection")
       CComObject<Collection>* col;
       CComObject<Collection>::CreateInstance(&col);
       col->AddRef();
-      col->m_wzName = L"MyCol";
+      col->m_name = "MyCol";
       col->m_fireEvents = true;
       col->m_stopSingleEvents = true;
       col->AddPart(bump1);
@@ -123,7 +123,7 @@ TEST_CASE("Collection")
       loaded->Load(reader);
       CHECK_FALSE(reader.HasError());
 
-      CHECK(loaded->m_wzName == L"MyCol");
+      CHECK(loaded->m_name == "MyCol");
       CHECK(loaded->m_fireEvents == true);
       CHECK(loaded->m_stopSingleEvents == true);
       // Members are stored by name and only resolved once the whole table is loaded

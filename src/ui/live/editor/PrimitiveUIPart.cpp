@@ -65,6 +65,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
       m_meshExportFileName = *m_pendingMeshExport;
       m_pendingMeshExport = nullptr;
       m_meshUnitsMeters = false;
+      m_meshExportFailed = false;
       ImGui::OpenPopup("Wavefront OBJ Exporter");
    }
 
@@ -93,9 +94,9 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          ImGui::Separator();
          if (ImGui::Button("Import"))
          {
-            // The dialog returns UTF-8, while the mesh loader uses native narrow paths (see PathToString)
-            m_part->m_d.m_meshFileName = PathToString(PathFromUTF8(m_meshImportFileName).filename());
-            m_meshImportFailed = !m_part->LoadMesh(PathToString(PathFromUTF8(m_meshImportFileName)), m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits, m_meshImportAbsolutePosition, m_meshImportCenterMesh,
+            const std::filesystem::path meshPath = PathFromUTF8(m_meshImportFileName); // The dialog and the table use UTF-8
+            m_part->m_d.m_meshFileName = PathToUTF8(meshPath.filename());
+            m_meshImportFailed = !m_part->LoadMesh(meshPath, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits, m_meshImportAbsolutePosition, m_meshImportCenterMesh,
                m_meshImportMaterial, m_meshImportAnimation, !m_meshImportNoForsyth);
             if (!m_meshImportFailed)
             {
@@ -123,13 +124,18 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          ImGui::TextWrapped("%s", m_meshExportFileName.c_str());
          ImGui::Spacing();
          UpdateMeshUnitsUI();
+         if (m_meshExportFailed)
+            ImGui::TextColored(ImVec4(1.f, 0.2f, 0.2f, 1.f), "Failed to export file!");
          ImGui::Separator();
          if (ImGui::Button("Export"))
          {
-            m_part->m_mesh.SaveWavefrontObj(
-               PathToString(PathFromUTF8(m_meshExportFileName)), m_part->m_d.m_use3DMesh ? MakeString(m_part->m_wzName) : "Primitive"s, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits);
-            m_meshExportFileName.clear();
-            ImGui::CloseCurrentPopup();
+            m_meshExportFailed = !m_part->m_mesh.SaveWavefrontObj(
+               PathFromUTF8(m_meshExportFileName), m_part->m_d.m_use3DMesh ? m_part->m_name : "Primitive"s, m_meshUnitsMeters ? MeshUnits::Meters : MeshUnits::VPUnits);
+            if (!m_meshExportFailed)
+            {
+               m_meshExportFileName.clear();
+               ImGui::CloseCurrentPopup();
+            }
          }
          ImGui::SameLine();
          if (ImGui::Button("Cancel"))
@@ -343,7 +349,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Primitive>(
          m_part, "Friction"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_friction; }, //
-         [](Primitive* primitive, float v) { primitive->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
+         [](Primitive* primitive, float v) { primitive->m_d.m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 3);
       props.InputFloat<Primitive>(
          m_part, "Scatter Angle"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_scatter; }, //

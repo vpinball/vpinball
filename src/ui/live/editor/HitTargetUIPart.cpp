@@ -130,7 +130,7 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<HitTarget>(
          m_part, "Friction"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_friction; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 3);
       props.InputFloat<HitTarget>(
          m_part, "Scatter Angle"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_scatter; }, //

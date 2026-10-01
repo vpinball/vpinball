@@ -89,7 +89,7 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
    switch (dispid)
    {
    case IDC_GRAVITY_EDIT: CHECK_UPDATE_VALUE_SETTER(table->SetGravity, table->GetGravity, PropertyDialog::GetFloatTextbox, m_gravityConstantEdit, table); break;
-   case IDC_PLAYFIELD_FRICTION_EDIT: CHECK_UPDATE_ITEM(table->m_friction, PropertyDialog::GetFloatTextbox(m_playfieldFrictionEdit), table); break;
+   case IDC_PLAYFIELD_FRICTION_EDIT: CHECK_UPDATE_ITEM(table->m_friction, max(PropertyDialog::GetFloatTextbox(m_playfieldFrictionEdit), 0.f), table); break;
    case IDC_PLAYFIELD_ELASTICITY_EDIT: CHECK_UPDATE_ITEM(table->m_elasticity, PropertyDialog::GetFloatTextbox(m_playfieldElasticityEdit), table); break;
    case IDC_PLAYFIELD_FALLOFF_EDIT: CHECK_UPDATE_ITEM(table->m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_playfieldElasticityFalloffEdit), table); break;
    case IDC_PLAYFIELD_SCATTER_EDIT: CHECK_UPDATE_ITEM(table->m_scatter, PropertyDialog::GetFloatTextbox(m_playfieldScatterEdit), table); break;

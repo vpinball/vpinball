@@ -16,7 +16,7 @@ TEST_CASE("Ball part")
    {
       Ball* const ball = Ball::COMCreate();
       ball->Init(100.f, 200.f, false);
-      ball->SetName(L"Ball1");
+      ball->SetName("Ball1");
       ball->m_hitBall.m_d.m_pos.z = 25.f;
       ball->m_hitBall.m_d.m_radius = 30.f;
       ball->m_hitBall.m_d.m_mass = 2.5f;
@@ -39,7 +39,7 @@ TEST_CASE("Ball part")
       Ball* const copy = Ball::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Ball1");
+      CHECK(copy->GetName() == "Ball1");
       CHECK(copy->m_hitBall.m_d.m_pos.x == 100.f);
       CHECK(copy->m_hitBall.m_d.m_pos.y == 200.f);
       CHECK(copy->m_hitBall.m_d.m_pos.z == 25.f);
@@ -66,7 +66,7 @@ TEST_CASE("Ball part")
    {
       Ball* const ball = Ball::COMCreate();
       ball->Init(10.f, 20.f, false);
-      ball->SetName(L"Ball2");
+      ball->SetName("Ball2");
       ball->m_hitBall.m_d.m_pos.z = 5.f;
       ball->m_hitBall.m_d.m_radius = 42.f;
       ball->m_hitBall.m_d.m_mass = 3.f;
@@ -83,7 +83,7 @@ TEST_CASE("Ball part")
    {
       Ball* const ball = Ball::COMCreate();
       ball->Init(10.f, 20.f, false);
-      ball->SetName(L"Ball3");
+      ball->SetName("Ball3");
       table->AddPart(ball);
       ball->Release();
 

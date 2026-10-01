@@ -203,13 +203,13 @@ SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, Sound* sound)
    return new SoundPlayer(audioPlayer, sound);
 }
 
-SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const string& filename)
+SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const std::filesystem::path& filename)
 {
    // Decode and resample the sound on the ancillary thread as this is fairly heavy
    return new SoundPlayer(audioPlayer, filename);
 }
 
-SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const string& filename)
+SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::path& filename)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(SoundOutTypes::SNDOUT_BACKGLASS)
    , m_commandQueue(1)
@@ -217,7 +217,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const string& filename)
 {
    m_commandQueue.enqueue([this, filename]()
    {
-      SetThreadName("VPX.SoundPlayer ["s.append(filename).append(1, ']'));
+      SetThreadName("VPX.SoundPlayer ["s.append(PathToUTF8(filename.filename())).append(1, ']'));
       set_denormals_flush_to_zero(); // FPU mode is per thread
 
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
@@ -244,7 +244,11 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const string& filename)
 
       m_sound = std::make_unique<ma_sound>();
       ma_sound_config config = ma_sound_config_init_2(engine);
+      #ifdef _WIN32
+      config.pFilePathW = filename.c_str(); // Wide path (miniaudio opens narrow ones with the process code page)
+      #else
       config.pFilePath = filename.c_str();
+      #endif
       config.channelsOut = 2;
       config.monoExpansionMode = ma_mono_expansion_mode_stereo_only;
       config.endCallback = OnSoundEnd;
@@ -507,7 +511,7 @@ void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
                      g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
                   else
                   {
-                     CComVariant rgvar[1] = { CComVariant(callbackId->c_str()) };
+                     CComVariant rgvar[1] = { CComVariant(MakeWString(*callbackId).c_str()) }; // The sound name is UTF-8 (a narrow CComVariant would read it as ANSI)
                      DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
                      g_pplayer->m_ptable->FireDispID(DISPID_GameEvents_SoundDone, &dispparams);
                   }

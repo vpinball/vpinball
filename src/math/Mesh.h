@@ -39,9 +39,9 @@ public:
       middlePoint.z = 0.0f;
    }
    void Clear();
-   bool LoadWavefrontObj(const string& fname, const MeshUnits units);
-   void SaveWavefrontObj(const string& fname, const string& description, const MeshUnits units);
-   bool LoadAnimation(const char* fname, const MeshUnits units);
+   bool LoadWavefrontObj(const std::filesystem::path& fname, const MeshUnits units);
+   bool SaveWavefrontObj(const std::filesystem::path& fname, const string& description, const MeshUnits units);
+   bool LoadAnimation(const std::filesystem::path& fname, const MeshUnits units);
 
    size_t NumVertices() const { return m_vertices.size(); }
    size_t NumIndices() const { return m_indices.size(); }

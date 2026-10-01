@@ -979,6 +979,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
       kt += tangent.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF)); // flipper only has angular response
 
       // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
+      // (a negative friction coefficient or impulse means no friction; loading and setters already clamp the coefficient at 0)
       const float maxFric = fmaxf(m_friction, 0.f) * fmaxf(impulse, 0.f);
       const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
@@ -1123,7 +1124,7 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       // first check for slippage
       const Vertex3Ds slip = vrel - normVel * normal; // calc the tangential slip velocity
 
-      const float maxFric = j * fmaxf(m_friction, 0.f);
+      const float maxFric = j * fmaxf(m_friction, 0.f); // j >= 0, a negative friction coefficient means no friction
 
       const float slipspeed = slip.Length();
       Vertex3Ds slipDir,crossF;

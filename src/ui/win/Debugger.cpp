@@ -44,6 +44,7 @@ BOOL DebuggerDialog::OnInitDialog()
                                                   WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
                                                   rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), nullptr, g_app->GetInstanceHandle(), 0);
 
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // Evaluated statements and log output are UTF-8 (Scintilla defaults to the ANSI code page)
     ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
     ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
 

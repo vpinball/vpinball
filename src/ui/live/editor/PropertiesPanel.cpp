@@ -104,7 +104,7 @@ void PropertiesPanel::Render(float topBarHeight)
       case Selection::S_EDITABLE:
       {
          IEditable *const editable = editor.m_selection.GetPart()->GetEditable();
-         const string nameBefore = MakeString(editable->GetWName());
+         const string nameBefore = editable->GetName();
          editor.m_undo.BeginUndo();
          editor.m_undo.MarkForUndo(editable);
          editor.m_selection.GetPart()->UpdatePropertyPane(props);
@@ -145,7 +145,7 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
 {
    EditorUI &editor = m_editor;
    PinTable *table = props.GetEditedPart<PinTable>(editor.m_table);
-   props.Header("Table"s, [table]() { return table->GetWName(); }, [table](const wstring &v) { table->SetName(v); });
+   props.Header("Table"s, [table]() { return table->GetName(); }, [table](const string &v) { table->SetName(v); });
 
    if (props.BeginSection("Visuals"s))
    {
@@ -251,7 +251,7 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
       props.InputFloat<PinTable>(
          table, "Playfield Friction"s, //
          [](const PinTable *table) { return table->m_friction; }, //
-         [](PinTable *table, float v) { table->m_friction = v; }, PropertyPane::Unit::None, 3);
+         [](PinTable *table, float v) { table->m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 3);
       props.InputFloat<PinTable>(
          table, "Playfield Scatter Angle"s, //
          [](const PinTable *table) { return table->m_scatter; }, //
@@ -453,7 +453,7 @@ void PropertiesPanel::CameraProperties(PropertyPane &props, int bgSet)
 {
    EditorUI &editor = m_editor;
    ImGui::BeginDisabled(true);
-   props.Header("Camera"s, [bgSet]() { return bgSet == 0 ? L"Desktop"s : bgSet == 1 ? L"Cabinet"s : L"Full Single Screen"s; }, [](const wstring &) {});
+   props.Header("Camera"s, [bgSet]() { return bgSet == 0 ? "Desktop"s : bgSet == 1 ? "Cabinet"s : "Full Single Screen"s; }, [](const string &) {});
    ImGui::EndDisabled();
 
    {
@@ -532,7 +532,7 @@ void PropertiesPanel::ImageProperties(PropertyPane &props, Texture *texture)
    EditorUI &editor = m_editor;
    ImGui::BeginDisabled(editor.m_table->m_liveBaseTable != nullptr); // Disable edition in inspection mode as images are shared between startup & inspected table
 
-   props.Header("Image"s, [texture]() { return MakeWString(texture->m_name); }, [texture](const wstring &v) { texture->m_name = MakeString(v); });
+   props.Header("Image"s, [texture]() { return texture->m_name; }, [texture](const string &v) { texture->m_name = v; });
 
    ImageActions(props);
 
@@ -579,7 +579,7 @@ void PropertiesPanel::RenderProbeProperties(PropertyPane &props, RenderProbe *pr
 {
    EditorUI &editor = m_editor;
    RenderProbe *editedProbe = props.GetEditedPart<RenderProbe>(probe);
-   props.Header("Render Probe"s, [editedProbe]() { return MakeWString(editedProbe->GetName()); }, [editedProbe](const wstring &v) { editedProbe->SetName(MakeString(v)); });
+   props.Header("Render Probe"s, [editedProbe]() { return editedProbe->GetName(); }, [editedProbe](const string &v) { editedProbe->SetName(v); });
 
    if (props.BeginSection("Visuals"s))
    {
@@ -629,7 +629,7 @@ void PropertiesPanel::RenderProbeProperties(PropertyPane &props, RenderProbe *pr
 void PropertiesPanel::MaterialProperties(PropertyPane &props, Material *material)
 {
    Material *editedMaterial = props.GetEditedPart<Material>(material);
-   props.Header("Material"s, [editedMaterial]() { return MakeWString(editedMaterial->m_name); }, [editedMaterial](const wstring &v) { editedMaterial->m_name = MakeString(v); });
+   props.Header("Material"s, [editedMaterial]() { return editedMaterial->m_name; }, [editedMaterial](const string &v) { editedMaterial->m_name = v; });
 
    ImGui::BeginDisabled(m_editor.m_table->m_liveBaseTable != nullptr); // Material list actions are not supported in inspection mode
    MaterialActions(props);
@@ -728,10 +728,10 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
    const bool isPlaying = playing || (m_playingSound == sound);
 
    props.Header(
-      "Sound"s, [sound]() { return MakeWString(sound->GetName()); },
-      [&editor, sound](const wstring &v)
+      "Sound"s, [sound]() { return sound->GetName(); },
+      [&editor, sound](const string &v)
       {
-         sound->SetName(MakeString(v));
+         sound->SetName(v);
          editor.m_table->SetNonUndoableDirty(eSaveDirty);
       });
 
@@ -836,7 +836,7 @@ void PropertiesPanel::UsersSection(PropertyPane &props, const vector<WhereUsedIn
       for (const WhereUsedInfo &where : whereUsed)
       {
          IEditable * editable = editor.m_table->GetElementByName(where.whereUsedObjectname.c_str());
-         if (editable == nullptr && where.whereUsedObjectname == MakeString(m_editor.m_table->m_wzName))
+         if (editable == nullptr && where.whereUsedObjectname == m_editor.m_table->m_name)
             editable = m_editor.m_table;
          ImGui::PushID(&where);
          // Clicking an entry selects the using part in the editor, like the Win32 dialog's 'Edit Object' button
@@ -1307,7 +1307,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
             Material *const pmat = new Material(mat.bIsMetal ? Material::METAL : Material::BASIC, mat.fWrapLighting, mat.fRoughness, dequantizeUnsigned<8>(mat.fGlossyImageLerp),
                dequantizeUnsigned<8>(mat.fThickness), mat.fEdge, dequantizeUnsigned<7>(mat.bOpacityActive_fEdgeAlpha >> 1), mat.fOpacity, mat.cBase, mat.cGlossy, mat.cClearcoat,
                !!(mat.bOpacityActive_fEdgeAlpha & 1), elasticity, elasticityFalloff, friction, scatterAngle, 0xFFFFFFFF);
-            pmat->m_name = string(mat.szName, strnlen(mat.szName, std::size(mat.szName))); // May not be null terminated in a corrupted file
+            pmat->m_name = string_from_utf8_or_cp1252(mat.szName, strnlen(mat.szName, std::size(mat.szName))); // May not be null terminated in a corrupted file
             table->AddMaterial(pmat);
             sel.push_back(pmat);
             editor.m_selection = Selection(pmat);
@@ -1345,7 +1345,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
             mat.fOpacity = pmat->m_fOpacity;
             mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
             mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-            strncpy_s(mat.szName, std::size(mat.szName), pmat->m_name.c_str());
+            strncpy_s(mat.szName, std::size(mat.szName), TruncateToUTF8Length(pmat->m_name, std::size(mat.szName) - 1).c_str()); // Do not split a UTF-8 character
             f.write(reinterpret_cast<const char *>(&mat), sizeof(SaveMaterial));
             f.write(reinterpret_cast<const char *>(&pmat->m_fElasticity), sizeof(float));
             f.write(reinterpret_cast<const char *>(&pmat->m_fElasticityFalloff), sizeof(float));

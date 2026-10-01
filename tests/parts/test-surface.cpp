@@ -17,7 +17,7 @@ TEST_CASE("Surface part")
    {
       Surface* const surface = Surface::COMCreate();
       surface->Init(100.f, 200.f, false);
-      surface->SetName(L"Wall1");
+      surface->SetName("Wall1");
       surface->m_d.m_slingshot_threshold = 0.9f;
       surface->m_d.m_szSideImage = "side.png";
       surface->m_d.m_szImage = "top.png";
@@ -52,7 +52,7 @@ TEST_CASE("Surface part")
       Surface* const copy = Surface::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Wall1");
+      CHECK(copy->GetName() == "Wall1");
       CHECK(copy->m_d.m_slingshot_threshold == 0.9f);
       CHECK(copy->m_d.m_szSideImage == "side.png");
       CHECK(copy->m_d.m_szImage == "top.png");
@@ -92,7 +92,7 @@ TEST_CASE("Surface part")
    {
       Surface* const surface = Surface::COMCreate();
       surface->Init(50.f, 60.f, false);
-      surface->SetName(L"Wall2");
+      surface->SetName("Wall2");
       surface->m_d.m_droppable = true;
       table->AddPart(surface);
       surface->Release();
@@ -106,7 +106,7 @@ TEST_CASE("Surface part")
    {
       Surface* const surface = Surface::COMCreate();
       surface->Init(100.f, 100.f, false);
-      surface->SetName(L"Wall3");
+      surface->SetName("Wall3");
       table->AddPart(surface);
       surface->Release();
 

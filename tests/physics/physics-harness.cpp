@@ -98,7 +98,7 @@ Surface *PhysicsTestHarness::AddWall(const vector<Vertex2D> &outline, const floa
 {
    Surface *const wall = Surface::COMCreate();
    wall->Init(0.f, 0.f, false);
-   wall->SetName(L"TestWall" + std::to_wstring(++m_partCounter));
+   wall->SetName("TestWall" + std::to_string(++m_partCounter));
    wall->m_curve.ClearPoints();
    for (const Vertex2D &v : outline)
       wall->m_curve.PushPoint(std::make_unique<DragPoint>(&wall->m_curve, v.x, v.y, 0.f, false));

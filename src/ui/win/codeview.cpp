@@ -457,7 +457,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
-   pcvd->m_wName = piscript->get_Name();
+   pcvd->m_wName = MakeWString(piscript->get_Name());
    pcvd->m_pdisp = piscript->GetIDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -472,9 +472,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    m_vcvd.AddSortedString(pcvd);
 
    // Add item to dropdown
-   string szT = MakeString(pcvd->m_wName);
-
-   const size_t index = ::SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT.data());
+   const size_t index = ::SendMessageW(m_hwndItemList, CB_ADDSTRING, 0, (size_t)MakeWString(piscript->get_Name()).c_str()); // Wide: the ANSI combo box would read UTF-8 as ANSI
    ::SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
    //AndyS - WIP insert new item into autocomplete list??
    return S_OK;
@@ -482,9 +480,9 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 
 void CodeViewer::RemoveItem(IScriptable * const piscript)
 {
-   const wstring& name = piscript->get_Name();
+   const string& name = piscript->get_Name();
 
-   const int idx = m_vcvd.GetSortedIndex(name);
+   const int idx = m_vcvd.GetSortedIndex(MakeWString(name));
 
    if (idx == -1)
       return;
@@ -496,8 +494,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    m_vcvd.RemoveElementAt(idx);
 
    // Remove item from dropdown
-   string szT = MakeString(name);
-   const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT.data());
+   const size_t index = ::SendMessageW(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)MakeWString(name).c_str());
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
    delete pcvd;
@@ -505,8 +502,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 
 void CodeViewer::SelectItem(IScriptable * const piscript)
 {
-   string name = MakeString(piscript->get_Name());
-   const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)name.data());
+   const LRESULT index = ::SendMessageW(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)MakeWString(piscript->get_Name()).c_str());
    if (index != CB_ERR)
    {
       ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
@@ -515,14 +511,15 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    }
 }
 
-HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNew)
+HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const string &newName)
 {
+   const wstring wzNew = MakeWString(newName);
    if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
 
-   const wstring& name = piscript->get_Name();
+   const string& name = piscript->get_Name();
 
-   const int idx = m_vcvd.GetSortedIndex(name);
+   const int idx = m_vcvd.GetSortedIndex(MakeWString(name));
    if (idx == -1)
       return E_FAIL;
 
@@ -537,12 +534,10 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
    m_vcvd.AddSortedString(pcvd); // and re-add
 
    // Remove old name from dropdown and replace it with the new
-   string szT = MakeString(name);
-   size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT.data());
+   size_t index = ::SendMessageW(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)MakeWString(name).c_str());
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
-   szT = MakeString(wzNew);
-   index = ::SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT.data());
+   index = ::SendMessageW(m_hwndItemList, CB_ADDSTRING, 0, (size_t)wzNew.c_str());
    ::SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
 
    ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
@@ -605,10 +600,10 @@ void CodeViewer::SetCaption(const string& szCaption)
 {
    string szT;
    if (!m_tableEditor->m_table->m_external_script_name.empty())
-      szT = "MODIFYING EXTERNAL SCRIPT: " + m_tableEditor->m_table->m_external_script_name.string();
+      szT = "MODIFYING EXTERNAL SCRIPT: " + PathToUTF8(m_tableEditor->m_table->m_external_script_name);
    else
       szT = szCaption + ' ' + LocalString(IDS_SCRIPT).m_szbuffer;
-   SetWindowText(szT.c_str());
+   ::SetWindowTextW(GetHwnd(), MakeWString(szT).c_str()); // The caption is UTF-8
 }
 
 void CodeViewer::UpdatePrefsfromReg()
@@ -733,6 +728,8 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
       0, 30+2 +40, 0, 0, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+
+	::SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // The script text is UTF-8 (Scintilla defaults to the ANSI code page)
 
 	//if still using old dll load VB lexer instead
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER

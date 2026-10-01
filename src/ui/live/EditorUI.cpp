@@ -1577,7 +1577,7 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
 
    // Same initialization sequence as the WinUI editor
    if (auto *const scriptable = pie->GetIScriptable(); scriptable)
-      m_table->GetUniqueName(type, scriptable->m_wzName);
+      m_table->GetUniqueName(type, scriptable->m_name);
    pie->m_desktopBackdrop = (m_camMode == ViewMode::DesktopBackdrop);
    m_table->AddPart(pie);
    pie->SetPartGroup(GetPartGroupForNewPart());
@@ -1673,12 +1673,12 @@ void EditorUI::PasteSelection(const ImVec2 &pos)
       editable->Load(reader);
       editable->m_desktopBackdrop = backdrop;
       // If the original name is not yet used, use that one, otherwise add/increase the suffix until we find a name that's not used yet
-      if (!m_table->IsNameUnique(editable->GetWName()))
+      if (!m_table->IsNameUnique(editable->GetName()))
       {
          // First remove the existing suffix
-         const wstring input = editable->GetWName();
+         const string input = editable->GetName();
          size_t lastNonDigit = input.length();
-         while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
+         while (lastNonDigit > 0 && input[lastNonDigit - 1] >= '0' && input[lastNonDigit - 1] <= '9')
             --lastNonDigit;
          editable->SetName(m_table->GetUniqueName(input.substr(0, lastNonDigit)));
       }
@@ -1860,15 +1860,35 @@ void EditorUI::UpdateEditableList()
                if (newGroups.contains(group))
                   group->SetUIVisible(true);
    }
-   // Sort according to outliner path to ease its rendering
+   // Sort in tree order for the outliner (root live objects first, then each group directly followed by its content, siblings by name).
+   // Paths are compared name by name: comparing the joined path strings would put "Lights GI/..." between "Lights" and "Lights/..."
+   // (' ' sorts before '/'), and the outliner would then lose the parts of "Lights"
    if (needSort)
-      std::ranges::sort(m_editables,
-         [this](const auto &a, const auto &b)
+   {
+      const auto pathOf = [](const IEditable *edit)
+      {
+         vector<const string *> path;
+         for (const IEditable *part = edit; part != nullptr; part = part->GetPartGroup())
+            path.push_back(&part->GetName());
+         std::ranges::reverse(path);
+         return path;
+      };
+      vector<std::pair<vector<const string *>, std::shared_ptr<EditorUIPart>>> sorted;
+      sorted.reserve(m_editables.size());
+      for (auto &uiPart : m_editables)
+         sorted.emplace_back(pathOf(uiPart->GetEditable()), std::move(uiPart));
+      std::ranges::sort(sorted,
+         [](const auto &a, const auto &b)
          {
-            const bool isRootA = a->GetEditable()->GetPartGroup() == nullptr && a->GetEditable()->GetItemType() != eItemPartGroup;
-            const bool isRootB = b->GetEditable()->GetPartGroup() == nullptr && b->GetEditable()->GetItemType() != eItemPartGroup;
-            return (isRootA != isRootB) ? isRootA : (a->GetOutlinerPath() < b->GetOutlinerPath());
+            const bool isRootA = a.second->GetEditable()->GetPartGroup() == nullptr && a.second->GetEditable()->GetItemType() != eItemPartGroup;
+            const bool isRootB = b.second->GetEditable()->GetPartGroup() == nullptr && b.second->GetEditable()->GetItemType() != eItemPartGroup;
+            if (isRootA != isRootB)
+               return isRootA;
+            return std::ranges::lexicographical_compare(a.first, b.first, [](const string *x, const string *y) { return StrLessNoCase(*x, *y); });
          });
+      for (size_t i = 0; i < sorted.size(); i++)
+         m_editables[i] = std::move(sorted[i].second);
+   }
 }
 
 void EditorUI::SetGizmoOperation(ImGuizmo::OPERATION operation)

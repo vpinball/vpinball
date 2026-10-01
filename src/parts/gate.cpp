@@ -404,7 +404,7 @@ void Gate::Render(const unsigned int renderMask)
 
 void Gate::ExportMesh(ObjLoader& loader)
 {
-   const string name = MakeString(m_wzName);
+   const string& name = m_name;
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    if (m_d.m_showBracket)
@@ -481,7 +481,7 @@ void Gate::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(AFRC), m_d.m_damping);
    writer.WriteFloat(FID(GGFC), m_d.m_gravityfactor);
    writer.WriteBool(FID(GVSB), m_d.m_visible);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteBool(FID(TWWA), m_d.m_twoWay);
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    writer.WriteInt(FID(GATY), m_d.m_type);
@@ -519,7 +519,7 @@ void Gate::Load(IObjectReader& reader)
          case FID(GVSB): m_d.m_visible = reader.AsBool(); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
          case FID(GAMA): m_d.m_angleMax = reader.AsFloat(); break;
          case FID(GAMI): m_d.m_angleMin = reader.AsFloat(); break;
@@ -828,7 +828,7 @@ STDMETHODIMP Gate::get_Friction(float *pVal)
 
 STDMETHODIMP Gate::put_Friction(float newVal)
 {
-   m_d.m_friction = saturate(newVal);
+   m_d.m_friction = max(newVal, 0.f); // Friction can not be negative, but may exceed 1
    return S_OK;
 }
 

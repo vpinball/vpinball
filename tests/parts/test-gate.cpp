@@ -16,7 +16,7 @@ TEST_CASE("Gate part")
    {
       Gate* const gate = Gate::COMCreate();
       gate->Init(100.f, 200.f, false);
-      gate->SetName(L"Gate1");
+      gate->SetName("Gate1");
       gate->m_d.m_length = 110.f;
       gate->m_d.m_height = 60.f;
       gate->m_d.m_rotation = 90.f;
@@ -42,7 +42,7 @@ TEST_CASE("Gate part")
       Gate* const copy = Gate::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Gate1");
+      CHECK(copy->GetName() == "Gate1");
       CHECK(copy->m_d.m_vCenter.x == 100.f);
       CHECK(copy->m_d.m_vCenter.y == 200.f);
       CHECK(copy->m_d.m_length == 110.f);
@@ -71,7 +71,7 @@ TEST_CASE("Gate part")
    {
       Gate* const gate = Gate::COMCreate();
       gate->Init(50.f, 60.f, false);
-      gate->SetName(L"Gate2");
+      gate->SetName("Gate2");
       gate->m_d.m_twoWay = true;
       table->AddPart(gate);
       gate->Release();
@@ -85,7 +85,7 @@ TEST_CASE("Gate part")
    {
       Gate* const gate = Gate::COMCreate();
       gate->Init(10.f, 20.f, false);
-      gate->SetName(L"Gate3");
+      gate->SetName("Gate3");
       table->AddPart(gate);
       gate->Release();
 

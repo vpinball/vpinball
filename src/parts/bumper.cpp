@@ -380,7 +380,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
 
 void Bumper::ExportMesh(ObjLoader& loader)
 {
-   const string name = MakeString(m_wzName);
+   const string& name = m_name;
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation));
@@ -655,7 +655,7 @@ void Bumper::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(SKMA), m_d.m_szSkirtMaterial);
    writer.WriteString(FID(RIMA), m_d.m_szRingMaterial);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
 
    writer.WriteBool(FID(CAVI), m_d.m_capVisible);
    writer.WriteBool(FID(BSVS), m_d.m_baseVisible);
@@ -696,7 +696,7 @@ void Bumper::Load(IObjectReader& reader)
          case FID(ORIN): m_d.m_orientation = reader.AsFloat(); break;
          case FID(RDLI): m_d.m_ringDropOffset = reader.AsFloat(); break;
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(BVIS):
          {
             // backwards compatibility when loading old VP9 tables

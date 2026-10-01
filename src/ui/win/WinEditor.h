@@ -85,7 +85,7 @@ public:
    class PinTableWnd* GetActiveTableEditor();
    CComObject<PinTable>* GetActiveTable();
    bool LoadFile(const bool updateEditor);
-   void LoadFileName(const string& szFileName, const bool updateEditor);
+   void LoadFileName(const std::filesystem::path& filename, const bool updateEditor);
 
    void DoPlay(const int playMode);
 
@@ -228,7 +228,7 @@ private:
 
    volatile bool m_unloadingTable;
    //CMenu m_mainMenu;
-   vector<string> m_recentTableList;
+   vector<std::filesystem::path> m_recentTableList;
 
    HANDLE  m_workerthread;
    unsigned int m_workerthreadid;

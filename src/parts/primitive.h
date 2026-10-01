@@ -261,13 +261,9 @@ public:
    void WriteRegDefaults() final;
 
    bool LoadMesh(
-      const string &filename, const MeshUnits units, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation, const bool doForsyth);
+      const std::filesystem::path &filename, const MeshUnits units, const bool importAbsolutePosition, const bool centerMesh, const bool importMaterial, const bool importAnimation, const bool doForsyth);
 
-#if (GET_PLATFORM_OS_ENUM==0) // Windows
-   bool IsPlayfield() const { return _wcsicmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
-#else // Linux and variants (POSIX.1-2008)
-   bool IsPlayfield() const { return wcscasecmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
-#endif
+   bool IsPlayfield() const { return StrCompareNoCase(m_name, "playfield_mesh"s); }
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }

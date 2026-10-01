@@ -539,7 +539,7 @@ void Surface::ExportMesh(ObjLoader& loader)
    m_d.m_heightbottom = oldBottomHeight;
    m_d.m_heighttop = oldTopHeight;
 
-   const string name = MakeString(m_wzName);
+   const string& name = m_name;
    if (!topBuf.empty() && m_d.m_topBottomVisible && !m_d.m_sideVisible)
    {
       loader.WriteObjectName(name);
@@ -548,7 +548,7 @@ void Surface::ExportMesh(ObjLoader& loader)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
-         loader.WriteMaterial(m_d.m_szImage, tex->GetFilePath().string(), mat);
+         loader.WriteMaterial(m_d.m_szImage, PathToUTF8(tex->GetFilePath()), mat); // Written as text in the .mtl file
          loader.UseTexture(m_d.m_szImage);
       }
       else
@@ -938,7 +938,7 @@ void Surface::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(HTBT), m_d.m_heightbottom);
    writer.WriteFloat(FID(HTTP), m_d.m_heighttop);
    //writer.WriteBool(FID(INNR), m_d.m_inner); //!! Deprecated
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteBool(FID(DSPT), m_d.m_displayTexture);
    writer.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
    writer.WriteFloat(FID(SLTH), m_d.m_slingshot_threshold);
@@ -992,7 +992,7 @@ void Surface::Load(IObjectReader& reader)
          // Deprecated and no longer written. An outer wall (not inner) needs the table
          // bounds to be squared off, which are out of reach here, so InitPostLoad does it
          case FID(INNR): m_onLoadInsideOutOuterWall = !reader.AsBool(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(DSPT): m_d.m_displayTexture = reader.AsBool(); break;
          case FID(SLGF): m_d.m_slingshotforce = reader.AsFloat(); break;
          case FID(SLTH): m_d.m_slingshot_threshold = reader.AsFloat(); break;
@@ -1329,7 +1329,7 @@ STDMETHODIMP Surface::get_Friction(float *pVal)
 
 STDMETHODIMP Surface::put_Friction(float newVal)
 {
-   m_d.m_friction = saturate(newVal);
+   m_d.m_friction = max(newVal, 0.f); // Friction can not be negative, but may exceed 1
    return S_OK;
 }
 

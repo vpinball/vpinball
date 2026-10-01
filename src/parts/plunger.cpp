@@ -201,16 +201,16 @@ constexpr static PlungerDesc flatDesc = { 0, 0 };
 static const char *nextTipToken(const char* &p)
 {
    // skip whitespace
-   for (; isspace(*p); ++p);
+   for (; isspace(static_cast<unsigned char>(*p)); ++p);
 
    // this is the start of the token, which will be our return value
    const char *tok = p;
 
    // skip ahead to the next delimiter
-   for (; *p != ';' && *p != ',' && !isspace(*p) && *p != '\0'; ++p);
+   for (; *p != ';' && *p != ',' && !isspace(static_cast<unsigned char>(*p)) && *p != '\0'; ++p);
 
    // skip whitespace at/after the delimiter
-   for (; isspace(*p); ++p);
+   for (; isspace(static_cast<unsigned char>(*p)); ++p);
 
    // return the start of the token
    return tok;
@@ -848,7 +848,7 @@ void Plunger::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(VSBL), m_d.m_visible);
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
 
    writer.WriteString(FID(TIPS), m_d.m_szTipShape);
    writer.WriteFloat(FID(RODD), m_d.m_rodDiam);
@@ -887,7 +887,7 @@ void Plunger::Load(IObjectReader& reader)
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
          case FID(MECH): m_d.m_mechPlunger = reader.AsBool(); break;
          case FID(APLG): m_d.m_autoPlunger = reader.AsBool(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(TYPE): m_d.m_type = static_cast<PlungerType>(reader.AsInt()); break;
          case FID(ANFR): m_d.m_animFrames = reader.AsInt(); break;
          case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;

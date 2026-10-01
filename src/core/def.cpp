@@ -292,30 +292,30 @@ static bool HelperConvertASCII(const char* const __restrict szcstr, const int le
 }
 #endif
 
-WCHAR *MakeWide(const string& sz, const UINT codepage)
+WCHAR *MakeWide(const string& sz)
 {
    // assume that we usually deal with (mostly) ASCII, so then the following over-allocation is (mostly) exact
-   // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), works for all codepages (not just CP_ACP), thus saving one Win-API call
+   // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), thus saving one Win-API call
    int len = (int)sz.length();
    WCHAR* const __restrict result = new WCHAR[len+1];
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
    if (!HelperConvertASCII(sz.c_str(), len, result)) // Non-ASCII found? -> Trigger Win-API conversion
 #endif
-      len = MultiByteToWideChar(codepage, 0, sz.c_str(), len, result, len+1);
+      len = MultiByteToWideChar(CP_UTF8, 0, sz.c_str(), len, result, len+1);
    result[len] = L'\0';
    return result;
 }
 
-BSTR MakeWideBSTR(const string& sz, const UINT codepage)
+BSTR MakeWideBSTR(const string& sz)
 {
-   return MakeWideBSTR(sz.c_str(), sz.length(), codepage);
+   return MakeWideBSTR(sz.c_str(), sz.length());
 }
 
-BSTR MakeWideBSTR(const char* const sz, const size_t length, const UINT codepage)
+BSTR MakeWideBSTR(const char* const sz, const size_t length)
 {
    // assume that we usually deal with (mostly) ASCII, so then the following over-allocation is (mostly) exact
-   // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), works for all codepages (not just CP_ACP), thus saving one Win-API call
+   // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), thus saving one Win-API call
    //!! note that this BSTR variant only reaches about 1.1x-1.9x speed up, due to more Win-API overhead
    //   and in the non-ASCII case an additional alloc+copy, but this also removes the overallocation
    const int szlen = (int)length;
@@ -329,7 +329,7 @@ BSTR MakeWideBSTR(const char* const sz, const size_t length, const UINT codepage
       return result;
 #endif
 
-   const int len = MultiByteToWideChar(codepage, 0, sz, szlen, result, szlen+1);
+   const int len = MultiByteToWideChar(CP_UTF8, 0, sz, szlen, result, szlen+1);
    if (len < szlen) // shrink the BSTR if the actual conversion produced fewer WCHARs (or if above call errors with 0)
    {
       BSTR trimmed = SysAllocStringLen(result, len);
@@ -345,37 +345,18 @@ BSTR MakeWideBSTR(const wstring& wz)
    return SysAllocStringLen(wz.c_str(), (UINT)wz.length());
 }
 
-wstring MakeWString(const string& sz, const UINT codepage)
+wstring MakeWString(const char* const sz, const size_t length)
 {
    // assume that we usually deal with (mostly) ASCII, so then the following over-allocation is (mostly) exact
-   // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), works for all codepages (not just CP_ACP), thus saving one Win-API call
-   //!! note that this wstring variant only reaches about 1.3x-3.4x speed up
-   int len = (int)sz.length();
+   // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), thus saving one Win-API call
+   //!! note that this wstring variant only reaches about 1.2x-3.4x speed up
+   const int len = (int)length;
    wstring result(len, L'\0');
-
-#ifdef ENABLE_SSE_OPTIMIZATIONS
-   if (HelperConvertASCII(sz.c_str(), len, result.data())) // all ASCII? -> done
-      return result;
-#endif
-   len = MultiByteToWideChar(codepage, 0, sz.c_str(), len, result.data(), len+1);
-   result.resize(len); //!! potentially reallocs
-   return result;
-}
-
-wstring MakeWString(const char* const sz, const UINT codepage)
-{
-   // assume that we usually deal with (mostly) ASCII, so then the following over-allocation is (mostly) exact
-   // this will speed up both the full ASCII and the non-ASCII fallback cases (1.1x-20x incl. SIMD path); BUT allocates 1x (all ASCII) up to (overallocating) 3x (all non-ASCII), works for all codepages (not just CP_ACP), thus saving one Win-API call
-   //!! note that this wstring variant only reaches about 1.2x-3.2x speed up
-   int len = (int)strlen(sz);
-   wstring result(len, L'\0');
-
 #ifdef ENABLE_SSE_OPTIMIZATIONS
    if (HelperConvertASCII(sz, len, result.data())) // all ASCII? -> done
       return result;
 #endif
-   len = MultiByteToWideChar(codepage, 0, sz, len, result.data(), len+1);
-   result.resize(len); //!! potentially reallocs
+   result.resize(len > 0 ? MultiByteToWideChar(CP_UTF8, 0, sz, len, result.data(), len) : 0); //!! potentially reallocs
    return result;
 }
 
@@ -406,6 +387,40 @@ static bool HelperIsASCII(const WCHAR* const __restrict wzcstr, const int len)
 }
 #endif
 
+#ifdef _WIN32
+static bool IsValidUTF8(const char* str, size_t length);
+
+std::filesystem::path PathFromUTF8OrString(const std::string& s)
+{
+   return IsValidUTF8(s.data(), s.size()) ? PathFromUTF8(s) : PathFromString(s);
+}
+
+std::filesystem::path PathFromString(const std::string& s)
+{
+   if (s.empty())
+      return {};
+   #ifdef _MSC_VER
+   UINT codepage = CP_ACP; // Matches PathToString
+   #else
+   UINT codepage = CP_UTF8; // MinGW's std::filesystem narrow encoding
+   #endif
+   int len = MultiByteToWideChar(codepage, MB_ERR_INVALID_CHARS, s.data(), static_cast<int>(s.size()), nullptr, 0);
+   if (len <= 0)
+   {
+      // Legacy ANSI text (e.g. settings written before the switch to UTF-8): decode it with the user's ANSI code page, or Windows-1252 when there is none or it is UTF-8 itself (Windows 'Beta: use Unicode UTF-8' option)
+      DWORD legacyCodepage = 0;
+      if (GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER, reinterpret_cast<LPWSTR>(&legacyCodepage), sizeof(legacyCodepage) / sizeof(WCHAR)) == 0
+         || legacyCodepage == 0 || legacyCodepage == CP_UTF8)
+         legacyCodepage = 1252;
+      codepage = legacyCodepage;
+      len = MultiByteToWideChar(codepage, 0, s.data(), static_cast<int>(s.size()), nullptr, 0);
+   }
+   std::wstring wide(len, L'\0');
+   MultiByteToWideChar(codepage, 0, s.data(), static_cast<int>(s.size()), wide.data(), len);
+   return wide;
+}
+#endif
+
 #ifdef _MSC_VER
 std::string PathToString(const std::filesystem::path& path)
 {
@@ -427,72 +442,31 @@ std::string PathToString(const std::filesystem::path& path)
 }
 #endif
 
-string MakeString(const wstring& wz, const UINT codepage)
+string MakeString(const WCHAR* const wz, const size_t length)
 {
+   const int len = (int)length;
+   if (len <= 0)
+      return string();
 #ifdef ENABLE_SSE_OPTIMIZATIONS // 1.5x-8.5x faster for all ASCII cases
 #pragma warning(push)
 #pragma warning(disable : 4244) // conversion from wchar to char
-   if (HelperIsASCII(wz.c_str(), (int)wz.length()))
-      return string(wz.begin(), wz.end()); // all ASCII
+   if (HelperIsASCII(wz, len))
+      return string(wz, wz + len); // all ASCII
 #pragma warning(pop)
 #endif
 
    // non-ASCII found
    // Note: Even in this case, the additional SIMD detection loop above is barely noticeable, thus overall performance is still ~1x
-   // Note: Overallocation (by up to 3x (UTF16) or 4x (UTF32), depending-on/for-all codepages (not just CP_ACP)) instead of exact allocation (similar to MakeWide) is not efficient as the assumption is that most of the chars will be ASCII (such benchmarks are significantly slower then)
-   const int len = WideCharToMultiByte(codepage, 0, wz.c_str(), -1, nullptr, 0, nullptr, nullptr);
-   if (len <= 1)
+   // Note: Overallocation (by up to 3x (UTF16) or 4x (UTF32)) instead of exact allocation (similar to MakeWide) is not efficient as the assumption is that most of the chars will be ASCII (such benchmarks are significantly slower then)
+   const int size = WideCharToMultiByte(CP_UTF8, 0, wz, len, nullptr, 0, nullptr, nullptr);
+   if (size <= 0)
       return string();
-   string result(len-1, '\0');
-   WideCharToMultiByte(codepage, 0, wz.c_str(), -1, result.data(), len, nullptr, nullptr);
+   string result(size, '\0');
+   WideCharToMultiByte(CP_UTF8, 0, wz, len, result.data(), size, nullptr, nullptr);
    return result;
 }
 
-string MakeString(const WCHAR* const wz, const UINT codepage)
-{
-#ifdef ENABLE_SSE_OPTIMIZATIONS // 1.5x-8.5x faster for all ASCII cases
-   const int wzlen = (int)wcslen(wz); //!! this penalties the non-ASCII case, dropping perf to 0.8x-0.9x instead of ~1x
-#pragma warning(push)
-#pragma warning(disable : 4244) // conversion from wchar to char
-   if (HelperIsASCII(wz, wzlen))
-      return string(wz, wz + wzlen); // all ASCII
-#pragma warning(pop)
-#endif
-
-   // non-ASCII found
-   // Note: Even in this case, the additional SIMD detection loop above is barely noticeable, thus overall performance is still ~1x
-   // Note: Overallocation (by up to 3x (UTF16) or 4x (UTF32), depending-on/for-all codepages (not just CP_ACP)) instead of exact allocation (similar to MakeWide) is not efficient as the assumption is that most of the chars will be ASCII (such benchmarks are significantly slower then)
-   const int len = WideCharToMultiByte(codepage, 0, wz, -1, nullptr, 0, nullptr, nullptr);
-   if (len <= 1)
-      return string();
-   string result(len-1, '\0');
-   WideCharToMultiByte(codepage, 0, wz, -1, result.data(), len, nullptr, nullptr);
-   return result;
-}
-
-string MakeString(const BSTR wz, const UINT codepage)
-{
-#ifdef ENABLE_SSE_OPTIMIZATIONS // 1.5x-8.5x faster for all ASCII cases
-   const int wzlen = (int)SysStringLen(wz);
-#pragma warning(push)
-#pragma warning(disable : 4244) // conversion from wchar to char
-   if (HelperIsASCII(wz, wzlen))
-      return string(wz, wz + wzlen); // all ASCII
-#pragma warning(pop)
-#endif
-
-   // non-ASCII found
-   // Note: Even in this case, the additional SIMD detection loop above is barely noticeable, thus overall performance is still ~1x
-   // Note: Overallocation (by up to 3x (UTF16) or 4x (UTF32), depending-on/for-all codepages (not just CP_ACP)) instead of exact allocation (similar to MakeWide) is not efficient as the assumption is that most of the chars will be ASCII (such benchmarks are significantly slower then)
-   const int len = WideCharToMultiByte(codepage, 0, wz, -1, nullptr, 0, nullptr, nullptr);
-   if (len <= 1)
-      return string();
-   string result(len-1, '\0');
-   WideCharToMultiByte(codepage, 0, wz, -1, result.data(), len, nullptr, nullptr);
-   return result;
-}
-
-char* MakeCharArray(const WCHAR* const wz, const int length, const UINT codepage)
+char* MakeCharArray(const WCHAR* const wz, const int length)
 {
 #ifdef ENABLE_SSE_OPTIMIZATIONS
    if (HelperIsASCII(wz, length))
@@ -506,12 +480,12 @@ char* MakeCharArray(const WCHAR* const wz, const int length, const UINT codepage
 #endif
 
    // non-ASCII found
-   const int len = (length > 0) ? WideCharToMultiByte(codepage, 0, wz, length, nullptr, 0, nullptr, nullptr) : 0;
+   const int len = (length > 0) ? WideCharToMultiByte(CP_UTF8, 0, wz, length, nullptr, 0, nullptr, nullptr) : 0;
    if (len <= 0 && length > 0)
       return nullptr;
    char* const result = new char[len + 1];
    if (len > 0)
-      WideCharToMultiByte(codepage, 0, wz, length, result, len, nullptr, nullptr);
+      WideCharToMultiByte(CP_UTF8, 0, wz, length, result, len, nullptr, nullptr);
    result[len] = '\0';
    return result;
 }
@@ -521,7 +495,7 @@ char* MakeCharArray(const WCHAR* const wz, const int length, const UINT codepage
 #ifdef _WIN32
 void SetThreadName(const std::string& name)
 {
-   const wstring wname = MakeWString(name, CP_UTF8);
+   const wstring wname = MakeWString(name);
    if (wname.empty())
       return;
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wname.c_str());
@@ -647,14 +621,27 @@ bool AskUser(const string& question, const string& title, const bool fallback)
 void Win32DialogSink::Notify(const MsgSeverity severity, const string& title, const string& message)
 {
    const UINT icon = severity == MsgSeverity::Info ? MB_ICONINFORMATION : severity == MsgSeverity::Warning ? MB_ICONWARNING : MB_ICONERROR;
-   ::MessageBox(m_parent, message.c_str(), title.c_str(), MB_OK | icon);
+   ::MessageBoxW(m_parent, MakeWString(message).c_str(), MakeWString(title).c_str(), MB_OK | icon); // Messages are UTF-8
 }
 
 bool Win32DialogSink::Confirm(const string& title, const string& message, const bool fallback)
 {
-   return ::MessageBox(m_parent, message.c_str(), title.c_str(), MB_YESNO | MB_ICONQUESTION | (fallback ? MB_DEFBUTTON1 : MB_DEFBUTTON2)) == IDYES;
+   return ::MessageBoxW(m_parent, MakeWString(message).c_str(), MakeWString(title).c_str(), MB_YESNO | MB_ICONQUESTION | (fallback ? MB_DEFBUTTON1 : MB_DEFBUTTON2)) == IDYES;
 }
 #endif
+
+#ifdef _WIN32
+#include <share.h>
+#endif
+
+FILE* open_file(const std::filesystem::path& path, const char* mode)
+{
+#ifdef _WIN32
+   return _wfsopen(path.c_str(), wstring(mode, mode + strlen(mode)).c_str(), _SH_DENYNO); // mode is ASCII; shared like fopen
+#else
+   return fopen(path.c_str(), mode);
+#endif
+}
 
 vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary)
 {
@@ -662,7 +649,7 @@ vector<uint8_t> read_file(const std::filesystem::path& filename, const bool bina
    std::ifstream file(filename, binary ? (std::ios::binary | std::ios::ate) : std::ios::ate);
    if (!file)
    {
-      ShowError("The file \"" + filename.string() + "\" could not be opened.");
+      ShowError("The file \"" + PathToUTF8(filename) + "\" could not be opened.");
       return data;
    }
    data.resize((size_t)file.tellg());
@@ -677,7 +664,7 @@ void write_file(const std::filesystem::path& filename, const vector<uint8_t>& da
    std::ofstream file(filename, binary ? (std::ios::binary | std::ios::trunc) : std::ios::trunc);
    if (!file)
    {
-      const string text = "The file \"" + PathToString(filename) + "\" could not be opened for writing.";
+      const string text = "The file \"" + PathToUTF8(filename) + "\" could not be opened for writing.";
       ShowError(text);
       return;
    }
@@ -759,7 +746,7 @@ std::filesystem::path find_case_insensitive_file_path(const std::filesystem::pat
 
       for (const auto& ent : std::filesystem::directory_iterator(base, ec))
       {
-         if (!ec && StrCompareNoCase(ent.path().filename().string(), path.filename().string()))
+         if (!ec && StrCompareNoCase(PathToUTF8(ent.path().filename()), PathToUTF8(path.filename())))
          {
             const auto& found = ent.path();
             if (found != path)
@@ -862,23 +849,33 @@ static constexpr uint8_t utf8d[] = {
 };
 
 // old ANSI to UTF-8 (allocates new mem block)
-static string iso8859_1_to_utf8(const char* str, const size_t length)
+// Windows-1252 (Western ANSI) to UTF-8: ISO-8859-1 plus printable characters in 0x80..0x9F (euro sign, typographic quotes, dashes,...).
+// The 5 unassigned bytes map to U+0081,... like Windows does
+static string cp1252_to_utf8(const char* str, const size_t length)
 {
-   string utf8(2 * length, '\0'); // worst case
+   static constexpr uint16_t cp1252_80_9f[32] = {
+      0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
+      0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178 };
+   string utf8(3 * length, '\0'); // worst case
 
    char* c = utf8.data();
-   for (size_t i = 0; i < length; ++i, ++str)
+   for (size_t i = 0; i < length; ++i)
    {
-      if (*str & 0x80)
+      const uint8_t b = static_cast<uint8_t>(str[i]);
+      const uint32_t cp = (b >= 0x80 && b <= 0x9F) ? cp1252_80_9f[b - 0x80] : b;
+      if (cp < 0x80)
+         *c++ = static_cast<char>(cp);
+      else if (cp < 0x800)
       {
-         *c++ = 0xc0 | (char)((unsigned char)*str >> 6);
-         *c++ = 0x80 | (*str & 0x3f);
+         *c++ = static_cast<char>(0xC0 | (cp >> 6));
+         *c++ = static_cast<char>(0x80 | (cp & 0x3F));
       }
-      //else // check for bogus ASCII control characters
-      //if (*str < 9 || (*str > 10 && *str < 13) || (*str > 13 && *str < 32))
-      //   *c++ = ' ';
       else
-         *c++ = *str;
+      {
+         *c++ = static_cast<char>(0xE0 | (cp >> 12));
+         *c++ = static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+         *c++ = static_cast<char>(0x80 | (cp & 0x3F));
+      }
    }
    utf8.resize(c - utf8.data());
 
@@ -908,13 +905,50 @@ static uint32_t validate_utf8(uint32_t* const state, const char* const str, cons
    return *state;
 }
 
-string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize)
+string TruncateToUTF16Length(const string& utf8, size_t maxUnits)
+{
+   size_t units = 0, pos = 0;
+   while (pos < utf8.size())
+   {
+      const uint8_t lead = static_cast<uint8_t>(utf8[pos]);
+      const size_t bytes = (lead >= 0xF0 && lead < 0xF8) ? 4 : (lead >= 0xE0 && lead < 0xF0) ? 3 : (lead >= 0xC0 && lead < 0xE0) ? 2 : 1;
+      const size_t charUnits = (bytes == 4) ? 2 : 1; // Characters beyond the BMP take a surrogate pair, invalid bytes count as 1
+      if (units + charUnits > maxUnits)
+         break;
+      units += charUnits;
+      pos = min(pos + bytes, utf8.size());
+   }
+   return utf8.substr(0, pos);
+}
+
+static bool IsValidUTF8(const char* str, size_t length)
 {
    uint32_t state = UTF8_ACCEPT;
-   if (validate_utf8(&state, src, srcSize) == UTF8_REJECT)
-      return iso8859_1_to_utf8(src, srcSize); // old ANSI characters? -> convert to UTF-8
-   else
-      return string(src, srcSize);
+   return validate_utf8(&state, str, length) == UTF8_ACCEPT; // Also rejects a sequence cut at the end
+}
+
+string TruncateToUTF8Length(const string& utf8, size_t maxBytes)
+{
+   if (utf8.size() <= maxBytes)
+      return utf8;
+   size_t pos = maxBytes;
+   while (pos > 0 && (static_cast<uint8_t>(utf8[pos]) & 0xC0) == 0x80) // Back to the start of the character that would be cut
+      pos--;
+   return utf8.substr(0, pos);
+}
+
+string string_from_utf8_or_cp1252(string&& src)
+{
+   if (!IsValidUTF8(src.data(), src.size()))
+      return cp1252_to_utf8(src.data(), src.size()); // old ANSI characters? -> convert to UTF-8
+   return std::move(src);
+}
+
+string string_from_utf8_or_cp1252(const char* src, size_t srcSize)
+{
+   if (!IsValidUTF8(src, srcSize))
+      return cp1252_to_utf8(src, srcSize); // old ANSI characters? -> convert to UTF-8
+   return string(src, srcSize);
 }
 
 //

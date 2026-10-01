@@ -521,7 +521,7 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
    if ((m_format != SRGBA) && (m_format != SRGB))
       return false;
 
-   const string ext = lowerCase(filepath.extension().string());
+   const string ext = lowerCase(PathToUTF8(filepath.extension()));
    bool success = false;
 
    // Create parent directory if needed
@@ -531,7 +531,7 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
    {
       if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
       {
-         success = SDL_SaveBMP(pSurface, filepath.string().c_str());
+         success = SDL_SaveBMP(pSurface, PathToUTF8(filepath).c_str()); // SDL expects UTF-8
          SDL_DestroySurface(pSurface);
       }
    }
@@ -553,7 +553,7 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
          }
          catch (const std::filesystem::filesystem_error& e)
          {
-            PLOGE << "Failed to save file " << filepath.string().c_str() << ": " << e.what();
+            PLOGE << "Failed to save file " << PathToUTF8(filepath) << ": " << e.what();
          }
          QOI_FREE(encoded);
       }
@@ -564,12 +564,12 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
       if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
       {
          if (ext == ".png")
-            success = IMG_SavePNG(pSurface, filepath.string().c_str());
+            success = IMG_SavePNG(pSurface, PathToUTF8(filepath).c_str());
          else if (ext == ".jpg" || ext == ".jpeg")
-            success = IMG_SaveJPG(pSurface, filepath.string().c_str(), 75);
+            success = IMG_SaveJPG(pSurface, PathToUTF8(filepath).c_str(), 75);
          // Needs latest SDL3_image for WEBP support
          //else if (ext == ".webp")
-         //   success = IMG_SaveWEBP(pSurface, filepath.string().c_str(), 75);
+         //   success = IMG_SaveWEBP(pSurface, PathToUTF8(filepath).c_str(), 75);
          SDL_DestroySurface(pSurface);
       }
 
@@ -583,13 +583,18 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
          else
             copy_bgra_rgba<false>((unsigned int*)bits, (const unsigned int*)m_data, m_width * m_height);
          FreeImage_FlipVertical(bitmap);
+         #ifdef _WIN32
+         const auto save = [&](FREE_IMAGE_FORMAT fif, int flags) { return FreeImage_SaveU(fif, bitmap, filepath.c_str(), flags); }; // Wide path
+         #else
+         const auto save = [&](FREE_IMAGE_FORMAT fif, int flags) { return FreeImage_Save(fif, bitmap, filepath.c_str(), flags); };
+         #endif
          if (ext == ".png")
-            success = FreeImage_Save(FIF_PNG, bitmap, filepath.string().c_str(), PNG_Z_DEFAULT_COMPRESSION);
+            success = save(FIF_PNG, PNG_Z_DEFAULT_COMPRESSION);
          else if (ext == ".jpg" || ext == ".jpeg")
-            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.string().c_str(), JPEG_QUALITYGOOD);
+            success = save(FIF_JPEG, JPEG_QUALITYGOOD);
          else if (ext == ".webp")
-            //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would be better for our regression tests)
-            success = FreeImage_Save(FIF_WEBP, bitmap, filepath.string().c_str(), WBMP_DEFAULT);
+            //success = save(FIF_WEBP, WEBP_LOSSLESS); // Very slow and very large files (but would be better for our regression tests)
+            success = save(FIF_WEBP, WBMP_DEFAULT);
          FreeImage_Unload(bitmap);
       }
    #endif
@@ -1020,7 +1025,7 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
                path.erase(path.length() - ext.length());
                path += "webp"sv;
             }
-            ppb->m_path = PathFromString(path);
+            ppb->m_path = PathFromUTF8(path);
             FreeImage_SeekMemory(memStream, 0, SEEK_SET);
             FreeImage_ReadMemory(ppb->m_buffer.data(), 1, static_cast<unsigned int>(ppb->m_buffer.size()), memStream);
             FreeImage_CloseMemory(memStream);
@@ -1105,7 +1110,7 @@ Texture::~Texture()
 void Texture::Save(IObjectWriter& writer, PinTable* pt) const
 {
    writer.WriteString(FID(NAME), m_name);
-   writer.WriteString(FID(PATH), m_ppb->m_path.string());
+   writer.WriteString(FID(PATH), PathToUTF8(m_ppb->m_path));
    writer.WriteInt(FID(WDTH), m_width);
    writer.WriteInt(FID(HGHT), m_height);
    if (pt && pt->GetImageLink(this))
@@ -1127,7 +1132,7 @@ bool Texture::IsHDR() const
    if (buffer)
       return buffer->m_format == BaseTexture::RGB_FP16 || buffer->m_format == BaseTexture::RGBA_FP16
           || buffer->m_format == BaseTexture::RGB_FP32 || buffer->m_format == BaseTexture::RGBA_FP32;
-   const string ext = lowerCase(m_ppb->m_path.extension().string());
+   const string ext = lowerCase(PathToUTF8(m_ppb->m_path.extension()));
    return (ext == ".exr") || (ext == ".hdr");
 }
 

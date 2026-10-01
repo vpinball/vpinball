@@ -96,6 +96,7 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
       const float kt = 1.0f/m_d.m_mass + tangent.Dot(CrossProduct(cross / Inertia(), surfP));
 
       // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
+      // (a negative friction coefficient means no friction; loading and setters already clamp it at 0)
       const float maxFric = fmaxf(friction, 0.f) * reactionImpulse;
       const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
@@ -329,6 +330,8 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
    const Vertex3Ds surfVel = SurfaceVelocity(surfP);
    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal; // calc the tangential slip velocity
 
+   // The normal force is approximated by the gravity component pressing the ball on the surface: none if gravity pulls it away
+   // (e.g. touching the underside of a wall due to the table slope, or the glass), then there is no friction either
    const float maxFric = fmaxf(fricCoeff, 0.f) * m_d.m_mass * fmaxf(-m_physics->GetGravity().Dot(hitnormal), 0.f);
 
    const float slipspeed = slip.Length();

@@ -26,8 +26,8 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
    tablefileChecksum = vpxChecksum = scriptsChecksum = 0;
    unsigned int dmd_data_c = 0;
 
-   FILE *f;
-   if (fopen_s(&f, tablefile.string().c_str(), "rb") == 0 && f)
+   FILE *f = open_file(tablefile, "rb");
+   if (f)
    {
       uint8_t tmp[4096];
       size_t r;
@@ -87,7 +87,7 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
    vbsFiles.push_back("core.vbs"s);
 
    for (const auto &i3 : vbsFiles)
-      if (fopen_s(&f, g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, i3).string().c_str(), "rb") == 0 && f)
+      if ((f = open_file(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, i3), "rb")))
       {
          uint8_t tmp[4096];
          size_t r;
@@ -111,17 +111,17 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
    //
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
-   const string strpath = GetExecutablePath();
-   const char *const path = strpath.c_str();
+   const std::filesystem::path path = GetExecutablePathW();
 #elif defined(__APPLE__) //!! ??
-   const char *const path = SDL_GetBasePath();
+   const char *const basePath = SDL_GetBasePath();
+   const std::filesystem::path path = basePath ? basePath : "";
 #else
-   char path[MAXSTRING];
-   const ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
-   if (len != -1)
-      path[len] = '\0';
+   char exePath[MAXSTRING];
+   const ssize_t len = ::readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+   exePath[len != -1 ? len : 0] = '\0';
+   const std::filesystem::path path = exePath;
 #endif
-   if (fopen_s(&f, path, "rb") == 0 && f)
+   if ((f = open_file(path, "rb")))
    {
       uint8_t tmp[4096];
       size_t r;
@@ -212,8 +212,7 @@ void GenerateTournamentFile()
       return;
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
 
-   FILE *f;
-   if (fopen_s(&f, (PathToString(g_pplayer->m_ptable->m_filename) + ".txt").c_str(), "w") == 0 && f)
+   if (FILE *f = open_file(std::filesystem::path(g_pplayer->m_ptable->m_filename) += ".txt", "w"); f)
    {
       fprintf(f, "%03X", g_pplayer->m_dmdSize.x);
       fprintf(f, "%03X", g_pplayer->m_dmdSize.y);
@@ -245,8 +244,7 @@ void GenerateImageFromTournamentFile(PinTable* table, const std::filesystem::pat
    unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, renderer = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
    unsigned int tablefileChecksum_in = 0, vpxChecksum_in = 0, scriptsChecksum_in = 0;
    vector<uint8_t> dmd_data;
-   FILE *f;
-   if (fopen_s(&f, txtfile.string().c_str(), "r") == 0 && f)
+   if (FILE *f = open_file(txtfile, "r"); f)
    {
       bool error = false;
       error |= fscanf_s(f, "%03X", &x) != 1;
@@ -336,7 +334,11 @@ void GenerateImageFromTournamentFile(PinTable* table, const std::filesystem::pat
    for (unsigned int j = 0; j < y; j++)
       for (unsigned int i = 0; i < x; i++)
          pdst[i + (y - 1 - j) * x] = dmd_data[i + j * x]; // flip y-axis for image output
-   if (!FreeImage_Save(FIF_PNG, dib, (txtfile.string() + ".png").c_str(), PNG_Z_BEST_COMPRESSION))
+#if defined(_WIN32) && !defined(__STANDALONE__)
+   if (!FreeImage_SaveU(FIF_PNG, dib, (std::filesystem::path(txtfile) += ".png").c_str(), PNG_Z_BEST_COMPRESSION))
+#else
+   if (!FreeImage_Save(FIF_PNG, dib, PathToString(std::filesystem::path(txtfile) += ".png").c_str(), PNG_Z_BEST_COMPRESSION)) // The standalone header only has the narrow API
+#endif
       ShowError("Tournament file converted image could not be saved");
    FreeImage_Unload(dib);
 }

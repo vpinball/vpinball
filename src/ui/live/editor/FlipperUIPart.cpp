@@ -143,7 +143,7 @@ void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Flipper>(
          m_part, "Friction"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_friction; }, //
-         [](Flipper* flipper, float v) { flipper->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
+         [](Flipper* flipper, float v) { flipper->m_d.m_friction = max(v, 0.f); }, PropertyPane::Unit::None, 3);
       props.InputFloat<Flipper>(
          m_part, "Return Strength"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_return; }, //

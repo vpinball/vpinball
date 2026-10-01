@@ -31,7 +31,7 @@ enum TypeID
 // Plugin strings are UTF-8 (a null string is an empty one)
 static BSTR ScriptStringToBSTR(const char* const str)
 {
-   return str ? MakeWideBSTR(str, strlen(str), CP_UTF8) : SysAllocString(L"");
+   return str ? MakeWideBSTR(str, strlen(str)) : SysAllocString(L"");
 }
 
 DynamicTypeLibrary::DynamicTypeLibrary() { Reset(); }
@@ -404,7 +404,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
       case TypeID::TYPEID_UINT64: CHANGE_TYPE(VT_UI8);  sv.vUInt64 = V_UI8(&v); break;
       case TypeID::TYPEID_STRING: CHANGE_TYPE(VT_BSTR);
          {
-            char* const charStr = MakeCharArray(V_BSTR(&v), static_cast<int>(SysStringLen(V_BSTR(&v))), CP_UTF8);
+            char* const charStr = MakeCharArray(V_BSTR(&v), static_cast<int>(SysStringLen(V_BSTR(&v))));
             if (charStr == nullptr)
             {
                // TODO raise an error and prevent further processing

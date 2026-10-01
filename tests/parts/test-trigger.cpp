@@ -17,7 +17,7 @@ TEST_CASE("Trigger part")
    {
       Trigger* const trigger = Trigger::COMCreate();
       trigger->Init(100.f, 200.f, false);
-      trigger->SetName(L"Trigger1");
+      trigger->SetName("Trigger1");
       trigger->m_d.m_radius = 60.f;
       trigger->m_d.m_szSurface = "surface1";
       trigger->m_d.m_shape = TriggerStar;
@@ -39,7 +39,7 @@ TEST_CASE("Trigger part")
       Trigger* const copy = Trigger::COMCreate();
       LoadPartFromStream(copy, saved);
 
-      CHECK(copy->GetWName() == L"Trigger1");
+      CHECK(copy->GetName() == "Trigger1");
       CHECK(copy->m_d.m_vCenter.x == 100.f);
       CHECK(copy->m_d.m_vCenter.y == 200.f);
       CHECK(copy->m_d.m_radius == 60.f);
@@ -65,7 +65,7 @@ TEST_CASE("Trigger part")
    {
       Trigger* const trigger = Trigger::COMCreate();
       trigger->Init(50.f, 60.f, false);
-      trigger->SetName(L"Trigger2");
+      trigger->SetName("Trigger2");
       trigger->m_d.m_shape = TriggerButton;
       table->AddPart(trigger);
       trigger->Release();
@@ -79,7 +79,7 @@ TEST_CASE("Trigger part")
    {
       Trigger* const trigger = Trigger::COMCreate();
       trigger->Init(0.f, 0.f, false);
-      trigger->SetName(L"Trigger3");
+      trigger->SetName("Trigger3");
       table->AddPart(trigger);
       trigger->Release();
 
@@ -95,7 +95,7 @@ TEST_CASE("Trigger part")
    {
       Trigger* const trigger = Trigger::COMCreate();
       trigger->Init(10.f, 20.f, false);
-      trigger->SetName(L"Trigger4");
+      trigger->SetName("Trigger4");
       table->AddPart(trigger);
       trigger->Release();
 

@@ -12,9 +12,9 @@
 class LightSeqData final
 {
 public:
-   Vertex2D      m_v; // UI position
-   Vertex2D      m_vCenter; // Center position used to compute light animations
-   std::wstring  m_wzCollection;
+   Vertex2D      m_v;          // UI position
+   Vertex2D      m_vCenter;    // Center position used to compute light animations
+   string        m_collection; // Name of the collection to animate
    int           m_updateinterval;
 };
 

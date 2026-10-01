@@ -209,7 +209,7 @@ void Spinner::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 void Spinner::ExportMesh(ObjLoader& loader)
 {
-   const string name = MakeString(m_wzName);
+   const string& name = m_name;
    vector<Vertex3D_NoTex2> transformedVertices;
    vector<HitObject*> dummyHitObj;
 
@@ -444,7 +444,7 @@ void Spinner::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
    writer.WriteString(FID(IMGF), m_d.m_szImage);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
-   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteWideString(FID(NAME), MakeWString(m_name));
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
    SaveSharedEditableFields(writer);
@@ -476,7 +476,7 @@ void Spinner::Load(IObjectReader& reader)
          case FID(SVIS): m_d.m_visible = reader.AsBool(); break;
          case FID(IMGF): m_d.m_szImage = reader.AsString(); break;
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
-         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
