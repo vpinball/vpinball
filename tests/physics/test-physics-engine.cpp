@@ -6,6 +6,7 @@
 
 #include "parts/ball.h"
 #include "parts/pintable.h"
+#include "parts/trigger.h"
 #include "physics/PhysicsEngine.h"
 #include "physics/collide.h"
 #include "physics/hitball.h"
@@ -175,6 +176,44 @@ TEST_CASE("PhysicsEngine: wall collisions")
 
       CHECK(bounced);
       CHECK(maxY < 2000.f); // contact at ~1975
+   }
+}
+
+TEST_CASE("PhysicsEngine: trigger volume")
+{
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST); // flat playfield: gravity only holds the ball down
+
+   const auto checkTriggerCrossing = [&](const vector<Vertex2D> &outline)
+   {
+      Trigger *const trigger = Trigger::COMCreate();
+      trigger->Init(0.f, 0.f, false);
+      trigger->SetName("Trigger");
+      trigger->m_d.m_shape = TriggerNone; // use the custom outline, not a predefined shape
+      trigger->m_curve.ClearPoints();
+      for (const Vertex2D &v : outline)
+         trigger->m_curve.PushPoint(std::make_unique<DragPoint>(&trigger->m_curve, v.x, v.y, 0.f, false));
+      harness.GetTable()->AddPart(trigger);
+      trigger->Release(); // owned by the table
+
+      Ball *const ball = harness.AddBall(400.f, 500.f, 0.f, 100.f, 0.f, 0.f); // +x through the [700,900]x[400,600] footprint
+      harness.Start();
+
+      // The ball must be registered as inside the trigger volume
+      REQUIRE(harness.AdvanceUntil([&]() { return ball->m_hitBall.m_d.m_pos.x > 750.f; }, 2000));
+      CHECK(!ball->m_hitBall.m_d.m_vpVolObjs->empty());
+
+      // and unregistered after leaving it
+      REQUIRE(harness.AdvanceUntil([&]() { return ball->m_hitBall.m_d.m_pos.x > 925.f; }, 2000));
+      CHECK(ball->m_hitBall.m_d.m_vpVolObjs->empty());
+   };
+
+   SUBCASE("canonical point order") { checkTriggerCrossing({ Vertex2D(700.f, 400.f), Vertex2D(700.f, 600.f), Vertex2D(900.f, 600.f), Vertex2D(900.f, 400.f) }); }
+
+   SUBCASE("reversed point order")
+   {
+      // Outline wound the other way around: Hit and UnHit must not be swapped
+      checkTriggerCrossing({ Vertex2D(700.f, 400.f), Vertex2D(900.f, 400.f), Vertex2D(900.f, 600.f), Vertex2D(700.f, 600.f) });
    }
 }
 

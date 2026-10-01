@@ -161,6 +161,10 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    {
       vector<RenderVertex> vvertex;
       m_curve.GetRgVertex(vvertex);
+      // The volume hit objects derive inside/outside from the winding dependent
+      // segment and polygon normals, so restore the canonical winding: a reversed
+      // point order would swap the Hit and UnHit events
+      NormalizeWindingOrder(vvertex);
 
       const int count = (int)vvertex.size();
       for (int i = 0; i < count; i++)
