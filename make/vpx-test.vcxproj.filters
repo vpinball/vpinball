@@ -176,6 +176,9 @@
     <ClCompile Include="../../tests/physics/test-motion-kalman.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/physics/test-physics-defects.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/physics/test-physics-engine.cpp">
       <Filter>physics</Filter>
     </ClCompile>

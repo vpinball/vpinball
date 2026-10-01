@@ -61,6 +61,7 @@ set(VPX_TEST_SOURCES
    tests/physics/test-collide.cpp
    tests/physics/test-hittimer.cpp
    tests/physics/test-motion-kalman.cpp
+   tests/physics/test-physics-defects.cpp
    tests/physics/test-physics-engine.cpp
    tests/physics/test-quadtree.cpp
    tests/plugins/alphadmd/test-alphanumeric.cpp
