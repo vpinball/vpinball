@@ -169,6 +169,22 @@ void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    vector<RenderVertex> vvertex;
    m_curve.GetRgVertex(vvertex);
 
+   // The generated colliders are one sided (line segments collide on their normal side,
+   // the top face from above, the bottom one from below), so they expect the canonical
+   // winding. Restore it if the point order was reversed (e.g. a point dragged across
+   // the others in the editor), otherwise the wall becomes a trap that lets balls in
+   // without letting them out.
+   if (vvertex.size() > 2 && DetermineWindingOrder(vvertex) == Clockwise)
+   {
+      std::ranges::reverse(vvertex);
+      // The slingshot flag marks the segment starting at a vertex: after reversing the
+      // vertex order, shift it back onto the same segments.
+      const bool sling = vvertex.front().slingshot;
+      for (size_t i = 0; i + 1 < vvertex.size(); ++i)
+         vvertex[i].slingshot = vvertex[i + 1].slingshot;
+      vvertex.back().slingshot = sling;
+   }
+
    const int count = (int)vvertex.size();
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
    Vertex3Ds *const rgv3Db = (m_d.m_isBottomSolid || isUI) ? new Vertex3Ds[count] : nullptr;
