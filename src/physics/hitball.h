@@ -51,7 +51,8 @@ public:
    float HitRadiusSqr() const { return sqrf((m_hitBBox.right - m_hitBBox.left)*0.5f); } // this returns the extended (by m_vel + magic) squared radius, as needed to be used in the collision detection
    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle);
 
-   void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff);
+   void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff,
+      const float normalImpulse); // normalImpulse: normal Δv applied by the contact this step (only used with FIX_PHYSICS)
    void HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime);
 
    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;

@@ -69,13 +69,20 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
    }
 #endif
 
+#ifndef FIX_PHYSICS
    // magnitude of the impulse which is just sufficient to keep the ball from
    // penetrating the wall (needed for friction computations)
    const float reactionImpulse = m_d.m_mass * fabsf(dot);
+#endif
 
    elasticity = ElasticityWithFalloff(elasticity, elastFalloff, dot);
    dot *= -(1.0f + elasticity);
    m_d.m_vel += dot * hitNormal; // apply collision impulse (along normal, so no torque)
+
+#ifdef FIX_PHYSICS
+   // bound the friction cone by the applied (post-restitution) normal impulse, like HitFlipper
+   const float reactionImpulse = m_d.m_mass * fabsf(dot);
+#endif
 
    // compute friction impulse
 
@@ -319,20 +326,27 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
       }
 #endif
 
-      ApplyFriction(coll.m_hitnormal, dtime, friction);
+      ApplyFriction(coll.m_hitnormal, dtime, friction, normalForce);
    }
 }
 
-void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff)
+void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff, const float normalImpulse)
 {
    const Vertex3Ds surfP = -m_d.m_radius * hitnormal; // surface contact point relative to center of mass
 
    const Vertex3Ds surfVel = SurfaceVelocity(surfP);
    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal; // calc the tangential slip velocity
 
+#ifdef FIX_PHYSICS
+   // Coulomb cone — bound the friction impulse by μ times the normal impulse the contact
+   // actually applied this step (normalImpulse is the Δv applied by HandleStaticContact), instead of
+   // the gravity component alone which collapses on walls and on the top glass
+   const float maxImpulse = fmaxf(fricCoeff, 0.f) * m_d.m_mass * normalImpulse;
+#else
    // The normal force is approximated by the gravity component pressing the ball on the surface: none if gravity pulls it away
    // (e.g. touching the underside of a wall due to the table slope, or the glass), then there is no friction either
    const float maxFric = fmaxf(fricCoeff, 0.f) * m_d.m_mass * fmaxf(-m_physics->GetGravity().Dot(hitnormal), 0.f);
+#endif
 
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
@@ -377,10 +391,18 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
 
    const Vertex3Ds cp = CrossProduct(surfP, slipDir);
    const float denom = 1.0f/m_d.m_mass + slipDir.Dot(CrossProduct(cp / Inertia(), surfP));
+
+#ifdef FIX_PHYSICS
+   const float fricImpulse = clamp(dtime * numer / denom, -maxImpulse, maxImpulse);
+
+   if (!infNaN(fricImpulse))
+      ApplySurfaceImpulse(fricImpulse * cp, fricImpulse * slipDir);
+#else
    const float fric = clamp(numer / denom, -maxFric, maxFric);
 
    if (!infNaN(fric))
       ApplySurfaceImpulse((dtime * fric) * cp, (dtime * fric) * slipDir);
+#endif
 }
 
 Vertex3Ds HitBall::SurfaceVelocity(const Vertex3Ds& surfP) const

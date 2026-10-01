@@ -172,8 +172,10 @@ TEST_CASE("Contact friction counters the tangential gravity component for any ma
 
    // Static friction branch (normVel <= 0.025): with I = 2/5 m r^2 the impulse
    // denominator is 1/m + r^2/I = 3.5/m, so the applied delta-v is
-   // dtime * tangential g / 3.5, which is mass-independent.
-   ball.ApplyFriction(Vertex3Ds(0.f, 0.f, 1.f), (float)PHYS_FACTOR, 0.3f);
+   // dtime * tangential g / 3.5, which is mass-independent. The normal impulse
+   // argument is the delta-v a resting contact applies per step: -g.n * dtime.
+   const float normalImpulse = cosf(ANGTORAD(6.f)) * GRAVITYCONST * (float)PHYS_FACTOR;
+   ball.ApplyFriction(Vertex3Ds(0.f, 0.f, 1.f), (float)PHYS_FACTOR, 0.3f, normalImpulse);
    const float tangentialG = sinf(ANGTORAD(6.f)) * GRAVITYCONST;
    CHECK(ball.m_d.m_vel.y == doctest::Approx(-PHYS_FACTOR * tangentialG / 3.5f));
 }
