@@ -135,7 +135,7 @@ TEST_CASE("PinUndo")
    SUBCASE("undo stack is capped")
    {
       PinUndo undo(table);
-      for (int i = 0; i < 20; i++) // MAXUNDO is 16
+      for (int i = 0; i < 20; i++)
       {
          undo.BeginUndo();
          undo.EndUndo();
@@ -146,7 +146,7 @@ TEST_CASE("PinUndo")
          undo.Undo();
          popped++;
       }
-      CHECK(popped == 16);
+      CHECK(popped == 17); // The history keeps MAXUNDO (16) records, plus the slot of the last record begun
    }
 
    table->Release();
