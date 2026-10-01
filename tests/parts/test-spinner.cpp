@@ -73,6 +73,19 @@ TEST_CASE("Spinner part")
       liveCopy->Release();
    }
 
+   SUBCASE("default spinner spins freely")
+   {
+      // Free spinning requires matching min/max angles, otherwise the mover clamps rotation to the limited range
+      Spinner* const spinner = Spinner::COMCreate();
+      spinner->Init(10.f, 20.f, false);
+      spinner->SetName("Spinner4");
+      table->AddPart(spinner);
+      spinner->Release();
+
+      CHECK(spinner->m_d.m_angleMin == 0.f);
+      CHECK(spinner->m_d.m_angleMax == 0.f);
+   }
+
    SUBCASE("editor transforms")
    {
       Spinner* const spinner = Spinner::COMCreate();

@@ -1260,7 +1260,7 @@ PropFloatUnbounded(DefaultPropsSpinner, Rotation, "Rotation"s, ""s, 0.f);
 PropBool(DefaultPropsSpinner, ShowBracket, "ShowBracket"s, ""s, true);
 PropFloatUnbounded(DefaultPropsSpinner, Height, "Height"s, ""s, 60.f); // Note: this property used to be an int (scaled by 1000)
 PropFloatUnbounded(DefaultPropsSpinner, AngleMax, "AngleMax"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsSpinner, AngleMin, "AngleMin"s, ""s, 0.3f);
+PropFloatUnbounded(DefaultPropsSpinner, AngleMin, "AngleMin"s, ""s, 0.f);
 PropBool(DefaultPropsSpinner, Visible, "Visible"s, ""s, true);
 PropString(DefaultPropsSpinner, Image, "Image"s, ""s, ""s);
 PropString(DefaultPropsSpinner, Surface, "Surface"s, ""s, ""s);
