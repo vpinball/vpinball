@@ -68,6 +68,14 @@
 
 //#define NEW_PHYSICS
 
+// Active behavioral fixes of the physics engine. Keep this list in
+// sync with the FIX_PHYSICS-guarded code: document each fix the flag enables.
+// - The static-friction gate "normVel <= 0.025" in ApplyFriction measured the post-contact
+//   residual ~ -m(g.n)dtime, an accidental test of the normal orientation that always selected the
+//   static (acceleration-directed) branch on walls even with real slip; the clause is now restricted
+//   to support-like contacts (hitnormal.z > 0.5) so walls use slip-directed dynamic friction.
+#define FIX_PHYSICS
+
 // low velocity stabilization ... if embedding occurs add some velocity
 #ifdef NEW_PHYSICS
  #define C_EMBEDVELLIMIT 5.f // can be undefd

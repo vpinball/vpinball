@@ -342,11 +342,19 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
 
 #ifdef C_BALL_SPIN_HACK
    const float normVel = m_d.m_vel.Dot(hitnormal);
-   if ((normVel <= 0.025f) || // check for <=0.025 originated from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
+   if (
+#ifdef FIX_PHYSICS
+      // After the contact impulse above (see HandleStaticContact, sole caller), the residual normVel is ~ -m(g.n)dtime, i.e. an
+      // accidental test of the normal orientation that always selects the static branch on walls;
+      // limit the quench to support-like contacts so sliding balls on walls get slip-directed friction
+      (normVel <= 0.025f && hitnormal.z > 0.5f) ||
+#else
+      (normVel <= 0.025f) || // check for <=0.025 originated from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
+#endif
 #else
    if (
 #endif
-       (slipspeed < C_PRECISION)) // slip speed zero - static friction case
+      (slipspeed < C_PRECISION)) // slip speed zero - static friction case
    {
       const Vertex3Ds surfAcc = SurfaceAcceleration(surfP);
       const Vertex3Ds slipAcc = surfAcc - surfAcc.Dot(hitnormal) * hitnormal; // calc the tangential slip acceleration
