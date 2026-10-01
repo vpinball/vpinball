@@ -488,6 +488,25 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
     return detOrient > 0.f ? Clockwise : CounterClockwise;
 }
 
+// The default (canonical) winding order of a part outline is counterclockwise; code
+// consuming drag point polygons assumes it (ear-clipping triangulation, side face
+// normals, one-sided physics colliders whose normals must face outward, ...).
+// Dragging a point across the others in the editor silently reverses the winding, so
+// restore the canonical order before generating derived data. The slingshot flag marks
+// the segment starting at a vertex: it is shifted back onto the same segments.
+template <class RenderVertexCont> inline void NormalizeWindingOrder(RenderVertexCont& vvertex)
+{
+   const size_t count = vvertex.size();
+   if (count > 2 && DetermineWindingOrder(vvertex) == Clockwise)
+   {
+      std::ranges::reverse(vvertex);
+      const bool sling = vvertex.front().slingshot;
+      for (size_t i = 0; i + 1 < count; ++i)
+         vvertex[i].slingshot = vvertex[i + 1].slingshot;
+      vvertex.back().slingshot = sling;
+   }
+}
+
 //
 // Ported at: VisualPinball.Engine/VPT/Mesh.cs
 //
