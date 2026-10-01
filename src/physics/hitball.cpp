@@ -299,7 +299,7 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
    {
       const Vertex3Ds fe = m_d.m_mass * m_physics->GetGravity(); // external forces (only gravity for now)
       const float dot = fe.Dot(coll.m_hitnormal);
-      const float normalForce = std::max(0.0f, -(dot*dtime + coll.m_hit_org_normalvelocity)); // normal force is always nonnegative
+      const float normalForce = std::max(0.0f, -(dot * dtime + coll.m_hit_org_normalvelocity * m_d.m_mass) / m_d.m_mass); // normal force is always nonnegative
 
       // Add just enough to kill original normal velocity and counteract the external forces.
       m_d.m_vel += normalForce * coll.m_hitnormal;
@@ -384,7 +384,7 @@ Vertex3Ds HitBall::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    const Vertex3Ds angularvelocity = m_angularmomentum / Inertia();
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
-   return m_physics->GetGravity() / m_d.m_mass // linear acceleration
+   return m_physics->GetGravity() // linear acceleration
       + CrossProduct(angularvelocity, CrossProduct(angularvelocity, surfP)); // centripetal acceleration
 }
 

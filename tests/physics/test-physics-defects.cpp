@@ -68,9 +68,10 @@ public:
 } // namespace
 
 // ---------------------------------------------------------------------------
-// HitBall::HandleStaticContact adds fe*dtime + org_normvel — a momentum plus a
-// velocity — directly to m_vel, and SurfaceAcceleration divides gravity (an
-// acceleration) by m_mass. Both are only correct for m_mass == 1.
+// HitBall::HandleStaticContact must add the gravity compensation impulse and
+// the original normal velocity in consistent units, and SurfaceAcceleration
+// must return gravity (already an acceleration) unscaled by mass. Both were
+// only correct for m_mass == 1.
 // ---------------------------------------------------------------------------
 
 TEST_CASE("Resting contact cancels gravity exactly for a unit-mass ball")
@@ -95,7 +96,7 @@ TEST_CASE("Resting contact cancels gravity exactly for a unit-mass ball")
    CHECK(ball.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR));
 }
 
-TEST_CASE("Resting contact velocity gain must be mass-independent" * doctest::should_fail())
+TEST_CASE("Resting contact velocity gain must be mass-independent")
 {
    PhysicsTestHarness harness;
    harness.SetGravity(0.f, GRAVITYCONST);
@@ -113,12 +114,33 @@ TEST_CASE("Resting contact velocity gain must be mass-independent" * doctest::sh
    coll.m_hit_org_normalvelocity = 0.f;
 
    ball.HandleStaticContact(coll, 0.3f, (float)PHYS_FACTOR);
-   // HandleStaticContact adds fe*n*dtime + org_normvel, i.e. momentum + velocity,
-   // directly to m_vel: correct only for m_mass == 1 (actual: 4x too much here).
    CHECK(ball.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR));
 }
 
-TEST_CASE("Ball surface acceleration is independent of mass" * doctest::should_fail())
+TEST_CASE("Contact cancels an incoming normal velocity for any mass")
+{
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   harness.Start();
+
+   HitBall ball;
+   ball.m_physics = harness.GetEngine();
+   ball.m_d.m_mass = 4.f;
+   ball.m_d.m_vel.SetZero();
+   ball.m_angularmomentum.SetZero();
+
+   CollisionEvent coll;
+   coll.m_hitnormal = Vertex3Ds(0.f, 0.f, 1.f);
+   coll.m_hitdistance = 1.f;
+   coll.m_hit_org_normalvelocity = -0.05f; // still moving into the surface at hit time
+
+   ball.HandleStaticContact(coll, 0.3f, (float)PHYS_FACTOR);
+   // The applied delta-v is the gravity compensation plus the approach
+   // cancellation, independent of mass.
+   CHECK(ball.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR + 0.05f));
+}
+
+TEST_CASE("Ball surface acceleration is independent of mass")
 {
    PhysicsTestHarness harness;
    harness.SetGravity(0.f, GRAVITYCONST);
@@ -130,12 +152,44 @@ TEST_CASE("Ball surface acceleration is independent of mass" * doctest::should_f
    ball.m_d.m_vel.SetZero();
    ball.m_angularmomentum.SetZero(); // no rotation: only the linear acceleration remains
 
-   // SurfaceAcceleration returns GetGravity()/m_mass: gravity is already an
-   // acceleration, the divide makes the result mass-dependent (actual: g/4).
    const Vertex3Ds acc = ball.SurfaceAcceleration(Vertex3Ds(0.f, 0.f, -DEFAULT_BALL_SIZE));
    CHECK(acc.x == doctest::Approx(0.f));
    CHECK(acc.y == doctest::Approx(0.f));
    CHECK(acc.z == doctest::Approx(-GRAVITYCONST));
+}
+
+TEST_CASE("Contact friction counters the tangential gravity component for any mass")
+{
+   PhysicsTestHarness harness;
+   harness.SetGravity(6.f, GRAVITYCONST); // gravity gains a +y tangential component on the flat playfield
+   harness.Start();
+
+   HitBall ball;
+   ball.m_physics = harness.GetEngine();
+   ball.m_d.m_mass = 4.f;
+   ball.m_d.m_vel.SetZero();
+   ball.m_angularmomentum.SetZero(); // no rotation: SurfaceAcceleration is gravity alone
+
+   // Static friction branch (normVel <= 0.025): with I = 2/5 m r^2 the impulse
+   // denominator is 1/m + r^2/I = 3.5/m, so the applied delta-v is
+   // dtime * tangential g / 3.5, which is mass-independent.
+   ball.ApplyFriction(Vertex3Ds(0.f, 0.f, 1.f), (float)PHYS_FACTOR, 0.3f);
+   const float tangentialG = sinf(ANGTORAD(6.f)) * GRAVITYCONST;
+   CHECK(ball.m_d.m_vel.y == doctest::Approx(-PHYS_FACTOR * tangentialG / 3.5f));
+}
+
+TEST_CASE("A heavy ball resting on the playfield is not launched upward")
+{
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   Ball *const ball = harness.AddBall(500.f, 1000.f, 0.f, 0.f, 0.f, 0.f, DEFAULT_BALL_SIZE, 10.f);
+   harness.Start();
+
+   // The contact normal impulse must just cancel gravity: it must never throw
+   // the ball upward (the mass == 1 assumption made it add m*|g|*dt per step).
+   const bool launched = harness.AdvanceUntil([&]() { return ball->m_hitBall.m_d.m_vel.z > 0.3f; }, 500);
+   CHECK(!launched);
+   CHECK(ball->m_hitBall.m_d.m_pos.z == doctest::Approx(DEFAULT_BALL_SIZE).epsilon(0.1));
 }
 
 TEST_CASE("Unequal-mass ball/ball collision conserves momentum")
