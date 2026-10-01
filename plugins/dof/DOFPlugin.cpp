@@ -123,32 +123,41 @@ void LIBDOFCALLBACK OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list 
 // asks libDOF for that list to pick the rom name handed to Init: ns::rom
 // resolves to "ns_rom" when that name is declared, "rom" otherwise.
 
-static std::string DofToUpper(const std::string_view& s)
+static std::string ToUpper(const std::string_view& s)
 {
    std::string r(s);
    std::transform(r.begin(), r.end(), r.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
    return r;
 }
 
-static std::unordered_set<std::string> LoadDofRomList(const std::filesystem::path& tablePath)
+static std::unordered_set<std::string> cachedRomList;
+static std::filesystem::path cachedRomListTablePath;
+static bool cachedRomListValid = false;
+
+static const std::unordered_set<std::string>& LoadRomList(const std::filesystem::path& tablePath)
 {
-   std::unordered_set<std::string> romList;
-   for (const std::string& romName : pDOF->GetLedControlRomNames(tablePath.string().c_str()))
-      romList.insert(DofToUpper(romName));
-   return romList;
+   if (!cachedRomListValid || cachedRomListTablePath != tablePath)
+   {
+      cachedRomList.clear();
+      for (const std::string& romName : pDOF->GetLedControlRomNames(tablePath.string().c_str()))
+         cachedRomList.insert(ToUpper(romName));
+      cachedRomListTablePath = tablePath;
+      cachedRomListValid = true;
+   }
+   return cachedRomList;
 }
 
 // Whether a rom name is declared in the rom list. Exact case-insensitive
 // match only: anything looser would let ns_rom bind a config declared for ns,
 // which is not the game this name was built for.
-static bool DofRomListContains(const std::unordered_set<std::string>& romList, const std::string_view& romName) { return romList.contains(DofToUpper(romName)); }
+static bool RomListContains(const std::unordered_set<std::string>& romList, const std::string_view& romName) { return romList.contains(ToUpper(romName)); }
 
-static std::string ResolveDofRomName(const std::string_view& gameNs, const std::string_view& gameKey, const std::unordered_set<std::string>& romList)
+static std::string ResolveRomName(const std::string_view& gameNs, const std::string_view& gameKey, const std::unordered_set<std::string>& romList)
 {
    if (!gameNs.empty())
    {
       const std::string nsRom = std::string(gameNs) + "_" + std::string(gameKey);
-      if (DofRomListContains(romList, nsRom))
+      if (RomListContains(romList, nsRom))
          return nsRom;
    }
    return std::string(gameKey);
@@ -252,7 +261,7 @@ static void SetupDOF()
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
    const string path = tableInfo.path;
-   const string romName = ResolveDofRomName(gameNs, gameKey, LoadDofRomList(path));
+   const string romName = ResolveRomName(gameNs, gameKey, LoadRomList(path));
 
    LOGI("New game started: gameId="s + controller.gameId + ", romName=" + romName);
    dofThread = std::make_unique<DOFEventConsumer>(path, romName, controller);
@@ -292,7 +301,7 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
          // controller resolves to a declared config, keep the legacy behavior
          // of binding the first pinmame one, then any controller: DOF can still
          // find table-filename mappings the rom list does not describe.
-         const std::unordered_set<std::string> romList = LoadDofRomList(
+         const std::unordered_set<std::string>& romList = LoadRomList(
             []
             {
                VPXTableInfo tableInfo;
@@ -308,7 +317,7 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
             if (gameKey.empty())
                continue;
             const bool pinmame = gameNs == "pinmame"sv;
-            const bool match = (!gameNs.empty() && DofRomListContains(romList, std::string(gameNs) + "_" + std::string(gameKey))) || DofRomListContains(romList, gameKey);
+            const bool match = (!gameNs.empty() && RomListContains(romList, std::string(gameNs) + "_" + std::string(gameKey))) || RomListContains(romList, gameKey);
             const int score = (match ? 2 : 0) + (pinmame ? 1 : 0);
             if (score > bestScore)
             {
@@ -331,6 +340,8 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
    controllers->Unsubscribe();
    controllers = nullptr;
    pDOF = nullptr;
+   cachedRomList.clear();
+   cachedRomListValid = false;
 
    msgApi = nullptr;
    vpxApi = nullptr;
