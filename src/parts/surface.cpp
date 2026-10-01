@@ -340,6 +340,9 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
 {
    vector<RenderVertex> vvertex;
    m_curve.GetRgVertex(vvertex);
+   // The mesh generation assumes the canonical winding (ear-clipping triangulation,
+   // side face normals), so a reversed point order used to leave the top face empty
+   NormalizeWindingOrder(vvertex);
    float *rgtexcoord = nullptr;
 
    Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
