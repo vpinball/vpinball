@@ -526,7 +526,16 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
          ez = _mm_mul_ps(ez, ez);
          const __m128 d = _mm_add_ps(_mm_add_ps(ex, ey), ez);
          const __m128 cmp2 = _mm_cmple_ps(d, rsqr);
-         const int mask2 = _mm_movemask_ps(cmp2);
+         int mask2 = _mm_movemask_ps(cmp2);
+
+         // The 4 lanes of a group are not aligned with this node's item range: only the lanes inside
+         // [m_start, m_start+org_items) belong to this node, the others belong to the previous/next
+         // node and would be hit-tested again when that node is traversed (leading to duplicated contacts)
+         const unsigned int itemsEnd = current->m_start + org_items;
+         if (i * 4 < current->m_start)
+            mask2 &= 0xF << (current->m_start - i * 4); // clear the lanes below m_start
+         if (i * 4 + 4 > itemsEnd)
+            mask2 &= (1 << (itemsEnd - i * 4)) - 1; // clear the lanes at/past itemsEnd
          if (mask2 == 0) continue;
 
          // now there is at least one bbox collision
