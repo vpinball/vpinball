@@ -3,23 +3,13 @@
 #pragma once
 
 #if defined(ENABLE_XR)
-   #include "bx/platform.h"
-
-   #if defined(__ANDROID__) && BX_PLATFORM_WINDOWS
-      // Our setup may lead to this incorrect double definition, so fix it
-      #undef BX_PLATFORM_WINDOWS
-      #define BX_PLATFORM_WINDOWS 0
-      #undef BX_PLATFORM_ANDROID
-      #define BX_PLATFORM_ANDROID 1
+   #ifdef __STANDALONE__
+   #pragma push_macro("_WIN64")
+   #undef _WIN64
    #endif
-
-   // libwinevbs / Wine headers define _WIN32 on standalone Linux, so bx/platform.h
-   // incorrectly reports BX_PLATFORM_WINDOWS and we pull in d3d11.h / d3d12.h.
-   #if defined(__STANDALONE__) && defined(__linux__) && !defined(__ANDROID__)
-      #undef BX_PLATFORM_WINDOWS
-      #define BX_PLATFORM_WINDOWS 0
-      #undef BX_PLATFORM_LINUX
-      #define BX_PLATFORM_LINUX 1
+   #include "bx/platform.h"
+   #ifdef __STANDALONE__
+   #pragma pop_macro("_WIN64")
    #endif
 
    #if BX_PLATFORM_WINDOWS
