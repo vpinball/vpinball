@@ -271,6 +271,12 @@ typedef struct VPXPluginAPI
    void (MSGPIAPI *SetActiveViewSetup)(VPXViewSetupDef* view);
 
    // --- Input management
+   // GetInputState: actionMask and stateMask are request masks selecting which fields are filled in (unsupported action bits are cleared)
+   // SetInputState: actionMask and stateMask select which inputs are driven by the plugin. Action bits in actionMask are applied
+   //                from actionState as direct states. Plunger (bits 0 & 1) and nudge (bit 2) overrides are enabled while the
+   //                corresponding bit is set, and released back to local sensors when cleared. Plunger position/velocity are
+   //                expressed relative to the full plunger range (0 = rest position, 1 = fully retracted), nudge acceleration
+   //                in m/s^2 and nudge displacement in m.
    void(MSGPIAPI* GetInputState)(VPXInputState* state);
    void(MSGPIAPI* SetInputState)(VPXInputState* state);
 

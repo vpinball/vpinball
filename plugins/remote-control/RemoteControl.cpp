@@ -22,6 +22,8 @@ using namespace std::string_view_literals;
 #include <thread>
 #include <semaphore>
 #include <mutex>
+#include <atomic>
+#include <cerrno>
 
 // Shared logging
 #include "plugins/LoggingPlugin.h"
@@ -150,8 +152,8 @@ public:
       #ifdef _WIN32
          return WSAGetLastError() == WSAETIMEDOUT;
       #else
-         return false; // TODO implement
-      #endif
+      return errno == EAGAIN || errno == EWOULDBLOCK;
+#endif
    }
 };
 
@@ -232,9 +234,12 @@ unsigned int getVpxApiId, onGameStartId, onGameEndId, onUpdatePhysicsId, onPrepa
 std::thread udpThread;
 std::binary_semaphore msgReadySem { 0 };
 
+constexpr uint16_t RemoteControlProtocolVersion = 1;
+
 struct StateMsg
 {
-   uint16_t version = 0;
+   uint16_t version = RemoteControlProtocolVersion;
+   uint32_t sequence = 0; // Allows to drop reordered or duplicated messages
    VPXInputState state {};
 };
 
@@ -244,18 +249,18 @@ enum RunMode
    RunModeController,
    RunModePlayer
 };
-RunMode runMode = RunMode::RunModeNone;
+std::atomic<RunMode> runMode { RunMode::RunModeNone };
 
 std::mutex stateMutex;
 StateMsg inputState[2]; // Last state acquired from VPX (controller mode) or received from network (player mode)
-int activeInputState = 0;
-int lastReceivedMsgId = 0;
-int lastProcessedMsgId = 0;
+int activeInputState = 0; // Only accessed under stateMutex
+std::atomic<int> lastReceivedMsgId { 0 };
+int lastProcessedMsgId = 0; // Only accessed on the API thread
 enum class ConnectionState
 {
    Unconnected, ConnectionMade, Connected, ConnectionLost
 };
-ConnectionState connectionState = ConnectionState::Unconnected;
+std::atomic<ConnectionState> connectionState { ConnectionState::Unconnected };
 
 const char* runModeLiterals[] = { "Controller", "Player" };
 MSGPI_ENUM_VAL_SETTING(runModeProp, "RunMode", "Mode", "Select between Controller and Player mode", true, 1, 2, runModeLiterals, 1);
@@ -279,7 +284,14 @@ static void onPrepareFrame(const unsigned int eventId, void* userData, void* eve
       if (runMode == RunMode::RunModeController)
          vpxApi->PushNotification("Remote player disconnected", 5000);
       else if (runMode == RunMode::RunModePlayer)
+      {
+         // Release remotely driven inputs (all buttons released, plunger & nudge overrides dropped)
+         VPXInputState releasedState {};
+         releasedState.actionMask = 0xFFFFFFFFFFFFFFFFULL;
+         releasedState.stateMask = 0;
+         vpxApi->SetInputState(&releasedState);
          vpxApi->PushNotification("Remote controller disconnected", 1000);
+      }
       break;
    default: break;
    }
@@ -333,45 +345,39 @@ static void onGameStart(const unsigned int eventId, void* userData, void* eventD
 {
    lastReceivedMsgId = 0;
    lastProcessedMsgId = 0;
+   connectionState = ConnectionState::Unconnected;
    if (runModeProp_Val == 1)
    {
+      if (hostProp_Get()[0] == '\0' || portProp_Val == 0)
+      {
+         LOGE("RemoteControl plugin is configured as controller but Host and/or Port are not defined"s);
+         return;
+      }
       runMode = RunMode::RunModeController;
       LOGI("RemoteControl plugin started as controller (client mode, server ip is "s + hostProp_Get() + ':' + std::to_string(portProp_Val) + ')');
       udpThread = std::thread([]()
          {
             using namespace std::literals;
             StateMsg stateMsg;
+            uint32_t sequence = 0;
             UdpClientSocket client(hostProp_Get(), portProp_Val, 500);
-            const auto start = std::chrono::steady_clock::now();
             while (runMode != RunMode::RunModeNone)
             {
-               msgReadySem.acquire();
+               // Wait for a new input state, waking up periodically to send keep alive messages
+               msgReadySem.try_acquire_for(500ms);
                {
                   std::lock_guard lock(stateMutex);
                   stateMsg = inputState[activeInputState];
+                  stateMsg.sequence = ++sequence;
                }
-               int sent = 0;
-               while (sent < sizeof(stateMsg))
+               if (client.sendData(&stateMsg, sizeof(stateMsg)) != sizeof(stateMsg))
                {
-                  int n = client.sendData(reinterpret_cast<char*>(&stateMsg) + sent, sizeof(stateMsg) - sent);
-                  if (n < 0)
-                  {
-                     if (client.hasTimedOut())
-                     {
-                        LOGE("RemoteControl failed to send input state over network (timed out), retrying"s);
-                     }
-                     else
-                     {
-                        LOGE("RemoteControl failed to send input state over network, stopping"s);
-                        runMode = RunMode::RunModeNone;
-                     }
-                     break;
-                  }
-                  sent += n;
+                  LOGE("RemoteControl failed to send input state over network, stopping"s);
+                  runMode = RunMode::RunModeNone;
+                  break;
                }
-               // LOGD(std::format("Sent {:08x}", stateMsg.timestamp));
-               int n = client.receiveData(reinterpret_cast<char*>(&stateMsg), 1);
-               if (n == 1) // Acked, therefore connected
+               char ack;
+               if (client.receiveData(&ack, 1) == 1) // Acked, therefore connected
                {
                   if (connectionState == ConnectionState::Unconnected)
                      connectionState = ConnectionState::ConnectionMade;
@@ -390,49 +396,58 @@ static void onGameStart(const unsigned int eventId, void* userData, void* eventD
    }
    else if (runModeProp_Val == 2)
    {
+      if (portProp_Val == 0)
+      {
+         LOGE("RemoteControl plugin is configured as player but Port is not defined"s);
+         return;
+      }
       runMode = RunMode::RunModePlayer;
       LOGI("RemoteControl plugin started as player (server mode, using port: "s + std::to_string(portProp_Val) + ')');
-      udpThread = std::thread([]()
+      udpThread = std::thread(
+         []()
          {
+            StateMsg stateMsg;
+            uint32_t lastSequence = 0;
+            int consecutiveTimeouts = 0;
             UdpServerSocket server(portProp_Val, 500);
             while (runMode != RunMode::RunModeNone)
             {
-               int rcv = 0;
-               while (rcv < sizeof(StateMsg))
+               const int n = server.receiveData(&stateMsg, sizeof(stateMsg));
+               if (n == sizeof(stateMsg))
                {
-                  int n = server.receiveData(reinterpret_cast<char*>(&inputState[1 - activeInputState]) + rcv, sizeof(StateMsg) - rcv);
-                  if (n < 0)
-                  {
-                     // Just ignore failed request and continue to wait for messages
-                     /* if (server.hasTimedOut())
-                     {
-                        LOGE("RemoteControl failed to receive controller state (timed out), retrying"s);
-                     }
-                     else
-                     {
-                        LOGE("RemoteControl failed to receive controller state, stopping"s);
-                        runMode = RunMode::RunModeNone;
-                     } */
-                     break;
-                  }
-                  rcv += n;
-               }
-               if (rcv == sizeof(StateMsg))
-               {
-                  if (inputState[1 - activeInputState].version != 0)
+                  consecutiveTimeouts = 0;
+                  if (stateMsg.version != RemoteControlProtocolVersion)
                   {
                      LOGE("RemoteControl plugin versions do not match"s);
                      runMode = RunMode::RunModeNone;
                      break;
                   }
-                  // LOGD(std::format("Rcv ok"));
+                  if (static_cast<int32_t>(stateMsg.sequence - lastSequence) <= 0)
+                     continue; // Drop reordered or duplicated messages
+                  lastSequence = stateMsg.sequence;
                   {
                      std::lock_guard lock(stateMutex);
+                     inputState[1 - activeInputState] = stateMsg;
                      activeInputState = 1 - activeInputState;
                      lastReceivedMsgId++;
                   }
+                  if (connectionState == ConnectionState::Unconnected)
+                     connectionState = ConnectionState::ConnectionMade;
                   int acq = 0;
                   server.sendData(&acq, 1);
+               }
+               else if (n >= 0)
+               {
+                  LOGW("RemoteControl received an incomplete input state message"s);
+               }
+               else if (server.hasTimedOut())
+               {
+                  if (connectionState == ConnectionState::Connected && ++consecutiveTimeouts > 4)
+                     connectionState = ConnectionState::ConnectionLost;
+               }
+               else
+               {
+                  LOGE("RemoteControl socket error while waiting for controller state"s);
                }
             }
             server.closeConnection();

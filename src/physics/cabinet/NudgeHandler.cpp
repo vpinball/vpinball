@@ -56,6 +56,8 @@ void NudgeHandler::StepOneMillisecond()
 
 const Vertex2D& NudgeHandler::GetCabinetAcceleration() const
 {
+   if (m_externalOverride)
+      return m_externalAcceleration;
    if (m_keyboardNudge->IsActive())
       return m_keyboardNudge->GetCabinetAcceleration();
    for (const auto& sensor : m_sensors)
@@ -66,6 +68,8 @@ const Vertex2D& NudgeHandler::GetCabinetAcceleration() const
 
 const Vertex2D& NudgeHandler::GetCabinetOffset() const
 {
+   if (m_externalOverride)
+      return m_externalDisplacement;
    if (m_keyboardNudge->IsActive())
       return m_keyboardNudge->GetCabinetOffset();
    for (const auto& sensor : m_sensors)
@@ -209,7 +213,9 @@ void NudgeHandler::UnmapDevice(uint16_t deviceId)
 
 void NudgeHandler::SetExternalNudge(bool enableOverride, const Vertex2D& acceleration, const Vertex2D& displacement)
 {
-   // FIXME implement
+   m_externalOverride = enableOverride;
+   m_externalAcceleration = acceleration;
+   m_externalDisplacement = displacement;
 }
 
 
