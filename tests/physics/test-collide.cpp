@@ -4,6 +4,7 @@
 #include "../vpx-test.h"
 
 #include "physics/collide.h"
+#include "physics/collideex.h"
 #include "physics/hitball.h"
 #include "physics/physconst.h"
 
@@ -275,5 +276,82 @@ TEST_CASE("DoHitTest picks the earliest collision")
       DoHitTest(&ball, nullptr, coll);
       CHECK(coll.m_obj == nullptr);
       CHECK(coll.m_hittime == doctest::Approx(1.f));
+   }
+}
+
+// ---------------------------------------------------------------------------
+// Slow shallow touches (bnd <= PHYS_TOUCH, |bnv| <= C_CONTACTVEL) must report
+// hittime 0 with the contact flag set, like HitBall does (see the last subcase
+// below). The legacy path computes a fake hittime of bnd*10+0.5 — a distance
+// remapped into (0,1] T — that is systematically larger than one physics
+// step, so the event is dropped entirely: no collision and no contact until
+// actual penetration, and surviving fake times corrupt event ordering.
+// ---------------------------------------------------------------------------
+
+TEST_CASE("A slow shallow touch on a wall reports a contact" * doctest::should_fail())
+{
+   // Vertical wall at x=100, spanning y=[0,100], z=[0,50]; ball surface is 0.02 VPU off the wall
+   LineSeg wall(nullptr, Vertex2D(100.f, 0.f), Vertex2D(100.f, 100.f), 0.f, 50.f);
+   CollisionEvent coll;
+   const BallS ball = MakeBall(Vertex3Ds(100.f - DEFAULT_BALL_SIZE - 0.02f, 50.f, 25.f), Vertex3Ds(0.05f, 0.f, 0.f));
+
+   CHECK(wall.HitTest(ball, 0.1f, coll) == doctest::Approx(0.f));
+   CHECK(coll.m_isContact);
+   CHECK(coll.m_hitdistance == doctest::Approx(0.02f));
+   CHECK(coll.m_hit_org_normalvelocity == doctest::Approx(-0.05f));
+}
+
+TEST_CASE("A slow shallow touch on a rigid poly reports a contact" * doctest::should_fail())
+{
+   // Horizontal quad at z=0, wound to get an upward (+z) normal; Hit3DPoly owns rgv
+   Vertex3Ds* const rgv = new Vertex3Ds[4] { Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds(0.f, 100.f, 0.f), //
+      Vertex3Ds(100.f, 100.f, 0.f), Vertex3Ds(100.f, 0.f, 0.f) };
+   Hit3DPoly poly(nullptr, rgv, 4);
+   CollisionEvent coll;
+   const BallS ball = MakeBall(Vertex3Ds(50.f, 50.f, DEFAULT_BALL_SIZE + 0.02f), Vertex3Ds(0.f, 0.f, -0.05f));
+
+   CHECK(poly.HitTest(ball, 0.1f, coll) == doctest::Approx(0.f));
+   CHECK(coll.m_isContact);
+   CHECK(coll.m_hitdistance == doctest::Approx(0.02f));
+}
+
+TEST_CASE("Slow shallow touches report usable hit times")
+{
+   SUBCASE("wall segment: slow ball outside the touch skin still waits for contact")
+   {
+      LineSeg wall(nullptr, Vertex2D(100.f, 0.f), Vertex2D(100.f, 100.f), 0.f, 50.f);
+      CollisionEvent coll;
+      // 0.1 VPU off the wall at 0.05 U/T approach speed: real hit is in 2 T, beyond this step
+      const BallS ball = MakeBall(Vertex3Ds(100.f - DEFAULT_BALL_SIZE - 0.1f, 50.f, 25.f), Vertex3Ds(0.05f, 0.f, 0.f));
+
+      CHECK(wall.HitTest(ball, 0.1f, coll) < 0.f);
+   }
+
+   SUBCASE("wall segment: fast approach in the touch skin stays a collision")
+   {
+      LineSeg wall(nullptr, Vertex2D(100.f, 0.f), Vertex2D(100.f, 100.f), 0.f, 50.f);
+      CollisionEvent coll;
+      const BallS ball = MakeBall(Vertex3Ds(100.f - DEFAULT_BALL_SIZE - 0.02f, 50.f, 25.f), Vertex3Ds(5.f, 0.f, 0.f));
+
+      CHECK(wall.HitTest(ball, 0.1f, coll) == doctest::Approx(0.f));
+      CHECK(!coll.m_isContact);
+   }
+
+   SUBCASE("ball-ball: slow shallow approach reports a contact at zero time")
+   {
+      // HitBall's contract (since ball-ball contacts were enabled): a pair in
+      // the touch layer reports hittime 0 with the contact flag set. The wall
+      // and poly cases above pin the same contract for the other colliders.
+      HitBall moving;
+      moving.m_d.m_pos = Vertex3Ds(-50.004f, 0.f, 25.f);
+      moving.m_d.m_vel = Vertex3Ds(0.05f, 0.f, 0.f);
+      HitBall still;
+      still.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
+      still.m_d.m_vel = Vertex3Ds(0.f, 0.f, 0.f);
+
+      CollisionEvent coll;
+      CHECK(still.HitTest(moving.m_d, 0.1f, coll) == doctest::Approx(0.f));
+      CHECK(coll.m_isContact);
+      CHECK(coll.m_hitdistance == doctest::Approx(0.004f).epsilon(0.01f));
    }
 }
