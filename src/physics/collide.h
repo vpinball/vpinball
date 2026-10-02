@@ -103,7 +103,7 @@ public:
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged (all derived classes DO implement this one!)
    virtual int GetType() const = 0;
    virtual void Collide(const CollisionEvent& coll) = 0;
-   virtual void Contact(CollisionEvent& coll, const float dtime); // apply contact forces for the given time interval. Ball, Spinner and Gate do nothing here, Flipper has a specialized handling
+   virtual void Contact(CollisionEvent& coll, const float dtime); // apply contact forces for the given time interval. Spinner and Gate do nothing here, Flipper has a specialized handling
    virtual void CalcHitBBox() = 0;
 
    virtual MoverObject *GetMoverObject() { return nullptr; }
