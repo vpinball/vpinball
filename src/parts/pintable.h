@@ -395,10 +395,18 @@ public:
 
    HRESULT Save(VPXFileFeedback &feedback);
    HRESULT SaveToStorage(InMemStructuredStorage *pstg, VPXFileFeedback &feedback);
+   // Saves the table as a VPZ pack: a folder when path is a directory (or has no extension),
+   // a zip archive otherwise (".vpz" extension expected)
+   HRESULT SaveToJSON(const std::filesystem::path &path, VPXFileFeedback &feedback);
    HRESULT LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback);
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
 
 private:
+   HRESULT LoadGameFromVPXStorage(VPXFileFeedback &feedback);
+   HRESULT LoadGameFromJSONPack(VPXFileFeedback &feedback);
+   void FinalizeLoadedParts(vector<IEditable *> &parts);
+   void ApplyLoadedVersionFixups(int loadfileversion);
+
    HRESULT SaveInfo(InMemStructuredStorage *pstg, TableHash *const hash);
    HRESULT SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, TableHash *const hash);
    static HRESULT WriteInfoValue(InMemStructuredStorage *pstg, const string &name, const string &szValue, TableHash *const hash);

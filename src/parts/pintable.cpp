@@ -43,6 +43,7 @@
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "utils/hash.h"
+#include "utils/JSONSerializer.h"
 #include "utils/objloader.h"
 #include "utils/ushock_output.h"
 
@@ -1299,6 +1300,100 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          m_settings.Load(false);
    }
 
+   const HRESULT hr = JSONSerializer::IsPack(filename) ? LoadGameFromJSONPack(feedback) : LoadGameFromVPXStorage(feedback);
+
+   if (m_pbTempScreenshot) // For some reason, no image picked up the screenshot.  Not good; but we'll dump it to make sure it gets cleaned up
+   {
+      delete m_pbTempScreenshot;
+      m_pbTempScreenshot = nullptr;
+   }
+
+   SetDirty(eSaveClean);
+
+   m_title = TitleFromFilename(filename);
+   // A read only table cannot be saved over, so say so in the title. On Windows this
+   // mirrors FILE_ATTRIBUTE_READONLY, which is what the standard library reports there;
+   // elsewhere it is the owner write bit. Ignore any error: an unreadable status just
+   // means we leave the title alone
+   std::error_code ec;
+   const std::filesystem::perms perms = std::filesystem::status(filename, ec).permissions();
+   if (!ec && (perms & std::filesystem::perms::owner_write) == std::filesystem::perms::none)
+      m_title += " [READ ONLY]"sv;
+
+   PLOGI << "InitTablePostLoad"; // For profiling
+
+   // Not registered if a part already uses it (it would then be removed with that part's name on rename)
+   m_nameRegistered = !m_name.empty() && m_scriptableNames.insert(lowerCase(m_name)).second;
+
+   for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
+      if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
+      {
+         mViewSetups[i] = mViewSetups[BG_DESKTOP];
+         if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
+            m_BG_image[i] = m_BG_image[BG_DESKTOP];
+      }
+
+   // Warn if the backdrop used by the active view mode references an image that is not in the
+   // table: it would render black. An empty name or the "<None>" sentinel means no backdrop is set.
+   if (const string& bg = m_BG_image[GetViewMode()];
+       !bg.empty() && !StrCompareNoCase(bg, g_szNoneSelection) && GetImage(bg) == nullptr) {
+      PLOGW << "Backdrop image '" << bg << "' set for the active view mode was not found in the table (renders black)";
+   }
+
+   Settings::SetTableOverride_Difficulty_Default(m_difficulty);
+   m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
+
+   RemoveInvalidReferences();
+
+   std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
+   std::filesystem::path tableFile = std::filesystem::path(filename).filename();
+
+   // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings
+   // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
+   if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".pov"); !FileExists(GetSettingsFileName()) && FileExists(filenameAuto))
+      ImportBackdropPOV(filenameAuto, true);
+   else if (const std::filesystem::path filenameAuto2 = tablePath / "autopov.pov"sv; FileExists(filenameAuto2))
+      ImportBackdropPOV(filenameAuto2, true);
+
+   // auto-import VBS table script, if it exists...
+   if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(this, tableFile.replace_extension(".vbs")); !filenameAuto.empty())
+      LoadScriptOverride(filenameAuto);
+   else
+   {
+      auto fn = tablePath.filename();
+      fn += ".vbs"sv;
+      std::filesystem::path folderVbs = tablePath / fn;
+      folderVbs = find_case_insensitive_file_path(folderVbs);
+      if (!folderVbs.empty())
+         LoadScriptOverride(folderVbs);
+   }
+
+   // auto-import VPP settings, if it exists...
+   if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".vpp"); FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
+      ImportVPP(filenameAuto);
+   else if (const std::filesystem::path filenameAuto2 = tablePath / "autovpp.vpp"sv; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
+      ImportVPP(filenameAuto2);
+
+#ifdef VPX_ENABLE_WIN32_EDITOR
+   if (m_tableEditor)
+   {
+      m_tableEditor->m_pcv->SetScript(m_script_text);
+      m_tableEditor->m_pcv->AddItem(this, false);
+      m_tableEditor->m_pcv->AddItem(m_psgt, true);
+      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
+   }
+#endif
+
+   // Loading (including an overriding .vbs) is not a user edit, but filling the code viewer raised the script dirty flag
+   SetDirtyScript(eSaveClean);
+
+   return hr;
+}
+
+HRESULT PinTable::LoadGameFromVPXStorage(VPXFileFeedback &feedback)
+{
+   const std::filesystem::path &filename = m_filename;
+
    const string loadedFile = POLE::PathToFilename(m_filename);
    POLE::Storage rootStorage(loadedFile.c_str());
    rootStorage.open();
@@ -1556,295 +1651,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   rec->ReplayInto(*hch);
          }
 
-         // Handle failed loading & duplicates
-         if (!parts.empty())
-         {
-            // Process unnamed parts after named parts
-            std::ranges::stable_partition(parts.begin(), parts.end(), [](IEditable *p) { return p && !p->GetIScriptable()->m_name.empty(); });
-            for (size_t i = 0; i < parts.size(); )
-            {
-               IEditable * const part = parts[i];
-               if (part == nullptr)
-               {
-                  PLOGE << "Failed to load one of the table parts";
-                  parts.erase(parts.begin() + i);
-               }
-               else
-               {
-                  // Decals used to not have a name, so we may have to provide an autogenerated one (still, some old files do have a name for decals somehow)
-                  string &name = part->GetIScriptable()->m_name;
-                  if (name.empty())
-                     GetUniqueName(part->GetItemType(), name);
-                  if (!IsNameUnique(name))
-                  {
-                     const string oldName = name;
-                     name = GetUniqueName(oldName);
-                     PLOGW << "Duplicate part name found: " << oldName << " renamed it to " << name;
-                  }
-                  AddPart(part);
-                  part->InitPostLoad(); // m_ptable is set now
-                  part->Release();
-                  i++;
-               }
-            }
-
-            // We used to have a hack taken from VPVR to display backglass in VR: an external window would be captured, then rendered on a primitive with an
-            // image named backglassimage. We now have support for external renderer on flasher, so we replace these primitives by flashers.
-            // As this may cause script error if the original table would expect a primitive object and tweak properties not supported by flasher object,
-            // we keep the original object. This is not perfect as the table script will not tweak this one, but at least, it makes updating table easy.
-            parts = GetParts();
-            for (IEditable* part : parts)
-            {
-               if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
-               {
-                  bool hasBackglassFlasher = false;
-                  for (const auto existing : parts)
-                  {
-                     if (existing->GetItemType() == ItemTypeEnum::eItemFlasher)
-                     {
-                        if (const Flasher *const exBackglass = (const Flasher *)existing;
-                           exBackglass->m_d.m_renderMode == FlasherData::EXT_RENDER && exBackglass->m_d.m_renderStyle == VPXWindowId::VPXWINDOW_Backglass)
-                        {
-                           hasBackglassFlasher = true;
-                           break;
-                        }
-                     }
-                  }
-                  if (hasBackglassFlasher)
-                     continue;
-                  Primitive *const primitive = (Primitive *)part;
-                  if (primitive->m_d.m_use3DMesh)
-                     continue;
-
-                  // We need to reduce the primitive to a flasher rectangle. The algorithm is:
-                  // - to find the flasher plane using mesh's faces normals, favoring faces looking toward the player (a backfacing backglass is unlikely)
-                  // - to find the plane position by considering the vertices nearest to the player (to discard back of the primitive if using a box instead of a rect)
-                  // - to evaluate an axis align square in this plane and define a flasher accordingly (a rotated backglass is unlikely)
-                  const Matrix3D &transform = primitive->RecalculateMatrices();
-                  vector<vec3> vertices(primitive->m_mesh.m_vertices.size());
-                  for (size_t i2 = 0; i2 < primitive->m_mesh.m_vertices.size(); i2++)
-                     vertices[i2] = transform * primitive->m_mesh.m_vertices[i2];
-                  vec3 planeNormal(0.f, 0.f, 0.f);
-                  float planeNormalWeight = 0.f;
-                  for (size_t i2 = 0; i2 < primitive->m_mesh.m_indices.size(); i2 += 3)
-                  {
-                     vec3 &a = vertices[primitive->m_mesh.m_indices[i2]];
-                     vec3 &b = vertices[primitive->m_mesh.m_indices[i2 + 1]];
-                     vec3 &c = vertices[primitive->m_mesh.m_indices[i2 + 2]];
-                     vec3 ab(b.x - a.x, b.y - a.y, b.z - a.z);
-                     vec3 ac(c.x - a.x, c.y - a.y, c.z - a.z);
-                     vec3 n = CrossProduct(ac, ab);
-                     n.Normalize();
-                     const float weight = -n.z; //= n.Dot(vec3(0.f, 0.f, -1.f));
-                     if (weight > 0.f)
-                     {
-                        planeNormal += weight * n;
-                        planeNormalWeight += weight;
-                     }
-                  }
-
-                  planeNormal.x = 0.f; // to simplify, we align the backglass X axis with the table (after all, backglasses should be facing the player)
-                  if (const float normalLength = planeNormal.Length(); normalLength > 1e-5f)
-                  {
-                     planeNormal /= normalLength;
-
-                     float planeDist = FLT_MAX;
-                     for (const unsigned int idx : primitive->m_mesh.m_indices)
-                        planeDist = min(planeDist, planeNormal.Dot(vertices[idx]));
-
-                     float minx = FLT_MAX; // min/max along the x axis
-                     float miny = FLT_MAX; // min/max along planeYAxis
-                     float maxx = -FLT_MAX;
-                     float maxy = -FLT_MAX;
-                     const vec3 planeYAxis(0.f, planeNormal.z, -planeNormal.y); //= CrossProduct(planeNormal, vec3(1.f, 0.f, 0.f));
-                     for (const unsigned int idx : primitive->m_mesh.m_indices)
-                        if (const float proj = planeNormal.Dot(vertices[idx]); proj < planeDist + 1.f)
-                        {
-                           const float px = vertices[idx].x; // since we aligned the x axis, planeXAxis is (1, 0, 0)
-                           const float py = vertices[idx].Dot(planeYAxis);
-                           minx = min(minx, px);
-                           maxx = max(maxx, px);
-                           miny = min(miny, py);
-                           maxy = max(maxy, py);
-                        }
-                     const float backglassWidth = maxx - minx;
-                     const float backglassHeight = maxy - miny;
-                     if (backglassWidth > 0.f && backglassHeight > 0.f)
-                     {
-                        Flasher *const backglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0.f, 0.f);
-                        if (backglass)
-                        {
-                           backglass->m_name = GetUniqueName(primitive->GetName());
-                           backglass->m_onLoadExpectedPartGroup = primitive->m_onLoadExpectedPartGroup;
-                           backglass->Scale(backglassWidth / 100.f, backglassHeight / 100.f, Vertex2D { },
-                              true); // We should gather the base flasher size from the object instead of guessing its default value
-                           vec3 center = planeDist * planeNormal;
-                           center += (miny + 0.5f * backglassHeight) * planeYAxis;
-                           center.x += (minx + 0.5f * backglassWidth); // since planeXAxis is (1, 0, 0)
-                           backglass->Translate(Vertex2D(center.x, center.y));
-                           backglass->m_d.m_height = center.z;
-                           backglass->m_d.m_rotX = -180.f - RADTOANG(atan2(planeNormal.y, planeNormal.z)); // since planeXAxis is (1, 0, 0)
-                           backglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
-                           backglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
-                           backglass->m_d.m_depthBias = primitive->m_d.m_depthBias;
-                           backglass->m_d.m_isVisible = primitive->m_d.m_visible;
-                           primitive->m_d.m_visible = false;
-                           PLOGW << "Primitive '" << primitive->GetName() << "' used as a deprecated VR backglass was hidden and an external renderer flasher named '"
-                                 << backglass->GetName() << "' was added. This may cause script issues.";
-                           AddPart(backglass);
-                           backglass->Release();
-                        }
-                     }
-                  }
-               }
-            }
-         }
-         // Drop failed loads before searching for duplicates (the name is stored in the stream, so identify them by stream)
-         for (size_t i = 0; i < m_vsound.size(); i++)
-            if (m_vsound[i] == nullptr)
-	    {
-               PLOGE << "Failed to load table sound from stream GameStg/Sound" << i;
-	    }
-         std::erase(m_vsound, nullptr);
-         for (size_t i = 0; i < m_vimage.size(); i++)
-            if (m_vimage[i] == nullptr)
-	    {
-               PLOGE << "Failed to load table image from stream GameStg/Image" << i;
-	    }
-         std::erase(m_vimage, nullptr);
-         if (!m_vsound.empty())
-            for (size_t i = 0; i < m_vsound.size(); ++i)
-            {
-               const VPX::Sound *sound = m_vsound[i];
-               if (i < m_vsound.size() - 1)
-               {
-                  for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
-                     if (StrCompareNoCase(sound->GetName(), m_vsound[i2]->GetName()))
-                     {
-                        PLOGW << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
-                        delete m_vsound[i2];
-                        m_vsound.erase(m_vsound.begin() + i2);
-                        --i2;
-                     }
-               }
-            }
-         if (!m_vimage.empty())
-            for (size_t i = 0; i < m_vimage.size(); ++i)
-            {
-               const Texture *image = m_vimage[i];
-               if (i < m_vimage.size() - 1)
-               {
-                  for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
-                     if (StrCompareNoCase(image->m_name, m_vimage[i2]->m_name))
-                     {
-                        PLOGW << "Duplicate image name found: " << image->GetName() << ", dropping it!";
-                        delete m_vimage[i2];
-                        m_vimage.erase(m_vimage.begin() + i2);
-                        --i2;
-                     }
-               }
-            }
-         if (!m_vfont.empty())
-            for (size_t i = 0; i < m_vfont.size(); ++i)
-            {
-               if (PinFont *font = m_vfont[i]; font == nullptr)
-               {
-                  PLOGE << "Failed to load one of the table fonts";
-                  m_vfont.erase(m_vfont.begin() + i);
-                  --i;
-               }
-               else
-               {
-                  font->Register();
-               }
-            }
-
-         PLOGI << "Images, Sounds, Fonts and Parts loaded"; // For profiling
-
-         // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
-         parts = GetParts();
-         vector<string> functions;
-         vector<string> identifiers;
-         ParseScript(m_script_text, functions, identifiers, [](const string&, int) {});
-         for (auto part : parts)
-         {
-            if (const string& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
-            {
-               string layerName = requestedLayerName;
-               auto partGroupF = std::ranges::find_if(m_vedit,
-                  [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && StrCompareNoCase(editable->GetIScriptable()->m_name, layerName); });
-               // If part group was not already added, we need to check if the name is conflicting with other editables, collections or script declarations
-               int renameIndex = 1;
-               bool layerPostpend = false;
-               while (partGroupF == m_vedit.end())
-               {
-                  const string tmp = lowerCase(layerName);
-                  const bool nameIsUnique =
-                        IsNameUnique(layerName)
-                     && std::ranges::find(functions, tmp) == functions.end()
-                     && std::ranges::find(identifiers, tmp) == identifiers.end();
-                  if (nameIsUnique)
-                     break;
-
-                  // Postpend "layer" to keep alphabetic order of layer
-                  if (!layerPostpend && !layerName.ends_with("_Layer"sv))
-                  {
-                     layerPostpend = true;
-                     layerName += "_Layer"sv;
-                  }
-                  else
-                  {
-                     size_t lastNonDigit = layerName.length();
-                     while (lastNonDigit > 0 && layerName[lastNonDigit - 1] >= '0' && layerName[lastNonDigit - 1] <= '9')
-                        lastNonDigit--;
-                     if (lastNonDigit < layerName.length())
-                     {
-                        // If it ends by a number, then inc the number
-                        const string numberStr = layerName.substr(lastNonDigit);
-                        const int number = std::stoi(numberStr);
-                        layerName.resize(lastNonDigit); // base
-                        renameIndex = max(renameIndex, number + 1);
-                     }
-                     else
-                     {
-                        // If not, add it
-                        layerName += '_';
-                     }
-                     layerName += std::format("{:03d}", renameIndex);
-                     renameIndex += 1;
-                  }
-
-                  partGroupF = std::ranges::find_if(m_vedit,
-                     [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && StrCompareNoCase(editable->GetIScriptable()->m_name, layerName); });
-               }
-               // Set or create implicit PartGroups (that is to say, PartGroups corresponding to legacy layers)
-               if (partGroupF != m_vedit.end())
-               {
-                  part->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
-               }
-               else if (PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, this, 0, 0)); newGroup)
-               {
-                  if (requestedLayerName != layerName)
-                  {
-                     PLOGI << "Layer name '" << requestedLayerName << "' was replaced by '" << layerName
-                           << "' as this name is already used by another table element";
-                  }
-                  newGroup->m_name = layerName;
-                  AddPart(newGroup);
-                  newGroup->Release();
-                  part->SetPartGroup(newGroup);
-               }
-            }
-         }
-
-         // Since 10.8.1, layers have been replaced by groups with properties, keep partgroups at the beginning of the editable list.
-         std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
-
-         // Resolve collection parts
-         for (auto pcol : m_vcollection)
-            pcol->InitPostLoad(this);
-
-         SanitizePhysicsData();
+         FinalizeLoadedParts(parts);
       }
 
       // Authentication block
@@ -1891,242 +1698,1229 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             CryptReleaseContext(hcp, 0);
       #endif
 
-      if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
-         for (size_t i = 0; i < m_materials.size(); ++i)
-            m_materials[i]->m_fGlossyImageLerp = 1.f;
-
-      if (loadfileversion < 1040) // the m_fThickness part was included first with 10.4, so set all previously saved materials to the old default
-         for (size_t i = 0; i < m_materials.size(); ++i)
-            m_materials[i]->m_fThickness = 0.05f;
-
-      if (loadfileversion < 1072) // playfield meshes were always forced as collidable until 10.7.1
-         for (auto pEdit : m_vedit)
-            if (pEdit->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)pEdit)->IsPlayfield()))
-            {
-               Primitive* const prim = (Primitive *)pEdit;
-               prim->put_IsToy(FTOVB(false));
-               prim->put_Collidable(FTOVB(true));
-            }
-
-      // reflections were hardcoded without render probe before 10.8.0
-      RenderProbe *pf_reflection_probe = GetRenderProbe(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
-      if (pf_reflection_probe == nullptr)
-      {
-         pf_reflection_probe = new RenderProbe();
-         pf_reflection_probe->SetName(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
-         pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
-         m_vrenderprobe.push_back(pf_reflection_probe);
-      }
-      constexpr vec4 plane{0.f, 0.f, 1.f, 0.f};
-      pf_reflection_probe->SetType(RenderProbe::PLANE_REFLECTION);
-      pf_reflection_probe->SetReflectionPlane(plane);
-      pf_reflection_probe->SetReflectionNoLightmaps(true);
-
-      if (loadfileversion < 1080)
-      {
-         // Glass was horizontal before 10.8
-         m_glassBottomHeight = m_glassTopHeight;
-
-         for (size_t i = 0; i < m_vedit.size(); ++i)
-         {
-            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->m_d.m_disableLightingBelow != 1.0f))
-            {
-               Primitive *const prim = (Primitive *)m_vedit[i];
-               // Before 10.8 alpha channel of texture was discarded if material transparency was 1, in turn leading to disabling lighting from below.
-               Material* mat = GetMaterial(prim->m_d.m_szMaterial);
-               if (mat && (!mat->m_bOpacityActive || mat->m_fOpacity == 1.0f))
-                  prim->m_d.m_disableLightingBelow = 1.0f;
-            }
-            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
-            {
-               Primitive* const prim = (Primitive *)m_vedit[i];
-               // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
-               prim->m_d.m_staticRendering = true;
-               // since playfield were always rendered before bulb light buffer until 10.8, they would never have transmitted light
-               prim->m_d.m_disableLightingBelow = 1.0f;
-               // playfield meshes were always forced as visible until 10.8.0
-               prim->put_Visible(FTOVB(true));
-               // playfield meshes were always drawn before other transparent parts until 10.8.0
-               prim->m_d.m_depthBias = 100000.0f;
-               // playfield meshes did not handle backfaces until 10.8.0
-               prim->m_d.m_backfacesEnabled = false;
-            }
-            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
-            {
-               Light* const light = (Light *)m_vedit[i];
-               // Before 10.8, lights would never be reflected
-               light->m_d.m_reflectionEnabled = false;
-               // Before 10.8, lights did not have a z coordinate for the light emission point: classic lights where renderer at surface+0.1, bulb light at surface+halo height+0.1
-               // This needs to be preserved to avoid changing the light falloff curve, so we set up with the same definition (the 0.1 offset on z axis being applied when rendering to avoid z fighting)
-               light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_bulbHaloHeight : 0.0f;
-               if (!light->m_d.m_BulbLight)
-               {
-                  // Before 10.8, classic light could not have a bulb mesh so force it off
-                  light->m_d.m_showBulbMesh = false;
-                  // Before 10.8, classic light could not have ball reflection so force it off
-                  light->m_d.m_showReflectionOnBall = false;
-               }
-               // Before 10.8, bulb mesh visibility was combined with lightmap visibility (i.e. a hidden light could be reflecting but not have a bulb mesh). Note that light visible property was only accessible through script
-               if (!light->m_d.m_visible)
-                  light->m_d.m_showBulbMesh = false;
-            }
-         }
-      }
-
-      if (loadfileversion < 1081)
-      {
-         // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
-         const string script = lowerCase(m_script_text);
-         std::ranges::for_each(m_vedit,
-            [&](IEditable *editable)
-            {
-               if (editable->GetItemType() != eItemPartGroup)
-                  return;
-               const string& name = editable->GetName();
-               if (!name.starts_with("Layer_"sv))
-                  return;
-               const string shortName = name.substr(6);
-               if (shortName.empty() || !IsNameUnique(shortName) || StrCompareNoCase(shortName, m_name))
-                  return; // Conflict with a part, collection, global or the table name (not registered yet)
-               if ((shortName.find_first_not_of("0123456789") != string::npos) && script.find(lowerCase(shortName)) != string::npos) //!!
-                  return; // (Potential) conflict with a script variable
-               RenamePart(editable, shortName);
-            });
-      }
-
-      // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
-      /* This code would replace a DMD textbox by a flasher. It is deactivated since it would break scripting (but does anyone script this ?)
-      for (size_t i = 0; i < m_vedit.size(); ++i)
-      {
-         if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
-         {
-            Textbox *const textbox = (Textbox *)m_vedit[i];
-            if (textbox->m_d.m_isDMD || StrFindNoCase(textbox->m_d.m_text, "DMD"s) != string::npos)
-            {
-               RemovePart(textbox);
-               Flasher* const dmd = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0, 0);
-               RemovePart(dmd);
-               dmd->m_name = textbox->m_name;
-               dmd->UpdatePoint(0, textbox->m_d.m_v1.x, textbox->m_d.m_v1.y);
-               dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
-               dmd->UpdatePoint(2, textbox->m_d.m_v2.x, textbox->m_d.m_v2.y);
-               dmd->UpdatePoint(3, textbox->m_d.m_v2.x, textbox->m_d.m_v1.y);
-               dmd->m_desktopBackdrop = true;
-               dmd->m_d.m_isVisible = textbox->m_d.m_visible;
-               dmd->m_d.m_renderMode = FlasherData::DMD;
-               dmd->m_d.m_renderStyle = 0; // Legacy rendering style
-               dmd->m_d.m_imagealignment = ImageModeWrap;
-               dmd->m_d.m_color = textbox->m_d.m_fontcolor;
-               dmd->m_d.m_addBlend = FlasherData::AB_NONE;
-               dmd->m_d.m_modulate_vs_add = 1.f; // Actually alpha
-               dmd->m_d.m_alpha = static_cast<int>(100.f * textbox->m_d.m_intensity_scale); // Actually brightness
-               dmd->m_d.m_intensity_scale = 1.f; // Actually brightness scale
-               dmd->m_vCollection.insert(dmd->m_vCollection.begin(), textbox->m_vCollection.begin(), textbox->m_vCollection.end());
-               for (Collection *const pcollection : textbox->m_vCollection)
-               {
-                  pcollection->RemovePart(textbox);
-                  pcollection->AddPart(dmd);
-               }
-               m_vedit[i] = dmd;
-               AddPart(dmd);
-               PLOGI << "Textbox used as DMD replaced by a flasher (name=" << dmd->m_name << ')';
-               break;
-            }
-         }
-      }*/
-
-      // Do not consider properties converted to settings as changes to avoid creating an ini for each opened old table (they will be imported again as they are part of the VPX file)
-      m_settings.SetModified(false);
-   }
-
-   if (m_pbTempScreenshot) // For some reason, no image picked up the screenshot.  Not good; but we'll dump it to make sure it gets cleaned up
-   {
-      delete m_pbTempScreenshot;
-      m_pbTempScreenshot = nullptr;
+      ApplyLoadedVersionFixups(loadfileversion);
    }
 
    rootStorage.close();
 
-   SetDirty(eSaveClean);
+   return hr;
+}
 
-   m_title = TitleFromFilename(filename);
-   // A read only table cannot be saved over, so say so in the title. On Windows this
-   // mirrors FILE_ATTRIBUTE_READONLY, which is what the standard library reports there;
-   // elsewhere it is the owner write bit. Ignore any error: an unreadable status just
-   // means we leave the title alone
-   std::error_code ec;
-   const std::filesystem::perms perms = std::filesystem::status(filename, ec).permissions();
-   if (!ec && (perms & std::filesystem::perms::owner_write) == std::filesystem::perms::none)
-      m_title += " [READ ONLY]"sv;
-
-   PLOGI << "InitTablePostLoad"; // For profiling
-
-   // Not registered if a part already uses it (it would then be removed with that part's name on rename)
-   m_nameRegistered = !m_name.empty() && m_scriptableNames.insert(lowerCase(m_name)).second;
-
-   for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
-      if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
+void PinTable::FinalizeLoadedParts(vector<IEditable *> &parts)
+{
+   // Handle failed loading & duplicates
+   if (!parts.empty())
+   {
+      // Process unnamed parts after named parts
+      std::ranges::stable_partition(parts.begin(), parts.end(), [](IEditable *p) { return p && !p->GetIScriptable()->m_name.empty(); });
+      for (size_t i = 0; i < parts.size(); )
       {
-         mViewSetups[i] = mViewSetups[BG_DESKTOP];
-         if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
-            m_BG_image[i] = m_BG_image[BG_DESKTOP];
+         IEditable * const part = parts[i];
+         if (part == nullptr)
+         {
+            PLOGE << "Failed to load one of the table parts";
+            parts.erase(parts.begin() + i);
+         }
+         else
+         {
+            // Decals used to not have a name, so we may have to provide an autogenerated one (still, some old files do have a name for decals somehow)
+            string &name = part->GetIScriptable()->m_name;
+            if (name.empty())
+               GetUniqueName(part->GetItemType(), name);
+            if (!IsNameUnique(name))
+            {
+               const string oldName = name;
+               name = GetUniqueName(oldName);
+               PLOGW << "Duplicate part name found: " << oldName << " renamed it to " << name;
+            }
+            AddPart(part);
+            part->InitPostLoad(); // m_ptable is set now
+            part->Release();
+            i++;
+         }
       }
 
-   // Warn if the backdrop used by the active view mode references an image that is not in the
-   // table: it would render black. An empty name or the "<None>" sentinel means no backdrop is set.
-   if (const string& bg = m_BG_image[GetViewMode()];
-       !bg.empty() && !StrCompareNoCase(bg, g_szNoneSelection) && GetImage(bg) == nullptr) {
-      PLOGW << "Backdrop image '" << bg << "' set for the active view mode was not found in the table (renders black)";
+      // We used to have a hack taken from VPVR to display backglass in VR: an external window would be captured, then rendered on a primitive with an
+      // image named backglassimage. We now have support for external renderer on flasher, so we replace these primitives by flashers.
+      // As this may cause script error if the original table would expect a primitive object and tweak properties not supported by flasher object,
+      // we keep the original object. This is not perfect as the table script will not tweak this one, but at least, it makes updating table easy.
+      parts = GetParts();
+      for (IEditable* part : parts)
+      {
+         if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
+         {
+            bool hasBackglassFlasher = false;
+            for (const auto existing : parts)
+            {
+               if (existing->GetItemType() == ItemTypeEnum::eItemFlasher)
+               {
+                  if (const Flasher *const exBackglass = (const Flasher *)existing;
+                     exBackglass->m_d.m_renderMode == FlasherData::EXT_RENDER && exBackglass->m_d.m_renderStyle == VPXWindowId::VPXWINDOW_Backglass)
+                  {
+                     hasBackglassFlasher = true;
+                     break;
+                  }
+               }
+            }
+            if (hasBackglassFlasher)
+               continue;
+            Primitive *const primitive = (Primitive *)part;
+            if (primitive->m_d.m_use3DMesh)
+               continue;
+
+            // We need to reduce the primitive to a flasher rectangle. The algorithm is:
+            // - to find the flasher plane using mesh's faces normals, favoring faces looking toward the player (a backfacing backglass is unlikely)
+            // - to find the plane position by considering the vertices nearest to the player (to discard back of the primitive if using a box instead of a rect)
+            // - to evaluate an axis align square in this plane and define a flasher accordingly (a rotated backglass is unlikely)
+            const Matrix3D &transform = primitive->RecalculateMatrices();
+            vector<vec3> vertices(primitive->m_mesh.m_vertices.size());
+            for (size_t i2 = 0; i2 < primitive->m_mesh.m_vertices.size(); i2++)
+               vertices[i2] = transform * primitive->m_mesh.m_vertices[i2];
+            vec3 planeNormal(0.f, 0.f, 0.f);
+            float planeNormalWeight = 0.f;
+            for (size_t i2 = 0; i2 < primitive->m_mesh.m_indices.size(); i2 += 3)
+            {
+               vec3 &a = vertices[primitive->m_mesh.m_indices[i2]];
+               vec3 &b = vertices[primitive->m_mesh.m_indices[i2 + 1]];
+               vec3 &c = vertices[primitive->m_mesh.m_indices[i2 + 2]];
+               vec3 ab(b.x - a.x, b.y - a.y, b.z - a.z);
+               vec3 ac(c.x - a.x, c.y - a.y, c.z - a.z);
+               vec3 n = CrossProduct(ac, ab);
+               n.Normalize();
+               const float weight = -n.z; //= n.Dot(vec3(0.f, 0.f, -1.f));
+               if (weight > 0.f)
+               {
+                  planeNormal += weight * n;
+                  planeNormalWeight += weight;
+               }
+            }
+
+            planeNormal.x = 0.f; // to simplify, we align the backglass X axis with the table (after all, backglasses should be facing the player)
+            if (const float normalLength = planeNormal.Length(); normalLength > 1e-5f)
+            {
+               planeNormal /= normalLength;
+
+               float planeDist = FLT_MAX;
+               for (const unsigned int idx : primitive->m_mesh.m_indices)
+                  planeDist = min(planeDist, planeNormal.Dot(vertices[idx]));
+
+               float minx = FLT_MAX; // min/max along the x axis
+               float miny = FLT_MAX; // min/max along planeYAxis
+               float maxx = -FLT_MAX;
+               float maxy = -FLT_MAX;
+               const vec3 planeYAxis(0.f, planeNormal.z, -planeNormal.y); //= CrossProduct(planeNormal, vec3(1.f, 0.f, 0.f));
+               for (const unsigned int idx : primitive->m_mesh.m_indices)
+                  if (const float proj = planeNormal.Dot(vertices[idx]); proj < planeDist + 1.f)
+                  {
+                     const float px = vertices[idx].x; // since we aligned the x axis, planeXAxis is (1, 0, 0)
+                     const float py = vertices[idx].Dot(planeYAxis);
+                     minx = min(minx, px);
+                     maxx = max(maxx, px);
+                     miny = min(miny, py);
+                     maxy = max(maxy, py);
+                  }
+               const float backglassWidth = maxx - minx;
+               const float backglassHeight = maxy - miny;
+               if (backglassWidth > 0.f && backglassHeight > 0.f)
+               {
+                  Flasher *const backglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0.f, 0.f);
+                  if (backglass)
+                  {
+                     backglass->m_name = GetUniqueName(primitive->GetName());
+                     backglass->m_onLoadExpectedPartGroup = primitive->m_onLoadExpectedPartGroup;
+                     backglass->Scale(backglassWidth / 100.f, backglassHeight / 100.f, Vertex2D { },
+                        true); // We should gather the base flasher size from the object instead of guessing its default value
+                     vec3 center = planeDist * planeNormal;
+                     center += (miny + 0.5f * backglassHeight) * planeYAxis;
+                     center.x += (minx + 0.5f * backglassWidth); // since planeXAxis is (1, 0, 0)
+                     backglass->Translate(Vertex2D(center.x, center.y));
+                     backglass->m_d.m_height = center.z;
+                     backglass->m_d.m_rotX = -180.f - RADTOANG(atan2(planeNormal.y, planeNormal.z)); // since planeXAxis is (1, 0, 0)
+                     backglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
+                     backglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
+                     backglass->m_d.m_depthBias = primitive->m_d.m_depthBias;
+                     backglass->m_d.m_isVisible = primitive->m_d.m_visible;
+                     primitive->m_d.m_visible = false;
+                     PLOGW << "Primitive '" << primitive->GetName() << "' used as a deprecated VR backglass was hidden and an external renderer flasher named '"
+                           << backglass->GetName() << "' was added. This may cause script issues.";
+                     AddPart(backglass);
+                     backglass->Release();
+                  }
+               }
+            }
+         }
+      }
+   }
+   // Drop failed loads before searching for duplicates (the name is stored in the stream, so identify them by stream)
+   for (size_t i = 0; i < m_vsound.size(); i++)
+      if (m_vsound[i] == nullptr)
+      {
+         PLOGE << "Failed to load table sound at index" << i;
+      }
+   std::erase(m_vsound, nullptr);
+   for (size_t i = 0; i < m_vimage.size(); i++)
+      if (m_vimage[i] == nullptr)
+      {
+         PLOGE << "Failed to load table image at index" << i;
+      }
+   std::erase(m_vimage, nullptr);
+   if (!m_vsound.empty())
+      for (size_t i = 0; i < m_vsound.size(); ++i)
+      {
+         const VPX::Sound *sound = m_vsound[i];
+         if (i < m_vsound.size() - 1)
+         {
+            for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
+               if (StrCompareNoCase(sound->GetName(), m_vsound[i2]->GetName()))
+               {
+                  PLOGW << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
+                  delete m_vsound[i2];
+                  m_vsound.erase(m_vsound.begin() + i2);
+                  --i2;
+               }
+         }
+      }
+   if (!m_vimage.empty())
+      for (size_t i = 0; i < m_vimage.size(); ++i)
+      {
+         const Texture *image = m_vimage[i];
+         if (i < m_vimage.size() - 1)
+         {
+            for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
+               if (StrCompareNoCase(image->m_name, m_vimage[i2]->m_name))
+               {
+                  PLOGW << "Duplicate image name found: " << image->GetName() << ", dropping it!";
+                  delete m_vimage[i2];
+                  m_vimage.erase(m_vimage.begin() + i2);
+                  --i2;
+               }
+         }
+      }
+   if (!m_vfont.empty())
+      for (size_t i = 0; i < m_vfont.size(); ++i)
+      {
+         if (PinFont *font = m_vfont[i]; font == nullptr)
+         {
+            PLOGE << "Failed to load one of the table fonts";
+            m_vfont.erase(m_vfont.begin() + i);
+            --i;
+         }
+         else
+         {
+            font->Register();
+         }
+      }
+
+   PLOGI << "Images, Sounds, Fonts and Parts loaded"; // For profiling
+
+   // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
+   parts = GetParts();
+   vector<string> functions;
+   vector<string> identifiers;
+   ParseScript(m_script_text, functions, identifiers, [](const string&, int) {});
+   for (auto part : parts)
+   {
+      if (const string& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
+      {
+         string layerName = requestedLayerName;
+         auto partGroupF = std::ranges::find_if(m_vedit,
+            [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && StrCompareNoCase(editable->GetIScriptable()->m_name, layerName); });
+         // If part group was not already added, we need to check if the name is conflicting with other editables, collections or script declarations
+         int renameIndex = 1;
+         bool layerPostpend = false;
+         while (partGroupF == m_vedit.end())
+         {
+            const string tmp = lowerCase(layerName);
+            const bool nameIsUnique =
+                  IsNameUnique(layerName)
+               && std::ranges::find(functions, tmp) == functions.end()
+               && std::ranges::find(identifiers, tmp) == identifiers.end();
+            if (nameIsUnique)
+               break;
+
+            // Postpend "layer" to keep alphabetic order of layer
+            if (!layerPostpend && !layerName.ends_with("_Layer"sv))
+            {
+               layerPostpend = true;
+               layerName += "_Layer"sv;
+            }
+            else
+            {
+               size_t lastNonDigit = layerName.length();
+               while (lastNonDigit > 0 && layerName[lastNonDigit - 1] >= '0' && layerName[lastNonDigit - 1] <= '9')
+                  lastNonDigit--;
+               if (lastNonDigit < layerName.length())
+               {
+                  // If it ends by a number, then inc the number
+                  const string numberStr = layerName.substr(lastNonDigit);
+                  const int number = std::stoi(numberStr);
+                  layerName.resize(lastNonDigit); // base
+                  renameIndex = max(renameIndex, number + 1);
+               }
+               else
+               {
+                  // If not, add it
+                  layerName += '_';
+               }
+               layerName += std::format("{:03d}", renameIndex);
+               renameIndex += 1;
+            }
+
+            partGroupF = std::ranges::find_if(m_vedit,
+               [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && StrCompareNoCase(editable->GetIScriptable()->m_name, layerName); });
+         }
+         // Set or create implicit PartGroups (that is to say, PartGroups corresponding to legacy layers)
+         if (partGroupF != m_vedit.end())
+         {
+            part->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
+         }
+         else if (PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, this, 0, 0)); newGroup)
+         {
+            if (requestedLayerName != layerName)
+            {
+               PLOGI << "Layer name '" << requestedLayerName << "' was replaced by '" << layerName
+                     << "' as this name is already used by another table element";
+            }
+            newGroup->m_name = layerName;
+            AddPart(newGroup);
+            newGroup->Release();
+            part->SetPartGroup(newGroup);
+         }
+      }
    }
 
-   Settings::SetTableOverride_Difficulty_Default(m_difficulty);
-   m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
+   // Since 10.8.1, layers have been replaced by groups with properties, keep partgroups at the beginning of the editable list.
+   std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
 
-   RemoveInvalidReferences();
+   // Resolve collection parts
+   for (auto pcol : m_vcollection)
+      pcol->InitPostLoad(this);
 
-   std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
-   std::filesystem::path tableFile = std::filesystem::path(filename).filename();
+   SanitizePhysicsData();
+}
 
-   // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings
-   // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
-   if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".pov"); !FileExists(GetSettingsFileName()) && FileExists(filenameAuto))
-      ImportBackdropPOV(filenameAuto, true);
-   else if (const std::filesystem::path filenameAuto2 = tablePath / "autopov.pov"sv; FileExists(filenameAuto2))
-      ImportBackdropPOV(filenameAuto2, true);
+void PinTable::ApplyLoadedVersionFixups(const int loadfileversion)
+{
+   if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
+      for (size_t i = 0; i < m_materials.size(); ++i)
+         m_materials[i]->m_fGlossyImageLerp = 1.f;
 
-   // auto-import VBS table script, if it exists...
-   if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(this, tableFile.replace_extension(".vbs")); !filenameAuto.empty())
-      LoadScriptOverride(filenameAuto);
+   if (loadfileversion < 1040) // the m_fThickness part was included first with 10.4, so set all previously saved materials to the old default
+      for (size_t i = 0; i < m_materials.size(); ++i)
+         m_materials[i]->m_fThickness = 0.05f;
+
+   if (loadfileversion < 1072) // playfield meshes were always forced as collidable until 10.7.1
+      for (auto pEdit : m_vedit)
+         if (pEdit->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)pEdit)->IsPlayfield()))
+         {
+            Primitive* const prim = (Primitive *)pEdit;
+            prim->put_IsToy(FTOVB(false));
+            prim->put_Collidable(FTOVB(true));
+         }
+
+   // reflections were hardcoded without render probe before 10.8.0
+   RenderProbe *pf_reflection_probe = GetRenderProbe(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+   if (pf_reflection_probe == nullptr)
+   {
+      pf_reflection_probe = new RenderProbe();
+      pf_reflection_probe->SetName(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+      pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
+      m_vrenderprobe.push_back(pf_reflection_probe);
+   }
+   constexpr vec4 plane{0.f, 0.f, 1.f, 0.f};
+   pf_reflection_probe->SetType(RenderProbe::PLANE_REFLECTION);
+   pf_reflection_probe->SetReflectionPlane(plane);
+   pf_reflection_probe->SetReflectionNoLightmaps(true);
+
+   if (loadfileversion < 1080)
+   {
+      // Glass was horizontal before 10.8
+      m_glassBottomHeight = m_glassTopHeight;
+
+      for (size_t i = 0; i < m_vedit.size(); ++i)
+      {
+         if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->m_d.m_disableLightingBelow != 1.0f))
+         {
+            Primitive *const prim = (Primitive *)m_vedit[i];
+            // Before 10.8 alpha channel of texture was discarded if material transparency was 1, in turn leading to disabling lighting from below.
+            Material* mat = GetMaterial(prim->m_d.m_szMaterial);
+            if (mat && (!mat->m_bOpacityActive || mat->m_fOpacity == 1.0f))
+               prim->m_d.m_disableLightingBelow = 1.0f;
+         }
+         if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
+         {
+            Primitive* const prim = (Primitive *)m_vedit[i];
+            // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
+            prim->m_d.m_staticRendering = true;
+            // since playfield were always rendered before bulb light buffer until 10.8, they would never have transmitted light
+            prim->m_d.m_disableLightingBelow = 1.0f;
+            // playfield meshes were always forced as visible until 10.8.0
+            prim->put_Visible(FTOVB(true));
+            // playfield meshes were always drawn before other transparent parts until 10.8.0
+            prim->m_d.m_depthBias = 100000.0f;
+            // playfield meshes did not handle backfaces until 10.8.0
+            prim->m_d.m_backfacesEnabled = false;
+         }
+         if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
+         {
+            Light* const light = (Light *)m_vedit[i];
+            // Before 10.8, lights would never be reflected
+            light->m_d.m_reflectionEnabled = false;
+            // Before 10.8, lights did not have a z coordinate for the light emission point: classic lights where renderer at surface+0.1, bulb light at surface+halo height+0.1
+            // This needs to be preserved to avoid changing the light falloff curve, so we set up with the same definition (the 0.1 offset on z axis being applied when rendering to avoid z fighting)
+            light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_bulbHaloHeight : 0.0f;
+            if (!light->m_d.m_BulbLight)
+            {
+               // Before 10.8, classic light could not have a bulb mesh so force it off
+               light->m_d.m_showBulbMesh = false;
+               // Before 10.8, classic light could not have ball reflection so force it off
+               light->m_d.m_showReflectionOnBall = false;
+            }
+            // Before 10.8, bulb mesh visibility was combined with lightmap visibility (i.e. a hidden light could be reflecting but not have a bulb mesh). Note that light visible property was only accessible through script
+            if (!light->m_d.m_visible)
+               light->m_d.m_showBulbMesh = false;
+         }
+      }
+   }
+
+   if (loadfileversion < 1081)
+   {
+      // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
+      const string script = lowerCase(m_script_text);
+      std::ranges::for_each(m_vedit,
+         [&](IEditable *editable)
+         {
+            if (editable->GetItemType() != eItemPartGroup)
+               return;
+            const string& name = editable->GetName();
+            if (!name.starts_with("Layer_"sv))
+               return;
+            const string shortName = name.substr(6);
+            if (shortName.empty() || !IsNameUnique(shortName) || StrCompareNoCase(shortName, m_name))
+               return; // Conflict with a part, collection, global or the table name (not registered yet)
+            if ((shortName.find_first_not_of("0123456789") != string::npos) && script.find(lowerCase(shortName)) != string::npos) //!!
+               return; // (Potential) conflict with a script variable
+            RenamePart(editable, shortName);
+         });
+   }
+
+   // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
+   /* This code would replace a DMD textbox by a flasher. It is deactivated since it would break scripting (but does anyone script this ?)
+   for (size_t i = 0; i < m_vedit.size(); ++i)
+   {
+      if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
+      {
+         Textbox *const textbox = (Textbox *)m_vedit[i];
+         if (textbox->m_d.m_isDMD || StrFindNoCase(textbox->m_d.m_text, "DMD"s) != string::npos)
+         {
+            RemovePart(textbox);
+            Flasher* const dmd = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0, 0);
+            RemovePart(dmd);
+            dmd->m_name = textbox->m_name;
+            dmd->UpdatePoint(0, textbox->m_d.m_v1.x, textbox->m_d.m_v1.y);
+            dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
+            dmd->UpdatePoint(2, textbox->m_d.m_v2.x, textbox->m_d.m_v2.y);
+            dmd->UpdatePoint(3, textbox->m_d.m_v2.x, textbox->m_d.m_v1.y);
+            dmd->m_desktopBackdrop = true;
+            dmd->m_d.m_isVisible = textbox->m_d.m_visible;
+            dmd->m_d.m_renderMode = FlasherData::DMD;
+            dmd->m_d.m_renderStyle = 0; // Legacy rendering style
+            dmd->m_d.m_imagealignment = ImageModeWrap;
+            dmd->m_d.m_color = textbox->m_d.m_fontcolor;
+            dmd->m_d.m_addBlend = FlasherData::AB_NONE;
+            dmd->m_d.m_modulate_vs_add = 1.f; // Actually alpha
+            dmd->m_d.m_alpha = static_cast<int>(100.f * textbox->m_d.m_intensity_scale); // Actually brightness
+            dmd->m_d.m_intensity_scale = 1.f; // Actually brightness scale
+            dmd->m_vCollection.insert(dmd->m_vCollection.begin(), textbox->m_vCollection.begin(), textbox->m_vCollection.end());
+            for (Collection *const pcollection : textbox->m_vCollection)
+            {
+               pcollection->RemovePart(textbox);
+               pcollection->AddPart(dmd);
+            }
+            m_vedit[i] = dmd;
+            AddPart(dmd);
+            PLOGI << "Textbox used as DMD replaced by a flasher (name=" << dmd->m_name << ')';
+            break;
+         }
+      }
+   }*/
+
+   // Do not consider properties converted to settings as changes to avoid creating an ini for each opened old table (they will be imported again as they are part of the VPX file)
+   m_settings.SetModified(false);
+}
+
+static vector<std::filesystem::path> ListPackFolder(const JSONSerializer::Deserializer &pack, const std::filesystem::path &folder)
+{
+   vector<std::filesystem::path> entries;
+   for (const std::filesystem::path &entry : pack.ListFiles())
+   {
+      const std::filesystem::path rel = entry.lexically_relative(folder);
+      if (!rel.empty() && *rel.begin() != "..")
+         entries.push_back(entry);
+   }
+   std::ranges::sort(entries);
+   return entries;
+}
+
+// Lists the JSON files of a pack folder, sorted for deterministic processing order
+static vector<std::filesystem::path> ListPackJSONFolder(const JSONSerializer::Deserializer &pack, const std::filesystem::path &folder)
+{
+   vector<std::filesystem::path> entries = ListPackFolder(pack, folder);
+   entries.erase(std::remove_if(entries.begin(), entries.end(), [](const std::filesystem::path &entry) { return entry.extension() != ".json"; }), entries.end());
+   return entries;
+}
+
+// Pack-relative path as stored inside JSON documents: UTF-8 with '/' separators (portable across platforms)
+static string PackPathToJSON(const std::filesystem::path &path)
+{
+   string s = PathToUTF8(path);
+   std::ranges::replace(s, '\\', '/');
+   return s;
+}
+
+// Finds the binary file a sidecar document refers to, as the sibling file sharing the sidecar's file stem
+static std::filesystem::path PackSidecarDataFile(const std::filesystem::path &sidecarPath, const vector<std::filesystem::path> &folderEntries)
+{
+   for (const std::filesystem::path &entry : folderEntries)
+      if (entry.extension() != ".json" && entry.parent_path() == sidecarPath.parent_path() && entry.stem() == sidecarPath.stem())
+         return entry;
+   return {};
+}
+
+// Loads the TableInfo and custom tags of a VPZ pack from its table.json document
+static void LoadJSONTableInfo(PinTable *const table, const nlohmann::ordered_json &doc)
+{
+   table->m_tableName = doc.value("table_name", ""s);
+   table->m_author = doc.value("author", ""s);
+   table->m_version = doc.value("table_version", ""s);
+   table->m_releaseDate = doc.value("release_date", ""s);
+   table->m_authorEMail = doc.value("author_email", ""s);
+   table->m_webSite = doc.value("web_site", ""s);
+   table->m_blurb = doc.value("blurb", ""s);
+   table->m_description = doc.value("description", ""s);
+   table->m_rules = doc.value("rules", ""s);
+   table->m_numTimesSaved = doc.value("save_rev", 0u);
+   table->m_customInfo.clear();
+   if (const nlohmann::json tags = doc.value("custom_tags", nlohmann::json::object()); tags.is_object())
+      for (const auto &[tag, tagContent] : tags.items())
+         if (tagContent.is_string())
+            table->m_customInfo.emplace_back(tag, tagContent.get<string>());
+}
+
+HRESULT PinTable::LoadGameFromJSONPack(VPXFileFeedback &feedback)
+{
+   const auto pack = JSONSerializer::CreateReader(m_filename);
+
+   // The manifest identifies the pack format and its version
+   string content;
+   if (!pack->ReadTextFile("manifest.json"s, content))
+   {
+      ShowError(std::format("\"{}\" is not a valid VPZ table (missing manifest.json)", PathToUTF8(m_filename)));
+      return STG_E_FILENOTFOUND;
+   }
+   try
+   {
+      const nlohmann::json manifest = nlohmann::json::parse(content);
+      const string format = manifest.value("file_format", ""s);
+      const int formatVersion = manifest.value("file_version", 0);
+      if (format != "vpinball-pack"s)
+      {
+         ShowError(std::format("Unsupported file format \"{}\" in \"{}\"", format, PathToUTF8(m_filename)));
+         return E_FAIL;
+      }
+      if (formatVersion > JSONSerializer::kFormatVersion)
+      {
+         ShowError(std::format("This table uses a newer VPZ file format (version {}). Please update Visual Pinball.", formatVersion));
+         return E_FAIL;
+      }
+   }
+   catch (const nlohmann::json::exception &e)
+   {
+      ShowError(std::format("Invalid manifest.json in \"{}\": {}", PathToUTF8(m_filename), e.what()));
+      return E_FAIL;
+   }
+
+   // Table definition (a partial pack may omit it, in which case its content is loaded into a default table)
+   nlohmann::ordered_json tableDoc;
+   nlohmann::json materialList;
+   nlohmann::json probeList;
+   if (pack->ReadTextFile("table.json"s, content))
+   {
+      try
+      {
+         tableDoc = nlohmann::ordered_json::parse(content);
+      }
+      catch (const nlohmann::json::exception &e)
+      {
+         ShowError(std::format("Invalid table.json in \"{}\": {}", PathToUTF8(m_filename), e.what()));
+         return E_FAIL;
+      }
+      LoadJSONTableInfo(this, tableDoc);
+      // Materials are saved as asset files of the pack (in materials/): table.json only keeps the ordered name list
+      materialList = tableDoc.value("materials", nlohmann::json::array());
+      tableDoc.erase("materials");
+      // Render probes are saved as asset files of the pack (in renderprobes/): table.json only keeps the ordered name list
+      probeList = tableDoc.value("renderprobes", nlohmann::json::array());
+      tableDoc.erase("renderprobes");
+      JSONObjectReader tableReader(tableDoc, eItemTable, pack.get(), CURRENT_FILE_FORMAT_VERSION);
+      Load(tableReader);
+      if (tableReader.HasError())
+         PLOGE << "Errors while loading the table definition of \"" << PathToUTF8(m_filename) << '"';
+   }
    else
    {
-      auto fn = tablePath.filename();
-      fn += ".vbs"sv;
-      std::filesystem::path folderVbs = tablePath / fn;
-      folderVbs = find_case_insensitive_file_path(folderVbs);
-      if (!folderVbs.empty())
-         LoadScriptOverride(folderVbs);
+      PLOGW << "\"" << PathToUTF8(m_filename) << "\" is a partial VPZ pack without a table definition";
+      SetLoadDefaults();
+      memset(m_loadTemp, 0, sizeof(m_loadTemp));
    }
 
-   // auto-import VPP settings, if it exists...
-   if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".vpp"); FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
-      ImportVPP(filenameAuto);
-   else if (const std::filesystem::path filenameAuto2 = tablePath / "autovpp.vpp"sv; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
-      ImportVPP(filenameAuto2);
-
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   if (m_tableEditor)
+   // Ordered name lists, persisted in table.json to preserve item order, completed by any
+   // additional file of the pack folder (to support externally authored packs). Entries are
+   // resolved to their file which is the sanitized name (file resolution is a loader concern)
+   const auto namedList = [&pack](const nlohmann::json &list, const std::filesystem::path &folder)
    {
-      m_tableEditor->m_pcv->SetScript(m_script_text);
-      m_tableEditor->m_pcv->AddItem(this, false);
-      m_tableEditor->m_pcv->AddItem(m_psgt, true);
-      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
+      vector<std::pair<std::filesystem::path, string>> items; // (pack file, unique name)
+      vector<std::filesystem::path> claimed;
+      if (list.is_array())
+         for (const nlohmann::json &item : list)
+         {
+            if (!item.is_string())
+               continue;
+            const string name = item.get<string>();
+            const std::filesystem::path file = folder / (JSONSerializer::SanitizeFileName(name) + ".json"s);
+            if (!pack->Exists(file))
+               PLOGW << "No file found for " << folder << " entry \"" << name << '"';
+            else if (std::ranges::find(claimed, file) == claimed.end())
+            {
+               items.emplace_back(file, name);
+               claimed.push_back(file);
+            }
+         }
+      for (const std::filesystem::path &entry : ListPackJSONFolder(*pack, folder))
+         if (std::ranges::find(claimed, entry) == claimed.end())
+            items.emplace_back(entry, PathToUTF8(entry.stem()));
+      return items;
+   };
+
+   const auto collectionItems = namedList(tableDoc.is_object() ? tableDoc.value("collections", nlohmann::json::array()) : nlohmann::json::array(), "collections");
+   const auto partItems = namedList(tableDoc.is_object() ? tableDoc.value("parts", nlohmann::json::array()) : nlohmann::json::array(), "parts");
+   const vector<std::filesystem::path> soundEntries = ListPackFolder(*pack, "sounds");
+   const vector<std::filesystem::path> imageEntries = ListPackFolder(*pack, "images");
+   const vector<std::filesystem::path> fontEntries = ListPackFolder(*pack, "fonts");
+
+   feedback.SetLength(static_cast<unsigned int>(collectionItems.size() + partItems.size() + soundEntries.size() + imageEntries.size() + fontEntries.size()));
+   std::atomic_int nLoadedItems = 0;
+
+   // Materials, saved as asset files of the pack (in materials/)
+   for (const auto &[file, name] : namedList(materialList, "materials"))
+   {
+      try
+      {
+         string matContent;
+         if (!pack->ReadTextFile(file, matContent))
+            throw std::runtime_error("File not found in pack");
+         nlohmann::ordered_json matDoc = nlohmann::ordered_json::parse(matContent);
+         matDoc["name"] = matDoc.value("name", name); // The name is the file name
+         Material *const mat = new Material();
+         JSONObjectReader reader(matDoc, JSONSerializer::kMaterialNode, pack.get(), CURRENT_FILE_FORMAT_VERSION);
+         mat->Load(reader);
+         if (reader.HasError())
+         {
+            PLOGE << "Errors while loading material \"" << PathToUTF8(file) << '"';
+            delete mat;
+         }
+         else
+            m_materials.push_back(mat);
+      }
+      catch (const std::exception &e)
+      {
+         PLOGE << "Failed to load material \"" << PathToUTF8(file) << "\": " << e.what();
+      }
    }
-#endif
 
-   // Loading (including an overriding .vbs) is not a user edit, but filling the code viewer raised the script dirty flag
-   SetDirtyScript(eSaveClean);
+   // Render probes, saved as asset files of the pack (in renderprobes/)
+   for (const auto &[file, name] : namedList(probeList, "renderprobes"))
+   {
+      try
+      {
+         string probeContent;
+         if (!pack->ReadTextFile(file, probeContent))
+            throw std::runtime_error("File not found in pack");
+         nlohmann::ordered_json probeDoc = nlohmann::ordered_json::parse(probeContent);
+         probeDoc["name"] = probeDoc.value("name", name); // The name is the file name
+         RenderProbe *const probe = new RenderProbe();
+         JSONObjectReader reader(probeDoc, JSONSerializer::kRenderProbeNode, pack.get(), CURRENT_FILE_FORMAT_VERSION);
+         probe->Load(reader);
+         if (reader.HasError())
+         {
+            PLOGE << "Errors while loading render probe \"" << PathToUTF8(file) << '"';
+            delete probe;
+         }
+         else
+            m_vrenderprobe.push_back(probe);
+      }
+      catch (const std::exception &e)
+      {
+         PLOGE << "Failed to load render probe \"" << PathToUTF8(file) << "\": " << e.what();
+      }
+   }
 
-   return hr;
+   // Load collections before the parts as parts need them to resolve their membership
+   for (const auto &[collectionFile, collectionName] : collectionItems)
+   {
+      try
+      {
+         if (!pack->ReadTextFile(collectionFile, content))
+            throw std::runtime_error("File not found in pack");
+         nlohmann::ordered_json doc = nlohmann::ordered_json::parse(content);
+         doc["name"] = doc.value("name", collectionName); // The name is the file name
+         CComObject<Collection> *pcol;
+         CComObject<Collection>::CreateInstance(&pcol);
+         pcol->AddRef();
+         JSONObjectReader reader(doc, eItemCollection, pack.get(), CURRENT_FILE_FORMAT_VERSION);
+         pcol->Load(reader);
+         if (reader.HasError())
+            PLOGE << "Errors while loading collection \"" << PathToUTF8(collectionFile) << '"';
+         if (pcol->m_name.empty() || !IsNameUnique(pcol->m_name))
+         {
+            const string oldName = pcol->m_name;
+            pcol->m_name = GetUniqueName(oldName.empty() ? "Collection"s : oldName);
+            PLOGW << "Duplicate collection name found: " << oldName << " renamed it to " << pcol->m_name;
+         }
+         AddCollection(pcol);
+         pcol->Release();
+      }
+      catch (const std::exception &e)
+      {
+         PLOGE << "Failed to load collection \"" << PathToUTF8(collectionFile) << "\": " << e.what();
+      }
+      feedback.SetProgress(++nLoadedItems);
+   }
+
+   // Load all parts concurrently
+   vector<IEditable *> parts(partItems.size());
+   {
+      ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
+      for (size_t i = 0; i < partItems.size(); ++i)
+      {
+         pool.enqueue(
+            [this, i, &partItems, &parts, &nLoadedItems, pack = pack.get()]
+            {
+               ++nLoadedItems;
+               const std::filesystem::path &partFile = partItems[i].first;
+               try
+               {
+                  string partContent;
+                  if (!pack->ReadTextFile(partFile, partContent))
+                     return;
+                  nlohmann::ordered_json doc = nlohmann::ordered_json::parse(partContent);
+                  doc["name"] = doc.value("name", partItems[i].second); // The name is the file name
+                  const int type = JSONSerializer::GetPartTypeFromName(doc.value("$type", ""s));
+                  IEditable *const piedit = EditableRegistry::Create(static_cast<ItemTypeEnum>(type));
+                  if (piedit == nullptr)
+                  {
+                     PLOGE << "Unsupported part type \"" << doc.value("$type", ""s) << "\" in \"" << PathToUTF8(partFile) << '"';
+                     return;
+                  }
+                  piedit->m_onLoadExpectedPartGroup.clear();
+                  JSONObjectReader reader(doc, type, pack, CURRENT_FILE_FORMAT_VERSION);
+                  piedit->Load(reader);
+                  if (reader.HasError())
+                  {
+                     PLOGE << "Errors while loading part \"" << PathToUTF8(partFile) << '"';
+                     delete piedit;
+                     return;
+                  }
+                  // Primitive meshes are stored as external GLTF binary files
+                  if (piedit->GetItemType() == eItemPrimitive)
+                  {
+                     Primitive *const prim = static_cast<Primitive *>(piedit);
+                     if (prim->m_d.m_use3DMesh && prim->m_mesh.m_vertices.empty())
+                     {
+                        const string partName = doc.value("name", ""s);
+                        std::filesystem::path meshFile = PathFromUTF8(doc.value("mesh", ""s));
+                        if (meshFile.empty() && !partName.empty())
+                           meshFile = std::filesystem::path("meshes") / (JSONSerializer::SanitizeFileName(partName) + ".glb"s);
+                        vector<uint8_t> meshData;
+                        if (meshFile.empty() || !pack->ReadBinaryFile(meshFile, meshData) || !prim->m_mesh.LoadGLB(meshData.data(), meshData.size()))
+                           PLOGE << "Failed to load the mesh of \"" << partName << "\" from \"" << PathToUTF8(meshFile) << '"';
+                     }
+                  }
+                  parts[i] = piedit;
+               }
+               catch (const std::exception &e)
+               {
+                  PLOGE << "Failed to load part \"" << PathToUTF8(partFile) << "\": " << e.what();
+               }
+            });
+      }
+      // Wait, updating the progress bar on the UI thread
+      while (pool.has_work_in_flight())
+      {
+         SDL_Delay(10);
+         feedback.SetProgress(nLoadedItems);
+      }
+   }
+
+   // Images: original binary files plus their JSON sidecar holding the import metadata
+   {
+      vector<std::filesystem::path> consumedFiles;
+      const auto loadImage = [this, &pack, &consumedFiles](const nlohmann::json &sidecar, const std::filesystem::path &dataFile, const string &defaultName)
+      {
+         vector<uint8_t> data;
+         if (!pack->ReadBinaryFile(dataFile, data))
+         {
+            PLOGE << "Missing image data file \"" << PathToUTF8(dataFile) << '"';
+            return;
+         }
+         consumedFiles.push_back(dataFile);
+         const string name = sidecar.value("name", defaultName);
+         nlohmann::ordered_json texDoc;
+         texDoc["name"] = name;
+         texDoc["path"] = sidecar.value("import_path", PackPathToJSON(dataFile));
+         if (sidecar.contains("width"sv) && sidecar.contains("height"sv))
+         {
+            texDoc["width"] = sidecar["width"];
+            texDoc["height"] = sidecar["height"];
+         }
+         else
+         {
+            // Missing size: decode the image data to get it
+            const auto imageBuffer = BaseTexture::CreateFromData(data.data(), data.size());
+            if (imageBuffer == nullptr)
+            {
+               PLOGE << "Failed to load image \"" << name << "\": invalid image data";
+               return;
+            }
+            texDoc["width"] = imageBuffer->m_realWidth;
+            texDoc["height"] = imageBuffer->m_realHeight;
+         }
+         for (const char *key : { "alpha_test", "opaque", "link" })
+            if (sidecar.contains(key))
+               texDoc[key] = sidecar[key];
+         if (const nlohmann::json md5 = sidecar.value("md5", nlohmann::json()); md5.is_string())
+         {
+            // The md5 hash is stored as a hex string, converted back to its byte array
+            const string hex = md5.get<string>();
+            const auto hexDigit = [](const char c)
+            {
+               if (c >= '0' && c <= '9')
+                  return c - '0';
+               if (c >= 'a' && c <= 'f')
+                  return c - 'a' + 10;
+               if (c >= 'A' && c <= 'F')
+                  return c - 'A' + 10;
+               return -1;
+            };
+            nlohmann::ordered_json bytes = nlohmann::ordered_json::array();
+            for (size_t i = 0; i + 1 < hex.size(); i += 2)
+            {
+               const int hi = hexDigit(hex[i]);
+               const int lo = hexDigit(hex[i + 1]);
+               if (hi < 0 || lo < 0)
+                  break;
+               bytes.push_back((hi << 4) | lo);
+            }
+            texDoc["md5"] = bytes;
+         }
+         // Image data block, using the PinBinary serialization field ordering (size before data)
+         nlohmann::ordered_json binDoc;
+         binDoc["name"] = name;
+         binDoc["path"] = sidecar.value("import_path", PackPathToJSON(dataFile));
+         binDoc["size"] = static_cast<int>(data.size());
+         binDoc["data"] = PackPathToJSON(dataFile);
+         texDoc["image"] = binDoc;
+         JSONObjectReader reader(texDoc, JSONSerializer::kTextureNode, pack.get(), CURRENT_FILE_FORMAT_VERSION);
+         Texture *const tex = Texture::CreateFromObjectReader(reader, this);
+         if (reader.HasError())
+            PLOGE << "Errors while loading image \"" << name << '"';
+         if (tex != nullptr)
+            m_vimage.push_back(tex);
+      };
+      for (const std::filesystem::path &entry : imageEntries)
+      {
+         if (entry.extension() != ".json")
+            continue;
+         try
+         {
+            string sidecarContent;
+            const nlohmann::json sidecar = pack->ReadTextFile(entry, sidecarContent) ? nlohmann::json::parse(sidecarContent) : nlohmann::json::object();
+            const std::filesystem::path dataFile = PackSidecarDataFile(entry, imageEntries);
+            if (dataFile.empty())
+               PLOGE << "Missing data file for image sidecar \"" << PathToUTF8(entry) << '"';
+            else
+               loadImage(sidecar, dataFile, PathToUTF8(entry.stem()));
+         }
+         catch (const std::exception &e)
+         {
+            PLOGE << "Failed to load image \"" << PathToUTF8(entry) << "\": " << e.what();
+         }
+         feedback.SetProgress(++nLoadedItems);
+      }
+      // Plain binary files without a sidecar are loaded with default properties
+      for (const std::filesystem::path &entry : imageEntries)
+      {
+         if (entry.extension() == ".json" || std::ranges::find(consumedFiles, entry) != consumedFiles.end())
+            continue;
+         loadImage(nlohmann::json::object(), entry, PathToUTF8(entry.stem()));
+         feedback.SetProgress(++nLoadedItems);
+      }
+   }
+
+   // Sounds: original binary files plus their JSON sidecar holding the import properties
+   {
+      vector<std::filesystem::path> consumedFiles;
+      const auto loadSound = [this, &pack, &consumedFiles](const nlohmann::json &sidecar, const std::filesystem::path &dataFile, const string &defaultName)
+      {
+         vector<uint8_t> data;
+         if (!pack->ReadBinaryFile(dataFile, data))
+         {
+            PLOGE << "Missing sound data file \"" << PathToUTF8(dataFile) << '"';
+            return;
+         }
+         consumedFiles.push_back(dataFile);
+         const string name = sidecar.value("name", defaultName);
+         VPX::Sound *const pps = new VPX::Sound(name, PathFromUTF8(sidecar.value("import_path", PackPathToJSON(dataFile))), data);
+         const string outputTarget = sidecar.value("output_target", "playfield"s);
+         pps->SetOutputTarget(outputTarget == "backglass"s ? VPX::SNDOUT_BACKGLASS : VPX::SNDOUT_TABLE);
+         pps->SetVolume(sidecar.value("volume_offset", 0));
+         pps->SetPan(sidecar.value("left_right_offset", 0));
+         pps->SetFrontRearFade(sidecar.value("rear_front_offset", 0));
+         m_vsound.push_back(pps);
+      };
+      for (const std::filesystem::path &entry : soundEntries)
+      {
+         if (entry.extension() != ".json")
+            continue;
+         try
+         {
+            string sidecarContent;
+            const nlohmann::json sidecar = pack->ReadTextFile(entry, sidecarContent) ? nlohmann::json::parse(sidecarContent) : nlohmann::json::object();
+            const std::filesystem::path dataFile = PackSidecarDataFile(entry, soundEntries);
+            if (dataFile.empty())
+               PLOGE << "Missing data file for sound sidecar \"" << PathToUTF8(entry) << '"';
+            else
+               loadSound(sidecar, dataFile, PathToUTF8(entry.stem()));
+         }
+         catch (const std::exception &e)
+         {
+            PLOGE << "Failed to load sound \"" << PathToUTF8(entry) << "\": " << e.what();
+         }
+         feedback.SetProgress(++nLoadedItems);
+      }
+      // Plain binary files without a sidecar are loaded with default properties
+      for (const std::filesystem::path &entry : soundEntries)
+      {
+         if (entry.extension() == ".json" || std::ranges::find(consumedFiles, entry) != consumedFiles.end())
+            continue;
+         loadSound(nlohmann::json::object(), entry, PathToUTF8(entry.stem()));
+         feedback.SetProgress(++nLoadedItems);
+      }
+   }
+
+   // Fonts: raw binary files plus their optional JSON sidecar
+   {
+      vector<std::filesystem::path> consumedFiles;
+      const auto loadFont = [this, &pack, &consumedFiles](const nlohmann::json &sidecar, const std::filesystem::path &dataFile, const string &defaultName)
+      {
+         vector<uint8_t> data;
+         if (!pack->ReadBinaryFile(dataFile, data))
+         {
+            PLOGE << "Missing font data file \"" << PathToUTF8(dataFile) << '"';
+            return;
+         }
+         consumedFiles.push_back(dataFile);
+         PinFont *const font = new PinFont();
+         font->m_name = sidecar.value("name", defaultName);
+         font->m_path = PathFromUTF8(sidecar.value("import_path", PackPathToJSON(dataFile)));
+         font->m_buffer = std::move(data);
+         m_vfont.push_back(font);
+      };
+      for (const std::filesystem::path &entry : fontEntries)
+      {
+         if (entry.extension() != ".json")
+            continue;
+         try
+         {
+            string sidecarContent;
+            const nlohmann::json sidecar = pack->ReadTextFile(entry, sidecarContent) ? nlohmann::json::parse(sidecarContent) : nlohmann::json::object();
+            const std::filesystem::path dataFile = PackSidecarDataFile(entry, fontEntries);
+            if (dataFile.empty())
+               PLOGE << "Missing data file for font sidecar \"" << PathToUTF8(entry) << '"';
+            else
+               loadFont(sidecar, dataFile, PathToUTF8(entry.stem()));
+         }
+         catch (const std::exception &e)
+         {
+            PLOGE << "Failed to load font \"" << PathToUTF8(entry) << "\": " << e.what();
+         }
+         feedback.SetProgress(++nLoadedItems);
+      }
+      // Plain binary files without a sidecar are loaded with default properties
+      for (const std::filesystem::path &entry : fontEntries)
+      {
+         if (entry.extension() == ".json" || std::ranges::find(consumedFiles, entry) != consumedFiles.end())
+            continue;
+         loadFont(nlohmann::json::object(), entry, PathToUTF8(entry.stem()));
+         feedback.SetProgress(++nLoadedItems);
+      }
+   }
+
+   FinalizeLoadedParts(parts);
+   ApplyLoadedVersionFixups(CURRENT_FILE_FORMAT_VERSION);
+   return S_OK;
+}
+
+HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback &feedback)
+{
+   m_savingActive = true;
+
+   const auto pack = JSONSerializer::CreateWriter(path);
+   int csaveditems = 0;
+   feedback.SetLength(static_cast<unsigned int>(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size()));
+
+   // Unique pack-relative file names are built from each object's unique name, sanitized for
+   // filesystem use, tracking used names to avoid collisions on case insensitive filesystems
+   vector<std::filesystem::path> usedNames;
+   const auto uniquePath = [&usedNames](const std::filesystem::path &folder, const string &baseName, const string &ext)
+   {
+      const auto isUsed = [&usedNames](const std::filesystem::path &file)
+      { return std::ranges::find_if(usedNames, [&file](const std::filesystem::path &used) { return lowerCase(PathToUTF8(used)) == lowerCase(PathToUTF8(file)); }) != usedNames.end(); };
+      std::filesystem::path file = folder / (baseName + ext);
+      for (int index = 2; isUsed(file); ++index)
+         file = folder / (baseName + "_"s + std::to_string(index) + ext);
+      usedNames.push_back(file);
+      return file;
+   };
+
+   // Parts, saved in z-order, with PartGroups first (see the VPX saving path for why)
+   vector<string> partNames;
+   partNames.reserve(m_vedit.size());
+   std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *piedit) { return piedit->GetItemType() == eItemPartGroup; });
+   for (IEditable *const piedit : m_vedit)
+   {
+      const ItemTypeEnum type = piedit->GetItemType();
+      if (type == eItemDragPoint) // Dragpoints are saved inside their owning part
+         continue;
+      JSONObjectWriter writer((int)type, pack.get());
+      piedit->Save(writer, false);
+      if (writer.HasError())
+      {
+         m_savingActive = false;
+         return E_FAIL;
+      }
+      nlohmann::ordered_json doc;
+      doc["$type"] = JSONSerializer::GetPartTypeName(type);
+      doc.update(writer.Json());
+      doc.erase("name"); // The name is the file name
+      // Primitive meshes are stored as external GLTF binary files
+      if (type == eItemPrimitive)
+      {
+         Primitive *const prim = static_cast<Primitive *>(piedit);
+         if (prim->m_d.m_use3DMesh)
+         {
+            const std::filesystem::path meshFile = uniquePath("meshes", JSONSerializer::SanitizeFileName(piedit->GetName()), ".glb"s);
+            vector<uint8_t> meshData;
+            if (prim->m_mesh.SaveGLB(meshData))
+            {
+               pack->AddBinaryFile(meshFile, std::move(meshData));
+               doc["mesh"] = PackPathToJSON(meshFile);
+            }
+            else
+               PLOGE << "Failed to save the mesh of \"" << piedit->GetName() << '"';
+         }
+      }
+      const std::filesystem::path file = uniquePath("parts", JSONSerializer::SanitizeFileName(piedit->GetName().empty() ? "part"s : piedit->GetName()), ".json"s);
+      partNames.push_back(piedit->GetName());
+      pack->AddTextFile(file, doc.dump(2));
+      feedback.SetProgress(++csaveditems);
+   }
+
+   // Collections
+   vector<string> collectionNames;
+   collectionNames.reserve(m_vcollection.size());
+   for (Collection *const pcol : m_vcollection)
+   {
+      JSONObjectWriter writer(eItemCollection, pack.get());
+      pcol->Save(writer, false);
+      if (writer.HasError())
+      {
+         m_savingActive = false;
+         return E_FAIL;
+      }
+      nlohmann::ordered_json doc;
+      doc["$type"] = "collection";
+      doc.update(writer.Json());
+      doc.erase("name"); // The name is the file name
+      const std::filesystem::path file = uniquePath("collections", JSONSerializer::SanitizeFileName(pcol->m_name), ".json"s);
+      collectionNames.push_back(pcol->m_name);
+      pack->AddTextFile(file, doc.dump(2));
+      feedback.SetProgress(++csaveditems);
+   }
+
+   // Table definition with all its persisted properties, the table infos and the custom tags
+   {
+      JSONObjectWriter writer(eItemTable, pack.get());
+      Save(writer, false);
+      if (writer.HasError())
+      {
+         m_savingActive = false;
+         return E_FAIL;
+      }
+      nlohmann::ordered_json doc;
+      doc["$type"] = "table";
+      doc.update(writer.Json());
+      // Table information, stored in a dedicated TableInfo storage in the VPX file format
+      doc["table_name"] = m_tableName;
+      doc["author"] = m_author;
+      doc["table_version"] = m_version;
+      doc["release_date"] = m_releaseDate;
+      doc["author_email"] = m_authorEMail;
+      doc["web_site"] = m_webSite;
+      doc["blurb"] = m_blurb;
+      doc["description"] = m_description;
+      doc["rules"] = m_rules;
+      time_t hourMachine;
+      time(&hourMachine);
+      tm local_hour;
+      localtime_s(&local_hour, &hourMachine);
+      char buffer[256];
+      asctime_s(buffer, std::size(buffer), &local_hour);
+      string dateSaved(buffer);
+      while (!dateSaved.empty() && (dateSaved.back() == '\n' || dateSaved.back() == '\r'))
+         dateSaved.pop_back();
+      doc["date_saved"] = dateSaved;
+      doc["save_rev"] = ++m_numTimesSaved;
+      // Materials are saved as asset files of the pack (in materials/), table.json keeps the ordered name list
+      if (doc.contains("materials"))
+      {
+         nlohmann::ordered_json materialNames = nlohmann::ordered_json::array();
+         for (nlohmann::ordered_json &matDoc : doc["materials"])
+         {
+            const string matName = matDoc.value("name", ""s);
+            matDoc.erase("name"); // The name is the file name
+            nlohmann::ordered_json fileDoc;
+            fileDoc["$type"] = "material";
+            fileDoc.update(matDoc);
+            const std::filesystem::path file = uniquePath("materials", JSONSerializer::SanitizeFileName(matName), ".json"s);
+            pack->AddTextFile(file, fileDoc.dump(2));
+            materialNames.push_back(matName);
+         }
+         doc["materials"] = materialNames;
+      }
+      // Render probes are saved as asset files of the pack (in renderprobes/), table.json keeps the ordered name list
+      if (doc.contains("renderprobes"))
+      {
+         nlohmann::ordered_json probeNames = nlohmann::ordered_json::array();
+         for (nlohmann::ordered_json &probeDoc : doc["renderprobes"])
+         {
+            const string probeName = probeDoc.value("name", ""s);
+            probeDoc.erase("name"); // The name is the file name
+            nlohmann::ordered_json fileDoc;
+            fileDoc["$type"] = "renderprobe";
+            fileDoc.update(probeDoc);
+            const std::filesystem::path file = uniquePath("renderprobes", JSONSerializer::SanitizeFileName(probeName), ".json"s);
+            pack->AddTextFile(file, fileDoc.dump(2));
+            probeNames.push_back(probeName);
+         }
+         doc["renderprobes"] = probeNames;
+      }
+      doc["parts"] = partNames;
+      doc["collections"] = collectionNames;
+      nlohmann::ordered_json tags = nlohmann::ordered_json::object();
+      for (const auto &[tag, tagContent] : m_customInfo)
+         tags[tag] = tagContent;
+      doc["custom_tags"] = tags;
+      pack->AddTextFile("table.json"s, doc.dump(2));
+   }
+
+   // Images, with the original file bytes and a JSON sidecar holding the import metadata
+   for (const Texture *const tex : m_vimage)
+   {
+      const string baseName = JSONSerializer::SanitizeFileName(tex->m_name);
+      string ext = lowerCase(PathToUTF8(tex->GetFilePath().extension()));
+      if (ext.empty())
+         ext = ".png"s;
+      const std::filesystem::path dataFile = uniquePath("images", baseName, ext);
+      pack->AddBinaryFile(dataFile, vector<uint8_t>(tex->GetFileRaw(), tex->GetFileRaw() + tex->GetFileSize()));
+      nlohmann::ordered_json sidecar;
+      sidecar["$type"] = "image";
+      sidecar["import_path"] = PathToUTF8(tex->GetFilePath());
+      sidecar["width"] = tex->m_width;
+      sidecar["height"] = tex->m_height;
+      sidecar["alpha_test"] = tex->m_alphaTestValue * 255.f; // 0..255 scale, negative when disabled
+      const uint8_t *const md5Hash = tex->GetMD5Hash();
+      char md5Hex[33];
+      for (int i = 0; i < 16; ++i)
+         snprintf(md5Hex + 2 * i, 3, "%02x", md5Hash[i]);
+      md5Hex[32] = '\0';
+      sidecar["md5"] = md5Hex;
+      sidecar["opaque"] = tex->IsOpaque();
+      pack->AddTextFile(uniquePath("images", baseName, ".json"s), sidecar.dump(2));
+      feedback.SetProgress(++csaveditems);
+   }
+
+   // Sounds, with the original file bytes and a JSON sidecar holding the import properties
+   for (const VPX::Sound *const pps : m_vsound)
+   {
+      const string baseName = JSONSerializer::SanitizeFileName(pps->GetName());
+      string ext = lowerCase(PathToUTF8(pps->GetImportPath().extension()));
+      if (ext.empty())
+         ext = ".wav"s;
+      const std::filesystem::path dataFile = uniquePath("sounds", baseName, ext);
+      pack->AddBinaryFile(dataFile, vector<uint8_t>(pps->GetFileRaw(), pps->GetFileRaw() + pps->GetFileSize()));
+      nlohmann::ordered_json sidecar;
+      sidecar["$type"] = "sound";
+      sidecar["import_path"] = PathToUTF8(pps->GetImportPath());
+      sidecar["output_target"] = pps->GetOutputTarget() == VPX::SNDOUT_BACKGLASS ? "backglass" : "playfield";
+      sidecar["volume_offset"] = pps->GetVolume();
+      sidecar["left_right_offset"] = pps->GetPan();
+      sidecar["rear_front_offset"] = pps->GetFrontRearFade(); // -100 is full rear, +100 is full front
+      pack->AddTextFile(uniquePath("sounds", baseName, ".json"s), sidecar.dump(2));
+      feedback.SetProgress(++csaveditems);
+   }
+
+   // Fonts, with the raw file bytes and a JSON sidecar holding the import properties
+   for (const PinFont *const font : m_vfont)
+   {
+      const string baseName = JSONSerializer::SanitizeFileName(font->m_name);
+      string ext = lowerCase(PathToUTF8(font->m_path.extension()));
+      if (ext.empty())
+         ext = ".ttf"s;
+      const std::filesystem::path dataFile = uniquePath("fonts", baseName, ext);
+      pack->AddBinaryFile(dataFile, font->m_buffer);
+      nlohmann::ordered_json sidecar;
+      sidecar["$type"] = "font";
+      sidecar["import_path"] = PathToUTF8(font->m_path);
+      pack->AddTextFile(uniquePath("fonts", baseName, ".json"s), sidecar.dump(2));
+      feedback.SetProgress(++csaveditems);
+   }
+
+   // The manifest identifies the pack format and its version
+   {
+      nlohmann::ordered_json manifest;
+      manifest["$type"] = "manifest";
+      manifest["file_format"] = "vpinball-pack";
+      manifest["file_version"] = JSONSerializer::kFormatVersion;
+      manifest["name"] = m_tableName;
+      manifest["author"] = m_author;
+      manifest["version"] = m_version;
+      manifest["description"] = m_blurb;
+      time_t hourMachine;
+      time(&hourMachine);
+      tm local_hour;
+      localtime_s(&local_hour, &hourMachine);
+      char buffer[256];
+      asctime_s(buffer, std::size(buffer), &local_hour);
+      string saveDate(buffer);
+      while (!saveDate.empty() && (saveDate.back() == '\n' || saveDate.back() == '\r'))
+         saveDate.pop_back();
+      manifest["save_date"] = saveDate;
+      pack->AddTextFile("manifest.json"s, manifest.dump(2));
+   }
+
+   m_savingActive = false;
+   return S_OK;
 }
 
 void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)

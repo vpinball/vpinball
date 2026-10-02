@@ -4,10 +4,15 @@
 #include "../vpx-test.h"
 
 #include "core/VPApp.h"
+#include "math/Mesh.h"
+#include "parts/Material.h"
 #include "parts/pintable.h"
+#include "renderer/RenderProbe.h"
 #include "utils/fileio.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
+
+#include <nlohmann/json.hpp>
 
 #include "pole/pole.h"
 
@@ -496,6 +501,290 @@ TEST_CASE("Table file save/load round-trip")
 
    reloaded->Release();
    table->Release();
+}
+
+
+// Checks that a table reloaded from a VPZ pack has the same content as the original table
+static void CheckSameTableContent(const PinTable *table, const PinTable *reloaded)
+{
+   CHECK(reloaded->GetParts().size() == table->GetParts().size());
+   CHECK(reloaded->GetImageList().size() == table->GetImageList().size());
+   CHECK(reloaded->m_vsound.size() == table->m_vsound.size());
+   for (size_t i = 0; i < table->m_vsound.size(); ++i)
+   {
+      CHECK(reloaded->m_vsound[i]->GetName() == table->m_vsound[i]->GetName());
+      CHECK(reloaded->m_vsound[i]->GetFrontRearFade() == table->m_vsound[i]->GetFrontRearFade());
+   }
+   CHECK(reloaded->GetFontList().size() == table->GetFontList().size());
+   CHECK(reloaded->GetCollections().size() == table->GetCollections().size());
+   CHECK(reloaded->m_vrenderprobe.size() == table->m_vrenderprobe.size());
+   CHECK(reloaded->m_materials.size() == table->m_materials.size());
+   std::set<string> materialNames, reloadedMaterialNames;
+   for (const Material *material : table->m_materials)
+      materialNames.insert(material->m_name);
+   for (const Material *material : reloaded->m_materials)
+      reloadedMaterialNames.insert(material->m_name);
+   CHECK(reloadedMaterialNames == materialNames);
+   std::set<string> partNames, reloadedPartNames;
+   for (const IEditable *part : table->GetParts())
+      partNames.insert(part->GetName());
+   for (const IEditable *part : reloaded->GetParts())
+      reloadedPartNames.insert(part->GetName());
+   CHECK(reloadedPartNames == partNames);
+   CHECK(reloaded->m_tableName == table->m_tableName);
+   CHECK(reloaded->m_script_text == table->m_script_text);
+   CHECK(reloaded->m_customInfo == table->m_customInfo);
+}
+
+
+TEST_CASE("VPZ pack save/load round-trip")
+{
+   std::error_code ec;
+
+   CComObject<PinTable> *table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   TestFileFeedback feedback;
+   REQUIRE(SUCCEEDED(table->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", feedback)));
+
+   // Add a render probe and a sound so that the pack layout holds them (default tables have none)
+   RenderProbe *const probe = table->NewRenderProbe();
+   probe->SetName("test_probe");
+   vector<uint8_t> soundData = { 'I', 'D', '3', 0 };
+   VPX::Sound *const sound = new VPX::Sound("test_sound", "imported.mp3"s, soundData);
+   sound->SetFrontRearFade(-75); // -100 is full rear, +100 is full front
+   table->m_vsound.push_back(sound);
+
+   SUBCASE("folder pack")
+   {
+      // A pack folder uses the same .vpz extension as the zip archive
+      const std::filesystem::path packPath = GetTmpDir() / "roundtrip.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      REQUIRE(std::filesystem::create_directories(packPath, ec));
+
+      TestFileFeedback saveFeedback;
+      CHECK(SUCCEEDED(table->SaveToJSON(packPath, saveFeedback)));
+      CHECK(saveFeedback.m_isMonotonic);
+
+      CHECK(std::filesystem::exists(packPath / "manifest.json"));
+      CHECK(std::filesystem::exists(packPath / "table.json"));
+      CHECK(std::filesystem::exists(packPath / "script.vbs"));
+      CHECK(std::filesystem::is_directory(packPath / "parts"));
+
+      // The manifest identifies the pack format (which may also hold partial data, hence "vpinball-pack")
+      const nlohmann::ordered_json manifest = nlohmann::ordered_json::parse(std::ifstream(packPath / "manifest.json"));
+      CHECK(manifest["$type"].get<string>() == "manifest");
+      CHECK(manifest["file_format"].get<string>() == "vpinball-pack");
+      CHECK(manifest["file_version"].get<int>() == 1);
+      CHECK(!manifest.contains("content"));
+      // Every document starts with its "$type" property
+      CHECK(manifest.begin().key() == "$type");
+
+      // Pack layout: table.json holds ordered name lists, assets are files named after their unique name
+      const nlohmann::ordered_json tableDoc = nlohmann::ordered_json::parse(std::ifstream(packPath / "table.json"));
+      CHECK(tableDoc.begin().key() == "$type");
+      CHECK(tableDoc.value("parts", nlohmann::json()).is_array());
+      CHECK(tableDoc.value("collections", nlohmann::json()).is_array());
+      CHECK(tableDoc.value("materials", nlohmann::json()).is_array());
+      CHECK(tableDoc.value("desktop_view", nlohmann::json()).is_object());
+      CHECK(tableDoc.value("cabinet_view", nlohmann::json()).is_object());
+      CHECK(tableDoc.contains("is_fullsinglescreen_view_enabled"));
+      CHECK(!tableDoc.contains("part_files"));
+      CHECK(!tableDoc.contains("collection_files"));
+      CHECK(!tableDoc.contains("part_count"));
+      CHECK(!tableDoc.contains("materials_legacy_count"));
+      REQUIRE(!tableDoc["parts"].empty());
+      const nlohmann::ordered_json partDoc = nlohmann::ordered_json::parse(std::ifstream(packPath / "parts" / (tableDoc["parts"][0].get<string>() + ".json")));
+      CHECK(!partDoc.contains("name")); // The name is the file name
+      CHECK(partDoc["$type"].is_string());
+      CHECK(partDoc.begin().key() == "$type");
+      // Render probes are saved as asset files of the pack (in renderprobes/), table.json keeps the name list
+      CHECK(tableDoc.value("renderprobes", nlohmann::json()).is_array());
+      REQUIRE(std::ranges::find_if(tableDoc["renderprobes"], [](const nlohmann::json &item) { return item.is_string() && item.get<string>() == "test_probe"s; })
+         != tableDoc["renderprobes"].end());
+      const nlohmann::ordered_json probeDoc = nlohmann::ordered_json::parse(std::ifstream(packPath / "renderprobes" / "test_probe.json"));
+      CHECK(!probeDoc.contains("name"));
+      CHECK(probeDoc["$type"].get<string>() == "renderprobe");
+      CHECK(probeDoc.begin().key() == "$type");
+      // Sounds: offsets follow the same naming order as left_right (-1 rear, +1 front)
+      const nlohmann::ordered_json soundDoc = nlohmann::ordered_json::parse(std::ifstream(packPath / "sounds" / "test_sound.json"));
+      CHECK(soundDoc.begin().key() == "$type");
+      CHECK(soundDoc["$type"].get<string>() == "sound");
+      CHECK(!soundDoc.contains("front_rear_offset"));
+      CHECK(soundDoc["rear_front_offset"].get<int>() == -75);
+      // Fields are canonically ordered (field map declaration order) for stable diffs
+      {
+         static const char *viewOrder[] = { "mode", "rotation", "inclination", "layback", "fov", "view_x", "view_y", "view_z", "scale_x", "scale_y", "scale_z", "horizontal_ofs",
+            "vertical_ofs", "window_top_z_ofs", "window_bot_z_ofs" };
+         vector<string> expected;
+         for (const char *key : viewOrder)
+            if (tableDoc["desktop_view"].contains(key))
+               expected.push_back(key);
+         vector<string> actual;
+         for (const auto &[key, v] : tableDoc["desktop_view"].items())
+            actual.push_back(key);
+         string actualStr, expectedStr;
+         for (const auto &k : actual)
+            actualStr += k + ',';
+         for (const auto &k : expected)
+            expectedStr += k + ',';
+         INFO("actual: ", actualStr, " expected: ", expectedStr);
+         CHECK(actual == expected);
+      }
+      if (!tableDoc["materials"].empty())
+      {
+         const nlohmann::ordered_json matDoc = nlohmann::ordered_json::parse(std::ifstream(packPath / "materials" / (tableDoc["materials"][0].get<string>() + ".json")));
+         CHECK(!matDoc.contains("name"));
+         CHECK(matDoc["$type"].get<string>() == "material");
+         CHECK(matDoc.begin().key() == "$type");
+      }
+
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
+      CHECK(loadFeedback.m_isMonotonic);
+      CheckSameTableContent(table, reloaded);
+      reloaded->Release();
+      std::filesystem::remove_all(packPath, ec);
+   }
+
+   SUBCASE("zip pack")
+   {
+      const std::filesystem::path packPath = GetTmpDir() / "roundtrip-zip.vpz";
+      std::filesystem::remove(packPath, ec);
+
+      TestFileFeedback saveFeedback;
+      CHECK(SUCCEEDED(table->SaveToJSON(packPath, saveFeedback)));
+      CHECK(saveFeedback.m_isMonotonic);
+
+      // A .vpz file is a zip archive
+      {
+         std::ifstream in(packPath, std::ios::binary);
+         char header[2] = { 0, 0 };
+         in.read(header, 2);
+         CHECK(header[0] == 'P');
+         CHECK(header[1] == 'K');
+      }
+
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
+      CHECK(loadFeedback.m_isMonotonic);
+      CheckSameTableContent(table, reloaded);
+      reloaded->Release();
+      std::filesystem::remove(packPath, ec);
+   }
+
+   SUBCASE("pack without a table.json loads as a partial pack")
+   {
+      const std::filesystem::path packPath = GetTmpDir() / "partial.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      REQUIRE(std::filesystem::create_directories(packPath, ec));
+      REQUIRE(SUCCEEDED(table->SaveToJSON(packPath, feedback)));
+      REQUIRE(std::filesystem::remove(packPath / "table.json", ec));
+
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
+      // Parts of the pack are still loaded, into a default table
+      CHECK(reloaded->GetParts().size() == table->GetParts().size());
+      reloaded->Release();
+      std::filesystem::remove_all(packPath, ec);
+   }
+
+   SUBCASE("invalid packs are rejected")
+   {
+      // Folder without a manifest is not a valid pack
+      const std::filesystem::path noManifest = GetTmpDir() / "no-manifest.vpz";
+      std::filesystem::remove_all(noManifest, ec);
+      REQUIRE(std::filesystem::create_directories(noManifest / "parts", ec));
+      {
+         CComObject<PinTable> *reloaded;
+         CComObject<PinTable>::CreateInstance(&reloaded);
+         reloaded->AddRef();
+         TestFileFeedback loadFeedback;
+         CHECK(FAILED(reloaded->LoadGameFromFilename(noManifest, loadFeedback)));
+         reloaded->Release();
+      }
+      std::filesystem::remove_all(noManifest, ec);
+
+      // Invalid manifest JSON
+      const std::filesystem::path badManifest = GetTmpDir() / "bad-manifest.vpz";
+      std::filesystem::remove_all(badManifest, ec);
+      REQUIRE(std::filesystem::create_directories(badManifest, ec));
+      {
+         std::ofstream out(badManifest / "manifest.json", std::ios::binary);
+         out << "{ not json";
+      }
+      {
+         CComObject<PinTable> *reloaded;
+         CComObject<PinTable>::CreateInstance(&reloaded);
+         reloaded->AddRef();
+         TestFileFeedback loadFeedback;
+         CHECK(FAILED(reloaded->LoadGameFromFilename(badManifest, loadFeedback)));
+         reloaded->Release();
+      }
+      // Manifest of a different format
+      {
+         std::ofstream out(badManifest / "manifest.json", std::ios::binary);
+         out << "{ \"file_format\": \"something-else\", \"file_version\": 1 }";
+      }
+      {
+         CComObject<PinTable> *reloaded;
+         CComObject<PinTable>::CreateInstance(&reloaded);
+         reloaded->AddRef();
+         TestFileFeedback loadFeedback;
+         CHECK(FAILED(reloaded->LoadGameFromFilename(badManifest, loadFeedback)));
+         reloaded->Release();
+      }
+      std::filesystem::remove_all(badManifest, ec);
+   }
+
+   table->Release();
+}
+
+
+TEST_CASE("Mesh GLB round-trip")
+{
+   Mesh mesh;
+   mesh.m_vertices.resize(4);
+   mesh.m_vertices[0] = { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f };
+   mesh.m_vertices[1] = { 100.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f };
+   mesh.m_vertices[2] = { 100.f, 100.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f };
+   mesh.m_vertices[3] = { 0.f, 100.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f };
+   mesh.m_indices = { 0, 1, 2, 0, 2, 3 };
+   Mesh::FrameData frame;
+   frame.m_frameVerts.resize(4);
+   for (size_t i = 0; i < 4; ++i)
+      frame.m_frameVerts[i] = { mesh.m_vertices[i].x, mesh.m_vertices[i].y, mesh.m_vertices[i].z + 10.f, 0.f, 0.f, 1.f };
+   mesh.m_animationFrames.push_back(frame);
+
+   vector<uint8_t> glb;
+   REQUIRE(mesh.SaveGLB(glb));
+
+   Mesh loaded;
+   REQUIRE(loaded.LoadGLB(glb.data(), glb.size()));
+   CHECK(loaded.m_vertices.size() == mesh.m_vertices.size());
+   CHECK(loaded.m_indices.size() == mesh.m_indices.size());
+   CHECK(loaded.m_animationFrames.size() == 1);
+   for (size_t i = 0; i < mesh.m_vertices.size(); ++i)
+   {
+      CHECK(loaded.m_vertices[i].x == doctest::Approx(mesh.m_vertices[i].x));
+      CHECK(loaded.m_vertices[i].y == doctest::Approx(mesh.m_vertices[i].y));
+      CHECK(loaded.m_vertices[i].z == doctest::Approx(mesh.m_vertices[i].z));
+      CHECK(loaded.m_vertices[i].tu == doctest::Approx(mesh.m_vertices[i].tu));
+      CHECK(loaded.m_vertices[i].tv == doctest::Approx(mesh.m_vertices[i].tv));
+   }
+   for (size_t i = 0; i < mesh.m_indices.size(); ++i)
+      CHECK(loaded.m_indices[i] == mesh.m_indices[i]);
+   // Morph target frame restores the vertex offsets
+   CHECK(loaded.m_animationFrames[0].m_frameVerts[0].z == doctest::Approx(10.f));
 }
 
 
