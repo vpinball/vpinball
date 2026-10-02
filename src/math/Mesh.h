@@ -42,6 +42,10 @@ public:
    bool LoadWavefrontObj(const std::filesystem::path& fname, const MeshUnits units);
    bool SaveWavefrontObj(const std::filesystem::path& fname, const string& description, const MeshUnits units);
    bool LoadAnimation(const std::filesystem::path& fname, const MeshUnits units);
+   // GLB (binary glTF) load/save, as used by the VPZ file format. The glTF file uses the same
+   // conventions as the Wavefront OBJ "Meters" mode: meters, +Y up, right handed.
+   bool LoadGLB(const uint8_t* data, size_t size);
+   bool SaveGLB(vector<uint8_t>& out) const;
 
    size_t NumVertices() const { return m_vertices.size(); }
    size_t NumIndices() const { return m_indices.size(); }

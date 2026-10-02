@@ -826,6 +826,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/Mesh.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/math/MeshGLTF.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/Collection.cpp" />
@@ -1063,6 +1064,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/AppCommands.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/def.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/fileio.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/JSONSerializer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/md2.cpp" />
@@ -2003,6 +2005,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/utils/eventproxy.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/fileio.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/hash.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/JSONSerializer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/Logger.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/lzwreader.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/md2.h" />

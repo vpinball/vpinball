@@ -92,6 +92,7 @@ set(VPX_SOURCES
    src/math/vector.h
    src/math/Mesh.h
    src/math/Mesh.cpp
+   src/math/MeshGLTF.cpp
    src/math/MeshUtils.h
    src/math/ModelViewProj.h
 
@@ -430,6 +431,8 @@ set(VPX_SOURCES
    src/utils/lzwreader.cpp
    src/utils/lzwreader.h
    src/utils/hash.h
+   src/utils/JSONSerializer.cpp
+   src/utils/JSONSerializer.h
    src/utils/objloader.cpp
    src/utils/objloader.h
    src/utils/Logger.cpp

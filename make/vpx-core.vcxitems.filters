@@ -282,6 +282,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/math/Mesh.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/math/MeshGLTF.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp">
       <Filter>parts</Filter>
     </ClCompile>
@@ -994,6 +997,9 @@
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/fileio.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/JSONSerializer.cpp">
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp">
@@ -2073,6 +2079,9 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/hash.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/JSONSerializer.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/TableHash.h">
