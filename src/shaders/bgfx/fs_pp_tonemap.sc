@@ -642,10 +642,13 @@ void main()
       if (isLinearFrameBuffer)
       {
           #ifdef TM_OUT_GAMMA
-             result = InvGamma(saturate(FBDither(result, v_texcoord0)));
+             result = InvGamma(FBColorGrade(saturate(FBDither(result, v_texcoord0))));
           #else
-             result =          saturate(FBDither(result, v_texcoord0));
+             result = saturate(FBDither(result, v_texcoord0));
+             BRANCH if (do_color_grade)
+                result = InvGamma(FBColorGrade(FBGamma(result)));
           #endif
+          gl_FragColor = vec4(result, 1.0);
       }
       else
       {
@@ -656,8 +659,8 @@ void main()
           #else
              result = FBGamma(  saturate(FBDither(result, v_texcoord0)));
           #endif
+          gl_FragColor = vec4(FBColorGrade(result), 1.0);
       }
-      gl_FragColor = vec4(FBColorGrade(result), 1.0);
    }
 
    // WCG HDR support for DXGI, based on https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
