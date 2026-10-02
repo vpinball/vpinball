@@ -92,7 +92,7 @@ void AudioSettingsPage::BuildPage()
               {
                  m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
                     m_devices[v], //
-                    g_settingsService.GetActiveSettings().GetPlayer_SoundDevice(), //
+                    m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
                     static_cast<VPX::SoundConfigTypes>(g_settingsService.GetActiveSettings().GetPlayer_Sound3D()));
               }, //
               [](Settings& settings) { settings.ResetPlayer_SoundDeviceBG(); }, //
@@ -114,7 +114,7 @@ void AudioSettingsPage::BuildPage()
       [this](int, int v)
       {
          m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
-            g_settingsService.GetActiveSettings().GetPlayer_SoundDeviceBG(), //
+            m_player->m_audioPlayer->GetBackglassDeviceName(), //
             m_devices[v], //
             static_cast<VPX::SoundConfigTypes>(g_settingsService.GetActiveSettings().GetPlayer_Sound3D()));
       }, //
