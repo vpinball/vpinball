@@ -105,8 +105,8 @@ BOOL TableInfoDialog::OnInitDialog()
       lvcol.cx = 100;
       m_customListView.InsertColumn(1, lvcol);
 
-      for (size_t i = 0; i < pt->m_vCustomInfoTag.size(); i++)
-         AddListItem(m_customListView.GetHwnd(), pt->m_vCustomInfoTag[i], pt->m_vCustomInfoContent[i], NULL);
+      for (const auto &[tag, content] : pt->m_customInfo)
+         AddListItem(m_customListView.GetHwnd(), tag, content, NULL);
    }
 
    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 650, 500));
@@ -256,15 +256,12 @@ void TableInfoDialog::OnOK()
       pt->m_screenShot = sshot;
 
    // Clear old custom values, read back new ones
-   pt->m_vCustomInfoTag.clear();
-   pt->m_vCustomInfoContent.clear();
+   pt->m_customInfo.clear();
 
    const int customcount = m_customListView.GetItemCount();
    for (int i = 0; i < customcount; i++)
-   {
-      pt->m_vCustomInfoTag.push_back(m_customListView.GetItemText(i, 0, MAXSTRING).GetString()); // name
-      pt->m_vCustomInfoContent.push_back(m_customListView.GetItemText(i, 1, MAXSTRING).GetString()); // value
-   }
+      pt->m_customInfo.emplace_back(m_customListView.GetItemText(i, 0, MAXSTRING).GetString(), // name
+         m_customListView.GetItemText(i, 1, MAXSTRING).GetString()); // value
 
    pt->SetNonUndoableDirty(eSaveDirty);
    CDialog::OnOK();
