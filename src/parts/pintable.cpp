@@ -987,12 +987,12 @@ HRESULT PinTable::SaveInfo(InMemStructuredStorage *pstg, TableHash *const hash)
 HRESULT PinTable::SaveCustomInfo(InMemStructuredStorage *pstg, InMemStream *pstmTags, TableHash *const hash)
 {
    BiffWriter writer(pstmTags, hash);
-   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      writer.WriteString(FID(CUST), m_vCustomInfoTag[i]);
+   for (const auto &info : m_customInfo)
+      writer.WriteString(FID(CUST), info.first);
    writer.EndObject();
 
-   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      WriteInfoValue(pstg, m_vCustomInfoTag[i], m_vCustomInfoContent[i], hash);
+   for (const auto &[tag, content] : m_customInfo)
+      WriteInfoValue(pstg, tag, content, hash);
 
    return S_OK;
 }
@@ -1071,26 +1071,18 @@ void PinTable::LoadCustomInfo(POLE::Storage &storage, TableHash *const hash, int
    if (!storage.exists("GameStg/CustomInfoTags"))
       return;
 
-   m_vCustomInfoTag.clear();
-   m_vCustomInfoContent.clear();
+   m_customInfo.clear();
    POLE::Stream customTagsStream(&storage, "GameStg/CustomInfoTags");
    BiffReader reader(&customTagsStream, version, hash, 0);
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
       {
          if (tag == FID(CUST))
-         {
-            string tmp = reader.AsString();
-            m_vCustomInfoTag.push_back(std::move(tmp));
-         }
+            m_customInfo.emplace_back(reader.AsString(), ""s);
          return true;
       });
-   for (const string& tag : m_vCustomInfoTag)
-   {
-      string customInfo;
-      ReadInfoValue(storage, "TableInfo/" + tag, customInfo, hash);
-      m_vCustomInfoContent.push_back(std::move(customInfo));
-   }
+   for (auto &[tag, content] : m_customInfo)
+      ReadInfoValue(storage, "TableInfo/" + tag, content, hash);
 }
 
 void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)

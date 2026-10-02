@@ -18,6 +18,7 @@
 #include "pole/pole.h"
 
 #include <atomic>
+#include <utility>
 
 #ifdef __STANDALONE__
 #include <iostream>
@@ -719,8 +720,7 @@ public:
    string m_dateSaved;
    unsigned int m_numTimesSaved = 0;
 
-   vector<string> m_vCustomInfoTag;
-   vector<string> m_vCustomInfoContent;
+   vector<std::pair<string, string>> m_customInfo;
 
    LightSource m_Light[MAX_LIGHT_SOURCES];
    COLORREF m_lightAmbient;
