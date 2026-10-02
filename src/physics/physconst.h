@@ -64,8 +64,6 @@
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
 
-//#define BALL_CONTACTS // not working anymore?!?
-
 //#define NEW_PHYSICS
 
 // Active behavioral fixes of the physics engine. Keep this list in

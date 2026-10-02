@@ -45,7 +45,7 @@ public:
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eBall; }
    void Collide(const CollisionEvent& coll) override;
-   void Contact(CollisionEvent& coll, const float dtime) override { }
+   // Contact() is inherited: it applies HandleStaticContact to coll.m_ball (each ball reports its own contact record)
    void CalcHitBBox() override;
 
    float HitRadiusSqr() const { return sqrf((m_hitBBox.right - m_hitBBox.left)*0.5f); } // this returns the extended (by m_vel + magic) squared radius, as needed to be used in the collision detection

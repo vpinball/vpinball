@@ -158,30 +158,15 @@ float HitBall::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
    const float bnd = bcdd - totalradius;   // distance between ball surfaces
 
    float hittime;
-#ifdef BALL_CONTACTS //!! leads to trouble currently, might be due to missing contact handling for -both- balls?!
    bool isContact = false;
-#endif
-   if (bnd <= (float)PHYS_TOUCH)           // in contact??? 
+   if (bnd <= (float)PHYS_TOUCH) // in contact???
    {
       if (bnd < ball.m_radius*-2.0f)
          return -1.0f;                     // embedded too deep?
 
-      if ((fabsf(bnv) > C_CONTACTVEL)      // >fast velocity, return zero time
-         //zero time for rigid fast bodies
-         || (bnd <= (float)(-PHYS_TOUCH)))
-         hittime = 0;                      // slow moving but embedded
-      else {
-#ifdef NEW_PHYSICS
-         hittime = bnd / -bnv;
-#else
-         hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events
-#endif
-      }
-
-#ifdef BALL_CONTACTS
-      if (fabsf(bnv) <= C_CONTACTVEL)
-         isContact = true;
-#endif
+      hittime = 0; // already touching or overlapping: immediate response
+      // a slow moving pair inside the touch layer is a steady contact, a deeper overlap stays a collision
+      isContact = (fabsf(bnv) <= C_CONTACTVEL) && (bnd > (float)(-PHYS_TOUCH));
    }
    else
    {
@@ -217,11 +202,9 @@ float HitBall::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
    coll.m_hitdistance = bnd; // actual contact distance
    //coll.m_hitRigid = true; // rigid collision type
 
-#ifdef BALL_CONTACTS
    coll.m_isContact = isContact;
    if (isContact)
       coll.m_hit_org_normalvelocity = bnv;
-#endif
 
    return hittime;
 }
