@@ -202,8 +202,8 @@ typedef struct DisplaySrcId
 {
    CtlResId id;                      // Unique Id of the display
    CtlResId overrideId;              // Id of the display this source overrides if any, { endpoint, 0xFFFF } if overriding something else then a display, 0 if not overriding anything
-   unsigned int width;               
-   unsigned int height;              
+   unsigned int width;
+   unsigned int height;
    union {
       struct {
          uint16_t hardwareModel;

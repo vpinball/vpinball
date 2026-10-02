@@ -196,6 +196,9 @@ void HitGate::Collide(const CollisionEvent& coll)
 
    // linear speed = ball speed
    // angular speed = linear/radius (height of hit)
+   // Same massless / no-energy-loss kinematic model as the spinner above
+   // -- see HitSpinner::Collide for why this is intentional and what an
+   // opt-in physical upgrade would look like
    float speed = fabsf(dot);
    // h is the height of the gate axis.
    if (fabsf(h) > 1.0f) // avoid divide by zero
@@ -401,6 +404,20 @@ void HitSpinner::Collide(const CollisionEvent& coll)
    // Since the spinner has no mass in our equation, the spot
    // h -coll.m_radius will be moving a at linear rate of
    // 'speed'.  We can calculate the angular speed from that.
+
+   // NOTE: this is a deliberate kinematic shortcut, not an approximation
+   // worth "fixing". The spinner inherits the ball's projected velocity
+   // and the ball loses no energy on the hit -- which matches the way
+   // real pinball spinners feel (a ~1-3 g paddle has so little inertia
+   // that ball pass-through is essentially free) and matches what tables
+   // tuned over decades expect. A physically correct upgrade would be:
+   //     I = mass * (width^2 + height^2) / 12   (rectangle about its
+   //                                             central horizontal axis)
+   // and then resolve the collision via angular impulse, deducting the
+   // corresponding linear impulse from the ball. That changes ball speed
+   // through spinner lanes and shifts the timing of `Spin` events that
+   // many tables script against, so it should be opt-in (e.g. behind a
+   // per-table flag) rather than a default change
 
    m_spinnerMover.m_anglespeed = fabsf(dot); // use this until a better value comes along
 
