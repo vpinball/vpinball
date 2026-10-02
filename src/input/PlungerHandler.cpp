@@ -37,19 +37,29 @@ void PlungerHandler::StepOneMillisecond()
    m_position = 0.f;
    m_rawVelocity = 0.f;
 
-   for (const auto& sensor : m_sensors)
+   if (m_externalOverride)
    {
-      if (sensor->IsActive())
+      m_position = m_externalPosition;
+      m_rawVelocity = m_externalVelocity;
+   }
+   else
+   {
+      for (const auto& sensor : m_sensors)
       {
-         m_position = sensor->GetRawPosition();
-         m_rawVelocity = sensor->GetRawVelocity();
-         break;
+         if (sensor->IsActive())
+         {
+            m_position = sensor->GetRawPosition();
+            m_rawVelocity = sensor->GetRawVelocity();
+            break;
+         }
       }
    }
 }
 
 bool PlungerHandler::HasPlungerSensor() const
 {
+   if (m_externalOverride)
+      return true;
    for (const auto& sensor : m_sensors)
       if (sensor->IsActive())
          return true;
@@ -63,6 +73,10 @@ float PlungerHandler::GetRawVelocity() const
 
 float PlungerHandler::GetHitVelocity(float restPos) const
 {
+   // External velocity is provided in p.u./s, that is to say relative to the full plunger range, while hit velocity is
+   // expressed in t.u./s, relative to the range between rest position and fully retracted (rescaled by 1 - restPos)
+   if (m_externalOverride)
+      return m_externalVelocity * (1.f - restPos);
    for (const auto& sensor : m_sensors)
       if (sensor->IsActive())
          return sensor->GetHitVelocity(restPos);
@@ -190,7 +204,9 @@ void PlungerHandler::UnmapDevice(uint16_t deviceId)
 
 void PlungerHandler::SetExternalPlunger(bool enableOverride, const float velocity, const float displacement)
 {
-   // FIXME implement
+   m_externalOverride = enableOverride;
+   m_externalVelocity = velocity;
+   m_externalPosition = displacement;
 }
 
 

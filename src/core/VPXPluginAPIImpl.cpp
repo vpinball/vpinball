@@ -7,6 +7,8 @@
 #include "parts/flasher.h"
 #include "renderer/Renderer.h"
 #include "ui/live/LiveUI.h"
+#include "input/PlungerHandler.h"
+#include "physics/cabinet/NudgeHandler.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
@@ -131,9 +133,22 @@ void MSGPIAPI VPXPluginAPIImpl::GetInputState(VPXInputState* state)
             state->actionState |= mask;
       }
    }
-   
-   // TODO implement
-   state->stateMask = 0;
+
+   const PlungerHandler* plungerHandler = g_pplayer->m_pininput.m_plungerHandler.get();
+   const VPX::Physics::NudgeHandler* nudgeHandler = g_pplayer->m_pininput.m_nudgeHandler.get();
+   if (state->stateMask & 1)
+      state->plungerPosition = plungerHandler->GetRawPosition();
+   if (state->stateMask & 2)
+      state->plungerVelocity = plungerHandler->GetHitVelocity(0.f);
+   if (state->stateMask & 4)
+   {
+      const Vertex2D& nudgeAcceleration = nudgeHandler->GetCabinetAcceleration();
+      state->nudgeAccelerationX = nudgeAcceleration.x;
+      state->nudgeAccelerationY = nudgeAcceleration.y;
+      const Vertex2D& nudgeDisplacement = nudgeHandler->GetCabinetOffset();
+      state->nudgeDisplacementX = nudgeDisplacement.x;
+      state->nudgeDisplacementY = nudgeDisplacement.y;
+   }
 }
 
 void MSGPIAPI VPXPluginAPIImpl::SetInputState(VPXInputState* state)
@@ -167,8 +182,10 @@ void MSGPIAPI VPXPluginAPIImpl::SetInputState(VPXInputState* state)
       }
    }
 
-   // TODO implement
-   state->stateMask = 0;
+   // Setting a stateMask bit overrides the corresponding input with the provided value, clearing it releases it
+   g_pplayer->m_pininput.m_plungerHandler->SetExternalPlunger((state->stateMask & 3) != 0, state->plungerVelocity, state->plungerPosition);
+   g_pplayer->m_pininput.m_nudgeHandler->SetExternalNudge(
+      (state->stateMask & 4) != 0, Vertex2D(state->nudgeAccelerationX, state->nudgeAccelerationY), Vertex2D(state->nudgeDisplacementX, state->nudgeDisplacementY));
 }
 
 

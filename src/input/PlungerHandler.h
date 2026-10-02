@@ -22,6 +22,7 @@ public:
    void StepOneMillisecond();
 
    bool HasPlungerSensor() const;
+   float GetRawPosition() const { return m_position; } // p.u.
    float GetRawVelocity() const; // p.u/s
    float GetHitVelocity(float restPos) const; // restPos must be in t.u., returned velocity is in t.u/s.
    float GetPosition(float restPos) const; // t.u.
@@ -47,6 +48,11 @@ private:
    bool m_isPullBackAndRetract = false; // enable 1s retract phase for button/key plunger
    float m_rawVelocity = 0.f; // p.u./s
    float m_position = 0.f; // p.u.
+
+   // External plunger state override (e.g. remote control plugin), expressed in p.u. and p.u./s
+   bool m_externalOverride = false;
+   float m_externalVelocity = 0.f;
+   float m_externalPosition = 0.f;
 };
 
 

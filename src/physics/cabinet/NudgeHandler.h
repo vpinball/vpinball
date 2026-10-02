@@ -96,6 +96,11 @@ private:
    Vertex2D m_noNudge = Vertex2D(0.f, 0.f);
    KeyboardNudgeMode m_keyboardNudgeMode;
    int m_keyboardNudgeIndex = 0;
+
+   // External nudge state override (e.g. remote control plugin)
+   bool m_externalOverride = false;
+   Vertex2D m_externalAcceleration = Vertex2D(0.f, 0.f);
+   Vertex2D m_externalDisplacement = Vertex2D(0.f, 0.f);
 };
 
 };
