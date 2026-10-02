@@ -42,7 +42,7 @@ private:
    }
    LibVulkan()
    {
-#if BX_PLATFORM_WINDOWS
+#if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX
       m_vulkan1Dll = bx::dlopen(
 #if BX_PLATFORM_WINDOWS
          "vulkan-1.dll"
@@ -104,10 +104,6 @@ public:
          instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #if BX_PLATFORM_ANDROID
          instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_LINUX
-         instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-         instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-         instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_WINDOWS
          instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_OSX
