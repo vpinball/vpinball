@@ -88,6 +88,7 @@
     <ClCompile Include="../../tests/parts/test-timer.cpp" />
     <ClCompile Include="../../tests/parts/test-trigger.cpp" />
     <ClCompile Include="../../tests/physics/physics-harness.cpp" />
+    <ClCompile Include="../../tests/physics/test-ball-spin.cpp" />
     <ClCompile Include="../../tests/physics/test-cabinet.cpp" />
     <ClCompile Include="../../tests/physics/test-collide.cpp" />
     <ClCompile Include="../../tests/physics/test-hittimer.cpp" />

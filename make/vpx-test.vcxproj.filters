@@ -164,6 +164,9 @@
     <ClCompile Include="../../tests/physics/physics-harness.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/physics/test-ball-spin.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/physics/test-cabinet.cpp">
       <Filter>physics</Filter>
     </ClCompile>
