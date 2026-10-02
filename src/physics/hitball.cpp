@@ -165,8 +165,11 @@ float HitBall::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
          return -1.0f;                     // embedded too deep?
 
       hittime = 0; // already touching or overlapping: immediate response
-      // a slow moving pair inside the touch layer is a steady contact, a deeper overlap stays a collision
-      isContact = (fabsf(bnv) <= C_CONTACTVEL) && (bnd > (float)(-PHYS_TOUCH));
+      // a slow moving pair inside the touch layer is a steady contact; for ball-ball pairs
+      // keep it a contact for deeper overlap too: a resting stack always hovers a bit inside
+      // -PHYS_TOUCH, and crossing it turns the pair into a restitution collision plus a
+      // displacement-correction pop, which is the slow sink-then-pop jitter of resting stacks
+      isContact = (fabsf(bnv) <= C_CONTACTVEL) && (bnd > -0.5f);
    }
    else
    {
@@ -223,6 +226,7 @@ void HitBall::Collide(const CollisionEvent& coll)
    const Vertex3Ds vrel = pball->m_d.m_vel - m_d.m_vel;
    const Vertex3Ds vnormal = coll.m_hitnormal;
    float dot = vrel.Dot(vnormal);
+   const float impactSpeed = -dot; // approach speed before the embedded kick below
 
    // correct displacements, mostly from low velocity, alternative to true acceleration processing
    if (dot >= -C_LOWNORMVEL)          // nearly receding ... make sure of conditions
@@ -243,29 +247,44 @@ void HitBall::Collide(const CollisionEvent& coll)
    }
 
 #ifdef C_DISP_GAIN
-   float edist = -C_DISP_GAIN * coll.m_hitdistance;
-   if (edist > 1.0e-4f)
+   // For resting-scale impacts (below the script-event impact speed) on shallow
+   // overlap, skip the displacement correction: it pops the pair far enough
+   // apart that the following ball re-approaches as a new collision forever
+   // (the slow jitter loop of resting stacks). Persistent contacts handle the
+   // small residual overlap instead; deep embeds and real impacts keep it.
+   if (impactSpeed > 0.25f || coll.m_hitdistance < -0.5f)
    {
-      if (edist > C_DISP_LIMIT)
-         edist = C_DISP_LIMIT; // crossing ramps, delta noise
-      if (!m_d.m_lockedInKicker) edist *= 0.5f; // if the hitten ball is not frozen
-      pball->m_d.m_pos += edist * vnormal;// push along norm, back to free area
-      // use the norm, but is not correct, but cheaply handled
-   }
+      float edist = -C_DISP_GAIN * coll.m_hitdistance;
+      if (edist > 1.0e-4f)
+      {
+         if (edist > C_DISP_LIMIT)
+            edist = C_DISP_LIMIT; // crossing ramps, delta noise
+         if (!m_d.m_lockedInKicker)
+            edist *= 0.5f; // if the hitten ball is not frozen
+         pball->m_d.m_pos += edist * vnormal; // push along norm, back to free area
+         // use the norm, but is not correct, but cheaply handled
+      }
 
-   edist = -C_DISP_GAIN * m_coll.m_hitdistance; // noisy value .... needs investigation
-   if (!m_d.m_lockedInKicker && edist > 1.0e-4f)
-   {
-      if (edist > C_DISP_LIMIT)
-         edist = C_DISP_LIMIT; // crossing ramps, delta noise
-      edist *= 0.5f;
-      m_d.m_pos -= edist * vnormal; // pull along norm, back to free area
+      edist = -C_DISP_GAIN * m_coll.m_hitdistance; // noisy value .... needs investigation
+      if (!m_d.m_lockedInKicker && edist > 1.0e-4f)
+      {
+         if (edist > C_DISP_LIMIT)
+            edist = C_DISP_LIMIT; // crossing ramps, delta noise
+         edist *= 0.5f;
+         m_d.m_pos -= edist * vnormal; // pull along norm, back to free area
+      }
    }
 #endif
 
    const float myInvMass = m_d.m_lockedInKicker ? 0.0f : 1.0f/m_d.m_mass; // frozen ball has infinite mass
    const float pballInvMass = 1.0f/pball->m_d.m_mass; //!! do same frozen mass thing for that one?
-   const float impulse = -(float)(1.0 + 0.8) * dot / (myInvMass + pballInvMass); // resitution = 0.8
+   // Low speed impacts stay inelastic: a restitution bounce leaves the pair
+   // receding just above the contact velocity window, so balls resting in a
+   // stack would be kicked apart, re-approach above C_CONTACTVEL and bounce
+   // again forever (the slow jitter loop of resting stacks). -0.25 is the same
+   // impact scale used above to decide that a collision is worth a script event.
+   const float restitution = (dot < -0.25f) ? 0.8f : 0.0f;
+   const float impulse = -(1.0f + restitution) * dot / (myInvMass + pballInvMass);
 
    if (!m_d.m_lockedInKicker)
    {
@@ -284,19 +303,53 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
 {
    const float normVel = m_d.m_vel.Dot(coll.m_hitnormal); // this should be zero, but only up to +/- C_CONTACTVEL
 
+   const bool ballContact = coll.m_obj != nullptr && coll.m_obj->GetType() == eBall;
+   const HitBall* const otherBall = ballContact ? static_cast<const HitBall*>(coll.m_obj) : nullptr;
+
+   // For a ball-ball contact the approach speed is relative to the supporting
+   // ball, which may itself be moving (a stack pressed on a wall, a ball resting
+   // on a rolling ball): using the ball's own normal velocity here either lets
+   // it creep into its support or wrongly skips the impulse.
+   const float approach = ballContact ? (otherBall->m_d.m_vel - m_d.m_vel).Dot(coll.m_hitnormal) : -normVel;
+
    // If some collision has changed the ball's velocity, we may not have to do anything.
-   if (normVel <= C_CONTACTVEL)
+   if (approach > -C_CONTACTVEL)
    {
-      const Vertex3Ds fe = m_d.m_mass * m_physics->GetGravity(); // external forces (only gravity for now)
-      const float dot = fe.Dot(coll.m_hitnormal);
-      const float normalForce = std::max(0.0f, -(dot * dtime + coll.m_hit_org_normalvelocity * m_d.m_mass) / m_d.m_mass); // normal force is always nonnegative
+      float normalForce;
+      if (ballContact)
+      {
+         // Resting on another ball: kill the residual normal velocity only
+         // (vel.n -> 0). Matching the supporting ball's velocity instead lets
+         // each neighbour's contact rewrite this velocity in a single pass, and
+         // the chain never converges: balls in a stack end up oscillating at a
+         // few 0.1/step, which displacements then turn into real overlap.
+         normalForce = std::max(0.0f, -normVel);
+      }
+      else
+      {
+         const Vertex3Ds fe = m_d.m_mass * m_physics->GetGravity(); // external forces (only gravity for now)
+         const float dot = fe.Dot(coll.m_hitnormal);
+         normalForce = std::max(0.0f, -(dot * dtime + coll.m_hit_org_normalvelocity * m_d.m_mass) / m_d.m_mass); // normal force is always nonnegative
+      }
 
       // Add just enough to kill original normal velocity and counteract the external forces.
       m_d.m_vel += normalForce * coll.m_hitnormal;
 
+      // Contacts resolve after displacement, so a slowly pressed ball still
+      // creeps into its support a little each step; left alone the overlap
+      // sinks past -PHYS_TOUCH, turns into a restitution collision plus a
+      // displacement-correction pop, and the cycle repeats (the slow jitter
+      // loop of resting balls). Drain the overlap with a small capped position
+      // nudge instead, quiet enough to stay below the collision threshold.
+      if (!m_d.m_lockedInKicker && coll.m_hitdistance < 0.f)
+         m_d.m_pos += std::min(-0.5f * coll.m_hitdistance, 0.02f) * coll.m_hitnormal;
+
 #ifdef C_EMBEDVELLIMIT
-      if (coll.m_hitdistance <= (float)PHYS_TOUCH)
-          m_d.m_vel += coll.m_hitnormal*max(min(C_EMBEDVELLIMIT,-coll.m_hitdistance),(float)PHYS_TOUCH);
+      // Un-embed kick only when actually penetrating; applying its minimum
+      // velocity to merely touching contacts pushes every resting ball off its
+      // support on every step, which is the perpetual micro-bounce.
+      if (coll.m_hitdistance < 0.f)
+         m_d.m_vel += coll.m_hitnormal * min(C_EMBEDVELLIMIT, -coll.m_hitdistance);
 #endif
 
 #ifdef C_BALL_SPIN_HACK2 // hacky killing of ball spin

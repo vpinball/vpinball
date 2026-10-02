@@ -336,12 +336,19 @@ TEST_CASE("A deeply overlapped ball pair still reports a collision")
    moving.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
    moving.m_d.m_vel = Vertex3Ds(0.05f, 0.f, 0.f); // below C_CONTACTVEL
    HitBall still;
-   still.m_d.m_pos = Vertex3Ds(49.94f, 0.f, 25.f); // bnd = -0.06: past the touch layer
+   still.m_d.m_pos = Vertex3Ds(49.94f, 0.f, 25.f); // bnd = -0.06: resting band, contact drains it
    still.m_d.m_vel.SetZero();
 
    CollisionEvent coll;
-   // Overlap beyond the touch layer must stay a collision so the displacement
-   // correction can separate the pair (a contact would never push them out).
+   // Shallow overlap at resting speed is a persistent contact: the contact drain
+   // separates the pair gently while a collision would pop them apart and the
+   // pair would keep bouncing (the slow jitter loop of resting stacks).
+   CHECK(still.HitTest(moving.m_d, (float)PHYS_FACTOR, coll) == doctest::Approx(0.f));
+   CHECK(coll.m_isContact);
+
+   // But a pathological overlap deep past the resting band still reports a real
+   // collision so the displacement correction can dig the balls out.
+   still.m_d.m_pos = Vertex3Ds(49.4f, 0.f, 25.f); // bnd = -0.6
    CHECK(still.HitTest(moving.m_d, (float)PHYS_FACTOR, coll) == doctest::Approx(0.f));
    CHECK(!coll.m_isContact);
 }
@@ -349,8 +356,11 @@ TEST_CASE("A deeply overlapped ball pair still reports a collision")
 TEST_CASE("Ball-ball contact handling supports the resting ball")
 {
    // Ball-ball contacts are recorded like any other contact and dispatched to
-   // the contacted HitBall's Contact(). It must apply the usual static contact
-   // handling to coll.m_ball, not silently drop the event.
+   // the contacted HitBall's Contact(). It must apply static contact handling
+   // to coll.m_ball, not silently drop the event: a ball that just gained one
+   // step of gravity must come out with zero normal velocity (the impulse is
+   // computed from the current velocity, not from a gravity pre-compensation,
+   // so that simultaneous contacts on stacked balls do not overshoot).
    PhysicsTestHarness harness;
    harness.SetGravity(0.f, GRAVITYCONST);
    harness.Start();
@@ -358,18 +368,19 @@ TEST_CASE("Ball-ball contact handling supports the resting ball")
    HitBall top;
    top.m_physics = harness.GetEngine();
    top.m_d.m_mass = 1.f;
-   top.m_d.m_vel.SetZero();
+   top.m_d.m_vel = Vertex3Ds(0.f, 0.f, -GRAVITYCONST * PHYS_FACTOR);
    top.m_angularmomentum.SetZero();
    HitBall bottom;
 
    CollisionEvent coll;
    coll.m_ball = &top;
+   coll.m_obj = &bottom;
    coll.m_hitnormal = Vertex3Ds(0.f, 0.f, 1.f); // top resting on bottom
    coll.m_hitdistance = 0.f;
    coll.m_hit_org_normalvelocity = 0.f;
 
    bottom.Contact(coll, (float)PHYS_FACTOR);
-   CHECK(top.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR));
+   CHECK(top.m_d.m_vel.z == doctest::Approx(0.f));
 }
 
 TEST_CASE("A ball pressed against a locked ball comes to rest")
