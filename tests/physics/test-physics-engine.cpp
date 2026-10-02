@@ -305,6 +305,163 @@ TEST_CASE("PhysicsEngine: stacked balls come to rest")
    CHECK((dTop.m_pos - posTop).Length() < 0.5f);
 }
 
+TEST_CASE("PhysicsEngine: column of 4 stacked balls comes to rest")
+{
+   // Ghostbusters-like situation: balls resting on the playfield one above the
+   // other. A shaft exactly one ball wide keeps the column vertical, so the
+   // only thing holding each ball is the ball-ball contact with the one below.
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST); // straight down: pure vertical stack
+
+   harness.AddWallSegment(474.f, 450.f, 474.f, 550.f, 0.f, 200.f);
+   harness.AddWallSegment(526.f, 450.f, 526.f, 550.f, 0.f, 200.f);
+   harness.AddWallSegment(474.f, 474.f, 526.f, 474.f, 0.f, 200.f);
+   harness.AddWallSegment(474.f, 526.f, 526.f, 526.f, 0.f, 200.f);
+
+   Ball *const b1 = harness.AddBall(500.f, 500.f, 0.f);
+   Ball *const b2 = harness.AddBall(500.f, 500.f, 50.f);
+   Ball *const b3 = harness.AddBall(500.f, 500.f, 100.f);
+   Ball *const b4 = harness.AddBall(500.f, 500.f, 150.f);
+   harness.Start();
+
+   harness.AdvanceMs(4000); // let the column settle
+
+   const HitBall *const balls[4] = { &b1->m_hitBall, &b2->m_hitBall, &b3->m_hitBall, &b4->m_hitBall };
+   for (const HitBall *const ball : balls)
+   {
+      INFO("ball pos ", ball->m_d.m_pos.x, ' ', ball->m_d.m_pos.y, ' ', ball->m_d.m_pos.z, " vel ", ball->m_d.m_vel.x, ' ', ball->m_d.m_vel.y, ' ', ball->m_d.m_vel.z);
+      CHECK(ball->m_d.m_vel.Length() < 0.5f);
+   }
+
+   // The column held: centers ~50 apart, no interpenetration
+   for (int i = 0; i < 3; ++i)
+      CHECK((balls[i + 1]->m_d.m_pos - balls[i]->m_d.m_pos).Length() > 2.f * DEFAULT_BALL_SIZE - 1.f);
+
+   // The pile is stable: positions and velocities do not jitter over time.
+   // The upper balls, held only by their ball-ball contacts, must be dead
+   // quiet; the bottom ball keeps the ~0.18/step z noise every ball resting
+   // on the playfield has (the floor is always a micro-collision).
+   const Vertex3Ds pos[4] = { balls[0]->m_d.m_pos, balls[1]->m_d.m_pos, balls[2]->m_d.m_pos, balls[3]->m_d.m_pos };
+   float maxPerBall[4] = { 0.f, 0.f, 0.f, 0.f };
+   for (int i = 0; i < 200; ++i)
+   {
+      harness.Step();
+      for (int b = 0; b < 4; ++b)
+         maxPerBall[b] = std::max(maxPerBall[b], balls[b]->m_d.m_vel.Length());
+   }
+   for (int b = 0; b < 4; ++b)
+   {
+      INFO("ball ", b, " z=", balls[b]->m_d.m_pos.z, " vz=", balls[b]->m_d.m_vel.z, " maxSpeed=", maxPerBall[b]);
+      CHECK(maxPerBall[b] < (b == 0 ? 0.25f : 0.05f));
+   }
+   for (int i = 0; i < 4; ++i)
+      CHECK((balls[i]->m_d.m_pos - pos[i]).Length() < 0.5f);
+}
+
+TEST_CASE("PhysicsEngine: two balls in contact roll down the slope")
+{
+   // Two touching balls on a slope: the contact must not act as glue — gravity
+   // still pulls both balls down-table and the pair rolls away. The inline
+   // arrangement puts the contact normal along the travel direction, while the
+   // side-by-side one puts it across (friction and spin coupling only).
+   PhysicsTestHarness harness;
+   harness.SetGravity(6.5f, GRAVITYCONST); // slope toward the bottom of the table (+y)
+
+   Ball *a;
+   Ball *b;
+   SUBCASE("one ball uphill of the other")
+   {
+      a = harness.AddBall(500.f, 500.f, 0.f);
+      b = harness.AddBall(500.f, 550.f, 0.f); // touching, downhill of rear
+   }
+   SUBCASE("balls side by side")
+   {
+      a = harness.AddBall(475.f, 500.f, 0.f);
+      b = harness.AddBall(525.f, 500.f, 0.f); // touching, same height
+   }
+   harness.Start();
+
+   harness.AdvanceMs(600);
+
+   const BallS &da = a->m_hitBall.m_d;
+   const BallS &db = b->m_hitBall.m_d;
+   INFO("a pos ", da.m_pos.x, ' ', da.m_pos.y, ' ', da.m_pos.z, " vel ", da.m_vel.x, ' ', da.m_vel.y, ' ', da.m_vel.z);
+   INFO("b pos ", db.m_pos.x, ' ', db.m_pos.y, ' ', db.m_pos.z, " vel ", db.m_vel.x, ' ', db.m_vel.y, ' ', db.m_vel.z);
+
+   // Both balls are rolling down-table, with a downhill speed far above the
+   // per-step gravity increment (0.18): the ball-ball contact did not hold them.
+   CHECK(da.m_pos.y > 550.f);
+   CHECK(db.m_pos.y > 550.f);
+   CHECK(da.m_vel.y > 0.5f);
+   CHECK(db.m_vel.y > 0.5f);
+   // and they stayed together (no wild separation)
+   CHECK((da.m_pos - db.m_pos).Length() < 100.f);
+}
+
+TEST_CASE("PhysicsEngine: a row of balls resting against a downhill wall stays put")
+{
+   // Ghostbusters-like: four balls queued one behind the other on the slope,
+   // the lowest leaning on a wall. The ball-ball contacts must hold the row
+   // quietly: no slow sink-into-the-neighbor then pop-back cycle.
+   PhysicsTestHarness harness;
+   harness.SetGravity(6.5f, GRAVITYCONST); // slope toward the bottom of the table (+y)
+
+   // A channel ending in a wall at y=700: the slope presses the row against it
+   harness.AddWallSegment(473.f, 400.f, 473.f, 700.f, 0.f, 100.f);
+   harness.AddWallSegment(527.f, 400.f, 527.f, 700.f, 0.f, 100.f);
+   harness.AddWallSegment(473.f, 700.f, 527.f, 700.f, 0.f, 100.f);
+
+   Ball *const row[4] = { harness.AddBall(500.f, 675.f, 0.f), harness.AddBall(500.f, 625.f, 0.f), harness.AddBall(500.f, 575.f, 0.f), harness.AddBall(500.f, 525.f, 0.f) };
+   harness.Start();
+
+   harness.AdvanceMs(3000); // let the row settle
+
+   // Quiet row: no ball makes a visible move in a single step (a displacement-
+   // correction pop after slow penetration moves ~0.05, plain contact creep
+   // ~0.002/step).
+   float maxStepMove[4] = { 0.f, 0.f, 0.f, 0.f };
+   float minGap = 1e9f, maxGap = 0.f;
+   int popSteps = 0;
+   int firstPopStep = -1;
+   for (int i = 0; i < 1000; ++i)
+   {
+      const Vertex3Ds prev[4] = { row[0]->m_hitBall.m_d.m_pos, row[1]->m_hitBall.m_d.m_pos, row[2]->m_hitBall.m_d.m_pos, row[3]->m_hitBall.m_d.m_pos };
+      harness.Step();
+      for (int p = 0; p < 3; ++p)
+      {
+         const float gap = (row[p + 1]->m_hitBall.m_d.m_pos - row[p]->m_hitBall.m_d.m_pos).Length();
+         minGap = std::min(minGap, gap);
+         maxGap = std::max(maxGap, gap);
+      }
+      for (int b = 0; b < 4; ++b)
+      {
+         const float move = (row[b]->m_hitBall.m_d.m_pos - prev[b]).Length();
+         if (move > 0.02f)
+         {
+            ++popSteps;
+            if (firstPopStep < 0)
+               firstPopStep = i;
+         }
+         maxStepMove[b] = std::max(maxStepMove[b], move);
+      }
+   }
+   INFO("min pair gap ", minGap, " max pair gap ", maxGap, " pop steps ", popSteps, " first at step ", firstPopStep);
+   for (int b = 0; b < 4; ++b)
+   {
+      INFO("ball ", b, " pos ", row[b]->m_hitBall.m_d.m_pos.x, ' ', row[b]->m_hitBall.m_d.m_pos.y, ' ', row[b]->m_hitBall.m_d.m_pos.z, " maxStepMove=", maxStepMove[b]);
+      CHECK(maxStepMove[b] < 0.02f);
+   }
+
+   // No pair penetrating or separated
+   for (int i = 0; i < 3; ++i)
+   {
+      const float gap = (row[i + 1]->m_hitBall.m_d.m_pos - row[i]->m_hitBall.m_d.m_pos).Length();
+      INFO("gap ", i, " ", gap);
+      CHECK(gap > 2.f * DEFAULT_BALL_SIZE - 1.f);
+      CHECK(gap < 2.f * DEFAULT_BALL_SIZE + 5.f);
+   }
+}
+
 TEST_CASE("PhysicsEngine: live changes during simulation")
 {
    PhysicsTestHarness harness;
