@@ -41,49 +41,51 @@ void GraphicSettingsPage::BuildPage()
 #endif
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View mode"s));
-
-   AddItem(std::make_unique<InGameUIItem>( //
-      VPX::Properties::EnumPropertyDef(*Settings::GetPlayer_BGSet_Property(), m_player->m_ptable->GetViewMode()), //
-      [this]() { return (int)m_player->m_ptable->GetViewMode(); }, // Live
-      [this](const Settings& settings) { return (int)settings.GetPlayer_BGSet(); }, // Stored
-      [this](int, int v)
-      {
-         m_player->m_ptable->SetViewSetupOverride((ViewSetupID)v);
-         m_player->SetCabinetAutoFitMode(g_settingsService.GetActiveSettings().GetPlayer_CabinetAutofitMode());
-         m_player->SetCabinetAutoFitPos(g_settingsService.GetActiveSettings().GetPlayer_CabinetAutofitPos());
-         OnStaticRenderDirty();
-         RequestRebuild();
-      },
-      [](Settings& settings) { settings.ResetPlayer_BGSet(); }, //
-      [this](int v, Settings& settings, bool asTableOverride)
-      {
-         settings.SetPlayer_BGSet(v, asTableOverride);
-         m_player->m_ptable->SetViewSetupOverride(ViewSetupID::BG_INVALID);
-      }));
-
-   if (m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
+   if (!m_player->IsVR())
    {
-      AddItem(std::make_unique<InGameUIItem>(
-         Settings::m_propPlayer_CabinetAutofitMode, //
-         [this]() { return m_player->GetCabinetAutoFitMode(); }, // Live
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View mode"s));
+
+      AddItem(std::make_unique<InGameUIItem>( //
+         VPX::Properties::EnumPropertyDef(*Settings::GetPlayer_BGSet_Property(), m_player->m_ptable->GetViewMode()), //
+         [this]() { return (int)m_player->m_ptable->GetViewMode(); }, // Live
+         [this](const Settings& settings) { return (int)settings.GetPlayer_BGSet(); }, // Stored
          [this](int, int v)
          {
-            m_player->SetCabinetAutoFitMode(v);
-            if (v != 0)
-               OnStaticRenderDirty();
+            m_player->m_ptable->SetViewSetupOverride((ViewSetupID)v);
+            m_player->SetCabinetAutoFitMode(g_settingsService.GetActiveSettings().GetPlayer_CabinetAutofitMode());
+            m_player->SetCabinetAutoFitPos(g_settingsService.GetActiveSettings().GetPlayer_CabinetAutofitPos());
+            OnStaticRenderDirty();
+            RequestRebuild();
+         },
+         [](Settings& settings) { settings.ResetPlayer_BGSet(); }, //
+         [this](int v, Settings& settings, bool asTableOverride)
+         {
+            settings.SetPlayer_BGSet(v, asTableOverride);
+            m_player->m_ptable->SetViewSetupOverride(ViewSetupID::BG_INVALID);
          }));
-      if (m_player->GetCabinetAutoFitMode() == 1)
+
+      if (m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
       {
          AddItem(std::make_unique<InGameUIItem>(
-            Settings::m_propPlayer_CabinetAutofitPos, 100.f, "%4.1f %%"s, //
-            [this]() { return m_player->GetCabinetAutoFitPos(); },
-            [this](float, float v)
+            Settings::m_propPlayer_CabinetAutofitMode, //
+            [this]() { return m_player->GetCabinetAutoFitMode(); }, // Live
+            [this](int, int v)
             {
-               m_player->SetCabinetAutoFitPos(v);
-               OnStaticRenderDirty();
+               m_player->SetCabinetAutoFitMode(v);
+               if (v != 0)
+                  OnStaticRenderDirty();
             }));
+         if (m_player->GetCabinetAutoFitMode() == 1)
+         {
+            AddItem(std::make_unique<InGameUIItem>(
+               Settings::m_propPlayer_CabinetAutofitPos, 100.f, "%4.1f %%"s, //
+               [this]() { return m_player->GetCabinetAutoFitPos(); },
+               [this](float, float v)
+               {
+                  m_player->SetCabinetAutoFitPos(v);
+                  OnStaticRenderDirty();
+               }));
+         }
       }
    }
 
