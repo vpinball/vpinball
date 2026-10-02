@@ -282,13 +282,13 @@ TEST_CASE("DoHitTest picks the earliest collision")
 // ---------------------------------------------------------------------------
 // Slow shallow touches (bnd <= PHYS_TOUCH, |bnv| <= C_CONTACTVEL) must report
 // hittime 0 with the contact flag set, like HitBall does (see the last subcase
-// below). The legacy path computes a fake hittime of bnd*10+0.5 — a distance
-// remapped into (0,1] T — that is systematically larger than one physics
-// step, so the event is dropped entirely: no collision and no contact until
-// actual penetration, and surviving fake times corrupt event ordering.
+// below). The legacy path computed a fake hittime of bnd*10+0.5 — a distance
+// remapped into (0,1] T — that was systematically larger than one physics
+// step, so the event was dropped entirely: no collision and no contact until
+// actual penetration, and surviving fake times corrupted event ordering.
 // ---------------------------------------------------------------------------
 
-TEST_CASE("A slow shallow touch on a wall reports a contact" * doctest::should_fail())
+TEST_CASE("A slow shallow touch on a wall reports a contact")
 {
    // Vertical wall at x=100, spanning y=[0,100], z=[0,50]; ball surface is 0.02 VPU off the wall
    LineSeg wall(nullptr, Vertex2D(100.f, 0.f), Vertex2D(100.f, 100.f), 0.f, 50.f);
@@ -301,7 +301,7 @@ TEST_CASE("A slow shallow touch on a wall reports a contact" * doctest::should_f
    CHECK(coll.m_hit_org_normalvelocity == doctest::Approx(-0.05f));
 }
 
-TEST_CASE("A slow shallow touch on a rigid poly reports a contact" * doctest::should_fail())
+TEST_CASE("A slow shallow touch on a rigid poly reports a contact")
 {
    // Horizontal quad at z=0, wound to get an upward (+z) normal; Hit3DPoly owns rgv
    Vertex3Ds* const rgv = new Vertex3Ds[4] { Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds(0.f, 100.f, 0.f), //

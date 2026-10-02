@@ -91,7 +91,9 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
             || (bnd <= (float)(-PHYS_TOUCH)))
             hittime = 0;                                    // slow moving but embedded
          else {
-#ifdef NEW_PHYSICS
+#ifdef FIX_PHYSICS
+            hittime = 0.f; // slow shallow touch: becomes a contact via the isContact test below
+#elif defined(NEW_PHYSICS)
             hittime = bnd / -bnv;
 #else
             hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events

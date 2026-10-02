@@ -581,7 +581,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
    const bool rigid = (m_ObjType != eTrigger);
    float hittime;
-#ifdef NEW_PHYSICS
+#if defined(NEW_PHYSICS) || defined(FIX_PHYSICS) // FIX_PHYSICS: also enable the slow-touch contact path (hittime 0 + isContact)
    bool isContact = false;
 #endif
    if (rigid) //rigid polygon
@@ -590,16 +590,16 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
       if (bnd <= (float)PHYS_TOUCH)
       {
-#ifdef NEW_PHYSICS
-          if (fabsf(bnv) <= C_CONTACTVEL)
-          {
-              hittime = 0;
-              isContact = true;
-          }
-          else if (inside)
-              hittime = 0;                          // zero time for rigid fast bodies
-          else
-              hittime = bnd / -bnv;
+#if defined(NEW_PHYSICS) || defined(FIX_PHYSICS)
+         if (fabsf(bnv) <= C_CONTACTVEL)
+         {
+            hittime = 0;
+            isContact = true;
+         }
+         else if (inside)
+            hittime = 0; // zero time for rigid fast bodies
+         else
+            hittime = bnd / -bnv;
 #else
           if (inside || (fabsf(bnv) > C_CONTACTVEL) // fast velocity, return zero time
                                                     //zero time for rigid fast bodies
@@ -691,7 +691,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
       coll.m_hitdistance = bnd;   // 3dhit actual contact distance ... 
       //coll.m_hitRigid = rigid;  // collision type
 
-#ifdef NEW_PHYSICS
+#if defined(NEW_PHYSICS) || defined(FIX_PHYSICS)
       coll.m_isContact = isContact;
       if (isContact)
          coll.m_hit_org_normalvelocity = bnv;
