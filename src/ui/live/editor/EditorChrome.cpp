@@ -52,10 +52,14 @@ void EditorChrome::RenderMenuBar()
          }
          if (ImGui::MenuItem("Load..."))
             editor.LoadTable();
+         if (ImGui::MenuItem("Load Pack Folder..."))
+            editor.LoadTableFolder();
          if (ImGui::MenuItem("Save", "Ctrl+S"))
             editor.SaveTable();
          if (ImGui::MenuItem("Save As..."))
             editor.SaveTableAs();
+         if (ImGui::MenuItem("Save As Pack Folder..."))
+            editor.SaveTableAsPackFolder();
          ImGui::Separator();
          if (ImGui::MenuItem("Play", "F5", false, !editor.m_table->IsLocked()))
             editor.PlayTest();

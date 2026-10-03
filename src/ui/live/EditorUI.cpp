@@ -195,12 +195,17 @@ void EditorUI::SaveTableAs()
    if (IsInspectMode() || m_table->IsLocked() || m_player->m_playfieldWnd == nullptr)
       return;
    m_pendingSaveAsPath = std::make_shared<string>();
-   const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx" } };
+   m_pendingSaveAsFolder = false;
+   const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx;vpz" } };
    std::filesystem::path defaultLocation = m_table->m_filename;
    if (defaultLocation.empty())
       defaultLocation = PathFromString(m_table->GetSettings().GetRecentDir_LoadDir()) / "new_table.vpx";
-   else
-      defaultLocation.replace_extension(".vpx");
+   else if (lowerCase(PathToUTF8(defaultLocation.extension())) != ".vpz"s)
+   {
+      std::error_code ec;
+      if (!std::filesystem::is_directory(defaultLocation, ec))
+         defaultLocation.replace_extension(".vpx");
+   }
    const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
    SDL_ShowSaveFileDialog(
       [](void *userdata, const char *const *filelist, int filter)
@@ -214,11 +219,36 @@ void EditorUI::SaveTableAs()
       m_player->m_playfieldWnd->GetCore(), filters, 1, location.empty() ? nullptr : location.c_str());
 }
 
-void EditorUI::LoadTable()
+void EditorUI::SaveTableAsPackFolder()
+{
+   if (IsInspectMode() || m_table->IsLocked() || m_player->m_playfieldWnd == nullptr)
+      return;
+   m_pendingSaveAsPath = std::make_shared<string>();
+   m_pendingSaveAsFolder = true;
+   const std::filesystem::path defaultLocation = m_table->m_filename.empty() ? PathFromString(m_table->GetSettings().GetRecentDir_LoadDir()) : m_table->m_filename.parent_path();
+   const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
+   SDL_ShowOpenFolderDialog(
+      [](void *userdata, const char *const *filelist, int filter)
+      {
+         auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+         if (filelist != nullptr && filelist[0] != nullptr)
+            **res = filelist[0];
+         delete res;
+      },
+      new std::shared_ptr<string>(m_pendingSaveAsPath), //
+      m_player->m_playfieldWnd->GetCore(), location.empty() ? nullptr : location.c_str(), false);
+}
+
+void EditorUI::LoadTable() { LoadTableDialog(false); }
+
+void EditorUI::LoadTableFolder() { LoadTableDialog(true); }
+
+void EditorUI::LoadTableDialog(const bool folder)
 {
    if (IsInspectMode() || m_player->m_playfieldWnd == nullptr)
       return;
    // Loading another table discards the edited table's unsaved changes: ask for confirmation first
+   m_pendingLoadFolder = folder;
    if (m_table->FDirty())
    {
       m_pendingNewTable.reset();
@@ -226,7 +256,7 @@ void EditorUI::LoadTable()
       m_confirmLoadTable = true;
       return;
    }
-   ShowLoadTableDialog();
+   ShowLoadTableDialog(folder);
 }
 
 void EditorUI::RequestClose(const int closeState)
@@ -242,15 +272,31 @@ void EditorUI::RequestClose(const int closeState)
    m_player->SetCloseState(static_cast<Player::CloseState>(closeState));
 }
 
-void EditorUI::ShowLoadTableDialog()
+void EditorUI::ShowLoadTableDialog(const bool folder)
 {
    m_pendingLoadPath = std::make_shared<string>();
-   const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx;vpt" } };
    // Start on the edited table's file (right folder, preselected file), falling back to the recent load dir
    std::filesystem::path defaultLocation = m_table->m_filename;
    if (defaultLocation.empty())
       defaultLocation = PathFromString(m_table->GetSettings().GetRecentDir_LoadDir()) / "";
+   else if (folder)
+      defaultLocation = defaultLocation.parent_path();
    const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
+   if (folder)
+   {
+      SDL_ShowOpenFolderDialog(
+         [](void *userdata, const char *const *filelist, int filter)
+         {
+            auto *res = static_cast<std::shared_ptr<string> *>(userdata);
+            if (filelist != nullptr && filelist[0] != nullptr)
+               **res = filelist[0];
+            delete res;
+         },
+         new std::shared_ptr<string>(m_pendingLoadPath), //
+         m_player->m_playfieldWnd->GetCore(), location.empty() ? nullptr : location.c_str(), false);
+      return;
+   }
+   const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx;vpt;vpz" } };
    SDL_ShowOpenFileDialog(
       [](void *userdata, const char *const *filelist, int filter)
       {
@@ -415,6 +461,12 @@ void EditorUI::RenderUI()
       m_table->m_filename = PathFromUTF8(*m_pendingSaveAsPath);
       m_table->m_title = TitleFromFilename(m_table->m_filename);
       m_pendingSaveAsPath = nullptr;
+      // A folder selection is a VPZ folder pack: the directory must exist for the table to be saved as a folder (not a .vpx file)
+      if (m_pendingSaveAsFolder)
+      {
+         m_pendingSaveAsFolder = false;
+         std::filesystem::create_directories(m_table->m_filename);
+      }
       if (SaveTable())
          g_settingsService.GetAppSettings().SetRecentDir_LoadDir(PathToString(m_table->m_filename.parent_path()), false);
       else
@@ -507,7 +559,7 @@ void EditorUI::RenderUI()
             m_pendingNewTable.reset();
          }
          else
-            ShowLoadTableDialog();
+            ShowLoadTableDialog(m_pendingLoadFolder);
       }
       ImGui::SameLine();
       ImGui::SetItemDefaultFocus();

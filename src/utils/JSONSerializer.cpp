@@ -806,7 +806,10 @@ public:
       if (out)
          out << content;
       else
+      {
          PLOGE << "Failed to write pack file: " << PathToUTF8(fullPath);
+         m_hasError = true;
+      }
    }
 
    void AddBinaryFile(const std::filesystem::path& path, const std::vector<uint8_t>& data) override
@@ -818,11 +821,17 @@ public:
       if (out)
          out.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
       else
+      {
          PLOGE << "Failed to write pack file: " << PathToUTF8(fullPath);
+         m_hasError = true;
+      }
    }
+
+   bool HasError() const override { return m_hasError; }
 
 private:
    const std::filesystem::path m_basePath;
+   bool m_hasError = false;
 };
 
 class ZipSerializer final : public JSONSerializer::Serializer
@@ -834,13 +843,17 @@ public:
       memset(&m_zipArchive, 0, sizeof(m_zipArchive));
    }
 
-   ~ZipSerializer() override
+   ~ZipSerializer() override { Finalize(); }
+
+   bool Finalize() override
    {
       if (m_zipArchive.m_pState)
       {
-         mz_zip_writer_finalize_archive(&m_zipArchive);
+         if (!mz_zip_writer_finalize_archive(&m_zipArchive))
+            m_hasError = true;
          mz_zip_writer_end(&m_zipArchive);
       }
+      return !m_hasError;
    }
 
    void AddTextFile(const std::filesystem::path& path, const std::string& content) override { AddMem(path, content.data(), content.size()); }
@@ -853,16 +866,23 @@ private:
       if (!m_zipArchive.m_pState && !mz_zip_writer_init_file(&m_zipArchive, PathToUTF8(m_zipPath).c_str(), 0))
       {
          PLOGE << "Failed to initialize zip writer for: " << PathToUTF8(m_zipPath);
+         m_hasError = true;
          return;
       }
       // Zip entries use '/' separators and UTF-8 names
       const string entryName = MakeString(path.generic_wstring());
       if (!mz_zip_writer_add_mem(&m_zipArchive, entryName.c_str(), data, size, MZ_DEFAULT_COMPRESSION))
+      {
          PLOGE << "Failed to add file to zip pack: " << entryName;
+         m_hasError = true;
+      }
    }
+
+   bool HasError() const override { return m_hasError; }
 
    const std::filesystem::path m_zipPath;
    mz_zip_archive m_zipArchive;
+   bool m_hasError = false;
 };
 
 class FolderDeserializer final : public JSONSerializer::Deserializer
