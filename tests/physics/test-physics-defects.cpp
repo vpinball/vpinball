@@ -19,6 +19,7 @@
 #include "parts/kicker.h"
 #include "parts/pintable.h"
 #include "parts/surface.h"
+#include "parts/trigger.h"
 #include "physics/PhysicsEngine.h"
 #include "physics/cabinet/NudgeHandler.h"
 #include "physics/collide.h"
@@ -700,4 +701,100 @@ TEST_CASE("The flipper end cap provides the same contact support" * doctest::sho
       CollisionEvent coll;
       CHECK(flipper.HitTestFlipperEnd(ball, 1.f, coll) >= 0.f); // bnv > 0 -> rejected today
    }
+}
+
+// ---------------------------------------------------------------------------
+// Trigger/kicker volume-edge events teleport the ball by STATICTIME*vel —
+// a position change that no velocity ever integrated. The same hack
+// exists in the Hit3DPoly volume path, TriggerHitLine and the kicker.
+// ---------------------------------------------------------------------------
+
+TEST_CASE("Entering a trigger volume does not teleport the ball" * doctest::should_fail())
+{
+   // No simulation needed: TriggerHitCircle::Collide only touches the ball and
+   // the trigger's event bookkeeping.
+   PhysicsTestHarness harness;
+
+   Trigger *const trigger = Trigger::COMCreate();
+   trigger->Init(500.f, 500.f, false, false);
+   trigger->SetName("TestTrigger");
+   harness.GetTable()->AddPart(trigger);
+   trigger->Release(); // owned by the table
+
+   TriggerHitCircle triggerVolume(trigger, Vertex2D(500.f, 500.f), 50.f, 0.f, 100.f);
+   triggerVolume.m_ObjType = eTrigger;
+   triggerVolume.m_obj = static_cast<IFireEvents *>(trigger);
+
+   HitBall ball;
+   ball.m_d.m_pos = Vertex3Ds(500.f, 500.f, DEFAULT_BALL_SIZE);
+   ball.m_d.m_vel = Vertex3Ds(100.f, 0.f, 0.f);
+
+   CollisionEvent coll;
+   coll.m_ball = &ball;
+   coll.m_hitflag = false; // Hit: ball was not inside the volume yet
+
+   triggerVolume.Collide(coll);
+
+   // The event does record the ball inside the volume ...
+   REQUIRE(ball.m_d.m_vpVolObjs->size() == 1);
+   // ... but reporting the edge crossing must not displace it. The code adds
+   // STATICTIME*vel (~0.2 ms of travel) "to move ball slightly forward" — a
+   // position change outside the integrator that also shifts where the ball's
+   // next hit tests run from.
+   CHECK(ball.m_d.m_pos.x == doctest::Approx(500.f));
+}
+
+// ---------------------------------------------------------------------------
+// HitFlipper::Contact feeds HitBall::SurfaceAcceleration — which includes the
+// centripetal term w x (w x rB) of the ball's *material* surface point — into
+// the contact separation test. A fast spinning ball reads as "accelerating
+// away" and the contact early-outs without even cancelling the approach
+// velocity.
+// ---------------------------------------------------------------------------
+
+TEST_CASE("A spinning ball keeps flipper contact support" * doctest::should_fail())
+{
+   PhysicsTestHarness harness;
+
+   Flipper *const flipperPart = Flipper::COMCreate();
+   flipperPart->Init(0.f, 0.f, false);
+   flipperPart->SetName("TestFlipperSpin");
+   harness.GetTable()->AddPart(flipperPart);
+   flipperPart->Release(); // owned by the table
+   harness.Start();
+
+   HitFlipper flipper(Vertex2D(500.f, 500.f), 30.f, 15.f, 80.f, 0.f, 0.f, 0.f, 100.f, flipperPart);
+   const Vertex2D F(flipper.m_flipperMover.m_zeroAngNorm);
+   const Vertex3Ds normal(F.x, F.y, 0.f);
+
+   // Same contact state for both balls: slowly approaching the flipper face.
+   auto makeContact = [&](HitBall &ball)
+   {
+      ball.m_physics = harness.GetEngine();
+      ball.m_d.m_vel = -0.05f * normal;
+
+      CollisionEvent coll;
+      coll.m_ball = &ball;
+      coll.m_hitnormal = normal;
+      coll.m_hitdistance = 0.02f;
+      coll.m_hit_org_normalvelocity = -0.05f;
+      flipper.Contact(coll, (float)PHYS_FACTOR);
+   };
+
+   HitBall nonSpinning;
+   nonSpinning.m_angularmomentum.SetZero();
+   makeContact(nonSpinning);
+   // Sanity check: without spin the contact kills the approach velocity.
+   CHECK(nonSpinning.m_d.m_vel.Dot(normal) > -0.01f);
+
+   HitBall spinning;
+   // angular velocity w = am/I with I = 0.4*r^2*m = 250: am=1000 gives w=4,
+   // a centripetal acceleration of w^2*r = 400 along the normal >> gravity.
+   spinning.m_angularmomentum = Vertex3Ds(0.f, 0.f, 1000.f);
+   makeContact(spinning);
+   // The material surface point's centripetal acceleration is not gap
+   // acceleration: spin must not release the contact. Today normAcc >= 0
+   // early-outs before the approach-velocity cancellation, leaving the full
+   // -0.05 approach velocity in place.
+   CHECK(spinning.m_d.m_vel.Dot(normal) > -0.01f);
 }

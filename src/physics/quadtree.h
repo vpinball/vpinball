@@ -64,6 +64,11 @@ public:
 
    unsigned int GetObjectCount() const { return static_cast<unsigned int>(m_vho.size()); }
    unsigned int GetNLevels() const { return m_nLevels; }
+#ifndef USE_EMBREE
+   // Number of tree nodes allocated so far: a count equal to the pool size means
+   // the pool was exhausted and subdivision was silently truncated
+   size_t GetNodeCount() const { return m_numNodes; }
+#endif
 
 #ifndef USE_EMBREE
    void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const;
