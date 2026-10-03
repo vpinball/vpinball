@@ -51,7 +51,7 @@ public:
    inline float GetY() const { return m_v.y; }
    inline void SetY(const float v);
    inline float GetZ() const { return m_v.z; }
-   inline void SetZ(const float v) { m_v.z = v; }
+   inline void SetZ(const float v);
    inline float GetCalcHeight() const { return m_calcHeight; }
    inline void SetCalcHeight(const float v) { m_calcHeight = v; }
    inline bool IsSmooth() const { return m_smooth; }
@@ -221,4 +221,9 @@ private:
 
 inline void DragPoint::SetX(const float v) { m_v.x = v; m_pcurve->OnPointsModified(); }
 inline void DragPoint::SetY(const float v) { m_v.y = v; m_pcurve->OnPointsModified(); }
+inline void DragPoint::SetZ(const float v)
+{
+   m_v.z = v;
+   m_pcurve->OnPointsModified();
+}
 inline void DragPoint::SetSmooth(const bool v) { m_smooth = v; m_pcurve->OnPointsModified(); }
