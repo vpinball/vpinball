@@ -169,7 +169,7 @@ static void GenerateTournamentFileInternal2(uint8_t *const dmd_data, const unsig
    || defined(__x86_64__)
       if (fe[0] == 0x0F && fe[1] == 0xAE && fe[2] == 0xF8)
 #else // for now arm only
-      if (fe[0] == 0xD5 && fe[1] == 0x03 && fe[2] == 0x3B && fe[3] == 0xBF)
+      if (fe[0] == 0xBF && fe[1] == 0x3B && fe[2] == 0x03 && fe[3] == 0xD5)
 #endif
          break;
       fe++;
