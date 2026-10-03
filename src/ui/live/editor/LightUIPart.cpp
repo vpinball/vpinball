@@ -36,6 +36,18 @@ void LightUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& r
 void LightUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
+
+   // Bulb center overlay, same as the win32 editor: falloff ellipse, center crosshair, bulb mesh circle
+   const ImU32 color = ctx.GetColor(ctx.IsSelected());
+   const Vertex3Ds xAxis(1.f, 0.f, 0.f);
+   const Vertex3Ds yAxis(0.f, 1.f, 0.f);
+   const Vertex2D& c = m_part->m_d.m_vCenter;
+   const float z = m_part->m_surfaceHeight;
+   ctx.DrawCircle(Vertex3Ds(c.x, c.y, z), xAxis, yAxis, m_part->m_d.m_falloff, color);
+   ctx.DrawLine(Vertex3Ds(c.x - 10.f, c.y, z), Vertex3Ds(c.x + 10.f, c.y, z), color);
+   ctx.DrawLine(Vertex3Ds(c.x, c.y - 10.f, z), Vertex3Ds(c.x, c.y + 10.f, z), color);
+   if (m_part->m_d.m_showBulbMesh)
+      ctx.DrawCircle(Vertex3Ds(c.x, c.y, z), xAxis, yAxis, m_part->m_d.m_meshRadius * 0.5f, color);
 }
 
 void LightUIPart::UpdatePropertyPane(PropertyPane& props)
@@ -43,6 +55,7 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
    props.EditableHeader("Light"s, m_part);
 
    UpdateCurveSection(props);
+   UpdateCenterSection(props, &Data::m_vCenter);
 
    if (props.BeginSection("Light Settings"s))
    {
