@@ -11,6 +11,7 @@
 #include "editor/Selection.h"
 #include "editor/EditorChrome.h"
 #include "editor/OutlinerPanel.h"
+#include "editor/PartLibraryPanel.h"
 #include "editor/PropertiesPanel.h"
 #include "editor/RendererInspectionModal.h"
 #include "math/matrix.h"
@@ -40,6 +41,7 @@ class EditorUI final
    friend class OutlinerPanel;
    friend class PropertiesPanel;
    friend class RendererInspectionModal;
+   friend class PartLibraryPanel;
 
 public:
    EditorUI(LiveUI &liveUI);
@@ -75,6 +77,7 @@ private:
    OutlinerPanel m_outliner;
    PropertiesPanel m_properties;
    RendererInspectionModal m_inspectionModal;
+   PartLibraryPanel m_partLibrary;
 
    Selection m_selection;
 
@@ -191,6 +194,12 @@ private:
    bool m_pendingLoadFolder = false; // Pending 'Load' result is a folder pack, not a file
    std::optional<NewTableTemplate> m_pendingNewTable; // New table template awaiting the 'discard unsaved changes' confirmation
    bool m_confirmLoadTable = false; // Request the 'discard unsaved changes' confirmation popup in RenderUI
+
+   // Part library (import/export of parts through partial VPZ packs, handled by the PartLibraryPanel dialog)
+   void OpenPartLibrary() { m_partLibrary.Show(); }
+   bool CanExportPartSelection() const { return m_partLibrary.CanExportSelection(); }
+   void ExportPartSelection() { m_partLibrary.ExportSelection(); }
+
 public:
    // Closes the session with the given Player::CloseState, first asking to discard unsaved changes when they would be lost
    void RequestClose(int closeState);

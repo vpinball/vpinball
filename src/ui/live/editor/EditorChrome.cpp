@@ -241,6 +241,22 @@ void EditorChrome::RenderToolbar()
          ImGui::SetTooltip("Delete selection\n[Delete]");
       ImGui::EndDisabled();
 
+      // Part library import/export buttons
+      ImGui::SameLine();
+      ImGui::BeginDisabled(editor.m_table->IsLocked());
+      if (ImGui::Button(ICON_FK_DOWNLOAD))
+         editor.OpenPartLibrary();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Import parts (part library)");
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::BeginDisabled(!editor.CanExportPartSelection());
+      if (ImGui::Button(ICON_FK_UPLOAD))
+         editor.ExportPartSelection();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Export selection to a VPZ pack");
+      ImGui::EndDisabled();
+
       // Part type picker popup (Shift+A in standard mode): picking a type arms add part mode,
       // clicking outside of the popup dismisses it without arming add part mode
       if (m_openAddPartPopup)
