@@ -62,6 +62,7 @@ EditorUI::EditorUI(LiveUI &liveUI)
    , m_outliner(*this)
    , m_properties(*this)
    , m_inspectionModal(*this)
+   , m_partLibrary(*this)
    , m_undo(m_player->m_ptable)
 {
    m_table = m_player->m_ptable;
@@ -129,6 +130,7 @@ void EditorUI::Close()
    ExitPointEditMode(false);
    RestorePartsVisibility();
    m_inspectionModal.Close();
+   m_partLibrary.Close();
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
 }
@@ -511,6 +513,7 @@ void EditorUI::RenderUI()
       m_properties.Render(m_chrome.GetTopBarHeight());
    }
    m_inspectionModal.Render();
+   m_partLibrary.Render();
 
 #endif
 

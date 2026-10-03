@@ -1437,6 +1437,7 @@ PropInt(Editor, BackGroundColor, "BackGroundColor"s, "Background color in viewpo
 PropInt(Editor, FillColor, "FillColor"s, "Fill color in viewport/editor"s, 0x000000, 0xFFFFFF, 0x00B1CFB3);
 PropEnum(Editor, Units, "Units"s, "Unit used in viewport/editor"s, int, 0, "Inches"s, "Millimeters"s, "VP Units"s);
 PropBool(Editor, AlwaysViewScript, "AlwaysViewScript"s, "Always view Script window"s, false);
+PropString(Editor, PartLibraryFolders, "PartLibraryFolders"s, "List of part library folders (';' separated)"s, ""s);
 PropFloatUnbounded(Editor, ThrowBallMass, "ThrowBallMass"s, "Mass of thrown ball in 'throw ball' debugging mode"s, 1.f);
 PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, "Size of thrown ball in 'throw ball' debugging mode"s, 50);
 PropBool(Editor, RenderSolid, "RenderSolid"s, "Render solid in viewport/editor"s, true);

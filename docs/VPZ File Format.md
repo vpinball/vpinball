@@ -72,7 +72,7 @@ Notable structure:
 
 One JSON file per scene node, collection, material and render probe, named after its unique name. Part files carry a `"$type"` naming the part type (`"bumper"`, `"flipper"`, `"primitive"`, `"surface"`, `"light"`, `"partgroup"`, ...), render probe files use `"renderprobe"`. References to other scene nodes or assets use their unique names (e.g. a primitive references its image by name and its mesh by a `mesh` property pointing to `meshes/<name>.glb`).
 
-A partial pack (assets and/or scene nodes without a `table.json`) is also a valid pack.
+A partial pack (assets and/or scene nodes without a `table.json`) is also a valid pack. This is what the editor's part export produces: the selected parts (with their part group ancestors and the members of the selected groups), the collections they belong to (filtered to the exported members), and only the assets the parts reference by name.
 
 
 ## Asset sidecars

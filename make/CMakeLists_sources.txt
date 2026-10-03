@@ -318,6 +318,8 @@ set(VPX_SOURCES
    src/ui/live/editor/LiveRenderContext.cpp
    src/ui/live/editor/OutlinerPanel.h
    src/ui/live/editor/OutlinerPanel.cpp
+   src/ui/live/editor/PartLibraryPanel.h
+   src/ui/live/editor/PartLibraryPanel.cpp
    src/ui/live/editor/PartGroupUIPart.h
    src/ui/live/editor/PartGroupUIPart.cpp
    src/ui/live/editor/PlungerUIPart.h

@@ -6,11 +6,14 @@
 #include "core/VPApp.h"
 #include "math/Mesh.h"
 #include "parts/Material.h"
+#include "parts/PartGroup.h"
 #include "parts/pintable.h"
+#include "parts/surface.h"
 #include "renderer/RenderProbe.h"
 #include "utils/fileio.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
+#include "utils/JSONSerializer.h"
 
 #include <nlohmann/json.hpp>
 
@@ -785,6 +788,223 @@ TEST_CASE("VPZ pack save/load round-trip")
          CHECK(header[1] == char(0xCF));
       }
       std::filesystem::remove(vpxPath, ec);
+   }
+
+   table->Release();
+}
+
+
+TEST_CASE("VPZ partial pack export and import")
+{
+   std::error_code ec;
+
+   CComObject<PinTable> *table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   TestFileFeedback feedback;
+   REQUIRE(SUCCEEDED(table->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", feedback)));
+
+   // An unreferenced asset must not be exported with a part selection
+   vector<uint8_t> soundData = { 'I', 'D', '3', 0 };
+   table->m_vsound.push_back(new VPX::Sound("unreferenced_sound", "imported.mp3"s, soundData));
+
+   SUBCASE("a partial pack holds only the selected parts and the referenced assets")
+   {
+      // Export to a folder pack so the produced layout can be checked
+      const std::filesystem::path packPath = GetTmpDir() / "part-export.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      REQUIRE(std::filesystem::create_directories(packPath, ec));
+      vector<IEditable *> selection;
+      for (IEditable *const part : table->GetParts())
+         if (part->GetItemType() != eItemPartGroup && part->GetItemType() != eItemDragPoint && selection.size() < 2)
+            selection.push_back(part);
+      REQUIRE(selection.size() == 2);
+      // The exported parts are the selection plus its part group ancestors
+      std::set<IEditable *> expected(selection.begin(), selection.end());
+      for (IEditable *const part : selection)
+         for (PartGroup *group = part->GetPartGroup(); group != nullptr; group = group->GetPartGroup())
+            expected.insert(group);
+
+      TestFileFeedback saveFeedback;
+      CHECK(SUCCEEDED(table->SavePartsToJSONPack(packPath, selection, saveFeedback)));
+
+      // A partial pack has a manifest but no table.json
+      const nlohmann::ordered_json manifest = nlohmann::ordered_json::parse(std::ifstream(packPath / "manifest.json"));
+      CHECK(manifest["$type"].get<string>() == "manifest");
+      CHECK(manifest["file_format"].get<string>() == "vpinball-pack");
+      CHECK(!std::filesystem::exists(packPath / "table.json"));
+
+      // Only the selected parts (and their group ancestors) are exported, files are named after their unique names
+      vector<std::filesystem::path> partFiles;
+      for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator(packPath / "parts"))
+         partFiles.push_back(entry.path());
+      CHECK(partFiles.size() == expected.size());
+      for (IEditable *const part : expected)
+         CHECK(std::filesystem::exists(packPath / "parts" / (JSONSerializer::SanitizeFileName(part->GetName()) + ".json")));
+      // Assets not referenced by the exported parts are not included
+      CHECK(!std::filesystem::exists(packPath / "sounds"));
+      CHECK(!std::filesystem::exists(packPath / "renderprobes"));
+
+      // The partial pack loads as a table holding only the exported parts
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
+      CHECK(reloaded->GetParts().size() == expected.size());
+      reloaded->Release();
+      std::filesystem::remove_all(packPath, ec);
+   }
+
+   SUBCASE("import merges parts and shares assets by name")
+   {
+      // Export all the parts of the table to a partial pack
+      const std::filesystem::path packPath = GetTmpDir() / "table-export.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      TestFileFeedback saveFeedback;
+      CHECK(SUCCEEDED(table->SavePartsToJSONPack(packPath, table->GetParts(), saveFeedback)));
+      CComObject<PinTable> *pack;
+      CComObject<PinTable>::CreateInstance(&pack);
+      pack->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(pack->LoadGameFromFilename(packPath, loadFeedback)));
+      CHECK(pack->GetParts().size() == table->GetParts().size());
+
+      // Import the pack into a copy of the same table: every part is a duplicate and gets renamed
+      CComObject<PinTable> *target;
+      CComObject<PinTable>::CreateInstance(&target);
+      target->AddRef();
+      TestFileFeedback loadFeedback2;
+      REQUIRE(SUCCEEDED(target->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", loadFeedback2)));
+      const size_t partCount = target->GetParts().size();
+      const size_t imageCount = target->GetImageList().size();
+      std::set<string> originalNames;
+      for (const IEditable *part : target->GetParts())
+         originalNames.insert(part->GetName());
+      const vector<IEditable *> imported = target->ImportParts(pack, nullptr);
+      CHECK(imported.size() == table->GetParts().size());
+      CHECK(target->GetParts().size() == partCount + imported.size());
+      // Imported parts are added to the table, renamed since all their names were already used
+      std::set<string> importedNames;
+      for (IEditable *const part : imported)
+      {
+         CHECK(std::ranges::find(target->GetParts(), part) != target->GetParts().end());
+         CHECK(!originalNames.contains(part->GetName()));
+         importedNames.insert(part->GetName());
+      }
+      CHECK(importedNames.size() == imported.size());
+      // Same named assets are shared, not duplicated
+      CHECK(target->GetImageList().size() == imageCount);
+
+      // Importing twice adds the parts again, with unique names
+      CComObject<PinTable> *pack2;
+      CComObject<PinTable>::CreateInstance(&pack2);
+      pack2->AddRef();
+      TestFileFeedback loadFeedback3;
+      REQUIRE(SUCCEEDED(pack2->LoadGameFromFilename(packPath, loadFeedback3)));
+      const vector<IEditable *> imported2 = target->ImportParts(pack2, nullptr);
+      CHECK(target->GetParts().size() == partCount + imported.size() + imported2.size());
+
+      pack2->Release();
+      pack->Release();
+      target->Release();
+      std::filesystem::remove_all(packPath, ec);
+   }
+
+   SUBCASE("import merge strategies resolve asset name conflicts")
+   {
+      // A target table holding assets that will conflict with the pack ones by name
+      CComObject<PinTable> *target;
+      CComObject<PinTable>::CreateInstance(&target);
+      target->AddRef();
+      TestFileFeedback targetFeedback;
+      REQUIRE(SUCCEEDED(target->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", targetFeedback)));
+      REQUIRE(target->GetImageList().size() >= 3);
+      REQUIRE(!target->GetMaterialList().empty());
+      Texture *const brick = target->GetImageList()[0];
+      brick->m_name = "brick";
+      Texture *const stone = target->GetImageList()[1];
+      stone->m_name = "stone";
+      const vector<uint8_t> stoneData(stone->GetFileRaw(), stone->GetFileRaw() + stone->GetFileSize());
+      // The conflicting image of the pack reuses the bytes of another real image (so that it loads)
+      const vector<uint8_t> packBrickData(target->GetImageList()[2]->GetFileRaw(), target->GetImageList()[2]->GetFileRaw() + target->GetImageList()[2]->GetFileSize());
+      target->GetMaterialList()[0]->m_name = "metal";
+      const size_t imageCount = target->GetImageList().size();
+      const size_t materialCount = target->GetMaterialList().size();
+
+      // A small pack folder holding a surface that references the conflicting and the equal assets
+      const std::filesystem::path packPath = GetTmpDir() / "conflicts.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      const auto writeFile = [&packPath](const std::filesystem::path &file, const string &content)
+      {
+         std::filesystem::create_directories((packPath / file).parent_path());
+         std::ofstream(packPath / file, std::ios::binary) << content;
+      };
+      writeFile("manifest.json", R"({"$type":"manifest","file_format":"vpinball-pack","file_version":1,"name":"lib"})");
+      writeFile("parts/libsurface.json", R"({"$type":"surface","image":"brick","side_image":"stone","top_material":"metal"})");
+      const auto imageSidecar = [](const Texture *const tex)
+      { return "{\"$type\":\"image\",\"alpha_test\":"s + std::to_string(tex->m_alphaTestValue * 255.f) + ",\"opaque\":"s + (tex->IsOpaque() ? "true"s : "false"s) + "}"s; };
+      writeFile("images/brick.png", string(packBrickData.begin(), packBrickData.end())); // Same name, different content
+      writeFile("images/brick.json", imageSidecar(brick));
+      writeFile("images/stone.png", string(stoneData.begin(), stoneData.end())); // Same name and content: shared, not duplicated
+      writeFile("images/stone.json", imageSidecar(stone));
+      writeFile("materials/metal.json", R"({"$type":"material","roughness":12.5})");
+
+      const auto importPack = [&packPath](PinTable *const into, const PartImportMergeStrategy strategy)
+      {
+         const std::unique_ptr<JSONSerializer::Deserializer> reader = into->CreateImportDeserializer(packPath, strategy);
+         REQUIRE(reader != nullptr);
+         CComObject<PinTable> *pack;
+         CComObject<PinTable>::CreateInstance(&pack);
+         pack->AddRef();
+         TestFileFeedback loadFeedback;
+         REQUIRE(SUCCEEDED(pack->LoadGameFromJSONPack(*reader, loadFeedback)));
+         const vector<IEditable *> imported = into->ImportParts(pack, nullptr);
+         pack->Release();
+         REQUIRE(imported.size() == 1);
+         REQUIRE(imported[0]->GetItemType() == eItemSurface);
+         return static_cast<Surface *>(imported[0]);
+      };
+
+      // Default strategy: conflicting incoming assets are renamed, equal ones are shared
+      Surface *const surface = importPack(target, PartImportMergeStrategy::RenameConflict);
+      CHECK(surface->m_d.m_szImage == "brick_2");
+      CHECK(surface->m_d.m_szSideImage == "stone");
+      CHECK(surface->m_d.m_szTopMaterial == "metal_2");
+      CHECK(target->GetImage("brick") == brick);
+      CHECK(target->GetImage("brick_2") != nullptr);
+      CHECK(target->GetImage("stone") == stone);
+      CHECK(target->GetImage("stone_2") == nullptr);
+      CHECK(target->GetImageList().size() == imageCount + 1);
+      CHECK(!target->IsMaterialNameUnique("metal_2"));
+
+      // A second import renames again with a fresh unique name
+      Surface *const surface2 = importPack(target, PartImportMergeStrategy::RenameConflict);
+      CHECK(surface2->m_d.m_szImage == "brick_3");
+      CHECK(surface2->m_d.m_szSideImage == "stone");
+      CHECK(target->GetImage("brick_3") != nullptr);
+
+      // Alternate strategy: on a name conflict the imported part reuses the existing asset
+      CComObject<PinTable> *target2;
+      CComObject<PinTable>::CreateInstance(&target2);
+      target2->AddRef();
+      TestFileFeedback targetFeedback2;
+      REQUIRE(SUCCEEDED(target2->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", targetFeedback2)));
+      target2->GetImageList()[0]->m_name = "brick";
+      target2->GetImageList()[1]->m_name = "stone";
+      target2->GetMaterialList()[0]->m_name = "metal";
+      const size_t imageCount2 = target2->GetImageList().size();
+      const size_t materialCount2 = target2->GetMaterialList().size();
+      Surface *const surface3 = importPack(target2, PartImportMergeStrategy::ExistingWins);
+      CHECK(surface3->m_d.m_szImage == "brick");
+      CHECK(surface3->m_d.m_szSideImage == "stone");
+      CHECK(surface3->m_d.m_szTopMaterial == "metal");
+      CHECK(target2->GetImageList().size() == imageCount2);
+      CHECK(target2->GetMaterialList().size() == materialCount2);
+      target2->Release();
+
+      target->Release();
+      std::filesystem::remove_all(packPath, ec);
    }
 
    table->Release();
