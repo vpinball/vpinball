@@ -399,7 +399,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
       return E_FAIL;
    std::filesystem::path path = g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::Music, false);
    if (V_VT(&pSubDir) == VT_BSTR)
-      path = path / V_BSTR(&pSubDir);
+      path /= PathFromUTF8(MakeString(V_BSTR(&pSubDir))); // MakeString accepts a null BSTR
    if (!DirExists(path))
       return E_FAIL;
    path /= "";
@@ -467,6 +467,8 @@ STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
 {
    if (!g_pplayer || g_pplayer->m_scriptInterpreter == nullptr)
       return E_FAIL;
+   if (SysStringLen(Name) == 0) // Also a null BSTR
+      return E_INVALIDARG;
 
    g_pplayer->m_scriptInterpreter->AddItem(Name, pdisp, false);
 
@@ -502,6 +504,19 @@ static BSTR BstrFromVariant(VARIANT *pvar, LCID lcid)
    }
 }
 
+// Table and value names ignore (ASCII) case like VBScript: an existing entry keeps its spelling, exact match first
+// (the INI library is built case sensitive for the settings file, see MINI_CASE_SENSITIVE)
+template <class Map> static string FindNameNoCase(const Map& map, const string& name)
+{
+   if (map.has(name))
+      return name;
+   const string trimmed = trim_string(name); // Names are stored trimmed
+   for (const auto& [key, value] : map)
+      if (StrCompareNoCase(key, trimmed))
+         return key;
+   return name;
+}
+
 STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value)
 {
    mINI::INIStructure ini;
@@ -517,7 +532,8 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       SysFreeString(bstr);
    }
 
-   ini[szTableName][szValueName] = szValue;
+   auto &values = ini[FindNameNoCase(ini, szTableName)];
+   values[FindNameNoCase(values, szValueName)] = szValue;
 
    file.write(ini);
 
@@ -536,9 +552,11 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    string szTableName = MakeString(TableName);
    string szValueName = MakeString(ValueName);
 
-   if (ini.has(szTableName) && ini[szTableName].has(szValueName))
+   const string section = FindNameNoCase(ini, szTableName);
+   const string key = ini.has(section) ? FindNameNoCase(ini[section], szValueName) : szValueName;
+   if (ini.has(section) && ini[section].has(key))
    {
-      SetVarBstr(Value, MakeWideBSTR(ini[szTableName][szValueName]));
+      SetVarBstr(Value, MakeWideBSTR(ini[section][key]));
    }
    else
    {
@@ -555,7 +573,21 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
             return S_OK;
          }
 
-         const string streamName = szTableName + '/' + szValueName;
+         // Same name matching as for the INI file (Windows OLE ignored case, POLE compares names exactly)
+         const auto findEntry = [&storage](const string& dir, const string& name)
+         {
+            string match = name;
+            for (const string& entry : storage.entries(dir))
+            {
+               if (entry == name)
+                  return entry;
+               if (match == name && StrCompareNoCase(entry, name))
+                  match = entry;
+            }
+            return match;
+         };
+         const string tableEntry = findEntry("/"s, szTableName);
+         const string streamName = tableEntry + '/' + findEntry('/' + tableEntry, szValueName);
          if (!storage.exists(streamName))
          {
             SetVarBstr(Value, SysAllocString(L""));
@@ -764,7 +796,9 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
    if (m_table->GetImage(szImageName))
       return E_FAIL;
 
-   Texture *image = m_table->ImportImage(fileName, szImageName);
+   if (SysStringLen(fileName) == 0) // Also a null BSTR
+      return E_INVALIDARG;
+   Texture *image = m_table->ImportImage(PathFromUTF8(MakeString(fileName)), szImageName);
    return image == nullptr ? E_FAIL : S_OK;
 }
 

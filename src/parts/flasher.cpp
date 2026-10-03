@@ -1187,7 +1187,7 @@ void Flasher::Render(const unsigned int renderMask)
             if (!m_d.m_imageSrcLink.empty())
                dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
             if (dmd.state.frame == nullptr)
-               dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display?dmd_only=1"s);
+               dmd = g_pplayer->m_resURIResolver.GetDisplayState(PinballPlugin::ResURIResolver::DefaultDmdUri);
             if (dmd.state.frame != nullptr)
                UploadRenderFrame(dmd);
          }

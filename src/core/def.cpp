@@ -851,11 +851,12 @@ static constexpr uint8_t utf8d[] = {
 // old ANSI to UTF-8 (allocates new mem block)
 // Windows-1252 (Western ANSI) to UTF-8: ISO-8859-1 plus printable characters in 0x80..0x9F (euro sign, typographic quotes, dashes,...).
 // The 5 unassigned bytes map to U+0081,... like Windows does
+static constexpr uint16_t cp1252_80_9f[32] = {
+   0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
+   0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178 };
+
 static string cp1252_to_utf8(const char* str, const size_t length)
 {
-   static constexpr uint16_t cp1252_80_9f[32] = {
-      0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
-      0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178 };
    string utf8(3 * length, '\0'); // worst case
 
    char* c = utf8.data();
@@ -925,6 +926,28 @@ static bool IsValidUTF8(const char* str, size_t length)
 {
    uint32_t state = UTF8_ACCEPT;
    return validate_utf8(&state, str, length) == UTF8_ACCEPT; // Also rejects a sequence cut at the end
+}
+
+bool utf8_to_cp1252(const string& utf8, string& cp1252)
+{
+   cp1252.clear();
+   cp1252.reserve(utf8.size());
+   uint32_t state = UTF8_ACCEPT, cp = 0;
+   for (const char c : utf8)
+   {
+      const uint32_t result = decode(&state, &cp, static_cast<uint8_t>(c));
+      if (result == UTF8_REJECT)
+         return false;
+      if (result != UTF8_ACCEPT)
+         continue; // Inside a sequence
+      if (cp < 0x80 || (cp >= 0xA0 && cp <= 0xFF))
+         cp1252 += static_cast<char>(cp);
+      else if (const auto it = std::ranges::find(cp1252_80_9f, cp); it != std::end(cp1252_80_9f))
+         cp1252 += static_cast<char>(0x80 + (it - std::begin(cp1252_80_9f)));
+      else
+         return false;
+   }
+   return state == UTF8_ACCEPT;
 }
 
 string TruncateToUTF8Length(const string& utf8, size_t maxBytes)

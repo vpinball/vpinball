@@ -251,7 +251,8 @@ private:
       int idIndex = 1;
       int nameIndex = 1;
       int joystickCount = 0;
-      const string sdlJoyName = SDL_GetJoystickName(joystick);
+      const char* const joyName = SDL_GetJoystickName(joystick); // null if not available
+      const string sdlJoyName = joyName ? joyName : "";
       SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
       for (int i = 0; i < joystickCount; i++)
       {
@@ -259,7 +260,7 @@ private:
             break;
          if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
             idIndex++;
-         if (string otherName = SDL_GetJoystickNameForID(joystickIds[i]); otherName == sdlJoyName)
+         if (const char* const otherName = SDL_GetJoystickNameForID(joystickIds[i]); (otherName ? otherName : "") == sdlJoyName)
             nameIndex++;
       }
       SDL_free(joystickIds);

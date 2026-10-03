@@ -135,9 +135,9 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
       void *Link(const std::string &directory, const std::string &file) override
       {
 #if defined(_MSC_VER) || defined(__MINGW32__)
-         SetDllDirectory(directory.c_str());
+         SetDllDirectoryW(MakeWString(directory).c_str()); // The paths are UTF-8
 #endif
-         void *dynamicModule = static_cast<void *>(SDL_LoadObject(file.c_str()));
+         void *dynamicModule = static_cast<void *>(SDL_LoadObject(file.c_str())); // SDL expects UTF-8
 #if defined(_MSC_VER) || defined(__MINGW32__)
          SetDllDirectory(NULL);
 #endif
@@ -2773,7 +2773,8 @@ void Player::OnAudioUpdated(const unsigned int msgId, void *userData, void *msgD
       case CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT: isFloat = true; break;
       default: return;
       }
-      const auto stream = me->m_audioPlayer->OpenAudioStream(std::format("{}.{:04X}", laneIt->second.source.name, msg.streamId.resId), static_cast<int>(msg.sampleRate), nChannels, isFloat);
+      const char* const srcName = laneIt->second.source.name ? laneIt->second.source.name : "Audio"; // The name is optional
+      const auto stream = me->m_audioPlayer->OpenAudioStream(std::format("{}.{:04X}", srcName, msg.streamId.resId), static_cast<int>(msg.sampleRate), nChannels, isFloat);
       if (stream)
       {
          lane.streams[msg.streamId.id] = stream;
