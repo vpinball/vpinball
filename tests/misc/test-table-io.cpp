@@ -746,6 +746,47 @@ TEST_CASE("VPZ pack save/load round-trip")
       std::filesystem::remove_all(badManifest, ec);
    }
 
+   SUBCASE("PinTable::Save selects the writer from the filename")
+   {
+      // The live editor always goes through PinTable::Save, which must write a VPZ pack
+      // when the filename is a pack (a directory or a .vpz file), a VPX file otherwise
+      const std::filesystem::path zipPath = GetTmpDir() / "dispatch.vpz";
+      std::filesystem::remove(zipPath, ec);
+      table->m_filename = zipPath;
+      TestFileFeedback saveFeedback;
+      CHECK(SUCCEEDED(table->Save(saveFeedback)));
+      {
+         std::ifstream in(zipPath, std::ios::binary);
+         char header[2] = { 0, 0 };
+         in.read(header, 2);
+         CHECK(header[0] == 'P'); // A .vpz file is a zip archive
+         CHECK(header[1] == 'K');
+      }
+      std::filesystem::remove(zipPath, ec);
+
+      const std::filesystem::path folderPath = GetTmpDir() / "dispatch-folder";
+      std::filesystem::remove_all(folderPath, ec);
+      REQUIRE(std::filesystem::create_directories(folderPath, ec));
+      table->m_filename = folderPath;
+      CHECK(SUCCEEDED(table->Save(saveFeedback)));
+      CHECK(std::filesystem::exists(folderPath / "manifest.json"));
+      CHECK(std::filesystem::exists(folderPath / "table.json"));
+      std::filesystem::remove_all(folderPath, ec);
+
+      const std::filesystem::path vpxPath = GetTmpDir() / "dispatch.vpx";
+      std::filesystem::remove(vpxPath, ec);
+      table->m_filename = vpxPath;
+      CHECK(SUCCEEDED(table->Save(saveFeedback)));
+      {
+         std::ifstream in(vpxPath, std::ios::binary);
+         char header[2] = { 0, 0 };
+         in.read(header, 2);
+         CHECK(header[0] == char(0xD0)); // A .vpx file is an OLE container
+         CHECK(header[1] == char(0xCF));
+      }
+      std::filesystem::remove(vpxPath, ec);
+   }
+
    table->Release();
 }
 

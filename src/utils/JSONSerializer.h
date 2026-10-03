@@ -39,6 +39,10 @@ public:
       virtual ~Serializer() = default;
       virtual void AddTextFile(const std::filesystem::path& path, const std::string& content) = 0;
       virtual void AddBinaryFile(const std::filesystem::path& path, const std::vector<uint8_t>& data) = 0;
+      // Flushes pending writes (zip footer,...); false when the pack could not be fully written
+      virtual bool Finalize() { return !HasError(); }
+      // True when a file could not be written
+      virtual bool HasError() const { return false; }
    };
 
    // Read side of a pack (a folder or a zip archive).

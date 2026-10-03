@@ -178,12 +178,17 @@ private:
    // File operations (the 'Save As' and 'Load' file dialogs are asynchronous: their result is applied in RenderUI)
    bool SaveTable(); // Returns true if the table was saved
    void SaveTableAs();
+   void SaveTableAsPackFolder(); // Save as a VPZ folder pack
    void LoadTable();
+   void LoadTableFolder(); // Load a VPZ folder pack
    void NewTable(NewTableTemplate templateType);
-   void ShowLoadTableDialog();
+   void ShowLoadTableDialog(bool folder = false);
+   void LoadTableDialog(bool folder);
    void LoadTableTemplate(NewTableTemplate templateType);
    std::shared_ptr<string> m_pendingSaveAsPath;
    std::shared_ptr<string> m_pendingLoadPath;
+   bool m_pendingSaveAsFolder = false; // Pending 'Save As' result is a folder pack, not a file
+   bool m_pendingLoadFolder = false; // Pending 'Load' result is a folder pack, not a file
    std::optional<NewTableTemplate> m_pendingNewTable; // New table template awaiting the 'discard unsaved changes' confirmation
    bool m_confirmLoadTable = false; // Request the 'discard unsaved changes' confirmation popup in RenderUI
 public:

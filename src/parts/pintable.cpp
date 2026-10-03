@@ -747,6 +747,30 @@ void PinTable::SetupLookUpTables(bool isPlaying)
 HRESULT PinTable::Save(VPXFileFeedback &feedback)
 {
    HRESULT hr = S_OK;
+   // VPZ packs (zip archive or folder) are saved through the JSON serializer instead of the VPX writer
+   if (JSONSerializer::IsPack(m_filename))
+   {
+      RemoveInvalidReferences();
+      hr = SaveToJSON(m_filename, feedback);
+      if (FAILED(hr))
+      {
+         ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
+         return hr;
+      }
+      SetNonUndoableDirty(eSaveClean);
+#ifdef VPX_ENABLE_WIN32_EDITOR
+      if (m_tableEditor)
+      {
+         m_tableEditor->SetCleanPoint(eSaveClean);
+         m_tableEditor->m_pcv->SetClean(eSaveClean);
+      }
+#endif
+      // Save user custom settings file (if any) along the table file, only once saved (a failed 'Save As' must not leave an orphan settings file)
+      m_settings.SetModified(true);
+      m_settings.SetIniPath(GetSettingsFileName());
+      m_settings.Save();
+      return hr;
+   }
    // Tables are saved in the VPX format, so a legacy .vpt table is saved to a .vpx file (keeping the case of an existing .vpx extension,
    // as changing it would write another file on case sensitive file systems)
    std::filesystem::path vpxPath = m_filename;
@@ -2920,7 +2944,7 @@ HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback 
    }
 
    m_savingActive = false;
-   return S_OK;
+   return pack->Finalize() ? S_OK : E_FAIL;
 }
 
 void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
