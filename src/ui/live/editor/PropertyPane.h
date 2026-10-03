@@ -65,6 +65,9 @@ public:
    template <class T> void SoundCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void Font(T* obj, const std::function<FontDesc(const T*)>& getter, const std::function<void(T*, const FontDesc&)>& setter);
 
+   // Layout helper for fields rendered manually instead of through a typed widget
+   void PropertyLabel(const string& label);
+
    int GetModifiedField() const { return m_modified; }
 
 private:
@@ -83,8 +86,6 @@ private:
    };
    template <class T> SyncField<T> BeginSyncField(T* obj);
    template <class T, class Getter, class Setter, class V> void EndSyncField(const SyncField<T>& sync, const Getter& getter, const Setter& setter, const V& displayValue);
-
-   void PropertyLabel(const string& label);
 
    int m_modified = 0;
    int m_modifyFieldId = 1;

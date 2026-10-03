@@ -4,6 +4,7 @@
 
 #include <optional>
 
+class Collection;
 class Material;
 class Texture;
 class RenderProbe;
@@ -40,6 +41,7 @@ private:
    void CameraProperties(PropertyPane &props, int bgSet);
    void MaterialProperties(PropertyPane &props, Material *material);
    void SoundProperties(PropertyPane &props, VPX::Sound *sound);
+   void CollectionProperties(PropertyPane &props, Collection *collection);
 
    // Resource actions offered at the top of the image/sound/material property panes,
    // matching the actions of the corresponding Win32 manager dialogs

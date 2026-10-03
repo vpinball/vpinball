@@ -4,6 +4,7 @@
 #include "OutlinerPanel.h"
 
 #include "fonts/IconsForkAwesome.h"
+#include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/PartGroup.h"
 #include "parts/Sound.h"
@@ -129,6 +130,35 @@ void OutlinerPanel::Render(float topBarHeight)
       {
          Selection sel(probe);
          if (ImGui::Selectable(probe->GetName().c_str(), editor.m_selection == sel))
+            editor.SetSelection(sel);
+      }
+      ImGui::TreePop();
+   }
+   const bool collectionsOpened = ImGui::TreeNode("Collections");
+   if (ImGui::BeginPopupContextItem())
+   {
+      // Collections can only be edited on the base table (the inspected table is a live copy)
+      ImGui::BeginDisabled(editor.m_table->m_liveBaseTable != nullptr);
+      if (ImGui::MenuItem("New Collection"))
+         editor.CreateCollection(false);
+      const bool hasScriptableSel = std::ranges::any_of(
+         editor.m_multiSel, [](const std::shared_ptr<EditorUIPart> &part) { return part->GetEditable() != nullptr && part->GetEditable()->GetIScriptable() != nullptr; });
+      ImGui::BeginDisabled(!hasScriptableSel);
+      if (ImGui::MenuItem("New Collection From Selection"))
+         editor.CreateCollection(true);
+      ImGui::EndDisabled();
+      ImGui::EndDisabled();
+      ImGui::EndPopup();
+   }
+   if (collectionsOpened)
+   {
+      // Collections are listed in their storage order as it is user defined and relevant to scripts
+      for (Collection *const collection : editor.m_table->GetCollections())
+      {
+         if (!MatchesFilter(collection->m_name))
+            continue;
+         const Selection sel(collection);
+         if (ImGui::Selectable((collection->m_name + "##collection"s).c_str(), editor.m_selection == sel))
             editor.SetSelection(sel);
       }
       ImGui::TreePop();

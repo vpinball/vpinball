@@ -530,6 +530,10 @@ public:
    bool GetCollectionIndex(const IEditable *const element, int &collectionIndex, int &elementIndex);
    void ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection);
    const string &GetCollectionNameByElement(const IEditable *const element) const;
+   // Collection content edition, keeping the parts' m_vCollection/m_viCollection cross references in sync
+   void AddPartToCollection(Collection *collection, IEditable *part);
+   void RemovePartFromCollection(Collection *collection, IEditable *part);
+   void SetCollectionContent(Collection *collection, const vector<IEditable *> &parts);
 
 private:
    vector<CComObject<Collection> *> m_vcollection;

@@ -1400,6 +1400,9 @@ void EditorUI::RestoreUndoSelection(const UndoSelectionState &state)
       m_selection = std::ranges::find(m_table->GetRenderProbeList(), state.selection.GetProbe()) != m_table->GetRenderProbeList().end() ? state.selection : Selection();
       break;
    case Selection::S_SOUND: m_selection = std::ranges::find(m_table->m_vsound, state.selection.GetSound()) != m_table->m_vsound.end() ? state.selection : Selection(); break;
+   case Selection::S_COLLECTION:
+      m_selection = std::ranges::find(m_table->GetCollections(), state.selection.GetCollection()) != m_table->GetCollections().end() ? state.selection : Selection();
+      break;
    default: m_selection = state.selection; break; // S_NONE, S_CAMERA
    }
    m_outlinerAnchor = resolve(state.outlinerAnchor);
@@ -1658,6 +1661,26 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
       SetSelection(Selection(it->second));
       m_outlinerAnchor = it->second;
    }
+}
+
+void EditorUI::CreateCollection(bool fromSelection)
+{
+   // Same initialization sequence as the WinUI editor (PinTableWnd::NewCollection)
+   CComObject<Collection> *pcol;
+   CComObject<Collection>::CreateInstance(&pcol);
+   pcol->AddRef();
+   pcol->m_name = m_table->GetUniqueName("Collection"s);
+   if (fromSelection)
+      for (const auto &uiPart : m_multiSel)
+      {
+         IEditable *const editable = uiPart->GetEditable();
+         if (editable && editable->GetIScriptable()) // Collections only reference scriptable parts (persisted by name)
+            m_table->AddPartToCollection(pcol, editable);
+      }
+   m_table->AddCollection(pcol);
+   pcol->Release();
+   m_table->SetNonUndoableDirty(eSaveDirty);
+   SetSelection(Selection(pcol));
 }
 
 PartGroup *EditorUI::GetPartGroupForNewPart()

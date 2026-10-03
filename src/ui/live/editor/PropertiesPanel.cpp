@@ -7,6 +7,7 @@
 #include "core/editablereg.h"
 #include "core/player.h"
 #include "core/SettingsService.h"
+#include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/Sound.h"
 #include "parts/primitive.h"
@@ -89,6 +90,7 @@ void PropertiesPanel::Render(float topBarHeight)
                case Selection::S_MATERIAL: MaterialProperties(props, editor.m_selection.GetMaterial()); break;
                case Selection::S_RENDERPROBE: RenderProbeProperties(props, editor.m_selection.GetProbe()); break;
                case Selection::S_SOUND: SoundProperties(props, editor.m_selection.GetSound()); break;
+               case Selection::S_COLLECTION: CollectionProperties(props, editor.m_selection.GetCollection()); break;
                }
                ImGui::EndTabItem();
             }
@@ -132,6 +134,7 @@ void PropertiesPanel::Render(float topBarHeight)
       case Selection::S_MATERIAL: MaterialProperties(props, editor.m_selection.GetMaterial()); break;
       case Selection::S_RENDERPROBE: RenderProbeProperties(props, editor.m_selection.GetProbe()); break;
       case Selection::S_SOUND: SoundProperties(props, editor.m_selection.GetSound()); break;
+      case Selection::S_COLLECTION: CollectionProperties(props, editor.m_selection.GetCollection()); break;
       }
    }
 
@@ -817,6 +820,200 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
    }
 
    ImGui::EndDisabled();
+}
+
+void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *collection)
+{
+   EditorUI &editor = m_editor;
+   PinTable *const table = editor.m_table;
+   // The displayed collection: when inspecting a live table, this is the live collection on the
+   // 'Live' tab and its startup version on the 'Startup' tab (they are distinct objects)
+   Collection *const edited = props.GetEditedPart<Collection>(collection);
+   PinTable *const editedTable = (edited == collection) ? table : table->m_liveBaseTable;
+
+   props.Header(
+      "Collection"s, [edited]() { return edited->m_name; },
+      [editedTable, edited](const string &v)
+      {
+         // Same uniqueness handling as the Win32 collection manager (names are script identifiers)
+         string name = TruncateToUTF16Length(v, MAXNAMEBUFFER - 1);
+         if (name.empty() || editedTable == nullptr)
+            return;
+         if (lowerCase(name) != lowerCase(edited->m_name) && !editedTable->IsNameUnique(name))
+            name = editedTable->GetUniqueName(name);
+         editedTable->RenameCollection(edited, name);
+         editedTable->SetNonUndoableDirty(eSaveDirty);
+      });
+
+   // Actions on the table's collection list are only available when editing the base table
+   // (the inspected table is a live copy whose changes would be lost when the play session ends)
+   ImGui::BeginDisabled(table->m_liveBaseTable != nullptr);
+   if (props.BeginSection("Actions"s))
+   {
+      if (ImGui::Button("New"))
+         editor.CreateCollection(false);
+      ImGui::SameLine();
+      const auto &collections = table->GetCollections();
+      int colIndex = -1;
+      for (size_t i = 0; i < collections.size(); i++)
+         if (collections[i] == collection)
+            colIndex = static_cast<int>(i);
+      ImGui::BeginDisabled(colIndex <= 0);
+      if (ImGui::Button("Move Up"))
+      {
+         table->MoveCollectionUp(collections[colIndex]);
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      ImGui::EndDisabled();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Move the collection up in the table's collection list");
+      ImGui::SameLine();
+      ImGui::BeginDisabled(colIndex < 0 || colIndex >= static_cast<int>(collections.size()) - 1);
+      if (ImGui::Button("Move Down"))
+      {
+         table->MoveCollectionDown(collections[colIndex]);
+         table->SetNonUndoableDirty(eSaveDirty);
+      }
+      ImGui::EndDisabled();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Move the collection down in the table's collection list");
+      ImGui::SameLine();
+      if (ImGui::Button("Delete"))
+      {
+         RequestConfirm("Delete the selected collection?"s,
+            [this, collection]()
+            {
+               EditorUI &editor = m_editor;
+               for (CComObject<Collection> *const col : editor.m_table->GetCollections())
+                  if (col == collection)
+                  {
+                     editor.m_table->RemoveCollection(col);
+                     break;
+                  }
+               editor.m_selection = Selection();
+               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            });
+      }
+      props.EndSection();
+   }
+   ImGui::EndDisabled();
+
+   if (props.BeginSection("Options"s))
+   {
+      // Fields are synchronizable between the live and startup versions of the collection: the
+      // setter may receive either one, so the table to flag as dirty is resolved from the object
+      const auto markDirty = [&editor](Collection *col)
+      {
+         PinTable *dirtyTable = editor.m_table;
+         if (dirtyTable->m_liveBaseTable && dirtyTable->GetLiveFromStartup<Collection>(col) != nullptr)
+            dirtyTable = dirtyTable->m_liveBaseTable;
+         dirtyTable->SetNonUndoableDirty(eSaveDirty);
+      };
+      props.Checkbox<Collection>(
+         collection, "Fire events for this collection"s, //
+         [](const Collection *col) { return col->m_fireEvents; }, //
+         [&markDirty](Collection *col, bool v)
+         {
+            col->m_fireEvents = v;
+            markDirty(col);
+         });
+      props.Checkbox<Collection>(
+         collection, "Suppress individual events for each member"s, //
+         [](const Collection *col) { return col->m_stopSingleEvents; }, //
+         [&markDirty](Collection *col, bool v)
+         {
+            col->m_stopSingleEvents = v;
+            markDirty(col);
+         });
+      props.Checkbox<Collection>(
+         collection, "Group elements together"s, //
+         [](const Collection *col) { return col->m_groupElements; }, //
+         [&markDirty](Collection *col, bool v)
+         {
+            col->m_groupElements = v;
+            markDirty(col);
+         });
+      props.EndSection();
+   }
+
+   if (props.BeginSection("Content"s))
+   {
+      const vector<IEditable *> &members = edited->GetParts();
+
+      // Member picker listing the table's scriptable parts that are not members yet
+      props.PropertyLabel("Add part"s);
+      ImGui::SetNextItemWidth(-FLT_MIN);
+      if (ImGui::BeginCombo("##AddPart", "Select a part to add"))
+      {
+         vector<IEditable *> candidates;
+         for (IEditable *const part : editedTable->GetParts())
+            if (part->GetIScriptable() != nullptr && std::ranges::find(members, part) == members.end())
+               candidates.push_back(part);
+         std::ranges::sort(candidates, [](const IEditable *a, const IEditable *b) { return StrLessNoCase(a->GetName(), b->GetName()); });
+         for (IEditable *const part : candidates)
+            if (ImGui::Selectable(part->GetName().c_str()))
+            {
+               vector<IEditable *> newContent(members);
+               newContent.push_back(part);
+               editedTable->SetCollectionContent(edited, newContent);
+               editedTable->SetNonUndoableDirty(eSaveDirty);
+            }
+         ImGui::EndCombo();
+      }
+
+      // Members, in the collection's order which is the order exposed to scripts
+      if (members.empty())
+         ImGui::TextDisabled("Empty collection");
+      const float buttonWidth = ImGui::CalcTextSize(ICON_FK_ARROW_UP).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+      const float buttonsX = ImGui::GetContentRegionAvail().x - 3.f * buttonWidth - 2.f * ImGui::GetStyle().ItemSpacing.x;
+      int moveIndex = -1, removeIndex = -1;
+      for (int i = 0; i < static_cast<int>(members.size()); i++)
+      {
+         IEditable *const member = members[i];
+         ImGui::PushID(i);
+         if (ImGui::Selectable(member->GetName().c_str()))
+         {
+            // Select the part in the editor (a startup part resolves to its live counterpart)
+            IEditable *const target = (edited == collection) ? member : table->GetLiveFromStartup<IEditable>(member);
+            if (target != nullptr)
+               if (const auto it = editor.m_editableMap.find(target); it != editor.m_editableMap.end())
+                  editor.SetSelection(Selection(it->second));
+         }
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", LocalString(EditableRegistry::GetTypeNameStringID(member->GetItemType())).m_szbuffer);
+         ImGui::SameLine(buttonsX);
+         ImGui::BeginDisabled(i == 0);
+         if (ImGui::SmallButton(ICON_FK_ARROW_UP))
+            moveIndex = i - 1;
+         ImGui::EndDisabled();
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Move up");
+         ImGui::SameLine();
+         ImGui::BeginDisabled(i == static_cast<int>(members.size()) - 1);
+         if (ImGui::SmallButton(ICON_FK_ARROW_DOWN))
+            moveIndex = i;
+         ImGui::EndDisabled();
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Move down");
+         ImGui::SameLine();
+         if (ImGui::SmallButton(ICON_FK_TIMES))
+            removeIndex = i;
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Remove from collection");
+         ImGui::PopID();
+      }
+      if (moveIndex != -1 || removeIndex != -1)
+      {
+         vector<IEditable *> newContent(members);
+         if (moveIndex != -1)
+            std::swap(newContent[moveIndex], newContent[moveIndex + 1]);
+         else
+            newContent.erase(newContent.begin() + removeIndex);
+         editedTable->SetCollectionContent(edited, newContent);
+         editedTable->SetNonUndoableDirty(eSaveDirty);
+      }
+      props.EndSection();
+   }
 }
 
 void PropertiesPanel::RequestConfirm(const string &message, const std::function<void()> &action)
