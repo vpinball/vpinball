@@ -652,7 +652,7 @@ void PropertiesPanel::MaterialProperties(PropertyPane &props, Material *material
          material, "Wrap Lighting"s, //
          [](const Material *material) { return material->m_fWrapLighting; }, //
          [](Material *material, float v) { material->m_fWrapLighting = v; }, PropertyPane::Unit::None, 2);
-      if (material->m_type != Material::METAL)
+      if (editedMaterial->m_type != Material::METAL)
       {
          props.InputRGB<Material>(
             material, "Glossy Color", //
