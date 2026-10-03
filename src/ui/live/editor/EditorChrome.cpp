@@ -260,6 +260,20 @@ void EditorChrome::RenderToolbar()
          ImGui::SetTooltip("Export selection to a VPZ pack");
       ImGui::EndDisabled();
 
+      // Script editor button
+      ImGui::SameLine();
+      ImGui::Separator();
+      ImGui::SameLine();
+      const bool scriptActive = editor.m_scriptPanel.IsVisible();
+      if (scriptActive)
+         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+      if (ImGui::Button(ICON_FK_CODE))
+         editor.m_scriptPanel.Show();
+      if (scriptActive)
+         ImGui::PopStyleColor();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Edit table script");
+
       // Part type picker popup (Shift+A in standard mode): picking a type arms add part mode,
       // clicking outside of the popup dismisses it without arming add part mode
       if (m_openAddPartPopup)

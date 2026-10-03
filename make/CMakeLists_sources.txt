@@ -336,6 +336,8 @@ set(VPX_SOURCES
    src/ui/live/editor/RendererInspectionModal.cpp
    src/ui/live/editor/RubberUIPart.h
    src/ui/live/editor/RubberUIPart.cpp
+   src/ui/live/editor/ScriptPanel.h
+   src/ui/live/editor/ScriptPanel.cpp
    src/ui/live/editor/Selection.h
    src/ui/live/editor/SpinnerUIPart.h
    src/ui/live/editor/SpinnerUIPart.cpp

@@ -14,6 +14,7 @@
 #include "editor/PartLibraryPanel.h"
 #include "editor/PropertiesPanel.h"
 #include "editor/RendererInspectionModal.h"
+#include "editor/ScriptPanel.h"
 #include "math/matrix.h"
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
@@ -42,6 +43,7 @@ class EditorUI final
    friend class PropertiesPanel;
    friend class RendererInspectionModal;
    friend class PartLibraryPanel;
+   friend class ScriptPanel;
 
 public:
    EditorUI(LiveUI &liveUI);
@@ -78,6 +80,7 @@ private:
    PropertiesPanel m_properties;
    RendererInspectionModal m_inspectionModal;
    PartLibraryPanel m_partLibrary;
+   ScriptPanel m_scriptPanel;
 
    Selection m_selection;
 
