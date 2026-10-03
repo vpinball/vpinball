@@ -10,8 +10,6 @@
 #include "utils/lzwreader.h"
 
 #ifdef __STANDALONE__
-#include <SDL3_image/SDL_image.h>
-#include <SDL3/SDL_surface.h>
 #define _WINDOWS_
 #endif
 #include "FreeImage.h"
@@ -559,20 +557,6 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
    }
    else
    {
-   #ifdef __STANDALONE__
-      if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
-      {
-         if (ext == ".png")
-            success = IMG_SavePNG(pSurface, PathToUTF8(filepath).c_str());
-         else if (ext == ".jpg" || ext == ".jpeg")
-            success = IMG_SaveJPG(pSurface, PathToUTF8(filepath).c_str(), 75);
-         // Needs latest SDL3_image for WEBP support
-         //else if (ext == ".webp")
-         //   success = IMG_SaveWEBP(pSurface, PathToUTF8(filepath).c_str(), 75);
-         SDL_DestroySurface(pSurface);
-      }
-
-   #else
       FIBITMAP* bitmap = FreeImage_Allocate(m_width, m_height, m_format == SRGB ? 24 : 32);
       if (bitmap)
       {
@@ -596,7 +580,6 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
             success = save(FIF_WEBP, WBMP_DEFAULT);
          FreeImage_Unload(bitmap);
       }
-   #endif
    }
 
    return success;
