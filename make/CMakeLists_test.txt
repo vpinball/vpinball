@@ -313,7 +313,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       bimg_encode64
       bx64
       SDL364
-      SDL3_image64
       SDL3_ttf64
       freeimage64
       hidapi64
@@ -416,7 +415,6 @@ elseif(PLATFORM STREQUAL "macos")
 
    target_link_libraries(vpx-test PUBLIC
       SDL3
-      SDL3_image
       SDL3_ttf
       freeimage
       hidapi
@@ -515,7 +513,6 @@ elseif(PLATFORM STREQUAL "linux")
 
    target_link_libraries(vpx-test PUBLIC
       SDL3
-      SDL3_image
       SDL3_ttf
       freeimage
       hidapi-hidraw

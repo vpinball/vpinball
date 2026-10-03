@@ -333,10 +333,10 @@ void GenerateImageFromTournamentFile(PinTable* table, const std::filesystem::pat
    for (unsigned int j = 0; j < y; j++)
       for (unsigned int i = 0; i < x; i++)
          pdst[i + (y - 1 - j) * x] = dmd_data[i + j * x]; // flip y-axis for image output
-#if defined(_WIN32) && !defined(__STANDALONE__)
+#ifdef _WIN32
    if (!FreeImage_SaveU(FIF_PNG, dib, (std::filesystem::path(txtfile) += ".png").c_str(), PNG_Z_BEST_COMPRESSION))
 #else
-   if (!FreeImage_Save(FIF_PNG, dib, PathToString(std::filesystem::path(txtfile) += ".png").c_str(), PNG_Z_BEST_COMPRESSION)) // The standalone header only has the narrow API
+   if (!FreeImage_Save(FIF_PNG, dib, (std::filesystem::path(txtfile) += ".png").c_str(), PNG_Z_BEST_COMPRESSION))
 #endif
       ShowError("Tournament file converted image could not be saved");
    FreeImage_Unload(dib);
