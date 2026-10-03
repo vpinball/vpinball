@@ -156,6 +156,7 @@ void EditorUI::SetTable(PinTable *const table)
    ClearSelection();
    m_editables.clear();
    m_editableMap.clear();
+   m_partGroupUseHistory.clear();
    m_lastUndoPart = nullptr;
    m_addPartType = eItemInvalid;
    m_boxSelectActive = false;
@@ -1659,17 +1660,47 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
    }
 }
 
-PartGroup *EditorUI::GetPartGroupForNewPart() const
+PartGroup *EditorUI::GetPartGroupForNewPart()
 {
-   // Assign new parts to the group of the current selection, defaulting to the first root part group
+   // Assign new parts to the group of the current selection. When the selection does not define a
+   // group, favor the most recently used ones (still respecting UI visibility), then fall back to
+   // the visibility mask (first UI visible root group, else first root group). The target is only
+   // empty when the table does not have any part group at all.
    PartGroup *partGroup = nullptr;
-   if (m_selection.GetType() == Selection::S_EDITABLE)
-      partGroup = m_selection.GetPart()->GetEditable()->GetItemType() == eItemPartGroup ? static_cast<PartGroup *>(m_selection.GetPart()->GetEditable())
-                                                                                        : m_selection.GetPart()->GetEditable()->GetPartGroup();
+   if (const std::shared_ptr<EditorUIPart> &part = m_selection.GetPart())
+      partGroup = part->GetEditable()->GetItemType() == eItemPartGroup ? static_cast<PartGroup *>(part->GetEditable()) : part->GetEditable()->GetPartGroup();
    if (partGroup == nullptr)
+   {
+      const vector<IEditable *> &parts = m_table->GetParts();
+      std::erase_if(m_partGroupUseHistory, [&parts](const PartGroup *group) { return std::ranges::find(parts, group) == parts.end(); });
+      for (PartGroup *const group : m_partGroupUseHistory)
+         if (group->IsUIVisible(true))
+         {
+            partGroup = group;
+            break;
+         }
+   }
+   if (partGroup == nullptr)
+   {
       for (IEditable *const part : m_table->GetParts())
+      {
          if (part->GetItemType() == eItemPartGroup && part->GetPartGroup() == nullptr)
-            partGroup = static_cast<PartGroup *>(part);
+         {
+            if (part->IsUIVisible(false))
+            {
+               partGroup = static_cast<PartGroup *>(part);
+               break;
+            }
+            if (partGroup == nullptr)
+               partGroup = static_cast<PartGroup *>(part);
+         }
+      }
+   }
+   if (partGroup != nullptr)
+   {
+      std::erase(m_partGroupUseHistory, partGroup);
+      m_partGroupUseHistory.insert(m_partGroupUseHistory.begin(), partGroup);
+   }
    return partGroup;
 }
 
