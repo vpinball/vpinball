@@ -468,18 +468,19 @@ void PinTable::AddCollection(CComObject<Collection> *collection)
 
 void PinTable::RemoveCollection(CComObject<Collection> *collection)
 {
-#ifdef VPX_ENABLE_WIN32_EDITOR
    auto it = m_scriptableNames.find(lowerCase(collection->m_name));
    assert(it != m_scriptableNames.end());
    m_scriptableNames.erase(it);
+#ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->m_pcv->RemoveItem((IScriptable *)collection);
+#endif
    const int idx = FindIndexOf(m_vcollection, collection);
    assert(idx != -1);
    if (idx != -1)
       m_vcollection.erase(m_vcollection.begin() + idx);
+   SetCollectionContent(collection, {}); // Drop the members' cross references to the removed collection
    collection->Release();
-#endif
 }
 
 void PinTable::RenameCollection(Collection *collection, const string &newName)
@@ -692,6 +693,8 @@ PinTable* PinTable::CopyForPlay() const
          }
       }
       live_table->AddCollection(pcol);
+      dst->m_startupToLive[srccol] = pcol;
+      dst->m_liveToStartup[pcol] = srccol;
    }
 
 #ifdef VPX_ENABLE_WIN32_EDITOR
@@ -4012,7 +4015,7 @@ void PinTable::ToggleCollectionMembership(const int colIndex, const vector<IEdit
       {
          if (part == collectionPart)
          {
-            m_vcollection[colIndex]->RemovePart(part);
+            RemovePartFromCollection(m_vcollection[colIndex], part);
             removeOnly = true;
             break;
          }
@@ -4024,10 +4027,61 @@ void PinTable::ToggleCollectionMembership(const int colIndex, const vector<IEdit
 
    // selected elements are not part of the selected collection and can be added
    for (IEditable *const part : selection)
+      AddPartToCollection(m_vcollection[colIndex], part);
+}
+
+void PinTable::AddPartToCollection(Collection *collection, IEditable *part)
+{
+   // Multi-select may contain a part together with its sub parts (drag points, light centers): add each part only once
+   if (FindIndexOf(collection->GetParts(), part) != -1)
+      return;
+   part->m_vCollection.push_back(collection);
+   part->m_viCollection.push_back(static_cast<int>(collection->GetParts().size()));
+   collection->AddPart(part);
+}
+
+void PinTable::RemovePartFromCollection(Collection *collection, IEditable *part)
+{
+   const int partIndex = FindIndexOf(collection->GetParts(), part);
+   if (partIndex == -1)
+      return;
+   collection->RemovePart(part);
+   const int colIndex = FindIndexOf(part->m_vCollection, collection);
+   if (colIndex != -1)
    {
-      // Multi-select may contain a part together with its sub parts (drag points, light centers): add each part only once
-      if (FindIndexOf(m_vcollection[colIndex]->GetParts(), part) == -1)
-         m_vcollection[colIndex]->AddPart(part);
+      part->m_vCollection.erase(part->m_vCollection.begin() + colIndex);
+      part->m_viCollection.erase(part->m_viCollection.begin() + colIndex);
+   }
+   // Fix the member index of the parts that were after the removed one
+   for (int i = partIndex; i < static_cast<int>(collection->GetParts().size()); i++)
+   {
+      IEditable *const member = collection->GetParts()[i];
+      const int memberColIndex = FindIndexOf(member->m_vCollection, collection);
+      if (memberColIndex != -1)
+         member->m_viCollection[memberColIndex] = i;
+   }
+}
+
+void PinTable::SetCollectionContent(Collection *collection, const vector<IEditable *> &parts)
+{
+   // Two sided rebuild of the collection content (same sequence as the Win32 collection dialog's OnOK)
+   for (IEditable *const part : collection->GetParts())
+   {
+      const int index = FindIndexOf(part->m_vCollection, collection);
+      if (index != -1)
+      {
+         part->m_vCollection.erase(part->m_vCollection.begin() + index);
+         part->m_viCollection.erase(part->m_viCollection.begin() + index);
+      }
+   }
+   collection->ClearParts();
+   for (IEditable *const part : parts)
+   {
+      if (FindIndexOf(collection->GetParts(), part) != -1)
+         continue;
+      collection->AddPart(part);
+      part->m_vCollection.push_back(collection);
+      part->m_viCollection.push_back(static_cast<int>(collection->GetParts().size()) - 1);
    }
 }
 

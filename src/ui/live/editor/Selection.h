@@ -5,6 +5,7 @@
 #include <memory>
 #include <variant>
 
+class Collection;
 class Material;
 class Texture;
 class RenderProbe;
@@ -19,7 +20,7 @@ namespace VPX::EditorUI
 class EditorUIPart;
 
 // Current editor selection: either nothing, a camera view setup, a material, an image,
-// an editable part (the active part of the multi selection), a render probe or a sound.
+// an editable part (the active part of the multi selection), a render probe, a sound or a collection.
 struct Selection
 {
    enum SelectionType
@@ -30,7 +31,8 @@ struct Selection
       S_IMAGE,
       S_EDITABLE,
       S_RENDERPROBE,
-      S_SOUND
+      S_SOUND,
+      S_COLLECTION
    };
    struct CameraSel
    {
@@ -39,8 +41,8 @@ struct Selection
    };
 
    // Alternative order must match SelectionType (GetType relies on it)
-   using Payload = std::variant<std::monostate, CameraSel, Material *, Texture *, std::shared_ptr<EditorUIPart>, RenderProbe *, VPX::Sound *>;
-   static_assert(std::variant_size_v<Payload> == S_SOUND + 1);
+   using Payload = std::variant<std::monostate, CameraSel, Material *, Texture *, std::shared_ptr<EditorUIPart>, RenderProbe *, VPX::Sound *, Collection *>;
+   static_assert(std::variant_size_v<Payload> == S_COLLECTION + 1);
    Payload payload;
 
    Selection() = default;
@@ -62,6 +64,10 @@ struct Selection
    }
    Selection(VPX::Sound *sound)
       : payload(sound)
+   {
+   }
+   Selection(Collection *collection)
+      : payload(collection)
    {
    }
    static Selection Camera(int viewSetup)
@@ -100,6 +106,11 @@ struct Selection
    VPX::Sound *GetSound() const
    {
       const auto *p = std::get_if<VPX::Sound *>(&payload);
+      return p ? *p : nullptr;
+   }
+   Collection *GetCollection() const
+   {
+      const auto *p = std::get_if<Collection *>(&payload);
       return p ? *p : nullptr;
    }
 

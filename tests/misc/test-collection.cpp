@@ -142,5 +142,56 @@ TEST_CASE("Collection")
       col->Release();
    }
 
+   SUBCASE("membership edition keeps the parts' back references in sync")
+   {
+      CComObject<Collection>* col;
+      CComObject<Collection>::CreateInstance(&col);
+      col->AddRef();
+      col->m_name = "Col1";
+      table->AddCollection(col);
+      col->Release();
+
+      table->AddPartToCollection(col, bump1);
+      table->AddPartToCollection(col, bump2);
+      CHECK(col->GetParts().size() == 2);
+      REQUIRE(bump1->m_vCollection.size() == 1);
+      CHECK(bump1->m_vCollection[0] == col);
+      CHECK(bump1->m_viCollection[0] == 0);
+      CHECK(bump2->m_viCollection[0] == 1);
+
+      // Adding the same part twice is a no-op
+      table->AddPartToCollection(col, bump1);
+      CHECK(col->GetParts().size() == 2);
+
+      // Removing a member fixes the member index of the parts that were after it
+      table->RemovePartFromCollection(col, bump1);
+      CHECK(col->GetParts() == vector<IEditable*> { bump2 });
+      CHECK(bump1->m_vCollection.empty());
+      CHECK(bump1->m_viCollection.empty());
+      CHECK(bump2->m_viCollection[0] == 0);
+
+      // Content rebuild keeps both sides of the cross reference consistent
+      table->SetCollectionContent(col, { bump2, bump1 });
+      REQUIRE(col->GetParts().size() == 2);
+      CHECK(col->GetParts()[0] == bump2);
+      CHECK(col->GetParts()[1] == bump1);
+      CHECK(bump2->m_viCollection[0] == 0);
+      CHECK(bump1->m_vCollection[0] == col);
+      CHECK(bump1->m_viCollection[0] == 1);
+
+      // Toggle membership used by the context menus also maintains the back references
+      table->ToggleCollectionMembership(0, { bump1 });
+      CHECK(col->GetParts() == vector<IEditable*> { bump2 });
+      CHECK(bump1->m_vCollection.empty());
+      table->ToggleCollectionMembership(0, { bump1 });
+      REQUIRE(col->GetParts().size() == 2);
+      CHECK(bump1->m_vCollection[0] == col);
+      CHECK(bump1->m_viCollection[0] == 1);
+
+      table->RemoveCollection(col);
+      CHECK(bump1->m_vCollection.empty());
+      CHECK(bump2->m_vCollection.empty());
+   }
+
    table->Release();
 }
