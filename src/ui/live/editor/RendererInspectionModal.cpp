@@ -51,6 +51,8 @@ void RendererInspectionModal::Render()
       {
          ImGui::RadioButton(m_editor.m_table->m_vrenderprobe[i]->GetName().c_str(), &m_passSelection, 100 + (int)i);
       }
+      if (m_passSelection >= 100 + static_cast<int>(m_editor.m_table->m_vrenderprobe.size()))
+         m_passSelection = IF_FPS;
       if (m_passSelection < 100)
          m_editor.m_player->m_infoMode = (InfoMode)m_passSelection;
       else
