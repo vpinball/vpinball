@@ -923,6 +923,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RampUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RubberUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ScriptPanel.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/SpinnerUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/SurfaceUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/TextBoxUIPart.cpp" />
@@ -1859,6 +1860,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RampUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RubberUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ScriptPanel.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/Selection.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/SpinnerUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/SurfaceUIPart.h" />

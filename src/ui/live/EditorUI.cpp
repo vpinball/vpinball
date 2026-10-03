@@ -63,6 +63,7 @@ EditorUI::EditorUI(LiveUI &liveUI)
    , m_properties(*this)
    , m_inspectionModal(*this)
    , m_partLibrary(*this)
+   , m_scriptPanel(*this)
    , m_undo(m_player->m_ptable)
 {
    m_table = m_player->m_ptable;
@@ -131,6 +132,7 @@ void EditorUI::Close()
    RestorePartsVisibility();
    m_inspectionModal.Close();
    m_partLibrary.Close();
+   m_scriptPanel.Close();
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
 }
@@ -517,6 +519,7 @@ void EditorUI::RenderUI()
    }
    m_inspectionModal.Render();
    m_partLibrary.Render();
+   m_scriptPanel.Render();
 
 #endif
 
