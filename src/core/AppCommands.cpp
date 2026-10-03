@@ -772,7 +772,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, '\'' + PathToUTF8(tableFileName) + "' is not a Visual Pinball table (.vpx)");
             exit(1);
          }
-         const std::filesystem::path tournamentFileName = GetPathFromArg(szArglist[i + 2]);
+         const std::filesystem::path tournamentFileName = GetPathFromArg(szArglist[i + 1]);
          i++;
          if (!FileExists(tournamentFileName))
          {
