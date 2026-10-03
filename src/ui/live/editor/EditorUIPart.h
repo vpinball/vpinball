@@ -213,13 +213,23 @@ protected:
    virtual bool IsExtraHidden() const { return false; }
 
    // Editor-side value of a render-visibility field: the editor value for this part, or the model value for the other (startup/live) instance or for unshadowed fields.
-   bool GetVisibility(const T* part) const { return GetVisibility(part, m_visibilityFields[0].field); }
+   // The single-field overloads are only valid for parts that registered at least one visibility field (Kicker and LightSeq have none).
+   bool GetVisibility(const T* part) const
+   {
+      assert(!m_visibilityFields.empty());
+      return !m_visibilityFields.empty() && GetVisibility(part, m_visibilityFields[0].field);
+   }
    bool GetVisibility(const T* part, bool Data::* field) const
    {
       const size_t i = FieldIndex(field);
       return (part == m_part && i != m_visibilityFields.size()) ? m_visibilityFields[i].visible : part->m_d.*field;
    }
-   void SetVisibility(T* part, const bool v) { SetVisibility(part, v, m_visibilityFields[0].field); }
+   void SetVisibility(T* part, const bool v)
+   {
+      assert(!m_visibilityFields.empty());
+      if (!m_visibilityFields.empty())
+         SetVisibility(part, v, m_visibilityFields[0].field);
+   }
    void SetVisibility(T* part, const bool v, bool Data::* field)
    {
       const size_t i = FieldIndex(field);
