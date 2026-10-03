@@ -14,14 +14,14 @@ LightSeqUIPart::LightSeqUIPart(LightSeq* lightSeq)
 
 LightSeqUIPart::TransformMask LightSeqUIPart::GetTransform(Matrix3D& transform)
 {
-   transform = Matrix3D::MatrixTranslate(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, 0.f);
+   transform = Matrix3D::MatrixTranslate(m_part->m_d.m_v.x, m_part->m_d.m_v.y, 0.f);
    return TM_TransAny;
 }
 
 void LightSeqUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
-{ 
-   m_part->m_d.m_vCenter.x = pos.x;
-   m_part->m_d.m_vCenter.y = pos.y;
+{
+   m_part->m_d.m_v.x = pos.x;
+   m_part->m_d.m_v.y = pos.y;
 }
 
 void LightSeqUIPart::RenderOverlay(const EditorRenderContext& ctx)
@@ -59,6 +59,8 @@ void LightSeqUIPart::RenderOverlay(const EditorRenderContext& ctx)
 void LightSeqUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("LightSeq"s, m_part);
+
+   UpdateCenterSection(props, &Data::m_vCenter);
 
    if (props.BeginSection("Visuals"s))
    {

@@ -116,13 +116,18 @@ private:
       std::shared_ptr<EditorUIPart> outlinerAnchor;
       std::shared_ptr<EditorUIPart> pointEditPart; // Part in drag point edit mode, nullptr when not in that mode
       vector<int> pointSel; // Indices of the selected points in the edited part's curve
+      bool pointEditCenter = false; // Whether the part's center point is being edited instead of its drag point curve
    };
    UndoSelectionState CaptureUndoSelection() const;
    void RestoreUndoSelection(const UndoSelectionState &state);
 
    // Drag point edit mode (entered/exited with Tab when the active selected part has a DragPointCurve):
-   // while active, the part's curve points are rendered and can be selected & transformed in the table XY plane
+   // while active, the part's curve points are rendered and can be selected & transformed in the table XY
+   // plane. For parts exposing an editable center (light bulb, light sequencer animation center), Tab
+   // switches the mode between the drag point curve and the center point before exiting.
    std::shared_ptr<EditorUIPart> m_pointEditPart; // Part whose DragPointCurve is being edited (nullptr when not in point edit mode)
+   bool m_pointEditCenter = false; // Edit the part's center point instead of its drag point curve
+   bool m_centerSelected = false; // Whether the part's center point is selected in center edit mode
    vector<DragPoint *> m_pointSel; // Selected drag points of the edited part's curve
    Selection m_savedSelection; // Selection state saved on mode entry, restored on exit
    vector<std::shared_ptr<EditorUIPart>> m_savedMultiSel;
@@ -136,6 +141,7 @@ private:
    bool IsPointSelected(const DragPoint *point) const;
    void TogglePointSelection(DragPoint *point);
    DragPoint *HitTestDragPoint(const ImVec2 &mousePos) const;
+   bool HitTestEditCenter(const ImVec2 &mousePos) const;
    void BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
    Vertex2D UnprojectToPlane(const ImVec2 &mousePos, float z) const;
    void AddPointOnNearestSegment();
@@ -143,6 +149,7 @@ private:
 
    // DragPointEditContext implementation
    const vector<DragPoint *> &GetSelectedPoints() const override { return m_pointSel; }
+   bool IsCenterEditMode() const override { return m_pointEditCenter; }
    void BeginPointEdit() override;
    void EndPointEdit() override;
 

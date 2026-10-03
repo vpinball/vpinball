@@ -216,7 +216,8 @@ void EditorChrome::RenderToolbar()
 
       // Copy/Paste buttons (same actions as the Ctrl+C and Ctrl+V keyboard shortcuts)
       ImGui::SameLine();
-      const bool canCopy = editor.m_pointEditPart ? (editor.m_pointSel.size() == 1) : (editor.m_selection.GetType() == Selection::S_EDITABLE);
+      const bool canCopy
+         = editor.m_pointEditPart ? (editor.m_pointEditCenter ? editor.m_centerSelected : editor.m_pointSel.size() == 1) : (editor.m_selection.GetType() == Selection::S_EDITABLE);
       ImGui::BeginDisabled(!canCopy || editor.m_table->IsLocked());
       if (ImGui::Button(ICON_FK_FILES_O))
          editor.CopySelection();
@@ -224,7 +225,9 @@ void EditorChrome::RenderToolbar()
          ImGui::SetTooltip("Copy selection\n[Ctrl+C]");
       ImGui::EndDisabled();
       ImGui::SameLine();
-      const bool canPaste = editor.m_pointEditPart ? (editor.m_pointSel.size() == 1 && VPX::EditorClipboard::HasPoint()) : VPX::EditorClipboard::HasParts();
+      const bool canPaste = editor.m_pointEditPart
+         ? (editor.m_pointEditCenter ? editor.m_centerSelected && VPX::EditorClipboard::HasPoint() : editor.m_pointSel.size() == 1 && VPX::EditorClipboard::HasPoint())
+         : VPX::EditorClipboard::HasParts();
       ImGui::BeginDisabled(!canPaste || editor.m_table->IsLocked());
       if (ImGui::Button(ICON_FK_CLIPBOARD))
          editor.PasteSelection(ImVec2(viewport->GetCenter().x, viewport->GetCenter().y));
@@ -429,7 +432,7 @@ void EditorChrome::RenderStatusOverlay()
       ImGui::TextUnformatted(gizmoLabel);
    }
    if (editor.m_pointEditPart)
-      ImGui::TextUnformatted("Drag Point Edit (Tab to exit)");
+      ImGui::TextUnformatted(editor.m_pointEditCenter ? "Center Edit (Tab to exit)" : "Drag Point Edit (Tab to exit)");
    ImGui::End();
 }
 

@@ -59,7 +59,7 @@ void EditorUIPart::SetCurveScale(const vec3& scale)
 
 void EditorUIPart::UpdateCurveSection(PropertyPane& props)
 {
-   if (m_pointEditCtx == nullptr)
+   if (m_pointEditCtx == nullptr || m_pointEditCtx->IsCenterEditMode())
       return;
    DragPointCurve* const curve = GetDragPointCurve();
    if (curve == nullptr || !props.BeginSection("Curve"s))
