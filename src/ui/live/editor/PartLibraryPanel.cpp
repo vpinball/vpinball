@@ -417,7 +417,9 @@ void PartLibraryPanel::ImportPack(const std::filesystem::path &path)
    if (!m_editor.m_multiSel.empty())
       m_editor.m_selection = Selection(m_editor.m_multiSel.back());
 
-   m_editor.m_liveUI.PushNotification("Imported "s + std::to_string(imported.size()) + " part(s) from '"s + PathToUTF8(path.filename()) + '\'', 10000);
+   m_editor.m_liveUI.PushNotification(
+      "Imported "s + std::to_string(imported.size()) + " part(s) from '"s + PathToUTF8(path.filename()) + "' into '"s + (target != nullptr ? target->GetName() : "(table root)"s) + '\'',
+      10000);
 }
 
 }
