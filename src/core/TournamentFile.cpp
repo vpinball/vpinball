@@ -8,11 +8,10 @@
 #include "core/VPApp.h"
 #include "ui/live/LiveUI.h"
 #include "utils/hash.h"
-#ifndef __STANDALONE__
-#include "FreeImage.h"
-#else
-#include "standalone/FreeImage.h"
+#ifdef __STANDALONE__
+#define _WINDOWS_
 #endif
+#include "FreeImage.h"
 
 namespace VPX::TournamentFile
 {

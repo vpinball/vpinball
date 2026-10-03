@@ -9,13 +9,12 @@
 #include "utils/BiffReader.h"
 #include "utils/lzwreader.h"
 
-#ifndef __STANDALONE__
-#include "FreeImage.h"
-#else
+#ifdef __STANDALONE__
 #include <SDL3_image/SDL_image.h>
 #include <SDL3/SDL_surface.h>
-#include "standalone/FreeImage.h"
+#define _WINDOWS_
 #endif
+#include "FreeImage.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage //!! can remove stbi again if at some point FreeImage incorporates libjpeg-turbo or something similar
