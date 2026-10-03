@@ -18,6 +18,8 @@
 #include <thread>
 #include <random>
 
+#include "plugins/PluginStrings.h"
+
 namespace Vni
 {
 
@@ -132,7 +134,9 @@ private:
 
    void ColorizeThread(DisplaySrcId dmdId)
    {
-      Vni_Context* const pVNI = Vni_LoadFromPaths(m_palPath.string().c_str(), m_vniPath.empty() ? nullptr : m_vniPath.string().c_str(), nullptr, nullptr);
+      const std::string palPath = PluginStrings::PathToNative(m_palPath);
+      const std::string vniPath = PluginStrings::PathToNative(m_vniPath);
+      Vni_Context* const pVNI = Vni_LoadFromPaths(palPath.c_str(), m_vniPath.empty() ? nullptr : vniPath.c_str(), nullptr, nullptr);
       if (pVNI == nullptr)
       {
          LOGE("Failed to load colorization data");
@@ -322,10 +326,10 @@ private:
 static bool FindColorizationIn(const std::filesystem::path& gameDir, const std::string_view& gameId, std::filesystem::path& palPath, std::filesystem::path& vniPath)
 {
    const std::string rom = std::string(gameId);
-   if (auto pal = find_case_insensitive_file_path(gameDir / (rom + ".pal")); !pal.empty())
+   if (auto pal = find_case_insensitive_file_path(gameDir / PluginStrings::PathFromUTF8(rom + ".pal")); !pal.empty())
    {
       palPath = pal;
-      vniPath = find_case_insensitive_file_path(gameDir / (rom + ".vni"));
+      vniPath = find_case_insensitive_file_path(gameDir / PluginStrings::PathFromUTF8(rom + ".vni"));
       return true;
    }
    if (auto pal = find_case_insensitive_file_path(gameDir / "pin2dmd.pal"sv); !pal.empty())
@@ -345,21 +349,24 @@ static bool FindColorizationIn(const std::filesystem::path& gameDir, const std::
 // already carries the namespace).
 static bool GetColorization(const std::string_view& gameNs, const std::string_view& gameId, std::filesystem::path& palPath, std::filesystem::path& vniPath)
 {
-   VPXTableInfo tableInfo;
+   VPXTableInfo tableInfo {};
    vpxApi->GetTableInfo(&tableInfo);
-   const std::filesystem::path tablePath = tableInfo.path;
-   const std::filesystem::path vniBasePath = vniPathProp_Get();
+   const std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path);
+   const std::filesystem::path vniBasePath = PluginStrings::PathFromUTF8OrNative(vniPathProp_Get());
 
    std::vector<std::filesystem::path> gameDirs;
    const auto addBases = [&gameDirs](const std::filesystem::path& base, const std::string_view& ns, const std::string_view& rom)
    {
       if (!ns.empty())
-         gameDirs.push_back(base / ns / rom);
-      gameDirs.push_back(base / rom);
+         gameDirs.push_back(base / PluginStrings::PathFromUTF8(ns) / PluginStrings::PathFromUTF8(rom));
+      gameDirs.push_back(base / PluginStrings::PathFromUTF8(rom));
    };
-   addBases(tablePath.parent_path() / "vni"sv, gameNs, gameId);
-   if (gameNs == "pinmame"sv)
-      gameDirs.push_back(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId);
+   if (!tablePath.empty())
+   {
+      addBases(tablePath.parent_path() / "vni"sv, gameNs, gameId);
+      if (gameNs == "pinmame"sv)
+         gameDirs.push_back(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / PluginStrings::PathFromUTF8(gameId));
+   }
    if (!vniBasePath.empty())
       addBases(vniBasePath, gameNs, gameId);
 
@@ -390,10 +397,10 @@ static void OnControllersChanged()
             return;
          }
 
-         LOGI("Loading PAL from " + palPath.string());
+         LOGI("Loading PAL from " + PluginStrings::PathToUTF8(palPath));
 
          if (!vniPath.empty())
-            LOGI("Loading VNI from " + vniPath.string());
+            LOGI("Loading VNI from " + PluginStrings::PathToUTF8(vniPath));
 
          colorizer = std::make_unique<VNIColorizer>(palPath, vniPath, selectedController.endpointId);
       });

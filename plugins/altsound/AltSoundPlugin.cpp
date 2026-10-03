@@ -11,6 +11,8 @@
 #include "pinmame/PinMAMEPlugin.h"
 #include <altsound.h>
 
+#include "plugins/PluginStrings.h"
+
 using namespace std::string_literals;
 using namespace std::string_view_literals;
 
@@ -98,22 +100,30 @@ static void SetupAltSound()
    const string pinmamePrefix(PMPI_GAMEID_PREFIX);
    const string gameId = string(controller.gameId).substr(pinmamePrefix.length());
 
-   VPXTableInfo tableInfo;
+   VPXTableInfo tableInfo {};
    vpxApi->GetTableInfo(&tableInfo);
-   std::filesystem::path tablePath = tableInfo.path;
+   const std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path);
 
    std::filesystem::path basePath;
+   std::filesystem::path altsoundGamePath;
 
    // Priority 1: altsound/<rom> (library adds /altsound/<rom> to basePath)
-   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound"sv / gameId); !path1.empty())
-      basePath = tablePath.parent_path();
+   // The base comes from the match, keeping the actual case of its folders (e.g. 'pinmame')
+   if (std::filesystem::path path1 = tablePath.empty() ? std::filesystem::path() : find_case_insensitive_file_path(tablePath.parent_path() / "altsound"sv / PluginStrings::PathFromUTF8(gameId)); !path1.empty())
+   {
+      altsoundGamePath = path1;
+      basePath = path1.parent_path().parent_path();
+   }
    // Priority 2: pinmame/altsound/<rom>
-   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altsound"sv / gameId); !path2.empty())
-      basePath = tablePath.parent_path() / "pinmame"sv;
+   else if (std::filesystem::path path2 = tablePath.empty() ? std::filesystem::path() : find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altsound"sv / PluginStrings::PathFromUTF8(gameId)); !path2.empty())
+   {
+      altsoundGamePath = path2;
+      basePath = path2.parent_path().parent_path();
+   }
    // Priority 3: global setting
    else
    {
-      std::filesystem::path altsoundFolder = altsoundFolderProp_Get();
+      std::filesystem::path altsoundFolder = PluginStrings::PathFromUTF8OrNative(altsoundFolderProp_Get());
       if (!altsoundFolder.empty())
          basePath = altsoundFolder.parent_path();
    }
@@ -121,23 +131,30 @@ static void SetupAltSound()
    if (basePath.empty())
       return;
 
-   std::filesystem::path altsoundGamePath = basePath / "altsound"sv / gameId;
-   if (!std::filesystem::exists(altsoundGamePath))
+   // The library appends 'altsound/<rom>' to the base as is: on case sensitive file systems, these folders need this exact case
+   const std::filesystem::path libraryGamePath = basePath / "altsound"sv / PluginStrings::PathFromUTF8(gameId);
+   if (std::error_code ec; !std::filesystem::exists(libraryGamePath, ec))
+   {
+      if (!altsoundGamePath.empty())
+         LOGW(std::format("AltSound folder {} is not used: it must be named 'altsound/{}', with this case", PluginStrings::PathToUTF8(altsoundGamePath), gameId));
       return;
+   }
+   if (altsoundGamePath.empty())
+      altsoundGamePath = libraryGamePath;
 
-   LOGI(std::format("Found altsound directory for game: {} at {}", gameId, altsoundGamePath.string()));
+   LOGI(std::format("Found altsound directory for game: {} at {}", gameId, PluginStrings::PathToUTF8(altsoundGamePath)));
    PinMAMEMachineStateMsg state { };
    state.version = 1;
    state.hardwareGen = 0;
    msgApi->BroadcastMsg(endpointId, getMachineStateId, &state);
 
-   VPXInfo vpxInfo;
+   VPXInfo vpxInfo {};
    vpxApi->GetVpxInfo(&vpxInfo);
-   AltSoundSetLogger(vpxInfo.prefPath, ALTSOUND_LOG_LEVEL_INFO, false);
+   AltSoundSetLogger(vpxInfo.prefPath ? vpxInfo.prefPath : "", ALTSOUND_LOG_LEVEL_INFO, false); // Native narrow path, as the library expects
 
-   LOGI(std::format("Initializing AltSound for game: {}, basePath: {}", gameId, basePath.string()));
+   LOGI(std::format("Initializing AltSound for game: {}, basePath: {}", gameId, PluginStrings::PathToUTF8(basePath)));
 
-   if (!AltSoundInit(basePath.string(), gameId, 44100, 2, BUFFER_SIZE_FRAMES))
+   if (!AltSoundInit(PluginStrings::PathToNative(basePath), gameId, 44100, 2, BUFFER_SIZE_FRAMES))
    {
       LOGE("Failed to initialize AltSound for game: " + gameId);
       return;

@@ -21,6 +21,8 @@
 #include <charconv>
 #include <mutex>
 
+#include "plugins/PluginStrings.h"
+
 namespace PinMAME
 {
 
@@ -326,39 +328,43 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       // Prioritize a pinmame folder along the table
       if (vpxApi != nullptr)
       {
-         VPXTableInfo tableInfo;
+         VPXTableInfo tableInfo {};
          vpxApi->GetTableInfo(&tableInfo);
-         std::filesystem::path tablePath = tableInfo.path;
-         pinmamePath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "roms"sv);
-         if (!pinmamePath.empty())
-            pinmamePath = pinmamePath.parent_path();
-         memmapPath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "memmaps"sv);
+         const std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path);
+         if (!tablePath.empty())
+         {
+            pinmamePath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "roms"sv);
+            if (!pinmamePath.empty())
+               pinmamePath = pinmamePath.parent_path();
+            memmapPath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "memmaps"sv);
+         }
       }
 
       // Defaults to the global setting
       if (pinmamePath.empty())
-         pinmamePath = pinMAMEPathProp_Get();
+         pinmamePath = PluginStrings::PathFromUTF8OrNative(pinMAMEPathProp_Get());
       if (memmapPath.empty())
-         memmapPath = std::filesystem::path(pinMAMEPathProp_Get()) / "memmaps"sv;
+         memmapPath = PluginStrings::PathFromUTF8OrNative(pinMAMEPathProp_Get()) / "memmaps"sv;
 
       // Custom platforms defaults
       #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
       if (pinmamePath.empty() && vpxApi != nullptr)
       {
-         VPXInfo vpxInfo;
+         VPXInfo vpxInfo {};
          vpxApi->GetVpxInfo(&vpxInfo);
-         pinmamePath = find_case_insensitive_directory_path(std::filesystem::path(vpxInfo.prefPath) / "pinmame"sv);
+         if (const std::filesystem::path prefPath = PluginStrings::PathFromNative(vpxInfo.prefPath); !prefPath.empty())
+            pinmamePath = find_case_insensitive_directory_path(prefPath / "pinmame"sv);
       }
       #elif defined(__APPLE__) || defined(__linux__)
-      if (pinmamePath.empty())
-         pinmamePath = std::filesystem::path(getenv("HOME")) / ".pinmame"sv;
+      if (const std::filesystem::path homePath = PluginStrings::PathFromNative(getenv("HOME")); pinmamePath.empty() && !homePath.empty())
+         pinmamePath = homePath / ".pinmame"sv;
       #endif
 
       // FIXME implement a last resort or just ask the user to define its path setup in the settings ?
       if (pinmamePath.empty())
          LOGE("PinMAME path is not defined."s);
       else
-         strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, (pinmamePath / ""sv).string().c_str());
+         strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, PluginStrings::PathToNative(pinmamePath / ""sv).c_str());
 
       Controller* pController = new Controller(msgApi, endpointId, config, memmapPath);
       pController->SetOnDestroyHandler(OnControllerDestroyed);

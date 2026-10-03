@@ -17,7 +17,7 @@ public:
    WMPAudioPlayer(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId);
    ~WMPAudioPlayer();
 
-   bool LoadFile(const string& filepath);
+   bool LoadFile(const std::filesystem::path& filepath);
    void UnloadFile();
    void Play();
    void Pause();

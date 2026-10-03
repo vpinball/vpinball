@@ -45,7 +45,7 @@ void PUPImage::Load(const std::filesystem::path& szFile)
 
    m_loading.store(true);
    std::thread([this, szFile]() {
-      auto surface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(IMG_Load(szFile.string().c_str()), SDL_DestroySurface);
+      auto surface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(IMG_Load(PluginStrings::PathToUTF8(szFile).c_str()), SDL_DestroySurface);
       if (surface && surface->format != SDL_PIXELFORMAT_RGBA32)
          surface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(SDL_ConvertSurface(surface.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);
       {

@@ -101,7 +101,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
 
    // Optional initial background playlist
    if (PUPPlaylist* const backgroundPlaylist = parts[2].empty() ? nullptr : screen->GetPlaylist(parts[2]); backgroundPlaylist)
-      screen->Play(backgroundPlaylist, parts[3], screen->GetVolume(), -1, PlayAction::SetBG, 0);
+      screen->Play(backgroundPlaylist, PluginStrings::PathFromUTF8(parts[3]), screen->GetVolume(), -1, PlayAction::SetBG, 0);
 
    return screen;
 }
@@ -131,7 +131,7 @@ void PUPScreen::LoadTriggers()
       {
          if (++i == 1)
             continue;
-         AddTrigger(PUPTrigger::CreateFromCSV(this, line));
+         AddTrigger(PUPTrigger::CreateFromCSV(this, PluginStrings::TextFromUTF8OrCP1252(line)));
       }
    }
 }
@@ -208,7 +208,7 @@ void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
    if (!pPlaylist)
       return;
 
-   m_playlistMap[lowerCase(pPlaylist->GetFolder().string())] = pPlaylist;
+   m_playlistMap[lowerCase(PluginStrings::PathToUTF8(pPlaylist->GetFolder()))] = pPlaylist;
 }
 
 PUPPlaylist* PUPScreen::GetPlaylist(const string& szFolder)
@@ -347,7 +347,7 @@ void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPl
 void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   //LOGD(std::format("play, screen={{{}}}, playlist={{{}}}, playFile={}, volume={:.0f}, priority={}", ToString(false), pPlaylist->ToString(), szPlayFile.string(), volume, priority));
+   //LOGD(std::format("play, screen={{{}}}, playlist={{{}}}, playFile={}, volume={:.0f}, priority={}", ToString(false), pPlaylist->ToString(), PluginStrings::PathToUTF8(szPlayFile), volume, priority));
    //StopMedia(); // Does it stop the played media on all request like overlays or alphas ? I don't think so but unsure
    const bool background = (action == PlayAction::SetBG);
    switch (pPlaylist->GetFunction())
@@ -356,7 +356,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
    {
       // PNGs/JPGs bypass FFmpeg — loaded as static image on the video layer.
       // Persists until replaced by a new image or video play.
-      const string ext = extension_from_path(szPlayFile.string());
+      const string ext = extension_from_path(PluginStrings::PathToUTF8(szPlayFile));
       if (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp")
       {
          if (background)

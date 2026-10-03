@@ -27,6 +27,9 @@
 #include <format>
 #include <unordered_set>
 #include <vector>
+
+#include "plugins/PluginStrings.h"
+
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
 #include <pthread.h>
 #endif
@@ -139,7 +142,7 @@ static const std::unordered_set<std::string>& LoadRomList(const std::filesystem:
    if (!cachedRomListValid || cachedRomListTablePath != tablePath)
    {
       cachedRomList.clear();
-      for (const std::string& romName : pDOF->GetLedControlRomNames(tablePath.string().c_str()))
+      for (const std::string& romName : pDOF->GetLedControlRomNames(PluginStrings::PathToNative(tablePath).c_str()))
          cachedRomList.insert(ToUpper(romName));
       cachedRomListTablePath = tablePath;
       cachedRomListValid = true;
@@ -258,10 +261,10 @@ static void SetupDOF()
    if (gameKey.empty())
       return;
 
-   VPXTableInfo tableInfo;
+   VPXTableInfo tableInfo {};
    vpxApi->GetTableInfo(&tableInfo);
-   const string path = tableInfo.path;
-   const string romName = ResolveRomName(gameNs, gameKey, LoadRomList(path));
+   const string path = tableInfo.path ? tableInfo.path : ""; // Native narrow path, as libDOF expects
+   const string romName = ResolveRomName(gameNs, gameKey, LoadRomList(PluginStrings::PathFromNative(tableInfo.path)));
 
    LOGI("New game started: gameId="s + controller.gameId + ", romName=" + romName);
    dofThread = std::make_unique<DOFEventConsumer>(path, romName, controller);
@@ -282,12 +285,12 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
-   VPXInfo vpxInfo;
+   VPXInfo vpxInfo {};
    vpxApi->GetVpxInfo(&vpxInfo);
 
    DOF::Config* pConfig = DOF::Config::GetInstance();
    pConfig->SetLogCallback(OnDOFLog);
-   pConfig->SetBasePath(vpxInfo.prefPath);
+   pConfig->SetBasePath(vpxInfo.prefPath ? vpxInfo.prefPath : ""); // Native narrow path, as libDOF expects
 
    pDOF = std::make_unique<DOF::DOF>();
 
@@ -304,9 +307,9 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
          const std::unordered_set<std::string>& romList = LoadRomList(
             []
             {
-               VPXTableInfo tableInfo;
+               VPXTableInfo tableInfo {};
                vpxApi->GetTableInfo(&tableInfo);
-               return std::filesystem::path(tableInfo.path);
+               return PluginStrings::PathFromNative(tableInfo.path);
             }());
          const ControllerDef* selected = nullptr;
          int bestScore = -1;
@@ -317,7 +320,7 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
             if (gameKey.empty())
                continue;
             const bool pinmame = gameNs == "pinmame"sv;
-            const bool match = (!gameNs.empty() && RomListContains(romList, std::string(gameNs) + "_" + std::string(gameKey))) || RomListContains(romList, gameKey);
+            const bool match = (!gameNs.empty() && RomListContains(romList, std::string(gameNs) + '_' + std::string(gameKey))) || RomListContains(romList, gameKey);
             const int score = (match ? 2 : 0) + (pinmame ? 1 : 0);
             if (score > bestScore)
             {

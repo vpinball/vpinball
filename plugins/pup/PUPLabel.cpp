@@ -218,11 +218,11 @@ void PUPLabel::SetCaption(const string& szCaption)
       }
 
       const bool wasImage = (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF);
-      std::filesystem::path fs_path(normalize_path_separators(szText));
+      std::filesystem::path fs_path = PluginStrings::PathFromUTF8(normalize_path_separators(szText));
       // The playlist is the first path component, the rest is the file path inside
       // the playlist folder (which may contain subfolders, e.g. playlist\player2\foo.png)
       const std::filesystem::path playlistFolder = *fs_path.begin();
-      PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder.string());
+      PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(PluginStrings::PathToUTF8(playlistFolder));
       std::filesystem::path szPath;
       if (pPlaylist)
          szPath = pPlaylist->GetPlayFilePath(fs_path.lexically_relative(playlistFolder));
@@ -1008,7 +1008,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
             m_pSourceImage = nullptr;
             m_sourceImagePath.clear();
          }
-         SDL_Surface* image = IMG_Load(szPath.string().c_str());
+         SDL_Surface* image = IMG_Load(PluginStrings::PathToUTF8(szPath).c_str());
          if (image && image->format != SDL_PIXELFORMAT_RGBA32) {
             SDL_Surface* newImage = SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
             SDL_DestroySurface(image);
@@ -1021,7 +1021,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
             SDL_DestroySurface(image);
          }
          else
-            LOGE("Unable to load image: " + szPath.string());
+            LOGE("Unable to load image: " + PluginStrings::PathToUTF8(szPath));
       }
       // Rotated image: cache the decoded source so a spinning image does not re-decode every
       // frame, then bake the rotation into a working copy.
@@ -1031,7 +1031,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
          {
             if (m_pSourceImage)
                SDL_DestroySurface(m_pSourceImage);
-            m_pSourceImage = IMG_Load(szPath.string().c_str());
+            m_pSourceImage = IMG_Load(PluginStrings::PathToUTF8(szPath).c_str());
             if (m_pSourceImage && m_pSourceImage->format != SDL_PIXELFORMAT_RGBA32) {
                SDL_Surface* newImage = SDL_ConvertSurface(m_pSourceImage, SDL_PIXELFORMAT_RGBA32);
                SDL_DestroySurface(m_pSourceImage);
@@ -1059,12 +1059,12 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
                SDL_DestroySurface(work);
          }
          else
-            LOGE("Unable to load image: " + szPath.string());
+            LOGE("Unable to load image: " + PluginStrings::PathToUTF8(szPath));
       }
    }
    else if (type == PUP_LABEL_TYPE_GIF)
    {
-      rs.m_pAnimation = std::shared_ptr<IMG_Animation>(IMG_LoadAnimation(szPath.string().c_str()), IMG_FreeAnimation);
+      rs.m_pAnimation = std::shared_ptr<IMG_Animation>(IMG_LoadAnimation(PluginStrings::PathToUTF8(szPath).c_str()), IMG_FreeAnimation);
       if (rs.m_pAnimation) {
          rs.m_accumulatedDelays.resize(rs.m_pAnimation->count);
          int accum = 0;
@@ -1088,7 +1088,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
          }
       }
       else
-         LOGE("Unable to load animation: " + szPath.string());
+         LOGE("Unable to load animation: " + PluginStrings::PathToUTF8(szPath));
    }
    return rs;
 }
@@ -1355,7 +1355,7 @@ string PUPLabel::ToString() const
       (m_yAlign == PUP_LABEL_YALIGN_TOP           ? "TOP"
             : m_yAlign == PUP_LABEL_YALIGN_CENTER ? "CENTER"
                                                   : "BOTTOM"),
-      m_xPos, m_yPos, m_pagenum, m_szPath.string());
+      m_xPos, m_yPos, m_pagenum, PluginStrings::PathToUTF8(m_szPath));
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int flashingPeriod)
@@ -1442,7 +1442,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
          if (m_numFormat == 1)
          {
             int insertPos = static_cast<int>(numStr.length()) - 3;
-            while (insertPos > 0) { numStr.insert(insertPos, ","); insertPos -= 3; }
+            while (insertPos > ((m_numEnd < 0) ? 1 : 0)) { numStr.insert(insertPos, ","); insertPos -= 3; } // No separator after the minus sign
          }
          PUPLabel* label = const_cast<PUPLabel*>(m_label);
          label->m_szCaption = numStr;
@@ -1576,8 +1576,9 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       if (m_numFormat == 1)
       {
          numStr = std::to_string(num);
+         const int firstDigit = (num < 0) ? 1 : 0; // No separator after the minus sign
          int insertPos = static_cast<int>(numStr.length()) - 3;
-         while (insertPos > 0)
+         while (insertPos > firstDigit)
          {
             numStr.insert(insertPos, ",");
             insertPos -= 3;

@@ -587,6 +587,8 @@ Font* FlexDMD::NewFont(const string& font, uint32_t tint, uint32_t borderTint, i
    const string tintHex = std::format("{:08X}", ((tint & 0x0000FFu) << 24) | ((tint & 0x00FF00u) << 8) | ((tint & 0xFF0000u) >> 8) | 0xFFu);
    const string borderHex = std::format("{:08X}", ((borderTint & 0x0000FFu) << 24) | ((borderTint & 0x00FF00u) << 8) | ((borderTint & 0xFF0000u) >> 8) | 0xFFu);
    AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(font + "&tint=" + tintHex + "&border_size=" + std::to_string(borderSize) + "&border_tint=" + borderHex, nullptr);
+   if (pAssetSrc == nullptr) // Invalid name: an empty font (callers expect a font)
+      pAssetSrc = m_pAssetManager->ResolveSrc(string(), nullptr);
    Font* pFont = m_pAssetManager->GetFont(pAssetSrc);
    pAssetSrc->Release();
    return pFont;
@@ -599,6 +601,8 @@ AnimatedActor* FlexDMD::NewVideo(const string& name, const string& video)
       return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, video, name, 30, true);
    else {
       AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(video, nullptr);
+      if (pAssetSrc == nullptr)
+         return nullptr;
       AssetType assetType = pAssetSrc->GetAssetType();
       pAssetSrc->Release();
 

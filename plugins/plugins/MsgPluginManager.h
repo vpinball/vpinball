@@ -31,7 +31,7 @@ class MsgModuleLoader
 {
 public:
    virtual ~MsgModuleLoader() { }
-   virtual void* Link(const std::string& directory, const std::string& file) = 0;
+   virtual void* Link(const std::string& directory, const std::string& file) = 0; // UTF-8 paths
    virtual void Unlink(void* dynamicModule) = 0;
    virtual void* GetFunction(void* dynamicModule, const std::string& functionName) = 0;
 };
@@ -81,8 +81,8 @@ public:
    const std::string m_link; // Web link to online information
 
    bool IsDynamicallyLinked() const { return m_loader != nullptr; }
-   const std::string m_directory; // Directory containing this plugin
-   const std::string m_library; // Library implementing this plugin for the current platform
+   const std::string m_directory; // Directory containing this plugin (UTF-8)
+   const std::string m_library; // Library implementing this plugin for the current platform (UTF-8)
 
    const uint32_t m_endpointId; // Unique 'end point' ID of the plugin, used to identify it for the lifetime of this session
 

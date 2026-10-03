@@ -53,7 +53,7 @@ void PUPPinDisplay::playlistadd(int screenNum, const string& folder, int sort, i
       return;
    }
 
-   pScreen->AddPlaylist(new PUPPlaylist(&m_pupManager, folder, ""s, sort, restSeconds, 100, 1));
+   pScreen->AddPlaylist(new PUPPlaylist(&m_pupManager, PluginStrings::PathFromUTF8(folder), ""s, sort, restSeconds, 100, 1));
 }
 
 void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
@@ -64,7 +64,7 @@ void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
    {
       PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
       if (pPlaylist)
-         pScreen->Play(pPlaylist, ""s, pPlaylist->GetVolume(), 0, PlayAction::Normal, 0);
+         pScreen->Play(pPlaylist, std::filesystem::path(), pPlaylist->GetVolume(), 0, PlayAction::Normal, 0);
       else
          LOGE(std::format("Playlist not found: screenNum={}, playlist={}", screenNum, playlist));
    }
@@ -75,7 +75,7 @@ void PUPPinDisplay::playlistplayex(int screenNum, const string& playlist, const 
    // priority(0=none, 1..9) will override the restSeconds (see playlistadd)
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
+      pScreen->Play(playlist, PluginStrings::PathFromUTF8(playfilename), static_cast<float>(volume), priority);
 }
 
 void PUPPinDisplay::play(int screenNum, const string& playlist, const string& playfilename)
@@ -89,7 +89,7 @@ void PUPPinDisplay::play(int screenNum, const string& playlist, const string& pl
          LOGE(std::format("Playlist not found: screen={{{}}}, playlist={}", pScreen->ToString(false), playlist));
          return;
       }
-      pScreen->Play(playlist, playfilename, pPlaylist->GetVolume(), 0);
+      pScreen->Play(playlist, PluginStrings::PathFromUTF8(playfilename), pPlaylist->GetVolume(), 0);
    }
 }
 
@@ -625,9 +625,9 @@ string PUPPinDisplay::GetGetRoot() const
 {
    // The return path is either the default one when not playing or the one actually being played (which may be a per table or a global folder)
    if (m_pupManager.GetPath().empty())
-      return m_pupManager.GetRootPath().string();
+      return PluginStrings::PathToUTF8(m_pupManager.GetRootPath());
    else
-      return (m_pupManager.GetPath().parent_path() / ""sv).string();
+      return PluginStrings::PathToUTF8(m_pupManager.GetPath().parent_path() / ""sv);
 }
 
 void PUPPinDisplay::SetGetRoot(const string& value)
@@ -715,7 +715,7 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
    {
       PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
       if (pPlaylist)
-         pScreen->Stop(pPlaylist, playfilename);
+         pScreen->Stop(pPlaylist, PluginStrings::PathFromUTF8(playfilename));
       return;
    }
    case PlayAction::PlaySSF:
@@ -726,7 +726,7 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
       break;
    }
 
-   pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority, action);
+   pScreen->Play(playlist, PluginStrings::PathFromUTF8(playfilename), static_cast<float>(volume), priority, action);
    if (action == PlayAction::Loop)
       pScreen->SetLoop(1);
    else if (Seconds > 0)

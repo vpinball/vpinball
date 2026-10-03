@@ -290,7 +290,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    scriptApi->SetCOMObjectOverride("PinUpPlayer.PinDisplay", PUP_PinDisplay_SCD);
 
    msgApi->RegisterSetting(endpointId, &pupPathProp);
-   std::filesystem::path pupFolder = pupPathProp_Get();
+   std::filesystem::path pupFolder = PluginStrings::PathFromUTF8OrNative(pupPathProp_Get());
    std::filesystem::path rootPath = find_case_insensitive_directory_path(pupFolder / "pupvideos"sv);
    if (rootPath.empty())
    {
@@ -298,7 +298,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
          // No global folder configured: the per-table 'pupvideos' folder (next to each table) is the primary source.
          LOGI("No global PUP folder configured; per-table 'pupvideos' used when present");
       else
-         LOGW("PUP folder was not found (settings is '" + pupFolder.string() + "')");
+         LOGW("PUP folder was not found (settings is '" + PluginStrings::PathToUTF8(pupFolder) + "')");
    }
    pupManager = std::make_unique<PUPManager>(msgApi, endpointId, rootPath);
 
@@ -311,7 +311,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
 MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
 {
    pupManager = nullptr;
-   
+
    scriptApi->SetCOMObjectOverride("PinUpPlayer.PinDisplay", nullptr);
    UnregisterPUP_PinDisplay([](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); });
 

@@ -99,7 +99,7 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
    m_commandQueue.enqueue(
       [this, filename, volume]()
    {
-      LOGD("> Playing filename=" + filename.string());
+      LOGD("> Playing filename=" + PluginStrings::PathToUTF8(filename));
 
       // Suppress end callback during play-to-play transition — the previous video
       // is being replaced, not ending naturally.
@@ -109,9 +109,9 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       m_onEndCallback = savedCallback;
 
       AVFormatContext* pFormatContext = nullptr;
-      if (m_libAv._avformat_open_input(&pFormatContext, filename.string().c_str(), nullptr, nullptr) != 0)
+      if (m_libAv._avformat_open_input(&pFormatContext, PluginStrings::PathToUTF8(filename).c_str(), nullptr, nullptr) != 0)
       {
-         LOGE("Unable to open: filename=" + filename.string());
+         LOGE("Unable to open: filename=" + PluginStrings::PathToUTF8(filename));
          m_pendingPlay--;
          return;
       }
@@ -139,11 +139,11 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          pVideoContext = OpenStream(pFormatContext, videoStream);
          if (pVideoContext)
          {
-            LOGD(std::format("Video stream: {} {}x{} file={}", m_libAv._avcodec_get_name(pVideoContext->codec_id), pCodecParameters->width, pCodecParameters->height, filename.string()));
+            LOGD(std::format("Video stream: {} {}x{} file={}", m_libAv._avcodec_get_name(pVideoContext->codec_id), pCodecParameters->width, pCodecParameters->height, PluginStrings::PathToUTF8(filename)));
          }
          else
          {
-            LOGE("Unable to open video stream: filename=" + filename.string());
+            LOGE("Unable to open video stream: filename=" + PluginStrings::PathToUTF8(filename));
          }
       }
 
@@ -153,7 +153,7 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          if (audioStream < 0)
          {
             if (audioStream == AVERROR_DECODER_NOT_FOUND)
-               LOGE("No audio stream found: filename=" + filename.string());
+               LOGE("No audio stream found: filename=" + PluginStrings::PathToUTF8(filename));
             audioStream = -1;
          }
       }
@@ -179,13 +179,13 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          }
          else
          {
-            LOGE("Unable to open audio stream: filename=" + filename.string());
+            LOGE("Unable to open audio stream: filename=" + PluginStrings::PathToUTF8(filename));
          }
       }
 
       if (!pVideoContext && !pAudioContext)
       {
-         LOGE("No video or audio stream found: filename=" + filename.string());
+         LOGE("No video or audio stream found: filename=" + PluginStrings::PathToUTF8(filename));
          m_libAv._avformat_close_input(&pFormatContext);
          m_pendingPlay--;
          return;
@@ -485,7 +485,7 @@ void PUPMediaPlayer::Run()
          {
             if (m_libAv._av_seek_frame(m_pFormatContext, m_videoStream, 0, 0) < 0)
             {
-               LOGE("Unable to seek video stream. Aborting loop: " + m_filename.filename().string());
+               LOGE("Unable to seek video stream. Aborting loop: " + PluginStrings::PathToUTF8(m_filename.filename()));
                break;
             }
             m_libAv._avcodec_flush_buffers(m_pVideoContext);
@@ -494,7 +494,7 @@ void PUPMediaPlayer::Run()
          {
             if (m_libAv._av_seek_frame(m_pFormatContext, m_audioStream, 0, 0) < 0)
             {
-               LOGE("Unable to seek audio stream: " + m_filename.filename().string());
+               LOGE("Unable to seek audio stream: " + PluginStrings::PathToUTF8(m_filename.filename()));
             }
             m_libAv._avcodec_flush_buffers(m_pAudioContext);
          }
@@ -528,7 +528,7 @@ void PUPMediaPlayer::Run()
       }
       else if (rfRet < 0)
       {
-         LOGE(std::format("Error reading frame: name={}, file={}, ret={}", m_name, m_filename.filename().string(), rfRet));
+         LOGE(std::format("Error reading frame: name={}, file={}, ret={}", m_name, PluginStrings::PathToUTF8(m_filename.filename()), rfRet));
          break;
       }
 
@@ -577,7 +577,7 @@ void PUPMediaPlayer::Run()
 
    {
       std::lock_guard lock(m_mutex);
-      LOGD(std::format("Player stopped: name={}, file={}", m_name, m_filename.filename().string()));
+      LOGD(std::format("Player stopped: name={}, file={}", m_name, PluginStrings::PathToUTF8(m_filename.filename())));
       m_running = false;
       StopAudioStream(m_audioStreamId);
       m_onEndCallback();

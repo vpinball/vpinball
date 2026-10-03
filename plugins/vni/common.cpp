@@ -4,6 +4,9 @@
 
 #include <algorithm>
 #include <filesystem>
+
+#include "plugins/PluginStrings.h"
+
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
 #include <pthread.h>
 #endif
@@ -40,20 +43,6 @@ void SetThreadName(const std::string& name)
 }
 #endif
 
-static inline char cLower(char c)
-{
-   if (c >= 'A' && c <= 'Z')
-      c ^= 32;
-   return c;
-}
-
-static inline bool StrCompareNoCase(const string& strA, const string& strB)
-{
-   return strA.length() == strB.length()
-      && std::equal(strA.begin(), strA.end(), strB.begin(),
-         [](char a, char b) { return cLower(a) == cLower(b); });
-}
-
 string normalize_path_separators(const string& szPath)
 {
    string szResult = szPath;
@@ -73,36 +62,12 @@ string normalize_path_separators(const string& szPath)
 
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile)
 {
-   auto fn = [](const auto& self, std::filesystem::path path)
+   const std::filesystem::path found = PluginStrings::FindPathNoCase(searchedFile, false);
+   if (std::error_code ec; !found.empty() && !std::filesystem::exists(searchedFile, ec))
    {
-      std::error_code ec;
-      path = path.lexically_normal();
-      if (std::filesystem::exists(path, ec))
-         return path;
-
-      const auto& parent = path.parent_path();
-      std::filesystem::path base = (parent.empty() || parent == path) ? std::filesystem::path("."s) : self(self, parent);
-      if (base.empty())
-         return base;
-
-      for (const auto& ent : std::filesystem::directory_iterator(base, ec))
-      {
-         if (!ec && StrCompareNoCase(ent.path().filename().string(), path.filename().string()))
-         {
-            const auto& found = ent.path();
-            if (found != path)
-            {
-               LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", path.string(), found.string()));
-            }
-            return found;
-         }
-      }
-
-      return std::filesystem::path();
-   };
-
-   const std::filesystem::path result = fn(fn, searchedFile);
-   return result.empty() ? result : std::filesystem::absolute(result);
+      LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", PluginStrings::PathToUTF8(searchedFile), PluginStrings::PathToUTF8(found)));
+   }
+   return found;
 }
 
 }

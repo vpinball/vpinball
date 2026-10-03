@@ -134,13 +134,13 @@ std::filesystem::path PUPManager::FindGameDir(const std::string_view& gameNs, co
    // First search for pupvideos along the table file
    if (m_vpxApi != nullptr)
    {
-      VPXTableInfo tableInfo;
+      VPXTableInfo tableInfo {};
       m_vpxApi->GetTableInfo(&tableInfo);
-      const std::filesystem::path pupBase = std::filesystem::path(tableInfo.path).parent_path() / "pupvideos"sv;
+      const std::filesystem::path pupBase = PluginStrings::PathFromNative(tableInfo.path).parent_path() / "pupvideos"sv;
       if (!gameNs.empty())
-         if (std::filesystem::path path = find_case_insensitive_directory_path(pupBase / gameNs / gameId); !path.empty())
+         if (std::filesystem::path path = find_case_insensitive_directory_path(pupBase / PluginStrings::PathFromUTF8(gameNs) / PluginStrings::PathFromUTF8(gameId)); !path.empty())
             return path;
-      if (std::filesystem::path path = find_case_insensitive_directory_path(pupBase / gameId); !path.empty())
+      if (std::filesystem::path path = find_case_insensitive_directory_path(pupBase / PluginStrings::PathFromUTF8(gameId)); !path.empty())
          return path;
    }
 
@@ -148,9 +148,9 @@ std::filesystem::path PUPManager::FindGameDir(const std::string_view& gameNs, co
    if (!m_szRootPath.empty())
    {
       if (!gameNs.empty())
-         if (std::filesystem::path path = find_case_insensitive_directory_path(m_szRootPath / gameNs / gameId); !path.empty())
+         if (std::filesystem::path path = find_case_insensitive_directory_path(m_szRootPath / PluginStrings::PathFromUTF8(gameNs) / PluginStrings::PathFromUTF8(gameId)); !path.empty())
             return path;
-      return find_case_insensitive_directory_path(m_szRootPath / gameId);
+      return find_case_insensitive_directory_path(m_szRootPath / PluginStrings::PathFromUTF8(gameId));
    }
 
    return {};
@@ -165,7 +165,7 @@ void PUPManager::ApplyGameDir(const std::filesystem::path& path, const std::stri
    m_szRomName = gameId;
    m_controllerGameId = controller.gameId != nullptr ? controller.gameId : "";
    m_controller = { controller.endpointId, m_controllerGameId.c_str() };
-   LOGI("PUP path: " + m_szPath.string());
+   LOGI("PUP path: " + PluginStrings::PathToUTF8(m_szPath));
 
    // Load Fonts
    LoadFonts();
@@ -245,13 +245,13 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
          while (std::getline(screensFile, line)) {
             if (++i == 1)
                continue;
-            std::unique_ptr<PUPScreen> pScreen = PUPScreen::CreateFromCSV(this, line, m_playlists);
+            std::unique_ptr<PUPScreen> pScreen = PUPScreen::CreateFromCSV(this, PluginStrings::TextFromUTF8OrCP1252(line), m_playlists);
             if (pScreen)
                AddScreen(std::move(pScreen));
          }
       }
       else {
-         LOGE("Unable to load " + szScreensPath.string());
+         LOGE("Unable to load " + PluginStrings::PathToUTF8(szScreensPath));
       }
    }
    else {
@@ -366,13 +366,13 @@ void PUPManager::LoadFonts()
             std::filesystem::path szFontPath = entry.path();
             if (lowerCase(szFontPath.extension()) == ".ttf")
             {
-               if (TTF_Font* pTTFFont = TTF_OpenFont(szFontPath.string().c_str(), 8))
+               if (TTF_Font* pTTFFont = TTF_OpenFont(PluginStrings::PathToUTF8(szFontPath).c_str(), 8))
                {
-                  AddFont(std::make_unique<PUPFont>(pTTFFont, szFontPath), entry.path().filename().string());
+                  AddFont(std::make_unique<PUPFont>(pTTFFont, szFontPath), PluginStrings::PathToUTF8(entry.path().filename()));
                }
                else
                {
-                  LOGE("Failed to load font: " + szFontPath.string() + ' ' + SDL_GetError());
+                  LOGE("Failed to load font: " + PluginStrings::PathToUTF8(szFontPath) + ' ' + SDL_GetError());
                }
             }
          }
@@ -385,10 +385,10 @@ void PUPManager::LoadFonts()
 
    if (m_vpxApi)
    {
-      VPXInfo vpxInfo;
+      VPXInfo vpxInfo {};
       m_vpxApi->GetVpxInfo(&vpxInfo);
-      std::filesystem::path fallbackPath = std::filesystem::path(vpxInfo.path) / "assets" / "LiberationSans-Regular.ttf";
-      if (TTF_Font* pTTFFont = TTF_OpenFont(fallbackPath.string().c_str(), 8))
+      std::filesystem::path fallbackPath = PluginStrings::PathFromNative(vpxInfo.path) / "assets" / "LiberationSans-Regular.ttf";
+      if (TTF_Font* pTTFFont = TTF_OpenFont(PluginStrings::PathToUTF8(fallbackPath).c_str(), 8))
          AddFont(std::make_unique<PUPFont>(pTTFFont, fallbackPath), "LiberationSans-Regular.ttf");
    }
 }
@@ -405,9 +405,9 @@ void PUPManager::LoadPlaylists()
       while (std::getline(playlistsFile, line)) {
          if (++i == 1)
             continue;
-         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(this, line);
+         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(this, PluginStrings::TextFromUTF8OrCP1252(line));
          if (pPlaylist) {
-            string folderNameLower = lowerCase(pPlaylist->GetFolder().string());
+            string folderNameLower = lowerCase(PluginStrings::PathToUTF8(pPlaylist->GetFolder()));
             if (lowerPlaylistNames.find(folderNameLower) == lowerPlaylistNames.end()) {
                m_playlists.push_back(pPlaylist);
                lowerPlaylistNames.insert(folderNameLower);
@@ -525,12 +525,15 @@ bool PUPManager::AddFont(std::unique_ptr<PUPFont> pFont, const string& szFilenam
 
    TTF_Font* const pTTFFont = pFont->GetTTFFont();
 
-   const string szFamilyName = TTF_GetFontFamilyName(pTTFFont);
+   // SDL_ttf gives nullptr for fonts without family or style name: the family falls back to the file name without extension
+   const char* const familyName = TTF_GetFontFamilyName(pTTFFont);
+   const string szFamilyName = familyName ? string(familyName) : szFilename.substr(0, szFilename.find_last_of('.'));
    const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  "s, ' '));
    m_fontMap[szNormalizedFamilyName] = pFont.get();
 
-   const string szStyleName = TTF_GetFontStyleName(pTTFFont);
-   if (szStyleName != "Regular")
+   const char* const styleName = TTF_GetFontStyleName(pTTFFont);
+   const string szStyleName = styleName ? string(styleName) : string();
+   if (!szStyleName.empty() && szStyleName != "Regular")
    {
       const string szFullName = szFamilyName + ' ' + szStyleName;
       const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  "s, ' '));
@@ -578,7 +581,7 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
             LOGD(buffer);
          },
          this);
-      m_dmdTriggerDataLoaded = m_dmd->Load(m_szPath.string().c_str(), "", src.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
+      m_dmdTriggerDataLoaded = m_dmd->Load(PluginStrings::PathToNative(m_szPath).c_str(), "", src.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
       memset(m_idFrame.data(), 0, m_idFrame.size());
    }
 

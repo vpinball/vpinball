@@ -38,20 +38,21 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const std::filesystem::path& szFol
    m_priority = priority;
    m_lastIndex = 0;
 
-   if (StrCompareNoCase(szFolder.string(), "PUPOverlays"s))
+   const string szFolderName = PluginStrings::PathToUTF8(szFolder);
+   if (StrCompareNoCase(szFolderName, "PUPOverlays"s))
       m_function = PUPPlaylist::Function::Overlays;
-   else if (StrCompareNoCase(szFolder.string(), "PUPFrames"s))
+   else if (StrCompareNoCase(szFolderName, "PUPFrames"s))
       m_function = PUPPlaylist::Function::Frames;
-   else if (StrCompareNoCase(szFolder.string(), "PUPAlphas"s))
+   else if (StrCompareNoCase(szFolderName, "PUPAlphas"s))
       m_function = PUPPlaylist::Function::Alphas;
-   else if (StrCompareNoCase(szFolder.string(), "PuPShapes"s))
+   else if (StrCompareNoCase(szFolderName, "PuPShapes"s))
       m_function = PUPPlaylist::Function::Shapes;
    else
       m_function = PUPPlaylist::Function::Default;
 
    m_szBasePath = find_case_insensitive_directory_path(manager->GetPath() / szFolder);
    if (m_szBasePath.empty()) {
-      LOGE("Playlist folder not found: " + szFolder.string());
+      LOGE("Playlist folder not found: " + szFolderName);
       return;
    }
 
@@ -83,7 +84,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
       return nullptr;
    }
 
-   std::filesystem::path szFolderPath = find_case_insensitive_directory_path(manager->GetPath() / parts[1]);
+   std::filesystem::path szFolderPath = find_case_insensitive_directory_path(manager->GetPath() / PluginStrings::PathFromUTF8(parts[1]));
    if (szFolderPath.empty()) {
       LOGE("Playlist folder not found: " + parts[1]);
       return nullptr;
@@ -102,7 +103,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 
    if (!hasFiles) {
       // TODO add to a pup pack audit, we log as info as not a big deal.
-      LOGW("Playlist folder " + szFolderPath.string() + " is empty");
+      LOGW("Playlist folder " + PluginStrings::PathToUTF8(szFolderPath) + " is empty");
    }
 
    PUPPlaylist* pPlaylist = new PUPPlaylist(
@@ -163,7 +164,7 @@ void PUPPlaylist::MarkPlayed()
 }
 
 string PUPPlaylist::ToString() const {
-   return "folder=" + m_szFolder.string() +
+   return "folder=" + PluginStrings::PathToUTF8(m_szFolder) +
       ", description=" + m_szDescription +
       ", randomize=" + (m_randomize ? "true" : "false") +
       ", restSeconds=" + std::to_string(m_restSeconds) +

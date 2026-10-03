@@ -39,32 +39,32 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 
    if (!isBg && mainPlaying && priority < currentPriority)
    {
-      LOGD(std::format("Dropping lower priority: screen={}, current={}, new={}, file={}", m_pScreen->GetScreenNum(), currentPriority, priority, szPlayFile.string()));
+      LOGD(std::format("Dropping lower priority: screen={}, current={}, new={}, file={}", m_pScreen->GetScreenNum(), currentPriority, priority, PluginStrings::PathToUTF8(szPlayFile)));
       return;
    }
 
    if (action == PlayAction::SkipSamePriority && mainPlaying && priority > 0 && priority == currentPriority)
    {
-      LOGW(std::format("Skipping same priority, screen={{{}}}, playlist={}, playFile={{{}}}, priority={}", m_pScreen->ToString(false), pPlaylist->ToString(), szPlayFile.string(), priority));
+      LOGW(std::format("Skipping same priority, screen={{{}}}, playlist={}, playFile={{{}}}, priority={}", m_pScreen->ToString(false), pPlaylist->ToString(), PluginStrings::PathToUTF8(szPlayFile), priority));
       return;
    }
 
    const bool preempting = (priority > 0) && (priority > currentPriority);
    if (action == PlayAction::Normal && !preempting && pPlaylist->IsResting())
    {
-      LOGD(std::format("Resting playlist, skipping: screen={}, playlist={}, restSeconds={}", m_pScreen->GetScreenNum(), pPlaylist->GetFolder().string(), pPlaylist->GetRestSeconds()));
+      LOGD(std::format("Resting playlist, skipping: screen={}, playlist={}, restSeconds={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(pPlaylist->GetFolder()), pPlaylist->GetRestSeconds()));
       return;
    }
 
    std::filesystem::path szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (szPath.empty()) {
-      LOGE(std::format("PlayFile not found: screen={{{}}}, playlist={{{}}}, playFile={}", m_pScreen->ToString(false), pPlaylist->ToString(), szPlayFile.string()));
+      LOGE(std::format("PlayFile not found: screen={{{}}}, playlist={{{}}}, playFile={}", m_pScreen->ToString(false), pPlaylist->ToString(), PluginStrings::PathToUTF8(szPlayFile)));
       return;
    }
 
    if (isBg)
    {
-      LOGD(std::format("BG CONFIG: screen={}, file={}", m_pScreen->GetScreenNum(), szPath.filename().string()));
+      LOGD(std::format("BG CONFIG: screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(szPath.filename())));
       m_bg.szPath = szPath;
       m_bg.volume = volume;
       m_bg.active = true;
@@ -76,14 +76,14 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 
    if (mainPlaying && m_queue.front().szPath == szPath)
    {
-      LOGD(std::format("MAIN SKIP (same file): screen={}, file={}", m_pScreen->GetScreenNum(), szPath.filename().string()));
+      LOGD(std::format("MAIN SKIP (same file): screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(szPath.filename())));
       m_player.SetVolume(volume);
       pPlaylist->MarkPlayed();
       return;
    }
    if (!mainPlaying && szPath == m_bg.szPath && m_bg.active && m_player.IsPlaying())
    {
-      LOGD(std::format("MAIN SKIP (bg has file): screen={}, file={}", m_pScreen->GetScreenNum(), szPath.filename().string()));
+      LOGD(std::format("MAIN SKIP (bg has file): screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(szPath.filename())));
       pPlaylist->MarkPlayed();
       return;
    }
@@ -107,7 +107,7 @@ void PUPMediaManager::StartCurrent()
    if (m_queue.empty())
       return;
    const PlayItem& head = m_queue.front();
-   LOGD(std::format("MAIN PLAY: screen={}, vol={:.0f}, pri={}, len={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, head.length, head.szPath.filename().string()));
+   LOGD(std::format("MAIN PLAY: screen={}, vol={:.0f}, pri={}, len={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, head.length, PluginStrings::PathToUTF8(head.szPath.filename())));
    m_player.Play(head.szPath, head.volume);
    m_player.SetLength(head.length);
    m_player.SetLoop(head.loop);
@@ -118,7 +118,7 @@ void PUPMediaManager::PlayBackground()
 {
    if (m_bg.active && !m_bg.szPath.empty())
    {
-      LOGD(std::format("BG PLAY: screen={}, file={}", m_pScreen->GetScreenNum(), m_bg.szPath.filename().string()));
+      LOGD(std::format("BG PLAY: screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(m_bg.szPath.filename())));
       m_player.Play(m_bg.szPath, m_bg.volume);
       m_player.SetLoop(true);
    }
@@ -214,11 +214,11 @@ void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 {
    std::filesystem::path szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (!szPath.empty() && !m_queue.empty() && m_queue.front().szPath == szPath) {
-      LOGD(std::format("Main player stopping playback: screen={{{}}}, path={}", m_pScreen->ToString(false), szPath.string()));
+      LOGD(std::format("Main player stopping playback: screen={{{}}}, path={}", m_pScreen->ToString(false), PluginStrings::PathToUTF8(szPath)));
       Stop();
    }
    else {
-      LOGD(std::format("Main player playback stop requested but currently not playing: screen={{{}}}, path={}", m_pScreen->ToString(false), szPath.string()));
+      LOGD(std::format("Main player playback stop requested but currently not playing: screen={{{}}}, path={}", m_pScreen->ToString(false), PluginStrings::PathToUTF8(szPath)));
    }
 }
 
@@ -232,7 +232,7 @@ void PUPMediaManager::SetMask(const std::filesystem::path& path)
 {
    // Defines a transparency mask from the pixel at 0,0 that is applied to the rendering inside this screen
    m_mask.reset();
-   m_mask = std::shared_ptr<SDL_Surface>(IMG_Load(path.string().c_str()), SDL_DestroySurface);
+   m_mask = std::shared_ptr<SDL_Surface>(IMG_Load(PluginStrings::PathToUTF8(path).c_str()), SDL_DestroySurface);
    if (m_mask && m_mask->format != SDL_PIXELFORMAT_RGBA32)
       m_mask = std::shared_ptr<SDL_Surface>(SDL_ConvertSurface(m_mask.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);
    if (m_mask)

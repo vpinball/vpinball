@@ -37,9 +37,9 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
       return false;
    if (scoreView == nullptr)
    {
-      VPXTableInfo tableInfo;
+      VPXTableInfo tableInfo {};
       vpxApi->GetTableInfo(&tableInfo);
-      std::filesystem::path tablePath = tableInfo.path;
+      std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path);
 
       scoreView = std::make_unique<ScoreView>(msgApi, endpointId, vpxApi);
 
@@ -48,13 +48,17 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
 
       // Then try  a file matching the table's parent folder name with scv extension
       if (!scoreView->HasLayouts())
-         scoreView->Load(tablePath.parent_path() / tablePath.parent_path().filename().replace_extension(".scv"));
+      {
+         std::filesystem::path folderFile = tablePath.parent_path().filename();
+         folderFile += ".scv"; // Appended, instead of replace_extension, otherwise "AFM 1.2" turns into "AFM 1.scv"
+         scoreView->Load(tablePath.parent_path() / folderFile);
+      }
 
       // Allow the user to provide a custom folder (out of application path) with his default layouts ?
       if (!scoreView->HasLayouts())
       {
          if (std::string customPath = layoutFolderProp_Get(); !customPath.empty())
-            scoreView->Load(std::filesystem::path(customPath));
+            scoreView->Load(PluginStrings::PathFromUTF8OrNative(customPath));
       }
 
       // Finally defaults to base layouts provided with the plugin
@@ -63,9 +67,9 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
          // Load default layouts provided with plugin
          std::filesystem::path path;
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-         VPXInfo vpxInfo;
+         VPXInfo vpxInfo {};
          vpxApi->GetVpxInfo(&vpxInfo);
-         path = std::filesystem::path(vpxInfo.path) / "plugins"sv / "scoreview"sv;
+         path = PluginStrings::PathFromNative(vpxInfo.path) / "plugins"sv / "scoreview"sv;
          #else
          path = GetPluginPath();
          #endif

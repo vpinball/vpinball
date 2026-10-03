@@ -88,7 +88,7 @@ bool ResURIResolver::try_parse_int(const string &str, int &value)
 float ResURIResolver::GetFloatState(const string &link)
 {
    return m_stateSources->With(
-      [this, link](const std::vector<StateSrcId> &sources)
+      [this, &link](const std::vector<StateSrcId> &sources)
       {
          if (const auto &cache = m_floatCache.find(link); cache != m_floatCache.end())
             return cache->second(link);
@@ -188,7 +188,7 @@ float ResURIResolver::GetFloatState(const string &link)
 ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string &link)
 {
    return m_segSources->With(
-      [this, link](const std::vector<SegSrcId> &sources)
+      [this, &link](const std::vector<SegSrcId> &sources)
       {
          if (const auto &cache = m_segCache.find(link); cache != m_segCache.end())
             return cache->second(link);
@@ -302,7 +302,7 @@ const DisplaySrcId *ResURIResolver::GetDefaultDisplaySource(const std::vector<Di
 ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
 {
    return m_displaySources->With(
-      [this, link](const std::vector<DisplaySrcId> &sources)
+      [this, &link](const std::vector<DisplaySrcId> &sources)
       {
          if (const auto &cache = m_displayCache.find(link); cache != m_displayCache.end())
             return cache->second(link);

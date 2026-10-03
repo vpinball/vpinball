@@ -8,13 +8,20 @@ namespace Flex {
 
 Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
 {
-   m_pBitmapFont = (BitmapFont*)pAssetManager->Open(pAssetSrc);
+   m_pBitmapFont = (pAssetSrc->GetAssetType() == AssetType_BMFont) ? (BitmapFont*)pAssetManager->Open(pAssetSrc) : nullptr; // Other asset types would open as images
+   if (m_pBitmapFont == nullptr) // Missing or invalid font file: an empty font, drawing nothing
+   {
+      LOGE("Failed to load font: " + pAssetSrc->GetId());
+      m_pBitmapFont = new BitmapFont();
+   }
 
    m_textures = new SDL_Surface*[m_pBitmapFont->GetPageCount()];
    memset((void*)m_textures, 0, sizeof(SDL_Surface*) * m_pBitmapFont->GetPageCount());
 
    for (int i = 0; i < m_pBitmapFont->GetPageCount(); i++) {
       AssetSrc* pTextureAssetSrc = pAssetManager->ResolveSrc(m_pBitmapFont->GetPage(i)->GetFilename(), pAssetSrc);
+      if (pTextureAssetSrc == nullptr) // Invalid page file name: the page stays empty
+         continue;
       m_textures[i] = (SDL_Surface*)pAssetManager->Open(pTextureAssetSrc);
       pTextureAssetSrc->Release();
    }

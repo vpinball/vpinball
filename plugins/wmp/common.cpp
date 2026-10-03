@@ -40,43 +40,14 @@ string normalize_path_separators(const string& szPath)
 
 string find_case_insensitive_file_path(const string& szPath)
 {
-   auto fn = [&](auto& self, const string& s) -> string {
-      string path = normalize_path_separators(s);
-      std::filesystem::path p = std::filesystem::path(path).lexically_normal();
-      std::error_code ec;
-
-      if (std::filesystem::exists(p, ec))
-         return p.string();
-
-      const auto& parent = p.parent_path();
-      string base;
-      if (parent.empty() || parent == p) {
-         base = "."sv;
-      } else {
-         base = self(self, parent.string());
-         if (base.empty())
-            return string();
-      }
-
-      for (const auto& ent : std::filesystem::directory_iterator(base, ec)) {
-         if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
-            const auto& found = ent.path();
-            if (found != path) {
-               LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", path, found.string()));
-            }
-            return found.string();
-         }
-      }
-
+   const std::filesystem::path path = PluginStrings::PathFromUTF8(normalize_path_separators(szPath));
+   const std::filesystem::path result = PluginStrings::FindPathNoCase(path);
+   if (result.empty())
       return string();
-   };
-
-   string result = fn(fn, szPath);
-   if (!result.empty()) {
-      std::filesystem::path p = std::filesystem::absolute(result);
-      return p.string();
-   }
-   return string();
+   std::error_code ec;
+   if (!std::filesystem::exists(path, ec))
+      LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", PluginStrings::PathToUTF8(path), PluginStrings::PathToUTF8(result)));
+   return PluginStrings::PathToUTF8(result);
 }
 
 }

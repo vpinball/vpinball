@@ -170,6 +170,8 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
           return ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, string(), 30, true);
        else {
           AssetSrc* pAssetSrc = m_pFlexDMD->GetAssetManager()->ResolveSrc(path, nullptr);
+          if (pAssetSrc == nullptr)
+             return nullptr;
           AssetType assetType = pAssetSrc->GetAssetType();
           pAssetSrc->Release();
 

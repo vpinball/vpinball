@@ -18,7 +18,6 @@ using std::string;
 namespace AltSound {
 
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
-bool StrCompareNoCase(const string& strA, const string& strB);
 
 LPI_USE_CPP();
 #define LOGD LPI_LOGD_CPP

@@ -617,16 +617,16 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginLoad(const uint32_t sessionId, const M
 
    std::filesystem::path path;
 #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-   VPXInfo vpxInfo;
+   VPXInfo vpxInfo {};
    vpxApi->GetVpxInfo(&vpxInfo);
-   path = std::filesystem::path(vpxInfo.path) / "plugins"sv / "inspector"sv;
+   path = PluginStrings::PathFromNative(vpxInfo.path) / "plugins"sv / "inspector"sv;
 #else
    path = GetPluginPath();
 #endif
    path = path / "assets"sv;
 
    webServer = std::make_unique<WebServer>();
-   webServer->Start(portSetting_Get(), path.string());
+   webServer->Start(portSetting_Get(), PluginStrings::PathToUTF8(path));
 
    controllerSources->Subscribe();
    displaySources->Subscribe();

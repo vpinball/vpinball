@@ -179,11 +179,11 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       return nullptr;
    }
 
-   std::filesystem::path szPlayFile = parts[6];
+   std::filesystem::path szPlayFile = PluginStrings::PathFromUTF8(parts[6]);
    if (!szPlayFile.empty()) {
       szPlayFile = pPlaylist->GetPlayFile(szPlayFile);
       if (szPlayFile.empty()) {
-         LOGE("PlayFile not found for playlist " + pPlaylist->GetFolder().string() + ": " + parts[6]);
+         LOGE("PlayFile not found for playlist " + PluginStrings::PathToUTF8(pPlaylist->GetFolder()) + ": " + parts[6]);
          return nullptr;
       }
    }
@@ -293,7 +293,7 @@ string PUPTrigger::ToString() const {
       ", trigger=" + m_szTrigger +
       ", screen={" + m_pScreen->ToString() + '}' +
       ", playlist={" + m_pPlaylist->ToString() + '}' +
-      ", playFile=" + m_szPlayFile.string() + // FIXME this may cause an exception
+      ", playFile=" + PluginStrings::PathToUTF8(m_szPlayFile) +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
       ", length=" + std::to_string(m_length) +

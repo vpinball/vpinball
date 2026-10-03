@@ -174,15 +174,18 @@ typedef struct GetAncillaryRendererMsg
 #define VPUTOINCHES(x) ((x) * (float)(1.0625 / 50.))
 #endif
 
+// VPXInfo and VPXTableInfo paths are native narrow, unlike the other API strings (UTF-8): with MSVC the process code page (legacy
+// ANSI, or UTF-8 since Windows 10 1903) with '_' for characters it lacks, UTF-8 elsewhere. Convert them with PluginStrings::PathFromNative,
+// which also accepts nullptr (VPXTableInfo::path outside of play). VPX owns them until the next call: copy them
 typedef struct VPXInfo
 {
-   const char* path;              // [R_]
-   const char* prefPath;          // [R_]
+   const char* path;              // [R_] Application folder (native narrow path)
+   const char* prefPath;          // [R_] Preferences folder (native narrow path)
 } VPXInfo;
 
 typedef struct VPXTableInfo
 {
-   const char* path;              // [R_]
+   const char* path;              // [R_] Table file (native narrow path), or nullptr
    float tableWidth, tableHeight; // [R_]
 } VPXTableInfo;
 

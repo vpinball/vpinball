@@ -40,29 +40,29 @@ public:
    static ankerl::unordered_dense::map<string, string> ParseParts(const string& line);
 
 private:
-   int m_alphaChannel;
-   int m_redChannel;
-   int m_greenChannel;
-   int m_blueChannel;
-   bool m_bold;
-   bool m_italic;
-   bool m_packed;
-   bool m_smoothed;
-   bool m_unicode;
+   int m_alphaChannel = 0;
+   int m_redChannel = 0;
+   int m_greenChannel = 0;
+   int m_blueChannel = 0;
+   bool m_bold = false;
+   bool m_italic = false;
+   bool m_packed = false;
+   bool m_smoothed = false;
+   bool m_unicode = false;
 
    string m_szCharset;
    string m_szFamilyName;
-   int m_fontSize;
+   int m_fontSize = 0;
    ankerl::unordered_dense::map<int, Kerning*> m_kernings;
    ankerl::unordered_dense::map<char, Character*> m_characters;
-   int m_baseHeight;
-   int m_lineHeight;
-   int m_stretchedHeight;
-   int m_outlineSize;
+   int m_baseHeight = 0;
+   int m_lineHeight = 0;
+   int m_stretchedHeight = 0;
+   int m_outlineSize = 0;
    SDL_Rect m_padding;
    vector<Page*> m_pages;
    SDL_Point m_spacing;
-   int m_superSampling;
+   int m_superSampling = 0;
    SDL_Rect m_textureSize;
 };
 

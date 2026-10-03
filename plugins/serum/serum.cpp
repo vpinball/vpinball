@@ -19,6 +19,8 @@
 #include <thread>
 #include <vector>
 
+#include "plugins/PluginStrings.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Serum Colorization plugin
 //
@@ -159,7 +161,7 @@ class SerumColorizer
 {
 public:
    SerumColorizer(const std::filesystem::path& serumPath, const std::string_view& currentGameId, uint32_t controllerEndpointId)
-      : m_pSerum(Serum_Load(serumPath.string().c_str(), string(currentGameId).c_str(), SerumRequestFlags()))
+      : m_pSerum(Serum_Load(PluginStrings::PathToNative(serumPath).c_str(), string(currentGameId).c_str(), SerumRequestFlags()))
       , m_controllerEndpointId(controllerEndpointId)
       , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
       , m_colorizedframeId(std_rand())
@@ -558,8 +560,10 @@ private:
 // which rom/ sits.
 static std::filesystem::path GetColorization(const std::string_view& gameNs, const std::string_view& gameId)
 {
-   const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
-   const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
+   const std::filesystem::path cromc = PluginStrings::PathFromUTF8(std::format("{}{}", gameId, ".cROMc"));
+   const std::filesystem::path crz = PluginStrings::PathFromUTF8(std::format("{}{}", gameId, ".cRZ"));
+   const std::filesystem::path gameNsPath = PluginStrings::PathFromUTF8(gameNs);
+   const std::filesystem::path gameIdPath = PluginStrings::PathFromUTF8(gameId);
 
    VPXPluginAPI* vpxApi = nullptr;
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
@@ -569,29 +573,29 @@ static std::filesystem::path GetColorization(const std::string_view& gameNs, con
    // host that has tables. Other hosts -- PPUC drives real pinball hardware,
    // and there are headless colorization tools -- have no VPX API at all and
    // must still reach the global setting below.
+   VPXTableInfo tableInfo {};
    if (vpxApi != nullptr)
-   {
-      VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
-      std::filesystem::path tablePath = tableInfo.path;
+   if (const std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path); !tablePath.empty())
+   {
       const std::filesystem::path serumBase = tablePath.parent_path() / "serum"sv;
 
-      std::vector<std::filesystem::path> bases = { serumBase / gameNs, serumBase };
+      std::vector<std::filesystem::path> bases = { serumBase / gameNsPath, serumBase };
       if (gameNs == "pinmame"sv)
          bases.push_back(tablePath.parent_path() / "pinmame"sv / "altcolor"sv);
       for (const std::filesystem::path& base : bases)
       {
-         if (auto path = find_case_insensitive_file_path(base / gameId / cromc); !path.empty())
+         if (auto path = find_case_insensitive_file_path(base / gameIdPath / cromc); !path.empty())
             return path.parent_path().parent_path();
-         else if (path = find_case_insensitive_file_path(base / gameId / crz); !path.empty())
+         else if (path = find_case_insensitive_file_path(base / gameIdPath / crz); !path.empty())
             return path.parent_path().parent_path();
       }
    }
 
    // Priority 3: global setting path
-   if (std::filesystem::path serumPath = serumPathProp_Get(); !serumPath.empty())
-      for (const std::filesystem::path& base : { serumPath / gameNs, serumPath })
-         if (!find_case_insensitive_file_path(base / gameId / cromc).empty() || !find_case_insensitive_file_path(base / gameId / crz).empty())
+   if (std::filesystem::path serumPath = PluginStrings::PathFromUTF8OrNative(serumPathProp_Get()); !serumPath.empty())
+      for (const std::filesystem::path& base : { serumPath / gameNsPath, serumPath })
+         if (!find_case_insensitive_file_path(base / gameIdPath / cromc).empty() || !find_case_insensitive_file_path(base / gameIdPath / crz).empty())
             return base;
 
    return std::filesystem::path();
@@ -634,7 +638,7 @@ static void OnControllerChanged()
          const ControllerDef& selectedController = items.front();
          const std::string_view currentGameId = PinballPlugin::Controller::CtrlGetGameKey(selectedController.gameId);
          const std::filesystem::path serumPath = GetColorization(PinballPlugin::Controller::CtrlGetGameNamespace(selectedController.gameId), currentGameId);
-         LOGI(std::format("Loading from '{}' for '{}'", serumPath.string(), selectedController.gameId));
+         LOGI(std::format("Loading from '{}' for '{}'", PluginStrings::PathToUTF8(serumPath), selectedController.gameId));
 
          // Claim the game before loading it, not after.
          //

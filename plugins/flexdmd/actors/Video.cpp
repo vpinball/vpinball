@@ -31,6 +31,8 @@ Video::~Video()
 Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& path, const string& name, bool loop)
 {
    AssetSrc* pSrc = pAssetManager->ResolveSrc(path, NULL);
+   if (pSrc == nullptr)
+      return nullptr;
 
    const LibAV::LibAV& m_libAv = LibAV::LibAV::GetInstance();
    assert(m_libAv.isLoaded);

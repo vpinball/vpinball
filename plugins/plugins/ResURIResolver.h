@@ -75,6 +75,7 @@ public:
       DisplayFrame state;
    };
    DisplayState GetDisplayState(const std::string &link);
+   static inline const std::string DefaultDmdUri = "ctrl://default/display?dmd_only=1"; // The default display, if it is a DMD
    std::string DumpDisplaySources() const;
    static const DisplaySrcId *GetDefaultDisplaySource(const std::vector<DisplaySrcId> &sources);
    

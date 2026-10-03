@@ -15,6 +15,8 @@
 #include "plugins/VPXPlugin.h" // Only used for optional feature (visual feedback on error)
 #include <climits>
 
+#include "plugins/PluginStrings.h"
+
 using json = nlohmann::json;
 
 namespace PinMAME
@@ -199,7 +201,7 @@ void Controller::Run(long hParentWnd, int nMinVersion)
                   if (index.is_object() && index.contains(m_szRomName) && index[m_szRomName].is_string())
                   {
                      // Load memmap
-                     const std::filesystem::path subPath(index[m_szRomName].get<string>());
+                     const std::filesystem::path subPath = PluginStrings::PathFromUTF8(index[m_szRomName].get<string>());
                      std::ifstream memmapFile(m_memmapPath / subPath, std::ios::binary | std::ios::ate);
                      std::streamsize memmapSize = memmapFile.tellg();
                      memmapFile.seekg(0, std::ios::beg);
@@ -214,9 +216,10 @@ void Controller::Run(long hParentWnd, int nMinVersion)
                         && memMapDef["_metadata"]["platform"].is_string())
                      {
                         string platformFilename = memMapDef["_metadata"]["platform"].get<string>() + ".json";
-                        if (!platformFilename.empty() && std::filesystem::exists(m_memmapPath / "platforms" / platformFilename))
+                        const std::filesystem::path platformPath = m_memmapPath / "platforms" / PluginStrings::PathFromUTF8(platformFilename);
+                        if (!platformFilename.empty() && std::filesystem::exists(platformPath, ec))
                         {
-                           std::ifstream platformFile(m_memmapPath / "platforms" / platformFilename, std::ios::binary | std::ios::ate);
+                           std::ifstream platformFile(platformPath, std::ios::binary | std::ios::ate);
                            std::streamsize platformSize = platformFile.tellg();
                            platformFile.seekg(0, std::ios::beg);
                            platform.resize(platformSize);
@@ -229,7 +232,7 @@ void Controller::Run(long hParentWnd, int nMinVersion)
                }
                catch (const json::parse_error& e)
                {
-                  LOGE("JSON parse error while parsing memmap in "s + it->path().string() + ": " + e.what());
+                  LOGE("JSON parse error while parsing memmap in " + PluginStrings::PathToUTF8(it->path()) + ": " + e.what());
                }
             }
             break;

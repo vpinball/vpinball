@@ -36,6 +36,9 @@ using std::vector;
 // Shared logging
 #include "plugins/LoggingPlugin.h"
 
+// Shared string and path helpers
+#include "plugins/PluginStrings.h"
+
 // VPX main API
 #include "plugins/VPXPlugin.h"
 

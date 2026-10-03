@@ -35,17 +35,22 @@ WMPAudioPlayer::WMPAudioPlayer(const MsgPluginAPI* msgApi, uint32_t endpointId, 
 
 WMPAudioPlayer::~WMPAudioPlayer() { UnloadFile(); }
 
-bool WMPAudioPlayer::LoadFile(const string& filepath)
+bool WMPAudioPlayer::LoadFile(const std::filesystem::path& filepath)
 {
    UnloadFile();
 
-   LOGI("Loading audio file: " + filepath);
+   const string filepathUTF8 = PluginStrings::PathToUTF8(filepath);
+   LOGI("Loading audio file: " + filepathUTF8);
 
    const ma_decoder_config config = wmp_ma_decoder_config_init(ma_format_f32, 0, 0);
+#ifdef _WIN32
+   ma_result result = wmp_ma_decoder_init_file_w(filepath.c_str(), &config, &m_decoder);
+#else
    ma_result result = wmp_ma_decoder_init_file(filepath.c_str(), &config, &m_decoder);
+#endif
    if (result != MA_SUCCESS)
    {
-      LOGE("Failed to initialize decoder for file: " + filepath + " (error: " + std::to_string(result) + ')');
+      LOGE("Failed to initialize decoder for file: " + filepathUTF8 + " (error: " + std::to_string(result) + ')');
       return false;
    }
 
@@ -86,7 +91,7 @@ bool WMPAudioPlayer::LoadFile(const string& filepath)
    wmp_ma_sound_set_volume(&m_sound, m_volume.load());
    wmp_ma_sound_set_end_callback(&m_sound, SoundEndCallback, this);
 
-   m_loadedFile = filepath;
+   m_loadedFile = filepathUTF8;
    m_isLoaded = true;
 
    // The host drops audio updates from a source it has not enumerated, so advertise before starting the engine

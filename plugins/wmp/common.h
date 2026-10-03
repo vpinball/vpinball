@@ -7,6 +7,7 @@
 #include "plugins/ScriptablePlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "plugins/ControllerPlugin.h"
+#include "plugins/PluginStrings.h"
 
 #include <string>
 using namespace std::string_literals;
@@ -28,7 +29,7 @@ template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx
 namespace WMP {
 
 string normalize_path_separators(const string& szPath);
-string find_case_insensitive_file_path(const string& szPath);
+string find_case_insensitive_file_path(const string& szPath); // UTF-8 path in and out
 bool StrCompareNoCase(const string& strA, const string& strB);
 
 LPI_USE_CPP();

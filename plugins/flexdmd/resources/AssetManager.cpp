@@ -86,8 +86,8 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       else if (pBaseSrc->GetSrcType() == AssetSrcType_VPXResource)
          parts[0] = "VPX." + parts[0];
       else if (pBaseSrc->GetSrcType() == AssetSrcType_File) {
-         std::filesystem::path path = std::filesystem::path(pBaseSrc->GetPath()).parent_path() / parts[0];
-         parts[0] = path.lexically_normal().string();
+         std::filesystem::path path = PluginStrings::PathFromUTF8(pBaseSrc->GetPath()).parent_path() / PluginStrings::PathFromUTF8(parts[0]);
+         parts[0] = PluginStrings::PathToUTF8(path.lexically_normal());
       }
    }
 
@@ -112,7 +112,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       pAssetSrc->SetSrcType(AssetSrcType_VPXResource);
       pAssetSrc->SetPath(parts[0].substr(4));
       ext.clear();
-      if (m_vpxFile == nullptr && std::filesystem::exists(m_szBasePath + m_szTableFile))
+      if (m_vpxFile == nullptr && std::filesystem::exists(PluginStrings::PathFromUTF8(m_szBasePath + m_szTableFile)))
       {
          m_vpxFile = new VPXFile(m_szBasePath + m_szTableFile);
          //log.Info("Path for resolving VPX embedded resources defined to '{0}'", _vpxFile.ToString());
@@ -134,7 +134,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    }
    else {
       pAssetSrc->SetSrcType(AssetSrcType_File);
-      if (!pBaseSrc && !std::filesystem::path(parts[0]).is_absolute())
+      if (!pBaseSrc && !PluginStrings::PathFromUTF8(parts[0]).is_absolute())
          pAssetSrc->SetPath(m_szBasePath + parts[0]);
       else
          pAssetSrc->SetPath(parts[0]);
@@ -238,14 +238,14 @@ void* AssetManager::Open(AssetSrc* pSrc)
    switch(pSrc->GetSrcType()) {
       case AssetSrcType_File:
       {
-        std::filesystem::path path = find_case_insensitive_file_path(pSrc->GetPath());
+        std::filesystem::path path = find_case_insensitive_file_path(PluginStrings::PathFromUTF8(pSrc->GetPath()));
         if (!path.empty()) {
            if (pSrc->GetAssetType() == AssetType_BMFont)
               pAsset = BitmapFont::Create(path);
            else if (pSrc->GetAssetType() != AssetType_GIF)
-              pAsset = IMG_Load(path.string().c_str());
+              pAsset = IMG_Load(PluginStrings::PathToUTF8(path).c_str());
            else
-              pAsset = IMG_LoadAnimation(path.string().c_str());
+              pAsset = IMG_LoadAnimation(PluginStrings::PathToUTF8(path).c_str());
         }
       }
       break;
@@ -254,26 +254,26 @@ void* AssetManager::Open(AssetSrc* pSrc)
          // Load assets provided with plugin
          std::filesystem::path path;
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-         VPXInfo vpxInfo;
+         VPXInfo vpxInfo {};
          m_vpxApi->GetVpxInfo(&vpxInfo);
-         path = std::filesystem::path(vpxInfo.path) / "plugins" / "flexdmd";
+         path = PluginStrings::PathFromNative(vpxInfo.path) / "plugins" / "flexdmd";
          #else
          path = GetPluginPath();
          #endif
-         path = find_case_insensitive_file_path(path / "assets" / pSrc->GetPath());
+         path = find_case_insensitive_file_path(path / "assets" / PluginStrings::PathFromUTF8(pSrc->GetPath()));
          if (!path.empty()) {
             if (pSrc->GetAssetType() == AssetType_BMFont)
                pAsset = BitmapFont::Create(path);
             else if (pSrc->GetAssetType() != AssetType_GIF)
-               pAsset = IMG_Load(path.string().c_str());
+               pAsset = IMG_Load(PluginStrings::PathToUTF8(path).c_str());
             else
-               pAsset = IMG_LoadAnimation(path.string().c_str());
+               pAsset = IMG_LoadAnimation(PluginStrings::PathToUTF8(path).c_str());
          }
       }
       break;
       case AssetSrcType_VPXResource:
       {
-         if (m_vpxFile == nullptr && std::filesystem::exists(m_szBasePath + m_szTableFile))
+         if (m_vpxFile == nullptr && std::filesystem::exists(PluginStrings::PathFromUTF8(m_szBasePath + m_szTableFile)))
          {
             m_vpxFile = new VPXFile(m_szBasePath + m_szTableFile);
             //log.Info("Path for resolving VPX embedded resources defined to '{0}'", _vpxFile.ToString());

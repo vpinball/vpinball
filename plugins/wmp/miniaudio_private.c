@@ -22,6 +22,13 @@ ma_result wmp_ma_decoder_init_file(const char* pFilePath, const ma_decoder_confi
    return ma_decoder_init_file(pFilePath, pConfig, pDecoder);
 }
 
+#ifdef _WIN32
+ma_result wmp_ma_decoder_init_file_w(const wchar_t* pFilePath, const ma_decoder_config* pConfig, ma_decoder* pDecoder)
+{
+   return ma_decoder_init_file_w(pFilePath, pConfig, pDecoder);
+}
+#endif
+
 ma_result wmp_ma_decoder_get_data_format(ma_decoder* pDecoder, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap)
 {
    return ma_decoder_get_data_format(pDecoder, pFormat, pChannels, pSampleRate, pChannelMap, channelMapCap);

@@ -24,7 +24,21 @@
 #include "../utils/VPXGraphics.h"
 #include "../utils/VPXGraphics.h"
 
+#include "plugins/PluginStrings.h"
+
 namespace B2SLegacy {
+
+// Missing elements or attributes of malformed directb2s files give the default value instead of a null string
+static const char* Attr(const tinyxml2::XMLElement* node, const char* name, const char* def = "")
+{
+   const char* const value = node ? node->Attribute(name) : nullptr;
+   return value ? value : def;
+}
+
+static int IntAttr(const tinyxml2::XMLElement* node, const char* name, int def = 0)
+{
+   return node ? node->IntAttribute(name, def) : def;
+}
 
 FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, const MsgPluginAPI* msgApi,uint32_t endpointId, B2SData* pB2SData)
    : Form(vpxApi, msgApi, endpointId, pB2SData, "Backglass"s),
@@ -348,7 +362,11 @@ const SDL_FRect& FormBackglass::GetScaleFactor() const
 
 void FormBackglass::LoadB2SData()
 {
-   const std::filesystem::path tablePath(m_pB2SData->GetTableFileName());
+   const std::filesystem::path tablePath = PluginStrings::PathFromUTF8(m_pB2SData->GetTableFileName());
+   if (tablePath.empty()) {
+      LOGD("No table path, no directb2s file to load"s);
+      throw std::exception();
+   }
    std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
    
    // Search for a file matching the template 'foldername.directb2s' for file layout where tables are located in a folder with their companion files (b2s, pup, flex, music, ...)
@@ -364,9 +382,10 @@ void FormBackglass::LoadB2SData()
       throw std::exception();
    }
 
-   LOGI("directb2s file found at: " + b2sFilename.string());
+   const string b2sFilenameUTF8 = PluginStrings::PathToUTF8(b2sFilename);
+   LOGI("directb2s file found at: " + b2sFilenameUTF8);
 
-   m_pB2SData->SetBackglassFileName(b2sFilename.string());
+   m_pB2SData->SetBackglassFileName(b2sFilenameUTF8);
 
    std::ifstream infile(b2sFilename);
    if (!infile.good())
@@ -380,16 +399,16 @@ void FormBackglass::LoadB2SData()
 
    auto xml = buffer.str();
    if (b2sTree.Parse(xml.c_str(), xml.size())) {
-      LOGE("Failed to parse directb2s file: " + b2sFilename.string());
+      LOGE("Failed to parse directb2s file: " + b2sFilenameUTF8);
       throw std::exception();
    }
 
    if (!b2sTree.FirstChildElement("DirectB2SData")) {
-      LOGE("Invalid directb2s file: " + b2sFilename.string());
+      LOGE("Invalid directb2s file: " + b2sFilenameUTF8);
       throw std::exception();
    }
 
-   m_pB2SSettings->SetBackglassFileVersion(b2sTree.FirstChildElement("DirectB2SData")->Attribute("Version"));
+   m_pB2SSettings->SetBackglassFileVersion(Attr(b2sTree.FirstChildElement("DirectB2SData"), "Version"));
 
    // current backglass version is not allowed to be larger than server version and to be smaller minimum B2S version
    if (m_pB2SSettings->GetBackglassFileVersion() > string(B2S_VERSION_STRING)) {
@@ -413,14 +432,14 @@ void FormBackglass::LoadB2SData()
    m_pB2SData->ClearAll(true);
 
    // get some basic info
-   m_pB2SData->SetTableName(topnode->FirstChildElement("Name")->Attribute("Value"));
-   m_pB2SData->SetTableType(topnode->FirstChildElement("TableType")->IntAttribute("Value"));
-   m_pB2SData->SetDMDType(topnode->FirstChildElement("DMDType")->IntAttribute("Value"));
+   m_pB2SData->SetTableName(Attr(topnode->FirstChildElement("Name"), "Value"));
+   m_pB2SData->SetTableType(IntAttr(topnode->FirstChildElement("TableType"), "Value"));
+   m_pB2SData->SetDMDType(IntAttr(topnode->FirstChildElement("DMDType"), "Value"));
    if (topnode->FirstChildElement("DMDDefaultLocation"))
       m_pB2SData->SetDMDDefaultLocation({
          topnode->FirstChildElement("DMDDefaultLocation")->IntAttribute("LocX"), topnode->FirstChildElement("DMDDefaultLocation")->IntAttribute("LocY") });
-   m_pB2SData->SetGrillHeight(std::max(topnode->FirstChildElement("GrillHeight")->IntAttribute("Value"), 0));
-   if (topnode->FirstChildElement("GrillHeight")->FindAttribute("Small") && m_pB2SData->GetGrillHeight() > 0)
+   m_pB2SData->SetGrillHeight(std::max(IntAttr(topnode->FirstChildElement("GrillHeight"), "Value"), 0));
+   if (topnode->FirstChildElement("GrillHeight") && topnode->FirstChildElement("GrillHeight")->FindAttribute("Small") && m_pB2SData->GetGrillHeight() > 0)
       m_pB2SData->SetSmallGrillHeight(std::max(topnode->FirstChildElement("GrillHeight")->IntAttribute("Small"), 0));
    if (topnode->FirstChildElement("DualBackglass"))
       m_pB2SData->SetDualBackglass(topnode->FirstChildElement("DualBackglass")->IntAttribute("Value") == 1);
@@ -452,7 +471,7 @@ void FormBackglass::LoadB2SData()
    std::map<string, int> roms4Fantasy;
    if (topnode->FirstChildElement("Illumination")) {
       for (auto innerNode = topnode->FirstChildElement("Illumination")->FirstChildElement("Bulb");  innerNode != nullptr; innerNode = innerNode->NextSiblingElement("Bulb")) {
-         string parent = innerNode->Attribute("Parent");
+         string parent = Attr(innerNode, "Parent");
          int id = innerNode->IntAttribute("ID");
          int romid = 0;
          eRomIDType romidtype = (eRomIDType)0;
@@ -475,7 +494,7 @@ void FormBackglass::LoadB2SData()
          int dualmode = 0;
          if (innerNode->FindAttribute("DualMode"))
                dualmode = innerNode->IntAttribute("DualMode");
-         string name = innerNode->Attribute("Name");
+         string name = Attr(innerNode, "Name");
          bool isimagesnippit = false;
          if (innerNode->FindAttribute("IsImageSnippit"))
             isimagesnippit = (innerNode->IntAttribute("IsImageSnippit") == 1);
@@ -505,10 +524,10 @@ void FormBackglass::LoadB2SData()
          //bool visible = (innerNode->IntAttribute("Visible") == 1);
          SDL_Point loc = { innerNode->IntAttribute("LocX"), innerNode->IntAttribute("LocY") };
          SDL_Rect size = { 0, 0, innerNode->IntAttribute("Width"), innerNode->IntAttribute("Height") };
-         VPXTexture pImage = Base64ToImage(innerNode->Attribute("Image"));
+         VPXTexture pImage = Base64ToImage(Attr(innerNode, "Image"));
          VPXTexture pOffImage = nullptr;
          if (innerNode->FindAttribute("OffImage"))
-            pOffImage = Base64ToImage(innerNode->Attribute("OffImage"));
+            pOffImage = Base64ToImage(Attr(innerNode, "OffImage"));
          if (picboxtype == ePictureBoxType_StandardImage) {
             // Events of overlapping pictures get merged #76, crop image transparency
             VPXTexture pCroppedTexture = CropImageToTransparency(pImage, pOffImage, loc, size);
@@ -605,14 +624,14 @@ void FormBackglass::LoadB2SData()
       if (topnode->FirstChildElement("Scores")->FindAttribute("ReelRollingInterval"))
          rollinginterval = topnode->FirstChildElement("Scores")->IntAttribute("ReelRollingInterval");
       for (auto innerNode = topnode->FirstChildElement("Scores")->FirstChildElement("Score"); innerNode != nullptr; innerNode = innerNode->NextSiblingElement("Score")) {
-         string parent = innerNode->Attribute("Parent");
+         string parent = Attr(innerNode, "Parent");
          int id = innerNode->IntAttribute("ID");
          int setid = 0;
          if (innerNode->FindAttribute("ReelIlluImageSet"))
             setid = innerNode->IntAttribute("ReelIlluImageSet");
-         string reeltype = innerNode->Attribute("ReelType");
-         uint32_t reellitcolor = String2Color(innerNode->Attribute("ReelLitColor"));
-         uint32_t reeldarkcolor = String2Color(innerNode->Attribute("ReelDarkColor"));
+         string reeltype = Attr(innerNode, "ReelType");
+         uint32_t reellitcolor = String2Color(Attr(innerNode, "ReelLitColor"));
+         uint32_t reeldarkcolor = String2Color(Attr(innerNode, "ReelDarkColor"));
          float d7glow = innerNode->FloatAttribute("Glow") / 100.0f;
          float d7thickness = innerNode->FloatAttribute("Thickness") / 100.0f;
          float d7shear = innerNode->FloatAttribute("Shear") / 100.0f;
@@ -795,7 +814,7 @@ void FormBackglass::LoadB2SData()
                // look for matching reel sound
                soundName.clear();
                if (innerNode->FindAttribute(("Sound" + std::to_string(i)).c_str())) {
-                  soundName = innerNode->Attribute(("Sound" + std::to_string(i)).c_str());
+                  soundName = Attr(innerNode, ("Sound" + std::to_string(i)).c_str());
                   if (soundName.empty())
                      soundName = "stille"sv;
                }
@@ -865,8 +884,8 @@ void FormBackglass::LoadB2SData()
    if (topnode->FirstChildElement("Reels")) {
       if (topnode->FirstChildElement("Reels")->FirstChildElement("Image")) {
          for (auto innerNode = topnode->FirstChildElement("Reels")->FirstChildElement("Image");  innerNode != nullptr; innerNode = innerNode->NextSiblingElement("Image")) {
-            string name = innerNode->Attribute("Name");
-            VPXTexture pImage = Base64ToImage(innerNode->Attribute("Image"));
+            string name = Attr(innerNode, "Name");
+            VPXTexture pImage = Base64ToImage(Attr(innerNode, "Image"));
             if (!m_pB2SData->GetReelImages()->contains(name))
                (*m_pB2SData->GetReelImages())[name] = pImage;
             else
@@ -875,8 +894,8 @@ void FormBackglass::LoadB2SData()
       }
       else if (topnode->FirstChildElement("Reels")->FirstChildElement("Images") && topnode->FirstChildElement("Reels")->FirstChildElement("Images")->FirstChildElement("Image")) {
          for (auto innerNode = topnode->FirstChildElement("Reels")->FirstChildElement("Images")->FirstChildElement("Image");  innerNode != nullptr; innerNode = innerNode->NextSiblingElement("Image")) {
-            string name = innerNode->Attribute("Name");
-            VPXTexture pImage = Base64ToImage(innerNode->Attribute("Image"));
+            string name = Attr(innerNode, "Name");
+            VPXTexture pImage = Base64ToImage(Attr(innerNode, "Image"));
             if (!m_pB2SData->GetReelImages()->contains(name))
                (*m_pB2SData->GetReelImages())[name] = pImage;
             else
@@ -886,7 +905,7 @@ void FormBackglass::LoadB2SData()
                int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                for (int i = 1; i <= countOfIntermediates; i++) {
                   string intname = name + '_' + std::to_string(i);
-                  VPXTexture pIntImage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
+                  VPXTexture pIntImage = Base64ToImage(Attr(innerNode, ("IntermediateImage" + std::to_string(i)).c_str()));
                   if (!m_pB2SData->GetReelIntermediateImages()->contains(intname))
                      (*m_pB2SData->GetReelIntermediateImages())[intname] = pIntImage;
                   else
@@ -898,8 +917,8 @@ void FormBackglass::LoadB2SData()
          if (topnode->FirstChildElement("Reels")->FirstChildElement("IlluminatedImages")) {
             if (topnode->FirstChildElement("Reels")->FirstChildElement("IlluminatedImages")->FirstChildElement("IlluminatedImage")) {
                for (auto innerNode = topnode->FirstChildElement("Reels")->FirstChildElement("IlluminatedImages")->FirstChildElement("IlluminatedImage"); innerNode != nullptr; innerNode = innerNode->NextSiblingElement("IlluminatedImage")) {
-                  string name = innerNode->Attribute("Name");
-                  VPXTexture pImage = Base64ToImage(innerNode->Attribute("Image"));
+                  string name = Attr(innerNode, "Name");
+                  VPXTexture pImage = Base64ToImage(Attr(innerNode, "Image"));
                   if (!m_pB2SData->GetReelIlluImages()->contains(name))
                      (*m_pB2SData->GetReelIlluImages())[name] = pImage;
                   else
@@ -909,7 +928,7 @@ void FormBackglass::LoadB2SData()
                      int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                      for (int i = 1; i <= countOfIntermediates; i++) {
                         string intname = name + '_' + std::to_string(i);
-                        VPXTexture pIntImage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
+                        VPXTexture pIntImage = Base64ToImage(Attr(innerNode, ("IntermediateImage" + std::to_string(i)).c_str()));
                         if (!m_pB2SData->GetReelIntermediateIlluImages()->contains(intname))
                            (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = pIntImage;
                         else
@@ -922,8 +941,8 @@ void FormBackglass::LoadB2SData()
                for (auto setnode = topnode->FirstChildElement("Reels")->FirstChildElement("IlluminatedImages")->FirstChildElement("Set"); setnode != nullptr; setnode = setnode->NextSiblingElement("Set")) {
                   int setid = setnode->IntAttribute("ID");
                   for (auto innerNode = setnode->FirstChildElement("IlluminatedImage"); innerNode != nullptr; innerNode = innerNode->NextSiblingElement("IlluminatedImage")) {
-                     string name = innerNode->Attribute("Name") + ('_' + std::to_string(setid));
-                     VPXTexture pImage = Base64ToImage(innerNode->Attribute("Image"));
+                     string name = Attr(innerNode, "Name") + ('_' + std::to_string(setid));
+                     VPXTexture pImage = Base64ToImage(Attr(innerNode, "Image"));
                      if (!m_pB2SData->GetReelIlluImages()->contains(name))
                         (*m_pB2SData->GetReelIlluImages())[name] = pImage;
                      else
@@ -933,7 +952,7 @@ void FormBackglass::LoadB2SData()
                         int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                         for (int i = 1; i <= countOfIntermediates; i++) {
                            string intname = name + '_' + std::to_string(i);
-                           VPXTexture pIntImage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
+                           VPXTexture pIntImage = Base64ToImage(Attr(innerNode, ("IntermediateImage" + std::to_string(i)).c_str()));
                            if (!m_pB2SData->GetReelIntermediateIlluImages()->contains(intname))
                               (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = pIntImage;
                            else
@@ -950,8 +969,8 @@ void FormBackglass::LoadB2SData()
    // maybe get all sounds
    if (topnode->FirstChildElement("Sounds")) {
       for (auto innerNode = topnode->FirstChildElement("Sounds")->FirstChildElement("Sound"); innerNode != nullptr; innerNode = innerNode->NextSiblingElement("Sound")) {
-         string name = innerNode->Attribute("Name");
-         Sound* pSound = Base64ToWav(innerNode->Attribute("Stream"));
+         string name = Attr(innerNode, "Name");
+         Sound* pSound = Base64ToWav(Attr(innerNode, "Stream"));
          if (!m_pB2SData->GetSounds()->contains(name))
             (*m_pB2SData->GetSounds())[name] = pSound;
       }
@@ -967,7 +986,7 @@ void FormBackglass::LoadB2SData()
       if (topnode->FirstChildElement("Images")->FirstChildElement("BackglassOffImage")) {
          m_pB2SData->SetOnAndOffImage(true);
          // get on and off image
-         VPXTexture pOffImage = Base64ToImage(topnode->FirstChildElement("Images")->FirstChildElement("BackglassOffImage")->Attribute("Value"));
+         VPXTexture pOffImage = Base64ToImage(Attr(topnode->FirstChildElement("Images")->FirstChildElement("BackglassOffImage"), "Value"));
          if (pOffImage) {
             SetDarkImage4Authentic(VPXGraphics::DuplicateTexture(m_vpxApi, pOffImage));
             if (m_pB2SData->IsDualBackglass())
@@ -976,7 +995,7 @@ void FormBackglass::LoadB2SData()
          }
          auto onimagenode = topnode->FirstChildElement("Images")->FirstChildElement("BackglassOnImage");
          if (onimagenode) {
-            VPXTexture pOnImage = Base64ToImage(onimagenode->Attribute("Value"));
+            VPXTexture pOnImage = Base64ToImage(Attr(onimagenode, "Value"));
             if (pOnImage) {
                SetTopLightImage4Authentic(VPXGraphics::DuplicateTexture(m_vpxApi, pOnImage));
                if (m_pB2SData->IsDualBackglass())
@@ -1023,7 +1042,7 @@ void FormBackglass::LoadB2SData()
       else {
          VPXTexture pImage = nullptr;
          if (topnode->FirstChildElement("Images")->FirstChildElement("BackglassImage")) {
-            pImage = Base64ToImage(topnode->FirstChildElement("Images")->FirstChildElement("BackglassImage")->Attribute("Value"));
+            pImage = Base64ToImage(Attr(topnode->FirstChildElement("Images")->FirstChildElement("BackglassImage"), "Value"));
             if (pImage) {
                SetDarkImage4Authentic(VPXGraphics::DuplicateTexture(m_vpxApi, pImage));
                if (m_pB2SData->IsDualBackglass())
@@ -1038,7 +1057,7 @@ void FormBackglass::LoadB2SData()
       // DMD image
       VPXTexture pImage = nullptr;
       if (topnode->FirstChildElement("Images")->FirstChildElement("DMDImage")) {
-         pImage = Base64ToImage(topnode->FirstChildElement("Images")->FirstChildElement("DMDImage")->Attribute("Value"));
+         pImage = Base64ToImage(Attr(topnode->FirstChildElement("Images")->FirstChildElement("DMDImage"), "Value"));
          if (pImage) {
             if (!m_pB2SSettings->IsHideB2SDMD()) {
                CheckDMDForm();
@@ -1133,14 +1152,14 @@ void FormBackglass::LoadB2SData()
    // get all animation info
    if (topnode->FirstChildElement("Animations")) {
       for (auto innerNode = topnode->FirstChildElement("Animations")->FirstChildElement("Animation"); innerNode != nullptr; innerNode = innerNode->NextSiblingElement("Animation")) {
-         string name = innerNode->Attribute("Name");
+         string name = Attr(innerNode, "Name");
          eDualMode dualmode = eDualMode_Both;
          if (innerNode->FindAttribute("DualMode"))
             dualmode = (eDualMode)innerNode->IntAttribute("DualMode");
          int interval = innerNode->IntAttribute("Interval");
          int loops = innerNode->IntAttribute("Loops");
-         string idJoins = innerNode->Attribute("IDJoin");
-         bool startAnimationAtBackglassStartup = (innerNode->Attribute("StartAnimationAtBackglassStartup") == "1"sv);
+         string idJoins = Attr(innerNode, "IDJoin");
+         bool startAnimationAtBackglassStartup = (Attr(innerNode, "StartAnimationAtBackglassStartup") == "1"sv);
          eLightsStateAtAnimationStart lightsStateAtAnimationStart = eLightsStateAtAnimationStart_NoChange;
          eLightsStateAtAnimationEnd lightsStateAtAnimationEnd = eLightsStateAtAnimationEnd_InvolvedLightsOff;
          eAnimationStopBehaviour animationstopbehaviour = eAnimationStopBehaviour_StopImmediately;
@@ -1152,22 +1171,22 @@ void FormBackglass::LoadB2SData()
          if (innerNode->FindAttribute("LightsStateAtAnimationStart"))
             lightsStateAtAnimationStart = (eLightsStateAtAnimationStart)innerNode->IntAttribute("LightsStateAtAnimationStart");
          else if (innerNode->FindAttribute("AllLightsOffAtAnimationStart"))
-            lightsStateAtAnimationStart = (innerNode->Attribute("AllLightsOffAtAnimationStart") == "1"sv) ? eLightsStateAtAnimationStart_LightsOff : eLightsStateAtAnimationStart_NoChange;
+            lightsStateAtAnimationStart = (Attr(innerNode, "AllLightsOffAtAnimationStart") == "1"sv) ? eLightsStateAtAnimationStart_LightsOff : eLightsStateAtAnimationStart_NoChange;
          if (innerNode->FindAttribute("LightsStateAtAnimationEnd"))
             lightsStateAtAnimationEnd = (eLightsStateAtAnimationEnd)innerNode->IntAttribute("LightsStateAtAnimationEnd");
          else if (innerNode->FindAttribute("ResetLightsAtAnimationEnd"))
-            lightsStateAtAnimationEnd = (innerNode->Attribute("ResetLightsAtAnimationEnd") == "1"sv) ? eLightsStateAtAnimationEnd_LightsReseted : eLightsStateAtAnimationEnd_Undefined;
+            lightsStateAtAnimationEnd = (Attr(innerNode, "ResetLightsAtAnimationEnd") == "1"sv) ? eLightsStateAtAnimationEnd_LightsReseted : eLightsStateAtAnimationEnd_Undefined;
          if (innerNode->FindAttribute("AnimationStopBehaviour"))
             animationstopbehaviour = (eAnimationStopBehaviour)innerNode->IntAttribute("AnimationStopBehaviour");
          else if (innerNode->FindAttribute("RunAnimationTilEnd"))
-            animationstopbehaviour = (innerNode->Attribute("RunAnimationTilEnd") == "1"sv) ? eAnimationStopBehaviour_RunAnimationTillEnd : eAnimationStopBehaviour_StopImmediately;
-         lockInvolvedLamps = (innerNode->Attribute("LockInvolvedLamps") == "1"sv);
+            animationstopbehaviour = (Attr(innerNode, "RunAnimationTilEnd") == "1"sv) ? eAnimationStopBehaviour_RunAnimationTillEnd : eAnimationStopBehaviour_StopImmediately;
+         lockInvolvedLamps = (Attr(innerNode, "LockInvolvedLamps") == "1"sv);
          if (innerNode->FindAttribute("HideScoreDisplays"))
-            hidescoredisplays = (innerNode->Attribute("HideScoreDisplays") == "1"sv);
+            hidescoredisplays = (Attr(innerNode, "HideScoreDisplays") == "1"sv);
          if (innerNode->FindAttribute("BringToFront"))
-            bringtofront = (innerNode->Attribute("BringToFront") == "1"sv);
+            bringtofront = (Attr(innerNode, "BringToFront") == "1"sv);
          if (innerNode->FindAttribute("RandomStart"))
-            randomstart = (innerNode->Attribute("RandomStart") == "1"sv);
+            randomstart = (Attr(innerNode, "RandomStart") == "1"sv);
          if (randomstart && innerNode->FindAttribute("RandomQuality"))
             randomquality = innerNode->IntAttribute("RandomQuality");
          if (lightsStateAtAnimationStart == eLightsStateAtAnimationStart_Undefined)
@@ -1179,9 +1198,9 @@ void FormBackglass::LoadB2SData()
          vector<PictureBoxAnimationEntry*> entries;
          for (auto stepnode = innerNode->FirstChildElement("AnimationStep"); stepnode != nullptr; stepnode = stepnode->NextSiblingElement("AnimationStep")) {
             //int step = stepnode->IntAttribute("Step");
-            string on = stepnode->Attribute("On");
+            string on = Attr(stepnode, "On");
             int waitLoopsAfterOn = stepnode->IntAttribute("WaitLoopsAfterOn");
-            string off = stepnode->Attribute("Off");
+            string off = Attr(stepnode, "Off");
             int waitLoopsAfterOff = stepnode->IntAttribute("WaitLoopsAfterOff");
             int pulseswitch = 0;
             if (stepnode->FindAttribute("PulseSwitch"))
@@ -1698,7 +1717,7 @@ VPXTexture FormBackglass::CropImageToTransparency(VPXTexture pImage, VPXTexture 
 
 VPXTexture FormBackglass::Base64ToImage(const char* image)
 {
-   std::string_view imageView { image };
+   std::string_view imageView { image ? image : "" };
    vector<uint8_t> decoded = base64_decode(imageView.data(), imageView.size());
    if (decoded.empty()) {
       LOGE("Base64ToImage: Failed to decode Base64 data"s);
@@ -1708,7 +1727,7 @@ VPXTexture FormBackglass::Base64ToImage(const char* image)
    VPXTexture pImage = m_vpxApi->CreateTexture(decoded.data(), static_cast<int>(decoded.size()));
    if (!pImage) {
       size_t len = std::min<size_t>(imageView.size(), 40);
-      LOGE("Base64ToImage: Failed to create texture from data: " + string(image, len));
+      LOGE("Base64ToImage: Failed to create texture from data: " + string(imageView.substr(0, len)));
    }
 
    return pImage;
@@ -1716,7 +1735,7 @@ VPXTexture FormBackglass::Base64ToImage(const char* image)
 
 Sound* FormBackglass::Base64ToWav(const char* data)
 {
-   std::string_view dataView { data };
+   std::string_view dataView { data ? data : "" };
    vector<uint8_t> decoded = base64_decode(dataView.data(), dataView.size());
    return new Sound(std::move(decoded));
 }

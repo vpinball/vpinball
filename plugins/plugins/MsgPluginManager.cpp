@@ -9,6 +9,7 @@
 
 #define MINI_CASE_SENSITIVE
 #include "mINI/ini.h"
+#include "PluginStrings.h"
 #include <plog/Log.h>
 
 using namespace std::string_literals;
@@ -353,7 +354,7 @@ void MsgPluginManager::RunTimer(const TimerEntry& timer)
 
 static std::string unquote(const std::string& str)
 {
-   if (str.front() == '"' && str.back() == '"')
+   if (str.size() >= 2 && str.front() == '"' && str.back() == '"') // Missing values are empty
       return str.substr(1, str.size() - 2);
    return str;
 }
@@ -371,9 +372,10 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& i
 void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader, const std::filesystem::path& pluginDir, const std::function<void(MsgPlugin&)>& callback)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   if (!std::filesystem::exists(pluginDir))
+   std::error_code ec;
+   if (!std::filesystem::exists(pluginDir, ec))
    {
-      PLOGE << "Missing plugin directory: " << pluginDir;
+      PLOGE << "Missing plugin directory: " << PluginStrings::PathToUTF8(pluginDir);
       return;
    }
    std::string libraryKey;
@@ -417,9 +419,10 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
       return;
    }
 
-   for (const auto& entry : std::filesystem::directory_iterator(pluginDir))
+   for (std::filesystem::directory_iterator dirIt(pluginDir, ec), end; !ec && dirIt != end; dirIt.increment(ec))
    {
-      if (entry.is_directory())
+      const auto& entry = *dirIt;
+      if (std::error_code entryError; entry.is_directory(entryError))
       {
          mINI::INIStructure ini;
          mINI::INIFile file(entry.path() / "plugin.cfg"sv);
@@ -427,8 +430,8 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
          {
             std::string id = unquote(ini["configuration"s]["id"s]);
             const std::string libraryFile = unquote(ini["libraries"s][libraryKey]);
-            const std::filesystem::path libraryPath = entry.path() / libraryFile;
-            if (!std::filesystem::exists(libraryPath))
+            const std::filesystem::path libraryPath = entry.path() / PluginStrings::PathFromUTF8(libraryFile);
+            if (std::error_code fileError; libraryFile.empty() || !std::filesystem::is_regular_file(libraryPath, fileError))
             {
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
                continue;
@@ -442,14 +445,16 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
             else
             {
                auto plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
-                  unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), loader, entry.path().string(),
-                  libraryPath.string(), static_cast<unsigned int>(m_plugins.size() + 1));
+                  unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), loader, PluginStrings::PathToUTF8(entry.path()),
+                  PluginStrings::PathToUTF8(libraryPath), static_cast<unsigned int>(m_plugins.size() + 1));
                m_plugins.push_back(plugin);
                callback(*plugin);
             }
          }
       }
    }
+   if (ec)
+      PLOGE << "Failed to scan plugin directory " << PluginStrings::PathToUTF8(pluginDir) << ": " << ec.message();
 }
 
 void MsgPluginManager::LoadPlugin(MsgPlugin& plugin)

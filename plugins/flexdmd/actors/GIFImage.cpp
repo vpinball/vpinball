@@ -9,6 +9,8 @@ GIFImage::GIFImage(FlexDMD* pFlexDMD, const string& name) : AnimatedActor(pFlexD
 GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& path, const string& name)
 {
    AssetSrc* pSrc = pAssetManager->ResolveSrc(path, nullptr);
+   if (pSrc == nullptr)
+      return nullptr;
    Bitmap* pBitmap = pAssetManager->GetBitmap(pSrc);
    if (!pBitmap) {
       pSrc->Release();

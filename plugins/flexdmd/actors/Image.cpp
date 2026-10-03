@@ -11,6 +11,8 @@ Image::Image(FlexDMD* pFlexDMD, const string& name) : Actor(pFlexDMD, name)
 Image* Image::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& image, const string& name)
 {
    AssetSrc* pSrc = pAssetManager->ResolveSrc(image, nullptr);
+   if (pSrc == nullptr)
+      return nullptr;
    Bitmap* pBitmap = pAssetManager->GetBitmap(pSrc);
    if (!pBitmap)
    {

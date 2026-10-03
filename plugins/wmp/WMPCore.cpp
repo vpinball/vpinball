@@ -67,7 +67,7 @@ WMPPlayState WMPCore::GetPlayState() const
 bool WMPCore::LoadAudio(const string& url)
 {
    LOGI("Loading audio file: " + url);
-   return m_pAudioPlayer->LoadFile(url);
+   return m_pAudioPlayer->LoadFile(PluginStrings::PathFromUTF8(url));
 }
 
 void WMPCore::UnloadAudio()

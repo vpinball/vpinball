@@ -25,9 +25,12 @@ static inline bool StrCompareNoCase(const string& strA, const string& strB)
 
 inline void StrToLower(std::filesystem::path& path)
 {
-   std::string str = path.string();
-   std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
-   path = str;
+   using C = std::filesystem::path::value_type;
+   std::filesystem::path::string_type str = path.native(); // ASCII folding on the native string (path::string() is ANSI on Windows, and may throw)
+   for (C& c : str)
+      if (c >= C('A') && c <= C('Z'))
+         c = static_cast<C>(c - C('A') + C('a'));
+   path = std::move(str);
 }
 
 std::filesystem::path lowerCase(std::filesystem::path input)

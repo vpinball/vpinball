@@ -33,6 +33,9 @@ using std::vector;
 // Shared logging
 #include "plugins/LoggingPlugin.h"
 
+// Shared string and path helpers
+#include "plugins/PluginStrings.h"
+
 // Scriptable API
 #include "plugins/ScriptablePlugin.h"
 

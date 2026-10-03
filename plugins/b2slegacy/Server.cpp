@@ -28,8 +28,21 @@ using namespace std::string_view_literals;
 #include <algorithm>
 #include <random>
 
+#include "plugins/PluginStrings.h"
+
 
 namespace B2SLegacy {
+
+// Score right aligned on the display digits, keeping its rightmost digits if it does not fit (as ControlCollection::SetScore)
+static string PadScore(int score, int digits)
+{
+   const string text = std::to_string(score);
+   if (digits <= 0)
+      return string();
+   if (static_cast<int>(text.length()) >= digits)
+      return text.substr(text.length() - digits);
+   return string(static_cast<size_t>(digits) - text.length(), ' ') + text;
+}
 
 static std::string CreateGuidString()
 {
@@ -1733,7 +1746,7 @@ void Server::MyB2SSetScore(int digit, int score)
             // Get all necessary display data
             const int startdigit = (*m_pB2SData->GetLEDs())[led]->GetStartDigit();
             const int digits = (*m_pB2SData->GetLEDs())[led]->GetDigits();
-            const string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
+            const string scoreAsString = PadScore(score, digits);
 
             // Set digits
             for (int i = startdigit + digits - 1; i >= startdigit; i--)
@@ -1744,7 +1757,7 @@ void Server::MyB2SSetScore(int digit, int score)
 
             // Get all necessary display data
             const int digits = pLEDDisplayDigit->GetLEDDisplay()->GetDigits();
-            const string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
+            const string scoreAsString = PadScore(score, digits);
 
             // Set digits
             for (int i = digits - 1; i >= 0; i--)
@@ -1880,11 +1893,12 @@ void Server::MyB2SStopSound(const string& soundname)
 
 void Server::Startup()
 {
-    VPXTableInfo tableInfo;
+    VPXTableInfo tableInfo {};
     m_vpxApi->GetTableInfo(&tableInfo);
-    m_pB2SData->SetTableFileName(tableInfo.path);
+    // Stored as UTF-8 (VPX provides a native narrow path, nullptr gives an empty string)
+    m_pB2SData->SetTableFileName(PluginStrings::PathToUTF8(PluginStrings::PathFromNative(tableInfo.path)));
 
-    LOGI("B2S table filename set to '"s + tableInfo.path + '\'');
+    LOGI("B2S table filename set to '"s + m_pB2SData->GetTableFileName() + '\'');
 }
 
 void Server::ShowBackglassForm()
@@ -1909,7 +1923,7 @@ void Server::KillBackglassForm()
 {
    // Clear the running flag before destroying the form, like the B2S server does. The data
    // setters gate on IsBackglassRunning(), so a script that keeps pushing B2S data after the
-   // backglass is killed then stops touching the freed form instead of dereferencing it.
+   // backglass is killed then stops touching the freed form instead of dereferencing it
    m_pB2SData->SetBackglassVisible(false);
    if (m_pFormBackglass) {
       delete m_pFormBackglass;

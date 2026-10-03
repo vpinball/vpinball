@@ -67,7 +67,7 @@ void BitmapFont::Load(const std::filesystem::path& filename)
    fontFile.open(filename, std::ifstream::in);
 
    if (!fontFile.is_open()) {
-      LOGE("Failed to open bitmap font file: " + filename.string());
+      LOGE("Failed to open bitmap font file: " + PluginStrings::PathToUTF8(filename));
       return;
    }
 
@@ -251,9 +251,8 @@ ankerl::unordered_dense::map<string, string> BitmapFont::ParseParts(const string
    iss >> token;
    result["section"s] = token;
 
-   while (iss) {
-      char c;
-      iss.get(c);
+   char c;
+   while (iss.get(c)) { // Reads before testing ('while (iss)' used c once more after the last character)
 
       if (c == '=')
          isKey = false;

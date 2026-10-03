@@ -135,9 +135,14 @@ string lowerCase(string input)
 
 inline void StrToLower(std::filesystem::path& path)
 {
-   std::string str = path.string();
-   std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
-   path = str;
+   // ASCII folding on the native string (path::string() is ANSI on Windows, and may throw)
+   std::filesystem::path::string_type str = path.native();
+   for (std::filesystem::path::value_type& c : str)
+   {
+      if (c >= std::filesystem::path::value_type('A') && c <= std::filesystem::path::value_type('Z'))
+         c = static_cast<std::filesystem::path::value_type>(c - std::filesystem::path::value_type('A') + std::filesystem::path::value_type('a'));
+   }
+   path = std::move(str);
 }
 
 std::filesystem::path lowerCase(std::filesystem::path input)
@@ -171,71 +176,24 @@ string normalize_path_separators(const string& szPath)
 
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile)
 {
-   auto fn = [](const auto& self, std::filesystem::path path)
+   std::filesystem::path result = PluginStrings::FindPathNoCase(searchedFile, false);
+   std::error_code ec;
+   if (!result.empty() && !std::filesystem::exists(searchedFile, ec))
    {
-      std::error_code ec;
-      path = path.lexically_normal();
-      if (std::filesystem::exists(path, ec))
-         return path;
-
-      const auto& parent = path.parent_path();
-      std::filesystem::path base = (parent.empty() || parent == path) ? std::filesystem::path("."s) : self(self, parent);
-      if (base.empty())
-         return base;
-
-      for (const auto& ent : std::filesystem::directory_iterator(base, ec))
-      {
-         if (!ec && StrCompareNoCase(ent.path().filename().string(), path.filename().string()))
-         {
-            const auto& found = ent.path();
-            if (found != path)
-            {
-               LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", path.string(), found.string()));
-            }
-            return found;
-         }
-      }
-
-      return std::filesystem::path();
-   };
-
-   const std::filesystem::path result = fn(fn, searchedFile);
-   return result.empty() ? result : std::filesystem::absolute(result);
+      LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", PluginStrings::PathToUTF8(searchedFile), PluginStrings::PathToUTF8(result)));
+   }
+   return result;
 }
 
 std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile)
 {
-   auto fn = [](const auto& self, std::filesystem::path path)
+   std::filesystem::path result = PluginStrings::FindPathNoCase(searchedFile, true);
+   std::error_code ec;
+   if (!result.empty() && !std::filesystem::exists(searchedFile, ec))
    {
-      std::error_code ec;
-      path = path.lexically_normal();
-      if (std::filesystem::exists(path, ec) && std::filesystem::is_directory(path, ec))
-         return path;
-
-      const auto& parent = path.parent_path();
-      std::filesystem::path base = (parent.empty() || parent == path) ? std::filesystem::path("."s) : self(self, parent);
-      if (base.empty())
-         return base;
-
-      for (const auto& ent : std::filesystem::directory_iterator(base, ec))
-      {
-         if (ec || !ent.is_directory(ec))
-            continue;
-         if (ec || !StrCompareNoCase(ent.path().filename().string(), path.filename().string()))
-            continue;
-         const auto& found = ent.path();
-         if (found != path)
-         {
-            LOGI(std::format("Case insensitive directory match: requested \"{}\", actual \"{}\"", path.string(), found.string()));
-         }
-         return found;
-      }
-
-      return std::filesystem::path();
-   };
-
-   const std::filesystem::path result = fn(fn, searchedFile);
-   return result.empty() ? result : std::filesystem::absolute(result);
+      LOGI(std::format("Case insensitive directory match: requested \"{}\", actual \"{}\"", PluginStrings::PathToUTF8(searchedFile), PluginStrings::PathToUTF8(result)));
+   }
+   return result;
 }
 
 bool StrCompareNoCase(const string& strA, const string& strB)

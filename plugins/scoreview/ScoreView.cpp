@@ -69,7 +69,7 @@ void ScoreView::Load(const std::filesystem::path& path)
 void ScoreView::Parse(const std::filesystem::path& path)
 {
    std::ifstream content(path);
-   #define CHECK_FIELD(check) if (!(check)) { LOGE(std::format("Invalid field '{}: {}' at line {} in ScoreView file {}", key, value, lineIndex, path.string())); return; }
+   #define CHECK_FIELD(check) if (!(check)) { LOGE(std::format("Invalid field '{}: {}' at line {} in ScoreView file {}", key, value, lineIndex, PluginStrings::PathToUTF8(path))); return; }
    static const string whitespace = " \t"s;
    Layout layout = { };
    layout.path = path;
@@ -114,13 +114,13 @@ void ScoreView::Parse(const std::filesystem::path& path)
          indentSize = afterIndent;
       if ((indentSize != 0) && ((afterIndent % indentSize) != 0))
       {
-         LOGE(std::format("Invalid indentation at line {} in ScoreView file {}", lineIndex, path.string()));
+         LOGE(std::format("Invalid indentation at line {} in ScoreView file {}", lineIndex, PluginStrings::PathToUTF8(path)));
          return;
       }
       size_t indent = indentSize == 0 ? 0 : afterIndent / indentSize;
       if (indent > expectedIndent)
       {
-         LOGE(std::format("Invalid indentation ({} while expecting {} at line {}) in ScoreView file {}", indent, expectedIndent, lineIndex, path.string()));
+         LOGE(std::format("Invalid indentation ({} while expecting {} at line {}) in ScoreView file {}", indent, expectedIndent, lineIndex, PluginStrings::PathToUTF8(path)));
          return;
       }
       if (indent < expectedIndent)
@@ -134,12 +134,12 @@ void ScoreView::Parse(const std::filesystem::path& path)
       const auto colon = line.find(':');
       if (colon == string::npos)
       {
-         LOGE(std::format("Field is missing ':' separator at line {} in ScoreView file {}", lineIndex, path.string()));
+         LOGE(std::format("Field is missing ':' separator at line {} in ScoreView file {}", lineIndex, PluginStrings::PathToUTF8(path)));
          return;
       }
       if (colon == afterIndent)
       {
-         LOGE(std::format("Field is missing a key before ':' separator at line {} in ScoreView file {}", lineIndex, path.string()));
+         LOGE(std::format("Field is missing a key before ':' separator at line {} in ScoreView file {}", lineIndex, PluginStrings::PathToUTF8(path)));
          return;
       }
       const string key(line.cbegin() + afterIndent, line.cbegin() + colon);
@@ -407,7 +407,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
       case VisualType::DMD:
          if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
          {
-            LOGE("DMD display needs Size to be defined in ScoreView file " + path.string());
+            LOGE("DMD display needs Size to be defined in ScoreView file " + PluginStrings::PathToUTF8(path));
             return;
          }
          break;
@@ -415,7 +415,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
       case VisualType::Screen:
          if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
          {
-            LOGE("Screen display needs Size to be defined in ScoreView file " + path.string());
+            LOGE("Screen display needs Size to be defined in ScoreView file " + PluginStrings::PathToUTF8(path));
             return;
          }
          break;
@@ -425,7 +425,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
             visual.nElements = (int)visual.xOffsets.size();
          if (visual.nElements == 0)
          {
-            LOGE("Segment display needs at least one of XPos/NElements to be defined in ScoreView file " + path.string());
+            LOGE("Segment display needs at least one of XPos/NElements to be defined in ScoreView file " + PluginStrings::PathToUTF8(path));
             return;
          }
          if (visual.xOffsets.empty())
@@ -456,7 +456,7 @@ void ScoreView::LoadGlass(Visual& visual)
          visual.glass = texImage->second;
       else
       {
-         const std::filesystem::path fullPath = m_bestLayout->path.remove_filename() / visual.glassPath;
+         const std::filesystem::path fullPath = m_bestLayout->path.remove_filename() / PluginStrings::PathFromUTF8(visual.glassPath);
          std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
          if (file.is_open())
          {
@@ -469,7 +469,7 @@ void ScoreView::LoadGlass(Visual& visual)
          }
          else
          {
-            LOGE("Missing glass file: " + fullPath.string());
+            LOGE("Missing glass file: " + PluginStrings::PathToUTF8(fullPath));
             visual.glass = nullptr;
          }
          m_images[visual.glassPath] = visual.glass;

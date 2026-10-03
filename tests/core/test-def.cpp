@@ -164,6 +164,12 @@ TEST_CASE("def.h helpers")
       CHECK(string_from_utf8_or_cp1252("Caf\xC3\xA9"s) == "Caf\xC3\xA9"); // in place variant
       CHECK(string_from_utf8_or_cp1252("Caf\xE9"s) == "Caf\xC3\xA9");
       CHECK(convert("Caf\xC3"s) == "Caf\xC3\x83"); // a UTF-8 sequence cut at the end is legacy text too
+      string cp1252;
+      CHECK(utf8_to_cp1252("Caf\xC3\xA9 \xE2\x82\xAC \xC2\x81"s, cp1252)); // back to Windows-1252, incl. the 0x80..0x9F range
+      CHECK(cp1252 == "Caf\xE9 \x80 \x81");
+      CHECK(convert(cp1252) == "Caf\xC3\xA9 \xE2\x82\xAC \xC2\x81"); // round trip
+      CHECK_FALSE(utf8_to_cp1252("\xD0\x96"s, cp1252)); // Cyrillic is not in Windows-1252
+      CHECK_FALSE(utf8_to_cp1252("Caf\xC3"s, cp1252)); // invalid UTF-8
       CHECK(string_from_utf8_or_cp1252("Caf\xC3"s) == "Caf\xC3\x83");
    }
 

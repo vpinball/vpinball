@@ -19,6 +19,8 @@ typedef int ssize_t;
 
 #include "base64.h"
 
+#include "plugins/PluginStrings.h"
+
 namespace B2SLegacy
 {
 
@@ -41,13 +43,6 @@ string trim_string(const string& str)
    return str.substr(start, end - start);
 }
 
-bool StrCompareNoCase(const string& strA, const string& strB)
-{
-   return strA.length() == strB.length()
-      && std::equal(strA.begin(), strA.end(), strB.begin(),
-         [](char a, char b) { return cLower(a) == cLower(b); });
-}
-
 string string_to_lower(string str)
 {
    std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
@@ -56,36 +51,12 @@ string string_to_lower(string str)
 
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile)
 {
-   auto fn = [](const auto& self, std::filesystem::path path)
+   const std::filesystem::path found = PluginStrings::FindPathNoCase(searchedFile, false);
+   if (std::error_code ec; !found.empty() && !std::filesystem::exists(searchedFile, ec))
    {
-      std::error_code ec;
-      path = path.lexically_normal();
-      if (std::filesystem::exists(path, ec))
-         return path;
-
-      const auto& parent = path.parent_path();
-      std::filesystem::path base = (parent.empty() || parent == path) ? std::filesystem::path("."s) : self(self, parent);
-      if (base.empty())
-         return base;
-
-      for (const auto& ent : std::filesystem::directory_iterator(base, ec))
-      {
-         if (!ec && StrCompareNoCase(ent.path().filename().string(), path.filename().string()))
-         {
-            const auto& found = ent.path();
-            if (found != path)
-            {
-               LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", path.string(), found.string()));
-            }
-            return found;
-         }
-      }
-
-      return std::filesystem::path();
-   };
-
-   const std::filesystem::path result = fn(fn, searchedFile);
-   return result.empty() ? result : std::filesystem::absolute(result);
+      LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", PluginStrings::PathToUTF8(searchedFile), PluginStrings::PathToUTF8(found)));
+   }
+   return found;
 }
 
 // Wraps up https://github.com/czkz/base64 public domain decoder (plus extensions/optimizations)

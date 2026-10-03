@@ -5,7 +5,11 @@
 #include "B2SServer.h"
 
 #include <algorithm>
+#include <fstream>
+#include <iterator>
 #include <random>
+
+#include "plugins/PluginStrings.h"
 
 namespace B2S
 {
@@ -23,15 +27,17 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    , m_exposedControllers(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG)
    , m_exposedStates(msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG)
 {
-   VPXTableInfo tableInfo;
+   VPXTableInfo tableInfo {};
    m_vpxApi->GetTableInfo(&tableInfo);
 
    // Search for an exact match (same file name with .directb2s extension)
-   const std::filesystem::path tablePath(tableInfo.path);
-   std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+   const std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path);
+   std::filesystem::path b2sFilename;
+   if (!tablePath.empty())
+      b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
 
    // Search for a file matching the template 'foldername.directb2s' for file layout where tables are located in a folder with their companion files (b2s, pup, flex, music, ...)
-   if (b2sFilename.empty())
+   if (b2sFilename.empty() && !tablePath.empty())
    {
       std::filesystem::path folderName = tablePath.parent_path().filename();
       folderName += ".directb2s"sv;
@@ -45,14 +51,28 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
          std::shared_ptr<B2STable> b2s;
          try
          {
+            std::ifstream file(path, std::ios::binary);
+            if (!file)
+            {
+               LOGE("Failed to open B2S file: " + PluginStrings::PathToUTF8(path));
+               return b2s;
+            }
+            const std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
             tinyxml2::XMLDocument b2sTree;
-            b2sTree.LoadFile(path.string().c_str());
+            if (b2sTree.Parse(buffer.c_str(), buffer.size()) != tinyxml2::XML_SUCCESS)
+            {
+               const char* const error = b2sTree.ErrorStr();
+               LOGE("Failed to parse B2S file: " + PluginStrings::PathToUTF8(path) + " (" + (error ? error : "") + ')');
+               return b2s;
+            }
             if (b2sTree.FirstChildElement("DirectB2SData"))
                b2s = std::make_shared<B2STable>(*b2sTree.FirstChildElement("DirectB2SData"));
+            else
+               LOGE("Invalid B2S file: " + PluginStrings::PathToUTF8(path));
          }
          catch (...)
          {
-            LOGE("Failed to load B2S file: " + path.string());
+            LOGE("Failed to load B2S file: " + PluginStrings::PathToUTF8(path));
          }
          return b2s;
       };
@@ -144,7 +164,11 @@ int B2SServer::OnRender(VPXRenderContext2D* ctx, void* userData)
    {
       if (me->m_loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
       {
-         me->m_renderer = std::make_unique<B2SRenderer>(me->m_msgApi, me->m_vpxApi, me->m_endpointId, me->m_loadedB2S.get());
+         // get() invalidates the future, so a failed load is not retried on the next frames
+         std::shared_ptr<B2STable> loadedB2S = me->m_loadedB2S.get();
+         if (loadedB2S == nullptr)
+            return false;
+         me->m_renderer = std::make_unique<B2SRenderer>(me->m_msgApi, me->m_vpxApi, me->m_endpointId, loadedB2S);
          me->m_renderer->Render(ctx, me);
       }
       return true; // Until loaded, we assume that the file will succeed loading with the expected backglass/score view
