@@ -251,8 +251,8 @@ private:
       int idIndex = 1;
       int nameIndex = 1;
       int joystickCount = 0;
-      const char* const joyName = SDL_GetJoystickName(joystick); // null if not available
-      const string sdlJoyName = joyName ? joyName : "";
+      const char* const tmpJoyName = SDL_GetJoystickName(joystick); // null if not available
+      const string sdlJoyName = tmpJoyName ? tmpJoyName : "";
       SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
       for (int i = 0; i < joystickCount; i++)
       {
