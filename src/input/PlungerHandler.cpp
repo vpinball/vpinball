@@ -344,7 +344,9 @@ float PlungerSensor::GetHitVelocity(float restPos) const
 {
    if (m_velocitySensor->IsMapped())
    {
-      return m_velocitySensor->GetValue();
+      // Sensor velocity is provided in p.u./s, that is to say relative to the full plunger range, while hit velocity is
+      // expressed in t.u./s, relative to the range between rest position and fully retracted (rescaled by 1 - restPos)
+      return m_velocitySensor->GetValue() * (1.f - restPos);
    }
    else
    {
