@@ -1035,7 +1035,7 @@ void PinTable::ReadInfoValue(POLE::Storage &storage, const std::string &name, st
 
    POLE::Stream versionStream(&storage, name);
    const unsigned int size = static_cast<unsigned int>(versionStream.size());
-   BiffReader br(&versionStream, 0, hash, NULL);
+   BiffReader br(&versionStream, 0, hash, 0);
 
 #if (WCHAR_T_SIZE == 4)
    const int len = size / 2;
@@ -1462,7 +1462,7 @@ HRESULT PinTable::LoadGameFromVPXStorage(VPXFileFeedback &feedback)
    int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
    if (rootStorage.exists("GameStg/GameData"))
    {
-      HCRYPTKEY hkey = NULL; // legacy VP8/VP9 script decryption key, NULL without CryptoAPI
+      HCRYPTKEY hkey = 0; // legacy VP8/VP9 script decryption key, 0 without CryptoAPI
       if (rootStorage.exists("GameStg/Version"))
       {
          POLE::Stream versionStream(&rootStorage, "GameStg/Version");
@@ -1490,7 +1490,7 @@ HRESULT PinTable::LoadGameFromVPXStorage(VPXFileFeedback &feedback)
       LoadCustomInfo(rootStorage, hch, loadfileversion);
 
       POLE::Stream gameStream(&rootStorage, "GameStg/GameData");
-      BiffReader tableReader(&gameStream, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
+      BiffReader tableReader(&gameStream, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
       Load(tableReader);
       if (!tableReader.HasError())
       {
@@ -1586,7 +1586,7 @@ HRESULT PinTable::LoadGameFromVPXStorage(VPXFileFeedback &feedback)
                      itemHash = itemHashRec[i].get();
                   }
 
-                  BiffReader reader(&stream, loadfileversion, itemHash, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
+                  BiffReader reader(&stream, loadfileversion, itemHash, (loadfileversion < 1000) ? hkey : 0); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
                   piedit->Load(reader);
                   if (reader.HasError())
                      return;

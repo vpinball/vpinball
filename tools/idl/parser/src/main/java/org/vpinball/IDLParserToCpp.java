@@ -504,7 +504,7 @@ public class IDLParserToCpp {
 		buffer.append("DISPID dispId;\n");
 		buffer.append("const WCHAR *name;\n");
 		buffer.append("} idsNamesList[] = {\n");
-		buffer.append("{ NULL }");
+		buffer.append("{ 0 }");
 
 		HashMap<String, Event> eventMap = new HashMap<String, Event>();
 		for (Event event : eventList) {

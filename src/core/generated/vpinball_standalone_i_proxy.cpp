@@ -136,7 +136,7 @@ HRESULT Collection::FireDispID(const DISPID dispid, DISPPARAMS * const pdisppara
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_SurfaceEvents_Slingshot, L"_Slingshot" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
@@ -5096,7 +5096,7 @@ HRESULT PinTable::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_KeyDown, L"_KeyDown" },
 			{ DISPID_GameEvents_KeyUp, L"_KeyUp" },
 			{ DISPID_GameEvents_Init, L"_Init" },
@@ -6097,7 +6097,7 @@ HRESULT Surface::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_SurfaceEvents_Slingshot, L"_Slingshot" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
@@ -6982,7 +6982,7 @@ HRESULT Flipper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_FlipperEvents_Collide, L"_Collide" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
@@ -7182,7 +7182,7 @@ HRESULT Timer::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" }
 	};
@@ -8072,7 +8072,7 @@ HRESULT Plunger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_LimitEvents_EOS, L"_LimitEOS" },
@@ -8561,7 +8561,7 @@ HRESULT Textbox::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" }
 	};
@@ -9301,7 +9301,7 @@ HRESULT Bumper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_HitEvents_Hit, L"_Hit" },
@@ -9814,7 +9814,7 @@ HRESULT Trigger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_HitEvents_Hit, L"_Hit" },
@@ -10693,7 +10693,7 @@ HRESULT Light::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_AnimateEvents_Animate, L"_Animate" }
@@ -11353,7 +11353,7 @@ HRESULT Kicker::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_HitEvents_Hit, L"_Hit" },
@@ -11777,7 +11777,7 @@ HRESULT Decal::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL }
+			{ 0 }
 	};
 
 	static WCHAR wzName[MAXSTRING];
@@ -13293,7 +13293,7 @@ HRESULT Primitive::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_HitEvents_Hit, L"_Hit" }
 	};
@@ -14146,7 +14146,7 @@ HRESULT HitTarget::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_TargetEvents_Dropped, L"_Dropped" },
@@ -14822,7 +14822,7 @@ HRESULT Gate::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_HitEvents_Hit, L"_Hit" },
@@ -15361,7 +15361,7 @@ HRESULT Spinner::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_SpinnerEvents_Spin, L"_Spin" },
@@ -18149,7 +18149,7 @@ HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" }
 	};
@@ -18184,7 +18184,7 @@ HRESULT Ramp::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" }
 	};
 
@@ -18218,7 +18218,7 @@ HRESULT Flasher::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" }
 	};
@@ -18253,7 +18253,7 @@ HRESULT Rubber::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_HitEvents_Hit, L"_Hit" }
@@ -18865,7 +18865,7 @@ HRESULT DispReel::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_AnimateEvents_Animate, L"_Animate" }
@@ -19061,7 +19061,7 @@ HRESULT PartGroup::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" }
 	};
@@ -19385,7 +19385,7 @@ HRESULT LightSeq::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 		DISPID dispId;
 		const WCHAR *name;
 	} idsNamesList[] = {
-			{ NULL },
+			{ 0 },
 			{ DISPID_GameEvents_Init, L"_Init" },
 			{ DISPID_TimerEvents_Timer, L"_Timer" },
 			{ DISPID_LightSeqEvents_PlayDone, L"_PlayDone" }
