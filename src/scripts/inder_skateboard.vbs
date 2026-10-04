@@ -106,7 +106,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyCPUDiag      .Switch(swCPUDiag)     = True
 			Case keySoundDiag    .Switch(swSoundDiag)   = True
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
 	End With

@@ -67,7 +67,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySelfTest     .Switch(swAdvanceTest) = True
 			Case keyAdvance      .Switch(swReturnTest)  = True
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
 	End With

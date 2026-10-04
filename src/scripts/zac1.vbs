@@ -65,7 +65,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyDown         vpmTimer.PulseSw swProgEnable
 			Case keySlamDoorHit  .Switch(swSlamTilt) = True
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
 	End With

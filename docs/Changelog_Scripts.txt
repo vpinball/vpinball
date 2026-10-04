@@ -1,6 +1,9 @@
 New in 3.62 (Update by mfuegemann, JP, Mike Welsh)
 - Added wpc_ph.vbs (based on wpc.vbs)
 - Added p2k.vbs
+- Removed the hardcoded keyVPMVolume (F12) key from all system .vbs files; the VPinMAME
+  volume is now adjusted through a "VPinMAME Volume" table option in the in-game UI
+  (only when using the VPinMAME COM controller, not the PinMAME plugin)
 - Corrected 2 switches in nuova.vbs
 - Added playbar.vbs
 - Added coin door key to Sega/Stern WhiteStar (sega(2).vbs)

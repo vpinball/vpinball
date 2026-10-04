@@ -83,7 +83,7 @@ Dim keyReset: keyReset = VPXActionKey(19) '(F3)  Reset Emulation
 Const keyFrame		= 62                  '(F4)  Toggle Window Lock (no operation if not usig VPinMAME)
 Const keyDoubleSize	= 63                  '(F5)  Toggle displaysize (no operation if not usig VPinMAME)
 Const keyShowDips	= 64                  '(F6)  Show Dip Switch / Options Menu
-Const keyVPMVolume	= 88                  '(F12) Show input box to set VPM Volume (no operation if not usig VPinMAME)
+Const keyVPMVolume	= 88                  '(F12) Deprecated (conflicts with in-game UI): VPinMAME volume is now a table option of the in-game UI, only kept for backward compatibility with table scripts referencing it
 
 ' Cabinet switches
 Dim keyAddBall:		keyAddBall		= VPXActionKey(22) '(B)		Add extra ball

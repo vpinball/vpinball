@@ -114,7 +114,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyCancel		 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCancel'"
 			Case keyCoinDoor	 .Switch(swMenu) = True
 			Case StartGameKey	 .Switch(swStartButton) = True
-			Case keyVPMVolume	 vpmVol
 			Case CollectKey		 .Switch(swCollect) = True
 			Case LeftHoldKey	 .Switch(swLeftHold) = True
 			Case MiddleHoldKey	 .Switch(swMiddleHold) = True
