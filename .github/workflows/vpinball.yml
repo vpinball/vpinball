@@ -252,7 +252,7 @@ jobs:
               --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
               VPinballX_${{ matrix.type }}.app/Contents/PlugIns/*/*.dylib
             codesign --verbose --timestamp --options runtime --deep --force \
-              --entitlements ../../standalone/macos/VPinballX.entitlements \
+              --entitlements ../../apps/macos/VPinballX.entitlements \
               --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
               VPinballX_${{ matrix.type }}.app
             ditto -c -k --rsrc --keepParent VPinballX_${{ matrix.type }}.app VPinballX_${{ matrix.type }}.zip
@@ -265,7 +265,7 @@ jobs:
           fi
           create-dmg \
             --volname "VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}" \
-            --volicon ../../standalone/macos/VPinballX.icns \
+            --volicon ../../apps/macos/VPinballX.icns \
             --window-pos 200 120 \
             --window-size 520 320 \
             --icon-size 64 \
@@ -534,14 +534,14 @@ jobs:
           sudo xcode-select -switch /Applications/Xcode_26.3.app
           MARKETING_VERSION="${{ needs.version.outputs.version_ios }}"
           CURRENT_PROJECT_VERSION="${{ needs.version.outputs.version_full }}"
-          cd standalone/ios
+          cd apps/ios
           perl -i -pe "s/MARKETING_VERSION = [0-9.]+/MARKETING_VERSION = $MARKETING_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
           perl -i -pe "s/CURRENT_PROJECT_VERSION = [0-9.]+/CURRENT_PROJECT_VERSION = $CURRENT_PROJECT_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
           fastlane build_unsigned_ipa
       - name: Stage artifacts
         run: |
           mkdir tmp
-          cp standalone/ios/fastlane/VPinballX.ipa tmp/VPinballX_BGFX-${{ needs.version.outputs.tag }}-ios-${{ matrix.config }}.ipa
+          cp apps/ios/fastlane/VPinballX.ipa tmp/VPinballX_BGFX-${{ needs.version.outputs.tag }}-ios-${{ matrix.config }}.ipa
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -626,7 +626,7 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          cd standalone/android
+          cd apps/android
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/vpinball.jks
           FLAVOR="${{ matrix.flavor }}"
           FLAVOR_CAPITALIZED="$(echo "${FLAVOR:0:1}" | tr '[:lower:]' '[:upper:]')${FLAVOR:1}"
@@ -641,7 +641,7 @@ jobs:
           export ANDROID_KEYSTORE_PASSWORD=vpinball
           export ANDROID_KEY_ALIAS=vpinball
           export ANDROID_KEY_PASSWORD=vpinball
-          cd standalone/android
+          cd apps/android
           keytool -genkey -v -keystore app/vpinball.jks \
                 -keyalg RSA -keysize 2048 -validity 10000 \
                 -storepass "$ANDROID_KEYSTORE_PASSWORD" \
@@ -660,10 +660,10 @@ jobs:
           CONFIG_LC=$(echo "${{ matrix.config }}" | tr '[:upper:]' '[:lower:]')
           FLAVOR_LC=$(echo "${{ matrix.flavor }}" | tr '[:upper:]' '[:lower:]')
           mkdir tmp-apk
-          cp standalone/android/app/build/outputs/apk/${FLAVOR_LC}/${CONFIG_LC}/*.apk tmp-apk/VPinballX_BGFX-${{ needs.version.outputs.tag }}-android-${{ matrix.flavor }}-${{ matrix.config }}.apk
+          cp apps/android/app/build/outputs/apk/${FLAVOR_LC}/${CONFIG_LC}/*.apk tmp-apk/VPinballX_BGFX-${{ needs.version.outputs.tag }}-android-${{ matrix.flavor }}-${{ matrix.config }}.apk
           if [[ "${{ github.repository }}" == "vpinball/vpinball" ]]; then
              mkdir tmp-aab
-             cp standalone/android/app/build/outputs/bundle/${FLAVOR_LC}${{ matrix.config }}/*.aab tmp-aab/VPinballX_BGFX-${{ needs.version.outputs.tag }}-android-${{ matrix.flavor }}-${{ matrix.config }}.aab
+             cp apps/android/app/build/outputs/bundle/${FLAVOR_LC}${{ matrix.config }}/*.aab tmp-aab/VPinballX_BGFX-${{ needs.version.outputs.tag }}-android-${{ matrix.flavor }}-${{ matrix.config }}.aab
           fi
       - name: Upload apk
         uses: actions/upload-artifact@v7

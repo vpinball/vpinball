@@ -979,7 +979,7 @@ public class IDLParserToCpp {
 
 		parser.parse(
 			"../../../src/core/vpinball.idl",
-			"../../vpinball_standalone_i_proxy.cpp",
+			"../../../src/core/generated/vpinball_standalone_i_proxy.cpp",
 			Arrays.asList(
 				new IDLInterface("IPartGroup", "PartGroup"),
 				new IDLInterface("IPartGroupEvents", "PartGroup"),

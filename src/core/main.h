@@ -173,7 +173,7 @@ using std::wstring;
    #include <afxwin.h>
    #include <atltypes.h>
 
-   #include "standalone/inc/win32xx/win32xx.h"
+   #include "compat/win32xx.h"
 #endif
 
 
@@ -182,7 +182,7 @@ using std::wstring;
 #ifndef __STANDALONE__
 #include "vpinball.h"
 #else
-#include "standalone/vpinball_standalone_i.h"
+#include "core/generated/vpinball_standalone_i.h"
 #endif
 
 #include "utils/Logger.h"

@@ -17,12 +17,10 @@ tmp
 external
 third-party/*
 
-standalone/inc/wine/dlls/vbscript/parser.tab.h
-standalone/inc/wine/dlls/vbscript/parser.tab.c
-standalone/idl/parser/bin
-standalone/ios/VPinball/Frameworks
-standalone/android/app/src/main/assets
-standalone/android/app/src/main/jniLibs
+tools/idl/parser/bin
+apps/ios/VPinball/Frameworks
+apps/android/app/src/main/assets
+apps/android/app/src/main/jniLibs
 
 # local Microsoft Visual Studio files
 VisualPinball.sln
