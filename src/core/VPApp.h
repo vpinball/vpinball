@@ -42,8 +42,6 @@ public:
       BOOL PreTranslateMessage(MSG& msg) override;
    } m_winApp;
    HINSTANCE GetInstanceHandle() const { return m_winApp.GetInstanceHandle(); }
-#else
-   HINSTANCE GetInstanceHandle() const { return nullptr; }
 #endif
 
 private:

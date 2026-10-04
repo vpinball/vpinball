@@ -136,9 +136,6 @@ public:
    {
       if (!rgszNames || !rgDispId)
          return E_POINTER;
-      #ifndef __STANDALONE__
-      USES_CONVERSION;
-      #endif
       for (UINT i = 0; i < cNames; ++i)
       {
          const string sname = MakeString(rgszNames[i]);

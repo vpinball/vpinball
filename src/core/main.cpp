@@ -179,7 +179,7 @@ static void SetNVIDIAThreadOptimization(NvThreadOptimization threadedOptimizatio
 }
 #endif
 
-extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
+extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
    static NvThreadOptimization s_OriginalNVidiaThreadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
@@ -220,6 +220,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          cmdLine.m_command->Execute();
    }
 
+#ifndef __STANDALONE__
    // catch all CException types
    catch (const CException &e)
    {
@@ -228,6 +229,14 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
+#else
+   catch (const std::exception &e)
+   {
+      ShowMessage(MsgSeverity::Fatal, e.what(), "Unhandled exception");
+
+      retval = -1;
+   }
+#endif
 
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 
    if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
