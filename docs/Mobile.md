@@ -1,345 +1,325 @@
-# Visual Pinball for iOS, Android and Meta Quest
+# Visual Pinball on iPhone, iPad, Android and Meta Quest
 
-Experience the open source pinball simulator on your iPhone, iPad, Android phone or tablet, and Meta Quest headset!
+Visual Pinball is a free, open source pinball simulator. The same player that runs on desktop computers also runs on your phone, tablet or VR headset, so you can play the hundreds of tables the community has built.
 
 [![Download on the App Store](https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1700524800)](https://apps.apple.com/us/app/visual-pinball/id6547859926?itscg=30200&itsct=apps_box_badge&mttnsubad=6547859926)
 
-The mobile apps are built from the same player as the desktop version of Visual Pinball. Tables, plugins, settings and the [in-game UI](LiveUI.md) work the same way everywhere, so this guide only covers what is specific to mobile. Where the platforms differ, it says so.
+## Contents
 
-## Table of contents
+1. [Before you start](#before-you-start)
+2. [Getting the app](#getting-the-app)
+3. [Your first game](#your-first-game)
+4. [Playing with touch](#playing-with-touch)
+5. [Keyboards and game controllers](#keyboards-and-game-controllers)
+6. [The in-game menu](#the-in-game-menu)
+7. [Adding your own tables](#adding-your-own-tables)
+8. [Managing your tables](#managing-your-tables)
+9. [Showing the score display and backglass](#showing-the-score-display-and-backglass)
+10. [Using a real DMD](#using-a-real-dmd)
+11. [App settings](#app-settings)
+12. [Meta Quest](#meta-quest)
+13. [Troubleshooting](#troubleshooting)
+14. [Getting help](#getting-help)
+15. [Other cool projects](#other-cool-projects)
+16. [Credits, license and privacy](#credits-license-and-privacy)
 
-1. [Features](#features)
-2. [Before you begin](#before-you-begin)
-3. [Installing](#installing)
-4. [Quick start](#quick-start)
-5. [Controls](#controls)
-6. [In-Game UI](#in-game-ui)
-7. [Settings](#settings)
-8. [Importing Tables](#importing-tables)
-9. [Table Selection Screen](#table-selection-screen)
-10. [External DMDs](#external-dmds)
-11. [Troubleshooting](#troubleshooting)
-12. [Support](#support)
-13. [Other Cool Projects](#other-cool-projects)
-14. [Third Party Libraries](#third-party-libraries)
-15. [License](#license)
-16. [Privacy Policy](#privacy-policy)
-17. [Credits](#credits)
+## Before you start
 
-## Features
+Visual Pinball is not a download-and-play game. The app is a player; the tables are made by hobbyists and shared on community sites, and many of them need extra files such as a ROM, a backglass or a patched script. Getting a table running takes a little effort, and this guide walks you through it.
 
-- Play hundreds of community and hobbyist-developed tables.
-- Feel the action with haptic feedback for bumpers, targets, and flippers.
-- The same in-game UI as the desktop version for table options, point of view, and all player settings.
-- Keyboard and game controller support.
-- Plugins for ROM based games (PinMAME), backglasses (B2S), PinUp Player, DMDs (FlexDMD, Serum, VNI) and more, built in.
-- External DMD support for [ZeDMD](https://github.com/PPUC/zedmd), [ZeDMD-WiFi](https://github.com/PPUC/zedmd), and [Pixelcade](https://pixelcade.org/) devices.
-- [AltSound](https://github.com/vpinball/libaltsound) support.
-- Touch overlay shows touch areas.
-- Built-in web server for transferring files from a browser.
-- Advanced options for power users, including script viewing and log file exports.
-- Native VR on Meta Quest, including color keyed passthrough.
+The app comes with an example table so you can try it right away.
 
-## Before you begin
+## Getting the app
 
-We’ve worked to make setting up tables as **simple** as possible for mobile, and while it’s much easier than on Desktop platforms, it still **requires some effort**! Visual Pinball isn’t always a download-and-play experience -- it gives you flexibility and control, but that comes with a bit of **complexity**.
+**iPhone and iPad:** install *Visual Pinball* from the [App Store](https://apps.apple.com/us/app/visual-pinball/id6547859926). Needs iOS 18 or later.
 
-If this sounds like something you can handle, read on!
+**Android:** install *Visual Pinball* from Google Play, or install an APK. Needs a 64-bit device running Android 13 or later. Google Play may warn you when installing an APK from another source.
 
-## Installing
+**Meta Quest:** the Quest version is installed by sideloading. See [Meta Quest](#meta-quest) below.
 
-**iOS / iPadOS**: install *Visual Pinball* from the [App Store](https://apps.apple.com/us/app/visual-pinball/id6547859926). Requires iOS 18 or later and runs on iPhone and iPad.
+Android and Quest APKs are produced by the project's [GitHub Actions](https://github.com/vpinball/vpinball/actions) builds. If you want to build the apps yourself, see the [build instructions](../make/README.md).
 
-**Android**: install *Visual Pinball* from Google Play, or sideload an APK. Requires a 64-bit ARM device running Android 13 or later with OpenGL ES 3.2 support.
+## Your first game
 
-**Meta Quest**: the Quest version is the `quest` flavor of the Android app and renders tables in VR through OpenXR. It is installed by sideloading the APK: enable developer mode for the headset in the Meta Horizon app, connect the headset over USB, and install with `adb install <file>.apk` or a sideloading tool of your choice.
-
-APKs for both Android flavors (`mobile` and `quest`) are produced by the project's [GitHub Actions](https://github.com/vpinball/vpinball/actions) builds. See the [build instructions](../make/README.md) to build them yourself.
-
-## Quick start
-
-Launch the app:
+When you open the app for the first time, the table list is empty:
 
 <p align="center">
-<img src="img/mobile/quick-start-1.png" width="150" hspace="20">
-<img src="img/mobile/quick-start-2.png" width="150" hspace="20">
+<img src="img/mobile/table-list-empty.png" width="200">
 </p>
 
-On the *Table Selection* screen, tap the *+* button in the upper right. Under *Built in...*, select *blankTable.vpx* or *exampleTable.vpx*:
+Tap the **+** button in the top right and pick **exampleTable.vpx** under *Built in...*, then tap **OK**:
 
 <p align="center">
-<img src="img/mobile/quick-start-3.png" width="150" hspace="20">
-<img src="img/mobile/quick-start-4.png" width="150" hspace="20">
+<img src="img/mobile/import-menu.png" width="200">
 </p>
 
-After the table is imported, tap it to start:
+The table appears in the list. Tap it to play. Tap the bottom left corner to start a game and hold the bottom right corner to pull the plunger:
 
 <p align="center">
-<img src="img/mobile/quick-start-5.png" width="150" hspace="20">
-<img src="img/mobile/quick-start-6.png" width="150" hspace="20">
+<img src="img/mobile/playing.gif" width="200">
 </p>
 
-Play some Visual Pinball!
+To leave the table, tap the top right corner to open the menu and choose **Quit**. On Android you can also use the back gesture.
+
+## Playing with touch
+
+The screen is divided into invisible areas. Touching an area presses that button:
 
 <p align="center">
-<img src="img/mobile/quick-start-7.gif" width="150">
+<img src="img/mobile/touch-areas.png" width="200">
 </p>
 
-## Controls
+| Area | What it does |
+|---|---|
+| Top left | Insert a coin |
+| Top right | Open the [in-game menu](#the-in-game-menu) |
+| Upper left / upper right | Left / right magna-save |
+| Middle left / middle right | Nudge the table left / right |
+| Lower left / lower right | Left / right flipper |
+| Lower middle | Nudge the table forward |
+| Bottom left | Start a game |
+| Bottom right | Plunger. Hold to pull back, let go to launch |
 
-### Touch
+The first few times you start a table, a message reminds you where the areas are. You can also draw the areas on screen while playing: open the in-game menu and choose **Enable Touch Overlay**.
 
-On phones and tablets, playing requires touching specific areas of the screen to perform different actions:
+Nudging is done with the touch areas or a game controller. The phone's motion sensors are not used.
+
+On iPhone, Android phones and Quest controllers, flippers, bumpers and slingshots give haptic feedback. The strength of each can be changed in **Input Settings** in the in-game menu.
+
+## Keyboards and game controllers
+
+Bluetooth and USB keyboards and game controllers work on all platforms. These are the defaults; all of them can be changed in **Input Settings** in the in-game menu.
+
+**Keyboard**
+
+| Key | What it does |
+|---|---|
+| 1 | Start |
+| 5 | Insert a coin |
+| Left Shift / Right Shift | Left / right flipper |
+| Left Control / Right Control | Left / right magna-save |
+| Z / / | Nudge left / right |
+| Space | Nudge forward |
+| Return | Plunger (hold to pull back) |
+| T | Tilt |
+| F12 | Open the in-game menu |
+| Escape | Quit the table |
+| End | Open and close the coin door (for ROM games, see [Troubleshooting](#troubleshooting)) |
+| 7, 8, 9, 0 | Service buttons (the operator menu of ROM games) |
+
+**Game controller**
+
+| Control | What it does |
+|---|---|
+| Left / right trigger | Left / right flipper (press further for a staged flipper) |
+| Left / right shoulder | Left / right magna-save |
+| Left stick | Nudge |
+| Right stick | Plunger |
+| A (bottom button) | Launch ball |
+| B (right button) | Start |
+| Y (top button) | Insert a coin |
+| Back | Open the in-game menu |
+| D-pad | Service buttons, and moving around the in-game menu |
+
+Quest controllers are listed under [Meta Quest](#meta-quest).
+
+## The in-game menu
+
+While playing, tap the top right corner of the screen (or press *Back* on a controller, *X* on a Quest controller, *F12* on a keyboard). This is the same menu as the desktop version of Visual Pinball. Tap an item to open it, drag to scroll, and use the back button at the top of a page to go back.
+
+The top of the menu is about the table you are playing:
+
+- **Table Rules** and **Table Options**, if the table provides them
+- **Point Of View** (or **VR Settings** on Quest) to change the camera
+- **Generic Options** such as day/night and difficulty
+
+Below that:
+
+- **Enable / Disable Touch Overlay** draws the touch areas on screen
+- **Enable / Disable FPS** shows a frame rate counter
+- **Quit** returns to the table list. If the table has no picture yet, a screenshot is saved as its picture
+
+Then the settings pages: plugins, sound, graphics, displays, input, plunger, nudge and tilt, and more. The desktop guide to this menu is [Live User Interface](LiveUI.md).
+
+Pages that can be saved have buttons at the top to reset to defaults, undo and save. When saving, **Save Globally** uses the change for every table, while **Save as Table Override** keeps it for this table only. The defaults are fine for most devices and most tables, so you rarely need to change anything here.
+
+## Adding your own tables
+
+### What a table needs
+
+A table is a `.vpx` file. Many tables also need files that sit next to it:
+
+- **ROM games** (most tables based on real machines from the 1980s onward) need the machine's ROM in a `pinmame/roms` folder. The table's description tells you which ROM it needs.
+- **A patched script** (`.vbs`) if the table does not run as-is on mobile. See [Troubleshooting](#troubleshooting).
+- **Backglass** (`.directb2s`), **music**, **alternate sounds**, **DMD colorizations** and similar extras, each in its own folder.
+
+The full list of folders is in [File Layout](FileLayout.md#tables-folder-organization). The important thing is that everything for one table lives in one folder.
+
+### Packing a table as a .vpxz
+
+To move a table and its files to your device in one go, put them in a folder, zip the folder, and rename the zip file's extension from `.zip` to `.vpxz`:
 
 <p align="center">
-<img src="img/mobile/controls-1.png" width="150" hspace="20">
-<img src="img/mobile/controls-2.png" width="150" hspace="20">
+<img src="img/mobile/vpxz-folder.gif">
 </p>
 
-The touch areas are:
+A plain `.zip` works too, and so does a bare `.vpx` file if the table needs nothing else.
 
-- Coin (top left)
-- In-Game UI (top right)
-- Left / Right Magna-Save (upper left / upper right)
-- Left / Right Nudge (middle left / middle right)
-- Left / Right Flipper (lower left / lower right)
-- Center Nudge (lower middle)
-- Start (bottom left)
-- Plunger (bottom right, *long press to pull back*)
+### Getting the file onto your device
 
-The *Touch Overlay* draws these areas on screen. It can be turned on and off from the [In-Game UI](#in-game-ui).
+**iPhone and iPad**
 
-### Keyboard
+- Tap the file in the **Files** app (iCloud Drive, Google Drive, OneDrive and so on all work) and confirm the import.
+- AirDrop the file from a Mac or another iPhone.
+- On iPad, drag and drop the file onto the app.
+- Use the web browser method below.
 
-Bluetooth and USB keyboards are supported. The default keys are:
+Your tables are also visible in the Files app under *On My iPhone* / *On My iPad* > *Visual Pinball*, and in the Finder sidebar when the device is plugged into a Mac.
 
-- *5* - Coin
-- *1* - Start
-- *Left Shift* / *Right Shift* - Left / Right Flipper
-- *Left Control* / *Right Control* - Left / Right Magna Save
-- *Z* / */* - Left / Right Nudge
-- *Space* - Center Nudge
-- *Return* - Plunger (*Hold down to pull back*)
-- *T* - Tilt
-- *F12* - In-Game UI
-- *Escape* - Quit to the *Table Selection* screen
-- *End* - Coin Door (*Press once to open, press again to close*)
-- *7*, *8*, *9*, *0* - Service Buttons (ROM operator menu)
+**Android**
 
-### Game controller
+- Tap **+** then **Files** and pick the file.
+- Open the file from your downloads, a file manager or a cloud app and choose *Visual Pinball*.
+- Use the web browser method below.
 
-Bluetooth and USB game controllers are supported. The default layout is:
+**Meta Quest**
 
-- *Left / Right Trigger* - Left / Right Flipper (pressing further activates the staged flipper)
-- *Left / Right Shoulder* - Left / Right Magna Save
-- *Left Stick* - Nudge
-- *Right Stick* - Plunger
-- *A* (bottom face button) - Launch Ball
-- *B* (right face button) - Start
-- *Y* (top face button) - Coin
-- *Back* - In-Game UI
-- *D-pad* - Service Buttons (ROM operator menu), and navigation while the In-Game UI is open
+- Use the web browser method below. This is by far the easiest way.
 
-### Meta Quest controllers
+### From a web browser on your computer
 
-The default Touch controller layout is:
+The app has a built-in file manager that you open in a browser on the same Wi-Fi network:
 
-- *Left / Right Trigger* - Left / Right Flipper (pressing further activates the staged flipper)
-- *Left / Right Grip* - Left / Right Magna Save
-- *Left Thumbstick* - Nudge
-- *Right Thumbstick* (up / down) - Plunger
-- *Right Thumbstick click* - Launch Ball
-- *A* - Start
-- *B* - Coin
-- *X* - In-Game UI
-- *Y* - Quit to the *Table Selection* screen
-- *Left Thumbstick click* - Align the table to the controllers' position (for setups where the controllers are placed on a physical cabinet)
+1. Open **Settings** (gear icon) in the app and turn on **Enabled** under *Web Server*.
+2. The address to use appears below the switch, for example `http://192.168.1.20:2112`. Type it into a browser on your computer.
+3. Upload your `.vpx`, `.vpxz` or `.zip` files. Archives can be unpacked in place with **Extract**.
+4. Click **Refresh Tables** so the new tables show up in the app.
 
-While the In-Game UI is open, the left thumbstick (up / down) and right thumbstick (left / right) navigate it.
+The page also lets you download, rename, move and delete files, create folders, edit scripts and settings files, and watch the log while a table runs. Turn the web server off again when you are done.
 
-All keyboard, game controller and Quest controller mappings can be changed in *Input Settings* in the [In-Game UI](#in-game-ui).
+## Managing your tables
 
-## In-Game UI
+The **...** button in the top right switches between a grid and a list, changes the size of the grid, and sorts by name. The search box filters the list by name.
 
-While playing, tap the upper right corner of the screen (or press *Back* on a game controller, *X* on a Quest controller, or *F12* on a keyboard) to open the *In-Game UI*. This is the same menu used by the desktop version of Visual Pinball and is described in [Live User Interface](LiveUI.md). Tap an item to open it, drag to scroll, and use the back button at the top of each page to go back.
+Press and hold a table to get its menu:
 
-From the home page you can open *Table Rules*, *Table Options*, *Point Of View* (*VR Settings* on Quest), *Generic Options*, and all the player settings pages (plugins, sound, graphics, displays, input, plunger, nudge & tilt, cabinet, and more). On mobile, the home page also offers:
+- **Rename** changes the name shown in the list. The files are not renamed.
+- **Table Image** lets you pick a picture from your photo library, or reset it. When you quit a table that has no picture yet, a screenshot is used automatically.
+- **View Script** opens the table's script. If the table has no separate script file yet, this reads **Extract Script** and creates one next to the table. This is how you get a script to edit when a table needs patching.
+- **Share** packs the table and all its files into a `.vpxz` file and opens the share sheet, so you can send it to another device.
+- **Reset** removes the settings you saved for this table only. It is greyed out if there are none.
+- **Delete** removes the table and its files.
 
-- *Enable / Disable Touch Overlay* - Draws the touch areas on screen (phones and tablets)
-- *Enable / Disable FPS* - Shows the frames per second counter
-- *Quit* - Return to the *Table Selection* screen
+Reset and Delete act immediately. There is no confirmation.
 
-Pages that can be saved have buttons at the top to reset to defaults, undo changes, and save. When saving, choose *Save Globally* to use the changes as the default for all tables, or *Save as Table Override* to keep them for the current table only. See [File Layout](FileLayout.md#global-settings-and-table-overrides) for how global settings and table overrides are stored.
+## Showing the score display and backglass
 
-## Settings
+Real pinball machines have a score display above the playfield, and a backglass above that. On a phone there is only one screen, so by default the app shows the playfield alone and the score display is hidden. You can show it as a small window on top of the playfield:
 
-The app's *Settings* screen, opened with the gear button in the upper left corner of the *Table Selection* screen, only holds the settings that have to be set before a table starts:
+1. While playing, open the [in-game menu](#the-in-game-menu).
+2. Choose **Display Settings**, then **ScoreView Display**.
+3. Turn on **Enable**. The score display appears over the playfield.
+4. Drag it to where you want it, or set **Width**, **Height**, **X Position** and **Y Position** on the same page.
+5. Save with **Save Globally** so it shows on every table.
 
-- *General* (Android only) - *Graphics Backend* (OpenGL ES or Vulkan), and *Storage* to keep tables in the app's internal storage or in a folder of your choice
-- *Performance* - *Max Texture Dimensions*. Reduce this value if tables crash while loading
-- *External DMD* - see [External DMDs](#external-dmds)
-- *Web Server* - see [Importing Tables](#importing-tables)
-- *Miscellaneous* - *Force VR Rendering Mode*, which provides table scripts with `RenderingMode=2` so the backbox and cabinet are rendered (useful for tables that do not provide FSS support)
-- *Advanced* - view and export `vpinball.log` and `VPinballX.ini`
-- *Support*, *Credits*, *License* and *Reset*
+This works for the dot matrix displays of ROM games as well as the older alphanumeric and reel displays, and for FlexDMD tables. The display is drawn with a glass-like look by the ScoreView plugin; a table can ship its own layout as a `.scv` file.
 
-All other settings (graphics, sound, input, plugins, etc.) are changed while playing, using the [In-Game UI](#in-game-ui). The default configuration is usually sufficient for most devices.
+A backglass is shown the same way, with **Backglass Display** instead of ScoreView Display, as long as the table has a `.directb2s` file next to it.
 
-Settings are stored in `VPinballX.ini`. See [File Layout](FileLayout.md#visual-pinball-x-installation) for where it is located on each platform.
+Colorized DMDs work automatically if the colorization files are in the table's `serum`, `vni` or `pinmame/altcolor` folder.
 
-## Importing Tables
+## Using a real DMD
 
-Visual Pinball tables are stored in the `.vpx` file format. Many tables require additional support files, such as scripts, music, graphics, and ROMs. Plain `.vpx` files, `.zip` archives and `.vpxz` files can be imported.
+If you own a [ZeDMD](https://github.com/PPUC/zedmd), ZeDMD-WiFi or [Pixelcade](https://pixelcade.org/) display, the app can send the score display to it over your network.
 
-To simplify file transfers, the mobile apps support `.vpxz` files. A `.vpxz` file is simply a `.zip` file renamed, making it easier to bundle all necessary files together. For example, to package a ROM based table, make a folder structure like this:
+- **ZeDMD-WiFi** connects directly. In the app's **Settings**, under *External DMD*, set **DMD Type** to *ZeDMD WiFi* and enter the device's address. The default `zedmd-wifi.local` usually works.
+- **ZeDMD** (USB) and **Pixelcade** need a small computer running `DMDServer`, which is part of [libdmdutil](https://github.com/vpinball/libdmdutil). The easiest way is [ZeDMDOS](https://github.com/PPUC/zedmdos) on a Raspberry Pi. Set **DMD Type** to *DMDServer* and enter the Pi's address and port (6789 by default).
 
-```
-table/
-      <table.vpx>
-      pinmame/
-              roms/
-                  <rom.zip>
-```
+## App settings
 
-Zip the above folder, and then change the file extension to `.vpxz`:
+The gear icon on the table list opens the app's settings. These are the few things that have to be set before a table starts; everything else is in the [in-game menu](#the-in-game-menu).
 
-<p align="center">
-<img src="img/mobile/importing-1.gif">
-</p>
+- **Graphics Backend** (Android only): OpenGL ES or Vulkan. Try the other one if tables look wrong or run slowly.
+- **Storage** (Android only): *Internal* keeps tables inside the app. *Custom* lets you pick any folder, for example on an SD card. With a custom folder, the table's files are copied into the app before it starts and any changes copied back afterwards, so starting a table takes a moment longer.
+- **Max Texture Dimensions**: large tables use a lot of memory. If a table crashes while loading, lower this value. The default is 3072.
+- **External DMD**: see [Using a real DMD](#using-a-real-dmd).
+- **Web Server**: see [From a web browser on your computer](#from-a-web-browser-on-your-computer).
+- **Force VR Rendering Mode**: some tables only show their backbox and cabinet when they think they are in VR. Turn this on if a table looks like it is missing them.
+- **Advanced**: view, share or clear the log file, and view the settings file. Useful when asking for help.
+- **Reset** puts every setting back to its default.
 
-See [File Layout](FileLayout.md#tables-folder-organization) for everything that can be placed next to a table.
+## Meta Quest
 
-To get the file on to your device, there are several options:
+The Quest version is the Android app built for the headset. Tables are played in VR, standing in front of a virtual machine.
 
-- **iOS**: the *Files* app (iCloud Drive or third party apps such as Google Drive and OneDrive), AirDrop, drag and drop on iPad, or the built-in web server. The app's *Documents* folder is also accessible from the *Files* app, and from *Finder* when connected to a Mac.
-- **Android**: tap the *+* button and choose *Files* to pick a file, open the file from another app (a file manager, a browser download, a cloud storage app, etc.) and choose *Visual Pinball*, or use the built-in web server.
-- **Meta Quest**: the built-in web server is the easiest way. The *+* button can also import files already on the headset.
+**Installing:** the app is not on the Meta store, so it is sideloaded. Turn on developer mode for your headset in the Meta Horizon phone app, plug the headset into your computer, allow USB debugging in the headset, then install the `quest` APK with `adb install <file>.apk` or a sideloading tool such as SideQuest.
 
-Using the *Files* app on iOS, simply select the `.vpxz` and confirm the import:
+**Adding tables:** the app opens as a flat panel with the same table list as on a phone. Use the [web browser method](#from-a-web-browser-on-your-computer) to copy tables over.
 
-<p align="center">
-<img src="img/mobile/importing-2.png" width="150" hspace="20">
-<img src="img/mobile/importing-3.png" width="150" hspace="20">
-</p>
+**Controllers:**
 
-<p align="center">
-<img src="img/mobile/importing-4.png" width="150">
-</p>
+| Control | What it does |
+|---|---|
+| Left / right trigger | Left / right flipper (press further for a staged flipper) |
+| Left / right grip | Left / right magna-save |
+| Left thumbstick | Nudge |
+| Right thumbstick up / down | Plunger |
+| Right thumbstick click | Launch ball |
+| A | Start |
+| B | Insert a coin |
+| X | Open the in-game menu |
+| Y | Quit the table |
+| Left thumbstick click | Line the table up with where your controllers are, for playing on a real cabinet |
 
-The **built-in web server** can be enabled in the *Web Server* section of *Settings*. Once running, the address to open in a browser on the same network is shown below the setting. The web page lets you browse, upload, download, rename, move, and delete files, create folders, extract `.zip` and `.vpxz` files, edit text files such as scripts and ini files, view the log, and refresh the table list.
+In the in-game menu, move with the left thumbstick and change values with the right thumbstick.
 
-## Table Selection Screen
+**VR Settings:** in the in-game menu, *VR Settings* replaces *Point Of View*. There you can move and turn the table, set the size of the virtual cabinet, choose the headset refresh rate, and turn on **Color Keyed Passthrough** to see your room behind the table. Passthrough is applied when a table starts, so save the setting and restart the table.
 
-Change the layout and sort order of the *Table Selection* screen by tapping the *...* button in the upper right, and use the search bar to filter tables by name:
-
-<p align="center">
-<img src="img/mobile/misc-1.png" width="150" hspace="20">
-<img src="img/mobile/misc-2.png" width="150" hspace="20">
-</p>
-
-Long pressing on a table displays a context menu with the following actions:
-
-- Rename
-- Table Image
-- View Script (or Extract Script if the table does not have a `.vbs` file yet)
-- Share - packages the table as a `.vpxz` file
-- Reset - removes the table's settings overrides
-- Delete
-
-<p align="center">
-<img src="img/mobile/misc-3.gif" width="150">
-</p>
-
-On iOS, share tables to other devices using AirDrop:
-
-<p align="center">
-<img src="img/mobile/misc-4.png" width="150">
-</p>
-
-## External DMDs
-
-The mobile apps support external DMDs (Dot Matrix Displays) using `DMDServer`, which is part of the [libdmdutil](https://github.com/vpinball/libdmdutil) project.
-
-Currently supported DMDs:
-
-- [ZeDMD](https://github.com/PPUC/zedmd)
-- [ZeDMD-WiFi](https://github.com/PPUC/zedmd)
-- [Pixelcade](https://pixelcade.org/)
-
-The easiest way to run `DMDServer` is to use [ZeDMDOS](https://github.com/PPUC/zedmdos) on a Raspberry Pi.
-
-In the *External DMD* section of *Settings*, select *DMDServer* for *DMD Type* and enter the correct *Address* and *Port* values.
-
-`ZeDMD-WiFi` devices can be connected to directly by selecting *ZeDMD WiFi* for *DMD Type* and entering the device's *Address*. `DMDServer` is not needed.
+**Settings:** the same as Android, except that *Graphics Backend* and *Force VR Rendering Mode* are not shown.
 
 ## Troubleshooting
 
-**Q: When a table starts, a script error occurs immediately.**
+**The table shows a script error as soon as it starts.**
+The mobile apps run table scripts with a different engine than Windows, and a few older tables use features it does not support. The community keeps fixed scripts at [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts). Download the `.vbs` for your table, give it the same name as the `.vpx` file, and put it next to the table, either inside the `.vpxz` before importing or by uploading it with the web browser method.
 
-**A:** The mobile apps use the VBScript interpreter from [Wine](https://gitlab.winehq.org/wine/wine/-/tree/master/dlls/vbscript), which has some quirks compared to the Windows one. Many newer tables handle these quirks and work without changes. For tables that do have issues, a repository of patched scripts can be found at [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts). Name the patched script after the table (`<table>.vbs` for `<table>.vpx`) and place it next to the table file, either by adding it to the `.vpxz` file or by uploading it with the web server.
+**The app crashes while a table is loading.**
+The table needs more memory than the device has. Lower **Max Texture Dimensions** in the app's settings.
 
-**Q: Visual Pinball crashes when a table starts.**
+**A ROM game loads but nothing happens, or the display stays blank.**
+Check that the ROM `.zip` is in a `pinmame/roms` folder next to the table and has the name the table expects. The log file (*Advanced* in the app's settings, or *Log Stream* in the web browser page) shows what went wrong.
 
-**A:** Visual Pinball tables are large and require **a lot** of memory. Reducing the *Max Texture Dimensions* value in the *Performance* section of *Settings* may help.
+**A ROM game starts but will not take coins or start.**
+Some machines need a reset the first time they are switched on. Quit the table and start it again. If that does not help, press *7* on a keyboard or *D-pad left* on a controller.
 
-**Q: My ROM based game loads, but does not seem to do anything.**
+**A ROM game is very quiet.**
+The volume of many machines is set in the machine's own menu. With a keyboard, press *End* to open the coin door, use *8* and *9* to change the volume, and press *End* again to close the door. The setting is remembered.
 
-**A:** Make sure the table is packaged correctly (see [Importing Tables](#importing-tables)). You can also view the `vpinball.log` in *Settings* to get detailed error information.
+**I cannot see the score or the dot matrix display.**
+It is hidden by default. See [Showing the score display and backglass](#showing-the-score-display-and-backglass).
 
-**Q: My ROM based game is very quiet, can the volume be changed?**
+**The table looks like it is missing its backbox or cabinet.**
+Turn on **Force VR Rendering Mode** in the app's settings.
 
-**A:** Some ROM based games allow the volume to be set via the machine's system menu. To access the system menu, you will need a [keyboard](#keyboard) or [game controller](#game-controller). Press the *End* key to open the "coin door". Use the *8* and *9* keys (or the D-pad) to change the volume. Press the *End* key again to close the "coin door". When exiting the table, the settings will be saved to an NVRAM file.
+**Can the app do this or that?**
+Visual Pinball is free and open source. The [source code](https://github.com/vpinball/vpinball) is public and contributions are welcome, whether it is fixing bugs, adding features or improving this guide.
 
-**Q: My ROM based game seems to have started but I can't do anything?**
+## Getting help
 
-**A:** Some ROM based games need to be reset the first time they are powered up. Exiting and restarting the table usually fixes this. You can also press the *7* key on a [keyboard](#keyboard) or *D-pad Left* on a [game controller](#game-controller).
+The *Support* section of the app's settings has a **Learn More** button that opens this guide, a **Contact Us** button that writes an email, and a link to the `#vpx-standalone-mobile` channel on the [Virtual Pinball Chat](https://discord.com/channels/652274650524418078/1323445406524248090) Discord server. Discord is the best place to ask questions.
 
-**Q: Do the mobile apps support B2S backglasses, PuP and DMDs?**
+When asking for help, include the log file from *Advanced* in the app's settings.
 
-**A:** Yes. Backglasses (B2S), PuP and DMDs (PinMAME, FlexDMD) are rendered by plugins, the same as on desktop, and can be configured in *Plugin Settings* in the [In-Game UI](#in-game-ui).
+Please do not use the GitHub issue tracker to ask for help with the mobile apps.
 
-**Q: Can Visual Pinball be customized to do this or that?**
+## Other cool projects
 
-**A:** Visual Pinball is completely free. The [source code](https://github.com/vpinball/vpinball) is open and available for anyone interested in contributing. Contributions are welcome, whether for fixing bugs, adding features, or helping with documentation!
-
-## Support
-
-In *Settings*, go to the *Support* section:
-
-<p align="center">
-<img src="img/mobile/support-1.png" width="150">
-</p>
-
-Tap *Learn More* to open this guide.
-
-Tap *Contact Us* to send an email, or click [here](mailto:jsm174@gmail.com).
-
-Tap *Discord (Virtual Pinball Chat)* to go to the `#vpx-standalone-mobile` channel in the *Virtual Pinball Chat* Discord server, or click [here](https://discord.com/channels/652274650524418078/1323445406524248090).
-
-**Please do not use the GitHub issue queue to request support for the mobile apps!**
-
-## Other Cool Projects
-
-- [vpxtool](https://github.com/francisdb/vpxtool) - Terminal based frontend and utilities for Visual Pinball (@francisdb)
-
-- [PinPal](https://github.com/bartdesign/PinPal) - Portable VPX pinball handheld controller with DMD display (@bartdesign)
+- [vpxtool](https://github.com/francisdb/vpxtool) is a command line tool for working with table files (@francisdb).
+- [PinPal](https://github.com/bartdesign/PinPal) is a 3D-printed handheld case with real flipper buttons and a small DMD that your phone slides into (@bartdesign):
 
 <p align="center">
-<img src="img/mobile/other-cool-projects-1.png" width="150">
+<img src="img/mobile/pinpal.png" width="200">
 </p>
 
-## Third Party Libraries
+## Credits, license and privacy
 
-Third Party libraries used by Visual Pinball can be found [here](../third-party/README.md).
-
-## License
-
-License information for Visual Pinball can be found [here](../LICENSE).
-
-## Privacy Policy
-
-The Privacy Policy for the mobile apps can be found [here](../PRIVACY.md).
-
-## Credits
-
-Visual Pinball for mobile was built upon the work of giants. Without Open Source, none of this would be possible. A huge thanks goes out to all the developers and contributors who have been part of the journey in making Visual Pinball and its ecosystem what it is today!
+Visual Pinball for mobile is built on the work of many open source projects. The *Credits* section of the app's settings lists them and their contributors, and the full list of third party libraries is [here](../third-party/README.md). The license is [here](../LICENSE) and the privacy policy for the mobile apps is [here](../PRIVACY.md).
