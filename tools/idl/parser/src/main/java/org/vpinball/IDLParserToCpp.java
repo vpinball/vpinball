@@ -554,12 +554,8 @@ public class IDLParserToCpp {
 
 		buffer.append("static WCHAR wzName[MAXSTRING];\n");
 		buffer.append("size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;\n");
-		buffer.append("int r;\n");
 
-		// Crash on exit workaround
-		buffer.append("#ifdef __STANDALONE__\n");
-		buffer.append("if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;\n");
-		buffer.append("#endif\n");
+		buffer.append("if (m_scriptInterpreter == nullptr) return DISP_E_MEMBERNOTFOUND;\n");
 
 		buffer.append("while(min <= max) {\n");
 		buffer.append("i = (min + max) / 2;\n");
@@ -569,7 +565,7 @@ public class IDLParserToCpp {
 		buffer.append("LPOLESTR fnNames = (LPOLESTR)wzName;\n");
 		buffer.append("DISPID tDispid;\n");
 		buffer.append("CComPtr<IDispatch> disp;\n");
-		buffer.append("g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);\n");
+		buffer.append("m_scriptInterpreter->GetScriptDispatch(&disp);\n");
 		buffer.append("if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {\n");
 		buffer.append("return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);\n");
 		buffer.append("}\n");
