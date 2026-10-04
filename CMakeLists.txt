@@ -132,7 +132,6 @@ if(USE_SYSTEM_LIBS)
    include_directories(BEFORE
       "${SYSTEM_LIBS_INCLUDE_DIR}"
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/wine"
-      "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/atlmfc"
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/atl")
    link_directories(BEFORE "${SYSTEM_LIBS_LIB_DIR}")
    message(STATUS "USE_SYSTEM_LIBS: include=${SYSTEM_LIBS_INCLUDE_DIR} lib=${SYSTEM_LIBS_LIB_DIR}")

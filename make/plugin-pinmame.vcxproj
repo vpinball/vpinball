@@ -33,7 +33,7 @@
     <ClInclude Include="../../plugins/pinmame/Roms.h" />
     <ClInclude Include="../../plugins/pinmame/Settings.h" />
     <ClInclude Include="../../plugins/pinmame/SettingsDefaults.h" />
-    <ClInclude Include="../../third-party/include/libpinmame.h" />
+    <ClInclude Include="../../third-party/include/pinmame/libpinmame.h" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <PostBuildEvent>

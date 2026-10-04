@@ -16,7 +16,6 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
-echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo ""
@@ -350,49 +349,13 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --enable-shared \
       --disable-static \
       --disable-programs \
-      --disable-doc
+      --disable-doc \
+      --disable-avdevice \
+      --disable-avfilter
    make -j${NUM_PROCS}
    cd ..
 
    echo "$FFMPEG_EXPECTED_SHA" > cache.txt
-
-   cd ..
-fi
-
-#
-# build libzip
-#
-
-LIBZIP_EXPECTED_SHA="${LIBZIP_SHA}"
-LIBZIP_FOUND_SHA="$([ -f libzip/cache.txt ] && cat libzip/cache.txt || echo "")"
-
-if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
-   echo "Building libzip. Expected: ${LIBZIP_EXPECTED_SHA}, Found: ${LIBZIP_FOUND_SHA}"
-
-   rm -rf libzip
-   mkdir libzip
-   cd libzip
-
-   curl -sL https://github.com/nih-at/libzip/archive/${LIBZIP_SHA}.tar.gz -o libzip-${LIBZIP_SHA}.tar.gz
-   tar xzf libzip-${LIBZIP_SHA}.tar.gz
-   mv libzip-${LIBZIP_SHA} libzip
-   cd libzip
-   cmake \
-      -DBUILD_SHARED_LIBS=ON \
-      -DENABLE_ZSTD=OFF \
-      -DENABLE_BZIP2=OFF \
-      -DENABLE_LZMA=OFF \
-      -DBUILD_TOOLS=OFF \
-      -DBUILD_REGRESS=OFF \
-      -DBUILD_OSSFUZZ=OFF \
-      -DBUILD_EXAMPLES=OFF \
-      -DBUILD_DOC=OFF \
-      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
-   cd ..
-
-   echo "$LIBZIP_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
@@ -479,15 +442,12 @@ cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libusb*.{so,so.*} ../
 cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libhidapi-hidraw.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libftdi1*.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 
-for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
+for LIB in libavcodec libavformat libavutil libswresample libswscale; do
    cp -a ffmpeg/ffmpeg/${LIB}/${LIB}.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}
 done
 
-cp -a libzip/libzip/build/lib/libzip.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
-cp libzip/libzip/build/zipconf.h ../../../third-party/include
-cp libzip/libzip/lib/zip.h ../../../third-party/include
 
 cp -a libwinevbs/libwinevbs/build/libwinevbs.so* ../../../third-party/runtime-libs/linux-aarch64
 mkdir -p ../../../third-party/include/libwinevbs/wine/include

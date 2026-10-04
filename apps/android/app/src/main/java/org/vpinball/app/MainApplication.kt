@@ -36,8 +36,6 @@ class MainApplication : Application() {
         System.loadLibrary("pupdmd")
         System.loadLibrary("vni")
         System.loadLibrary("avcodec")
-        System.loadLibrary("avdevice")
-        System.loadLibrary("avfilter")
         System.loadLibrary("avformat")
         System.loadLibrary("avutil")
         System.loadLibrary("swresample")
