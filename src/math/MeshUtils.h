@@ -494,7 +494,8 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
 // Dragging a point across the others in the editor silently reverses the winding, so
 // restore the canonical order before generating derived data. The slingshot flag marks
 // the segment starting at a vertex: it is shifted back onto the same segments.
-template <class RenderVertexCont> inline void NormalizeWindingOrder(RenderVertexCont& vvertex)
+// Returns true if reversed (per-vertex data computed before must then be reversed, too)
+template <class RenderVertexCont> inline bool NormalizeWindingOrder(RenderVertexCont& vvertex)
 {
    const size_t count = vvertex.size();
    if (count > 2 && DetermineWindingOrder(vvertex) == Clockwise)
@@ -504,7 +505,9 @@ template <class RenderVertexCont> inline void NormalizeWindingOrder(RenderVertex
       for (size_t i = 0; i + 1 < count; ++i)
          vvertex[i].slingshot = vvertex[i + 1].slingshot;
       vvertex.back().slingshot = sling;
+      return true;
    }
+   return false;
 }
 
 //
