@@ -559,8 +559,8 @@ void VRDevice::SetupHMD()
    }
 
    // Limit to OpenXR declared limits
-   const uint32_t maxWidth = std::min(m_viewConfigurationViews[0].recommendedImageRectWidth, m_systemProperties.graphicsProperties.maxSwapchainImageWidth);
-   const uint32_t maxHeight = std::min(m_viewConfigurationViews[0].recommendedImageRectHeight, m_systemProperties.graphicsProperties.maxSwapchainImageHeight);
+   const uint32_t maxWidth = std::min(m_viewConfigurationViews[0].maxImageRectWidth, m_systemProperties.graphicsProperties.maxSwapchainImageWidth);
+   const uint32_t maxHeight = std::min(m_viewConfigurationViews[0].maxImageRectHeight, m_systemProperties.graphicsProperties.maxSwapchainImageHeight);
    if (m_eyeWidth == 0 || m_eyeHeight == 0 || m_eyeWidth > maxWidth || m_eyeHeight > maxHeight)
    {
       PLOGI << "Requested resolution exceeds OpenXR swapchain limits, defaulting to headset recommended resolution";
