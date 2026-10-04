@@ -31,15 +31,19 @@ public:
    // Script security level
    int m_securitylevel;
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_REGISTERED_TYPELIB
    static CComModule m_module;
+#endif
+#ifndef __STANDALONE__
    class WinApp final : public CWinApp
    {
    public:
       WinApp() = default;
+#ifdef VPX_ENABLE_WIN32_EDITOR
    protected:
       BOOL OnIdle(LONG) override;
       BOOL PreTranslateMessage(MSG& msg) override;
+#endif
    } m_winApp;
    HINSTANCE GetInstanceHandle() const { return m_winApp.GetInstanceHandle(); }
 #endif

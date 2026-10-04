@@ -18,6 +18,8 @@
 
 #include <memory>
 
+__forceinline void ListView_SetItemText_Safe(HWND hwndLV, WPARAM iItem, int iSubItem, LPCSTR pszText) { ListView_SetItemText(hwndLV, iItem, iSubItem, (LPSTR)pszText); }
+
 class PinTableMDI;
 class IWinUIPart;
 
