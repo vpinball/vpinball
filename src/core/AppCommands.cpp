@@ -349,9 +349,11 @@ enum option_names
    OPTION_H,
    OPTION_HELP,
    OPTION_QMARK,
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_REGISTERED_TYPELIB
    OPTION_UNREGSERVER,
    OPTION_REGSERVER,
+#endif
+#ifdef VPX_ENABLE_WIN32_EDITOR
    OPTION_MINIMIZED,
    OPTION_EXTMINIMIZED,
    OPTION_EDIT,
@@ -395,9 +397,11 @@ static const CommandLineOption options[] = {
    { OPTION_H, "h"s, string() },
    { OPTION_HELP, "help"s, string() },
    { OPTION_QMARK, "?"s, string() },
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_REGISTERED_TYPELIB
    { OPTION_UNREGSERVER, "UnregServer"s, "Unregister VP functions"s },
    { OPTION_REGSERVER, "RegServer"s,"Register VP functions"s },
+#endif
+#ifdef VPX_ENABLE_WIN32_EDITOR
    { OPTION_MINIMIZED, "Minimized"s, "Start the windows editor in the 'invisible' minimized window mode"s },
    { OPTION_EXTMINIMIZED, "ExtMinimized"s, "Start the windows editor in the 'invisible' minimized window mode, but with enabled Pause Menu"s },
    { OPTION_EDIT, "Edit"s, "[filename]  Load file into VP"s },
@@ -580,7 +584,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          }
          break;
 
-      #ifndef __STANDALONE__
+      #ifdef VPX_HAS_REGISTERED_TYPELIB
       case OPTION_UNREGSERVER:
          defaultToWin32Editor = false;
          VPApp::m_module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
@@ -596,7 +600,9 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             ShowError("Register VP functions failed");
          exit(0);
          break;
+      #endif
 
+      #ifdef VPX_ENABLE_WIN32_EDITOR
       case OPTION_MINIMIZED:
          win32EditorMinimized = true;
          break;

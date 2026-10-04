@@ -117,12 +117,13 @@ void operator delete[](void *address)
    _aligned_free(address);
 }*/
 #endif
+#endif
 
+#ifdef VPX_HAS_REGISTERED_TYPELIB
 CComModule VPApp::m_module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
-
 #endif
 
 
@@ -346,7 +347,7 @@ void VPApp::InitInstance(bool isPlay)
    g_settingsService.GetAppSettings().Save();
 }
 
-#ifndef __STANDALONE__
+#ifdef VPX_ENABLE_WIN32_EDITOR
 BOOL VPApp::WinApp::OnIdle(LONG)
 {
    if (g_pplayer)
