@@ -282,15 +282,18 @@ cvpmVLock (create as many as needed)
   (Public)  .TrigUnhit    - called from trigger unhit event
   (Public)  .KickHit      - called from kicier hit event
 
-cvpmDips (create as many as needed) => (Dip Switch And/Or Table Options Menu)
-  (Public)  .AddForm       - create a form (AKA dialogue)
-  (Public)  .AddChk        - add a chckbox
+cvpmDips (create as many as needed) => (Dip Switch And/Or Table Options)
+  declarations are mapped to table options shown in the in-game UI (the legacy
+  VPinMAME.WSHDlg dialog is no longer used); dip switches are synchronized with
+  PinMAME through vpmOptionEvent (called by VPX on table option events)
+  (Public)  .AddForm       - declare an option form
+  (Public)  .AddChk        - add a checkbox option
   (Public)  .AddChkExtra   -   -  "" -     for non-dip settings
-  (Public)  .AddFrame      - add a frame with checkboxes or option buttons
+  (Public)  .AddFrame      - add a group of checkboxes or exclusive choices
   (Public)  .AddFrameExtra -  - "" - for non-dip settings
-  (Public)  .AddLabel      - add a label (text string)
-  (Public)  .ViewDips      - Show form
-  (Public)  .ViewDipsExtra -  - "" -  with non-dip settings
+  (Public)  .AddLabel      - ignored (was: text label on the legacy dialog)
+  (Public)  .ViewDips      - register the declared options
+  (Public)  .ViewDipsExtra -  - "" - returns the current non-dip settings word
 
 cvpmImpulseP (create as many as needed) => (Impulse Plunger Object using a Trigger to Plunge Manual/Auto)
   (Public)  .InitImpulseP - Initialise Impulse Plunger Object (Trigger, Plunger Power, Time to Full Plunge [0 = Auto])
