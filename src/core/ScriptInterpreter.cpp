@@ -198,6 +198,9 @@ void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const 
 
 void ScriptInterpreter::RemoveItem(IScriptable *const piscript)
 {
+#ifdef VPX_MANUAL_SCRIPT_DISPATCH
+   piscript->m_scriptInterpreter = nullptr;
+#endif
    piscript->GetIDispatch()->Release();
    m_scriptItemMap.erase(MakeWString(piscript->get_Name()));
 }

@@ -29,7 +29,13 @@ public:
 
    void Start(PinTable *table);
    void Stop(PinTable *table, bool interruptDirectly = false);
-   void AddItem(IScriptable *scriptable, const bool global) { AddItem(MakeWString(scriptable->get_Name()), scriptable->GetIDispatch(), global); }
+   void AddItem(IScriptable *scriptable, const bool global)
+   {
+#ifdef VPX_MANUAL_SCRIPT_DISPATCH
+      scriptable->m_scriptInterpreter = this;
+#endif
+      AddItem(MakeWString(scriptable->get_Name()), scriptable->GetIDispatch(), global);
+   }
    void AddItem(const wstring& name, IDispatch *dispatch, const bool global);
    void RemoveItem(IScriptable *const piscript);
    void Evaluate(const string &script, bool isDebugStatement);
