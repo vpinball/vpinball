@@ -47,7 +47,7 @@ class SettingsViewModel : ViewModel() {
     var externalDMD by mutableStateOf(VPinballExternalDMD.NONE)
         private set
 
-    var dmdServerAddr by mutableStateOf("0.0.0.0")
+    var dmdServerAddr by mutableStateOf("localhost")
         private set
 
     var dmdServerPort by mutableIntStateOf(6789)
@@ -105,7 +105,7 @@ class SettingsViewModel : ViewModel() {
                 else -> VPinballExternalDMD.NONE
             }
 
-        dmdServerAddr = VPinballManager.loadValue(PLUGIN_DMDUTIL, "DMDServerAddr", "0.0.0.0")
+        dmdServerAddr = VPinballManager.loadValue(PLUGIN_DMDUTIL, "DMDServerAddr", "localhost")
         dmdServerPort = VPinballManager.loadValue(PLUGIN_DMDUTIL, "DMDServerPort", 6789)
         zedmdWiFiAddr = VPinballManager.loadValue(PLUGIN_DMDUTIL, "ZeDMDWiFiAddr", "zedmd-wifi.local")
 

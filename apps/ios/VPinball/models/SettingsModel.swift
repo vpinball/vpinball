@@ -43,7 +43,7 @@ class SettingsModel: ObservableObject {
             externalDMD = .none
         }
 
-        dmdServerAddr = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerAddr", "0.0.0.0")
+        dmdServerAddr = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerAddr", "localhost")
         dmdServerPort = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerPort", 6789)
         zedmdWiFiAddr = vpinballManager.loadValue(.pluginDMDUtil, "ZeDMDWiFiAddr", "zedmd-wifi.local")
 
