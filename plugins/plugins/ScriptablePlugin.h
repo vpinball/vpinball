@@ -479,7 +479,7 @@ public:
    {
       if (m_baseClassDef == nullptr)
       {
-         // FIXME Report error to caller (unimplemented)
+         ReportCallError(memberIndex, "the plugin providing class '" + m_baseName + "' is not loaded");
          return;
       }
       unsigned int baseMember = 0xFFFFFFFF;
@@ -510,7 +510,7 @@ public:
       }
       if (baseMember == 0xFFFFFFFF)
       {
-         // FIXME Report error to caller (unimplemented)
+         ReportCallError(memberIndex, "class '" + m_baseName + "' does not implement a matching member");
          return;
       }
       m_baseClassDef->members[baseMember].Call(me, baseMember, pArgs, pRet);
@@ -520,6 +520,14 @@ public:
    const ScriptClassDef* GetProxyClassDef() const { return m_proxyClassDef; }
 
 private:
+   void ReportCallError(const int memberIndex, const std::string& reason) const
+   {
+      if (m_scriptApi == nullptr)
+         return;
+      const std::string memberName = ((memberIndex >= 0) && (memberIndex < static_cast<int>(m_proxyClassDef->nMembers))) ? m_proxyClassDef->members[memberIndex].name.name : "unknown";
+      m_scriptApi->OnError(PSC_ERR_FAIL, ("Call to '" + memberName + "' failed: " + reason).c_str());
+   }
+
    inline bool IsNameMatch(const std::string_view& proxyName, const std::string_view& className) const
    {
       const std::string_view name1 = proxyName.starts_with(m_proxyPrefix) ? proxyName.substr(m_proxyPrefix.length()) : proxyName;
@@ -593,7 +601,7 @@ public:
    {
       if (m_classProxy.GetBaseClassDef() == nullptr)
       {
-         // FIXME Report error to caller (unimplemented)
+         m_classProxy.ForwardCall(me, memberIndex, pArgs, pRet);
          return;
       }
       if (m_instance == nullptr)

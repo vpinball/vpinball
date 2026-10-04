@@ -774,6 +774,34 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
    }
 }
 
+void DynamicTypeLibrary::InitScriptVariant(const ScriptTypeNameDef& type, ScriptVariant& sv) const
+{
+   memset(&sv, 0, sizeof(sv));
+   if (type.id >= m_types.size())
+      return;
+   const TypeDef& typeDef = m_types[type.id];
+   switch (typeDef.category)
+   {
+   case TypeDef::TD_ALIAS: InitScriptVariant(typeDef.aliasDef.typeDef, sv); break;
+
+   case TypeDef::TD_NATIVE:
+      if (typeDef.nativeType.id == TypeID::TYPEID_STRING)
+         sv.vString = { [](ScriptString* s) { delete[] s->string; }, nullptr };
+      break;
+
+   case TypeDef::TD_CLASS: sv.vObject = nullptr; break;
+
+   case TypeDef::TD_ARRAY:
+      sv.vArray = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int)));
+      sv.vArray->Release = [](ScriptArray* me) { free(me); };
+      for (unsigned int i = 0; i < typeDef.arrayDef->nDimensions; i++)
+         sv.vArray->lengths[i] = 0;
+      break;
+
+   default: break;
+   }
+}
+
 void DynamicTypeLibrary::ReleaseScriptVariant(const ScriptTypeNameDef& type, ScriptVariant& sv) const
 {
    assert(type.id != TypeID::TYPEID_UNRESOLVED);
@@ -989,6 +1017,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    #endif
 
    ScriptVariant retValue;
+   InitScriptVariant(memberDef.type, retValue);
    try
    {
       memberDef.Call(nativeObject, memberIndex, args, &retValue);
