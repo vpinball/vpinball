@@ -120,7 +120,7 @@ void VPinballLib::AppIterate()
          std::filesystem::path imagePath = tablePath.parent_path() / imageFilename;
 
          std::error_code ec;
-         if (std::filesystem::exists(imagePath, ec)) {
+         if (std::filesystem::exists(imagePath, ec) && std::filesystem::file_size(imagePath, ec) > 0) {
             g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
             return;
          }
