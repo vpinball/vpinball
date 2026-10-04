@@ -42,7 +42,7 @@
 // CryptoAPI, table hashing no longer needs it (utils/TableHash.h only cross checks against it), but the legacy VP8/VP9 script decryption still does
 #define VPX_HAS_CRYPTOAPI
 #else
-// No registered typelib, so scriptable classes instead carry a hand written IDispatch implementation generated from the IDL (see standalone/idl/)
+// No registered typelib, so scriptable classes instead carry a hand written IDispatch implementation generated from the IDL (see tools/idl/)
 #define VPX_MANUAL_SCRIPT_DISPATCH
 #endif
 

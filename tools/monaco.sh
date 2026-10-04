@@ -2,8 +2,10 @@
 
 set -e
 
+cd "$(dirname "$0")"
+
 BUILD_DIR="monaco-build-temp"
-OUTPUT_DIR="../../../src/assets/web/monaco"
+OUTPUT_DIR="../src/assets/web/monaco"
 
 rm -rf "$BUILD_DIR" || true
 rm -rf "$OUTPUT_DIR" || true

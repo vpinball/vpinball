@@ -178,7 +178,7 @@ cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
 #cmake -DPLATFORM=ios-simulator -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build/ios-simulator-arm64
 #cmake --build build/ios-simulator-arm64 -- -j$(sysctl -n hw.ncpu)
 
-open standalone/ios/VPinball.xcodeproj
+open apps/ios/VPinball.xcodeproj
 ```
 </details>
 
@@ -197,7 +197,7 @@ export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
 platforms/android-arm64-v8a/external.sh
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
-cd standalone/android
+cd apps/android
 ./gradlew assembleMobileDebug
 ```
 </details>
@@ -217,7 +217,7 @@ export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
 platforms/android-arm64-v8a/external.sh
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DENABLE_XR=ON -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
-cd standalone/android
+cd apps/android
 ./gradlew assembleQuestDebug
 ```
 </details>
