@@ -2191,15 +2191,12 @@ string Shader::PreprocessGLShader(const string& shaderCode) {
       if (line.starts_with("#version ")) {
          #if defined(__OPENGLES__)
             header += "#version 300 es\n"sv;
-            header += "#define ShaderUniform::GLES30\n"sv;
+            header += "#define SHADER_GLES30\n"sv;
          #elif defined(__APPLE__)
             header += "#version 410\n"sv;
-            header += "#define ShaderUniform::GL410\n"sv;
+            header += "#define SHADER_GL410\n"sv;
          #else
             header += line + '\n';
-         #endif
-         #ifdef __STANDALONE__
-            header += "#define ShaderUniform::STANDALONE\n"sv;
          #endif
       }
       else if (line.starts_with("#extension "))
