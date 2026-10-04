@@ -2437,7 +2437,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
       JSONObjectReader tableReader(tableDoc, eItemTable, pack, CURRENT_FILE_FORMAT_VERSION);
       Load(tableReader);
       if (tableReader.HasError())
+      {
          PLOGE << "Errors while loading the table definition of \"" << PathToUTF8(m_filename) << '"';
+      }
    }
    else
    {
@@ -2552,7 +2554,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
          JSONObjectReader reader(doc, eItemCollection, pack, CURRENT_FILE_FORMAT_VERSION);
          pcol->Load(reader);
          if (reader.HasError())
+	 {
             PLOGE << "Errors while loading collection \"" << PathToUTF8(collectionFile) << '"';
+	 }
          if (pcol->m_name.empty() || !IsNameUnique(pcol->m_name))
          {
             const string oldName = pcol->m_name;
@@ -2615,7 +2619,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
                            meshFile = std::filesystem::path("meshes") / (JSONSerializer::SanitizeFileName(partName) + ".glb"s);
                         vector<uint8_t> meshData;
                         if (meshFile.empty() || !pack->ReadBinaryFile(meshFile, meshData) || !prim->m_mesh.LoadGLB(meshData.data(), meshData.size()))
+			{
                            PLOGE << "Failed to load the mesh of \"" << partName << "\" from \"" << PathToUTF8(meshFile) << '"';
+			}
                      }
                   }
                   parts[i] = piedit;
@@ -2705,7 +2711,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
          JSONObjectReader reader(texDoc, JSONSerializer::kTextureNode, pack, CURRENT_FILE_FORMAT_VERSION);
          Texture *const tex = Texture::CreateFromObjectReader(reader, this);
          if (reader.HasError())
+	 {
             PLOGE << "Errors while loading image \"" << name << '"';
+	 }
          if (tex != nullptr)
             m_vimage.push_back(tex);
       };
@@ -3388,10 +3396,12 @@ std::unique_ptr<JSONSerializer::Deserializer> PinTable::CreateImportDeserializer
          const nlohmann::json sidecar = readJSON(sidecarFile);
          bool equal = sidecar.is_object();
          if (equal)
+         {
             if (const nlohmann::json md5 = sidecar.value("md5", nlohmann::json()); md5.is_string())
                equal = StrCompareNoCase(md5.get<string>(), HexMD5(tex->GetMD5Hash()));
             else
                equal = sameData(sidecarFile, tex->GetFileRaw(), tex->GetFileSize());
+         }
          if (equal)
             if (const nlohmann::json v = sidecar.value("alpha_test", nlohmann::json()); !v.is_number() || fabsf(v.get<float>() - tex->m_alphaTestValue * 255.f) > 0.5f)
                equal = false;

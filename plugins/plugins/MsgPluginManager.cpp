@@ -454,7 +454,9 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
       }
    }
    if (ec)
+   {
       PLOGE << "Failed to scan plugin directory " << PluginStrings::PathToUTF8(pluginDir) << ": " << ec.message();
+   }
 }
 
 void MsgPluginManager::LoadPlugin(MsgPlugin& plugin)
