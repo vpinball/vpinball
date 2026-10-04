@@ -14,6 +14,7 @@
    10. [Plunger speed axis input](<Plunger Velocity Input User Guide.md>) | [Technical notes](<Plunger Velocity Input Tech Note.md>)
    11. [Open Pinball Device setup](<Open Pinball Device User Guide.md>)
    12. [Latency](Latency.md)
+   13. [Mobile (iOS, Android, Meta Quest)](Mobile.md)
 2. Scripting
    1. [API Reference](<Script API Reference.md>)
 3. Upgrading to new version

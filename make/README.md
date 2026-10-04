@@ -94,7 +94,7 @@ Run it from there; tests tagged `[render]` need a GPU/display, the rest are head
 ```
 
 * A relative `PLUGINS_DIR` is resolved against the build directory.
-* `PLUGINS_DIR` is ignored when the application is built, and on iOS, tvOS and Android, where the plugins are static libraries linked into the application.
+* `PLUGINS_DIR` is ignored when the application is built, and on iOS and Android, where the plugins are static libraries linked into the application.
 
 #### Supported Platforms
 
@@ -191,9 +191,9 @@ open apps/ios/VPinball.xcodeproj
 brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
-export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
-export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
-export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export ANDROID_NDK=$HOME/Library/Android/sdk/ndk/28.2.13676358
+export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/28.2.13676358
 platforms/android-arm64-v8a/external.sh
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
@@ -211,9 +211,9 @@ cd apps/android
 brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
-export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
-export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
-export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export ANDROID_NDK=$HOME/Library/Android/sdk/ndk/28.2.13676358
+export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/28.2.13676358
 platforms/android-arm64-v8a/external.sh
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DENABLE_XR=ON -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
@@ -319,6 +319,45 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 
 > [!NOTE]
 > Instructions for unsupported platforms are provided as-is and are not officially maintained by the team. Community contributions to improve and update them are welcome.
+
+## Running and debugging
+
+After building, run a table from the build folder:
+
+**macOS:**
+```
+build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleTable.vpx
+```
+
+**Linux:**
+```
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx
+```
+
+Use `-h` to list all options, or see [Command Line](<../docs/Command Line.md>).
+
+### Visual Studio Code (macOS, Linux)
+
+- Install the [C/C++ Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack) extension.
+- Open the `vpinball` folder.
+- If prompted, select the latest clang (macOS) or gcc (Linux) kit.
+- Go to `Settings` -> `CMake: Debug Config` and click `Edit in settings.json`.
+- Update `settings.json` with:
+  ```
+  "cmake.debugConfig": {
+     "args": [ "-play", "${workspaceFolder}/src/assets/exampleTable.vpx" ]
+  }
+  ```
+- Click the bug button (to the left of the play button) in the bottom bar.
+
+### iOS and Android
+
+- iOS: build `libvpinball` as described above, then open `apps/ios/VPinball.xcodeproj` in Xcode and run on a device or simulator.
+- Android: build `libvpinball` as described above, then open `apps/android` in Android Studio and select the `mobile` or `quest` build variant.
+
+### Table script patches
+
+Some older tables need their scripts patched to run with the Wine VBScript engine. A patched script named after the table and placed next to it is used instead of the embedded one (see [File Layout](../docs/FileLayout.md)). Community patches are collected in the [vpx-standalone-scripts](https://github.com/jsm174/vpx-standalone-scripts) repository.
 
 ## Continuous Integration
 
