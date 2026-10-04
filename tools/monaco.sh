@@ -5,10 +5,9 @@ set -e
 cd "$(dirname "$0")"
 
 BUILD_DIR="monaco-build-temp"
-OUTPUT_DIR="../src/assets/web/monaco"
+OUTPUT_DIR="$(cd .. && pwd)/src/assets/web/monaco"
 
 rm -rf "$BUILD_DIR" || true
-rm -rf "$OUTPUT_DIR" || true
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
@@ -20,7 +19,7 @@ cat << 'EOF' > package.json
     "build": "vite build"
   },
   "dependencies": {
-    "monaco-editor": "^0.55.1"
+    "monaco-editor": "^0.57.0"
   },
   "devDependencies": {
     "vite": "^5.0.0"
@@ -53,11 +52,11 @@ export default defineConfig({
 EOF
 
 cat << 'EOF' > main.js
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import 'monaco-editor/esm/vs/basic-languages/vb/vb.contribution';
-import 'monaco-editor/esm/vs/basic-languages/ini/ini.contribution';
-import 'monaco-editor/esm/vs/basic-languages/xml/xml.contribution';
-import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController';
+import * as monaco from 'monaco-editor/editor';
+import 'monaco-editor/features/find/register';
+import 'monaco-editor/languages/definitions/vb/register';
+import 'monaco-editor/languages/definitions/ini/register';
+import 'monaco-editor/languages/definitions/xml/register';
 
 window.monaco = monaco;
 EOF
@@ -68,6 +67,7 @@ npm run build
 echo "Contents of dist directory:"
 ls -la dist/
 
+rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 cp dist/monaco.umd.cjs "$OUTPUT_DIR/monaco.js"
 cp dist/*.css "$OUTPUT_DIR/" 2>/dev/null || true
