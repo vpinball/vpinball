@@ -482,7 +482,7 @@ elseif(PLATFORM STREQUAL "macos")
    set_target_properties(vpinball PROPERTIES
       RUNTIME_OUTPUT_NAME "${RUNTIME_OUTPUT_NAME}"
       MACOSX_BUNDLE YES
-      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/apps/macos/Info_${RENDERER}.plist"
+      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/apps/macos/Info.plist"
    )
 
    set(RESOURCES_DIR "$<TARGET_FILE_DIR:vpinball>/../Resources")
@@ -509,8 +509,6 @@ elseif(PLATFORM STREQUAL "macos")
       COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
       COMMAND cp -a "${RUNTIME_LIBS_DIR}/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/apps/macos/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
-      COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
-      COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
    )
 
 # Linux build (BGFX / GL)
