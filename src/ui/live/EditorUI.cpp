@@ -1858,7 +1858,7 @@ void EditorUI::PasteSelection(const ImVec2 &pos)
       IEditable *const editable = EditableRegistry::Create(type);
       if (editable == nullptr)
          continue;
-      BiffReader reader(partData.data() + sizeof(int), static_cast<uint32_t>(partData.size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, nullptr, NULL);
+      BiffReader reader(partData.data() + sizeof(int), static_cast<uint32_t>(partData.size() - sizeof(int)), CURRENT_FILE_FORMAT_VERSION, nullptr, 0);
       editable->Load(reader);
       editable->m_desktopBackdrop = backdrop;
       // If the original name is not yet used, use that one, otherwise add/increase the suffix until we find a name that's not used yet

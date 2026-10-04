@@ -10,7 +10,6 @@
 #endif
 
 #ifdef __STANDALONE__
-   #define __null 0
    #define __WINE_WINCON_H
 #endif
 

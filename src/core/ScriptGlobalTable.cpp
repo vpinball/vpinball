@@ -450,7 +450,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(LONG *pVal)
 {
    if (!g_pplayer)
    {
-      *pVal = NULL;
+      *pVal = 0;
       return E_FAIL;
    }
    #ifdef _WIN32
@@ -459,7 +459,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(LONG *pVal)
    else
       *pVal = (size_t)g_pplayer->m_playfieldWnd->GetNativeHWND();
    #else
-      *pVal = NULL;
+      *pVal = 0;
    #endif
    return S_OK; // returning E_FAIL would break all PinMAME tables that starts PinMAME through 'Controller.Run GetPlayerHWnd'
 }
