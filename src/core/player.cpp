@@ -79,7 +79,9 @@ using namespace VPX;
 #endif
 
 // leave as-is as e.g. VPM relies on this
+#ifndef __STANDALONE__
 #define WIN32_PLAYER_WND_CLASSNAME _T("VPPlayer")
+#endif
 
 
 Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loadProgress)

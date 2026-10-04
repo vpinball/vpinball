@@ -431,42 +431,6 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, con
    return tex;
 }
 
-std::shared_ptr<BaseTexture> BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int maxTexDim, bool with_alpha) noexcept
-{
-   #ifdef __STANDALONE__
-      return nullptr;
-   #else
-      // from the FreeImage FAQ page
-      BITMAP bm;
-      GetObject(hbmp, sizeof(BITMAP), &bm);
-      FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
-      if (!dib)
-         return nullptr;
-      // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (don't know why)
-      // So we save these infos below. This is needed for palettized images only.
-      const int nColors = FreeImage_GetColorsUsed(dib);
-      const HDC dc = GetDC(nullptr);
-      /*const int Success =*/ GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
-         FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
-      ReleaseDC(nullptr, dc);
-      // restore BITMAPINFO members
-      FreeImage_GetInfoHeader(dib)->biClrUsed = nColors;
-      FreeImage_GetInfoHeader(dib)->biClrImportant = nColors;
-
-      if (!dib)
-         return nullptr;
-      if (with_alpha && FreeImage_GetBPP(dib) == 24)
-      {
-         FIBITMAP* dibConv = FreeImage_ConvertTo32Bits(dib);
-         FreeImage_Unload(dib);
-         dib = dibConv;
-         if (!dib)
-            return nullptr;
-      }
-      return BaseTexture::CreateFromFreeImage(dib, true, maxTexDim, true);
-   #endif
-}
-
 void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int width, const unsigned int height, const Format texFormat, const void* image)
 {
    const int pixelSize = GetPixelSize(texFormat);
