@@ -235,7 +235,7 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
                                                                       : "Scale to apply to acquired value"s,
          false, 0.f,
          liveMapping->GetType() == SensorMapping::Type::Acceleration  ? 80.f
-            : liveMapping->GetType() == SensorMapping::Type::Velocity ? 20.f
+            : liveMapping->GetType() == SensorMapping::Type::Velocity ? 80.f
                                                                       : 10.f,
          0.f, 1.f),
       1.f,
