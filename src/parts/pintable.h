@@ -21,10 +21,7 @@
 #include <atomic>
 #include <utility>
 
-#ifdef __STANDALONE__
-#include <iostream>
 class Light;
-#endif
 
 class TableHash;
 

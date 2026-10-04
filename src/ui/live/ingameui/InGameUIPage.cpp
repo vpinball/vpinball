@@ -411,18 +411,19 @@ void InGameUIPage::Render(float elapsedS)
       winSize.y = (1 / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
    }
-#ifdef __LIBVPINBALL__
-   else if (io.DisplaySize.x > io.DisplaySize.y)
-   { // Landscape mode
-      winSize = ImVec2(0.75f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
-      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
+   else if (g_isMobile)
+   {
+      if (io.DisplaySize.x > io.DisplaySize.y)
+      { // Landscape mode
+         winSize = ImVec2(0.75f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
+         ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
+      }
+      else
+      { // Portrait mode
+         winSize = ImVec2(0.9f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
+         ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
+      }
    }
-   else
-   { // Portrait mode
-      winSize = ImVec2(0.9f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
-      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
-   }
-#else
    else if (io.DisplaySize.x > io.DisplaySize.y)
    { // Landscape mode, fit on height
       winSize.y = 0.5f * io.DisplaySize.y;
@@ -435,7 +436,6 @@ void InGameUIPage::Render(float elapsedS)
       winSize.y = (1.f / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    }
-#endif
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin(std::to_string(reinterpret_cast<size_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
 

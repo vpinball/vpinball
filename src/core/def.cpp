@@ -42,6 +42,7 @@ uint64_t mwc64x_state = 4077358422479273989ull;
 
 // (optionally) convert decimal point to locale specific one (i.e. ',' or force to always use '.')
 // and trim all trailing zeros for better readability
+#ifdef VPX_ENABLE_WIN32_EDITOR
 string convert_decimal_point_and_trim(string sz, const bool use_locale) // use_locale: true if the decimal point should be converted to the OS locale setting, otherwise false (i.e. always use '.' as decimal point)
 {
    const size_t pos = sz.find_first_of(",."); // search for the 2 variants
@@ -56,6 +57,7 @@ string convert_decimal_point_and_trim(string sz, const bool use_locale) // use_l
    }
    return sz;
 }
+#endif
 
 // used by dialogues, etc, locale specific, otherwise use std::from_chars (or e.g. std::stof() (with exception handling) or std::strtof()) directly
 float sz2f(string sz, const bool force_convert_decimal_point)
@@ -531,56 +533,6 @@ bool IsOnWine()
    static const bool result = IsOnWineInternal();
    return result;
 }
-
-#ifdef _WIN32
-typedef HRESULT(STDAPICALLTYPE* pRGV)(LPOSVERSIONINFOEXW osi);
-static pRGV mRtlGetVersion = nullptr;
-
-bool IsWindows10_1803orAbove()
-{
-   if (mRtlGetVersion == nullptr)
-      mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
-
-   if (mRtlGetVersion != nullptr)
-   {
-      OSVERSIONINFOEXW osInfo;
-      osInfo.dwOSVersionInfoSize = sizeof(osInfo);
-      mRtlGetVersion(&osInfo);
-
-      if (osInfo.dwMajorVersion > 10)
-         return true;
-      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion > 0)
-         return true;
-      if (osInfo.dwMajorVersion == 10 && osInfo.dwMinorVersion == 0 && osInfo.dwBuildNumber >= 17134) // which is the more 'common' 1803
-         return true;
-   }
-
-   return false;
-}
-
-bool IsWindowsVistaOr7()
-{
-   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, {}, 0, 0, 0, 0, 0 };
-   const DWORDLONG dwlConditionMask = //VerSetConditionMask(
-      VerSetConditionMask(VerSetConditionMask(0, VER_MAJORVERSION, VER_EQUAL), VER_MINORVERSION, VER_EQUAL) /*,
-      VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/
-      ;
-   osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
-   osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-   //osvi.wServicePackMajor = 0;
-
-   const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
-
-   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0, {}, 0, 0, 0, 0, 0 };
-   osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
-   osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
-   //osvi2.wServicePackMajor = 0;
-
-   const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
-
-   return vista || win7;
-}
-#endif
 
 static std::atomic<UserMessageSink*> s_userMessageSink = nullptr;
 

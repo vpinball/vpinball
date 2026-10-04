@@ -4,10 +4,8 @@
 
 #ifdef _MSC_VER
 #define VPINBALLAPI extern "C" __declspec(dllexport)
-#define VPINBALLCALLBACK __stdcall
 #else
 #define VPINBALLAPI extern "C" __attribute__((visibility("default")))
-#define VPINBALLCALLBACK
 #endif
 
 // Enums

@@ -868,6 +868,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
    }
 }
 
+#ifndef __STANDALONE__
 const char** CommandLineProcessor::CommandLineToArgvA(const char* const CmdLine, int* const _argc)
 {
    const size_t len = strlen(CmdLine);
@@ -937,3 +938,4 @@ const char** CommandLineProcessor::CommandLineToArgvA(const char* const CmdLine,
    (*_argc) = argc;
    return argv;
 }
+#endif

@@ -21,8 +21,6 @@ public:
    static void LogAppender(const string& formattedLog);
    static void BroadcastStatus();
    void Update();
-   bool IsRunning() { return m_run; }
-   string GetUrl();
 
 private:
    void Start();
@@ -48,7 +46,6 @@ private:
    string GetIPAddress();
    bool ValidatePathParameter(struct mg_connection *c, struct mg_http_message* hm, const char* paramName, string& outValue);
    std::filesystem::path BuildTablePath(const char* relativePath);
-   bool Unzip(const char* pSource);
 
    struct mg_mgr m_mgr;
    std::atomic<bool> m_run;

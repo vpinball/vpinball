@@ -136,7 +136,9 @@ public:
    std::unique_ptr<AppCommand> m_command;
 
 private:
+#ifndef __STANDALONE__
    static const char** CommandLineToArgvA(const char* const CmdLine, int* const _argc);
+#endif
    static std::filesystem::path GetPathFromArg(const string& arg);
    static string GetCommandLineHelp();
    static void OnCommandLineError(const string& title, const string& message);
