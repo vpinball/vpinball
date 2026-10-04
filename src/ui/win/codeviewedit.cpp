@@ -21,6 +21,9 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name, con
 }
 
 // CodeViewer Preferences
+
+static constexpr const char* defaultFontName = "Consolas"; // fixed pitch/width, for the CVEdit *_Font setting defaults
+
 CVPreference::CVPreference(const COLORREF crTextColor, const bool bDisplay, const string& registryName,
                            const int szScintillaKeyword, const int IDC_ChkBox, const int IDC_ColorBut, const int IDC_Font)
    : m_rgb(crTextColor),
@@ -49,7 +52,7 @@ void CVPreference::GetPrefsFromReg()
    m_rgb = g_settingsService.GetAppSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value());
    m_pointSize = g_settingsService.GetAppSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value());
    string tmp = g_settingsService.GetAppSettings().GetString(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value());
-   strncpy_s(m_logFont.lfFaceName, std::size(m_logFont.lfFaceName), tmp.c_str());
+   strncpy_s(m_logFont.lfFaceName, std::size(m_logFont.lfFaceName), tmp.empty() ? defaultFontName : tmp.c_str());
    m_logFont.lfWeight = g_settingsService.GetAppSettings().GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value());
    m_logFont.lfItalic = g_settingsService.GetAppSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value());
    m_logFont.lfUnderline = g_settingsService.GetAppSettings().GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value());
@@ -76,6 +79,7 @@ void CVPreference::SetDefaultFont(const HWND hwndDlg)
 	if (hFont == nullptr)
 		hFont = (HFONT)GetStockObject(SYSTEM_FONT);
 	GetObject(hFont, sizeof(LOGFONT), plfont);
+	strncpy_s(plfont->lfFaceName, std::size(plfont->lfFaceName), defaultFontName); // the stock fixed font is a bitmap font
 	m_pointSize = 10;
 	GetHeightFromPointSize(hwndDlg);
 }

@@ -1241,6 +1241,7 @@ void InputManager::UpdateRumbleOutput(const uint32_t now)
    m_rumbleSentEndMs = endMs;
    m_rumbleSentKickLow = kickLow;
    m_rumbleSentKickHigh = kickHigh;
+   //!! TODO synchronous on the logic thread with m_rumbleMutex held: a slow device (e.g. Bluetooth gamepad) stalls the game loop, send from a rumble thread
    SendRumble(low, high, (endMs > now) ? static_cast<int>(endMs - now) : 0, kickLow, kickHigh);
 }
 
