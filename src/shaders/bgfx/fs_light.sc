@@ -19,7 +19,7 @@ EARLY_DEPTH_STENCIL void main()
     const vec3 light_dir = v_tablePos - lightCenter_maxRange.xyz;
     const float light_dist = length(light_dir);
     const float len = light_dist * lightCenter_maxRange.w;
-    const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+    const float atten = pow(max(1.0 - saturate(len), 0.0001), lightColor2_falloff_power.w);
     const vec3 lcolor = mix(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
     gl_FragColor.rgb = lcolor * (-blend_modulate_vs_add.x * atten * lightColor_intensity.w); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
     #ifdef BALLSHADOW
