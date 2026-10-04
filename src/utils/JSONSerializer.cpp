@@ -1025,7 +1025,9 @@ void JSONObjectWriter::BeginObject(const int objectId, const bool isArray, const
    if (name == nullptr)
    {
       if (top.node)
+      {
          PLOGD << "JSON writer: skipped unmapped field " << std::hex << objectId << std::dec;
+      }
       m_stack.push_back({ nullptr, -1 });
       return;
    }
@@ -1052,7 +1054,9 @@ void JSONObjectWriter::WriteBool(const int fieldId, const bool value)
    if (const char* const name = top.node ? JSONSerializer::GetFieldName(top.nodeKind, fieldId) : nullptr)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteInt(const int fieldId, const int value)
@@ -1061,7 +1065,9 @@ void JSONObjectWriter::WriteInt(const int fieldId, const int value)
    if (const char* const name = top.node ? JSONSerializer::GetFieldName(top.nodeKind, fieldId) : nullptr)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteUInt(const int fieldId, const unsigned int value)
@@ -1070,7 +1076,9 @@ void JSONObjectWriter::WriteUInt(const int fieldId, const unsigned int value)
    if (const char* const name = top.node ? JSONSerializer::GetFieldName(top.nodeKind, fieldId) : nullptr)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteFloat(const int fieldId, const float value)
@@ -1079,7 +1087,9 @@ void JSONObjectWriter::WriteFloat(const int fieldId, const float value)
    if (const char* const name = top.node ? JSONSerializer::GetFieldName(top.nodeKind, fieldId) : nullptr)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteString(const int fieldId, const string& value)
@@ -1088,7 +1098,9 @@ void JSONObjectWriter::WriteString(const int fieldId, const string& value)
    if (const char* const name = top.node ? JSONSerializer::GetFieldName(top.nodeKind, fieldId) : nullptr)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteWideString(const int fieldId, const wstring& value)
@@ -1097,7 +1109,9 @@ void JSONObjectWriter::WriteWideString(const int fieldId, const wstring& value)
    if (const char* const name = top.node ? JSONSerializer::GetFieldName(top.nodeKind, fieldId) : nullptr)
       AssignField(top.node, top.nodeKind, fieldId, name, MakeString(value));
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteVector2(const int fieldId, const Vertex2D& vec)
@@ -1110,7 +1124,9 @@ void JSONObjectWriter::WriteVector2(const int fieldId, const Vertex2D& vec)
       obj["y"] = vec.y;
    }
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteVector3(const int fieldId, const vec3& vec)
@@ -1124,7 +1140,9 @@ void JSONObjectWriter::WriteVector3(const int fieldId, const vec3& vec)
       obj["z"] = vec.z;
    }
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteVector4(const int fieldId, const vec4& vec)
@@ -1139,7 +1157,9 @@ void JSONObjectWriter::WriteVector4(const int fieldId, const vec4& vec)
       obj["w"] = vec.w;
    }
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteScript(const int fieldId, const string& value)
@@ -1149,7 +1169,9 @@ void JSONObjectWriter::WriteScript(const int fieldId, const string& value)
    if (name == nullptr)
    {
       if (top.node)
+      {
          PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+      }
       return;
    }
    if (m_pack == nullptr)
@@ -1178,7 +1200,9 @@ void JSONObjectWriter::WriteFontDescriptor(const int fieldId, const FontDesc& va
       obj["strikethrough"] = (value.attributes & 0x08) != 0;
    }
    else if (top.node)
+   {
       PLOGD << "JSON writer: skipped unmapped field " << std::hex << fieldId << std::dec;
+   }
 }
 
 void JSONObjectWriter::WriteRaw(const int fieldId, const void* pvalue, const int size)
@@ -1188,7 +1212,9 @@ void JSONObjectWriter::WriteRaw(const int fieldId, const void* pvalue, const int
    if (name == nullptr)
    {
       if (top.node)
+      {
          PLOGD << "JSON writer: skipped unmapped raw field " << std::hex << fieldId << std::dec;
+      }
       return;
    }
    auto& value = FieldSlot(*top.node, name);

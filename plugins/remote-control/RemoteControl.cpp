@@ -364,7 +364,7 @@ static void onGameStart(const unsigned int eventId, void* userData, void* eventD
             while (runMode != RunMode::RunModeNone)
             {
                // Wait for a new input state, waking up periodically to send keep alive messages
-               msgReadySem.try_acquire_for(500ms);
+               static_cast<void>(msgReadySem.try_acquire_for(500ms));
                {
                   std::lock_guard lock(stateMutex);
                   stateMsg = inputState[activeInputState];

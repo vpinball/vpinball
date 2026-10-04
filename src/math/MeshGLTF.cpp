@@ -211,7 +211,9 @@ bool Mesh::LoadGLB(const uint8_t* data, const size_t size)
          return false;
       }
       if (!warn.empty())
+      {
          PLOGW << "GLB mesh loading warnings: " << warn;
+      }
 
       // Find the first triangle mesh primitive
       const tinygltf::Primitive* prim = nullptr;
