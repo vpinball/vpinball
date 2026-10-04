@@ -455,11 +455,9 @@ cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 cp -a libwinevbs/libwinevbs/build/libwinevbs.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 mkdir -p ../../../third-party/include/libwinevbs/wine/include
 mkdir -p ../../../third-party/include/libwinevbs/atl/include
-mkdir -p ../../../third-party/include/libwinevbs/atlmfc/include
 cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwinevbs/
 cp -r libwinevbs/libwinevbs/wine/include/* ../../../third-party/include/libwinevbs/wine/include/
 cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevbs/atl/include/
-cp -r libwinevbs/libwinevbs/atlmfc/include/* ../../../third-party/include/libwinevbs/atlmfc/include/
 
 cp -a libdof/libdof/build/libdof.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
