@@ -3109,9 +3109,6 @@ Private Sub vpmShowHelp
 		vpmKeyName(keyReset)	  & vbTab & "Reset emulation"	   & vbNewLine &_
 		vpmKeyName(keyFrame)	  & vbTab & "Toggle Display lock"  & vbNewLine &_
 		vpmKeyName(keyDoubleSize) & vbTab & "Toggle Display size"  & vbNewLine
-	If IsObject(vpmShowDips) Then
-		szKeyMsg = szKeyMsg & "DIP switch / table options are adjusted in the in-game UI" & vbNewLine
-	End If
 	If IsObject(vpmTrough) Then
 		szKeyMsg = szKeyMsg & vpmKeyName(keyAddBall) & vbTab & "Add / Remove Ball From Table" & vbNewLine
 	End If
