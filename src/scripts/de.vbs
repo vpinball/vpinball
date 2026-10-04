@@ -123,7 +123,6 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
 			Case keyFrame        .LockDisplay = Not .LockDisplay
 			Case keyDoubleSize   .DoubleSize  = Not .DoubleSize
-			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
 			Case Else            vpmKeyUp = False
 		End Select
 	End With

@@ -4,6 +4,8 @@ New in 3.62 (Update by mfuegemann, JP, Mike Welsh)
 - Removed the hardcoded keyVPMVolume (F12) key from all system .vbs files; the VPinMAME
   volume is now adjusted through a "VPinMAME Volume" table option in the in-game UI
   (only when using the VPinMAME COM controller, not the PinMAME plugin)
+- Removed the hardcoded keyShowDips (F6) key from all system .vbs files; dip switches
+  and table options are adjusted in the in-game UI
 - Corrected 2 switches in nuova.vbs
 - Added playbar.vbs
 - Added coin door key to Sega/Stern WhiteStar (sega(2).vbs)
