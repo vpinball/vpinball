@@ -22,7 +22,6 @@ enum VPinballStatus: CInt {
 }
 
 enum VPinballSettingsSection: String {
-    case global = "Global"
     case standalone = "Standalone"
     case player = "Player"
     case pluginDMDUtil = "Plugin.DMDUtil"

@@ -28,16 +28,9 @@ enum class VPinballStatus(val value: Int) {
 }
 
 enum class VPinballSettingsSection(val value: String) {
-    GLOBAL("Global"),
     STANDALONE("Standalone"),
     PLAYER("Player"),
-    PLUGIN_DMDUTIL("Plugin.DMDUtil");
-
-    companion object {
-        @JvmStatic
-        fun fromValue(value: String): VPinballSettingsSection =
-            entries.firstOrNull { it.value == value } ?: throw IllegalArgumentException("Unknown value: $value")
-    }
+    PLUGIN_DMDUTIL("Plugin.DMDUtil"),
 }
 
 enum class VPinballMaxTexDimension(val value: Int, override val text: String) : VPinballDisplayText {
@@ -62,11 +55,7 @@ enum class VPinballMaxTexDimension(val value: Int, override val text: String) : 
 enum class VPinballExternalDMD(val value: Int, override val text: String) : VPinballDisplayText {
     NONE(0, "None"),
     DMD_SERVER(1, "DMDServer"),
-    ZEDMD_WIFI(2, "ZeDMD WiFi");
-
-    companion object {
-        @JvmStatic fun fromInt(value: Int): VPinballExternalDMD = entries.firstOrNull { it.value == value } ?: NONE
-    }
+    ZEDMD_WIFI(2, "ZeDMD WiFi"),
 }
 
 enum class VPinballGfxBackend(val value: String, override val text: String) : VPinballDisplayText {
