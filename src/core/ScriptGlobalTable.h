@@ -136,7 +136,7 @@ public:
 
    STDMETHOD(CreatePluginObject)(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch **pVal);
 
-   STDMETHOD(PushNotification)(/*[in]*/ BSTR message, /*[in]*/ long durationMs, /*[in]*/ long reuseId, /*[out, retval]*/ long *pVal);
+   STDMETHOD(PushNotification)(/*[in]*/ BSTR message, /*[in]*/ LONG durationMs, /*[in]*/ LONG reuseId, /*[out, retval]*/ LONG *pVal);
 
    ScriptGlobalTable() { m_name = "Global"s; }
    void Init(PinTable *pt);

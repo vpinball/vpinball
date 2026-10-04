@@ -790,11 +790,11 @@ STDMETHODIMP ScriptGlobalTable::CreatePluginObject(/*[in]*/ BSTR classId, /*[out
    return (*pVal != nullptr) ? S_OK : E_FAIL;
 }
 
-STDMETHODIMP ScriptGlobalTable::PushNotification(/*[in]*/ BSTR message, /*[in]*/ long durationMs, /*[in]*/ long reuseId, /*[out, retval]*/ long *pVal)
+STDMETHODIMP ScriptGlobalTable::PushNotification(/*[in]*/ BSTR message, /*[in]*/ LONG durationMs, /*[in]*/ LONG reuseId, /*[out, retval]*/ LONG *pVal)
 {
    if (!pVal)
       return E_POINTER;
-   *pVal = (g_pplayer && g_pplayer->m_liveUI) ? (long)g_pplayer->m_liveUI->PushNotification(MakeString(message), (int)durationMs, (unsigned int)reuseId) : 0;
+   *pVal = (g_pplayer && g_pplayer->m_liveUI) ? (LONG)g_pplayer->m_liveUI->PushNotification(MakeString(message), (int)durationMs, (unsigned int)reuseId) : 0;
    return S_OK;
 }
 
