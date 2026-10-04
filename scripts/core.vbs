@@ -44,6 +44,8 @@ SolCallbackInitialized = False
 ' Game specific info
 Dim ExtraKeyHelp ' Help string for game specific keys
 Dim vpmShowDips  ' Show DIPs function
+Dim vpmDipsObjs : vpmDipsObjs = Array(Empty) ' cvpmDips instances notified of option changes by vpmOptionEvent
+Dim vpmDipsCount : vpmDipsCount = 0
 
 ' Check if VPX version offers FrameIndex property
 Dim HasFrameIndex : HasFrameIndex = Not IsEmpty(Eval("FrameIndex"))
@@ -1790,106 +1792,236 @@ End Class
 '--------------------
 '	View Dips
 '--------------------
+' Dip switch and table option declarations are mapped to table options
+' (ActiveTable.Option) integrated in the in-game UI (the legacy VPinMAME.WSHDlg
+' based dialog is not used anymore). vpmOptionEvent applies the persisted
+' option values to PinMAME's dip switches on game start (the VPX table settings
+' win over the NVRAM state) and whenever an option is changed.
 Class cvpmDips
-	Private mLWF, mChkCount, mOptCount, mItems0(), mItems1(), mItems2(), mItems3(), mItems4()
+	' mItemsType: 0 = dip backed, 1 = non-dip custom option (aLabels are ignored)
+	' mItemsKind: 0 = check box (bit test), 1 = exclusive choice (masked enum)
+	Private mItemCount, mRegistered, mSupported, mUseDip, mDipsWritten, mLastDipWord, mNameCount, mNameSeq
+	Private mItemsType(), mItemsKind(), mItemsName(), mItemsMask(), mItemsVals(), mItemsLbls(), mItemsDef(), mRegNames()
 
 	Private Sub Class_Initialize
-		ReDim mItems0(100), mItems1(100), mItems2(100), mItems3(100), mItems4(100)
+		ReDim mItemsType(100), mItemsKind(100), mItemsName(100), mItemsMask(100), mItemsVals(100), mItemsLbls(100), mItemsDef(100), mRegNames(100)
+		mSupported = True
+		' Register this instance so that vpmOptionEvent can apply option changes
+		If vpmDipsCount > UBound(vpmDipsObjs) Then ReDim Preserve vpmDipsObjs(UBound(vpmDipsObjs)+8)
+		Set vpmDipsObjs(vpmDipsCount) = Me
+		vpmDipsCount = vpmDipsCount + 1
 	End Sub
 
-	Private Sub addChkBox(aType, aLeft, aTop, aWidth, aNames)
-		Dim ii, obj
-		If Not isObject(mLWF) Then Exit Sub
+	Private Sub GrowItems
+		Dim n
+		If mItemCount > UBound(mItemsType) Then
+			n = UBound(mItemsType) + 100
+			ReDim Preserve mItemsType(n), mItemsKind(n), mItemsName(n), mItemsMask(n), mItemsVals(n), mItemsLbls(n), mItemsDef(n)
+		End If
+	End Sub
+
+	Private Function ItemLabel(aType, aLabel)
+		If aType = 0 Then ItemLabel = "DIP - " & aLabel Else ItemLabel = aLabel
+	End Function
+
+	Private Function UniqueName(aName)
+		Dim ii, dup, n : n = aName
+		Do
+			dup = False
+			For ii = 1 To mNameCount
+				If mRegNames(ii) = n Then dup = True : Exit For
+			Next
+			If dup Then mNameSeq = mNameSeq+1 : n = aName & " (" & mNameSeq & ")"
+		Loop While dup
+		mNameCount = mNameCount + 1
+		If mNameCount > UBound(mRegNames) Then ReDim Preserve mRegNames(UBound(mRegNames)+100)
+		mRegNames(mNameCount) = n
+		UniqueName = n
+	End Function
+
+	Private Sub addChkBox(aType, aHeading, aNames)
+		Dim ii, lbl
 		For ii = 0 To UBound(aNames) Step 2
-			Set obj = mLWF.AddCtrl("chkBox", 10+aLeft, 5+aTop+ii*7, aWidth, 14, aNames(ii))
-			mChkCount = mChkCount + 1
-			mItems0(mChkCount+mOptCount) = aType
-			Set mItems1(mChkCount+mOptCount) = obj
-			mItems2(mChkCount+mOptCount) = mChkCount
-			mItems3(mChkCount+mOptCount) = aNames(ii+1)
-			mItems4(mChkCount+mOptCount) = aNames(ii+1)
+			If aHeading = "" Then lbl = aNames(ii) Else lbl = aHeading & " - " & aNames(ii)
+			GrowItems
+			mItemCount = mItemCount + 1
+			mItemsType(mItemCount) = aType
+			mItemsKind(mItemCount) = 0
+			mItemsName(mItemCount) = ItemLabel(aType, lbl)
+			mItemsMask(mItemCount) = aNames(ii+1)
 		Next
 	End Sub
 
-	Private Sub addOptBox(aType, aLeft, aTop, aWidth, aHeading, aMask, aNames)
-		Dim ii, obj
-		If Not isObject(mLWF) Then Exit Sub
-		mLWF.AddCtrl "Frame", 10+aLeft, 5+aTop, 10+aWidth, 7*UBound(aNames)+25, aHeading
+	Private Sub addOptBox(aType, aHeading, aMask, aNames)
+		Dim ii, n, v(), l()
 		If aMask Then
-			For ii = 0 To UBound(aNames) Step 2
-				Set obj = mLWF.AddCtrl("OptBtn", 10+aLeft+5, 5+aTop+ii*7+14, aWidth, 14, aNames(ii))
-				mOptCount = mOptCount + 1
-				mItems0(mChkCount+mOptCount) = aType+2
-				Set mItems1(mChkCount+mOptCount) = obj
-				mItems2(mChkCount+mOptCount) = mOptCount
-				mItems3(mChkCount+mOptCount) = aNames(ii+1)
-				mItems4(mChkCount+mOptCount) = aMask
+			n = (UBound(aNames)+1)\2
+			ReDim v(n-1), l(n-1)
+			For ii = 0 To n-1
+				l(ii) = aNames(ii*2) : v(ii) = aNames(ii*2+1)
 			Next
+			GrowItems
+			mItemCount = mItemCount + 1
+			mItemsType(mItemCount) = aType
+			mItemsKind(mItemCount) = 1
+			If aHeading = "" Then aHeading = "Options"
+			mItemsName(mItemCount) = ItemLabel(aType, aHeading)
+			mItemsMask(mItemCount) = aMask
+			mItemsVals(mItemCount) = v
+			mItemsLbls(mItemCount) = l
 		Else
-			addChkBox aType, 5+aLeft, 15+aTop, aWidth, aNames
+			addChkBox aType, aHeading, aNames
 		End If
 	End Sub
 
 	Public Sub addForm(ByVal aWidth, aHeight, aName)
-		If aWidth < 80 Then aWidth = 80
+		mItemCount = 0 : mNameCount = 0 : mNameSeq = 0
+	End Sub
+
+	Public Sub addChk(aLeft, aTop, aWidth, aNames)      : addChkBox 0, "", aNames : End Sub
+	Public Sub addChkExtra(aLeft, aTop, aWidth, aNames) : addChkBox 1, "", aNames : End Sub
+	Public Sub addFrame(aLeft, aTop, aWidth, aHeading, aMask, aNames)      : addOptBox 0, aHeading, aMask, aNames : End Sub
+	Public Sub addFrameExtra(aLeft, aTop, aWidth, aHeading, aMask, aNames) : addOptBox 1, aHeading, aMask, aNames : End Sub
+	Public Sub addLabel(aLeft, aTop, aWidth, aHeight, aCaption) : End Sub
+
+	Private Function ReadDipsWord()
 		On Error Resume Next
-		Set mLWF = CreateObject("VPinMAME.WSHDlg") : If Err Then Exit Sub
-		With mLWF
-			.x = -1 : .y = -1 ' : .w = aWidth : .h = aHeight+60
-			.Title = aName : .AddCtrl "OKBtn", -1, -1, 70, 25, "&Ok"
+		Dim d
+		With Controller
+			d = .Dip(0) + .Dip(1)*256 + .Dip(2)*65536 + (.Dip(3) And &H7f)*&H1000000
+			If .Dip(3) And &H80 Then d = d Or &H80000000 'workaround for overflow error
 		End With
-		mChkCount = 0 : mOptCount = 0
+		If Err Then d = 0 : Err.Clear
+		ReadDipsWord = d
+		On Error Goto 0
+	End Function
+
+	Private Function FindEntryIndex(aIdx, aWord)
+		Dim ii
+		For ii = 0 To UBound(mItemsVals(aIdx))
+			If (aWord And mItemsMask(aIdx)) = mItemsVals(aIdx)(ii) Then FindEntryIndex = ii : Exit Function
+		Next
+		FindEntryIndex = 0
+	End Function
+
+	Private Sub RegisterItem(aIdx, aWord)
+		If Not mSupported Then Exit Sub
+		Dim def, dummy
+		On Error Resume Next
+		mItemsName(aIdx) = UniqueName(mItemsName(aIdx))
+		If mItemsKind(aIdx) = 0 Then
+			If (aWord And mItemsMask(aIdx)) = mItemsMask(aIdx) Then def = 1 Else def = 0
+			mItemsDef(aIdx) = def
+			dummy = ActiveTable.Option(mItemsName(aIdx), 0, 1, 1, def, 0, Array("Off", "On"))
+		Else
+			def = FindEntryIndex(aIdx, aWord)
+			mItemsDef(aIdx) = def
+			dummy = ActiveTable.Option(mItemsName(aIdx), 0, UBound(mItemsVals(aIdx)), 1, def, 0, mItemsLbls(aIdx))
+		End If
+		If Err Then mSupported = False : Err.Clear
+		On Error Goto 0
 	End Sub
 
-	Public Sub addChk(aLeft, aTop, aWidth, aNames)
-		addChkBox 0, aLeft, aTop, aWidth, aNames
-	End Sub
-	Public Sub addChkExtra(aLeft, aTop, aWidth, aNames)
-		addChkBox 1, aLeft, aTop, aWidth, aNames
-	End Sub
-	Public Sub addFrame(aLeft, aTop, aWidth, aHeading, aMask, aNames)
-		addOptBox 0, aLeft, aTop, aWidth, aHeading, aMask, aNames
-	End Sub
-	Public Sub addFrameExtra(aLeft, aTop, aWidth, aHeading, aMask, aNames)
-		addOptBox 1, aLeft, aTop, aWidth, aHeading, aMask, aNames
+	Private Sub Materialize(aExtra)
+		If mRegistered Then Exit Sub
+		mRegistered = True
+		If IsEmpty(aExtra) Then aExtra = 0
+		Dim word : word = ReadDipsWord()
+		Dim ii
+		' Custom options are registered first so that they appear before the dip
+		' switches on the table options page (list order = registration order)
+		For ii = 1 To mItemCount
+			If mItemsType(ii) = 1 Then RegisterItem ii, aExtra
+		Next
+		For ii = 1 To mItemCount
+			If mItemsType(ii) = 0 Then RegisterItem ii, word : mUseDip = True
+		Next
 	End Sub
 
-	Public Sub addLabel(aLeft, aTop, aWidth, aHeight, aCaption)
-		If Not isObject(mLWF) Then Exit Sub
-		mLWF.AddCtrl "Label", 10+aLeft, 5+aTop, aWidth, aHeight, aCaption
+	Private Function ReadOptionValue(aIdx)
+		Dim v
+		On Error Resume Next
+		If mItemsKind(aIdx) = 0 Then
+			v = ActiveTable.Option(mItemsName(aIdx), 0, 1, 1, mItemsDef(aIdx), 0, Array("Off", "On"))
+		Else
+			v = ActiveTable.Option(mItemsName(aIdx), 0, UBound(mItemsVals(aIdx)), 1, mItemsDef(aIdx), 0, mItemsLbls(aIdx))
+		End If
+		If Err Then v = mItemsDef(aIdx) : Err.Clear
+		ReadOptionValue = v
+		On Error Goto 0
+	End Function
+
+	Private Function ComposeWord(aType)
+		Dim word, ii, v : word = 0
+		For ii = 1 To mItemCount
+			If mItemsType(ii) = aType Then
+				v = ReadOptionValue(ii)
+				If mItemsKind(ii) = 0 Then
+					If v <> 0 Then word = word Or mItemsMask(ii)
+				Else
+					v = CLng(v)
+					If v < 0 Then v = 0
+					If v > UBound(mItemsVals(ii)) Then v = UBound(mItemsVals(ii))
+					word = (word And Not mItemsMask(ii)) Or mItemsVals(ii)(v)
+				End If
+			End If
+		Next
+		ComposeWord = word
+	End Function
+
+	' Apply the current table option values to PinMAME's dip switches
+	Public Sub ApplyDips()
+		If Not mRegistered Or Not mSupported Or Not mUseDip Then Exit Sub
+		On Error Resume Next
+		Dim word : word = ComposeWord(0)
+		If Err Then Exit Sub
+		If Not mDipsWritten Or word <> mLastDipWord Then
+			With Controller
+				.Dip(0) =  (word And 255)
+				.Dip(1) = ((word And 65280)\256) And 255
+				.Dip(2) = ((word And &H00ff0000)\65536) And 255
+				.Dip(3) = ((word And &Hff000000)\&H01000000) And 255
+			End With
+			If Not Err Then mDipsWritten = True : mLastDipWord = word
+		End If
+		On Error Goto 0
 	End Sub
 
 	Public Sub viewDips : viewDipsExtra 0 : End Sub
 	Public Function viewDipsExtra(aExtra)
-		Dim dips(1), ii, useDip
-		If Not isObject(mLWF) Then Exit Function
-		With Controller
-			dips(0) = .Dip(0) + .Dip(1)*256 + .Dip(2)*65536 + (.Dip(3) And &H7f)*&H1000000
-			If .Dip(3) And &H80 Then dips(0) = dips(0) Or &H80000000 'workaround for overflow error
-		End With
-		useDip = False : dips(1) = aExtra
-		For ii = 1 To mChkCount + mOptCount
-			mItems1(ii).Value = -((dips(mItems0(ii) And &H01) And mItems4(ii)) = mItems3(ii))
-			If (mItems0(ii) And &H01) = 0 Then useDip = True
-		Next
-		If vpmVPVer >= 10800 Then ShowCursor = True
-		mLWF.Show GetPlayerHWnd
-		If vpmVPVer >= 10800 Then ShowCursor = False
-		dips(0) = 0 : dips(1) = 0
-		For ii = 1 To mChkCount + mOptCount
-			If mItems1(ii).Value Then dips(mItems0(ii) And &H01) = dips(mItems0(ii) And &H01) Or mItems3(ii)
-		Next
-		If useDip Then
-			With Controller
-				.Dip(0) =  (dips(0) And 255)
-				.Dip(1) = ((dips(0) And 65280)\256) And 255
-				.Dip(2) = ((dips(0) And &H00ff0000)\65536) And 255
-				.Dip(3) = ((dips(0) And &Hff000000)\&H01000000) And 255
-			End With
-		End If
-		viewDipsExtra = dips(1)
+		Materialize aExtra
+		If Not mSupported Then Exit Function
+		viewDipsExtra = ComposeWord(1)
 	End Function
 End Class
+
+' Called by VPX when a table option event happens, in addition to the table's
+' own <TableName>_OptionEvent event, so that shared core scripts can track
+' option changes even when the table defines its own OptionEvent handler.
+' eventId: 0 = options initialized (after table Init), 1 = option changed,
+'          2 = options reset (legacy, unused), 3 = option page closed
+Sub vpmOptionEvent(ByVal eventId)
+	On Error Resume Next
+	Dim ii, obj
+	If eventId = 0 Then
+		' Let scripts register their dip switch / custom options now that the
+		' table's own options are initialized (so that they are listed last on
+		' the table options page)
+		If IsObject(vpmShowDips) Then vpmShowDips
+	End If
+	If eventId = 0 Or eventId = 1 Or eventId = 3 Then
+		For ii = 0 To vpmDipsCount-1
+			Set obj = vpmDipsObjs(ii)
+			If IsObject(obj) Then obj.ApplyDips
+		Next
+	End If
+	If eventId = 1 Then
+		' Re-run the show dips handler so that scripts which consume the
+		' ViewDipsExtra result (saving it into their own settings and applying
+		' it, like the VPW options UI template) stay in sync on every change
+		If IsObject(vpmShowDips) Then vpmShowDips
+	End If
+End Sub
 
 '--------------------
 '	Impulse Plunger
@@ -2908,7 +3040,7 @@ Private Sub vpmShowHelp
 		vpmKeyName(keyFrame)	  & vbTab & "Toggle Display lock"  & vbNewLine &_
 		vpmKeyName(keyDoubleSize) & vbTab & "Toggle Display size"  & vbNewLine
 	If IsObject(vpmShowDips) Then
-		szKeyMsg = szKeyMsg & vpmKeyName(keyShowDips) & vbTab & "Show DIP Switch / Option Menu" & vbNewLine
+		szKeyMsg = szKeyMsg & "DIP switch / table options are adjusted in the in-game UI" & vbNewLine
 	End If
 	If IsObject(vpmTrough) Then
 		szKeyMsg = szKeyMsg & vpmKeyName(keyAddBall) & vbTab & "Add / Remove Ball From Table" & vbNewLine

@@ -4002,6 +4002,23 @@ void PinTable::FireOptionEvent(OptionEventType eventType)
    CComVariant rgvar[1] = { CComVariant(event) };
    DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
    FireDispID(DISPID_GameEvents_OptionEvent, &dispparams);
+
+   // In addition to the table-scoped '<TableName>_OptionEvent' event fired above,
+   // also invoke a global script function owned by shared core scripts (e.g. to
+   // synchronize VPM dip switch options with PinMAME). This allows the shared
+   // scripts to be notified even when the table defines its own OptionEvent.
+   if (g_pplayer && g_pplayer->m_scriptInterpreter)
+   {
+      CComPtr<IDispatch> disp;
+      g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
+
+      static wchar_t FnName[] = L"vpmOptionEvent";
+      LPOLESTR fnNames = FnName;
+
+      DISPID dispid;
+      if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &dispid)))
+         disp->Invoke(dispid, IID_NULL, 0, DISPATCH_METHOD, &dispparams, nullptr, nullptr, nullptr);
+   }
 }
 
 IEditable *PinTable::GetElementByName(const char * const name) const
@@ -6734,7 +6751,12 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
 {
    const string name = MakeString(optionName);
 
-   if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
+   // Scripts may pass the values array through a reference (e.g. an array stored
+   // in a variable or in an array element), so dereference it before use
+   CComVariant valuesVar;
+   VariantCopyInd(&valuesVar, &values);
+
+   if (V_VT(&valuesVar) != VT_ERROR && V_VT(&valuesVar) != VT_EMPTY && V_VT(&valuesVar) != (VT_ARRAY | VT_VARIANT))
    {
       PLOGE << "Table.Option(\"" << name << "\"): the values argument must be omitted or an Array";
       return std::nullopt;
@@ -6761,15 +6783,15 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
    }
 
    vector<string> literals;
-   if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
+   if (V_VT(&valuesVar) == (VT_ARRAY | VT_VARIANT))
    {
-      if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
+      if (step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
       {
          PLOGE << "Table.Option(\"" << name << "\"): with a values Array, step must be 1 and minValue/maxValue must be integers (minValue=" << minValue << ", maxValue=" << maxValue << ", step=" << step << ")";
          return std::nullopt;
       }
       const int nValues = 1 + (int)maxValue - (int)minValue;
-      SAFEARRAY *psa = V_ARRAY(&values);
+      SAFEARRAY *psa = V_ARRAY(&valuesVar);
       LONG lbound, ubound;
       if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
       {
