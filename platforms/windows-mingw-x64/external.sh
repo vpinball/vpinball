@@ -553,11 +553,9 @@ cp libwinevbs/libwinevbs/build/winevbs64.dll ../../../third-party/runtime-libs/w
 cp libwinevbs/libwinevbs/build/libwinevbs64.dll.a ../../../third-party/build-libs/windows-mingw-x64
 mkdir -p ../../../third-party/include/libwinevbs/wine/include
 mkdir -p ../../../third-party/include/libwinevbs/atl/include
-mkdir -p ../../../third-party/include/libwinevbs/atlmfc/include
 cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwinevbs/
 cp -r libwinevbs/libwinevbs/wine/include/* ../../../third-party/include/libwinevbs/wine/include/
 cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevbs/atl/include/
-cp -r libwinevbs/libwinevbs/atlmfc/include/* ../../../third-party/include/libwinevbs/atlmfc/include/
 
 for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
    DIR="lib${LIB}"
