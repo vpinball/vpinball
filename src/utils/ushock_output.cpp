@@ -343,9 +343,9 @@ void ushock_output_shutdown()
 {
    if (hnd != INVALID_HANDLE_VALUE)
    {
-      hnd = INVALID_HANDLE_VALUE;
 #ifndef __STANDALONE__
       CloseHandle(hnd);
 #endif
+      hnd = INVALID_HANDLE_VALUE;
    }
 }
