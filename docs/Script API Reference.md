@@ -116,7 +116,7 @@ DMDColoredPixels = myDMDdata
 - `StopSound(string)`
 - `PlayMusic(string, float volume)` - volume 0..1, one can pass a full path, or just a filename (that is placed in the music subfolder)
 - `MusicVolume(float volume)` - 0..1
-- `EndMusic)`
+- `EndMusic()`
 - `FireKnocker(int Count)`
 - `QuitPlayer(int CloseType)`
 - `Version` - returns `VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION`
@@ -311,16 +311,14 @@ DMDColoredPixels = myDMDdata
 | ImageB | string |  texture name for image B
 | Filter | string |  use one of the following filters to blend ImageA > ImageB: 'None', 'Additive', 'Multiply', 'Overlay', 'Screen' (filter names are case sensitive!) this feature only works if you defined both images
 | Amount | int | defines the filter amount how much of ImageB is filtered over ImageA in percent (0..100, can be set to >100 though)
-| Mode | int | 0=ImageModeWorld, 1=ImageModeWrap
+| ImageAlignment | RampImageAlignment | 0=ImageModeWorld, 1=ImageModeWrap
 | *DisplayTexture | bool | 
 | Opacity | int | lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of flashers in additive alpha blending mode)
 | IntensityScale | float | sets the flashers brightness/emission scale, so that one can fade in/out all affected flashers with the same scaling factor
-| Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
+| Color | OLECOLOR | defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 | Visible | bool |  shows/hides the flasher
 | AddBlend | bool |  use additive alpha blending instead of classical alpha blending
 | AddBlendMode | int | superset of AddBlend: 0=off, 1=additive, 2=additive; but darkening what is behind the flasher instead of brightening it, to fake a Fresnel like reflection on glass (ModulateVsAdd steers how much is absorbed)
-| EnableDepthMask | bool | Enable/Disable depth masking
-| ImageAlignment
 | ModulateVsAdd | float | blends between modulating and additive when bulb is enabled (0..1)
 | DMD | bool |  enable DMD image via script connection
 | DMDWidth | int | set width of DMD
@@ -431,12 +429,12 @@ DMDColoredPixels = myDMDdata
 | TimerEnabled | bool | 
 | TimerInterval | int |  set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 | Enabled | bool | 
-| *DrawStyle | KickerType | 0=Hidden, 1=Hole, 2=Cup, 3=Invisible
+| *DrawStyle | KickerType | 0=Invisible, 1=Hole, 2=Cup, 3=HoleSimple, 4=Williams, 5=Gottlieb, 6=Cup2
 | *Color | OLECOLOR | 
 | *Surface | string | 
 | UserValue | any | can store any user defined value for re-use later-on
 | Scatter | float | 
-| Fall Through | bool |  if checked the ball will fall through the surface assigned to the kicker, only if the surface is higher than the playfield
+| FallThrough | bool |  if checked the ball will fall through the surface assigned to the kicker, only if the surface is higher than the playfield
 | *Legacy | bool | if checked the kicker will behave as an old VP9 kicker that means no distraction of the ball if it doesn't hit straight the kicker center
 | HitAccuracy | float |  defines the accuracy how fast the ball gets caught when rolling over the kicker center (0.0-1.0)
 | *HitHeight | float | 
@@ -602,8 +600,9 @@ DMDColoredPixels = myDMDdata
 | BackfacesEnabled | bool |  default=false, if enabled will also show/render the backfacing triangles (if a transparent material is used)
 | UserValue | any |  can store any user defined value for re-use later-on
 | Opacity | float |  lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of primitives in additive alpha blending mode)
-| Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
+| Color | OLECOLOR | defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 | AddBlend | bool |  use additive alpha blending instead of classical alpha blending (also disable depth buffer writing)
+| EnableDepthMask | bool | Enable/Disable depth masking
 | RotAndTra0 | float |  Legacy. Replaced by RotX
 | RotAndTra1 | float |  Legacy. Replaced by RotY
 | RotAndTra2 | float |  Legacy. Replaced by RotZ
@@ -639,7 +638,7 @@ The following methods only applies to mesh primitives with an animation sequence
 | WidthTop | float | 
 | *Type | RampType | 0=Flat, 1=4Wire, 2=2Wire, 3=3WireLeft, 4=3WireRight, 5=Wire
 | Image | string |  texture name
-| ImageAlignment(RampImageAlignment) - 0=ImageModeWorld, 1=ImageModeWrap
+| ImageAlignment | RampImageAlignment | 0=ImageModeWorld, 1=ImageModeWrap
 | HasWallImage | bool |  apply image to walls
 | LeftWallHeight | float | 
 | RightWallHeight | float | 
@@ -848,15 +847,15 @@ The following methods only applies to mesh primitives with an animation sequence
 | BackColor | OLECOLOR | 
 | FontColor | OLECOLOR | 
 | Text | string | 
-| Font
+| Font | IFontDisp | 
 | Name | string | 
 | X | float | 
 | Y | float | 
 | Width | float | 
 | Height | float | 
-| Alignment
-| IsTransparent
-| TimerEnabled
+| Alignment | TextAlignment | 0=Left, 1=Center, 2=Right
+| IsTransparent | bool | 
+| TimerEnabled | bool |
 | TimerInterval | int |  set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 | UserValue | any | can store any user defined value for re-use later-on
 | IntensityScale | float |  scales the color of the textbox
@@ -925,7 +924,7 @@ The following methods only applies to mesh primitives with an animation sequence
 | *HeightTop | float | 
 | *FaceColor | OLECOLOR | 
 | *CanDrop | bool | 
-| Collideable | bool | 
+| Collidable | bool | 
 | IsBottomSolid | bool | 
 | IsDropped | bool | 
 | *DisplayTexture | bool | 

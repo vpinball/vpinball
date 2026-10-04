@@ -14,11 +14,11 @@ Beside these eventually needed updates, 10.8 offers new features that can be lev
 3. [Playfield transparency](#playfield-transparency)
 4. [Playfield Cutouts and Lower Playfield](#playfield-cutouts-and-lower-playfield)
 5. [Reflections](#reflections)
-6. [Better light fading](better-light-fading)
+6. [Better light fading](#better-light-fading)
 7. [Simplified scripting](#simplified-scripting)
 8. [Better static parts](#better-static-parts)
-9. [Additional DMD](additional-dmd)
-10. [Primitive Depth Masking](primitive-depth-masking)
+9. [Additional DMD](#additional-dmd)
+10. [Primitive Depth Masking](#primitive-depth-masking)
 
 
 ## Ball Shadows
@@ -65,7 +65,7 @@ Reflections used to be limited to the playfield, with no VR nor camera mode supp
 Now, reflections are implemented using 'reflection probes', using 2 'rendering passes': the first one evaluates the reflected incoming light, the second one actually draws the object using this precomputed incoming light.
 This offers the following benefits:
 - VR support (and also camera mode & LiveUI),
-- process the playfield like any [other parts](playfield-transparency),
+- process the playfield like any [other parts](#playfield-transparency),
 - use reflections on any part,
 - reflections are rendered with the object they are applied to, therefore taking into account its geometry: e.g. no more reflections in the playfield hole,
 - in addition, a new 'roughness' parameter was added to allow for blurry reflections.

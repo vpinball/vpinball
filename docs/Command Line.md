@@ -4,24 +4,24 @@ VPX supports the following command line options:
 
 | Command | Description |
 | --- | - |
-| -? | Displays the following info |
+| -h, -help, -? | Displays the following info |
+| -v                     | Displays the version |
 | -UnregServer   | Unregister VP functions |
 | -RegServer     | Register VP functions |
 | | |
-| -DisableTrueFullscreen   | Force-disable True Fullscreen setting |
-| -EnableTrueFullscreen    | Force-enable True Fullscreen setting |
-| -Minimized               | Start VP in the 'invisible' minimized window mode |
-| -ExtMinimized            | Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu |
-| -Primary                 | Force VP to render on the Primary/Pixel(0,0) Monitor |
+| -Minimized               | Start the windows editor in the 'invisible' minimized window mode |
+| -ExtMinimized            | Start the windows editor in the 'invisible' minimized window mode, but with enabled Pause Menu |
 | | |
-| -GLES [value]            | Overrides the global emission scale (day/night setting, value range: 0.115..0.925) |
+| -GLES [value]            | Overrides the global emission scale (day/night setting, value range: 0.115..0.925) [Deprecated, uses ini settings instead] |
 | | |
 | -LessCPUthreads          | Limit the amount of parallel execution |
+| -PrefPath [path]         | Use a custom preferences path instead of default |
 | | |
 | -Edit [filename]         | Load file into VP |
+| -LiveEdit [opt filename] | Start in live editor mode. If a filename is provided, loads it as the table to edit |
 | -Play [filename]         | Load and play file |
 | | |
-| -PovEdit [filename]      | Load and run file in camera mode, then export new pov on exit |
+| -PovEdit [filename]      | Load and run file in live editing mode, then export new pov on exit |
 | -Pov [filename]          | Load, export pov and close |
 | | |
 | -Audit [filename]        | Audit the table |
@@ -29,12 +29,10 @@ VPX supports the following command line options:
 | -ExtractVBS [filename]   | Load, export table script and close |
 | | |
 | -Ini [filename]          | Use a custom settings file instead of loading it from the default location |
+| -TableIni [filename]     | Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,... |
 | | |
 | -CaptureAttract [n frames] [framerate] [filename] [noloop] | Capture n attract frames of the given table into a 'Capture' folder, skipping startup, at the given framerate, with loop pattern detection and truncation (unless 'noloop' is specified) |
 | | |
 | -TournamentFile [table filename] [tournament filename] | Load a table and tournament file and convert to .png |
-| | |
-| -ListRes                 | List the available display resolution |
-| -ListSnd                 | List the available sound devices |
 | | |
 | -c1 [customparam] .. -c9 [customparam]   | Custom user parameters that can be accessed in the script via GetCustomParam(X) |
