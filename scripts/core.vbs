@@ -46,6 +46,7 @@ Dim ExtraKeyHelp ' Help string for game specific keys
 Dim vpmShowDips  ' Show DIPs function
 Dim vpmDipsObjs : vpmDipsObjs = Array(Empty) ' cvpmDips instances notified of option changes by vpmOptionEvent
 Dim vpmDipsCount : vpmDipsCount = 0
+Dim vpmDipsNotifId : vpmDipsNotifId = 0 ' In-game notification reused when extra options change
 
 ' Check if VPX version offers FrameIndex property
 Dim HasFrameIndex : HasFrameIndex = Not IsEmpty(Eval("FrameIndex"))
@@ -1800,7 +1801,7 @@ End Class
 Class cvpmDips
 	' mItemsType: 0 = dip backed, 1 = non-dip custom option (aLabels are ignored)
 	' mItemsKind: 0 = check box (bit test), 1 = exclusive choice (masked enum)
-	Private mItemCount, mRegistered, mSupported, mUseDip, mDipsWritten, mLastDipWord, mNameCount, mNameSeq
+	Private mItemCount, mRegistered, mSupported, mUseDip, mDipsWritten, mLastDipWord, mLastExtraWord, mNameCount, mNameSeq
 	Private mItemsType(), mItemsKind(), mItemsName(), mItemsMask(), mItemsVals(), mItemsLbls(), mItemsDef(), mRegNames()
 
 	Private Sub Class_Initialize
@@ -1936,6 +1937,7 @@ Class cvpmDips
 		For ii = 1 To mItemCount
 			If mItemsType(ii) = 0 Then RegisterItem ii, word : mUseDip = True
 		Next
+		mLastExtraWord = ComposeWord(1)
 	End Sub
 
 	Private Function ReadOptionValue(aIdx)
@@ -1987,11 +1989,20 @@ Class cvpmDips
 		On Error Goto 0
 	End Sub
 
+	' Returns True when a non-dip (custom) option value changed since the last
+	' check; used to warn that the table may need to be restarted
+	Public Function ExtraChanged()
+		If Not mRegistered Or Not mSupported Then ExtraChanged = False : Exit Function
+		Dim word : word = ComposeWord(1)
+		If word <> mLastExtraWord Then mLastExtraWord = word : ExtraChanged = True Else ExtraChanged = False
+	End Function
+
 	Public Sub viewDips : viewDipsExtra 0 : End Sub
 	Public Function viewDipsExtra(aExtra)
 		Materialize aExtra
 		If Not mSupported Then Exit Function
 		viewDipsExtra = ComposeWord(1)
+		mLastExtraWord = viewDipsExtra
 	End Function
 End Class
 
@@ -2016,6 +2027,17 @@ Sub vpmOptionEvent(ByVal eventId)
 		Next
 	End If
 	If eventId = 1 Then
+		' Custom (non-dip) options used to be applied synchronously after the
+		' options dialog closed, so warn that the table may need a restart
+		For ii = 0 To vpmDipsCount-1
+			Set obj = vpmDipsObjs(ii)
+			If IsObject(obj) Then
+				If obj.ExtraChanged Then
+					vpmDipsNotifId = PushNotification("The table may need to be restarted to take the changes in account", 8000, vpmDipsNotifId)
+					Exit For
+				End If
+			End If
+		Next
 		' Re-run the show dips handler so that scripts which consume the
 		' ViewDipsExtra result (saving it into their own settings and applying
 		' it, like the VPW options UI template) stay in sync on every change

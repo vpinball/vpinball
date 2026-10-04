@@ -2291,6 +2291,7 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"PlungerTypeFlat", 2023 },
 			{ L"PlungerTypeModern", 2022 },
 			{ L"PreciseGameTime", 263 },
+			{ L"PushNotification", 266 },
 			{ L"QuitPlayer", 37 },
 			{ L"RampType1Wire", 2021 },
 			{ L"RampType2Wire", 2018 },
@@ -2537,6 +2538,7 @@ static const char *ScriptGlobalTable_dispid_name(DISPID dispId) {
 		case 228: return "DisableStaticPrerendering";
 		case 229: return "LoadTexture";
 		case 265: return "CreatePluginObject";
+		case 266: return "PushNotification";
 		case 2000: return "LightStateOff";
 		case 2001: return "LightStateOn";
 		case 2002: return "LightStateBlinking";
@@ -3864,6 +3866,32 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 				V_VT(&res) = VT_DISPATCH;
 				hres = CreatePluginObject(V_BSTR(&var0), (IDispatch**)&V_DISPATCH(&res));
 				VariantClear(&var0);
+			}
+			break;
+		}
+		case 266: {
+			if (wFlags & DISPATCH_METHOD) {
+				// line 804: [id(266), helpstring("method PushNotification")] HRESULT PushNotification([in] BSTR message, [defaultvalue(5000)] long durationMs, [defaultvalue(0)] long reuseId, [out, retval] long *pVal);
+				if (pDispParams->cArgs < 1) {
+					hres = DISP_E_BADPARAMCOUNT;
+					break;
+				}
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
+				VARIANT var1;
+				V_VT(&var1) = VT_I4;
+				V_I4(&var1) = 5000;
+				VariantChangeType(&var1, (index > 0) ? &pDispParams->rgvarg[--index] : &var1, 0, VT_I4);
+				VARIANT var2;
+				V_VT(&var2) = VT_I4;
+				V_I4(&var2) = 0;
+				VariantChangeType(&var2, (index > 0) ? &pDispParams->rgvarg[--index] : &var2, 0, VT_I4);
+				V_VT(&res) = VT_I4;
+				hres = PushNotification(V_BSTR(&var0), V_I4(&var1), V_I4(&var2), &V_I4(&res));
+				VariantClear(&var0);
+				VariantClear(&var1);
+				VariantClear(&var2);
 			}
 			break;
 		}

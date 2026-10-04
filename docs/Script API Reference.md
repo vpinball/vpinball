@@ -162,6 +162,8 @@ DMDColoredPixels = myDMDdata
 
 - `LoadTexture(string imageName, string fileName)` - load the file fileName into image imageName
 
+- `PushNotification(string message, optional int durationMs, optional int reuseId)` - push a notification in the in-game UI; returns a notification id which can be passed back as reuseId to update the same notification
+
 
 -------------------------------------------------------------------------------
 ## Ball

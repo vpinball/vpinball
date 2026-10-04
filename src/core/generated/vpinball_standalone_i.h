@@ -3574,6 +3574,7 @@ ITableGlobal : public IDispatch
         BSTR classId,
         IDispatch **pVal) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE PushNotification(BSTR message, LONG durationMs, LONG reuseId, LONG * pVal) = 0;
 };
 #ifdef __CRT_UUID_DECL
 __CRT_UUID_DECL(ITableGlobal, 0x2981e0e0, 0x8e64, 0x44fc, 0x9a,0x01, 0x64,0xcf,0xfa,0x1f,0x7d,0xba)
@@ -4048,6 +4049,8 @@ typedef struct ITableGlobalVtbl {
         BSTR classId,
         IDispatch **pVal);
 
+    HRESULT(STDMETHODCALLTYPE *PushNotification)(ITableGlobal *This, BSTR message, LONG durationMs, LONG reuseId, LONG *pVal);
+
     END_INTERFACE
 } ITableGlobalVtbl;
 
@@ -4153,6 +4156,7 @@ interface ITableGlobal {
 #define ITableGlobal_put_DisableStaticPrerendering(This,newVal) (This)->lpVtbl->put_DisableStaticPrerendering(This,newVal)
 #define ITableGlobal_LoadTexture(This,imageName,fileName) (This)->lpVtbl->LoadTexture(This,imageName,fileName)
 #define ITableGlobal_CreatePluginObject(This,classId,pVal) (This)->lpVtbl->CreatePluginObject(This,classId,pVal)
+#define ITableGlobal_PushNotification(This, message, durationMs, reuseId, pVal) (This)->lpVtbl->PushNotification(This, message, durationMs, reuseId, pVal)
 #else
 /*** IUnknown methods ***/
 static inline HRESULT ITableGlobal_QueryInterface(ITableGlobal* This,REFIID riid,void **ppvObject) {
@@ -4435,6 +4439,10 @@ static inline HRESULT ITableGlobal_LoadTexture(ITableGlobal* This,BSTR imageName
 }
 static inline HRESULT ITableGlobal_CreatePluginObject(ITableGlobal* This,BSTR classId,IDispatch **pVal) {
     return This->lpVtbl->CreatePluginObject(This,classId,pVal);
+}
+static inline HRESULT ITableGlobal_PushNotification(ITableGlobal *This, BSTR message, LONG durationMs, LONG reuseId, LONG *pVal)
+{
+   return This->lpVtbl->PushNotification(This, message, durationMs, reuseId, pVal);
 }
 #endif
 #endif
