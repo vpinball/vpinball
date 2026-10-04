@@ -538,12 +538,29 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
          if (ext == ".png")
             success = save(FIF_PNG, PNG_Z_DEFAULT_COMPRESSION);
          else if (ext == ".jpg" || ext == ".jpeg")
-            success = save(FIF_JPEG, JPEG_QUALITYGOOD);
+         {
+            if (FIBITMAP* const bitmap24 = (m_format == SRGB) ? bitmap : FreeImage_ConvertTo24Bits(bitmap); bitmap24)
+            {
+               #ifdef _WIN32
+               success = FreeImage_SaveU(FIF_JPEG, bitmap24, filepath.c_str(), JPEG_QUALITYGOOD);
+               #else
+               success = FreeImage_Save(FIF_JPEG, bitmap24, filepath.c_str(), JPEG_QUALITYGOOD);
+               #endif
+               if (bitmap24 != bitmap)
+                  FreeImage_Unload(bitmap24);
+            }
+         }
          else if (ext == ".webp")
             //success = save(FIF_WEBP, WEBP_LOSSLESS); // Very slow and very large files (but would be better for our regression tests)
             success = save(FIF_WEBP, WBMP_DEFAULT);
          FreeImage_Unload(bitmap);
       }
+   }
+
+   if (!success)
+   {
+      std::error_code ec;
+      std::filesystem::remove(filepath, ec);
    }
 
    return success;
