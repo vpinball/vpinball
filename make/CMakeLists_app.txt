@@ -242,7 +242,7 @@ if(PLATFORM STREQUAL "windows")
 
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"
-      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "$<TARGET_FILE_DIR:vpinball>/docs"
    )
 
@@ -370,7 +370,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
 
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"
-      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "$<TARGET_FILE_DIR:vpinball>/docs"
    )
 
@@ -487,7 +487,7 @@ elseif(PLATFORM STREQUAL "macos")
 
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "${RESOURCES_DIR}/assets"
-      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "${RESOURCES_DIR}/scripts"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/scripts" "${RESOURCES_DIR}/scripts"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "${RESOURCES_DIR}/docs"
    )
 
@@ -618,7 +618,7 @@ elseif(PLATFORM STREQUAL "linux")
 
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "${RESOURCES_DIR}/assets"
-      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "${RESOURCES_DIR}/scripts"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/scripts" "${RESOURCES_DIR}/scripts"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "${RESOURCES_DIR}/docs"
    )
 
@@ -819,7 +819,7 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/lib/include/vpinball/VPinballLib_C.h" "$<TARGET_FILE_DIR:vpinball>"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"
-      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "$<TARGET_FILE_DIR:vpinball>/docs"
    )
 

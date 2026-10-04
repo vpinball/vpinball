@@ -1,0 +1,147 @@
+'Last Updated in VBS v3.61
+'-Added accounting reset switch (Inkochnito)
+
+Option Explicit
+LoadCore
+Private Sub LoadCore
+	On Error Resume Next
+	If VPBuildVersion < 0 Or Err Then
+		Dim fso : Set fso = CreateObject("Scripting.FileSystemObject") : Err.Clear
+		ExecuteGlobal fso.OpenTextFile("core.vbs", 1).ReadAll    : If Err Then MsgBox "Can't open ""core.vbs""" : Exit Sub
+		ExecuteGlobal fso.OpenTextFile("VPMKeys.vbs", 1).ReadAll : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
+	Else
+		ExecuteGlobal GetTextFile("core.vbs")    : If Err Then MsgBox "Can't open ""core.vbs"""    : Exit Sub
+		ExecuteGlobal GetTextFile("VPMKeys.vbs") : If Err Then MsgBox "Can't open ""vpmkeys.vbs""" : Exit Sub
+	End If
+End Sub
+
+'-------------------------
+' GamePlan Data
+'-------------------------
+' Flipper Solenoid
+Const GameOnSolenoid = 16
+' Cabinet switches
+Const swSelfTest     = 26
+Const swCPUDiag      = -6
+Const swSoundDiag    = -7
+Const swTilt         =  8
+Const swSlamTilt     =  3
+Const swCoin3        =  6
+Const swCoin2        =  5
+Const swCoin1        =  7
+Const swStartButton  =  2
+Const swHiScoreReset =  1 'accounting reset
+Const swLRFlip       = 82
+Const swLLFlip       = 84
+Const swURFlip       = 81
+Const swULFlip       = 83
+
+' Help Window
+vpmSystemHelp = "GamePlan keys:" & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
+  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
+  vpmKeyName(keyHiScoreReset)& vbTab & "accounting/high score reset" & vbNewLine &_
+  vpmKeyName(keySelfTest)    & vbTab & "Self Test"        & vbNewLine &_
+  vpmKeyName(keySoundDiag)   & vbTab & "Sound Diagnostic" & vbNewLine &_
+  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
+
+' Dip Switch / Options Menu
+Private Sub gpShowDips
+	If Not IsObject(vpmDips) Then ' First time
+		Set vpmDips = New cvpmDips
+		With vpmDips
+			.AddForm 150, 245, "DIP Switches"
+			.AddFrame  0,0, 60, "", 0,_
+			  Array("DIP  1",&H00000001,"DIP  2",&H00000002,"DIP  3",&H00000004,"DIP  4",&H00000008,_
+			        "DIP  5",&H00000010,"DIP  6",&H00000020,"DIP  7",&H00000040,"DIP  8",&H00000080,_
+			        "DIP  9",&H00000100,"DIP 10",&H00000200,"DIP 11",&H00000400,"DIP 12",&H00000800,_
+			        "DIP 13",&H00001000,"DIP 14",&H00002000,"DIP 15",&H00004000,"DIP 16",32768)
+			.AddFrame 80,0, 60, "", 0,_
+			  Array("DIP 17",&H00010000,"DIP 18",&H00020000,"DIP 19",&H00040000,"DIP 20",&H00080000,_
+			        "DIP 21",&H00100000,"DIP 22",&H00200000,"DIP 23",&H00400000,"DIP 24",&H00800000,_
+			        "DIP 25",&H01000000,"DIP 26",&H02000000,"DIP 27",&H04000000,"DIP 28",&H08000000,_
+			        "DIP 29",&H10000000,"DIP 30",&H20000000,"DIP 31",&H40000000,"DIP 32",&H80000000)
+		End With
+	End If
+	vpmDips.ViewDips
+End Sub
+Set vpmShowDips = GetRef("gpShowDips")
+Private vpmDips
+
+' Keyboard handlers
+Function vpmKeyDown(ByVal keycode)
+	vpmKeyDown = True ' Assume we handle the key
+	Dim stagedFlipperL, stagedFlipperR
+	If keyStagedFlipperL & "" = "" Then stagedFlipperL = -1 Else stagedFlipperL = StagedLeftFlipperKey ' "" disables staged flipper processing
+	If keyStagedFlipperR & "" = "" Then stagedFlipperR = -1 Else stagedFlipperR = StagedRightFlipperKey
+	With Controller
+		Select Case keycode
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = True : vpmKeyDown = False : vpmFlips.FlipL True
+				If keycode = stagedFlipperL Then ' as vbs will not evaluate the Case stagedFlipperL then, also handle it here
+					vpmFlips.FlipUL True
+					If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = True
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = True : vpmKeyDown = False : vpmFlips.FlipR True
+				If keycode = stagedFlipperR Then ' as vbs will not evaluate the Case stagedFlipperR then, also handle it here
+					vpmFlips.FlipUR True
+					If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = True
+				End If
+			Case stagedFlipperL vpmFlips.FlipUL True : If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = True
+			Case stagedFlipperR vpmFlips.FlipUR True : If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = True
+			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
+			Case StartGameKey    .Switch(swStartButton) = True
+			Case keySelfTest     .Switch(swSelfTest)    = True
+			Case keyCPUDiag      .Switch(swCPUDiag)     = True
+			Case keySoundDiag    .Switch(swSoundDiag)   = True
+			Case keyHiScoreReset .Switch(swHiScoreReset)= True
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
+			Case keyBangBack     vpmNudge.DoMechTilt
+			Case keyVPMVolume    vpmVol
+			Case Else            vpmKeyDown = False
+		End Select
+	End With
+End Function
+
+Function vpmKeyUp(ByVal keycode)
+	vpmKeyUp = True ' Assume we handle the key
+	Dim stagedFlipperL, stagedFlipperR
+	If keyStagedFlipperL & "" = "" Then stagedFlipperL = -1 Else stagedFlipperL = StagedLeftFlipperKey ' "" disables staged flipper processing
+	If keyStagedFlipperR & "" = "" Then stagedFlipperR = -1 Else stagedFlipperR = StagedRightFlipperKey
+	With Controller
+		Select Case keycode
+			Case LeftFlipperKey
+				.Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
+				If keycode = stagedFlipperL Then ' as vbs will not evaluate the Case stagedFlipperL then, also handle it here
+					vpmFlips.FlipUL False
+					If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = False
+				End If
+			Case RightFlipperKey
+				.Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
+				If keycode = stagedFlipperR Then ' as vbs will not evaluate the Case stagedFlipperR then, also handle it here
+					vpmFlips.FlipUR False
+					If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = False
+				End If
+			Case stagedFlipperL vpmFlips.FlipUL False : If vpmFlips.FlipperSolNumber(2) <> 0 Then .Switch(swULFlip) = False
+			Case stagedFlipperR vpmFlips.FlipUR False : If vpmFlips.FlipperSolNumber(3) <> 0 Then .Switch(swURFlip) = False
+			Case StartGameKey    .Switch(swStartButton) = False
+			Case keySelfTest     .Switch(swSelfTest)    = False
+			Case keyCPUDiag      .Switch(swCPUDiag)     = False
+			Case keySoundDiag    .Switch(swSoundDiag)   = False
+			Case keyHiScoreReset .Switch(swHiScoreReset)= False
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
+			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
+			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
+			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
+			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
+			Case keyReset        .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
+			Case keyFrame        .LockDisplay = Not .LockDisplay
+			Case keyDoubleSize   .DoubleSize  = Not .DoubleSize
+			Case Else            vpmKeyUp = False
+		End Select
+	End With
+End Function
