@@ -160,8 +160,6 @@ using std::wstring;
 
    typedef LPSTR LPTSTR;
    typedef LPCSTR LPCTSTR;
-   class PropertyDialog final { };
-   class SCNotification final { };
 
    #include <atldef.h>
    #include <atlcom.h>
@@ -172,8 +170,6 @@ using std::wstring;
    #include <afxdlgs.h>
    #include <afxwin.h>
    #include <atltypes.h>
-
-   #include "compat/win32xx.h"
 #endif
 
 
