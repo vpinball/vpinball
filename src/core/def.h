@@ -749,7 +749,9 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
    // return value * (float)(1.0 / 0.540425);
 }
 
+#ifdef VPX_ENABLE_WIN32_EDITOR
 string convert_decimal_point_and_trim(string sz, const bool use_locale);
+#endif
 
 float sz2f(string sz, const bool force_convert_decimal_point = false);
 string f2sz(const float f, const bool can_convert_decimal_point = true);
@@ -775,24 +777,6 @@ inline wstring MakeWString(const char* const sz) { return sz ? MakeWString(sz, s
 inline std::string PathToUTF8(const std::filesystem::path& path) { return MakeString(path.native()); }
 inline std::filesystem::path PathFromUTF8(const std::string& utf8) { return MakeWString(utf8); }
 #endif
-
-// in case the incoming string length is >= the maximum char length of the outgoing one, WideCharToMultiByte will not produce a zero terminated string
-// this variant always makes sure that the outgoing string is zero terminated
-inline int WideCharToMultiByteNull(
-   const uint32_t CodePage,
-   const uint32_t dwFlags,
-   LPCWSTR        lpWideCharStr,
-   const int      cchWideChar,
-   char*          lpMultiByteStr,
-   const int      cbMultiByte,
-   const char*    lpDefaultChar,
-   BOOL*          lpUsedDefaultChar)
-{
-   const int res = WideCharToMultiByte(CodePage,dwFlags,lpWideCharStr,cchWideChar,lpMultiByteStr,cbMultiByte,lpDefaultChar,lpUsedDefaultChar);
-   if(cbMultiByte > 0 && lpMultiByteStr)
-      lpMultiByteStr[min(res, cbMultiByte - 1)] = '\0';
-   return res;
-}
 
 
 // in case the incoming string length is >= the maximum wchar length of the outgoing one, MultiByteToWideChar will not produce a zero terminated string
@@ -985,8 +969,6 @@ void SetThreadName(const string& name);
 bool IsOnWine();
 
 #ifdef _WIN32
-bool IsWindowsVistaOr7();
-bool IsWindows10_1803orAbove();
 
 template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 {

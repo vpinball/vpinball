@@ -13,12 +13,12 @@
 #include "ui/live/LiveUI.h"
 #include "utils/color.h"
 
-#ifndef __STANDALONE__
 #include <atlsafe.h>
-#endif
 
+#ifndef __STANDALONE__
 #include "serial.h"
 static serial Serial;
+#endif
 
 ScriptGlobalTable::~ScriptGlobalTable()
 {

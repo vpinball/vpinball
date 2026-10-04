@@ -6,9 +6,7 @@
 
 //#define DEBUG_FLIPPERS
 
-#ifdef __STANDALONE__
 class Flipper;
-#endif
 
 class FlipperMoverObject : public MoverObject
 {

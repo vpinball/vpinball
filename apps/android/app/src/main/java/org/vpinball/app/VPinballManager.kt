@@ -202,8 +202,6 @@ object VPinballManager : KoinComponent {
         }
     }
 
-    fun isInitialized(): Boolean = synchronized(initLock) { initState == InitState.INITIALIZED }
-
     fun setPlayerActivity(activity: VPinballPlayerActivity?) {
         playerActivity = activity
     }

@@ -265,11 +265,6 @@ void WebServer::Update()
       Stop();
 }
 
-string WebServer::GetUrl()
-{
-   return m_run ? m_url : string();
-}
-
 void WebServer::Info(struct mg_connection *c, struct mg_http_message* hm)
 {
    json j = {{"version", VP_VERSION_STRING_FULL_LITERAL}};

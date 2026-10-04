@@ -252,9 +252,8 @@ void LiveUI::UpdateScale()
       }
    }
    m_uiScale = min(m_uiScale, 10.f); // To avoid texture size overflows
-#ifdef __LIBVPINBALL__
-   m_uiScale *= 1.35f;
-#endif
+   if (g_isMobile)
+      m_uiScale *= 1.35f;
    if (m_uiScale != prevDPI)
    {
       m_perfUI.SetUIScale(overlayScale);

@@ -471,63 +471,6 @@ private fun SwitchRow(
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun SliderRow(
-    label: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    enabled: Boolean = true,
-    minValue: Float = 0f,
-    maxValue: Float = 100f,
-    description: String? = null,
-) {
-    val alpha = if (enabled) 1f else 0.5f
-
-    Column(modifier = Modifier.alpha(alpha).then(if (!enabled) Modifier.pointerInput(Unit) {} else Modifier)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Slider(
-                value = value,
-                onValueChange = onValueChange,
-                valueRange = minValue..maxValue,
-                track = {
-                    SliderDefaults.Track(
-                        sliderState = it,
-                        drawStopIndicator = null,
-                        thumbTrackGapSize = 0.dp,
-                        colors =
-                            SliderDefaults.colors(
-                                activeTrackColor = Color.VpxRed,
-                                inactiveTrackColor = SliderDefaults.colors().disabledInactiveTrackColor,
-                                disabledActiveTrackColor = Color.VpxRed.copy(alpha = 0.5f),
-                            ),
-                        modifier = Modifier.height(4.dp),
-                    )
-                },
-                thumb = { Box(Modifier.size(26.dp).shadow(2.dp, CircleShape).clip(CircleShape).background(Color.White)) },
-                modifier = Modifier.padding(vertical = 8.dp).weight(1f),
-                enabled = enabled,
-            )
-        }
-
-        if (!description.isNullOrEmpty()) {
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
-        }
-    }
-}
-
-@Composable
 private fun <T> EnumMenuRow(label: String, options: List<T>, option: T, onOptionChanged: (T) -> Unit, sameLine: Boolean = true)
     where T : VPinballDisplayText {
     var expanded by remember { mutableStateOf(false) }
