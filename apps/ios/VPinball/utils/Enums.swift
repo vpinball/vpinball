@@ -20,9 +20,9 @@ enum Link {
     var url: URL {
         switch self {
         case .docs:
-            return URL(string: "https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md")!
+            return URL(string: "https://github.com/vpinball/vpinball/blob/master/docs/Mobile.md")!
         case .troubleshooting:
-            return URL(string: "https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md#troubleshooting")!
+            return URL(string: "https://github.com/vpinball/vpinball/blob/master/docs/Mobile.md#troubleshooting")!
         case .discord:
             return URL(string: "https://discord.com/channels/652274650524418078/1323445406524248090")!
         case .licenses:

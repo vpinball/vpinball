@@ -6,8 +6,8 @@ import androidx.browser.customtabs.CustomTabsIntent
 import java.io.File
 
 enum class Link(val url: String) {
-    DOCS("https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md"),
-    TROUBLESHOOTING("https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md#troubleshooting"),
+    DOCS("https://github.com/vpinball/vpinball/blob/master/docs/Mobile.md"),
+    TROUBLESHOOTING("https://github.com/vpinball/vpinball/blob/master/docs/Mobile.md#troubleshooting"),
     DISCORD("https://discord.com/channels/652274650524418078/1323445406524248090"),
     LICENSES("https://github.com/vpinball/vpinball/blob/master/LICENSE"),
     ZEDMDOS("https://github.com/PPUC/zedmdos"),

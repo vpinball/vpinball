@@ -18,7 +18,7 @@ This project was started by Randy Davis, open sourced in 2010 and continued by t
 - Support for Head tracking via BAM
 - Support for VR/XR HMD rendering (including [PUP](https://www.nailbuster.com/wikipinup), [B2S](https://github.com/vpinball/b2s-backglass) backglass and DMD output support)
 - Support for WCG/HDR rendering (for now only via the BGFX (D3D11/12) build)
-- Support for Windows (x86), Linux (x86/Arm, incl. RaspberryPi and RK3588), macOS, iOS/tvOS, Android (the latter builds are also available via the respective app stores for free)
+- Support for Windows (x86), Linux (x86/Arm, incl. RaspberryPi and RK3588), macOS, iOS/iPadOS, Android and Meta Quest (the iOS and Android builds are also available via the respective app stores for free)
 - Plugin system to drive/fuel all kinds of displays (DMD, backglass, etc), add custom/dynamically-changed content (PUP, Serum, etc), direct output framework (DOF), sensors, and much more (WIP)
 
 ## Download

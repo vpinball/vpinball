@@ -17,17 +17,17 @@ Visual Pinball X installation is made of 3 parts: the application, its preferenc
   - Windows: `C:\Users\xxx\AppData\Roaming\...`
   - MacOS: `/Users/xxx/Library/Application Support/VPinballX`
   - Linux: `/home/xxx/.local/share/VPinballX`
-  - Android & Meta Quest: `/data/data/org.vpinball.app/files/`
+  - Android & Meta Quest: `/data/data/org.vpinball.vpinball_bgfx/files/`
   - iOS: preferences are stored in the app's Documents directory
 - The 'Tables' folder to store all table datas
   - Windows: in a user created folder inside `C:\Users\xxx\Documents\...`
   - MacOS: in a user created folder inside `/Users/xxx/Documents`
-  - Android & Meta Quest: `/data/data/org.vpinball.app/files/`
+  - Android & Meta Quest: `/data/data/org.vpinball.vpinball_bgfx/files/`
   - iOS: Tables are stored in the app's Documents directory
 
 Mobile platform notes:
 - To simplify file management, VPX includes a **built-in web server** on all mobile platforms. Enable it in settings to upload tables and transfer files from any browser on the same network.
-- On Android, on first launch, VPX copies required assets from the APK to the app's internal storage, typically: `/data/data/org.vpinball.app/files/assets/`
+- On Android, on first launch, VPX copies required assets from the APK to the app's internal storage, typically: `/data/data/org.vpinball.vpinball_bgfx/files/assets/`
 - On iOS, to provide additional user-friendly file access:
   - The Documents folder is accessible via the **Files app** on the device
   - When connected to a Mac, files can be transferred through **Finder**
