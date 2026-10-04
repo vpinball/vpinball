@@ -10,6 +10,7 @@
 #include "physics/cabinet/NudgeHandler.h"
 #include "pole/pole.h"
 #include "renderer/Renderer.h"
+#include "ui/live/LiveUI.h"
 #include "utils/color.h"
 
 #ifndef __STANDALONE__
@@ -787,6 +788,14 @@ STDMETHODIMP ScriptGlobalTable::CreatePluginObject(/*[in]*/ BSTR classId, /*[out
    VPXPluginAPIImpl &pi = g_pplayer->m_pluginAPI;
    *pVal = pi.CreateCOMPluginObject(MakeString(classId));
    return (*pVal != nullptr) ? S_OK : E_FAIL;
+}
+
+STDMETHODIMP ScriptGlobalTable::PushNotification(/*[in]*/ BSTR message, /*[in]*/ long durationMs, /*[in]*/ long reuseId, /*[out, retval]*/ long *pVal)
+{
+   if (!pVal)
+      return E_POINTER;
+   *pVal = (g_pplayer && g_pplayer->m_liveUI) ? (long)g_pplayer->m_liveUI->PushNotification(MakeString(message), (int)durationMs, (unsigned int)reuseId) : 0;
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
