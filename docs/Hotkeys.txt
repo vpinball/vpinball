@@ -8,12 +8,13 @@ Play Table (with exchanged
   DT/FS camera parameters)  Hold Shift/LeftFlipperButton during Table Start
 Start in Camera/Light
   Tweaking Mode             F6
+Live Table Editor           F7
 Collection Manager          F8
 Add unsmoothed/smoothed     F10/F11
   control points to walls,
   ramps or lights
 New Table                   Ctrl + N
-Load Table                  Ctrl + L
+Load Table                  Ctrl + O
 Save Table                  Ctrl + S
 Copy                        Ctrl + C
 Paste                       Ctrl + V

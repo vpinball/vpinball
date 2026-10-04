@@ -1,8 +1,9 @@
 # Upgrading a table to 10.8.1
 
 ## Table of Contents
-1. [VR/XR Setup](#vr/xr-setup)
-2. [Ball motion trail/blur](ball-motion-trail/blur)
+1. [Inputs](#inputs)
+2. [VR/XR Setup](#vrxr-setup)
+3. [Ball motion trail/blur](#ball-motion-trailblur)
 
 VPX 10.8.1 tries to be entirely backwards compatible and should not require any update to existing tables. Informations below describe new features and how to support them.
 
