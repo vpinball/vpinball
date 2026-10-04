@@ -1053,8 +1053,8 @@ void KickerHitCircle::DoCollide(HitBall *const pball, const Vertex3Ds &hitnormal
                pball->m_d.m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
                m_pHitBall = pball;
                m_lastCapturedBall = pball;
-               if (pball->m_pBall == g_pplayer->m_liveUI->m_ballControl.GetSelectedBall())
-                  g_pplayer->m_liveUI->m_ballControl.ReleaseDragTarget();
+               if (BallControl* const ballControl = m_physics->GetBallControl(); ballControl && pball->m_pBall == ballControl->GetSelectedBall())
+                  ballControl->ReleaseDragTarget();
             }
 
             // Don't fire the hit event if the ball was just created

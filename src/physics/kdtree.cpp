@@ -398,7 +398,7 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
    for (unsigned i=m_start; i<m_start+org_items; i++)
    {
 #ifdef DEBUGPHYSICS
-      hitoct->m_physics->c_tested++;
+      if (hitoct->m_physics) hitoct->m_physics->c_tested++;
 #endif
       HitObject * const pho = hitoct->GetItemAt(i);
       if ((pball != pho) // ball can not hit itself
@@ -412,7 +412,7 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
    if (m_children) // not a leaf
    {
 #ifdef DEBUGPHYSICS
-      hitoct->m_physics->c_traversed++;
+      if (hitoct->m_physics) hitoct->m_physics->c_traversed++;
 #endif
       if (axis == 0)
       {
@@ -488,7 +488,7 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
       for (unsigned int i = start; i != end; i += dt)
       {
 #ifdef DEBUGPHYSICS
-         hitoct->m_physics->c_tested++; //!! +=4? or is this more fair?
+         if (hitoct->m_physics) hitoct->m_physics->c_tested++; //!! +=4? or is this more fair?
 #endif
          // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
          // bits set, there is a bounding box collision
@@ -572,7 +572,7 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
       if (current->m_children) // not a leaf
       {
 #ifdef DEBUGPHYSICS
-         hitoct->m_physics->c_traversed++;
+         if (hitoct->m_physics) hitoct->m_physics->c_traversed++;
 #endif
          if (axis == 0)
          {
@@ -613,7 +613,7 @@ void HitKDNode::HitTestXRay(const HitKD* hitoct, const HitBall* const pball, vec
    for (unsigned i = m_start; i < m_start + org_items; i++)
    {
 #ifdef DEBUGPHYSICS
-      hitoct->m_physics->c_tested++;
+      if (hitoct->m_physics) hitoct->m_physics->c_tested++;
 #endif
       HitObject * const pho = hitoct->GetItemAt(i);
       if ((pball != pho) && // ball cannot hit itself
@@ -621,7 +621,7 @@ void HitKDNode::HitTestXRay(const HitKD* hitoct, const HitBall* const pball, vec
          fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
 #ifdef DEBUGPHYSICS
-         hitoct->m_physics->c_deepTested++;
+         if (hitoct->m_physics) hitoct->m_physics->c_deepTested++;
 #endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
@@ -635,7 +635,7 @@ void HitKDNode::HitTestXRay(const HitKD* hitoct, const HitBall* const pball, vec
    if (m_children) // not a leaf
    {
 #ifdef DEBUGPHYSICS
-      hitoct->m_physics->c_traversed++;
+      if (hitoct->m_physics) hitoct->m_physics->c_traversed++;
 #endif
       if (axis == 0)
       {

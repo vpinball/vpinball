@@ -358,6 +358,32 @@ TEST_CASE("PhysicsEngine: column of 4 stacked balls comes to rest")
       CHECK((balls[i]->m_d.m_pos - pos[i]).Length() < 0.5f);
 }
 
+TEST_CASE("PhysicsEngine: a ball hitting a resting pair passes the impulse on" * doctest::should_fail(!kFixPhysics))
+{
+   // Newton's cradle: ball C rolls into ball A, which rests against ball B. The
+   // C/A collision and the A/B contact (recorded while both were still at rest)
+   // are resolved in the same cycle: the contact must not swallow the impact A
+   // just received, which then has to reach B through the A/B collision.
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST); // flat: nothing presses the pair together
+
+   Ball *const b = harness.AddBall(500.f, 600.f, 0.f);
+   Ball *const a = harness.AddBall(500.f, 550.f, 0.f);           // touching b
+   Ball *const c = harness.AddBall(500.f, 480.f, 0.f, 0.f, 5.f); // 20 VPU before a, rolling at 5 VPU/T
+   harness.Start();
+
+   harness.AdvanceMs(100);
+
+   const BallS &da = a->m_hitBall.m_d;
+   const BallS &db = b->m_hitBall.m_d;
+   const BallS &dc = c->m_hitBall.m_d;
+   INFO("vel c ", dc.m_vel.y, " a ", da.m_vel.y, " b ", db.m_vel.y);
+   // With restitution 0.8 most of the impact ends up in B, A and C nearly stop
+   CHECK(db.m_vel.y > 2.f);
+   CHECK(db.m_vel.y > da.m_vel.y);
+   CHECK(db.m_vel.y > dc.m_vel.y);
+}
+
 TEST_CASE("PhysicsEngine: two balls in contact roll down the slope")
 {
    // Two touching balls on a slope: the contact must not act as glue — gravity

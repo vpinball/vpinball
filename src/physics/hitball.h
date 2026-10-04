@@ -45,15 +45,19 @@ public:
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eBall; }
    void Collide(const CollisionEvent& coll) override;
-   // Contact() is inherited: it applies HandleStaticContact to coll.m_ball (each ball reports its own contact record)
+   void Contact(CollisionEvent& coll, const float dtime) override; // two body contact handling for coll.m_ball against this ball
    void CalcHitBBox() override;
 
    float HitRadiusSqr() const { return sqrf((m_hitBBox.right - m_hitBBox.left)*0.5f); } // this returns the extended (by m_vel + magic) squared radius, as needed to be used in the collision detection
    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle);
 
+   // other: the contacted ball for ball/ball contacts (relative approach; relative friction only with FIX_PHYSICS), nullptr for static surfaces
    void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff,
-      const float normalImpulse); // normalImpulse: normal Δv applied by the contact this step (only used with FIX_PHYSICS)
-   void HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime);
+      const float normalImpulse, const HitBall* const other = nullptr); // normalImpulse: normal delta-v applied by the contact this step (only used with FIX_PHYSICS)
+   void HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime, const HitBall* const other = nullptr);
+#ifdef NEW_PHYSICS
+   void ApplyRotationalFriction(const Vertex3Ds& hitnormal, const float fricCoeff, const float normalImpulse, const HitBall* const other = nullptr); // as for ApplyFriction
+#endif
 
    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
    Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
@@ -80,6 +84,13 @@ public:
    Vertex3Ds m_angularmomentum;
 
    Matrix3 m_orientation;
+
+#ifdef FIX_PHYSICS
+   // velocity change the contacts resolved so far in the current contact pass applied to the ball (reset by PhysicsEngine):
+   // all of it for ball/ball contacts, only the tangential (friction) part for static contacts. Static contacts add it to
+   // the velocity they saw at hit test time (see HandleStaticContact)
+   Vertex3Ds m_contactDeltaV = Vertex3Ds(0.f, 0.f, 0.f);
+#endif
 
 #ifdef C_DYNAMIC
    int m_dynamic = C_DYNAMIC; // used to determine static ball conditions and velocity quenching

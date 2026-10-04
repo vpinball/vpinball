@@ -581,7 +581,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
    const bool rigid = (m_ObjType != eTrigger);
    float hittime;
-#if defined(NEW_PHYSICS) || defined(FIX_PHYSICS) // FIX_PHYSICS: also enable the slow-touch contact path (hittime 0 + isContact)
+#ifdef FIX_PHYSICS
    bool isContact = false;
 #endif
    if (rigid) //rigid polygon
@@ -590,23 +590,27 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
       if (bnd <= (float)PHYS_TOUCH)
       {
-#if defined(NEW_PHYSICS) || defined(FIX_PHYSICS)
-         if (fabsf(bnv) <= C_CONTACTVEL)
-         {
-            hittime = 0;
-            isContact = true;
-         }
-         else if (inside)
-            hittime = 0; // zero time for rigid fast bodies
-         else
-            hittime = bnd / -bnv;
+#ifdef FIX_PHYSICS
+          if (fabsf(bnv) <= C_CONTACTVEL
+#ifndef NEW_PHYSICS
+              && bnd > (float)(-PHYS_TOUCH)         // deeper: collide, so the legacy embed corrections push it out
+#endif
+             )
+          {
+              hittime = 0;
+              isContact = true;
+          }
+          else if (inside)
+              hittime = 0;                          // zero time for rigid fast bodies
+          else
+              hittime = bnd / -bnv;
 #else
           if (inside || (fabsf(bnv) > C_CONTACTVEL) // fast velocity, return zero time
                                                     //zero time for rigid fast bodies
               || (bnd <= (float)(-PHYS_TOUCH)))     // slow moving but embedded
               hittime = 0;
           else
-              hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events
+              hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events //!! TODO: >= 0.5 never fits the 1 ms step of 0.1 VPT, i.e. no hit; kept for compatibility (like that since the physmod changes)
 #endif
       }
       else if (fabsf(bnv) > C_LOWNORMVEL)           // not velocity low?
@@ -691,7 +695,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
       coll.m_hitdistance = bnd;   // 3dhit actual contact distance ... 
       //coll.m_hitRigid = rigid;  // collision type
 
-#if defined(NEW_PHYSICS) || defined(FIX_PHYSICS)
+#ifdef FIX_PHYSICS
       coll.m_isContact = isContact;
       if (isContact)
          coll.m_hit_org_normalvelocity = bnv;
@@ -991,12 +995,15 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
       return -1.0f; // excessive penetration of plane ... no collision HACK
 
    float hittime;
-#ifdef NEW_PHYSICS
+#ifdef FIX_PHYSICS
    bool isContact = false;
-   // slow moving ball? then either contact or no collision at all
    if (bnd <= (float)PHYS_TOUCH)
    {
-       if (fabsf(bnv) <= C_CONTACTVEL)
+       if (fabsf(bnv) <= C_CONTACTVEL
+#ifndef NEW_PHYSICS
+           && bnd >= (float)(-PHYS_TOUCH) // deeper: collide, so the legacy embed corrections push it out
+#endif
+          )
        {
            hittime = 0;
            isContact = true;
@@ -1038,7 +1045,7 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
    coll.m_hitdistance = bnd; // actual contact distance
    //coll.m_hitRigid = true; // collision type
 
-#ifdef NEW_PHYSICS
+#ifdef FIX_PHYSICS
    coll.m_isContact = isContact;
    if(isContact)
       coll.m_hit_org_normalvelocity = bnv; // remember original normal velocity

@@ -92,11 +92,9 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
             hittime = 0;                                    // slow moving but embedded
          else {
 #ifdef FIX_PHYSICS
-            hittime = 0.f; // slow shallow touch: becomes a contact via the isContact test below
-#elif defined(NEW_PHYSICS)
-            hittime = bnd / -bnv;
+            hittime = 0; // slow and within touch distance: contact (flagged below), not a collision in the future
 #else
-            hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events
+            hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events //!! TODO: >= 0.5 never fits the 1 ms step of 0.1 VPT, i.e. no hit; kept for compatibility (its like that since physmod days)
 #endif
          }
       }
@@ -154,7 +152,12 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
    //coll.m_hitRigid = rigid;     // collision type
 
    // check for contact
+#ifdef NEW_PHYSICS
+   // also deeper embedded slow balls of rigid segments, so HandleStaticContact pushes them out (no C_EMBEDDED/C_DISP_GAIN)
+   coll.m_isContact = (fabsf(bnv) <= C_CONTACTVEL && (rigid ? bnd : fabsf(bnd)) <= (float)PHYS_TOUCH);
+#else
    coll.m_isContact = (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= (float)PHYS_TOUCH);
+#endif
    if(coll.m_isContact)
       coll.m_hit_org_normalvelocity = bnv;
 
@@ -545,12 +548,8 @@ float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
          isContact = true;
          hittime = 0.f;
       }
-      else // estimate based on distance and speed along distance
-#ifdef NEW_PHYSICS
-         hittime = -bnd / bnv;
-#else
+      else // estimate based on distance and speed along distance (already overlapping: max(0, ...) collides immediately)
          hittime = std::max(0.0f, -bnd / bnv);
-#endif
    }
    else
    {
@@ -613,7 +612,8 @@ void DoHitTest(const HitBall*const pball, const HitObject *const pho, CollisionE
       return;
 
 #ifdef DEBUGPHYSICS
-   pho->m_physics->c_deepTested++; //!! atomic needed if USE_EMBREE
+   if (pho->m_physics) // stand-alone hit objects (e.g. in tests) have no physics engine
+      pho->m_physics->c_deepTested++; //!! atomic needed if USE_EMBREE
 #endif
 
    CollisionEvent newColl;

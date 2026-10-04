@@ -141,6 +141,142 @@ TEST_CASE("Contact cancels an incoming normal velocity for any mass")
    CHECK(ball.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR + 0.05f));
 }
 
+namespace
+{
+CollisionEvent MakeFloorContact(HitBall *ball)
+{
+   CollisionEvent coll;
+   coll.m_ball = ball;
+   coll.m_hitnormal = Vertex3Ds(0.f, 0.f, 1.f);
+   coll.m_hitdistance = 0.f;
+   coll.m_hit_org_normalvelocity = 0.f; // resting at hit time
+   return coll;
+}
+}
+
+#ifdef FIX_PHYSICS // static contacts also cancel what the contacts resolved before them did to the ball
+namespace
+{
+// A ball pressed (+y) against something in front of it while rolling towards it: its front surface moves down
+HitBall MakeBlockedRollingBall(PhysicsEngine *physics)
+{
+   HitBall ball;
+   ball.m_physics = physics;
+   ball.m_d.m_mass = 1.f;
+   ball.m_d.m_vel = Vertex3Ds(0.f, 0.01f, 0.f);
+   ball.m_angularmomentum = Vertex3Ds(-0.1f * ball.Inertia(), 0.f, 0.f);
+   return ball;
+}
+}
+
+TEST_CASE("A static contact cancels the friction lift of another static contact")
+{
+   // Same against a wall: the wall friction pushes the ball up, the playfield
+   // contact resolved after it must cancel that lift too.
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   harness.Start();
+
+   HitBall ball = MakeBlockedRollingBall(harness.GetEngine());
+   CollisionEvent wallColl;
+   wallColl.m_ball = &ball;
+   wallColl.m_hitnormal = Vertex3Ds(0.f, -1.f, 0.f);
+   wallColl.m_hitdistance = 0.f;
+   wallColl.m_hit_org_normalvelocity = -0.01f;
+   ball.HandleStaticContact(wallColl, 0.3f, (float)PHYS_FACTOR);
+   REQUIRE(ball.m_d.m_vel.z > 0.f); // the wall friction pushed the ball up
+
+   const CollisionEvent floorColl = MakeFloorContact(&ball);
+   ball.HandleStaticContact(floorColl, 0.3f, (float)PHYS_FACTOR);
+   CHECK(ball.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR));
+}
+
+TEST_CASE("A static contact cancels the lift of a ball/ball contact")
+{
+   // The contact friction stopping the spin of a ball rolling against a
+   // blocking ball pushes it up. Ball/ball contacts are resolved first, and the
+   // playfield contact must cancel that lift, otherwise the ball climbs a bit
+   // every step until it leaves the touch layer and drops back (jitter of balls
+   // resting in a row).
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   harness.Start();
+
+   HitBall rear = MakeBlockedRollingBall(harness.GetEngine());
+   HitBall front;
+   front.m_physics = harness.GetEngine();
+   front.m_d.m_mass = 1.f;
+   front.m_angularmomentum.SetZero();
+
+   CollisionEvent ballColl;
+   ballColl.m_ball = &rear;
+   ballColl.m_obj = &front;
+   ballColl.m_hitnormal = Vertex3Ds(0.f, -1.f, 0.f); // from the front ball towards the rear one
+   ballColl.m_hitdistance = 0.f;
+   ballColl.m_hit_org_normalvelocity = -0.01f;
+   front.Contact(ballColl, (float)PHYS_FACTOR);
+   REQUIRE(rear.m_d.m_vel.z > 0.f); // the ball/ball friction pushed the rear ball up
+
+   const CollisionEvent floorColl = MakeFloorContact(&rear);
+   rear.HandleStaticContact(floorColl, 0.3f, (float)PHYS_FACTOR);
+   CHECK(rear.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR)); // just the gravity compensation, no lift
+}
+#endif
+
+TEST_CASE("A static contact does not absorb an impact gained after the hit test")
+{
+   // A ball resting on a surface can be hit into it by another ball earlier in
+   // the same cycle: that impact must stay for a collision with the surface
+   // (bounce with its elasticity), the contact works from the hit test velocity.
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   harness.Start();
+
+   HitBall ball;
+   ball.m_physics = harness.GetEngine();
+   ball.m_d.m_mass = 1.f;
+   ball.m_d.m_vel = Vertex3Ds(0.f, 0.f, -5.f); // hit into the surface this cycle
+   ball.m_angularmomentum.SetZero();
+
+   const CollisionEvent coll = MakeFloorContact(&ball);
+   ball.HandleStaticContact(coll, 0.3f, (float)PHYS_FACTOR);
+   CHECK(ball.m_d.m_vel.z == doctest::Approx(-5.f + GRAVITYCONST * PHYS_FACTOR));
+}
+
+TEST_CASE("The normal responses of two static contacts stay independent")
+{
+   // A ball on the two wires of a wire ramp: each contact compensates gravity
+   // along its normal from the hit test velocity, as before. Seeing the other
+   // contact's normal impulse would make the result depend on the (random)
+   // contact order and kick the ball sideways.
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   harness.Start();
+
+   const float dt = (float)PHYS_FACTOR;
+   HitBall ball;
+   ball.m_physics = harness.GetEngine();
+   ball.m_d.m_mass = 1.f;
+   ball.m_d.m_vel = Vertex3Ds(0.f, 0.f, -GRAVITYCONST * dt); // one step of gravity
+   ball.m_angularmomentum.SetZero();
+
+   const float s = sinf(ANGTORAD(30.f)), c = cosf(ANGTORAD(30.f));
+   CollisionEvent wire[2];
+   for (int i = 0; i < 2; ++i)
+   {
+      wire[i].m_ball = &ball;
+      wire[i].m_hitnormal = Vertex3Ds(i == 0 ? s : -s, 0.f, c);
+      wire[i].m_hitdistance = 0.f;
+      wire[i].m_hit_org_normalvelocity = ball.m_d.m_vel.Dot(wire[i].m_hitnormal);
+   }
+   ball.HandleStaticContact(wire[0], 0.f, dt); // frictionless: only the normal responses
+   ball.HandleStaticContact(wire[1], 0.f, dt);
+
+   // each contact applies 2*g*c*dt along its normal
+   CHECK(ball.m_d.m_vel.x == doctest::Approx(0.f).epsilon(1e-6));
+   CHECK(ball.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * dt * (4.f * c * c - 1.f)));
+}
+
 TEST_CASE("Ball surface acceleration is independent of mass")
 {
    PhysicsTestHarness harness;
@@ -412,6 +548,102 @@ TEST_CASE("A ball pressed against a locked ball comes to rest")
    }
    CHECK(maxLateralSpeed < 0.05f);
 }
+
+// ---------------------------------------------------------------------------
+// Both balls of a free pair report their own contact record. Each one only
+// kills its own normal velocity towards the other, so the relative approach
+// velocity is not cancelled twice and the pair does not separate again.
+// The contact friction must use the slip relative to the other ball, so two
+// balls rolling side by side are not braked by touching each other.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+void MakeContactPair(PhysicsEngine *physics, HitBall &a, HitBall &b, CollisionEvent &collA, CollisionEvent &collB, const float approach)
+{
+   for (HitBall *ball : { &a, &b })
+   {
+      ball->m_physics = physics;
+      ball->m_d.m_mass = 1.f;
+      ball->m_angularmomentum.SetZero();
+   }
+   // a is left of b, touching along x: collA reports a against b, collB reports b against a
+   collA.m_ball = &a;
+   collA.m_hitnormal = Vertex3Ds(-1.f, 0.f, 0.f); // from b towards a
+   collA.m_hitdistance = 0.f;
+   collA.m_hit_org_normalvelocity = -approach; // relative normal velocity, negative when approaching
+   collB = collA;
+   collB.m_ball = &b;
+   collB.m_hitnormal = Vertex3Ds(1.f, 0.f, 0.f); // from a towards b
+}
+}
+
+TEST_CASE("Two free balls in slow contact do not cancel their approach twice")
+{
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST); // flat: no gravity along the contact normal
+   harness.Start();
+
+   HitBall a, b;
+   CollisionEvent collA, collB;
+   MakeContactPair(harness.GetEngine(), a, b, collA, collB, 0.05f);
+   a.m_d.m_vel = Vertex3Ds(0.025f, 0.f, 0.f);
+   b.m_d.m_vel = Vertex3Ds(-0.025f, 0.f, 0.f);
+
+   b.Contact(collA, (float)PHYS_FACTOR); // a against b
+   a.Contact(collB, (float)PHYS_FACTOR); // b against a
+
+   // the approach is cancelled once: no separation, momentum conserved
+   CHECK((a.m_d.m_vel - b.m_d.m_vel).x == doctest::Approx(0.f));
+   CHECK(a.m_d.m_vel.x + b.m_d.m_vel.x == doctest::Approx(0.f));
+}
+
+TEST_CASE("A free ball in slow contact with a locked ball takes the whole response")
+{
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   harness.Start();
+
+   HitBall a, b;
+   CollisionEvent collA, collB;
+   MakeContactPair(harness.GetEngine(), a, b, collA, collB, 0.05f);
+   a.m_d.m_vel = Vertex3Ds(0.05f, 0.f, 0.f);
+   b.m_d.m_lockedInKicker = true; // a locked ball is not hit tested: only a reports the contact
+
+   b.Contact(collA, (float)PHYS_FACTOR);
+
+   CHECK(a.m_d.m_vel.x == doctest::Approx(0.f));
+}
+
+#ifdef FIX_PHYSICS // relative contact friction
+TEST_CASE("Two balls rolling side by side are not braked by their contact")
+{
+   PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
+   harness.Start();
+
+   HitBall a, b;
+   CollisionEvent collA, collB;
+   MakeContactPair(harness.GetEngine(), a, b, collA, collB, 0.05f); // slightly pressed together, so friction has a budget
+   // both roll along +y at the same speed: their surfaces at the mutual contact point move together (no relative slip)
+   const float speed = 10.f;
+   for (HitBall *ball : { &a, &b })
+   {
+      ball->m_d.m_vel = Vertex3Ds(0.f, speed, 0.f);
+      ball->m_angularmomentum = Vertex3Ds(-speed / ball->m_d.m_radius * ball->Inertia(), 0.f, 0.f); // rolling on the playfield
+   }
+   a.m_d.m_vel.x = 0.025f;
+   b.m_d.m_vel.x = -0.025f;
+
+   b.Contact(collA, (float)PHYS_FACTOR);
+   a.Contact(collB, (float)PHYS_FACTOR);
+
+   // treating the other ball as a static surface would see a 10 VPU/T slip and brake both balls
+   CHECK(a.m_d.m_vel.y == doctest::Approx(speed).epsilon(1e-6));
+   CHECK(b.m_d.m_vel.y == doctest::Approx(speed).epsilon(1e-6));
+   CHECK(a.m_angularmomentum.x == doctest::Approx(-speed / a.m_d.m_radius * a.Inertia()).epsilon(1e-6));
+}
+#endif
 
 // ---------------------------------------------------------------------------
 // Each collider type defines its own contact window and receding-velocity
@@ -752,7 +984,7 @@ TEST_CASE("Entering a trigger volume does not teleport the ball" * doctest::shou
 // velocity.
 // ---------------------------------------------------------------------------
 
-TEST_CASE("A spinning ball keeps flipper contact support" * doctest::should_fail())
+TEST_CASE("A spinning ball keeps flipper contact support" * doctest::should_fail(!kFixPhysics))
 {
    PhysicsTestHarness harness;
 
@@ -793,7 +1025,7 @@ TEST_CASE("A spinning ball keeps flipper contact support" * doctest::should_fail
    spinning.m_angularmomentum = Vertex3Ds(0.f, 0.f, 1000.f);
    makeContact(spinning);
    // The material surface point's centripetal acceleration is not gap
-   // acceleration: spin must not release the contact. Today normAcc >= 0
+   // acceleration: spin must not release the contact. Without FIX_PHYSICS normAcc >= 0
    // early-outs before the approach-velocity cancellation, leaving the full
    // -0.05 approach velocity in place.
    CHECK(spinning.m_d.m_vel.Dot(normal) > -0.01f);

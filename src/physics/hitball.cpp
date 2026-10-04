@@ -18,6 +18,9 @@ HitBall::HitBall()
    for (int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
       m_oldpos[i].x = FLT_MAX;
    m_lastEventPos.x = m_lastEventPos.y = m_lastEventPos.z = -10000.0f; // last pos is far far away
+#ifdef FIX_PHYSICS
+   SetFriction(C_BALL_BALL_FRICTION); // for ball/ball contacts, as for ball/ball collisions (Collide)
+#endif
 }
 
 HitBall::~HitBall()
@@ -276,6 +279,19 @@ void HitBall::Collide(const CollisionEvent& coll)
    }
 #endif
 
+#ifdef NEW_PHYSICS
+   // Separate overlapping balls along the normal, split by inverse mass (a frozen ball does not move), replacing C_DISP_GAIN:
+   // deeper overlaps stay collisions (see HitTest), a slow collision impulse alone would not separate them
+   if (coll.m_hitdistance < 0.f)
+   {
+      const float invMassThis = m_d.m_lockedInKicker ? 0.0f : 1.0f / m_d.m_mass;
+      const float invMassOther = 1.0f / pball->m_d.m_mass;
+      const float depth = std::min(-coll.m_hitdistance, C_EMBEDDISPLIMIT) / (invMassThis + invMassOther);
+      pball->m_d.m_pos += (depth * invMassOther) * vnormal;
+      m_d.m_pos -= (depth * invMassThis) * vnormal;
+   }
+#endif
+
    const float myInvMass = m_d.m_lockedInKicker ? 0.0f : 1.0f/m_d.m_mass; // frozen ball has infinite mass
    const float pballInvMass = 1.0f/pball->m_d.m_mass; //!! do same frozen mass thing for that one?
    // Low speed impacts stay inelastic: a restitution bounce leaves the pair
@@ -297,39 +313,87 @@ void HitBall::Collide(const CollisionEvent& coll)
 #ifdef C_DYNAMIC
    pball->m_dynamic = C_DYNAMIC;
 #endif
+
+#ifdef NEW_PHYSICS
+   // Coulomb friction at the contact point, bounded by mu times the normal impulse (as in Collide3DWall),
+   // so that spin is exchanged/dissipated between balls (e.g. a ball resting on others)
+   const Vertex3Ds surfThis = m_d.m_radius * vnormal;          // contact point relative to this ball's center
+   const Vertex3Ds surfOther = -pball->m_d.m_radius * vnormal; // contact point relative to the other ball's center
+   const Vertex3Ds vslip = pball->SurfaceVelocity(surfOther) - SurfaceVelocity(surfThis);
+   const Vertex3Ds tslip = vslip - vslip.Dot(vnormal) * vnormal;
+   const float slipspeed = tslip.Length();
+   if (slipspeed > C_PRECISION)
+   {
+      const Vertex3Ds tangent = tslip / slipspeed;
+      // effective inverse mass along the tangent: for a sphere, (r x t) x r = r^2 t as r is perpendicular to t
+      const float myInvInertia = m_d.m_lockedInKicker ? 0.0f : 1.0f / Inertia();
+      const float k = myInvMass + pballInvMass + m_d.m_radius * m_d.m_radius * myInvInertia + pball->m_d.m_radius * pball->m_d.m_radius / pball->Inertia();
+      const float jt = std::min(slipspeed / k, C_BALL_BALL_FRICTION * fabsf(impulse)); // friction impulse magnitude
+      if (!infNaN(jt))
+      {
+         pball->ApplySurfaceImpulse(CrossProduct(surfOther, -jt * tangent), -jt * tangent);
+         if (!m_d.m_lockedInKicker)
+            ApplySurfaceImpulse(CrossProduct(surfThis, jt * tangent), jt * tangent);
+      }
+   }
+#endif
 }
 
-void HitBall::HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime)
+// Ball/ball contact: coll.m_ball touches this ball (both balls of a free pair report their own contact record)
+void HitBall::Contact(CollisionEvent& coll, const float dtime)
+{
+   coll.m_ball->HandleStaticContact(coll, m_friction, dtime, this);
+}
+
+void HitBall::HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime, const HitBall* const other)
 {
    const float normVel = m_d.m_vel.Dot(coll.m_hitnormal); // this should be zero, but only up to +/- C_CONTACTVEL
-
-   const bool ballContact = coll.m_obj != nullptr && coll.m_obj->GetType() == eBall;
-   const HitBall* const otherBall = ballContact ? static_cast<const HitBall*>(coll.m_obj) : nullptr;
+#ifdef FIX_PHYSICS
+   const Vertex3Ds velBefore = m_d.m_vel;
+#endif
 
    // For a ball-ball contact the approach speed is relative to the supporting
    // ball, which may itself be moving (a stack pressed on a wall, a ball resting
    // on a rolling ball): using the ball's own normal velocity here either lets
    // it creep into its support or wrongly skips the impulse.
-   const float approach = ballContact ? (otherBall->m_d.m_vel - m_d.m_vel).Dot(coll.m_hitnormal) : -normVel;
+   const float approach = other ? (other->m_d.m_vel - m_d.m_vel).Dot(coll.m_hitnormal) : -normVel;
 
    // If some collision has changed the ball's velocity, we may not have to do anything.
    if (approach > -C_CONTACTVEL)
    {
       float normalForce;
-      if (ballContact)
+      if (other)
       {
          // Resting on another ball: kill the residual normal velocity only
          // (vel.n -> 0). Matching the supporting ball's velocity instead lets
          // each neighbour's contact rewrite this velocity in a single pass, and
          // the chain never converges: balls in a stack end up oscillating at a
          // few 0.1/step, which displacements then turn into real overlap.
+#ifdef FIX_PHYSICS
+         // Only a contact-scale approach is cancelled (plus the step of gravity a resting stack carries): a faster one
+         // comes from a collision earlier in this cycle, e.g. a ball hit into a resting pair, and must reach the other
+         // ball through their collision instead of being absorbed here (-> Newton's cradle)
+         const float maxCancel = C_CONTACTVEL + fmaxf(-m_physics->GetGravity().Dot(coll.m_hitnormal), 0.f) * (float)PHYS_FACTOR;
+         normalForce = std::max(0.0f, std::min(-normVel, maxCancel));
+#else
          normalForce = std::max(0.0f, -normVel);
+#endif
       }
       else
       {
          const Vertex3Ds fe = m_d.m_mass * m_physics->GetGravity(); // external forces (only gravity for now)
          const float dot = fe.Dot(coll.m_hitnormal);
+#ifdef FIX_PHYSICS
+         // Also cancel what the contacts resolved before this one did to the ball (m_contactDeltaV): stopping the spin of
+         // a ball pressed against a wall or another ball, their friction pushes it up, and left alone the
+         // ball climbs a bit every step until it leaves its support and drops back. Otherwise this keeps working from the hit
+         // test velocity: the normal impulses of the other static contacts are not included
+         // (TODO: two wires of a wire ramp, corners still stay independent), nor collisions earlier in this cycle (an impact stays a collision)
+         const float hitNormVel = coll.m_hit_org_normalvelocity + m_contactDeltaV.Dot(coll.m_hitnormal);
+         normalForce = std::max(0.0f, -(dot * dtime + hitNormVel * m_d.m_mass) / m_d.m_mass); // normal force is always nonnegative
+#else
          normalForce = std::max(0.0f, -(dot * dtime + coll.m_hit_org_normalvelocity * m_d.m_mass) / m_d.m_mass); // normal force is always nonnegative
+#endif
       }
 
       // Add just enough to kill original normal velocity and counteract the external forces.
@@ -345,11 +409,20 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
          m_d.m_pos += std::min(-0.5f * coll.m_hitdistance, 0.02f) * coll.m_hitnormal;
 
 #ifdef C_EMBEDVELLIMIT
-      // Un-embed kick only when actually penetrating; applying its minimum
-      // velocity to merely touching contacts pushes every resting ball off its
-      // support on every step, which is the perpetual micro-bounce.
+      // Embedded: leave the surface within one nominal physics step. The target normal velocity is set, not added,
+      // so it does not accumulate while the ball is still inside (a static surface keeps the gravity compensation above).
+      // Against another ball: relative to it, and only this ball's share (by inverse mass), its own contact record takes the rest
       if (coll.m_hitdistance < 0.f)
-         m_d.m_vel += coll.m_hitnormal * min(C_EMBEDVELLIMIT, -coll.m_hitdistance);
+      {
+         const float pushOut = std::min(C_EMBEDVELLIMIT, -coll.m_hitdistance * (float)(1.0 / PHYS_FACTOR));
+         const float target = other ? pushOut : pushOut - m_physics->GetGravity().Dot(coll.m_hitnormal) * dtime;
+         const float vn = (other ? m_d.m_vel - other->m_d.m_vel : m_d.m_vel).Dot(coll.m_hitnormal);
+         if (vn < target)
+         {
+            const float otherInvMass = (other && !other->m_d.m_lockedInKicker) ? 1.0f / other->m_d.m_mass : 0.f;
+            m_d.m_vel += ((target - vn) * (1.0f / m_d.m_mass) / (1.0f / m_d.m_mass + otherInvMass)) * coll.m_hitnormal;
+         }
+      }
 #endif
 
 #ifdef C_BALL_SPIN_HACK2 // hacky killing of ball spin
@@ -362,20 +435,81 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
       }
 #endif
 
+#ifdef FIX_PHYSICS
+      ApplyFriction(coll.m_hitnormal, dtime, friction, normalForce, other);
+ #ifdef NEW_PHYSICS
+      ApplyRotationalFriction(coll.m_hitnormal, friction, normalForce, other);
+ #endif
+
+      Vertex3Ds deltaV = m_d.m_vel - velBefore;
+      if (!other) // ball/ball contacts (resolved first) pass on all of it
+         deltaV -= deltaV.Dot(coll.m_hitnormal) * coll.m_hitnormal; // a static contact passes on its friction only
+      m_contactDeltaV += deltaV;
+#else
       ApplyFriction(coll.m_hitnormal, dtime, friction, normalForce);
+#endif
    }
 }
 
-void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff, const float normalImpulse)
+#ifdef NEW_PHYSICS
+// A point contact with Coulomb friction exerts no torque about its normal and dissipates nothing once the ball rolls,
+// so a ball could spin (or, wedged between contacts, keep driving itself) forever. Model the contact patch instead:
+// spin friction about the normal and rolling resistance, bounded by the contact's normal impulse and never reversing
+// the rotation (this replaces the C_BALL_SPIN_HACK heuristics)
+void HitBall::ApplyRotationalFriction(const Vertex3Ds& hitnormal, const float fricCoeff, const float normalImpulse, const HitBall* const other)
+{
+   const float impulseN = m_d.m_mass * normalImpulse; // normal impulse of the contact this step
+   if (impulseN <= 0.f)
+      return;
+
+   // spin about the normal: angular impulse mu * a * N (a: contact patch radius), so none on a frictionless surface.
+   // Against another ball the relative spin is stopped using the pair's inverse inertia (no overshoot, see ApplyFriction)
+   const float invInertia = 1.0f / Inertia();
+   float spinN = m_angularmomentum.Dot(hitnormal) * invInertia; // angular velocity about the normal
+   float otherInvInertia = 0.f;
+   if (other)
+   {
+      spinN -= other->m_angularmomentum.Dot(hitnormal) / other->Inertia();
+      if (!other->m_d.m_lockedInKicker)
+         otherInvInertia = 1.0f / other->Inertia();
+   }
+   const float stopImpulse = fabsf(spinN) / (invInertia + otherInvInertia); // angular impulse that stops the (relative) spin
+   m_angularmomentum -= copysignf(std::min(stopImpulse, fmaxf(fricCoeff, 0.f) * C_CONTACT_PATCH_RADIUS * impulseN), spinN) * hitnormal;
+
+   if (other) // no rolling resistance between balls
+      return;
+   // rolling: angular impulse C_rr * r * N against the tangential rotation (friction then slows the ball accordingly)
+   const Vertex3Ds rolling = m_angularmomentum - m_angularmomentum.Dot(hitnormal) * hitnormal;
+   const float rollingLength = rolling.Length();
+   if (rollingLength > 1e-6f)
+      m_angularmomentum -= (std::min(rollingLength, C_ROLLING_RESISTANCE * m_d.m_radius * impulseN) / rollingLength) * rolling;
+}
+#endif
+
+void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff, const float normalImpulse, const HitBall* const other)
 {
    const Vertex3Ds surfP = -m_d.m_radius * hitnormal; // surface contact point relative to center of mass
 
+#ifdef FIX_PHYSICS
+   // Against another ball: slip relative to its contact point, and its effective inverse mass along the tangent
+   // (1/m + r^2/I for a sphere, 0 if locked), so the two contact records of a pair never overshoot (they are applied
+   // one after the other on the then current slip: for equal balls 75% of it is removed per step, the rest later)
+   Vertex3Ds surfVel = SurfaceVelocity(surfP);
+   float otherInvMassT = 0.f;
+   if (other)
+   {
+      surfVel -= other->SurfaceVelocity(other->m_d.m_radius * hitnormal);
+      if (!other->m_d.m_lockedInKicker)
+         otherInvMassT = 1.0f / other->m_d.m_mass + other->m_d.m_radius * other->m_d.m_radius / other->Inertia();
+   }
+#else
    const Vertex3Ds surfVel = SurfaceVelocity(surfP);
+#endif
    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal; // calc the tangential slip velocity
 
 #ifdef FIX_PHYSICS
-   // Coulomb cone — bound the friction impulse by μ times the normal impulse the contact
-   // actually applied this step (normalImpulse is the Δv applied by HandleStaticContact), instead of
+   // Coulomb cone: bound the friction impulse by mu times the normal impulse the contact
+   // actually applied this step (normalImpulse is the delta-v applied by HandleStaticContact), instead of
    // the gravity component alone which collapses on walls and on the top glass
    const float maxImpulse = fmaxf(fricCoeff, 0.f) * m_d.m_mass * normalImpulse;
 #else
@@ -387,6 +521,9 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
    float numer;
+#ifdef FIX_PHYSICS
+   float numerScale; // dtime if numer is an acceleration (static case), 1 if it is a velocity (dynamic case)
+#endif
    //PLOGD << "Velocity: " << m_vel.Length() << " Angular velocity: " << (m_angularmomentum / Inertia()).Length() << " Surface velocity: " << surfVel.Length() << " Slippage: " << slipspeed;
    //if (slipspeed > 1e-6f)
 
@@ -417,19 +554,31 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
       slipDir.Normalize();
 
       numer = -slipDir.Dot(surfAcc);
+#ifdef FIX_PHYSICS
+      numerScale = dtime;
+      otherInvMassT = 0.f; // this ball's own (gravity) slip acceleration: the other ball holds it like a static surface
+#endif
    }
    else // nonzero slip speed - dynamic friction case
    {
       slipDir = slip / slipspeed;
 
       numer = -slipDir.Dot(surfVel);
+#ifdef FIX_PHYSICS
+      numerScale = 1.0f;
+#endif
    }
 
    const Vertex3Ds cp = CrossProduct(surfP, slipDir);
+#ifdef FIX_PHYSICS
+   const float denom = 1.0f/m_d.m_mass + slipDir.Dot(CrossProduct(cp / Inertia(), surfP)) + otherInvMassT;
+#else
    const float denom = 1.0f/m_d.m_mass + slipDir.Dot(CrossProduct(cp / Inertia(), surfP));
+#endif
 
 #ifdef FIX_PHYSICS
-   const float fricImpulse = clamp(dtime * numer / denom, -maxImpulse, maxImpulse);
+   // Dynamic case: the full slip-removing impulse (legacy: dtime times it, so sliding friction depended on the step length)
+   const float fricImpulse = clamp(numerScale * numer / denom, -maxImpulse, maxImpulse);
 
    if (!infNaN(fricImpulse))
       ApplySurfaceImpulse(fricImpulse * cp, fricImpulse * slipDir);

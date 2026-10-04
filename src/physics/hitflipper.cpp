@@ -145,6 +145,7 @@ void FlipperMoverObject::UpdateInertia()
 
    const float mass = (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass;
    m_inertia = mass * m_inertiaShape;
+   m_angularMomentum = m_angleSpeed * m_inertia; // keep the angular speed if the mass changes at runtime (e.g. OverridePhysics toggled)
 
    // The shape-accurate inertia differs from the rod approximation
    // (m_inertia_rod = mass * flipr^2 / 3) that pre-existing tables were
@@ -1171,7 +1172,14 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       const Vertex3Ds normalDeriv = CrossZ(m_flipperMover.m_angleSpeed, normal);
 
       // relative acceleration in the normal direction
+#ifdef FIX_PHYSICS
+      // The gap closes with the acceleration of the ball's center, not of its material contact point: the centripetal
+      // term of the latter (w x (w x rB), >= 0 along the normal for any spin) read as accelerating away, and a spinning
+      // ball lost its support (early out, or a weaker contact impulse). Friction below keeps the material point (slip)
+      const float normAcc = (pball->m_physics->GetGravity() - aF).Dot(normal) + 2.0f * normalDeriv.Dot(vrel);
+#else
       const float normAcc = arel.Dot(normal) + 2.0f * normalDeriv.Dot(vrel);
+#endif
 
       if (normAcc >= 0.f) // objects accelerating away from each other, nothing to do
          return;

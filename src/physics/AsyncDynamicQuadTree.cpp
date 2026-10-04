@@ -251,6 +251,14 @@ void AsyncDynamicQuadTree::UpdateAsync()
 {
    if (m_quadtreeUpdateReady.try_acquire()) // Update ready ?
    {
+      // The new quadtree owns the hit objects: detach them, so ~DynamicEditable neither deletes nor releases them
+      for (const auto& updEd : m_updatedEditables)
+      {
+         updEd->hitObjects.clear();
+         updEd->editable = nullptr;
+      }
+      m_updatedEditables.clear();
+
       m_quadTreeUpdateInProgress = false;
       // Swap quad trees (to limit memory reallocations)
       HitQuadtree* tmp = m_quadTree;
@@ -314,19 +322,17 @@ void AsyncDynamicQuadTree::UpdateQuadtreeThread()
       const auto start = std::chrono::steady_clock::now();
       std::chrono::duration<double> elapsed;*/
 
-      // Move pending hit objects into the static quadtree, reusing free slots if possible
+      // Move pending hit objects into the static quadtree, reusing free slots if possible.
+      // m_updatedEditables is read-only here: the main thread still hit tests against it and releases it in UpdateAsync
       vector<size_t>::iterator nullSlotsIt = m_nullSlots.begin(), nullSlotsEnd = m_nullSlots.end();
       for (const auto& updEd : m_updatedEditables)
       {
-         vector<HitObject*>::iterator hitObjectIt = updEd->hitObjects.begin();
-         for (; (hitObjectIt < updEd->hitObjects.end()) && (nullSlotsIt < nullSlotsEnd); ++hitObjectIt, ++nullSlotsIt)
+         vector<HitObject*>::const_iterator hitObjectIt = updEd->hitObjects.cbegin();
+         for (; (hitObjectIt < updEd->hitObjects.cend()) && (nullSlotsIt < nullSlotsEnd); ++hitObjectIt, ++nullSlotsIt)
             (*m_quadTreeHitobjects)[*nullSlotsIt] = *hitObjectIt;
-         if (hitObjectIt < updEd->hitObjects.end())
-            m_quadTreeHitobjects->insert(m_quadTreeHitobjects->end(), hitObjectIt, updEd->hitObjects.end());
-         updEd->hitObjects.clear();
-         updEd->editable = nullptr;
+         if (hitObjectIt < updEd->hitObjects.cend())
+            m_quadTreeHitobjects->insert(m_quadTreeHitobjects->end(), hitObjectIt, updEd->hitObjects.cend());
       }
-      m_updatedEditables.clear();
 
       // Remove any remaining null slot if any
       if (nullSlotsIt < nullSlotsEnd)

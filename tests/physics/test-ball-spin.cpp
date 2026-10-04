@@ -108,10 +108,17 @@ TEST_CASE("BallSpin: wall contacts keep slip-directed friction")
    // Ball resting against a vertical wall, spinning about +y: 50 VPU/T slip
    // along +z at the contact -> friction pushes the contact down (-z).
    HitBall ball = MakeBall(harness.GetEngine(), Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds(0.f, 500.f, 0.f));
+#ifdef FIX_PHYSICS
+   ball.ApplyFriction(Vertex3Ds(1.f, 0.f, 0.f), (float)PHYS_FACTOR, 0.3f, 100.f); // generous impulse budget (bound 30), no clamping
+   // FIX_PHYSICS requests the full slip-removing impulse: jt = -slipspeed / (1/m + r^2/I) = -50 / 3.5
+   CHECK(ball.m_d.m_vel.z == doctest::Approx(-14.286f).epsilon(0.01));
+   CHECK(ball.m_angularmomentum.y == doctest::Approx(500.f - 25.f * 14.286f).epsilon(0.01));
+#else
    ball.ApplyFriction(Vertex3Ds(1.f, 0.f, 0.f), (float)PHYS_FACTOR, 0.3f, 10.f); // generous impulse budget, no clamping
    // jt = dtime * (-slipspeed) / (1/m + r^2/I) = 0.1 * -50 / 3.5
    CHECK(ball.m_d.m_vel.z == doctest::Approx(-1.4286f).epsilon(0.01));
    CHECK(ball.m_angularmomentum.y == doctest::Approx(500.f - 25.f * 1.4286f).epsilon(0.01));
+#endif
 }
 
 // ---------------------------------------------------------------------------

@@ -474,7 +474,7 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
             for (unsigned int i = start; i != end; i += dt)
             {
                #ifdef DEBUGPHYSICS
-                  g_pplayer->m_physics->c_tested++; //!! +=4? or is this more fair?
+                  if (m_physics) m_physics->c_tested++; //!! +=4? or is this more fair?
                #endif
 
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
@@ -521,7 +521,16 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
                   const __m128 d = _mm_add_ps(ex, ey);
                #endif
                const __m128 cmp2 = _mm_cmple_ps(d, rsqr);
-               const int mask2 = _mm_movemask_ps(cmp2);
+               int mask2 = _mm_movemask_ps(cmp2);
+
+               //!! opt.?
+               // Groups of 4 are not aligned with the node's item range: mask the lanes outside [m_start, m_start+m_items),
+               // they belong to other nodes and would be tested twice (duplicated contacts)
+               const unsigned int itemsEnd = current->m_start + current->m_items;
+               if (i * 4 < current->m_start)
+                  mask2 &= 0xF << (current->m_start - i * 4);
+               if (i * 4 + 4 > itemsEnd)
+                  mask2 &= (1 << (itemsEnd - i * 4)) - 1;
                if (mask2 == 0) continue;
 
                // now there is at least one bbox collision
@@ -556,7 +565,7 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
          if (current->m_children != nullptr)
          {
             #ifdef DEBUGPHYSICS
-               g_pplayer->m_physics->c_traversed++;
+               if (m_physics) m_physics->c_traversed++;
             #endif
             const bool left = (pball->m_hitBBox.left <= current->m_vcenter.x);
             const bool right = (pball->m_hitBBox.right >= current->m_vcenter.x);
@@ -586,7 +595,7 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
    for (unsigned int i = m_start; i < m_start + m_items; i++)
    {
 #ifdef DEBUGPHYSICS
-      quadTree->m_physics->c_tested++;
+      if (quadTree->m_physics) quadTree->m_physics->c_tested++;
 #endif
       HitObject* pho = quadTree->m_vho[i];
       if ((pball != pho) // ball can not hit itself
@@ -600,7 +609,7 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
    if (m_children != nullptr)
    {
 #ifdef DEBUGPHYSICS
-      quadTree->m_physics->c_tested++;
+      if (quadTree->m_physics) quadTree->m_physics->c_tested++;
 #endif
       const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
@@ -624,7 +633,7 @@ void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBa
    for (unsigned int i = m_start; i < m_start + m_items; i++)
    {
 #ifdef DEBUGPHYSICS
-      quadTree->m_physics->c_tested++;
+      if (quadTree->m_physics) quadTree->m_physics->c_tested++;
 #endif
       HitObject* pho = quadTree->m_vho[i];
       if ((pho != nullptr) && (pball != pho) // ball can not hit itself
@@ -632,7 +641,7 @@ void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBa
          && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
          #ifdef DEBUGPHYSICS
-         quadTree->m_physics->c_deepTested++;
+         if (quadTree->m_physics) quadTree->m_physics->c_deepTested++;
 #endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
@@ -643,7 +652,7 @@ void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBa
    if (m_children != nullptr)
    {
 #ifdef DEBUGPHYSICS
-      quadTree->m_physics->c_tested++;
+      if (quadTree->m_physics) quadTree->m_physics->c_tested++;
 #endif
       const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
       const bool right = (pball->m_hitBBox.right >= m_vcenter.x);

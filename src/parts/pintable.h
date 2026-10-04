@@ -642,8 +642,8 @@ private:
 
 public:
 
-   float m_angletiltMax;
-   float m_angletiltMin;
+   float m_angletiltMax = 6.0f; // as in SetLoadDefaults (e.g. for the test progs)
+   float m_angletiltMin = 4.5f;
 
    int m_overridePhysics = 0;
    float m_fOverrideGravityConstant;
@@ -658,7 +658,7 @@ public:
 
    unsigned int m_PhysicsMaxLoops;
 
-   float m_Gravity;
+   float m_Gravity = 0.97f * GRAVITYCONST; // as in SetDefaultPhysics
    float m_friction;
    float m_elasticity;
    float m_elasticityFalloff;

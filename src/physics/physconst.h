@@ -64,6 +64,15 @@
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
 
+// Experimental, on top of FIX_PHYSICS (constants not calibrated yet!):
+// - drops the legacy embedding/spin workarounds (C_EMBEDDED/C_EMBEDSHOT, C_EMBEDSHOT_PLANE, C_DISP_GAIN, C_BALL_SPIN_HACK)
+// - replaces them: embedded balls in contact are pushed out by velocity (C_EMBEDVELLIMIT), overlapping balls are
+//   separated positionally (C_EMBEDDISPLIMIT), slow balls embedded deeper than PHYS_TOUCH become contacts
+//   (walls, Hit3DPolys, playfield), and contacts apply rolling resistance (C_ROLLING_RESISTANCE)
+// - contact friction (constants are initial guesses, to be calibrated with help of real tables):
+//   - spin friction about the contact normal (mu * C_CONTACT_PATCH_RADIUS): point contacts could not stop a ball spinning in place
+//   - ball/ball collisions apply Coulomb friction with C_BALL_BALL_FRICTION (as ball/ball contacts do, see FIX_PHYSICS)
+//   - spin friction between balls uses their relative spin
 //#define NEW_PHYSICS
 
 // Active behavioral fixes of the physics engine. Keep this list in
@@ -81,13 +90,45 @@
 // - The friction cone used -m(g.n) as its sole normal-force estimate on contacts (~0 on
 //   walls, dead on the top glass) while Collide3DWall budgeted the pre-restitution impulse
 //   (under-counting by 1+elasticity). Contacts now clamp the friction impulse by
-//   mu*m*(the normal Δv the contact applied this step), and collisions by the post-restitution
+//   mu*m*(the normal delta-v the contact applied this step), and collisions by the post-restitution
 //   impulse, matching HitFlipper's convention.
+// - The flipper moment of inertia uses the real flipper shape instead of a rod; coil torque is
+//   rescaled (m_backwards_compatibility) to keep the free swing, ball impacts do change.
+// - A slow ball embedded deeper than PHYS_TOUCH in the playfield was ignored (and could sink through), now it collides.
+// - Sliding contact friction requests the full slip-removing impulse (Coulomb bound clamped)
+//   instead of dtime times it, which made it depend on the step length.
+// - Ball/ball contacts (HitBall::Contact): the contact friction uses the motion relative to the other ball, which was
+//   treated as a static surface, and C_BALL_BALL_FRICTION (was 0.3).
+// - Ball/ball contacts are resolved before the other contacts, and static contacts also cancel the velocity change the
+//   contacts resolved before them in the same pass applied to the ball (all of it for ball/ball contacts, the friction
+//   part for static ones), on top of the hit test velocity they otherwise work from: the friction stopping the spin of a
+//   ball pressed against another ball or a wall (spin its playfield friction gives it every step) pushes it up, and the
+//   ball climbed off the playfield until it dropped back (jitter of balls resting in a row). The normal impulses of the
+//   other static contacts stay out (two wires of a wire ramp).
+// - A ball/ball contact cancels at most a contact-scale approach (C_CONTACTVEL plus a step of gravity): it cancelled all of
+//   it, so an impact a ball received in the same cycle (a ball hit into a resting pair) was absorbed instead of reaching
+//   the other ball (Newton's cradle).
+// - HitFlipper::Contact tests the gap acceleration with the ball's center acceleration instead of the one of its material
+//   contact point, whose centripetal term (>= 0 along the normal for any spin) made a spinning ball lose its support.
 #define FIX_PHYSICS
+
+#if defined(NEW_PHYSICS) && !defined(FIX_PHYSICS)
+ #error NEW_PHYSICS builds on FIX_PHYSICS
+#endif
+
+// contact dissipation (initial guesses, to be calibrated with help of real tables)
+#ifdef FIX_PHYSICS
+ #define C_BALL_BALL_FRICTION 0.1f   // Coulomb friction coefficient between two balls (steel on steel): contacts, with NEW_PHYSICS also collisions
+#endif
+#ifdef NEW_PHYSICS
+ #define C_CONTACT_PATCH_RADIUS 1.0f // ball contact patch radius (VPU): spin friction about the normal = mu * radius * normal force
+#endif
 
 // low velocity stabilization ... if embedding occurs add some velocity
 #ifdef NEW_PHYSICS
- #define C_EMBEDVELLIMIT 5.f // can be undefd
+ #define C_EMBEDVELLIMIT 5.f         // max push-out velocity for a ball embedded in a contact surface, can be undefd
+ #define C_EMBEDDISPLIMIT 5.0f       // max separation (per collision) of two embedded balls
+ #define C_ROLLING_RESISTANCE 0.002f // rolling resistance coefficient C_rr (torque = C_rr * radius * normal force), initial guess
 #endif
 
 // old workarounds, not needed anymore?!

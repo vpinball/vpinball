@@ -5,6 +5,13 @@
 #include "math/vector.h"
 #include "physics/physconst.h"
 
+// For defects FIX_PHYSICS fixes: TEST_CASE("..." * doctest::should_fail(!kFixPhysics))
+#ifdef FIX_PHYSICS
+inline constexpr bool kFixPhysics = true;
+#else
+inline constexpr bool kFixPhysics = false;
+#endif
+
 class PinTable;
 class PhysicsEngine;
 class HitBall;
