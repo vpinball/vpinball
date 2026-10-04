@@ -338,7 +338,7 @@ License information for Visual Pinball can be found [here](../LICENSE).
 
 ## Privacy Policy
 
-The Privacy Policy for the mobile apps can be found [here](<Privacy Policy.md>).
+The Privacy Policy for the mobile apps can be found [here](../PRIVACY.md).
 
 ## Credits
 
