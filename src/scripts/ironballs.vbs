@@ -52,7 +52,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case StartGameKey    .Switch(swStartButton) =True
 '			Case keySlamDoorHit  .Switch(swSlamTilt)    =True
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
 	End With

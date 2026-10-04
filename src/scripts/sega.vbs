@@ -101,7 +101,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swMemoryProtect) = Not .Switch(swMemoryProtect) Else .Switch(swMemoryProtect) = Not inverseKeyCoinDoor
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
 	End With

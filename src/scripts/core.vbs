@@ -2019,6 +2019,7 @@ Sub vpmOptionEvent(ByVal eventId)
 		' table's own options are initialized (so that they are listed last on
 		' the table options page)
 		If IsObject(vpmShowDips) Then vpmShowDips
+		vpmVolInit
 	End If
 	If eventId = 0 Or eventId = 1 Or eventId = 3 Then
 		For ii = 0 To vpmDipsCount-1
@@ -2042,7 +2043,54 @@ Sub vpmOptionEvent(ByVal eventId)
 		' ViewDipsExtra result (saving it into their own settings and applying
 		' it, like the VPW options UI template) stay in sync on every change
 		If IsObject(vpmShowDips) Then vpmShowDips
+		' Apply a change of the VPinMAME volume table option, if any
+		vpmVolApply
 	End If
+End Sub
+
+'--------------------
+'	VPinMAME Volume
+'--------------------
+' When the VPinMAME COM controller is used (not the PinMAME plugin, which mixes
+' its sound through VPX and is therefore covered by VPX volume settings), the
+' emulated game volume is exposed as a table option, integrated in the in-game
+' UI. VPinMAME only applies this per game setting (in dB, from -32 to 0) when
+' the emulation (re)starts, so the persisted option value is pushed on game
+' start (the VPX table settings win over the registry state) and a notification
+' is shown when it is changed.
+Dim vpmVolNotifId : vpmVolNotifId = 0 ' In-game notification reused when the volume changes
+Private vpmVolRegistered : vpmVolRegistered = False
+Private vpmVolApplied : vpmVolApplied = 0 ' Last option value pushed to VPinMAME
+Private Const vpmVolOption = "VPinMAME Volume"
+
+' Register the volume table option and apply its persisted value
+Private Sub vpmVolInit
+	If IsPluginPinMAME Or Not IsObject(Controller) Then Exit Sub
+	On Error Resume Next
+	Dim cur : cur = Controller.Games(Controller.GameName).Settings.Value("volume")
+	If Err Then Err.Clear : Exit Sub ' Controller does not support the per game volume setting
+	Dim v : v = ActiveTable.Option(vpmVolOption, -32, 0, 1, cur, 0)
+	If Err Then Err.Clear : Exit Sub
+	Controller.Games(Controller.GameName).Settings.Value("volume") = CLng(v)
+	If Err Then Err.Clear : Exit Sub
+	vpmVolRegistered = True
+	vpmVolApplied = CLng(v)
+	On Error Goto 0
+End Sub
+
+' Push the table option value to VPinMAME when it changed
+Private Sub vpmVolApply
+	If Not vpmVolRegistered Then Exit Sub
+	On Error Resume Next
+	Dim v : v = ActiveTable.Option(vpmVolOption, -32, 0, 1, vpmVolApplied, 0)
+	If Err Then Err.Clear : Exit Sub
+	If CLng(v) = vpmVolApplied Then Exit Sub
+	Controller.Games(Controller.GameName).Settings.Value("volume") = CLng(v)
+	If Err Then Err.Clear : Exit Sub
+	vpmVolApplied = CLng(v)
+	vpmVolNotifId = PushNotification("VPinMAME volume set to " & vpmVolApplied & " dB (applied on next emulation reset)", 8000, vpmVolNotifId)
+	Err.Clear
+	On Error Goto 0
 End Sub
 
 '--------------------
@@ -3134,19 +3182,30 @@ Sub NVOffset(version) ' version 2 for dB2S compatibility
 	End If
 End Sub
 
+' Legacy entry point for the keyVPMVolume key: the VPinMAME volume is now
+' adjusted through a table option, integrated in the in-game UI. Kept for
+' tables still calling this routine from their own (embedded) key handlers.
 Sub VPMVol
 	' PinMAME plugin streams its sound through VPX, using VPX mixing and therefore volume settings
 	if IsPluginPinMAME Then Exit Sub
-	Dim VolPM,VolPMNew
-	VolPM = Controller.Games(controller.GameName).Settings.Value("volume")
-	VolPMNew = InputBox ("Enter desired VPinMAME Volume Level (-32 to 0)","VPinMAME Volume",VolPM)
-	If VolPMNew = "" Then Exit Sub
-	If VolPMNew <= 0 and VolPMNew >= -32 Then
-		Controller.Games(controller.GameName).Settings.Value("volume")= round(VolPMNew)
-		msgbox "The Visual PinMAME Global Volume is now set to " & round(VolPMNew) & "db." & VbNewLine & VbNewLine & "Please reset Visual PinMAME (F3) to apply."
+	On Error Resume Next
+	If vpmVolRegistered Then
+		vpmVolNotifId = PushNotification("VPinMAME volume is adjusted from the table options page of the in-game UI", 8000, vpmVolNotifId)
+		Err.Clear
 	Else
-		msgbox "Entered value is out of range. Entry must be in the range of negative 32 to 0." & VbNewLine & VbNewLine & "Visual PinMAME Global Volume will remain set at " & VolPM & "."
+		' Fallback for VPX versions without table option support
+		Dim VolPM,VolPMNew
+		VolPM = Controller.Games(controller.GameName).Settings.Value("volume")
+		VolPMNew = InputBox ("Enter desired VPinMAME Volume Level (-32 to 0)","VPinMAME Volume",VolPM)
+		If VolPMNew = "" Then Exit Sub
+		If VolPMNew <= 0 and VolPMNew >= -32 Then
+			Controller.Games(controller.GameName).Settings.Value("volume")= round(VolPMNew)
+			msgbox "The Visual PinMAME Global Volume is now set to " & round(VolPMNew) & "db." & VbNewLine & VbNewLine & "Please reset Visual PinMAME (F3) to apply."
+		Else
+			msgbox "Entered value is out of range. Entry must be in the range of negative 32 to 0." & VbNewLine & VbNewLine & "Visual PinMAME Global Volume will remain set at " & VolPM & "."
+		End If
 	End If
+	On Error Goto 0
 End Sub
 
 ' Simple min/max functions

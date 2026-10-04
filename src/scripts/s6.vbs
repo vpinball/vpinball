@@ -105,7 +105,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
 			Case keyHiscoreReset .Switch(swHiScoreReset) = True
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
 	End With

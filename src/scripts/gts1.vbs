@@ -90,7 +90,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySelfTest     .Switch(swTest)        = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case keyVPMVolume    vpmVol
 			Case keyCPUDiag      .Switch(swSwitch25)    = True
 			Case Else            vpmKeyDown = False
 		End Select

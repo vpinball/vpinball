@@ -121,7 +121,6 @@ Function vpmKeyDown(ByVal keycode)
 			' The door switch reads closed when set, so the sense here is the opposite of WPC's: a "closed" door is Switch = True
 			Case keyCoinDoor	 swCopy = swCoinDoorClosed :  If toggleKeyCoinDoor Then .Switch(swCopy) = Not .Switch(swCopy) Else .Switch(swCopy) = inverseKeyCoinDoor
 			Case keyBangBack	 vpmNudge.DoMechTilt
-			Case keyVPMVolume	 vpmVol
 			Case Else			 vpmKeyDown = False
 		End Select
 	End With
