@@ -20,7 +20,6 @@ echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
-echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo "  LIBBACKTRACE_SHA: ${LIBBACKTRACE_SHA}"
 echo ""
 
@@ -401,48 +400,14 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --disable-static \
       --disable-programs \
       --disable-doc \
+      --disable-avdevice \
+      --disable-avfilter \
       --arch="x86_64" \
       --build-suffix=64
    make -j${NUM_PROCS}
    cd ..
 
    echo "$FFMPEG_EXPECTED_SHA" > cache.txt
-
-   cd ..
-fi
-
-#
-# build libzip
-#
-
-LIBZIP_EXPECTED_SHA="${LIBZIP_SHA}"
-LIBZIP_FOUND_SHA="$([ -f libzip/cache.txt ] && cat libzip/cache.txt || echo "")"
-
-if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
-   echo "Building libzip. Expected: ${LIBZIP_EXPECTED_SHA}, Found: ${LIBZIP_FOUND_SHA}"
-
-   rm -rf libzip
-   mkdir libzip
-   cd libzip
-
-   curl -sL https://github.com/nih-at/libzip/archive/${LIBZIP_SHA}.tar.gz -o libzip-${LIBZIP_SHA}.tar.gz
-   tar xzf libzip-${LIBZIP_SHA}.tar.gz
-   mv libzip-${LIBZIP_SHA} libzip
-   cd libzip
-   sed -i.bak 's/\(set_target_properties(zip PROPERTIES\)/\1 OUTPUT_NAME "zip64"/' lib/CMakeLists.txt
-   cmake \
-      -DBUILD_SHARED_LIBS=ON \
-      -DBUILD_TOOLS=OFF \
-      -DBUILD_REGRESS=OFF \
-      -DBUILD_OSSFUZZ=OFF \
-      -DBUILD_EXAMPLES=OFF \
-      -DBUILD_DOC=OFF \
-      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
-   cd ..
-
-   echo "$LIBZIP_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
@@ -557,7 +522,7 @@ cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwi
 cp -r libwinevbs/libwinevbs/wine/include/* ../../../third-party/include/libwinevbs/wine/include/
 cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevbs/atl/include/
 
-for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
+for LIB in avcodec avformat avutil swresample swscale; do
    DIR="lib${LIB}"
    cp ffmpeg/ffmpeg/${DIR}/${LIB}64.lib ../../../third-party/build-libs/windows-mingw-x64
    cp ffmpeg/ffmpeg/${DIR}/lib${LIB}64.dll.a ../../../third-party/build-libs/windows-mingw-x64
@@ -575,10 +540,6 @@ cp "${UCRT64_BIN}/libbz2-1.dll" ../../../third-party/runtime-libs/windows-mingw-
 cp "${UCRT64_BIN}/libgcc_s_seh-1.dll" ../../../third-party/runtime-libs/windows-mingw-x64
 cp "${UCRT64_BIN}/libstdc++-6.dll" ../../../third-party/runtime-libs/windows-mingw-x64
 
-cp libzip/libzip/build/lib/libzip64.dll ../../../third-party/runtime-libs/windows-mingw-x64
-cp libzip/libzip/build/lib/libzip64.dll.a ../../../third-party/build-libs/windows-mingw-x64
-cp libzip/libzip/build/zipconf.h ../../../third-party/include
-cp libzip/libzip/lib/zip.h ../../../third-party/include
 
 cp libbacktrace/libbacktrace/.libs/libbacktrace.a ../../../third-party/build-libs/windows-mingw-x64
 cp libbacktrace/libbacktrace/backtrace.h ../../../third-party/include

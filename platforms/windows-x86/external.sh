@@ -26,7 +26,6 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
-echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo ""
 
 mkdir -p "external/windows-x86/${BUILD_TYPE}"
@@ -373,6 +372,8 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
          --disable-static \
          --disable-programs \
          --disable-doc \
+         --disable-avdevice \
+         --disable-avfilter \
          --arch=\"x86\" \
          --extra-cflags=\"-m32\" \
          --extra-ldflags=\"-m32\" &&
@@ -381,45 +382,6 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
    cd ..
 
    echo "$FFMPEG_EXPECTED_SHA" > cache.txt
-
-   cd ..
-fi
-
-#
-# build libzip
-#
-
-LIBZIP_EXPECTED_SHA="${LIBZIP_SHA}"
-LIBZIP_FOUND_SHA="$([ -f libzip/cache.txt ] && cat libzip/cache.txt || echo "")"
-
-if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
-   echo "Building libzip. Expected: ${LIBZIP_EXPECTED_SHA}, Found: ${LIBZIP_FOUND_SHA}"
-
-   rm -rf libzip
-   mkdir libzip
-   cd libzip
-
-   curl -sL https://github.com/nih-at/libzip/archive/${LIBZIP_SHA}.tar.gz -o libzip-${LIBZIP_SHA}.tar.gz
-   tar xzf libzip-${LIBZIP_SHA}.tar.gz
-   mv libzip-${LIBZIP_SHA} libzip
-   cd libzip
-   CURRENT_DIR="$(pwd)"
-   "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
-      cd \"${CURRENT_DIR}\" &&
-      cmake \
-         -DBUILD_SHARED_LIBS=ON \
-         -DBUILD_TOOLS=OFF \
-         -DBUILD_REGRESS=OFF \
-         -DBUILD_OSSFUZZ=OFF \
-         -DBUILD_EXAMPLES=OFF \
-         -DBUILD_DOC=OFF \
-         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-         -B build &&
-      cmake --build build -- -j$(nproc)
-   "
-   cd ..
-
-   echo "$LIBZIP_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
@@ -500,7 +462,7 @@ cp libdof/libdof/third-party/runtime-libs/win/x86/hidapi.dll ../../../third-part
 cp libdof/libdof/third-party/build-libs/win/x86/libftdi1.lib ../../../third-party/build-libs/windows-x86
 cp libdof/libdof/third-party/runtime-libs/win/x86/libftdi1.dll ../../../third-party/runtime-libs/windows-x86
 
-for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
+for LIB in avcodec avformat avutil swresample swscale; do
    DIR="lib${LIB}"
    cp ffmpeg/ffmpeg/${DIR}/${LIB}.lib ../../../third-party/build-libs/windows-x86
    cp ffmpeg/ffmpeg/${DIR}/${LIB}-*.dll ../../../third-party/runtime-libs/windows-x86
@@ -515,7 +477,3 @@ cp "${MSYS2_PATH}/mingw32/bin/liblzma-5.dll" ../../../third-party/runtime-libs/w
 cp "${MSYS2_PATH}/mingw32/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/libgcc_s_dw2-1.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/libstdc++-6.dll" ../../../third-party/runtime-libs/windows-x86
-
-cp libzip/libzip/build/lib/libzip.dll ../../../third-party/runtime-libs/windows-x86
-cp libzip/libzip/build/zipconf.h ../../../third-party/include
-cp libzip/libzip/lib/zip.h ../../../third-party/include

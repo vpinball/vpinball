@@ -364,6 +364,8 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --disable-shared \
       --disable-programs \
       --disable-doc \
+      --disable-avdevice \
+      --disable-avfilter \
       --disable-audiotoolbox \
       --disable-securetransport \
       --arch=arm64 \
@@ -475,7 +477,7 @@ cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevb
 cp libdof/libdof/build/libdof.a ../../../third-party/build-libs/ios-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
 
-for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
+for LIB in libavcodec libavformat libavutil libswresample libswscale; do
    cp -a ffmpeg/ffmpeg/${LIB}/${LIB}.a ../../../third-party/build-libs/ios-arm64
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}

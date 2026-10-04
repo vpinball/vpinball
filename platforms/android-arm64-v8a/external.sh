@@ -420,6 +420,8 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --extra-ldflags="-Wl,-z,max-page-size=16384" \
       --disable-programs \
       --disable-doc \
+      --disable-avdevice \
+      --disable-avfilter \
       --enable-shared \
       --disable-static
    make -j${NUM_PROCS}
@@ -531,7 +533,7 @@ cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwi
 cp -r libwinevbs/libwinevbs/wine/include/* ../../../third-party/include/libwinevbs/wine/include/
 cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevbs/atl/include/
 
-for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
+for LIB in libavcodec libavformat libavutil libswresample libswscale; do
    cp ffmpeg/ffmpeg/${LIB}/${LIB}.so ../../../third-party/runtime-libs/android-arm64-v8a
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}

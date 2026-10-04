@@ -77,7 +77,7 @@
     <ClInclude Include="../../plugins/pinmame/SettingsDefaults.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="../../third-party/include/libpinmame.h">
+    <ClInclude Include="../../third-party/include/pinmame/libpinmame.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

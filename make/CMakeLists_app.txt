@@ -134,7 +134,6 @@ if(PLATFORM STREQUAL "windows")
          third-party/include/win32xx/include
          src
          plugins
-         shader
       )
       target_compile_definitions(vpinball PRIVATE
          ENABLE_DX9
@@ -377,7 +376,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
    if(POST_BUILD_COPY_EXT_LIBS)
       add_custom_command(TARGET vpinball POST_BUILD
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL364.dll" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_image64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_ttf64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/freeimage64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/pinmame64.dll" "$<TARGET_FILE_DIR:vpinball>"
@@ -504,6 +502,7 @@ elseif(PLATFORM STREQUAL "macos")
    endif()
 
    add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E remove_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
       COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
       COMMAND cp -a "${RUNTIME_LIBS_DIR}/*.dylib" "$<TARGET_FILE_DIR:vpinball>/../Frameworks"
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/apps/macos/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
@@ -638,8 +637,6 @@ elseif(PLATFORM STREQUAL "linux")
       add_custom_command(TARGET vpinball POST_BUILD
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3.so" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3.so.*" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_image.so" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_image.so.*" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_ttf.so" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_ttf.so.*" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libfreeimage.so" "$<TARGET_FILE_DIR:vpinball>"
