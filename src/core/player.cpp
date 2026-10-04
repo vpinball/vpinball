@@ -414,7 +414,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    {
       g_settingsService.GetAppSettings().SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s,
+                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and top right for the Menu"s,
          12000);
    }
 

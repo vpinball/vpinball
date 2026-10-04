@@ -147,6 +147,9 @@ void Decal::GetTextSize(int * const px, int * const py)
    clientDC.SelectObject(hFontOld);
 
    DeleteObject(hFont);
+#else
+   *py = 10;
+   *px = max(6, 6 * static_cast<int>(m_d.m_text.length()));
 #endif
 }
 
