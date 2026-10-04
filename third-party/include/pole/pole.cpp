@@ -1212,7 +1212,7 @@ void DirTree::save( unsigned char* buffer )
     if( !e ) continue;
     if( e->dir )
     {
-      e->start = 0xffffffff;
+      e->start = 0;
       e->size = 0;
     }
     
@@ -1687,7 +1687,7 @@ void StorageIO::init()
     header->num_bat = 1;
     header->num_sbat = 1;
     header->dirty = true;
-    bbat->set(0, AllocTable::Eof);
+    bbat->set(0, AllocTable::Bat);
     bbat->markAsDirty(0, bbat->blockSize);
     bbat->set(1, AllocTable::Eof);
     bbat->markAsDirty(1, bbat->blockSize);
@@ -2223,7 +2223,7 @@ uint64 StorageIO::ExtendFile( std::vector<uint64> *chain )
 void StorageIO::addbbatBlock()
 {
     uint64 newblockIdx = bbat->unused();
-    bbat->set(newblockIdx, AllocTable::MetaBat);
+    bbat->set(newblockIdx, AllocTable::Bat);
 
     if (header->num_bat < 109)
         header->bb_blocks[header->num_bat] = newblockIdx;
