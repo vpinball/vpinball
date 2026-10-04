@@ -325,3 +325,75 @@ TEST_CASE("Plugin string marshalling uses UTF-8")
    delete static_cast<int*>(obj);
    typeLib.UnregisterScriptClass(&testStringClass);
 }
+
+
+// Handlers for members returning without setting their return value, as happens when a
+// proxy (e.g. B2S's PinMAME controller mirror) forwards a call to a plugin that is not loaded
+namespace TestPluginNoReturn
+{
+
+static void get_Unset(void*, int, ScriptVariant*, ScriptVariant*) { }
+
+static ScriptArrayDef intArrayDef = { { "TestIntArray" }, { "int32" }, 1, { 0 } };
+
+static ScriptClassDef testNoRetClass = { { "TestNoRetClass" }, []() { return static_cast<void*>(new int(0)); }, 5,
+   {
+      { { "AddRef" }, { "uint32" }, 0, {}, TestPluginArrays::TestAddRef },
+      { { "Release" }, { "uint32" }, 0, {}, TestPluginArrays::TestRelease },
+      { { "Version" }, { "string" }, 0, {}, get_Unset },
+      { { "Count" }, { "int32" }, 0, {}, get_Unset },
+      { { "Data" }, { "TestIntArray" }, 0, {}, get_Unset },
+   } };
+
+} // namespace TestPluginNoReturn
+
+
+TEST_CASE("Plugin member that does not set its return value yields a safe default")
+{
+   using namespace TestPluginNoReturn;
+
+   DynamicTypeLibrary typeLib;
+   typeLib.RegisterScriptArray(&intArrayDef);
+   typeLib.RegisterScriptClass(&testNoRetClass);
+   typeLib.ResolveAllClasses();
+
+   void* obj = testNoRetClass.CreateObject();
+   DynamicDispatch* disp = new DynamicDispatch(&typeLib, &testNoRetClass, obj);
+
+   SUBCASE("string")
+   {
+      VARIANT result = InvokePropertyGet(disp, L"Version");
+      CHECK(V_VT(&result) == VT_BSTR);
+      if (V_VT(&result) == VT_BSTR)
+         CHECK(SysStringLen(V_BSTR(&result)) == 0);
+      VariantClear(&result);
+   }
+
+   SUBCASE("int")
+   {
+      VARIANT result = InvokePropertyGet(disp, L"Count");
+      CHECK(V_VT(&result) == VT_I4);
+      if (V_VT(&result) == VT_I4)
+         CHECK(V_I4(&result) == 0);
+      VariantClear(&result);
+   }
+
+   SUBCASE("array")
+   {
+      VARIANT result = InvokePropertyGet(disp, L"Data");
+      CHECK(V_VT(&result) == (VT_ARRAY | VT_VARIANT));
+      if (V_VT(&result) == (VT_ARRAY | VT_VARIANT))
+      {
+         LONG lBound, uBound;
+         SafeArrayGetLBound(V_ARRAY(&result), 1, &lBound);
+         SafeArrayGetUBound(V_ARRAY(&result), 1, &uBound);
+         CHECK(uBound - lBound + 1 == 0);
+      }
+      VariantClear(&result);
+   }
+
+   disp->Release();
+   delete static_cast<int*>(obj);
+   typeLib.UnregisterScriptClass(&testNoRetClass);
+   typeLib.UnregisterScriptArray(&intArrayDef);
+}
