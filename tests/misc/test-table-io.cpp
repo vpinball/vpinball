@@ -38,6 +38,45 @@ static std::filesystem::path GetTmpDir()
 
 static vector<uint8_t> ToBytes(const string &str) { return vector<uint8_t>(str.begin(), str.end()); }
 
+static uint32_t ReadU32LE(const vector<uint8_t> &data, size_t offset)
+{
+   return data[offset] | (data[offset + 1] << 8) | (data[offset + 2] << 16) | (static_cast<uint32_t>(data[offset + 3]) << 24);
+}
+
+static void CheckOLESectorMarkers(const std::filesystem::path &file)
+{
+   std::ifstream in(file, std::ios::binary);
+   const vector<uint8_t> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+   REQUIRE(data.size() >= 512);
+   const size_t sectorSize = static_cast<size_t>(1) << (data[0x1E] | (data[0x1F] << 8));
+   const auto sectorOffset = [&](uint32_t sector)
+   {
+      const size_t offset = (static_cast<size_t>(sector) + 1) * sectorSize;
+      REQUIRE(offset + sectorSize <= data.size());
+      return offset;
+   };
+   const uint32_t numFatSectors = ReadU32LE(data, 0x2C);
+   REQUIRE(numFatSectors <= 109);
+   vector<uint32_t> fatSectors;
+   for (uint32_t i = 0; i < numFatSectors; ++i)
+      fatSectors.push_back(ReadU32LE(data, 0x4C + i * 4));
+   const size_t entriesPerSector = sectorSize / 4;
+   const auto fatEntry = [&](uint32_t sector)
+   {
+      REQUIRE(sector / entriesPerSector < fatSectors.size());
+      return ReadU32LE(data, sectorOffset(fatSectors[sector / entriesPerSector]) + (sector % entriesPerSector) * 4);
+   };
+   for (const uint32_t fatSector : fatSectors)
+      CHECK(fatEntry(fatSector) == 0xFFFFFFFDu);
+   for (uint32_t dirSector = ReadU32LE(data, 0x30); dirSector < 0xFFFFFFFAu; dirSector = fatEntry(dirSector))
+   {
+      const size_t offset = sectorOffset(dirSector);
+      for (size_t entry = offset; entry < offset + sectorSize; entry += 128)
+         if (data[entry + 0x42] == 1)
+            CHECK(ReadU32LE(data, entry + 0x74) == 0u);
+   }
+}
+
 // Reads an entire POLE stream, checks the stream exists and could be fully read
 static vector<uint8_t> ReadPoleStream(POLE::Storage &storage, const string &name)
 {
@@ -299,6 +338,38 @@ TEST_CASE("POLE structured storage")
          for (int i = 0; i < count; i += 37)
             CHECK(ReadPoleStream(storage, std::format("Stg/s{:04}", i)) == ToBytes(std::format("stream {}", i)));
          storage.close();
+      }
+   }
+
+   SUBCASE("sector markers follow the OLE format")
+   {
+      for (const bool largeSectors : { false, true })
+      {
+         const std::filesystem::path file = GetTmpDir() / (largeSectors ? "pole-markers-4k.vpx" : "pole-markers-512.vpx");
+         std::filesystem::remove(file, ec);
+
+         vector<uint8_t> big(5 * 1024 * 1024);
+         for (size_t i = 0; i < big.size(); ++i)
+            big[i] = static_cast<uint8_t>(i * 31 + 17);
+         {
+            POLE::Storage storage(file.string().c_str());
+            REQUIRE(storage.open(true, true, largeSectors));
+            POLE::Stream bigStream(&storage, "GameStg/GameData", true);
+            CHECK(bigStream.write(big.data(), big.size()) == big.size());
+            POLE::Stream smallStream(&storage, "TableInfo/TableName", true);
+            CHECK(smallStream.write(reinterpret_cast<unsigned char *>(const_cast<char *>("Table")), 5) == 5);
+            smallStream.flush();
+            storage.close();
+         }
+
+         CheckOLESectorMarkers(file);
+         {
+            POLE::Storage storage(file.string().c_str());
+            REQUIRE(storage.open());
+            CHECK(ReadPoleStream(storage, "GameStg/GameData") == big);
+            CHECK(ReadPoleStream(storage, "TableInfo/TableName") == ToBytes("Table"s));
+            storage.close();
+         }
       }
    }
 }
