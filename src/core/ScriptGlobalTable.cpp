@@ -562,7 +562,6 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    else
    {
       SetVarBstr(Value, SysAllocString(L""));
-#ifndef __STANDALONE__
       // VPX used to save table persisted values in a OLE container. When the value is missing, try to locate & load from a legacy file.
       {
          const std::filesystem::path path = g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, false) / "VPReg.stg"sv;
@@ -607,7 +606,6 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 
          SetVarBstr(Value, wzT);
       }
-#endif
    }
 
    PLOGD << "TableName=" << szTableName << ", ValueName=" << szValueName << ", Value=" << MakeString(V_BSTR(Value));

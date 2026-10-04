@@ -436,7 +436,7 @@ STDMETHODIMP ScriptInterpreter::GetApplication(IDebugApplication **ppda)
    else
       return E_NOTIMPL;
 #else
-   return S_OK;
+   return E_NOTIMPL;
 #endif
 }
 

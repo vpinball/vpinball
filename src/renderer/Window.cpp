@@ -496,9 +496,7 @@ void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
    constexpr bool isSingleView = true;
 #endif
    std::unique_ptr<Window> prevWindow;
-   if (mode == OM_WINDOW && isSingleView)
-      m_mode = OM_EMBEDDED;
-   m_mode = mode;
+   m_mode = (mode == OM_WINDOW && isSingleView) ? OM_EMBEDDED : mode;
    switch (m_mode)
    {
    case OM_DISABLED:
