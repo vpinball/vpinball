@@ -26,7 +26,9 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  LIBMYSOFA_SHA: ${LIBMYSOFA_SHA}"
 echo "  LIBSPATIALAUDIO_SHA: ${LIBSPATIALAUDIO_SHA}"
+echo "  ZLIB_SHA: ${ZLIB_SHA}"
 echo ""
 
 mkdir -p "external/windows-x86/${BUILD_TYPE}"
@@ -389,10 +391,90 @@ fi
 
 
 #
+# build zlib (static library needed by libmysofa, static runtime to match the app)
+#
+
+ZLIB_EXPECTED_SHA="${ZLIB_SHA}"
+ZLIB_FOUND_SHA="$([ -f zlib/cache.txt ] && cat zlib/cache.txt || echo "")"
+
+if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
+   echo "Building zlib. Expected: ${ZLIB_EXPECTED_SHA}, Found: ${ZLIB_FOUND_SHA}"
+
+   rm -rf zlib
+   mkdir zlib
+   cd zlib
+
+   curl -sL https://github.com/madler/zlib/archive/${ZLIB_SHA}.tar.gz -o zlib-${ZLIB_SHA}.tar.gz
+   tar xzf zlib-${ZLIB_SHA}.tar.gz
+   mv zlib-${ZLIB_SHA} zlib
+   cd zlib
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -A Win32 \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DZLIB_BUILD_EXAMPLES=OFF \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cmake --install build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$ZLIB_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libmysofa (static library needed by libspatialaudio for SOFA HRTF support)
+#
+
+LIBMYSOFA_EXPECTED_SHA="${LIBMYSOFA_SHA}-${ZLIB_SHA}"
+LIBMYSOFA_FOUND_SHA="$([ -f libmysofa/cache.txt ] && cat libmysofa/cache.txt || echo "")"
+
+if [ "${LIBMYSOFA_EXPECTED_SHA}" != "${LIBMYSOFA_FOUND_SHA}" ]; then
+   echo "Building libmysofa. Expected: ${LIBMYSOFA_EXPECTED_SHA}, Found: ${LIBMYSOFA_FOUND_SHA}"
+
+   rm -rf libmysofa
+   mkdir libmysofa
+   cd libmysofa
+
+   curl -sL https://github.com/hoene/libmysofa/archive/${LIBMYSOFA_SHA}.tar.gz -o libmysofa-${LIBMYSOFA_SHA}.tar.gz
+   # MSYS tar cannot create the archive's .sofa symlinks; skip them and provide
+   # share/default.sofa (a symlink in the archive) as a real file for install
+   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz --exclude='*.sofa'
+   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz libmysofa-${LIBMYSOFA_SHA}/share/MIT_KEMAR_normal_pinna.sofa
+   mv libmysofa-${LIBMYSOFA_SHA} libmysofa
+   cp libmysofa/share/MIT_KEMAR_normal_pinna.sofa libmysofa/share/default.sofa
+   cd libmysofa
+   # Patch: replace the MSVC-only nuget zlib fetch (hardcoded path, unlinked)
+   # by a standard FindZLIB using the zlib built above
+   sed -i.bak '/find_program(NUGET nuget)/,/zlib-1.3.1\/include\/)/c\  include(FindZLIB)\n  include_directories(${ZLIB_INCLUDE_DIRS})' src/CMakeLists.txt
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -A Win32 \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_STATIC_LIBS=ON \
+      -DBUILD_TESTS=OFF \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -DZLIB_INCLUDE_DIR="$(cygpath -m "$PWD/../../zlib/zlib/install/include")" \
+      -DZLIB_LIBRARY="$(cygpath -m "$(/usr/bin/find ../../zlib/zlib/install/lib -name 'zlibstatic*.lib' | head -n 1)")" \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cmake --install build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBMYSOFA_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build libspatialaudio (static library)
 #
 
-LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}"
+LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}-${LIBMYSOFA_SHA}"
 LIBSPATIALAUDIO_FOUND_SHA="$([ -f libspatialaudio/cache.txt ] && cat libspatialaudio/cache.txt || echo "")"
 
 if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
@@ -414,6 +496,8 @@ if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
       -DBUILD_TESTING=OFF \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_INSTALL_PREFIX=install \
+      -DMYSOFA_INCLUDE_DIRS="$(cygpath -m "$PWD/../libmysofa/libmysofa/install/include")" \
+      -DMYSOFA_LIBRARIES="$(cygpath -m "$PWD/../libmysofa/libmysofa/install/lib/mysofa.lib")" \
       -B build
    cmake --build build --config ${BUILD_TYPE}
    cmake --install build --config ${BUILD_TYPE}
@@ -514,6 +598,12 @@ cp "${MSYS2_PATH}/mingw32/bin/liblzma-5.dll" ../../../third-party/runtime-libs/w
 cp "${MSYS2_PATH}/mingw32/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/libgcc_s_dw2-1.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/libstdc++-6.dll" ../../../third-party/runtime-libs/windows-x86
+
+cp zlib/zlib/install/lib/zlibstatic*.lib ../../../third-party/build-libs/windows-x86/zlibstatic.lib
+
+cp libmysofa/libmysofa/install/lib/mysofa.lib ../../../third-party/build-libs/windows-x86
+cp libmysofa/libmysofa/install/include/mysofa.h ../../../third-party/include/
+cp libmysofa/libmysofa/install/include/mysofa_export.h ../../../third-party/include/
 
 cp libspatialaudio/libspatialaudio/build/${BUILD_TYPE}/spatialaudio.lib ../../../third-party/build-libs/windows-x86
 cp -r libspatialaudio/libspatialaudio/install/include/spatialaudio ../../../third-party/include/

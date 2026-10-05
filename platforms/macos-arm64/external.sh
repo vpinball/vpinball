@@ -17,7 +17,9 @@ echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  LIBMYSOFA_SHA: ${LIBMYSOFA_SHA}"
 echo "  LIBSPATIALAUDIO_SHA: ${LIBSPATIALAUDIO_SHA}"
+echo "  ZLIB_SHA: ${ZLIB_SHA}"
 echo ""
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
@@ -372,10 +374,87 @@ fi
 
 
 #
+# build zlib (static library needed by libmysofa)
+#
+
+ZLIB_EXPECTED_SHA="${ZLIB_SHA}"
+ZLIB_FOUND_SHA="$([ -f zlib/cache.txt ] && cat zlib/cache.txt || echo "")"
+
+if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
+   echo "Building zlib. Expected: ${ZLIB_EXPECTED_SHA}, Found: ${ZLIB_FOUND_SHA}"
+
+   rm -rf zlib
+   mkdir zlib
+   cd zlib
+
+   curl -sL https://github.com/madler/zlib/archive/${ZLIB_SHA}.tar.gz -o zlib-${ZLIB_SHA}.tar.gz
+   tar xzf zlib-${ZLIB_SHA}.tar.gz
+   mv zlib-${ZLIB_SHA} zlib
+   cd zlib
+   cmake \
+      -DCMAKE_OSX_ARCHITECTURES=arm64 \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DZLIB_BUILD_EXAMPLES=OFF \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cmake --install build
+   cd ..
+
+   echo "$ZLIB_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libmysofa (static library needed by libspatialaudio for SOFA HRTF support)
+#
+
+LIBMYSOFA_EXPECTED_SHA="${LIBMYSOFA_SHA}-${ZLIB_SHA}"
+LIBMYSOFA_FOUND_SHA="$([ -f libmysofa/cache.txt ] && cat libmysofa/cache.txt || echo "")"
+
+if [ "${LIBMYSOFA_EXPECTED_SHA}" != "${LIBMYSOFA_FOUND_SHA}" ]; then
+   echo "Building libmysofa. Expected: ${LIBMYSOFA_EXPECTED_SHA}, Found: ${LIBMYSOFA_FOUND_SHA}"
+
+   rm -rf libmysofa
+   mkdir libmysofa
+   cd libmysofa
+
+   curl -sL https://github.com/hoene/libmysofa/archive/${LIBMYSOFA_SHA}.tar.gz -o libmysofa-${LIBMYSOFA_SHA}.tar.gz
+   # provide share/default.sofa (a symlink in the archive) as a real file
+   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz --exclude='*.sofa'
+   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz libmysofa-${LIBMYSOFA_SHA}/share/MIT_KEMAR_normal_pinna.sofa
+   mv libmysofa-${LIBMYSOFA_SHA} libmysofa
+   cp libmysofa/share/MIT_KEMAR_normal_pinna.sofa libmysofa/share/default.sofa
+   cd libmysofa
+   ZLIB_LIB="$(find ../../zlib/zlib/install/lib -type f \( -name 'libz.a' -o -name 'libzlibstatic.a' \) | head -n1)"
+   cmake \
+      -DCMAKE_OSX_ARCHITECTURES=arm64 \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_STATIC_LIBS=ON \
+      -DBUILD_TESTS=OFF \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -DZLIB_INCLUDE_DIR="$(cd ../../zlib/zlib/install/include && pwd)" \
+      -DZLIB_LIBRARY="$(cd "$(dirname "${ZLIB_LIB}")" && pwd)/$(basename "${ZLIB_LIB}")" \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cmake --install build
+   cd ..
+
+   echo "$LIBMYSOFA_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build libspatialaudio (static library)
 #
 
-LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}"
+LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}-${LIBMYSOFA_SHA}"
 LIBSPATIALAUDIO_FOUND_SHA="$([ -f libspatialaudio/cache.txt ] && cat libspatialaudio/cache.txt || echo "")"
 
 if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
@@ -396,6 +475,8 @@ if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -DCMAKE_INSTALL_PREFIX=install \
+      -DMYSOFA_INCLUDE_DIRS="$(cd ../libmysofa/libmysofa/install/include && pwd)" \
+      -DMYSOFA_LIBRARIES="$(cd ../libmysofa/libmysofa/install/lib && pwd)/libmysofa.a" \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    cmake --install build
@@ -468,6 +549,12 @@ for LIB in libavcodec libavformat libavutil libswresample libswscale; do
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}
 done
+
+cp "$(find zlib/zlib/install/lib -type f \( -name 'libz.a' -o -name 'libzlibstatic.a' \) | head -n1)" ../../../third-party/build-libs/macos-arm64/libz.a
+
+cp libmysofa/libmysofa/install/lib/libmysofa.a ../../../third-party/build-libs/macos-arm64
+cp libmysofa/libmysofa/install/include/mysofa.h ../../../third-party/include/
+cp libmysofa/libmysofa/install/include/mysofa_export.h ../../../third-party/include/
 
 cp libspatialaudio/libspatialaudio/build/libspatialaudio.a ../../../third-party/build-libs/macos-arm64
 cp -r libspatialaudio/libspatialaudio/install/include/spatialaudio ../../../third-party/include/

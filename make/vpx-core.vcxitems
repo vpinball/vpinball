@@ -36,8 +36,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <!-- Spatial audio support (libspatialaudio, built by platforms/windows-*/external.sh) -->
-      <AdditionalDependencies>spatialaudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- Spatial audio support (libspatialaudio + libmysofa/zlib for SOFA HRTFs, built by platforms/windows-*/external.sh) -->
+      <AdditionalDependencies>spatialaudio.lib;mysofa.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
