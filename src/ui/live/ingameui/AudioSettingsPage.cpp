@@ -15,6 +15,14 @@ AudioSettingsPage::AudioSettingsPage()
 
 void AudioSettingsPage::BuildPage()
 {
+   // Reapply the spatial audio setup after an audio player recreation (device/mode change)
+   const auto setupAudioListener = [this]()
+   {
+      m_player->m_audioPlayer->SetTableDimensions(m_player->m_ptable->m_right - m_player->m_ptable->m_left, m_player->m_ptable->m_bottom - m_player->m_ptable->m_top);
+      if (m_player->IsVR())
+         m_player->m_audioPlayer->SetBinaural(true);
+   };
+
    m_devices.clear();
    for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
       m_devices.push_back(device.name);
@@ -88,47 +96,68 @@ void AudioSettingsPage::BuildPage()
                  auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDeviceBG());
                  return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
               }, // Stored
-              [this](int, int v)
+              [this, setupAudioListener](int, int v)
               {
                  m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
                     m_devices[v], //
                     m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
-                    static_cast<VPX::SoundConfigTypes>(g_settingsService.GetActiveSettings().GetPlayer_Sound3D()));
+                    static_cast<VPX::SoundConfigTypes>(g_settingsService.GetActiveSettings().GetPlayer_Sound3D()), //
+                    g_settingsService.GetActiveSettings().GetPlayer_SpatialAudio());
+                 setupAudioListener();
               }, //
               [](Settings& settings) { settings.ResetPlayer_SoundDeviceBG(); }, //
               [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDeviceBG(m_devices[v], isTableOverride); }))
       .m_excludeFromDefault = true;
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Playfield Sound Device"s, "Select playfield sound device"s, false, 0, 0, m_devices), //
-      [this]()
-      {
-         auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetPlayfieldDeviceName());
-         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
-      }, // Live
-      [this](const Settings& settings)
-      {
-         auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDevice());
-         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
-      }, // Stored
-      [this](int, int v)
+              VPX::Properties::EnumPropertyDef(""s, ""s, "Playfield Sound Device"s, "Select playfield sound device"s, false, 0, 0, m_devices), //
+              [this]()
+              {
+                 auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetPlayfieldDeviceName());
+                 return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+              }, // Live
+              [this](const Settings& settings)
+              {
+                 auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDevice());
+                 return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+              }, // Stored
+              [this, setupAudioListener](int, int v)
+              {
+                 m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
+                    m_player->m_audioPlayer->GetBackglassDeviceName(), //
+                    m_devices[v], //
+                    static_cast<VPX::SoundConfigTypes>(g_settingsService.GetActiveSettings().GetPlayer_Sound3D()), //
+                    g_settingsService.GetActiveSettings().GetPlayer_SpatialAudio());
+                 setupAudioListener();
+              }, //
+              [](Settings& settings) { settings.ResetPlayer_SoundDevice(); }, //
+              [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDevice(m_devices[v], isTableOverride); }))
+      .m_excludeFromDefault = true;
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_SpatialAudio, //
+      [this]() { return m_player->m_audioPlayer->IsSpatialAudioEnabled(); }, //
+      [this, setupAudioListener](bool v)
       {
          m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
-            m_player->m_audioPlayer->GetBackglassDeviceName(), //
-            m_devices[v], //
-            static_cast<VPX::SoundConfigTypes>(g_settingsService.GetActiveSettings().GetPlayer_Sound3D()));
-      }, //
-      [](Settings& settings) { settings.ResetPlayer_SoundDevice(); }, //
-      [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDevice(m_devices[v], isTableOverride); })).m_excludeFromDefault = true;
+            g_settingsService.GetActiveSettings().GetPlayer_SoundDeviceBG(), //
+            g_settingsService.GetActiveSettings().GetPlayer_SoundDevice(), //
+            static_cast<VPX::SoundConfigTypes>(g_settingsService.GetActiveSettings().GetPlayer_Sound3D()), //
+            v);
+         setupAudioListener();
+      }));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Sound3D, //
       [this]() { return m_player->m_audioPlayer->GetSoundMode3D(); }, //
-      [this](int, int v) {
+      [this, setupAudioListener](int, int v)
+      {
          m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
             g_settingsService.GetActiveSettings().GetPlayer_SoundDeviceBG(), //
             g_settingsService.GetActiveSettings().GetPlayer_SoundDevice(), //
-            static_cast<VPX::SoundConfigTypes>(v));
+            static_cast<VPX::SoundConfigTypes>(v), //
+            g_settingsService.GetActiveSettings().GetPlayer_SpatialAudio());
+         setupAudioListener();
       }));
 }
 }

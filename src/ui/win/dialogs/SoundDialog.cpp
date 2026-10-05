@@ -65,91 +65,92 @@ static int DPIValue(int value)
 
 BOOL SoundDialog::OnInitDialog()
 {
-   m_audioPlayer = std::make_unique<VPX::AudioPlayer>(
-      g_settingsService.GetAppSettings().GetPlayer_SoundDeviceBG(), g_settingsService.GetAppSettings().GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(g_settingsService.GetAppSettings().GetPlayer_Sound3D()));
+   m_audioPlayer = std::make_unique<VPX::AudioPlayer>(g_settingsService.GetAppSettings().GetPlayer_SoundDeviceBG(), g_settingsService.GetAppSettings().GetPlayer_SoundDevice(),
+      static_cast<VPX::SoundConfigTypes>(g_settingsService.GetAppSettings().GetPlayer_Sound3D()), g_settingsService.GetAppSettings().GetPlayer_SpatialAudio());
 
-    const HWND toolTipHwnd = CreateWindowEx(
-      0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_app->GetInstanceHandle(), nullptr);
-    hSoundList = GetDlgItem( IDC_SOUNDLIST ).GetHwnd();
-    AddToolTip("Import a new sound from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
-    AddToolTip("ReImport selected sound(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
-    AddToolTip("ReImport selected sound (using a different file path).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORTFROM).GetHwnd());
-    AddToolTip("Delete the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_DELETE_SOUND).GetHwnd());
-    AddToolTip("Rename the selected sound.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_RENAME).GetHwnd());
-    AddToolTip("Play the selected sound to preview it.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_PLAY).GetHwnd());
-    AddToolTip("Stop playing the selected sound.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_STOP).GetHwnd());
-    AddToolTip("Export the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDEXPORT).GetHwnd());
-    AddToolTip("Toggle the sound to play through Table vs Backglass speakers for the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDTOBG).GetHwnd());
-    AddToolTip("Set the volume, left/right (pan) and front/back (fade) sound position for the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDPOSITION).GetHwnd());
-    AddToolTip("The 'Name' value from the list will be used when exporting instead of the file name from the 'Import Path'.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd());
-    AddToolTip("Click 'OK' to close this window.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_OK).GetHwnd());
-    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 514, 231));
-    m_resizer.AddChild(hSoundList, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_DELETE_SOUND).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_PLAY).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STOP).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_SNDEXPORT).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_SNDTOBG).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_SNDPOSITION).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC).GetHwnd(), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), CResizer::topright, 0);
+   const HWND toolTipHwnd = CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr,
+      g_app->GetInstanceHandle(), nullptr);
+   hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   AddToolTip("Import a new sound from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
+   AddToolTip("ReImport selected sound(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
+   AddToolTip("ReImport selected sound (using a different file path).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORTFROM).GetHwnd());
+   AddToolTip("Delete the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_DELETE_SOUND).GetHwnd());
+   AddToolTip("Rename the selected sound.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_RENAME).GetHwnd());
+   AddToolTip("Play the selected sound to preview it.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_PLAY).GetHwnd());
+   AddToolTip("Stop playing the selected sound.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_STOP).GetHwnd());
+   AddToolTip("Export the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDEXPORT).GetHwnd());
+   AddToolTip("Toggle the sound to play through Table vs Backglass speakers for the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDTOBG).GetHwnd());
+   AddToolTip("Set the volume, left/right (pan) and front/back (fade) sound position for the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDPOSITION).GetHwnd());
+   AddToolTip("The 'Name' value from the list will be used when exporting instead of the file name from the 'Import Path'.", GetHwnd(), toolTipHwnd,
+      GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd());
+   AddToolTip("Click 'OK' to close this window.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_OK).GetHwnd());
+   m_resizer.Initialize(GetHwnd(), CRect(0, 0, 514, 231));
+   m_resizer.AddChild(hSoundList, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+   m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_DELETE_SOUND).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_PLAY).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STOP).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_SNDEXPORT).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_SNDTOBG).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_SNDPOSITION).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), CResizer::topright, 0);
 
-    LoadPosition();
+   LoadPosition();
 
-    m_columnSortOrder = 1;
+   m_columnSortOrder = 1;
 
-    ListView_SetExtendedListViewStyle( hSoundList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
-    LVCOLUMN lvcol = {};
-    lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT; 
-    const LocalString ls( IDS_NAME );
-    lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
-    lvcol.cx = DPIValue(150);
-    ListView_InsertColumn(hSoundList, 0, &lvcol);
+   ListView_SetExtendedListViewStyle(hSoundList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+   LVCOLUMN lvcol = { };
+   lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+   const LocalString ls(IDS_NAME);
+   lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
+   lvcol.cx = DPIValue(150);
+   ListView_InsertColumn(hSoundList, 0, &lvcol);
 
-    const LocalString ls2( IDS_IMPORTPATH );
-    lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Import Path";
-    lvcol.cx = DPIValue(200);
-    ListView_InsertColumn(hSoundList, 1, &lvcol);
+   const LocalString ls2(IDS_IMPORTPATH);
+   lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Import Path";
+   lvcol.cx = DPIValue(200);
+   ListView_InsertColumn(hSoundList, 1, &lvcol);
 
-    lvcol.pszText = (LPSTR)"Output"; //!! use LocalString
-    lvcol.cx = DPIValue(80);
-    ListView_InsertColumn(hSoundList, 2, &lvcol);
+   lvcol.pszText = (LPSTR) "Output"; //!! use LocalString
+   lvcol.cx = DPIValue(80);
+   ListView_InsertColumn(hSoundList, 2, &lvcol);
 
-    lvcol.pszText = (LPSTR)"Pan"; //!! use LocalString
-    lvcol.cx = DPIValue(40);
-    ListView_InsertColumn(hSoundList, 3, &lvcol);
+   lvcol.pszText = (LPSTR) "Pan"; //!! use LocalString
+   lvcol.cx = DPIValue(40);
+   ListView_InsertColumn(hSoundList, 3, &lvcol);
 
-    lvcol.pszText = (LPSTR)"Fade"; //!! use LocalString
-    lvcol.cx = DPIValue(40);
-    ListView_InsertColumn(hSoundList, 4, &lvcol);
+   lvcol.pszText = (LPSTR) "Fade"; //!! use LocalString
+   lvcol.cx = DPIValue(40);
+   ListView_InsertColumn(hSoundList, 4, &lvcol);
 
-    lvcol.pszText = (LPSTR)"Vol"; //!! use LocalString
-    lvcol.cx = DPIValue(40);
-    ListView_InsertColumn(hSoundList, 5, &lvcol);
+   lvcol.pszText = (LPSTR) "Vol"; //!! use LocalString
+   lvcol.cx = DPIValue(40);
+   ListView_InsertColumn(hSoundList, 5, &lvcol);
 
-    lvcol.pszText = (LPSTR) "Freq"; //!! use LocalString
-    lvcol.cx = DPIValue(50);
-    ListView_InsertColumn(hSoundList, 6, &lvcol);
+   lvcol.pszText = (LPSTR) "Freq"; //!! use LocalString
+   lvcol.cx = DPIValue(50);
+   ListView_InsertColumn(hSoundList, 6, &lvcol);
 
-    lvcol.pszText = (LPSTR) "Chan."; //!! use LocalString
-    lvcol.cx = DPIValue(30);
-    ListView_InsertColumn(hSoundList, 7, &lvcol);
+   lvcol.pszText = (LPSTR) "Chan."; //!! use LocalString
+   lvcol.cx = DPIValue(30);
+   ListView_InsertColumn(hSoundList, 7, &lvcol);
 
-    lvcol.pszText = (LPSTR) "Length"; //!! use LocalString
-    lvcol.cx = DPIValue(70);
-    ListView_InsertColumn(hSoundList, 8, &lvcol);
+   lvcol.pszText = (LPSTR) "Length"; //!! use LocalString
+   lvcol.cx = DPIValue(70);
+   ListView_InsertColumn(hSoundList, 8, &lvcol);
 
-    ListSounds();
+   ListSounds();
 
-    ListView_SetItemState(hSoundList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-    GotoDlgCtrl(hSoundList);
+   ListView_SetItemState(hSoundList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+   GotoDlgCtrl(hSoundList);
 
-    return FALSE;
+   return FALSE;
 }
 
 void SoundDialog::ListSounds()

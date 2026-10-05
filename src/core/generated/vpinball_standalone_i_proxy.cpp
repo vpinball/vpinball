@@ -2193,244 +2193,47 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 	static struct {
 		const WCHAR *name;
 		DISPID dispId;
-	} namesIdsList[] = {
-			{ NULL },
-			{ L"ActiveBall", 19 },
-			{ L"ActiveTable", 48 },
-			{ L"AddCreditKey", 20 },
-			{ L"AddCreditKey2", 67 },
-			{ L"AutoSize", 2135 },
-			{ L"AutoWidth", 2136 },
-			{ L"BeginModal", 25 },
-			{ L"CenterTiltKey", 8 },
-			{ L"CloseSerial", 251 },
-			{ L"CreatePluginObject", 265 },
-			{ L"DecalImage", 2045 },
-			{ L"DecalText", 2044 },
-			{ L"Default", 2025 },
-			{ L"DisableStaticPrerendering", 228 },
-			{ L"DMDColoredPixels", 47 },
-			{ L"DMDHeight", 45 },
-			{ L"DMDPixels", 46 },
-			{ L"DMDWidth", 44 },
-			{ L"DropTargetBeveled", 2028 },
-			{ L"DropTargetFlatSimple", 2034 },
-			{ L"DropTargetSimple", 2029 },
-			{ L"EndModal", 26 },
-			{ L"EndMusic", 11 },
-			{ L"ExitGame", 34 },
-			{ L"FireKnocker", 33 },
-			{ L"FlushSerial", 252 },
-			{ L"FrameIndex", 232 },
-			{ L"GameTime", 22 },
-			{ L"GateLongPlate", 2040 },
-			{ L"GatePlate", 2039 },
-			{ L"GateWireRectangle", 2038 },
-			{ L"GateWireW", 2037 },
-			{ L"GetBalls", 41 },
-			{ L"GetCustomParam", 823 },
-			{ L"GetElementByName", 43 },
-			{ L"GetElements", 42 },
-			{ L"GetMaterial", 231 },
-			{ L"GetMaterialPhysics", 248 },
-			{ L"GetPlayerHWnd", 14 },
-			{ L"GetSerialDevices", 249 },
-			{ L"GetTextFile", 23 },
-			{ L"HitFatTargetRectangle", 2032 },
-			{ L"HitFatTargetSlim", 2035 },
-			{ L"HitFatTargetSquare", 2033 },
-			{ L"HitTargetRectangle", 2031 },
-			{ L"HitTargetRound", 2030 },
-			{ L"HitTargetSlim", 2036 },
-			{ L"ImageAlignCenter", 2005 },
-			{ L"ImageAlignTopLeft", 2004 },
-			{ L"ImageAlignWorld", 2003 },
-			{ L"ImageModeWorld", 2145 },
-			{ L"ImageModeWrap", 2146 },
-			{ L"JoyCustomKey", 808 },
-			{ L"KickerCup", 2140 },
-			{ L"KickerCup2", 2144 },
-			{ L"KickerGottlieb", 2143 },
-			{ L"KickerHole", 2139 },
-			{ L"KickerHoleSimple", 2141 },
-			{ L"KickerInvisible", 2138 },
-			{ L"KickerWilliams", 2142 },
-			{ L"LeftFlipperKey", 4 },
-			{ L"LeftMagnaSave", 31 },
-			{ L"LeftTiltKey", 6 },
-			{ L"LightStateBlinking", 2002 },
-			{ L"LightStateOff", 2000 },
-			{ L"LightStateOn", 2001 },
-			{ L"LoadTexture", 229 },
-			{ L"LoadValue", 18 },
-			{ L"LockbarKey", 803 },
-			{ L"ManualSize", 2137 },
-			{ L"MaterialColor", 224 },
-			{ L"MechanicalTilt", 30 },
-			{ L"MusicDirectory", 257 },
-			{ L"MusicVolume", 15 },
-			{ L"NightDay", 436 },
-			{ L"Nudge", DISPID_Table_Nudge },
-			{ L"NudgeGetCalibration", 804 },
-			{ L"NudgeSensorStatus", 806 },
-			{ L"NudgeSetCalibration", 805 },
-			{ L"NudgeTiltStatus", 807 },
-			{ L"Off", 2026 },
-			{ L"On", 2027 },
-			{ L"OpenSerial", 250 },
-			{ L"PlatformBits", 261 },
-			{ L"PlatformCPU", 260 },
-			{ L"PlatformOS", 259 },
-			{ L"PlayMusic", 10 },
-			{ L"PlaySound", 3 },
-			{ L"PlungerKey", 9 },
-			{ L"PlungerTypeCustom", 2024 },
-			{ L"PlungerTypeFlat", 2023 },
-			{ L"PlungerTypeModern", 2022 },
-			{ L"PreciseGameTime", 263 },
-			{ L"PushNotification", 266 },
-			{ L"QuitPlayer", 37 },
-			{ L"RampType1Wire", 2021 },
-			{ L"RampType2Wire", 2018 },
-			{ L"RampType3WireLeft", 2019 },
-			{ L"RampType3WireRight", 2020 },
-			{ L"RampType4Wire", 2017 },
-			{ L"RampTypeFlat", 2016 },
-			{ L"ReadSerial", 254 },
-			{ L"RenderingMode", 218 },
-			{ L"RightFlipperKey", 5 },
-			{ L"RightMagnaSave", 32 },
-			{ L"RightTiltKey", 7 },
-			{ L"SaveValue", 17 },
-			{ L"ScriptsDirectory", 258 },
-			{ L"SeqAllOff", 2131 },
-			{ L"SeqAllOn", 2132 },
-			{ L"SeqArcBottomLeftDownOff", 2113 },
-			{ L"SeqArcBottomLeftDownOn", 2112 },
-			{ L"SeqArcBottomLeftUpOff", 2111 },
-			{ L"SeqArcBottomLeftUpOn", 2110 },
-			{ L"SeqArcBottomRightDownOff", 2117 },
-			{ L"SeqArcBottomRightDownOn", 2116 },
-			{ L"SeqArcBottomRightUpOff", 2115 },
-			{ L"SeqArcBottomRightUpOn", 2114 },
-			{ L"SeqArcTopLeftDownOff", 2121 },
-			{ L"SeqArcTopLeftDownOn", 2120 },
-			{ L"SeqArcTopLeftUpOff", 2119 },
-			{ L"SeqArcTopLeftUpOn", 2118 },
-			{ L"SeqArcTopRightDownOff", 2125 },
-			{ L"SeqArcTopRightDownOn", 2124 },
-			{ L"SeqArcTopRightUpOff", 2123 },
-			{ L"SeqArcTopRightUpOn", 2122 },
-			{ L"SeqBlinking", 2133 },
-			{ L"SeqCircleInOff", 2089 },
-			{ L"SeqCircleInOn", 2088 },
-			{ L"SeqCircleOutOff", 2087 },
-			{ L"SeqCircleOutOn", 2086 },
-			{ L"SeqClockLeftOff", 2093 },
-			{ L"SeqClockLeftOn", 2092 },
-			{ L"SeqClockRightOff", 2091 },
-			{ L"SeqClockRightOn", 2090 },
-			{ L"SeqDiagDownLeftOff", 2061 },
-			{ L"SeqDiagDownLeftOn", 2060 },
-			{ L"SeqDiagDownRightOff", 2059 },
-			{ L"SeqDiagDownRightOn", 2058 },
-			{ L"SeqDiagUpLeftOff", 2057 },
-			{ L"SeqDiagUpLeftOn", 2056 },
-			{ L"SeqDiagUpRightOff", 2055 },
-			{ L"SeqDiagUpRightOn", 2054 },
-			{ L"SeqDownOff", 2049 },
-			{ L"SeqDownOn", 2048 },
-			{ L"SeqFanLeftDownOff", 2105 },
-			{ L"SeqFanLeftDownOn", 2104 },
-			{ L"SeqFanLeftUpOff", 2103 },
-			{ L"SeqFanLeftUpOn", 2102 },
-			{ L"SeqFanRightDownOff", 2109 },
-			{ L"SeqFanRightDownOn", 2108 },
-			{ L"SeqFanRightUpOff", 2107 },
-			{ L"SeqFanRightUpOn", 2106 },
-			{ L"SeqHatch1HorizOff", 2079 },
-			{ L"SeqHatch1HorizOn", 2078 },
-			{ L"SeqHatch1VertOff", 2083 },
-			{ L"SeqHatch1VertOn", 2082 },
-			{ L"SeqHatch2HorizOff", 2081 },
-			{ L"SeqHatch2HorizOn", 2080 },
-			{ L"SeqHatch2VertOff", 2085 },
-			{ L"SeqHatch2VertOn", 2084 },
-			{ L"SeqLastDynamic", 2130 },
-			{ L"SeqLeftOff", 2053 },
-			{ L"SeqLeftOn", 2052 },
-			{ L"SeqMiddleInHorizOff", 2065 },
-			{ L"SeqMiddleInHorizOn", 2064 },
-			{ L"SeqMiddleInVertOff", 2069 },
-			{ L"SeqMiddleInVertOn", 2068 },
-			{ L"SeqMiddleOutHorizOff", 2063 },
-			{ L"SeqMiddleOutHorizOn", 2062 },
-			{ L"SeqMiddleOutVertOff", 2067 },
-			{ L"SeqMiddleOutVertOn", 2066 },
-			{ L"SeqRadarLeftOff", 2097 },
-			{ L"SeqRadarLeftOn", 2096 },
-			{ L"SeqRadarRightOff", 2095 },
-			{ L"SeqRadarRightOn", 2094 },
-			{ L"SeqRandom", 2134 },
-			{ L"SeqRightOff", 2051 },
-			{ L"SeqRightOn", 2050 },
-			{ L"SeqScrewLeftOff", 2129 },
-			{ L"SeqScrewLeftOn", 2128 },
-			{ L"SeqScrewRightOff", 2127 },
-			{ L"SeqScrewRightOn", 2126 },
-			{ L"SeqStripe1HorizOff", 2071 },
-			{ L"SeqStripe1HorizOn", 2070 },
-			{ L"SeqStripe1VertOff", 2075 },
-			{ L"SeqStripe1VertOn", 2074 },
-			{ L"SeqStripe2HorizOff", 2073 },
-			{ L"SeqStripe2HorizOn", 2072 },
-			{ L"SeqStripe2VertOff", 2077 },
-			{ L"SeqStripe2VertOn", 2076 },
-			{ L"SeqUpOff", 2047 },
-			{ L"SeqUpOn", 2046 },
-			{ L"SeqWiperLeftOff", 2101 },
-			{ L"SeqWiperLeftOn", 2100 },
-			{ L"SeqWiperRightOff", 2099 },
-			{ L"SeqWiperRightOn", 2098 },
-			{ L"Setting", 824 },
-			{ L"SetupSerial", 253 },
-			{ L"ShapeCircle", 2006 },
-			{ L"ShapeCustom", 2007 },
-			{ L"ShowCursor", 262 },
-			{ L"ShowDT", 13434 },
-			{ L"ShowFSS", 625 },
-			{ L"StagedLeftFlipperKey", 825 },
-			{ L"StagedRightFlipperKey", 826 },
-			{ L"StartGameKey", 12 },
-			{ L"StopSound", 16 },
-			{ L"SystemTime", 225 },
-			{ L"TablesDirectory", 256 },
-			{ L"TextAlignCenter", 2042 },
-			{ L"TextAlignLeft", 2041 },
-			{ L"TextAlignRight", 2043 },
-			{ L"TriggerButton", 2012 },
-			{ L"TriggerInder", 2015 },
-			{ L"TriggerNone", 2008 },
-			{ L"TriggerStar", 2010 },
-			{ L"TriggerWireA", 2009 },
-			{ L"TriggerWireB", 2011 },
-			{ L"TriggerWireC", 2013 },
-			{ L"TriggerWireD", 2014 },
-			{ L"UpdateMaterial", 230 },
-			{ L"UpdateMaterialPhysics", 247 },
-			{ L"UserDirectory", 13 },
-			{ L"Version", 219 },
-			{ L"VersionMajor", 38 },
-			{ L"VersionMinor", 39 },
-			{ L"VersionRevision", 40 },
-			{ L"VPBuildVersion", 24 },
-			{ L"VPXActionKey", 809 },
-			{ L"WindowHeight", 227 },
-			{ L"WindowWidth", 226 },
-			{ L"WriteSerial", 255 }
-	};
+   } namesIdsList[] = { { NULL }, { L"ActiveBall", 19 }, { L"ActiveTable", 48 }, { L"AddCreditKey", 20 }, { L"AddCreditKey2", 67 }, { L"AutoSize", 2135 }, { L"AutoWidth", 2136 },
+      { L"BeginModal", 25 }, { L"CenterTiltKey", 8 }, { L"CloseSerial", 251 }, { L"CreatePluginObject", 265 }, { L"DecalImage", 2045 }, { L"DecalText", 2044 }, { L"Default", 2025 },
+      { L"DisableStaticPrerendering", 228 }, { L"DMDColoredPixels", 47 }, { L"DMDHeight", 45 }, { L"DMDPixels", 46 }, { L"DMDWidth", 44 }, { L"DropTargetBeveled", 2028 },
+      { L"DropTargetFlatSimple", 2034 }, { L"DropTargetSimple", 2029 }, { L"EndModal", 26 }, { L"EndMusic", 11 }, { L"ExitGame", 34 }, { L"FireKnocker", 33 }, { L"FlushSerial", 252 },
+      { L"FrameIndex", 232 }, { L"GameTime", 22 }, { L"GateLongPlate", 2040 }, { L"GatePlate", 2039 }, { L"GateWireRectangle", 2038 }, { L"GateWireW", 2037 }, { L"GetBalls", 41 },
+      { L"GetCustomParam", 823 }, { L"GetElementByName", 43 }, { L"GetElements", 42 }, { L"GetMaterial", 231 }, { L"GetMaterialPhysics", 248 }, { L"GetPlayerHWnd", 14 },
+      { L"GetSerialDevices", 249 }, { L"GetTextFile", 23 }, { L"HitFatTargetRectangle", 2032 }, { L"HitFatTargetSlim", 2035 }, { L"HitFatTargetSquare", 2033 },
+      { L"HitTargetRectangle", 2031 }, { L"HitTargetRound", 2030 }, { L"HitTargetSlim", 2036 }, { L"ImageAlignCenter", 2005 }, { L"ImageAlignTopLeft", 2004 }, { L"ImageAlignWorld", 2003 },
+      { L"ImageModeWorld", 2145 }, { L"ImageModeWrap", 2146 }, { L"JoyCustomKey", 808 }, { L"KickerCup", 2140 }, { L"KickerCup2", 2144 }, { L"KickerGottlieb", 2143 },
+      { L"KickerHole", 2139 }, { L"KickerHoleSimple", 2141 }, { L"KickerInvisible", 2138 }, { L"KickerWilliams", 2142 }, { L"LeftFlipperKey", 4 }, { L"LeftMagnaSave", 31 },
+      { L"LeftTiltKey", 6 }, { L"LightStateBlinking", 2002 }, { L"LightStateOff", 2000 }, { L"LightStateOn", 2001 }, { L"LoadTexture", 229 }, { L"LoadValue", 18 }, { L"LockbarKey", 803 },
+      { L"ManualSize", 2137 }, { L"MaterialColor", 224 }, { L"MechanicalTilt", 30 }, { L"MusicDirectory", 257 }, { L"MusicVolume", 15 }, { L"NightDay", 436 },
+      { L"Nudge", DISPID_Table_Nudge }, { L"NudgeGetCalibration", 804 }, { L"NudgeSensorStatus", 806 }, { L"NudgeSetCalibration", 805 }, { L"NudgeTiltStatus", 807 }, { L"Off", 2026 },
+      { L"On", 2027 }, { L"OpenSerial", 250 }, { L"PlatformBits", 261 }, { L"PlatformCPU", 260 }, { L"PlatformOS", 259 }, { L"PlayMusic", 10 }, { L"PlaySound", 3 }, { L"PlaySoundAt", 827 },
+      { L"PlungerKey", 9 }, { L"PlungerTypeCustom", 2024 }, { L"PlungerTypeFlat", 2023 }, { L"PlungerTypeModern", 2022 }, { L"PreciseGameTime", 263 }, { L"PushNotification", 266 },
+      { L"QuitPlayer", 37 }, { L"RampType1Wire", 2021 }, { L"RampType2Wire", 2018 }, { L"RampType3WireLeft", 2019 }, { L"RampType3WireRight", 2020 }, { L"RampType4Wire", 2017 },
+      { L"RampTypeFlat", 2016 }, { L"ReadSerial", 254 }, { L"RenderingMode", 218 }, { L"RightFlipperKey", 5 }, { L"RightMagnaSave", 32 }, { L"RightTiltKey", 7 }, { L"SaveValue", 17 },
+      { L"ScriptsDirectory", 258 }, { L"SeqAllOff", 2131 }, { L"SeqAllOn", 2132 }, { L"SeqArcBottomLeftDownOff", 2113 }, { L"SeqArcBottomLeftDownOn", 2112 },
+      { L"SeqArcBottomLeftUpOff", 2111 }, { L"SeqArcBottomLeftUpOn", 2110 }, { L"SeqArcBottomRightDownOff", 2117 }, { L"SeqArcBottomRightDownOn", 2116 }, { L"SeqArcBottomRightUpOff", 2115 },
+      { L"SeqArcBottomRightUpOn", 2114 }, { L"SeqArcTopLeftDownOff", 2121 }, { L"SeqArcTopLeftDownOn", 2120 }, { L"SeqArcTopLeftUpOff", 2119 }, { L"SeqArcTopLeftUpOn", 2118 },
+      { L"SeqArcTopRightDownOff", 2125 }, { L"SeqArcTopRightDownOn", 2124 }, { L"SeqArcTopRightUpOff", 2123 }, { L"SeqArcTopRightUpOn", 2122 }, { L"SeqBlinking", 2133 },
+      { L"SeqCircleInOff", 2089 }, { L"SeqCircleInOn", 2088 }, { L"SeqCircleOutOff", 2087 }, { L"SeqCircleOutOn", 2086 }, { L"SeqClockLeftOff", 2093 }, { L"SeqClockLeftOn", 2092 },
+      { L"SeqClockRightOff", 2091 }, { L"SeqClockRightOn", 2090 }, { L"SeqDiagDownLeftOff", 2061 }, { L"SeqDiagDownLeftOn", 2060 }, { L"SeqDiagDownRightOff", 2059 },
+      { L"SeqDiagDownRightOn", 2058 }, { L"SeqDiagUpLeftOff", 2057 }, { L"SeqDiagUpLeftOn", 2056 }, { L"SeqDiagUpRightOff", 2055 }, { L"SeqDiagUpRightOn", 2054 }, { L"SeqDownOff", 2049 },
+      { L"SeqDownOn", 2048 }, { L"SeqFanLeftDownOff", 2105 }, { L"SeqFanLeftDownOn", 2104 }, { L"SeqFanLeftUpOff", 2103 }, { L"SeqFanLeftUpOn", 2102 }, { L"SeqFanRightDownOff", 2109 },
+      { L"SeqFanRightDownOn", 2108 }, { L"SeqFanRightUpOff", 2107 }, { L"SeqFanRightUpOn", 2106 }, { L"SeqHatch1HorizOff", 2079 }, { L"SeqHatch1HorizOn", 2078 },
+      { L"SeqHatch1VertOff", 2083 }, { L"SeqHatch1VertOn", 2082 }, { L"SeqHatch2HorizOff", 2081 }, { L"SeqHatch2HorizOn", 2080 }, { L"SeqHatch2VertOff", 2085 }, { L"SeqHatch2VertOn", 2084 },
+      { L"SeqLastDynamic", 2130 }, { L"SeqLeftOff", 2053 }, { L"SeqLeftOn", 2052 }, { L"SeqMiddleInHorizOff", 2065 }, { L"SeqMiddleInHorizOn", 2064 }, { L"SeqMiddleInVertOff", 2069 },
+      { L"SeqMiddleInVertOn", 2068 }, { L"SeqMiddleOutHorizOff", 2063 }, { L"SeqMiddleOutHorizOn", 2062 }, { L"SeqMiddleOutVertOff", 2067 }, { L"SeqMiddleOutVertOn", 2066 },
+      { L"SeqRadarLeftOff", 2097 }, { L"SeqRadarLeftOn", 2096 }, { L"SeqRadarRightOff", 2095 }, { L"SeqRadarRightOn", 2094 }, { L"SeqRandom", 2134 }, { L"SeqRightOff", 2051 },
+      { L"SeqRightOn", 2050 }, { L"SeqScrewLeftOff", 2129 }, { L"SeqScrewLeftOn", 2128 }, { L"SeqScrewRightOff", 2127 }, { L"SeqScrewRightOn", 2126 }, { L"SeqStripe1HorizOff", 2071 },
+      { L"SeqStripe1HorizOn", 2070 }, { L"SeqStripe1VertOff", 2075 }, { L"SeqStripe1VertOn", 2074 }, { L"SeqStripe2HorizOff", 2073 }, { L"SeqStripe2HorizOn", 2072 },
+      { L"SeqStripe2VertOff", 2077 }, { L"SeqStripe2VertOn", 2076 }, { L"SeqUpOff", 2047 }, { L"SeqUpOn", 2046 }, { L"SeqWiperLeftOff", 2101 }, { L"SeqWiperLeftOn", 2100 },
+      { L"SeqWiperRightOff", 2099 }, { L"SeqWiperRightOn", 2098 }, { L"Setting", 824 }, { L"SetupSerial", 253 }, { L"ShapeCircle", 2006 }, { L"ShapeCustom", 2007 }, { L"ShowCursor", 262 },
+      { L"ShowDT", 13434 }, { L"ShowFSS", 625 }, { L"StagedLeftFlipperKey", 825 }, { L"StagedRightFlipperKey", 826 }, { L"StartGameKey", 12 }, { L"StopSound", 16 }, { L"SystemTime", 225 },
+      { L"TablesDirectory", 256 }, { L"TextAlignCenter", 2042 }, { L"TextAlignLeft", 2041 }, { L"TextAlignRight", 2043 }, { L"TriggerButton", 2012 }, { L"TriggerInder", 2015 },
+      { L"TriggerNone", 2008 }, { L"TriggerStar", 2010 }, { L"TriggerWireA", 2009 }, { L"TriggerWireB", 2011 }, { L"TriggerWireC", 2013 }, { L"TriggerWireD", 2014 },
+      { L"UpdateMaterial", 230 }, { L"UpdateMaterialPhysics", 247 }, { L"UserDirectory", 13 }, { L"Version", 219 }, { L"VersionMajor", 38 }, { L"VersionMinor", 39 },
+      { L"VersionRevision", 40 }, { L"VPBuildVersion", 24 }, { L"VPXActionKey", 809 }, { L"WindowHeight", 227 }, { L"WindowWidth", 226 }, { L"WriteSerial", 255 } };
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+   size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -2469,7 +2272,8 @@ static const char *ScriptGlobalTable_dispid_name(DISPID dispId) {
 		case 808: return "JoyCustomKey";
 		case 809: return "VPXActionKey";
 		case 3: return "PlaySound";
-		case 10: return "PlayMusic";
+      case 827: return "PlaySoundAt";
+      case 10: return "PlayMusic";
 		case 15: return "MusicVolume";
 		case 11: return "EndMusic";
 		case 13: return "UserDirectory";
@@ -3892,7 +3696,68 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			}
 			break;
 		}
-		case 2000: {
+      case 827:
+      {
+         if (wFlags & DISPATCH_METHOD)
+         {
+            // line 806: [id(827), helpstring("method PlaySoundAt")] HRESULT PlaySoundAt(BSTR Sound, float x, float y, [defaultvalue(0)] float z, [defaultvalue(1)] long LoopCount, [defaultvalue(1)] float Volume, [defaultvalue(0)] float randompitch, [defaultvalue(0)] long pitch, [defaultvalue(0)] VARIANT_BOOL usesame, [defaultvalue(1)] VARIANT_BOOL restart);
+            if (pDispParams->cArgs < 3)
+            {
+               hres = DISP_E_BADPARAMCOUNT;
+               break;
+            }
+            VARIANT var0;
+            V_VT(&var0) = VT_EMPTY;
+            VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
+            VARIANT var1;
+            V_VT(&var1) = VT_EMPTY;
+            VariantChangeType(&var1, &pDispParams->rgvarg[--index], 0, VT_R4);
+            VARIANT var2;
+            V_VT(&var2) = VT_EMPTY;
+            VariantChangeType(&var2, &pDispParams->rgvarg[--index], 0, VT_R4);
+            VARIANT var3;
+            V_VT(&var3) = VT_R4;
+            V_R4(&var3) = 0;
+            VariantChangeType(&var3, (index > 0) ? &pDispParams->rgvarg[--index] : &var3, 0, VT_R4);
+            VARIANT var4;
+            V_VT(&var4) = VT_I4;
+            V_I4(&var4) = 1;
+            VariantChangeType(&var4, (index > 0) ? &pDispParams->rgvarg[--index] : &var4, 0, VT_I4);
+            VARIANT var5;
+            V_VT(&var5) = VT_R4;
+            V_R4(&var5) = 1;
+            VariantChangeType(&var5, (index > 0) ? &pDispParams->rgvarg[--index] : &var5, 0, VT_R4);
+            VARIANT var6;
+            V_VT(&var6) = VT_R4;
+            V_R4(&var6) = 0;
+            VariantChangeType(&var6, (index > 0) ? &pDispParams->rgvarg[--index] : &var6, 0, VT_R4);
+            VARIANT var7;
+            V_VT(&var7) = VT_I4;
+            V_I4(&var7) = 0;
+            VariantChangeType(&var7, (index > 0) ? &pDispParams->rgvarg[--index] : &var7, 0, VT_I4);
+            VARIANT var8;
+            V_VT(&var8) = VT_BOOL;
+            V_BOOL(&var8) = 0;
+            VariantChangeType(&var8, (index > 0) ? &pDispParams->rgvarg[--index] : &var8, 0, VT_BOOL);
+            VARIANT var9;
+            V_VT(&var9) = VT_BOOL;
+            V_BOOL(&var9) = 1;
+            VariantChangeType(&var9, (index > 0) ? &pDispParams->rgvarg[--index] : &var9, 0, VT_BOOL);
+            hres = PlaySoundAt(V_BSTR(&var0), V_R4(&var1), V_R4(&var2), V_R4(&var3), V_I4(&var4), V_R4(&var5), V_R4(&var6), V_I4(&var7), V_BOOL(&var8), V_BOOL(&var9));
+            VariantClear(&var0);
+            VariantClear(&var1);
+            VariantClear(&var2);
+            VariantClear(&var3);
+            VariantClear(&var4);
+            VariantClear(&var5);
+            VariantClear(&var6);
+            VariantClear(&var7);
+            VariantClear(&var8);
+            VariantClear(&var9);
+         }
+         break;
+      }
+      case 2000: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
 				V_I2(&res) = 0;

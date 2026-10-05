@@ -26,6 +26,7 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  LIBSPATIALAUDIO_SHA: ${LIBSPATIALAUDIO_SHA}"
 echo ""
 
 mkdir -p "external/windows-x64/${BUILD_TYPE}"
@@ -385,6 +386,40 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
+# build libspatialaudio (static library, static runtime to match the app)
+#
+
+LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}"
+LIBSPATIALAUDIO_FOUND_SHA="$([ -f libspatialaudio/cache.txt ] && cat libspatialaudio/cache.txt || echo "")"
+
+if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
+   echo "Building libspatialaudio. Expected: ${LIBSPATIALAUDIO_EXPECTED_SHA}, Found: ${LIBSPATIALAUDIO_FOUND_SHA}"
+
+   rm -rf libspatialaudio
+   mkdir libspatialaudio
+   cd libspatialaudio
+
+   curl -sL https://github.com/videolan/libspatialaudio/archive/${LIBSPATIALAUDIO_SHA}.tar.gz -o libspatialaudio-${LIBSPATIALAUDIO_SHA}.tar.gz
+   tar xzf libspatialaudio-${LIBSPATIALAUDIO_SHA}.tar.gz
+   mv libspatialaudio-${LIBSPATIALAUDIO_SHA} libspatialaudio
+   cd libspatialaudio
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cmake --install build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBSPATIALAUDIO_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # copy libraries
 #
 
@@ -467,6 +502,9 @@ for LIB in avcodec avformat avutil swresample swscale; do
    mkdir -p ../../../third-party/include/${DIR}
    cp ffmpeg/ffmpeg/${DIR}/*.h ../../../third-party/include/${DIR}
 done
+
+cp libspatialaudio/libspatialaudio/build/${BUILD_TYPE}/spatialaudio.lib ../../../third-party/build-libs/windows-x64
+cp -r libspatialaudio/libspatialaudio/install/include/spatialaudio ../../../third-party/include/
 
 cp "${MSYS2_PATH}/ucrt64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/ucrt64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64

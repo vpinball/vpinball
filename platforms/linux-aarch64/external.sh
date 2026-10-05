@@ -18,6 +18,7 @@ echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
+echo "  LIBSPATIALAUDIO_SHA: ${LIBSPATIALAUDIO_SHA}"
 echo ""
 
 NUM_PROCS=$(nproc)
@@ -391,6 +392,40 @@ if [ "${LIBWINEVBS_EXPECTED_SHA}" != "${LIBWINEVBS_FOUND_SHA}" ]; then
    cd ..
 fi
 
+
+#
+# build libspatialaudio (static library)
+#
+
+LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}"
+LIBSPATIALAUDIO_FOUND_SHA="$([ -f libspatialaudio/cache.txt ] && cat libspatialaudio/cache.txt || echo "")"
+
+if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
+   echo "Building libspatialaudio. Expected: ${LIBSPATIALAUDIO_EXPECTED_SHA}, Found: ${LIBSPATIALAUDIO_FOUND_SHA}"
+
+   rm -rf libspatialaudio
+   mkdir libspatialaudio
+   cd libspatialaudio
+
+   curl -sL https://github.com/videolan/libspatialaudio/archive/${LIBSPATIALAUDIO_SHA}.tar.gz -o libspatialaudio-${LIBSPATIALAUDIO_SHA}.tar.gz
+   tar xzf libspatialaudio-${LIBSPATIALAUDIO_SHA}.tar.gz
+   mv libspatialaudio-${LIBSPATIALAUDIO_SHA} libspatialaudio
+   cd libspatialaudio
+   cmake \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cmake --install build
+   cd ..
+
+   echo "$LIBSPATIALAUDIO_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
 #
 # copy libraries
 #
@@ -459,3 +494,6 @@ cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevb
 cp -a openxr/openxr/build/src/loader/libopenxr_loader.so* ../../../third-party/runtime-libs/linux-aarch64
 mkdir -p ../../../third-party/include/openxr
 cp openxr/openxr/build/include/openxr/*.h ../../../third-party/include/openxr
+
+cp libspatialaudio/libspatialaudio/build/libspatialaudio.a ../../../third-party/build-libs/linux-aarch64
+cp -r libspatialaudio/libspatialaudio/install/include/spatialaudio ../../../third-party/include/

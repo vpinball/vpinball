@@ -94,8 +94,8 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
    , m_pininput(this, g_settingsService.GetAppSettings())
-   , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
-        table->GetSettings().GetPlayer_SoundDeviceBG(), table->GetSettings().GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(table->GetSettings().GetPlayer_Sound3D())))
+   , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(table->GetSettings().GetPlayer_SoundDeviceBG(), table->GetSettings().GetPlayer_SoundDevice(),
+        static_cast<VPX::SoundConfigTypes>(table->GetSettings().GetPlayer_Sound3D()), table->GetSettings().GetPlayer_SpatialAudio()))
    , m_resURIResolver(m_pluginManager.GetMsgAPI(), m_pluginAPI.GetVPXEndPointId(), true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
@@ -230,6 +230,12 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    #else
    const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->GetSettings().GetPlayer_Stereo3D();
    #endif
+
+   // Setup the audio listener: fixed pose in front of the table for desktop/cabinet play,
+   // head tracked pose with binaural rendering for VR play
+   m_audioPlayer->SetTableDimensions(m_ptable->m_right - m_ptable->m_left, m_ptable->m_bottom - m_ptable->m_top);
+   if (stereo3D == STEREO_VR)
+      m_audioPlayer->SetBinaural(true);
 
    m_detectScriptHang = m_ptable->GetSettings().GetPlayer_DetectHang();
 

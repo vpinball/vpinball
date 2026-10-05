@@ -201,6 +201,7 @@ public:
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 
    STDMETHOD(PlaySound)(BSTR soundName, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
+   STDMETHOD(PlaySoundAt)(BSTR soundName, float x, float y, float z, int loopcount, float volume, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
    STDMETHOD(StopSound)(BSTR soundName);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
    STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);

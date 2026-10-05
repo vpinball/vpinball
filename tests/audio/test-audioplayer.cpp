@@ -85,7 +85,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("player construction and stream lifecycle")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, false);
       CHECK(player.GetSoundMode3D() == SNDCFG_SND3D2CH);
       CHECK(player.GetBackglassDeviceName() != "Error"s);
       CHECK(player.GetPlayfieldDeviceName() != "Error"s);
@@ -106,7 +106,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("closing an unknown stream keeps the opened streams")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, false);
       AudioPlayer::AudioStreamID stream = player.OpenAudioStream("test-stream", 44100, 2, true);
       AudioPlayer::AudioStreamID unknown;
       player.CloseAudioStream(unknown, false); // logs an error, must not remove the valid stream
@@ -115,7 +115,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("sound information decoding")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, false);
       VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.1f));
 
       const SoundSpec spec = player.GetSoundInformations(&sound);
@@ -126,7 +126,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("play and stop a sound")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, false);
       VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.5f));
 
       player.SetMainVolume(0.5f, 0.5f);
@@ -136,7 +136,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("music playback commands")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, false);
 
       const std::filesystem::path musicFile = GetTestTmpDir() / "test-music.wav";
       write_file(musicFile, MakeSineWav(0.5f), true);
