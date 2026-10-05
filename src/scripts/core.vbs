@@ -3214,11 +3214,20 @@ LoadScript("ledcontrol.vbs"):Err.Clear	' Checks for existance of ledcontrol.vbs 
 LoadScript("GlobalPlugIn.vbs")			' Checks for existance of GlobalPlugIn.vbs and loads it if found, useful for adding
 										' custom scripting that can be used for all tables instead of altering the core.vbs
 
-Dim swidth, sheight, VP8sound, VP9sound
+Dim swidth, sheight, VP8sound, VP9sound, VPXSpatialSound
 swidth = 950
 sheight = 2100
 VP8sound = False
 VP9sound = False
+
+' Detect the positional sound API (PlaySoundAt on the global table object)
+VPXSpatialSound = False
+On Error Resume Next
+Err.Clear
+PlaySoundAt "", 0, 0, 0
+VPXSpatialSound = (Err.Number = 0)
+Err.Clear
+On Error Goto 0
 
 On Error Resume Next
 Err.Clear
@@ -3273,7 +3282,9 @@ End Function
 Private Sub CorePlaySoundAt(soundName, at)
 	If IsEmpty(soundName) Then Exit Sub
 	If IsObject(at) Then
-		If VP8sound then
+		If VPXSpatialSound then
+			PlaySoundAt soundName, at.x, at.y
+		ElseIf VP8sound then
 			PlaySound soundName
 		ElseIf VP9sound then
 			PlaySound soundName, 1, 1, CoreAudioPan(at.x), 0

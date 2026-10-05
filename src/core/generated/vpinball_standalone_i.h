@@ -3575,6 +3575,9 @@ ITableGlobal : public IDispatch
         IDispatch **pVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE PushNotification(BSTR message, LONG durationMs, LONG reuseId, LONG * pVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE PlaySoundAt(
+       BSTR Sound, float x, float y, float z, LONG LoopCount, float Volume, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart) = 0;
 };
 #ifdef __CRT_UUID_DECL
 __CRT_UUID_DECL(ITableGlobal, 0x2981e0e0, 0x8e64, 0x44fc, 0x9a,0x01, 0x64,0xcf,0xfa,0x1f,0x7d,0xba)
@@ -4051,6 +4054,9 @@ typedef struct ITableGlobalVtbl {
 
     HRESULT(STDMETHODCALLTYPE *PushNotification)(ITableGlobal *This, BSTR message, LONG durationMs, LONG reuseId, LONG *pVal);
 
+    HRESULT(STDMETHODCALLTYPE *PlaySoundAt)(
+       ITableGlobal *This, BSTR Sound, float x, float y, float z, LONG LoopCount, float Volume, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
+
     END_INTERFACE
 } ITableGlobalVtbl;
 
@@ -4157,6 +4163,8 @@ interface ITableGlobal {
 #define ITableGlobal_LoadTexture(This,imageName,fileName) (This)->lpVtbl->LoadTexture(This,imageName,fileName)
 #define ITableGlobal_CreatePluginObject(This,classId,pVal) (This)->lpVtbl->CreatePluginObject(This,classId,pVal)
 #define ITableGlobal_PushNotification(This, message, durationMs, reuseId, pVal) (This)->lpVtbl->PushNotification(This, message, durationMs, reuseId, pVal)
+#define ITableGlobal_PlaySoundAt(This, Sound, x, y, z, LoopCount, Volume, randompitch, pitch, usesame, restart)                                                                              \
+(This)->lpVtbl->PlaySoundAt(This, Sound, x, y, z, LoopCount, Volume, randompitch, pitch, usesame, restart)
 #else
 /*** IUnknown methods ***/
 static inline HRESULT ITableGlobal_QueryInterface(ITableGlobal* This,REFIID riid,void **ppvObject) {
@@ -4443,6 +4451,11 @@ static inline HRESULT ITableGlobal_CreatePluginObject(ITableGlobal* This,BSTR cl
 static inline HRESULT ITableGlobal_PushNotification(ITableGlobal *This, BSTR message, LONG durationMs, LONG reuseId, LONG *pVal)
 {
    return This->lpVtbl->PushNotification(This, message, durationMs, reuseId, pVal);
+}
+static inline HRESULT ITableGlobal_PlaySoundAt(
+   ITableGlobal *This, BSTR Sound, float x, float y, float z, LONG LoopCount, float Volume, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
+{
+   return This->lpVtbl->PlaySoundAt(This, Sound, x, y, z, LoopCount, Volume, randompitch, pitch, usesame, restart);
 }
 #endif
 #endif

@@ -5,9 +5,16 @@
 #include "AudioPlayer.h"
 #include "ThreadPool.h"
 
+#include <chrono>
+
 struct ma_decoder;
 struct ma_sound;
 struct vpx_node;
+
+namespace VPX
+{
+class SpatialAudioSource;
+}
 
 namespace VPX
 {
@@ -20,7 +27,9 @@ public:
    static SoundPlayer* Create(const AudioPlayer* audioPlayer, const std::filesystem::path& filename);
    ~SoundPlayer();
 
-   void Play(float volume, const float randompitch, const int pitch, float pan, float frontRearFade, const int loopcount);
+   // Plays the sound. Position is either given explicitly (hasPos, table units, z above the playfield)
+   // or derived from the legacy pan/frontRearFade parameters.
+   void Play(float volume, const float randompitch, const int pitch, float pan, float frontRearFade, const int loopcount, bool hasPos, float posX, float posY, float posZ);
    void Pause();
    void Unpause();
    void Stop();
@@ -48,10 +57,19 @@ private:
    int m_loopCount = 0;
 
    void ApplyVolume();
+   void UpdateDoppler(float x, float y, float z);
 
    std::unique_ptr<ma_decoder> m_decoder;
    std::unique_ptr<ma_sound> m_sound;
-   std::unique_ptr<vpx_node> m_vpxMixNode;
+   std::unique_ptr<SpatialAudioSource> m_spatialSource;
+   std::unique_ptr<vpx_node> m_vpxMixNode; // Legacy channel mixing node, used when spatial audio is disabled
+
+   // Doppler effect, estimated from successive position updates
+   float m_pitchFactor = 1.f;
+   float m_dopplerFactor = 1.f;
+   float m_lastDistance = 0.f;
+   bool m_hasLastDistance = false;
+   std::chrono::steady_clock::time_point m_lastPosTime;
 
    mutable ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
 

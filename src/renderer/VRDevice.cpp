@@ -1345,6 +1345,47 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             m_sceneProj[eye] = sceneScale * m_roomProj[eye];
          }
 
+         // Feed the head tracked pose to the spatial audio listener (in table space, VPU)
+         if (g_pplayer->m_audioPlayer)
+         {
+            // m_view maps table space to view space: its inverse maps the camera pose to table space
+            const Matrix3D headPose = Matrix3D::MatrixInverse(m_pfWorld.m_view[0]);
+            const Matrix3D rightEyePose = m_viewConfigurationViews.size() > 1 ? Matrix3D::MatrixInverse(m_pfWorld.m_view[1]) : headPose;
+            const float posX = 0.5f * (headPose.m[3][0] + rightEyePose.m[3][0]);
+            const float posY = 0.5f * (headPose.m[3][1] + rightEyePose.m[3][1]);
+            const float posZ = 0.5f * (headPose.m[3][2] + rightEyePose.m[3][2]);
+            // Head basis vectors in table space (rows of the inverse view matrix, renormalized
+            // as the view matrix chain contains scaling): right = row 0, up = row 1, forward = -row 2
+            const float rLen = sqrtf(headPose.m[0][0] * headPose.m[0][0] + headPose.m[0][1] * headPose.m[0][1] + headPose.m[0][2] * headPose.m[0][2]);
+            const float rx = rLen > 0.f ? headPose.m[0][0] / rLen : 1.f;
+            const float ry = rLen > 0.f ? headPose.m[0][1] / rLen : 0.f;
+            const float rz = rLen > 0.f ? headPose.m[0][2] / rLen : 0.f;
+            const float uLen = sqrtf(headPose.m[1][0] * headPose.m[1][0] + headPose.m[1][1] * headPose.m[1][1] + headPose.m[1][2] * headPose.m[1][2]);
+            const float ux = uLen > 0.f ? headPose.m[1][0] / uLen : 0.f;
+            const float uy = uLen > 0.f ? headPose.m[1][1] / uLen : 0.f;
+            const float uz = uLen > 0.f ? headPose.m[1][2] / uLen : 1.f;
+            const float fLen = sqrtf(headPose.m[2][0] * headPose.m[2][0] + headPose.m[2][1] * headPose.m[2][1] + headPose.m[2][2] * headPose.m[2][2]);
+            const float fx = fLen > 0.f ? -headPose.m[2][0] / fLen : 0.f;
+            const float fy = fLen > 0.f ? -headPose.m[2][1] / fLen : -1.f;
+            const float fz = fLen > 0.f ? -headPose.m[2][2] / fLen : 0.f;
+            const float yaw = atan2f(-fx, -fy); // Positive = looking toward the player's left
+            const float pitch = atan2f(fz, sqrtf(fx * fx + fy * fy)); // Positive = looking up
+            // Roll = tilt of the head up vector against the up vector expected for an untilted head
+            // (world up projected on the plane normal to the forward vector)
+            const float upDot = fz; // world up (0,0,1) dot forward
+            float euX = -upDot * fx, euY = -upDot * fy, euZ = 1.f - upDot * fz;
+            const float euLen = sqrtf(euX * euX + euY * euY + euZ * euZ);
+            float roll = 0.f;
+            if (euLen > 1e-6f)
+            {
+               euX /= euLen;
+               euY /= euLen;
+               euZ /= euLen;
+               roll = atan2f(ux * rx + uy * ry + uz * rz, ux * euX + uy * euY + uz * euZ); // Positive = tilting head to the right
+            }
+            g_pplayer->m_audioPlayer->SetListenerPose(posX, posY, posZ, yaw, pitch, roll);
+         }
+
          // Swapchain is acquired, rendered to, and released together for all views as a texture array
 
          // Resize the layer projection views to match the view count. The layer projection views are used in the layer projection.

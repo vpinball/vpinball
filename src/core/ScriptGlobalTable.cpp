@@ -95,6 +95,12 @@ STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, LONG LoopCount, float volum
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::PlaySoundAt(BSTR bstr, float x, float y, float z, LONG LoopCount, float volume, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
+{
+   m_table->PlaySoundAt(bstr, x, y, z, LoopCount, volume, randompitch, pitch, usesame, restart);
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::FireKnocker(int Count)
 {
    m_table->FireKnocker(Count);

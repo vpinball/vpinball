@@ -195,6 +195,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/audio/SoundPlayer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/audio/SpatialAudio.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/editablereg.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -1122,6 +1125,9 @@
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/audio/SpatialAudio.h">
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/AppCommands.h">

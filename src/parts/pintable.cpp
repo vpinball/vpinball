@@ -4702,6 +4702,26 @@ STDMETHODIMP PinTable::PlaySound(BSTR soundName, int loopcount, float volume, fl
    return S_OK;
 }
 
+STDMETHODIMP PinTable::PlaySoundAt(BSTR soundName, float x, float y, float z, int loopcount, float volume, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
+{
+   if (g_pplayer == nullptr)
+      return S_OK;
+   const string name = MakeString(soundName);
+   if (StrCompareNoCase("knock"s, name) || StrCompareNoCase("knocker"s, name)) // FIXME remove or port to plugin
+      ushock_output_knock();
+   VPX::Sound *const sound = GetSound(name);
+   if (sound)
+   {
+      g_pplayer->m_audioPlayer->PlaySoundAt(sound, x, y, z, volume, randompitch, pitch, loopcount, VBTOb(usesame), VBTOb(restart));
+   }
+   else if (!name.empty() && !m_loggedSoundErrors.contains(name))
+   {
+      m_loggedSoundErrors.insert(name);
+      PLOGW << "Request to play \"" << name << "\", but sound was not found.";
+   }
+   return S_OK;
+}
+
 STDMETHODIMP PinTable::StopSound(BSTR soundName)
 {
    if (g_pplayer == nullptr)
@@ -5141,7 +5161,8 @@ string PinTable::AuditTable(bool log) const
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
-   auto audioPlayer = std::make_unique<VPX::AudioPlayer>(m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()));
+   auto audioPlayer = std::make_unique<VPX::AudioPlayer>(
+      m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()), m_settings.GetPlayer_SpatialAudio());
    for (const auto sound : m_vsound)
    {
       auto specs = audioPlayer->GetSoundInformations(sound);

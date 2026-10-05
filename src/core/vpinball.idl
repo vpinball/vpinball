@@ -802,6 +802,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(265), helpstring("method CreatePluginObject") ] HRESULT CreatePluginObject([in] BSTR classId, [out, retval] IDispatch* *pVal);
 
                 [id(266), helpstring("method PushNotification")] HRESULT PushNotification([in] BSTR message, [defaultvalue(5000)] long durationMs, [defaultvalue(0)] long reuseId, [out, retval] long *pVal);
+
+                [id(827), helpstring("method PlaySoundAt")] HRESULT PlaySoundAt(BSTR Sound, float x, float y, [defaultvalue(0)] float z, [defaultvalue(1)] long LoopCount, [defaultvalue(1)] float Volume, [defaultvalue(0)] float randompitch, [defaultvalue(0)] long pitch, [defaultvalue(0)] VARIANT_BOOL usesame, [defaultvalue(1)] VARIANT_BOOL restart);
         }
 
         [

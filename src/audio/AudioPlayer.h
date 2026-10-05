@@ -4,6 +4,7 @@
 
 #include "core/Settings.h"
 #include "parts/Sound.h"
+#include "audio/SpatialAudio.h"
 
 #include <SDL3/SDL_audio.h>
 
@@ -21,7 +22,7 @@ namespace VPX
 // different device or not)
 enum SoundConfigTypes : int
 {
-   // 2CH: Render playfield sounds as 2 channels to the front channel of the selected audio device (which should be a different 
+   // 2CH: Render playfield sounds as 2 channels to the front channel of the selected audio device (which should be a different
    // one than the audio device playing backglass audio)
    SNDCFG_SND3D2CH = 0,
 
@@ -29,28 +30,31 @@ enum SoundConfigTypes : int
    // This can replace the need to use two sound cards to move table audio inside the cab.
    SNDCFG_SND3DALLREAR = 1,
 
-   // FRONTISREAR: Render playfield sounds as up to 6 channels to the front/side/rear channels of the audio card (depending 
+   // FRONTISREAR: Render playfield sounds as up to 6 channels to the front/side/rear channels of the audio card (depending
    // on the audio card type), with the rear channels near the front of the cab (where the player stands).
    // Table effects are mapped such that the front of the cab is the rear surround channels. If you were to play
    // VPX in a home theater system with the TV in front of you, this would produce an appropriate result with the ball coming
    // from the rear channels as it gets closer to you.
    SNDCFG_SND3DFRONTISREAR = 2,
 
-   // FRONTISFRONT: Render playfield sounds as up to 6 channels to the front/side/rear channels of the audio card (depending 
+   // FRONTISFRONT: Render playfield sounds as up to 6 channels to the front/side/rear channels of the audio card (depending
    // on the audio card type), with the front channels near the front of the cab (where the player stands).
    // Recommended mapping for a dedicated sound card attached to the playfield. Front channel maps to the front
    // of the cab. We "flip" the rear to the standard 2 channels, so older versions of VP still play sounds on the front most
    // channels of the cab. This mapping could also be used to place 6 channels on the playfield.
    SNDCFG_SND3DFRONTISFRONT = 3,
 
-   // 6CH: Render playfield sounds to 4 channels: side (back of the cab) & rear (front of the cab) channels of the audio 
+   // 6CH: Render playfield sounds to 4 channels: side (back of the cab) & rear (front of the cab) channels of the audio
    // card, leaving the front channels for backglass audio (similar to SNDCFG_SND3DFRONTISFRONT but leaving front channels empty)
    // Rear of playfield shifted to the sides, and front of playfield shifted to the far rear. Leaves front channels open
    // for default backglass and VPinMAME.
    SNDCFG_SND3D6CH = 4,
 
    // SSF: Same as 6CH but with a different sound horizontal panning and vertical fading are enhanced for a more realistic experience.
-   SNDCFG_SND3DSSF = 5
+   SNDCFG_SND3DSSF = 5,
+
+   // BINAURAL: Render playfield sounds binauralized (HRTF) for headphone play.
+   SNDCFG_SND3DBINAURAL = 6
 };
 
 struct SoundSpec
@@ -67,7 +71,7 @@ struct SoundSpec
 class AudioPlayer
 {
 public:
-   explicit AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode);
+   explicit AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, bool spatialAudio);
    ~AudioPlayer();
 
    void SetMainVolume(float backglassVolume, float playfieldVolume); // Overall gain, directly applied to all sounds, including the ones being played
@@ -92,6 +96,17 @@ public:
 
    // Sound, played from memory buffer to backglass or playfield device, applying 3D mode setup
    void PlaySound(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+   // Positional variant: x/y in table units, z = height above the playfield surface
+   void PlaySoundAt(Sound* sound, float x, float y, float z, float volumeOffset, const float randompitch, const int pitch, const int loopcount, const bool usesame, const bool restart);
+
+   // Spatial audio
+   void SetTableDimensions(float width, float height); // in table units, used for the default listener pose and legacy pan/fade to position mapping
+   void SetListenerPose(float x, float y, float z, float yaw, float pitch, float roll);
+   void SetBinaural(bool binaural); // Binaural rendering for headphones / VR play
+   bool IsSpatialAudioEnabled() const { return m_spatialAudioEnabled; }
+   SpatialAudioMixer* GetSpatialMixer(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldSpatial.get() : m_backglassSpatial.get(); }
+   float GetTableWidth() const { return m_tableWidth; }
+   float GetTableHeight() const { return m_tableHeight; }
    void StopSound(Sound* sound);
    bool IsSoundPlaying(const Sound* sound) const;
    SoundSpec GetSoundInformations(const Sound* const sound) const;
@@ -111,10 +126,21 @@ public:
    ma_engine* GetEngine(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldEngine.get() : m_backglassEngine.get(); }
 
 private:
+   void PlaySoundInternal(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart,
+      bool hasPos, float posX, float posY, float posZ);
+
    float m_playfieldVolume = 1.f;
    float m_backglassVolume = 1.f;
    float m_musicVolume = 1.f;
    bool m_mirrored = false;
+
+   float m_tableWidth = 950.f;
+   float m_tableHeight = 2100.f;
+   float m_listenerPose[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+   bool m_binaural = false;
+   const bool m_spatialAudioEnabled;
+   std::unique_ptr<SpatialAudioMixer> m_backglassSpatial;
+   std::unique_ptr<SpatialAudioMixer> m_playfieldSpatial;
 
    int m_playfieldAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
    int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;

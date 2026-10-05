@@ -206,8 +206,9 @@ static ma_result ma_context_init__sdl(ma_context* pContext, const ma_context_con
 namespace VPX
 {
 
-AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode)
-   : m_soundMode3D(playfieldSoundMode)
+AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, bool spatialAudio)
+   : m_spatialAudioEnabled(spatialAudio)
+   , m_soundMode3D(playfieldSoundMode)
 {
    if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
       return;
@@ -286,6 +287,13 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
             m_backglassDevice->device.onData = ma_engine_data_callback_internal;
             m_backglassDevice->device.pUserData = m_backglassEngine.get();
             ma_engine_start(m_backglassEngine.get());
+            if (m_spatialAudioEnabled)
+            {
+               m_backglassSpatial
+                  = std::make_unique<SpatialAudioMixer>(m_backglassEngine.get(), SpatialAudioMixer::GetBackglassSpeakerLayout(ma_engine_get_channels(m_backglassEngine.get())));
+               m_backglassSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
+               m_backglassSpatial->SetBinauralEnabled(m_binaural || m_soundMode3D == SNDCFG_SND3DBINAURAL);
+            }
          }
          else
          {
@@ -330,6 +338,13 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
             m_playfieldDevice->device.onData = ma_engine_data_callback_internal;
             m_playfieldDevice->device.pUserData = m_playfieldEngine.get();
             ma_engine_start(m_playfieldEngine.get());
+            if (m_spatialAudioEnabled)
+            {
+               m_playfieldSpatial = std::make_unique<SpatialAudioMixer>(m_playfieldEngine.get(),
+                  SpatialAudioMixer::GetPlayfieldSpeakerLayout(m_soundMode3D == SNDCFG_SND3DBINAURAL ? SNDCFG_SND3D2CH : m_soundMode3D, ma_engine_get_channels(m_playfieldEngine.get())));
+               m_playfieldSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
+               m_playfieldSpatial->SetBinauralEnabled(m_binaural || m_soundMode3D == SNDCFG_SND3DBINAURAL);
+            }
          }
          else
          {
@@ -350,6 +365,8 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
 AudioPlayer::~AudioPlayer()
 {
    m_soundPlayers.clear();
+   m_playfieldSpatial = nullptr;
+   m_backglassSpatial = nullptr;
    m_audioStreams.clear();
    m_pendingDeleteAudioStreams.clear();
    m_music = nullptr;
@@ -474,7 +491,54 @@ bool AudioPlayer::IsMusicPlaying() const
    return m_music && m_music->IsPlaying();
 }
 
+void AudioPlayer::SetTableDimensions(float width, float height)
+{
+   m_tableWidth = width;
+   m_tableHeight = height;
+   // Default listener pose: standing at the lockbar, facing the backglass (overridden by the head tracked pose in VR)
+   SetListenerPose(width * 0.5f, height + 350.f, 1000.f, 0.f, 0.f, 0.f);
+}
+
+void AudioPlayer::SetListenerPose(float x, float y, float z, float yaw, float pitch, float roll)
+{
+   m_listenerPose[0] = x;
+   m_listenerPose[1] = y;
+   m_listenerPose[2] = z;
+   m_listenerPose[3] = yaw;
+   m_listenerPose[4] = pitch;
+   m_listenerPose[5] = roll;
+   if (m_backglassSpatial)
+      m_backglassSpatial->GetListener()->SetPose(x, y, z, yaw, pitch, roll);
+   if (m_playfieldSpatial)
+      m_playfieldSpatial->GetListener()->SetPose(x, y, z, yaw, pitch, roll);
+}
+
+void AudioPlayer::SetBinaural(bool binaural)
+{
+   m_binaural = binaural;
+   const bool enabled = binaural || m_soundMode3D == SNDCFG_SND3DBINAURAL;
+   if (m_backglassSpatial)
+      m_backglassSpatial->SetBinauralEnabled(enabled);
+   if (m_playfieldSpatial)
+      m_playfieldSpatial->SetBinauralEnabled(enabled);
+}
+
+void AudioPlayer::PlaySoundAt(
+   Sound* sound, float x, float y, float z, float volumeOffset, const float randomPitch, const int pitch, const int loopcount, const bool useSame, const bool restart)
+{
+   PlaySoundInternal(
+      sound, dequantizeSignedPercent(sound->GetVolume()) + volumeOffset, randomPitch, pitch, 0.f, 0.f, loopcount, useSame, restart, true, m_mirrored ? m_tableWidth - x : x, y, z);
+}
+
 void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float randomPitch, const int pitch, float panOffset, float frontRearFadeOffset, const int loopcount, const bool useSame, const bool restart)
+{
+   float pan = dequantizeSignedPercent(sound->GetPan()) + panOffset;
+   PlaySoundInternal(sound, dequantizeSignedPercent(sound->GetVolume()) + volumeOffset, randomPitch, pitch, m_mirrored ? -pan : pan,
+      dequantizeSignedPercent(sound->GetFrontRearFade()) + frontRearFadeOffset, loopcount, useSame, restart, false, 0.f, 0.f, 0.f);
+}
+
+void AudioPlayer::PlaySoundInternal(Sound* sound, float volume, const float randomPitch, const int pitch, float pan, float frontRearFade, const int loopcount, const bool useSame,
+   const bool restart, bool hasPos, float posX, float posY, float posZ)
 {
    SoundPlayer* player = nullptr;
    vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
@@ -510,15 +574,7 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
       players.push_back(std::unique_ptr<SoundPlayer>(player));
    }
 
-   float pan = dequantizeSignedPercent(sound->GetPan()) + panOffset;
-
-   player->Play(
-      dequantizeSignedPercent(sound->GetVolume()) + volumeOffset,
-      randomPitch,
-      pitch,
-      m_mirrored ? -pan : pan,
-      dequantizeSignedPercent(sound->GetFrontRearFade()) + frontRearFadeOffset,
-      loopcount);
+   player->Play(volume, randomPitch, pitch, pan, frontRearFade, loopcount, hasPos, posX, posY, posZ);
 }
 
 void AudioPlayer::StopSound(Sound* sound)

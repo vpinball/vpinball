@@ -88,6 +88,7 @@ public:
    STDMETHOD(get_ShowFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 
    STDMETHOD(PlaySound)(BSTR sound, LONG LoopCount, float volume, float pan, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
+   STDMETHOD(PlaySoundAt)(BSTR sound, float x, float y, float z, LONG LoopCount, float volume, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
    STDMETHOD(StopSound)(BSTR sound);
 
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
