@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "math/Mesh.h"
+#include "parts/flipper.h"
 #include "parts/Material.h"
 #include "parts/PartGroup.h"
 #include "parts/pintable.h"
@@ -864,6 +865,46 @@ TEST_CASE("VPZ pack save/load round-trip")
    table->Release();
 }
 
+
+TEST_CASE("VPZ pack keeps fractional flipper rubber dimensions")
+{
+   std::error_code ec;
+
+   CComObject<PinTable> *table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   TestFileFeedback feedback;
+   REQUIRE(SUCCEEDED(table->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", feedback)));
+   const auto isFlipper = [](const IEditable *part) { return part->GetItemType() == eItemFlipper; };
+   const auto found = std::ranges::find_if(table->GetParts(), isFlipper);
+   REQUIRE(found != table->GetParts().end());
+   Flipper *const flipper = static_cast<Flipper *>(*found);
+   flipper->m_d.m_rubberthickness = 7.5f;
+   flipper->m_d.m_rubberheight = 19.25f;
+   flipper->m_d.m_rubberwidth = 24.75f;
+
+   const std::filesystem::path packPath = GetTmpDir() / "flipper-rubber.vpz";
+   std::filesystem::remove(packPath, ec);
+   TestFileFeedback saveFeedback;
+   REQUIRE(SUCCEEDED(table->SaveToJSON(packPath, saveFeedback)));
+
+   CComObject<PinTable> *reloaded;
+   CComObject<PinTable>::CreateInstance(&reloaded);
+   reloaded->AddRef();
+   TestFileFeedback loadFeedback;
+   REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
+   const auto sameName = [flipper](const IEditable *part) { return part->GetItemType() == eItemFlipper && part->GetName() == flipper->GetName(); };
+   const auto reloadedFound = std::ranges::find_if(reloaded->GetParts(), sameName);
+   REQUIRE(reloadedFound != reloaded->GetParts().end());
+   const Flipper *const reloadedFlipper = static_cast<const Flipper *>(*reloadedFound);
+   CHECK(reloadedFlipper->m_d.m_rubberthickness == 7.5f);
+   CHECK(reloadedFlipper->m_d.m_rubberheight == 19.25f);
+   CHECK(reloadedFlipper->m_d.m_rubberwidth == 24.75f);
+
+   reloaded->Release();
+   table->Release();
+   std::filesystem::remove(packPath, ec);
+}
 
 TEST_CASE("VPZ partial pack export and import")
 {
