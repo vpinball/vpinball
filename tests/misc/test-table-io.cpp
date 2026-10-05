@@ -612,6 +612,45 @@ static void CheckSameTableContent(const PinTable *table, const PinTable *reloade
 }
 
 
+TEST_CASE("Table save adds the .vpx extension")
+{
+   std::error_code ec;
+
+   CComObject<PinTable> *table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   TestFileFeedback feedback;
+   REQUIRE(SUCCEEDED(table->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", feedback)));
+
+   SUBCASE("a dotted name is kept whole")
+   {
+      const std::filesystem::path expected = GetTmpDir() / "save 1.5.vpx";
+      std::filesystem::remove(expected, ec);
+      std::filesystem::remove(GetTmpDir() / "save 1.vpx", ec);
+      table->m_filename = GetTmpDir() / "save 1.5";
+      TestFileFeedback saveFeedback;
+      CHECK(SUCCEEDED(table->Save(saveFeedback)));
+      CHECK(std::filesystem::exists(expected));
+      CHECK(!std::filesystem::exists(GetTmpDir() / "save 1.vpx"));
+      CHECK(table->m_filename == expected);
+      std::filesystem::remove(expected, ec);
+   }
+
+   SUBCASE("a legacy .vpt extension is replaced")
+   {
+      const std::filesystem::path expected = GetTmpDir() / "legacy.vpx";
+      std::filesystem::remove(expected, ec);
+      table->m_filename = GetTmpDir() / "legacy.vpt";
+      TestFileFeedback saveFeedback;
+      CHECK(SUCCEEDED(table->Save(saveFeedback)));
+      CHECK(std::filesystem::exists(expected));
+      CHECK(table->m_filename == expected);
+      std::filesystem::remove(expected, ec);
+   }
+
+   table->Release();
+}
+
 TEST_CASE("VPZ pack save/load round-trip")
 {
    std::error_code ec;
