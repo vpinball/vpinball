@@ -18,6 +18,11 @@ namespace VPX
 
 void SpatialAudioListener::SetPose(float x, float y, float z, float yaw, float pitch, float roll)
 {
+   // Reject invalid poses (tracking loss can produce NaN/Inf through the view
+   // matrix inversion): a single non finite value would permanently poison the
+   // DSP state (rotation matrix, filter and convolution overlap buffers)
+   if (!std::isfinite(x + y + z + yaw + pitch + roll))
+      return;
    m_x = x;
    m_y = y;
    m_z = z;
@@ -39,13 +44,25 @@ void SpatialAudioListener::GetPose(float& x, float& y, float& z, float& yaw, flo
 
 // VPU (table unit) to meters, matching the scale used by the VR renderer
 static constexpr float kVPUToMeters = static_cast<float>(0.0254 * 1.0625 / 50.);
-static constexpr unsigned int kAmbiOrder = 1;
-static constexpr unsigned int kAmbiChannels = 4; // First order 3D B-format, ACN order: W, Y, Z, X
-static constexpr unsigned int kMaxAmbiBlock = 4096;
+static constexpr unsigned int kAmbiOrder = 2;
+static constexpr unsigned int kAmbiChannels = (kAmbiOrder + 1) * (kAmbiOrder + 1); // 3D B-format, ACN channel order
+// Maximum frames processed per ambisonic DSP call. This size directly sets the
+// binauralizer's FFT convolution length (next pow2 of block + HRTF taps - 1),
+// and the cost of each Process call is constant in that FFT size whatever the
+// number of frames it is asked to output. A value much larger than the audio
+// device period (typically ~480 frames) therefore multiplies the per-period CPU
+// cost by the wasted FFT size (e.g. ~4.5ms per 10ms period at 4096 -> audio
+// underruns and eventual device failure). 512 frames gives a 1024 points FFT
+// (~10x cheaper) while staying efficient vs the ~256 tap HRTFs.
+static constexpr unsigned int kMaxAmbiBlock = 512;
 // Fade times (ms) used by libspatialaudio to smooth source position and head
 // orientation changes (avoids clicks when scripts move sources or in VR)
 static constexpr float kPositionFadeMs = 10.f;
 static constexpr float kRotationFadeMs = 20.f;
+// Head orientation change (radians, ~0.2 deg) below which the soundfield
+// rotator is not retargeted: filters tracker jitter that would otherwise
+// restart the rotation fade on every audio block in VR
+static constexpr float kOrientationEpsilon = 0.004f;
 
 // Playfield speaker positions, in spherical coordinates relative to the default
 // listener (standing at the lockbar, facing the backglass): azimuth in degrees
@@ -192,15 +209,23 @@ struct SpatialAudioMixer::Impl
    std::vector<float*> speakerPtrs;
    std::vector<float> channelScratch[kAmbiChannels];
    std::atomic<bool> binaural { false };
+   // Last orientation sent to the rotator (audio thread only, no atomics needed)
+   float appliedYaw = 0.f, appliedPitch = 0.f, appliedRoll = 0.f;
+   bool orientationApplied = false;
 
    void Process(const float* in, unsigned int count, float* out)
    {
-      // Deinterleave the B-format input bus into per channel buffers
+      // Deinterleave the B-format input bus into per channel buffers, dropping
+      // non finite samples so a bad source cannot permanently poison the
+      // rotator, shelf filters and convolution overlap state downstream
       for (unsigned int ch = 0; ch < kAmbiChannels; ch++)
       {
          float* scratch = channelScratch[ch].data();
          for (unsigned int i = 0; i < count; i++)
-            scratch[i] = in[i * kAmbiChannels + ch];
+         {
+            const float v = in[i * kAmbiChannels + ch];
+            scratch[i] = std::isfinite(v) ? v : 0.f;
+         }
          bFormat.InsertStream(scratch, ch, count);
       }
       // Rotate the whole soundfield to the listener head orientation (VR head
@@ -214,7 +239,19 @@ struct SpatialAudioMixer::Impl
          // the head to the right), hence the sign change. Pitch (positive =
          // looking up) and roll (positive = tilting the head to the right)
          // already match the rotator conventions.
-         rotator.SetOrientation({ -yaw, pitch, roll });
+         const float rotYaw = -yaw;
+         // Skip non finite poses: they would poison the rotation matrix, and the
+         // epsilon gate would then never recover (fabsf(NaN) > eps is false)
+         if (std::isfinite(rotYaw + pitch + roll)
+            && (!orientationApplied || fabsf(rotYaw - appliedYaw) > kOrientationEpsilon || fabsf(pitch - appliedPitch) > kOrientationEpsilon
+               || fabsf(roll - appliedRoll) > kOrientationEpsilon))
+         {
+            rotator.SetOrientation({ rotYaw, pitch, roll });
+            appliedYaw = rotYaw;
+            appliedPitch = pitch;
+            appliedRoll = roll;
+            orientationApplied = true;
+         }
          rotator.Process(&bFormat, count);
       }
       const bool binauralize = binaural.load(std::memory_order_relaxed) && outChannels >= 2;
@@ -398,8 +435,14 @@ struct SpatialAudioSource::Impl
       const float distGain = clamp(refDistance / std::max(refDistance, distance), 0.f, 3.f);
       const float vol = volume.load(std::memory_order_relaxed);
       const float balance = clamp(channelBalance.load(std::memory_order_relaxed), -1.f, 1.f);
-      gainL = vol * distGain * (balance < 0.f ? 1.f : 1.f - balance);
-      gainR = vol * distGain * (balance > 0.f ? 1.f : 1.f + balance);
+      const float newGainL = vol * distGain * (balance < 0.f ? 1.f : 1.f - balance);
+      const float newGainR = vol * distGain * (balance > 0.f ? 1.f : 1.f + balance);
+      // Keep the previous position and gains on non finite values (NaN/Inf
+      // would poison the encoder coefficients and the downstream DSP state)
+      if (!std::isfinite(azimuth + elevation + distance + newGainL + newGainR))
+         return;
+      gainL = newGainL;
+      gainR = newGainR;
       const float spread = spaudio::DegreesToRadians(stereoSpread);
       if (inChannels == 2)
       {
@@ -416,6 +459,11 @@ struct SpatialAudioSource::Impl
    void Process(const float* in, unsigned int count, float* out)
    {
       UpdatePosition();
+      // Reset the B-format accumulator: GainInterp does not write channels
+      // whose target gain is ~0, so without a reset they would keep stale
+      // content, and worse, ProcessAccumul (stereo right channel) would keep
+      // adding into them, growing without bound until Inf/NaN
+      bFormat.Reset();
       if (inChannels == 2)
       {
          // Deinterleave stereo input, applying volume, distance attenuation and channel balance
@@ -433,7 +481,7 @@ struct SpatialAudioSource::Impl
             scratchL[i] = in[i] * gainL;
          encoderL.Process(scratchL.data(), count, &bFormat);
       }
-      // Interleave the B-format channels (W, Y, Z, X) to the output
+      // Interleave the B-format channels (ACN order) to the output
       for (unsigned int ch = 0; ch < kAmbiChannels; ch++)
       {
          float* scratch = channelScratch[ch].data();
