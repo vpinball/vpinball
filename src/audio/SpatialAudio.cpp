@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "SpatialAudio.h"
+#include "core/VPApp.h"
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_CUSTOM
@@ -11,6 +12,7 @@
 #include "spatialaudio/AmbisonicDecoder.h"
 #include "spatialaudio/AmbisonicEncoder.h"
 #include "spatialaudio/AmbisonicRotator.h"
+#include "spatialaudio/SpatialaudioConfig.h"
 
 
 namespace VPX
@@ -44,7 +46,14 @@ void SpatialAudioListener::GetPose(float& x, float& y, float& z, float& yaw, flo
 
 // VPU (table unit) to meters, matching the scale used by the VR renderer
 static constexpr float kVPUToMeters = static_cast<float>(0.0254 * 1.0625 / 50.);
+// Second order ambisonics needs a SOFA (full sphere) HRTF for binaural rendering: its
+// 20 virtual speakers reach -69deg elevation while the built-in MIT HRTF rejects
+// anything below -40deg (Configure fails, leading to an assert in Process)
+#if SPATIALAUDIO_SUPPORTS_SOFA
 static constexpr unsigned int kAmbiOrder = 2;
+#else
+static constexpr unsigned int kAmbiOrder = 1;
+#endif
 static constexpr unsigned int kAmbiChannels = (kAmbiOrder + 1) * (kAmbiOrder + 1); // 3D B-format, ACN channel order
 // Maximum frames processed per ambisonic DSP call. This size directly sets the
 // binauralizer's FFT convolution length (next pow2 of block + HRTF taps - 1),
@@ -209,6 +218,7 @@ struct SpatialAudioMixer::Impl
    std::vector<float*> speakerPtrs;
    std::vector<float> channelScratch[kAmbiChannels];
    std::atomic<bool> binaural { false };
+   bool binauralConfigured = false;
    // Last orientation sent to the rotator (audio thread only, no atomics needed)
    float appliedYaw = 0.f, appliedPitch = 0.f, appliedRoll = 0.f;
    bool orientationApplied = false;
@@ -254,7 +264,7 @@ struct SpatialAudioMixer::Impl
          }
          rotator.Process(&bFormat, count);
       }
-      const bool binauralize = binaural.load(std::memory_order_relaxed) && outChannels >= 2;
+      const bool binauralize = binaural.load(std::memory_order_relaxed) && binauralConfigured && outChannels >= 2;
       if (binauralize)
          binauralizer.Process(&bFormat, speakerPtrs.data(), count);
       else
@@ -333,7 +343,25 @@ SpatialAudioMixer::SpatialAudioMixer(ma_engine* engine, const std::vector<Spatia
 
    // Configure the binauralizer (used for headphones and VR play)
    unsigned int tailLength = 0;
-   m_impl->binauralizer.Configure(kAmbiOrder, true, sampleRate, kMaxAmbiBlock, tailLength);
+#if SPATIALAUDIO_SUPPORTS_SOFA
+   // Use the bundled full sphere FABIAN HRTF: the built-in MIT HRTF cannot cover
+   // the virtual speakers below -40deg elevation used by 2nd order decoding
+   const std::string hrtfPath = g_app ? (g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets) / "fabian-hrir.sofa").string() : std::string();
+   try
+   {
+      m_impl->binauralConfigured = m_impl->binauralizer.Configure(kAmbiOrder, true, sampleRate, kMaxAmbiBlock, tailLength, hrtfPath, false);
+   }
+   catch (const std::exception&)
+   {
+      m_impl->binauralConfigured = false;
+   }
+   if (!m_impl->binauralConfigured)
+      PLOGE << "Failed to load the binaural HRTF '" << hrtfPath << "', falling back to loudspeaker decoding";
+#else
+   m_impl->binauralConfigured = m_impl->binauralizer.Configure(kAmbiOrder, true, sampleRate, kMaxAmbiBlock, tailLength);
+   if (!m_impl->binauralConfigured)
+      PLOGE << "Failed to configure binaural audio, falling back to loudspeaker decoding";
+#endif
 
    const unsigned int nBuffers = std::max(nSpeakers, 2u);
    m_impl->speakerBuffers.resize(nBuffers, std::vector<float>(kMaxAmbiBlock, 0.f));
