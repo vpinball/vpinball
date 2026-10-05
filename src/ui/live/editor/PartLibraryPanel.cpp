@@ -59,7 +59,7 @@ void PartLibraryPanel::Render()
       std::filesystem::path file = PathFromUTF8(*m_pendingExportPath);
       m_pendingExportPath = nullptr;
       if (lowerCase(PathToUTF8(file.extension())) != ".vpz"s)
-         file.replace_extension(".vpz");
+         file += ".vpz";
       vector<IEditable *> parts;
       for (const auto &part : m_editor.m_multiSel)
          parts.push_back(part->GetEditable());

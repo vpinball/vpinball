@@ -774,11 +774,14 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
       m_settings.Save();
       return hr;
    }
-   // Tables are saved in the VPX format, so a legacy .vpt table is saved to a .vpx file (keeping the case of an existing .vpx extension,
-   // as changing it would write another file on case sensitive file systems)
+   // Tables are saved in the VPX format, so a legacy .vpt table is saved to a .vpx file, and any other name gets the .vpx extension appended,
+   // keeping a dotted name like 'table 1.5' whole (keeping the case of an existing .vpx extension, as changing it would write another file
+   // on case sensitive file systems)
    std::filesystem::path vpxPath = m_filename;
-   if (lowerCase(PathToUTF8(vpxPath.extension())) != ".vpx")
+   if (const string extension = lowerCase(PathToUTF8(vpxPath.extension())); extension == ".vpt")
       vpxPath.replace_extension(".vpx");
+   else if (extension != ".vpx")
+      vpxPath += ".vpx";
 
    RemoveInvalidReferences();
 
@@ -831,7 +834,7 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
 #endif
       SetNonUndoableDirty(eSaveClean);
 
-      // A legacy .vpt table was saved as .vpx: from now on, the table is this file
+      // A legacy .vpt table, or a name without the .vpx extension, was saved as .vpx: from now on, the table is this file
       if (vpxPath != m_filename)
       {
          m_filename = vpxPath;
