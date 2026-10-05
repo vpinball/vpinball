@@ -26,7 +26,7 @@ PinMAMEAPI::PinMAMEAPI(const MsgPluginAPI* msgApi, uint32_t endpointId, Server* 
       else if (name == "Switch"sv && nArgs == 2)
          m_setSwitchIndex = i;
    }
-   
+
    assert(m_changedLampsIndex >= 0);
    assert(m_changedSolenoidsIndex >= 0);
    assert(m_changedGIStringsIndex >= 0);
@@ -90,10 +90,8 @@ void PinMAMEAPI::HandleCall(int memberIndex, ScriptVariant* pArgs, ScriptVariant
    m_controllerProxy.ForwardCall(m_server, memberIndex, pArgs, pRet);
 
    if (methodName == "GameName"sv) {
-      if (pArgs) {
-         string gameName;
-         if (pArgs[0].vString.string)
-            gameName = pArgs[0].vString.string;
+      if (m_serverClassDef->members[memberIndex].nArgs >= 1 && pArgs && pArgs[0].vString.string) {
+         string gameName = pArgs[0].vString.string;
          LOGI("Setting GameName to '" + gameName + "' in B2S settings");
          m_server->GetB2SSettings()->SetGameName(gameName);
          m_server->SetB2SName(""s);
