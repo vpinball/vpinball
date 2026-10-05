@@ -36,6 +36,7 @@
 
 #include "utils/BiffReader.h"
 #include "utils/color.h"
+#include "utils/JSONSerializer.h"
 
 #include "imgui/imgui.h"
 
@@ -203,8 +204,11 @@ void EditorUI::SaveTableAs()
       return;
    m_pendingSaveAsPath = std::make_shared<string>();
    m_pendingSaveAsFolder = false;
-   const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx;vpz" } };
    std::filesystem::path defaultLocation = m_table->m_filename;
+   const bool isPack = !defaultLocation.empty() && JSONSerializer::IsPack(defaultLocation);
+   const SDL_DialogFileFilter tableFilter = { "Visual Pinball Tables", "vpx" };
+   const SDL_DialogFileFilter packFilter = { "Visual Pinball Packs", "vpz" };
+   const SDL_DialogFileFilter filters[] = { isPack ? packFilter : tableFilter, isPack ? tableFilter : packFilter };
    if (defaultLocation.empty())
       defaultLocation = PathFromString(m_table->GetSettings().GetRecentDir_LoadDir()) / "new_table.vpx";
    else if (lowerCase(PathToUTF8(defaultLocation.extension())) != ".vpz"s)
@@ -223,7 +227,7 @@ void EditorUI::SaveTableAs()
          delete res;
       },
       new std::shared_ptr<string>(m_pendingSaveAsPath), //
-      m_player->m_playfieldWnd->GetCore(), filters, 1, location.empty() ? nullptr : location.c_str());
+      m_player->m_playfieldWnd->GetCore(), filters, static_cast<int>(std::size(filters)), location.empty() ? nullptr : location.c_str());
 }
 
 void EditorUI::SaveTableAsPackFolder()
