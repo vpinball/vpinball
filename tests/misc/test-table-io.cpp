@@ -1115,8 +1115,27 @@ TEST_CASE("Mesh GLB round-trip")
    }
    for (size_t i = 0; i < mesh.m_indices.size(); ++i)
       CHECK(loaded.m_indices[i] == mesh.m_indices[i]);
+   for (size_t i = 0; i < mesh.m_vertices.size(); ++i)
+   {
+      CHECK(loaded.m_vertices[i].nx == doctest::Approx(mesh.m_vertices[i].nx));
+      CHECK(loaded.m_vertices[i].ny == doctest::Approx(mesh.m_vertices[i].ny));
+      CHECK(loaded.m_vertices[i].nz == doctest::Approx(mesh.m_vertices[i].nz));
+   }
    // Morph target frame restores the vertex offsets
    CHECK(loaded.m_animationFrames[0].m_frameVerts[0].z == doctest::Approx(10.f));
+
+   uint32_t jsonLength;
+   memcpy(&jsonLength, glb.data() + 12, sizeof(jsonLength));
+   const nlohmann::json gltf = nlohmann::json::parse(glb.begin() + 20, glb.begin() + 20 + jsonLength);
+   const nlohmann::json &accessor = gltf["accessors"][gltf["meshes"][0]["primitives"][0]["attributes"]["NORMAL"].get<int>()];
+   const size_t offset = gltf["bufferViews"][accessor["bufferView"].get<int>()].value("byteOffset", 0);
+   const uint8_t *const binary = glb.data() + 20 + jsonLength + 8;
+   for (size_t i = 0; i < accessor["count"].get<size_t>(); ++i)
+   {
+      float n[3];
+      memcpy(n, binary + offset + i * sizeof(n), sizeof(n));
+      CHECK(sqrtf(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]) == doctest::Approx(1.f));
+   }
 }
 
 

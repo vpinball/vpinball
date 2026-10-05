@@ -26,6 +26,8 @@ namespace
 
 vec3 VpxToGltf(const float x, const float y, const float z) { return vec3(VPUTOM(x), VPUTOM(z), VPUTOM(y)); }
 vec3 GltfToVpx(const float x, const float y, const float z) { return vec3(MTOVPU(x), MTOVPU(z), MTOVPU(y)); }
+vec3 VpxToGltfDirection(const float x, const float y, const float z) { return vec3(x, z, y); }
+vec3 GltfToVpxDirection(const float x, const float y, const float z) { return vec3(x, z, y); }
 
 int AddAccessor(tinygltf::Model& model, const void* data, const size_t dataSize, const int componentType, const size_t count, const int type, const float* minBounds = nullptr,
    const float* maxBounds = nullptr)
@@ -95,7 +97,7 @@ bool Mesh::SaveGLB(vector<uint8_t>& out) const
       {
          const Vertex3D_NoTex2& v = m_vertices[i];
          const vec3 pos = VpxToGltf(v.x, v.y, v.z);
-         const vec3 nrm = VpxToGltf(v.nx, v.ny, v.nz);
+         const vec3 nrm = VpxToGltfDirection(v.nx, v.ny, v.nz);
          positions[i * 3 + 0] = pos.x;
          positions[i * 3 + 1] = pos.y;
          positions[i * 3 + 2] = pos.z;
@@ -157,7 +159,7 @@ bool Mesh::SaveGLB(vector<uint8_t>& out) const
          for (size_t i = 0; i < numVertices; i++)
          {
             const vec3 dp = VpxToGltf(frame.m_frameVerts[i].x - m_vertices[i].x, frame.m_frameVerts[i].y - m_vertices[i].y, frame.m_frameVerts[i].z - m_vertices[i].z);
-            const vec3 dn = VpxToGltf(frame.m_frameVerts[i].nx - m_vertices[i].nx, frame.m_frameVerts[i].ny - m_vertices[i].ny, frame.m_frameVerts[i].nz - m_vertices[i].nz);
+            const vec3 dn = VpxToGltfDirection(frame.m_frameVerts[i].nx - m_vertices[i].nx, frame.m_frameVerts[i].ny - m_vertices[i].ny, frame.m_frameVerts[i].nz - m_vertices[i].nz);
             deltaPos[i * 3 + 0] = dp.x;
             deltaPos[i * 3 + 1] = dp.y;
             deltaPos[i * 3 + 2] = dp.z;
@@ -289,7 +291,7 @@ bool Mesh::LoadGLB(const uint8_t* data, const size_t size)
          v.x = pos.x;
          v.y = pos.y;
          v.z = pos.z;
-         const vec3 nrm = hasNormals ? GltfToVpx(normals[i * 3 + 0], normals[i * 3 + 1], normals[i * 3 + 2]) : vec3(0.f, 0.f, 1.f);
+         const vec3 nrm = hasNormals ? GltfToVpxDirection(normals[i * 3 + 0], normals[i * 3 + 1], normals[i * 3 + 2]) : vec3(0.f, 0.f, 1.f);
          v.nx = nrm.x;
          v.ny = nrm.y;
          v.nz = nrm.z;
@@ -320,7 +322,7 @@ bool Mesh::LoadGLB(const uint8_t* data, const size_t size)
             fv.y = pos.y;
             fv.z = pos.z;
             const vec3 nrm = deltaNrm.empty() ? vec3(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz)
-                                              : GltfToVpx(normals[i * 3 + 0] + deltaNrm[i * 3 + 0], normals[i * 3 + 1] + deltaNrm[i * 3 + 1], normals[i * 3 + 2] + deltaNrm[i * 3 + 2]);
+                                              : GltfToVpxDirection(normals[i * 3 + 0] + deltaNrm[i * 3 + 0], normals[i * 3 + 1] + deltaNrm[i * 3 + 1], normals[i * 3 + 2] + deltaNrm[i * 3 + 2]);
             fv.nx = nrm.x;
             fv.ny = nrm.y;
             fv.nz = nrm.z;
