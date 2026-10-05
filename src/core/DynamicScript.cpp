@@ -331,7 +331,7 @@ int DynamicTypeLibrary::ResolveMemberId(const ScriptClassDef* classDef, const ch
 {
    if ((classDef->name.id == TypeID::TYPEID_UNRESOLVED) || (classDef->name.id >= m_types.size()))
       return -1;
-   
+
    const TypeDef& type = m_types[classDef->name.id];
    if (type.category != TypeDef::TD_CLASS)
       return -1;
@@ -355,11 +355,11 @@ ScriptClassDef* DynamicTypeLibrary::GetClass(const ScriptTypeNameDef& name) cons
 
 bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeNameDef& type, ScriptVariant& sv) const
 {
-   // Since we are copying from COM data structure to our own data layout, there is no difference between normal and 
+   // Since we are copying from COM data structure to our own data layout, there is no difference between normal and
    // byref arguments. The difference is after call where we need to update byref COM arguments from ScripVariants
    if (V_VT(cv) == (VT_BYREF | VT_VARIANT))
       return COMToScriptVariant(V_VARIANTREF(cv), type, sv);
-   
+
    assert(type.id != TypeID::TYPEID_UNRESOLVED);
    const TypeDef& typeDef = m_types[type.id];
    switch (typeDef.category)
@@ -912,11 +912,11 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
 
    // FIXME match overload on type and arguments
    //
-   // For now, search for the right overload matching on arg count, then disambiguating string (VT_BSTR) 
+   // For now, search for the right overload matching on arg count, then disambiguating string (VT_BSTR)
    // vs non-string args. Falls back to first arg-count match if nothing type-matches.
    //
    // Needed for several B2S functions such as B2SSetData(int, int) vs (string, int)
- 
+
    const std::vector<int>& members = cd->members[dispIdMember - 1];
    int memberIndex = -1;
    if (wFlags & DISPATCH_METHOD)
@@ -997,7 +997,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    const ScriptClassMemberDef& memberDef = classDef->members[memberIndex];
 
    // Convert all incoming COM arguments to ScriptVariants
-   ScriptVariant args[PSC_CALL_MAX_ARG_COUNT];
+   ScriptVariant args[PSC_CALL_MAX_ARG_COUNT] = {};
    for (unsigned int i = 0; i < pDispParams->cArgs; i++)
    {
       if (!COMToScriptVariant(&pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]))
@@ -1087,7 +1087,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       }
       ReleaseScriptVariant(memberDef.callArgType[i], args[i]);
    }
-   
+
    // Convert then dispose the return value if any
    if (memberDef.type.id != TypeID::TYPEID_VOID)
    {
