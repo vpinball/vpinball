@@ -16,7 +16,7 @@ namespace VPX
 //   all sources and mixers of a play session (atomics as it is updated from the
 //   render/VR thread and read from the audio thread).
 // - SpatialAudioMixer is a per audio engine node mixing all spatial sources in
-//   a first order B-format bus, then decoding to the device loudspeaker layout
+//   a second order B-format bus, then decoding to the device loudspeaker layout
 //   or binauralizing (headphones / VR).
 // - SpatialAudioSource is a per sound encoder node, converting a mono or stereo
 //   source to B-format according to its position relative to the listener.
@@ -60,7 +60,7 @@ public:
    SpatialAudioMixer(ma_engine* engine, const std::vector<SpatialSpeakerPosition>& speakerLayout);
    ~SpatialAudioMixer();
 
-   // Node to attach SpatialAudioSource outputs to (first order B-format input bus).
+   // Node to attach SpatialAudioSource outputs to (B-format input bus).
    // Returns a ma_node* (declared as void* to avoid including miniaudio.h here)
    void* GetMixBus() const;
    SpatialAudioListener* GetListener() { return &m_listener; }
