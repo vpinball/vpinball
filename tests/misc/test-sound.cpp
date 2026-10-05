@@ -42,6 +42,25 @@ Sound* LoadSoundFromFileStorage(const std::filesystem::path& file)
    return sound;
 }
 
+// Saves a sound, then replaces the import path in the saved data, as a file saved by another version may hold it
+InMemStream WithStoredPath(const Sound& sound, const string& path)
+{
+   InMemStream saved;
+   sound.SaveToStream(&saved);
+   const uint8_t* const data = saved.Data();
+   int32_t nameLen, pathLen;
+   memcpy(&nameLen, data, sizeof(int32_t));
+   memcpy(&pathLen, data + sizeof(int32_t) + nameLen, sizeof(int32_t));
+   const size_t restOffset = 2 * sizeof(int32_t) + nameLen + pathLen;
+   const int32_t newPathLen = static_cast<int32_t>(path.size());
+   InMemStream stream;
+   stream.Write(data, sizeof(int32_t) + nameLen);
+   stream.Write(&newPathLen, sizeof(int32_t));
+   stream.Write(path.data(), path.size());
+   stream.Write(data + restOffset, saved.Size() - restOffset);
+   return stream;
+}
+
 // Builds a minimal canonical PCM WAV file (44 byte header + samples)
 vector<uint8_t> MakeWavFile(vector<uint8_t> samples)
 {
@@ -148,5 +167,57 @@ TEST_CASE("Sound")
       CHECK(loaded->GetName() == "WavSound");
       CHECK(loaded->GetFileSize() == wav.size());
       CHECK(memcmp(loaded->GetFileRaw(), wav.data(), wav.size()) == 0);
+   }
+
+   SUBCASE("a sound loads by its stored layout, whatever its import path")
+   {
+      const vector<uint8_t> wav = MakeWavFile({ 1, 0, 2, 0, 3, 0, 4, 0 });
+      const vector<uint8_t> payload = { 'I', 'D', '3', 4, 0, 0, 0, 0, 0, 0 };
+      const std::tuple<vector<uint8_t>, std::filesystem::path, string> cases[] = {
+         { wav, "fx/hit.wav", "fx/creditreel" },
+         { wav, "fx/hit.wav", "fx/hit.mp3" },
+         { payload, "fx/hit.mp3", "fx/hit.wav" },
+         { payload, "fx/hit.mp3", "fx/hit" },
+      };
+      for (const auto& [content, savedPath, storedPath] : cases)
+      {
+         CAPTURE(storedPath);
+         Sound sound("hit", savedPath, content);
+         const std::filesystem::path file = GetTestTmpDir() / "sound-layout.vpx";
+         SaveSoundToFileStorage(WithStoredPath(sound, storedPath), file);
+         std::unique_ptr<Sound> loaded(LoadSoundFromFileStorage(file));
+         REQUIRE(loaded != nullptr);
+         CHECK(loaded->GetImportPath() == std::filesystem::path(storedPath));
+         CHECK(loaded->GetFileSize() == content.size());
+         CHECK(memcmp(loaded->GetFileRaw(), content.data(), content.size()) == 0);
+      }
+   }
+
+   SUBCASE("a sound is stored by its data, whatever its import path")
+   {
+      vector<uint8_t> wavWithList = MakeWavFile({ 1, 0, 2, 0 });
+      const vector<uint8_t> list = { 'L', 'I', 'S', 'T', 4, 0, 0, 0, 'I', 'N', 'F', 'O' };
+      wavWithList.insert(wavWithList.begin() + 36, list.begin(), list.end());
+      const uint32_t riffSize = static_cast<uint32_t>(wavWithList.size() - 8);
+      memcpy(wavWithList.data() + 4, &riffSize, sizeof(riffSize));
+      const std::pair<vector<uint8_t>, std::filesystem::path> cases[] = {
+         { MakeWavFile({ 1, 0, 2, 0, 3, 0, 4, 0 }), "fx/hit.mp3" },
+         { MakeWavFile({ 1, 0, 2, 0, 3, 0, 4, 0 }), "fx/hit" },
+         { { 'I', 'D', '3', 4, 0, 0, 0, 0, 0, 0 }, "fx/hit.wav" },
+         { wavWithList, "fx/hit.wav" },
+      };
+      for (const auto& [content, path] : cases)
+      {
+         CAPTURE(path);
+         Sound sound("hit", path, content);
+         InMemStream stream;
+         sound.SaveToStream(&stream);
+         const std::filesystem::path file = GetTestTmpDir() / "sound-data.vpx";
+         SaveSoundToFileStorage(stream, file);
+         std::unique_ptr<Sound> loaded(LoadSoundFromFileStorage(file));
+         REQUIRE(loaded != nullptr);
+         CHECK(loaded->GetFileSize() == content.size());
+         CHECK(memcmp(loaded->GetFileRaw(), content.data(), content.size()) == 0);
+      }
    }
 }
