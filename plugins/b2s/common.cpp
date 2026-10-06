@@ -102,4 +102,82 @@ bool is_string_numeric(const string& str, int* const __restrict result)
    return end == tmp.c_str() + tmp.length();
 }
 
+bool DecodeWav(const vector<uint8_t>& wav, WavData& out)
+{
+   if (wav.size() < 12 || memcmp(wav.data(), "RIFF", 4) != 0 || memcmp(wav.data() + 8, "WAVE", 4) != 0)
+      return false;
+
+   const auto read16 = [&wav](const size_t pos) { return static_cast<uint16_t>(wav[pos] | (wav[pos + 1] << 8)); };
+   const auto read32 = [&wav](const size_t pos) { return static_cast<uint32_t>(wav[pos] | (wav[pos + 1] << 8) | (wav[pos + 2] << 16) | (wav[pos + 3] << 24)); };
+
+   uint16_t format = 0, channels = 0, bitsPerSample = 0;
+   uint32_t sampleRate = 0;
+   const uint8_t* data = nullptr;
+   size_t dataSize = 0;
+   for (size_t pos = 12; pos + 8 <= wav.size();)
+   {
+      const uint32_t chunkSize = read32(pos + 4);
+      const size_t payload = pos + 8;
+      if (payload + chunkSize > wav.size())
+         return false;
+      if (memcmp(wav.data() + pos, "fmt ", 4) == 0 && chunkSize >= 16)
+      {
+         format = read16(payload);
+         channels = read16(payload + 2);
+         sampleRate = read32(payload + 4);
+         bitsPerSample = read16(payload + 14);
+      }
+      else if (memcmp(wav.data() + pos, "data", 4) == 0)
+      {
+         data = wav.data() + payload;
+         dataSize = chunkSize;
+      }
+      pos = payload + chunkSize + (chunkSize & 1);
+   }
+   if (data == nullptr || format == 0 || channels == 0 || channels > 2 || sampleRate == 0)
+      return false;
+
+   const size_t bytesPerSample = (bitsPerSample + 7) / 8;
+   const size_t nSamples = dataSize / bytesPerSample;
+   if (format == 1 && bitsPerSample == 16)
+   {
+      out.isFloat = false;
+      out.pcm.assign(data, data + dataSize - (dataSize % 2));
+   }
+   else if (format == 1 && bitsPerSample == 8)
+   {
+      out.isFloat = false;
+      out.pcm.resize(nSamples * 2);
+      int16_t* const dst = reinterpret_cast<int16_t*>(out.pcm.data());
+      for (size_t i = 0; i < nSamples; i++)
+         dst[i] = static_cast<int16_t>((static_cast<int>(data[i]) - 128) << 8);
+   }
+   else if (format == 1 && bitsPerSample == 24)
+   {
+      out.isFloat = false;
+      out.pcm.resize(nSamples * 2);
+      int16_t* const dst = reinterpret_cast<int16_t*>(out.pcm.data());
+      for (size_t i = 0; i < nSamples; i++)
+         dst[i] = static_cast<int16_t>(data[i * 3 + 1] | (data[i * 3 + 2] << 8));
+   }
+   else if (format == 1 && bitsPerSample == 32)
+   {
+      out.isFloat = false;
+      out.pcm.resize(nSamples * 2);
+      int16_t* const dst = reinterpret_cast<int16_t*>(out.pcm.data());
+      for (size_t i = 0; i < nSamples; i++)
+         dst[i] = static_cast<int16_t>(data[i * 4 + 2] | (data[i * 4 + 3] << 8));
+   }
+   else if (format == 3 && bitsPerSample == 32)
+   {
+      out.isFloat = true;
+      out.pcm.assign(data, data + dataSize - (dataSize % 4));
+   }
+   else
+      return false;
+
+   out.channels = channels;
+   out.sampleRate = static_cast<double>(sampleRate);
+   return true;
+}
 }
