@@ -258,8 +258,10 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
 
 void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores, float elapsed)
 {
-   if (server == nullptr || server->AreScoreDisplaysHidden())
+   if (server == nullptr)
       return;
+   // B2SHideScoreDisplays/animations only hide LED score displays, reel displays keep rendering
+   const bool ledDisplaysHidden = server->AreScoreDisplaysHidden();
 
    vector<SegElementType> segTypes;
    vector<float> luminances;
@@ -344,6 +346,10 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
 
    for (const auto& reel : scores.m_scores)
    {
+      // Skip hidden displays (DisplayState=1), and LED displays when score displays are hidden
+      if (reel.IsHidden() || (ledDisplaysHidden && (reel.m_scoreType == B2SScoreRenderer::Dream7 || reel.m_scoreType == B2SScoreRenderer::RenderedLED)))
+         continue;
+
       // Skip digits located on the grill when the grill is hidden
       if (static_cast<float>(reel.m_locY) > ctx->srcHeight)
       {
