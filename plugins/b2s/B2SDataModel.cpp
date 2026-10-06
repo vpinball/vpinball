@@ -103,11 +103,15 @@ static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::s
    return nullptr;
 }
 
-static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName) noexcept
+static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath) noexcept
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
-      if (const char* value = node->Attribute(attributeName.c_str()))
+      // The WAV stream is stored in the 'Stream' attribute ('Value' in some older files)
+      const char* value = node->Attribute("Stream");
+      if (value == nullptr)
+         value = node->Attribute("Value");
+      if (value != nullptr)
       {
          std::string_view valueView { value };
          vector<uint8_t> decoded_wav = base64_decode(valueView.data(), valueView.size());
@@ -193,7 +197,7 @@ static bool StartsWithCaseInsensitive(const std::string_view& str, const std::st
 
 B2SSound::B2SSound(const tinyxml2::XMLNode& root) noexcept
    : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
-   , m_wav(GetSoundAttribute(root, ""s, "Value"s))
+   , m_wav(GetSoundAttribute(root, ""s))
 {
 }
 
@@ -416,12 +420,19 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root) noexcept
    , m_width(GetIntAttribute(root, ""s, "Width"s, 0))
    , m_height(GetIntAttribute(root, ""s, "Height"s, 0))
    , m_soundName(GetStringAttribute(root, ""s, "Sound"s, "stille"s))
+   , m_soundNames(
+        [&root, this]() -> vector<string>
+        {
+           vector<string> names;
+           for (int i = 1; i <= m_digits; i++)
+              names.push_back(GetStringAttribute(root, ""s, "Sound"s + std::to_string(i), ""s));
+           return names;
+        }())
    , m_scoreType(StartsWithCaseInsensitive(m_reelType, "dream7"s)  ? B2SScoreRenderer::Dream7
            : StartsWithCaseInsensitive(m_reelType, "rendered"s)    ? B2SScoreRenderer::RenderedLED
            : StartsWithCaseInsensitive(m_reelType, "LED"s)         ? B2SScoreRenderer::LED
            : StartsWithCaseInsensitive(m_reelType, "ImportedLED"s) ? B2SScoreRenderer::ImportedLED
-                                                                   : B2SScoreRenderer::Reel
-   )
+                                                                   : B2SScoreRenderer::Reel)
 {
 }
 

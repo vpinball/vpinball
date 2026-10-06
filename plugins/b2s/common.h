@@ -82,4 +82,14 @@ vector<uint8_t> base64_decode(const char * const __restrict value, const size_t 
 int string_to_int(const string& str, int defaultValue);
 bool is_string_numeric(const string& str, int* const __restrict result);
 
+// RIFF/WAVE decoder for sounds embedded in .directb2s files.
+// Output payload is ready to be submitted as an AudioUpdateMsg buffer (mono/stereo, int16 or float32).
+struct WavData
+{
+   int channels = 0;
+   double sampleRate = 0.;
+   bool isFloat = false;
+   vector<uint8_t> pcm;
+};
+bool DecodeWav(const vector<uint8_t>& wav, WavData& out);
 }

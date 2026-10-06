@@ -145,10 +145,10 @@ public:
    void B2SStopRotation();
    void B2SShowScoreDisplays() { m_scoreDisplaysHidden = false; }
    void B2SHideScoreDisplays() { m_scoreDisplaysHidden = true; }
-   void B2SStartSound(const string& soundName) { } // FIXME
-   void B2SPlaySound(const string& soundName) { } // FIXME
-   void B2SStopSound(const string& soundName) { } // FIXME
-   void B2SMapSound(int digit, const string& soundName) { } // FIXME
+   void B2SStartSound(const string& soundName);
+   void B2SPlaySound(const string& soundName);
+   void B2SStopSound(const string& soundName);
+   void B2SMapSound(int digit, const string& soundName) { } // Not implemented in the reference either
 
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetLampState(int b2sId) const;
@@ -216,6 +216,14 @@ private:
    PinballPlugin::Controller::CtrlItemProvider<ControllerDef> m_exposedControllers;
    PinballPlugin::Controller::CtrlItemProvider<StateSrcId> m_exposedStates;
    void UpdateStateSrc();
+
+   // Embedded sound playback: one audio source, one stream per sound name (MsgAPI thread only)
+   PinballPlugin::Controller::CtrlItemProvider<AudioSrcId> m_audioSrc;
+   const unsigned int m_onAudioUpdateId;
+   uint32_t m_nextSoundStreamId = 1;
+   std::map<string, uint32_t> m_soundStreams; // Sound name -> stream resId
+   void StartSoundStream(const string& soundName);
+   void StopSoundStream(uint32_t streamResId);
    mutable std::mutex m_stateMutex;
    struct CallContext
    {

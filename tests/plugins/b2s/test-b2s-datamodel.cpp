@@ -454,6 +454,99 @@ TEST_CASE("B2S self rotating images")
    CHECK(!noSteps->IsRotating());
 }
 
+TEST_CASE("B2S sounds and reel sound names")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Sounds>
+            <Sound Name="click" Stream="QUJD"/>
+            <Sound Name="legacy" Value="REVG"/>
+         </Sounds>
+         <Scores>
+            <Score ID="1" Parent="Backglass" Digits="3" ReelType="reel_0" Sound="roll" Sound1="a" Sound3="c"/>
+         </Scores>
+      </DirectB2SData>)");
+
+   // Sounds are stored as base64 WAV streams in the 'Stream' attribute ('Value' in older files)
+   REQUIRE(table->m_sounds.size() == 2);
+   CHECK(table->m_sounds[0].m_name == "click");
+   REQUIRE(table->m_sounds[0].m_wav != nullptr);
+   CHECK(table->m_sounds[0].m_wav->size() == 3);
+   CHECK(table->m_sounds[0].m_wav->at(0) == 'A');
+   REQUIRE(table->m_sounds[1].m_wav != nullptr);
+   CHECK(table->m_sounds[1].m_wav->size() == 3);
+   CHECK(table->m_sounds[1].m_wav->at(0) == 'D');
+
+   // Per digit reel sounds (Sound1..SoundN attributes)
+   const B2SScore* score = table->FindScoreDisplay(1);
+   REQUIRE(score != nullptr);
+   CHECK(score->m_soundName == "roll");
+   REQUIRE(score->m_soundNames.size() == 3);
+   CHECK(score->m_soundNames[0] == "a");
+   CHECK(score->m_soundNames[1] == "");
+   CHECK(score->m_soundNames[2] == "c");
+}
+
+TEST_CASE("B2S WAV decoding")
+{
+   WavData wavData;
+   CHECK(!DecodeWav({}, wavData));
+   CHECK(!DecodeWav({ 'N', 'O', 'P', 'E' }, wavData));
+
+   // Build a minimal 16-bit PCM mono WAV in memory
+   const auto buildWav = [](int format, int channels, int bits, const vector<uint8_t>& data)
+   {
+      vector<uint8_t> wav;
+      const auto tag = [&wav](const char* s) { wav.insert(wav.end(), s, s + 4); };
+      const auto u32 = [&wav](uint32_t v) { wav.insert(wav.end(), { (uint8_t)v, (uint8_t)(v >> 8), (uint8_t)(v >> 16), (uint8_t)(v >> 24) }); };
+      const auto u16 = [&wav](uint16_t v) { wav.insert(wav.end(), { (uint8_t)v, (uint8_t)(v >> 8) }); };
+      tag("RIFF");
+      u32(0);
+      tag("WAVE");
+      tag("fmt ");
+      u32(16);
+      u16((uint16_t)format);
+      u16((uint16_t)channels);
+      u32(22050);
+      u32(22050 * channels * (bits / 8));
+      u16((uint16_t)(channels * (bits / 8)));
+      u16((uint16_t)bits);
+      tag("data");
+      u32((uint32_t)data.size());
+      wav.insert(wav.end(), data.begin(), data.end());
+      return wav;
+   };
+
+   // 16-bit PCM passes through
+   REQUIRE(DecodeWav(buildWav(1, 1, 16, { 0x34, 0x12, 0xCD, 0xAB }), wavData));
+   CHECK(wavData.channels == 1);
+   CHECK(wavData.sampleRate == 22050.);
+   CHECK(!wavData.isFloat);
+   REQUIRE(wavData.pcm.size() == 4);
+   CHECK(wavData.pcm[0] == 0x34);
+   CHECK(wavData.pcm[1] == 0x12);
+
+   // 8-bit unsigned PCM is converted to signed 16-bit
+   REQUIRE(DecodeWav(buildWav(1, 1, 8, { 0, 128, 255 }), wavData));
+   REQUIRE(wavData.pcm.size() == 6);
+   const int16_t* s16 = reinterpret_cast<const int16_t*>(wavData.pcm.data());
+   CHECK(s16[0] == -32768);
+   CHECK(s16[1] == 0);
+   CHECK(s16[2] == 32512);
+
+   // 32-bit float passes through
+   const float fsample = 0.5f;
+   vector<uint8_t> fdata(4);
+   memcpy(fdata.data(), &fsample, 4);
+   REQUIRE(DecodeWav(buildWav(3, 2, 32, fdata), wavData));
+   CHECK(wavData.isFloat);
+   CHECK(wavData.channels == 2);
+
+   // Unsupported formats are rejected
+   CHECK(!DecodeWav(buildWav(85, 1, 16, { 0, 0 }), wavData));
+   CHECK(!DecodeWav(buildWav(1, 4, 16, { 0, 0 }), wavData));
+}
+
 TEST_CASE("B2S bulbs are sorted by ZOrder")
 {
    const auto table = LoadTable(R"(

@@ -26,6 +26,8 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    , m_onStateChangeEventId(msgApi->GetMsgID("B2S", "OnStateChange:1"))
    , m_exposedControllers(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG)
    , m_exposedStates(msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG)
+   , m_audioSrc(msgApi, endpointId, CTLPI_AUDIO_GET_SRC_MSG, CTLPI_AUDIO_ON_SRC_CHG_MSG)
+   , m_onAudioUpdateId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG))
 {
    VPXTableInfo tableInfo {};
    m_vpxApi->GetTableInfo(&tableInfo);
@@ -90,6 +92,8 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
 
    m_b2sName = "b2s::"sv;
    SetB2SName(""s);
+
+   m_audioSrc.SetItem({ { m_endpointId, 0 }, { 0, 0 }, "B2S Sounds", "Sounds embedded in the backglass file", CTLPI_AUDIO_TARGET_BACKGLASS });
 }
 
 B2SServer::~B2SServer()
@@ -103,12 +107,14 @@ B2SServer::~B2SServer()
    m_gameRunning = false;
    m_exposedControllers.ClearItems();
    m_exposedStates.ClearItems();
+   m_audioSrc.ClearItems();
 
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
    m_msgApi->ReleaseMsgID(m_onGetAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
    m_msgApi->ReleaseMsgID(m_onStateChangeEventId);
+   m_msgApi->ReleaseMsgID(m_onAudioUpdateId);
 
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
@@ -581,6 +587,92 @@ void B2SServer::B2SStopRotation()
       for (auto& bulb : *bulbs)
          if (bulb->m_snippitType == B2SSnippitType::SelfRotatingImage)
             bulb->StopRotation();
+}
+
+// Embedded sounds: one audio source ("B2S Sounds"), one stream per sound name.
+// Calls may come from the script thread or the render thread (reel rolls): stream
+// mutations are always dispatched to the MsgAPI thread through RunOnMainThread.
+
+void B2SServer::StopSoundStream(uint32_t streamResId)
+{
+   AudioUpdateMsg msg {};
+   msg.sourceId = { m_endpointId, 0 };
+   msg.streamId = { m_endpointId, streamResId };
+   msg.buffer = nullptr; // Immediate stream destruction
+   m_msgApi->BroadcastMsg(m_endpointId, m_onAudioUpdateId, &msg);
+}
+
+void B2SServer::B2SStartSound(const string& soundName) { B2SPlaySound(soundName); }
+
+void B2SServer::B2SPlaySound(const string& soundName)
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   for (const B2SSound& sound : b2s->m_sounds)
+   {
+      if (sound.m_name != soundName || sound.m_wav == nullptr)
+         continue;
+      WavData wav;
+      if (!DecodeWav(*sound.m_wav, wav))
+      {
+         LOGW("B2SPlaySound: unsupported WAV format for sound '"s + soundName + "'"s);
+         return;
+      }
+      struct PlayCtx
+      {
+         B2SServer* me;
+         string name;
+         WavData wav;
+      };
+      m_msgApi->RunOnMainThread(
+         m_endpointId, 0.,
+         [](void* userData)
+         {
+            PlayCtx* const ctx = static_cast<PlayCtx*>(userData);
+            B2SServer* const me = ctx->me;
+            // Restart semantics: an already playing sound is stopped then replayed (as the reference does)
+            if (const auto it = me->m_soundStreams.find(ctx->name); it != me->m_soundStreams.end())
+               me->StopSoundStream(it->second);
+            AudioUpdateMsg msg {};
+            msg.sourceId = { me->m_endpointId, 0 };
+            msg.streamId = { me->m_endpointId, me->m_nextSoundStreamId };
+            msg.channelFormat = (ctx->wav.channels == 1) ? CTLPI_AUDIO_FORMAT_CHANNEL_MONO : CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
+            msg.sampleFormat = ctx->wav.isFloat ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
+            msg.sampleRate = ctx->wav.sampleRate;
+            msg.volume = 1.f;
+            msg.bufferSize = static_cast<unsigned int>(ctx->wav.pcm.size());
+            msg.buffer = ctx->wav.pcm.data();
+            me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_onAudioUpdateId, &msg);
+            me->m_soundStreams[ctx->name] = me->m_nextSoundStreamId++;
+            delete ctx;
+         },
+         new PlayCtx { this, soundName, std::move(wav) });
+      return;
+   }
+}
+
+void B2SServer::B2SStopSound(const string& soundName)
+{
+   struct StopCtx
+   {
+      B2SServer* me;
+      string name;
+   };
+   m_msgApi->RunOnMainThread(
+      m_endpointId, 0.,
+      [](void* userData)
+      {
+         StopCtx* const ctx = static_cast<StopCtx*>(userData);
+         B2SServer* const me = ctx->me;
+         if (const auto it = me->m_soundStreams.find(ctx->name); it != me->m_soundStreams.end())
+         {
+            me->StopSoundStream(it->second);
+            me->m_soundStreams.erase(it);
+         }
+         delete ctx;
+      },
+      new StopCtx { this, soundName });
 }
 
 void B2SServer::B2SStopAllAnimations()

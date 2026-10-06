@@ -113,6 +113,7 @@ public:
    const int m_width;
    const int m_height;
    const string m_soundName;
+   const vector<string> m_soundNames; // Per-digit reel sounds (Sound1..SoundN attributes), "" means default, "stille" means silent
 
    const B2SScoreRenderer m_scoreType;
 };
