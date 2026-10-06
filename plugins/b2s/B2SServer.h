@@ -124,6 +124,7 @@ public:
 
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetLampState(int b2sId) const;
+   bool GetBulbState(const B2SBulb& bulb, float& state) const;
    int GetScoreDigit(int digit) const;
    int GetPlayerScore(int player) const;
 
@@ -158,7 +159,14 @@ private:
    string m_controllerGameId;
    bool m_gameRunning = false;
    uint64_t m_defaultStateNameMask = 0;
-   std::map<int, std::atomic<float>> m_lampStates;
+   struct LampState
+   {
+      std::atomic<float> value { 0.f };
+      std::atomic<uint64_t> stamp { 0 };
+   };
+   std::map<int, LampState> m_lampStates;
+   std::map<string, LampState> m_groupStates;
+   uint64_t m_lampStamp = 0; // Monotonic write counter used to resolve most recent state writes
    std::map<int, std::atomic<int>> m_playerScores;
    struct ScoreDigit
    {

@@ -431,12 +431,15 @@ void B2SServer::B2SSetData(int b2sId, int value, bool sendPluginEvent)
 
    if (auto it = m_lampStates.find(b2sId); it != m_lampStates.end())
    {
-      it->second = static_cast<float>(value);
+      it->second.value = static_cast<float>(value);
+      it->second.stamp = ++m_lampStamp;
    }
    else
    {
       m_exposedStates.ClearItems();
-      m_lampStates[b2sId] = static_cast<float>(value);
+      LampState& lampState = m_lampStates[b2sId];
+      lampState.value = static_cast<float>(value);
+      lampState.stamp = ++m_lampStamp;
       UpdateStateSrc();
    }
 
@@ -455,15 +458,42 @@ void B2SServer::B2SSetData(const std::string& group, const std::string& value)
 
 void B2SServer::B2SSetData(const std::string& group, int value)
 {
-   // Same as B2SSetData, applied to a group of illumination elements, but does not broadcast a plugin event
-   // FIXME implement
-   assert(false);
+   // Same as B2SSetData, applied to an illumination group (all bulbs sharing this name), without plugin event
+   if (group.empty())
+      return;
+   LampState& groupState = m_groupStates[group];
+   groupState.value = static_cast<float>(value);
+   groupState.stamp = ++m_lampStamp;
 }
 
 float B2SServer::GetLampState(int b2sId) const
 {
    const auto it = m_lampStates.find(b2sId);
-   return it == m_lampStates.end() ? 0.f : it->second.load();
+   return it == m_lampStates.end() ? 0.f : it->second.value.load();
+}
+
+bool B2SServer::GetBulbState(const B2SBulb& bulb, float& state) const
+{
+   // Resolves the effective scripted state of a bulb: most recent write wins between its own B2S id and its illumination group
+   bool scripted = false;
+   uint64_t stamp = 0;
+   if (bulb.m_b2sId >= 0)
+   {
+      scripted = true;
+      if (const auto it = m_lampStates.find(bulb.m_b2sId); it != m_lampStates.end())
+      {
+         state = it->second.value;
+         stamp = it->second.stamp;
+      }
+   }
+   if (!bulb.m_name.empty())
+      if (const auto it = m_groupStates.find(bulb.m_name); it != m_groupStates.end() && it->second.stamp.load() > stamp)
+      {
+         state = it->second.value;
+         stamp = it->second.stamp;
+         scripted = true;
+      }
+   return scripted;
 }
 
 }

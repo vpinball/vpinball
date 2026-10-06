@@ -161,17 +161,13 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
 {
    for (const auto& bulb : bulbs)
    {
-      if (bulb->m_b2sId >= 0 && server)
-      {
-         const float state = server->GetLampState(bulb->m_b2sId);
-         bulb->m_brightness = (bulb->m_b2sValue > 0) ? 
-            ((static_cast<int>(state) == bulb->m_b2sValue) ? 1.f : 0.f) :
-            state;
-      }
+      float state = 0.f;
+      if (server && server->GetBulbState(*bulb, state))
+         bulb->m_brightness = (bulb->m_b2sValue > 0) ? //
+            ((static_cast<int>(state) == bulb->m_b2sValue) ? 1.f : 0.f)
+                                                     : state;
       else
-      {
          bulb->m_romUpdater();
-      }
       float rotation = 0.f;
       if (bulb->m_snippitType == B2SSnippitType::MechRotatingImage)
          rotation = 360.f * (bulb->m_mechRot / static_cast<float>(bulb->m_snippitRotatingSteps));
