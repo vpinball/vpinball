@@ -340,6 +340,24 @@ void MSGPIAPI B2SServer::GetScoreDigit(void* callContext, void* pResult)
 }
 
 
+// B2SSetPos
+
+void B2SServer::B2SSetPos(int id, int xpos, int ypos)
+{
+   // id is a RomID: moves all bulbs driven by this ROM id (respecting no illumination locks for now)
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   for (const auto* bulbs : { &b2s->m_backglassIlluminations, &b2s->m_dmdIlluminations })
+      for (const auto& bulb : *bulbs)
+         if (bulb->m_romId == id)
+         {
+            bulb->m_locationX = xpos;
+            bulb->m_locationY = ypos;
+         }
+}
+
+
 // B2SSetScore / B2SSetScorePlayer
 
 void B2SServer::ApplyScoreDigit(int digit, int value, bool roll)

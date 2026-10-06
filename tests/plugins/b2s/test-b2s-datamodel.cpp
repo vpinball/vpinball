@@ -104,14 +104,15 @@ TEST_CASE("B2S bulb and animation parsing")
          </Animations>
       </DirectB2SData>)");
 
+   // Bulbs are ZOrder sorted: the bulb without ZOrder comes first
    REQUIRE(table->m_backglassIlluminations.size() == 2);
-   CHECK(table->m_backglassIlluminations[0]->m_b2sId == 5);
-   CHECK(table->m_backglassIlluminations[0]->m_b2sValue == 2);
-   CHECK(table->m_backglassIlluminations[0]->m_name == "groupA");
-   CHECK(table->m_backglassIlluminations[0]->m_zOrder == 3);
-   CHECK(table->m_backglassIlluminations[1]->m_romId == 10);
-   CHECK(table->m_backglassIlluminations[1]->m_romIdType == B2SRomIDType::Solenoid);
-   CHECK(table->m_backglassIlluminations[1]->m_romInverted);
+   CHECK(table->m_backglassIlluminations[0]->m_romId == 10);
+   CHECK(table->m_backglassIlluminations[0]->m_romIdType == B2SRomIDType::Solenoid);
+   CHECK(table->m_backglassIlluminations[0]->m_romInverted);
+   CHECK(table->m_backglassIlluminations[1]->m_b2sId == 5);
+   CHECK(table->m_backglassIlluminations[1]->m_b2sValue == 2);
+   CHECK(table->m_backglassIlluminations[1]->m_name == "groupA");
+   CHECK(table->m_backglassIlluminations[1]->m_zOrder == 3);
 
    REQUIRE(table->m_backglassAnimations.size() == 1);
    const B2SAnimation& anim = table->m_backglassAnimations[0];
@@ -123,4 +124,27 @@ TEST_CASE("B2S bulb and animation parsing")
    CHECK(anim.m_animationSteps[0].m_on == vector<string> { "groupA" });
    CHECK(anim.m_animationSteps[0].m_off == vector<string> { "groupB" });
    CHECK(anim.m_animationSteps[0].m_pulseSwitch == 44);
+}
+
+TEST_CASE("B2S bulbs are sorted by ZOrder")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Illumination>
+            <Bulb Name="b1" Parent="Backglass" ZOrder="2"/>
+            <Bulb Name="b2" Parent="Backglass"/>
+            <Bulb Name="b3" Parent="Backglass" ZOrder="1"/>
+            <Bulb Name="b4" Parent="DMD" ZOrder="1"/>
+            <Bulb Name="b5" Parent="DMD"/>
+         </Illumination>
+      </DirectB2SData>)");
+
+   // Bulbs without ZOrder keep file order, then ZOrder ascending (drawn on top)
+   REQUIRE(table->m_backglassIlluminations.size() == 3);
+   CHECK(table->m_backglassIlluminations[0]->m_name == "b2");
+   CHECK(table->m_backglassIlluminations[1]->m_name == "b3");
+   CHECK(table->m_backglassIlluminations[2]->m_name == "b1");
+   REQUIRE(table->m_dmdIlluminations.size() == 2);
+   CHECK(table->m_dmdIlluminations[0]->m_name == "b5");
+   CHECK(table->m_dmdIlluminations[1]->m_name == "b4");
 }

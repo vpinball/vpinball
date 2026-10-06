@@ -482,6 +482,15 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
          (isDMD ? m_dmdScores : m_backglassScores).m_scores.push_back(std::move(score));
       }
    }
+
+   // ZOrder: images without ZOrder keep their file order, then ZOrder ascending (drawn on top)
+   const auto zsort = [](vector<std::unique_ptr<B2SBulb>>& bulbs)
+   {
+      std::stable_sort(bulbs.begin(), bulbs.end(),
+         [](const std::unique_ptr<B2SBulb>& a, const std::unique_ptr<B2SBulb>& b) { return (a->m_zOrder > 0 ? a->m_zOrder : 0) < (b->m_zOrder > 0 ? b->m_zOrder : 0); });
+   };
+   zsort(m_backglassIlluminations);
+   zsort(m_dmdIlluminations);
 }
 
 const B2SScore* B2STable::FindScoreDisplay(int displayId) const

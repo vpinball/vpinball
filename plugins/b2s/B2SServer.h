@@ -43,15 +43,43 @@ public:
    bool GetPuPHide() const { return false; }
    void SetPuPHide(bool puPHide) { }
 
-   void B2SSetPos(int id, int x, int y) { } // FIXME
-   void B2SSetPos(int id, const string& x, int y) { } // FIXME
-   void B2SSetPos(int id, int x, const string& y) { } // FIXME
-   void B2SSetPos(int id, const string& x, const string& y) { } // FIXME
-   void B2SSetPos(const string& name, int x, int y) { } // FIXME
-   void B2SSetPos(const string& name, const string& x, int y) { } // FIXME
-   void B2SSetPos(const string& name, int x, const string& y) { } // FIXME
-   void B2SSetPos(const string& name, const string& x, const string& y) { } // FIXME
-   
+   void B2SSetPos(int id, int x, int y);
+   void B2SSetPos(int id, const string& x, int y)
+   {
+      if (is_string_numeric(x, nullptr))
+         B2SSetPos(id, string_to_int(x, 0), y);
+   }
+   void B2SSetPos(int id, int x, const string& y)
+   {
+      if (is_string_numeric(y, nullptr))
+         B2SSetPos(id, x, string_to_int(y, 0));
+   }
+   void B2SSetPos(int id, const string& x, const string& y)
+   {
+      if (is_string_numeric(x, nullptr) && is_string_numeric(y, nullptr))
+         B2SSetPos(id, string_to_int(x, 0), string_to_int(y, 0));
+   }
+   void B2SSetPos(const string& name, int x, int y)
+   {
+      if (is_string_numeric(name, nullptr))
+         B2SSetPos(string_to_int(name, 0), x, y);
+   }
+   void B2SSetPos(const string& name, const string& x, int y)
+   {
+      if (is_string_numeric(name, nullptr) && is_string_numeric(x, nullptr))
+         B2SSetPos(string_to_int(name, 0), string_to_int(x, 0), y);
+   }
+   void B2SSetPos(const string& name, int x, const string& y)
+   {
+      if (is_string_numeric(name, nullptr) && is_string_numeric(y, nullptr))
+         B2SSetPos(string_to_int(name, 0), x, string_to_int(y, 0));
+   }
+   void B2SSetPos(const string& name, const string& x, const string& y)
+   {
+      if (is_string_numeric(name, nullptr) && is_string_numeric(x, nullptr) && is_string_numeric(y, nullptr))
+         B2SSetPos(string_to_int(name, 0), string_to_int(x, 0), string_to_int(y, 0));
+   }
+
    void B2SSetLED(int, int) { } // FIXME
    void B2SSetLED(int, const string&) { } // FIXME
    void B2SSetLEDDisplay(int, const string&) { } // FIXME
