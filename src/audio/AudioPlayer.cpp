@@ -206,9 +206,8 @@ static ma_result ma_context_init__sdl(ma_context* pContext, const ma_context_con
 namespace VPX
 {
 
-AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, bool spatialAudio)
-   : m_spatialAudioEnabled(spatialAudio)
-   , m_soundMode3D(playfieldSoundMode)
+AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode)
+   : m_soundMode3D(playfieldSoundMode < SNDCFG_SND3D2CH || playfieldSoundMode > SNDCFG_SND3DSSF ? SNDCFG_SND3D2CH : playfieldSoundMode)
 {
    if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
       return;
@@ -287,13 +286,6 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
             m_backglassDevice->device.onData = ma_engine_data_callback_internal;
             m_backglassDevice->device.pUserData = m_backglassEngine.get();
             ma_engine_start(m_backglassEngine.get());
-            if (m_spatialAudioEnabled)
-            {
-               m_backglassSpatial
-                  = std::make_unique<SpatialAudioMixer>(m_backglassEngine.get(), SpatialAudioMixer::GetBackglassSpeakerLayout(ma_engine_get_channels(m_backglassEngine.get())));
-               m_backglassSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
-               m_backglassSpatial->SetBinauralEnabled(m_binaural || m_soundMode3D == SNDCFG_SND3DBINAURAL);
-            }
          }
          else
          {
@@ -338,13 +330,6 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
             m_playfieldDevice->device.onData = ma_engine_data_callback_internal;
             m_playfieldDevice->device.pUserData = m_playfieldEngine.get();
             ma_engine_start(m_playfieldEngine.get());
-            if (m_spatialAudioEnabled)
-            {
-               m_playfieldSpatial = std::make_unique<SpatialAudioMixer>(m_playfieldEngine.get(),
-                  SpatialAudioMixer::GetPlayfieldSpeakerLayout(m_soundMode3D == SNDCFG_SND3DBINAURAL ? SNDCFG_SND3D2CH : m_soundMode3D, ma_engine_get_channels(m_playfieldEngine.get())));
-               m_playfieldSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
-               m_playfieldSpatial->SetBinauralEnabled(m_binaural || m_soundMode3D == SNDCFG_SND3DBINAURAL);
-            }
          }
          else
          {
@@ -513,14 +498,30 @@ void AudioPlayer::SetListenerPose(float x, float y, float z, float yaw, float pi
       m_playfieldSpatial->GetListener()->SetPose(x, y, z, yaw, pitch, roll);
 }
 
-void AudioPlayer::SetBinaural(bool binaural)
+void AudioPlayer::SetSpatialMode(const bool backglass, const bool playfield)
 {
-   m_binaural = binaural;
-   const bool enabled = binaural || m_soundMode3D == SNDCFG_SND3DBINAURAL;
-   if (m_backglassSpatial)
-      m_backglassSpatial->SetBinauralEnabled(enabled);
-   if (m_playfieldSpatial)
-      m_playfieldSpatial->SetBinauralEnabled(enabled);
+   // Spatial rendering is only used for VR play, always rendered through the binaural path (stereo to the headset)
+   if (backglass && m_backglassEngine && !m_backglassSpatial)
+   {
+      m_backglassSpatial = std::make_unique<SpatialAudioMixer>(m_backglassEngine.get(), SpatialAudioMixer::GetBackglassSpeakerLayout(ma_engine_get_channels(m_backglassEngine.get())));
+      m_backglassSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
+      m_backglassSpatial->SetBinauralEnabled(true);
+   }
+   else if (!backglass)
+   {
+      m_backglassSpatial = nullptr;
+   }
+   if (playfield && m_playfieldEngine && !m_playfieldSpatial)
+   {
+      m_playfieldSpatial
+         = std::make_unique<SpatialAudioMixer>(m_playfieldEngine.get(), SpatialAudioMixer::GetPlayfieldSpeakerLayout(m_soundMode3D, ma_engine_get_channels(m_playfieldEngine.get())));
+      m_playfieldSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
+      m_playfieldSpatial->SetBinauralEnabled(true);
+   }
+   else if (!playfield)
+   {
+      m_playfieldSpatial = nullptr;
+   }
 }
 
 void AudioPlayer::PlaySoundAt(

@@ -51,10 +51,7 @@ enum SoundConfigTypes : int
    SNDCFG_SND3D6CH = 4,
 
    // SSF: Same as 6CH but with a different sound horizontal panning and vertical fading are enhanced for a more realistic experience.
-   SNDCFG_SND3DSSF = 5,
-
-   // BINAURAL: Render playfield sounds binauralized (HRTF) for headphone play.
-   SNDCFG_SND3DBINAURAL = 6
+   SNDCFG_SND3DSSF = 5
 };
 
 struct SoundSpec
@@ -71,7 +68,7 @@ struct SoundSpec
 class AudioPlayer
 {
 public:
-   explicit AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, bool spatialAudio);
+   explicit AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode);
    ~AudioPlayer();
 
    void SetMainVolume(float backglassVolume, float playfieldVolume); // Overall gain, directly applied to all sounds, including the ones being played
@@ -99,11 +96,12 @@ public:
    // Positional variant: x/y in table units, z = height above the playfield surface
    void PlaySoundAt(Sound* sound, float x, float y, float z, float volumeOffset, const float randompitch, const int pitch, const int loopcount, const bool usesame, const bool restart);
 
-   // Spatial audio
+   // Spatial audio: positions sounds in 3D and binauralizes them for headphone rendering.
+   // Intended for VR play (head tracked listener pose through SetListenerPose).
    void SetTableDimensions(float width, float height); // in table units, used for the default listener pose and legacy pan/fade to position mapping
    void SetListenerPose(float x, float y, float z, float yaw, float pitch, float roll);
-   void SetBinaural(bool binaural); // Binaural rendering for headphones / VR play
-   bool IsSpatialAudioEnabled() const { return m_spatialAudioEnabled; }
+   void SetSpatialMode(bool backglass, bool playfield); // enable/disable spatial rendering per output
+   bool IsSpatialAudioEnabled(SoundOutTypes out) const { return GetSpatialMixer(out) != nullptr; }
    SpatialAudioMixer* GetSpatialMixer(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldSpatial.get() : m_backglassSpatial.get(); }
    float GetTableWidth() const { return m_tableWidth; }
    float GetTableHeight() const { return m_tableHeight; }
@@ -137,8 +135,6 @@ private:
    float m_tableWidth = 950.f;
    float m_tableHeight = 2100.f;
    float m_listenerPose[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
-   bool m_binaural = false;
-   const bool m_spatialAudioEnabled;
    std::unique_ptr<SpatialAudioMixer> m_backglassSpatial;
    std::unique_ptr<SpatialAudioMixer> m_playfieldSpatial;
 
