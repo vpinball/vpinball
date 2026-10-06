@@ -155,6 +155,7 @@ public:
    const int m_height;
    const string m_soundName;
    const vector<string> m_soundNames; // Per-digit reel sounds (Sound1..SoundN attributes), "" means default, "stille" means silent
+   const int m_ledSegments; // Segment count from the ReelType suffix (Dream7LEDx/RenderedLEDx): 7, 10 or 14, else 0
 
    const B2SScoreRenderer m_scoreType;
 

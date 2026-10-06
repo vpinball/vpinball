@@ -441,42 +441,45 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
 
          case B2SScoreRenderer::Dream7:
             // Asteroid Annie (Gottlieb 1980)
-            {
-               std::array<float, 16> brightness;
-               SegElementType segType = SegElementType::CTLPI_SEG_LAYOUT_14;
-               VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
-               VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
-               if (index > 0 && index * 16 <= (int)luminances.size())
-               {
-                  segType = segTypes[index-1];
-                  style = styles[index-1];
-                  hint = hints[index-1];
-                  memcpy(brightness.data(), luminances.data() + (index-1) * 16, 16 * sizeof(float));
-               }
-               else
-               {
-                  // Script driven digit: map value to its standard 7 segment pattern
-                  static constexpr uint16_t digitSegments[10] = { 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F };
-                  const uint16_t bits = (digit >= 0 && digit < 10) ? digitSegments[digit] : 0;
-                  for (int j = 0; j < 16; j++)
-                     brightness[j] = ((bits >> j) & 1) ? 1.f : 0.f;
-               }
-               ctx->DrawSegDisplay(ctx, style, hint,
-                  // First layer: glass
-                  nullptr, 1.f, 1.f, 1.f, 0.15f, // Glass texture, tint and roughness
-                  0.f, 0.f, 0.f, 0.f, // Glass texture coordinates (inside overall glass texture, cut for each element)
-                  0.f, 0.f, 0.f, // Glass lighting from room
-                  // Second layer: emitter
-                  segType, brightness.data(), // Segment emitter type and brightness array
-                  1.f, 1.f, 1.f, 1.f, 1.f,  // Emitter tint, emitter brightness, emitter alpha
-                  0.f, 0.f, 0.f, 0.f, // Emitter padding (from glass border)
-                  // Render quad
-                  x, ctx->srcHeight - static_cast<float>(reel.m_locY + reel.m_height), width, static_cast<float>(reel.m_height));
-            }
-            break;
-
          case B2SScoreRenderer::RenderedLED:
-            // Did not find any backglass using this mode (very old mode superseeded by Dream7 ?)
+         {
+            std::array<float, 16> brightness;
+            // Segment layout declared by the ReelType suffix (Dream7LEDx/RenderedLEDx)
+            SegElementType segType = reel.m_ledSegments == 7 ? SegElementType::CTLPI_SEG_LAYOUT_7
+               : reel.m_ledSegments == 10                    ? SegElementType::CTLPI_SEG_LAYOUT_9
+               : reel.m_ledSegments == 14                    ? SegElementType::CTLPI_SEG_LAYOUT_14
+                                                             : SegElementType::CTLPI_SEG_LAYOUT_14;
+            VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+            VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
+            if (index > 0 && index * 16 <= (int)luminances.size())
+            {
+               segType = segTypes[index - 1];
+               style = styles[index - 1];
+               hint = hints[index - 1];
+               memcpy(brightness.data(), luminances.data() + (index - 1) * 16, 16 * sizeof(float));
+            }
+            else
+            {
+               // Script driven digit: map value to its standard 7 segment pattern
+               static constexpr uint16_t digitSegments[10] = { 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F };
+               const uint16_t bits = (digit >= 0 && digit < 10) ? digitSegments[digit] : 0;
+               for (int j = 0; j < 16; j++)
+                  brightness[j] = ((bits >> j) & 1) ? 1.f : 0.f;
+               if (reel.m_scoreType == B2SScoreRenderer::RenderedLED)
+                  style = VPXSegDisplayRenderStyle::VPXSegStyle_GenLED;
+            }
+            ctx->DrawSegDisplay(ctx, style, hint,
+               // First layer: glass tinted with the unlit segment color
+               nullptr, reel.m_reelDarkColor.x, reel.m_reelDarkColor.y, reel.m_reelDarkColor.z, 0.15f, // Glass texture, tint and roughness
+               0.f, 0.f, 0.f, 0.f, // Glass texture coordinates (inside overall glass texture, cut for each element)
+               0.f, 0.f, 0.f, // Glass lighting from room
+               // Second layer: emitter tinted with the lit segment color
+               segType, brightness.data(), // Segment emitter type and brightness array
+               reel.m_reelLitColor.x, reel.m_reelLitColor.y, reel.m_reelLitColor.z, 1.f, 1.f, // Emitter tint, emitter brightness, emitter alpha
+               0.f, 0.f, 0.f, 0.f, // Emitter padding (from glass border)
+               // Render quad
+               x, ctx->srcHeight - static_cast<float>(reel.m_locY + reel.m_height), width, static_cast<float>(reel.m_height));
+         }
             break;
          }
       }

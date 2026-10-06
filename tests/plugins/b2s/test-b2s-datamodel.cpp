@@ -76,6 +76,39 @@ TEST_CASE("B2S hidden score displays")
    CHECK(table->FindScoreDisplay(3)->IsHidden());
 }
 
+TEST_CASE("B2S LED display segment types")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Scores>
+            <Score ID="1" Parent="Backglass" Digits="4" ReelType="Dream7LED7"/>
+            <Score ID="2" Parent="Backglass" Digits="4" ReelType="Dream7LED9"/>
+            <Score ID="3" Parent="Backglass" Digits="4" ReelType="Dream7LED14"/>
+            <Score ID="4" Parent="Backglass" Digits="4" ReelType="RenderedLED8"/>
+            <Score ID="5" Parent="Backglass" Digits="4" ReelType="RenderedLED14" ReelLitColor="255.128.64" ReelDarkColor="32.16.8"/>
+            <Score ID="6" Parent="Backglass" Digits="4" ReelType="reel_0"/>
+         </Scores>
+      </DirectB2SData>)");
+
+   // The ReelType suffix selects the segment layout; Dream7LEDx and RenderedLEDx pick the renderer
+   CHECK(table->FindScoreDisplay(1)->m_scoreType == B2SScoreRenderer::Dream7);
+   CHECK(table->FindScoreDisplay(1)->m_ledSegments == 7);
+   CHECK(table->FindScoreDisplay(2)->m_ledSegments == 10);
+   CHECK(table->FindScoreDisplay(3)->m_ledSegments == 14);
+   CHECK(table->FindScoreDisplay(4)->m_scoreType == B2SScoreRenderer::RenderedLED);
+   CHECK(table->FindScoreDisplay(4)->m_ledSegments == 7);
+   CHECK(table->FindScoreDisplay(5)->m_ledSegments == 14);
+   CHECK(table->FindScoreDisplay(6)->m_scoreType == B2SScoreRenderer::Reel);
+   CHECK(table->FindScoreDisplay(6)->m_ledSegments == 0);
+
+   // Lit/dark segment colors are parsed for the styled segment rendering
+   const B2SScore* styled = table->FindScoreDisplay(5);
+   CHECK(styled->m_reelLitColor.x == doctest::Approx(1.f));
+   CHECK(styled->m_reelLitColor.y == doctest::Approx(128.f / 255.f));
+   CHECK(styled->m_reelLitColor.z == doctest::Approx(64.f / 255.f));
+   CHECK(styled->m_reelDarkColor.z == doctest::Approx(8.f / 255.f));
+}
+
 TEST_CASE("B2S score distribution over display digits")
 {
    const auto table = LoadTable(R"(
@@ -90,6 +123,7 @@ TEST_CASE("B2S score distribution over display digits")
    const B2SScore* dream7 = table->FindScoreDisplay(2);
    REQUIRE(reels != nullptr);
    REQUIRE(dream7 != nullptr);
+   CHECK(dream7->m_ledSegments == 7);
 
    // Reels are zero padded on the left
    vector<int> digits = reels->DistributeScore(42);
