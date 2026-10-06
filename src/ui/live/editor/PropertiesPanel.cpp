@@ -431,7 +431,7 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
          [](const PinTable *table) { return table->m_bloom_strength; }, //
          [](PinTable *table, float v) { table->m_bloom_strength = v; }, PropertyPane::Unit::Percent, 1);
       props.Combo<PinTable>(
-         table, "Tonemapping"s, vector<string> { "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s, "AgX Punchy"s }, //
+         table, "Tonemapping"s, vector<string> { "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s }, //
          [](const PinTable *table) { return static_cast<int>(table->GetToneMapper()); }, //
          [&editor](PinTable *table, int v)
          {

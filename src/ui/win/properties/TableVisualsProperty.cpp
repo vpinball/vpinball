@@ -68,9 +68,6 @@ void TableVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          m_toneMapperCombo.AddString(_T("AgX"));
          m_toneMapperCombo.AddString(_T("Filmic"));
          m_toneMapperCombo.AddString(_T("Neutral"));
-#ifdef ENABLE_BGFX
-         m_toneMapperCombo.AddString(_T("AgX Punchy"));
-#endif
       }
       m_toneMapperCombo.SetCurSel((int)table->GetToneMapper());
    }

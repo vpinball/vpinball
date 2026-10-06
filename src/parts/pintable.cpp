@@ -3786,7 +3786,7 @@ void PinTable::Load(IObjectReader& reader)
          case FID(USSR): m_enableSSR = reader.AsInt() != 0; break; // Before 10.8, 1 would force SSR
          case FID(BPRS): m_ballPlayfieldReflectionStrength = reader.AsFloat(); break;
          case FID(DBIS): m_defaultBulbIntensityScaleOnBall = reader.AsFloat(); break;
-         case FID(TMAP): m_toneMapper = static_cast<ToneMapper>(reader.AsInt()); break;
+         case FID(TMAP): m_toneMapper = GetValidToneMapper(reader.AsInt()); break;
          case FID(EXPO): m_exposure = reader.AsFloat(); break;
          case FID(BLST): m_bloom_strength = reader.AsFloat(); break;
          case FID(BCLR): m_colorbackdrop = reader.AsInt(); break;
