@@ -763,3 +763,53 @@ TEST_CASE("B2S reel digit rolling")
    digit.Update(0.f, 0, 0, true);
    CHECK(digit.IsRolling());
 }
+
+TEST_CASE("B2S bulbs baked into the background image")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Images>
+            <BackglassOnImage Value="" RomID="4" RomIDType="1"/>
+         </Images>
+         <Illumination>
+            <Bulb Name="baked" Parent="Backglass" RomID="4" RomIDType="1"/>
+            <Bulb Name="inverted" Parent="Backglass" RomID="4" RomIDType="1" RomInverted="1"/>
+            <Bulb Name="othertype" Parent="Backglass" RomID="4" RomIDType="2"/>
+            <Bulb Name="otherid" Parent="Backglass" RomID="5" RomIDType="1"/>
+            <Bulb Name="b2sid" Parent="Backglass" B2SID="4"/>
+            <Bulb Name="anim" Parent="Backglass" RomID="4" RomIDType="1"/>
+            <Bulb Name="dmd" Parent="DMD" RomID="4" RomIDType="1"/>
+            <Bulb Name="norom" Parent="Backglass"/>
+         </Illumination>
+         <Animations>
+            <Animation Name="a" Parent="Backglass" Interval="50">
+               <AnimationStep Step="1" On="anim" WaitLoopsAfterOn="1"/>
+            </Animation>
+         </Animations>
+      </DirectB2SData>)");
+
+   const auto bulb = [&table](const char* name) -> B2SBulb*
+   {
+      for (auto& b : table->m_backglassIlluminations)
+         if (b->m_name == name)
+            return b.get();
+      return nullptr;
+   };
+
+   // Bulbs sharing the BackglassOnImage ROM channel are baked into the lit background
+   CHECK(bulb("baked")->m_bakedIntoBackground);
+   CHECK(bulb("b2sid")->m_bakedIntoBackground); // a B2SID bulb matches a lamp ROM channel
+
+   // Different type, inverted or other channel: drawn as a normal bulb
+   CHECK(!bulb("inverted")->m_bakedIntoBackground);
+   CHECK(!bulb("othertype")->m_bakedIntoBackground);
+   CHECK(!bulb("otherid")->m_bakedIntoBackground);
+   CHECK(!bulb("norom")->m_bakedIntoBackground);
+
+   // A bulb driven by an animation keeps drawing on top (SetThruAnimation)
+   CHECK(!bulb("anim")->m_bakedIntoBackground);
+
+   // DMD bulbs are never baked into the backglass image
+   REQUIRE(table->m_dmdIlluminations.size() == 1);
+   CHECK(!table->m_dmdIlluminations[0]->m_bakedIntoBackground);
+}
