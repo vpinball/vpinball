@@ -973,10 +973,30 @@ void Player::InitTableSession(const bool isInitial)
 
    // Signal plugins that a game session is starting (the only thing not fully initialized is the physics)
    m_pluginAPI.OnGameStart();
+
+   // Update the play statistics of the frontend info file along the table (see docs/FileLayout.md)
+   m_trackTableSessionStats = !IsEditorMode() && (m_playMode != PlayMode::CaptureAttract);
+   m_tableSessionPlayTime = 0;
+   m_tableSessionStartTime = (m_trackTableSessionStats && m_playing) ? usec() : 0;
+   if (m_trackTableSessionStats)
+      m_ptable->UpdateInfoFileOnGameStart();
 }
 
 void Player::ShutdownTableSession()
 {
+   // Update the play statistics of the frontend info file along the table (see docs/FileLayout.md)
+   if (m_trackTableSessionStats)
+   {
+      if (m_tableSessionStartTime != 0)
+      {
+         m_tableSessionPlayTime += usec() - m_tableSessionStartTime;
+         m_tableSessionStartTime = 0;
+      }
+      m_trackTableSessionStats = false;
+      m_ptable->UpdateInfoFileOnGameEnd(static_cast<uint32_t>(m_tableSessionPlayTime / 1000000ull));
+      m_tableSessionPlayTime = 0;
+   }
+
    // Signal plugins that the game session is ended
    m_pluginAPI.OnGameEnd();
 
@@ -1550,6 +1570,8 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
 
       if (m_playing)
       {
+         if (m_trackTableSessionStats)
+            m_tableSessionStartTime = usec();
          m_lastKnownGoodCounter++; // Reset hang script detection
          m_noTimeCorrect = true; // Disable physics engine time correction on next physic update
          UnpauseMusic();
@@ -1559,6 +1581,11 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
       }
       else
       {
+         if (m_tableSessionStartTime != 0)
+         {
+            m_tableSessionPlayTime += usec() - m_tableSessionStartTime;
+            m_tableSessionStartTime = 0;
+         }
          PauseMusic();
          PLOGI << "Pausing Game";
          if (!IsEditorMode())
