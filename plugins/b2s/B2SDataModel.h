@@ -29,6 +29,7 @@ public:
    const string m_filename;
    const int m_romId;
    const B2SRomIDType m_romIdType;
+   const bool m_romInverted;
 
    float m_brightness = 0.f;
    std::function<void()> m_romUpdater = []() { };
