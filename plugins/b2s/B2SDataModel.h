@@ -197,8 +197,8 @@ public:
    const vec4 m_dodgeColor;
    const int m_illuminationMode;
    const bool m_visible;
-   const int m_locationX;
-   const int m_locationY;
+   int m_locationX; // Mutable: can be repositioned through B2SSetPos
+   int m_locationY;
    const int m_width;
    const int m_height;
    const bool m_isImageSnippit; // Image snippit have their initial state applied before others on startup, didn't find any other difference
