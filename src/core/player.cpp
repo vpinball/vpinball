@@ -690,10 +690,22 @@ void Player::InitTableSession(const bool isInitial)
       std::unique_ptr<TextureCompressor> texCompressor;
       if (m_renderer->m_renderDevice->m_compressTextures && FileExists(m_ptable->m_filename))
       {
-         std::filesystem::path texCacheFolder = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true) / "textures"sv;
-         std::error_code ec;
-         std::filesystem::create_directories(texCacheFolder, ec);
-         texCompressor = std::make_unique<TextureCompressor>(std::move(texCacheFolder), maxTexDim);
+         // Texture compression relies on its disk cache, so it is disabled entirely when the cache folder is not writable
+         const std::filesystem::path texCacheDir = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true);
+         if (texCacheDir.empty())
+         {
+            PLOGW << "Texture compression is disabled as the table cache folder is not writable";
+         }
+         else
+         {
+            std::filesystem::path texCacheFolder = texCacheDir / "textures"sv;
+            std::error_code ec;
+            std::filesystem::create_directories(texCacheFolder, ec);
+            if (ec)
+               PLOGE << "Failed to create texture cache folder " << texCacheFolder << " (" << ec.message() << "), texture compression is disabled";
+            else
+               texCompressor = std::make_unique<TextureCompressor>(std::move(texCacheFolder), maxTexDim);
+         }
       }
 #endif
 
@@ -1030,7 +1042,7 @@ void Player::ShutdownTableSession()
          tinyxml2::XMLDocument xmlDoc;
          tinyxml2::XMLElement *root;
          ankerl::unordered_dense::map<string, tinyxml2::XMLElement *> textureAge;
-         const std::filesystem::path path = dir / "used_textures.xml"sv;
+         const std::filesystem::path path = dir.empty() ? dir : dir / "used_textures.xml"sv;
          if (FileExists(path))
          {
             std::ifstream myFile(path);
@@ -1109,11 +1121,14 @@ void Player::ShutdownTableSession()
             }
          }
 
-         std::ofstream myfile(path);
-         tinyxml2::XMLPrinter prn;
-         xmlDoc.Print(&prn);
-         myfile << prn.CStr();
-         myfile.close();
+         if (!path.empty())
+         {
+            std::ofstream myfile(path);
+            tinyxml2::XMLPrinter prn;
+            xmlDoc.Print(&prn);
+            myfile << prn.CStr();
+            myfile.close();
+         }
       }
       catch (...)
       {

@@ -293,7 +293,6 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
          {
             if (searchForWriting)
             {
-               std::filesystem::create_directories(path);
                string type;
                switch (sub)
                {
@@ -302,6 +301,14 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
                case TableSubFolder::Cache: type = "Cache"sv; break;
                case TableSubFolder::User: type = "User"sv; break;
                case TableSubFolder::AutoSave: type = "Autosave"sv; break;
+               }
+               std::error_code ec;
+               std::filesystem::create_directories(path, ec);
+               if (ec)
+               {
+                  // The table folder is not writable (e.g. a read only install): return an empty path, letting the caller disable the feature relying on it
+                  PLOGE << "Failed to create " << type << " folder for table '" << table->m_filename << "': " << path << " (" << ec.message() << ')';
+                  return std::filesystem::path();
                }
                PLOGI << type << " folder was created for table '" << table->m_filename << "': " << path;
             }
@@ -327,7 +334,15 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
          {
             path = GetAppPath(FileLocator::AppSubFolder::Preferences) / "Cache"sv / table->m_title; // table's title is its file name without extension
             if (searchForWriting && !DirExists(path))
-               std::filesystem::create_directories(path);
+            {
+               std::error_code ec;
+               std::filesystem::create_directories(path, ec);
+               if (ec)
+               {
+                  PLOGE << "Failed to create Cache folder for table '" << table->m_filename << "': " << path << " (" << ec.message() << ')';
+                  return std::filesystem::path();
+               }
+            }
          }
          break;
 
@@ -336,7 +351,13 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
          path = GetAppPath(FileLocator::AppSubFolder::Root) / "user"sv;
          if (searchForWriting && !DirExists(path))
          {
-            std::filesystem::create_directories(path);
+            std::error_code ec;
+            std::filesystem::create_directories(path, ec);
+            if (ec)
+            {
+               PLOGE << "Failed to create User folder for table '" << (table ? table->m_filename : "null table") << "': " << path << " (" << ec.message() << ')';
+               return std::filesystem::path();
+            }
             PLOGI << "User folder was created for table '" << (table ? table->m_filename : "null table") << "': " << path;
          }
          break;
