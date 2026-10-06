@@ -160,21 +160,24 @@ int B2SServer::OnRender(VPXRenderContext2D* ctx, void* userData)
    if (me->m_renderer)
       return me->m_renderer->Render(ctx, me);
 
-   if (me->m_loadedB2S.valid())
+   if (std::shared_ptr<B2STable> b2s = me->AcquireB2STable())
    {
-      if (me->m_loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-      {
-         // get() invalidates the future, so a failed load is not retried on the next frames
-         std::shared_ptr<B2STable> loadedB2S = me->m_loadedB2S.get();
-         if (loadedB2S == nullptr)
-            return false;
-         me->m_renderer = std::make_unique<B2SRenderer>(me->m_msgApi, me->m_vpxApi, me->m_endpointId, loadedB2S);
-         me->m_renderer->Render(ctx, me);
-      }
-      return true; // Until loaded, we assume that the file will succeed loading with the expected backglass/score view
+      if (me->m_renderer == nullptr)
+         me->m_renderer = std::make_unique<B2SRenderer>(me->m_msgApi, me->m_vpxApi, me->m_endpointId, b2s);
+      return me->m_renderer->Render(ctx, me);
    }
 
-   return false;
+   // Until loaded, we assume that the file will succeed loading with the expected backglass/score view
+   // (a failed load invalidates the future, so it is not retried on the next frames)
+   return me->m_loadedB2S.valid();
+}
+
+std::shared_ptr<B2STable> B2SServer::AcquireB2STable()
+{
+   std::lock_guard lock(m_b2sMutex);
+   if (!m_b2s && m_loadedB2S.valid() && m_loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+      m_b2s = m_loadedB2S.get();
+   return m_b2s;
 }
 
 void B2SServer::OnGetRenderer(const unsigned int, void* userData, void* msgData)
@@ -339,16 +342,19 @@ void MSGPIAPI B2SServer::GetScoreDigit(void* callContext, void* pResult)
 
 // B2SSetScore / B2SSetScorePlayer
 
-void B2SServer::B2SSetScore(int digit, int value, bool animate)
+void B2SServer::ApplyScoreDigit(int digit, int value, bool roll)
 {
    if (auto it = m_scoreDigits.find(digit); it != m_scoreDigits.end())
    {
-      it->second = value;
+      it->second.value = value;
+      it->second.roll = it->second.roll || roll;
    }
    else
    {
       m_exposedStates.ClearItems();
-      m_scoreDigits[digit] = value;
+      ScoreDigit& digitState = m_scoreDigits[digit];
+      digitState.value = value;
+      digitState.roll = roll;
       UpdateStateSrc();
    }
 
@@ -356,10 +362,28 @@ void B2SServer::B2SSetScore(int digit, int value, bool animate)
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
 }
 
+void B2SServer::B2SSetScore(int display, int value)
+{
+   // 'display' is a display id (Score/@ID): distribute the score over the display digits
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   const B2SScore* scoreDisplay = b2s->FindScoreDisplay(display);
+   if (scoreDisplay == nullptr || scoreDisplay->m_digits <= 0)
+      return;
+   const vector<int> digits = scoreDisplay->DistributeScore(value);
+   for (size_t i = 0; i < digits.size(); i++)
+      ApplyScoreDigit(scoreDisplay->m_resolvedStartDigit + static_cast<int>(i), digits[i], true);
+}
+
+void B2SServer::B2SSetScoreDigit(int digit, int value) { ApplyScoreDigit(digit, value, false); }
+
+void B2SServer::B2SSetReel(int digit, int value) { ApplyScoreDigit(digit, value, true); }
+
 int B2SServer::GetScoreDigit(int digit) const
 {
    const auto it = m_scoreDigits.find(digit);
-   return it == m_scoreDigits.end() ? 0 : it->second.load();
+   return it == m_scoreDigits.end() ? 0 : it->second.value.load();
 }
 
 void B2SServer::B2SSetScorePlayer(int playerno, int score)

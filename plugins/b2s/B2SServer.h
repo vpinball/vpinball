@@ -66,12 +66,16 @@ public:
    void B2SSetScorePlayer6(int score)                        { B2SSetScorePlayer(6, score); }
 
    // Scores identified by digit, either single or multiple digits (generate 'B' plugin events)
-   void B2SSetScore(int digit, int value, bool animate = true);
-   void B2SSetScoreDigit(int digit, int value)               { B2SSetScore(digit, value, false); }
-   void B2SSetReel(int digit, int value)                     { B2SSetScore(digit, value, true); }
-   void B2SSetCredits(int value)                             { m_defaultStateNameMask |= 1ull << 29; B2SSetScore(29, value, true); }
-   void B2SSetCredits(int id, int value)                     { B2SSetScore(id, value, true); }
-   
+   void B2SSetScore(int display, int value);
+   void B2SSetScoreDigit(int digit, int value);
+   void B2SSetReel(int digit, int value);
+   void B2SSetCredits(int value)
+   {
+      m_defaultStateNameMask |= 1ull << 29;
+      ApplyScoreDigit(29, value, false);
+   }
+   void B2SSetCredits(int id, int value) { ApplyScoreDigit(id, value, false); }
+
    // Illumination and animation states (generate 'E' plugin events)
    // Used to be binary on/off as 1/0 but not validated so script could use any integer value
    // Upgraded to be a float as this can also be driven by emulators with faded lamps & flashers
@@ -135,6 +139,10 @@ private:
    const std::thread::id m_msgApiThreadId { std::this_thread::get_id() };
 
    std::future<std::shared_ptr<B2STable>> m_loadedB2S;
+   std::mutex m_b2sMutex;
+   std::shared_ptr<B2STable> m_b2s; // Acquired once the asynchronous load completes
+   std::shared_ptr<B2STable> AcquireB2STable();
+   void ApplyScoreDigit(int digit, int value, bool roll);
    std::function<void(B2SServer*)> m_onDestroyHandler;
 
    // Renderer
@@ -152,7 +160,12 @@ private:
    uint64_t m_defaultStateNameMask = 0;
    std::map<int, std::atomic<float>> m_lampStates;
    std::map<int, std::atomic<int>> m_playerScores;
-   std::map<int, std::atomic<int>> m_scoreDigits;
+   struct ScoreDigit
+   {
+      std::atomic<int> value { 0 };
+      std::atomic<bool> roll { false };
+   };
+   std::map<int, ScoreDigit> m_scoreDigits;
    const unsigned int m_onStateChangeEventId;
    PinballPlugin::Controller::CtrlItemProvider<ControllerDef> m_exposedControllers;
    PinballPlugin::Controller::CtrlItemProvider<StateSrcId> m_exposedStates;

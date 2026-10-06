@@ -264,32 +264,50 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
       }
    });
 
-   int digitIndex = 1;
+   // Build the per-player score strings: right aligned, space padded on the left, then split
+   // across the player displays in file order (each display consuming its digit count)
+   ankerl::unordered_dense::map<int, string> playerScoreText;
+   ankerl::unordered_dense::map<int, size_t> playerScoreOffset;
+   for (const auto& score : scores.m_scores)
+      if (score.m_b2sPlayerNo > 0)
+         playerScoreText[score.m_b2sPlayerNo].append(static_cast<size_t>(std::max(0, score.m_digits)), ' ');
+   for (auto& [player, text] : playerScoreText)
+   {
+      const string scoreText = std::to_string(abs(server->GetPlayerScore(player)));
+      if (scoreText.length() >= text.length())
+         text = scoreText.substr(scoreText.length() - text.length());
+      else
+         text.replace(text.length() - scoreText.length(), scoreText.length(), scoreText);
+   }
+
    for (const auto& reel : scores.m_scores)
    {
       // Skip digits located on the grill when the grill is hidden
       if (static_cast<float>(reel.m_locY) > ctx->srcHeight)
+      {
+         if (reel.m_b2sPlayerNo != 0)
+            playerScoreOffset[reel.m_b2sPlayerNo] += static_cast<size_t>(std::max(0, reel.m_digits));
          continue;
+      }
 
       const float width = (static_cast<float>(reel.m_width) - 0.5f * static_cast<float>((reel.m_digits - 1) * reel.m_spacing)) / static_cast<float>(reel.m_digits);
       for (int i = 0; i < reel.m_digits; i++)
       {
          const float x = static_cast<float>(reel.m_locX) + static_cast<float>(i) * (width + 0.5f * static_cast<float>(reel.m_spacing));
          int digit = 0;
-         int index = -1;
+         const int index = reel.m_resolvedStartDigit + i;
          if (reel.m_b2sPlayerNo != 0)
          {
-            int score = abs(server->GetPlayerScore(reel.m_b2sPlayerNo));
-            for (int j = 0; j < (reel.m_digits - 1 - i); ++j)
-               score /= 10;
-            digit = score % 10;
+            const string& text = playerScoreText[reel.m_b2sPlayerNo];
+            const size_t offset = playerScoreOffset[reel.m_b2sPlayerNo] + static_cast<size_t>(i);
+            const char c = offset < text.length() ? text[offset] : ' ';
+            const int raw = (c >= '0' && c <= '9') ? c - '0' : -1;
+            digit = (reel.m_scoreType == B2SScoreRenderer::Dream7 || reel.m_scoreType == B2SScoreRenderer::RenderedLED) ? raw : (raw < 0 ? 0 : raw);
+            if (i == reel.m_digits - 1)
+               playerScoreOffset[reel.m_b2sPlayerNo] += static_cast<size_t>(reel.m_digits);
          }
          else
-         {
-            index = reel.m_b2sStartDigit > 0 ? (reel.m_b2sStartDigit + i) : digitIndex;
             digit = server->GetScoreDigit(index);
-         }
-         digitIndex++;
 
          switch (reel.m_scoreType)
          {
@@ -327,6 +345,14 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
                   style = styles[index-1];
                   hint = hints[index-1];
                   memcpy(brightness.data(), luminances.data() + (index-1) * 16, 16 * sizeof(float));
+               }
+               else
+               {
+                  // Script driven digit: map value to its standard 7 segment pattern
+                  static constexpr uint16_t digitSegments[10] = { 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F };
+                  const uint16_t bits = (digit >= 0 && digit < 10) ? digitSegments[digit] : 0;
+                  for (int j = 0; j < 16; j++)
+                     brightness[j] = ((bits >> j) & 1) ? 1.f : 0.f;
                }
                ctx->DrawSegDisplay(ctx, style, hint,
                   // First layer: glass

@@ -28,6 +28,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../gen/vpinball_i.c" />
+    <ClCompile Include="../../plugins/b2s/B2SDataModel.cpp">
+      <Filter>plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/common.cpp">
+      <Filter>plugins</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp">
       <Filter>plugins</Filter>
     </ClCompile>
@@ -189,6 +195,9 @@
       <Filter>physics</Filter>
     </ClCompile>
     <ClCompile Include="../../tests/plugins/alphadmd/test-alphanumeric.cpp">
+      <Filter>plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/plugins/b2s/test-b2s-datamodel.cpp">
       <Filter>plugins</Filter>
     </ClCompile>
     <ClCompile Include="../../tests/plugins/plugins/test-colorspace.cpp">

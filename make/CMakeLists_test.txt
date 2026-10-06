@@ -11,6 +11,8 @@
 # the test runner looks for it (FileLocator::AppSubFolder::Root / "test-assets").
 
 set(VPX_TEST_SOURCES
+   plugins/b2s/B2SDataModel.cpp
+   plugins/b2s/common.cpp
    plugins/upscaledmd/xbrz/xbrz.cpp
    tests/audio/test-audioplayer.cpp
    tests/core/test-def.cpp
@@ -66,6 +68,7 @@ set(VPX_TEST_SOURCES
    tests/physics/test-physics-engine.cpp
    tests/physics/test-quadtree.cpp
    tests/plugins/alphadmd/test-alphanumeric.cpp
+   tests/plugins/b2s/test-b2s-datamodel.cpp
    tests/plugins/plugins/test-colorspace.cpp
    tests/plugins/plugins/test-msgpluginmanager.cpp
    tests/plugins/plugins/test-resuriresolver.cpp

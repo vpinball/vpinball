@@ -346,11 +346,32 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root) noexcept
 {
 }
 
-B2SScores::B2SScores(const tinyxml2::XMLNode& root, const bool isDMD) noexcept
+vector<int> B2SScore::DistributeScore(int value) const
+{
+   // Right aligned score on the display digits, keeping its rightmost digits if it does not fit.
+   // Reels show leading zeros (matching B2SReelDisplay::SetScore) while LED displays show blanks.
+   vector<int> result(static_cast<size_t>(std::max(0, m_digits)), -1);
+   const string text = std::to_string(value);
+   const size_t count = std::min(text.length(), result.size());
+   for (size_t i = 0; i < count; i++)
+   {
+      const char c = text[text.length() - 1 - i];
+      int digit = -1;
+      if (c >= '0' && c <= '9')
+         digit = c - '0';
+      result[result.size() - 1 - i] = digit;
+   }
+   if (m_scoreType == B2SScoreRenderer::Reel || m_scoreType == B2SScoreRenderer::LED || m_scoreType == B2SScoreRenderer::ImportedLED)
+      for (int& digit : result)
+         if (digit < 0)
+            digit = 0;
+   return result;
+}
+
+B2SScores::B2SScores(const tinyxml2::XMLNode& root) noexcept
    : m_reelCountOfIntermediates(GetIntAttribute(root, "Scores"s, "ReelCountOfIntermediates"s, 0))
    , m_reelRollingDirection(GetStringAttribute(root, "Scores"s, "ReelRollingDirection"s, "Up"s) == "Up"s ? B2SReelRollingDirection::Up : B2SReelRollingDirection::Down)
    , m_reelRollingInterval(GetIntAttribute(root, "Scores"s, "ReelRollingInterval"s, 0))
-   , m_scores(GetFilteredList<B2SScore>(root, "Scores"s, "Score"s, isDMD))
 {
 }
 
@@ -438,13 +459,37 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
    , m_dmdImage(GetImageAttribute(root, "Images/DMDImage"s))
    , m_sounds(GetList<B2SSound>(root, "Sounds"s, "Sound"s))
    , m_reels(root)
-   , m_backglassScores(root, false)
-   , m_dmdScores(root, true)
+   , m_backglassScores(root)
+   , m_dmdScores(root)
    , m_backglassIlluminations(GetFilteredPtrList<B2SBulb>(root, "Illumination"s, "Bulb"s, false))
    , m_backglassAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, false))
    , m_dmdIlluminations(GetFilteredPtrList<B2SBulb>(root, "Illumination"s, "Bulb"s, true))
    , m_dmdAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, true))
 {
+   // Score digit numbering: displays without an explicit B2SStartDigit are numbered sequentially
+   // over all Score nodes in file order (both backglass and DMD parents share the same counter)
+   if (const tinyxml2::XMLElement* scoresNode = GetNode(root, "Scores"s); scoresNode != nullptr)
+   {
+      int autoDigit = 1;
+      for (const tinyxml2::XMLElement* node = scoresNode->FirstChildElement("Score"); node != nullptr; node = node->NextSiblingElement("Score"))
+      {
+         const bool isDMD = node->Attribute("Parent", "Backglass") == nullptr;
+         B2SScore score(*node);
+         score.m_resolvedStartDigit = (score.m_b2sStartDigit > 0) ? score.m_b2sStartDigit : autoDigit;
+         autoDigit += score.m_digits;
+         (isDMD ? m_dmdScores : m_backglassScores).m_scores.push_back(std::move(score));
+      }
+   }
 }
 
+const B2SScore* B2STable::FindScoreDisplay(int displayId) const
+{
+   for (const B2SScore& score : m_backglassScores.m_scores)
+      if (score.m_id == displayId)
+         return &score;
+   for (const B2SScore& score : m_dmdScores.m_scores)
+      if (score.m_id == displayId)
+         return &score;
+   return nullptr;
+}
 }
