@@ -137,14 +137,14 @@ public:
    void B2SStartAnimation(const string& animationName, bool reverse = false) { StartAnimation(animationName, reverse); }
    void B2SStartAnimationReverse(const string& animationName)                { StartAnimation(animationName, true); }
    void B2SStopAnimation(const string& animationName)                        { StopAnimation(animationName); }
-   void B2SStopAllAnimations() { } // FIXME
-   bool GetB2SIsAnimationRunning(const string& animationName) const { return false; } // FIXME
-   void StartAnimation(const string& animationName, bool reverse = false) { } // FIXME
-   void StopAnimation(const string& animationName) { } // FIXME
+   void B2SStopAllAnimations();
+   bool GetB2SIsAnimationRunning(const string& animationName) const;
+   void StartAnimation(const string& animationName, bool reverse = false);
+   void StopAnimation(const string& animationName);
    void B2SStartRotation() { } // FIXME
    void B2SStopRotation() { } // FIXME
-   void B2SShowScoreDisplays() { } // FIXME
-   void B2SHideScoreDisplays() { } // FIXME
+   void B2SShowScoreDisplays() { m_scoreDisplaysHidden = false; }
+   void B2SHideScoreDisplays() { m_scoreDisplaysHidden = true; }
    void B2SStartSound(const string& soundName) { } // FIXME
    void B2SPlaySound(const string& soundName) { } // FIXME
    void B2SStopSound(const string& soundName) { } // FIXME
@@ -155,6 +155,12 @@ public:
    bool GetBulbState(const B2SBulb& bulb, float& state) const;
    int GetScoreDigit(int digit) const;
    int GetPlayerScore(int player) const;
+
+   // Animation engine glue: the renderer drives the animations and applies their effects through this interface
+   B2SAnimationEffects GetAnimationEffects();
+   void PulseSwitch(int switchId);
+   bool IsIlluminationLocked(const string& group) const;
+   bool AreScoreDisplaysHidden() const { return m_scoreDisplaysHidden; }
 
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override;
 
@@ -168,7 +174,7 @@ private:
    const std::thread::id m_msgApiThreadId { std::this_thread::get_id() };
 
    std::future<std::shared_ptr<B2STable>> m_loadedB2S;
-   std::mutex m_b2sMutex;
+   mutable std::mutex m_b2sMutex;
    std::shared_ptr<B2STable> m_b2s; // Acquired once the asynchronous load completes
    std::shared_ptr<B2STable> AcquireB2STable();
    void ApplyScoreDigit(int digit, int value, bool roll);
@@ -194,7 +200,11 @@ private:
    };
    std::map<int, LampState> m_lampStates;
    std::map<string, LampState> m_groupStates;
-   uint64_t m_lampStamp = 0; // Monotonic write counter used to resolve most recent state writes
+   std::atomic<uint64_t> m_lampStamp { 0 }; // Monotonic write counter used to resolve most recent state writes
+   std::atomic<bool> m_scoreDisplaysHidden { false };
+   std::map<string, int> m_illuminationLocks; // Ref-counted animation locks, keyed by illumination group (bulb name)
+   mutable std::mutex m_illuminationLockMutex;
+   int m_setSwitchIndex = -1; // Index of the "Switch" setter member in the proxied PinMAME controller class
    std::map<int, std::atomic<int>> m_playerScores;
    struct ScoreDigit
    {

@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <atomic>
+#include <unordered_map>
+
 #include "common.h"
 #include "tinyxml2/tinyxml2.h"
 
@@ -287,12 +290,53 @@ enum class B2SAnimationStopBehaviour
 };
 
 
+class B2SAnimation;
+
+// Effect interface used by the animation engine, provided by the server through the renderer
+struct B2SAnimationEffects
+{
+   std::function<void(const string& group, bool on)> setGroup;
+   std::function<float(const string& group)> getGroup;
+   std::function<void(const string& group)> lockGroup;
+   std::function<void(const string& group)> unlockGroup;
+   std::function<void(int switchId)> pulseSwitch;
+   std::function<void(bool hidden)> setScoreDisplaysHidden;
+   std::function<void()> allLightsOff;
+   std::function<std::unordered_map<string, float>()> snapshotAllLights;
+   std::function<void(const std::unordered_map<string, float>&)> restoreAllLights;
+   // Edge event on a ROM trigger of a RandomStart animation (handled by the renderer which owns the animation pool)
+   std::function<void(B2SRomIDType romIdType, int romId, bool start, B2SAnimation* self)> randomTrigger;
+};
+
+
 class B2SAnimation final
 {
 public:
    explicit B2SAnimation(const tinyxml2::XMLNode& root) noexcept;
+   B2SAnimation(B2SAnimation&&) noexcept = default;
 
-   void Update(float elapsedInS);
+   // Animation runtime, driven by the renderer once per frame
+   void Update(float elapsedInS, const B2SAnimationEffects& fx);
+   bool IsRunning() const;
+   void Start(bool reverse = false); // Thread safe script-side request
+   void Stop(); // Thread safe script-side request
+
+   // ROM event trigger parsed from IDJoin (lamp/solenoid/GI string, optionally inverted)
+   struct RomTrigger
+   {
+      B2SRomIDType romIdType;
+      int romId;
+      bool inverted;
+   };
+   const vector<RomTrigger>& GetRomTriggers() const { return m_romTriggers; }
+   const vector<string>& GetLightsInvolved() const { return m_lightsInvolved; }
+
+   // True when the animation has no playable content (mirrors the reference which drops such animations)
+   bool IsEmpty() const { return m_entryActions.empty(); }
+
+   // Rebind ROM trigger state readers (called by the renderer when the ROM state sources change)
+   using RomTriggerResolver = std::function<std::function<void()>(B2SRomIDType romIdType, int romId, bool inverted, float* target)>;
+   void BindRomTriggers(const RomTriggerResolver& resolver);
 
 public:
    const string m_name;
@@ -315,10 +359,38 @@ public:
    const vector<B2SAnimationStep> m_animationSteps;
 
 private:
-   bool m_playing = false;
-   bool m_reverse = false;
-   unsigned int m_currentStep = 0;
-   float m_timeUntilNextStep = 0.f;
+   struct EntryAction
+   {
+      vector<string> groups;
+      int waitLoops; // Interval multiplier waited after this action (0 = same tick as next action)
+      bool on;
+      int corrector; // Reverse playback mapping to the matching counterpart action
+      int pulseSwitch;
+   };
+   vector<EntryAction> m_entryActions; // Expanded steps (on/off pairs)
+   vector<string> m_lightsInvolved;
+   vector<RomTrigger> m_romTriggers;
+
+   struct Runtime
+   {
+      std::atomic<int> request { 0 }; // 1=start forward, 2=start reverse, 3=stop
+      std::atomic<bool> running { false };
+      bool reverse = false;
+      bool stopMeLater = false;
+      bool reachedThe0Point = false;
+      int ticker = 0;
+      int loopTicker = 0;
+      float timeUntilNextStep = 0.f;
+      std::unordered_map<string, float> lightSnapshot;
+      vector<float> triggerValues;
+      vector<bool> triggerPrev;
+      vector<std::function<void()>> triggerUpdaters;
+   };
+   std::unique_ptr<Runtime> m_runtime;
+
+   void BeginRun(const B2SAnimationEffects& fx, bool reverse);
+   void EndRun(const B2SAnimationEffects& fx);
+   int Tick(const B2SAnimationEffects& fx); // returns the number of interval loops to wait
 };
 
 

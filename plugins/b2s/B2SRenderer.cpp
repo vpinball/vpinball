@@ -111,6 +111,13 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
       case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
       case B2SSnippitType::SelfRotatingImage: break;
       }
+
+   // Rebind the ROM event triggers of all animations (IDJoin)
+   const auto resolver = [this, &items](B2SRomIDType romIdType, int romId, bool inverted, float* target) { return ResolveRomPropUpdater(items, target, romIdType, romId, inverted); };
+   for (auto& animation : m_b2s->m_backglassAnimations)
+      animation.BindRomTriggers(resolver);
+   for (auto& animation : m_b2s->m_dmdAnimations)
+      animation.BindRomTriggers(resolver);
 }
 
 std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<StateSrcId>& items, float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted, const int romValue) const
@@ -157,16 +164,56 @@ bool B2SRenderer::Render(VPXRenderContext2D* ctx, B2SServer* server)
    }
 }
 
+void B2SRenderer::UpdateAnimations(vector<B2SAnimation>& animations, float elapsed, B2SServer* server)
+{
+   B2SAnimationEffects fx;
+   if (server)
+      fx = server->GetAnimationEffects();
+   fx.randomTrigger = [this, &animations](B2SRomIDType romIdType, int romId, bool start, B2SAnimation*) { OnRandomAnimationTrigger(animations, romIdType, romId, start); };
+   for (auto& animation : animations)
+      animation.Update(elapsed, fx); // TODO implement slowdown settings/props (scale elapsed)
+}
+
+void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start)
+{
+   if (start)
+   {
+      // Pick one animation at random among all the random-start animations sharing this ROM trigger
+      vector<B2SAnimation*> pool;
+      for (B2SAnimation& animation : animations)
+         if (animation.m_randomStart
+            && std::ranges::any_of(
+               animation.GetRomTriggers(), [romIdType, romId](const B2SAnimation::RomTrigger& trigger) { return trigger.romIdType == romIdType && trigger.romId == romId; }))
+            pool.push_back(&animation);
+      const bool anyRunning = std::ranges::any_of(pool, [](const B2SAnimation* animation) { return animation->IsRunning(); });
+      if (!anyRunning && !pool.empty())
+      {
+         int pick = pool.size() == 1 ? 0 : std::rand() % static_cast<int>(pool.size());
+         if (pool.size() > 1 && pick == m_lastRandomPick)
+            pick = (pick + 1) % static_cast<int>(pool.size()); // avoid restarting the same animation twice in a row
+         m_lastRandomPick = pick;
+         m_lastRandomAnimation = pool[pick];
+         m_lastRandomAnimation->Start(false);
+      }
+   }
+   else if (m_lastRandomAnimation != nullptr)
+   {
+      m_lastRandomAnimation->Stop();
+      m_lastRandomAnimation = nullptr;
+   }
+}
+
 void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs)
 {
    for (const auto& bulb : bulbs)
    {
+      const bool locked = server && !bulb->m_name.empty() && server->IsIlluminationLocked(bulb->m_name);
       float state = 0.f;
       if (server && server->GetBulbState(*bulb, state))
          bulb->m_brightness = (bulb->m_b2sValue > 0) ? //
             ((static_cast<int>(state) == bulb->m_b2sValue) ? 1.f : 0.f)
                                                      : state;
-      else
+      else if (!locked) // While the illumination group is locked by an animation, ROM updates are suspended
          bulb->m_romUpdater();
       float rotation = 0.f;
       if (bulb->m_snippitType == B2SSnippitType::MechRotatingImage)
@@ -192,7 +239,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
 
 void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores)
 {
-   if (server == nullptr)
+   if (server == nullptr || server->AreScoreDisplaysHidden())
       return;
 
    vector<SegElementType> segTypes;
@@ -395,8 +442,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    auto now = std::chrono::steady_clock::now();
    float elapsed = static_cast<float>(static_cast<double>((now - m_lastBackglassRenderTick).count()) / 1000000000.0);
    m_lastBackglassRenderTick = now;
-   for (auto& animation : m_b2s->m_backglassAnimations)
-      animation.Update(elapsed); // TODO implement slowdown settings/props (scale elapsed)
+   UpdateAnimations(m_b2s->m_backglassAnimations, elapsed, server);
 
    // Draw background
    m_b2s->m_backglassOnImage.m_romUpdater();
@@ -451,8 +497,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
    auto now = std::chrono::steady_clock::now();
    float elapsed = static_cast<float>(static_cast<double>((now - m_lastDmdRenderTick).count()) / 1000000000.0);
    m_lastDmdRenderTick = now;
-   for (auto& animation : m_b2s->m_dmdAnimations)
-      animation.Update(elapsed); // TODO implement slowdown settings/props (scale elapsed)
+   UpdateAnimations(m_b2s->m_dmdAnimations, elapsed, server);
 
    // Draw background
    if (m_b2s->m_dmdImage.m_image)

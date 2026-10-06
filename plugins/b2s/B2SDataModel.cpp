@@ -1,6 +1,8 @@
 // license:GPLv3+
 
+#include <algorithm>
 #include <charconv>
+#include <cctype>
 #include <format>
 
 #include "common.h"
@@ -397,40 +399,304 @@ B2SAnimation::B2SAnimation(const tinyxml2::XMLNode& root) noexcept
    , m_idJoin(GetStringAttribute(root, ""s, "IDJoin"s, ""s))
    , m_startAnimationAtBackglassStartup(GetBoolAttribute(root, ""s, "StartAnimationAtBackglassStartup"s, false))
    , m_allLightsOffAtAnimationStart(GetBoolAttribute(root, ""s, "AllLightsOffAtAnimationStart"s, false))
-   , m_lightsStateAtAnimationStart(static_cast<B2SLightsStateAtAnimationStart>(GetIntAttribute(root, ""s, "LightsStateAtAnimationStart"s, 0)))
+   , m_lightsStateAtAnimationStart(
+        static_cast<B2SLightsStateAtAnimationStart>(GetIntAttribute(root, ""s, "LightsStateAtAnimationStart"s, static_cast<int>(B2SLightsStateAtAnimationStart::NoChange))))
    , m_resetLightsAtAnimationEnd(GetBoolAttribute(root, ""s, "ResetLightsAtAnimationEnd"s, false))
-   , m_lightsStateAtAnimationEnd(static_cast<B2SLightsStateAtAnimationEnd>(GetIntAttribute(root, ""s, "LightsStateAtAnimationEnd"s, 0)))
+   , m_lightsStateAtAnimationEnd(
+        static_cast<B2SLightsStateAtAnimationEnd>(GetIntAttribute(root, ""s, "LightsStateAtAnimationEnd"s, static_cast<int>(B2SLightsStateAtAnimationEnd::InvolvedLightsOff))))
    , m_runAnimationTilEnd(GetBoolAttribute(root, ""s, "RunAnimationTilEnd"s, false))
-   , m_animationStopBehaviour(static_cast<B2SAnimationStopBehaviour>(GetIntAttribute(root, ""s, "AnimationStopBehaviour"s, 0)))
+   , m_animationStopBehaviour(static_cast<B2SAnimationStopBehaviour>(GetIntAttribute(root, ""s, "AnimationStopBehaviour"s, static_cast<int>(B2SAnimationStopBehaviour::StopImmediatelly))))
    , m_lockInvolvedLamps(GetBoolAttribute(root, ""s, "LockInvolvedLamps"s, false))
    , m_hideScoreDisplays(GetBoolAttribute(root, ""s, "HideScoreDisplays"s, false))
    , m_bringToFront(GetBoolAttribute(root, ""s, "BringToFront"s, false))
    , m_randomStart(GetBoolAttribute(root, ""s, "RandomStart"s, false))
    , m_randomQuality(GetIntAttribute(root, ""s, "RandomQuality"s, 0))
    , m_animationSteps(GetList<B2SAnimationStep>(root, ""s, "AnimationStep"s))
+   , m_runtime(std::make_unique<Runtime>())
 {
+   // Expand each step into on/off entry actions (matches the reference EntryAction expansion)
+   for (const B2SAnimationStep& step : m_animationSteps)
+   {
+      const bool isOnValid = (!step.m_on.empty() && !step.m_on[0].empty()) || step.m_waitLoopsAfterOn > 0;
+      const bool isOffValid = (!step.m_off.empty() && !step.m_off[0].empty()) || step.m_waitLoopsAfterOff > 0;
+      int pulseSwitch = step.m_pulseSwitch;
+      if (isOnValid)
+      {
+         m_entryActions.push_back({ step.m_on, step.m_waitLoopsAfterOn, true, isOffValid ? 1 : 0, pulseSwitch });
+         pulseSwitch = 0;
+      }
+      if (isOffValid)
+      {
+         m_entryActions.push_back({ step.m_off, step.m_waitLoopsAfterOff, false, isOnValid ? -1 : 0, pulseSwitch });
+         pulseSwitch = 0;
+      }
+      if (pulseSwitch > 0)
+         m_entryActions.push_back({ {}, 0, true, 0, pulseSwitch });
+   }
+
+   // Collect all involved light groups
+   for (const EntryAction& entry : m_entryActions)
+      for (const string& group : entry.groups)
+         if (!group.empty() && std::find(m_lightsInvolved.begin(), m_lightsInvolved.end(), group) == m_lightsInvolved.end())
+            m_lightsInvolved.push_back(group);
+
+   // Parse the IDJoin ROM event triggers (lamp/solenoid/GI string, I prefix inverts)
+   for (const string& idJoin : GetStringList(m_idJoin, ','))
+   {
+      if (idJoin.empty())
+         continue;
+      const auto toInt = [&idJoin](size_t offset) -> int
+      {
+         int v = 0;
+         for (size_t i = offset; i < idJoin.length(); i++)
+         {
+            if (idJoin[i] < '0' || idJoin[i] > '9')
+               return 0;
+            v = v * 10 + (idJoin[i] - '0');
+         }
+         return v;
+      };
+      const char c0 = static_cast<char>(std::toupper(static_cast<unsigned char>(idJoin[0])));
+      const char c1 = idJoin.length() > 1 ? static_cast<char>(std::toupper(static_cast<unsigned char>(idJoin[1]))) : ' ';
+      const char c2 = idJoin.length() > 2 ? static_cast<char>(std::toupper(static_cast<unsigned char>(idJoin[2]))) : ' ';
+      switch (c0)
+      {
+      case 'L':
+         if (toInt(1) > 0)
+            m_romTriggers.push_back({ B2SRomIDType::Lamp, toInt(1), false });
+         break;
+      case 'S':
+         if (toInt(1) > 0)
+            m_romTriggers.push_back({ B2SRomIDType::Solenoid, toInt(1), false });
+         break;
+      case 'G':
+         if (c1 == 'I')
+         {
+            if (toInt(2) > 0)
+               m_romTriggers.push_back({ B2SRomIDType::GIString, toInt(2), false });
+         }
+         else if (toInt(1) > 0)
+            m_romTriggers.push_back({ B2SRomIDType::GIString, toInt(1), false });
+         break;
+      case 'I':
+         if (c1 == 'L')
+         {
+            if (toInt(2) > 0)
+               m_romTriggers.push_back({ B2SRomIDType::Lamp, toInt(2), true });
+         }
+         else if (c1 == 'S')
+         {
+            if (toInt(2) > 0)
+               m_romTriggers.push_back({ B2SRomIDType::Solenoid, toInt(2), true });
+         }
+         else if (c1 == 'G')
+         {
+            if (c2 == 'I')
+            {
+               if (toInt(3) > 0)
+                  m_romTriggers.push_back({ B2SRomIDType::GIString, toInt(3), true });
+            }
+            else if (toInt(2) > 0)
+               m_romTriggers.push_back({ B2SRomIDType::GIString, toInt(2), true });
+         }
+         else if (toInt(1) > 0)
+            m_romTriggers.push_back({ B2SRomIDType::Lamp, toInt(1), true });
+         break;
+      default:
+         if (toInt(0) > 0)
+            m_romTriggers.push_back({ B2SRomIDType::Lamp, toInt(0), false });
+         break;
+      }
+   }
+
+   m_runtime->triggerValues.resize(m_romTriggers.size(), 0.f);
+   m_runtime->triggerPrev.resize(m_romTriggers.size(), false);
+   m_runtime->triggerUpdaters.resize(m_romTriggers.size());
+
    if (m_startAnimationAtBackglassStartup)
-      m_playing = true;
+      m_runtime->request = 1;
 }
 
-void B2SAnimation::Update(float elapsedInS)
+void B2SAnimation::BindRomTriggers(const RomTriggerResolver& resolver)
 {
-   if (!m_playing)
+   for (size_t i = 0; i < m_romTriggers.size(); i++)
+      m_runtime->triggerUpdaters[i] = resolver(m_romTriggers[i].romIdType, m_romTriggers[i].romId, m_romTriggers[i].inverted, &m_runtime->triggerValues[i]);
+}
+
+bool B2SAnimation::IsRunning() const { return m_runtime->running; }
+
+void B2SAnimation::Start(bool reverse) { m_runtime->request = reverse ? 2 : 1; }
+
+void B2SAnimation::Stop() { m_runtime->request = 3; }
+
+void B2SAnimation::Update(float elapsedInS, const B2SAnimationEffects& fx)
+{
+   Runtime& rt = *m_runtime;
+
+   // Poll ROM event triggers (IDJoin): rising edge starts, falling edge stops (random-start animations go through the pool)
+   for (size_t i = 0; i < m_romTriggers.size() && i < rt.triggerUpdaters.size(); i++)
+   {
+      if (rt.triggerUpdaters[i])
+         rt.triggerUpdaters[i]();
+      const bool on = rt.triggerValues[i] >= 0.5f;
+      if (on != rt.triggerPrev[i])
+      {
+         rt.triggerPrev[i] = on;
+         if (m_randomStart)
+         {
+            if (fx.randomTrigger)
+               fx.randomTrigger(m_romTriggers[i].romIdType, m_romTriggers[i].romId, on, this);
+         }
+         else
+         {
+            // Trigger edges do not override a pending script request
+            int expected = 0;
+            rt.request.compare_exchange_strong(expected, on ? 1 : 3);
+         }
+      }
+   }
+
+   // Consume the pending script/trigger request
+   if (const int request = rt.request.exchange(0); request != 0)
+   {
+      if (request == 3)
+      {
+         if (rt.running)
+         {
+            // Stop request honors the configured stop behaviour
+            switch (m_animationStopBehaviour)
+            {
+            case B2SAnimationStopBehaviour::RunAnimationTillEnd:
+            case B2SAnimationStopBehaviour::RunAnimationToFirstStep:
+               if (!rt.stopMeLater)
+                  rt.reachedThe0Point = false;
+               rt.stopMeLater = true;
+               break;
+            default: EndRun(fx); break;
+            }
+         }
+      }
+      else if (!rt.running) // Starting an already running animation is ignored (reference behavior)
+         BeginRun(fx, request == 2);
+   }
+
+   if (!rt.running)
       return;
 
-   m_timeUntilNextStep -= elapsedInS;
-   // FIXME this can lock up as m_timeUntilNextStep can have invalid values
-   /* while (m_timeUntilNextStep < 0.f)
+   // Interval is in milliseconds, clamped to avoid a lock up on degenerate animations
+   const float intervalInS = static_cast<float>(m_interval > 0 ? m_interval : 1) / 1000.f;
+   rt.timeUntilNextStep -= elapsedInS;
+   while (rt.running && rt.timeUntilNextStep <= 0.f)
+      rt.timeUntilNextStep += static_cast<float>(Tick(fx)) * intervalInS;
+}
+
+int B2SAnimation::Tick(const B2SAnimationEffects& fx)
+{
+   Runtime& rt = *m_runtime;
+   const int count = static_cast<int>(m_entryActions.size());
+   int waitLoops = 1;
+
+   while (true)
    {
-      if (m_reverse)
-         m_currentStep = (m_currentStep - 1 + static_cast<int>(m_animationSteps.size())) % static_cast<int>(m_animationSteps.size());
-      else
-         m_currentStep = (m_currentStep + 1) % static_cast<int>(m_animationSteps.size());
+      const int index = !rt.reverse ? rt.ticker + 1 : count - rt.ticker;
+      if (index < 1 || index > count)
+         break;
+      const EntryAction* action = &m_entryActions[index - 1];
+      if (action->corrector != 0 && rt.reverse)
+      {
+         const int corrected = index + action->corrector;
+         if (corrected >= 1 && corrected <= count)
+            action = &m_entryActions[corrected - 1];
+      }
+      for (const string& group : action->groups)
+         if (!group.empty())
+            fx.setGroup(group, action->on);
+      if (action->pulseSwitch > 0)
+         fx.pulseSwitch(action->pulseSwitch);
+      if (action->waitLoops > 0)
+      {
+         waitLoops = action->waitLoops;
+         break;
+      }
+      rt.ticker++;
+      if (rt.ticker >= count)
+         break;
+   }
 
+   rt.ticker++;
+   bool finished = false;
+   if (rt.ticker >= count)
+   {
+      rt.reachedThe0Point = true;
+      rt.loopTicker++;
+      rt.ticker = 0;
+      if (m_loops > 0 && rt.loopTicker >= m_loops)
+      {
+         rt.loopTicker = 0;
+         finished = true;
+      }
+   }
 
+   if (finished || (rt.stopMeLater && m_animationStopBehaviour == B2SAnimationStopBehaviour::RunAnimationTillEnd && rt.ticker == 0)
+      || (rt.stopMeLater && m_animationStopBehaviour == B2SAnimationStopBehaviour::RunAnimationToFirstStep && (rt.ticker == 1 || rt.ticker == 2) && rt.reachedThe0Point))
+      EndRun(fx);
 
-      m_timeUntilNextStep += static_cast<float>(m_interval) / 1000.f;
-   } */
+   return waitLoops;
+}
+
+void B2SAnimation::BeginRun(const B2SAnimationEffects& fx, bool reverse)
+{
+   Runtime& rt = *m_runtime;
+   rt.stopMeLater = false;
+   rt.reverse = reverse;
+   rt.ticker = 0;
+   rt.loopTicker = 0;
+   rt.reachedThe0Point = false;
+   rt.timeUntilNextStep = static_cast<float>(m_interval > 0 ? m_interval : 1) / 1000.f;
+
+   // snapshot all lights before touching them (restored at animation end when reset is requested)
+   if (m_resetLightsAtAnimationEnd || m_lightsStateAtAnimationEnd == B2SLightsStateAtAnimationEnd::LightsReseted)
+      rt.lightSnapshot = fx.snapshotAllLights();
+   else
+      rt.lightSnapshot.clear();
+
+   // maybe switch off all lights or switch on/off the involved lights
+   if (m_allLightsOffAtAnimationStart || m_lightsStateAtAnimationStart == B2SLightsStateAtAnimationStart::LightsOff)
+      fx.allLightsOff();
+   else if (m_lightsStateAtAnimationStart == B2SLightsStateAtAnimationStart::InvolvedLightsOff || m_lightsStateAtAnimationStart == B2SLightsStateAtAnimationStart::InvolvedLightsOn)
+      for (const string& group : m_lightsInvolved)
+         fx.setGroup(group, m_lightsStateAtAnimationStart == B2SLightsStateAtAnimationStart::InvolvedLightsOn);
+
+   if (m_lockInvolvedLamps)
+      for (const string& group : m_lightsInvolved)
+         fx.lockGroup(group);
+   if (m_hideScoreDisplays)
+      fx.setScoreDisplaysHidden(true);
+
+   rt.running = true;
+}
+
+void B2SAnimation::EndRun(const B2SAnimationEffects& fx)
+{
+   Runtime& rt = *m_runtime;
+   if (!rt.running)
+      return;
+   rt.running = false;
+   rt.stopMeLater = false;
+
+   if (m_hideScoreDisplays)
+      fx.setScoreDisplaysHidden(false);
+   if (m_lockInvolvedLamps)
+      for (const string& group : m_lightsInvolved)
+         fx.unlockGroup(group);
+   if (m_resetLightsAtAnimationEnd || m_lightsStateAtAnimationEnd == B2SLightsStateAtAnimationEnd::LightsReseted)
+   {
+      fx.restoreAllLights(rt.lightSnapshot);
+      rt.lightSnapshot.clear();
+   }
+   else if (m_lightsStateAtAnimationEnd == B2SLightsStateAtAnimationEnd::InvolvedLightsOff || m_lightsStateAtAnimationEnd == B2SLightsStateAtAnimationEnd::InvolvedLightsOn)
+      for (const string& group : m_lightsInvolved)
+         fx.setGroup(group, m_lightsStateAtAnimationEnd == B2SLightsStateAtAnimationEnd::InvolvedLightsOn);
 }
 
 B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
@@ -491,6 +757,18 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
    };
    zsort(m_backglassIlluminations);
    zsort(m_dmdIlluminations);
+
+   // Animations without a positive interval or without any playable step are dropped (reference behavior)
+   const auto dropEmptyAnims = [](vector<B2SAnimation>& animations)
+   {
+      vector<B2SAnimation> kept;
+      for (B2SAnimation& animation : animations)
+         if (animation.m_interval > 0 && !animation.IsEmpty())
+            kept.push_back(std::move(animation));
+      animations.swap(kept);
+   };
+   dropEmptyAnims(m_backglassAnimations);
+   dropEmptyAnims(m_dmdAnimations);
 }
 
 const B2SScore* B2STable::FindScoreDisplay(int displayId) const
