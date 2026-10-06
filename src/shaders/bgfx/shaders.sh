@@ -256,7 +256,7 @@ fi
 if [ "$gen_tonemap" = true ]; then
     echo "// Tonemap Shaders" > "../bgfx_tonemap.h"
     for k in 0 1; do
-        for variant in "FILMIC" "NEUTRAL" "AGX" "AGX_PUNCHY" "WCG"; do
+        for variant in "FILMIC" "NEUTRAL" "AGX" "WCG"; do
             variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
             for variant2 in "AO" "NOAO"; do
                 variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')

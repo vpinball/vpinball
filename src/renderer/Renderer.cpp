@@ -280,7 +280,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 void Renderer::ApplyTableSettings()
 {
    m_stereo3Denabled = true; // m_table->GetSettings().GetPlayer_Stereo3DEnabled();
-   m_toneMapper = (ToneMapper)m_table->GetSettings().GetTableOverride_ToneMapper();
+   m_toneMapper = GetValidToneMapper(m_table->GetSettings().GetTableOverride_ToneMapper());
    m_HDRforceDisableToneMapper = m_table->GetSettings().GetPlayer_HDRDisableToneMapper();
    Settings::SetTableOverride_Exposure_Default(m_table->GetExposure());
    m_exposure = m_table->GetSettings().GetTableOverride_Exposure();
@@ -2347,6 +2347,42 @@ void PrecompSplineTonemap(const float displayMaxLum, float out[6])
    out[5] = Qb;
 }
 
+// Precompute the allenwp tonemapping curve parameters for AgX on the CPU,
+// matching the shader code (see allenwpCurve in FBShader.fxh / fs_pp_tonemap.sc).
+// Derived from Godot's implementation (https://github.com/godotengine/godot/pull/106940)
+// Source and details: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
+static void PrecompAgXTonemap(float out[4])
+{
+   const float output_max_value = 1.f; // SDR always has an output_max_value of 1.0
+
+   // These constants must match the ones in the shader code.
+   // 18% "middle gray" is perceptually 50% of the brightness of reference white.
+   const float awp_crossover_point = 0.18f;
+   // If output_max_value and/or awp_crossover_point are no longer constant,
+   // awp_shoulder_max can be calculated on the CPU and passed in the shader parameters.
+   const float awp_shoulder_max = output_max_value - awp_crossover_point;
+
+   const float awp_contrast = 1.25f; // Approximately Blender's AgX contrast
+   const float awp_high_clip = 16.29f; // Blender's AgX white point (must be >= 2.0 for good behavior)
+
+   // awp_toe_a is a solution that ensures intersection at awp_crossover_point.
+   const float awp_toe_a = ((1.f / awp_crossover_point) - 1.f) * powf(awp_crossover_point, awp_contrast);
+   // Slope formula is simply the derivative of the toe function with an input of awp_crossover_point.
+   const float awp_slope_denom = powf(awp_crossover_point, awp_contrast) + awp_toe_a;
+   const float awp_slope = (awp_contrast * powf(awp_crossover_point, awp_contrast - 1.f) * awp_toe_a) / (awp_slope_denom * awp_slope_denom);
+
+   float awp_w = awp_high_clip - awp_crossover_point;
+   awp_w = awp_w * awp_w;
+   awp_w = awp_w / awp_shoulder_max;
+   awp_w = awp_w * awp_slope;
+
+   // This here must match the order in the shader itself!
+   out[0] = awp_contrast;
+   out[1] = awp_toe_a;
+   out[2] = awp_slope;
+   out[3] = awp_w;
+}
+
 void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT, bool isFullTonemap)
 {
    //const unsigned int jittertime = (unsigned int)((uint64_t)msec()*90/1000);
@@ -2436,6 +2472,10 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
       //m_renderDevice->m_FBShader->SetVector(ShaderUniform::spline2, 0.f,0.f,0.f,0.f);
    }
 
+   float agx_params[4];
+   PrecompAgXTonemap(agx_params);
+   m_renderDevice->m_FBShader->SetVector(ShaderUniform::agx_params, agx_params[0], agx_params[1], agx_params[2], agx_params[3]);
+
    Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
    if (pin)
       // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
@@ -2462,7 +2502,6 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
                        : m_toneMapper == TM_FILMIC       ? ShaderTechnique::fb_fmtonemap
                        : m_toneMapper == TM_NEUTRAL      ? ShaderTechnique::fb_nttonemap
                        : m_toneMapper == TM_AGX          ? ShaderTechnique::fb_agxtonemap
-                       : m_toneMapper == TM_AGX_PUNCHY   ? ShaderTechnique::fb_agxptonemap
                        : /*m_toneMapper == TM_WCG_SPLINE ?*/ ShaderTechnique::fb_wcgtonemap;
    else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
       tonemapTechnique = useAO ? filtered ? ShaderTechnique::fb_wcgtonemap_AO : ShaderTechnique::fb_wcgtonemap_AO_no_filter
@@ -2479,9 +2518,6 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
    else if (m_toneMapper == TM_AGX)
       tonemapTechnique = useAO ? filtered ? ShaderTechnique::fb_agxtonemap_AO : ShaderTechnique::fb_agxtonemap_AO_no_filter
                                : filtered ? ShaderTechnique::fb_agxtonemap    : ShaderTechnique::fb_agxtonemap_no_filter;
-   else if (m_toneMapper == TM_AGX_PUNCHY)
-      tonemapTechnique = useAO ? filtered ? ShaderTechnique::fb_agxptonemap_AO : ShaderTechnique::fb_agxptonemap_AO_no_filter
-                               : filtered ? ShaderTechnique::fb_agxptonemap    : ShaderTechnique::fb_agxptonemap_no_filter;
    else
       assert(!"unknown tonemapper");
    m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
@@ -3688,7 +3724,6 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
             case TM_FILMIC: tonemapTechnique = ShaderTechnique::fb_fmtonemap_no_filter; break;
             case TM_NEUTRAL: tonemapTechnique = ShaderTechnique::fb_nttonemap_no_filter; break;
             case TM_AGX: tonemapTechnique = ShaderTechnique::fb_agxtonemap_no_filter; break;
-            case TM_AGX_PUNCHY: tonemapTechnique = ShaderTechnique::fb_agxptonemap_no_filter; break;
             default: assert(!"unknown tonemapper"); break;
             }
             rd->m_FBShader->SetTechnique(tonemapTechnique);
@@ -3713,6 +3748,9 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
                   0.f, // Unused for SDR
                   0.f); // Tonemapping mode: 0 = SDR
             }
+            float agx_params[4];
+            PrecompAgXTonemap(agx_params);
+            rd->m_FBShader->SetVector(ShaderUniform::agx_params, agx_params[0], agx_params[1], agx_params[2], agx_params[3]);
             rd->DrawFullscreenTexturedQuad(rd->m_FBShader);
          }
       }

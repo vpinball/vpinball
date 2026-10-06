@@ -267,7 +267,7 @@ if ($gen_tonemap)
 	for($k = 0; $k -lt 2; $k++)
 	{
 	  #foreach ($variant in @("FILMIC", "TONY", "NEUTRAL", "AGX", "AGX_PUNCHY", "WCG_REINHARD"))
-	  foreach ($variant in @("FILMIC", "NEUTRAL", "AGX", "AGX_PUNCHY", "WCG"))
+	  foreach ($variant in @("FILMIC", "NEUTRAL", "AGX", "WCG"))
 	  {
 		 foreach ($variant2 in @("AO", "NOAO"))
 		 {
