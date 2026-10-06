@@ -789,7 +789,11 @@ void B2SAnimation::Update(float elapsedInS, const B2SAnimationEffects& fx)
          }
       }
       else if (!rt.running) // Starting an already running animation is ignored (reference behavior)
-         BeginRun(fx, request == 2);
+      {
+         // Dual backglass: an animation only runs in its declared mode
+         if (m_dualMode == B2SDualMode::Both || fx.dualMode == B2SDualMode::Both || m_dualMode == fx.dualMode)
+            BeginRun(fx, request == 2);
+      }
    }
 
    if (!rt.running)
