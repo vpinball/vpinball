@@ -42,13 +42,17 @@ public:
 class B2SReelImage final
 {
 public:
-   explicit B2SReelImage(const tinyxml2::XMLNode& image) noexcept;
+   explicit B2SReelImage(const tinyxml2::XMLNode& image, int setId = 0) noexcept;
    ~B2SReelImage();
+
+   // Rolling intermediate image n (1..CountOfIntermediates), nullptr if not available
+   VPXTexture GetIntermediate(int n) const { return (n >= 1 && n <= static_cast<int>(m_intermediates.size())) ? m_intermediates[static_cast<size_t>(n - 1)] : nullptr; }
 
 public:
    const string m_name;
    const int m_countOfIntermediate;
    const VPXTexture m_image;
+   vector<VPXTexture> m_intermediates; // IntermediateImage1..CountOfIntermediates shown while the reel rolls to the next digit
 };
 
 
@@ -57,10 +61,43 @@ class B2SReel final
 public:
    explicit B2SReel(const tinyxml2::XMLNode& root) noexcept;
 
-   B2SReelImage* GetImage(const string& name, int index) const;
+   // name is the reel type ("reel_00"/"reel_0"), index the digit (-1 = empty).
+   // When illuminated, images are taken from the illuminated pool, with a _setId name suffix when setId > 0.
+   const B2SReelImage* GetImage(const string& name, int index, bool illuminated = false, int setId = 0) const;
 
 public:
    const vector<std::unique_ptr<B2SReelImage>> m_images;
+   const vector<std::unique_ptr<B2SReelImage>> m_illuImages; // Illuminated image sets (names carry their _setId suffix)
+};
+
+
+// Runtime state of a rolling reel digit (render thread only). Digits roll one step per
+// interval, showing the intermediate images of the current digit in between, until they
+// reach their target value.
+class B2SReelDigit final
+{
+public:
+   // Set the digit to display. When animate is false, or for non digit values (blank), the change is instant
+   void SetTarget(int value, bool animate);
+   // Advances the rolling animation; returns true each time a reel step completes (=> play the reel sound)
+   bool Update(float elapsedInS, int rollingIntervalMs, int intermediates, bool rollUp);
+   int Current() const { return m_current; }
+   int Intermediate() const { return m_intermediate; } // 0 = digit image, n > 0 = intermediate image n
+   bool IsRolling() const { return m_rolling; }
+   // Illuminated image selection changed: skip the remaining intermediate steps (B2SReelBox.Illuminated behaviour)
+   void SetIlluminated(bool value, int intermediates);
+   // True while this digit still has to cross the 9->0 (up) or 0->9 (down) boundary to reach its target.
+   // More significant digits wait for the rollover before rolling (display carry behaviour)
+   bool HasPendingWrap(bool rollUp) const { return m_rolling && (rollUp ? (m_current > m_target) : (m_current < m_target)); }
+
+private:
+   int m_current = 0;
+   int m_target = 0;
+   int m_intermediate = 0;
+   int m_settle = 0; // Settle ticks between two digit steps
+   float m_accMs = 0.f;
+   bool m_rolling = false;
+   bool m_illuminated = false;
 };
 
 
@@ -100,6 +137,7 @@ public:
    const int m_reelIlluB2SID;
    const int m_reelIlluB2SIDType;
    const int m_reelIlluB2SValue;
+   const int m_reelIlluImageSet; // ReelIlluImageSet: illuminated image set index (0 = none)
    const vec4 m_reelLitColor;
    const vec4 m_reelDarkColor;
    const int m_glow;
@@ -116,6 +154,9 @@ public:
    const vector<string> m_soundNames; // Per-digit reel sounds (Sound1..SoundN attributes), "" means default, "stille" means silent
 
    const B2SScoreRenderer m_scoreType;
+
+   float m_reelIllu = 0.f; // Current ROM value of the ReelIlluB2SID lamp (render thread)
+   std::function<void()> m_reelIlluUpdater = []() { };
 };
 
 

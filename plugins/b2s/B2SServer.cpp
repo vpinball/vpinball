@@ -426,6 +426,12 @@ int B2SServer::GetScoreDigit(int digit) const
    return it == m_scoreDigits.end() ? 0 : it->second.value.load();
 }
 
+bool B2SServer::ConsumeScoreDigitRoll(int digit)
+{
+   const auto it = m_scoreDigits.find(digit);
+   return it != m_scoreDigits.end() && it->second.roll.exchange(false);
+}
+
 void B2SServer::B2SSetScorePlayer(int playerno, int score)
 {
    if (auto it = m_playerScores.find(playerno); it != m_playerScores.end())

@@ -12,6 +12,7 @@
 
 #include <future>
 #include <chrono>
+#include <map>
 
 namespace B2S
 {
@@ -31,7 +32,7 @@ private:
    bool RenderBackglass(VPXRenderContext2D* context, class B2SServer* server);
    bool RenderScoreView(VPXRenderContext2D* context, class B2SServer* server);
    void RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed);
-   void RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores);
+   void RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores, float elapsed);
    void UpdateAnimations(vector<B2SAnimation>& animations, float elapsed, B2SServer* server);
    void OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start);
 
@@ -54,6 +55,8 @@ private:
 
    B2SAnimation* m_lastRandomAnimation = nullptr; // Last animation started through a random trigger
    int m_lastRandomPick = -1;
+
+   std::map<int, B2SReelDigit> m_reelDigits; // Rolling reel digit states, keyed by resolved digit index
 
    bool m_showGrill = false;
    float m_b2sWidth = 0.f;

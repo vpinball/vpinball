@@ -112,6 +112,11 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
       case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted); break;
       }
 
+   // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
+   for (auto* scores : { &m_b2s->m_backglassScores, &m_b2s->m_dmdScores })
+      for (auto& score : scores->m_scores)
+         score.m_reelIlluUpdater = score.m_reelIlluB2SID > 0 ? ResolveRomPropUpdater(items, &score.m_reelIllu, B2SRomIDType::Lamp, score.m_reelIlluB2SID) : []() { };
+
    // Rebind the ROM event triggers of all animations (IDJoin)
    const auto resolver = [this, &items](B2SRomIDType romIdType, int romId, bool inverted, float* target) { return ResolveRomPropUpdater(items, target, romIdType, romId, inverted); };
    for (auto& animation : m_b2s->m_backglassAnimations)
@@ -251,7 +256,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
    }
 }
 
-void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores)
+void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores, float elapsed)
 {
    if (server == nullptr || server->AreScoreDisplaysHidden())
       return;
@@ -348,6 +353,21 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
       }
 
       const float width = (static_cast<float>(reel.m_width) - 0.5f * static_cast<float>((reel.m_digits - 1) * reel.m_spacing)) / static_cast<float>(reel.m_digits);
+
+      // Reel rolling: resolve the rolling direction, the illuminated image selection and the per-digit
+      // hold flags. A digit waits while a less significant digit has a pending 9->0 / 0->9 wrap (carry).
+      const bool rollUp = scores.m_reelRollingDirection != B2SReelRollingDirection::Down;
+      reel.m_reelIlluUpdater();
+      const bool illuminated = reel.m_reelIlluB2SID > 0 && (reel.m_reelIlluB2SValue > 0 ? (static_cast<int>(reel.m_reelIllu) == reel.m_reelIlluB2SValue) : (reel.m_reelIllu != 0.f));
+      vector<char> hold(static_cast<size_t>(std::max(0, reel.m_digits)), 0);
+      bool lowerWrapPending = false;
+      for (int i = reel.m_digits - 1; i >= 0; i--)
+      {
+         hold[static_cast<size_t>(i)] = lowerWrapPending ? 1 : 0;
+         if (const auto it = m_reelDigits.find(reel.m_resolvedStartDigit + i); it != m_reelDigits.end() && it->second.HasPendingWrap(rollUp))
+            lowerWrapPending = true;
+      }
+
       for (int i = 0; i < reel.m_digits; i++)
       {
          const float x = static_cast<float>(reel.m_locX) + static_cast<float>(i) * (width + 0.5f * static_cast<float>(reel.m_spacing));
@@ -377,11 +397,35 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
             // Volkan Steel and Metal (Original 2023), Hang Glider (Bally 1976) => Simple reels, no animations
             // ? => Simple reels with animations & sounds
             {
-               const B2SReelImage* reelImage = m_b2s->m_reels.GetImage(reel.m_reelType, digit);
-               if (reelImage && reelImage->m_image)
+               int shownDigit = digit;
+               int intermediate = 0;
+               B2SReelDigit& st = m_reelDigits[index];
+               const B2SReelImage* cur = m_b2s->m_reels.GetImage(reel.m_reelType, st.Current(), illuminated, reel.m_reelIlluImageSet);
+               const int intermediates = cur ? cur->m_countOfIntermediate : 0;
+               st.SetIlluminated(illuminated, intermediates);
+               // Player displays are updated from decoded pinmame frames so they always roll;
+               // script driven displays roll when B2SSetScore/B2SSetReel raised the roll flag.
+               // LED image displays never roll (B2SReelBox::isLED).
+               st.SetTarget(digit, reel.m_scoreType == B2SScoreRenderer::Reel && (reel.m_b2sPlayerNo != 0 || server->ConsumeScoreDigitRoll(index)));
+               if (!hold[static_cast<size_t>(i)] && st.Update(elapsed, scores.m_reelRollingInterval, intermediates, rollUp))
                {
-                  const VPXTextureInfo* texInfo = GetTextureInfo(reelImage->m_image);
-                  ctx->DrawImage(ctx, reelImage->m_image, 1.f, 1.f, 1.f, 1.f, //
+                  // Reel roll sound: per-digit Sound1..N attribute, or the display wide Sound attribute
+                  const string& soundName
+                     = (i < static_cast<int>(reel.m_soundNames.size()) && !reel.m_soundNames[static_cast<size_t>(i)].empty()) ? reel.m_soundNames[static_cast<size_t>(i)] : reel.m_soundName;
+                  if (!soundName.empty() && soundName != "stille"sv)
+                     server->B2SPlaySound(soundName);
+               }
+               shownDigit = st.Current();
+               intermediate = st.Intermediate();
+               const B2SReelImage* reelImage = m_b2s->m_reels.GetImage(reel.m_reelType, shownDigit, illuminated, reel.m_reelIlluImageSet);
+               const VPXTexture texture = (reelImage && intermediate > 0 && intermediate <= static_cast<int>(reelImage->m_intermediates.size()))
+                  ? reelImage->m_intermediates[static_cast<size_t>(intermediate - 1)]
+                  : nullptr;
+               if (reelImage && (texture != nullptr || reelImage->m_image != nullptr))
+               {
+                  const VPXTexture img = texture != nullptr ? texture : reelImage->m_image;
+                  const VPXTextureInfo* texInfo = GetTextureInfo(img);
+                  ctx->DrawImage(ctx, img, 1.f, 1.f, 1.f, 1.f, //
                      0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), //
                      0.f, 0.f, 0.f, // No rotation
                      x, static_cast<float>(reel.m_locY), width, static_cast<float>(reel.m_height));
@@ -490,7 +534,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
 
    // Draw illuminations, scores and DMD overlay
    RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed);
-   RenderScores(ctx, server, m_b2s->m_backglassScores);
+   RenderScores(ctx, server, m_b2s->m_backglassScores, elapsed);
    m_backglassDmdOverlay.Render(ctx);
 
    return true;
@@ -522,7 +566,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 
    // Draw illuminations, scores and DMD overlay
    RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations, elapsed);
-   RenderScores(ctx, server, m_b2s->m_dmdScores);
+   RenderScores(ctx, server, m_b2s->m_dmdScores, elapsed);
    m_scoreViewDmdOverlay.Render(ctx);
 
    return true;

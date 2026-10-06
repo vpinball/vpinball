@@ -348,51 +348,160 @@ B2SImage::~B2SImage()
 }
 
 
-B2SReelImage::B2SReelImage(const tinyxml2::XMLNode& root) noexcept
-   : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
+B2SReelImage::B2SReelImage(const tinyxml2::XMLNode& root, int setId) noexcept
+   : m_name(GetStringAttribute(root, ""s, "Name"s, ""s) + (setId > 0 ? "_"s + std::to_string(setId) : ""s))
    , m_countOfIntermediate(GetIntAttribute(root, ""s, "CountOfIntermediates"s, 0))
    , m_image(GetTextureAttribute(root, ""s, "Image"s))
 {
+   for (int i = 1; i <= m_countOfIntermediate; i++)
+      m_intermediates.push_back(GetTextureAttribute(root, ""s, "IntermediateImage"s + std::to_string(i)));
 }
 
 B2SReelImage::~B2SReelImage()
 {
    DeleteTexture(m_image);
+   for (const VPXTexture tex : m_intermediates)
+      DeleteTexture(tex);
 }
 
+
+static vector<std::unique_ptr<B2SReelImage>> GetIlluminatedReelImages(const tinyxml2::XMLNode& root) noexcept
+{
+   vector<std::unique_ptr<B2SReelImage>> list;
+   const tinyxml2::XMLElement* node = GetNode(root, "Reels/IlluminatedImages"s);
+   if (node == nullptr)
+      return list;
+   // Flat illuminated images and per-set images (names suffixed with _setId)
+   for (auto img = node->FirstChildElement("IlluminatedImage"); img != nullptr; img = img->NextSiblingElement("IlluminatedImage"))
+      list.push_back(std::make_unique<B2SReelImage>(*img));
+   for (auto set = node->FirstChildElement("Set"); set != nullptr; set = set->NextSiblingElement("Set"))
+   {
+      const int setId = set->IntAttribute("ID");
+      for (auto img = set->FirstChildElement("IlluminatedImage"); img != nullptr; img = img->NextSiblingElement("IlluminatedImage"))
+         list.push_back(std::make_unique<B2SReelImage>(*img, setId));
+   }
+   return list;
+}
 
 B2SReel::B2SReel(const tinyxml2::XMLNode& root) noexcept
    : m_images(GetNode(root, "Reels"s) ? GetPtrList<B2SReelImage>(*GetNode(root, "Reels"s), "Images"s, "Image"s) : vector<std::unique_ptr<B2SReelImage>>())
+   , m_illuImages(GetIlluminatedReelImages(root))
 {
 }
 
-B2SReelImage* B2SReel::GetImage(const string& name, int index) const
+const B2SReelImage* B2SReel::GetImage(const string& name, int index, bool illuminated, int setId) const
 {
-   string imgName;
+   // The reel type suffix defines the digit field width: "reel_00" -> 2 digits, "reel_0" -> 1 digit
+   string base;
+   int width = 0;
    if (name.ends_with("_00"))
    {
-      if (index < 0)
-         imgName = std::format("{}Empty", name.substr(0, name.length() - 2));
-      else
-         imgName = std::format("{}{:02}", name.substr(0, name.length() - 2), index);
+      width = 2;
+      base = name.substr(0, name.length() - 2);
    }
    else if (name.ends_with("_0"))
    {
-      if (index < 0)
-         imgName = std::format("{}Empty", name.substr(0, name.length() - 1));
-      else
-         imgName = std::format("{}{:01}", name.substr(0, name.length() - 1), index);
+      width = 1;
+      base = name.substr(0, name.length() - 1);
    }
    else
       return nullptr;
-   for (const auto& img : m_images)
+   string imgName;
+   if (index < 0)
+      imgName = std::format("{}Empty", base);
+   else if (width == 2)
+      imgName = std::format("{}{:02}", base, index);
+   else
+      imgName = std::format("{}{:01}", base, index);
+   if (illuminated && setId > 0)
+      imgName += "_"s + std::to_string(setId);
+   const auto& pool = illuminated ? m_illuImages : m_images;
+   for (const auto& img : pool)
    {
       if (img->m_name == imgName)
-      {
          return img.get();
-      }
    }
    return nullptr;
+}
+
+void B2SReelDigit::SetTarget(int value, bool animate)
+{
+   m_target = value;
+   if (value < 0 || value >= 10 || m_current < 0 || m_current >= 10)
+   {
+      m_current = value;
+      m_rolling = false;
+      m_intermediate = 0;
+      m_settle = 0;
+      m_accMs = 0.f;
+   }
+   else if (!m_rolling)
+   {
+      if (animate && m_current != m_target)
+      {
+         m_rolling = true;
+         m_intermediate = 0;
+         m_settle = 0;
+      }
+      else
+         m_current = value;
+   }
+   // While rolling, only the goal is updated (a roll in progress is never cancelled)
+}
+
+void B2SReelDigit::SetIlluminated(bool value, int intermediates)
+{
+   if (m_illuminated != value)
+   {
+      m_illuminated = value;
+      if (m_rolling)
+         m_intermediate = std::max(m_intermediate, intermediates);
+   }
+}
+
+bool B2SReelDigit::Update(float elapsedInS, int rollingIntervalMs, int intermediates, bool rollUp)
+{
+   if (!m_rolling)
+   {
+      // No rolling animation: snap to the target
+      m_current = m_target;
+      m_intermediate = 0;
+      m_settle = 0;
+      m_accMs = 0.f;
+      return false;
+   }
+
+   if (rollingIntervalMs < 10)
+      rollingIntervalMs = 101; // B2SReelBox default rolling interval
+   if (intermediates < 0)
+      intermediates = 3; // Automatic intermediate count
+   // Each digit step is spread over intermediate images + advance + settle ticks
+   const float stepMs = static_cast<float>(rollingIntervalMs) / static_cast<float>(intermediates + 2);
+   m_accMs += elapsedInS * 1000.f;
+   bool advanced = false;
+   while (m_rolling && m_accMs >= stepMs)
+   {
+      m_accMs -= stepMs;
+      if (m_settle > 0)
+      {
+         if (--m_settle == 0 && m_current == m_target)
+            m_rolling = false;
+      }
+      else if (m_intermediate < intermediates)
+         m_intermediate++;
+      else
+      {
+         m_current += rollUp ? 1 : -1;
+         if (m_current > 9)
+            m_current = 0;
+         else if (m_current < 0)
+            m_current = 9;
+         m_intermediate = 0;
+         m_settle = 2;
+         advanced = true;
+      }
+   }
+   return advanced;
 }
 
 
@@ -403,10 +512,11 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root) noexcept
    , m_b2sPlayerNo(GetIntAttribute(root, ""s, "B2SPlayerNo"s, 0))
    , m_reelType(GetStringAttribute(root, ""s, "ReelType"s, ""s))
    , m_reelIlluLocation(GetIntAttribute(root, ""s, "ReelIlluLocation"s, 0))
-   , m_reelIlluIntensity(GetIntAttribute(root, ""s, "B2SStartDigit"s, 0))
+   , m_reelIlluIntensity(GetIntAttribute(root, ""s, "ReelIlluIntensity"s, 0))
    , m_reelIlluB2SID(GetIntAttribute(root, ""s, "ReelIlluB2SID"s, 0))
    , m_reelIlluB2SIDType(GetIntAttribute(root, ""s, "ReelIlluB2SIDType"s, 0))
    , m_reelIlluB2SValue(GetIntAttribute(root, ""s, "ReelIlluB2SValue"s, 0))
+   , m_reelIlluImageSet(GetIntAttribute(root, ""s, "ReelIlluImageSet"s, 0))
    , m_reelLitColor(GetColorAttribute(root, ""s, "ReelLitColor"s, vec4(1.f, 1.f, 1.f, 1.f)))
    , m_reelDarkColor(GetColorAttribute(root, ""s, "ReelDarkColor"s, vec4(0.f, 0.f, 0.f, 1.f)))
    , m_glow(GetIntAttribute(root, ""s, "Glow"s, 0))

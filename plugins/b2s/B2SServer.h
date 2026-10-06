@@ -154,6 +154,7 @@ public:
    float GetLampState(int b2sId) const;
    bool GetBulbState(const B2SBulb& bulb, float& state) const;
    int GetScoreDigit(int digit) const;
+   bool ConsumeScoreDigitRoll(int digit); // Returns and clears the rolling flag set by B2SSetScore/B2SSetReel
    int GetPlayerScore(int player) const;
 
    // Animation engine glue: the renderer drives the animations and applies their effects through this interface
