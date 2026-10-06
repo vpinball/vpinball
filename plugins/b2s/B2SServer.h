@@ -141,8 +141,8 @@ public:
    bool GetB2SIsAnimationRunning(const string& animationName) const;
    void StartAnimation(const string& animationName, bool reverse = false);
    void StopAnimation(const string& animationName);
-   void B2SStartRotation() { } // FIXME
-   void B2SStopRotation() { } // FIXME
+   void B2SStartRotation();
+   void B2SStopRotation();
    void B2SShowScoreDisplays() { m_scoreDisplaysHidden = false; }
    void B2SHideScoreDisplays() { m_scoreDisplaysHidden = true; }
    void B2SStartSound(const string& soundName) { } // FIXME

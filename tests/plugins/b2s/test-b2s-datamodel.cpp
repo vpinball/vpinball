@@ -357,6 +357,103 @@ TEST_CASE("B2S animation ROM triggers (IDJoin)")
    CHECK(!anim.IsRunning());
 }
 
+TEST_CASE("B2S self rotating images")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Illumination>
+            <Bulb Name="cw" Parent="Backglass" SnippitType="1" SnippitRotatingSteps="4" SnippitRotatingInterval="100"
+                  eSnippitRotationDirection="0" SnippitRotatingStopBehaviour="1"/>
+            <Bulb Name="ccw" Parent="Backglass" SnippitType="1" SnippitRotatingSteps="4" SnippitRotatingInterval="100"
+                  eSnippitRotationDirection="1" SnippitRotatingStopBehaviour="1"/>
+            <Bulb Name="angle" Parent="Backglass" SnippitType="1" SnippitRotatingAngle="45" SnippitRotatingInterval="100"
+                  SnippitRotatingStopBehaviour="1"/>
+            <Bulb Name="both" Parent="Backglass" SnippitType="1" SnippitRotatingSteps="8" SnippitRotatingAngle="45" SnippitRotatingInterval="100"
+                  SnippitRotatingStopBehaviour="1"/>
+            <Bulb Name="spin" Parent="Backglass" SnippitType="1" SnippitRotatingSteps="4" SnippitRotatingInterval="100"
+                  SnippitRotatingStopBehaviour="0"/>
+            <Bulb Name="tillend" Parent="Backglass" SnippitType="1" SnippitRotatingSteps="4" SnippitRotatingInterval="100"
+                  SnippitRotatingStopBehaviour="2"/>
+            <Bulb Name="nosteps" Parent="Backglass" SnippitType="1" SnippitRotatingInterval="100"/>
+         </Illumination>
+      </DirectB2SData>)");
+
+   REQUIRE(table->m_backglassIlluminations.size() == 7);
+   const auto bulb = [&table](const char* name) -> B2SBulb*
+   {
+      for (auto& b : table->m_backglassIlluminations)
+         if (b->m_name == name)
+            return b.get();
+      return nullptr;
+   };
+
+   // Parsing: steps can be given directly or through the per-step angle; steps wins if both are present
+   CHECK(bulb("cw")->m_snippitType == B2SSnippitType::SelfRotatingImage);
+   CHECK(bulb("cw")->m_snippitRotatingSteps == 4);
+   CHECK(bulb("cw")->m_snippitRotatingInterval == 100);
+   CHECK(bulb("cw")->m_snippitRotatingDirection == B2SSnippitRotationDirection::Clockwise);
+   CHECK(bulb("angle")->m_snippitRotatingSteps == 8); // 360 / 45
+   CHECK(bulb("both")->m_snippitRotatingSteps == 8); // SnippitRotatingSteps takes precedence
+
+   // Clockwise rotation advances 90 degrees per 100ms interval step
+   B2SBulb* cw = bulb("cw");
+   cw->UpdateRotation(0.05f);
+   CHECK(cw->GetRotationAngle() == doctest::Approx(0.f));
+   cw->StartRotation();
+   cw->UpdateRotation(0.05f);
+   CHECK(cw->IsRotating());
+   CHECK(cw->GetRotationAngle() == doctest::Approx(45.f));
+   cw->UpdateRotation(0.05f);
+   CHECK(cw->GetRotationAngle() == doctest::Approx(90.f));
+
+   // Immediate stop freezes the angle
+   cw->StopRotation();
+   cw->UpdateRotation(0.05f);
+   CHECK(!cw->IsRotating());
+   CHECK(cw->GetRotationAngle() == doctest::Approx(90.f));
+
+   // Anti-clockwise rotates the other way (360-45)
+   B2SBulb* ccw = bulb("ccw");
+   ccw->StartRotation();
+   ccw->UpdateRotation(0.05f);
+   CHECK(ccw->GetRotationAngle() == doctest::Approx(315.f));
+
+   // Rotation wraps at 360
+   ccw->UpdateRotation(0.3f);
+   CHECK(ccw->GetRotationAngle() == doctest::Approx(45.f));
+
+   // Spin off keeps rotating while slowing down, then stops
+   B2SBulb* spin = bulb("spin");
+   spin->StartRotation();
+   spin->UpdateRotation(0.05f);
+   spin->StopRotation();
+   spin->UpdateRotation(0.05f);
+   CHECK(spin->IsRotating()); // still spinning down
+   for (int i = 0; i < 40; i++)
+      spin->UpdateRotation(0.1f);
+   CHECK(!spin->IsRotating());
+
+   // Run till end completes the revolution and stops on the first step
+   B2SBulb* tillEnd = bulb("tillend");
+   tillEnd->StartRotation();
+   tillEnd->UpdateRotation(0.05f);
+   CHECK(tillEnd->GetRotationAngle() == doctest::Approx(45.f));
+   tillEnd->StopRotation();
+   tillEnd->UpdateRotation(0.05f);
+   CHECK(tillEnd->IsRotating()); // keeps rotating until the revolution is over
+   CHECK(tillEnd->GetRotationAngle() == doctest::Approx(90.f));
+   for (int i = 0; i < 8; i++)
+      tillEnd->UpdateRotation(0.1f);
+   CHECK(!tillEnd->IsRotating());
+   CHECK(tillEnd->GetRotationAngle() == doctest::Approx(0.f));
+
+   // A rotating snippit without steps or interval never rotates
+   B2SBulb* noSteps = bulb("nosteps");
+   noSteps->StartRotation();
+   noSteps->UpdateRotation(0.5f);
+   CHECK(!noSteps->IsRotating());
+}
+
 TEST_CASE("B2S bulbs are sorted by ZOrder")
 {
    const auto table = LoadTable(R"(

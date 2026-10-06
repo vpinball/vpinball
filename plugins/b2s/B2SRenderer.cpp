@@ -109,7 +109,7 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
       {
       case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, bulb->m_b2sValue); break;
       case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
-      case B2SSnippitType::SelfRotatingImage: break;
+      case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted); break;
       }
 
    // Rebind the ROM event triggers of all animations (IDJoin)
@@ -203,7 +203,7 @@ void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2S
    }
 }
 
-void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs)
+void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed)
 {
    for (const auto& bulb : bulbs)
    {
@@ -218,6 +218,20 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
       float rotation = 0.f;
       if (bulb->m_snippitType == B2SSnippitType::MechRotatingImage)
          rotation = 360.f * (bulb->m_mechRot / static_cast<float>(bulb->m_snippitRotatingSteps));
+      else if (bulb->m_snippitType == B2SSnippitType::SelfRotatingImage)
+      {
+         // ROM-driven self rotating images rotate while their lamp is on (reference behaviour)
+         if (bulb->m_romId >= 0 && bulb->m_romIdType != B2SRomIDType::NotDefined)
+         {
+            if (bulb->m_romOn >= 0.5f)
+               bulb->StartRotation();
+            else
+               bulb->StopRotation();
+            bulb->m_brightness = std::max(bulb->m_brightness, bulb->m_romOn);
+         }
+         bulb->UpdateRotation(elapsed);
+         rotation = bulb->GetRotationAngle();
+      }
       if (bulb->m_offImage && bulb->m_brightness < 1.f)
       {
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_offImage);
@@ -475,7 +489,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    }
 
    // Draw illuminations, scores and DMD overlay
-   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations);
+   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed);
    RenderScores(ctx, server, m_b2s->m_backglassScores);
    m_backglassDmdOverlay.Render(ctx);
 
@@ -507,7 +521,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
          0.f, 0.f, m_dmdWidth, m_dmdHeight);
 
    // Draw illuminations, scores and DMD overlay
-   RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations);
+   RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations, elapsed);
    RenderScores(ctx, server, m_b2s->m_dmdScores);
    m_scoreViewDmdOverlay.Render(ctx);
 
