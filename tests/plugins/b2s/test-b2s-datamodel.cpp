@@ -813,3 +813,66 @@ TEST_CASE("B2S bulbs baked into the background image")
    REQUIRE(table->m_dmdIlluminations.size() == 1);
    CHECK(!table->m_dmdIlluminations[0]->m_bakedIntoBackground);
 }
+
+TEST_CASE("B2S dual backglass mode")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <DualBackglass Value="1"/>
+         <Illumination>
+            <Bulb Name="both" Parent="Backglass" DualMode="0"/>
+            <Bulb Name="auth" Parent="Backglass" DualMode="1"/>
+            <Bulb Name="fant" Parent="Backglass" DualMode="2"/>
+            <Bulb Name="def" Parent="Backglass"/>
+         </Illumination>
+         <Animations>
+            <Animation Name="shared" Parent="Backglass" Interval="50" DualMode="0">
+               <AnimationStep Step="1" On="both" WaitLoopsAfterOn="1"/>
+            </Animation>
+            <Animation Name="authOnly" Parent="Backglass" Interval="50" DualMode="1">
+               <AnimationStep Step="1" On="auth" WaitLoopsAfterOn="1"/>
+            </Animation>
+            <Animation Name="fantOnly" Parent="Backglass" Interval="50" DualMode="2">
+               <AnimationStep Step="1" On="fant" WaitLoopsAfterOn="1"/>
+            </Animation>
+         </Animations>
+      </DirectB2SData>)");
+
+   CHECK(table->m_dualBackglass);
+
+   // Bulb dual mode parsing (Both is the default)
+   CHECK(table->m_backglassIlluminations[0]->m_dualMode == B2SDualMode::Both);
+   CHECK(table->m_backglassIlluminations[1]->m_dualMode == B2SDualMode::Authentic);
+   CHECK(table->m_backglassIlluminations[2]->m_dualMode == B2SDualMode::Fantasy);
+   CHECK(table->m_backglassIlluminations[3]->m_dualMode == B2SDualMode::Both);
+
+   CHECK(table->m_backglassAnimations[0].m_dualMode == B2SDualMode::Both);
+   CHECK(table->m_backglassAnimations[1].m_dualMode == B2SDualMode::Authentic);
+   CHECK(table->m_backglassAnimations[2].m_dualMode == B2SDualMode::Fantasy);
+
+   // Animations only start in their declared mode
+   AnimFx animFx;
+   B2SAnimationEffects fx = animFx.Make();
+
+   fx.dualMode = B2SDualMode::Fantasy;
+   for (auto& anim : table->m_backglassAnimations)
+      anim.Start();
+   for (auto& anim : table->m_backglassAnimations)
+      anim.Update(0.f, fx);
+   CHECK(table->m_backglassAnimations[0].IsRunning()); // Both runs in any mode
+   CHECK(!table->m_backglassAnimations[1].IsRunning()); // Authentic dropped in Fantasy
+   CHECK(table->m_backglassAnimations[2].IsRunning()); // Fantasy runs
+   for (auto& anim : table->m_backglassAnimations)
+      anim.Stop();
+   for (auto& anim : table->m_backglassAnimations)
+      anim.Update(0.f, fx);
+
+   // Without a dual backglass (Both = unfiltered), every animation may start
+   fx.dualMode = B2SDualMode::Both;
+   for (auto& anim : table->m_backglassAnimations)
+      anim.Start();
+   for (auto& anim : table->m_backglassAnimations)
+      anim.Update(0.f, fx);
+   CHECK(table->m_backglassAnimations[1].IsRunning());
+   CHECK(table->m_backglassAnimations[2].IsRunning());
+}

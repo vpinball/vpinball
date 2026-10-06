@@ -372,6 +372,8 @@ struct B2SAnimationEffects
    std::function<void(const std::unordered_map<string, float>&)> restoreAllLights;
    // Edge event on a ROM trigger of a RandomStart animation (handled by the renderer which owns the animation pool)
    std::function<void(B2SRomIDType romIdType, int romId, bool start, B2SAnimation* self)> randomTrigger;
+   // Active dual-backglass mode; Both when the table does not define a dual backglass (no filtering applied)
+   B2SDualMode dualMode = B2SDualMode::Both;
 };
 
 

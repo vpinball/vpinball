@@ -14,6 +14,9 @@ namespace B2S {
 
 MSGPI_BOOL_VAL_SETTING(showGrillProp, "ShowGrill", "Show Grill", "Show Grill", true, false);
 
+static const char* dualModeValues[] = { "Authentic", "Fantasy" };
+MSGPI_ENUM_VAL_SETTING(dualModeProp, "DualMode", "Dual Mode", "Active mode for dual backglasses (authentic or fantasy)", true, 1, 2, dualModeValues, 1);
+
 B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* const vpxApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s)
    : m_b2s(b2s)
    , m_msgApi(msgApi)
@@ -90,6 +93,7 @@ B2SRenderer::~B2SRenderer()
 void B2SRenderer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
 {
    msgApi->RegisterSetting(endpointId, &showGrillProp);
+   msgApi->RegisterSetting(endpointId, &dualModeProp);
 }
 
 void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
@@ -169,11 +173,14 @@ bool B2SRenderer::Render(VPXRenderContext2D* ctx, B2SServer* server)
    }
 }
 
-void B2SRenderer::UpdateAnimations(vector<B2SAnimation>& animations, float elapsed, B2SServer* server)
+B2SDualMode B2SRenderer::ActiveDualMode() const { return m_b2s->m_dualBackglass ? static_cast<B2SDualMode>(dualModeProp_Get()) : B2SDualMode::Both; }
+
+void B2SRenderer::UpdateAnimations(vector<B2SAnimation>& animations, float elapsed, B2SServer* server, B2SDualMode dualMode)
 {
    B2SAnimationEffects fx;
    if (server)
       fx = server->GetAnimationEffects();
+   fx.dualMode = dualMode;
    fx.randomTrigger = [this, &animations](B2SRomIDType romIdType, int romId, bool start, B2SAnimation*) { OnRandomAnimationTrigger(animations, romIdType, romId, start); };
    for (auto& animation : animations)
       animation.Update(elapsed, fx); // TODO implement slowdown settings/props (scale elapsed)
@@ -208,10 +215,12 @@ void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2S
    }
 }
 
-void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed)
+void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed, B2SDualMode dualMode)
 {
    for (const auto& bulb : bulbs)
    {
+      if (dualMode != B2SDualMode::Both && bulb->m_dualMode != B2SDualMode::Both && bulb->m_dualMode != dualMode)
+         continue; // Dual backglass: only render bulbs matching the active mode
       if (bulb->m_bakedIntoBackground)
          continue; // Drawn as part of the lit background image
       const bool locked = server && !bulb->m_name.empty() && server->IsIlluminationLocked(bulb->m_name);
@@ -511,7 +520,8 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    auto now = std::chrono::steady_clock::now();
    float elapsed = static_cast<float>(static_cast<double>((now - m_lastBackglassRenderTick).count()) / 1000000000.0);
    m_lastBackglassRenderTick = now;
-   UpdateAnimations(m_b2s->m_backglassAnimations, elapsed, server);
+   const B2SDualMode dualMode = ActiveDualMode();
+   UpdateAnimations(m_b2s->m_backglassAnimations, elapsed, server, dualMode);
 
    // Draw background
    m_b2s->m_backglassOnImage.m_romUpdater();
@@ -544,7 +554,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    }
 
    // Draw illuminations, scores and DMD overlay
-   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed);
+   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed, dualMode);
    RenderScores(ctx, server, m_b2s->m_backglassScores, elapsed);
    m_backglassDmdOverlay.Render(ctx);
 
@@ -566,7 +576,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
    auto now = std::chrono::steady_clock::now();
    float elapsed = static_cast<float>(static_cast<double>((now - m_lastDmdRenderTick).count()) / 1000000000.0);
    m_lastDmdRenderTick = now;
-   UpdateAnimations(m_b2s->m_dmdAnimations, elapsed, server);
+   UpdateAnimations(m_b2s->m_dmdAnimations, elapsed, server, ActiveDualMode());
 
    // Draw background
    if (m_b2s->m_dmdImage.m_image)
@@ -576,7 +586,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
          0.f, 0.f, m_dmdWidth, m_dmdHeight);
 
    // Draw illuminations, scores and DMD overlay
-   RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations, elapsed);
+   RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations, elapsed, B2SDualMode::Both); // Reference does not dual-filter score view bulbs
    RenderScores(ctx, server, m_b2s->m_dmdScores, elapsed);
    m_scoreViewDmdOverlay.Render(ctx);
 
