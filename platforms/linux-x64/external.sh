@@ -397,10 +397,10 @@ fi
 
 
 #
-# build zlib (static library needed by libmysofa)
+# build zlib
 #
 
-ZLIB_EXPECTED_SHA="${ZLIB_SHA}"
+ZLIB_EXPECTED_SHA="${ZLIB_SHA}_001"
 ZLIB_FOUND_SHA="$([ -f zlib/cache.txt ] && cat zlib/cache.txt || echo "")"
 
 if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
@@ -419,10 +419,9 @@ if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
       -DZLIB_BUILD_EXAMPLES=OFF \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -DCMAKE_INSTALL_PREFIX=install \
       -B build
    cmake --build build -- -j${NUM_PROCS}
-   cmake --install build
+   cp build/zconf.h .
    cd ..
 
    echo "$ZLIB_EXPECTED_SHA" > cache.txt
@@ -431,10 +430,10 @@ if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
 fi
 
 #
-# build libmysofa (static library needed by libspatialaudio for SOFA HRTF support)
+# build libmysofa
 #
 
-LIBMYSOFA_EXPECTED_SHA="${LIBMYSOFA_SHA}-${ZLIB_SHA}"
+LIBMYSOFA_EXPECTED_SHA="${LIBMYSOFA_SHA}-${ZLIB_SHA}_001"
 LIBMYSOFA_FOUND_SHA="$([ -f libmysofa/cache.txt ] && cat libmysofa/cache.txt || echo "")"
 
 if [ "${LIBMYSOFA_EXPECTED_SHA}" != "${LIBMYSOFA_FOUND_SHA}" ]; then
@@ -445,25 +444,20 @@ if [ "${LIBMYSOFA_EXPECTED_SHA}" != "${LIBMYSOFA_FOUND_SHA}" ]; then
    cd libmysofa
 
    curl -sL https://github.com/hoene/libmysofa/archive/${LIBMYSOFA_SHA}.tar.gz -o libmysofa-${LIBMYSOFA_SHA}.tar.gz
-   # provide share/default.sofa (a symlink in the archive) as a real file
-   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz --exclude='*.sofa'
-   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz libmysofa-${LIBMYSOFA_SHA}/share/MIT_KEMAR_normal_pinna.sofa
+   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz
    mv libmysofa-${LIBMYSOFA_SHA} libmysofa
-   cp libmysofa/share/MIT_KEMAR_normal_pinna.sofa libmysofa/share/default.sofa
    cd libmysofa
-   ZLIB_LIB="$(find ../../zlib/zlib/install/lib -type f \( -name 'libz.a' -o -name 'libzlibstatic.a' \) | head -n1)"
    cmake \
       -DBUILD_SHARED_LIBS=OFF \
       -DBUILD_STATIC_LIBS=ON \
       -DBUILD_TESTS=OFF \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -DCMAKE_INSTALL_PREFIX=install \
-      -DZLIB_INCLUDE_DIR="$(cd ../../zlib/zlib/install/include && pwd)" \
-      -DZLIB_LIBRARY="$(cd "$(dirname "${ZLIB_LIB}")" && pwd)/$(basename "${ZLIB_LIB}")" \
+      -DZLIB_INCLUDE_DIR="$PWD/../../zlib/zlib" \
+      -DZLIB_LIBRARY="$PWD/../../zlib/zlib/build/libz.a" \
       -B build
    cmake --build build -- -j${NUM_PROCS}
-   cmake --install build
+   cp build/src/mysofa_export.h src/hrtf
    cd ..
 
    echo "$LIBMYSOFA_EXPECTED_SHA" > cache.txt
@@ -472,10 +466,10 @@ if [ "${LIBMYSOFA_EXPECTED_SHA}" != "${LIBMYSOFA_FOUND_SHA}" ]; then
 fi
 
 #
-# build libspatialaudio (static library)
+# build libspatialaudio
 #
 
-LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}-${LIBMYSOFA_SHA}"
+LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}-${LIBMYSOFA_SHA}_001"
 LIBSPATIALAUDIO_FOUND_SHA="$([ -f libspatialaudio/cache.txt ] && cat libspatialaudio/cache.txt || echo "")"
 
 if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
@@ -494,18 +488,17 @@ if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
       -DBUILD_TESTING=OFF \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -DCMAKE_INSTALL_PREFIX=install \
-      -DMYSOFA_INCLUDE_DIRS="$(cd ../libmysofa/libmysofa/install/include && pwd)" \
-      -DMYSOFA_LIBRARIES="$(cd ../libmysofa/libmysofa/install/lib && pwd)/libmysofa.a" \
+      -DMYSOFA_INCLUDE_DIRS="$PWD/../../libmysofa/libmysofa/src/hrtf" \
+      -DMYSOFA_LIBRARIES="$PWD/../../libmysofa/libmysofa/build/src/libmysofa.a" \
       -B build
    cmake --build build -- -j${NUM_PROCS}
-   cmake --install build
    cd ..
 
    echo "$LIBSPATIALAUDIO_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
+
 #
 # copy libraries
 #
@@ -575,11 +568,13 @@ cp -a openxr/openxr/build/src/loader/libopenxr_loader.so* ../../../third-party/r
 mkdir -p ../../../third-party/include/openxr
 cp openxr/openxr/build/include/openxr/*.h ../../../third-party/include/openxr
 
-cp "$(find zlib/zlib/install/lib -type f \( -name 'libz.a' -o -name 'libzlibstatic.a' \) | head -n1)" ../../../third-party/build-libs/linux-x64/libz.a
+cp zlib/zlib/build/libz.a ../../../third-party/build-libs/linux-x64
 
-cp libmysofa/libmysofa/install/lib/libmysofa.a ../../../third-party/build-libs/linux-x64
-cp libmysofa/libmysofa/install/include/mysofa.h ../../../third-party/include/
-cp libmysofa/libmysofa/install/include/mysofa_export.h ../../../third-party/include/
+cp libmysofa/libmysofa/build/src/libmysofa.a ../../../third-party/build-libs/linux-x64
+cp libmysofa/libmysofa/src/hrtf/mysofa.h ../../../third-party/include
+cp libmysofa/libmysofa/src/hrtf/mysofa_export.h ../../../third-party/include
 
 cp libspatialaudio/libspatialaudio/build/libspatialaudio.a ../../../third-party/build-libs/linux-x64
-cp -r libspatialaudio/libspatialaudio/install/include/spatialaudio ../../../third-party/include/
+mkdir -p ../../../third-party/include/spatialaudio
+cp -r libspatialaudio/libspatialaudio/include/*.h libspatialaudio/libspatialaudio/include/{adm,dsp,hrtf,kiss_fft} ../../../third-party/include/spatialaudio
+cp libspatialaudio/libspatialaudio/build/include/SpatialaudioConfig.h ../../../third-party/include/spatialaudio
