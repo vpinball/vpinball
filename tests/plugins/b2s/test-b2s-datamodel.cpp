@@ -569,3 +569,143 @@ TEST_CASE("B2S bulbs are sorted by ZOrder")
    CHECK(table->m_dmdIlluminations[0]->m_name == "b5");
    CHECK(table->m_dmdIlluminations[1]->m_name == "b4");
 }
+
+TEST_CASE("B2S reel image lookup and rolling metadata")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Reels>
+            <Images>
+               <Image Name="reel_00" Image="" CountOfIntermediates="2" IntermediateImage1="" IntermediateImage2=""/>
+               <Image Name="reel_05" Image=""/>
+               <Image Name="reel_5" Image=""/>
+               <Image Name="reel_Empty" Image=""/>
+            </Images>
+            <IlluminatedImages>
+               <IlluminatedImage Name="reel_00" Image=""/>
+               <Set ID="2">
+                  <IlluminatedImage Name="reel_05" Image=""/>
+               </Set>
+            </IlluminatedImages>
+         </Reels>
+         <Scores ReelRollingInterval="80" ReelRollingDirection="Down" ReelCountOfIntermediates="3">
+            <Score ID="1" Parent="Backglass" Digits="3" ReelType="reel_00" B2SStartDigit="5"
+                   ReelIlluB2SID="12" ReelIlluB2SValue="1" ReelIlluImageSet="2" ReelIlluIntensity="30"/>
+         </Scores>
+      </DirectB2SData>)");
+
+   // Scores level rolling attributes
+   CHECK(table->m_backglassScores.m_reelRollingInterval == 80);
+   CHECK(table->m_backglassScores.m_reelRollingDirection == B2SReelRollingDirection::Down);
+   CHECK(table->m_backglassScores.m_reelCountOfIntermediates == 3);
+
+   // Score level reel illumination attributes
+   const B2SScore* score = table->FindScoreDisplay(1);
+   REQUIRE(score != nullptr);
+   CHECK(score->m_reelIlluB2SID == 12);
+   CHECK(score->m_reelIlluB2SValue == 1);
+   CHECK(score->m_reelIlluImageSet == 2);
+   CHECK(score->m_reelIlluIntensity == 30);
+
+   // Reel images: "reel_00" is a 2 digit field (reel_05), "reel_0" a 1 digit field (reel_5), -1 is the empty image
+   const B2SReelImage* img = table->m_reels.GetImage("reel_00", 0);
+   REQUIRE(img != nullptr);
+   CHECK(img->m_countOfIntermediate == 2);
+   REQUIRE(img->m_intermediates.size() == 2);
+   CHECK(table->m_reels.GetImage("reel_00", 5)->m_name == "reel_05");
+   CHECK(table->m_reels.GetImage("reel_0", 5)->m_name == "reel_5");
+   CHECK(table->m_reels.GetImage("reel_00", -1)->m_name == "reel_Empty");
+   CHECK(table->m_reels.GetImage("reel_00", 9) == nullptr);
+
+   // Illuminated images: flat set when no image set is selected, _setId suffixed names otherwise
+   CHECK(table->m_reels.GetImage("reel_00", 0, true)->m_name == "reel_00");
+   CHECK(table->m_reels.GetImage("reel_00", 5, true, 2)->m_name == "reel_05_2");
+   CHECK(table->m_reels.GetImage("reel_00", 5, true) == nullptr); // no flat reel_05 illuminated image
+   CHECK(table->m_reels.GetImage("reel_00", 5, true, 1) == nullptr); // no set 1
+}
+
+TEST_CASE("B2S reel digit rolling")
+{
+   B2SReelDigit digit;
+
+   // Non animated changes are instant
+   digit.SetTarget(3, false);
+   digit.Update(1.f, 100, 2, true);
+   CHECK(digit.Current() == 3);
+   CHECK(!digit.IsRolling());
+
+   // Animated changes roll one digit per rolling interval, spread over intermediate + settle ticks.
+   // interval 100ms with 2 intermediates: 25ms sub ticks, 5 ticks per digit step (int1, int2, advance, settle, settle)
+   digit.SetTarget(7, true);
+   CHECK(digit.IsRolling());
+   CHECK(digit.Current() == 3);
+   int advances = 0;
+   digit.Update(0.025f, 100, 2, true);
+   CHECK(digit.Intermediate() == 1);
+   digit.Update(0.025f, 100, 2, true);
+   CHECK(digit.Intermediate() == 2);
+   CHECK(digit.Current() == 3);
+   advances += digit.Update(0.025f, 100, 2, true) ? 1 : 0;
+   CHECK(digit.Current() == 4); // the digit advances after the intermediates
+   CHECK(digit.Intermediate() == 0);
+   CHECK(advances == 1); // each advance triggers a reel sound
+   advances += digit.Update(0.05f, 100, 2, true) ? 1 : 0; // 2 settle ticks
+   CHECK(digit.Current() == 4);
+
+   // Roll the remaining steps (5 ticks per digit)
+   for (int i = 0; i < 15; i++)
+      advances += digit.Update(0.025f, 100, 2, true) ? 1 : 0;
+   CHECK(digit.Current() == 7);
+   CHECK(!digit.IsRolling());
+   CHECK(advances == 4); // 3 -> 7 is 4 digit advances
+
+   // Rolling down goes the other way and wraps through 0
+   digit.SetTarget(5, false);
+   digit.Update(0.f, 100, 0, false);
+   digit.SetTarget(3, true);
+   for (int i = 0; i < 20 && digit.IsRolling(); i++)
+      digit.Update(0.05f, 100, 0, false);
+   CHECK(digit.Current() == 3);
+   digit.SetTarget(1, false);
+   digit.Update(0.f, 100, 0, false);
+   digit.SetTarget(8, true);
+   for (int i = 0; i < 20 && digit.IsRolling(); i++)
+      digit.Update(0.05f, 100, 0, false);
+   CHECK(digit.Current() == 8); // 1 -> 0 -> 9 -> 8
+
+   // Rolling up wraps through 9, and the wrap is pending until the digit passes it
+   digit.SetTarget(8, false);
+   digit.Update(0.f, 100, 0, true);
+   digit.SetTarget(2, true);
+   CHECK(digit.HasPendingWrap(true));
+   int ticks = 0;
+   while (digit.IsRolling() && ticks < 100)
+   {
+      digit.Update(0.05f, 100, 0, true);
+      ticks++;
+      if (digit.Current() <= 2)
+         break;
+   }
+   CHECK(digit.Current() == 0);
+   CHECK(digit.IsRolling());
+   CHECK(!digit.HasPendingWrap(true)); // wrapped, more significant digits may roll now
+   while (digit.IsRolling() && ticks < 100)
+   {
+      digit.Update(0.05f, 100, 0, true);
+      ticks++;
+   }
+   CHECK(digit.Current() == 2);
+
+   // Rolling to a blank digit is instant
+   digit.SetTarget(-1, true);
+   CHECK(!digit.IsRolling());
+   CHECK(digit.Current() == -1);
+
+   // A rolling interval below 10ms falls back to the default, it does not snap
+   digit.SetTarget(0, false);
+   digit.Update(0.f, 0, 0, true);
+   digit.SetTarget(4, true);
+   CHECK(digit.IsRolling());
+   digit.Update(0.f, 0, 0, true);
+   CHECK(digit.IsRolling());
+}
