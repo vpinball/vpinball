@@ -79,9 +79,15 @@ class B2SScore final
 public:
    explicit B2SScore(const tinyxml2::XMLNode& root) noexcept;
 
+   // Distribute a score value over this display's digits (right aligned, keeping
+   // its rightmost digits if it does not fit). Returns one value per digit:
+   // digit value (0-9) or -1 for a blank digit (leading padding for LED displays).
+   vector<int> DistributeScore(int value) const;
+
 public:
    const int m_id;
    const int m_b2sStartDigit;
+   int m_resolvedStartDigit = 0; // Effective first digit (m_b2sStartDigit or auto-assigned)
    const B2SScoreType m_b2sScoreType;
    const int m_b2sPlayerNo;
    const string m_reelType;
@@ -118,13 +124,13 @@ enum class B2SReelRollingDirection
 class B2SScores final
 {
 public:
-   explicit B2SScores(const tinyxml2::XMLNode& root, const bool isDMD) noexcept;
+   explicit B2SScores(const tinyxml2::XMLNode& root) noexcept;
 
 public:
    const int m_reelCountOfIntermediates;
    const B2SReelRollingDirection m_reelRollingDirection;
    const int m_reelRollingInterval;
-   const vector<B2SScore> m_scores;
+   vector<B2SScore> m_scores; // filled by B2STable (digit numbering spans both parents in file order)
 };
 
 
@@ -321,6 +327,10 @@ public:
    explicit B2STable(const tinyxml2::XMLNode& root) noexcept; // Create from the root 'DirectB2SData' node
 
 public:
+   // Find the score display matching the given display id (searches both backglass and DMD displays)
+   const B2SScore* FindScoreDisplay(int displayId) const;
+
+public:
    const string m_version;
    const string m_name;
    const int m_tableType;
@@ -348,8 +358,8 @@ public:
    const B2SImage m_dmdImage;
    const vector<B2SSound> m_sounds;
    const B2SReel m_reels;
-   const B2SScores m_backglassScores;
-   const B2SScores m_dmdScores;
+   B2SScores m_backglassScores;
+   B2SScores m_dmdScores;
    vector<std::unique_ptr<B2SBulb>> m_backglassIlluminations;
    vector<B2SAnimation> m_backglassAnimations;
    vector<std::unique_ptr<B2SBulb>> m_dmdIlluminations;
