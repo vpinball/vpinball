@@ -124,6 +124,237 @@ TEST_CASE("B2S bulb and animation parsing")
    CHECK(anim.m_animationSteps[0].m_on == vector<string> { "groupA" });
    CHECK(anim.m_animationSteps[0].m_off == vector<string> { "groupB" });
    CHECK(anim.m_animationSteps[0].m_pulseSwitch == 44);
+
+   // IDJoin is parsed into ROM event triggers: lamp 10 and inverted solenoid 3
+   REQUIRE(anim.GetRomTriggers().size() == 2);
+   CHECK(anim.GetRomTriggers()[0].romIdType == B2SRomIDType::Lamp);
+   CHECK(anim.GetRomTriggers()[0].romId == 10);
+   CHECK(!anim.GetRomTriggers()[0].inverted);
+   CHECK(anim.GetRomTriggers()[1].romIdType == B2SRomIDType::Solenoid);
+   CHECK(anim.GetRomTriggers()[1].romId == 3);
+   CHECK(anim.GetRomTriggers()[1].inverted);
+}
+
+namespace
+{
+struct AnimFx
+{
+   std::unordered_map<string, float> groups;
+   std::unordered_map<string, int> locks;
+   vector<int> pulses;
+   bool scoreDisplaysHidden = false;
+   int allOffCount = 0;
+
+   B2SAnimationEffects Make()
+   {
+      B2SAnimationEffects fx;
+      fx.setGroup = [this](const string& group, bool on) { groups[group] = on ? 1.f : 0.f; };
+      fx.getGroup = [this](const string& group) -> float
+      {
+         const auto it = groups.find(group);
+         return it == groups.end() ? 0.f : it->second;
+      };
+      fx.lockGroup = [this](const string& group) { locks[group]++; };
+      fx.unlockGroup = [this](const string& group)
+      {
+         if (const auto it = locks.find(group); it != locks.end())
+         {
+            if (it->second > 1)
+               it->second--;
+            else
+               locks.erase(it);
+         }
+      };
+      fx.pulseSwitch = [this](int switchId) { pulses.push_back(switchId); };
+      fx.setScoreDisplaysHidden = [this](bool hidden) { scoreDisplaysHidden = hidden; };
+      fx.allLightsOff = [this]()
+      {
+         allOffCount++;
+         for (auto& [key, value] : groups)
+            value = 0.f;
+      };
+      fx.snapshotAllLights = [this]() { return groups; };
+      fx.restoreAllLights = [this](const std::unordered_map<string, float>& snapshot) { groups = snapshot; };
+      return fx;
+   }
+};
+}
+
+TEST_CASE("B2S animation engine steps, loops and stop behaviours")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Animations>
+            <Animation Name="flash" Parent="Backglass" Interval="100" Loops="2">
+               <AnimationStep Step="1" On="grpA" WaitLoopsAfterOn="1" Off="grpA" WaitLoopsAfterOff="1"/>
+            </Animation>
+            <Animation Name="autostart" Parent="Backglass" Interval="50" Loops="0" StartAnimationAtBackglassStartup="1">
+               <AnimationStep Step="1" On="grpB" WaitLoopsAfterOn="1"/>
+            </Animation>
+            <Animation Name="empty" Parent="Backglass" Interval="0"/>
+            <Animation Name="nosteps" Parent="Backglass" Interval="50"/>
+         </Animations>
+      </DirectB2SData>)");
+
+   // Animations without interval or steps are dropped
+   REQUIRE(table->m_backglassAnimations.size() == 2);
+
+   AnimFx animFx;
+   const B2SAnimationEffects fx = animFx.Make();
+
+   B2SAnimation& anim = table->m_backglassAnimations[0];
+   CHECK(!anim.IsRunning());
+
+   // Start requests are consumed by the update loop; the first step happens after one interval
+   anim.Start();
+   anim.Update(0.05f, fx);
+   CHECK(anim.IsRunning());
+   CHECK(animFx.groups["grpA"] == 0.f);
+   anim.Update(0.05f, fx);
+   CHECK(animFx.groups["grpA"] == 1.f); // On grpA (tick 1)
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpA"] == 0.f); // Off grpA (tick 2), loop 1 done
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpA"] == 1.f); // On grpA (tick 3)
+   CHECK(anim.IsRunning());
+   anim.Update(0.1f, fx); // Off grpA (tick 4), loop 2 done => end of animation
+   CHECK(!anim.IsRunning());
+   // Default LightsStateAtAnimationEnd is InvolvedLightsOff
+   CHECK(animFx.groups["grpA"] == 0.f);
+
+   // Starting an already running animation is ignored
+   anim.Start();
+   anim.Update(0.1f, fx);
+   CHECK(anim.IsRunning());
+   CHECK(animFx.groups["grpA"] == 1.f);
+   anim.Start(); // ignored
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpA"] == 0.f); // Off, not restarted
+
+   // Stop immediately (default stop behaviour)
+   anim.Start();
+   anim.Update(0.05f, fx);
+   anim.Stop();
+   anim.Update(0.05f, fx);
+   CHECK(!anim.IsRunning());
+
+   // Autostart animation runs on its first update
+   B2SAnimation& autoAnim = table->m_backglassAnimations[1];
+   autoAnim.Update(0.05f, fx);
+   CHECK(autoAnim.IsRunning());
+   CHECK(animFx.groups["grpB"] == 1.f);
+   autoAnim.Stop();
+   autoAnim.Update(0.05f, fx);
+   CHECK(!autoAnim.IsRunning());
+}
+
+TEST_CASE("B2S animation reverse, reset and pulse switch")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Animations>
+            <Animation Name="blink" Parent="Backglass" Interval="100" Loops="1"
+                       LightsStateAtAnimationEnd="3" LockInvolvedLamps="1" HideScoreDisplays="1">
+               <AnimationStep Step="1" On="grpA" WaitLoopsAfterOn="1" Off="grpA" WaitLoopsAfterOff="1"/>
+               <AnimationStep Step="2" On="grpB" WaitLoopsAfterOn="1" Off="grpB" WaitLoopsAfterOff="1"/>
+               <AnimationStep Step="3" PulseSwitch="44"/>
+            </Animation>
+         </Animations>
+      </DirectB2SData>)");
+
+   REQUIRE(table->m_backglassAnimations.size() == 1);
+   B2SAnimation& anim = table->m_backglassAnimations[0];
+
+   AnimFx animFx;
+   animFx.groups["grpA"] = 1.f; // light initially on
+   const B2SAnimationEffects fx = animFx.Make();
+
+   // The first step is evaluated on the same update that starts the animation
+   anim.Start();
+   anim.Update(0.1f, fx);
+   CHECK(anim.IsRunning());
+   CHECK(animFx.groups["grpA"] == 1.f); // step 1 on
+   CHECK(animFx.locks["grpA"] == 1);
+   CHECK(animFx.locks["grpB"] == 1);
+   CHECK(animFx.scoreDisplaysHidden);
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpA"] == 0.f); // step 1 off
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpB"] == 1.f); // step 2 on
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpB"] == 0.f); // step 2 off
+   anim.Update(0.1f, fx);
+   CHECK(animFx.pulses == vector<int> { 44 }); // step 3 pulses the switch then ends (1 loop)
+   CHECK(!anim.IsRunning());
+   CHECK(animFx.groups["grpA"] == 1.f); // LightsReseted restores the snapshot taken at start
+   CHECK(animFx.groups["grpB"] == 0.f);
+   CHECK(animFx.locks.empty());
+   CHECK(!animFx.scoreDisplaysHidden);
+
+   // Reverse run replays the on/off pairs back to front, each reversed on its on counterpart
+   animFx.pulses.clear();
+   anim.Start(true);
+   anim.Update(0.1f, fx);
+   CHECK(anim.IsRunning());
+   CHECK(animFx.pulses == vector<int> { 44 }); // the last entry action (pulse) is hit first
+   CHECK(animFx.groups["grpB"] == 1.f); // step 2 off replays its on counterpart
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpB"] == 0.f); // step 2 on replays its off counterpart
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpA"] == 1.f); // step 1 off replays on
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpA"] == 1.f); // step 1 on replays off, then the run ends and restores the snapshot
+   CHECK(!anim.IsRunning());
+}
+
+TEST_CASE("B2S animation ROM triggers (IDJoin)")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Animations>
+            <Animation Name="lamped" Parent="Backglass" Interval="100" Loops="0" IDJoin="L10,S7">
+               <AnimationStep Step="1" On="grpA" WaitLoopsAfterOn="1"/>
+            </Animation>
+         </Animations>
+      </DirectB2SData>)");
+
+   REQUIRE(table->m_backglassAnimations.size() == 1);
+   B2SAnimation& anim = table->m_backglassAnimations[0];
+   REQUIRE(anim.GetRomTriggers().size() == 2);
+   CHECK(anim.GetRomTriggers()[0].romIdType == B2SRomIDType::Lamp);
+   CHECK(anim.GetRomTriggers()[0].romId == 10);
+   CHECK(anim.GetRomTriggers()[1].romIdType == B2SRomIDType::Solenoid);
+   CHECK(anim.GetRomTriggers()[1].romId == 7);
+
+   // Bind fake ROM state readers
+   float lamp10 = 0.f, sol7 = 0.f;
+   anim.BindRomTriggers(
+      [&lamp10, &sol7](B2SRomIDType type, int id, bool, float* target) -> std::function<void()>
+      {
+         const float* src = (type == B2SRomIDType::Lamp) ? &lamp10 : &sol7;
+         return [src, target]() { *target = *src; };
+      });
+
+   AnimFx animFx;
+   const B2SAnimationEffects fx = animFx.Make();
+
+   // Rising edge on lamp 10 starts the animation, falling edge stops it
+   lamp10 = 1.f;
+   anim.Update(0.f, fx);
+   CHECK(anim.IsRunning());
+   anim.Update(0.1f, fx);
+   CHECK(animFx.groups["grpA"] == 1.f);
+   lamp10 = 0.f;
+   anim.Update(0.05f, fx);
+   CHECK(!anim.IsRunning()); // stop on falling edge (default: stop immediately)
+
+   // The solenoid trigger works the same
+   sol7 = 1.f;
+   anim.Update(0.f, fx);
+   CHECK(anim.IsRunning());
+   anim.Stop();
+   anim.Update(0.f, fx);
+   CHECK(!anim.IsRunning());
 }
 
 TEST_CASE("B2S bulbs are sorted by ZOrder")

@@ -83,12 +83,19 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    m_msgApi->SubscribeMsg(m_endpointId, m_onGetAuxRendererId, OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
 
+   // Locate the 'Switch' setter on the proxied PinMAME controller (used to pulse switches from animations)
+   for (unsigned int i = 0; i < serverClassDef->nMembers; i++)
+      if (serverClassDef->members[i].name.name == "Switch"sv && serverClassDef->members[i].nArgs == 2)
+         m_setSwitchIndex = static_cast<int>(i);
+
    m_b2sName = "b2s::"sv;
    SetB2SName(""s);
 }
 
 B2SServer::~B2SServer()
 {
+   m_msgApi->FlushPendingCallbacks(m_endpointId);
+
    if (m_loadedB2S.valid())
       m_loadedB2S.wait();
    m_renderer = nullptr;
@@ -176,7 +183,16 @@ std::shared_ptr<B2STable> B2SServer::AcquireB2STable()
 {
    std::lock_guard lock(m_b2sMutex);
    if (!m_b2s && m_loadedB2S.valid() && m_loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+   {
       m_b2s = m_loadedB2S.get();
+      // Pre-register all animation-involved illumination groups so that animation group writes on the
+      // render thread update existing map nodes instead of inserting while the script thread may read them
+      for (const auto* animations : { &m_b2s->m_backglassAnimations, &m_b2s->m_dmdAnimations })
+         for (const auto& animation : *animations)
+            for (const string& group : animation.GetLightsInvolved())
+               if (!group.empty())
+                  m_groupStates[group];
+   }
    return m_b2s;
 }
 
@@ -477,7 +493,8 @@ void B2SServer::B2SSetData(const std::string& group, const std::string& value)
 void B2SServer::B2SSetData(const std::string& group, int value)
 {
    // Same as B2SSetData, applied to an illumination group (all bulbs sharing this name), without plugin event
-   if (group.empty())
+   // Groups locked by a running animation ignore external writes
+   if (group.empty() || IsIlluminationLocked(group))
       return;
    LampState& groupState = m_groupStates[group];
    groupState.value = static_cast<float>(value);
@@ -492,10 +509,12 @@ float B2SServer::GetLampState(int b2sId) const
 
 bool B2SServer::GetBulbState(const B2SBulb& bulb, float& state) const
 {
-   // Resolves the effective scripted state of a bulb: most recent write wins between its own B2S id and its illumination group
+   // Resolves the effective scripted state of a bulb: most recent write wins between its own B2S id and its illumination group.
+   // While a bulb's illumination group is locked by a running animation, only group writes (performed by animations) apply.
+   const bool locked = !bulb.m_name.empty() && IsIlluminationLocked(bulb.m_name);
    bool scripted = false;
    uint64_t stamp = 0;
-   if (bulb.m_b2sId >= 0)
+   if (bulb.m_b2sId >= 0 && !locked)
    {
       scripted = true;
       if (const auto it = m_lampStates.find(bulb.m_b2sId); it != m_lampStates.end())
@@ -514,4 +533,149 @@ bool B2SServer::GetBulbState(const B2SBulb& bulb, float& state) const
    return scripted;
 }
 
+bool B2SServer::IsIlluminationLocked(const string& group) const
+{
+   std::lock_guard lock(m_illuminationLockMutex);
+   return m_illuminationLocks.find(group) != m_illuminationLocks.end();
+}
+
+void B2SServer::StartAnimation(const string& animationName, bool reverse)
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   for (auto* animations : { &b2s->m_backglassAnimations, &b2s->m_dmdAnimations })
+      for (auto& animation : *animations)
+         if (animation.m_name == animationName)
+            animation.Start(reverse);
+}
+
+void B2SServer::StopAnimation(const string& animationName)
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   for (auto* animations : { &b2s->m_backglassAnimations, &b2s->m_dmdAnimations })
+      for (auto& animation : *animations)
+         if (animation.m_name == animationName)
+            animation.Stop();
+}
+
+void B2SServer::B2SStopAllAnimations()
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   for (auto* animations : { &b2s->m_backglassAnimations, &b2s->m_dmdAnimations })
+      for (auto& animation : *animations)
+         animation.Stop();
+}
+
+bool B2SServer::GetB2SIsAnimationRunning(const string& animationName) const
+{
+   std::lock_guard lock(m_b2sMutex);
+   if (m_b2s == nullptr)
+      return false;
+   for (const auto* animations : { &m_b2s->m_backglassAnimations, &m_b2s->m_dmdAnimations })
+      for (const auto& animation : *animations)
+         if (animation.m_name == animationName)
+            return animation.IsRunning();
+   return false;
+}
+
+void B2SServer::PulseSwitch(int switchId)
+{
+   if (m_setSwitchIndex < 0)
+      return;
+   // Pulse the switch on the message API thread: set on, then released after 200ms (as the reference implementation)
+   const auto thunk = [](void* userData)
+   {
+      const auto ctx = static_cast<std::pair<B2SServer*, int>*>(userData);
+      ScriptVariant args[2];
+      args[0].vInt = ctx->second < 0 ? -ctx->second : ctx->second;
+      args[1].vBool = ctx->second >= 0 ? 1 : 0;
+      ctx->first->m_controllerProxy.ForwardCall(ctx->first, ctx->first->m_setSwitchIndex, args, nullptr);
+      delete ctx;
+   };
+   m_msgApi->RunOnMainThread(m_endpointId, 0., thunk, new std::pair<B2SServer*, int> { this, switchId });
+   m_msgApi->RunOnMainThread(m_endpointId, 0.2, thunk, new std::pair<B2SServer*, int> { this, -switchId });
+}
+
+B2SAnimationEffects B2SServer::GetAnimationEffects()
+{
+   B2SAnimationEffects fx;
+   fx.setGroup = [this](const string& group, bool on)
+   {
+      if (const auto it = m_groupStates.find(group); it != m_groupStates.end())
+      {
+         it->second.value = on ? 1.f : 0.f;
+         it->second.stamp = ++m_lampStamp;
+      }
+   };
+   fx.getGroup = [this](const string& group) -> float
+   {
+      const auto it = m_groupStates.find(group);
+      return it == m_groupStates.end() ? 0.f : it->second.value.load();
+   };
+   fx.lockGroup = [this](const string& group)
+   {
+      std::lock_guard lock(m_illuminationLockMutex);
+      m_illuminationLocks[group]++;
+   };
+   fx.unlockGroup = [this](const string& group)
+   {
+      std::lock_guard lock(m_illuminationLockMutex);
+      if (const auto it = m_illuminationLocks.find(group); it != m_illuminationLocks.end())
+      {
+         if (it->second > 1)
+            it->second--;
+         else
+            m_illuminationLocks.erase(it);
+      }
+   };
+   fx.pulseSwitch = [this](int switchId) { PulseSwitch(switchId); };
+   fx.setScoreDisplaysHidden = [this](bool hidden) { m_scoreDisplaysHidden = hidden; };
+   fx.allLightsOff = [this]()
+   {
+      for (auto& [id, lampState] : m_lampStates)
+      {
+         lampState.value = 0.f;
+         lampState.stamp = ++m_lampStamp;
+      }
+      for (auto& [group, groupState] : m_groupStates)
+      {
+         groupState.value = 0.f;
+         groupState.stamp = ++m_lampStamp;
+      }
+   };
+   fx.snapshotAllLights = [this]() -> std::unordered_map<string, float>
+   {
+      std::unordered_map<string, float> snapshot;
+      for (const auto& [id, lampState] : m_lampStates)
+         snapshot["#"s + std::to_string(id)] = lampState.value.load();
+      for (const auto& [group, groupState] : m_groupStates)
+         snapshot[group] = groupState.value.load();
+      return snapshot;
+   };
+   fx.restoreAllLights = [this](const std::unordered_map<string, float>& snapshot)
+   {
+      for (const auto& [key, value] : snapshot)
+      {
+         if (!key.empty() && key[0] == '#')
+         {
+            if (const auto it = m_lampStates.find(string_to_int(key.substr(1), 0)); it != m_lampStates.end())
+            {
+               it->second.value = value;
+               it->second.stamp = ++m_lampStamp;
+            }
+         }
+         else if (const auto it = m_groupStates.find(key); it != m_groupStates.end())
+         {
+            it->second.value = value;
+            it->second.stamp = ++m_lampStamp;
+         }
+      }
+   };
+   return fx;
+}
 }

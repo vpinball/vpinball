@@ -32,6 +32,8 @@ private:
    bool RenderScoreView(VPXRenderContext2D* context, class B2SServer* server);
    void RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs);
    void RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores);
+   void UpdateAnimations(vector<B2SAnimation>& animations, float elapsed, B2SServer* server);
+   void OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start);
 
    std::shared_ptr<B2STable> m_b2s;
 
@@ -49,6 +51,9 @@ private:
 
    std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;
+
+   B2SAnimation* m_lastRandomAnimation = nullptr; // Last animation started through a random trigger
+   int m_lastRandomPick = -1;
 
    bool m_showGrill = false;
    float m_b2sWidth = 0.f;
