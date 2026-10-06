@@ -340,6 +340,9 @@ public:
    bool m_vrApplyColorKey = false;
    bool m_vrPreviewShrink = false;
 
+   float GetVisualNudgeStrength() const { return m_visualNudgeStrength; }
+   void SetVisualNudgeStrength(float strength) { m_visualNudgeStrength = strength; }
+
 private:
    void ApplyTableSettings(); // (Re)load the cached table settings (called from ctor and SetTable)
 

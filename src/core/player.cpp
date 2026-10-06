@@ -16,6 +16,7 @@
 #include "parts/flasher.h"
 #include "parts/light.h"
 #include "parts/primitive.h"
+#include "physics/cabinet/NudgeHandler.h"
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
@@ -495,6 +496,10 @@ void Player::InitTableSession(const bool isInitial)
    UpdateVolume();
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
+
+   // Apply the (eventually per table overridden) keyboard nudge settings to the input live state
+   m_pininput.m_nudgeHandler->SetKeyboardNudgeMode(static_cast<VPX::Physics::NudgeHandler::KeyboardNudgeMode>(m_ptable->GetSettings().GetPlayer_KeyboardNudgeMode()));
+   m_pininput.m_nudgeHandler->SetKeyboardNudgeStrength(m_ptable->GetSettings().GetPlayer_KeyboardNudgeStrength());
 
    Ball::ResetBallIDCounter();
 
