@@ -219,9 +219,28 @@ public:
    const int m_fontStyle;
 
 public:
+   // Self-rotating image runtime. Start/Stop are thread safe requests consumed by UpdateRotation (render thread)
+   void StartRotation() { m_rotRequest = 1; }
+   void StopRotation() { m_rotRequest = 2; }
+   void UpdateRotation(float elapsedInS);
+   bool IsRotating() const { return m_rotating; }
+   float GetRotationAngle() const { return m_selfRotAngle; }
+
+public:
    std::function<void()> m_romUpdater = []() { };
    float m_brightness = 0.f;
    float m_mechRot = 0.f;
+   float m_romOn = 0.f; // ROM on/off state for self-rotating images (drives rotation start/stop)
+
+private:
+   std::atomic<int> m_rotRequest { 0 }; // 1 = start, 2 = stop
+   bool m_rotating = false;
+   float m_selfRotAngle = 0.f;
+   float m_rotIntervalMs = 0.f;
+   float m_slowdownAccMs = 0.f;
+   int m_rotateSlowDown = 0;
+   bool m_rotateRunTillEnd = false;
+   bool m_rotateRunToFirstStep = false;
 };
 
 

@@ -220,7 +220,9 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    , m_height(GetIntAttribute(root, ""s, "Height"s, 0))
    , m_isImageSnippit(GetBoolAttribute(root, ""s, "IsImageSnippit"s, false))
    , m_snippitType(static_cast<B2SSnippitType>(GetIntAttribute(root, ""s, "SnippitType"s, 0)))
-   , m_snippitRotatingSteps(GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0) != 0 ? (360 / GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 1)) : GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, 0))
+   , m_snippitRotatingSteps(GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, -1) >= 0
+           ? GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, 0)
+           : (GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0) != 0 ? (360 / GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 1)) : 0))
    , m_snippitRotatingInterval(GetIntAttribute(root, ""s, "SnippitRotatingInterval"s, 0))
    , m_snippitRotatingDirection(static_cast<B2SSnippitRotationDirection>(GetIntAttribute(root, ""s, "eSnippitRotationDirection"s, 0)))
    , m_snippitRotatingStopBehaviour(static_cast<B2SSnippitRotationStopBehaviour>(GetIntAttribute(root, ""s, "SnippitRotatingStopBehaviour"s, 0)))
@@ -242,6 +244,79 @@ B2SBulb::~B2SBulb()
 {
    DeleteTexture(m_image);
    DeleteTexture(m_offImage);
+}
+
+void B2SBulb::UpdateRotation(float elapsedInS)
+{
+   if (m_snippitType != B2SSnippitType::SelfRotatingImage)
+      return;
+
+   if (const int request = m_rotRequest.exchange(0); request != 0)
+   {
+      if (request == 1)
+      {
+         m_rotating = m_snippitRotatingSteps > 0 && m_snippitRotatingInterval > 0;
+         m_rotateSlowDown = 0;
+         m_slowdownAccMs = 0.f;
+         m_rotateRunTillEnd = false;
+         m_rotateRunToFirstStep = false;
+         m_rotIntervalMs = static_cast<float>(m_snippitRotatingInterval);
+      }
+      else if (m_rotating)
+      {
+         switch (m_snippitRotatingStopBehaviour)
+         {
+         case B2SSnippitRotationStopBehaviour::SpinOff: m_rotateSlowDown = 1; break;
+         case B2SSnippitRotationStopBehaviour::RunAnimationTillEnd: m_rotateRunTillEnd = true; break;
+         case B2SSnippitRotationStopBehaviour::RunAnimationToFirstStep: m_rotateRunToFirstStep = true; break;
+         default: m_rotating = false; break;
+         }
+      }
+   }
+
+   if (!m_rotating)
+      return;
+
+   const float direction = (m_snippitRotatingDirection == B2SSnippitRotationDirection::AntiClockwise) ? -1.f : 1.f;
+   const float stepAngle = 360.f / static_cast<float>(m_snippitRotatingSteps);
+   m_selfRotAngle += direction * stepAngle * (elapsedInS * 1000.f / m_rotIntervalMs);
+
+   bool wrapped = false;
+   while (m_selfRotAngle >= 360.f)
+   {
+      m_selfRotAngle -= 360.f;
+      wrapped = true;
+   }
+   while (m_selfRotAngle < 0.f)
+   {
+      m_selfRotAngle += 360.f;
+      wrapped = true;
+   }
+
+   if (m_rotateSlowDown > 0)
+   {
+      // Spin off: interval grows by 3ms per elapsed step for 25 steps then stops (reference behaviour)
+      m_slowdownAccMs += elapsedInS * 1000.f;
+      while (m_slowdownAccMs >= m_rotIntervalMs && m_rotateSlowDown <= 25)
+      {
+         m_slowdownAccMs -= m_rotIntervalMs;
+         m_rotIntervalMs += 3.f;
+         m_rotateSlowDown++;
+      }
+      if (m_rotateSlowDown > 25)
+      {
+         m_rotating = false;
+         m_rotateSlowDown = 0;
+      }
+   }
+   else if ((m_rotateRunTillEnd || m_rotateRunToFirstStep) && wrapped)
+   {
+      // Complete the current revolution then stop on the first step (angle 0)
+      m_selfRotAngle = 0.f;
+      m_rotating = false;
+      m_rotateRunTillEnd = false;
+      m_rotateRunToFirstStep = false;
+   }
 }
 
 

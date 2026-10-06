@@ -561,6 +561,28 @@ void B2SServer::StopAnimation(const string& animationName)
             animation.Stop();
 }
 
+void B2SServer::B2SStartRotation()
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   for (auto* bulbs : { &b2s->m_backglassIlluminations, &b2s->m_dmdIlluminations })
+      for (auto& bulb : *bulbs)
+         if (bulb->m_snippitType == B2SSnippitType::SelfRotatingImage)
+            bulb->StartRotation();
+}
+
+void B2SServer::B2SStopRotation()
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   for (auto* bulbs : { &b2s->m_backglassIlluminations, &b2s->m_dmdIlluminations })
+      for (auto& bulb : *bulbs)
+         if (bulb->m_snippitType == B2SSnippitType::SelfRotatingImage)
+            bulb->StopRotation();
+}
+
 void B2SServer::B2SStopAllAnimations()
 {
    const std::shared_ptr<B2STable> b2s = AcquireB2STable();
