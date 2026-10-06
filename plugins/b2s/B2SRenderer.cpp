@@ -212,6 +212,8 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
 {
    for (const auto& bulb : bulbs)
    {
+      if (bulb->m_bakedIntoBackground)
+         continue; // Drawn as part of the lit background image
       const bool locked = server && !bulb->m_name.empty() && server->IsIlluminationLocked(bulb->m_name);
       float state = 0.f;
       if (server && server->GetBulbState(*bulb, state))

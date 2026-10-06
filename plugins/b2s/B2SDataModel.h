@@ -277,6 +277,7 @@ public:
    float m_brightness = 0.f;
    float m_mechRot = 0.f;
    float m_romOn = 0.f; // ROM on/off state for self-rotating images (drives rotation start/stop)
+   bool m_bakedIntoBackground = false; // Bulb shares the BackglassOnImage ROM channel: it is drawn as part of the background, not as a separate bulb
 
 private:
    std::atomic<int> m_rotRequest { 0 }; // 1 = start, 2 = stop

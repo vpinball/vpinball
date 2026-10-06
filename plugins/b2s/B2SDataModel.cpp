@@ -981,6 +981,25 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
    };
    dropEmptyAnims(m_backglassAnimations);
    dropEmptyAnims(m_dmdAnimations);
+
+   // Bulbs on the BackglassOnImage ROM channel are baked into the lit background and not drawn
+   // separately, unless an animation drives their group (SetThruAnimation in the reference)
+   if (m_backglassOnImage.m_romId > 0 && m_backglassOnImage.m_romIdType != B2SRomIDType::NotDefined)
+   {
+      std::unordered_map<string, bool> animatedGroups;
+      for (const B2SAnimation& animation : m_backglassAnimations)
+         for (const string& group : animation.GetLightsInvolved())
+            animatedGroups[group] = true;
+      for (const auto& bulb : m_backglassIlluminations)
+      {
+         // A B2SID driven bulb matches a Lamp ROM channel, without inversion
+         const int romId = bulb->m_b2sId > 0 ? bulb->m_b2sId : bulb->m_romId;
+         const B2SRomIDType romIdType = bulb->m_b2sId > 0 ? B2SRomIDType::Lamp : bulb->m_romIdType;
+         const bool romInverted = bulb->m_b2sId > 0 ? false : bulb->m_romInverted;
+         bulb->m_bakedIntoBackground
+            = romId != 0 && romId == m_backglassOnImage.m_romId && romIdType == m_backglassOnImage.m_romIdType && !romInverted && animatedGroups.find(bulb->m_name) == animatedGroups.end();
+      }
+   }
 }
 
 const B2SScore* B2STable::FindScoreDisplay(int displayId) const
