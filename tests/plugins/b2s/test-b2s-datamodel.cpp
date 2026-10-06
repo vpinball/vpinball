@@ -54,6 +54,26 @@ TEST_CASE("B2S score display digit numbering")
    CHECK(display->m_resolvedStartDigit == 1);
    CHECK(table->FindScoreDisplay(3)->m_resolvedStartDigit == 7);
    CHECK(table->FindScoreDisplay(42) == nullptr);
+
+   // No display is hidden without a DisplayState=1 attribute
+   CHECK(!display->IsHidden());
+}
+
+TEST_CASE("B2S hidden score displays")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Scores>
+            <Score ID="1" Parent="Backglass" Digits="4" ReelType="reel_0" DisplayState="1"/>
+            <Score ID="2" Parent="Backglass" Digits="2" ReelType="dream7 7" DisplayState="0"/>
+            <Score ID="3" Parent="DMD" Digits="3" ReelType="reel_00" DisplayState="1"/>
+         </Scores>
+      </DirectB2SData>)");
+
+   // DisplayState=1 marks the display as initially hidden
+   CHECK(table->FindScoreDisplay(1)->IsHidden());
+   CHECK(!table->FindScoreDisplay(2)->IsHidden());
+   CHECK(table->FindScoreDisplay(3)->IsHidden());
 }
 
 TEST_CASE("B2S score distribution over display digits")

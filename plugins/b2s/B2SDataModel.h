@@ -125,6 +125,9 @@ public:
    // digit value (0-9) or -1 for a blank digit (leading padding for LED displays).
    vector<int> DistributeScore(int value) const;
 
+   // DisplayState=1 marks the score display as initially hidden
+   bool IsHidden() const { return m_displayState == 1; }
+
 public:
    const int m_id;
    const int m_b2sStartDigit;
