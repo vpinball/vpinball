@@ -538,6 +538,22 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root) noexcept
               names.push_back(GetStringAttribute(root, ""s, "Sound"s + std::to_string(i), ""s));
            return names;
         }())
+   , m_ledSegments(
+        [this]()
+        {
+           // ReelType suffix is the segment count: "Dream7LED7" -> 7, "RenderedLED14" -> 14
+           size_t pos = m_reelType.find_last_not_of("0123456789");
+           if (pos == string::npos || pos == m_reelType.length() - 1)
+              return 0;
+           const int count = atoi(m_reelType.c_str() + pos + 1);
+           if (count == 7 || count == 8)
+              return 7;
+           if (count == 9 || count == 10)
+              return 10;
+           if (count == 14)
+              return 14;
+           return 0;
+        }())
    , m_scoreType(StartsWithCaseInsensitive(m_reelType, "dream7"s)  ? B2SScoreRenderer::Dream7
            : StartsWithCaseInsensitive(m_reelType, "rendered"s)    ? B2SScoreRenderer::RenderedLED
            : StartsWithCaseInsensitive(m_reelType, "LED"s)         ? B2SScoreRenderer::LED
