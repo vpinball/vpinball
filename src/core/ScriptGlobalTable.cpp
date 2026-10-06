@@ -526,8 +526,11 @@ template <class Map> static string FindNameNoCase(const Map& map, const string& 
 
 STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value)
 {
+   const std::filesystem::path dir = g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, true);
+   if (dir.empty())
+      return E_FAIL;
    mINI::INIStructure ini;
-   mINI::INIFile file(g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::User, true) / "VPReg.ini"sv);
+   mINI::INIFile file(dir / "VPReg.ini"sv);
    file.read(ini);
 
    string szTableName = MakeString(TableName);

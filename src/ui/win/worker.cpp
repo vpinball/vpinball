@@ -83,15 +83,19 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    InMemStructuredStorage * const pstgroot = pasp->pstg;
 
-   const std::filesystem::path fn = g_app->m_fileLocator.GetTablePath(pasp->table, FileLocator::TableSubFolder::AutoSave, true) / std::format("AutoSave{}.vpx", pasp->tableindex);
+   const std::filesystem::path dir = g_app->m_fileLocator.GetTablePath(pasp->table, FileLocator::TableSubFolder::AutoSave, true);
+   const std::filesystem::path fn = dir.empty() ? dir : dir / std::format("AutoSave{}.vpx", pasp->tableindex);
 
    HRESULT hr = E_FAIL;
-   POLE::Storage storage(POLE::PathToFilename(fn).c_str());
-   if (storage.open(true, true, true) && storage.result() == POLE::Storage::Ok)
+   if (!fn.empty())
    {
-      const bool written = pstgroot->WriteToStorage(storage);
-      storage.close();
-      hr = (written && !storage.hasWriteError()) ? S_OK : E_FAIL;
+      POLE::Storage storage(POLE::PathToFilename(fn).c_str());
+      if (storage.open(true, true, true) && storage.result() == POLE::Storage::Ok)
+      {
+         const bool written = pstgroot->WriteToStorage(storage);
+         storage.close();
+         hr = (written && !storage.hasWriteError()) ? S_OK : E_FAIL;
+      }
    }
 
    delete pstgroot;

@@ -49,6 +49,9 @@ public:
       User, // 'user' folder along table file, used to save user data (highscores, settings,...)
       AutoSave
    };
+   // Returns the folder for the given table subfolder, creating it when searchForWriting is set. An empty path is
+   // returned when the folder does not exist (or cannot be created, e.g. read only install), letting the caller
+   // gracefully disable the feature relying on it.
    std::filesystem::path GetTablePath(const PinTable* table, TableSubFolder sub, bool searchForWriting) const;
 
    std::filesystem::path SearchScript(const PinTable* table, const std::filesystem::path& script) const;
