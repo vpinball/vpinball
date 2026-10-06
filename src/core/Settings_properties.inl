@@ -1366,16 +1366,16 @@ PropBool(DefaultPropsTrigger, TimerEnabled, "Timer Enabled"s, ""s, false);
 PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
 // Default core plugins enable state
-PropBoolDyn(PluginAltSound, Enable, "Enable"s, "Enable legacy AltSound plugin"s, g_isStandalone);
-PropBoolDyn(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, g_isStandalone);
+PropBoolDyn(PluginAltSound, Enable, "Enable"s, "Enable legacy AltSound plugin"s, true);
+PropBoolDyn(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, true);
 PropBoolDyn(PluginDMDUtil, Enable, "Enable"s, "Enable DMDUtil plugin"s, false);
-PropBoolDyn(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
-PropBoolDyn(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
-PropBoolDyn(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isStandalone);
-PropBoolDyn(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
-PropBoolDyn(PluginSerum, Enable, "Enable"s, "Enable Serum plugin"s, g_isStandalone);
-PropBoolDyn(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
-PropBoolDyn(PluginVNI, Enable, "Enable"s, "Enable VNI plugin"s, g_isStandalone);
+PropBoolDyn(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, true);
+PropBoolDyn(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, true);
+PropBoolDyn(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, true);
+PropBoolDyn(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, true);
+PropBoolDyn(PluginSerum, Enable, "Enable"s, "Enable Serum plugin"s, true);
+PropBoolDyn(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, true);
+PropBoolDyn(PluginVNI, Enable, "Enable"s, "Enable VNI plugin"s, true);
 
 // Standalone
 PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
