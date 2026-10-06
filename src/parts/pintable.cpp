@@ -5246,8 +5246,8 @@ string PinTable::AuditTable(bool log) const
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
-   auto audioPlayer = std::make_unique<VPX::AudioPlayer>(
-      m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()), m_settings.GetPlayer_SpatialAudio());
+   auto audioPlayer
+      = std::make_unique<VPX::AudioPlayer>(m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()));
    for (const auto sound : m_vsound)
    {
       auto specs = audioPlayer->GetSoundInformations(sound);

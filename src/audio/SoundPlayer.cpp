@@ -479,7 +479,6 @@ void SoundPlayer::Play(
                case SNDCFG_SND3D6CH:
                   break; // Keep front empty (performed when mixing) Not clear what would be the correct way of porting this (use a less effective pan & rearfade ?), so fallback to SSF
                case SNDCFG_SND3DSSF: break; // Keep front empty (performed when mixing)
-               case SNDCFG_SND3DBINAURAL: m_vpxMixNode->rearFrontFade = 0.f; break; // Spatial audio disabled: fallback to stereo output to front channels
                default: assert(false); return;
                }
                //Legacy hacked 3d audio, for reference:

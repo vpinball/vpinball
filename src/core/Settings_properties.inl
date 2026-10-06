@@ -14,11 +14,9 @@ PropInt(Player, MusicVolume, "Backglass Volume"s, "Main volume for music and sou
 PropInt(Player, SoundVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
 PropStringDyn(Player, SoundDeviceBG, "Backglass Sound Device"s, "Select backglass sound device"s, ""s);
 PropStringDyn(Player, SoundDevice, "Playfield Sound Device"s, "Select playfield sound device"s, ""s);
-PropBool(Player, SpatialAudio, "Positional 3D Audio"s, "Render playfield sounds as spatially positioned sources, using the playfield output mode for speaker layout, instead of the legacy static pan/fade channel mixing"s,
-   true);
 PropEnum(Player, Sound3D, "Playfield Output Mode"s, "Select how playfield sound is output to a speaker configuration"s, int /* VPX::SoundConfigTypes*/,
    0 /* VPX::SoundConfigTypes::SNDCFG_SND3D2CH */, "2 Front channels"s, "2 Rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s,
-   "6ch Side & Rear at lockbar. Legacy mixing"s, "6ch Side & Rear at lockbar. New mixing"s, "Binaural (headphones)"s);
+   "6ch Side & Rear at lockbar. Legacy mixing"s, "6ch Side & Rear at lockbar. New mixing"s);
 
 // Output (windows) settings
 // Main window (a.k.a. playfield)
@@ -263,6 +261,10 @@ PropBool(
 PropEnum(Player, VRPreview, "Preview mode"s, "Select VR preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
 PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, "Shrink VR preview"s, false);
 PropBool(PlayerVR, AddBackglass, "Add Backglass"s, "Add a default backglass display to the scene"s, false);
+PropBool(PlayerVR, SpatialAudioBackglass, "Backglass Spatial Audio"s,
+   "Render backglass sounds as spatially positioned sources, binauralized for the VR headset"s, true);
+PropBool(PlayerVR, SpatialAudioPlayfield, "Playfield Spatial Audio"s,
+   "Render playfield sounds as spatially positioned sources, binauralized for the VR headset, instead of the legacy static pan/fade channel mixing"s, true);
 PropFloatDyn(PlayerVR, ControllerCabYOffset, "Cabinet Y Offset"s, "Y offset to apply when using controller view centering"s, -150.f, 50.f, 0.f);
 PropFloatDyn(PlayerVR, ControllerLockbarScale, "Lockbar size ratio"s, "Lockbar size ratio to apply when using controller view centering"s, 0.5f, 2.0f, 1.f);
 PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
