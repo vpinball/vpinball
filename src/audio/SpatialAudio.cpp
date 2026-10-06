@@ -356,11 +356,15 @@ SpatialAudioMixer::SpatialAudioMixer(ma_engine* engine, const std::vector<Spatia
       m_impl->binauralConfigured = false;
    }
    if (!m_impl->binauralConfigured)
+   {
       PLOGE << "Failed to load the binaural HRTF '" << hrtfPath << "', falling back to loudspeaker decoding";
+   }
 #else
    m_impl->binauralConfigured = m_impl->binauralizer.Configure(kAmbiOrder, true, sampleRate, kMaxAmbiBlock, tailLength);
    if (!m_impl->binauralConfigured)
+   {
       PLOGE << "Failed to configure binaural audio, falling back to loudspeaker decoding";
+   }
 #endif
 
    const unsigned int nBuffers = std::max(nSpeakers, 2u);
