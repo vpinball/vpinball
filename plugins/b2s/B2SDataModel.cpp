@@ -248,6 +248,7 @@ B2SImage::B2SImage()
    , m_filename(""s)
    , m_romId(0)
    , m_romIdType(B2SRomIDType::NotDefined)
+   , m_romInverted(false)
 {
 }
 
@@ -256,6 +257,7 @@ B2SImage::B2SImage(const tinyxml2::XMLNode& root) noexcept
    , m_filename(GetStringAttribute(root, ""s, "FileName"s, ""s))
    , m_romId(GetIntAttribute(root, ""s, "RomID"s, 0))
    , m_romIdType(static_cast<B2SRomIDType>(GetIntAttribute(root, ""s, "RomIDType"s, 0)))
+   , m_romInverted(GetBoolAttribute(root, ""s, "RomInverted"s, false))
 {
 }
 

@@ -102,18 +102,18 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
 
    if (m_b2s->m_backglassOnImage.m_image)
       m_b2s->m_backglassOnImage.m_romUpdater
-         = ResolveRomPropUpdater(items, &m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId);
+         = ResolveRomPropUpdater(items, &m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId, m_b2s->m_backglassOnImage.m_romInverted);
 
    for (auto& bulb : m_b2s->m_backglassIlluminations)
       switch (bulb->m_snippitType)
       {
-      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId); break;
+      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, bulb->m_b2sValue); break;
       case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
       case B2SSnippitType::SelfRotatingImage: break;
       }
 }
 
-std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<StateSrcId> & items, float * value, const B2SRomIDType romIdType, const int romId, const bool romInverted) const
+std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<StateSrcId>& items, float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted, const int romValue) const
 {
    int groupId;
    switch (romIdType)
@@ -133,14 +133,14 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<State
          const auto& def = src.stateDefs[i];
          if (def.mappingId == romId && def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState)
          {
-            if (romInverted)
-               return [this, value, def]()
-               {
-                  m_stateSources.With([this, value, &def](const std::vector<StateSrcId>&) { def.GetState(def.callContext, value); });
+            return [this, value, def, romInverted, romValue]()
+            {
+               m_stateSources.With([this, value, &def](const std::vector<StateSrcId>&) { def.GetState(def.callContext, value); });
+               if (romValue > 0)
+                  *value = (static_cast<int>(*value) == romValue) ? 1.f : 0.f;
+               else if (romInverted)
                   *value = 1.f - *value;
-               };
-            else
-               return [this, value, def]() { m_stateSources.With([this, value, &def](const std::vector<StateSrcId>&) { def.GetState(def.callContext, value); }); };
+            };
          }
       }
    }
