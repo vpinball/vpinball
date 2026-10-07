@@ -329,8 +329,8 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       switch (item->m_property->m_type)
       {
       case VPX::Properties::PropertyDef::Type::String:
-         // Unsupported for now
-         assert(false);
+         if (isInitialPress && dynamic_cast<VPX::Properties::StringPropertyDef*>(item->m_property.get())->m_pathType != VPX::Properties::StringPropertyDef::PathType::None)
+            BrowseForPath(*item);
          break;
 
       case VPX::Properties::PropertyDef::Type::Enum:
@@ -387,6 +387,16 @@ void InGameUIPage::Render(float elapsedS)
       ClearItems();
       BuildPage();
       m_isBuildingPage = false;
+   }
+
+   // Apply the result of an asynchronous folder/file selection dialog to the item it was opened for (as the page may have been rebuilt in between, look it up by property id)
+   if (m_pathSelectResult && !m_pathSelectResult->empty())
+   {
+      const string path = PathToString(PathFromUTF8(*m_pathSelectResult));
+      for (const auto& item : m_items)
+         if (item->m_property && item->m_property->m_groupId == m_pathSelectGroupId && item->m_property->m_propId == m_pathSelectPropId)
+            item->SetValue(path);
+      m_pathSelectResult = nullptr;
    }
 
    ImGuiIO& io = ImGui::GetIO();
@@ -921,8 +931,25 @@ void InGameUIPage::Render(float elapsedS)
             if (!stackFields)
                ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             string v = item->GetStringValue();
-            ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::InputText(std::format("##Item{}", i).c_str(), &v);
+            if (prop->m_pathType != VPX::Properties::StringPropertyDef::PathType::None)
+            {
+               const bool isFolder = prop->m_pathType == VPX::Properties::StringPropertyDef::PathType::Folder;
+               const char* browseIcon = isFolder ? ICON_FK_FOLDER_OPEN : ICON_FK_FILE_O;
+               const char* hint = isFolder ? "Select a folder..." : "Select a file...";
+               const float browseButtonWidth = ImGui::CalcTextSize(browseIcon, nullptr, true).x + style.FramePadding.x * 2.0f;
+               ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x - browseButtonWidth - style.ItemSpacing.x);
+               ImGui::InputTextWithHint(std::format("##Item{}", i).c_str(), hint, &v);
+               ImGui::SameLine();
+               if (ImGui::Button(std::format("{}##Item{}", browseIcon, i).c_str(), ImVec2(browseButtonWidth, 0)))
+                  BrowseForPath(*item);
+               if (ImGui::IsItemHovered())
+                  ImGui::SetTooltip("%s", hint);
+            }
+            else
+            {
+               ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::InputText(std::format("##Item{}", i).c_str(), &v);
+            }
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -978,6 +1005,39 @@ void InGameUIPage::Render(float elapsedS)
    ImGui::End();
 
    RenderInputActionPopup();
+}
+
+void InGameUIPage::BrowseForPath(const InGameUIItem& item)
+{
+   if (m_player->m_playfieldWnd == nullptr)
+      return;
+   const auto prop = dynamic_cast<const VPX::Properties::StringPropertyDef*>(item.m_property.get());
+   if (prop == nullptr)
+      return;
+   m_pathSelectResult = std::make_shared<string>();
+   m_pathSelectGroupId = prop->m_groupId;
+   m_pathSelectPropId = prop->m_propId;
+   const auto callback = [](void* userdata, const char* const* filelist, int filter)
+   {
+      auto* res = static_cast<std::shared_ptr<string>*>(userdata);
+      if (filelist != nullptr && filelist[0] != nullptr)
+         **res = filelist[0];
+      delete res;
+   };
+   auto* result = new std::shared_ptr<string>(m_pathSelectResult);
+   if (prop->m_pathType == VPX::Properties::StringPropertyDef::PathType::File)
+   {
+      // For file dialogs, the default location must be a folder
+      const string location = PathToUTF8(PathFromString(item.GetStringValue()).parent_path()); // SDL expects UTF-8
+      const SDL_DialogFileFilter filters[] = { { prop->m_label.c_str(), prop->m_fileFilter.c_str() } };
+      SDL_ShowOpenFileDialog(callback, result, m_player->m_playfieldWnd->GetCore(), prop->m_fileFilter.empty() ? nullptr : filters, prop->m_fileFilter.empty() ? 0 : 1,
+         location.empty() ? nullptr : location.c_str(), false);
+   }
+   else
+   {
+      const string location = PathToUTF8(PathFromString(item.GetStringValue())); // SDL expects UTF-8
+      SDL_ShowOpenFolderDialog(callback, result, m_player->m_playfieldWnd->GetCore(), location.empty() ? nullptr : location.c_str(), false);
+   }
 }
 
 void InGameUIPage::RenderInputActionPopup()

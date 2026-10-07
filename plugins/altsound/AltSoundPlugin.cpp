@@ -25,7 +25,7 @@ namespace AltSound
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
-   MSGPI_STRING_VAL_SETTING(altsoundFolderProp, "Folder", "AltSound Folder", "", true, "", 1024);
+   MSGPI_FOLDER_VAL_SETTING(altsoundFolderProp, "Folder", "AltSound Folder", "", true, "", 1024);
 
 static constexpr uint32_t BUFFER_SIZE_FRAMES = 128;
 

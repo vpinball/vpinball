@@ -47,7 +47,7 @@ static std::minstd_rand std_rand;
 static std::unique_ptr<CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<class SerumColorizer> colorizer;
 
-MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
+MSGPI_FOLDER_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
 // Serum skips frames it cannot identify. How long to keep showing the last
 // known-good colorized frame before giving up on the unknown run, and how many
 // unknown frames to skip within it, are colorization- and ROM-dependent, so
