@@ -183,7 +183,19 @@ void B2SRenderer::UpdateAnimations(vector<B2SAnimation>& animations, float elaps
    fx.dualMode = dualMode;
    fx.randomTrigger = [this, &animations](B2SRomIDType romIdType, int romId, bool start, B2SAnimation*) { OnRandomAnimationTrigger(animations, romIdType, romId, start); };
    for (auto& animation : animations)
-      animation.Update(elapsed, fx); // TODO implement slowdown settings/props (scale elapsed)
+   {
+      // Animation slow downs from the plugin settings (AllAnimationSlowDown takes precedence over per-animation)
+      float scaledElapsed = elapsed;
+      if (server)
+      {
+         int slowDown = server->GetAllAnimationSlowDown();
+         if (slowDown <= 1)
+            slowDown = server->GetAnimationSlowDown(animation.m_name);
+         if (slowDown > 1)
+            scaledElapsed /= static_cast<float>(slowDown);
+      }
+      animation.Update(scaledElapsed, fx);
+   }
 }
 
 void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start)

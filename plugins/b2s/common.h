@@ -92,4 +92,7 @@ struct WavData
    vector<uint8_t> pcm;
 };
 bool DecodeWav(const vector<uint8_t>& wav, WavData& out);
+
+// Parses a 'name=factor;name2=factor2' slowdown list (AnimationSlowDowns plugin setting), returns the factor for 'name' or 1
+int B2SAnimationSlowDown(const string& list, const string& name);
 }

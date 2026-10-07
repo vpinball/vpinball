@@ -163,6 +163,11 @@ public:
    bool IsIlluminationLocked(const string& group) const;
    bool AreScoreDisplaysHidden() const { return m_scoreDisplaysHidden; }
 
+   // Plugin settings
+   static void RegisterSettings(const MsgPluginAPI* msgApi, unsigned int endpointId);
+   int GetAnimationSlowDown(const string& name) const;
+   int GetAllAnimationSlowDown() const;
+
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override;
 
 private:

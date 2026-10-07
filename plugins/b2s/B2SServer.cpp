@@ -14,6 +14,15 @@
 namespace B2S
 {
 
+MSGPI_INT_VAL_SETTING(allAnimationSlowDownProp, "AllAnimationSlowDown", "Global animation slowdown", "Slowdown factor applied to all backglass animations", true, 1, 100, 1);
+MSGPI_STRING_VAL_SETTING(animationSlowDownsProp, "AnimationSlowDowns", "Per-animation slowdowns", "Semicolon separated 'name=factor' animation slowdown overrides", true, "", 1024);
+
+void B2SServer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
+{
+   msgApi->RegisterSetting(endpointId, &allAnimationSlowDownProp);
+   msgApi->RegisterSetting(endpointId, &animationSlowDownsProp);
+}
+
 B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef)
    : m_controllerClassProxy(msgApi, endpointId, "PinMAME_"s, "PinMAME_Controller"s, "B2S_"s, serverClassDef)
    , m_controllerProxy(m_controllerClassProxy)
@@ -150,6 +159,10 @@ void B2SServer::SetWorkingDir(const string& workingDir)
    m_workingDir = PluginStrings::PathFromNative(workingDir.c_str());
    TryLoadB2S();
 }
+
+int B2SServer::GetAnimationSlowDown(const string& name) const { return B2SAnimationSlowDown(animationSlowDownsProp_Get(), name); }
+
+int B2SServer::GetAllAnimationSlowDown() const { return allAnimationSlowDownProp_Get(); }
 
 static std::string CreateGuidString()
 {

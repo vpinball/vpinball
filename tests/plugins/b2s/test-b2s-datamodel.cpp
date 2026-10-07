@@ -876,3 +876,14 @@ TEST_CASE("B2S dual backglass mode")
    CHECK(table->m_backglassAnimations[1].IsRunning());
    CHECK(table->m_backglassAnimations[2].IsRunning());
 }
+
+TEST_CASE("B2S animation slowdown setting parsing")
+{
+   CHECK(B2SAnimationSlowDown(""s, "flash"s) == 1);
+   CHECK(B2SAnimationSlowDown("flash"s, "flash"s) == 1); // entry without = is ignored
+   CHECK(B2SAnimationSlowDown("flash=3"s, "flash"s) == 3);
+   CHECK(B2SAnimationSlowDown("flash=3"s, "other"s) == 1);
+   CHECK(B2SAnimationSlowDown(" flash = 2 ; diver=4 "s, "flash"s) == 2);
+   CHECK(B2SAnimationSlowDown(" flash = 2 ; diver=4 "s, "diver"s) == 4);
+   CHECK(B2SAnimationSlowDown("flash=0"s, "flash"s) == 1); // clamped to a positive factor
+}

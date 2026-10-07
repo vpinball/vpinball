@@ -258,6 +258,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
 
+   B2SServer::RegisterSettings(msgApi, endpointId);
    B2SRenderer::RegisterSettings(msgApi, endpointId);
    DMDOverlay::DMDOverlay::RegisterSettings(msgApi, endpointId);
 
