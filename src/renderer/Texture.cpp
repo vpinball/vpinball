@@ -945,10 +945,12 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
             // Old files used to store some bitmaps as a 32-bit SBGRA picture, we now (10.8.1+) always use a compressed file format. Convert here to simplify the code
             const size_t size = (size_t)height * width;
             assert(ppb == nullptr && size != 0);
+            if (width == 0 || height == 0 || width > 16384 || height > 16384 || size * 4 < size) // Bound on-disk fields before sizing the decode buffer
+               return false;
 
             // Uncompress to RGBA image
             uint8_t* const __restrict tmp = new uint8_t[size * 4];
-            const LZWReader lzwreader(br.m_stream, tmp, width * 4);
+            const LZWReader lzwreader(br.m_stream, tmp, static_cast<unsigned int>(size * 4), width * 4);
 
             // Find out if all alpha values are 0x00 or 0xFF
             bool has_alpha = false;

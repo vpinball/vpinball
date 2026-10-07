@@ -6,7 +6,7 @@
 class LZWReader final
 {
 public:
-   LZWReader(POLE::Stream *stream, uint8_t *output, const unsigned int width); // immediately decodes content into output
+   LZWReader(POLE::Stream *stream, uint8_t *output, const unsigned int outputSize, const unsigned int width); // immediately decodes content into output (of outputSize bytes, scanned in width-byte lines)
    ~LZWReader() { }
 
 private:
@@ -33,7 +33,7 @@ private:
    uint8_t byte_buff[257];        // Current block
    uint8_t *pbytes;               // Pointer to next byte in block
 
-   uint8_t stack[MAX_CODES + 1];  // Stack for storing pixels
+   uint8_t stack[MAX_CODES + 2];  // Stack for storing pixels (worst case expansion is MAX_CODES+2 pushes per code)
    uint8_t suffix[MAX_CODES + 1]; // Suffix table
    uint16_t prefix[MAX_CODES + 1];// Prefix linked list
 
