@@ -1,6 +1,6 @@
 Option Explicit
 
-Const VPinMAMEDriverVer = 3.61
+Const VPinMAMEDriverVer = 3.62
 
 '======================
 ' VPinMAME driver core
@@ -22,6 +22,7 @@ Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime)
 Dim SolCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
 Dim SolModCallbackRef(68) ' Parsed callbacks appended to script to avoid stutters caused by calling Execute
 Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
+Dim SolOnAboveZero(68) ' Set by system scripts for coils whose modulated value may stay below half while on (i.e. Capcom flipper strength): SolCallback turns on above 0
 Dim SolCallbackInitialized ' Late initialization of solenoid callback
 Dim LampCallback	' Called after lamps are updated
 Dim PDLedCallback	' Called after leds are updated
@@ -2668,7 +2669,7 @@ Sub PinMAMETimer_Timer
 		For ii = 0 To UBound(ChgSol)
 			nsol = ChgSol(ii, 0)
 			state = ChgSol(ii, 1) * pwmScale
-			bstate = CBool(state >= 0.5)
+			If SolOnAboveZero(nsol) Then bstate = CBool(state > 0) Else bstate = CBool(state >= 0.5)
 			If bstate <> SolPrevState(nsol) Then
 				SolPrevState(nsol) = bstate
 				Set cb = SolCallbackRef(nsol)

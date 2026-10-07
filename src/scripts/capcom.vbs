@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.61
+'Last Updated in VBS v3.62
 
 Option Explicit
 LoadCore
@@ -33,6 +33,24 @@ Const swURFlip      = 81
 Const swULFlip      = 83
 
 Const GameOnSolenoid = 51
+
+'-------------------------
+' Flipper strength (PinMAME 3.7 and later)
+'-------------------------
+' The game's flipper strength setting is the value of its flipper solenoids while on: 9 (left flipper), 10 (right),
+'  11 (upper right: Breakshot, Pool Player, Big Bang Bar), 11/12 (Flipper Football: upper left/right), and their
+'  mirrors in the legacy mapping for DOF: 9 -> 45/46, 10 -> 47/48, 11 -> 33/34, 12 -> 35/36 (power/hold; 33-36 only
+'  in games with upper flippers). Kingpin, Flipper Football: setting/32; the others: setting/16
+' Without UseVPMModSol: on/off as before, nothing to do
+' With UseVPMModSol = 1 (value 0..255) or 2 (value 0..1), read it through SolModCallback, e.g. with 2:
+'  SolModCallback(9) = "LeftFlipperStrength"
+'  Sub LeftFlipperStrength(value) : If value > 0 Then LeftFlipper.Strength = LeftFlipperFullStrength * value : End Sub
+' Caveats:
+' - The value may stay below half while on (e.g. Flipper Football's upper flippers: 14/32 from the factory): treat any
+'   value above 0 as on, so never test for >= 0.5 (or >= 128). SolCallback does that for these solenoids (SolOnAboveZero below, needs core.vbs 3.62 or later)
+' - 45-48 now follow only the flipper coils and 33-36 only the upper flippers, also without UseVPMModSol: check existing SolCallbacks on these
+Dim capFlipSol
+For Each capFlipSol In Array(9, 10, 11, 12, 33, 34, 35, 36, 45, 46, 47, 48) : SolOnAboveZero(capFlipSol) = True : Next
 
 ' Help window
 vpmSystemHelp = "Capcom keys" & vbNewLine &_

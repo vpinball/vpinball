@@ -160,7 +160,7 @@ cvpmBallStack (DEPRECATED/LEGACY, but create as many as needed)
   (Public) .KickAngleVar  - ExitKicker Angle value varies by this much (+/-)
   (Public) .BallColour    - Set ball colour
   (Public) .TempBallImage - Set ball image for next ball only
-  (Public) .TempBallColour - Set ball colour for next ball only
+  (Public) .TempBallColour- Set ball colour for next ball only
   (Public) .BallImage     - Set ball image
   (Public) .InitAddSnd    - Sounds when ball enters stack
   (Public) .InitEntrySnd  - Sounds for Entry kicker
@@ -243,16 +243,16 @@ cvpmTurnTable (create as many as needed)
   (Private) .Reset         - handle emulation reset
 
 cvpmMech (create as many as needed)
-  (Public)  .Sol1, Sol2    - Controlling solenoids
-  (Public)  .MType         - type of mechanics
+  (Public)  .Sol1, Sol2   - Controlling solenoids
+  (Public)  .MType        - type of mechanics
   (Public)  .Length, Steps
-  (Public)  .Acc, Ret      - Acceleration, retardation
-  (Public)  .AddSw         - Automatically controlled switches
-  (Public)  .AddPulseSw    - Automatically pulsed switches
-  (Public)  .Callback      - Update graphics function
-  (Public)  .Start         - Start mechanics handler
-  (Public)  .Position      - Current position
-  (Public)  .Speed         - Current Speed
+  (Public)  .Acc, Ret     - Acceleration, retardation
+  (Public)  .AddSw        - Automatically controlled switches
+  (Public)  .AddPulseSw   - Automatically pulsed switches
+  (Public)  .Callback     - Update graphics function
+  (Public)  .Start        - Start mechanics handler
+  (Public)  .Position     - Current position
+  (Public)  .Speed        - Current Speed
   (Private) .Update
   (Private) .Reset
 
@@ -313,17 +313,17 @@ cvpmFlips2 (Fast Flips support)
  
 Generic solenoid handlers:
 --------------------------
-vpmSolFlipper flipObj1, flipObj2          - "flips flippers". Set unused to Nothing
+vpmSolFlipper flipObj1, flipObj2           - "flips flippers". Set unused to Nothing
 vpmSolFlip2   flipObj1, flipObj2, flipSpeedUp, flipSpeedDn, sndOn).  Set unused to Nothing
-vpmSolDiverter divObj, sound              - open/close diverter (flipper) with/without sound
-vpmSolWall wallObj, sound                 - Raise/Drop wall with/without sound
-vpmSolToggleWall wall1, wall2, sound      - Toggle between two walls
-vpmSolToggleObj obj1,obj2,sound           - Toggle any objects
+vpmSolDiverter divObj, sound               - open/close diverter (flipper) with/without sound
+vpmSolWall wallObj, sound                  - Raise/Drop wall with/without sound
+vpmSolToggleWall wall1, wall2, sound       - Toggle between two walls
+vpmSolToggleObj obj1,obj2,sound            - Toggle any objects
 vpmSolAutoPlunger plungerObj, var, enabled - Autoplunger/kickback
 vpmSolAutoPlungeS plungerObj, sound, var, enabled - Autoplunger/kickback With Specified Sound To Play
-vpmSolGate obj, sound                     - Open/close gate
-vpmSolSound sound                         - Play sound only
-vpmFlasher flashObj                       - Flashes flasher
+vpmSolGate obj, sound                      - Open/close gate
+vpmSolSound sound                          - Play sound only
+vpmFlasher flashObj                        - Flashes flasher
 
 Generating events:
 ------------------
@@ -332,12 +332,21 @@ cpmCreateLights
 
 Variables declared (to be filled in):
 ---------------------------------------
-SolCallback() - handler for each solenoid
+SolCallback()    - handler for each solenoid
+SolModCallback() - handler for each solenoid's modulated value, with UseVPMModSol set: 0..255 with 1
+                   (legacy modulated solenoids), 0..1 with 2 (physical outputs)
+SolOnAboveZero() - per solenoid: True if its modulated value may stay below half while on, so that its
+                   SolCallback turns on at any value above 0 instead of at 0.5. Filled by the system scripts
+                   (capcom.vbs: the flipper coils, which report their flipper strength setting)
 Lights()      - Lamps
 
 Constants used (must be defined):
 ---------------------------------
 UseSolenoids  - Update solenoids
+UseVPMModSol  - (optional, before LoadVPM) modulated outputs: True or 1 = modulated solenoids, SolModCallback gets 0..255;
+                2 = physical outputs, solenoids/lamps/GI/alphanumeric segments as 0..1 (also Lights().State).
+                SolCallback still gets on/off: on from half the value, or from any value above 0 for solenoids in
+                SolOnAboveZero (e.g. Capcom flipper coils, which report their flipper strength setting while on)
 MotorCallback - Called once every update for mechanics or custom sol handler
 UseLamps      - Update lamps
 LampCallback  - Sub to call after lamps are updated

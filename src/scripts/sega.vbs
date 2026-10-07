@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.61
+'Last Updated in VBS v3.62
 
 ' Note: use Sega2.vbs for Apollo13 or GoldenEye
 

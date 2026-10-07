@@ -1,14 +1,25 @@
-New in 3.62 (Update by mfuegemann, JP, Mike Welsh)
+New in 3.62 (Update by mfuegemann, JP, Mike Welsh, toxie)
 - Added wpc_ph.vbs (based on wpc.vbs)
 - Added p2k.vbs
+- Added pinheck.vbs
+- Added playbar.vbs
 - Removed the hardcoded keyVPMVolume (F12) key from all system .vbs files; the VPinMAME
   volume is now adjusted through a "VPinMAME Volume" table option in the in-game UI
   (only when using the VPinMAME COM controller, not the PinMAME plugin)
 - Removed the hardcoded keyShowDips (F6) key from all system .vbs files; dip switches
   and table options are adjusted in the in-game UI
 - Corrected 2 switches in nuova.vbs
-- Added playbar.vbs
 - Added coin door key to Sega/Stern WhiteStar (sega(2).vbs)
+- Added SolOnAboveZero(68) to core.vbs: scripts can mark all solenoids whose modulated value may stay below half while on;
+  their SolCallback then turns on at any value above 0, instead of at 0.5 (matters with UseVPMModSol = 2)
+- capcom.vbs marks its flipper coils (9-12, mirrored to 33-36 and 45-48) that way, as these games by now report their flipper strength setting while on;
+  see the "Flipper strength" section in capcom.vbs for how to read the strength in a table, and the caveats
+- Changed behavior for Capcom tables using UseVPMModSol: the flipper coils 9-12 and their mirrors 33-36/45-48 report the flipper strength setting while on
+  instead of full, and the hold outputs 34/36/46/48 now follow them too; SolModCallback on these outputs receives that value.
+  Also, in the games without upper flippers (Pinball Magic, Airborne, Kingpin) 33-36 no longer report solenoids 11/12.
+  Also, changed behavior for Capcom tables without UseVPMModSol: the flipper outputs 45-48 follow the lower
+  flipper coils (before: potential noise from other coils), and 33-36 the upper ones in the games that feature them
+  (Breakshot, Pool Player, Big Bang Bar, Flipper Football)
 
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)

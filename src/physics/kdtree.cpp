@@ -480,89 +480,94 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
       const unsigned int org_items = (current->m_items & 0x3FFFFFFF);
       const unsigned int axis = (current->m_items >> 30);
 
-      // loop implements 4 collision checks at once
-      // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
-      const unsigned int size = (current->m_start + org_items + 3) / 4;
-      const unsigned int start = traversal_order ? current->m_start / 4 : (size - 1);
-      const unsigned int end = traversal_order ? size : (current->m_start / 4 - 1);
-      for (unsigned int i = start; i != end; i += dt)
+      if (org_items != 0) // does node contain hitables?
       {
+         const unsigned int m_s = current->m_start;
+         const unsigned int itemsEnd = m_s + org_items;
+         const unsigned int size = (itemsEnd + 3) / 4;
+         const unsigned int start = traversal_order ? m_s / 4 : (size - 1);
+         const unsigned int end = traversal_order ? size : (m_s / 4 - 1);
+
+         // The groups of 4 are not aligned with the node's items: the lanes of the first and last group outside
+         // [m_start, itemsEnd) belong to other nodes (testing them here too duplicates contacts)
+         const unsigned int firstGroup = m_s / 4;
+         const unsigned int lastGroup = (itemsEnd - 1) / 4;
+         const int firstLanes = (0xF << (m_s & 3)) & 0xF;
+         const int lastLanes = 0xF >> (3 - ((itemsEnd - 1) & 3));
+
+         // loop implements 4 collision checks at once
+         // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
+         for (unsigned int i = start; i != end; i += dt)
+         {
 #ifdef DEBUGPHYSICS
-         if (hitoct->m_physics) hitoct->m_physics->c_tested++; //!! +=4? or is this more fair?
+            if (hitoct->m_physics) hitoct->m_physics->c_tested++; //!! +=4? or is this more fair?
 #endif
-         // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
-         // bits set, there is a bounding box collision
-         /*__m128 cmp = _mm_cmpge_ps(bright, pL[i]);
-         int mask = _mm_movemask_ps(cmp);
-         if (mask == 0) continue;
+            // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
+            // bits set, there is a bounding box collision
+            /*__m128 cmp = _mm_cmpge_ps(bright, pL[i]);
+            int mask = _mm_movemask_ps(cmp);
+            if (mask == 0) continue;
 
-         cmp = _mm_cmple_ps(bleft, pR[i]);
-         mask &= _mm_movemask_ps(cmp);
-         if (mask == 0) continue;
+            cmp = _mm_cmple_ps(bleft, pR[i]);
+            mask &= _mm_movemask_ps(cmp);
+            if (mask == 0) continue;
 
-         cmp = _mm_cmpge_ps(bbottom, pT[i]);
-         mask &= _mm_movemask_ps(cmp);
-         if (mask == 0) continue;
+            cmp = _mm_cmpge_ps(bbottom, pT[i]);
+            mask &= _mm_movemask_ps(cmp);
+            if (mask == 0) continue;
 
-         cmp = _mm_cmple_ps(btop, pB[i]);
-         mask &= _mm_movemask_ps(cmp);
-         if (mask == 0) continue;
+            cmp = _mm_cmple_ps(btop, pB[i]);
+            mask &= _mm_movemask_ps(cmp);
+            if (mask == 0) continue;
 
-         cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
-         mask &= _mm_movemask_ps(cmp);
-         if (mask == 0) continue;
+            cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
+            mask &= _mm_movemask_ps(cmp);
+            if (mask == 0) continue;
 
-         cmp = _mm_cmple_ps(bzlow, pZh[i]);
-         mask &= _mm_movemask_ps(cmp);
-         if (mask == 0) continue;*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
+            cmp = _mm_cmple_ps(bzlow, pZh[i]);
+            mask &= _mm_movemask_ps(cmp);
+            if (mask == 0) continue;*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
 
-         // test actual sphere against box(es)
-         const __m128 zero = _mm_setzero_ps();
-         __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pL[i],  posx), zero), _mm_max_ps(_mm_sub_ps(posx, pR[i] ), zero));
-         __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pT[i],  posy), zero), _mm_max_ps(_mm_sub_ps(posy, pB[i] ), zero));
-         __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pZl[i], posz), zero), _mm_max_ps(_mm_sub_ps(posz, pZh[i]), zero));
-         ex = _mm_mul_ps(ex, ex);
-         ey = _mm_mul_ps(ey, ey);
-         ez = _mm_mul_ps(ez, ez);
-         const __m128 d = _mm_add_ps(_mm_add_ps(ex, ey), ez);
-         const __m128 cmp2 = _mm_cmple_ps(d, rsqr);
-         int mask2 = _mm_movemask_ps(cmp2);
+            // test actual sphere against box(es)
+            const __m128 zero = _mm_setzero_ps();
+            __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pL[i],  posx), zero), _mm_max_ps(_mm_sub_ps(posx, pR[i] ), zero));
+            __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pT[i],  posy), zero), _mm_max_ps(_mm_sub_ps(posy, pB[i] ), zero));
+            __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pZl[i], posz), zero), _mm_max_ps(_mm_sub_ps(posz, pZh[i]), zero));
+            ex = _mm_mul_ps(ex, ex);
+            ey = _mm_mul_ps(ey, ey);
+            ez = _mm_mul_ps(ez, ez);
+            const __m128 d = _mm_add_ps(_mm_add_ps(ex, ey), ez);
+            const __m128 cmp2 = _mm_cmple_ps(d, rsqr);
+            const int lanes = (i == firstGroup ? firstLanes : 0xF) & (i == lastGroup ? lastLanes : 0xF); // this node's lanes
+            const int mask2 = _mm_movemask_ps(cmp2) & lanes;
+            if (mask2 == 0) continue;
 
-         // The 4 lanes of a group are not aligned with this node's item range: only the lanes inside
-         // [m_start, m_start+org_items) belong to this node, the others belong to the previous/next
-         // node and would be hit-tested again when that node is traversed (leading to duplicated contacts)
-         const unsigned int itemsEnd = current->m_start + org_items;
-         if (i * 4 < current->m_start)
-            mask2 &= 0xF << (current->m_start - i * 4); // clear the lanes below m_start
-         if (i * 4 + 4 > itemsEnd)
-            mask2 &= (1 << (itemsEnd - i * 4)) - 1; // clear the lanes at/past itemsEnd
-         if (mask2 == 0) continue;
-
-         // now there is at least one bbox collision
-         if ((mask2 & 1) != 0)
-         {
-            HitObject * const pho = hitoct->GetItemAt(i * 4);
-            if (pball != pho) // ball can not hit itself
-               DoHitTest(pball, pho, coll);
-         }
-         // array boundary checks for the rest not necessary as non-valid entries were initialized to keep these maskbits 0
-         if ((mask2 & 2) != 0 /*&& (i*4+1)<hitoct->m_num_items*/)
-         {
-            HitObject * const pho = hitoct->GetItemAt(i * 4 + 1);
-            if (pball != pho) // ball can not hit itself
-               DoHitTest(pball, pho, coll);
-         }
-         if ((mask2 & 4) != 0 /*&& (i*4+2)<hitoct->m_num_items*/)
-         {
-            HitObject * const pho = hitoct->GetItemAt(i * 4 + 2);
-            if (pball != pho) // ball can not hit itself
-               DoHitTest(pball, pho, coll);
-         }
-         if ((mask2 & 8) != 0 /*&& (i*4+3)<hitoct->m_num_items*/)
-         {
-            HitObject * const pho = hitoct->GetItemAt(i * 4 + 3);
-            if (pball != pho) // ball can not hit itself
-               DoHitTest(pball, pho, coll);
+            // now there is at least one bbox collision
+            if ((mask2 & 1) != 0)
+            {
+               HitObject * const pho = hitoct->GetItemAt(i * 4);
+               if (pball != pho) // ball can not hit itself
+                  DoHitTest(pball, pho, coll);
+            }
+            // array boundary checks for the rest not necessary as non-valid entries were initialized to keep these maskbits 0
+            if ((mask2 & 2) != 0 /*&& (i*4+1)<hitoct->m_num_items*/)
+            {
+               HitObject * const pho = hitoct->GetItemAt(i * 4 + 1);
+               if (pball != pho) // ball can not hit itself
+                  DoHitTest(pball, pho, coll);
+            }
+            if ((mask2 & 4) != 0 /*&& (i*4+2)<hitoct->m_num_items*/)
+            {
+               HitObject * const pho = hitoct->GetItemAt(i * 4 + 2);
+               if (pball != pho) // ball can not hit itself
+                  DoHitTest(pball, pho, coll);
+            }
+            if ((mask2 & 8) != 0 /*&& (i*4+3)<hitoct->m_num_items*/)
+            {
+               HitObject * const pho = hitoct->GetItemAt(i * 4 + 3);
+               if (pball != pho) // ball can not hit itself
+                  DoHitTest(pball, pho, coll);
+            }
          }
       }
 

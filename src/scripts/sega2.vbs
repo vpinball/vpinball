@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.56
+'Last Updated in VBS v3.62
 
 ' GoldenEye and Apollo13 use different flipper techinques and switch locations than other Sega games.
 

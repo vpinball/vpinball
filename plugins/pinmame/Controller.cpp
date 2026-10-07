@@ -638,8 +638,9 @@ bool Controller::GetSolenoid(int solenoid) const
                def.GetState(def.callContext, &solState);
             }
          });
-   // state is either 0/1 or 0..255
-   return solState > (m_deviceMode == DM_BINARY ? 0 : 127);
+   // state is either 0/1 or 0..255; any level above 0 is on, as in VPinMAME: a coil may report less than half while on
+   // (Capcom's flippers report their strength setting)
+   return solState > 0;
 }
 
 bool Controller::GetLamp(int lamp) const
