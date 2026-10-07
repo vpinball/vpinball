@@ -322,7 +322,7 @@ private:
          else // With thousands comma
             _2x7Num_2x7Num_4x1Num_gen7(m_seg_data);
          break;
-      case Layout_4x7_5x2: _2x7Num_2x7Num_10x1Num(m_seg_data, m_seg_data2); break; // FIXME Medusa: m_seg_data2 is not initialized. Is this really needed ?
+      case Layout_4x7_5x2: _2x7Num_2x7Num_10x1Num(m_seg_data, m_seg_data + 32); break;
       case Layout_2x16: _2x16Alpha(m_seg_data); break;
       case Layout_1x7_2x16: _1x7Num_1x16Alpha_1x16Num(m_seg_data); break;
       case Layout_2x16_1x7: _1x16Alpha_1x16Num_1x7Num(m_seg_data); break;
@@ -542,7 +542,6 @@ private:
    bool m_renderRequested = true;
    
    uint16_t m_seg_data[128] = { };
-   uint16_t m_seg_data2[128] = { };
    float m_groupLum[128 * 16] = { };
    std::vector<unsigned int> m_lastFrameId;
 
