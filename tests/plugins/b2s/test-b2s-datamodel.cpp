@@ -887,3 +887,45 @@ TEST_CASE("B2S animation slowdown setting parsing")
    CHECK(B2SAnimationSlowDown(" flash = 2 ; diver=4 "s, "diver"s) == 4);
    CHECK(B2SAnimationSlowDown("flash=0"s, "flash"s) == 1); // clamped to a positive factor
 }
+
+TEST_CASE("b2s LED segment masks")
+{
+   // Character masks follow the Dream7 DisplayCharacter tables in CTLPI bit order
+
+   // 7 segments: a..g = bits 0..6
+   CHECK(B2SSegmentCharMask('8', 7) == 0x7F);
+   CHECK(B2SSegmentCharMask('0', 7) == 0x3F);
+   CHECK(B2SSegmentCharMask('1', 7) == 0x06);
+   CHECK(B2SSegmentCharMask('E', 7) == 0x79);
+   CHECK(B2SSegmentCharMask(' ', 7) == 0x00);
+
+   // 14 segments: a..f = bits 0..5, g1 = 6, h = 8, i = 9, j = 10, g2 = 11, k = 12, l = 13, m = 14
+   // Dream7 '0' = abcdefjk (slashed zero)
+   CHECK(B2SSegmentCharMask('0', 14) == 0x143F);
+   // Dream7 '8' = abcdefg1g2
+   CHECK(B2SSegmentCharMask('8', 14) == 0x087F);
+   // Dream7 'B' = abcdg2il
+   CHECK(B2SSegmentCharMask('B', 14) == 0x280F);
+   // Dream7 'W' = bcefkm
+   CHECK(B2SSegmentCharMask('W', 14) == 0x5036);
+   // Dream7 'I' = adil
+   CHECK(B2SSegmentCharMask('I', 14) == 0x2209);
+   CHECK(B2SSegmentCharMask('!', 14) == 0x0000);
+
+   // 10 segments: i/l center verticals at bits 8/9 (matching the Gottlieb 9-seg '1' = 0x300)
+   CHECK(B2SSegmentCharMask('1', 10) == 0x0300);
+   CHECK(B2SSegmentCharMask('8', 10) == 0x007F);
+
+   // Bit code translation from the Dream7 segment order to CTLPI bit order
+   // 7 segments: identity on 8 bits
+   CHECK(B2SSegmentTranslateBitCode(0xFF, 7) == 0x00FF);
+   // 10 segments: g2 shares bit 6 with g1, i/l stay at 8/9
+   CHECK(B2SSegmentTranslateBitCode(0x3FF, 10) == 0x037F);
+   // 14 segments Dream7 order a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2
+   // Dream7 bit7 (dot) lands on the dp bit 15, Dream7 bits 12/13/14 (m/l/k) map to 14/13/12,
+   // and no Dream7 bit drives the CTLPI comma (bit 7)
+   CHECK(B2SSegmentTranslateBitCode(0xFFFF, 14) == 0xFF7F);
+   CHECK(B2SSegmentTranslateBitCode(0x0080, 14) == 0x8000);
+   CHECK(B2SSegmentTranslateBitCode(0x1000, 14) == 0x4000);
+   CHECK(B2SSegmentTranslateBitCode(0x4000, 14) == 0x1000);
+}

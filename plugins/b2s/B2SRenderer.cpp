@@ -483,9 +483,11 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
             }
             else
             {
-               // Script driven digit: map value to its standard 7 segment pattern
+               // Script driven digit: an explicit B2SSetLED segment mask takes precedence,
+               // otherwise the value is mapped to its standard 7 segment pattern
+               const int segMask = server->GetScoreDigitSegments(index);
                static constexpr uint16_t digitSegments[10] = { 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F };
-               const uint16_t bits = (digit >= 0 && digit < 10) ? digitSegments[digit] : 0;
+               const uint16_t bits = segMask >= 0 ? static_cast<uint16_t>(segMask) : (digit >= 0 && digit < 10) ? digitSegments[digit] : 0;
                for (int j = 0; j < 16; j++)
                   brightness[j] = ((bits >> j) & 1) ? 1.f : 0.f;
                if (reel.m_scoreType == B2SScoreRenderer::RenderedLED)
