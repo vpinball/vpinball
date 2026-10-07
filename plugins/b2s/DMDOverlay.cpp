@@ -93,6 +93,8 @@ void DMDOverlay::LoadSettings(bool isScoreView)
          m_frame.w = backglassDMDHProp_Val;
       }
    }
+   if (m_enableOverride != -1)
+      m_enable = (m_enableOverride == 0);
 }
 
 void DMDOverlay::UpdateBackgroundImage(VPXTexture backImage)

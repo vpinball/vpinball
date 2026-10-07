@@ -16,11 +16,18 @@ namespace B2S
 
 MSGPI_INT_VAL_SETTING(allAnimationSlowDownProp, "AllAnimationSlowDown", "Global animation slowdown", "Slowdown factor applied to all backglass animations", true, 1, 100, 1);
 MSGPI_STRING_VAL_SETTING(animationSlowDownsProp, "AnimationSlowDowns", "Per-animation slowdowns", "Semicolon separated 'name=factor' animation slowdown overrides", true, "", 1024);
+static const char* usedLEDTypeValues[] = { "Auto", "Rendered", "Dream7" };
+MSGPI_ENUM_VAL_SETTING(usedLEDTypeProp, "UsedLEDType", "Used LED type", "Force the LED display type (Auto = as declared by the .directb2s file)", true, 0, 3, usedLEDTypeValues, 0);
+MSGPI_BOOL_VAL_SETTING(hideB2SDMDProp, "HideB2SDMD", "Hide B2S DMD", "Hide the score view window", true, false);
+MSGPI_BOOL_VAL_SETTING(hideDMDProp, "HideDMD", "Hide DMD", "Hide the DMD overlays", true, false);
 
 void B2SServer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
 {
    msgApi->RegisterSetting(endpointId, &allAnimationSlowDownProp);
    msgApi->RegisterSetting(endpointId, &animationSlowDownsProp);
+   msgApi->RegisterSetting(endpointId, &usedLEDTypeProp);
+   msgApi->RegisterSetting(endpointId, &hideB2SDMDProp);
+   msgApi->RegisterSetting(endpointId, &hideDMDProp);
 }
 
 B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef)
@@ -163,6 +170,12 @@ void B2SServer::SetWorkingDir(const string& workingDir)
 int B2SServer::GetAnimationSlowDown(const string& name) const { return B2SAnimationSlowDown(animationSlowDownsProp_Get(), name); }
 
 int B2SServer::GetAllAnimationSlowDown() const { return allAnimationSlowDownProp_Get(); }
+
+int B2SServer::GetUsedLEDType() const { return usedLEDTypeProp_Get(); }
+
+int B2SServer::GetHideB2SDMD() const { return hideB2SDMDProp_Get(); }
+
+int B2SServer::GetHideDMD() const { return hideDMDProp_Get() ? 1 : -1; }
 
 static std::string CreateGuidString()
 {
