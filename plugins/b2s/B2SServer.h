@@ -152,6 +152,7 @@ public:
 
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetLampState(int b2sId) const;
+   bool GetScriptedLampState(int b2sId, float& state) const; // True when the script wrote this lamp id through B2SSetData
    bool GetBulbState(const B2SBulb& bulb, float& state) const;
    int GetScoreDigit(int digit) const;
    int GetScoreDigitSegments(int digit) const; // Explicit B2SSetLED segment mask, -1 = none
