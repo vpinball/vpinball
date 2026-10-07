@@ -20,6 +20,8 @@ public:
 
    static void RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId);
    void LoadSettings(bool isScoreView);
+   // HideDMD plugin setting override: -1 = no override, 0 = force visible, 1 = force hidden
+   void SetEnableOverride(int enableOverride) { m_enableOverride = enableOverride; }
 
    void UpdateBackgroundImage(VPXTexture backImage);
 
@@ -47,6 +49,7 @@ private:
 
    vec4<int> m_frame;
    bool m_enable = false;
+   int m_enableOverride = -1;
 
    bool m_detectDmdFrame = false;
    VPXTexture m_backImage = nullptr;

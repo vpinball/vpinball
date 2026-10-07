@@ -493,6 +493,12 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
                if (reel.m_scoreType == B2SScoreRenderer::RenderedLED)
                   style = VPXSegDisplayRenderStyle::VPXSegStyle_GenLED;
             }
+            // UsedLEDType plugin setting forces Dream7 (2) or rendered LEDs (1) whatever the table declares
+            const int usedLEDType = server->GetUsedLEDType();
+            if (usedLEDType == 1)
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_GenLED;
+            else if (usedLEDType == 2)
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
             ctx->DrawSegDisplay(ctx, style, hint,
                // First layer: glass tinted with the unlit segment color
                nullptr, reel.m_reelDarkColor.x, reel.m_reelDarkColor.y, reel.m_reelDarkColor.z, 0.15f, // Glass texture, tint and roughness
@@ -525,6 +531,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    m_b2sWidth = bgTexInfo ? static_cast<float>(bgTexInfo->width) : 1024.f;
    m_b2sHeight = (bgTexInfo ? static_cast<float>(bgTexInfo->height) : 768.f) - m_grillCut;
 
+   m_backglassDmdOverlay.SetEnableOverride(server->GetHideDMD());
    m_backglassDmdOverlay.LoadSettings(false);
 
    ctx->srcWidth = m_b2sWidth;
@@ -579,8 +586,11 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 {
    if (m_b2s->m_dmdImage.m_image == nullptr && m_b2s->m_dmdIlluminations.empty())
       return false;
+   if (server->GetHideB2SDMD() == 1) // HideB2SDMD plugin setting
+      return false;
 
    // Update to latest settings state
+   m_scoreViewDmdOverlay.SetEnableOverride(server->GetHideDMD());
    m_scoreViewDmdOverlay.LoadSettings(true);
 
    ctx->srcWidth = m_dmdWidth;

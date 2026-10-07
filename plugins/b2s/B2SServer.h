@@ -168,6 +168,9 @@ public:
    static void RegisterSettings(const MsgPluginAPI* msgApi, unsigned int endpointId);
    int GetAnimationSlowDown(const string& name) const;
    int GetAllAnimationSlowDown() const;
+   int GetUsedLEDType() const;
+   int GetHideB2SDMD() const;
+   int GetHideDMD() const; // -1 = no override, 1 = force hidden
 
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override;
 
