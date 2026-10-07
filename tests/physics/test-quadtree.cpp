@@ -7,6 +7,11 @@
 #include "physics/quadtree.h"
 #include "physics/kdtree.h"
 #include "parts/ball.h"
+#include "physics/hitball.h"
+#include "physics-harness.h"
+
+#include <chrono>
+#include <random>
 
 #include "doctest.h"
 
@@ -163,4 +168,86 @@ TEST_CASE("Hit KD tree")
       tree.Update();
       tree.Finalize();
    }
+}
+
+// ---------------------------------------------------------------------------
+// Benchmark of the quadtree ball query, skipped by default. Run it with:
+//   vpx-test --test-case="Benchmark: quadtree HitTestBall" --no-skip
+// Table-like hit objects (circles and wall segments of varying sizes, owned by
+// several parts so that nodes do not early out on a single unique part) queried
+// by moving balls at random positions. Reports the best timing and a checksum
+// of the results, which an optimization of the query must not change.
+// ---------------------------------------------------------------------------
+
+TEST_CASE("Benchmark: quadtree HitTestBall" * doctest::skip())
+{
+   PhysicsTestHarness harness;
+   harness.Start();
+
+   constexpr int nObjects = 3000, nBalls = 2000, nRounds = 200, nReps = 5;
+
+   std::mt19937 rng(1234);
+   auto uniform = [&rng](float lo, float hi) { return std::uniform_real_distribution<float>(lo, hi)(rng); };
+
+   constexpr int nParts = 8;
+   Ball *parts[nParts];
+   for (Ball *&part : parts)
+      part = Ball::COMCreate();
+
+   vector<std::unique_ptr<HitObject>> objects;
+   for (int i = 0; i < nObjects; ++i)
+   {
+      IEditable *const editable = parts[i % nParts];
+      const Vertex2D p(uniform(0.f, 1000.f), uniform(0.f, 2000.f));
+      if (i % 10 < 7)
+         objects.push_back(std::make_unique<HitCircle>(editable, p, uniform(2.f, 25.f), 0.f, 50.f));
+      else
+      {
+         const float angle = uniform(0.f, (float)(2.0 * M_PI)), length = uniform(20.f, 150.f);
+         objects.push_back(std::make_unique<LineSeg>(editable, p, Vertex2D(p.x + length * cosf(angle), p.y + length * sinf(angle)), 0.f, 50.f));
+      }
+      objects.back()->m_physics = harness.GetEngine();
+      objects.back()->CalcHitBBox();
+   }
+
+   HitQuadtree tree(harness.GetEngine());
+   tree.SetBounds(FRect(0.f, 1000.f, 0.f, 2000.f));
+   tree.Reset(ToPtrVector(objects));
+
+   vector<HitBall> balls(nBalls);
+   for (HitBall &ball : balls)
+   {
+      ball.m_d.m_pos = Vertex3Ds(uniform(0.f, 1000.f), uniform(0.f, 2000.f), 25.f);
+      ball.m_d.m_vel = Vertex3Ds(uniform(-20.f, 20.f), uniform(-20.f, 20.f), 0.f);
+      ball.CalcHitBBox();
+   }
+
+   double best = 1e30, checksum = 0.;
+   int hits = 0;
+   for (int rep = 0; rep < nReps; ++rep)
+   {
+      checksum = 0.;
+      hits = 0;
+      const auto t0 = std::chrono::steady_clock::now();
+      for (int round = 0; round < nRounds; ++round)
+         for (const HitBall &ball : balls)
+         {
+            CollisionEvent coll;
+            coll.m_hittime = 1.f;
+            coll.m_obj = nullptr;
+            tree.HitTestBall(&ball, coll);
+            if (coll.m_obj)
+            {
+               ++hits;
+               checksum += coll.m_hittime;
+            }
+         }
+      best = std::min(best, std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count());
+   }
+   MESSAGE("quadtree HitTestBall: ", nBalls * nRounds, " queries, best of ", nReps, ": ", best, " ms, hits ", hits, ", checksum ", checksum);
+   CHECK(hits > 0);
+
+   tree.Finalize();
+   for (Ball *part : parts)
+      part->Release();
 }

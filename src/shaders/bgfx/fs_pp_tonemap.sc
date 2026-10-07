@@ -32,6 +32,9 @@ uniform vec4 exposure_wcg;
 #define isHDR2020                   (exposure_wcg.w == 1.)
 #define isLinearFrameBuffer         (exposure_wcg.w == 2.)
 
+// allenwp AgX tonemapping curve parameters, computed on the CPU: x = contrast, y = toe_a, z = slope, w = w
+uniform vec4 agx_params;
+
 // HDR->HDR spline based remapping
 uniform vec4 spline1;
 uniform vec2 spline2;
@@ -43,7 +46,7 @@ uniform vec2 spline2;
 #define spline_qb                   (spline2.y)
 
 // Define which tonemapper outputs are in linear sRGB and which are in gamma compressed sRGB
-#if defined(FILMIC) || defined(AGX) || defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
+#if defined(FILMIC) || defined(AGX)
 #define TM_OUT_GAMMA
 #else
 #define TM_OUT_LINEAR
@@ -191,167 +194,80 @@ float PBRNeutralToneMapping(float color) { return color; } // Unimplemented
 #endif
 
 
-#if defined(AGX) || defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
-// AgX derived from the following references:
-// - Blog post: https://iolite-engine.com/blog_posts/minimal_agx_implementation
-// - Godot: https://github.com/godotengine/godot/pull/87260
-// - ThreeJS: https://github.com/mrdoob/three.js/blob/master/src/renderers/shaders/ShaderChunk/tonemapping_pars_fragment.glsl.js
-// - Filament: https://github.com/google/filament/blob/main/filament/src/ToneMapper.cpp
-// All of these trying to match Blender's implementation and reference OCIO profile.
-// TODO Add black/white point definition support when adding HDR output support
+#ifdef AGX
+// AgX Tone Mapping implementation, derived from Godot's implementation
+// (see https://github.com/godotengine/godot/pull/106940), itself an approximation
+// and simplification of EaryChow's AgX implementation used by Blender.
+// It uses the allenwp tonemapping curve instead of Blender's log2 encoded sigmoid,
+// closely matching it for dark-to-mid values while being cheaper, stable across
+// variable dynamic range (SDR, HDR, EDR) and supporting adjustable white point and
+// contrast, computed on the CPU and passed through the agx_params uniform.
+// allenwp curve: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
+// Colorspace transformations: https://www.colour-science.org:8010/apps/rgb_colourspace_transformation_matrix
+// Inputs are linear sRGB (Rec. 709), output is sRGB encoded.
+// TODO Add output_max_value support when adding HDR output support
 
-// https://iolite-engine.com/blog_posts/minimal_agx_implementation
-vec3 agxDefaultContrastApprox(vec3 x)
+// allenwp tonemapping curve; input must be a non-negative linear scene value.
+vec3 allenwpCurve(vec3 x)
 {
-    #if 1
-    // 6th order polynomial approximation (used in three.js and Godot)
-    // Mean error^2: 3.6705141e-06
-    vec3 x2 = x * x;
-    vec3 x4 = x2 * x2;
-    return + 15.5 * x4 * x2
-           - 40.14 * x4 * x
-           + 31.96 * x4
-           - 6.868 * x2 * x
-           + 0.4298 * x2
-           + 0.1191 * x
-           - 0.00232;
-    #else
-    // 7th order polynomial approximation (used in Filament)
-    vec3 x2 = x * x;
-    vec3 x4 = x2 * x2;
-    vec3 x6 = x4 * x2;
-    return - 17.86 * x6 * x
-           + 78.01 * x6
-           - 126.7 * x4 * x
-           + 92.06 * x4
-           - 28.72 * x2 * x
-           + 4.361 * x2
-           - 0.1718 * x
-           + 0.002857;
-    #endif
-}
+    const float output_max_value = 1.0; // SDR always has an output_max_value of 1.0
 
-// AgX Tone Mapping implementation taken from three.js, based on Filament, 
-// which in turn is based on Blender's implementation using rec 2020 primaries
-// https://github.com/google/filament/pull/7236
-// Inputs and outputs are encoded as Linear-sRGB.
+    // These constants must match the ones in the C++ code that calculates the parameters.
+    // 18% "middle gray" is perceptually 50% of the brightness of reference white.
+    const float awp_crossover_point = 0.18;
+    // If output_max_value and/or awp_crossover_point are no longer constant,
+    // awp_shoulder_max can be calculated on the CPU and passed in agx_params.
+    const float awp_shoulder_max = output_max_value - awp_crossover_point;
 
-vec3 agxLook(vec3 val) {
-  #if defined(AGX_GOLDEN)
-    // Golden
-    vec3 slope = vec3(1.0, 0.9, 0.5);
-    vec3 power = vec3_splat(0.8);
-    float sat = 0.8;
-  
-    const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
-    float luma = dot(val, lw);
-    val = pow(val * slope, power);
-    return luma + sat * (val - luma);
-    
-  #elif defined(AGX_PUNCHY)
-    // Punchy
-    vec3 power = vec3(1.35, 1.35, 1.35);
-    float sat = 1.4;
-  
-    const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
-    float luma = dot(val, lw);
-    val = pow(val, power);
-    return luma + sat * (val - luma);
-    
-  #else
-    // Default
-    return val;
-    
-  #endif
+    // Reinhard-like shoulder:
+    vec3 s = x - vec3_splat(awp_crossover_point);
+    const vec3 slope_s = agx_params.z * s;
+    s = slope_s * (vec3_splat(1.0) + s / vec3_splat(agx_params.w)) / (vec3_splat(1.0) + slope_s / vec3_splat(awp_shoulder_max));
+    s += vec3_splat(awp_crossover_point);
+
+    // Sigmoid power function toe:
+    vec3 t = pow(x, vec3_splat(agx_params.x));
+    t = t / (t + vec3_splat(agx_params.y));
+
+    return mix(t, s, step(vec3_splat(awp_crossover_point), x));
 }
 
 vec3 AgXToneMapping(vec3 color)
 {
-    #ifdef AGX_BLENDER
-    // AgX transform constants taken from Blender https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
-    // These operates on rec2020 value, therefore they require additional colorspace conversions
-    // (for AgXOutsetMatrix, the inverse is precomputed. Note that input and output matrices are not mutual inverses)
+    // Combined Rec. 709 to Rec. 2020 conversion and Blender AgX inset matrix:
     const mat3 AgXInsetMatrix = mtxFromRows3
     (
-        vec3( 0.8566271533159830, 0.137318972929847, 0.1118982129999500),
-        vec3( 0.0951212405381588, 0.761241990602591, 0.0767994186031903),
-        vec3( 0.0482516061458583, 0.101439036467562, 0.8113023683968590)
+        vec3(0.544814746488245, 0.140416948464053, 0.0888104196149096),
+        vec3(0.373787398372697, 0.754137554567394, 0.178871756420858),
+        vec3(0.0813978551390581, 0.105445496968552, 0.732317823964232)
     );
+    // Combined inverse AgX outset matrix and Rec. 2020 to Rec. 709 conversion:
     const mat3 AgXOutsetMatrix = mtxFromRows3
     (
-        vec3( 1.127100581814436800, -0.141329763498438300, -0.14132976349843826),
-        vec3(-0.110606643096603230,  1.157823702216272000, -0.11060664309660294),
-        vec3(-0.016493938717834573, -0.016493938717834257,  1.25193640659504050)
-    );
-    // Matrices for rec 2020 <> rec 709 color space conversion
-    // matrix provided in row-major order so it has been transposed
-    // https://www.itu.int/pub/R-REP-BT.2407-2017
-    const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mtxFromRows3
-    (
-        vec3(1.6605, -0.1246, -0.0182),
-        vec3(-0.5876, 1.1329, -0.1006),
-        vec3(-0.0728, -0.0083, 1.1187)
-    );
-    const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
-    (
-        vec3(0.6274, 0.0691, 0.0164),
-        vec3(0.3293, 0.9195, 0.0880),
-        vec3(0.0433, 0.0113, 0.8956)
+        vec3(1.96488741169489, -0.299313364904742, -0.164352742528393),
+        vec3(-0.855988495690215, 1.32639796461980, -0.238183969428088),
+        vec3(-0.108898916004672, -0.0270845997150571, 1.40253671195648)
     );
 
-    #else
+    // Clamping to non-negative values is required as negative values would result in
+    // darker and more saturated colors after applying the inset matrix, and the
+    // curve's pow would not evaluate correctly on them.
+    color = max(color, vec3_splat(0.0));
 
-    // AgX transformation constants taken from https://iolite-engine.com/blog_posts/minimal_agx_implementation (also used in Godot)
-    // It is assumed that they are ok for rec709 input values.
-    // (note that out transform is the inverse of in transform)
-    const mat3 AgXInsetMatrix = mtxFromRows3
-    (
-        vec3( 0.8424790622530940,  0.0423282422610123, 0.0423756549057051),
-        vec3( 0.0784335999999992,  0.8784686364697720, 0.0784336000000000),
-        vec3( 0.0792237451477643,  0.0791661274605434, 0.8791429737931040)
-    );
-    const mat3 AgXOutsetMatrix = mtxFromRows3
-    (
-        vec3( 1.1968790051201700, -0.0528968517574562, -0.0529716355144438),
-        vec3(-0.0980208811401368,  1.1519031299041700, -0.0980434501171241),
-        vec3(-0.0990297440797205, -0.0989611768448433,  1.1510736726411600)
-    );
-    #endif
-
-    // LOG2_MIN      = -10.0
-    // LOG2_MAX      =  +6.5
-    // MIDDLE_GRAY   =  0.18
-    const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
-    const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
-
-    #ifdef AGX_BLENDER
-    color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
-    #endif
-
+    // Apply inset matrix.
     color = mul(color, AgXInsetMatrix);
 
-    // Log2 encoding
-    color = max(color, FLT_MIN_VALUE); // avoid 0 or negative numbers for log2
-    color = log2(color);
-    color = (color - AgxMinEv) / (AgxMaxEv - AgxMinEv);
+    // Apply the allenwp tonemapping curve.
+    color = allenwpCurve(color);
 
-    color = clamp(color, 0.0, 1.0);
+    // Clipping to output_max_value is required to address a cyan color shift that occurs with very bright inputs.
+    color = min(color, vec3_splat(1.0));
 
-    // Apply sigmoid
-    color = agxDefaultContrastApprox(color);
-
-    // Apply AgX look
-    #if defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
-    color = agxLook(color);
-    #endif
-
+    // Apply outset matrix (makes the result more chroma laden and goes back to Rec. 709).
     color = mul(color, AgXOutsetMatrix);
 
-    #ifdef AGX_BLENDER
-    color = pow(max(vec3(0.0, 0.0, 0.0), color), vec3(2.2, 2.2, 2.2)); // rec2020 to linear rec2020
-    color = mul(color, LINEAR_REC2020_TO_LINEAR_SRGB);                 // linear rec2020 to linear rec709 (sRGB)
-    color = FBGamma(color);                                            // linear sRGB to sRGB
-    #endif
+    // Convert to sRGB encoded output.
+    color = FBGamma(color);
 
     return color;
 }
@@ -548,10 +464,6 @@ void main()
       #elif defined(NEUTRAL)
          result = PBRNeutralToneMapping(result); // linear sRGB -> linear sRGB
       #elif defined(AGX)
-         result = AgXToneMapping(result);        // linear sRGB -> sRGB
-      #elif defined(AGX_PUNCHY)
-         result = AgXToneMapping(result);        // linear sRGB -> sRGB
-      #elif defined(AGX_GOLDEN)
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
       /*#elif defined(BT2446)                    // linear sRGB -> linear sRGB
          // NOTE: the following BT2446 conversion (see method A in the spec) was not designed for target displays exceeding ~1000 nits (actually it defines source HDR at 1000 nits -> and the target at only 100 nits (=SDR)).

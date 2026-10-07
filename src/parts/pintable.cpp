@@ -1079,16 +1079,6 @@ void PinTable::LoadInfo(POLE::Storage& storage, TableHash *const hash, int versi
    if (!numTimesSaved.empty())
       std::from_chars(numTimesSaved.c_str(), numTimesSaved.c_str() + numTimesSaved.length(), m_numTimesSaved);
 
-   // Write the version to the registry.  This will be read later by the front end.
-   // FIXME This is deprecated and we should update the info file along the table instead (frontend are not supposed to read internal settings file, table informations should be stored in a distributed db along table)
-   if (string optId = trim_string(m_tableName); !optId.empty() && !m_version.empty())
-   {
-      std::replace_if(optId.begin(), optId.end(), [](char c) { return !IsASCIIAlnum(c); }, '_');
-      const auto propId
-         = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, true, m_version));
-      g_settingsService.GetAppSettings().Set(propId, m_version, false);
-   }
-
    if (storage.exists("TableInfo/Screenshot"))
    {
       POLE::Stream screenshotStream(&storage, "TableInfo/Screenshot");
@@ -1097,6 +1087,101 @@ void PinTable::LoadInfo(POLE::Storage& storage, TableHash *const hash, int versi
       BiffReader br(&screenshotStream, 0, hash, 0);
       br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<uint32_t>(m_pbTempScreenshot->m_buffer.size()));
    }
+}
+
+std::filesystem::path PinTable::GetCompanionFileName(const string &extension) const
+{
+   // File not yet saved => No companion file available
+   if (!FileExists(m_filename))
+      return std::filesystem::path();
+
+   // File alongside table file, name matching table filename
+   std::filesystem::path tableFile = m_filename;
+   tableFile.replace_extension(extension);
+   if (FileExists(tableFile))
+      return tableFile;
+
+   // File alongside table file, name matching folder name
+   const auto folder = m_filename.parent_path();
+   auto fn = folder.filename();
+   fn += extension;
+   std::filesystem::path folderFile = folder / fn;
+   folderFile = find_case_insensitive_file_path(folderFile);
+   if (!folderFile.empty())
+      return folderFile;
+
+   // No existing file: defaults to file alongside table file, name matching table filename
+   return tableFile;
+}
+
+// Reads, updates then writes back the '.info' companion file of the given table (see docs/FileLayout.md
+// for its file layout). Only the 'VPX' section is modified, all the other fields belong to frontends
+static void UpdateTableInfoFile(const PinTable *const table, const std::function<void(nlohmann::ordered_json &)> &update)
+{
+   const std::filesystem::path infoPath = table->GetInfoFileName();
+   if (infoPath.empty())
+      return;
+
+   nlohmann::ordered_json doc = nlohmann::ordered_json::object();
+   try
+   {
+      std::stringstream buffer;
+      std::ifstream file(infoPath);
+      buffer << file.rdbuf();
+      file.close();
+      const string content = buffer.str();
+      if (!content.empty())
+         doc = nlohmann::ordered_json::parse(content, nullptr, false);
+   }
+   catch (...)
+   {
+      PLOGE << "Failed to read table info file " << infoPath;
+   }
+   if (!doc.is_object())
+      doc = nlohmann::ordered_json::object();
+
+   nlohmann::ordered_json &vpx = doc["VPX"];
+   if (!vpx.is_object())
+      vpx = nlohmann::ordered_json::object();
+
+   try
+   {
+      update(vpx);
+      std::ofstream file(infoPath);
+      file << doc.dump(1, '\t');
+   }
+   catch (...)
+   {
+      PLOGE << "Failed to write table info file " << infoPath;
+   }
+}
+
+void PinTable::UpdateInfoFileOnGameStart()
+{
+   UpdateTableInfoFile(this,
+      [this](nlohmann::ordered_json &vpx)
+      {
+         if (!m_version.empty())
+            vpx["Version"] = m_version;
+         vpx["RunCount"] = (vpx["RunCount"].is_number() ? vpx["RunCount"].get<int64_t>() : 0) + 1;
+         std::tm tm;
+         const std::time_t now = std::time(nullptr);
+         gmtime_s(&tm, &now);
+         char lastRun[32];
+         std::strftime(lastRun, sizeof(lastRun), "%Y-%m-%dT%H:%M:%SZ", &tm);
+         vpx["LastRun"] = lastRun;
+      });
+}
+
+void PinTable::UpdateInfoFileOnGameEnd(const uint32_t playTimeSec)
+{
+   if (playTimeSec == 0)
+      return;
+   UpdateTableInfoFile(this,
+      [playTimeSec](nlohmann::ordered_json &vpx)
+      {
+         vpx["RunTime"] = (vpx["RunTime"].is_number() ? vpx["RunTime"].get<int64_t>() : 0) + playTimeSec;
+      });
 }
 
 void PinTable::LoadCustomInfo(POLE::Storage &storage, TableHash *const hash, int version)
@@ -3701,7 +3786,7 @@ void PinTable::Load(IObjectReader& reader)
          case FID(USSR): m_enableSSR = reader.AsInt() != 0; break; // Before 10.8, 1 would force SSR
          case FID(BPRS): m_ballPlayfieldReflectionStrength = reader.AsFloat(); break;
          case FID(DBIS): m_defaultBulbIntensityScaleOnBall = reader.AsFloat(); break;
-         case FID(TMAP): m_toneMapper = static_cast<ToneMapper>(reader.AsInt()); break;
+         case FID(TMAP): m_toneMapper = GetValidToneMapper(reader.AsInt()); break;
          case FID(EXPO): m_exposure = reader.AsFloat(); break;
          case FID(BLST): m_bloom_strength = reader.AsFloat(); break;
          case FID(BCLR): m_colorbackdrop = reader.AsInt(); break;
@@ -4702,6 +4787,26 @@ STDMETHODIMP PinTable::PlaySound(BSTR soundName, int loopcount, float volume, fl
    return S_OK;
 }
 
+STDMETHODIMP PinTable::PlaySoundAt(BSTR soundName, float x, float y, float z, int loopcount, float volume, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
+{
+   if (g_pplayer == nullptr)
+      return S_OK;
+   const string name = MakeString(soundName);
+   if (StrCompareNoCase("knock"s, name) || StrCompareNoCase("knocker"s, name)) // FIXME remove or port to plugin
+      ushock_output_knock();
+   VPX::Sound *const sound = GetSound(name);
+   if (sound)
+   {
+      g_pplayer->m_audioPlayer->PlaySoundAt(sound, x, y, z, volume, randompitch, pitch, loopcount, VBTOb(usesame), VBTOb(restart));
+   }
+   else if (!name.empty() && !m_loggedSoundErrors.contains(name))
+   {
+      m_loggedSoundErrors.insert(name);
+      PLOGW << "Request to play \"" << name << "\", but sound was not found.";
+   }
+   return S_OK;
+}
+
 STDMETHODIMP PinTable::StopSound(BSTR soundName)
 {
    if (g_pplayer == nullptr)
@@ -5141,7 +5246,8 @@ string PinTable::AuditTable(bool log) const
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
-   auto audioPlayer = std::make_unique<VPX::AudioPlayer>(m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()));
+   auto audioPlayer
+      = std::make_unique<VPX::AudioPlayer>(m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()));
    for (const auto sound : m_vsound)
    {
       auto specs = audioPlayer->GetSoundInformations(sound);

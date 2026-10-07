@@ -35,6 +35,11 @@
     <IntDir>$(SolutionDir)..\obj\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>spatialaudio.lib;mysofa.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
     <ClCompile>
       <!-- Log messages are UTF-8 like all narrow strings, must be the same for all sources using plog -->
       <PreprocessorDefinitions>PLOG_CHAR_IS_UTF8=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -792,6 +797,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/audio/AudioPlayer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/audio/SoundPlayer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/audio/SpatialAudio.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -1669,6 +1675,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/audio/SpatialAudio.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPApp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/AppCommands.h" />

@@ -164,6 +164,9 @@ public:
 private:
    bool m_wantsToPlay = true; // If we want the player to play beside the player focus state
    bool m_playing = true; // If the player is actually playing or not
+   bool m_trackTableSessionStats = false; // If the play statistics of the current table session are collected (see docs/FileLayout.md)
+   uint64_t m_tableSessionStartTime = 0; // Start time of the current uninterrupted play run in us, or 0 while the game is paused or stats are not tracked
+   uint64_t m_tableSessionPlayTime = 0; // Accumulated play time of the current table session in us, excluding paused time
 
    LoadProgress &m_loadProgress; // Load progress reporter provided by the caller (a dialog for the Win32 editor, logging elsewhere)
 

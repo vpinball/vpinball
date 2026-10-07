@@ -16,6 +16,7 @@
 #include "parts/flasher.h"
 #include "parts/light.h"
 #include "parts/primitive.h"
+#include "physics/cabinet/NudgeHandler.h"
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
@@ -230,6 +231,12 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    #else
    const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->GetSettings().GetPlayer_Stereo3D();
    #endif
+
+   // Setup the audio listener: fixed pose in front of the table for desktop/cabinet play,
+   // head tracked pose with per-output spatial/binaural rendering for VR play
+   m_audioPlayer->SetTableDimensions(m_ptable->m_right - m_ptable->m_left, m_ptable->m_bottom - m_ptable->m_top);
+   if (stereo3D == STEREO_VR)
+      m_audioPlayer->SetSpatialMode(m_ptable->GetSettings().GetPlayerVR_SpatialAudioBackglass(), m_ptable->GetSettings().GetPlayerVR_SpatialAudioPlayfield());
 
    m_detectScriptHang = m_ptable->GetSettings().GetPlayer_DetectHang();
 
@@ -490,6 +497,10 @@ void Player::InitTableSession(const bool isInitial)
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
+   // Apply the (eventually per table overridden) keyboard nudge settings to the input live state
+   m_pininput.m_nudgeHandler->SetKeyboardNudgeMode(static_cast<VPX::Physics::NudgeHandler::KeyboardNudgeMode>(m_ptable->GetSettings().GetPlayer_KeyboardNudgeMode()));
+   m_pininput.m_nudgeHandler->SetKeyboardNudgeStrength(m_ptable->GetSettings().GetPlayer_KeyboardNudgeStrength());
+
    Ball::ResetBallIDCounter();
 
    // Add a playfield primitive if it is missing
@@ -684,10 +695,22 @@ void Player::InitTableSession(const bool isInitial)
       std::unique_ptr<TextureCompressor> texCompressor;
       if (m_renderer->m_renderDevice->m_compressTextures && FileExists(m_ptable->m_filename))
       {
-         std::filesystem::path texCacheFolder = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true) / "textures"sv;
-         std::error_code ec;
-         std::filesystem::create_directories(texCacheFolder, ec);
-         texCompressor = std::make_unique<TextureCompressor>(std::move(texCacheFolder), maxTexDim);
+         // Texture compression relies on its disk cache, so it is disabled entirely when the cache folder is not writable
+         const std::filesystem::path texCacheDir = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true);
+         if (texCacheDir.empty())
+         {
+            PLOGW << "Texture compression is disabled as the table cache folder is not writable";
+         }
+         else
+         {
+            std::filesystem::path texCacheFolder = texCacheDir / "textures"sv;
+            std::error_code ec;
+            std::filesystem::create_directories(texCacheFolder, ec);
+            if (ec)
+               PLOGE << "Failed to create texture cache folder " << texCacheFolder << " (" << ec.message() << "), texture compression is disabled";
+            else
+               texCompressor = std::make_unique<TextureCompressor>(std::move(texCacheFolder), maxTexDim);
+         }
       }
 #endif
 
@@ -967,10 +990,30 @@ void Player::InitTableSession(const bool isInitial)
 
    // Signal plugins that a game session is starting (the only thing not fully initialized is the physics)
    m_pluginAPI.OnGameStart();
+
+   // Update the play statistics of the frontend info file along the table (see docs/FileLayout.md)
+   m_trackTableSessionStats = !IsEditorMode() && (m_playMode != PlayMode::CaptureAttract);
+   m_tableSessionPlayTime = 0;
+   m_tableSessionStartTime = (m_trackTableSessionStats && m_playing) ? usec() : 0;
+   if (m_trackTableSessionStats)
+      m_ptable->UpdateInfoFileOnGameStart();
 }
 
 void Player::ShutdownTableSession()
 {
+   // Update the play statistics of the frontend info file along the table (see docs/FileLayout.md)
+   if (m_trackTableSessionStats)
+   {
+      if (m_tableSessionStartTime != 0)
+      {
+         m_tableSessionPlayTime += usec() - m_tableSessionStartTime;
+         m_tableSessionStartTime = 0;
+      }
+      m_trackTableSessionStats = false;
+      m_ptable->UpdateInfoFileOnGameEnd(static_cast<uint32_t>(m_tableSessionPlayTime / 1000000ull));
+      m_tableSessionPlayTime = 0;
+   }
+
    // Signal plugins that the game session is ended
    m_pluginAPI.OnGameEnd();
 
@@ -1004,7 +1047,7 @@ void Player::ShutdownTableSession()
          tinyxml2::XMLDocument xmlDoc;
          tinyxml2::XMLElement *root;
          ankerl::unordered_dense::map<string, tinyxml2::XMLElement *> textureAge;
-         const std::filesystem::path path = dir / "used_textures.xml"sv;
+         const std::filesystem::path path = dir.empty() ? dir : dir / "used_textures.xml"sv;
          if (FileExists(path))
          {
             std::ifstream myFile(path);
@@ -1083,11 +1126,14 @@ void Player::ShutdownTableSession()
             }
          }
 
-         std::ofstream myfile(path);
-         tinyxml2::XMLPrinter prn;
-         xmlDoc.Print(&prn);
-         myfile << prn.CStr();
-         myfile.close();
+         if (!path.empty())
+         {
+            std::ofstream myfile(path);
+            tinyxml2::XMLPrinter prn;
+            xmlDoc.Print(&prn);
+            myfile << prn.CStr();
+            myfile.close();
+         }
       }
       catch (...)
       {
@@ -1544,6 +1590,8 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
 
       if (m_playing)
       {
+         if (m_trackTableSessionStats)
+            m_tableSessionStartTime = usec();
          m_lastKnownGoodCounter++; // Reset hang script detection
          m_noTimeCorrect = true; // Disable physics engine time correction on next physic update
          UnpauseMusic();
@@ -1553,6 +1601,11 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
       }
       else
       {
+         if (m_tableSessionStartTime != 0)
+         {
+            m_tableSessionPlayTime += usec() - m_tableSessionStartTime;
+            m_tableSessionStartTime = 0;
+         }
          PauseMusic();
          PLOGI << "Pausing Game";
          if (!IsEditorMode())

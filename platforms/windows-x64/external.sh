@@ -26,6 +26,9 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  LIBMYSOFA_SHA: ${LIBMYSOFA_SHA}"
+echo "  LIBSPATIALAUDIO_SHA: ${LIBSPATIALAUDIO_SHA}"
+echo "  ZLIB_SHA: ${ZLIB_SHA}"
 echo ""
 
 mkdir -p "external/windows-x64/${BUILD_TYPE}"
@@ -385,6 +388,113 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
+# build zlib
+#
+
+ZLIB_EXPECTED_SHA="${ZLIB_SHA}_001"
+ZLIB_FOUND_SHA="$([ -f zlib/cache.txt ] && cat zlib/cache.txt || echo "")"
+
+if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
+   echo "Building zlib. Expected: ${ZLIB_EXPECTED_SHA}, Found: ${ZLIB_FOUND_SHA}"
+
+   rm -rf zlib
+   mkdir zlib
+   cd zlib
+
+   curl -sL https://github.com/madler/zlib/archive/${ZLIB_SHA}.tar.gz -o zlib-${ZLIB_SHA}.tar.gz
+   tar xzf zlib-${ZLIB_SHA}.tar.gz
+   mv zlib-${ZLIB_SHA} zlib
+   cd zlib
+   sed -i.bak '/set(CMAKE_DEBUG_POSTFIX "d")/d' CMakeLists.txt
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DZLIB_BUILD_EXAMPLES=OFF \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cp build/zconf.h .
+   cd ..
+
+   echo "$ZLIB_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libmysofa
+#
+
+LIBMYSOFA_EXPECTED_SHA="${LIBMYSOFA_SHA}-${ZLIB_SHA}_001"
+LIBMYSOFA_FOUND_SHA="$([ -f libmysofa/cache.txt ] && cat libmysofa/cache.txt || echo "")"
+
+if [ "${LIBMYSOFA_EXPECTED_SHA}" != "${LIBMYSOFA_FOUND_SHA}" ]; then
+   echo "Building libmysofa. Expected: ${LIBMYSOFA_EXPECTED_SHA}, Found: ${LIBMYSOFA_FOUND_SHA}"
+
+   rm -rf libmysofa
+   mkdir libmysofa
+   cd libmysofa
+
+   curl -sL https://github.com/hoene/libmysofa/archive/${LIBMYSOFA_SHA}.tar.gz -o libmysofa-${LIBMYSOFA_SHA}.tar.gz
+   tar xzf libmysofa-${LIBMYSOFA_SHA}.tar.gz
+   mv libmysofa-${LIBMYSOFA_SHA} libmysofa
+   cd libmysofa
+   sed -i.bak '/find_program(NUGET nuget)/,/zlib-1.3.1\/include\/)/c\  include(FindZLIB)\n  include_directories(${ZLIB_INCLUDE_DIRS})' src/CMakeLists.txt
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_STATIC_LIBS=ON \
+      -DBUILD_TESTS=OFF \
+      -DC_HAS_WALL=OFF \
+      -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DZLIB_INCLUDE_DIR="$PWD/../../zlib/zlib" \
+      -DZLIB_LIBRARY="$PWD/../../zlib/zlib/build/${BUILD_TYPE}/zlibstatic.lib" \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cp build/src/mysofa_export.h src/hrtf
+   cd ..
+
+   echo "$LIBMYSOFA_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libspatialaudio
+#
+
+LIBSPATIALAUDIO_EXPECTED_SHA="${LIBSPATIALAUDIO_SHA}-${LIBMYSOFA_SHA}_001"
+LIBSPATIALAUDIO_FOUND_SHA="$([ -f libspatialaudio/cache.txt ] && cat libspatialaudio/cache.txt || echo "")"
+
+if [ "${LIBSPATIALAUDIO_EXPECTED_SHA}" != "${LIBSPATIALAUDIO_FOUND_SHA}" ]; then
+   echo "Building libspatialaudio. Expected: ${LIBSPATIALAUDIO_EXPECTED_SHA}, Found: ${LIBSPATIALAUDIO_FOUND_SHA}"
+
+   rm -rf libspatialaudio
+   mkdir libspatialaudio
+   cd libspatialaudio
+
+   curl -sL https://github.com/videolan/libspatialaudio/archive/${LIBSPATIALAUDIO_SHA}.tar.gz -o libspatialaudio-${LIBSPATIALAUDIO_SHA}.tar.gz
+   tar xzf libspatialaudio-${LIBSPATIALAUDIO_SHA}.tar.gz
+   mv libspatialaudio-${LIBSPATIALAUDIO_SHA} libspatialaudio
+   cd libspatialaudio
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DMYSOFA_INCLUDE_DIRS="$PWD/../../libmysofa/libmysofa/src/hrtf" \
+      -DMYSOFA_LIBRARIES="$PWD/../../libmysofa/libmysofa/build/src/${BUILD_TYPE}/mysofa.lib" \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBSPATIALAUDIO_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # copy libraries
 #
 
@@ -467,6 +577,17 @@ for LIB in avcodec avformat avutil swresample swscale; do
    mkdir -p ../../../third-party/include/${DIR}
    cp ffmpeg/ffmpeg/${DIR}/*.h ../../../third-party/include/${DIR}
 done
+
+cp zlib/zlib/build/${BUILD_TYPE}/zlibstatic.lib ../../../third-party/build-libs/windows-x64
+
+cp libmysofa/libmysofa/build/src/${BUILD_TYPE}/mysofa.lib ../../../third-party/build-libs/windows-x64
+cp libmysofa/libmysofa/src/hrtf/mysofa.h ../../../third-party/include
+cp libmysofa/libmysofa/src/hrtf/mysofa_export.h ../../../third-party/include
+
+cp libspatialaudio/libspatialaudio/build/${BUILD_TYPE}/spatialaudio.lib ../../../third-party/build-libs/windows-x64
+mkdir -p ../../../third-party/include/spatialaudio
+cp -r libspatialaudio/libspatialaudio/include/*.h libspatialaudio/libspatialaudio/include/{adm,dsp,hrtf,kiss_fft} ../../../third-party/include/spatialaudio
+cp libspatialaudio/libspatialaudio/build/include/SpatialaudioConfig.h ../../../third-party/include/spatialaudio
 
 cp "${MSYS2_PATH}/ucrt64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/ucrt64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64

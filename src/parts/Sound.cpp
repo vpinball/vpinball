@@ -59,6 +59,16 @@ struct WaveHeader
 #define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32_t)(BYTE)(ch0) | ((uint32_t)(BYTE)(ch1) << 8) | ((uint32_t)(BYTE)(ch2) << 16) | ((uint32_t)(BYTE)(ch3) << 24))
 #endif
 
+static bool HasStorableWavHeader(const vector<uint8_t>& data)
+{
+   if (data.size() < sizeof(WaveHeader))
+      return false;
+   WaveHeader header;
+   memcpy(&header, data.data(), sizeof(header));
+   return header.dwRiff == MAKEFOURCC('R', 'I', 'F', 'F') && header.dwWave == MAKEFOURCC('W', 'A', 'V', 'E') && header.dwFmt == MAKEFOURCC('f', 'm', 't', ' ')
+      && header.dwFmtSize == 24 - 8 && header.dwData == MAKEFOURCC('d', 'a', 't', 'a');
+}
+
 Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
 {
    string name; // Declared first so that errors can report it once read
@@ -101,13 +111,35 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
    stream.read(reinterpret_cast<unsigned char*>(dummy.data()), len);
 
    // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs to the waveformatex.
-   // This header is stored for WAV files, identified by their filename extension, instead of the regular WAV file format.
+   // This header is stored for WAV files instead of the regular WAV file format.
    const auto fsPath = PathFromUTF8(string_from_utf8_or_cp1252(path.data(), path.size()));
 
    // WAV files are stored with a special format, while others are just the raw imported file.
+   const auto isStoredAsWav = [&stream, &fsPath, LoadFileVersion]()
+   {
+      const uint64_t start = stream.tell();
+      const uint64_t settingsSize = LoadFileVersion >= NEW_SOUND_FORMAT_VERSION ? sizeof(uint8_t) + 4 * sizeof(int32_t) : sizeof(bool);
+      const uint64_t size = stream.size();
+      const uint64_t available = size > start + settingsSize ? size - start - settingsSize : 0;
+      uint8_t head[sizeof(WAVEFORMATEX) + sizeof(int32_t)];
+      const uint64_t headSize = stream.read(head, sizeof(head));
+      stream.seek(start);
+      const auto fills = [&](const size_t offset)
+      {
+         if (offset + sizeof(int32_t) > headSize)
+            return false;
+         int32_t len;
+         memcpy(&len, head + offset, sizeof(len));
+         return len >= 0 && offset + sizeof(int32_t) + static_cast<uint64_t>(len) == available;
+      };
+      const bool rawFits = fills(0);
+      const bool wavFits = fills(sizeof(WAVEFORMATEX));
+      return rawFits == wavFits ? isWav(fsPath) : wavFits;
+   };
+
    // We detect and (re)create the appropriate header for WAV files so that they can be treated as other sounds.
    vector<uint8_t> data;
-   if (isWav(fsPath))
+   if (isStoredAsWav())
    {
       WAVEFORMATEX wfx;
       stream.read(reinterpret_cast<unsigned char*>(&wfx), sizeof(wfx));
@@ -210,7 +242,7 @@ void Sound::SaveToStream(InMemStream* pstm) const
    pstm->Write(path.c_str(), pathLen);
    pstm->Write(&dummyLen, sizeof(int32_t)); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
    pstm->Write(&dummyPath, dummyLen);
-   if (isWav(m_path))
+   if (HasStorableWavHeader(m_data))
    {
       const auto waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
       WAVEFORMATEX wfx;

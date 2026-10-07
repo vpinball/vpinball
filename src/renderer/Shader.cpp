@@ -223,28 +223,12 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[static_cast<unsigned int>(Shad
    SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
       ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
    SHADER_TECHNIQUE(
-      fb_agxtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
+      fb_agxtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::agx_params, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::agx_params, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
       ShaderUniform::tex_ao, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+   SHADER_TECHNIQUE(fb_agxtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::agx_params, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
       ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
-      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(
-      fb_agxptonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxptonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
-      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxptonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
-      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxptonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
-      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(
-      fb_agxgtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxgtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
-      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxgtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
-      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
-   SHADER_TECHNIQUE(fb_agxgtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+   SHADER_TECHNIQUE(fb_agxtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::agx_params, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
       ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
    SHADER_TECHNIQUE(fb_wcgtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::spline1, ShaderUniform::spline2, ShaderUniform::tex_fb_filtered,
       ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
@@ -452,6 +436,7 @@ ShaderUniformDef ShaderUniformDef::coreUniforms[static_cast<unsigned int>(Shader
    // Post Process Shader
    SHADER_UNIFORM(ShaderUniformType::Float4, bloom_dither_colorgrade, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, exposure_wcg, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, agx_params, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, spline1, 1),
    SHADER_UNIFORM(ShaderUniformType::Float2, spline2, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
@@ -1554,10 +1539,6 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_noao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_noao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_nofilter),
@@ -1733,10 +1714,6 @@ void Shader::Load()
       loadProgram(embeddedShaders, ShaderTechnique::fb_agxtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_ao_filter));
       loadProgram(embeddedShaders, ShaderTechnique::fb_agxtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_noao_nofilter));
       loadProgram(embeddedShaders, ShaderTechnique::fb_agxtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_ao_nofilter));
-      loadProgram(embeddedShaders, ShaderTechnique::fb_agxptonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_noao_filter));
-      loadProgram(embeddedShaders, ShaderTechnique::fb_agxptonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_ao_filter));
-      loadProgram(embeddedShaders, ShaderTechnique::fb_agxptonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_noao_nofilter));
-      loadProgram(embeddedShaders, ShaderTechnique::fb_agxptonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_ao_nofilter));
       loadProgram(embeddedShaders, ShaderTechnique::fb_wcgtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_noao_filter));
       loadProgram(embeddedShaders, ShaderTechnique::fb_wcgtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_ao_filter));
       loadProgram(embeddedShaders, ShaderTechnique::fb_wcgtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_noao_nofilter));

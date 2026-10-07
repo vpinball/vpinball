@@ -40,8 +40,7 @@ FEATURES:
 - add "Surface" to the "Select Element" list
 - add overall GPU memory used, and overall file size to the image dialog
 
-- add additional tonemappers (the part of the rendering which handles how overly bright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible,
-  and 'AgX Punchy' which is a variation of AgX with more contrast/saturation
+- add 'Neutral' tonemapper (the part of the rendering which handles how overly bright parts are displayed on non-HDR displays) that keeps sRGB colors as authentic as possible.
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control in Blender)
 
 - add new FAAA postprocessing anti-aliasing mode (its mostly subtle, but also rather fast and less blurry)
@@ -134,6 +133,7 @@ FEATURES:
   . New option to add a plugin rendered backglass flasher to handle non VR tables (there used to be a limited hacky fixed backglass image added on all tables, with some hacks to allow VR tables to overwrite it)
   . OpenXR controllers can be used as input, including thumbstick nudging and plunger.
   . OpenXR controllers can be used to position the virtual table in the room.
+  . Spatialization of sounds
 
 - number of layers is not limited anymore. Layers can also be nested and they now feature properties:
   . a visibility mask, that allows to filter on which player mode layers are active (desktop, cabinet, virtual reality, mixed reality, ...)

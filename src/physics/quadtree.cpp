@@ -465,9 +465,19 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
       {
          if (current->m_items != 0) // does node contain hitables?
          {
-            const unsigned int size = (current->m_start + current->m_items + 3) / 4;
-            const unsigned int start = traversal_order ? current->m_start / 4 : (size - 1);
-            const unsigned int end = traversal_order ? size : (current->m_start / 4 - 1);
+            const unsigned int m_s = current->m_start;
+            const unsigned int itemsEnd = m_s + current->m_items;
+            const unsigned int size = (itemsEnd + 3) / 4;
+            const unsigned int start = traversal_order ? m_s / 4 : (size - 1);
+            const unsigned int end = traversal_order ? size : (m_s / 4 - 1);
+
+            // The groups of 4 are not aligned with the node's items: the lanes of the first and last group outside
+            // [m_start, itemsEnd) belong to other nodes (testing them here too duplicates contacts). Masked out at the
+            // first comparison, so that a group only hitting such lanes is skipped early
+            const unsigned int firstGroup = m_s / 4;
+            const unsigned int lastGroup = (itemsEnd - 1) / 4;
+            const int firstLanes = (0xF << (m_s & 3)) & 0xF;
+            const int lastLanes = 0xF >> (3 - ((itemsEnd - 1) & 3));
 
             // loop implements 4 collision checks at once
             // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
@@ -477,10 +487,12 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
                   if (m_physics) m_physics->c_tested++; //!! +=4? or is this more fair?
                #endif
 
+               const int lanes = (i == firstGroup ? firstLanes : 0xF) & (i == lastGroup ? lastLanes : 0xF); // this node's lanes
+
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
                // bits set, there is a bounding box collision
                __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
-               int mask = _mm_movemask_ps(cmp);
+               int mask = _mm_movemask_ps(cmp) & lanes;
                if (mask == 0) continue;
 
                cmp = _mm_cmple_ps(bleft, pR[i]);
@@ -521,16 +533,7 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
                   const __m128 d = _mm_add_ps(ex, ey);
                #endif
                const __m128 cmp2 = _mm_cmple_ps(d, rsqr);
-               int mask2 = _mm_movemask_ps(cmp2);
-
-               //!! opt.?
-               // Groups of 4 are not aligned with the node's item range: mask the lanes outside [m_start, m_start+m_items),
-               // they belong to other nodes and would be tested twice (duplicated contacts)
-               const unsigned int itemsEnd = current->m_start + current->m_items;
-               if (i * 4 < current->m_start)
-                  mask2 &= 0xF << (current->m_start - i * 4);
-               if (i * 4 + 4 > itemsEnd)
-                  mask2 &= (1 << (itemsEnd - i * 4)) - 1;
+               const int mask2 = _mm_movemask_ps(cmp2) & lanes;
                if (mask2 == 0) continue;
 
                // now there is at least one bbox collision

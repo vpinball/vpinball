@@ -201,6 +201,7 @@ public:
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 
    STDMETHOD(PlaySound)(BSTR soundName, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
+   STDMETHOD(PlaySoundAt)(BSTR soundName, float x, float y, float z, int loopcount, float volume, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
    STDMETHOD(StopSound)(BSTR soundName);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
    STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
@@ -555,6 +556,10 @@ public:
       m_settings.Load(false);
    }
 
+   // Get a companion file path for this table, searched along the table file, first with the table
+   // file name, then with the name of the folder containing the table file, defaulting to the former
+   std::filesystem::path GetCompanionFileName(const string &extension) const;
+
    // Get the ini file name to use for this table (either overridden or derived from table or folder name)
    std::filesystem::path GetSettingsFileName() const
    {
@@ -562,28 +567,15 @@ public:
       if (!m_iniFileName.empty() && FileExists(m_iniFileName))
          return m_iniFileName;
 
-      // File not yet saved => No table ini file available
-      if (!FileExists(m_filename))
-         return std::filesystem::path();
-
-      // Table ini file alongside table file, name matching table filename
-      std::filesystem::path tableIni = m_filename;
-      tableIni.replace_extension(".ini");
-      if (FileExists(tableIni))
-         return tableIni;
-
-      // Table ini file alongside table file, name matching folder name
-      const auto folder = m_filename.parent_path();
-      auto fn = folder.filename();
-      fn += ".ini"sv;
-      std::filesystem::path folderIni = folder / fn;
-      folderIni = find_case_insensitive_file_path(folderIni);
-      if (!folderIni.empty())
-         return folderIni;
-
-      // No existing file: defaults to ini file alongside table file, name matching table filename
-      return tableIni;
+      return GetCompanionFileName(".ini"s);
    }
+
+   // Get the frontend information file name for this table (see docs/FileLayout.md)
+   std::filesystem::path GetInfoFileName() const { return GetCompanionFileName(".info"s); }
+
+   // Update the play statistics stored in the '.info' companion file (see docs/FileLayout.md)
+   void UpdateInfoFileOnGameStart();
+   void UpdateInfoFileOnGameEnd(uint32_t playTimeSec);
 
    // Settings for this table (apply overrides above application settings)
    Settings &GetSettings() { return m_settings; }
