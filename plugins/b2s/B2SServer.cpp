@@ -672,6 +672,15 @@ float B2SServer::GetLampState(int b2sId) const
    return it == m_lampStates.end() ? 0.f : it->second.value.load();
 }
 
+bool B2SServer::GetScriptedLampState(int b2sId, float& state) const
+{
+   const auto it = m_lampStates.find(b2sId);
+   if (it == m_lampStates.end())
+      return false;
+   state = it->second.value.load();
+   return true;
+}
+
 bool B2SServer::GetBulbState(const B2SBulb& bulb, float& state) const
 {
    // Resolves the effective scripted state of a bulb: most recent write wins between its own B2S id and its illumination group.

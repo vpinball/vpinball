@@ -417,8 +417,14 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
       // Reel rolling: resolve the rolling direction, the illuminated image selection and the per-digit
       // hold flags. A digit waits while a less significant digit has a pending 9->0 / 0->9 wrap (carry).
       const bool rollUp = scores.m_reelRollingDirection != B2SReelRollingDirection::Down;
-      reel.m_reelIlluUpdater();
-      const bool illuminated = reel.m_reelIlluB2SID > 0 && (reel.m_reelIlluB2SValue > 0 ? (static_cast<int>(reel.m_reelIllu) == reel.m_reelIlluB2SValue) : (reel.m_reelIllu != 0.f));
+      // ReelIlluB2SID is in lamp-id space: script B2SSetData writes take precedence, else the ROM lamp state applies
+      float illuState = reel.m_reelIllu;
+      if (server == nullptr || !server->GetScriptedLampState(reel.m_reelIlluB2SID, illuState))
+      {
+         reel.m_reelIlluUpdater();
+         illuState = reel.m_reelIllu;
+      }
+      const bool illuminated = reel.m_reelIlluB2SID > 0 && (reel.m_reelIlluB2SValue > 0 ? (static_cast<int>(illuState) == reel.m_reelIlluB2SValue) : (illuState != 0.f));
       vector<char> hold(static_cast<size_t>(std::max(0, reel.m_digits)), 0);
       bool lowerWrapPending = false;
       for (int i = reel.m_digits - 1; i >= 0; i--)
