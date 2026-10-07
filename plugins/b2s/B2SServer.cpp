@@ -657,9 +657,10 @@ void B2SServer::B2SSetData(const std::string& group, const std::string& value)
 
 void B2SServer::B2SSetData(const std::string& group, int value)
 {
-   // Same as B2SSetData, applied to an illumination group (all bulbs sharing this name), without plugin event
-   // Groups locked by a running animation ignore external writes
-   if (group.empty() || IsIlluminationLocked(group))
+   // Same as B2SSetData, applied to an illumination group (all bulbs sharing this name), without plugin event.
+   // The reference does not check illumination locks on group writes, so animations' own group writes and
+   // external group writes both apply.
+   if (group.empty())
       return;
    LampState& groupState = m_groupStates[group];
    groupState.value = static_cast<float>(value);
