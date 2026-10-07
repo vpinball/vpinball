@@ -91,14 +91,24 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
    }
 
    bool hasFiles = false;
-   for (const auto& entry : std::filesystem::directory_iterator(szFolderPath)) {
-      if (entry.is_regular_file()) {
-         std::filesystem::path szFilename = entry.path().filename();
-         if (!szFilename.empty() && szFilename != ".") {
-            hasFiles = true;
-            break;
+   try
+   {
+      for (const auto& entry : std::filesystem::directory_iterator(szFolderPath))
+      {
+         if (entry.is_regular_file())
+         {
+            std::filesystem::path szFilename = entry.path().filename();
+            if (!szFilename.empty() && szFilename != ".")
+            {
+               hasFiles = true;
+               break;
+            }
          }
       }
+   }
+   catch (const std::filesystem::filesystem_error&)
+   {
+      LOGE("Failed to enumerate playlist folder: " + PluginStrings::PathToUTF8(szFolderPath));
    }
 
    if (!hasFiles) {
