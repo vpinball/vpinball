@@ -126,6 +126,8 @@ typedef struct MsgEndpointInfo
 #define MSGPI_SETTING_TYPE_INT    1
 #define MSGPI_SETTING_TYPE_BOOL   2
 #define MSGPI_SETTING_TYPE_STRING 3
+#define MSGPI_SETTING_TYPE_FOLDER 4
+#define MSGPI_SETTING_TYPE_FILE 5
 
 typedef struct MsgSettingDef
 {
@@ -166,6 +168,19 @@ typedef struct MsgSettingDef
          const char* (MSGPIAPI* Get)();
          void (MSGPIAPI* Set)(const char* val);
       } stringDef;
+      struct
+      {
+         const char* defVal;
+         const char*(MSGPIAPI* Get)();
+         void(MSGPIAPI* Set)(const char* val);
+      } folderDef;
+      struct
+      {
+         const char* defVal;
+         const char* fileFilter; // Optional ';' separated list of allowed file extensions (e.g. "png;jpg"), may be NULL
+         const char*(MSGPIAPI* Get)();
+         void(MSGPIAPI* Set)(const char* val);
+      } fileDef;
    };
 } MsgSettingDef;
 
@@ -180,6 +195,21 @@ typedef struct MsgSettingDef
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_BOOL, .boolDef = { defValue?1:0, getter, setter } }
 #define MSGPI_STRING_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize, getter, setter) \
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, getter, setter } }
+#define MSGPI_FOLDER_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize, getter, setter)                                                                     \
+   static MsgSettingDef varName                                                                                                                                                              \
+   {                                                                                                                                                                                         \
+      .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FOLDER, .folderDef = { defValue, getter, setter }   \
+   }
+#define MSGPI_FILE_SETTING(varName, id, propName, propDescription, propEditable, defValue, fileFilter, getter, setter)                                                                       \
+   static MsgSettingDef varName                                                                                                                                                              \
+   {                                                                                                                                                                                         \
+      .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FILE,                                               \
+      .fileDef                                                                                                                                                                               \
+         = { defValue,                                                                                                                                                                       \
+              fileFilter,                                                                                                                                                                    \
+              getter,                                                                                                                                                                        \
+              setter }                                                                                                                                                                       \
+   }
 #define MSGPI_FLOAT_VAL_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, stepVal, defValue) \
    static float varName##_Val; \
    static float varName##_Get() { return varName##_Val; } \
@@ -205,6 +235,31 @@ typedef struct MsgSettingDef
    static const char* varName##_Get() { return varName##_Val; } \
    static void varName##_Set(const char* v) { snprintf(varName##_Val, bufferSize, "%s", v); } \
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, &varName##_Get, &varName##_Set } }
+#define MSGPI_FOLDER_VAL_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize)                                                                                 \
+   static char varName##_Val[bufferSize];                                                                                                                                                    \
+   static const char* varName##_Get() { return varName##_Val; }                                                                                                                              \
+   static void varName##_Set(const char* v) { snprintf(varName##_Val, bufferSize, "%s", v); }                                                                                                \
+   static MsgSettingDef varName                                                                                                                                                              \
+   {                                                                                                                                                                                         \
+      .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FOLDER,                                             \
+      .folderDef                                                                                                                                                                             \
+         = { defValue,                                                                                                                                                                       \
+              &varName##_Get,                                                                                                                                                                \
+              &varName##_Set }                                                                                                                                                               \
+   }
+#define MSGPI_FILE_VAL_SETTING(varName, id, propName, propDescription, propEditable, defValue, fileFilter, bufferSize)                                                                       \
+   static char varName##_Val[bufferSize];                                                                                                                                                    \
+   static const char* varName##_Get() { return varName##_Val; }                                                                                                                              \
+   static void varName##_Set(const char* v) { snprintf(varName##_Val, bufferSize, "%s", v); }                                                                                                \
+   static MsgSettingDef varName                                                                                                                                                              \
+   {                                                                                                                                                                                         \
+      .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FILE,                                               \
+      .fileDef                                                                                                                                                                               \
+         = { defValue,                                                                                                                                                                       \
+              fileFilter,                                                                                                                                                                    \
+              &varName##_Get,                                                                                                                                                                \
+              &varName##_Set }                                                                                                                                                               \
+   }
 
 #define MSGPI_NAMESPACE                  "MsgPlugin"
 #define MSGPI_EVT_ON_PLUGIN_LOADED       "OnPluginLoaded:1"       // Broadcasted when a plugin is loaded

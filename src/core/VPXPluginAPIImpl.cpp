@@ -583,6 +583,47 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
       break;
    }
 
+   case MSGPI_SETTING_TYPE_FOLDER:
+   {
+      const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(
+         sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->folderDef.defVal, VPX::Properties::StringPropertyDef::PathType::Folder));
+      if (item == m_pluginSettings.end())
+         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
+      else
+      {
+         item->propId = newId;
+         item->setting = settingDef;
+      }
+      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
+         settings.Set(newId, settingDef->folderDef.Get(), asTableOverride);
+      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
+      {
+         const string& value = settings.GetString(newId);
+         settingDef->folderDef.Set(value.c_str());
+      }
+      break;
+   }
+
+   case MSGPI_SETTING_TYPE_FILE:
+   {
+      const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description,
+         false, settingDef->fileDef.defVal, VPX::Properties::StringPropertyDef::PathType::File, settingDef->fileDef.fileFilter != nullptr ? settingDef->fileDef.fileFilter : ""));
+      if (item == m_pluginSettings.end())
+         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
+      else
+      {
+         item->propId = newId;
+         item->setting = settingDef;
+      }
+      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
+         settings.Set(newId, settingDef->fileDef.Get(), asTableOverride);
+      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
+      {
+         const string& value = settings.GetString(newId);
+         settingDef->fileDef.Set(value.c_str());
+      }
+      break;
+   }
    }
 }
 

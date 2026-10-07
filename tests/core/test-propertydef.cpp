@@ -123,6 +123,16 @@ TEST_CASE("PropertyDef")
       CHECK(stringProp.m_type == PropertyDef::Type::String);
       CHECK(stringProp.m_def == "abc");
       CHECK(stringProp.WithDefault("xyz"s)->m_def == "xyz");
+
+      const StringPropertyDef folderProp("g"s, "p"s, "l"s, "d"s, false, "abc"s, StringPropertyDef::PathType::Folder);
+      CHECK(folderProp.m_pathType == StringPropertyDef::PathType::Folder);
+      CHECK(stringProp.m_pathType == StringPropertyDef::PathType::None);
+      CHECK_FALSE(stringProp == folderProp);
+
+      const StringPropertyDef fileProp("g"s, "p"s, "l"s, "d"s, false, "abc"s, StringPropertyDef::PathType::File, "png;jpg"s);
+      CHECK(fileProp.m_pathType == StringPropertyDef::PathType::File);
+      CHECK(fileProp.m_fileFilter == "png;jpg");
+      CHECK_FALSE(fileProp == folderProp);
    }
 
    SUBCASE("equality compares definition fields")

@@ -229,25 +229,37 @@ protected:
 class StringPropertyDef final : public PropertyDef
 {
 public:
-   StringPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool isContextual, const string& def)
+   enum class PathType
+   {
+      None,
+      Folder,
+      File,
+   };
+
+   StringPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool isContextual, const string& def, PathType pathType = PathType::None,
+      const string& fileFilter = "")
       : PropertyDef(Type::String, groupId, propId, label, description, isContextual)
       , m_def(def)
+      , m_pathType(pathType)
+      , m_fileFilter(fileFilter)
    {
    }
    StringPropertyDef(const StringPropertyDef& other, const string& def)
-      : StringPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, def)
+      : StringPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, def, other.m_pathType, other.m_fileFilter)
    {
    }
    std::unique_ptr<StringPropertyDef> WithDefault(const string& def) const { return std::make_unique<StringPropertyDef>(*this, def); }
    ~StringPropertyDef() override = default;
 
    const string m_def;
+   const PathType m_pathType; // If not None, the value is a folder or file path and the UI should offer a selection dialog
+   const string m_fileFilter; // For PathType::File, optional ';' separated list of allowed file extensions (e.g. "png;jpg")
 
 protected:
    bool equals(const PropertyDef& other) const override
    {
       const StringPropertyDef* o = dynamic_cast<const StringPropertyDef*>(&other);
-      return o && PropertyDef::equals(other) && (m_def == o->m_def);
+      return o && PropertyDef::equals(other) && (m_def == o->m_def) && (m_pathType == o->m_pathType) && (m_fileFilter == o->m_fileFilter);
    }
 };
 

@@ -96,6 +96,12 @@ private:
    bool m_defineActionPopup = false;
    InGameUIItem* m_defineActionItem = nullptr;
 
+   void BrowseForPath(const InGameUIItem& item);
+   // Folder/file selection dialogs are asynchronous: their result is applied to the targeted item on the next frame
+   std::shared_ptr<string> m_pathSelectResult;
+   string m_pathSelectGroupId;
+   string m_pathSelectPropId;
+
    static void RenderToggle(const string& label, const ImVec2& size, bool& v);
    static void TextWithEllipsis(const string& text, float maxWidth);
 };

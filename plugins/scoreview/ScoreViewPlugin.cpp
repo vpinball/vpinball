@@ -20,7 +20,7 @@
 namespace ScoreView
 {
 
-MSGPI_STRING_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Folder where custom ScoreView layouts are stored", true, "", 1024);
+MSGPI_FOLDER_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Folder where custom ScoreView layouts are stored", true, "", 1024);
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 

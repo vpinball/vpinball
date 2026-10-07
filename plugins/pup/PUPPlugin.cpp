@@ -61,7 +61,7 @@ static std::unique_ptr<PUPManager> pupManager;
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
-MSGPI_STRING_VAL_SETTING(pupPathProp, "PUPFolder", "PinUp Player Folder", "", true, "", 1024);
+MSGPI_FOLDER_VAL_SETTING(pupPathProp, "PUPFolder", "PinUp Player Folder", "", true, "", 1024);
 
 
 ///////////////////////////////////////////////////////////////////////////////
