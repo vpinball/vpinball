@@ -65,7 +65,7 @@ unsigned int LZWReader::get_next_code()
  * separating them into the proper size codes.  Finally, get_byte() is
  * the global routine to read the next byte from the file.
  */
-LZWReader::LZWReader(POLE::Stream * stream, uint8_t *output, const unsigned int width)
+LZWReader::LZWReader(POLE::Stream * stream, uint8_t *output, const unsigned int outputSize, const unsigned int width)
    : m_stream(stream)
 {
    // Initialize for decoding a new image...
@@ -87,6 +87,7 @@ LZWReader::LZWReader(POLE::Stream * stream, uint8_t *output, const unsigned int 
    unsigned int fc = 0;
 
    // Set up the decoding buffer from the output pointer
+   uint8_t* const bufEnd = output + outputSize;
    uint8_t *buf = output;
    output += width;
 
@@ -147,6 +148,8 @@ LZWReader::LZWReader(POLE::Stream * stream, uint8_t *output, const unsigned int 
             output += width;
             bufcnt = width;
          }
+         if (buf >= bufEnd) // corrupt stream emitting more pixels than the declared size
+            break;
       }
       else
       {
@@ -208,7 +211,7 @@ LZWReader::LZWReader(POLE::Stream * stream, uint8_t *output, const unsigned int 
           * buffer...  And when the decode buffer is full, write another
           * line...
           */
-         while (sp > stack)
+         while (sp > stack && buf < bufEnd)
          {
             *buf++ = *(--sp);
             if (--bufcnt == 0)
@@ -218,11 +221,18 @@ LZWReader::LZWReader(POLE::Stream * stream, uint8_t *output, const unsigned int 
                bufcnt = width;
             }
          }
+         if (buf >= bufEnd) // corrupt stream emitting more pixels than the declared size
+            break;
       }
    }
 
-   // Our position is just after last m_readahead bytes, out of which we have used (m_cfilebuffer + 1)
-   m_stream->seek(m_stream->tell() + m_cfilebuffer + 1 - m_readahead);
+   // Our position is just after last m_readahead bytes, out of which we have used (m_cfilebuffer + 1).
+   // Only ever seek back over buffered-but-unconsumed bytes: after end of stream m_cfilebuffer
+   // counts virtual zero bytes fed by get_byte(), which must not seek forward past the real data
+   int64_t seekBack = static_cast<int64_t>(m_readahead) - m_cfilebuffer - 1;
+   if (seekBack < 0)
+      seekBack = 0;
+   m_stream->seek(m_stream->tell() - seekBack);
 }
 
 // This returns the next byte from the file
@@ -234,5 +244,7 @@ uint8_t LZWReader::get_byte()
       m_readahead = m_stream->read(m_pfilebufferbytes, FILE_BUF_SIZE);
       m_cfilebuffer = 0;
    }
+   if (static_cast<uint64_t>(m_cfilebuffer) >= m_readahead)
+      return 0; // Stream exhausted (or read error): feed zeros so decoding terminates instead of looping on stale bytes
    return m_pfilebufferbytes[m_cfilebuffer];
 }
