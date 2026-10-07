@@ -413,6 +413,11 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             int versionNumber = 0;
             FILE *f;
             fopen_s(&f, szFilename[0].c_str(), "rb");
+            if (f == nullptr)
+            {
+               ShowError("Could not open material file!");
+               break;
+            }
 
             fread(&versionNumber, 4, 1, f);
             if (versionNumber != 1)
