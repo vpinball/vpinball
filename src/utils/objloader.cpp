@@ -178,6 +178,12 @@ bool ObjLoader::Load(const std::filesystem::path& filename, const MeshUnits unit
             if (matches == 3)
             {
                vi.v--; vi.t--; vi.n--;    // convert to 0-based indices
+               if (vi.v < 0 || static_cast<size_t>(vi.v) >= m_tmpVerts.size() || vi.t < 0 || static_cast<size_t>(vi.t) >= m_tmpTexel.size() || vi.n < 0
+                  || static_cast<size_t>(vi.n) >= m_tmpNorms.size())
+               {
+                  ShowError("Face index out of range in obj file!");
+                  goto Error;
+               }
                faceVerts.push_back(vi);
             }
          } while (matches > 0);
