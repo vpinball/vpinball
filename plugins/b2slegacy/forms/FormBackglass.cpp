@@ -1747,7 +1747,7 @@ uint32_t FormBackglass::String2Color(const string& color)
    vector<int> colorValues;
 
    while (std::getline(ss, token, '.'))
-      colorValues.push_back(std::stoi(token));
+      colorValues.push_back(string_to_int(token, 0));
 
    if (colorValues.size() == 3)
       return RGB(colorValues[0], colorValues[1], colorValues[2]);
