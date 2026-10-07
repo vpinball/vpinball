@@ -254,19 +254,24 @@ typedef struct ScriptablePluginAPI
       (variant).vArray = array; \
    }
 
-#define PSC_VAR_SET_array2(type, variant, value) { \
-      const unsigned int nDimensions = type##_SAD.nDimensions; \
-      const auto& vec = (value); \
-      const unsigned int subDataSize = (vec.empty() || vec[0].empty()) ? 0 : (sizeof(vec[0][0]) * vec[0].size()); \
-      const size_t dataSize = (vec.empty() || vec[0].empty()) ? 0 : (vec.size() * subDataSize); \
-      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + dataSize)); \
-      array->Release = [](ScriptArray* me) { free(me); }; \
-      array->lengths[0] = static_cast<unsigned int>(vec.size()); \
-      array->lengths[1] = array->lengths[0] > 0 ? vec[0].size() : 0; \
-      char* pData = reinterpret_cast<char*>(&array->lengths[2]); \
-      if (dataSize > 0) for (size_t i = 0; i < vec.size(); i++, pData += subDataSize) \
-         memcpy(pData, vec[i].data(), subDataSize); \
-      (variant).vArray = array; \
+#define PSC_VAR_SET_array2(type, variant, value)                                                                                                                                             \
+   {                                                                                                                                                                                         \
+      const unsigned int nDimensions = type##_SAD.nDimensions;                                                                                                                               \
+      const auto& vec = (value);                                                                                                                                                             \
+      const unsigned int subDataSize = (vec.empty() || vec[0].empty()) ? 0 : (sizeof(vec[0][0]) * vec[0].size());                                                                            \
+      const size_t dataSize = (vec.empty() || vec[0].empty()) ? 0 : (vec.size() * subDataSize);                                                                                              \
+      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + dataSize));                                                                    \
+      array->Release = [](ScriptArray* me) { free(me); };                                                                                                                                    \
+      array->lengths[0] = static_cast<unsigned int>(vec.size());                                                                                                                             \
+      array->lengths[1] = array->lengths[0] > 0 ? vec[0].size() : 0;                                                                                                                         \
+      char* pData = reinterpret_cast<char*>(&array->lengths[2]);                                                                                                                             \
+      if (dataSize > 0)                                                                                                                                                                      \
+      {                                                                                                                                                                                      \
+         memset(pData, 0, dataSize);                                                                                                                                                         \
+         for (size_t i = 0; i < vec.size(); i++, pData += subDataSize)                                                                                                                       \
+            memcpy(pData, vec[i].data(), vec[i].size() < vec[0].size() ? sizeof(vec[0][0]) * vec[i].size() : subDataSize);                                                                   \
+      }                                                                                                                                                                                      \
+      (variant).vArray = array;                                                                                                                                                              \
    }
 
 #define PSC_CLASS_ALIAS(classname, alias) \
