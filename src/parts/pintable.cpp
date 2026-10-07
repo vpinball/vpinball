@@ -2064,9 +2064,9 @@ void PinTable::FinalizeLoadedParts(vector<IEditable *> &parts)
                size_t lastNonDigit = layerName.length();
                while (lastNonDigit > 0 && layerName[lastNonDigit - 1] >= '0' && layerName[lastNonDigit - 1] <= '9')
                   lastNonDigit--;
-               if (lastNonDigit < layerName.length())
+               if (lastNonDigit < layerName.length() && layerName.length() - lastNonDigit <= 9)
                {
-                  // If it ends by a number, then inc the number
+                  // If it ends by a number, then inc the number (bounded digit count to keep stoi in range)
                   const string numberStr = layerName.substr(lastNonDigit);
                   const int number = std::stoi(numberStr);
                   layerName.resize(lastNonDigit); // base
