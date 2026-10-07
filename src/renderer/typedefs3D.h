@@ -74,12 +74,15 @@ enum VideoSyncMode
    VSM_INVALID
 };
 
-enum VRPreviewMode
+// Content of the desktop display (the OS window rendered on the playfield display) while playing in VR
+enum class VRDesktopMode
 {
-   VRPREVIEW_DISABLED,
-   VRPREVIEW_LEFT,
-   VRPREVIEW_RIGHT,
-   VRPREVIEW_BOTH
+   Disabled,
+   All, // Playfield and other displays
+   Playfield, // Playfield only
+   Left, // Left eye
+   Right, // Right eye
+   Both // Both eyes
 };
 
 #if defined(ENABLE_BGFX)

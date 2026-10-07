@@ -90,40 +90,22 @@ PropIntDyn(Topper, TopperFSHeight, "Height"s, "Fullscreen display mode height fo
 PropFloatDyn(Topper, TopperRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
 PropIntDyn(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 PropEnumDyn(Topper, TopperRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it"s, int, 0, "0"s, "90"s, "180"s, "270"s);
-// VR Preview Window
-PropStringDyn(PlayerVR, PreviewDisplay, "Display"s, "Display used for the VR Preview window"s, ""s);
-#ifdef ENABLE_BGFX
-PropEnumDyn(PlayerVR, PreviewFullScreen, "Display Mode"s, "Select between windowed or borderless fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s);
-#else
-PropEnumDyn(PlayerVR, PreviewFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Fullscreen"s);
-#endif
-PropIntDyn(PlayerVR, PreviewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
-PropIntDyn(PlayerVR, PreviewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
-PropIntDyn(PlayerVR, PreviewWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
-PropIntDyn(PlayerVR, PreviewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropIntDyn(PlayerVR, PreviewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropIntDyn(PlayerVR, PreviewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloatDyn(PlayerVR, PreviewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropIntDyn(PlayerVR, PreviewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // Array access (using VPXWindowId)
 PropArray(Window, Mode, int, Enum, Int, m_propInvalid, m_propBackglass_BackglassOutput, m_propScoreView_ScoreViewOutput, m_propTopper_TopperOutput, m_propInvalid);
 PropArray(Window, Display, string, String, String, m_propPlayer_PlayfieldDisplay, m_propBackglass_BackglassDisplay, m_propScoreView_ScoreViewDisplay, m_propTopper_TopperDisplay,
-   m_propPlayerVR_PreviewDisplay);
+   m_propInvalid);
 PropArray(Window, FullScreen, int, Enum, Int, m_propPlayer_PlayfieldFullScreen, m_propBackglass_BackglassFullScreen, m_propScoreView_ScoreViewFullScreen, m_propTopper_TopperFullScreen,
-   m_propPlayerVR_PreviewFullScreen);
-PropArray(Window, WndX, int, Int, Int, m_propPlayer_PlayfieldWndX, m_propBackglass_BackglassWndX, m_propScoreView_ScoreViewWndX, m_propTopper_TopperWndX, m_propPlayerVR_PreviewWndX);
-PropArray(Window, WndY, int, Int, Int, m_propPlayer_PlayfieldWndY, m_propBackglass_BackglassWndY, m_propScoreView_ScoreViewWndY, m_propTopper_TopperWndY, m_propPlayerVR_PreviewWndY);
-PropArray(Window, Width, int, Int, Int, m_propPlayer_PlayfieldWidth, m_propBackglass_BackglassWidth, m_propScoreView_ScoreViewWidth, m_propTopper_TopperWidth, m_propPlayerVR_PreviewWidth);
-PropArray(
-   Window, Height, int, Int, Int, m_propPlayer_PlayfieldHeight, m_propBackglass_BackglassHeight, m_propScoreView_ScoreViewHeight, m_propTopper_TopperHeight, m_propPlayerVR_PreviewHeight);
-PropArray(Window, FSWidth, int, Int, Int, m_propPlayer_PlayfieldFSWidth, m_propBackglass_BackglassFSWidth, m_propScoreView_ScoreViewFSWidth, m_propTopper_TopperFSWidth,
-   m_propPlayerVR_PreviewFSWidth);
-PropArray(Window, FSHeight, int, Int, Int, m_propPlayer_PlayfieldFSHeight, m_propBackglass_BackglassFSHeight, m_propScoreView_ScoreViewFSHeight, m_propTopper_TopperFSHeight,
-   m_propPlayerVR_PreviewFSHeight);
+   m_propInvalid);
+PropArray(Window, WndX, int, Int, Int, m_propPlayer_PlayfieldWndX, m_propBackglass_BackglassWndX, m_propScoreView_ScoreViewWndX, m_propTopper_TopperWndX, m_propInvalid);
+PropArray(Window, WndY, int, Int, Int, m_propPlayer_PlayfieldWndY, m_propBackglass_BackglassWndY, m_propScoreView_ScoreViewWndY, m_propTopper_TopperWndY, m_propInvalid);
+PropArray(Window, Width, int, Int, Int, m_propPlayer_PlayfieldWidth, m_propBackglass_BackglassWidth, m_propScoreView_ScoreViewWidth, m_propTopper_TopperWidth, m_propInvalid);
+PropArray(Window, Height, int, Int, Int, m_propPlayer_PlayfieldHeight, m_propBackglass_BackglassHeight, m_propScoreView_ScoreViewHeight, m_propTopper_TopperHeight, m_propInvalid);
+PropArray(Window, FSWidth, int, Int, Int, m_propPlayer_PlayfieldFSWidth, m_propBackglass_BackglassFSWidth, m_propScoreView_ScoreViewFSWidth, m_propTopper_TopperFSWidth, m_propInvalid);
+PropArray(Window, FSHeight, int, Int, Int, m_propPlayer_PlayfieldFSHeight, m_propBackglass_BackglassFSHeight, m_propScoreView_ScoreViewFSHeight, m_propTopper_TopperFSHeight, m_propInvalid);
 PropArray(Window, FSRefreshRate, float, Float, Float, m_propPlayer_PlayfieldRefreshRate, m_propBackglass_BackglassRefreshRate, m_propScoreView_ScoreViewRefreshRate,
-   m_propTopper_TopperRefreshRate, m_propPlayerVR_PreviewRefreshRate);
+   m_propTopper_TopperRefreshRate, m_propInvalid);
 PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth, m_propBackglass_BackglassColorDepth, m_propScoreView_ScoreViewColorDepth, m_propTopper_TopperColorDepth,
-   m_propPlayerVR_PreviewColorDepth);
+   m_propInvalid);
 // Only defined for the ancillary windows: the playfield has its own rotation, as part of its view setup
 PropArray(Window, Rotation, int, Enum, Int, m_propInvalid, m_propBackglass_BackglassRotation, m_propScoreView_ScoreViewRotation, m_propTopper_TopperRotation, m_propInvalid);
 
@@ -258,8 +240,9 @@ PropFloatDyn(PlayerVR, TableY, "View Offset Y"s, "VR view Y offset"s, -100.f, 10
 PropFloatDyn(PlayerVR, TableZ, "View Offset Z"s, "VR view Z offset"s, -100.f, 100.f, 0.f);
 PropBool(
    PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by full black to allow color keyed passthrough (for example using Virtual Desktop, setting passthrough to sharp full black)"s, false);
-PropEnum(Player, VRPreview, "Preview mode"s, "Select VR preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
-PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, "Shrink VR preview"s, false);
+PropEnum(PlayerVR, DesktopDisplay, "Desktop display"s, "Select the content to show on the desktop display while playing in VR"s, int, 1, "Disabled"s,
+   "Playfield and other displays"s, "Playfield only"s, "Left eye"s, "Right eye"s, "Both eyes"s);
+PropBool(PlayerVR, ShrinkDesktopDisplay, "Shrink desktop display"s, "Shrink the mirrored eye view to fit inside the desktop display"s, false);
 PropBool(PlayerVR, AddBackglass, "Add Backglass"s, "Add a default backglass display to the scene"s, false);
 PropBool(PlayerVR, SpatialAudioBackglass, "Backglass Spatial Audio"s,
    "Render backglass sounds as spatially positioned sources, binauralized for the VR headset"s, true);

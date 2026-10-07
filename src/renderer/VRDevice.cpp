@@ -1050,7 +1050,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
    bool rendered = true;
    if (!m_sessionRunning)
    {
-      // FIXME we should perform preview rendering here
+      // FIXME we should perform desktop display rendering here
       submitFrame(nullptr);
       return;
    }
@@ -1534,7 +1534,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
    frameEndInfo.layers = renderLayerInfo.layers.data();
    OPENXR_CHECK(xrEndFrame(m_session, &frameEndInfo), "Failed to end the XR Frame.");
 
-   // Perform preview window rendering only
+   // Perform desktop display rendering only
    if (!rendered)
       submitFrame(nullptr);
 }

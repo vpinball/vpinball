@@ -175,7 +175,11 @@ public:
    bool HasAdditiveScreenSpaceReflection() const { return m_ss_refl; }
    void EnableAdditiveScreenSpaceReflection(bool ssr) { m_ss_refl = ssr; }
 
-   VRPreviewMode m_vrPreview;
+   VRDesktopMode m_vrDesktop = VRDesktopMode::Disabled; // Content shown on the desktop display while playing in VR
+   bool NeedsDesktopSceneRender() const
+   {
+      return m_vrDesktop == VRDesktopMode::All || m_vrDesktop == VRDesktopMode::Playfield;
+   } // True when the desktop display shows a dedicated scene render instead of a mirrored eye
 
    enum RenderMask : unsigned int
    {
@@ -307,12 +311,31 @@ private:
    RenderTarget* m_pOffscreenVRLeft = nullptr;
    RenderTarget* m_pOffscreenVRRight = nullptr;
 
+   // Desktop display (the OS window rendered on the playfield display while playing in VR): when it shows
+   // the playfield, the scene is rendered a second time into a dedicated set of render targets, swapped
+   // in/out to avoid interfering with the VR render targets
+   void RenderDesktopScene(RenderTarget* outputRT);
+   void SwapDesktopTargets();
+   bool m_desktopScenePass = false; // True while recording the scene render passes for the desktop display
+   int m_desktopRenderWidth = 0, m_desktopRenderHeight = 0;
+   RenderTarget* m_desktopMSAABackBuffer = nullptr;
+   RenderTarget* m_desktopBackBuffer1 = nullptr;
+   RenderTarget* m_desktopBackBuffer2 = nullptr;
+   RenderTarget* m_desktopPostProcess1 = nullptr;
+   RenderTarget* m_desktopPostProcess2 = nullptr;
+   RenderTarget* m_desktopBloom = nullptr;
+   RenderTarget* m_desktopBloomTmp = nullptr;
+   RenderTarget* m_desktopReflection = nullptr;
+   RenderTarget* m_desktopMotionBlur = nullptr;
+   RenderTarget* m_desktopAO1 = nullptr;
+   RenderTarget* m_desktopAO2 = nullptr;
+
    PinTable* m_table;
 
    ModelViewProj m_mvp; // Active Model / View / Projection (includes visual nudge)
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
    ModelViewProj m_initialMVP; // Base playfield MVP in desktop mode (unused in VR)
-   Matrix3D m_playfieldView[2]; // Base playfield view matrices of m_initialMVP from which all views are derived in desktop mode (unused in VR)
+   Matrix3D m_playfieldView[2]; // Base playfield view matrices of m_initialMVP from which all views are derived in desktop mode, or the cabinet view for the VR desktop display scene render
 
    bool m_isStaticPrepassDirty = true;
    bool m_wasUsingStaticPrepass = false; // Static prepass use on the previous frame (see RenderStatics)
@@ -338,7 +361,7 @@ private:
 
 public:
    bool m_vrApplyColorKey = false;
-   bool m_vrPreviewShrink = false;
+   bool m_vrDesktopShrink = false;
 
    float GetVisualNudgeStrength() const { return m_visualNudgeStrength; }
    void SetVisualNudgeStrength(float strength) { m_visualNudgeStrength = strength; }

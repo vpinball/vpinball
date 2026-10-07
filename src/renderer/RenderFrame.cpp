@@ -120,7 +120,7 @@ void RenderFrame::SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedP
    for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end();)
    {
       const std::vector<RenderPass*>::iterator nextPass = itPass + 1;
-      if (nextPass != sortedPasses.end() && (*nextPass)->m_mergeable && (*itPass)->m_rt == (*nextPass)->m_rt)
+      if (nextPass != sortedPasses.end() && (*nextPass)->m_mergeable && (*itPass)->m_rt == (*nextPass)->m_rt && (*itPass)->m_singleLayerRendering == (*nextPass)->m_singleLayerRendering)
       {
          (*nextPass)->m_depthReadback |= (*itPass)->m_depthReadback;
          (*nextPass)->m_commands.insert((*nextPass)->m_commands.begin(), (*itPass)->m_commands.begin(), (*itPass)->m_commands.end());

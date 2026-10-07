@@ -67,7 +67,6 @@ typedef enum
    VPXWINDOW_Backglass,
    VPXWINDOW_ScoreView,
    VPXWINDOW_Topper,
-   VPXWINDOW_VRPreview,
 } VPXWindowId;
 
 typedef enum
