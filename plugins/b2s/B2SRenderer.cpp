@@ -198,6 +198,27 @@ void B2SRenderer::UpdateAnimations(vector<B2SAnimation>& animations, float elaps
    }
 }
 
+// Script B2SSetData writes in the lamp-id space trigger animations bound to that lamp through IDJoin
+// (mirrors the reference's MyB2SSetData which treats the B2SID space as lamp space)
+void B2SRenderer::DispatchScriptTriggers(B2SServer* server)
+{
+   for (const auto& [lampId, value] : server->DrainAnimationTriggers())
+      for (auto* animations : { &m_b2s->m_backglassAnimations, &m_b2s->m_dmdAnimations })
+         for (auto& animation : *animations)
+            for (const auto& trigger : animation.GetRomTriggers())
+               if (trigger.romIdType == B2SRomIDType::Lamp && trigger.romId == lampId)
+               {
+                  const bool start = (value != 0) != trigger.inverted;
+                  if (animation.m_randomStart)
+                     OnRandomAnimationTrigger(*animations, B2SRomIDType::Lamp, lampId, start);
+                  else if (start)
+                     animation.Start();
+                  else
+                     animation.Stop();
+                  break;
+               }
+}
+
 void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start)
 {
    if (start)
@@ -552,6 +573,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    float elapsed = static_cast<float>(static_cast<double>((now - m_lastBackglassRenderTick).count()) / 1000000000.0);
    m_lastBackglassRenderTick = now;
    const B2SDualMode dualMode = ActiveDualMode();
+   DispatchScriptTriggers(server);
    UpdateAnimations(m_b2s->m_backglassAnimations, elapsed, server, dualMode);
 
    // Draw background
@@ -610,8 +632,8 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
    auto now = std::chrono::steady_clock::now();
    float elapsed = static_cast<float>(static_cast<double>((now - m_lastDmdRenderTick).count()) / 1000000000.0);
    m_lastDmdRenderTick = now;
+   DispatchScriptTriggers(server);
    UpdateAnimations(m_b2s->m_dmdAnimations, elapsed, server, ActiveDualMode());
-
    // Draw background
    if (m_b2s->m_dmdImage.m_image)
       ctx->DrawImage(ctx, m_b2s->m_dmdImage.m_image, 1.f, 1.f, 1.f, 1.f,

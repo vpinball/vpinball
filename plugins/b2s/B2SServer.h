@@ -166,6 +166,10 @@ public:
 
    // Plugin settings
    static void RegisterSettings(const MsgPluginAPI* msgApi, unsigned int endpointId);
+
+   // Pending lamp-id writes from B2SSetData that drive animation triggers (drained by the render thread)
+   std::vector<std::pair<int, int>> DrainAnimationTriggers();
+
    int GetAnimationSlowDown(const string& name) const;
    int GetAllAnimationSlowDown() const;
    int GetUsedLEDType() const;
@@ -224,6 +228,8 @@ private:
    std::atomic<bool> m_scoreDisplaysHidden { false };
    std::map<string, int> m_illuminationLocks; // Ref-counted animation locks, keyed by illumination group (bulb name)
    mutable std::mutex m_illuminationLockMutex;
+   std::mutex m_animationTriggerMutex;
+   std::vector<std::pair<int, int>> m_pendingAnimationTriggers;
    int m_setSwitchIndex = -1; // Index of the "Switch" setter member in the proxied PinMAME controller class
    std::map<int, std::atomic<int>> m_playerScores;
    struct ScoreDigit
