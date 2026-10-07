@@ -134,7 +134,7 @@ wstring BiffReader::AsWideString()
    if (!ValidateLength(len))
       return wstring();
    m_bytesinrecordremaining -= len + (int)sizeof(int32_t);
-   const int numChars = len / 2;
+   const int numChars = (len + 1) / 2; // Round up: ReadBytes writes len bytes below, which would overflow a len/2 buffer by 1 for odd len
 #if (WCHAR_T_SIZE == 2) // Windows
    wstring value(numChars, L'\0');
 #else // Linux, macOS
