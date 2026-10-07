@@ -192,8 +192,8 @@ brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 export ANDROID_HOME=$HOME/Library/Android/sdk
-export ANDROID_NDK=$HOME/Library/Android/sdk/ndk/28.2.13676358
-export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/28.2.13676358
+export ANDROID_NDK=$HOME/Library/Android/sdk/ndk/29.0.14206865
+export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/29.0.14206865
 platforms/android-arm64-v8a/external.sh
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
@@ -212,8 +212,8 @@ brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 export ANDROID_HOME=$HOME/Library/Android/sdk
-export ANDROID_NDK=$HOME/Library/Android/sdk/ndk/28.2.13676358
-export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/28.2.13676358
+export ANDROID_NDK=$HOME/Library/Android/sdk/ndk/29.0.14206865
+export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/29.0.14206865
 platforms/android-arm64-v8a/external.sh
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DENABLE_XR=ON -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)

@@ -559,9 +559,9 @@ jobs:
         config: [ Release ]
         flavor: ${{ fromJSON(needs.matrix.outputs.android_flavors) }}
     env:
-      ANDROID_NDK: /usr/local/lib/android/sdk/ndk/28.2.13676358
-      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/28.2.13676358
-      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/28.2.13676358
+      ANDROID_NDK: /usr/local/lib/android/sdk/ndk/29.0.14206865
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/29.0.14206865
+      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/29.0.14206865
     steps:
       - run: |
           sudo apt install bison
