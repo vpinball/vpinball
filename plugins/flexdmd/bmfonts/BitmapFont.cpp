@@ -222,6 +222,8 @@ SDL_Rect BitmapFont::ParsePadding(const string& s)
    string token;
    while (std::getline(ss, token, ','))
       parts.push_back(string_to_int(token));
+   while (parts.size() < 4)
+      parts.push_back(0);
 
    return { parts[3], parts[0], parts[1], parts[2] };
 }
@@ -233,6 +235,8 @@ SDL_Point BitmapFont::ParsePoint(const string& s)
    string token;
    while (std::getline(ss, token, ','))
       parts.push_back(string_to_int(token));
+   while (parts.size() < 2)
+      parts.push_back(0);
 
    return { parts[0], parts[1] };
 }
