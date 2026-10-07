@@ -399,10 +399,12 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       assert((init.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
       init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
       init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
+      if (init.type == bgfx::RendererType::Vulkan && !g_isAndroid)
+         init.platformData.queue = g_pplayer->m_vrDevice->GetGraphicPlatformQueue();
       assert(init.platformData.context != nullptr);
       // For the time being, we do not support having a desktop swapchain along the headset swapchain under Vulkan, so we run BGFX in headless mode
       // Note that this is needed for native VR (running directly on the headset)
-      if (init.type == bgfx::RendererType::Vulkan)
+      if (init.type == bgfx::RendererType::Vulkan && g_isAndroid)
          init.swapChain.nwh = nullptr;
 #endif
    }
@@ -425,6 +427,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       void* nativeWindow = init.swapChain.nwh;
       void* nativeDisplayType = init.swapChain.ndt;
       void* context = init.platformData.context;
+      void* queue = init.platformData.queue;
+      init.platformData.queue = nullptr;
       init.swapChain.width = 0;
       init.swapChain.height = 0;
       init.swapChain.flags &= ~BGFX_SWAP_CHAIN_HDR10;
@@ -448,6 +452,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       init.swapChain.nwh = nativeWindow;
       init.swapChain.ndt = nativeDisplayType;
       init.platformData.context = context;
+      init.platformData.queue = queue;
    }
 
    init.swapChain.flags &= ~BGFX_SWAP_CHAIN_HDR10; // Handle HDR10 color space (actually BGFX select colorspace based on the backbuffer format and discard this flag)

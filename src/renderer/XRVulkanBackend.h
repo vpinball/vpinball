@@ -25,6 +25,9 @@ public:
 
    PFN_vkCreateInstance _vkCreateInstance;
    PFN_vkDestroyInstance _vkDestroyInstance;
+   PFN_vkEnumerateInstanceVersion _vkEnumerateInstanceVersion;
+   PFN_vkEnumerateInstanceExtensionProperties _vkEnumerateInstanceExtensionProperties;
+   PFN_vkEnumerateDeviceExtensionProperties _vkEnumerateDeviceExtensionProperties;
    PFN_vkGetPhysicalDeviceFeatures _vkGetPhysicalDeviceFeatures;
    PFN_vkGetPhysicalDeviceQueueFamilyProperties _vkGetPhysicalDeviceQueueFamilyProperties;
    PFN_vkGetInstanceProcAddr _vkGetInstanceProcAddr;
@@ -58,6 +61,9 @@ private:
          return;
       _vkCreateInstance = (PFN_vkCreateInstance)bx::dlsym(m_vulkan1Dll, "vkCreateInstance");
       _vkDestroyInstance = (PFN_vkDestroyInstance)bx::dlsym(m_vulkan1Dll, "vkDestroyInstance");
+      _vkEnumerateInstanceVersion = (PFN_vkEnumerateInstanceVersion)bx::dlsym(m_vulkan1Dll, "vkEnumerateInstanceVersion");
+      _vkEnumerateInstanceExtensionProperties = (PFN_vkEnumerateInstanceExtensionProperties)bx::dlsym(m_vulkan1Dll, "vkEnumerateInstanceExtensionProperties");
+      _vkEnumerateDeviceExtensionProperties = (PFN_vkEnumerateDeviceExtensionProperties)bx::dlsym(m_vulkan1Dll, "vkEnumerateDeviceExtensionProperties");
       _vkGetPhysicalDeviceFeatures = (PFN_vkGetPhysicalDeviceFeatures)bx::dlsym(m_vulkan1Dll, "vkGetPhysicalDeviceFeatures");
       _vkGetPhysicalDeviceQueueFamilyProperties = (PFN_vkGetPhysicalDeviceQueueFamilyProperties)bx::dlsym(m_vulkan1Dll, "vkGetPhysicalDeviceQueueFamilyProperties");
       _vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)bx::dlsym(m_vulkan1Dll, "vkGetInstanceProcAddr");
@@ -68,6 +74,9 @@ private:
 #else
       _vkCreateInstance = &vkCreateInstance;
       _vkDestroyInstance = &vkDestroyInstance;
+      _vkEnumerateInstanceVersion = &vkEnumerateInstanceVersion;
+      _vkEnumerateInstanceExtensionProperties = &vkEnumerateInstanceExtensionProperties;
+      _vkEnumerateDeviceExtensionProperties = &vkEnumerateDeviceExtensionProperties;
       _vkGetPhysicalDeviceFeatures = &vkGetPhysicalDeviceFeatures;
       _vkGetPhysicalDeviceQueueFamilyProperties = &vkGetPhysicalDeviceQueueFamilyProperties;
       _vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
@@ -95,22 +104,34 @@ public:
 
       XrResult result;
 
-      std::vector<const char*> instanceExtensions;
-      instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-      instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-      // For the time being, we are not creating any additional swapchain when using the Vulkan backend (so no preview window)
-      if (false)
+      // BGFX shares this instance, so enable what it uses when available: debug reporting, the extended physical device queries,
+      // and on desktop the surface extensions needed to create the preview and ancillary window swapchains
+      std::vector<const char*>& instanceExtensions = m_instanceExtensions;
       {
-         instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-#if BX_PLATFORM_ANDROID
-         instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_WINDOWS
-         instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+         uint32_t count = 0;
+         m_vulkan._vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+         std::vector<VkExtensionProperties> available(count);
+         m_vulkan._vkEnumerateInstanceExtensionProperties(nullptr, &count, available.data());
+         for (const char* name : {
+                 VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+                 VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
+                 VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+#if !BX_PLATFORM_ANDROID
+                 VK_KHR_SURFACE_EXTENSION_NAME,
+#if BX_PLATFORM_WINDOWS
+                 "VK_KHR_win32_surface",
+#elif BX_PLATFORM_LINUX
+                 "VK_KHR_xlib_surface",
+                 "VK_KHR_xcb_surface",
+                 "VK_KHR_wayland_surface",
 #elif BX_PLATFORM_OSX
-         instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_NX
-         instanceExtensions.push_back(VK_NN_VI_SURFACE_EXTENSION_NAME);
+                 "VK_MVK_macos_surface",
 #endif
+#endif
+              })
+            for (const VkExtensionProperties& ext : available)
+               if (strcmp(ext.extensionName, name) == 0)
+                  instanceExtensions.push_back(name);
       }
       PLOGI << "Requested Vulkan instance extensions: ";
       for (auto ext : instanceExtensions)
@@ -131,15 +152,21 @@ public:
       PLOGI << "Max Vulkan API version: " << XR_VERSION_MAJOR(graphicsRequirements.maxApiVersionSupported) << '.' << XR_VERSION_MINOR(graphicsRequirements.maxApiVersionSupported) << '.'
             << XR_VERSION_PATCH(graphicsRequirements.maxApiVersionSupported);
 
-      // Create Vulkan instance with the required version
+      // Create the Vulkan instance with the highest version the loader and the OpenXR runtime both support, as BGFX needs at least 1.1
+      uint32_t loaderVersion = VK_API_VERSION_1_0;
+      if (m_vulkan._vkEnumerateInstanceVersion)
+         m_vulkan._vkEnumerateInstanceVersion(&loaderVersion);
+      const uint32_t minVersion = VK_MAKE_API_VERSION(0, XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported), XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported), 0);
+      const uint32_t maxVersion = VK_MAKE_API_VERSION(0, XR_VERSION_MAJOR(graphicsRequirements.maxApiVersionSupported), XR_VERSION_MINOR(graphicsRequirements.maxApiVersionSupported), 0);
+      const uint32_t apiVersion = std::max(minVersion, std::min(maxVersion, VK_MAKE_API_VERSION(0, VK_API_VERSION_MAJOR(loaderVersion), VK_API_VERSION_MINOR(loaderVersion), 0)));
+      PLOGI << "Vulkan instance API version: " << VK_API_VERSION_MAJOR(apiVersion) << '.' << VK_API_VERSION_MINOR(apiVersion);
       VkApplicationInfo appInfo = {};
       appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
       appInfo.pApplicationName = "VPinball";
       appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
       appInfo.pEngineName = "bgfx";
       appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-      appInfo.apiVersion = VK_MAKE_VERSION(XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported), XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported),
-         XR_VERSION_PATCH(graphicsRequirements.minApiVersionSupported));
+      appInfo.apiVersion = apiVersion;
 
       VkInstanceCreateInfo instanceInfo { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
       instanceInfo.pApplicationInfo = &appInfo;
@@ -178,13 +205,19 @@ public:
       m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
 
       m_queueFamilyIndex = UINT32_MAX;
+      constexpr VkQueueFlags requiredQueueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
       for (uint32_t i = 0; i < queueFamilyCount; i++)
       {
-         if (queueFamilies[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))
+         if ((queueFamilies[i].queueFlags & requiredQueueFlags) == requiredQueueFlags)
          {
             m_queueFamilyIndex = i;
             break;
          }
+      }
+      if (m_queueFamilyIndex == UINT32_MAX)
+      {
+         PLOGE << "No Vulkan queue family supports both graphics and compute";
+         return;
       }
 
       float queuePriorities[1] = { 0.0f };
@@ -215,11 +248,23 @@ public:
       if (availableFeatures.depthBiasClamp)
          deviceFeatures.depthBiasClamp = VK_TRUE;
 
-      std::vector<const char*> deviceExtensions;
+      // Only the extensions listed here are usable by BGFX on this device (it can not know what was enabled otherwise)
+      std::vector<const char*>& deviceExtensions = m_deviceExtensions;
       deviceExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
       deviceExtensions.push_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
-      //deviceExtensions.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
-      //deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); // For preview swapchain
+#if !BX_PLATFORM_ANDROID
+      deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); // Preview and ancillary window swapchains
+#endif
+      {
+         uint32_t count = 0;
+         m_vulkan._vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &count, nullptr);
+         std::vector<VkExtensionProperties> available(count);
+         m_vulkan._vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &count, available.data());
+         for (const char* name : { VK_EXT_MEMORY_BUDGET_EXTENSION_NAME })
+            for (const VkExtensionProperties& ext : available)
+               if (strcmp(ext.extensionName, name) == 0)
+                  deviceExtensions.push_back(name);
+      }
       PLOGI << "Requested device extensions: ";
       for (auto ext : deviceExtensions)
          PLOGI << "\t" << ext;
@@ -253,6 +298,14 @@ public:
       m_graphicsBinding.device = m_device;
       m_graphicsBinding.queueFamilyIndex = m_queueFamilyIndex;
       m_graphicsBinding.queueIndex = 0;
+
+      m_externalDevice.instance = (void*)m_instance;
+      m_externalDevice.physicalDevice = (void*)m_physicalDevice;
+      m_externalDevice.queueFamilyIndex = m_queueFamilyIndex;
+      m_externalDevice.instanceExtensions = m_instanceExtensions.data();
+      m_externalDevice.numInstanceExtensions = static_cast<uint32_t>(m_instanceExtensions.size());
+      m_externalDevice.deviceExtensions = m_deviceExtensions.data();
+      m_externalDevice.numDeviceExtensions = static_cast<uint32_t>(m_deviceExtensions.size());
    }
 
    ~XRVulkanBackend() override
@@ -269,6 +322,10 @@ public:
    }
 
    void* GetGraphicContext() const override { return (void*)m_device; }
+
+   // Instance, physical device, queue family and enabled extensions shared with BGFX (bgfx::PlatformData::queue), so that it
+   // can create the desktop swapchains on the same instance and only rely on the extensions enabled here
+   void* GetGraphicPlatformQueue() override { return &m_externalDevice; }
 
    bgfx::RendererType::Enum GetRendererType() const override { return bgfx::RendererType::Vulkan; }
 
@@ -332,6 +389,9 @@ private:
    XrSystemId m_systemID;
    VkInstance m_instance = VK_NULL_HANDLE;
    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+   std::vector<const char*> m_instanceExtensions;
+   std::vector<const char*> m_deviceExtensions;
+   bgfx::VulkanExternalDevice m_externalDevice;
    VkDevice m_device = VK_NULL_HANDLE;
    uint32_t m_queueFamilyIndex = 0;
    XrGraphicsBindingVulkanKHR m_graphicsBinding {};
