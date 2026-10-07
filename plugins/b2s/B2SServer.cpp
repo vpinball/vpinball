@@ -632,6 +632,21 @@ void B2SServer::B2SSetData(int b2sId, int value, bool sendPluginEvent)
       B2SPluginEvent event { 'E', b2sId, value };
       m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
    }
+
+   // Script writes in the lamp-id space also drive IDJoin animation triggers (mirrors the reference's MyB2SSetData)
+   {
+      std::lock_guard lock(m_animationTriggerMutex);
+      if (m_pendingAnimationTriggers.size() < 1024) // Bound the queue when no backglass is rendering to drain it
+         m_pendingAnimationTriggers.emplace_back(b2sId, value);
+   }
+}
+
+std::vector<std::pair<int, int>> B2SServer::DrainAnimationTriggers()
+{
+   std::lock_guard lock(m_animationTriggerMutex);
+   std::vector<std::pair<int, int>> triggers;
+   triggers.swap(m_pendingAnimationTriggers);
+   return triggers;
 }
 
 void B2SServer::B2SSetData(const std::string& group, const std::string& value)
