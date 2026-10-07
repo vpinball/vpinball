@@ -55,7 +55,6 @@ private:
    std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;
 
    B2SAnimation* m_lastRandomAnimation = nullptr; // Last animation started through a random trigger
-   int m_lastRandomPick = -1;
 
    std::map<int, B2SReelDigit> m_reelDigits; // Rolling reel digit states, keyed by resolved digit index
 

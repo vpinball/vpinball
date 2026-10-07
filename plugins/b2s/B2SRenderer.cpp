@@ -202,21 +202,31 @@ void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2S
 {
    if (start)
    {
-      // Pick one animation at random among all the random-start animations sharing this ROM trigger
+      // Pick one animation at random among all the random-start animations sharing this ROM trigger,
+      // weighted by RandomQuality (the reference adds the animation once per quality point to the pool)
       vector<B2SAnimation*> pool;
+      int totalWeight = 0;
       for (B2SAnimation& animation : animations)
          if (animation.m_randomStart
             && std::ranges::any_of(
                animation.GetRomTriggers(), [romIdType, romId](const B2SAnimation::RomTrigger& trigger) { return trigger.romIdType == romIdType && trigger.romId == romId; }))
+         {
             pool.push_back(&animation);
+            totalWeight += std::max(1, animation.m_randomQuality);
+         }
       const bool anyRunning = std::ranges::any_of(pool, [](const B2SAnimation* animation) { return animation->IsRunning(); });
       if (!anyRunning && !pool.empty())
       {
-         int pick = pool.size() == 1 ? 0 : std::rand() % static_cast<int>(pool.size());
-         if (pool.size() > 1 && pick == m_lastRandomPick)
-            pick = (pick + 1) % static_cast<int>(pool.size()); // avoid restarting the same animation twice in a row
-         m_lastRandomPick = pick;
-         m_lastRandomAnimation = pool[pick];
+         int pick = std::rand() % totalWeight;
+         for (B2SAnimation* animation : pool)
+         {
+            pick -= std::max(1, animation->m_randomQuality);
+            if (pick < 0)
+            {
+               m_lastRandomAnimation = animation;
+               break;
+            }
+         }
          m_lastRandomAnimation->Start(false);
       }
    }
