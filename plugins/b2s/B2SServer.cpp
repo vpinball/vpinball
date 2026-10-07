@@ -91,6 +91,17 @@ B2SServer::~B2SServer()
       m_onDestroyHandler(this);
 }
 
+// Compatibility version reported to scripts, matching the B2S backglass server series the plugin emulates
+string B2SServer::GetB2SServerVersion() const { return "2.3.1"s; }
+
+double B2SServer::GetB2SBuildVersion() const { return 20301.0999; }
+
+string B2SServer::GetB2SServerDirectory() const
+{
+   const std::filesystem::path& dir = m_workingDir.empty() ? m_tableDir : m_workingDir;
+   return PluginStrings::PathToUTF8(dir);
+}
+
 std::shared_ptr<B2STable> B2SServer::LoadB2SFile(const std::filesystem::path& path)
 {
    std::shared_ptr<B2STable> b2s;

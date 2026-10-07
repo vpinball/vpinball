@@ -26,9 +26,9 @@ public:
    PSC_IMPLEMENT_REFCOUNT()
 
    void Dispose() { }
-   string GetB2SServerVersion() const { return ""s; }
-   double GetB2SBuildVersion() const { return 0.0; }
-   string GetB2SServerDirectory() const { return ""s; }
+   string GetB2SServerVersion() const;
+   double GetB2SBuildVersion() const;
+   string GetB2SServerDirectory() const;
    string GetVPMBuildVersion() const { return ""s; }
    string GetB2SName() const;
    void SetB2SName(const string& b2sName);
