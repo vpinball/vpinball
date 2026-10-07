@@ -113,7 +113,9 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
       {
       case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, bulb->m_b2sValue); break;
       case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
-      case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted); break;
+      case B2SSnippitType::SelfRotatingImage:
+         bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, bulb->m_b2sValue);
+         break;
       }
 
    // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
@@ -268,7 +270,8 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          continue; // Drawn as part of the lit background image
       const bool locked = server && !bulb->m_name.empty() && server->IsIlluminationLocked(bulb->m_name);
       float state = 0.f;
-      if (server && server->GetBulbState(*bulb, state))
+      const bool scripted = server && server->GetBulbState(*bulb, state);
+      if (scripted)
          bulb->m_brightness = (bulb->m_b2sValue > 0) ? //
             ((static_cast<int>(state) == bulb->m_b2sValue) ? 1.f : 0.f)
                                                      : state;
@@ -279,15 +282,21 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          rotation = 360.f * (bulb->m_mechRot / static_cast<float>(bulb->m_snippitRotatingSteps));
       else if (bulb->m_snippitType == B2SSnippitType::SelfRotatingImage)
       {
-         // ROM-driven self rotating images rotate while their lamp is on (reference behaviour)
-         if (bulb->m_romId >= 0 && bulb->m_romIdType != B2SRomIDType::NotDefined)
+         // Self rotating images spin while their driving state is on; scripted state wins over the ROM
+         // lamp state (same as illumination). Rotation only toggles on state transitions so that explicit
+         // B2SStartRotation calls keep spinning until B2SStopRotation or a state write (reference behaviour).
+         const float spin = scripted ? bulb->m_brightness : bulb->m_romOn;
+         const bool spinOn = spin >= 0.5f;
+         if (spinOn != bulb->m_spinDriverOn)
          {
-            if (bulb->m_romOn >= 0.5f)
+            bulb->m_spinDriverOn = spinOn;
+            if (spinOn)
                bulb->StartRotation();
             else
                bulb->StopRotation();
-            bulb->m_brightness = std::max(bulb->m_brightness, bulb->m_romOn);
          }
+         if (!scripted)
+            bulb->m_brightness = std::max(bulb->m_brightness, bulb->m_romOn);
          bulb->UpdateRotation(elapsed);
          rotation = bulb->GetRotationAngle();
       }
