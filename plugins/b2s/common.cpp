@@ -180,4 +180,18 @@ bool DecodeWav(const vector<uint8_t>& wav, WavData& out)
    out.sampleRate = static_cast<double>(sampleRate);
    return true;
 }
+
+int B2SAnimationSlowDown(const string& list, const string& name)
+{
+   size_t pos = 0;
+   while (pos < list.size())
+   {
+      const size_t end = list.find(';', pos);
+      const string entry = trim_string(list.substr(pos, end == string::npos ? string::npos : end - pos));
+      if (const size_t eq = entry.find('='); eq != string::npos && trim_string(entry.substr(0, eq)) == name)
+         return std::max(1, string_to_int(trim_string(entry.substr(eq + 1)), 1));
+      pos = end == string::npos ? list.size() : end + 1;
+   }
+   return 1;
+}
 }
