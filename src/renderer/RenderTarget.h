@@ -41,6 +41,7 @@ public:
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
    bool IsMSAA() const { return m_nMSAASamples > 1; }
+   int GetMSAASamples() const { return m_nMSAASamples; }
    bool HasDepth() const { return m_has_depth; }
    colorFormat GetColorFormat() const { return m_format; }
    RenderDevice* GetRenderDevice() const { return m_rd; }

@@ -733,7 +733,7 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    }
    
 #elif defined(ENABLE_DX9)
-   assert(pw1 == pw2 && ph1 == ph2); // we do not support scaling (only used for VR preview)
+   assert(pw1 == pw2 && ph1 == ph2); // we do not support scaling (only used for the VR desktop display)
    assert(srcLayer == -1); // Layered rendering is not supported for DirectX 9
    if (copyColor)
    {

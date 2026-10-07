@@ -45,19 +45,11 @@ DisplayHomePage::DisplayHomePage()
 
 void DisplayHomePage::BuildPage()
 {
-   // On Phone platform, the main display is always the device screen
+   // On Phone platform, the main display is always the device screen. In VR, the main display is the desktop display
    if (!g_isMobile)
    {
-      if (m_player->m_vrDevice)
-      {
-         m_player->m_liveUI->m_inGameUI.AddPage("settings/display_vr_preview"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_VRPreview); });
-         AddItem(std::make_unique<InGameUIItem>("VR PReview Display"s, ""s, "settings/display_vr_preview"s));
-      }
-      else
-      {
-         m_player->m_liveUI->m_inGameUI.AddPage("settings/display_playfield"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Playfield); });
-         AddItem(std::make_unique<InGameUIItem>("Playfield Display"s, ""s, "settings/display_playfield"s));
-      }
+      m_player->m_liveUI->m_inGameUI.AddPage("settings/display_playfield"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Playfield); });
+      AddItem(std::make_unique<InGameUIItem>(m_player->m_vrDevice ? "Desktop Display"s : "Playfield Display"s, ""s, "settings/display_playfield"s));
    }
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_backglass"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Backglass); });
@@ -72,14 +64,13 @@ void DisplayHomePage::BuildPage()
 
 
 DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
-   : InGameUIPage(wndId == VPXWindowId::VPXWINDOW_Playfield ? "Playfield Display Settings"s
-           : wndId == VPXWindowId::VPXWINDOW_VRPreview      ? "VR Preview Display Settings"s
+   : InGameUIPage(wndId == VPXWindowId::VPXWINDOW_Playfield ? (g_pplayer->IsVR() ? "Desktop Display Settings"s : "Playfield Display Settings"s)
            : wndId == VPXWindowId::VPXWINDOW_Backglass      ? "Backglass Display Settings"s
            : wndId == VPXWindowId::VPXWINDOW_ScoreView      ? "ScoreView Display Settings"s
                                                             : "Topper Display Settings"s,
         "Adjust display mode, size and position"s, SaveMode::Both)
    , m_wndId(wndId)
-   , m_isMainWindow(wndId == VPXWindowId::VPXWINDOW_Playfield || wndId == VPXWindowId::VPXWINDOW_VRPreview)
+   , m_isMainWindow(wndId == VPXWindowId::VPXWINDOW_Playfield)
 {
    m_displays = VPX::Window::GetDisplays();
    for (const auto& display : m_displays)
@@ -90,8 +81,8 @@ DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
 void DisplaySettingsPage::ResetARLock()
 {
    double ar;
-   if (m_wndId == VPXWindowId::VPXWINDOW_Playfield || m_wndId == VPXWindowId::VPXWINDOW_VRPreview)
-      ar = static_cast<double>(m_player->m_playfieldWnd->GetWidth()) / static_cast<double>(m_player->m_playfieldWnd->GetHeight());
+   if (m_isMainWindow)
+      ar = static_cast<double>(GetWindow()->GetWidth()) / static_cast<double>(GetWindow()->GetHeight());
    else
       ar = static_cast<double>(GetOutput(m_wndId).GetWidth()) / static_cast<double>(GetOutput(m_wndId).GetHeight());
    double best = 0.1; // Select up to 10% away
@@ -151,6 +142,16 @@ VPX::RenderOutput& DisplaySettingsPage::GetOutput(VPXWindowId wndId)
    case VPXWINDOW_Topper: return m_player->m_topperOutput;
    default: assert(false); return m_player->m_backglassOutput;
    }
+}
+
+VPX::Window* DisplaySettingsPage::GetWindow()
+{
+   if (!m_isMainWindow)
+      return GetOutput(m_wndId).GetWindow();
+   // In VR, the first output window is the headset and the second one is the desktop display OS window
+   if (m_player->IsVR() && m_player->m_renderer->m_renderDevice->m_outputWnd.size() >= 2)
+      return m_player->m_renderer->m_renderDevice->m_outputWnd[1];
+   return m_player->m_playfieldWnd;
 }
 
 void DisplaySettingsPage::BuildPage()
@@ -261,7 +262,7 @@ void DisplaySettingsPage::BuildWindowPage()
    SDL_Point wndPos; // Relative position of the window inside the display (0,0 is top,left)
    SDL_Point wndSize;
    {
-      const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+      const Window* const wnd = GetWindow();
       wnd->GetPos(wndPos.x, wndPos.y);
       wndPos.x += wnd->GetWidth() / 2;
       wndPos.y += wnd->GetHeight() / 2;
@@ -289,7 +290,7 @@ void DisplaySettingsPage::BuildWindowPage()
       }, // Stored
       [this](int, int v)
       {
-         Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+         Window* const wnd = GetWindow();
          SDL_Point size;
          size.x = wnd->GetWidth();
          size.y = wnd->GetHeight();
@@ -459,11 +460,11 @@ void DisplaySettingsPage::BuildWindowPage()
          Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, maxWidth));
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Width[m_wndId], "%d"s, //
-                    [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetPixelWidth(); }, //
+                    [this]() { return (GetWindow())->GetPixelWidth(); }, //
                     [this, containerWidth, containerHeight, wndDisplay](int prev, int v)
                     {
                        // Apply AR constraint
-                       Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       Window* const wnd = GetWindow();
                        SDL_Point prevSize { prev, wnd->GetPixelHeight() };
                        SDL_Point size { v, wnd->GetPixelHeight() };
                        if (m_arLock != 0)
@@ -494,15 +495,16 @@ void DisplaySettingsPage::BuildWindowPage()
                        OnStaticRenderDirty();
                        RequestRebuild();
                     }))
-            .m_excludeFromDefault = true;
+            .m_excludeFromDefault
+            = true;
 
          Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, maxHeight));
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Height[m_wndId], "%d"s, //
-                    [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetPixelHeight(); }, //
+                    [this]() { return (GetWindow())->GetPixelHeight(); }, //
                     [this, containerWidth, containerHeight, wndDisplay](int prev, int v)
                     {
-                       Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       Window* const wnd = GetWindow();
                        SDL_Point prevSize { wnd->GetPixelWidth(), prev };
                        SDL_Point size { wnd->GetPixelWidth(), v };
                        if (m_arLock != 0)
@@ -533,10 +535,11 @@ void DisplaySettingsPage::BuildWindowPage()
                        OnStaticRenderDirty();
                        RequestRebuild();
                     }))
-            .m_excludeFromDefault = true;
+            .m_excludeFromDefault
+            = true;
       }
 
-      if (const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow(); wnd->IsPositioningSupported())
+      if (const Window* const wnd = GetWindow(); wnd->IsPositioningSupported())
       {
          Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)->WithRange(0, containerWidth - wndSize.x));
          AddItem(std::make_unique<InGameUIItem>(
@@ -544,13 +547,13 @@ void DisplaySettingsPage::BuildWindowPage()
                     [this, wndDisplay]()
                     {
                        SDL_Point pos;
-                       const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       const Window* const wnd = GetWindow();
                        wnd->GetPixelPos(pos.x, pos.y);
                        return pos.x - wnd->LogicalToPixel(m_displays[wndDisplay].left);
                     }, //
                     [this, wndDisplay](int prev, int v)
                     {
-                       Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       Window* const wnd = GetWindow();
                        SDL_Point pos;
                        wnd->GetPixelPos(pos.x, pos.y);
                        wnd->SetPixelPos(wnd->LogicalToPixel(m_displays[wndDisplay].left) + v, pos.y);
@@ -562,7 +565,8 @@ void DisplaySettingsPage::BuildWindowPage()
                        }
                        RequestRebuild();
                     }))
-            .m_excludeFromDefault = true;
+            .m_excludeFromDefault
+            = true;
 
          Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_wndId)->WithRange(0, containerHeight - wndSize.y));
          AddItem(std::make_unique<InGameUIItem>(
@@ -570,13 +574,13 @@ void DisplaySettingsPage::BuildWindowPage()
                     [this, wndDisplay]()
                     {
                        SDL_Point pos;
-                       const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       const Window* const wnd = GetWindow();
                        wnd->GetPixelPos(pos.x, pos.y);
                        return pos.y - wnd->LogicalToPixel(m_displays[wndDisplay].top);
                     }, //
                     [this, wndDisplay](int prev, int v)
                     {
-                       Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       Window* const wnd = GetWindow();
                        SDL_Point pos;
                        wnd->GetPixelPos(pos.x, pos.y);
                        wnd->SetPixelPos(pos.x, wnd->LogicalToPixel(m_displays[wndDisplay].top) + v);
@@ -588,7 +592,8 @@ void DisplaySettingsPage::BuildWindowPage()
                        }
                        RequestRebuild();
                     }))
-            .m_excludeFromDefault = true;
+            .m_excludeFromDefault
+            = true;
 
          AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window to adjust its position"s));
       }
@@ -707,14 +712,13 @@ void DisplaySettingsPage::Render(float elapsedS)
 {
    InGameUIPage::Render(elapsedS);
    if (!IsWindowHovered() // Don't drag when mouse is hovering the InGameUI
-      && (SDL_GetMouseFocus() == m_player->m_playfieldWnd->GetCore()) // Only apply for main playfield window (and its embedded windows)
+      && (SDL_GetMouseFocus() == (m_isMainWindow ? GetWindow() : m_player->m_playfieldWnd)->GetCore()) // Only apply for main window (and its embedded windows)
       && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) // Only drag with left mouse button
    {
       if (m_isMainWindow)
       { // Drag main window
          SDL_Point pos;
-         m_player->m_playfieldWnd->GetPos(pos.x, pos.y);
-         const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+         Window* const wnd = GetWindow();
          wnd->GetPos(pos.x, pos.y);
          pos.x += wnd->GetWidth() / 2;
          pos.y += wnd->GetHeight() / 2;
@@ -745,9 +749,9 @@ void DisplaySettingsPage::Render(float elapsedS)
          default: assert(false);
          }
 
-         pos.x = clamp(pos.x, displayBounds.x, max(displayBounds.x, displayBounds.x + displayBounds.w - m_player->m_playfieldWnd->GetWidth()));
-         pos.y = clamp(pos.y, displayBounds.y, max(displayBounds.y, displayBounds.y + displayBounds.h - m_player->m_playfieldWnd->GetHeight()));
-         m_player->m_playfieldWnd->SetPos(pos.x, pos.y);
+         pos.x = clamp(pos.x, displayBounds.x, max(displayBounds.x, displayBounds.x + displayBounds.w - wnd->GetWidth()));
+         pos.y = clamp(pos.y, displayBounds.y, max(displayBounds.y, displayBounds.y + displayBounds.h - wnd->GetHeight()));
+         wnd->SetPos(pos.x, pos.y);
       }
       else if (GetOutput(m_wndId).GetMode() == RenderOutput::OM_EMBEDDED)
       { // Drag ancillary embedded window

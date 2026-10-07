@@ -560,7 +560,7 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
       g_pplayer->m_vrDevice->RenderFrame(this,
          [this](RenderTarget* vrRenderTarget)
          {
-            // FIXME No VR target, we should still render to the preview window
+            // FIXME No VR target, we should still render to the desktop display
             if (vrRenderTarget == nullptr)
                return;
 
@@ -580,7 +580,7 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
                return;
             }
 
-            // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
+            // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like the desktop display,...)
             {
                BEGIN_SPAN(tagSpan, "VPX->BGFX")
                std::lock_guard lock(m_frameMutex);
@@ -1278,22 +1278,23 @@ RenderDevice::RenderDevice(
    m_outputWnd.push_back(wnd);
    VPX::Window* swapchainWnd = wnd;
 
-   // Create preview in the render device as it holds the desktop swapchain (not really clean and should be refactored for all windows to be added/removed by the client)
+   // Create the desktop display in the render device as it holds the desktop swapchain (not really clean and should be refactored for all windows to be added/removed by the client)
+   // It is configured as the playfield display: all of its settings come from the playfield window properties
    if (isVR && !g_isAndroid)
    {
-      VPX::Window* previewWnd = new VPX::Window("Visual Pinball VR Preview"s, g_settingsService.GetActiveSettings(), VPXWindowId::VPXWINDOW_VRPreview);
+      VPX::Window* desktopWnd = new VPX::Window("Visual Pinball Desktop Display"s, g_settingsService.GetActiveSettings(), VPXWindowId::VPXWINDOW_Playfield);
 #ifdef ENABLE_BGFX
       // Color and depth format are likely wrong => use the ones selected by the OpenXR backend
       RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, bgfx::TextureFormat::RGBA8, BGFX_INVALID_HANDLE,
-         bgfx::TextureFormat::D32F, "BackBuffer", previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8);
+         bgfx::TextureFormat::D32F, "BackBuffer", desktopWnd->GetPixelWidth(), desktopWnd->GetPixelHeight(), colorFormat::RGBA8);
 #else
-      RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8);
+      RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, desktopWnd->GetPixelWidth(), desktopWnd->GetPixelHeight(), colorFormat::RGBA8);
 #endif
-      previewWnd->SetBackBuffer(backbuffer, false);
-      previewWnd->Show();
-      previewWnd->RaiseAndFocus();
-      m_outputWnd.push_back(previewWnd);
-      swapchainWnd = previewWnd;
+      desktopWnd->SetBackBuffer(backbuffer, false);
+      desktopWnd->Show();
+      desktopWnd->RaiseAndFocus();
+      m_outputWnd.push_back(desktopWnd);
+      swapchainWnd = desktopWnd;
    }
 
    assert(!isVR || m_nEyes == 2);
@@ -1955,7 +1956,7 @@ RenderDevice::~RenderDevice()
       wnd->SetBackBuffer(nullptr);
    }
 
-   // Delete preview window we eventually created in constructor
+   // Delete the desktop display window we eventually created in constructor
    if (g_pplayer->IsVR() && m_outputWnd.size() > 1)
       delete m_outputWnd[1];
 
@@ -2754,6 +2755,8 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const b
    {
       m_currentPass = m_renderFrame->AddPass(name, rt);
       m_currentPass->m_mergeable = !forceNewPass;
+      // Single layer rendering only applies to stereo (2 layers) render targets (other layered render targets like cubemap probes need all of their layers)
+      m_currentPass->m_singleLayerRendering = rt->m_nLayers == 2 ? m_singleLayerRendering : -1;
       if (useRTContent && rt->m_lastRenderPass != nullptr)
       {
          for (auto precursors : rt->m_lastRenderPass->m_dependencies)
@@ -2913,7 +2916,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    {
       m_FBShader->SetTextureNull(ShaderUniform::tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " HBlur", tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
-      m_currentPass->m_singleLayerRendering = singleLayer; // We support blurring a single layer (for anaglyph defocusing)
+      m_currentPass->m_singleLayerRendering = max(singleLayer, m_singleLayerRendering); // We support blurring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(source);
       m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, source->GetColorSampler());
       m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
@@ -2923,7 +2926,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    {
       m_FBShader->SetTextureNull(ShaderUniform::tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " VBlur", dest, false); // switch to output buffer for vertical phase of gaussian blur
-      m_currentPass->m_singleLayerRendering = singleLayer; // We support blurring a single layer (for anaglyph defocusing)
+      m_currentPass->m_singleLayerRendering = max(singleLayer, m_singleLayerRendering); // We support blurring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(tmp);
       m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, tmp->GetColorSampler());
       m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);

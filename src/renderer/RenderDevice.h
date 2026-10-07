@@ -237,6 +237,8 @@ public:
 
    bool m_noMovingBalls = false;
 
+   int m_singleLayerRendering = -1; // if positive, newly created passes will only render to the corresponding layer of their stereo render target
+
 private:
    const bool m_isAnaglyph;
    const bool m_isVR;

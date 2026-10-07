@@ -329,16 +329,14 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    m_scoreViewOutput.SetMode(m_ptable->GetSettings(), static_cast<RenderOutput::OutputMode>(m_ptable->GetSettings().GetWindow_Mode(VPXWindowId::VPXWINDOW_ScoreView)));
    m_topperOutput.SetMode(m_ptable->GetSettings(), static_cast<RenderOutput::OutputMode>(m_ptable->GetSettings().GetWindow_Mode(VPXWindowId::VPXWINDOW_Topper)));
    #if defined(ENABLE_BGFX)
-   if (m_vrDevice == nullptr) // Ancillary windows are not yet supported while in VR mode
-   {
-      if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-         m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
-      if (m_scoreViewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-         m_renderer->m_renderDevice->AddWindow(m_scoreViewOutput.GetWindow());
-      if (m_topperOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-         m_renderer->m_renderDevice->AddWindow(m_topperOutput.GetWindow());
-   }
-   #endif
+   // Ancillary windows are created hidden and only shown when rendering them (in VR mode, they are only rendered when the desktop display shows the other displays)
+   if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+      m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
+   if (m_scoreViewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+      m_renderer->m_renderDevice->AddWindow(m_scoreViewOutput.GetWindow());
+   if (m_topperOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+      m_renderer->m_renderDevice->AddWindow(m_topperOutput.GetWindow());
+#endif
 
    // Disable static prerendering for VR
    if (stereo3D == STEREO_VR)

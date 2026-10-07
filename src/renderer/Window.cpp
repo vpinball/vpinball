@@ -208,7 +208,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       if (SDL_GetCurrentVideoDriver() == "x11"sv)
       {
          // On X11, we need ancillary windows to be non focusable but non focusable windows are only resizable if they are utility windows
-         if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowId != VPXWindowId::VPXWINDOW_VRPreview && m_windowMode == Windowed)
+         if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowMode == Windowed)
             wnd_flags |= SDL_WINDOW_UTILITY;
       }
       else if (SDL_GetCurrentVideoDriver() == "windows"sv)
@@ -222,7 +222,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
          // is to make ancillary windows (backglass, score view, topper) output only. They must never grab input
          // focus, otherwise showing them (eventually lazily, when the script starts feeding them content) would
          // steal focus from the playfield and pause the table.
-         if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowId != VPXWindowId::VPXWINDOW_VRPreview && m_windowMode == Windowed)
+         if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowMode == Windowed)
             wnd_flags |= SDL_WINDOW_NOT_FOCUSABLE;
       }
 
@@ -530,7 +530,7 @@ void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
                : m_windowId == VPXWindowId::VPXWINDOW_Backglass                             ? "Visual Pinball Backglass"s
                : m_windowId == VPXWindowId::VPXWINDOW_ScoreView                             ? "Visual Pinball Score View"s
                : m_windowId == VPXWindowId::VPXWINDOW_Topper                                ? "Visual Pinball Topper"s
-                                                                                            : "Visual Pinball VR Preview"s,
+                                                                                            : "Visual Pinball"s,
             settings, m_windowId);
       }
       break;

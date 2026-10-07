@@ -137,15 +137,23 @@ void VRSettingsPage::BuildPage()
       [this](int, int v) { m_player->m_vrDevice->SetDisplayRefreshRateMode(v); }));
 #endif
 
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_VRPreview, //
-      [this]() { return static_cast<int>(m_player->m_renderer->m_vrPreview); }, //
-      [this](int, int v) { m_player->m_renderer->m_vrPreview = static_cast<VRPreviewMode>(v); }));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Desktop Display"s));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_ShrinkPreview, //
-      [this]() { return m_player->m_renderer->m_vrPreviewShrink; }, //
-      [this](bool v) { m_player->m_renderer->m_vrPreviewShrink = v; }));
+      Settings::m_propPlayerVR_DesktopDisplay, //
+      [this]() { return static_cast<int>(m_player->m_renderer->m_vrDesktop); }, //
+      [this](int, int v)
+      {
+         m_player->m_renderer->m_vrDesktop = static_cast<VRDesktopMode>(v);
+         RequestRebuild(); // Rebuild the page to update the eye display related options
+      }));
+
+   // Shrinking only applies to the desktop displays which mirror a headset eye
+   if (m_player->m_renderer->m_vrDesktop >= VRDesktopMode::Left)
+      AddItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayerVR_ShrinkDesktopDisplay, //
+         [this]() { return m_player->m_renderer->m_vrDesktopShrink; }, //
+         [this](bool v) { m_player->m_renderer->m_vrDesktopShrink = v; }));
 
 #ifdef ENABLE_XR
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet positioning using controllers"s));
