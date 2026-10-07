@@ -32,12 +32,12 @@ public:
    string GetVPMBuildVersion() const { return ""s; }
    string GetB2SName() const;
    void SetB2SName(const string& b2sName);
-   string GetTableName() const { return ""s; }
-   void SetTableName(const string& tableName) { }
-   void SetWorkingDir(const string& workingDir) { }
-   void SetPath(const string& path) { }
-   bool GetLaunchBackglass() const { return false; }
-   void SetLaunchBackglass(bool launchBackglass) { }
+   string GetTableName() const { return m_tableName; }
+   void SetTableName(const string& tableName);
+   void SetWorkingDir(const string& workingDir);
+   void SetPath(const string& path) { SetWorkingDir(path); }
+   bool GetLaunchBackglass() const { return m_launchBackglass; }
+   void SetLaunchBackglass(bool launchBackglass) { m_launchBackglass = launchBackglass; }
    bool GetLockDisplay() const { return false; }
    void SetLockDisplay(bool lockDisplay) { }
    bool GetPuPHide() const { return false; }
@@ -178,6 +178,15 @@ private:
    mutable std::mutex m_b2sMutex;
    std::shared_ptr<B2STable> m_b2s; // Acquired once the asynchronous load completes
    std::shared_ptr<B2STable> AcquireB2STable();
+
+   // Backglass file discovery (table file name, or folder name for merged layouts)
+   static std::shared_ptr<B2STable> LoadB2SFile(const std::filesystem::path& path);
+   std::filesystem::path FindB2SFile() const;
+   void TryLoadB2S();
+   std::filesystem::path m_tableDir;
+   string m_tableName; // Table file stem by default, scripts may override through TableName
+   std::filesystem::path m_workingDir; // Script override through WorkingDir/SetPath
+   std::atomic<bool> m_launchBackglass { true };
    void ApplyScoreDigit(int digit, int value, bool roll);
    std::function<void(B2SServer*)> m_onDestroyHandler;
 
