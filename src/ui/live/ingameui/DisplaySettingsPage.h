@@ -35,6 +35,7 @@ private:
    void BuildWindowPage();
    void BuildEmbeddedPage();
    VPX::RenderOutput& GetOutput(VPXWindowId wndId);
+   VPX::Window* GetWindow();
 
    void OnStaticRenderDirty();
    bool m_staticPrepassDisabled = false;

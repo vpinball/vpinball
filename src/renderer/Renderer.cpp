@@ -86,7 +86,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    if (m_stereo3D == STEREO_VR)
    {
-      // For VR, renders at the HMD native eye resolution (preview will reuse and scale/stretch it)
+      // For VR, renders at the HMD native eye resolution (the desktop display will reuse and scale/stretch it)
       m_renderWidth = g_pplayer->m_vrDevice->GetEyeWidth();
       m_renderHeight = g_pplayer->m_vrDevice->GetEyeHeight();
    }
@@ -288,8 +288,8 @@ void Renderer::ApplyTableSettings()
    m_disableAO = m_table->GetSettings().GetPlayer_DisableAO();
    for (int wnd = VPXWindowId::VPXWINDOW_Backglass; wnd <= VPXWindowId::VPXWINDOW_Topper; wnd++)
       m_ancillaryWndRotation[wnd] = 90 * clamp(m_table->GetSettings().GetWindow_Rotation(wnd), 0, 3); // Setting is an index in the 0 / 90 / 180 / 270 literals
-   m_vrPreview = (VRPreviewMode)m_table->GetSettings().GetPlayer_VRPreview();
-   m_vrPreviewShrink = m_table->GetSettings().GetPlayerVR_ShrinkPreview();
+   m_vrDesktop = static_cast<VRDesktopMode>(m_table->GetSettings().GetPlayerVR_DesktopDisplay());
+   m_vrDesktopShrink = m_table->GetSettings().GetPlayerVR_ShrinkDesktopDisplay();
    m_FXAA = m_table->GetSettings().GetPlayer_FXAA();
    m_sharpen = m_table->GetSettings().GetPlayer_Sharpen();
    m_ss_refl = m_table->GetSettings().GetPlayer_SSRefl();
@@ -398,6 +398,17 @@ Renderer::~Renderer()
    delete m_pMotionBlurBufferTexture;
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
+   delete m_desktopMSAABackBuffer;
+   delete m_desktopBackBuffer1;
+   delete m_desktopBackBuffer2;
+   delete m_desktopPostProcess1;
+   delete m_desktopPostProcess2;
+   delete m_desktopBloom;
+   delete m_desktopBloomTmp;
+   delete m_desktopReflection;
+   delete m_desktopMotionBlur;
+   delete m_desktopAO1;
+   delete m_desktopAO2;
    for (int window = 0; window <= VPXWindowId::VPXWINDOW_Topper; window++)
       m_ancillaryWndHdrRT[window] = nullptr;
    #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || (defined(__ANDROID__) && defined(ENABLE_XR))
@@ -968,7 +979,7 @@ void Renderer::DrawBackground()
       if (!g_pplayer->m_liveUI->IsEditorBackdropViewMode())
          return;
    }
-   else if (g_pplayer->IsVR())
+   else if (g_pplayer->IsVR() && !m_desktopScenePass)
    {
       m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 #ifdef ENABLE_XR
@@ -1762,7 +1773,7 @@ void Renderer::SetSpaceReference(PartGroupData::SpaceReference spaceReference, b
       return;
 
 #if defined(ENABLE_XR)
-   if (m_stereo3D == STEREO_VR)
+   if (m_stereo3D == STEREO_VR && !m_desktopScenePass)
       g_pplayer->m_vrDevice->UpdateVRPosition(spaceReference, m_mvp);
    else
 #endif
@@ -2445,13 +2456,16 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
       render_h = renderedRT->GetHeight();
    }
 
-   const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
+   // The wide color gamut setup applies to the window being rendered to: the desktop display for the VR desktop scene, the playfield window otherwise
+   VPX::Window* const outputWnd = m_desktopScenePass && m_renderDevice->m_outputWnd.size() >= 2 ? m_renderDevice->m_outputWnd[1] : m_renderDevice->m_outputWnd[0];
+   const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr || m_desktopScenePass) && outputWnd->IsWCGBackBuffer();
    if (isHdr2020)
    {
-      const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
-      m_renderDevice->m_FBShader->SetVector(ShaderUniform::exposure_wcg,
-         m_exposure,
-         (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before tonemapping, equal to 1/GetHDRHeadRoom()
+      const float maxDisplayLuminance = outputWnd->GetHDRHeadRoom()
+         * (outputWnd->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::exposure_wcg, m_exposure,
+         (outputWnd->GetSDRWhitePoint() * 80.f)
+            / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before tonemapping, equal to 1/GetHDRHeadRoom()
          maxDisplayLuminance / 10000.f, // Apply back maximum luminance in nits of display after tonemapping, scaled down to PQ limits (1.0 is 10000 nits)
          1.f);
 
@@ -2465,7 +2479,10 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
    else
    {
       // VR device expects linear RGB value (for linear layer composition)
-      m_renderDevice->m_FBShader->SetVector(ShaderUniform::exposure_wcg, m_exposure, 1.f, /*100.f*//*203.f*/350.f/10000.f, g_pplayer->m_vrDevice ? 2.f : 0.f); //!! 203 nits as SDR reference? //!! or 100 as in BT2446 spec? // but both result in too dark images for BT2446 conversion at least compared to the other mappers
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::exposure_wcg, m_exposure, 1.f, /*100.f*/ /*203.f*/ 350.f / 10000.f,
+         (g_pplayer->m_vrDevice && !m_desktopScenePass)
+            ? 2.f
+            : 0.f); //!! 203 nits as SDR reference? //!! or 100 as in BT2446 spec? // but both result in too dark images for BT2446 conversion at least compared to the other mappers
 
       // dummy values only, unused at the moment
       //m_renderDevice->m_FBShader->SetVector(ShaderUniform::spline1, 0.f,0.f,0.f,0.f);
@@ -2482,7 +2499,7 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_color_lut, pin, true, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
    m_renderDevice->m_FBShader->SetVector(ShaderUniform::bloom_dither_colorgrade,
       IsBloomEnabled() ? 1.f : 0.f, // Bloom
-      (!isHdr2020 && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither
+      (!isHdr2020 && (outputRT->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither
       (pin != nullptr) ? 1.f : 0.f, /* LUT colorgrade */
       0.f);
    if (IsBloomEnabled())
@@ -2503,7 +2520,7 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
                        : m_toneMapper == TM_NEUTRAL      ? ShaderTechnique::fb_nttonemap
                        : m_toneMapper == TM_AGX          ? ShaderTechnique::fb_agxtonemap
                        : /*m_toneMapper == TM_WCG_SPLINE ?*/ ShaderTechnique::fb_wcgtonemap;
-   else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
+   else if (outputWnd->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
       tonemapTechnique = useAO ? filtered ? ShaderTechnique::fb_wcgtonemap_AO : ShaderTechnique::fb_wcgtonemap_AO_no_filter
                                : filtered ? ShaderTechnique::fb_wcgtonemap    : ShaderTechnique::fb_wcgtonemap_no_filter;
    else if (m_toneMapper == TM_REINHARD)
@@ -2544,10 +2561,11 @@ RenderTarget* Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarget*
    if (!m_embeddedRegions.empty() && (g_pplayer->GetInfoMode() == IF_NONE) && m_table->GetImage(m_table->m_imageColorGrade) != nullptr)
    {
       // The flags SetupTonemapping just set, with only the color grade cleared
-      const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
+      VPX::Window* const outputWnd = m_desktopScenePass && m_renderDevice->m_outputWnd.size() >= 2 ? m_renderDevice->m_outputWnd[1] : m_renderDevice->m_outputWnd[0];
+      const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr || m_desktopScenePass) && outputWnd->IsWCGBackBuffer();
       m_renderDevice->m_FBShader->SetVector(ShaderUniform::bloom_dither_colorgrade, //
          IsBloomEnabled() ? 1.f : 0.f, // Bloom
-         (!isHdr2020 && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither
+         (!isHdr2020 && (outputWnd->GetBackBuffer()->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither
          0.f, // No LUT colorgrade
          0.f);
       for (const vec4& region : m_embeddedRegions)
@@ -2916,32 +2934,32 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          m_renderDevice->BlitRenderTarget(GetBackBufferTexture(), outputBackBuffer, false, true);
       }
 
-      // Blit preview
-      RenderTarget* previewRT = nullptr;
-      if (m_renderDevice->m_outputWnd.size() >= 2)
+      // Mirror the rendered eye(s) to the desktop display (unless it shows a dedicated render of the scene, see RenderDesktopScene)
+      RenderTarget* desktopRT = nullptr;
+      if (m_renderDevice->m_outputWnd.size() >= 2 && !NeedsDesktopSceneRender())
       {
-         assert(m_renderDevice->m_outputWnd.size() >= 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
-         previewRT = m_renderDevice->m_outputWnd[1]->GetBackBuffer();
-         m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false, true);
+         assert(m_renderDevice->m_outputWnd.size() >= 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the desktop display OS window
+         desktopRT = m_renderDevice->m_outputWnd[1]->GetBackBuffer();
+         m_renderDevice->SetRenderTarget("Desktop Display"s, desktopRT, false, true);
 
          m_renderDevice->AddRenderTargetDependency(renderedRT);
-         const int previewW = m_vrPreview == VRPREVIEW_BOTH ? previewRT->GetWidth() / 2 : previewRT->GetWidth(), previewH = previewRT->GetHeight();
-         const float ar = (float)w / (float)h, previewAr = (float)previewW / (float)previewH;
+         const int desktopW = m_vrDesktop == VRDesktopMode::Both ? desktopRT->GetWidth() / 2 : desktopRT->GetWidth(), desktopH = desktopRT->GetHeight();
+         const float ar = (float)w / (float)h, desktopAr = (float)desktopW / (float)desktopH;
          int x = 0, y = 0;
          int fw = w, fh = h;
-         if ((m_vrPreviewShrink && ar < previewAr) || (!m_vrPreviewShrink && ar > previewAr))
+         if ((m_vrDesktopShrink && ar < desktopAr) || (!m_vrDesktopShrink && ar > desktopAr))
          { // Fit on Y
-            const int scaledW = (int)((float)h * previewAr);
+            const int scaledW = (int)((float)h * desktopAr);
             x = (w - scaledW) / 2;
             fw = scaledW;
          }
          else
          { // Fit on X
-            const int scaledH = (int)((float)w / previewAr);
+            const int scaledH = (int)((float)w / desktopAr);
             y = (h - scaledH) / 2;
             fh = scaledH;
          }
-         if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
+         if (m_vrDesktopShrink || m_vrDesktop == VRDesktopMode::Disabled)
             m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
          Vertex3D_TexelOnly verts[4] =
@@ -2954,12 +2972,12 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_mirror);
          m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, 1.f, 1.f, 1.f, 1.f);
          m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, renderedRT->GetColorSampler(), SamplerFilter::SF_BILINEAR);
-         if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
+         if (m_vrDesktop == VRDesktopMode::Left || m_vrDesktop == VRDesktopMode::Right)
          {
-            m_renderDevice->m_FBShader->SetInt(ShaderUniform::layer, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1);
+            m_renderDevice->m_FBShader->SetInt(ShaderUniform::layer, m_vrDesktop == VRDesktopMode::Left ? 0 : 1);
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
          }
-         else if (m_vrPreview == VRPREVIEW_BOTH)
+         else if (m_vrDesktop == VRDesktopMode::Both)
          {
             verts[0].x = verts[2].x = -1.f;
             verts[1].x = verts[3].x = 0.f;
@@ -2971,8 +2989,8 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
          }
 
-         // Composite the UI on the preview, as it is submitted to the headset as a dedicated composition layer
-         if (RenderTarget* const uiLayer = g_pplayer->m_vrDevice->GetUIRenderTarget(); uiLayer != nullptr && m_vrPreview != VRPREVIEW_DISABLED)
+         // Composite the UI on the desktop display, as it is submitted to the headset as a dedicated composition layer
+         if (RenderTarget* const uiLayer = g_pplayer->m_vrDevice->GetUIRenderTarget(); uiLayer != nullptr && m_vrDesktop != VRDesktopMode::Disabled)
          {
             m_renderDevice->AddRenderTargetDependency(uiLayer);
             const float uiW = static_cast<float>(uiLayer->GetWidth()), uiH = static_cast<float>(uiLayer->GetHeight());
@@ -2995,7 +3013,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
             m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
             m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-            if (m_vrPreview == VRPREVIEW_BOTH)
+            if (m_vrDesktop == VRDesktopMode::Both)
             {
                overlay[0].x = overlay[2].x = 0.f;
                overlay[1].x = overlay[3].x = uiW * 0.5f;
@@ -3016,8 +3034,8 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          // blending the color key with the rendered scene (alpha blending which would be kept, as it is not fullfilling the
          // color key after blending).
          m_renderDevice->SetRenderTarget("VR ColorKeying"s, m_renderDevice->GetOutputBackBuffer(), true, true);
-         if (previewRT)
-            m_renderDevice->AddRenderTargetDependency(previewRT); // Add a dependency on the preview to ensure color keying is done after preview copy
+         if (desktopRT)
+            m_renderDevice->AddRenderTargetDependency(desktopRT); // Add a dependency on the desktop display to ensure color keying is done after its copy
          m_renderDevice->AddRenderTargetDependency(renderedRT);
          m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
          m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
@@ -3250,7 +3268,7 @@ void Renderer::Render3DScene()
 
    // For OpenXR, the LiveUI is rendered to a dedicated mono render target submitted as a view locked quad composition
    // layer (a head locked overlay rendered inside the world locked projection layer was shaken by the compositor
-   // reprojection). It is recorded before stereo to allow compositing it on the preview window.
+   // reprojection). It is recorded before stereo to allow compositing it on the desktop display.
    RenderTarget* xrUILayer = nullptr;
    #ifdef ENABLE_XR
    if (m_stereo3D == STEREO_VR)
@@ -3277,8 +3295,176 @@ void Renderer::Render3DScene()
    // The last rendered render target must be the output back buffer
    assert(renderedRT == m_renderDevice->GetOutputBackBuffer());
 
+   // Render the scene a second time when the desktop display shows the playfield (the VR render state is preserved by swapping the render targets)
+   if (m_stereo3D == STEREO_VR && NeedsDesktopSceneRender() && m_renderDevice->m_outputWnd.size() >= 2 && m_renderDevice->m_outputWnd[1]->GetBackBuffer())
+      RenderDesktopScene(m_renderDevice->m_outputWnd[1]->GetBackBuffer());
+
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)
       m_gpu_profiler.Timestamp(GTS_PostProcess);
+}
+
+
+void Renderer::RenderDesktopScene(RenderTarget* outputRT)
+{
+   if (m_desktopBackBuffer1 == nullptr)
+   {
+      m_desktopRenderWidth = outputRT->GetWidth();
+      m_desktopRenderHeight = outputRT->GetHeight();
+      // Same layered type as the VR targets since the shaders sample them as texture arrays, but only the first layer is ever rendered
+      m_desktopBackBuffer1 = new RenderTarget(m_renderDevice, GetBackBufferTexture()->m_type, "DesktopBuffer1"s, m_desktopRenderWidth, m_desktopRenderHeight,
+         GetBackBufferTexture()->GetColorFormat(), true, GetBackBufferTexture()->GetMSAASamples(), "Fatal Error: unable to create desktop display back buffer");
+      m_desktopBackBuffer2 = m_desktopBackBuffer1->Duplicate("DesktopBuffer2"s, false);
+      if (m_pOffscreenMSAABackBufferTexture != nullptr)
+         m_desktopMSAABackBuffer = new RenderTarget(m_renderDevice, m_pOffscreenMSAABackBufferTexture->m_type, "DesktopMSAABackBuffer"s, m_desktopRenderWidth, m_desktopRenderHeight,
+            m_pOffscreenMSAABackBufferTexture->GetColorFormat(), true, m_pOffscreenMSAABackBufferTexture->GetMSAASamples(), "Fatal Error: unable to create desktop display MSAA back buffer");
+      m_desktopBloom = new RenderTarget(m_renderDevice, GetBackBufferTexture()->m_type, "DesktopBloom"s, m_desktopRenderWidth / 4, m_desktopRenderHeight / 4,
+         GetBackBufferTexture()->GetColorFormat(), false, 1, "Fatal Error: unable to create desktop display bloom buffer");
+      m_desktopBloomTmp = m_desktopBloom->Duplicate("DesktopBloomTmp"s);
+   }
+
+   // Save the VR render state which is restored at the end of this pass
+   ModelViewProj vrMVP = m_mvp;
+   const Matrix3D vrPlayfieldView[2] = { m_playfieldView[0], m_playfieldView[1] };
+   const bool vrNoBackdrop = m_noBackdrop;
+   const unsigned int vrVisibilityMask = m_visibilityMask;
+
+   SwapDesktopTargets();
+   m_desktopScenePass = true;
+   // Only the first layer is rendered: record every pass of this render (scene, probes, post process) to that layer only
+   m_renderDevice->m_singleLayerRendering = 0;
+
+   // Use the table's view setup, same as when not playing in VR, with the same view for both eyes as the shaders are compiled for stereo rendering
+   m_table->GetViewSetup().ComputeMVP(m_table, (float)GetBackBufferTexture()->GetWidth() / (float)GetBackBufferTexture()->GetHeight(), false, m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc);
+   for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+      m_playfieldView[eye] = m_mvp.GetView(eye);
+   m_noBackdrop = !g_pplayer->m_liveUI->IsEditorBackdropViewMode() && (m_table->GetViewMode() == BG_FULLSCREEN || g_pplayer->m_liveUI->IsEditorViewMode());
+   if (m_table->GetViewMode() == BG_FULLSCREEN)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET;
+   else if (m_table->GetViewMode() == BG_FSS)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_FSS;
+   else
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
+   m_renderDevice->m_basicShader->SetVector(
+      ShaderUniform::w_h_height, (float)(1.0 / (double)GetBackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetBackBufferTexture()->GetHeight()), 0.0f, 0.0f);
+   m_renderDevice->m_ballShader->SetVector(
+      ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
+
+   SwapBackBufferRenderTargets();
+   SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, true);
+   m_renderDevice->m_ballShader->SetTexture(ShaderUniform::tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
+   SetScreenOffset(0.f, 0.f);
+
+   // Re-render all probes for the cabinet view
+   for (auto probe : m_table->m_vrenderprobe)
+      probe->MarkDirty();
+
+   m_render_mask = Renderer::DEFAULT;
+
+   RenderStatics();
+
+   // While static parts are being accumulated, the static pass renders probes with static parts only: re-render them for the dynamic pass
+   for (auto probe : m_table->m_vrenderprobe)
+      probe->MarkDirty();
+
+   m_renderDevice->m_noMovingBalls = true;
+
+   RenderDynamics();
+
+   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
+   if (GetMSAABackBufferTexture() != GetBackBufferTexture())
+   {
+      RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
+      m_renderDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
+      m_renderDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
+      m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+      initial_rt->m_name += '-';
+   }
+
+   RenderTarget* renderedRT = GetBackBufferTexture();
+
+   renderedRT = ApplyAdditiveScreenSpaceReflection(renderedRT);
+
+   // Clear embedded ancillary windows before updating bloom & AO
+   ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, renderedRT);
+   ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, renderedRT);
+   ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT);
+
+   // Compute AO contribution (to be applied later, with tonemapping)
+   if (GetAOMode() == 2) // Only process for dynamic AO
+      UpdateAmbientOcclusion(GetBackBufferTexture(), g_pplayer->m_overall_frames % 2048);
+
+   // Compute bloom (to be applied later, with tonemapping)
+   UpdateBloom(renderedRT);
+
+   // Composite the embedded ancillary windows (only when the desktop display shows the other displays)
+   m_embeddedRegions.clear();
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Backglass]);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_ScoreView]);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper]);
+
+   // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
+   ApplyTonemapping(renderedRT, outputRT);
+
+#ifdef ENABLE_XR
+   // Composite the UI on the desktop display, as it is submitted to the headset as a dedicated composition layer
+   if (RenderTarget* const uiLayer = g_pplayer->m_vrDevice->GetUIRenderTarget(); uiLayer != nullptr)
+   {
+      m_renderDevice->SetRenderTarget("Desktop Display UI"s, outputRT, true, true);
+      m_renderDevice->AddRenderTargetDependency(uiLayer);
+      const float uiW = static_cast<float>(uiLayer->GetWidth()), uiH = static_cast<float>(uiLayer->GetHeight());
+      const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, uiW, uiH, 0.f, 0.f, 1.f);
+      m_renderDevice->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
+      m_renderDevice->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &ortho, 2);
+      m_renderDevice->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 0.f);
+      m_renderDevice->m_uiShader->SetVector(ShaderUniform::clip_plane, 0.f, 0.f, uiW, uiH);
+      m_renderDevice->m_uiShader->SetTexture(ShaderUniform::tex_base_color, uiLayer->GetColorSampler());
+      const Vertex3D_NoTex2 overlay[4]
+         = { { 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f }, { uiW, 0.f, 1.f, 1.f, 1.f, 1.f, 1.f, 0.f }, { 0.f, uiH, 1.f, 1.f, 1.f, 1.f, 0.f, 1.f }, { uiW, uiH, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f } };
+      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+      m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+      m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+      m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+      m_renderDevice->DrawTexturedQuad(m_renderDevice->m_uiShader, overlay, true);
+      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   }
+#endif
+
+   // Restore the VR render state
+   m_renderDevice->m_singleLayerRendering = -1;
+   m_desktopScenePass = false;
+   SwapDesktopTargets();
+   m_mvp = vrMVP;
+   m_playfieldView[0] = vrPlayfieldView[0];
+   m_playfieldView[1] = vrPlayfieldView[1];
+   m_noBackdrop = vrNoBackdrop;
+   m_visibilityMask = vrVisibilityMask;
+   m_renderDevice->m_basicShader->SetVector(
+      ShaderUniform::w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
+   m_renderDevice->m_ballShader->SetVector(
+      ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
+   // The probes now hold renders for the cabinet view: mark them for re-rendering on next frame
+   for (auto probe : m_table->m_vrenderprobe)
+      probe->MarkDirty();
+   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
+   UpdateBasicShaderMatrix();
+   UpdateBallShaderMatrix();
+}
+
+void Renderer::SwapDesktopTargets()
+{
+   std::swap(m_pOffscreenMSAABackBufferTexture, m_desktopMSAABackBuffer);
+   std::swap(m_pOffscreenBackBufferTexture1, m_desktopBackBuffer1);
+   std::swap(m_pOffscreenBackBufferTexture2, m_desktopBackBuffer2);
+   std::swap(m_pPostProcessRenderTarget1, m_desktopPostProcess1);
+   std::swap(m_pPostProcessRenderTarget2, m_desktopPostProcess2);
+   std::swap(m_pBloomBufferTexture, m_desktopBloom);
+   std::swap(m_pBloomTmpBufferTexture, m_desktopBloomTmp);
+   std::swap(m_pReflectionBufferTexture, m_desktopReflection);
+   std::swap(m_pMotionBlurBufferTexture, m_desktopMotionBlur);
+   std::swap(m_pAORenderTarget1, m_desktopAO1);
+   std::swap(m_pAORenderTarget2, m_desktopAO2);
+   std::swap(m_renderWidth, m_desktopRenderWidth);
+   std::swap(m_renderHeight, m_desktopRenderHeight);
 }
 
 
@@ -3440,18 +3626,27 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
    const string& renderPassName = renderPassNames[window - VPXWindowId::VPXWINDOW_Backglass];
    const string& hdrRTName = hdrRTNames[window - VPXWindowId::VPXWINDOW_Backglass];
 
-   if (g_pplayer->IsVR())
+   // In VR, ancillary OS windows are only rendered when the desktop display shows the playfield and the other
+   // displays, while embedded ancillary displays are only composited into the desktop display scene render
+   const bool ancillaryAllowed = m_vrDesktop == VRDesktopMode::All && (output.GetMode() == VPX::RenderOutput::OM_WINDOW ? !m_desktopScenePass : m_desktopScenePass);
+   if (g_pplayer->IsVR() && !ancillaryAllowed)
+   {
+      // Hide the window if it was left visible by a previous 'playfield and other displays' desktop mode
+      if (!m_desktopScenePass && output.GetMode() == VPX::RenderOutput::OM_WINDOW && output.GetWindow() != nullptr && output.GetWindow()->IsVisible())
+         output.GetWindow()->Show(false);
       return nullptr;
+   }
 
-   // Stereo Postprocessing is not yet implemented for embedded window
-   if (m_stereo3D != StereoMode::STEREO_OFF && output.GetMode() != VPX::RenderOutput::OM_WINDOW)
+   // Stereo Postprocessing is not yet implemented for embedded window (the VR desktop display scene render
+   // does support it since it only renders to the first layer of its stereo render targets)
+   if (m_stereo3D != StereoMode::STEREO_OFF && output.GetMode() != VPX::RenderOutput::OM_WINDOW && !m_desktopScenePass)
       return nullptr;
 
    RenderTarget* outputRT;
    if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
    {
       outputRT = embedRT;
-      VPX::Window* containerWnd = m_renderDevice->m_outputWnd[0];
+      VPX::Window* containerWnd = m_renderDevice->m_outputWnd[m_desktopScenePass ? 1 : 0];
 
       const float displayScaleX = static_cast<float>(containerWnd->GetPixelWidth()) / static_cast<float>(containerWnd->GetWidth());
       const float displayScaleY = static_cast<float>(containerWnd->GetPixelHeight()) / static_cast<float>(containerWnd->GetHeight());
@@ -3558,8 +3753,7 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
 }
 
 // Pages of the in game UI adjusting the displays, indexed by VPXWindowId
-static const string s_displaySettingsPages[]
-   = { "settings/display_playfield"s, "settings/display_backglass"s, "settings/display_scoreview"s, "settings/display_topper"s, "settings/display_vr_preview"s };
+static const string s_displaySettingsPages[] = { "settings/display_playfield"s, "settings/display_backglass"s, "settings/display_scoreview"s, "settings/display_topper"s };
 
 void Renderer::DrawEmbeddedQuad(RenderTarget* outputRT, int x, int y, int w, int h, float r, float g, float b)
 {

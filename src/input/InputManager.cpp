@@ -955,12 +955,14 @@ void InputManager::CreateInputActions()
             m_player->m_renderer->m_stereo3Denabled = !m_player->m_renderer->m_stereo3Denabled;
          }
          else if (m_player->m_renderer->m_stereo3D == STEREO_VR)
-         { // Toggle preview mode
-            m_player->m_renderer->m_vrPreview = (VRPreviewMode)((m_player->m_renderer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
-            m_player->m_liveUI->PushNotification(m_player->m_renderer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset
-                  : m_player->m_renderer->m_vrPreview == VRPREVIEW_LEFT                                   ? "Preview switched to left eye"s
-                  : m_player->m_renderer->m_vrPreview == VRPREVIEW_RIGHT                                  ? "Preview switched to right eye"s
-                                                                                                           : "Preview switched to both eyes"s,
+         { // Toggle desktop display mode
+            m_player->m_renderer->m_vrDesktop = static_cast<VRDesktopMode>((static_cast<int>(m_player->m_renderer->m_vrDesktop) + 1) % (static_cast<int>(VRDesktopMode::Both) + 1));
+            m_player->m_liveUI->PushNotification(m_player->m_renderer->m_vrDesktop == VRDesktopMode::Disabled ? "Desktop display disabled"s // Will only display in headset
+                  : m_player->m_renderer->m_vrDesktop == VRDesktopMode::All                                   ? "Desktop display switched to all displays"s
+                  : m_player->m_renderer->m_vrDesktop == VRDesktopMode::Playfield                             ? "Desktop display switched to playfield only"s
+                  : m_player->m_renderer->m_vrDesktop == VRDesktopMode::Left                                  ? "Desktop display switched to left eye"s
+                  : m_player->m_renderer->m_vrDesktop == VRDesktopMode::Right                                 ? "Desktop display switched to right eye"s
+                                                                                                              : "Desktop display switched to both eyes"s,
                2000);
          }
          m_player->m_renderer->InitLayout();

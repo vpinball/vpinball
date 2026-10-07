@@ -105,7 +105,7 @@ public:
       XrResult result;
 
       // BGFX shares this instance, so enable what it uses when available: debug reporting, the extended physical device queries,
-      // and on desktop the surface extensions needed to create the preview and ancillary window swapchains
+      // and on desktop the surface extensions needed to create the desktop display and ancillary window swapchains
       std::vector<const char*>& instanceExtensions = m_instanceExtensions;
       {
          uint32_t count = 0;
@@ -253,7 +253,7 @@ public:
       deviceExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
       deviceExtensions.push_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
 #if !BX_PLATFORM_ANDROID
-      deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); // Preview and ancillary window swapchains
+      deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); // Desktop display and ancillary window swapchains
 #endif
       {
          uint32_t count = 0;
