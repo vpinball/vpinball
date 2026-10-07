@@ -441,6 +441,8 @@ XrBool32 VRDevice::OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlag
 
 void* VRDevice::GetGraphicContext() const { return m_backend->GetGraphicContext(); }
 
+void* VRDevice::GetGraphicPlatformQueue() const { return m_backend->GetGraphicPlatformQueue(); }
+
 bgfx::RendererType::Enum VRDevice::GetGraphicContextType() const { return m_backend->GetRendererType(); }
 
 void VRDevice::SetupHMD()

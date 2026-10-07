@@ -2917,11 +2917,10 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       }
 
       // Blit preview
-      // FIXME no preview for Vulkan as we are not creating the desktop swapchain
-      RenderTarget* previewRT = nullptr; 
-      if (bgfx::getRendererType() != bgfx::RendererType::Vulkan)
+      RenderTarget* previewRT = nullptr;
+      if (m_renderDevice->m_outputWnd.size() >= 2)
       {
-         assert(m_renderDevice->m_outputWnd.size() == 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
+         assert(m_renderDevice->m_outputWnd.size() >= 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
          previewRT = m_renderDevice->m_outputWnd[1]->GetBackBuffer();
          m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false, true);
 

@@ -10,6 +10,7 @@ public:
    virtual ~XRGraphicBackend() = default;
 
    virtual void* GetGraphicContext() const = 0;
+   virtual void* GetGraphicPlatformQueue() { return nullptr; }
    virtual bgfx::RendererType::Enum GetRendererType() const = 0;
    virtual void* GetGraphicsBinding() = 0;
 

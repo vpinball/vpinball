@@ -203,6 +203,7 @@ public:
    void CreateSession();
    void ReleaseSession();
    void* GetGraphicContext() const;
+   void* GetGraphicPlatformQueue() const;
    bgfx::RendererType::Enum GetGraphicContextType() const;
    void PollEvents();
    void RenderFrame(class RenderDevice* rd, const std::function<void(RenderTarget* vrRenderTarget)>& submitFrame);
