@@ -359,6 +359,10 @@ const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
 // Some PinMAME drivers defines a virtual matrix column for cabinet switches and use negative indices to access it (Whitestar for example)
 static constexpr int SWITCH_OFFSET = 16;
 
+// Provider-supplied mapping ids are trusted to build the index maps below: bound them to
+// keep a buggy source from triggering an out-of-bounds index or a multi-GB vector resize
+static constexpr uint32_t MAX_MAPPING_ID = 4095;
+
 void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
 {
    m_switches = { };
@@ -382,7 +386,8 @@ void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
             if (m_switches.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_UINT8 && m_switches.stateDefs[i].GetState != nullptr && m_switches.stateDefs[i].SetState != nullptr)
             {
                const int switchOfs = static_cast<int16_t>(m_switches.stateDefs[i].mappingId) + SWITCH_OFFSET;
-               assert(switchOfs >= 0);
+               if (switchOfs < 0 || switchOfs > MAX_MAPPING_ID)
+                  continue;
                if (m_switchMap.size() < switchOfs + 1)
                   m_switchMap.resize(switchOfs + 1, UINT_MAX);
                m_switchMap[switchOfs] = i;
@@ -401,6 +406,8 @@ void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
          {
             if (src.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_UINT8 && m_dipSwitches.stateDefs[i].GetState != nullptr && m_dipSwitches.stateDefs[i].SetState != nullptr)
             {
+               if (m_dipSwitches.stateDefs[i].mappingId > MAX_MAPPING_ID)
+                  continue;
                if (m_dipSwitchMap.size() < m_dipSwitches.stateDefs[i].mappingId + 1)
                   m_dipSwitchMap.resize(m_dipSwitches.stateDefs[i].mappingId + 1, UINT_MAX);
                m_dipSwitchMap[m_dipSwitches.stateDefs[i].mappingId] = i;
@@ -421,6 +428,8 @@ void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
          {
             if (m_solenoids.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_UINT8 && m_solenoids.stateDefs[i].GetState != nullptr)
             {
+               if (m_solenoids.stateDefs[i].mappingId > MAX_MAPPING_ID)
+                  continue;
                if (m_solenoidMap.size() < m_solenoids.stateDefs[i].mappingId + 1)
                   m_solenoidMap.resize(m_solenoids.stateDefs[i].mappingId + 1, UINT_MAX);
                m_solenoidMap[m_solenoids.stateDefs[i].mappingId] = i;
@@ -435,6 +444,8 @@ void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
          {
             if (m_gis.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_UINT8 && m_gis.stateDefs[i].GetState != nullptr)
             {
+               if (m_gis.stateDefs[i].mappingId > MAX_MAPPING_ID)
+                  continue;
                if (m_giMap.size() < m_gis.stateDefs[i].mappingId + 1)
                   m_giMap.resize(m_gis.stateDefs[i].mappingId + 1, UINT_MAX);
                m_giMap[m_gis.stateDefs[i].mappingId] = i;
@@ -449,6 +460,8 @@ void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
          {
             if (m_lamps.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_UINT8 && m_lamps.stateDefs[i].GetState != nullptr)
             {
+               if (m_lamps.stateDefs[i].mappingId > MAX_MAPPING_ID)
+                  continue;
                if (m_lampMap.size() < m_lamps.stateDefs[i].mappingId + 1)
                   m_lampMap.resize(m_lamps.stateDefs[i].mappingId + 1, UINT_MAX);
                m_lampMap[m_lamps.stateDefs[i].mappingId] = i;
