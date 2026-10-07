@@ -12,6 +12,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
+#include <deque>
 #include <filesystem>
 #include <mutex>
 #include <random>
@@ -293,7 +294,9 @@ private:
       m_colorizedDmd.ClearItems();
       m_advertisedWidth32 = 0;
       m_advertisedWidth64 = 0;
-      m_colorFrameV1.clear();
+      m_retiredFramesV1.push_back(std::move(m_colorFrameV1));
+      if (m_retiredFramesV1.size() > 8)
+         m_retiredFramesV1.pop_front();
    }
 
    // Advertisement request, run on the main thread while the colorize thread blocks. It carries the source the thread was started for, as the source list may have been cleared meanwhile
@@ -437,7 +440,12 @@ private:
                      const DisplaySrcId& dmdId = static_cast<AdvertiseContext*>(userData)->dmdId;
                      const unsigned int size = dmdId.width * dmdId.height;
                      colorizer->m_colorizedDmd.ClearItems();
-                     // FIXME if a concurrent GetRenderFrame has been done returning the previous backing buffer, this will discard it and lead to an invalid mem access
+                     // GetRenderFrame hands out m_colorFrameV1.data() under a lock it releases before the
+                     // consumer copies the frame: retire replaced buffers instead of freeing them so a
+                     // late copy never touches freed memory
+                     colorizer->m_retiredFramesV1.push_back(std::move(colorizer->m_colorFrameV1));
+                     if (colorizer->m_retiredFramesV1.size() > 8)
+                        colorizer->m_retiredFramesV1.pop_front();
                      colorizer->m_colorFrameV1.resize(size * 3);
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 0 } }, //
@@ -515,7 +523,7 @@ private:
    DisplayFrame GetRenderFrameSerumV1()
    {
       std::lock_guard targetLock(m_stateMutex);
-      return { m_colorizedframeId, m_colorFrameV1.data() };
+      return { m_colorizedframeId, m_colorFrameV1.empty() ? nullptr : m_colorFrameV1.data() };
    }
    DisplayFrame GetRenderFrameSerumV2_32()
    {
@@ -543,6 +551,7 @@ private:
    // under the same lock -- rather than on whichever thread delivered the event.
    std::vector<uint16_t> m_pendingScenes;
    std::vector<uint8_t> m_colorFrameV1;
+   std::deque<std::vector<uint8_t>> m_retiredFramesV1;
    unsigned int m_advertisedWidth32 = 0;
    unsigned int m_advertisedWidth64 = 0;
 
