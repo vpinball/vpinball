@@ -178,7 +178,11 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
             string rtoken;
             while (std::getline(rss, rtoken, ','))
                rparts.push_back(string_to_int(rtoken));
-            assert(rparts.size() >= 4);
+            if (rparts.size() < 4)
+            {
+               LOGE("region= bitmap parameter needs 4 comma-separated values: " + definition);
+               continue;
+            }
             RegionFilter* pFilter = new RegionFilter();
             pFilter->SetX(rparts[0]);
             pFilter->SetY(rparts[1]);
@@ -192,7 +196,11 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
             string ptoken;
             while (std::getline(pss, ptoken, ','))
                pparts.push_back(string_to_int(ptoken));
-            assert(pparts.size() >= 4);
+            if (pparts.size() < 4)
+            {
+               LOGE("pad= bitmap parameter needs 4 comma-separated values: " + definition);
+               continue;
+            }
             PadFilter* pFilter = new PadFilter();
             pFilter->SetLeft(pparts[0]);
             pFilter->SetTop(pparts[1]);
