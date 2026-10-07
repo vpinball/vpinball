@@ -470,6 +470,8 @@ public:
 public:
    // Find the score display matching the given display id (searches both backglass and DMD displays)
    const B2SScore* FindScoreDisplay(int displayId) const;
+   // Find the score display owning the given resolved digit index (1-based, both backglass and DMD displays)
+   const B2SScore* FindScoreDigitDisplay(int digit) const;
 
 public:
    const string m_version;
@@ -508,4 +510,10 @@ public:
    // Missing Scores
 };
 
+
+// LED script API helpers (B2SSetLED/B2SSetLEDDisplay): convert a character or a Dream7 segment bit
+// code to a 16 bit luminance mask matching the CTLPI/PinMAME bit order for the display's layout
+// (ledSegments is the ReelType suffix: 7, 10 or 14).
+uint16_t B2SSegmentCharMask(char c, int ledSegments);
+uint16_t B2SSegmentTranslateBitCode(uint32_t bits, int ledSegments);
 }

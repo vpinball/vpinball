@@ -434,6 +434,7 @@ void B2SServer::ApplyScoreDigit(int digit, int value, bool roll)
    {
       it->second.value = value;
       it->second.roll = it->second.roll || roll;
+      it->second.segMask = -1;
    }
    else
    {
@@ -446,6 +447,67 @@ void B2SServer::ApplyScoreDigit(int digit, int value, bool roll)
 
    B2SPluginEvent event { 'B', digit, value };
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
+}
+
+void B2SServer::ApplyScoreSegments(int digit, int segMask)
+{
+   if (auto it = m_scoreDigits.find(digit); it != m_scoreDigits.end())
+      it->second.segMask = segMask;
+   else
+   {
+      m_exposedStates.ClearItems();
+      m_scoreDigits[digit].segMask = segMask;
+      UpdateStateSrc();
+   }
+}
+
+void B2SServer::B2SSetLED(int digit, int value)
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   const B2SScore* display = b2s->FindScoreDigitDisplay(digit);
+   if (display == nullptr || display->m_ledSegments == 0)
+      return;
+   ApplyScoreSegments(digit, B2SSegmentTranslateBitCode(static_cast<uint32_t>(value), display->m_ledSegments));
+}
+
+void B2SServer::B2SSetLED(int digit, const string& value)
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   const B2SScore* display = b2s->FindScoreDigitDisplay(digit);
+   if (display == nullptr || display->m_ledSegments == 0)
+      return;
+   ApplyScoreSegments(digit, B2SSegmentCharMask(value.empty() ? ' ' : value[0], display->m_ledSegments));
+}
+
+void B2SServer::B2SSetLEDDisplay(int display, const string& text)
+{
+   const std::shared_ptr<B2STable> b2s = AcquireB2STable();
+   if (b2s == nullptr)
+      return;
+   const B2SScore* scoreDisplay = b2s->FindScoreDisplay(display);
+   if (scoreDisplay == nullptr || scoreDisplay->m_ledSegments == 0)
+      return;
+   // Dream7 Text setter: chars fill the digits left to right, '.' merges into the previous digit,
+   // digits beyond the text length are left unchanged
+   const int dotBit = scoreDisplay->m_ledSegments == 14 ? 0x8000 : 0x0080;
+   int digitIndex = 0;
+   for (size_t i = 0; i < text.length() && digitIndex < scoreDisplay->m_digits; i++)
+   {
+      const char c = text[i];
+      if (c == '.' && digitIndex > 0)
+      {
+         const int digit = scoreDisplay->m_resolvedStartDigit + digitIndex - 1;
+         const int existing = GetScoreDigitSegments(digit);
+         ApplyScoreSegments(digit, (existing >= 0 ? existing : 0) | dotBit);
+         continue;
+      }
+      ApplyScoreSegments(scoreDisplay->m_resolvedStartDigit + digitIndex, B2SSegmentCharMask(c, scoreDisplay->m_ledSegments));
+      digitIndex++;
+   }
 }
 
 void B2SServer::B2SSetScore(int display, int value)
@@ -470,6 +532,12 @@ int B2SServer::GetScoreDigit(int digit) const
 {
    const auto it = m_scoreDigits.find(digit);
    return it == m_scoreDigits.end() ? 0 : it->second.value.load();
+}
+
+int B2SServer::GetScoreDigitSegments(int digit) const
+{
+   const auto it = m_scoreDigits.find(digit);
+   return it == m_scoreDigits.end() ? -1 : it->second.segMask.load();
 }
 
 bool B2SServer::ConsumeScoreDigitRoll(int digit)

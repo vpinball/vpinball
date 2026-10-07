@@ -1016,4 +1016,180 @@ const B2SScore* B2STable::FindScoreDisplay(int displayId) const
          return &score;
    return nullptr;
 }
+
+const B2SScore* B2STable::FindScoreDigitDisplay(int digit) const
+{
+   for (const B2SScore& score : m_backglassScores.m_scores)
+      if (digit >= score.m_resolvedStartDigit && digit < score.m_resolvedStartDigit + score.m_digits)
+         return &score;
+   for (const B2SScore& score : m_dmdScores.m_scores)
+      if (digit >= score.m_resolvedStartDigit && digit < score.m_resolvedStartDigit + score.m_digits)
+         return &score;
+   return nullptr;
 }
+
+uint16_t B2SSegmentCharMask(char c, int ledSegments)
+{
+   // Character to segment mask, following the Dream7 DisplayCharacter tables (reference SegmentNumber.vb)
+   // expressed in the CTLPI/PinMAME luminance bit order used by the modern segment renderer:
+   //   7seg : a=0,b=1,c=2,d=3,e=4,f=5,g=6, dp/comma=7
+   //   10seg: a..f=0..5, g1/g2 merged=6, i=8, l=9
+   //   14seg: a=0,b=1,c=2,d=3,e=4,f=5,g1=6, h=8,i=9,j=10,g2=11,k=12,l=13,m=14, dp=15
+   switch (ledSegments)
+   {
+   case 14:
+   {
+      switch (c)
+      {
+      case '0': return 0x143F;
+      case '1': return 0x0406;
+      case '2': return 0x085B;
+      case '3': return 0x080F;
+      case '4': return 0x0866;
+      case '5': return 0x086D;
+      case '6': return 0x087D;
+      case '7': return 0x0007;
+      case '8': return 0x087F;
+      case '9': return 0x086F;
+      case 'A':
+      case 'a': return 0x0877;
+      case 'B':
+      case 'b': return 0x280F;
+      case 'C':
+      case 'c': return 0x0039;
+      case 'D':
+      case 'd': return 0x220F;
+      case 'E':
+      case 'e': return 0x0079;
+      case 'F':
+      case 'f': return 0x0071;
+      case 'G':
+      case 'g': return 0x083D;
+      case 'H':
+      case 'h': return 0x0876;
+      case 'I':
+      case 'i': return 0x2209;
+      case 'J':
+      case 'j': return 0x001E;
+      case 'K':
+      case 'k': return 0x4470;
+      case 'L':
+      case 'l': return 0x0038;
+      case 'M':
+      case 'm': return 0x0536;
+      case 'N':
+      case 'n': return 0x4136;
+      case 'O':
+      case 'o': return 0x003F;
+      case 'P':
+      case 'p': return 0x0873;
+      case 'Q':
+      case 'q': return 0x403F;
+      case 'R':
+      case 'r': return 0x4873;
+      case 'S':
+      case 's': return 0x086D;
+      case 'T':
+      case 't': return 0x2201;
+      case 'U':
+      case 'u': return 0x003E;
+      case 'V':
+      case 'v': return 0x1430;
+      case 'W':
+      case 'w': return 0x5036;
+      case 'X':
+      case 'x': return 0x5500;
+      case 'Y':
+      case 'y': return 0x2500;
+      case 'Z':
+      case 'z': return 0x1409;
+      case '-': return 0x00C0;
+      case '_': return 0x0008;
+      case '=': return 0x0048;
+      default: return 0;
+      }
+   }
+   case 10:
+   {
+      switch (c)
+      {
+      case '0': return 0x003F;
+      case '1': return 0x0300;
+      case '2': return 0x005B;
+      case '3': return 0x004F;
+      case '4': return 0x0066;
+      case '5': return 0x006D;
+      case '6': return 0x007D;
+      case '7': return 0x0007;
+      case '8': return 0x007F;
+      case '9': return 0x006F;
+      case 'A':
+      case 'a': return 0x0077;
+      case 'B':
+      case 'b': return 0x007C;
+      case 'C':
+      case 'c': return 0x0039;
+      case 'D':
+      case 'd': return 0x005E;
+      case 'E':
+      case 'e': return 0x0079;
+      case 'F':
+      case 'f': return 0x0071;
+      case '-': return 0x0040;
+      default: return 0;
+      }
+   }
+   default:
+   {
+      switch (c)
+      {
+      case '0': return 0x003F;
+      case '1': return 0x0006;
+      case '2': return 0x005B;
+      case '3': return 0x004F;
+      case '4': return 0x0066;
+      case '5': return 0x006D;
+      case '6': return 0x007D;
+      case '7': return 0x0007;
+      case '8': return 0x007F;
+      case '9': return 0x006F;
+      case 'A':
+      case 'a': return 0x0077;
+      case 'B':
+      case 'b': return 0x007C;
+      case 'C':
+      case 'c': return 0x0039;
+      case 'D':
+      case 'd': return 0x005E;
+      case 'E':
+      case 'e': return 0x0079;
+      case 'F':
+      case 'f': return 0x0071;
+      case '-': return 0x0040;
+      case '_': return 0x0008;
+      default: return 0;
+      }
+   }
+   }
+}
+
+uint16_t B2SSegmentTranslateBitCode(uint32_t bits, int ledSegments)
+{
+   // Dream7 DisplayBitCode iterates the display's segment list: segment index n reads bit n.
+   // Translate from that (Dream7 layout order) to the CTLPI/PinMAME luminance bit order.
+   switch (ledSegments)
+   {
+   case 14:
+      // Dream7 order: a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2 -> CTLPI: a,b,c,d,e,f,g1,comma,h,i,j,g2,k,l,m,dp
+      return static_cast<uint16_t>(
+         (bits & 0x007F) | ((bits & 0x0080) << 8) | (bits & 0x0700) | (bits & 0x0800) | ((bits & 0x1000) << 2) | (bits & 0x2000) | ((bits & 0x4000) >> 2) | (bits & 0x8000));
+   case 10:
+      // Dream7 order: a,b,c,d,e,f,g1,g2,i,l with g2 also reading bit 6 -> CTLPI 9seg: a..g=0..6, i=8, l=9
+      return static_cast<uint16_t>(bits & 0x037F);
+   case 7:
+   default: return static_cast<uint16_t>(bits & 0x00FF);
+   }
+}
+
+}
+

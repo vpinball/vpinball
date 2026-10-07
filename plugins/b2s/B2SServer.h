@@ -80,9 +80,9 @@ public:
          B2SSetPos(string_to_int(name, 0), string_to_int(x, 0), string_to_int(y, 0));
    }
 
-   void B2SSetLED(int, int) { } // FIXME
-   void B2SSetLED(int, const string&) { } // FIXME
-   void B2SSetLEDDisplay(int, const string&) { } // FIXME
+   void B2SSetLED(int digit, int value);
+   void B2SSetLED(int digit, const string& value);
+   void B2SSetLEDDisplay(int display, const string& text);
 
    // Scores identified by player, multiple digits (generate 'C' plugin events)
    void B2SSetScorePlayer(int playerno, int score);
@@ -154,6 +154,7 @@ public:
    float GetLampState(int b2sId) const;
    bool GetBulbState(const B2SBulb& bulb, float& state) const;
    int GetScoreDigit(int digit) const;
+   int GetScoreDigitSegments(int digit) const; // Explicit B2SSetLED segment mask, -1 = none
    bool ConsumeScoreDigitRoll(int digit); // Returns and clears the rolling flag set by B2SSetScore/B2SSetReel
    int GetPlayerScore(int player) const;
 
@@ -193,6 +194,7 @@ private:
    std::filesystem::path m_workingDir; // Script override through WorkingDir/SetPath
    std::atomic<bool> m_launchBackglass { true };
    void ApplyScoreDigit(int digit, int value, bool roll);
+   void ApplyScoreSegments(int digit, int segMask);
    std::function<void(B2SServer*)> m_onDestroyHandler;
 
    // Renderer
@@ -225,6 +227,7 @@ private:
    {
       std::atomic<int> value { 0 };
       std::atomic<bool> roll { false };
+      std::atomic<int> segMask { -1 }; // >= 0: explicit CTLPI-ordered segment mask set by B2SSetLED(B2SSetLEDDisplay)
    };
    std::map<int, ScoreDigit> m_scoreDigits;
    const unsigned int m_onStateChangeEventId;
