@@ -328,7 +328,7 @@ void Plunger::RenderSetup(Renderer *renderer)
          // Figure the texture coordinate.  The tip is always
          // the top 25% of the overall texture; interpolate the
          // current lathe point's position within that 25%.
-         c->tv = 0.24f * c->y / tiplen;
+         c->tv = (tiplen > 0.f) ? 0.24f * c->y / tiplen : 0.f;
 
          // Figure the normal as the average of the surrounding
          // surface normals.
@@ -341,8 +341,16 @@ void Plunger::RenderSetup(Renderer *renderer)
          //c->nx = sinf(th);
          //c->ny = -cosf(th);
          const float r = sqrtf(xd*xd + yd*yd);
-         c->nx = yd / r;
-         c->ny = -xd / r;
+         if (r > 0.f)
+         {
+            c->nx = yd / r;
+            c->ny = -xd / r;
+         }
+         else // Degenerate segment (e.g. blank "0,0" tip entry): no side profile, normal points down
+         {
+            c->nx = 0.f;
+            c->ny = -1.f;
+         }
       }
 
       // add the inner edge of the tip (abutting the rod)
