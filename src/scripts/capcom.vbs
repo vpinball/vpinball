@@ -39,8 +39,8 @@ Const GameOnSolenoid = 51
 '-------------------------
 ' The game's flipper strength setting is the value of its flipper solenoids while on: 9 (left flipper), 10 (right),
 '  11 (upper right: Breakshot, Pool Player, Big Bang Bar), 11/12 (Flipper Football: upper left/right), and their
-'  mirrors in the legacy mapping for DOF: 9 -> 45/46, 10 -> 47/48, 11 -> 33/34, 12 -> 35/36 (power/hold; 33-36 only
-'  in games with upper flippers). Kingpin, Flipper Football: setting/32; the others: setting/16
+'  mirrors on the matching side (power/hold): 9 -> 47/48 (sLLFlipper), 10 -> 45/46 (sLRFlipper), upper right ->
+'  33/34 (sURFlipper), upper left -> 35/36 (sULFlipper; 33-36 only in games with upper flippers). Kingpin, Flipper Football: setting/32; the others: setting/16
 ' Without UseVPMModSol: on/off as before, nothing to do
 ' With UseVPMModSol = 1 (value 0..255) or 2 (value 0..1), read it through SolModCallback, e.g. with 2:
 '  SolModCallback(9) = "LeftFlipperStrength"

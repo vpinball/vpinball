@@ -338,7 +338,7 @@ SolModCallback() - handler for each solenoid's modulated value, with UseVPMModSo
 SolOnAboveZero() - per solenoid: True if its modulated value may stay below half while on, so that its
                    SolCallback turns on at any value above 0 instead of at 0.5. Filled by the system scripts
                    (capcom.vbs: the flipper coils, which report their flipper strength setting)
-Lights()      - Lamps
+Lights()         - Lamps
 
 Constants used (must be defined):
 ---------------------------------
