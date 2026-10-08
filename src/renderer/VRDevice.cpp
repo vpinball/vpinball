@@ -1583,4 +1583,6 @@ void VRDevice::SaveVRSettings(Settings& settings) const
    settings.SetPlayerVR_TableX(m_tablePos.x, false);
    settings.SetPlayerVR_TableY(m_tablePos.y, false);
    settings.SetPlayerVR_TableZ(m_tablePos.z, false);
+   settings.SetPlayer_LockbarWidth(m_lockbarWidth, false);
+   settings.SetPlayer_LockbarHeight(m_lockbarHeight, false);
 }

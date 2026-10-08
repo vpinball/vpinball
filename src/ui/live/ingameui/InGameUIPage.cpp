@@ -210,10 +210,12 @@ void InGameUIPage::SaveTableOverride()
    Settings& tableSettings = g_settingsService.GetActiveSettings();
    for (const auto& item : m_items)
       item->ResetSave(tableSettings);
-   // Then save to table override
+   // Then save to table override (except items which are defined as global only)
+   Settings& appSettings = g_settingsService.GetAppSettings();
    for (const auto& item : m_items)
-      item->Save(tableSettings, true);
+      item->Save(item->m_globalOnly ? appSettings : tableSettings, !item->m_globalOnly);
    tableSettings.Save();
+   appSettings.Save();
 }
 
 bool InGameUIPage::HasSelectableItem() const
