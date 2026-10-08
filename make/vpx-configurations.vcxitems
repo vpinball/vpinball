@@ -50,4 +50,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <PropertyGroup>
+    <VpxBaseConfig>$(Configuration.Replace('_BGFX','').Replace('_GL',''))</VpxBaseConfig>
+  </PropertyGroup>
 </Project>

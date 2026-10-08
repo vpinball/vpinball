@@ -24,23 +24,23 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\inspector\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\inspector\"
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\inspector\assets" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\inspector\assets"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\inspector\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\inspector\"
-        copy /y  "$(SolutionDir)..\..\plugins\inspector\assets\*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\inspector\assets\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\inspector\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\inspector\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\inspector\assets" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\inspector\assets"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\inspector\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\inspector\"
+        copy /y  "$(SolutionDir)..\..\plugins\inspector\assets\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\inspector\assets\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\inspector\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\inspector\"
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\inspector\assets" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\inspector\assets"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\inspector\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\inspector\"
-        copy /y  "$(SolutionDir)..\..\plugins\inspector\assets\*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\inspector\assets\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\inspector\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\inspector\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\inspector\assets" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\inspector\assets"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\inspector\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\inspector\"
+        copy /y  "$(SolutionDir)..\..\plugins\inspector\assets\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\inspector\assets\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\inspector\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\inspector\"
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\inspector\assets" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\inspector\assets"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\inspector\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\inspector\"
-        copy /y  "$(SolutionDir)..\..\plugins\inspector\assets\*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\inspector\assets\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\inspector\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\inspector\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\inspector\assets" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\inspector\assets"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\inspector\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\inspector\"
+        copy /y  "$(SolutionDir)..\..\plugins\inspector\assets\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\inspector\assets\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
