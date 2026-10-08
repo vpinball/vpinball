@@ -19,14 +19,17 @@ VRSettingsPage::VRSettingsPage()
 
 void VRSettingsPage::BuildPage()
 {
+   // Positioning and physical setup are defined for the user's rig, so these items are always saved to the application settings (never as table overrides)
+   const auto addGlobalOnlyItem = [this](std::unique_ptr<InGameUIItem> item) { AddItem(std::move(item)).m_globalOnly = true; };
+
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View Offset"s));
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_Orientation, 1.f, "%4.1f deg"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOrientation(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetSceneOrientation(v); }));
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_TableX, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOffset().x; }, //
       [this](float, float v)
@@ -36,7 +39,7 @@ void VRSettingsPage::BuildPage()
          m_player->m_vrDevice->SetSceneOffset(offset);
       }));
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_TableY, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOffset().y; }, //
       [this](float, float v)
@@ -46,7 +49,7 @@ void VRSettingsPage::BuildPage()
          m_player->m_vrDevice->SetSceneOffset(offset);
       }));
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_TableZ, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOffset().z; }, //
       [this](float, float v)
@@ -58,35 +61,39 @@ void VRSettingsPage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet Layout"s));
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetLockbarWidth(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetLockbarWidth(v); }));
 
 #ifdef ENABLE_BGFX
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_LockbarHeight, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetLockbarHeight(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetLockbarHeight(v); }));
 #endif
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   auto& playerXItem = AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenPlayerX(); }, //
       [this](float, float v)
       {
          m_notifId = m_player->m_liveUI->PushNotification("This change is directly persisted and is used when centering view"s, 5000, m_notifId);
          g_settingsService.GetActiveSettings().SetPlayer_ScreenPlayerX(v, false);
-      })).m_excludeFromDefault = true;
+      }));
+   playerXItem.m_excludeFromDefault = true;
+   playerXItem.m_globalOnly = true;
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   auto& playerYItem = AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenPlayerY(); }, //
       [this](float, float v)
       {
          m_notifId = m_player->m_liveUI->PushNotification("This change is directly persisted and is used when centering view"s, 5000, m_notifId);
          g_settingsService.GetActiveSettings().SetPlayer_ScreenPlayerY(v, false);
-      })).m_excludeFromDefault = true;
+      }));
+   playerYItem.m_excludeFromDefault = true;
+   playerYItem.m_globalOnly = true;
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Augmented Reality"s));
 
@@ -120,7 +127,7 @@ void VRSettingsPage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous Settings"s));
 
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_LockFeetToGround, //
       [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
       [this](bool v) { m_player->m_vrDevice->SetLockFeetToGround(v); }));
@@ -159,19 +166,19 @@ void VRSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet positioning using controllers"s));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_ControllerCabYOffset, 1.f, "%4.1f cm"s, //
       [this]() { return g_settingsService.GetActiveSettings().GetPlayerVR_ControllerCabYOffset(); }, //
       [this](float, float v) { g_settingsService.GetActiveSettings().SetPlayerVR_ControllerCabYOffset(v, false); }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-   AddItem(std::make_unique<InGameUIItem>( //
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_ControllerLockbarScale, 100.f, "%4.1f %%"s, //
       [this]() { return g_settingsService.GetActiveSettings().GetPlayerVR_ControllerLockbarScale(); }, //
       [this](float, float v) { g_settingsService.GetActiveSettings().SetPlayerVR_ControllerLockbarScale(v, false); }));
 
    const auto& action = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetVRControllerViewCenteringActionId()];
-   AddItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
 #endif
 }
 
