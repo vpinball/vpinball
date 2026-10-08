@@ -19,26 +19,26 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\"
-        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\"
-        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\altsound\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\altsound\"
+        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\altsound\"
+        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\altsound\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\"
-        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\"
-        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\altsound\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\altsound\"
+        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\altsound\"
+        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\altsound\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
-        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
-        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\altsound\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\altsound\"
+        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\altsound\"
+        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\altsound\"
 
         if $(Platform) EQU x64 (
-        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\"
-        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\"
-        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\altsound\"
         ) ELSE (
-        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\"
-        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\"
-        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\altsound\"
         )
       </Command>
     </PostBuildEvent>

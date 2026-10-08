@@ -16,27 +16,27 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\vni\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\vni\"
-        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\vni\"
-        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\vni\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\vni\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\vni\"
+        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\vni\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\vni\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\vni\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\vni\"
-        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\vni\"
-        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\vni\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\vni\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\vni\"
+        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\vni\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\vni\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\vni\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\vni\"
-        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\vni\"
-        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\vni\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\vni\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\vni\"
+        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\vni\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\vni\"
 
 		if $(Platform) EQU x64 (
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\vni\"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\vni\"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\vni\"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\vni\"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\vni\"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\vni\"
 
 		) ELSE (
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\vni\"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\vni\"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\vni\"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\vni\"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\vni\"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\vni\"
 		)
       </Command>
     </PostBuildEvent>
