@@ -19,7 +19,7 @@ using namespace std::string_view_literals;
 using std::vector;
 
 
-namespace DMDOverlay
+namespace B2SLegacy::DMDOverlay
 {
 
 MSGPI_BOOL_VAL_SETTING(scoreViewDMDOverlayProp, "ScoreViewDMDOverlay", "ScoreView DMD Overlay", "Enable a DMD overlay on the Score View", true, false);
