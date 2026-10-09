@@ -82,6 +82,8 @@ PictureBoxAnimation::PictureBoxAnimation(
 
 PictureBoxAnimation::~PictureBoxAnimation() {
    Stop();
+   for (const auto& [key, pEntry] : m_entries)
+      delete pEntry;
 }
 
 void PictureBoxAnimation::Start()
