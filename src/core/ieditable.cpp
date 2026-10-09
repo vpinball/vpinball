@@ -16,6 +16,7 @@ IEditable::~IEditable()
 {
    assert(m_phittimer == nullptr); // If TimerRelease was not called, then player will hold an invalid reference
    SetPartGroup(nullptr);
+   VariantClear(&m_uservalue);
 }
 
 void IEditable::SetPartGroup(PartGroup* partGroup)
@@ -185,7 +186,6 @@ HRESULT IEditable::get_UserValue(VARIANT *pVal)
 
 HRESULT IEditable::put_UserValue(VARIANT *newVal)
 {
-   VariantInit(&m_uservalue);
    VariantClear(&m_uservalue);
    const HRESULT hr = VariantCopy(&m_uservalue, newVal);
 
