@@ -8,7 +8,7 @@
 #include <future>
 
 
-namespace DMDOverlay
+namespace B2SLegacy::DMDOverlay
 {
 
 class DMDOverlay final
