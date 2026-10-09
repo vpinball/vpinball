@@ -631,7 +631,13 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
 
    case TypeDef::TD_ARRAY:
    {
-      if (typeDef.arrayDef->nDimensions == 1)
+      if (sv.vArray == nullptr)
+      {
+         SAFEARRAYBOUND bounds[2] = { { 0, typeDef.arrayDef->lowerBounds[0] }, { 0, typeDef.arrayDef->lowerBounds[1] } };
+         V_VT(cv) = VT_ARRAY | VT_VARIANT;
+         V_ARRAY(cv) = SafeArrayCreate(VT_VARIANT, typeDef.arrayDef->nDimensions, bounds);
+      }
+      else if (typeDef.arrayDef->nDimensions == 1)
       {
          SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, typeDef.arrayDef->lowerBounds[0], sv.vArray->lengths[0]);
          VARIANT* pData;
@@ -791,12 +797,7 @@ void DynamicTypeLibrary::InitScriptVariant(const ScriptTypeNameDef& type, Script
 
    case TypeDef::TD_CLASS: sv.vObject = nullptr; break;
 
-   case TypeDef::TD_ARRAY:
-      sv.vArray = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int)));
-      sv.vArray->Release = [](ScriptArray* me) { free(me); };
-      for (unsigned int i = 0; i < typeDef.arrayDef->nDimensions; i++)
-         sv.vArray->lengths[i] = 0;
-      break;
+   case TypeDef::TD_ARRAY: sv.vArray = nullptr; break;
 
    default: break;
    }
@@ -821,6 +822,8 @@ void DynamicTypeLibrary::ReleaseScriptVariant(const ScriptTypeNameDef& type, Scr
       break;
 
    case TypeDef::TD_ARRAY:
+      if (sv.vArray == nullptr)
+         break;
       // String elements carry a per-element lifecycle (ScriptString::Release), mirroring the
       // scalar string convention. Release each element before freeing the array block itself.
       if (typeDef.arrayDef->type.id == TypeID::TYPEID_STRING)
