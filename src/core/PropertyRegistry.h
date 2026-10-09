@@ -49,7 +49,7 @@ public:
          const PropertyDef* existing = GetProperty(propId);
          if (*existing == *prop)
             return propId;
-         // Dynamic properties must be epxlicitely defined to allow correct handling (saving without a stable default for example)
+         // Dynamic properties must be explicitly defined to allow correct handling (saving without a stable default for example)
          // Redefining is also allowed when the existing definition is contextual: it may be a placeholder registered
          // before its owner defines it (e.g. mobile UI reading a plugin setting before the plugin is loaded)
          assert(prop->m_contextualProperty || existing->m_contextualProperty);

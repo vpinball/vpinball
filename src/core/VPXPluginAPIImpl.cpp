@@ -502,7 +502,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
       if (action == MsgPI::MsgPluginManager::SettingAction::Save)
          settings.Set(newId, settingDef->floatDef.Get(), asTableOverride);
       else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-         settingDef->floatDef.Set(settings.GetFloat(newId));
+         settingDef->floatDef.Set(Settings::GetRegistry().GetFloatProperty(newId)->GetValid(settings.GetFloat(newId)));
       break;
    }
 
@@ -524,7 +524,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
          if (action == MsgPI::MsgPluginManager::SettingAction::Save)
             settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
          else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-            settingDef->intDef.Set(settings.GetInt(newId));
+            settingDef->intDef.Set(Settings::GetRegistry().GetEnumProperty(newId)->GetValid(settings.GetInt(newId)));
       }
       else
       {
@@ -540,7 +540,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
          if (action == MsgPI::MsgPluginManager::SettingAction::Save)
             settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
          else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-            settingDef->intDef.Set(settings.GetInt(newId));
+            settingDef->intDef.Set(Settings::GetRegistry().GetIntProperty(newId)->GetValid(settings.GetInt(newId)));
       }
       break;
 

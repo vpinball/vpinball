@@ -14,8 +14,8 @@ Form::Form(VPXPluginAPI* vpxApi, const MsgPluginAPI* msgApi, uint32_t endpointId
 {
    if (!overlayType.empty()) {
       m_pResURIResolver = new PinballPlugin::ResURIResolver(*msgApi, m_endpointId, true, false, false);
+      m_isScoreView = overlayType == "ScoreView";
       m_pDmdOverlay = new DMDOverlay::DMDOverlay(m_vpxApi, *m_pResURIResolver, m_dmdTex, nullptr);
-      m_pDmdOverlay->LoadSettings(overlayType == "ScoreView");
    }
 }
 
@@ -38,6 +38,7 @@ void Form::Hide()
 void Form::OnPaint(VPXRenderContext2D* const ctx)
 {
    if (m_pDmdOverlay) {
+      m_pDmdOverlay->LoadSettings(m_isScoreView);
       m_pDmdOverlay->UpdateBackgroundImage(GetBackgroundImage());
       m_pDmdOverlay->Render(ctx);
    }

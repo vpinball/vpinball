@@ -24,17 +24,17 @@ namespace B2SLegacy::DMDOverlay
 
 MSGPI_BOOL_VAL_SETTING(scoreViewDMDOverlayProp, "ScoreViewDMDOverlay", "ScoreView DMD Overlay", "Enable a DMD overlay on the Score View", true, false);
 MSGPI_BOOL_VAL_SETTING(scoreViewDMDAutoPosProp, "ScoreViewDMDAutoPos", "ScoreView DMD Automatic position", "Enable automatic DMD bounds detection", true, false);
-MSGPI_INT_VAL_SETTING(scoreViewDMDXProp, "ScoreViewDMDX", "ScoreView DMD X position", "DMD overlay X position", true, 0, 0xFFFF, 0);
-MSGPI_INT_VAL_SETTING(scoreViewDMDYProp, "ScoreViewDMDY", "ScoreView DMD Y position", "DMD overlay Y position", true, 0, 0xFFFF, 0);
-MSGPI_INT_VAL_SETTING(scoreViewDMDWProp, "ScoreViewDMDW", "ScoreView DMD width", "DMD overlay width", true, 0, 0xFFFF, 0);
-MSGPI_INT_VAL_SETTING(scoreViewDMDHProp, "ScoreViewDMDH", "ScoreView DMD height", "DMD overlay height", true, 0, 0xFFFF, 0);
+MSGPI_FLOAT_VAL_SETTING(scoreViewDMDXProp, "ScoreViewDMDX", "ScoreView DMD X position", "Horizontal position in percent: 0 = left, 50 = centered, 100 = right", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(scoreViewDMDYProp, "ScoreViewDMDY", "ScoreView DMD Y position", "Vertical position in percent: 0 = top, 50 = centered, 100 = bottom", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(scoreViewDMDWProp, "ScoreViewDMDW", "ScoreView DMD width", "Width in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(scoreViewDMDHProp, "ScoreViewDMDH", "ScoreView DMD height", "Height in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
 
 MSGPI_BOOL_VAL_SETTING(backglassDMDOverlayProp, "BackglassDMDOverlay", "Backglass DMD Overlay", "Enable a DMD overlay on the Backglass", true, false);
 MSGPI_BOOL_VAL_SETTING(backglassDMDAutoPosProp, "BackglassDMDAutoPos", "Backglass DMD Automatic position", "Enable automatic DMD bounds detection", true, false);
-MSGPI_INT_VAL_SETTING(backglassDMDXProp, "BackglassDMDX", "Backglass DMD X position", "DMD overlay X position", true, 0, 0xFFFF, 0);
-MSGPI_INT_VAL_SETTING(backglassDMDYProp, "BackglassDMDY", "Backglass DMD Y position", "DMD overlay Y position", true, 0, 0xFFFF, 0);
-MSGPI_INT_VAL_SETTING(backglassDMDWProp, "BackglassDMDW", "Backglass DMD width", "DMD overlay width", true, 0, 0xFFFF, 0);
-MSGPI_INT_VAL_SETTING(backglassDMDHProp, "BackglassDMDH", "Backglass DMD height", "DMD overlay height", true, 0, 0xFFFF, 0);
+MSGPI_FLOAT_VAL_SETTING(backglassDMDXProp, "BackglassDMDX", "Backglass DMD X position", "Horizontal position in percent: 0 = left, 50 = centered, 100 = right", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(backglassDMDYProp, "BackglassDMDY", "Backglass DMD Y position", "Vertical position in percent: 0 = top, 50 = centered, 100 = bottom", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(backglassDMDWProp, "BackglassDMDW", "Backglass DMD width", "Width in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
+MSGPI_FLOAT_VAL_SETTING(backglassDMDHProp, "BackglassDMDH", "Backglass DMD height", "Height in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
 
 DMDOverlay::DMDOverlay(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage)
    : m_resURIResolver(resURIResolver)
@@ -69,16 +69,14 @@ void DMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int
 
 void DMDOverlay::LoadSettings(bool isScoreView)
 {
+   const bool wasDetecting = m_detectDmdFrame;
    if (isScoreView)
    {
       m_enable = scoreViewDMDOverlayProp_Val != 0;
       m_detectDmdFrame = scoreViewDMDAutoPosProp_Val != 0;
       if (!m_detectDmdFrame)
       {
-         m_frame.x = scoreViewDMDXProp_Val;
-         m_frame.y = scoreViewDMDYProp_Val;
-         m_frame.z = scoreViewDMDWProp_Val;
-         m_frame.w = scoreViewDMDHProp_Val;
+         m_manualFrame = vec4<float>(scoreViewDMDXProp_Val, scoreViewDMDYProp_Val, scoreViewDMDWProp_Val, scoreViewDMDHProp_Val);
       }
    }
    else
@@ -87,11 +85,13 @@ void DMDOverlay::LoadSettings(bool isScoreView)
       m_detectDmdFrame = backglassDMDAutoPosProp_Val != 0;
       if (!m_detectDmdFrame)
       {
-         m_frame.x = backglassDMDXProp_Val;
-         m_frame.y = backglassDMDYProp_Val;
-         m_frame.z = backglassDMDWProp_Val;
-         m_frame.w = backglassDMDHProp_Val;
+         m_manualFrame = vec4<float>(backglassDMDXProp_Val, backglassDMDYProp_Val, backglassDMDWProp_Val, backglassDMDHProp_Val);
       }
+   }
+   if (m_detectDmdFrame && !wasDetecting)
+   {
+      m_frame = vec4<int>();
+      m_detectSrcId.id = 0;
    }
 }
 
@@ -141,6 +141,16 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
 
    if (m_frameSearch.valid() && m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
       m_frame = m_frameSearch.get();
+
+   if (!m_detectDmdFrame)
+   {
+      const float w = m_manualFrame.z;
+      const float h = m_manualFrame.w;
+      const float x = m_manualFrame.x * (100.f - w) / 100.f;
+      const float y = m_manualFrame.y * (100.f - h) / 100.f;
+      m_frame = vec4<int>(static_cast<int>(x * ctx->srcWidth / 100.f), static_cast<int>((100.f - y - h) * ctx->srcHeight / 100.f),
+         static_cast<int>(w * ctx->srcWidth / 100.f), static_cast<int>(h * ctx->srcHeight / 100.f));
+   }
 
    if (m_frame.z == 0 || m_frame.w == 0)
       return;

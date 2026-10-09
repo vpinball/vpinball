@@ -57,6 +57,7 @@ public:
    const string& GetB2SName() const { return m_szB2SName; }
    void SetB2SName(const string& szB2SName) { m_szB2SName = szB2SName; Load(false); }
    void Load(bool resetLogs = true);
+   bool IsRestartPending() const;
    void ClearAll();
    bool IsHideGrill() const { return m_hideGrill; }
    bool IsHideDMD() const { return m_hideDMD; }
