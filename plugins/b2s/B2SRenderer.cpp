@@ -9,8 +9,12 @@
 
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 namespace B2S {
+
+// sRGB to linear conversion (duplicate from the main VPX codebase, see utils/color.h)
+static inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
 
 MSGPI_BOOL_VAL_SETTING(showGrillProp, "ShowGrill", "Show Grill", "Show Grill", true, false);
 
@@ -545,14 +549,21 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
                style = VPXSegDisplayRenderStyle::VPXSegStyle_GenLED;
             else if (usedLEDType == 2)
                style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+            // The styled profiles embed their own display color so the emitter tint must stay neutral
+            // for them (it is multiplied over the profile color, tinting twice); only the generic
+            // styles take the authored lit color. Same for the glass: the B2S dark color is the unlit
+            // segment color, not a glass tint, and multiplied over the output it darkens the display.
+            const vec4 litColor = (style == VPXSegDisplayRenderStyle::VPXSegStyle_GenPlasma || style == VPXSegDisplayRenderStyle::VPXSegStyle_GenLED)
+               ? vec4(InvsRGB(reel.m_reelLitColor.x), InvsRGB(reel.m_reelLitColor.y), InvsRGB(reel.m_reelLitColor.z), 1.f)
+               : vec4(1.f, 1.f, 1.f, 1.f);
             ctx->DrawSegDisplay(ctx, style, hint,
-               // First layer: glass tinted with the unlit segment color
-               nullptr, reel.m_reelDarkColor.x, reel.m_reelDarkColor.y, reel.m_reelDarkColor.z, 0.15f, // Glass texture, tint and roughness
+               // First layer: neutral glass, there is no glass texture
+               nullptr, 1.f, 1.f, 1.f, 0.15f, // Glass texture, tint and roughness
                0.f, 0.f, 0.f, 0.f, // Glass texture coordinates (inside overall glass texture, cut for each element)
                0.f, 0.f, 0.f, // Glass lighting from room
                // Second layer: emitter tinted with the lit segment color
                segType, brightness.data(), // Segment emitter type and brightness array
-               reel.m_reelLitColor.x, reel.m_reelLitColor.y, reel.m_reelLitColor.z, 1.f, 1.f, // Emitter tint, emitter brightness, emitter alpha
+               litColor.x, litColor.y, litColor.z, 1.f, 1.f, // Emitter tint, emitter brightness, emitter alpha
                0.f, 0.f, 0.f, 0.f, // Emitter padding (from glass border)
                // Render quad
                x, ctx->srcHeight - static_cast<float>(reel.m_locY + reel.m_height), width, static_cast<float>(reel.m_height));
