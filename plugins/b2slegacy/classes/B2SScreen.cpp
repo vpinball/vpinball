@@ -14,12 +14,12 @@
 
 namespace B2SLegacy {
 
-MSGPI_INT_VAL_SETTING(backglassWidthProp, "B2SBackglassWidth", "B2SBackglassWidth", "", true, 0, 16384, 1024);
-MSGPI_INT_VAL_SETTING(backglassHeightProp, "B2SBackglassHeight", "B2SBackglassHeight", "", true, 0, 16384, 768);
+MSGPI_INT_VAL_SETTING(backglassWidthProp, "B2SBackglassWidth", "B2SBackglassWidth", "", false, 0, 16384, 1024);
+MSGPI_INT_VAL_SETTING(backglassHeightProp, "B2SBackglassHeight", "B2SBackglassHeight", "", false, 0, 16384, 768);
 
-MSGPI_INT_VAL_SETTING(dmdWidthProp, "B2SDMDWidth", "B2SDMDWidth", "", true, 0, 16384, 512);
-MSGPI_INT_VAL_SETTING(dmdHeightProp, "B2SDMDHeight", "B2SDMDHeight", "", true, 0, 16384, 128);
-MSGPI_BOOL_VAL_SETTING(dmdFlipYProp, "B2SDMDFlipY", "B2SDMDFlipY", "", true, false);
+MSGPI_INT_VAL_SETTING(dmdWidthProp, "B2SDMDWidth", "B2SDMDWidth", "", false, 0, 16384, 512);
+MSGPI_INT_VAL_SETTING(dmdHeightProp, "B2SDMDHeight", "B2SDMDHeight", "", false, 0, 16384, 128);
+MSGPI_BOOL_VAL_SETTING(dmdFlipYProp, "B2SDMDFlipY", "Flip B2S DMD", "Flip the B2S DMD vertically. Applies after restarting the table", true, false);
 
 B2SScreen::B2SScreen(B2SData* pB2SData, const MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, unsigned int endpointId)
    : m_pB2SData(pB2SData),
@@ -82,6 +82,11 @@ void B2SScreen::ReadB2SSettingsFromFile()
    m_dmdSize = { 0, 0, dmdWidthProp_Val, dmdHeightProp_Val };
 
    m_dmdFlipY = dmdFlipYProp_Val;
+}
+
+bool B2SScreen::IsRestartPending() const
+{
+   return (dmdFlipYProp_Val != 0) != m_dmdFlipY;
 }
 
 void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdViewMode, int backglassGrillHeight, int backglassSmallGrillHeight)

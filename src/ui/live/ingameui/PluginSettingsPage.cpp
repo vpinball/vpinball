@@ -90,7 +90,7 @@ void PluginSettingsPage::BuildPage()
 
    for (const auto& option : g_pplayer->m_pluginAPI.GetPluginSettings())
    {
-      if (option.pluginId != m_pluginId)
+      if (option.pluginId != m_pluginId || !option.setting->isUserEditable)
          continue;
 
       const bool isReversed = false; //option.displayScale < 0.f;

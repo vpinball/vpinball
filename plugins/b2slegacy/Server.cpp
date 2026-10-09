@@ -167,6 +167,11 @@ int Server::OnRender(VPXRenderContext2D* const renderCtx, void* context)
       m_ready = true;
    }
 
+   const bool restartPending = m_pB2SSettings->IsRestartPending() || (m_pFormBackglass->GetB2SScreen() && m_pFormBackglass->GetB2SScreen()->IsRestartPending());
+   if (restartPending && !m_restartNotified)
+      m_vpxApi->PushNotification("This change will be applied after restarting the game", 5000);
+   m_restartNotified = restartPending;
+
    if (renderCtx->window == VPXWindowId::VPXWINDOW_Backglass) {
       if (!m_pB2SSettings->IsHideB2SBackglass()) {
          renderCtx->srcWidth = static_cast<float>(m_pFormBackglass->GetWidth());

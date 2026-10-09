@@ -31,6 +31,7 @@ private:
    PinballPlugin::ResURIResolver* m_pResURIResolver = nullptr;
    VPXTexture m_dmdTex = nullptr;
    DMDOverlay::DMDOverlay* m_pDmdOverlay = nullptr;
+   bool m_isScoreView = false;
    bool m_topMost = false;
 };
 

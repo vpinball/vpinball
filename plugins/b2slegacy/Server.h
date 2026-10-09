@@ -230,6 +230,7 @@ private:
    static void OnGetRendererStatic(const unsigned int msgId, void* userData, void* msgData);
 
    bool m_ready = false;
+   bool m_restartNotified = false;
 };
 
 }
