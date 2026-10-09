@@ -127,7 +127,23 @@ void RenderPass::SortCommands()
 
          // At this point, both commands are draw commands of opaque items
 
-         // HACKY: if marked with a very high depthbias, render them first. This is needed to avoid breaking playfield rendering of old table 
+         // Deferred light inserts (lightmap meshes) are opaque but are coplanar overlays that must be drawn after
+         // the surface they sit on (e.g. the playfield). With a static prepass the surface is baked separately so
+         // ordering never mattered, but on the no-prepass path (which BGFX MSAA forces, since it cannot blit between
+         // MSAA textures) the opaque surface shares this pass with the inserts. Without this rule the inserts sort
+         // ahead of the surface by technique and get overwritten by it. Keep them after other opaque parts and
+         // before transparents (which are already ordered after all opaque items above).
+         const auto isInsertLightmap = [](const RenderCommand* r) {
+            const ShaderTechnique t = r->GetShaderState()->GetTechnique();
+            return t == ShaderTechnique::light_with_texture || t == ShaderTechnique::light_without_texture
+               || t == ShaderTechnique::light_with_texture_isMetal || t == ShaderTechnique::light_without_texture_isMetal;
+         };
+         const bool insert1 = isInsertLightmap(r1);
+         const bool insert2 = isInsertLightmap(r2);
+         if (insert1 != insert2)
+            return insert2; // a non-insert opaque sorts before an insert lightmap
+
+         // HACKY: if marked with a very high depthbias, render them first. This is needed to avoid breaking playfield rendering of old table
          // since before 10.8, playfield was always rendered before all other parts, with alpha testing and depth writing.
          if (r1->GetDepth() != r2->GetDepth() && fabsf(r1->GetDepth() - r2->GetDepth()) > 50000.f)
             return r1->GetDepth() > r2->GetDepth(); // Back to front
