@@ -1294,6 +1294,8 @@ void FormBackglass::LoadB2SData()
                }
             }
          }
+         for (const auto& pEntry : entries)
+            delete pEntry;
       }
    }
 }
