@@ -10,6 +10,19 @@
 #include <filesystem>
 #include <format>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#include <tchar.h>
+#else
+#include <dlfcn.h>
+#include <climits>
+#include <unistd.h>
+#endif
+
 #include <string>
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -37,6 +50,7 @@ LPI_USE_CPP();
 PSC_USE_ERROR();
 
 std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile);
+std::filesystem::path GetPluginPath();
 
 inline string string_to_lower(string str)
 {

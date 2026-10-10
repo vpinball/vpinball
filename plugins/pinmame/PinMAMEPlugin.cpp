@@ -320,11 +320,13 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       };
 
       // Define pinmame directory (for ROM, NVRAM, ... eventually using VPX API if available)
+      // and the folders holding optional machine data (memory maps, game definitions)
       std::filesystem::path pinmamePath;
       std::filesystem::path memmapPath;
+      std::filesystem::path gamedefPath;
       VPXPluginAPI* vpxApi = nullptr;
       msgApi->BroadcastMsg(endpointId, getVpxApiMsgId, &vpxApi);
-      
+
       // Prioritize a pinmame folder along the table
       if (vpxApi != nullptr)
       {
@@ -337,14 +339,30 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
             if (!pinmamePath.empty())
                pinmamePath = pinmamePath.parent_path();
             memmapPath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "memmaps"sv);
+            gamedefPath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "gamedefs"sv);
          }
       }
 
-      // Defaults to the global setting
+      // Defaults to the user defined folder from the plugin settings
+      const std::filesystem::path settingsPath = PluginStrings::PathFromUTF8OrNative(pinMAMEPathProp_Get());
       if (pinmamePath.empty())
-         pinmamePath = PluginStrings::PathFromUTF8OrNative(pinMAMEPathProp_Get());
-      if (memmapPath.empty())
-         memmapPath = PluginStrings::PathFromUTF8OrNative(pinMAMEPathProp_Get()) / "memmaps"sv;
+         pinmamePath = settingsPath;
+      if (!settingsPath.empty())
+      {
+         if (memmapPath.empty())
+            memmapPath = find_case_insensitive_directory_path(settingsPath / "memmaps"sv);
+         if (gamedefPath.empty())
+            gamedefPath = find_case_insensitive_directory_path(settingsPath / "gamedefs"sv);
+      }
+
+      // Defaults to the data shipped along the plugin
+      if (const std::filesystem::path pluginPath = GetPluginPath(); !pluginPath.empty())
+      {
+         if (memmapPath.empty())
+            memmapPath = find_case_insensitive_directory_path(pluginPath / "memmaps"sv);
+         if (gamedefPath.empty())
+            gamedefPath = find_case_insensitive_directory_path(pluginPath / "gamedefs"sv);
+      }
 
       // Custom platforms defaults
       #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
@@ -366,7 +384,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       else
          strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, PluginStrings::PathToNative(pinmamePath / ""sv).c_str());
 
-      Controller* pController = new Controller(msgApi, endpointId, config, memmapPath);
+      Controller* pController = new Controller(msgApi, endpointId, config, memmapPath, gamedefPath);
       pController->SetOnDestroyHandler(OnControllerDestroyed);
       pController->SetOnGameStartHandler(OnControllerGameStart);
       pController->SetOnGameEndHandler(OnControllerGameEnd);

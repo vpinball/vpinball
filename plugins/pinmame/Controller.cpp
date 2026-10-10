@@ -26,19 +26,20 @@ namespace PinMAME
 // nothing stops a producer overshooting, and truncating would bias every shade down
 __forceinline uint8_t saturatedScale(const float v, const float scale) { return (uint8_t)(scale * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v) + 0.5f); }
 
-Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config, const std::filesystem::path& memmapPath)
+Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config, const std::filesystem::path& memmapPath, const std::filesystem::path& gamedefPath)
    : m_vpmPath(config.vpmPath)
    , m_memmapPath(memmapPath)
+   , m_gamedefPath(gamedefPath)
    , m_msgApi(api)
    , m_endpointId(endpointId)
    , m_threadLock(std::this_thread::get_id())
-   , m_pinmameConfig({ })
+   , m_pinmameConfig({})
    , m_stateSources(
         api, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
         [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_endpointId; }); },
-        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& stateSources) { OnStateSrcChanged({ }); }); },
+        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& stateSources) { OnStateSrcChanged({}); }); },
         [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& stateSources) { OnStateSrcChanged(stateSources); }); })
-   {
+{
    memcpy(&m_pinmameConfig, &config, sizeof(m_pinmameConfig));
    memcpy(const_cast<char*>(m_pinmameConfig.vpmPath), config.vpmPath, sizeof(m_pinmameConfig.vpmPath));
 
@@ -239,6 +240,48 @@ void Controller::Run(long hParentWnd, int nMinVersion)
          }
       }
    }
+
+   // Search and load a game definition providing user friendly names for the machine's inputs and outputs
+   // (see https://github.com/vpinball/pinmame-game-defs), resolving the running driver through the catalog
+   vector<uint8_t> gameDef;
+   const std::filesystem::path catalogPath = m_gamedefPath / "catalog"sv / "pinmame.json"sv;
+   if (std::error_code ec; std::filesystem::exists(m_gamedefPath, ec) && std::filesystem::exists(catalogPath, ec))
+   {
+      std::ifstream catalogFile(catalogPath);
+      if (catalogFile.is_open())
+      {
+         try
+         {
+            json catalog;
+            catalogFile >> catalog;
+            if (catalog.is_object() && catalog.contains("drivers") && catalog["drivers"].is_array())
+            {
+               for (const json& driver : catalog["drivers"])
+               {
+                  if (driver.is_object() && driver.contains("id") && driver["id"].is_string() && driver["id"].get<string>() == m_szRomName && driver.contains("definition")
+                     && driver["definition"].is_string())
+                  {
+                     const std::filesystem::path defPath = m_gamedefPath / PluginStrings::PathFromUTF8(driver["definition"].get<string>());
+                     std::ifstream defFile(defPath, std::ios::binary | std::ios::ate);
+                     if (defFile.is_open())
+                     {
+                        std::streamsize defSize = defFile.tellg();
+                        defFile.seekg(0, std::ios::beg);
+                        gameDef.resize(defSize);
+                        defFile.read(reinterpret_cast<char*>(gameDef.data()), defSize);
+                     }
+                     break;
+                  }
+               }
+            }
+         }
+         catch (const json::parse_error& e)
+         {
+            LOGE("JSON parse error while parsing gamedef catalog in " + PluginStrings::PathToUTF8(catalogPath) + ": " + e.what());
+         }
+      }
+   }
+   PinmameSetGameDef(gameDef.data(), gameDef.size());
 
    // Trigger startup, status will be either 2 (starting), 1 (running), 0 (stopped, likely after failure)
    PINMAME_STATUS status = PinmameRun(m_szGameName.c_str());

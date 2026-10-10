@@ -59,6 +59,17 @@
         	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pinmame\"
         	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pinmame\"
         )
+
+        if exist "$(SolutionDir)..\..\third-party\memmaps\" (
+        	xcopy /y /d /q /s "$(SolutionDir)..\..\third-party\memmaps\*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pinmame\memmaps\"
+        	xcopy /y /d /q /s "$(SolutionDir)..\..\third-party\memmaps\*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pinmame\memmaps\"
+        	xcopy /y /d /q /s "$(SolutionDir)..\..\third-party\memmaps\*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pinmame\memmaps\"
+        )
+        if exist "$(SolutionDir)..\..\third-party\gamedefs\" (
+        	xcopy /y /d /q /s "$(SolutionDir)..\..\third-party\gamedefs\*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pinmame\gamedefs\"
+        	xcopy /y /d /q /s "$(SolutionDir)..\..\third-party\gamedefs\*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pinmame\gamedefs\"
+        	xcopy /y /d /q /s "$(SolutionDir)..\..\third-party\gamedefs\*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pinmame\gamedefs\"
+        )
       </Command>
     </PostBuildEvent>
     <ClCompile>

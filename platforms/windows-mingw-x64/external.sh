@@ -14,6 +14,8 @@ echo "  FREEIMAGE_SHA: ${FREEIMAGE_SHA}"
 echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
+echo "  PINMAME_MEMMAPS_SHA: ${PINMAME_MEMMAPS_SHA}"
+echo "  PINMAME_GAMEDEFS_SHA: ${PINMAME_GAMEDEFS_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
@@ -207,6 +209,33 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    cd ..
 
    echo "$PINMAME_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# fetch pinmame machine data
+#
+
+PINMAME_DATA_EXPECTED_SHA="${PINMAME_MEMMAPS_SHA}-${PINMAME_GAMEDEFS_SHA}"
+PINMAME_DATA_FOUND_SHA="$([ -f pinmame-data/cache.txt ] && cat pinmame-data/cache.txt || echo "")"
+
+if [ "${PINMAME_DATA_EXPECTED_SHA}" != "${PINMAME_DATA_FOUND_SHA}" ]; then
+   echo "Fetching PinMAME machine data. Expected: ${PINMAME_DATA_EXPECTED_SHA}, Found: ${PINMAME_DATA_FOUND_SHA}"
+
+   rm -rf pinmame-data
+   mkdir pinmame-data
+   cd pinmame-data
+
+   curl -sL https://github.com/tomlogic/pinball-memory-maps/archive/${PINMAME_MEMMAPS_SHA}.tar.gz -o pinball-memory-maps-${PINMAME_MEMMAPS_SHA}.tar.gz
+   tar xzf pinball-memory-maps-${PINMAME_MEMMAPS_SHA}.tar.gz
+   mv pinball-memory-maps-${PINMAME_MEMMAPS_SHA} memmaps
+
+   curl -sL https://github.com/vpinball/pinmame-game-defs/archive/${PINMAME_GAMEDEFS_SHA}.tar.gz -o pinmame-game-defs-${PINMAME_GAMEDEFS_SHA}.tar.gz
+   tar xzf pinmame-game-defs-${PINMAME_GAMEDEFS_SHA}.tar.gz
+   mv pinmame-game-defs-${PINMAME_GAMEDEFS_SHA} gamedefs
+
+   echo "$PINMAME_DATA_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
@@ -582,6 +611,11 @@ cp pinmame/pinmame/build/libpinmame64.dll.a ../../../third-party/build-libs/wind
 mkdir -p ../../../third-party/include/pinmame
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include/pinmame
 cp pinmame/pinmame/src/libpinmame/PinMAMEPlugin.h ../../../third-party/include/pinmame
+
+mkdir -p ../../../third-party/memmaps
+cp -r pinmame-data/memmaps/index.json pinmame-data/memmaps/maps pinmame-data/memmaps/platforms ../../../third-party/memmaps/
+mkdir -p ../../../third-party/gamedefs
+cp -r pinmame-data/gamedefs/catalog pinmame-data/gamedefs/machines pinmame-data/gamedefs/controllers ../../../third-party/gamedefs/
 
 cp openxr/openxr/build/src/loader/openxr_loader64.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp openxr/openxr/build/src/loader/libopenxr_loader64.dll.a ../../../third-party/build-libs/windows-mingw-x64

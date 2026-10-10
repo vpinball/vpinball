@@ -18,7 +18,7 @@ class Settings;
 class Controller final
 {
 public:
-   Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config, const std::filesystem::path& memmapPath);
+   Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config, const std::filesystem::path& memmapPath, const std::filesystem::path& gamedefPath);
    ~Controller();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -163,6 +163,7 @@ public:
 private:
    string m_vpmPath;
    std::filesystem::path m_memmapPath;
+   std::filesystem::path m_gamedefPath;
    string m_szGameName; // Requested game name (may be an alias registered through alias.txt)
    string m_szRomName; // Resolved driver name
    mutable std::unordered_map<string, GameSettings*> m_gameSettings; // shared per game so settings survive repeated Games(name) accesses
