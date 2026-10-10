@@ -112,6 +112,15 @@ if(BUILD_SHARED)
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pinmame/plugin.cfg" "${PLUGINS_DIR}/pinmame/plugin.cfg"
    )
 
+   # Ship the machine data fetched by the platform external scripts as a default data source
+   foreach(dataFolder memmaps gamedefs)
+      if(EXISTS "${CMAKE_SOURCE_DIR}/third-party/${dataFolder}")
+         add_custom_command(TARGET PinMAMEPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/third-party/${dataFolder}" "${PLUGINS_DIR}/pinmame/${dataFolder}"
+         )
+      endif()
+   endforeach()
+
    if(POST_BUILD_COPY_EXT_LIBS)
       if(PLATFORM STREQUAL "windows")
          if (ARCH STREQUAL "x64")
