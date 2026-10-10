@@ -54,7 +54,13 @@ public:
 
    Player* const m_player;
 
-   void RequestRebuild() { m_needsRebuild = true; }
+   void RequestRebuild()
+   {
+      if (m_deferRebuild)
+         m_rebuildPending = true;
+      else
+         m_needsRebuild = true;
+   }
    virtual void BuildPage() = 0;
 
 private:
@@ -65,6 +71,8 @@ private:
    const SaveMode m_saveMode;
 
    bool m_needsRebuild = true;
+   bool m_deferRebuild = false;
+   bool m_rebuildPending = false;
    bool m_isBuildingPage = false;
    void ClearItems();
 
