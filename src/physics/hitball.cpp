@@ -79,13 +79,19 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
 #endif
 
    elasticity = ElasticityWithFalloff(elasticity, elastFalloff, dot);
-   dot *= -(1.0f + elasticity);
-   m_d.m_vel += dot * hitNormal; // apply collision impulse (along normal, so no torque)
 
 #ifdef FIX_PHYSICS
-   // bound the friction cone by the applied (post-restitution) normal impulse, like HitFlipper
+   // Bound the friction cone by the pre-restitution normal impulse m*|v.n|, captured here
+   // before dot is reflected below (dot is still the raw approach speed at this point). Using
+   // the post-restitution impulse m*|dot| instead would over-credit friction by (1+elasticity)
+   // on elastic wall/wire/ramp bounces, bleeding too much tangential speed and stalling balls
+   // climbing wire habitrails or ejecting from scoops/VUKs. The restitution impulse applied
+   // along the normal (below) is unchanged.
    const float reactionImpulse = m_d.m_mass * fabsf(dot);
 #endif
+
+   dot *= -(1.0f + elasticity);
+   m_d.m_vel += dot * hitNormal; // apply collision impulse (along normal, so no torque)
 
    // compute friction impulse
 
