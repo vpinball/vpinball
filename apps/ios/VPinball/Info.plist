@@ -34,8 +34,6 @@
 			<string>ExtendedGamepad</string>
 		</dict>
 	</array>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
 	<key>UIApplicationSceneManifest</key>

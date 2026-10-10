@@ -4,33 +4,29 @@ import android.graphics.ImageDecoder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,39 +34,43 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.vpinball.app.Table
 import org.vpinball.app.TableGridSize
-import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.jni.VPinballLogLevel
-import org.vpinball.app.ui.screens.common.RoundedCard
-import org.vpinball.app.ui.theme.VpxRed
+import org.vpinball.app.ui.screens.common.AlertButton
 import org.vpinball.app.util.resetImage
 import org.vpinball.app.util.resetIni
 import org.vpinball.app.util.resizeWithAspectFit
 import org.vpinball.app.util.updateImage
 
+private val GRID_GAP = 12.dp
+private val GRID_PADDING = 16.dp
+const val RECENTLY_PLAYED_LIMIT = 6
+
+fun List<Table>.recentlyPlayed(): List<Table> = filter { it.lastPlayedAt != null }.sortedByDescending { it.lastPlayedAt }.take(RECENTLY_PLAYED_LIMIT)
+
+fun List<Table>.favorites(): List<Table> = filter { it.isFavorite }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TablesList(
     tables: List<Table>,
-    viewMode: TableViewMode,
+    filteredTables: List<Table>,
+    isSearching: Boolean,
     gridSize: TableGridSize,
     onPlay: (table: Table) -> Unit,
     onRename: (table: Table, name: String) -> Unit,
@@ -78,9 +78,10 @@ fun TablesList(
     onShare: (table: Table) -> Unit,
     onDelete: (table: Table) -> Unit,
     modifier: Modifier = Modifier,
-    lazyGridState: LazyGridState = rememberLazyGridState(),
-    lazyListState: LazyListState = rememberLazyListState(),
-    availableHeightOverride: Dp? = null,
+    topContentPadding: Dp = 12.dp,
+    bottomContentPadding: Dp = 12.dp,
+    libraryGridState: LazyGridState = rememberLazyGridState(),
+    resultsGridState: LazyGridState = rememberLazyGridState(),
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -90,8 +91,7 @@ fun TablesList(
     var showRenameAlertDialog by remember { mutableStateOf(false) }
     var renameName by remember { mutableStateOf(TextFieldValue("")) }
 
-    var showTableImageSheet by remember { mutableStateOf(false) }
-    val tableImageSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var confirmAction by remember { mutableStateOf<TableConfirmAction?>(null) }
 
     val focusRequester = remember { FocusRequester() }
 
@@ -99,97 +99,134 @@ fun TablesList(
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent(),
             onResult = { uri ->
-                if (uri != null) {
-                    try {
-                        val source = ImageDecoder.createSource(context.contentResolver, uri)
-                        val bitmap = ImageDecoder.decodeBitmap(source) { decoder, _, _ -> decoder.isMutableRequired = true }
-                        val resizedBitmap =
-                            bitmap.resizeWithAspectFit(
-                                newWidth = VPinballManager.getDisplaySize().width,
-                                newHeight = VPinballManager.getDisplaySize().height,
-                            )
-                        val tableToUpdate = currentTable!!
-                        coroutineScope.launch { withContext(Dispatchers.IO) { tableToUpdate.updateImage(resizedBitmap) } }
-                    } catch (e: Exception) {
-                        VPinballManager.log(VPinballLogLevel.ERROR, "Unable to change image: ${e.message}")
+                val tableToUpdate = currentTable
+                if (uri != null && tableToUpdate != null) {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        try {
+                            val source = ImageDecoder.createSource(context.contentResolver, uri)
+                            val bitmap = ImageDecoder.decodeBitmap(source) { decoder, _, _ -> decoder.isMutableRequired = true }
+                            val resizedBitmap =
+                                bitmap.resizeWithAspectFit(
+                                    newWidth = VPinballManager.getDisplaySize().width,
+                                    newHeight = VPinballManager.getDisplaySize().height,
+                                )
+                            tableToUpdate.updateImage(resizedBitmap)
+                        } catch (e: Exception) {
+                            VPinballManager.log(VPinballLogLevel.ERROR, "Unable to change image: ${e.message}")
+                        }
                     }
                 }
             },
         )
 
-    when (viewMode) {
-        TableViewMode.LIST -> {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(0.dp), modifier = modifier, state = lazyListState) {
-                items(tables.size, key = { tables[it].uuid }) { index ->
-                    val table = tables[index]
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        if (index == 0) {
-                            HorizontalDivider()
-                        }
+    val recent = remember(tables) { tables.recentlyPlayed() }
+    val favorites = remember(tables) { tables.favorites() }
 
-                        TableRowItem(
-                            table = table,
+    BoxWithConstraints(modifier = modifier) {
+        val columns = gridSize.columns(wide = maxWidth >= 600.dp, compactHeight = maxHeight < 480.dp)
+        val cardWidth = (maxWidth - GRID_PADDING * 2 - GRID_GAP * (columns - 1)) / columns
+
+        fun LazyGridScope.cards(cardTables: List<Table>) {
+            items(cardTables.size, key = { cardTables[it].uuid }) { index ->
+                val table = cardTables[index]
+                TableGridItem(
+                    table = table,
+                    onPlay = onPlay,
+                    onRename = {
+                        currentTable = table
+                        renameName = renameName.copy(text = table.name)
+                        showRenameAlertDialog = true
+                    },
+                    onSetImage = {
+                        currentTable = table
+                        photoPickerLauncher.launch("image/*")
+                    },
+                    onViewScript = { onViewScript(table) },
+                    onShare = { onShare(table) },
+                    onResetImage = { confirmAction = TableConfirmAction.ResetImage(table) },
+                    onResetSettings = { confirmAction = TableConfirmAction.ResetSettings(table) },
+                    onDelete = { confirmAction = TableConfirmAction.Delete(table) },
+                )
+            }
+        }
+
+        if (isSearching) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                state = resultsGridState,
+                contentPadding = PaddingValues(start = GRID_PADDING, top = topContentPadding, end = GRID_PADDING, bottom = bottomContentPadding),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(GRID_GAP),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                item(key = "results-header", span = { GridItemSpan(maxLineSpan) }) { SectionHeader(title = "Results", count = filteredTables.size) }
+                cards(filteredTables)
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                state = libraryGridState,
+                contentPadding = PaddingValues(start = GRID_PADDING, top = topContentPadding, end = GRID_PADDING, bottom = bottomContentPadding),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(GRID_GAP),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                if (recent.isNotEmpty()) {
+                    item(key = "recent", span = { GridItemSpan(maxLineSpan) }) {
+                        MarqueeRow(
+                            title = "Recently Played",
+                            tables = recent,
+                            cardWidth = cardWidth,
+                            rowWidth = maxWidth,
+                            inRecentlyPlayed = true,
                             onPlay = onPlay,
-                            onRename = {
+                            onRename = { table ->
                                 currentTable = table
                                 renameName = renameName.copy(text = table.name)
                                 showRenameAlertDialog = true
                             },
-                            onTableImage = {
+                            onSetImage = { table ->
                                 currentTable = table
-                                showTableImageSheet = true
+                                photoPickerLauncher.launch("image/*")
                             },
-                            onViewScript = { onViewScript(table) },
-                            onShare = { onShare(table) },
-                            onReset = { table.resetIni() },
-                            onDelete = { onDelete(table) },
+                            onViewScript = onViewScript,
+                            onShare = onShare,
+                            onResetImage = { table -> confirmAction = TableConfirmAction.ResetImage(table) },
+                            onResetSettings = { table -> confirmAction = TableConfirmAction.ResetSettings(table) },
+                            onDelete = { table -> confirmAction = TableConfirmAction.Delete(table) },
                         )
-
-                        HorizontalDivider()
                     }
                 }
-            }
-        }
-        else -> {
-            BoxWithConstraints(modifier = modifier) {
-                val maxWidth = this.maxWidth
-                val maxHeight = availableHeightOverride ?: this.maxHeight
 
-                val layout =
-                    computeColumns(containerWidth = maxWidth - 32.dp, availableHeight = (maxHeight - 32.dp).coerceAtLeast(60.dp), gridSize = gridSize)
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(layout.columns),
-                    verticalArrangement = Arrangement.spacedBy(layout.gap),
-                    horizontalArrangement = Arrangement.spacedBy(layout.gap),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
-                    state = lazyGridState,
-                ) {
-                    items(tables.size, key = { tables[it].uuid }) {
-                        val table = tables[it]
-                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                            Box(modifier = Modifier.width(layout.cardWidth).height(layout.cardWidth * 1.5f)) {
-                                TableGridItem(
-                                    table = table,
-                                    onPlay = onPlay,
-                                    onRename = {
-                                        currentTable = table
-                                        renameName = renameName.copy(text = table.name)
-                                        showRenameAlertDialog = true
-                                    },
-                                    onTableImage = {
-                                        currentTable = table
-                                        showTableImageSheet = true
-                                    },
-                                    onViewScript = { onViewScript(table) },
-                                    onShare = { onShare(table) },
-                                    onReset = { table.resetIni() },
-                                    onDelete = { onDelete(table) },
-                                )
-                            }
-                        }
+                if (favorites.isNotEmpty()) {
+                    item(key = "favorites", span = { GridItemSpan(maxLineSpan) }) {
+                        MarqueeRow(
+                            title = "Favorites",
+                            count = favorites.size,
+                            tables = favorites,
+                            cardWidth = cardWidth,
+                            rowWidth = maxWidth,
+                            onPlay = onPlay,
+                            onRename = { table ->
+                                currentTable = table
+                                renameName = renameName.copy(text = table.name)
+                                showRenameAlertDialog = true
+                            },
+                            onSetImage = { table ->
+                                currentTable = table
+                                photoPickerLauncher.launch("image/*")
+                            },
+                            onViewScript = onViewScript,
+                            onShare = onShare,
+                            onResetImage = { table -> confirmAction = TableConfirmAction.ResetImage(table) },
+                            onResetSettings = { table -> confirmAction = TableConfirmAction.ResetSettings(table) },
+                            onDelete = { table -> confirmAction = TableConfirmAction.Delete(table) },
+                        )
                     }
                 }
+
+                item(key = "all-header", span = { GridItemSpan(maxLineSpan) }) { SectionHeader(title = "All Tables", count = tables.size) }
+                cards(tables)
             }
         }
     }
@@ -203,8 +240,12 @@ fun TablesList(
                     onValueChange = { renameName = it },
                     colors =
                         OutlinedTextFieldDefaults.colors(
-                            cursorColor = Color.VpxRed,
-                            selectionColors = TextSelectionColors(handleColor = Color.Transparent, backgroundColor = Color.VpxRed.copy(alpha = 0.5f)),
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            selectionColors =
+                                TextSelectionColors(
+                                    handleColor = MaterialTheme.colorScheme.primary,
+                                    backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                                ),
                             focusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         ),
                     singleLine = true,
@@ -217,162 +258,123 @@ fun TablesList(
             },
             onDismissRequest = {},
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        onRename(currentTable!!, renameName.text)
-                        showRenameAlertDialog = false
-                    },
-                    enabled = renameName.text.isNotBlank(),
-                ) {
-                    Text(
-                        text = "OK",
-                        color = if (renameName.text.isNotBlank()) Color.VpxRed else Color.Gray,
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                    )
+                AlertButton(text = "OK", enabled = renameName.text.isNotBlank()) {
+                    currentTable?.let { onRename(it, renameName.text) }
+                    showRenameAlertDialog = false
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { showRenameAlertDialog = false }) {
-                    Text(
-                        text = "Cancel",
-                        color = Color.VpxRed,
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-            },
+            dismissButton = { AlertButton(text = "Cancel") { showRenameAlertDialog = false } },
         )
     }
 
-    if (showTableImageSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showTableImageSheet = false },
-            sheetState = tableImageSheetState,
-            containerColor = MaterialTheme.colorScheme.surface,
+    confirmAction?.let { action ->
+        AlertDialog(
+            title = { Text(text = action.title, style = MaterialTheme.typography.titleMedium) },
+            text = { Text(action.message) },
+            onDismissRequest = { confirmAction = null },
+            confirmButton = {
+                AlertButton(text = action.confirmLabel, destructive = true) {
+                    confirmAction = null
+                    when (action) {
+                        is TableConfirmAction.ResetImage -> coroutineScope.launch { withContext(Dispatchers.IO) { action.table.resetImage() } }
+                        is TableConfirmAction.ResetSettings -> action.table.resetIni()
+                        is TableConfirmAction.Delete -> onDelete(action.table)
+                    }
+                }
+            },
+            dismissButton = { AlertButton(text = "Cancel") { confirmAction = null } },
+        )
+    }
+}
+
+sealed class TableConfirmAction(val table: Table) {
+    class ResetImage(table: Table) : TableConfirmAction(table)
+
+    class ResetSettings(table: Table) : TableConfirmAction(table)
+
+    class Delete(table: Table) : TableConfirmAction(table)
+
+    val title: String
+        get() =
+            when (this) {
+                is ResetImage -> "Reset Image?"
+                is ResetSettings -> "Reset Settings?"
+                is Delete -> "Delete Table?"
+            }
+
+    val message: String
+        get() =
+            when (this) {
+                is ResetImage -> "The image for \"${table.name}\" will be removed."
+                is ResetSettings -> "The saved settings for \"${table.name}\" will be removed."
+                is Delete -> "\"${table.name}\" and its files will be permanently deleted."
+            }
+
+    val confirmLabel: String
+        get() = if (this is Delete) "Delete" else "Reset"
+}
+
+@Composable
+fun SectionHeader(title: String, count: Int? = null, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.Bottom) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.weight(1f),
+        )
+        if (count != null) {
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MarqueeRow(
+    title: String,
+    tables: List<Table>,
+    cardWidth: Dp,
+    rowWidth: Dp,
+    onPlay: (table: Table) -> Unit,
+    onRename: (table: Table) -> Unit,
+    onSetImage: (table: Table) -> Unit,
+    onViewScript: (table: Table) -> Unit,
+    onShare: (table: Table) -> Unit,
+    onResetImage: (table: Table) -> Unit,
+    onResetSettings: (table: Table) -> Unit,
+    onDelete: (table: Table) -> Unit,
+    count: Int? = null,
+    inRecentlyPlayed: Boolean = false,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        SectionHeader(title = title, count = count)
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(GRID_GAP),
+            contentPadding = PaddingValues(horizontal = GRID_PADDING),
+            modifier = Modifier.requiredWidth(rowWidth),
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                RoundedCard {
-                    TextButton(
-                        onClick = {
-                            showTableImageSheet = false
-                            photoPickerLauncher.launch("image/*")
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(text = "Photo Library", color = Color.VpxRed, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Normal)
-                    }
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                    TextButton(
-                        onClick = {
-                            showTableImageSheet = false
-                            val tableToReset = currentTable!!
-                            coroutineScope.launch { withContext(Dispatchers.IO) { tableToReset.resetImage() } }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(text = "Reset", color = Color.VpxRed, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Normal)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                RoundedCard {
-                    TextButton(onClick = { showTableImageSheet = false }, modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Cancel", color = Color.VpxRed, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    }
-                }
+            items(tables, key = { it.uuid }) { table ->
+                TableGridItem(
+                    table = table,
+                    inRecentlyPlayed = inRecentlyPlayed,
+                    onPlay = onPlay,
+                    onRename = onRename,
+                    onSetImage = onSetImage,
+                    onViewScript = onViewScript,
+                    onShare = onShare,
+                    onResetImage = onResetImage,
+                    onResetSettings = onResetSettings,
+                    onDelete = onDelete,
+                    modifier = Modifier.width(cardWidth),
+                )
             }
         }
     }
-}
-
-data class GridLayout(val columns: Int, val cardWidth: Dp, val gap: Dp)
-
-private const val BASE_GAP = 12f
-private const val RATIO = 2f / 3f
-private const val MIN_READABLE_WIDTH = 120f
-private const val MIN_FLOOR_REGULAR = 48f
-private const val MIN_FLOOR_COMPACT = 40f
-
-fun heightFactor(gridSize: TableGridSize): Float =
-    when (gridSize) {
-        TableGridSize.SMALL -> 0.72f
-        TableGridSize.MEDIUM -> 0.88f
-        TableGridSize.LARGE -> 1.0f
-    }
-
-data class TierResult(val small: Int, val medium: Int, val large: Int, val maxWidthFromHeight: Float)
-
-fun computeTiers(containerWidth: Dp, availableHeight: Dp, gap: Dp, minFloor: Float): TierResult {
-    val baseCap = max(60f, availableHeight.value) * RATIO
-
-    fun calculateColumns(capFactor: Float): Int {
-        var minWidth = MIN_READABLE_WIDTH
-        val effectiveCap = baseCap * capFactor
-        var effectiveMin = min(minWidth, effectiveCap)
-        var columns = floor(((containerWidth.value + gap.value) / (effectiveMin + gap.value))).toInt()
-        while (columns < 3 && minWidth > minFloor) {
-            minWidth -= 6
-            effectiveMin = min(minWidth, effectiveCap)
-            columns = floor(((containerWidth.value + gap.value) / (effectiveMin + gap.value))).toInt()
-        }
-        return columns.coerceAtLeast(1)
-    }
-
-    val smallColumnsRaw = calculateColumns(0.72f)
-    val mediumColumnsRaw = calculateColumns(0.88f)
-    val largeColumnsRaw = calculateColumns(1.0f)
-
-    var smallColumns = max(3, smallColumnsRaw)
-    var mediumColumns = min(mediumColumnsRaw, smallColumns - 1)
-    if (mediumColumns < 2) mediumColumns = max(2, smallColumns - 1)
-    var largeColumns = min(largeColumnsRaw, mediumColumns - 1)
-    if (largeColumns < 1) largeColumns = 1
-
-    return TierResult(smallColumns, mediumColumns, largeColumns, baseCap)
-}
-
-fun cardWidthForColumns(columns: Int, containerWidth: Dp, heightCap: Dp, gridSize: TableGridSize, gap: Dp): Dp {
-    val widthPerColumn = (containerWidth - gap * max(columns - 1, 0)) / max(columns, 1)
-    var width = if (widthPerColumn < heightCap) widthPerColumn else heightCap
-    if (columns == 1) {
-        val factor =
-            when (gridSize) {
-                TableGridSize.SMALL -> 0.86f
-                TableGridSize.MEDIUM -> 0.94f
-                TableGridSize.LARGE -> 1.0f
-            }
-        val maxWidth = containerWidth * factor
-        width = if (width < maxWidth) width else maxWidth
-    }
-    return width
-}
-
-fun computeColumns(containerWidth: Dp, availableHeight: Dp, gridSize: TableGridSize): GridLayout {
-    val baseGap = BASE_GAP.dp
-    val gap = if (availableHeight < 420.dp) 8.dp else baseGap
-    val minFloor = if (availableHeight < 420.dp) MIN_FLOOR_COMPACT else MIN_FLOOR_REGULAR
-
-    val tiers = computeTiers(containerWidth, availableHeight, gap, minFloor)
-
-    val effectiveSmall = min(tiers.small, 6)
-    var effectiveMedium = min(tiers.medium, effectiveSmall - 1)
-    if (effectiveMedium < 2) effectiveMedium = max(1, effectiveSmall - 1)
-    var effectiveLarge = min(tiers.large, effectiveMedium - 1)
-    if (effectiveLarge < 1) effectiveLarge = 1
-
-    val columns =
-        when (gridSize) {
-            TableGridSize.SMALL -> effectiveSmall
-            TableGridSize.MEDIUM -> effectiveMedium
-            TableGridSize.LARGE -> effectiveLarge
-        }
-
-    val heightCap = max(60f, availableHeight.value).dp * RATIO * heightFactor(gridSize)
-    val cardWidth = cardWidthForColumns(columns, containerWidth, heightCap, gridSize, gap)
-
-    return GridLayout(columns = columns, cardWidth = cardWidth, gap = gap)
 }

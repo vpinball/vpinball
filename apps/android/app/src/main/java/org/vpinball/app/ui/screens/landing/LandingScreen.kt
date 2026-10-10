@@ -6,11 +6,12 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -18,27 +19,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -46,16 +36,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -66,8 +54,6 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import java.io.File
 import java.io.FileOutputStream
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.vpinball.app.Link
@@ -75,21 +61,19 @@ import org.vpinball.app.R
 import org.vpinball.app.SAFFileSystem
 import org.vpinball.app.Table
 import org.vpinball.app.TableManager
-import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.VPinballModel
+import org.vpinball.app.ui.screens.common.AlertButton
+import org.vpinball.app.ui.screens.common.CircleIconButton
 import org.vpinball.app.ui.screens.common.ProgressOverlay
+import org.vpinball.app.ui.screens.common.frostedEdge
 import org.vpinball.app.ui.screens.settings.SettingsBottomSheet
-import org.vpinball.app.ui.theme.DarkBlack
-import org.vpinball.app.ui.theme.LightBlack
+import org.vpinball.app.ui.theme.AmbientBackground
 import org.vpinball.app.ui.theme.VPinballTheme
-import org.vpinball.app.ui.theme.VpxDarkYellow
-import org.vpinball.app.ui.theme.VpxRed
 import org.vpinball.app.ui.util.koinActivityViewModel
 import org.vpinball.app.util.FileUtils
 import org.vpinball.app.util.hasScriptFile
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LandingScreen(
     onViewFile: (file: File) -> Unit,
@@ -99,6 +83,7 @@ fun LandingScreen(
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) { viewModel.initialize(vpinballModel) }
 
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
@@ -108,19 +93,17 @@ fun LandingScreen(
 
     var showSettingsDialog by remember { mutableStateOf(false) }
 
-    val tableViewMode by viewModel.tableViewMode.collectAsStateWithLifecycle()
     val tableGridSize by viewModel.tableGridSize.collectAsStateWithLifecycle()
     var showTableListModeMenu by remember { mutableStateOf(false) }
 
-    var showImportTableMenu by remember { mutableStateOf(false) }
     var showConfirmDialog by remember { mutableStateOf(false) }
     var importUri by remember { mutableStateOf<Uri?>(null) }
     var importFilename by remember { mutableStateOf<String?>(null) }
 
-    var searchIsFocused by remember { mutableStateOf(false) }
+    var searchActive by remember { mutableStateOf(false) }
     val searchText by viewModel.search.collectAsStateWithLifecycle()
 
-    val isSearching by remember { derivedStateOf { searchIsFocused || searchText.isNotEmpty() } }
+    val isSearching by remember { derivedStateOf { searchActive || searchText.isNotEmpty() } }
 
     val searchTextFieldState = rememberTextFieldState(searchText)
 
@@ -133,42 +116,8 @@ fun LandingScreen(
 
     var scrollToTable by remember { mutableStateOf<Table?>(null) }
 
-    val lazyGridState: LazyGridState = rememberLazyGridState()
-    val lazyListState: LazyListState = rememberLazyListState()
-
-    val totalOffset by remember {
-        derivedStateOf {
-            when (tableViewMode) {
-                TableViewMode.LIST -> lazyListState.run { (firstVisibleItemIndex * 100) + firstVisibleItemScrollOffset }
-                else -> lazyGridState.run { (firstVisibleItemIndex * 100) + firstVisibleItemScrollOffset }
-            }.toFloat()
-        }
-    }
-
-    val maxSearchBarHeight = 58.dp
-    val density = LocalDensity.current
-
-    val searchBarHeight by remember {
-        derivedStateOf {
-            if (isSearching) {
-                maxSearchBarHeight
-            } else {
-                val offsetDp = with(density) { totalOffset.toDp() }
-                (maxSearchBarHeight - offsetDp).coerceIn(0.dp, maxSearchBarHeight)
-            }
-        }
-    }
-
-    val searchBarOpacity by remember {
-        derivedStateOf {
-            if (isSearching) {
-                1f
-            } else {
-                val offsetDp = with(density) { totalOffset.toDp() }
-                (1f - offsetDp / (maxSearchBarHeight / 2)).coerceIn(0f, 1f)
-            }
-        }
-    }
+    val libraryGridState: LazyGridState = rememberLazyGridState()
+    val resultsGridState: LazyGridState = rememberLazyGridState()
 
     var showProgress by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf<String?>(null) }
@@ -210,161 +159,59 @@ fun LandingScreen(
     LaunchedEffect(Unit) { LandingScreenViewModel.scrollToTableTrigger.collect { table -> scrollToTable = table } }
 
     LaunchedEffect(scrollToTable, tables) {
-        val table = scrollToTable
-        if (table != null) {
-            val idx = tables.indexOfFirst { it.uuid == table.uuid }
-            if (idx >= 0) {
-                if (tableViewMode == TableViewMode.LIST) {
-                    lazyListState.animateScrollToItem(idx)
-                } else {
-                    lazyGridState.animateScrollToItem(idx)
-                }
-                scrollToTable = null
-            }
+        val table = scrollToTable ?: return@LaunchedEffect
+        val idx = tables.indexOfFirst { it.uuid == table.uuid }
+        if (idx >= 0) {
+            val headerItems = (if (tables.recentlyPlayed().isNotEmpty()) 1 else 0) + (if (tables.favorites().isNotEmpty()) 1 else 0) + 1
+            libraryGridState.animateScrollToItem(headerItems + idx)
+            scrollToTable = null
         }
     }
 
-    BackHandler(enabled = isSearching) {
+    fun endSearch() {
         searchTextFieldState.clearText()
         focusManager.clearFocus()
+        searchActive = false
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize().hazeSource(hazeState),
-        containerColor = Color.LightBlack,
-        topBar = {
-            if (!isSearching) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    TopAppBar(
-                        title = {},
-                        navigationIcon = {
-                            IconButton(onClick = { showSettingsDialog = true }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.img_sf_gearshape),
-                                    contentDescription = null,
-                                    tint = Color.VpxDarkYellow,
-                                    modifier = Modifier.size(22.dp),
-                                )
-                            }
-                        },
-                        actions = {
-                            Box {
-                                IconButton(onClick = { showTableListModeMenu = true }) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.img_sf_ellipsis_circle),
-                                        contentDescription = null,
-                                        tint = Color.VpxDarkYellow,
-                                        modifier = Modifier.size(22.dp),
-                                    )
-                                }
+    BackHandler(enabled = isSearching) { endSearch() }
 
-                                TableListModeDropdownMenu(
-                                    expanded = showTableListModeMenu,
-                                    onDismissRequest = { showTableListModeMenu = false },
-                                    viewModel = viewModel,
-                                )
-                            }
+    fun importBuiltInTable(name: String) {
+        try {
+            val assetFile = File(context.cacheDir, name)
+            context.assets.open("assets/$name").use { input -> FileOutputStream(assetFile).use { output -> input.copyTo(output) } }
+            importUri = assetFile.toUri()
+            importFilename = name
+            showConfirmDialog = true
+        } catch (e: Exception) {
+            viewModel.setError("Failed to load $name: ${e.message}")
+        }
+    }
 
-                            Box {
-                                IconButton(onClick = { showImportTableMenu = true }) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.img_sf_plus),
-                                        contentDescription = null,
-                                        tint = Color.VpxDarkYellow,
-                                        modifier = Modifier.size(22.dp),
-                                    )
-                                }
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val topContentPadding = statusBarPadding + (if (isSearching) 0.dp else TopBarHeight) + 12.dp
+    val bottomContentPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + BottomBarHeight + 36.dp
 
-                                ImportTableDropdownMenu(
-                                    expanded = showImportTableMenu,
-                                    onDismissRequest = { showImportTableMenu = false },
-                                    onFiles = {
-                                        showImportTableMenu = false
+    Box(modifier = modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {
+            AmbientBackground()
 
-                                        launcher.launch(arrayOf("*/*"))
-                                    },
-                                    onBlankTable = {
-                                        showImportTableMenu = false
-                                        try {
-                                            val assetFile = File(context.cacheDir, "blankTable.vpx")
-                                            context.assets.open("assets/blankTable.vpx").use { input ->
-                                                FileOutputStream(assetFile).use { output -> input.copyTo(output) }
-                                            }
-                                            importUri = assetFile.toUri()
-                                            importFilename = "blankTable.vpx"
-                                            showConfirmDialog = true
-                                        } catch (e: Exception) {
-                                            viewModel.setError("Failed to load blank table: ${e.message}")
-                                        }
-                                    },
-                                    onExampleTable = {
-                                        showImportTableMenu = false
-
-                                        try {
-                                            val assetFile = File(context.cacheDir, "exampleTable.vpx")
-                                            context.assets.open("assets/exampleTable.vpx").use { input ->
-                                                FileOutputStream(assetFile).use { output -> input.copyTo(output) }
-                                            }
-                                            importUri = assetFile.toUri()
-                                            importFilename = "exampleTable.vpx"
-                                            showConfirmDialog = true
-                                        } catch (e: Exception) {
-                                            viewModel.setError("Failed to load example table: ${e.message}")
-                                        }
-                                    },
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.DarkBlack),
-                    )
-
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(WindowInsets.statusBars.asPaddingValues()).height(56.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.img_vpinball_logo),
-                            contentDescription = null,
-                            modifier = Modifier.height(44.dp).padding(top = 8.dp),
-                        )
-                    }
-                }
-            } else {
-                TopAppBar(
-                    title = {},
-                    navigationIcon = {},
-                    expandedHeight = 0.dp,
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.DarkBlack),
-                )
-            }
-        },
-    ) { padding ->
-        BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxWidth()) {
-            val searchBarAllowance = 24.dp
-            val stableAvailableHeight = (this.maxHeight - maxSearchBarHeight - searchBarAllowance).coerceAtLeast(60.dp)
-            Column(modifier = Modifier.fillMaxWidth()) {
-                LandingScreenSearchBar(
-                    searchTextFieldState = searchTextFieldState,
-                    searchText = searchText,
-                    searchBarHeight = searchBarHeight,
-                    searchBarOpacity = searchBarOpacity,
-                    isSearching = isSearching,
-                    focusManager = focusManager,
-                    onFocusChanged = { searchIsFocused = it },
-                )
-
+            Column(modifier = Modifier.fillMaxSize()) {
                 if (tables.isEmpty()) {
-                    EmptyTablesList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent))
-                } else if (filteredTables.isEmpty()) {
-                    NoResultsTableList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent).imePadding())
+                    EmptyTablesList(modifier = Modifier.fillMaxWidth().padding(top = topContentPadding, bottom = bottomContentPadding))
+                } else if (isSearching && filteredTables.isEmpty()) {
+                    NoResultsTableList(
+                        modifier = Modifier.fillMaxWidth().padding(top = topContentPadding, bottom = bottomContentPadding).imePadding()
+                    )
                 } else {
                     TablesList(
-                        tables = filteredTables,
-                        viewMode = tableViewMode,
+                        tables = tables,
+                        filteredTables = filteredTables,
+                        isSearching = isSearching,
                         gridSize = tableGridSize,
                         onPlay = { table ->
                             focusManager.clearFocus()
-                            VPinballManager.play(filteredTables.firstOrNull { it.uuid == table.uuid } ?: table)
+                            VPinballManager.play(tables.firstOrNull { it.uuid == table.uuid } ?: table)
                         },
                         onRename = { table, name -> viewModel.viewModelScope.launch { TableManager.getInstance().renameTable(table, name) } },
                         onViewScript = { table ->
@@ -393,7 +240,7 @@ fun LandingScreen(
                                 status.value = "Extracting script"
                                 showProgress = true
 
-                                CoroutineScope(Dispatchers.Main).launch {
+                                coroutineScope.launch {
                                     TableManager.extractTableScript(
                                         table,
                                         onProgress = { inProgress, inStatus ->
@@ -415,7 +262,7 @@ fun LandingScreen(
                             status.value = "Exporting table"
                             showProgress = true
 
-                            CoroutineScope(Dispatchers.Main).launch {
+                            coroutineScope.launch {
                                 TableManager.shareTable(
                                     table,
                                     onProgress = { inProgress, inStatus ->
@@ -446,7 +293,7 @@ fun LandingScreen(
                             status.value = "Deleting table"
                             showProgress = true
 
-                            CoroutineScope(Dispatchers.Main).launch {
+                            coroutineScope.launch {
                                 TableManager.getInstance()
                                     .deleteTable(
                                         table = table,
@@ -458,90 +305,114 @@ fun LandingScreen(
                                 showProgress = false
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(all = 5.dp).imePadding(),
-                        lazyGridState = lazyGridState,
-                        lazyListState = lazyListState,
-                        availableHeightOverride = stableAvailableHeight,
+                        modifier = Modifier.fillMaxWidth().weight(1f).imePadding(),
+                        topContentPadding = topContentPadding,
+                        bottomContentPadding = bottomContentPadding,
+                        libraryGridState = libraryGridState,
+                        resultsGridState = resultsGridState,
                     )
                 }
             }
         }
-    }
 
-    if (showConfirmDialog) {
-        ImportConfirmDialog(
-            filename = importFilename,
-            onConfirm = {
-                showConfirmDialog = false
-                importUri?.let { uri ->
-                    CoroutineScope(Dispatchers.Main).launch {
-                        TableManager.importTable(
-                            uri = uri,
-                            onUpdate = { inProgress, inStatus ->
-                                title = importFilename
-                                progress.value = inProgress
-                                status.value = inStatus
-                                showProgress = true
-                            },
-                            onComplete = { _, _ -> showProgress = false },
-                            onError = { showProgress = false },
-                        )
+        val scrolled by remember { derivedStateOf { libraryGridState.canScrollBackward } }
+        val frostAlpha by animateFloatAsState(if (scrolled) 1f else 0f, label = "top_bar_frost")
+
+        AnimatedVisibility(visible = !isSearching, enter = fadeIn(), exit = fadeOut(), modifier = Modifier.align(Alignment.TopCenter)) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                val frostHeight = statusBarPadding + TopBarHeight + 44.dp
+                Box(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .height(frostHeight)
+                            .frostedEdge(hazeState, frostAlpha, solidFraction = (statusBarPadding + TopBarHeight + 4.dp) / frostHeight)
+                )
+
+                LandingTopBar(hazeState = hazeState, onSettings = { showSettingsDialog = true }) {
+                    CircleIconButton(hazeState = hazeState, iconRes = R.drawable.img_sf_ellipsis, contentDescription = "View Options") {
+                        showTableListModeMenu = true
                     }
-                } ?: run { error("$importFilename was not found!") }
-            },
-            onDismiss = { showConfirmDialog = false },
-        )
-    }
 
-    if (showProgress || isFetchingTables) {
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.1f)).pointerInput(Unit) {})
-
-        val displayTitle = if (isFetchingTables) "Loading Tables" else title
-        val displayProgress = if (isFetchingTables) fetchProgress else progress.value
-        val displayStatus = if (isFetchingTables) fetchStatus else status.value
-
-        ProgressOverlay(title = displayTitle, progress = displayProgress, status = displayStatus, hazeState = hazeState)
-    }
-
-    errorMessage?.let { message ->
-        AlertDialog(
-            title = { Text(text = "TILT!", style = MaterialTheme.typography.titleMedium) },
-            text = { Text(message) },
-            onDismissRequest = {},
-            confirmButton = {
-                TextButton(onClick = { viewModel.clearError() }) {
-                    Text(
-                        text = "OK",
-                        color = Color.VpxRed,
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
+                    TableListModeDropdownMenu(
+                        expanded = showTableListModeMenu,
+                        onDismissRequest = { showTableListModeMenu = false },
+                        viewModel = viewModel,
                     )
                 }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
+            }
+        }
+
+        LandingBottomBar(
+            hazeState = hazeState,
+            showSearch = tables.isNotEmpty(),
+            searchActive = searchActive,
+            onSearchActiveChange = { active -> if (active) searchActive = true else endSearch() },
+            searchTextFieldState = searchTextFieldState,
+            searchText = searchText,
+            focusManager = focusManager,
+            onFiles = { launcher.launch(arrayOf("*/*")) },
+            onBlankTable = { importBuiltInTable("blankTable.vpx") },
+            onExampleTable = { importBuiltInTable("exampleTable.vpx") },
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
+
+        if (showConfirmDialog) {
+            ImportConfirmDialog(
+                filename = importFilename,
+                onConfirm = {
+                    showConfirmDialog = false
+                    importUri?.let { uri ->
+                        coroutineScope.launch {
+                            TableManager.importTable(
+                                uri = uri,
+                                onUpdate = { inProgress, inStatus ->
+                                    title = importFilename
+                                    progress.value = inProgress
+                                    status.value = inStatus
+                                    showProgress = true
+                                },
+                                onComplete = { _, _ -> showProgress = false },
+                                onError = { showProgress = false },
+                            )
+                        }
+                    } ?: run { error("$importFilename was not found!") }
+                },
+                onDismiss = { showConfirmDialog = false },
+            )
+        }
+
+        if (showProgress || isFetchingTables) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.1f)).pointerInput(Unit) {})
+
+            val displayTitle = if (isFetchingTables) "Loading Tables" else title
+            val displayProgress = if (isFetchingTables) fetchProgress else progress.value
+            val displayStatus = if (isFetchingTables) fetchStatus else status.value
+
+            ProgressOverlay(title = displayTitle, progress = displayProgress, status = displayStatus, hazeState = hazeState)
+        }
+
+        errorMessage?.let { message ->
+            AlertDialog(
+                title = { Text(text = "TILT!", style = MaterialTheme.typography.titleMedium) },
+                text = { Text(message) },
+                onDismissRequest = {},
+                confirmButton = { AlertButton(text = "OK") { viewModel.clearError() } },
+                dismissButton = {
+                    AlertButton(text = "Learn More") {
                         viewModel.clearError()
                         Link.TROUBLESHOOTING.open(context = context)
                     }
-                ) {
-                    Text(
-                        text = "Learn More",
-                        color = Color.VpxRed,
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-            },
+                },
+            )
+        }
+
+        SettingsBottomSheet(
+            webServerURL = vpinballModel.webServerURL ?: "",
+            show = showSettingsDialog,
+            onDismissRequest = { showSettingsDialog = false },
+            onViewFile = onViewFile,
         )
     }
-
-    SettingsBottomSheet(
-        webServerURL = vpinballModel.webServerURL ?: "",
-        show = showSettingsDialog,
-        onDismissRequest = { showSettingsDialog = false },
-        onViewFile = onViewFile,
-    )
 }
 
 @Preview

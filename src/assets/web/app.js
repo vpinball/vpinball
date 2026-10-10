@@ -88,48 +88,82 @@ const LogState = {
 
 const UIState = {
   statusWs: null,
-  currentContextMenu: null,
-  isUploadingFolder: false
+  currentContextMenu: null
 };
 
-const UploadProgress = {
+const UPLOAD_CHUNK_SIZE = 1024 * 512;
+
+const UploadQueue = {
+  jobs: [],
+  active: false,
   totalFiles: 0,
   completedFiles: 0,
-  currentFileName: '',
-  currentFileProgress: 0,
   totalBytes: 0,
-  uploadedBytes: 0,
-  reset() {
+  completedBytes: 0,
+  currentBytes: 0,
+  failures: 0,
+
+  enqueue(jobs) {
+    for (const job of jobs) {
+      this.jobs.push(job);
+      this.totalFiles++;
+      this.totalBytes += job.size;
+    }
+    if (!this.active) {
+      this.run();
+    }
+  },
+
+  percent() {
+    if (this.totalBytes === 0) return 100;
+    return Math.min(100, Math.floor(((this.completedBytes + this.currentBytes) / this.totalBytes) * 100));
+  },
+
+  report(name) {
+    const count = this.totalFiles > 1 ? ` (${this.completedFiles + 1}/${this.totalFiles})` : "";
+    showStatusMessage("main-status", `Uploading ${name}... ${this.percent()}%${count}`, "info", true);
+  },
+
+  async run() {
+    this.active = true;
+    while (this.jobs.length > 0) {
+      const job = this.jobs.shift();
+      this.currentBytes = 0;
+      try {
+        const file = await job.getFile();
+        const data = new Uint8Array(await file.arrayBuffer());
+        await uploadBytes(job.path, data, (offset) => {
+          this.currentBytes = offset;
+          this.report(file.name);
+        });
+      } catch (error) {
+        console.error("Upload failed:", job.path, error);
+        this.failures++;
+      }
+      this.completedBytes += job.size;
+      this.completedFiles++;
+    }
+    this.finish();
+  },
+
+  finish() {
+    const files = this.totalFiles;
+    const failures = this.failures;
+    this.active = false;
     this.totalFiles = 0;
     this.completedFiles = 0;
-    this.currentFileName = '';
-    this.currentFileProgress = 0;
     this.totalBytes = 0;
-    this.uploadedBytes = 0;
-    this.lastDisplayedPercent = -1;
-  },
-  updateOverallProgress() {
-    if (this.totalFiles === 0) return;
+    this.completedBytes = 0;
+    this.currentBytes = 0;
+    this.failures = 0;
 
-    let overallPercent;
-    if (this.totalBytes > 0) {
-      overallPercent = Math.floor((this.uploadedBytes / this.totalBytes) * 100);
+    if (failures > 0) {
+      showStatusMessage("main-status", `✗ ${failures} of ${files} file${files === 1 ? "" : "s"} failed to upload`, "error", true);
     } else {
-      const completedProgress = this.completedFiles / this.totalFiles;
-      const currentFileContribution = (this.currentFileProgress / 100) / this.totalFiles;
-      const totalProgress = (completedProgress + currentFileContribution) * 100;
-      overallPercent = Math.floor(totalProgress);
+      showStatusMessage("main-status", `✓ Uploaded ${files} file${files === 1 ? "" : "s"}`, "success");
     }
-
-    let message = `Uploading files... ${overallPercent}% (${this.completedFiles}/${this.totalFiles})`;
-
-    if (this.currentFileName) {
-      message += ` - ${this.currentFileName}`;
-    }
-
-    showStatusMessage("main-status", message, "info", true);
-  },
-  lastDisplayedPercent: -1
+    navigateToPath(_directory);
+  }
 };
 
 const DOMCache = {
@@ -243,7 +277,6 @@ var _maxLogEntries = LogState.maxEntries;
 var _currentContextMenu = UIState.currentContextMenu;
 var _isNavigating = AppState.isNavigating;
 var _isViewingFile = EditorState.isViewingFile;
-var _lastUpdateTimestamp = AppState.lastUpdateTimestamp;
 
 function downloadFile(fileName, filePath) {
   const link = document.createElement('a');
@@ -291,7 +324,7 @@ function connectStatusWebSocket() {
       if (_statusData && newStatusData.lastUpdate &&
           _statusData.lastUpdate !== newStatusData.lastUpdate) {
 
-        if (!UIState.isUploadingFolder) {
+        if (!UploadQueue.active) {
           navigateToPath(_directory || '');
         }
       }
@@ -768,23 +801,22 @@ function newFolder() {
 function uploadFile() {
   const fileInput = document.createElement("input");
   fileInput.type = "file";
+  fileInput.multiple = true;
 
   fileInput.addEventListener("change", () => {
-    if (fileInput.files.length > 0) {
-      var file = fileInput.files[0];
-      var reader = new FileReader();
-      reader.readAsArrayBuffer(file);
-      reader.onload = () => {
-        const filePath = _directory ? `${_directory}/${file.name}` : file.name;
-        const data = new Uint8Array(reader.result);
-        sendChunk(filePath, data, 0, 1024 * 512, "main-status", () => {
-          navigateToPath(_directory);
-        });
-      };
-    }
+    enqueueFiles(fileInput.files, _directory);
   });
 
   fileInput.click();
+}
+
+function enqueueFiles(files, targetDir) {
+  const jobs = Array.from(files).map((file) => ({
+    path: targetDir ? `${targetDir}/${file.name}` : file.name,
+    size: file.size,
+    getFile: () => Promise.resolve(file)
+  }));
+  UploadQueue.enqueue(jobs);
 }
 
 function openFile(fileName, editing = false) {
@@ -1240,281 +1272,70 @@ function showStatusMessage(elementId, message, type, persistent = false) {
   }
 }
 
-function sendChunk(filePath, data, offset, chunkSize, statusId, callback) {
-  const progressPercentage = (offset / data.length) * 100;
-  const statusElement = DOMCache.get(statusId);
-  statusElement.innerHTML = `Uploading... ${progressPercentage.toFixed(0)}%`;
-  statusElement.style.color = "var(--primary-color)";
+function splitPath(filePath) {
+  const index = filePath.lastIndexOf('/');
+  return index === -1
+    ? { directory: "", filename: filePath }
+    : { directory: filePath.substring(0, index), filename: filePath.substring(index + 1) };
+}
 
-  let directory = "";
-  let filename = filePath;
+async function uploadBytes(filePath, data, onProgress) {
+  const { directory, filename } = splitPath(filePath);
+  let offset = 0;
 
-  const lastSlashIndex = filePath.lastIndexOf('/');
-  if (lastSlashIndex !== -1) {
-    directory = filePath.substring(0, lastSlashIndex);
-    filename = filePath.substring(lastSlashIndex + 1);
+  while (true) {
+    if (onProgress) onProgress(offset);
+
+    const chunk = data.subarray(offset, offset + UPLOAD_CHUNK_SIZE);
+    const response = await fetch(`/upload?offset=${offset}&q=${encodeURIComponent(directory)}&file=${encodeURIComponent(filename)}&length=${data.length}`, {
+      method: "POST",
+      body: chunk
+    });
+    if (!response.ok) {
+      throw new Error(`Upload failed with status ${response.status}`);
+    }
+
+    const written = parseInt(await response.text(), 10);
+    if (chunk.length === 0 || (Number.isFinite(written) && written >= data.length)) {
+      return;
+    }
+    offset += chunk.length;
   }
-
-  var chunk = data.subarray(offset, offset + chunkSize) || "";
-  fetch(`/upload?offset=${offset}&q=${encodeURIComponent(directory)}&file=${encodeURIComponent(filename)}&length=${data.length}`, { method: "POST", body: chunk })
-    .then((res) => {
-      if (res.ok && chunk.length > 0) {
-        sendChunk(filePath, data, offset + chunk.length, chunkSize, statusId, callback);
-      }
-      return res.ok ? res.text() : Promise.reject(res.text());
-    })
-    .then((text) => {
-      if (text === "0") {
-        showStatusMessage(statusId, "Upload complete!", "success");
-        if (callback) {
-          callback();
-        }
-      }
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      showStatusMessage(statusId, "Upload failed", "error");
-    });
 }
 
-async function countFilesInEntry(entry) {
-  if (entry.isFile) {
-    return 1;
-  } else if (entry.isDirectory) {
-    const reader = entry.createReader();
-    let totalFiles = 0;
-
-    return new Promise((resolve) => {
-      function readEntries() {
-        reader.readEntries(async (entries) => {
-          if (entries.length === 0) {
-            resolve(totalFiles);
-            return;
-          }
-
-          for (const subEntry of entries) {
-            totalFiles += await countFilesInEntry(subEntry);
-          }
-
-          readEntries();
-        }, () => resolve(totalFiles));
-      }
-      readEntries();
-    });
-  }
-  return 0;
+function readEntry(entry) {
+  return new Promise((resolve, reject) => entry.file(resolve, reject));
 }
 
-async function calculateTotalBytesInEntry(entry) {
-  if (entry.isFile) {
-    return new Promise((resolve) => {
-      entry.file((file) => {
-        resolve(file.size);
-      }, () => resolve(0));
-    });
-  } else if (entry.isDirectory) {
-    const reader = entry.createReader();
-    let totalBytes = 0;
-
-    return new Promise((resolve) => {
-      function readEntries() {
-        reader.readEntries(async (entries) => {
-          if (entries.length === 0) {
-            resolve(totalBytes);
-            return;
-          }
-
-          for (const subEntry of entries) {
-            totalBytes += await calculateTotalBytesInEntry(subEntry);
-          }
-
-          readEntries();
-        }, () => resolve(totalBytes));
-      }
-      readEntries();
-    });
-  }
-  return 0;
-}
-
-async function handleFileEntry(fileEntry, baseDir = _directory) {
-  return new Promise((resolve, reject) => {
-    fileEntry.file((file) => {
-      if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
-        UploadProgress.currentFileName = file.name;
-        UploadProgress.currentFileProgress = 0;
-        UploadProgress.updateOverallProgress();
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const filePath = baseDir ? `${baseDir}/${file.name}` : file.name;
-        const data = new Uint8Array(reader.result);
-
-        if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
-          sendChunkSequential(filePath, data, 0, 1024 * 512, "main-status", file.size)
-            .then(() => {
-              UploadProgress.completedFiles++;
-              UploadProgress.currentFileName = '';
-              UploadProgress.currentFileProgress = 0;
-              UploadProgress.updateOverallProgress();
-              resolve();
-            })
-            .catch(reject);
-        } else {
-          sendChunk(filePath, data, 0, 1024 * 512, "main-status", resolve);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    }, reject);
-  });
-}
-
-async function handleDirectoryEntry(directoryEntry, basePath = '', baseDir = _directory) {
+function readDirectory(directoryEntry) {
   const reader = directoryEntry.createReader();
-  const allEntries = [];
-
-  const dirPath = baseDir ? `${baseDir}/${basePath}` : basePath;
-  await createDirectory(dirPath);
-
+  const entries = [];
   return new Promise((resolve, reject) => {
-    function readEntries() {
-      reader.readEntries(async (entries) => {
-        if (entries.length === 0) {
-          try {
-            await processEntriesSequentially(allEntries, basePath, baseDir);
-            resolve();
-          } catch (error) {
-            reject(error);
-          }
+    const next = () => {
+      reader.readEntries((batch) => {
+        if (batch.length === 0) {
+          resolve(entries);
           return;
         }
-
-        allEntries.push(...entries);
-        readEntries();
+        entries.push(...batch);
+        next();
       }, reject);
-    }
-
-    readEntries();
-  });
-}
-
-async function processEntriesSequentially(entries, basePath, baseDir = _directory) {
-  const directories = entries.filter(entry => entry.isDirectory);
-  const files = entries.filter(entry => entry.isFile);
-
-  for (const entry of directories) {
-    const entryPath = basePath ? `${basePath}/${entry.name}` : entry.name;
-    await handleDirectoryEntry(entry, entryPath, baseDir);
-  }
-
-  for (const entry of files) {
-    const entryPath = basePath ? `${basePath}/${entry.name}` : entry.name;
-
-    await handleFileEntrySequential(entry, entryPath, baseDir);
-
-    if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
-      UploadProgress.completedFiles++;
-      UploadProgress.updateOverallProgress();
-    }
-  }
-}
-
-async function handleFileEntrySequential(fileEntry, entryPath, baseDir = _directory) {
-  return new Promise((resolve, reject) => {
-    fileEntry.file((file) => {
-      if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
-        UploadProgress.currentFileName = file.name;
-        UploadProgress.currentFileProgress = 0;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const filePath = baseDir ? `${baseDir}/${entryPath}` : entryPath;
-        const data = new Uint8Array(reader.result);
-
-        sendChunkSequential(filePath, data, 0, 1024 * 512, "main-status", file.size)
-          .then(() => {
-            if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
-              UploadProgress.currentFileName = '';
-              UploadProgress.currentFileProgress = 0;
-            }
-            resolve();
-          })
-          .catch((error) => {
-            reject(new Error(`Failed to upload ${entryPath}: ${error.message}`));
-          });
-      };
-      reader.onerror = () => reject(new Error(`Failed to read file: ${entryPath}`));
-      reader.readAsArrayBuffer(file);
-    }, (error) => reject(new Error(`Failed to access file: ${entryPath} - ${error.message}`)));
-  });
-}
-
-function sendChunkSequential(filePath, data, offset, chunkSize, statusId, fileSize = 0) {
-  return new Promise((resolve, reject) => {
-    const startingUploadedBytes = UploadProgress.uploadedBytes;
-
-    const uploadChunk = (currentOffset) => {
-      const progressPercentage = (currentOffset / data.length) * 100;
-
-      if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
-        UploadProgress.uploadedBytes = startingUploadedBytes + currentOffset;
-        UploadProgress.currentFileProgress = Math.floor(progressPercentage);
-        UploadProgress.updateOverallProgress();
-      } else {
-        const statusElement = DOMCache.get(statusId);
-        if (statusElement) {
-          const fileName = filePath.split('/').pop();
-          statusElement.innerHTML = `Uploading ${fileName}... ${progressPercentage.toFixed(0)}%`;
-          statusElement.style.color = "var(--primary-color)";
-        }
-      }
-      
-      let directory = "";
-      let filename = filePath;
-      const lastSlashIndex = filePath.lastIndexOf('/');
-      if (lastSlashIndex !== -1) {
-        directory = filePath.substring(0, lastSlashIndex);
-        filename = filePath.substring(lastSlashIndex + 1);
-      }
-      
-      const chunk = data.subarray(currentOffset, currentOffset + chunkSize) || new Uint8Array(0);
-      
-      fetch(`/upload?offset=${currentOffset}&q=${encodeURIComponent(directory)}&file=${encodeURIComponent(filename)}&length=${data.length}`, {
-        method: "POST",
-        body: chunk
-      })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Upload failed with status: ${res.status}`);
-        }
-        return res.text();
-      })
-      .then((text) => {
-        if (text === "0") {
-          if (!UIState.isUploadingFolder) {
-            const statusElement = DOMCache.get(statusId);
-            if (statusElement) {
-              statusElement.innerHTML = `Upload complete!`;
-              statusElement.style.color = "var(--success-color)";
-            }
-          }
-          resolve();
-        } else if (chunk.length > 0) {
-          setTimeout(() => uploadChunk(currentOffset + chunk.length), 10);
-        } else {
-          resolve();
-        }
-      })
-      .catch((error) => {
-        reject(error);
-      });
     };
-    
-    uploadChunk(offset);
+    next();
   });
+}
+
+async function collectUploadJobs(entries, targetDir, jobs) {
+  for (const entry of entries) {
+    const path = targetDir ? `${targetDir}/${entry.name}` : entry.name;
+    if (entry.isFile) {
+      const file = await readEntry(entry);
+      jobs.push({ path, size: file.size, getFile: () => Promise.resolve(file) });
+    } else if (entry.isDirectory) {
+      await createDirectory(path);
+      await collectUploadJobs(await readDirectory(entry), path, jobs);
+    }
+  }
 }
 
 async function createDirectory(dirPath) {
@@ -1550,76 +1371,25 @@ function isInternalMoveDrag(e) {
 }
 
 async function uploadDataTransferToDir(dataTransfer, targetDir) {
-  const items = dataTransfer.items;
-  if (items && items.length > 0) {
-    UIState.isUploadingFolder = true;
-    showStatusMessage("main-status", "Analyzing files... Please wait.", "info", true);
+  const entries = Array.from(dataTransfer.items || [])
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.webkitGetAsEntry())
+    .filter(Boolean);
 
-    UploadProgress.reset();
-    const allEntries = [];
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.kind === 'file') {
-        const entry = item.webkitGetAsEntry();
-        if (entry) allEntries.push(entry);
-      }
-    }
-
-    for (const entry of allEntries) {
-      UploadProgress.totalFiles += await countFilesInEntry(entry);
-      UploadProgress.totalBytes += await calculateTotalBytesInEntry(entry);
-    }
-
-    if (UploadProgress.totalFiles === 1) {
-      showStatusMessage("main-status", "Starting file upload...", "info", true);
-      UIState.isUploadingFolder = false;
-    } else {
-      showStatusMessage("main-status", `Found ${UploadProgress.totalFiles} files. Starting upload...`, "info", true);
-    }
-
-    try {
-      for (const entry of allEntries) {
-        if (entry.isFile) {
-          await handleFileEntry(entry, targetDir);
-        } else if (entry.isDirectory) {
-          await handleDirectoryEntry(entry, entry.name, targetDir);
-        }
-      }
-
-      UIState.isUploadingFolder = false;
-
-      if (UploadProgress.totalFiles > 1) {
-        showStatusMessage("main-status", `✓ Successfully uploaded ${UploadProgress.totalFiles} files!`, "success", true);
-      } else {
-        showStatusMessage("main-status", "✓ Upload completed successfully!", "success", true);
-      }
-    } catch (error) {
-      UIState.isUploadingFolder = false;
-      showStatusMessage("main-status", `✗ Upload failed: ${error.message}`, "error", true);
-    }
-
-    setTimeout(() => {
-      showStatusMessage("main-status", "Refreshing...", "info");
-      navigateToPath(_directory);
-    }, 3000);
-  } else {
-    const files = dataTransfer.files;
-    if (files.length > 0) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = () => {
-          const filePath = targetDir ? `${targetDir}/${file.name}` : file.name;
-          const data = new Uint8Array(reader.result);
-          sendChunk(filePath, data, 0, 1024 * 512, "main-status", () => {
-            navigateToPath(_directory);
-          });
-        };
-        reader.readAsArrayBuffer(file);
-      }
-    }
+  if (entries.length === 0) {
+    enqueueFiles(dataTransfer.files, targetDir);
+    return;
   }
+
+  showStatusMessage("main-status", "Preparing upload...", "info", true);
+  const jobs = [];
+  try {
+    await collectUploadJobs(entries, targetDir, jobs);
+  } catch (error) {
+    showStatusMessage("main-status", `✗ Could not read dropped files: ${error.message}`, "error", true);
+    return;
+  }
+  UploadQueue.enqueue(jobs);
 }
 
 async function moveFileToDir(sourcePath, targetDir) {
@@ -1853,12 +1623,6 @@ function displayLogEntry(logText) {
   logEntry.textContent = logText;
 
   logContent.appendChild(logEntry);
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 function clearLogs() {
@@ -2318,14 +2082,6 @@ const DropdownManager = {
   }
 };
 
-function toggleActionsDropdown() {
-  DropdownManager.toggle('actions-dropdown');
-}
-
-function hideActionsDropdown() {
-  DropdownManager.hide('actions-dropdown');
-}
-
 const DROPDOWN_CONFIGS = [
   { dropdownId: 'main-actions-dropdown', buttonId: 'main-actions-button' },
   { dropdownId: 'image-actions-dropdown', buttonId: 'image-actions-button' },
@@ -2417,7 +2173,8 @@ function saveCurrentFile() {
     }
 
     const data = new Uint8Array(new TextEncoder().encode(content));
-    sendChunk(_currentFilePath, data, 0, 1024 * 512, "editor-status", () => {
+    showStatusMessage("editor-status", "Saving...", "info", true);
+    uploadBytes(_currentFilePath, data).then(() => {
       showStatusMessage("editor-status", "File saved successfully!", "success");
       _originalContent = content;
       _hasChanges = false;
@@ -2441,6 +2198,9 @@ function saveCurrentFile() {
           hasUnsavedChanges: false
         }, '', `#${currentPath ? encodeURIComponent(currentPath) + '/' : ''}${encodeURIComponent(fileName)}`);
       }
+    }).catch((error) => {
+      console.error("Save failed:", error);
+      showStatusMessage("editor-status", "Save failed", "error");
     });
   }
 }

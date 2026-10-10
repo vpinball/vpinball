@@ -174,15 +174,6 @@ body {
   background-color: var(--danger-hover);
 }
 
-.btn-success {
-  background-color: var(--success-color);
-  color: white;
-}
-
-.btn-success:hover {
-  background-color: var(--success-hover);
-}
-
 .main-container {
   flex: 1;
   display: flex;
@@ -327,11 +318,6 @@ body {
   min-width: 160px;
   z-index: 1000;
   margin-top: 0.25rem;
-}
-
-.image-viewer-actions .actions-dropdown-content {
-  right: 0;
-  left: auto;
 }
 
 .log-viewer-controls .actions-dropdown-content {
@@ -541,41 +527,6 @@ body {
   fill: none;
 }
 
-.action-icon {
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  border-radius: var(--radius);
-  transition: all 0.2s ease;
-  margin-right: 4px;
-}
-
-.action-icon:hover {
-  background-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-.action-icon svg {
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-  stroke-width: 2;
-  fill: none;
-}
-
-.export-icon {
-  color: var(--primary-color);
-}
-
-.export-icon:hover {
-  background-color: rgba(253, 52, 35, 0.1);
-  color: var(--primary-hover);
-}
-
 .context-menu {
   background: var(--card-background);
   border: 1px solid var(--border-color);
@@ -635,12 +586,6 @@ body {
   padding: 1rem 0;
 }
 
-.image-viewer-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
 .image-viewer-content {
   flex: 1;
   display: flex;
@@ -667,12 +612,6 @@ body {
   flex: 1;
   min-height: 0;
   padding: 1rem 0;
-}
-
-.video-viewer-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
 }
 
 .video-viewer-content {
@@ -702,12 +641,6 @@ body {
   padding: 1rem 0;
 }
 
-.audio-viewer-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
 .audio-viewer-content {
   flex: 1;
   display: flex;
@@ -723,12 +656,6 @@ body {
 .audio-viewer-content audio {
   width: 100%;
   max-width: 600px;
-}
-
-.editor-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
 }
 
 #editor-content {

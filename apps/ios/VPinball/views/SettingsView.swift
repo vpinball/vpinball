@@ -54,17 +54,22 @@ struct SettingsView: View {
     @State var showReset = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
-                SettingsPerformanceView(settingsModel: settingsModel)
-                    .id("performance")
+                Section("Appearance") {
+                    Picker("Mode", selection: $settingsModel.appearance) {
+                        ForEach(AppAppearance.allCases) { appearance in
+                            Text(appearance.title).tag(appearance)
+                        }
+                    }
+                }
 
                 SettingsExternalDMDView(settingsModel: settingsModel, showInput: handleShowInput)
 
                 SettingsWebServerView(settingsModel: settingsModel, showInput: handleShowInput)
 
                 Section("Miscellaneous") {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Toggle(isOn: $settingsModel.renderingModeOverride) {
                             Text("Force VR Rendering Mode")
                         }
@@ -74,20 +79,21 @@ struct SettingsView: View {
                             .font(.footnote)
                             .foregroundStyle(Color.secondary)
                     }
+                    .padding(.vertical, 6)
                 }
 
                 Section("Advanced") {
                     Button("Export \(ExportFile.log.name)...") {
                         handleShowExport(.log)
                     }
-                    .foregroundStyle(Color.vpxRed)
+                    .tint(Color.vpxRed)
                 }
 
                 Section {
                     Button("Export \(ExportFile.ini.name)...") {
                         handleShowExport(.ini)
                     }
-                    .foregroundStyle(Color.vpxRed)
+                    .tint(Color.vpxRed)
                 }
 
                 Section("Support") {
@@ -212,24 +218,32 @@ struct SettingsView: View {
                     }
                 }
 
-                Text(String(cString: VPinballGetVersionStringFull()))
-                    .font(.caption)
-                    .foregroundStyle(Color.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity,
-                           alignment: .center)
-                    .listRowBackground(Color.clear)
+                VStack(spacing: 4) {
+                    Button(action: {
+                        handleLink(Link.vpinball)
+                    }, label: {
+                        HStack(spacing: 4) {
+                            Text(BuildInfo.provenance)
+                            Image(systemName: "arrow.up.right.square")
+                        }
+                    })
+                    .buttonStyle(.plain)
+
+                    Text(BuildInfo.version)
+                }
+                .font(.caption)
+                .foregroundStyle(Color.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity,
+                       alignment: .center)
+                .listRowBackground(Color.clear)
             }
+            .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
-            .navigationBarTitle("Settings", displayMode: .large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
+                    Button(role: .close) {
                         handleDismiss()
-                    }) {
-                        Text("Done")
-                            .bold()
-                            .foregroundStyle(Color.vpxRed)
                     }
                 }
             }
@@ -267,6 +281,9 @@ struct SettingsView: View {
             {
                 handleResetAllSettings()
             }
+        }
+        .onChange(of: settingsModel.appearance) {
+            settingsModel.handleAppearance()
         }
         .onChange(of: settingsModel.renderingModeOverride) {
             settingsModel.handleRenderingModeOverride()

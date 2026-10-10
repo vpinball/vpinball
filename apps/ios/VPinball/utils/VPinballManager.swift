@@ -35,6 +35,9 @@ class VPinballManager {
                 VPinballManager.runOnMain {
                     VPinballModel.shared.isPlaying = true
                     VPinballModel.shared.hideHUD()
+                    if let table = VPinballModel.shared.activeTable {
+                        TableManager.shared.markPlayed(table: table)
+                    }
                 }
             case .playerFailed:
                 Task { @MainActor in

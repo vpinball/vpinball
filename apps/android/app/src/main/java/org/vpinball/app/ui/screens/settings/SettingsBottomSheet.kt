@@ -10,7 +10,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +36,7 @@ import java.io.File
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.vpinball.app.ui.theme.VPinballTheme
 
 @Composable
 fun SettingsBottomSheet(
@@ -88,42 +88,42 @@ fun SettingsBottomSheet(
                 decorFitsSystemWindows = false,
             ),
     ) {
-        BackHandler { dismiss() }
+        VPinballTheme {
+            BackHandler { dismiss() }
 
-        Box(modifier = modifier.fillMaxSize()) {
-            Box(
-                modifier =
-                    Modifier.fillMaxSize().background(Color.Black.copy(alpha = animatedScrim)).clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) {
-                        dismiss()
-                    }
-            )
+            Box(modifier = modifier.fillMaxSize()) {
+                Box(
+                    modifier =
+                        Modifier.fillMaxSize().background(Color.Black.copy(alpha = animatedScrim)).clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) {
+                            dismiss()
+                        }
+                )
 
-            Surface(
-                modifier =
-                    Modifier.align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .offset { IntOffset(0, animatedOffset.roundToInt()) }
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures(
-                                onDragEnd = {
-                                    if (dragOffset > screenHeightPx * 0.2f) {
-                                        dismiss()
-                                    } else {
-                                        dragOffset = 0f
-                                    }
-                                },
-                                onVerticalDrag = { _, dragAmount -> dragOffset = (dragOffset + dragAmount).coerceAtLeast(0f) },
-                            )
-                        },
-                color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-            ) {
-                Box(modifier = Modifier.navigationBarsPadding()) {
-                    SettingsScreen(webServerURL = webServerURL, onDone = { dismiss() }, onViewFile = onViewFile, viewModel = viewModel)
+                Surface(
+                    modifier =
+                        Modifier.align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .offset { IntOffset(0, animatedOffset.roundToInt()) }
+                            .pointerInput(Unit) {
+                                detectVerticalDragGestures(
+                                    onDragEnd = {
+                                        if (dragOffset > screenHeightPx * 0.2f) {
+                                            dismiss()
+                                        } else {
+                                            dragOffset = 0f
+                                        }
+                                    },
+                                    onVerticalDrag = { _, dragAmount -> dragOffset = (dragOffset + dragAmount).coerceAtLeast(0f) },
+                                )
+                            },
+                    color = MaterialTheme.colorScheme.background,
+                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                ) {
+                    Box { SettingsScreen(webServerURL = webServerURL, onDone = { dismiss() }, onViewFile = onViewFile, viewModel = viewModel) }
                 }
             }
         }

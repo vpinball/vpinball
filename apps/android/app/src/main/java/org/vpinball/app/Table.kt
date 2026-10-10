@@ -5,7 +5,16 @@ import kotlinx.serialization.Serializable
 import org.vpinball.app.jni.VPinballPath
 
 @Serializable
-data class Table(val uuid: String, val name: String, val path: String, val image: String, val createdAt: Long, val modifiedAt: Long) {
+data class Table(
+    val uuid: String,
+    val name: String,
+    val path: String,
+    val image: String,
+    val createdAt: Long,
+    val modifiedAt: Long,
+    val lastPlayedAt: Long? = null,
+    val isFavorite: Boolean = false,
+) {
     val fileName: String
         get() = File(path).name
 
@@ -18,14 +27,6 @@ data class Table(val uuid: String, val name: String, val path: String, val image
                 File(tablesPath, path).absolutePath
             }
         }
-
-    val baseURL: File
-        get() =
-            if (SAFFileSystem.isUsingSAF()) {
-                File("")
-            } else {
-                File(fullPath).parentFile ?: File("")
-            }
 
     val scriptURL: File
         get() = File(fullPath.substringBeforeLast('.') + ".vbs")

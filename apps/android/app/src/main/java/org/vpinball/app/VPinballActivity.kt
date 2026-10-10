@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.filterNotNull
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.vpinball.app.ui.VPinballContent
 import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
+import org.vpinball.app.ui.theme.AppearanceState
 
 class VPinballActivity : ComponentActivity() {
     val viewModel: VPinballModel by viewModel()
@@ -21,11 +23,15 @@ class VPinballActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        enableEdgeToEdge()
         window.addFlags(FLAG_KEEP_SCREEN_ON)
 
         VPinballManager.onActivityReady(this)
 
-        VPinballManager.whenReady { TableManager.initialize(this) }
+        VPinballManager.whenReady {
+            TableManager.initialize(this)
+            AppearanceState.load()
+        }
 
         handleIntent(intent)
 

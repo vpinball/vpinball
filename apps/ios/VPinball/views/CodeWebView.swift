@@ -16,6 +16,8 @@ struct CodeWebView: UIViewRepresentable {
                                 configuration: configuration)
         webView.isInspectable = true
         webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
         webView.scrollView.bouncesZoom = false
         webView.scrollView.bounces = false
 

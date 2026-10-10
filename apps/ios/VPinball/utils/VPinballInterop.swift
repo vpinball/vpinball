@@ -27,38 +27,6 @@ enum VPinballSettingsSection: String {
     case pluginDMDUtil = "Plugin.DMDUtil"
 }
 
-enum VPinballMaxTexDimension: CInt {
-    case unlimited = 0
-    case max256 = 256
-    case max384 = 384
-    case max512 = 512
-    case max768 = 768
-    case max1024 = 1024
-    case max1280 = 1280
-    case max1536 = 1536
-    case max1792 = 1792
-    case max2048 = 2048
-    case max3072 = 3072
-    case max4096 = 4096
-
-    static let all: [VPinballMaxTexDimension] = [.max256,
-                                                 .max384,
-                                                 .max512,
-                                                 .max768,
-                                                 .max1024,
-                                                 .max1280,
-                                                 .max1536,
-                                                 .max1792,
-                                                 .max2048,
-                                                 .max3072,
-                                                 .max4096,
-                                                 .unlimited]
-
-    var name: String {
-        return self == .unlimited ? "Unlimited" : String(rawValue)
-    }
-}
-
 enum VPinballExternalDMD: CInt {
     case none
     case dmdServer

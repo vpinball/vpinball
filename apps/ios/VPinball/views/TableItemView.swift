@@ -1,50 +1,27 @@
-import PhotosUI
 import SwiftUI
 
 struct TableItemView: View {
-    let table: Table
+    static let aspect: CGFloat = 1 / 2
+    static let cornerRadius: CGFloat = 14
 
+    let table: Table
     var showTitle = true
-    var enableContextMenu = true
 
     var body: some View {
-        let content = ZStack(alignment: .bottom) {
-            GeometryReader { geometry in
+        if showTitle {
+            VStack(spacing: 8) {
                 TableImageView(table: table)
-                    .frame(width: geometry.size.width,
-                           height: geometry.size.height)
-            }
-            .aspectRatio(2 / 3,
-                         contentMode: .fit)
 
-            if showTitle {
-                VStack {
-                    Text(table.name)
-                        .multilineTextAlignment(.center)
-                        .font(.footnote)
-                        .bold()
-                        .foregroundStyle(Color.white)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 5)
-                }
-                .frame(maxWidth: .infinity)
-                .background(
-                    .ultraThinMaterial,
-                    in: RoundedRectangle(cornerRadius: 6)
-                )
+                Text(table.name)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.primary)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 2)
             }
-        }
-        Group {
-            if enableContextMenu {
-                content
-                    .contextMenu {
-                        TableContextMenu(table: table)
-                    } preview: {
-                        TableContextPreview(table: table)
-                    }
-            } else {
-                content
-            }
+        } else {
+            TableImageView(table: table)
         }
     }
 }

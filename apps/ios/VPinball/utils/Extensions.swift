@@ -4,11 +4,19 @@ import UniformTypeIdentifiers
 extension Color {
     static let darkBlack = Color(hex: 0x0C0C0C)
     static let lightBlack = Color(hex: 0x101010)
-    static let darkGray = Color(hex: 0x3C3C3C)
+    static let subtitle = Color.primary.opacity(0.7)
+    static let editorBackground = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(Color(hex: 0x1E1E1E)) : UIColor(Color(hex: 0xFFFFFE))
+    })
 
     static let vpxRed = Color(hex: 0xFD251D)
-    static let vpxLightYellow = Color(hex: 0xFFFD8E)
     static let vpxDarkYellow = Color(hex: 0xFEF716)
+
+    static let vpxAccent = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(Color.vpxDarkYellow)
+            : UIColor(Color(hex: 0xC8161C))
+    })
 
     init(hex: UInt) {
         self.init(
@@ -23,14 +31,6 @@ extension String {
     var cstring: UnsafePointer<CChar> {
         (self as NSString).cString(using: String.Encoding.utf8.rawValue)!
     }
-
-    var htmlEscaped: String {
-        return replacingOccurrences(of: "&", with: "&amp;")
-            .replacingOccurrences(of: "<", with: "&lt;")
-            .replacingOccurrences(of: ">", with: "&gt;")
-            .replacingOccurrences(of: "\"", with: "&quot;")
-            .replacingOccurrences(of: "'", with: "&#39;")
-    }
 }
 
 extension UTType {
@@ -43,34 +43,9 @@ extension UTType {
     }
 }
 
-extension UIImage {
-    func resizeWithAspectFit(newSize: CGSize) -> UIImage? {
-        let widthRatio = newSize.width / size.width
-        let heightRatio = newSize.height / size.height
-
-        let aspectFitRatio = min(widthRatio, heightRatio)
-        let aspectFitSize = CGSize(width: size.width * aspectFitRatio,
-                                   height: size.height * aspectFitRatio)
-
-        let renderer = UIGraphicsImageRenderer(size: newSize)
-        return renderer.image { context in
-            UIColor.black.setFill()
-            context.fill(CGRect(origin: .zero, size: newSize))
-
-            let origin = CGPoint(
-                x: (newSize.width - aspectFitSize.width) / 2.0,
-                y: (newSize.height - aspectFitSize.height) / 2.0
-            )
-            draw(in: CGRect(origin: origin,
-                            size: aspectFitSize))
-        }
-    }
-}
-
 extension View {
-    func blinkEffect(interval: TimeInterval = 0.75, maxLoop: Int = 0) -> some View {
-        modifier(BlinkEffect(interval: interval,
-                             maxLoop: maxLoop))
+    func blinkEffect(interval: TimeInterval = 0.75) -> some View {
+        modifier(BlinkEffect(interval: interval))
     }
 
     func gradientEffect(icon: String, contentMode: ContentMode) -> some View {
@@ -78,19 +53,7 @@ extension View {
                                 contentMode: contentMode))
     }
 
-    func statusBarHidden(_ hidden: Bool,
-                         style: UIStatusBarStyle? = nil,
-                         animated: Bool = true) -> some View
-    {
-        onAppear {
-            StatusBarManager.shared.setHidden(hidden,
-                                              style: style,
-                                              animated: animated)
-        }
-        .onChange(of: hidden) {
-            StatusBarManager.shared.setHidden(hidden,
-                                              style: style,
-                                              animated: animated)
-        }
+    func glassPanel(cornerRadius: CGFloat) -> some View {
+        glassEffect(.regular, in: .rect(cornerRadius: cornerRadius, style: .continuous))
     }
 }

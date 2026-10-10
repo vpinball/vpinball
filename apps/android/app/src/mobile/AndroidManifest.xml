@@ -4,6 +4,7 @@
 
     <application>
         <activity android:name="VPinballActivity"
+            android:windowSoftInputMode="adjustResize"
             tools:node="merge">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

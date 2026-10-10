@@ -121,6 +121,7 @@ object VPinballManager : KoinComponent {
                     CoroutineScope(Dispatchers.Main).launch {
                         viewModel.hideHUD()
                         playerActivity?.hideLoadingOverlay()
+                        viewModel.activeTable?.let { TableManager.getInstance().markPlayed(it) }
                     }
                 }
                 VPinballEvent.PLAYER_FAILED -> {

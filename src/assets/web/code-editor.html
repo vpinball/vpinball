@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="stylesheet" href="assets/web/monaco/style.css">
     <style>
         @font-face {
@@ -23,6 +23,10 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
+        :root {
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
         body {
             margin: 0;
             padding: 0;
@@ -82,7 +86,11 @@
                 });
 
                 if (editorInstance && editorInstance.editor) {
+                    const rootStyle = getComputedStyle(document.documentElement);
+                    const safeTop = parseFloat(rootStyle.getPropertyValue('--safe-top')) || 0;
+                    const safeBottom = parseFloat(rootStyle.getPropertyValue('--safe-bottom')) || 0;
                     editorInstance.editor.updateOptions({
+                        padding: { top: safeTop, bottom: safeBottom },
                         scrollSensitivity: 2,
                         fastScrollSensitivity: 10,
                         scrollbar: {

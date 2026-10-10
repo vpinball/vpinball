@@ -1,13 +1,5 @@
 package org.vpinball.app.ui.screens.landing
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -15,16 +7,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.vpinball.app.R
 import org.vpinball.app.Table
-import org.vpinball.app.ui.theme.VpxRed
+import org.vpinball.app.ui.screens.common.AppDropdownMenu
+import org.vpinball.app.ui.screens.common.AppMenuDivider
+import org.vpinball.app.ui.screens.common.AppMenuGroupGap
+import org.vpinball.app.ui.screens.common.AppMenuHeader
+import org.vpinball.app.ui.screens.common.AppMenuItem
 import org.vpinball.app.util.hasIniFile
 import org.vpinball.app.util.hasScriptFile
 
@@ -32,11 +26,14 @@ import org.vpinball.app.util.hasScriptFile
 fun TableContextMenu(
     table: Table,
     expanded: MutableState<Boolean>,
+    onToggleFavorite: () -> Unit,
+    onRemoveFromRecent: (() -> Unit)?,
     onRename: () -> Unit,
-    onTableImage: () -> Unit,
+    onSetImage: () -> Unit,
     onViewScript: () -> Unit,
     onShare: () -> Unit,
-    onReset: () -> Unit,
+    onResetImage: () -> Unit,
+    onResetSettings: () -> Unit,
     onDelete: () -> Unit,
     offsetProvider: () -> Offset,
 ) {
@@ -46,112 +43,54 @@ fun TableContextMenu(
     var scriptExists by remember { mutableStateOf(false) }
     var iniExists by remember { mutableStateOf(false) }
 
-    DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }, offset = offset) {
+    fun choose(action: () -> Unit) {
+        expanded.value = false
+        action()
+    }
+
+    AppDropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }, offset = offset) {
         LaunchedEffect(expanded.value) {
             if (expanded.value) {
-                scriptExists = table.hasScriptFile()
-                iniExists = table.hasIniFile()
+                withContext(Dispatchers.IO) {
+                    scriptExists = table.hasScriptFile()
+                    iniExists = table.hasIniFile()
+                }
             }
         }
 
-        Text(
-            text = table.name,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(vertical = 4.dp).padding(horizontal = 12.dp),
-        )
+        AppMenuHeader(table.name)
 
-        HorizontalDivider()
+        AppMenuItem(
+            label = if (table.isFavorite) "Remove from Favorites" else "Add to Favorites",
+            iconRes = if (table.isFavorite) R.drawable.img_sf_heart_slash else R.drawable.img_sf_heart,
+        ) {
+            choose(onToggleFavorite)
+        }
+        if (onRemoveFromRecent != null) {
+            AppMenuDivider()
+            AppMenuItem(label = "Remove from Recently Played", iconRes = R.drawable.img_sf_clock_badge_xmark) { choose(onRemoveFromRecent) }
+        }
 
-        DropdownMenuItem(
-            text = { Text("Rename", style = MaterialTheme.typography.bodyLarge) },
-            trailingIcon = {
-                Icon(painter = painterResource(id = R.drawable.img_sf_pencil), contentDescription = null, modifier = Modifier.size(20.dp))
-            },
-            onClick = {
-                expanded.value = false
-                onRename()
-            },
-        )
+        AppMenuGroupGap()
 
-        HorizontalDivider()
+        AppMenuItem(label = "Rename", iconRes = R.drawable.img_sf_pencil) { choose(onRename) }
+        AppMenuDivider()
+        AppMenuItem(label = "Set Image", iconRes = R.drawable.img_sf_photo_on_rectangle_angled) { choose(onSetImage) }
 
-        DropdownMenuItem(
-            text = { Text("Table Image", style = MaterialTheme.typography.bodyLarge) },
-            trailingIcon = {
-                Icon(painter = painterResource(id = R.drawable.img_sf_photo), contentDescription = null, modifier = Modifier.size(20.dp))
-            },
-            onClick = {
-                expanded.value = false
-                onTableImage()
-            },
-        )
+        AppMenuGroupGap()
 
-        HorizontalDivider()
+        AppMenuItem(label = if (scriptExists) "View Script" else "Extract Script", iconRes = R.drawable.img_sf_applescript) { choose(onViewScript) }
+        AppMenuDivider()
+        AppMenuItem(label = "Share", iconRes = R.drawable.img_sf_square_and_arrow_up) { choose(onShare) }
 
-        DropdownMenuItem(
-            text = { Text(text = if (scriptExists) "View Script" else "Extract Script", style = MaterialTheme.typography.bodyLarge) },
-            trailingIcon = {
-                Icon(painter = painterResource(id = R.drawable.img_sf_applescript), contentDescription = null, modifier = Modifier.size(20.dp))
-            },
-            onClick = {
-                expanded.value = false
-                onViewScript()
-            },
-        )
+        AppMenuGroupGap()
 
-        HorizontalDivider()
+        AppMenuItem(label = "Reset Image", iconRes = R.drawable.img_sf_photo, enabled = table.image.isNotEmpty()) { choose(onResetImage) }
+        AppMenuDivider()
+        AppMenuItem(label = "Reset Settings", iconRes = R.drawable.img_sf_slider_horizontal_3, enabled = iniExists) { choose(onResetSettings) }
 
-        DropdownMenuItem(
-            text = { Text("Share", style = MaterialTheme.typography.bodyLarge) },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.img_sf_square_and_arrow_up),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                )
-            },
-            onClick = {
-                expanded.value = false
-                onShare()
-            },
-        )
+        AppMenuGroupGap()
 
-        HorizontalDivider()
-
-        DropdownMenuItem(
-            text = { Text(text = "Reset", style = MaterialTheme.typography.bodyLarge, color = if (iniExists) Color.VpxRed else Color.Gray) },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.img_sf_arrow_trianglehead_counterclockwise),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = if (iniExists) Color.VpxRed else Color.Gray,
-                )
-            },
-            onClick = {
-                expanded.value = false
-                onReset()
-            },
-            enabled = iniExists,
-        )
-
-        HorizontalDivider()
-
-        DropdownMenuItem(
-            text = { Text("Delete", style = MaterialTheme.typography.bodyLarge, color = Color.VpxRed) },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.img_sf_trash),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.VpxRed,
-                )
-            },
-            onClick = {
-                expanded.value = false
-                onDelete()
-            },
-        )
+        AppMenuItem(label = "Delete", iconRes = R.drawable.img_sf_trash) { choose(onDelete) }
     }
 }

@@ -1,300 +1,232 @@
 import SwiftUI
 
-enum TableViewMode: Int, Hashable {
-    case grid = 0
-    case list = 1
-}
-
-enum TableGridSize: Int, Hashable {
-    case small = 0
-    case medium = 1
-    case large = 2
-}
-
 struct TableGridView: View {
-    @ObservedObject var mainViewModel = MainViewModel.shared
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
-    var tables: [Table]
-    var viewMode: TableViewMode
-    var gridSize: TableGridSize
-    var sortOrder: SortOrder
-    var searchText: String
+    let tables: [Table]
+    let gridSize: TableGridSize
+    let sortOrder: SortOrder
+    let searchText: String
+    let searchPresented: Bool
+    let namespace: Namespace.ID
     @Binding var scrollToTable: Table?
 
-    @State var selectedTable: Table?
-    private let imageWidth: CGFloat = 80
-    private let rowSpacing: CGFloat = 15
-    private let rowHorizontalPadding: CGFloat = 12
-    private let rowOuterPadding: CGFloat = 10
+    @State private var contentWidth: CGFloat = 0
 
-    var filteredTables: [Table] {
-        tables
-            .filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
-            .sorted {
-                sortOrder == .forward
-                    ? $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-                    : $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending
-            }
+    private var isSearching: Bool {
+        searchPresented || !searchText.isEmpty
+    }
+
+    private var columnCount: Int {
+        gridSize.columns(regular: sizeClass == .regular,
+                         compactHeight: verticalSizeClass == .compact)
+    }
+
+    private var cardWidth: CGFloat {
+        let count = CGFloat(columnCount)
+        return max(0, (contentWidth - 32 - 12 * (count - 1)) / count)
+    }
+
+    private var sortedTables: [Table] {
+        tables.sorted {
+            let result = $0.name.localizedCaseInsensitiveCompare($1.name)
+            return sortOrder == .forward ? result == .orderedAscending : result == .orderedDescending
+        }
     }
 
     var body: some View {
+        let sorted = sortedTables
+
         ZStack {
-            if viewMode == .list {
-                ScrollViewReader { proxy in
-                    let columns = [GridItem(.flexible(), spacing: 0, alignment: .top)]
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 0) {
-                            ForEach(filteredTables) { table in
-                                listRow(table: table)
-                            }
-                        }
-                    }
-                    .background(Color.clear)
-                    .onChange(of: scrollToTable) { _, newValue in
-                        handleScrollToTable(newValue, proxy: proxy)
-                    }
-                }
-            } else {
-                GeometryReader { geo in
-                    let size = geo.size
-                    if size.width > 0 && size.height > 0 {
-                        let stableWidth = floor(size.width)
-                        let stableHeight = floor(size.height)
-                        let layout = computeColumns(containerWidth: stableWidth - 32,
-                                                    availableHeight: stableHeight,
-                                                    gridSize: gridSize)
-                        ScrollViewReader { proxy in
-                            ScrollView {
-                                LazyVGrid(columns: Array(repeating: GridItem(.fixed(layout.cardWidth),
-                                                                             spacing: layout.gap,
-                                                                             alignment: .top),
-                                                         count: layout.columns),
-                                          spacing: layout.gap)
-                                {
-                                    ForEach(filteredTables) { table in
-                                        TableItemView(table: table)
-                                            .opacity(selectedTable?.uuid == table.uuid ? 0.5 : 1)
-                                            .onTapGesture { handlePlay(table) }
-                                            .frame(width: layout.cardWidth,
-                                                   height: layout.cardWidth * 1.5)
-                                            .id(table.uuid)
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 16)
-                            }
+            library(sorted)
+                .ignoresSafeArea(.keyboard)
+                .allowsHitTesting(!isSearching)
 
-                            .onChange(of: scrollToTable) { _, newValue in
-                                handleScrollToTable(newValue, proxy: proxy)
-                            }
-                        }
-                    }
-                }
-            }
-
-            if filteredTables.isEmpty && !searchText.isEmpty {
-                GeometryReader { geometry in
-                    VStack {
-                        Spacer()
-
-                        VStack(spacing: 40) {
-                            TableImagePlaceholderView()
-
-                            VStack(spacing: 20) {
-                                Text("Shoot Again!")
-                                    .font(.title)
-                                    .bold()
-                                    .foregroundStyle(Color.vpxDarkYellow)
-                                    .blinkEffect()
-
-                                Text("Please make sure the table name is correct, or try searching for another table.")
-                                    .font(.callout)
-                                    .multilineTextAlignment(.center)
-                                    .foregroundStyle(Color.white)
-                                    .padding(.horizontal, 40)
-                            }
-                        }
-                        .frame(height: geometry.size.height * 0.80)
-
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
-                }
+            if isSearching {
+                searchResults(sorted.filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) })
+                    .background(AmbientBackgroundView())
             }
         }
     }
 
-    func handlePlay(_ table: Table) {
-        selectedTable = table
+    private func library(_ sorted: [Table]) -> some View {
+        let recent = Array(tables
+            .filter { $0.lastPlayedAt != nil }
+            .sorted { ($0.lastPlayedAt ?? 0) > ($1.lastPlayedAt ?? 0) }
+            .prefix(6))
+        let favorites = sorted.filter(\.isFavorite)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            selectedTable = nil
+        return ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    if !recent.isEmpty {
+                        MarqueeHeaderView(title: "Recently Played",
+                                          sourcePrefix: "recent",
+                                          inRecentlyPlayed: true,
+                                          tables: recent,
+                                          cardWidth: cardWidth,
+                                          namespace: namespace)
+                    }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                mainViewModel.setAction(.play,
-                                        table: table)
+                    if !favorites.isEmpty {
+                        MarqueeHeaderView(title: "Favorites",
+                                          showsCount: true,
+                                          sourcePrefix: "favorite",
+                                          tables: favorites,
+                                          cardWidth: cardWidth,
+                                          namespace: namespace)
+                    }
+
+                    sectionHeader(title: "All Tables", count: sorted.count)
+
+                    tableGrid(sorted)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.width
+            } action: { width in
+                contentWidth = width
+            }
+            .scrollEdgeEffectStyle(.hard, for: .bottom)
+            .scrollEdgeEffectHidden(true, for: .bottom)
+            .animation(.snappy, value: columnCount)
+            .animation(.snappy, value: favorites.count)
+            .animation(.snappy, value: recent.count)
+            .onChange(of: scrollToTable) { _, newValue in
+                guard let table = newValue else { return }
+                withAnimation(.snappy) {
+                    proxy.scrollTo(table.uuid, anchor: .top)
+                }
+                scrollToTable = nil
             }
         }
     }
 
-    private func listRow(table: Table) -> some View {
-        Button {
-            handlePlay(table)
-        }
-        label: {
-            HStack(spacing: rowSpacing) {
-                TableItemView(table: table,
-                              showTitle: false,
-                              enableContextMenu: false)
-                    .frame(width: imageWidth,
-                           height: 120)
+    @ViewBuilder
+    private func searchResults(_ results: [Table]) -> some View {
+        if results.isEmpty {
+            VStack(spacing: 24) {
+                TableImagePlaceholderView()
+                    .frame(maxHeight: 360)
 
-                Text(table.name)
-                    .frame(maxWidth: .infinity,
-                           alignment: .leading)
-                    .multilineTextAlignment(.leading)
-                    .foregroundStyle(Color.white)
-                    .lineLimit(3)
-                    .fixedSize(horizontal: false,
-                               vertical: true)
-                    .layoutPriority(1)
+                VStack(spacing: 12) {
+                    Text("Shoot Again!")
+                        .font(.title2)
+                        .bold()
+                        .blinkEffect()
+
+                    Text("Check the spelling or try a new search.")
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(Color.subtitle)
+                        .padding(.horizontal, 40)
+                }
             }
-            .padding(.horizontal, rowHorizontalPadding)
-            .frame(maxWidth: .infinity,
-                   alignment: .leading)
+            .padding(.vertical, 32)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    sectionHeader(title: "Results", count: results.count)
+
+                    tableGrid(results)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            .scrollEdgeEffectStyle(.hard, for: .bottom)
+            .scrollEdgeEffectHidden(true, for: .bottom)
+            .scrollDismissesKeyboard(.immediately)
         }
-        .buttonStyle(.plain)
-        .id(table.uuid)
-        .contextMenu {
-            TableContextMenu(table: table)
-        } preview: {
-            TableContextPreview(table: table)
-        }
-        .frame(height: 140)
-        .padding(.vertical, rowOuterPadding)
-        .padding(.horizontal, rowOuterPadding)
-        .background(selectedTable?.uuid == table.uuid ? Color.darkGray : Color.lightBlack)
-        .overlay(
-            Rectangle()
-                .frame(height: 1)
-                .foregroundStyle(Color.darkGray),
-            alignment: .bottom
-        )
     }
 
-    private func handleScrollToTable(_ table: Table?, proxy: ScrollViewProxy) {
-        if let table = table {
-            proxy.scrollTo(table.uuid, anchor: .top)
-            scrollToTable = nil
+    private func tableGrid(_ items: [Table]) -> some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12, alignment: .top),
+                                 count: columnCount),
+                  spacing: 16)
+        {
+            ForEach(items) { table in
+                Button {
+                    MainViewModel.shared.play(table, sourceID: table.uuid)
+                } label: {
+                    TableItemView(table: table)
+                }
+                .buttonStyle(TableCardButtonStyle())
+                .matchedTransitionSource(id: table.uuid, in: namespace)
+                .contextMenu {
+                    TableContextMenu(table: table)
+                } preview: {
+                    TableContextPreview(table: table)
+                }
+                .tint(.primary)
+                .id(table.uuid)
+            }
         }
+    }
+
+    private func sectionHeader(title: String, count: Int) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+                .font(.title2.weight(.bold))
+            Spacer()
+            Text("\(count)")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 4)
     }
 }
 
-extension TableGridView {
-    private var baseGap: CGFloat {
-        12
-    }
+struct MarqueeHeaderView: View {
+    let title: String
+    var showsCount = false
+    let sourcePrefix: String
+    var inRecentlyPlayed = false
+    let tables: [Table]
+    let cardWidth: CGFloat
+    let namespace: Namespace.ID
 
-    private var ratio: CGFloat {
-        2 / 3
-    }
-
-    private var minReadableWidth: CGFloat {
-        120
-    }
-
-    private var minFloorRegular: CGFloat {
-        48
-    }
-
-    private var minFloorCompact: CGFloat {
-        40
-    }
-
-    private func heightFactor(_ gridSize: TableGridSize) -> CGFloat {
-        switch gridSize {
-        case .small: return 0.72
-        case .medium: return 0.88
-        case .large: return 1.0
-        }
-    }
-
-    private func computeTiers(containerWidth: CGFloat, availableHeight: CGFloat, gap: CGFloat, minFloor: CGFloat) -> (small: Int, medium: Int, large: Int, maxWidthFromHeight: CGFloat) {
-        let baseCap = max(60, availableHeight) * ratio
-        func calculateColumns(capFactor: CGFloat) -> Int {
-            var minWidth = minReadableWidth
-            let effectiveCap = baseCap * capFactor
-            var effectiveMin = min(minWidth, effectiveCap)
-            var columns = Int(floor((containerWidth + gap) / (effectiveMin + gap)))
-            while columns < 3 && minWidth > minFloor {
-                minWidth -= 6
-                effectiveMin = min(minWidth, effectiveCap)
-                columns = Int(floor((containerWidth + gap) / (effectiveMin + gap)))
-            }
-            return max(1, columns)
-        }
-        let smallColumnsRaw = calculateColumns(capFactor: 0.72)
-        let mediumColumnsRaw = calculateColumns(capFactor: 0.88)
-        let largeColumnsRaw = calculateColumns(capFactor: 1.00)
-
-        let smallColumns = max(3, smallColumnsRaw)
-        var mediumColumns = min(mediumColumnsRaw, smallColumns - 1)
-        if mediumColumns < 2 {
-            mediumColumns = max(2, smallColumns - 1)
-        }
-        var largeColumns = min(largeColumnsRaw, mediumColumns - 1)
-        if largeColumns < 1 {
-            largeColumns = 1
-        }
-
-        return (smallColumns, mediumColumns, largeColumns, baseCap)
-    }
-
-    private func cardWidthForColumns(_ columns: Int, containerWidth: CGFloat, heightCap: CGFloat, gridSize: TableGridSize, gap: CGFloat) -> CGFloat {
-        let widthPerColumn = (containerWidth - gap * CGFloat(max(columns - 1, 0))) / CGFloat(max(columns, 1))
-        var width = min(widthPerColumn, heightCap)
-        if columns == 1 {
-            let factor: CGFloat = {
-                switch gridSize {
-                case .small: return 0.86
-                case .medium: return 0.94
-                case .large: return 1.00
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title)
+                    .font(.title2.weight(.bold))
+                if showsCount {
+                    Spacer()
+                    Text("\(tables.count)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
                 }
-            }()
-            width = min(width, containerWidth * factor)
-        }
-        return floor(width)
-    }
-
-    private func computeColumns(containerWidth: CGFloat, availableHeight: CGFloat, gridSize: TableGridSize) -> (columns: Int, cardWidth: CGFloat, gap: CGFloat) {
-        let layout: (gap: CGFloat, minFloor: CGFloat) = (availableHeight < 420) ? (8, minFloorCompact) : (baseGap, minFloorRegular)
-        let tiers = computeTiers(containerWidth: containerWidth,
-                                 availableHeight: availableHeight,
-                                 gap: layout.gap,
-                                 minFloor: layout.minFloor)
-
-        let effectiveSmall = min(tiers.small, 6)
-        var effectiveMedium = min(tiers.medium, effectiveSmall - 1)
-        if effectiveMedium < 2 {
-            effectiveMedium = max(1, effectiveSmall - 1)
-        }
-        var effectiveLarge = min(tiers.large, effectiveMedium - 1)
-        if effectiveLarge < 1 {
-            effectiveLarge = 1
-        }
-        let columns: Int = {
-            switch gridSize {
-            case .small: return effectiveSmall
-            case .medium: return effectiveMedium
-            case .large: return effectiveLarge
             }
-        }()
-        let heightCap = max(60, availableHeight) * ratio * heightFactor(gridSize)
-        let cardWidth = cardWidthForColumns(columns,
-                                            containerWidth: containerWidth,
-                                            heightCap: heightCap,
-                                            gridSize: gridSize,
-                                            gap: layout.gap)
-        return (columns, cardWidth, layout.gap)
+            .padding(.horizontal, 4)
+
+            ScrollView(.horizontal) {
+                HStack(alignment: .top, spacing: 12) {
+                    ForEach(Array(tables.enumerated()), id: \.offset) { index, table in
+                        Button {
+                            MainViewModel.shared.play(table, sourceID: "\(sourcePrefix)-\(table.uuid)")
+                        } label: {
+                            TableItemView(table: table)
+                                .frame(width: cardWidth)
+                        }
+                        .buttonStyle(TableCardButtonStyle())
+                        .matchedTransitionSource(id: "\(sourcePrefix)-\(table.uuid)", in: namespace)
+                        .contextMenu {
+                            TableContextMenu(table: table, inRecentlyPlayed: inRecentlyPlayed)
+                        } preview: {
+                            TableContextPreview(table: table)
+                        }
+                        .tint(.primary)
+                        .id("\(sourcePrefix)-\(index)-\(table.uuid)")
+                    }
+                }
+            }
+            .scrollIndicators(.hidden)
+            .contentMargins(.horizontal, 16, for: .scrollContent)
+            .padding(.horizontal, -16)
+        }
     }
 }

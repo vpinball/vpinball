@@ -5,20 +5,18 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import org.vpinball.app.AppAppearance
 import org.vpinball.app.SAFFileSystem
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.jni.VPinballExternalDMD
 import org.vpinball.app.jni.VPinballGfxBackend
-import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMDUTIL
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStorageMode
 import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
+import org.vpinball.app.ui.theme.AppearanceState
 
 class SettingsViewModel : ViewModel() {
     // General
@@ -37,9 +35,7 @@ class SettingsViewModel : ViewModel() {
 
     // Display
 
-    // Performance
-
-    var maxTexDimension by mutableStateOf(VPinballMaxTexDimension.MAX_3072)
+    var appearance by mutableStateOf(AppAppearance.DARK)
         private set
 
     // External DMD
@@ -89,10 +85,9 @@ class SettingsViewModel : ViewModel() {
                 }
             }
 
-        // Performance
+        // Display
 
-        maxTexDimension =
-            VPinballMaxTexDimension.fromInt(VPinballManager.loadValue(PLAYER, "MaxTexDimension", VPinballMaxTexDimension.MAX_3072.value))
+        appearance = AppearanceState.appearance
 
         // External DMD
 
@@ -154,17 +149,15 @@ class SettingsViewModel : ViewModel() {
     fun triggerTableReloadIfNeeded() {
         if (needsTableReload) {
             needsTableReload = false
-            CoroutineScope(Dispatchers.Main).launch { LandingScreenViewModel.triggerRefresh() }
+            LandingScreenViewModel.triggerRefresh()
         }
     }
 
     // Display
 
-    // Performance
-
-    fun handleMaxTexDimension(value: VPinballMaxTexDimension) {
-        maxTexDimension = value
-        VPinballManager.saveValue(PLAYER, "MaxTexDimension", value.value)
+    fun handleAppearance(value: AppAppearance) {
+        appearance = value
+        AppearanceState.set(value)
     }
 
     // External DMD

@@ -26,6 +26,7 @@ struct VPinballAppView: View {
 
     func handleAppear() {
         VPinballManager.shared.startup()
+        AppAppearance.current.apply()
         vpinballModel.startSplashTimer()
     }
 }

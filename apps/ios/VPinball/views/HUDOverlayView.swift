@@ -5,34 +5,32 @@ struct HUDOverlayView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.2)
+            Color(.systemBackground).opacity(0.25)
                 .ignoresSafeArea()
 
             VStack {
                 Spacer()
 
-                VStack(spacing: 20) {
+                VStack(spacing: 18) {
                     Text(vpinballModel.hudTitle ?? " ")
                         .multilineTextAlignment(.center)
                         .font(.headline)
                         .bold()
-                        .foregroundStyle(Color.white)
+                        .foregroundStyle(.primary)
 
                     ProgressView(value: Double(vpinballModel.hudProgress),
                                  total: 100)
                         .progressViewStyle(.linear)
                         .tint(Color.vpxDarkYellow)
-                        .background(Color.black)
-                        .cornerRadius(2)
 
                     Text(vpinballModel.hudStatus ?? " ")
-                        .font(.caption)
-                        .bold()
-                        .foregroundStyle(Color.white)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.opacity)
                 }
-                .padding()
-                .background(.ultraThinMaterial,
-                            in: RoundedRectangle(cornerRadius: 10.0))
+                .padding(22)
+                .glassPanel(cornerRadius: 26)
+                .environment(\.colorScheme, .dark)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
             }

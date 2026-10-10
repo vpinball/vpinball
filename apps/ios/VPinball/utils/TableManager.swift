@@ -1,7 +1,11 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-let tableImageCache = NSCache<NSString, UIImage>()
+let tableImageCache: NSCache<NSString, UIImage> = {
+    let cache = NSCache<NSString, UIImage>()
+    cache.totalCostLimit = 96 * 1024 * 1024
+    return cache
+}()
 
 private var zipProgressHandler: ((Int, Int) -> Void)?
 
@@ -31,10 +35,6 @@ class TableManager {
 
     func refresh() async {
         await loadTables()
-    }
-
-    func getTable(uuid: String) -> Table? {
-        return tables.first { $0.uuid == uuid }
     }
 
     func importTable(from url: URL) async -> Bool {
@@ -219,7 +219,7 @@ class TableManager {
 
         if success, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
             let now = Int64(Date().timeIntervalSince1970)
-            tables[index] = table.with(image: resolvedImage, modifiedAt: now)
+            tables[index] = tables[index].with(image: resolvedImage, modifiedAt: now)
             saveTables()
             return true
         }
@@ -267,7 +267,7 @@ class TableManager {
 
             if success, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
                 let now = Int64(Date().timeIntervalSince1970)
-                tables[index] = table.with(image: resolvedImage, modifiedAt: now)
+                tables[index] = tables[index].with(image: resolvedImage, modifiedAt: now)
                 saveTables()
                 return true
             }
@@ -355,6 +355,24 @@ class TableManager {
         return result
     }
 
+    func markPlayed(table: Table) {
+        guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else { return }
+        tables[index] = tables[index].played(at: Int64(Date().timeIntervalSince1970))
+        saveTables()
+    }
+
+    func clearPlayed(table: Table) {
+        guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else { return }
+        tables[index] = tables[index].played(at: nil)
+        saveTables()
+    }
+
+    func toggleFavorite(table: Table) {
+        guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else { return }
+        tables[index] = tables[index].favorite(!tables[index].isFavorite)
+        saveTables()
+    }
+
     func resetTableIni(table: Table) -> Bool {
         let tablesURL = tablesURL!
         let tableFileURL = tablesURL.appendingPathComponent(table.path)
@@ -362,7 +380,7 @@ class TableManager {
         let deleted = TableFileOperations.delete(iniURL)
         if deleted, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
             let now = Int64(Date().timeIntervalSince1970)
-            tables[index] = table.with(modifiedAt: now)
+            tables[index] = tables[index].with(modifiedAt: now)
             saveTables()
         }
         return deleted
@@ -609,11 +627,6 @@ class TableManager {
                      image: image,
                      createdAt: now,
                      modifiedAt: now)
-    }
-
-    private func findTable(url: URL) -> Table? {
-        let relPath = relativePath(of: url)
-        return tables.first { $0.path == relPath }
     }
 
     private func generateUUID() -> String {

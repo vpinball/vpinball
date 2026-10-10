@@ -49,10 +49,23 @@ The version used for these libraries is defined by the SHA of the head commit in
 - Upstream: https://github.com/PPUC/libzedmd
 - License: GPLv3
 
+### libmysofa
+
+- Upstream: https://github.com/hoene/libmysofa
+- Version: head at 6cc5b15a73e9bd97810d03767082edda7f315881
+- License: 3-Clause BSD
+
+### libspatialaudio
+
+- Upstream: https://github.com/videolan/libspatialaudio
+- Version: head at d149ed9744fd399b835c6f2920511f8cbcfce5ea
+- License: LGPL-2.1-or-later
+
 ### OpenXR
 
-- Upstream: 
-- License: 
+- Upstream: https://github.com/KhronosGroup/OpenXR-SDK-Source
+- Version: 1.1.63 (head at 2b99fec95e9cdf352c1a98e9cb23bf4def1cf8e6)
+- License: Apache-2.0
 
 ### PinMAME
 
@@ -110,7 +123,7 @@ Liberation Sans
 ### Haze
 
 - Upstream: https://github.com/chrisbanes/haze
-- Version: 1.1.1
+- Version: 2.0.1
 - License: Apache-2.0 license
 
 ### HID
@@ -160,6 +173,12 @@ Liberation Sans
 - Upstream: https://github.com/metayeti/mINI
 - Version: ?
 - License: MIT
+
+### miniaudio
+
+- Upstream: https://github.com/mackron/miniaudio
+- Version: 0.11.25
+- License: Public Domain or MIT-0 (dual)
 
 ### miniD3D9
 

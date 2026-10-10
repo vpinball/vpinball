@@ -8,6 +8,7 @@
 
     <application>
         <activity android:name="VPinballActivity"
+            android:windowSoftInputMode="adjustResize"
             android:resizeableActivity="true"
             tools:node="merge">
             <intent-filter>

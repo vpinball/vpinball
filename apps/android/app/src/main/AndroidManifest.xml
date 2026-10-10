@@ -82,6 +82,7 @@
          -->
 
         <activity android:name="VPinballActivity"
+            android:windowSoftInputMode="adjustResize"
             android:launchMode="singleTop"
             android:configChanges="layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize"
             android:theme="@style/Theme.VPinball"
