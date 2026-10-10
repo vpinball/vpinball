@@ -122,7 +122,7 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    int periodSizeInFrames;
    SDL_AudioSpec specs;
    SDL_GetAudioDeviceFormat(pDeviceEx->deviceID, &specs, &periodSizeInFrames);
-   
+
    // Convert SDL format to miniaudio format
    ma_format deviceFormat;
    switch (specs.format)
@@ -258,6 +258,22 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
       return (ma_bool32)MA_TRUE;
    };
 
+   // Retry ma_device_init to recover from transient failures at startup.
+   auto initDeviceWithRetry = [](ma_context* context, const ma_device_config* config, ma_device* device) -> ma_result {
+      constexpr int kMaxAttempts = 5;
+      constexpr uint32_t kBackoffMs = 100;
+      ma_result result = MA_ERROR;
+      for (int attempt = 1; attempt <= kMaxAttempts; ++attempt)
+      {
+         result = ma_device_init(context, config, device);
+         if (result == MA_SUCCESS)
+            return result;
+         if (attempt < kMaxAttempts)
+            SDL_Delay(kBackoffMs);
+      }
+      return result;
+   };
+
    {
       SDLDeviceInfo deviceInfo { m_backglassAudioDevice, {} };
       ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
@@ -270,7 +286,7 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
       deviceConfig.playback.format = ma_format_f32;
       deviceConfig.noPreSilencedOutputBuffer = MA_TRUE; // We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer.
       deviceConfig.noClip = MA_TRUE; // The engine will do clipping itself.
-      result = ma_device_init(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(m_backglassDevice.get()));
+      result = initDeviceWithRetry(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(m_backglassDevice.get()));
 
       if (result == MA_SUCCESS)
       {
@@ -314,7 +330,7 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
       deviceConfig.playback.format = ma_format_f32;
       deviceConfig.noPreSilencedOutputBuffer = MA_TRUE; // We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer.
       deviceConfig.noClip = MA_TRUE; // The engine will do clipping itself.
-      result = ma_device_init(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(m_playfieldDevice.get()));
+      result = initDeviceWithRetry(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(m_playfieldDevice.get()));
 
       if (result == MA_SUCCESS)
       {
@@ -459,7 +475,7 @@ float AudioPlayer::GetMusicPosition() const
 {
    return m_music ? m_music->GetPosition() : 0.f;
 }
-   
+
 void AudioPlayer::SetMusicPosition(float seconds)
 {
    if (m_music) m_music->SetPosition(seconds);
@@ -552,11 +568,11 @@ void AudioPlayer::PlaySoundInternal(Sound* sound, float volume, const float rand
    //   - if 'usesame' is false, always create a new player for the given sound
    // - if restart is false and selected sound player was already playing, settings would be applied without restarting the sound
    // - if restart is true, all playing sounds would be stopped and a new one would be started
-   
+
    if (restart)
       for (const auto& soundPlayer : players)
          soundPlayer->Stop();
-   
+
    for (const auto& soundPlayer : players)
    {
       if (useSame || restart || !soundPlayer->IsPlaying())
