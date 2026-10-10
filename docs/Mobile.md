@@ -258,3 +258,5 @@ Found a bug, or missing a feature? Visual Pinball is open source and contributio
 Visual Pinball is the work of many people over many years, and the mobile apps stand on dozens of other open source projects. The *Credits* section of the app's settings names them all; the full list of third party libraries is in [third-party/README.md](../third-party/README.md).
 
 Visual Pinball is released under the [GPL license](../LICENSE). The mobile apps collect no personal data; the [privacy policy](../PRIVACY.md) has the details.
+
+The tables in the screenshots are [Dark Chaos](https://vpuniverse.com/files/file/24875-dark-chaos-apophis-2025/) by apophis, [Cyber Race](https://vpuniverse.com/files/file/17837-cyber-race-flux-original-2023/) by flux and [Volkan Steel and Metal](https://vpuniverse.com/files/file/14978-volkan-steel-and-metal-original-2023/) by Onevox, all original creations shared on VPUniverse.
