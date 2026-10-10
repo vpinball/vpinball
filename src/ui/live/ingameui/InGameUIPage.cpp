@@ -820,6 +820,7 @@ void InGameUIPage::Render(float elapsedS)
             ImGui::SliderFloat(std::format("##Item{}", i).c_str(), &v, prop->m_min * item->m_floatValueDisplayScale,
                prop->m_max * item->m_floatValueDisplayScale, item->m_format.c_str(),
                ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
+            const bool sliderActive = ImGui::IsItemActive();
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -830,7 +831,9 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
             }
+            m_deferRebuild = sliderActive;
             item->SetValue(v / item->m_floatValueDisplayScale);
+            m_deferRebuild = false;
             break;
          }
 
@@ -857,6 +860,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::SliderInt(std::format("##Item{}", i).c_str(), &v, prop->m_min, prop->m_max, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
             }
+            const bool sliderActive = ImGui::IsItemActive();
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -867,7 +871,9 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
             }
+            m_deferRebuild = sliderActive;
             item->SetValue(v);
+            m_deferRebuild = false;
             break;
          }
 
@@ -975,6 +981,17 @@ void InGameUIPage::Render(float elapsedS)
 
       if (hovered)
          ImGui::PopStyleColor();
+   }
+   // Rebuild requests made while a slider is being dragged are held until it is released. A rebuild
+   // stops the frame at the item that requested it (see above), so the page is drawn shorter: its
+   // scrollbar disappears, the content area gets wider and the slider's scale with it, and the same
+   // pointer position now maps to a slightly different value. That value change requests another
+   // rebuild on the next, full frame, and the view oscillates between the two values for as long as
+   // the slider is held (very visible on the point of view page where each change moves the camera).
+   if (m_rebuildPending && !ImGui::IsAnyItemActive())
+   {
+      m_rebuildPending = false;
+      m_needsRebuild = true;
    }
    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && m_isDraggingScroll)
       m_isDraggingScroll = false;
