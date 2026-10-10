@@ -87,7 +87,11 @@ static void AudioCallback(const float* samples, size_t frameCount, uint32_t samp
 static void OnGameEvent(const unsigned int eventId, void* userData, void* msgData)
 {
    if (isRunning.load(std::memory_order_relaxed))
-      AltSoundProcessCommand(static_cast<const PinMAMEChildBoardEventMsg*>(msgData)->cmd, 0);
+   {
+      // The board number lets AltSound tell apart the two sound boards of System 11 machines (board 1 commands as 0x01xx)
+      const PinMAMEChildBoardEventMsg* const msg = static_cast<const PinMAMEChildBoardEventMsg*>(msgData);
+      AltSoundProcessBoardCommand(msg->boardNo, msg->cmd, 0);
+   }
 }
 
 static void SetupAltSound()
