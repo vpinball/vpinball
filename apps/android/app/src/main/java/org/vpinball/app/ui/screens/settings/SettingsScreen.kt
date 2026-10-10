@@ -5,19 +5,24 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -29,18 +34,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,12 +51,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -69,10 +68,14 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import java.io.File
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.vpinball.app.AppAppearance
 import org.vpinball.app.BuildConfig
+import org.vpinball.app.BuildInfo
 import org.vpinball.app.Credit
 import org.vpinball.app.Link
 import org.vpinball.app.R
@@ -80,12 +83,16 @@ import org.vpinball.app.VPinballManager
 import org.vpinball.app.jni.VPinballDisplayText
 import org.vpinball.app.jni.VPinballExternalDMD
 import org.vpinball.app.jni.VPinballGfxBackend
-import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballStorageMode
+import org.vpinball.app.ui.screens.common.AlertButton
+import org.vpinball.app.ui.screens.common.CircleIconButton
 import org.vpinball.app.ui.screens.common.RoundedCard
+import org.vpinball.app.ui.screens.common.frostedEdge
 import org.vpinball.app.ui.theme.VPinballTheme
 import org.vpinball.app.ui.theme.VpxRed
+
+private val SettingsBarHeight = 76.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,19 +115,32 @@ fun SettingsScreen(
 
     LaunchedEffect(Unit) { viewModel.loadSettings() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Settings", fontSize = MaterialTheme.typography.titleLarge.fontSize, fontWeight = FontWeight.Bold) },
-                actions = {
-                    TextButton(onClick = onDone) {
-                        Text("Done", color = Color.VpxRed, fontSize = MaterialTheme.typography.titleMedium.fontSize, fontWeight = FontWeight.SemiBold)
+    val listState = rememberLazyListState()
+    val hazeState = rememberHazeState()
+    val scrolled by remember { derivedStateOf { listState.canScrollBackward } }
+    val frostAlpha by animateFloatAsState(if (scrolled) 1f else 0f, label = "settings_frost")
+    val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 24.dp
+
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Box(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(top = SettingsBarHeight, bottom = bottomPadding),
+                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            ) {
+                item {
+                    SectionHeader(title = "Appearance")
+
+                    RoundedCard {
+                        EnumMenuRow(
+                            label = "Mode",
+                            options = AppAppearance.entries.toList(),
+                            option = viewModel.appearance,
+                            onOptionChanged = { viewModel.handleAppearance(value = it) },
+                        )
                     }
-                },
-            )
-        },
-        content = { paddingValues ->
-            LazyColumn(modifier = modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp)) {
+                }
+
                 item {
                     SectionHeader(title = "General")
 
@@ -168,20 +188,6 @@ fun SettingsScreen(
                                 )
                             }
                         }
-                    }
-                }
-
-                item {
-                    SectionHeader(title = "Performance")
-
-                    RoundedCard {
-                        EnumSliderRow(
-                            label = "Max Texture Dimensions",
-                            options = VPinballMaxTexDimension.entries.toList(),
-                            value = viewModel.maxTexDimension,
-                            onValueChange = { viewModel.handleMaxTexDimension(value = it) },
-                            description = "Reduce this value if you experience crashes while loading tables.",
-                        )
                     }
                 }
 
@@ -375,16 +381,50 @@ fun SettingsScreen(
                 }
 
                 item {
-                    Text(
-                        text = VPinballManager.getVersionString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-                    )
+                    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { Link.VPINBALL.open(context) }.padding(horizontal = 8.dp, vertical = 4.dp),
+                        ) {
+                            Text(
+                                text = BuildInfo.PROVENANCE,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.img_sf_arrow_up_right_square),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 6.dp).size(14.dp),
+                            )
+                        }
+                        Text(
+                            text = BuildInfo.version,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
-        },
-    )
+        }
+
+        val frostHeight = SettingsBarHeight + 44.dp
+        Box(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .height(frostHeight)
+                    .frostedEdge(hazeState, frostAlpha, solidFraction = (SettingsBarHeight + 4.dp) / frostHeight)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth().height(SettingsBarHeight).padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Settings", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            CircleIconButton(iconRes = R.drawable.img_sf_xmark, contentDescription = "Close", onClick = onDone)
+        }
+    }
 
     if (showResetDialog) {
         val coroutineScope = rememberCoroutineScope()
@@ -417,7 +457,12 @@ fun SettingsScreen(
 
                 RoundedCard {
                     TextButton(onClick = { showResetDialog = false }, modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Cancel", color = Color.VpxRed, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            text = "Cancel",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
                     }
                 }
             }
@@ -464,7 +509,7 @@ private fun SwitchRow(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
             )
         }
     }
@@ -527,60 +572,6 @@ private fun <T> EnumMenuRow(label: String, options: List<T>, option: T, onOption
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun <T> EnumSliderRow(label: String, options: List<T>, value: T, onValueChange: (T) -> Unit, description: String? = null)
-    where T : VPinballDisplayText {
-    Column(modifier = Modifier) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-
-        Row(modifier = Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Slider(
-                value = options.indexOf(value).toFloat(),
-                onValueChange = { onValueChange(options[it.toInt()]) },
-                valueRange = 0f..(options.size - 1).toFloat(),
-                track = {
-                    SliderDefaults.Track(
-                        sliderState = it,
-                        drawStopIndicator = null,
-                        thumbTrackGapSize = 0.dp,
-                        colors =
-                            SliderDefaults.colors(
-                                activeTrackColor = Color.VpxRed,
-                                inactiveTrackColor = SliderDefaults.colors().disabledInactiveTrackColor,
-                                disabledActiveTrackColor = Color.VpxRed.copy(alpha = 0.5f),
-                            ),
-                        modifier = Modifier.height(4.dp),
-                    )
-                },
-                thumb = { Box(Modifier.size(26.dp).shadow(2.dp, CircleShape).clip(CircleShape).background(Color.White)) },
-                modifier = Modifier.weight(1f),
-            )
-
-            Text(
-                text = value.text,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 16.dp),
-            )
-        }
-
-        if (!description.isNullOrEmpty()) {
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
-        }
-    }
-}
-
 @Composable
 private fun IPAddressPortInputRow(
     label: String,
@@ -639,36 +630,12 @@ private fun IPAddressPortInputRow(
             },
             onDismissRequest = {},
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        onValueChange(tempValue.text)
-                        isDialogOpen = false
-                    },
-                    enabled = if (validateAsIpAddress) isValidIpAddress(tempValue.text) else isValidPort(tempValue.text),
-                ) {
-                    Text(
-                        text = "OK",
-                        color =
-                            if (validateAsIpAddress && isValidIpAddress(tempValue.text) || !validateAsIpAddress && isValidPort(tempValue.text)) {
-                                Color.VpxRed
-                            } else {
-                                Color.Gray
-                            },
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                    )
+                AlertButton(text = "OK", enabled = if (validateAsIpAddress) isValidIpAddress(tempValue.text) else isValidPort(tempValue.text)) {
+                    onValueChange(tempValue.text)
+                    isDialogOpen = false
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { isDialogOpen = false }) {
-                    Text(
-                        text = "Cancel",
-                        color = Color.VpxRed,
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-            },
+            dismissButton = { AlertButton(text = "Cancel") { isDialogOpen = false } },
         )
     }
 }

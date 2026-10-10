@@ -46,18 +46,6 @@ class StatusBarManager {
         }
     }
 
-    func reattachToTopMost() {
-        guard let rootViewController = attachedRootViewController else { return }
-        let topMostViewController = topMost(from: rootViewController)
-        if topMostViewController !== owningViewController {
-            owningViewController = topMostViewController
-            swizzleIfNeeded(on: topMostViewController)
-            setHidden(hidden,
-                      style: style,
-                      animated: false)
-        }
-    }
-
     func ensureAttached() {
         guard let rootViewController = attachedRootViewController else { return }
         if owningViewController == nil {

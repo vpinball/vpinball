@@ -45,12 +45,9 @@ class TableManager(private val context: Context) {
         }
     }
 
-    fun getTable(uuid: String): Table? {
-        return _tables.value.firstOrNull { it.uuid == uuid }
-    }
-
-    suspend fun reloadTableImage(table: Table): Table? {
+    suspend fun reloadTableImage(staleTable: Table): Table? {
         return withContext(Dispatchers.IO) {
+            val table = currentTable(staleTable)
             val tableDir = File(table.path).parent ?: return@withContext null
             val stem = File(table.path).nameWithoutExtension
 
@@ -154,6 +151,21 @@ class TableManager(private val context: Context) {
             withContext(Dispatchers.Main) { LandingScreenViewModel.triggerUpdateTable(updatedTable) }
             true
         }
+    }
+
+    fun markPlayed(table: Table) {
+        val updated = updateTable(table) { it.copy(lastPlayedAt = System.currentTimeMillis() / 1000) }
+        LandingScreenViewModel.triggerUpdateTable(updated)
+    }
+
+    fun clearPlayed(table: Table) {
+        val updated = updateTable(table) { it.copy(lastPlayedAt = null) }
+        LandingScreenViewModel.triggerUpdateTable(updated)
+    }
+
+    fun toggleFavorite(table: Table) {
+        val updated = updateTable(table) { it.copy(isFavorite = !it.isFavorite) }
+        LandingScreenViewModel.triggerUpdateTable(updated)
     }
 
     suspend fun setTableImage(table: Table, imagePath: String): Boolean {
@@ -411,8 +423,10 @@ class TableManager(private val context: Context) {
             .first { !fileOps.exists(buildPath(it)) }
     }
 
+    private fun currentTable(table: Table): Table = _tables.value.firstOrNull { it.uuid == table.uuid } ?: table
+
     private fun updateTable(table: Table, transform: (Table) -> Table): Table {
-        val updated = transform(table)
+        val updated = transform(currentTable(table))
         _tables.value = _tables.value.map { if (it.uuid == table.uuid) updated else it }
         saveTables()
         return updated

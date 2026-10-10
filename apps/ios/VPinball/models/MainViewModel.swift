@@ -8,15 +8,19 @@ class MainViewModel: ObservableObject {
     enum ActionType {
         case play
         case stopped
+        case toggleFavorite
+        case removeFromRecent
         case rename
-        case tableImage
+        case chooseImage
         case viewScript
         case share
-        case reset
+        case resetImage
+        case resetSettings
         case delete
     }
 
     @Published var selectedTable: Table?
+    @Published var playSourceID = ""
 
     @Published var showSettings = false
 
@@ -30,6 +34,7 @@ class MainViewModel: ObservableObject {
     @Published var showImportTable = false
 
     @Published var tableListSearchText = ""
+    @Published var tableListSearchPresented = false
 
     @Published var shareItems: [Any] = []
     @Published var showShare = false
@@ -37,9 +42,11 @@ class MainViewModel: ObservableObject {
     @Published var renameTableName = ""
     @Published var showRenameTable = false
 
-    @Published var showTableImage = false
     @Published var tableImagePhotoItem: PhotosPickerItem?
     @Published var showTableImagePhotoPicker = false
+    @Published var showResetImage = false
+    @Published var showResetSettings = false
+    @Published var showDelete = false
 
     @Published var showScript = false
 
@@ -52,10 +59,6 @@ class MainViewModel: ObservableObject {
 
     @Published var scrollToTable: Table?
 
-    @Published var tableViewMode: TableViewMode = .grid {
-        didSet { VPinballManager.shared.saveValue(.standalone, "TableViewMode", tableViewMode.rawValue) }
-    }
-
     @Published var tableGridSize: TableGridSize = .medium {
         didSet { VPinballManager.shared.saveValue(.standalone, "TableGridSize", tableGridSize.rawValue) }
     }
@@ -66,9 +69,6 @@ class MainViewModel: ObservableObject {
 
     func loadSettings() {
         let manager = VPinballManager.shared
-        tableViewMode = TableViewMode(rawValue: manager.loadValue(.standalone,
-                                                                  "TableViewMode",
-                                                                  TableViewMode.grid.rawValue)) ?? .grid
         tableGridSize = TableGridSize(rawValue: manager.loadValue(.standalone,
                                                                   "TableGridSize",
                                                                   TableGridSize.medium.rawValue)) ?? .medium
@@ -86,21 +86,41 @@ class MainViewModel: ObservableObject {
         switch type {
         case .play:
             handlePlayTable()
+        case .toggleFavorite:
+            if let table {
+                withAnimation(.snappy) {
+                    TableManager.shared.toggleFavorite(table: table)
+                }
+            }
+        case .removeFromRecent:
+            if let table {
+                withAnimation(.snappy) {
+                    TableManager.shared.clearPlayed(table: table)
+                }
+            }
         case .rename:
             handleShowRenameTable()
-        case .tableImage:
-            handleShowTableImage()
+        case .chooseImage:
+            tableImagePhotoItem = nil
+            showTableImagePhotoPicker = true
         case .viewScript:
             handleViewTableScript()
         case .share:
             handleShareTable()
-        case .reset:
-            handleResetTable()
+        case .resetImage:
+            showResetImage = true
+        case .resetSettings:
+            showResetSettings = true
         case .delete:
-            handleDeleteTable()
+            showDelete = true
         case .stopped:
             break
         }
+    }
+
+    func play(_ table: Table, sourceID: String) {
+        playSourceID = sourceID
+        setAction(.play, table: table)
     }
 
     func handleAppear() {
@@ -165,11 +185,6 @@ class MainViewModel: ObservableObject {
         }
     }
 
-    func handleShowTableImage() {
-        tableImagePhotoItem = nil
-        showTableImage = true
-    }
-
     func handleTableImagePhotoItem() {
         if let selectedTable = selectedTable {
             if let item = tableImagePhotoItem {
@@ -199,11 +214,9 @@ class MainViewModel: ObservableObject {
 
     func handleTableImageReset() {
         if let selectedTable = selectedTable {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                Task {
-                    await TableManager.shared.setTableImage(table: selectedTable,
-                                                            imagePath: "")
-                }
+            Task {
+                await TableManager.shared.setTableImage(table: selectedTable,
+                                                        imagePath: "")
             }
         }
     }

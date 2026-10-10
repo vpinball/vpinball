@@ -478,7 +478,7 @@ jobs:
 
   build-ios:
     name: Build VPinballX_BGFX-ios-${{ matrix.config }}
-    runs-on: macos-15
+    runs-on: macos-26
     needs: [ context, version ]
     strategy:
       fail-fast: false
@@ -531,7 +531,7 @@ jobs:
           cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
       - name: Build app
         run: |
-          sudo xcode-select -switch /Applications/Xcode_26.3.app
+          sudo xcode-select -switch /Applications/Xcode_26.6.app
           MARKETING_VERSION="${{ needs.version.outputs.version_ios }}"
           CURRENT_PROJECT_VERSION="${{ needs.version.outputs.version_full }}"
           cd apps/ios

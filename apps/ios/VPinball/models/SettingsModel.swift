@@ -4,6 +4,7 @@ import SwiftUI
 class SettingsModel: ObservableObject {
     // General
 
+    @Published var appearance: AppAppearance = .dark
     @Published var renderingModeOverride: Bool = false
 
     // External DMD
@@ -12,10 +13,6 @@ class SettingsModel: ObservableObject {
     @Published var dmdServerAddr: String = ""
     @Published var dmdServerPort: Int = 0
     @Published var zedmdWiFiAddr: String = ""
-
-    // Performance
-
-    @Published var maxTexDimensionIndex: Int = 0
 
     // Web Server
 
@@ -31,6 +28,7 @@ class SettingsModel: ObservableObject {
     func load() {
         // General
 
+        appearance = AppAppearance.current
         renderingModeOverride = (vpinballManager.loadValue(.standalone, "RenderingModeOverride", -1) == 2)
 
         // External DMD
@@ -47,13 +45,6 @@ class SettingsModel: ObservableObject {
         dmdServerPort = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerPort", 6789)
         zedmdWiFiAddr = vpinballManager.loadValue(.pluginDMDUtil, "ZeDMDWiFiAddr", "zedmd-wifi.local")
 
-        // Performance
-
-        maxTexDimensionIndex = VPinballMaxTexDimension(rawValue: vpinballManager.loadValue(.player,
-                                                                                           "MaxTexDimension",
-                                                                                           3072))
-            .flatMap { VPinballMaxTexDimension.all.firstIndex(of: $0) } ?? 0
-
         // Web Server
 
         webServer = vpinballManager.loadValue(.standalone, "WebServer", false)
@@ -62,6 +53,11 @@ class SettingsModel: ObservableObject {
 
     func reset() {
         load()
+    }
+
+    func handleAppearance() {
+        vpinballManager.saveValue(.standalone, "Appearance", appearance.rawValue)
+        appearance.apply()
     }
 
     func handleRenderingModeOverride() {
@@ -94,9 +90,5 @@ class SettingsModel: ObservableObject {
     func handleWebServerPort() {
         vpinballManager.saveValue(.standalone, "WebServerPort", Int(webServerPort))
         vpinballManager.updateWebServer()
-    }
-
-    func handleMaxTexDimension() {
-        vpinballManager.saveValue(.player, "MaxTexDimension", VPinballMaxTexDimension.all[maxTexDimensionIndex].rawValue)
     }
 }

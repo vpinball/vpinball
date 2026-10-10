@@ -42,65 +42,55 @@ struct CodeView: View {
     var allowsClear: Bool = false
 
     var body: some View {
-        GeometryReader { geometry in
-            NavigationStack {
-                CodeWebView(language: language,
-                            code: content)
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Text(url.lastPathComponent)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                                .frame(maxWidth: geometry.size.width * 0.6, alignment: .leading)
-                        }
-
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button(action: {
-                                handleDone()
-                            }) {
-                                Text("Done")
-                                    .bold()
-                            }
-                            .tint(Color.vpxRed)
-                        }
-                        ToolbarItem(placement: .bottomBar) {
-                            HStack {
-                                Button(action: {
-                                    handleShare()
-                                }) {
-                                    Image(systemName: "square.and.arrow.up")
-                                }
-                                .tint(Color.vpxRed)
-
-                                Spacer()
-
-                                if allowsClear {
-                                    Button(action: {
-                                        handleClear()
-                                    }) {
-                                        Text("Clear")
-                                    }
-                                    .tint(Color.vpxRed)
-                                }
-                            }
+        NavigationStack {
+            CodeWebView(language: language,
+                        code: content)
+                .background(Color.editorBackground.ignoresSafeArea())
+                .ignoresSafeArea()
+                .navigationTitle(url.lastPathComponent)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(role: .close) {
+                            handleDone()
                         }
                     }
-                    .toolbarBackground(.visible, for: .navigationBar)
-                    .toolbarBackground(.visible, for: .bottomBar)
-            }
-            .onAppear {
-                handleAppear()
-            }
-            .sheet(isPresented: $showShare,
-                   content: {
-                       ActivityViewControllerView(activityItems: $shareSheetItems,
-                                                  excludedActivityTypes: [.postToFacebook])
-                           .presentationDetents([.medium])
-                           .presentationDragIndicator(.hidden)
-                           .ignoresSafeArea()
-                   })
+
+                    ToolbarItem(placement: .bottomBar) {
+                        Button {
+                            handleShare()
+                        } label: {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .accessibilityLabel("Share")
+                    }
+
+                    ToolbarSpacer(.flexible, placement: .bottomBar)
+
+                    if allowsClear {
+                        ToolbarItem(placement: .bottomBar) {
+                            Button {
+                                handleClear()
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .tint(.primary)
+                            .accessibilityLabel("Clear")
+                        }
+                    }
+                }
         }
+        .onAppear {
+            handleAppear()
+        }
+        .sheet(isPresented: $showShare,
+               content: {
+                   ActivityViewControllerView(activityItems: $shareSheetItems,
+                                              excludedActivityTypes: [.postToFacebook])
+                       .presentationDetents([.medium])
+                       .presentationDragIndicator(.hidden)
+                       .ignoresSafeArea()
+               })
     }
 
     func handleAppear() {

@@ -16,7 +16,6 @@ import org.vpinball.app.Table
 import org.vpinball.app.TableGridSize
 import org.vpinball.app.TableListSortOrder
 import org.vpinball.app.TableManager
-import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.VPinballModel
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
@@ -80,9 +79,6 @@ class LandingScreenViewModel : ViewModel() {
     private val _filteredTables = MutableStateFlow(emptyList<Table>())
     val filteredTables: StateFlow<List<Table>> = _filteredTables
 
-    private val _tableViewMode = MutableStateFlow(TableViewMode.GRID)
-    val tableViewMode: StateFlow<TableViewMode> = _tableViewMode
-
     private val _tableGridSize = MutableStateFlow(TableGridSize.MEDIUM)
     val tableGridSize: StateFlow<TableGridSize> = _tableGridSize
 
@@ -142,11 +138,6 @@ class LandingScreenViewModel : ViewModel() {
         _importUri.update { null }
     }
 
-    fun setTableViewMode(mode: TableViewMode) {
-        _tableViewMode.update { mode }
-        VPinballManager.saveValue(STANDALONE, "TableViewMode", mode.value)
-    }
-
     fun setTableGridSize(size: TableGridSize) {
         _tableGridSize.update { size }
         VPinballManager.saveValue(STANDALONE, "TableGridSize", size.value)
@@ -158,8 +149,8 @@ class LandingScreenViewModel : ViewModel() {
 
         val sortedTables =
             when (order) {
-                TableListSortOrder.A_Z -> vpinballModel.tables.sortedBy { it.name }
-                TableListSortOrder.Z_A -> vpinballModel.tables.sortedByDescending { it.name }
+                TableListSortOrder.A_Z -> vpinballModel.tables.sortedBy { it.name.lowercase() }
+                TableListSortOrder.Z_A -> vpinballModel.tables.sortedByDescending { it.name.lowercase() }
             }
 
         vpinballModel.tables = sortedTables
@@ -190,8 +181,8 @@ class LandingScreenViewModel : ViewModel() {
         val combined = vpinballModel.tables + newTables
         val sortedTables =
             when (_tableListSortOrder.value) {
-                TableListSortOrder.A_Z -> combined.sortedBy { it.name }
-                TableListSortOrder.Z_A -> combined.sortedByDescending { it.name }
+                TableListSortOrder.A_Z -> combined.sortedBy { it.name.lowercase() }
+                TableListSortOrder.Z_A -> combined.sortedByDescending { it.name.lowercase() }
             }
 
         vpinballModel.tables = sortedTables
@@ -223,8 +214,8 @@ class LandingScreenViewModel : ViewModel() {
 
                 val sortedTables =
                     when (_tableListSortOrder.value) {
-                        TableListSortOrder.A_Z -> tables.sortedBy { it.name }
-                        TableListSortOrder.Z_A -> tables.sortedByDescending { it.name }
+                        TableListSortOrder.A_Z -> tables.sortedBy { it.name.lowercase() }
+                        TableListSortOrder.Z_A -> tables.sortedByDescending { it.name.lowercase() }
                     }.distinctBy { it.uuid }
 
                 withContext(Dispatchers.Main) {
@@ -244,7 +235,6 @@ class LandingScreenViewModel : ViewModel() {
     }
 
     private fun loadSettings() {
-        _tableViewMode.value = TableViewMode.fromInt(VPinballManager.loadValue(STANDALONE, "TableViewMode", TableViewMode.GRID.value))
         _tableGridSize.value = TableGridSize.fromInt(VPinballManager.loadValue(STANDALONE, "TableGridSize", TableGridSize.MEDIUM.value))
         _tableListSortOrder.value = TableListSortOrder.fromInt(VPinballManager.loadValue(STANDALONE, "TableListSort", TableListSortOrder.A_Z.value))
     }

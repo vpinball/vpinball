@@ -5,7 +5,7 @@ struct SplashView: View {
 
     var body: some View {
         ZStack {
-            Color.lightBlack.ignoresSafeArea()
+            AmbientBackgroundView()
 
             VStack {
                 Spacer()
@@ -34,11 +34,17 @@ struct SplashView: View {
             VStack {
                 Spacer()
 
-                Text(String(cString: VPinballGetVersionStringFull()))
+                Text(BuildInfo.provenance)
+                    .font(.caption)
+                    .bold()
+                    .foregroundStyle(.primary)
+
+                Text(BuildInfo.version)
                     .font(.caption)
                     .bold()
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(.primary)
+                    .padding(.top, 4)
             }
             .padding(.bottom, 10)
         }

@@ -1,3 +1,4 @@
+import ImageIO
 import UIKit
 
 struct Table: Codable, Identifiable, Hashable {
@@ -7,13 +8,42 @@ struct Table: Codable, Identifiable, Hashable {
     let image: String
     let createdAt: Int64
     let modifiedAt: Int64
+    let lastPlayedAt: Int64?
+    let isFavorite: Bool
+
+    init(uuid: String,
+         name: String,
+         path: String,
+         image: String,
+         createdAt: Int64,
+         modifiedAt: Int64,
+         lastPlayedAt: Int64? = nil,
+         isFavorite: Bool = false)
+    {
+        self.uuid = uuid
+        self.name = name
+        self.path = path
+        self.image = image
+        self.createdAt = createdAt
+        self.modifiedAt = modifiedAt
+        self.lastPlayedAt = lastPlayedAt
+        self.isFavorite = isFavorite
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        uuid = try container.decode(String.self, forKey: .uuid)
+        name = try container.decode(String.self, forKey: .name)
+        path = try container.decode(String.self, forKey: .path)
+        image = try container.decode(String.self, forKey: .image)
+        createdAt = try container.decode(Int64.self, forKey: .createdAt)
+        modifiedAt = try container.decode(Int64.self, forKey: .modifiedAt)
+        lastPlayedAt = try container.decodeIfPresent(Int64.self, forKey: .lastPlayedAt)
+        isFavorite = try container.decodeIfPresent(Bool.self, forKey: .isFavorite) ?? false
+    }
 
     var id: String {
         uuid
-    }
-
-    var tableId: UUID {
-        UUID(uuidString: uuid) ?? UUID()
     }
 
     var fullURL: URL {
@@ -64,19 +94,8 @@ struct Table: Codable, Identifiable, Hashable {
         iniURL.path
     }
 
-    var uiImage: UIImage? {
-        if !image.isEmpty {
-            let cache = tableImageCache
-            let cacheKey = "\(uuid)_\(modifiedAt)" as NSString
-            if let cached = cache.object(forKey: cacheKey) {
-                return cached
-            }
-            if let loaded = UIImage(contentsOfFile: imagePath) {
-                cache.setObject(loaded, forKey: cacheKey)
-                return loaded
-            }
-        }
-        return nil
+    private var imageCacheKey: String {
+        "\(uuid)_\(modifiedAt)"
     }
 
     func uiImageAsync() async -> UIImage? {
@@ -84,20 +103,56 @@ struct Table: Codable, Identifiable, Hashable {
             return nil
         }
 
-        let cache = tableImageCache
-        let cacheKey = "\(uuid)_\(modifiedAt)" as NSString
-        if let cached = cache.object(forKey: cacheKey) {
+        let cacheKey = imageCacheKey as NSString
+        if let cached = tableImageCache.object(forKey: cacheKey) {
             return cached
         }
 
         let imagePath = imagePath
-        return await Task.detached(priority: .utility) {
-            if let loaded = UIImage(contentsOfFile: imagePath) {
-                cache.setObject(loaded, forKey: cacheKey)
-                return loaded
-            }
-            return nil
+        let loaded = await Task.detached(priority: .utility) {
+            UIImage(contentsOfFile: imagePath)?.preparingForDisplay()
         }.value
+
+        if let loaded {
+            tableImageCache.setObject(loaded, forKey: cacheKey, cost: loaded.byteCost)
+        }
+        return loaded
+    }
+
+    func cachedThumbnail(maxPixelSize: Int) -> UIImage? {
+        if image.isEmpty {
+            return nil
+        }
+        return tableImageCache.object(forKey: "\(imageCacheKey)_\(maxPixelSize)" as NSString)
+    }
+
+    func thumbnailAsync(maxPixelSize: Int) async -> UIImage? {
+        if image.isEmpty {
+            return nil
+        }
+
+        let cacheKey = "\(imageCacheKey)_\(maxPixelSize)" as NSString
+        if let cached = tableImageCache.object(forKey: cacheKey) {
+            return cached
+        }
+
+        let imageURL = imageURL
+        let loaded = await Task.detached(priority: .utility) { () -> UIImage? in
+            guard let source = CGImageSourceCreateWithURL(imageURL as CFURL, nil) else { return nil }
+            let options: [CFString: Any] = [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceShouldCacheImmediately: true,
+                kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
+            ]
+            guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+            return UIImage(cgImage: cgImage)
+        }.value
+
+        if let loaded {
+            tableImageCache.setObject(loaded, forKey: cacheKey, cost: loaded.byteCost)
+        }
+        return loaded
     }
 
     func with(name: String? = nil, path: String? = nil, image: String? = nil, modifiedAt: Int64? = nil) -> Table {
@@ -106,18 +161,35 @@ struct Table: Codable, Identifiable, Hashable {
               path: path ?? self.path,
               image: image ?? self.image,
               createdAt: createdAt,
-              modifiedAt: modifiedAt ?? self.modifiedAt)
+              modifiedAt: modifiedAt ?? self.modifiedAt,
+              lastPlayedAt: lastPlayedAt,
+              isFavorite: isFavorite)
+    }
+
+    func played(at date: Int64?) -> Table {
+        Table(uuid: uuid,
+              name: name,
+              path: path,
+              image: image,
+              createdAt: createdAt,
+              modifiedAt: modifiedAt,
+              lastPlayedAt: date,
+              isFavorite: isFavorite)
+    }
+
+    func favorite(_ isFavorite: Bool) -> Table {
+        Table(uuid: uuid,
+              name: name,
+              path: path,
+              image: image,
+              createdAt: createdAt,
+              modifiedAt: modifiedAt,
+              lastPlayedAt: lastPlayedAt,
+              isFavorite: isFavorite)
     }
 
     func exists() -> Bool {
         return FileManager.default.fileExists(atPath: fullPath)
-    }
-
-    func existsAsync() async -> Bool {
-        let fullPath = fullPath
-        return await Task.detached(priority: .utility) {
-            FileManager.default.fileExists(atPath: fullPath)
-        }.value
     }
 
     func hasScriptFile() -> Bool {
@@ -134,27 +206,16 @@ struct Table: Codable, Identifiable, Hashable {
     func hasIniFile() -> Bool {
         return FileManager.default.fileExists(atPath: iniPath)
     }
-
-    func hasIniFileAsync() async -> Bool {
-        let iniPath = iniPath
-        return await Task.detached(priority: .utility) {
-            FileManager.default.fileExists(atPath: iniPath)
-        }.value
-    }
-
-    func hasImageFile() -> Bool {
-        return FileManager.default.fileExists(atPath: imagePath)
-    }
-
-    func hasImageFileAsync() async -> Bool {
-        let imagePath = imagePath
-        return await Task.detached(priority: .utility) {
-            FileManager.default.fileExists(atPath: imagePath)
-        }.value
-    }
 }
 
 struct TablesResponse: Codable {
     let tableCount: Int
     let tables: [Table]
+}
+
+private extension UIImage {
+    var byteCost: Int {
+        guard let cgImage else { return 0 }
+        return cgImage.bytesPerRow * cgImage.height
+    }
 }

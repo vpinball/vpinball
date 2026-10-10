@@ -10,10 +10,8 @@ func VPinball_IOSStartup(window: UnsafeMutableRawPointer?) {
         {
             StatusBarManager.install(on: rootViewController,
                                      hidden: false,
-                                     style: .lightContent,
+                                     style: .default,
                                      animated: false)
-
-            UISearchBar.appearance().overrideUserInterfaceStyle = .dark
 
             rootViewController.view.isMultipleTouchEnabled = true
 

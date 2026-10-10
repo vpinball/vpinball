@@ -1,6 +1,11 @@
 #!/bin/bash
 
-GITHUB_TOKEN=""
+# Prints the contributor list for each credited repository, ordered by commit count,
+# in the format used by the Credits section of the mobile apps.
+#
+# Uses GITHUB_TOKEN if set, otherwise the token from `gh auth token`.
+
+TOKEN="${GITHUB_TOKEN:-$(gh auth token 2>/dev/null)}"
 
 generate_commit_report() {
     REPO="$1"
@@ -11,44 +16,38 @@ generate_commit_report() {
     echo "BRANCH: ${BRANCH}"
 
     page=1
-    all_logins=()
+    : > tmp-contribs-all.txt
 
     while : ; do
-        url="https://api.github.com/repos/$REPO/commits?sha=$BRANCH&per_page=100&page=$page"
-        curl -s -H "Authorization: token $GITHUB_TOKEN" "$url" --output caches.json
+        url="https://api.github.com/repos/${REPO}/commits?sha=${BRANCH}&per_page=100&page=${page}"
+        curl -s -H "Authorization: Bearer ${TOKEN}" "${url}" --output tmp-contribs-page.json
 
-        logins=$(jq -r 'map(if .author.login == null then .commit.author.name else .author.login end) | .[]' caches.json)
-
-        if [ -z "$logins" ]; then
+        count=$(jq 'if type == "array" then length else 0 end' tmp-contribs-page.json)
+        if [ "${count}" = "0" ]; then
             break
         fi
 
-        all_logins+=($logins)
+        jq -r '.[] | (.author.login // .commit.author.name)' tmp-contribs-page.json >> tmp-contribs-all.txt
 
         ((page++))
     done
 
-    rm -f tmp-counts-all.txt
+    grep -v -e '\[bot\]$' -e '^No Author$' tmp-contribs-all.txt \
+        | sort | uniq -c | sort -rn \
+        | sed 's/^ *[0-9]* //' \
+        | paste -sd ',' - | sed 's/,/, /g'
 
-    for login in "${all_logins[@]}"; do
-        echo $login >> tmp-counts-all.txt
-    done
-
-    awk '{counts[$0]++} END {for (user in counts) print counts[user], user}' tmp-counts-all.txt | sort -rn > tmp-counts-login.txt
-
-    rm -f "tmp-counts-all.txt"
-
-    awk '{print $2}' tmp-counts-login.txt | tr '\n' ',' | sed 's/,/, /g; s/, $//'
-
-    rm -f tmp-counts-login.txt
+    rm -f tmp-contribs-all.txt tmp-contribs-page.json
 
     echo
 }
 
-generate_commit_report "vpinball/libaltsound" "master"
-generate_commit_report "vpinball/libdof" "master"
-generate_commit_report "PPUC/libserum" "main"
-generate_commit_report "PPUC/libzedmd" "main"
-generate_commit_report "vpinball/libdmdutil" "master"
 generate_commit_report "vpinball/vpinball" "master"
 generate_commit_report "vpinball/pinmame" "master"
+generate_commit_report "vpinball/libaltsound" "master"
+generate_commit_report "vpinball/libdmdutil" "master"
+generate_commit_report "PPUC/libzedmd" "main"
+generate_commit_report "PPUC/libserum" "main"
+generate_commit_report "vpinball/libdof" "master"
+generate_commit_report "PPUC/libvni" "main"
+generate_commit_report "vpinball/libwinevbs" "master"
