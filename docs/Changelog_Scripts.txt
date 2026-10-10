@@ -3,6 +3,7 @@ New in 3.62 (Update by mfuegemann, JP, Mike Welsh, toxie)
 - Added p2k.vbs
 - Added pinheck.vbs
 - Added playbar.vbs
+- Added spike1.vbs (Stern Spike 1)
 - Removed the hardcoded keyVPMVolume (F12) key from all system .vbs files; the VPinMAME
   volume is now adjusted through a "VPinMAME Volume" table option in the in-game UI
   (only when using the VPinMAME COM controller, not the PinMAME plugin)
