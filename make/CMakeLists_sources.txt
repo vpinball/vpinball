@@ -5,6 +5,8 @@ set(VPX_SOURCES
    plugins/plugins/VPXPlugin.h
    plugins/plugins/ControllerPlugin.h
    plugins/plugins/ScriptablePlugin.h
+   plugins/plugins/ResURIBuilder.h
+   plugins/plugins/ResURIBuilder.cpp
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 
@@ -336,6 +338,8 @@ set(VPX_SOURCES
    src/ui/live/editor/RampUIPart.cpp
    src/ui/live/editor/RendererInspectionModal.h
    src/ui/live/editor/RendererInspectionModal.cpp
+   src/ui/live/editor/ResURIPicker.h
+   src/ui/live/editor/ResURIPicker.cpp
    src/ui/live/editor/RubberUIPart.h
    src/ui/live/editor/RubberUIPart.cpp
    src/ui/live/editor/ScriptPanel.h

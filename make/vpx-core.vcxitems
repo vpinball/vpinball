@@ -818,6 +818,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/TournamentFile.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIBuilder.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -928,6 +931,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/PropertyPane.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RampUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ResURIPicker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RubberUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ScriptPanel.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/SpinnerUIPart.cpp" />
@@ -1676,6 +1680,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SpatialAudio.h" />
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIBuilder.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPApp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/AppCommands.h" />
@@ -1866,6 +1871,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/PropertyPane.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RampUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ResURIPicker.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RubberUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ScriptPanel.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/Selection.h" />

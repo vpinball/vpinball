@@ -573,6 +573,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ResURIPicker.cpp">
+      <Filter>ui\live\editor</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RubberUIPart.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
@@ -1100,6 +1103,9 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/DynamicScript.cpp">
       <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIBuilder.cpp">
+      <Filter>plugin</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.cpp">
       <Filter>plugin</Filter>
@@ -1653,6 +1659,9 @@
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ResURIPicker.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RubberUIPart.h">
@@ -2581,6 +2590,9 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIBuilder.h">
+      <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.h">
       <Filter>plugin</Filter>

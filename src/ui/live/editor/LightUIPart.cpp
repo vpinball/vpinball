@@ -232,10 +232,10 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
             },
             PropertyPane::Unit::Percent, 1);
       }
-      props.InputString<Light>(
+      props.InputResURI<Light>(
          m_part, "State Source"s, //
          [](const Light* light) { return light->m_d.m_stateSrcLink; }, //
-         [](Light* light, const string& v) { light->m_d.m_stateSrcLink = v; });
+         [](Light* light, const string& v) { light->m_d.m_stateSrcLink = v; }, ResURIKind::FloatState);
       props.EndSection();
    }
 

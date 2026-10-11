@@ -106,6 +106,7 @@
     <ClCompile Include="../../tests/plugins/b2s/test-b2s-datamodel.cpp" />
     <ClCompile Include="../../tests/plugins/plugins/test-colorspace.cpp" />
     <ClCompile Include="../../tests/plugins/plugins/test-msgpluginmanager.cpp" />
+    <ClCompile Include="../../tests/plugins/plugins/test-resuribuilder.cpp" />
     <ClCompile Include="../../tests/plugins/plugins/test-resuriresolver.cpp" />
     <ClCompile Include="../../tests/plugins/upscaledmd/test-upscalers.cpp" />
     <ClCompile Include="../../tests/render/test-base-render.cpp" />
