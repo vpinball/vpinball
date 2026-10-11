@@ -25,7 +25,7 @@ class ResURIDialog final : public CDialog
 {
 public:
    ResURIDialog(PinballPlugin::ResURIKind kind, const std::string& currentUri, const std::function<void(const std::string&)>& apply, Settings& tableSettings,
-      PinballPlugin::DisplayFamily displayFamily = PinballPlugin::DisplayFamily::Any);
+      PinballPlugin::DisplayFamily displayFamily = PinballPlugin::DisplayFamily::Any, int semanticType = -1, bool writableOnly = false, int dataFormat = CTLPI_STATE_FORMAT_FLOAT);
 
 protected:
    BOOL OnInitDialog() override;
@@ -33,7 +33,7 @@ protected:
    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
-   using Item = std::variant<PinballPlugin::ResURIBuilder::FloatItem, PinballPlugin::ResURIBuilder::DisplayItem, PinballPlugin::ResURIBuilder::SegItem>;
+   using Item = std::variant<PinballPlugin::ResURIBuilder::StateItem, PinballPlugin::ResURIBuilder::DisplayItem, PinballPlugin::ResURIBuilder::SegItem>;
 
    void RefreshPlugins();
    void RefreshItems();
@@ -47,6 +47,9 @@ private:
 
    const PinballPlugin::ResURIKind m_kind;
    const PinballPlugin::DisplayFamily m_displayFamily;
+   const int m_semanticType;
+   const bool m_writableOnly;
+   const int m_dataFormat;
    const std::string m_currentUri;
    const std::function<void(const std::string&)> m_apply;
    Settings& m_tableSettings;

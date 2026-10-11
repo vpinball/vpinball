@@ -16,7 +16,7 @@ namespace PinballPlugin
 // Which kind of controller source a ResURI picker can build a link to
 enum class ResURIKind
 {
-   FloatState,
+   State,
    Display,
    SegDisplay,
 };
@@ -53,7 +53,7 @@ public:
       bool isDefaultDisplay = false; // Pseudo entry for automatic default display selection, no lifecycle commands
    };
 
-   struct FloatItem
+   struct StateItem
    {
       std::string pluginId;
       uint32_t endpointId = 0;
@@ -63,6 +63,8 @@ public:
       std::string name;
       std::string desc;
       int semanticType = 0;
+      int dataFormat = 0; // see CTLPI_STATE_FORMAT_xxx
+      bool writable = false;
    };
 
    struct DisplayItem
@@ -104,17 +106,17 @@ public:
    std::vector<PluginInfo> GetPlugins(bool withDefaultDisplay = false) const;
 
    // Case-insensitive substring filter over the item name, mapping id, group name and plugin id
-   std::vector<FloatItem> GetFloatItems(const std::string& filter = {}) const;
+   std::vector<StateItem> GetStateItems(const std::string& filter = {}, int semanticType = -1, bool writableOnly = false, int dataFormat = CTLPI_STATE_FORMAT_FLOAT) const;
    // withDefault prepends a pseudo item generating a 'ctrl://default/display' URI honoring the family filter
    std::vector<DisplayItem> GetDisplayItems(const std::string& filter = {}, DisplayFamily family = DisplayFamily::Any, bool withDefault = false) const;
    std::vector<SegItem> GetSegItems(const std::string& filter = {}) const;
 
-   std::string MakeStateURI(const FloatItem& item, StateLinkMode mode) const;
+   std::string MakeStateURI(const StateItem& item, StateLinkMode mode) const;
    std::string MakeDisplayURI(const DisplayItem& item) const;
    std::string MakeSegURI(const SegItem& item, int subElement) const; // subElement < 0 produces no 'sub' parameter
 
    // Reads the current state value through the provider getter. False if the state vanished or has no getter.
-   bool PeekValue(const FloatItem& item, float& value) const;
+   bool PeekValue(const StateItem& item, float& value) const;
 
    // Called when the picker enables/disables a plugin, allowing the caller to persist the choice (e.g. table settings)
    std::function<void(const std::string& pluginId, bool enabled)> onPluginEnableChanged;

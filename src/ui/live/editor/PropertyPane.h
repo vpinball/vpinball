@@ -58,7 +58,7 @@ public:
    template <class T> void InputString(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T>
    void InputResURI(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind,
-      DisplayFamily displayFamily = DisplayFamily::Any);
+      DisplayFamily displayFamily = DisplayFamily::Any, int semanticType = -1, bool writableOnly = false, int dataFormat = CTLPI_STATE_FORMAT_FLOAT);
    template <class T> void Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
    template <class T> void ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
@@ -352,8 +352,8 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
 }
 
 template <class T>
-inline void PropertyPane::InputResURI(
-   T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind, DisplayFamily displayFamily)
+inline void PropertyPane::InputResURI(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind,
+   DisplayFamily displayFamily, int semanticType, bool writableOnly, int dataFormat)
 {
    assert(m_inSection);
    m_modifyFieldId++;
@@ -378,7 +378,7 @@ inline void PropertyPane::InputResURI(
             setter(display, uri);
             m_modified = fieldId;
          },
-         displayFamily);
+         displayFamily, semanticType, writableOnly, dataFormat);
    ResURIPicker::Render();
    EndSyncField(sync, getter, setter, value);
    ImGui::PopID();

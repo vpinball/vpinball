@@ -70,6 +70,7 @@ public:
 
    float GetFloatState(const std::string &link);
    bool TryGetFloatState(const std::string &link, float &value);
+   bool SetBoolState(const std::string &link, bool value);
 
    struct DisplayState
    {
@@ -96,6 +97,8 @@ private:
    mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>> m_stateSources;
    using floatCacheLambda = std::function<float(const std::string &)>;
    ankerl::unordered_dense::map<std::string, floatCacheLambda> m_floatCache;
+   using setBoolCacheLambda = std::function<void(bool)>;
+   ankerl::unordered_dense::map<std::string, setBoolCacheLambda> m_boolSetCache;
 
    mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<SegSrcId>> m_segSources;
    using segCacheLambda = std::function<SegDisplayState(const std::string &)>;
@@ -107,6 +110,8 @@ private:
    mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<DisplaySrcId>> m_displaySources;
    using displayCacheLambda = std::function<DisplayState(const std::string &)>;
    ankerl::unordered_dense::map<std::string, displayCacheLambda> m_displayCache;
+
+   const StateDef *FindStateDef(const std::string &link, const std::vector<StateSrcId> &sources) const;
 
    static std::string trim_string(const std::string &str);
    static bool try_parse_int(const std::string &str, int &value);

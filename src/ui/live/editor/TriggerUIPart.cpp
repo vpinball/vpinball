@@ -74,6 +74,13 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Enabled"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_enabled; }, //
          [](Trigger* trigger, bool v) { trigger->m_d.m_enabled = v; });
+      ImGui::BeginDisabled(!props.GetEditedPart<Trigger>(m_part)->m_d.m_enabled);
+      props.InputResURI<Trigger>(
+         m_part, "State Link"s, //
+         [](const Trigger* trigger) { return trigger->m_d.m_stateSrcLink; }, //
+         [](Trigger* trigger, const string& v) { trigger->m_d.m_stateSrcLink = v; }, //
+         ResURIKind::State, DisplayFamily::Any, CTLPI_STATE_TYPE_SWITCH, true, -1);
+      ImGui::EndDisabled();
       props.InputFloat<Trigger>(
          m_part, "Hit Height"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_hit_height; }, //

@@ -21,12 +21,12 @@ namespace VPX::EditorUI
 namespace
 {
 
-   using SelectedItem = std::variant<std::monostate, ResURIBuilder::FloatItem, ResURIBuilder::DisplayItem, ResURIBuilder::SegItem>;
+   using SelectedItem = std::variant<std::monostate, ResURIBuilder::StateItem, ResURIBuilder::DisplayItem, ResURIBuilder::SegItem>;
 
    struct PickerState
    {
       bool open = false;
-      ResURIKind kind = ResURIKind::FloatState;
+      ResURIKind kind = ResURIKind::State;
       DisplayFamily displayFamily = DisplayFamily::Any;
       std::function<void(const std::string&)> apply;
       std::unique_ptr<ResURIBuilder> builder;
@@ -35,6 +35,9 @@ namespace
       std::string filter;
       std::string selectedPlugin; // Empty = no selection / all plugins
       int linkMode = 1; // 0 = name, 1 = mapping
+      int semanticType = -1; // -1 = all state types (see CTLPI_STATE_TYPE_xxx)
+      bool writableOnly = false; // true = only states accepting SetState calls
+      int dataFormat = CTLPI_STATE_FORMAT_FLOAT; // -1 = all formats (see CTLPI_STATE_FORMAT_xxx)
       int subElement = -1; // -1 = whole segment display
       SelectedItem selected;
       std::string gameId;
@@ -108,13 +111,17 @@ namespace
 
 } // namespace
 
-void ResURIPicker::Open(ResURIKind kind, const std::string& currentUri, std::function<void(const std::string&)> apply, DisplayFamily displayFamily)
+void ResURIPicker::Open(
+   ResURIKind kind, const std::string& currentUri, std::function<void(const std::string&)> apply, DisplayFamily displayFamily, int semanticType, bool writableOnly, int dataFormat)
 {
    MsgPI::MsgPluginManager& manager = g_pplayer->m_pluginManager;
    s_picker = PickerState {};
    s_picker.open = true;
    s_picker.kind = kind;
    s_picker.displayFamily = displayFamily;
+   s_picker.semanticType = semanticType;
+   s_picker.writableOnly = writableOnly;
+   s_picker.dataFormat = dataFormat;
    s_picker.apply = std::move(apply);
    s_picker.currentUri = currentUri;
    s_picker.builder = std::make_unique<ResURIBuilder>(&manager, &manager.GetMsgAPI(), g_pplayer->m_pluginAPI.GetVPXEndPointId());
@@ -218,11 +225,11 @@ void ResURIPicker::Render()
    ImGui::InputTextWithHint("##filter", FilterHint(s_picker.kind), &s_picker.filter);
 
    const float listHeight = ImGui::GetContentRegionAvail().y - 90.f * dpi;
-   if (s_picker.kind == ResURIKind::FloatState)
+   if (s_picker.kind == ResURIKind::State)
    {
-      std::vector<ResURIBuilder::FloatItem> items = builder.GetFloatItems(s_picker.filter);
+      std::vector<ResURIBuilder::StateItem> items = builder.GetStateItems(s_picker.filter, s_picker.semanticType, s_picker.writableOnly, s_picker.dataFormat);
       if (!s_picker.selectedPlugin.empty())
-         std::erase_if(items, [](const ResURIBuilder::FloatItem& item) { return item.pluginId != s_picker.selectedPlugin; });
+         std::erase_if(items, [](const ResURIBuilder::StateItem& item) { return item.pluginId != s_picker.selectedPlugin; });
       if (ImGui::BeginTable("##items", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, listHeight)))
       {
          ImGui::TableSetupColumn("Name");
@@ -231,12 +238,12 @@ void ResURIPicker::Render()
          ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_WidthFixed, 90.f * dpi);
          ImGui::TableHeadersRow();
          int rowId = 0;
-         for (const ResURIBuilder::FloatItem& item : items)
+         for (const ResURIBuilder::StateItem& item : items)
          {
             ImGui::PushID(rowId++);
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
-            const auto* sel = std::get_if<ResURIBuilder::FloatItem>(&s_picker.selected);
+            const auto* sel = std::get_if<ResURIBuilder::StateItem>(&s_picker.selected);
             const bool isSelected = sel != nullptr && sel->endpointId == item.endpointId && sel->groupId == item.groupId && sel->mappingId == item.mappingId;
             const std::string name = item.name.empty() ? "#" + std::to_string(item.mappingId) : item.name;
             if (ImGui::Selectable(name.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
@@ -254,7 +261,7 @@ void ResURIPicker::Render()
          ImGui::EndTable();
       }
       if (items.empty())
-         ImGui::TextDisabled("No matching state source. Load a plugin or start a controller to expose states.");
+         ImGui::TextDisabled("No matching state link. Load a plugin or start a controller to expose states.");
    }
    else if (s_picker.kind == ResURIKind::Display)
    {
@@ -356,7 +363,7 @@ void ResURIPicker::Render()
          ImGui::EndCombo();
       }
    }
-   else if (s_picker.kind == ResURIKind::FloatState)
+   else if (s_picker.kind == ResURIKind::State)
    {
       ImGui::RadioButton("Link by name", &s_picker.linkMode, 0);
       ImGui::SameLine();
@@ -365,7 +372,7 @@ void ResURIPicker::Render()
 
    // Link generation
    std::string uri;
-   if (const auto* item = std::get_if<ResURIBuilder::FloatItem>(&s_picker.selected))
+   if (const auto* item = std::get_if<ResURIBuilder::StateItem>(&s_picker.selected))
       uri = builder.MakeStateURI(*item, s_picker.linkMode == 0 ? ResURIBuilder::StateLinkMode::Name : ResURIBuilder::StateLinkMode::Mapping);
    else if (const auto* item = std::get_if<ResURIBuilder::DisplayItem>(&s_picker.selected))
       uri = builder.MakeDisplayURI(*item);

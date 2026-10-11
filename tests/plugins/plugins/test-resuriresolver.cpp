@@ -33,6 +33,7 @@ struct FakeController
    float stateValueA = 0.25f;
    float stateValueB = 0.75f;
    uint8_t stateValueInt = 3;
+   uint8_t stateValueC = 0;
    int getStateCalls = 0;
 };
 
@@ -57,6 +58,8 @@ void MSGPIAPI GetStateA(void* ctx, void* result)
 }
 void MSGPIAPI GetStateB(void* ctx, void* result) { *static_cast<float*>(result) = static_cast<FakeController*>(ctx)->stateValueB; }
 void MSGPIAPI GetStateInt(void* ctx, void* result) { *static_cast<uint8_t*>(result) = static_cast<FakeController*>(ctx)->stateValueInt; }
+void MSGPIAPI GetStateC(void* ctx, void* result) { *static_cast<uint8_t*>(result) = static_cast<FakeController*>(ctx)->stateValueC; }
+void MSGPIAPI SetStateC(void* ctx, const void* value) { static_cast<FakeController*>(ctx)->stateValueC = *static_cast<const uint8_t*>(value); }
 
 void ControllerLoad(const uint32_t endpointId, const MsgPluginAPI* api)
 {
@@ -123,13 +126,14 @@ TEST_CASE("ResURIResolver ctrl URI resolution")
    segSrc.GetState = GetSegFrame;
    g_ctl.segs->AddItem(segSrc);
 
-   static StateDef stateDefs[3];
+   static StateDef stateDefs[4];
    stateDefs[0] = { "sol11", "Solenoid 11", 11, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, &g_ctl, GetStateA, nullptr };
    stateDefs[1] = { "gi1", "GI string 1", 1, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, &g_ctl, GetStateB, nullptr };
    stateDefs[2] = { "sw7", "Switch 7", 7, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, &g_ctl, GetStateInt, nullptr };
+   stateDefs[3] = { "sw10", "Switch 10", 10, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, &g_ctl, GetStateC, SetStateC };
    StateSrcId stateSrc {};
    stateSrc.id = ResId(ctl->m_endpointId, 1);
-   stateSrc.nStates = 3;
+   stateSrc.nStates = 4;
    stateSrc.stateDefs = stateDefs;
    g_ctl.states->AddItem(stateSrc);
 
@@ -213,6 +217,16 @@ TEST_CASE("ResURIResolver ctrl URI resolution")
       CHECK(resolver.GetFloatState("ctrl://unknown/state?group=1&mapping=11") == 0.f);
       CHECK(resolver.GetFloatState("ctrl://default/state?group=1&mapping=11") == 0.f);
       CHECK(resolver.GetFloatState("garbage") == 0.f);
+
+      // Writable states accept SetBoolState by mapping or name, read-only and unknown links fail
+      CHECK(resolver.SetBoolState("ctrl://testctl/state?group=1&mapping=10", true));
+      CHECK(g_ctl.stateValueC == 1);
+      CHECK(resolver.SetBoolState("ctrl://testctl/state?group=1&name=sw10", false));
+      CHECK(g_ctl.stateValueC == 0);
+      CHECK_FALSE(resolver.SetBoolState("ctrl://testctl/state?group=1&mapping=11", true));
+      CHECK_FALSE(resolver.SetBoolState("ctrl://testctl/state?group=1&mapping=7", true));
+      CHECK_FALSE(resolver.SetBoolState("ctrl://testctl/state?group=9&mapping=10", true));
+      CHECK_FALSE(resolver.SetBoolState("ctrl://unknown/state?group=1&mapping=10", true));
    }
 
    SUBCASE("source list updates are tracked")

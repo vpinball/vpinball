@@ -746,12 +746,12 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
          if (i < 0)
          {
             pball->m_d.m_vpVolObjs->push_back(m_obj);
-            ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
+            ((Trigger*)m_obj)->OnHit(true);
          }
          else
          {
             pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + i);
-            ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
+            ((Trigger*)m_obj)->OnHit(false);
          }
       }
    }
@@ -1209,13 +1209,13 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
       {
          pball->m_d.m_vpVolObjs->push_back(m_obj);
          ((Trigger*)m_obj)->TriggerAnimationHit();
-         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
+         ((Trigger*)m_obj)->OnHit(true);
       }
       else
       {
          pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + i);
          ((Trigger*)m_obj)->TriggerAnimationUnhit();
-         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
+         ((Trigger*)m_obj)->OnHit(false);
       }
    }
 }
@@ -1248,13 +1248,13 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
       {
          pball->m_d.m_vpVolObjs->push_back(m_obj);
          ((Trigger*)m_obj)->TriggerAnimationHit();
-         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
+         ((Trigger*)m_obj)->OnHit(true);
       }
       else
       {
          pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + i);
          ((Trigger*)m_obj)->TriggerAnimationUnhit();
-         ((Trigger*)m_obj)->FireGroupEvent(DISPID_HitEvents_Unhit);
+         ((Trigger*)m_obj)->OnHit(false);
       }
    }
 }
