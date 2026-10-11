@@ -48,7 +48,7 @@ object VPinballManager : KoinComponent {
     }
 
     private var initState = InitState.NOT_INITIALIZED
-    private val initLock = Object()
+    private val initLock = Any()
     private val pendingCallbacks = mutableListOf<() -> Unit>()
 
     fun initialize(context: Context) {

@@ -189,6 +189,8 @@ struct MarqueeHeaderView: View {
     let cardWidth: CGFloat
     let namespace: Namespace.ID
 
+    @State private var scrollPosition = ScrollPosition(edge: .leading)
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline) {
@@ -224,9 +226,16 @@ struct MarqueeHeaderView: View {
                     }
                 }
             }
+            .scrollPosition($scrollPosition)
             .scrollIndicators(.hidden)
             .contentMargins(.horizontal, 16, for: .scrollContent)
             .padding(.horizontal, -16)
+            .onChange(of: tables.first?.uuid) { _, _ in
+                guard inRecentlyPlayed else { return }
+                withAnimation(.snappy) {
+                    scrollPosition.scrollTo(edge: .leading)
+                }
+            }
         }
     }
 }

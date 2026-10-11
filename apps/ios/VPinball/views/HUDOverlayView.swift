@@ -5,7 +5,7 @@ struct HUDOverlayView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).opacity(0.25)
+            Color.black.opacity(0.25)
                 .ignoresSafeArea()
 
             VStack {

@@ -28,7 +28,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -38,7 +37,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -86,11 +84,13 @@ import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballStorageMode
 import org.vpinball.app.ui.screens.common.AlertButton
+import org.vpinball.app.ui.screens.common.CardDivider
 import org.vpinball.app.ui.screens.common.CircleIconButton
 import org.vpinball.app.ui.screens.common.RoundedCard
 import org.vpinball.app.ui.screens.common.frostedEdge
 import org.vpinball.app.ui.theme.VPinballTheme
 import org.vpinball.app.ui.theme.VpxRed
+import org.vpinball.app.util.cellClickable
 
 private val SettingsBarHeight = 76.dp
 
@@ -180,11 +180,16 @@ fun SettingsScreen(
                             )
 
                             if (viewModel.storageMode == VPinballStorageMode.CUSTOM) {
+                                CardDivider()
+
                                 Text(
                                     text = viewModel.currentTablesPath,
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp).clickable { folderPickerLauncher.launch(null) },
+                                    modifier =
+                                        Modifier.fillMaxWidth()
+                                            .cellClickable { folderPickerLauncher.launch(null) }
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
                                 )
                             }
                         }
@@ -203,7 +208,7 @@ fun SettingsScreen(
                         )
 
                         if (viewModel.externalDMD != VPinballExternalDMD.NONE) {
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            CardDivider()
 
                             if (viewModel.externalDMD == VPinballExternalDMD.DMD_SERVER) {
                                 IPAddressPortInputRow(
@@ -212,7 +217,7 @@ fun SettingsScreen(
                                     validateAsIpAddress = true,
                                     onValueChange = { viewModel.handleDMDServerAddr(value = it) },
                                 )
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                CardDivider()
 
                                 IPAddressPortInputRow(
                                     label = "DMDServer Port",
@@ -256,7 +261,7 @@ fun SettingsScreen(
                     RoundedCard {
                         SwitchRow(label = "Enabled", isChecked = viewModel.webServer, onCheckedChange = { viewModel.handleWebServer(value = it) })
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        CardDivider()
 
                         IPAddressPortInputRow(
                             label = "Web Server Port",
@@ -336,7 +341,7 @@ fun SettingsScreen(
                     RoundedCard {
                         ActionRow(label = "Learn More", onClick = { Link.DOCS.open(context) })
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        CardDivider()
 
                         ActionRow(
                             label = "Contact Us",
@@ -352,7 +357,7 @@ fun SettingsScreen(
                             },
                         )
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        CardDivider()
 
                         ActionRow(label = "Discord (Virtual Pinball Chat)", onClick = { Link.DISCORD.open(context) })
                     }
@@ -366,7 +371,7 @@ fun SettingsScreen(
                             CreditRow(credit = credit, context = LocalContext.current)
 
                             if (index < Credit.entries.size - 1) {
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                CardDivider()
                             }
                         }
                     }
@@ -436,37 +441,36 @@ fun SettingsScreen(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 RoundedCard {
-                    TextButton(
+                    SheetButton(
+                        label = "Reset All Settings",
+                        color = Color.VpxRed,
                         onClick = {
                             viewModel.handleResetAllSettings()
                             showResetDialog = false
                             coroutineScope.launch { onDone() }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = "Reset All Settings",
-                            color = Color.VpxRed,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Normal,
-                        )
-                    }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 RoundedCard {
-                    TextButton(onClick = { showResetDialog = false }, modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Cancel",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
+                    SheetButton(
+                        label = "Cancel",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold,
+                        onClick = { showResetDialog = false },
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SheetButton(label: String, color: Color, onClick: () -> Unit, fontWeight: FontWeight = FontWeight.Normal) {
+    Box(modifier = Modifier.fillMaxWidth().cellClickable(onClick = onClick).padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
+        Text(text = label, color = color, style = MaterialTheme.typography.bodyLarge, fontWeight = fontWeight)
     }
 }
 
@@ -488,7 +492,7 @@ private fun SwitchRow(
     modifier: Modifier = Modifier,
     description: String? = null,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = label,
@@ -516,56 +520,42 @@ private fun SwitchRow(
 }
 
 @Composable
-private fun <T> EnumMenuRow(label: String, options: List<T>, option: T, onOptionChanged: (T) -> Unit, sameLine: Boolean = true)
-    where T : VPinballDisplayText {
+private fun <T> EnumMenuRow(label: String, options: List<T>, option: T, onOptionChanged: (T) -> Unit) where T : VPinballDisplayText {
     var expanded by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier) {
-        if (!sameLine) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(vertical = 8.dp),
-            )
-        }
+    Row(
+        modifier = Modifier.fillMaxWidth().cellClickable { expanded = true }.padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
 
-        Row(modifier = Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = if (sameLine) label else "",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
+        Box {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = option.text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-            Box {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { expanded = true }) {
-                    Text(text = option.text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    painter = painterResource(id = R.drawable.img_sf_chevron_up_chevron_down),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp).padding(start = 4.dp),
+                )
+            }
 
-                    Icon(
-                        painter = painterResource(id = R.drawable.img_sf_chevron_up_chevron_down),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(14.dp).padding(start = 4.dp),
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, offset = DpOffset(x = 0.dp, y = 0.dp)) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = option.text,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        onClick = {
+                            onOptionChanged(option)
+                            expanded = false
+                        },
                     )
-                }
-
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, offset = DpOffset(x = 0.dp, y = 0.dp)) {
-                    options.forEach { option ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = option.text,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            },
-                            onClick = {
-                                onOptionChanged(option)
-                                expanded = false
-                            },
-                        )
-                    }
                 }
             }
         }
@@ -596,15 +586,13 @@ private fun IPAddressPortInputRow(
 
     fun isValidPort(value: String): Boolean = value.toIntOrNull()?.let { it in 0..65535 } == true
 
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(vertical = 8.dp)) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth().cellClickable { isDialogOpen = true }.padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
         Text(text = label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
 
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.clickable { isDialogOpen = true },
-        )
+        Text(text = value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 
     if (isDialogOpen) {
@@ -648,7 +636,10 @@ private fun ActionRow(
     showDisclosure: Boolean = true,
     labelColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(vertical = 8.dp).clickable { onClick() }) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth().cellClickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
         Text(text = label, style = MaterialTheme.typography.bodyLarge, color = labelColor, modifier = Modifier.weight(1f))
 
         if (showDisclosure) {
@@ -666,14 +657,9 @@ private fun ActionRow(
 private fun CreditRow(credit: Credit, context: Context) {
     Column(
         modifier =
-            Modifier.then(
-                    if (credit.link != null) {
-                        Modifier.clickable { credit.link.open(context) }
-                    } else {
-                        Modifier
-                    }
-                )
-                .padding(vertical = 8.dp)
+            Modifier.fillMaxWidth()
+                .then(if (credit.link != null) Modifier.cellClickable { credit.link.open(context) } else Modifier)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(

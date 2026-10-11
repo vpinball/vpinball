@@ -1,5 +1,6 @@
 package org.vpinball.app
 
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.window.OnBackInvokedDispatcher
@@ -41,6 +42,10 @@ class VPinballPlayerActivity : SDLActivity(), LifecycleOwner, SavedStateRegistry
         }
 
         VPinballManager.setPlayerActivity(this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, android.R.anim.fade_in, android.R.anim.fade_out)
+        }
 
         onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
             VPinballManager.stop()
@@ -112,7 +117,9 @@ class VPinballPlayerActivity : SDLActivity(), LifecycleOwner, SavedStateRegistry
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            @Suppress("DEPRECATION") overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
     }
 
     override fun getLibraries(): Array<String> = arrayOf("vpinball")

@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.vpinball.app.BuildInfo
@@ -38,19 +37,17 @@ fun SplashScreen(modifier: Modifier = Modifier) {
 
             Text(
                 text = BuildInfo.PROVENANCE,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
 
             Text(
                 text = BuildInfo.version,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 4.dp, bottom = 24.dp).align(Alignment.CenterHorizontally),
             )
         }

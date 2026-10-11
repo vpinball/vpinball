@@ -1,8 +1,16 @@
 package org.vpinball.app.util
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
@@ -31,4 +39,14 @@ fun Modifier.drawWithGradient(dark: Boolean = isDarkAppearance()): Modifier {
             }
         }
     )
+}
+
+@Composable
+fun Modifier.cellClickable(enabled: Boolean = true, onClick: () -> Unit): Modifier {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val alpha = animateFloatAsState(if (pressed) 1f else 0f, tween(if (pressed) 0 else 150), label = "cell_press")
+    val color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+    return drawBehind { drawRect(color.copy(alpha = color.alpha * alpha.value)) }
+        .clickable(interactionSource = interactionSource, indication = null, enabled = enabled, onClick = onClick)
 }
