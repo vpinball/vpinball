@@ -32,6 +32,7 @@ struct FakeController
    float stateValueA = 0.25f;
    float stateValueB = 0.75f;
    uint8_t stateValueInt = 3;
+   uint8_t stateValueC = 0;
 
    bool running = false;
    std::string gameId;
@@ -40,6 +41,8 @@ struct FakeController
    static void MSGPIAPI GetStateA(void* ctx, void* result) { *static_cast<float*>(result) = static_cast<FakeController*>(ctx)->stateValueA; }
    static void MSGPIAPI GetStateB(void* ctx, void* result) { *static_cast<float*>(result) = static_cast<FakeController*>(ctx)->stateValueB; }
    static void MSGPIAPI GetStateInt(void* ctx, void* result) { *static_cast<uint8_t*>(result) = static_cast<FakeController*>(ctx)->stateValueInt; }
+   static void MSGPIAPI GetStateC(void* ctx, void* result) { *static_cast<uint8_t*>(result) = static_cast<FakeController*>(ctx)->stateValueC; }
+   static void MSGPIAPI SetStateC(void* ctx, const void* value) { static_cast<FakeController*>(ctx)->stateValueC = *static_cast<const uint8_t*>(value); }
    static DisplayFrame MSGPIAPI GetDmdFrame(void*) { return { 1, nullptr }; }
    static SegDisplayFrame MSGPIAPI GetSegFrame(void*) { return { 1, nullptr }; }
 
@@ -127,14 +130,15 @@ void ControllerLoad(const uint32_t endpointId, const MsgPluginAPI* api)
    seg.GetState = FakeController::GetSegFrame;
    g_ctl.segs->AddItem(seg);
 
-   static StateDef stateDefs[3];
+   static StateDef stateDefs[4];
    stateDefs[0] = { "sol11", "Solenoid 11", 11, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, &g_ctl, FakeController::GetStateA, nullptr };
    stateDefs[1] = { "gi1", "GI string 1", 1, CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS, &g_ctl, FakeController::GetStateB, nullptr };
    stateDefs[2] = { "sw7", "Switch 7", 7, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, &g_ctl, FakeController::GetStateInt, nullptr };
+   stateDefs[3] = { "sw10", "Switch 10", 10, CTLPI_STATE_FORMAT_UINT8, CTLPI_STATE_TYPE_SWITCH, &g_ctl, FakeController::GetStateC, FakeController::SetStateC };
    StateSrcId stateSrc {};
    stateSrc.id = ResId(endpointId, 3);
    stateSrc.name = "Lamps";
-   stateSrc.nStates = 3;
+   stateSrc.nStates = 4;
    stateSrc.stateDefs = stateDefs;
    g_ctl.states->AddItem(stateSrc);
 }
@@ -207,20 +211,34 @@ TEST_CASE("ResURIBuilder source enumeration, URI generation and lifecycle")
 
    SUBCASE("float state items: enumeration, filter, peek and URIs")
    {
-      const auto items = builder.GetFloatItems();
-      REQUIRE(items.size() == 2); // the uint8 state is filtered out
+      const auto items = builder.GetStateItems();
+      REQUIRE(items.size() == 2); // non float states are filtered out
       CHECK(items[0].pluginId == "testctl");
       CHECK(items[0].groupId == 3);
       CHECK(items[0].groupName == "Lamps");
 
-      const auto filtered = builder.GetFloatItems("gi");
+      const auto filtered = builder.GetStateItems("gi");
       REQUIRE(filtered.size() == 1);
       CHECK(filtered[0].name == "gi1");
       CHECK(filtered[0].mappingId == 1);
 
-      CHECK(builder.GetFloatItems("lamps").size() == 2); // matches the group name
-      CHECK(builder.GetFloatItems("11").size() == 1); // matches the mapping id
-      CHECK(builder.GetFloatItems("nope").empty());
+      CHECK(builder.GetStateItems("lamps").size() == 2); // matches the group name
+      CHECK(builder.GetStateItems("11").size() == 1); // matches the mapping id
+      CHECK(builder.GetStateItems("nope").empty());
+
+      CHECK_FALSE(items[0].writable);
+
+      // semanticType, writableOnly and dataFormat filters restrict the listing (e.g. switch links for triggers)
+      const auto switches = builder.GetStateItems({}, CTLPI_STATE_TYPE_SWITCH, false, -1);
+      REQUIRE(switches.size() == 2);
+      CHECK(switches[0].name == "sw7");
+      CHECK(switches[0].dataFormat == CTLPI_STATE_FORMAT_UINT8);
+      CHECK_FALSE(switches[0].writable);
+      CHECK(switches[1].name == "sw10");
+      CHECK(switches[1].writable);
+      CHECK(builder.GetStateItems({}, CTLPI_STATE_TYPE_SWITCH, true, -1).size() == 1);
+      CHECK(builder.GetStateItems({}, CTLPI_STATE_TYPE_SWITCH).empty()); // switches are not float
+      CHECK(builder.GetStateItems({}, CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS).size() == 1);
 
       float value = 0.f;
       REQUIRE(builder.PeekValue(items[0], value));

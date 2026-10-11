@@ -85,12 +85,12 @@ std::vector<ResURIBuilder::PluginInfo> ResURIBuilder::GetPlugins(bool withDefaul
    return plugins;
 }
 
-std::vector<ResURIBuilder::FloatItem> ResURIBuilder::GetFloatItems(const std::string& filter) const
+std::vector<ResURIBuilder::StateItem> ResURIBuilder::GetStateItems(const std::string& filter, const int semanticType, const bool writableOnly, const int dataFormat) const
 {
    return m_stateSources.With(
-      [this, &filter](const std::vector<StateSrcId>& sources)
+      [this, &filter, semanticType, writableOnly, dataFormat](const std::vector<StateSrcId>& sources)
       {
-         std::vector<FloatItem> items;
+         std::vector<StateItem> items;
          for (const StateSrcId& src : sources)
          {
             const std::string pluginId = PluginIdForEndpoint(src.id.endpointId);
@@ -98,9 +98,13 @@ std::vector<ResURIBuilder::FloatItem> ResURIBuilder::GetFloatItems(const std::st
             for (unsigned int i = 0; i < src.nStates; ++i)
             {
                const StateDef& def = src.stateDefs[i];
-               if (def.dataFormat != CTLPI_STATE_FORMAT_FLOAT)
+               if (dataFormat >= 0 && def.dataFormat != dataFormat)
                   continue;
-               FloatItem item;
+               if (semanticType >= 0 && def.semanticType != semanticType)
+                  continue;
+               if (writableOnly && def.SetState == nullptr)
+                  continue;
+               StateItem item;
                item.pluginId = pluginId;
                item.endpointId = src.id.endpointId;
                item.groupId = src.id.resId;
@@ -109,6 +113,8 @@ std::vector<ResURIBuilder::FloatItem> ResURIBuilder::GetFloatItems(const std::st
                item.name = def.name != nullptr ? def.name : std::string();
                item.desc = def.desc != nullptr ? def.desc : std::string();
                item.semanticType = def.semanticType;
+               item.writable = def.SetState != nullptr;
+               item.dataFormat = def.dataFormat;
                if (MatchesFilter(filter, { item.name, std::to_string(item.mappingId), item.groupName, item.pluginId }))
                   items.push_back(std::move(item));
             }
@@ -176,7 +182,7 @@ std::vector<ResURIBuilder::SegItem> ResURIBuilder::GetSegItems(const std::string
       });
 }
 
-std::string ResURIBuilder::MakeStateURI(const FloatItem& item, StateLinkMode mode) const
+std::string ResURIBuilder::MakeStateURI(const StateItem& item, StateLinkMode mode) const
 {
    if (mode == StateLinkMode::Name && !item.name.empty())
       return std::format("ctrl://{}/state?group={}&name={}", item.pluginId, item.groupId, item.name);
@@ -197,7 +203,7 @@ std::string ResURIBuilder::MakeSegURI(const SegItem& item, int subElement) const
    return std::format("ctrl://{}/seg?id={}", item.pluginId, item.resId);
 }
 
-bool ResURIBuilder::PeekValue(const FloatItem& item, float& value) const
+bool ResURIBuilder::PeekValue(const StateItem& item, float& value) const
 {
    return m_stateSources.With(
       [&item, &value](const std::vector<StateSrcId>& sources)

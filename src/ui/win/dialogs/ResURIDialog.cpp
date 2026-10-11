@@ -70,10 +70,14 @@ public:
 
 } // namespace
 
-ResURIDialog::ResURIDialog(ResURIKind kind, const std::string& currentUri, const std::function<void(const std::string&)>& apply, Settings& tableSettings, DisplayFamily displayFamily)
+ResURIDialog::ResURIDialog(ResURIKind kind, const std::string& currentUri, const std::function<void(const std::string&)>& apply, Settings& tableSettings, DisplayFamily displayFamily,
+   const int semanticType, const bool writableOnly, const int dataFormat)
    : CDialog(IDD_RESURI_PICKER)
    , m_kind(kind)
    , m_displayFamily(displayFamily)
+   , m_semanticType(semanticType)
+   , m_writableOnly(writableOnly)
+   , m_dataFormat(dataFormat)
    , m_currentUri(currentUri)
    , m_apply(apply)
    , m_tableSettings(tableSettings)
@@ -140,8 +144,8 @@ BOOL ResURIDialog::OnInitDialog()
    };
 
    CheckRadioButton(IDC_RESURI_LINK_NAME, IDC_RESURI_LINK_MAPPING, IDC_RESURI_LINK_MAPPING);
-   GetDlgItem(IDC_RESURI_LINK_NAME).ShowWindow(m_kind == ResURIKind::FloatState ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_RESURI_LINK_MAPPING).ShowWindow(m_kind == ResURIKind::FloatState ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_RESURI_LINK_NAME).ShowWindow(m_kind == ResURIKind::State ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_RESURI_LINK_MAPPING).ShowWindow(m_kind == ResURIKind::State ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_RESURI_SUB).ShowWindow(m_kind == ResURIKind::SegDisplay ? SW_SHOW : SW_HIDE);
    RefreshPlugins();
    RefreshItems();
@@ -187,9 +191,9 @@ bool ResURIDialog::SameItem(const Item& a, const Item& b) const
 {
    if (a.index() != b.index())
       return false;
-   if (const auto* fa = std::get_if<ResURIBuilder::FloatItem>(&a))
+   if (const auto* fa = std::get_if<ResURIBuilder::StateItem>(&a))
    {
-      const auto& fb = std::get<ResURIBuilder::FloatItem>(b);
+      const auto& fb = std::get<ResURIBuilder::StateItem>(b);
       return fa->endpointId == fb.endpointId && fa->groupId == fb.groupId && fa->mappingId == fb.mappingId;
    }
    if (const auto* da = std::get_if<ResURIBuilder::DisplayItem>(&a))
@@ -231,7 +235,7 @@ void ResURIDialog::RefreshItems()
             newList.push_back(item);
       }
    else
-      for (const auto& item : m_builder->GetFloatItems(filter))
+      for (const auto& item : m_builder->GetStateItems(filter, m_semanticType, m_writableOnly, m_dataFormat))
       {
          if (pluginId.empty() || item.pluginId == pluginId)
             newList.push_back(item);
@@ -243,9 +247,9 @@ void ResURIDialog::RefreshItems()
          {
             if (a.index() != b.index())
                return false;
-            if (const auto* fa = std::get_if<ResURIBuilder::FloatItem>(&a))
+            if (const auto* fa = std::get_if<ResURIBuilder::StateItem>(&a))
             {
-               const auto& fb = std::get<ResURIBuilder::FloatItem>(b);
+               const auto& fb = std::get<ResURIBuilder::StateItem>(b);
                return fa->pluginId == fb.pluginId && fa->endpointId == fb.endpointId && fa->groupId == fb.groupId && fa->groupName == fb.groupName && fa->mappingId == fb.mappingId
                   && fa->name == fb.name;
             }
@@ -270,7 +274,7 @@ void ResURIDialog::RefreshItems()
    {
       if (previous.has_value() && SameItem(item, *previous))
          m_selectedItemIndex = idx;
-      if (const auto* floatItem = std::get_if<ResURIBuilder::FloatItem>(&item))
+      if (const auto* floatItem = std::get_if<ResURIBuilder::StateItem>(&item))
       {
          const std::string name = floatItem->name.empty() ? "#" + std::to_string(floatItem->mappingId) : floatItem->name;
          m_itemListView.InsertItem(idx, name.c_str());
@@ -324,7 +328,7 @@ std::string ResURIDialog::CurrentURI() const
    if (m_selectedItemIndex < 0 || m_selectedItemIndex >= static_cast<int>(m_itemList.size()))
       return {};
    const Item& item = m_itemList[m_selectedItemIndex];
-   if (const auto* floatItem = std::get_if<ResURIBuilder::FloatItem>(&item))
+   if (const auto* floatItem = std::get_if<ResURIBuilder::StateItem>(&item))
    {
       const auto mode = IsDlgButtonChecked(IDC_RESURI_LINK_NAME) == BST_CHECKED ? ResURIBuilder::StateLinkMode::Name : ResURIBuilder::StateLinkMode::Mapping;
       return m_builder->MakeStateURI(*floatItem, mode);

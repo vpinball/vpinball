@@ -51,7 +51,15 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
       m_stateSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>>(
          &m_msgAPI, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
          nullptr, // No filtering
-         [this]() { m_stateSources->With([this](const auto &) { m_floatCache.clear(); }); },
+         [this]()
+         {
+            m_stateSources->With(
+               [this](const auto &)
+               {
+                  m_floatCache.clear();
+                  m_boolSetCache.clear();
+               });
+         },
          nullptr); // No setup
       m_stateSources->Subscribe();
    }
@@ -106,100 +114,161 @@ bool ResURIResolver::TryGetFloatState(const string &link, float &value)
             return true;
          }
 
-         const auto &uri = uri::parse_uri(link);
-
-         unsigned int endpoint = 0;
-         if (uri.error == uri::Error::None)
-         {
-            if (uri.scheme == "ctrl")
-            {
-               if (uri.authority.host == "default")
-               {
-                  // Which definitions do we want to give for this (if any) ?
-               }
-               else
-               {
-                  endpoint = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
-               }
-            }
-         }
-         if (endpoint == 0)
-         {
-            // PLOGE << "Invalid resource URI: " << link;
-            m_floatCache[link] = nullptr;
-            return false;
-         }
-
          floatCacheLambda lambda = nullptr;
-         if (uri.path == "/state")
-         {
-            auto grpPart = uri.query.find("group"s);
-            int group = 0;
-            if (grpPart != uri.query.end() && try_parse_int(grpPart->second, group))
+         if (const StateDef *def = FindStateDef(link, sources); def != nullptr && def->dataFormat == CTLPI_STATE_FORMAT_FLOAT && def->GetState != nullptr)
+            lambda = [d = *def](const string &)
             {
-               int mapping = 0;
-               if (auto mappingPart = uri.query.find("mapping"s); mappingPart != uri.query.end() && try_parse_int(mappingPart->second, mapping))
-               {
-                  // Select by group + mapping
-                  auto stateBlock
-                     = std::ranges::find_if(sources.begin(), sources.end(), [endpoint, group](const StateSrcId &src) { return src.id.endpointId == endpoint && src.id.resId == group; });
-                  if (stateBlock != sources.end())
-                  {
-                     for (unsigned int i = 0; i < stateBlock->nStates; i++)
-                     {
-                        if (const StateDef &def = stateBlock->stateDefs[i]; def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr && def.mappingId == mapping)
-                        {
-                           lambda = [def](const string &)
-                           {
-                              float value;
-                              def.GetState(def.callContext, &value);
-                              return value;
-                           };
-                           break;
-                        }
-                     }
-                  }
-               }
-               else if (auto namePart = uri.query.find("name"s); namePart != uri.query.end())
-               {
-                  // Select by group + name
-                  const string name = namePart->second;
-                  auto stateBlock
-                     = std::ranges::find_if(sources.begin(), sources.end(), [endpoint, group](const StateSrcId &src) { return src.id.endpointId == endpoint && src.id.resId == group; });
-                  if (stateBlock != sources.end())
-                  {
-                     for (unsigned int i = 0; i < stateBlock->nStates; i++)
-                     {
-                        if (const StateDef &def = stateBlock->stateDefs[i];
-                           def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr && def.name != nullptr && string(def.name) == name)
-                        {
-                           lambda = [def](const string &)
-                           {
-                              float value;
-                              def.GetState(def.callContext, &value);
-                              return value;
-                           };
-                           break;
-                        }
-                     }
-                  }
-               }
-            }
-         }
-         else if (uri.path == "/display")
-         {
-            // TODO implement (to access individual dots, useful for small LED matrices), considering that this would require us to sync on display source as well
-         }
-
-         if (lambda == nullptr)
-         {
-            m_floatCache[link] = nullptr;
-            return false;
-         }
+               float value;
+               d.GetState(d.callContext, &value);
+               return value;
+            };
          m_floatCache[link] = lambda;
+         if (lambda == nullptr)
+            return false;
          value = lambda(link);
          return true;
       });
+}
+
+// The cache stores a null lambda for links that do not resolve to a writable state of a supported format
+bool ResURIResolver::SetBoolState(const string &link, const bool value)
+{
+   return m_stateSources->With(
+      [this, &link, value](const std::vector<StateSrcId> &sources)
+      {
+         if (const auto &cache = m_boolSetCache.find(link); cache != m_boolSetCache.end())
+         {
+            if (cache->second == nullptr)
+               return false;
+            cache->second(value);
+            return true;
+         }
+
+         setBoolCacheLambda lambda = nullptr;
+         if (const StateDef *def = FindStateDef(link, sources); def != nullptr && def->SetState != nullptr)
+            lambda = [d = *def](bool value)
+            {
+               switch (d.dataFormat)
+               {
+               case CTLPI_STATE_FORMAT_UINT8:
+               {
+                  const uint8_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_UINT16:
+               {
+                  const uint16_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_UINT32:
+               {
+                  const uint32_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_UINT64:
+               {
+                  const uint64_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT8:
+               {
+                  const int8_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT16:
+               {
+                  const int16_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT32:
+               {
+                  const int32_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT64:
+               {
+                  const int64_t v = value ? 1 : 0;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_FLOAT:
+               {
+                  const float v = value ? 1.f : 0.f;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_DOUBLE:
+               {
+                  const double v = value ? 1. : 0.;
+                  d.SetState(d.callContext, &v);
+                  break;
+               }
+               default: break;
+               }
+            };
+         m_boolSetCache[link] = lambda;
+         if (lambda == nullptr)
+            return false;
+         lambda(value);
+         return true;
+      });
+}
+
+const StateDef *ResURIResolver::FindStateDef(const string &link, const std::vector<StateSrcId> &sources) const
+{
+   const auto &uri = uri::parse_uri(link);
+
+   unsigned int endpoint = 0;
+   if (uri.error == uri::Error::None)
+   {
+      if (uri.scheme == "ctrl")
+      {
+         if (uri.authority.host == "default")
+         {
+            // Which definitions do we want to give for this (if any) ?
+         }
+         else
+         {
+            endpoint = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
+         }
+      }
+   }
+   if (endpoint == 0 || uri.path != "/state")
+      return nullptr;
+
+   const auto grpPart = uri.query.find("group"s);
+   int group = 0;
+   if (grpPart == uri.query.end() || !try_parse_int(grpPart->second, group))
+      return nullptr;
+
+   const auto stateBlock = std::ranges::find_if(sources.begin(), sources.end(), [endpoint, group](const StateSrcId &src) { return src.id.endpointId == endpoint && src.id.resId == group; });
+   if (stateBlock == sources.end())
+      return nullptr;
+
+   int mapping = 0;
+   if (const auto mappingPart = uri.query.find("mapping"s); mappingPart != uri.query.end() && try_parse_int(mappingPart->second, mapping))
+   {
+      // Select by group + mapping
+      for (unsigned int i = 0; i < stateBlock->nStates; i++)
+         if (const StateDef &def = stateBlock->stateDefs[i]; def.mappingId == mapping)
+            return &def;
+   }
+   else if (const auto namePart = uri.query.find("name"s); namePart != uri.query.end())
+   {
+      // Select by group + name
+      const string name = namePart->second;
+      for (unsigned int i = 0; i < stateBlock->nStates; i++)
+         if (const StateDef &def = stateBlock->stateDefs[i]; def.name != nullptr && string(def.name) == name)
+            return &def;
+   }
+   return nullptr;
 }
 
 ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string &link)

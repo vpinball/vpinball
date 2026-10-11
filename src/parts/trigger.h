@@ -31,6 +31,7 @@ public:
    float m_animSpeed;
    float m_wireThickness;
    bool m_enabled;
+   string m_stateSrcLink; // Optional controller state link (resuri, see ResURIResolver) set on hit/unhit events
 };
 
 class Trigger :
@@ -102,6 +103,7 @@ public:
 
    void TriggerAnimationHit();
    void TriggerAnimationUnhit();
+   void OnHit(bool hit);
 
    // Fills 'outline' with the 2D outline of wire-shaped triggers for editor display (empty for other shapes)
    void GetWireOutline(vector<Vertex2D> &outline) const;

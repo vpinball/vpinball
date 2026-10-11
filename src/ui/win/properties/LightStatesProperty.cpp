@@ -135,7 +135,7 @@ BOOL LightStatesProperty::OnCommand(WPARAM wParam, LPARAM lParam)
          break;
       }
       ResURIDialog dlg(
-         PinballPlugin::ResURIKind::FloatState, current,
+         PinballPlugin::ResURIKind::State, current,
          [this](const string &uri)
          {
             for (int i = 0; i < SelCount(); i++)

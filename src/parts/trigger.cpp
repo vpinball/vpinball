@@ -218,6 +218,13 @@ void Trigger::TriggerAnimationUnhit()
    m_unhitEvent = true;
 }
 
+void Trigger::OnHit(const bool hit)
+{
+   if (!m_d.m_stateSrcLink.empty() && g_pplayer != nullptr)
+      g_pplayer->m_resURIResolver.SetBoolState(m_d.m_stateSrcLink, hit);
+   FireGroupEvent(hit ? DISPID_HitEvents_Hit : DISPID_HitEvents_Unhit);
+}
+
 #pragma endregion
 
 
@@ -519,6 +526,7 @@ void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(SURF), m_d.m_szSurface);
    writer.WriteString(FID(MATR), m_d.m_szMaterial);
    writer.WriteBool(FID(EBLD), m_d.m_enabled);
+   writer.WriteString(FID(LINK), m_d.m_stateSrcLink);
    writer.WriteBool(FID(VSBL), m_d.m_visible);
    writer.WriteFloat(FID(THOT), m_d.m_hit_height);
    writer.WriteWideString(FID(NAME), MakeWString(m_name));
@@ -552,6 +560,7 @@ void Trigger::Load(IObjectReader& reader)
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
          case FID(EBLD): m_d.m_enabled = reader.AsBool(); break;
+         case FID(LINK): m_d.m_stateSrcLink = reader.AsString(); break;
          case FID(THOT): m_d.m_hit_height = reader.AsFloat(); break;
          case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
