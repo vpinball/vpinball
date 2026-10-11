@@ -8,7 +8,6 @@
 #include "plugins/ResURIBuilder.h"
 #include "ui/live/LiveUI.h"
 
-#include <map>
 #include <memory>
 #include <optional>
 #include <variant>
@@ -34,7 +33,7 @@ namespace
 
       std::string currentUri;
       std::string filter;
-      uint32_t selectedEndpoint = 0; // 0 = all endpoints
+      std::string selectedPlugin; // Empty = no selection / all plugins
       int linkMode = 1; // 0 = name, 1 = mapping
       int subElement = -1; // -1 = whole segment display
       SelectedItem selected;
@@ -54,6 +53,18 @@ namespace
       case CTLPI_RUN_STATUS_UNKNOWN_GAME: return "The game could not be resolved";
       default: return "The controller failed to start";
       }
+   }
+
+   void DisablePlugin(ResURIBuilder& builder, const ResURIBuilder::PluginInfo& plugin)
+   {
+      if (g_pplayer->m_scriptInterpreter && g_pplayer->m_pluginAPI.IsScriptContributor(plugin.endpointId))
+      {
+         g_pplayer->m_scriptInterpreter->Stop(g_pplayer->m_ptable);
+         ULONG refCount = g_pplayer->m_scriptInterpreter->Release();
+         g_pplayer->m_scriptInterpreter = nullptr;
+         assert(refCount == 0);
+      }
+      builder.UnloadPlugin(plugin.id);
    }
 
    void ClosePicker()
@@ -132,69 +143,73 @@ void ResURIPicker::Render()
 
    ResURIBuilder& builder = *s_picker.builder;
 
-   // Plugin list with lifecycle commands
+   // Plugin list, then lifecycle commands applied to the selected plugin
    ImGui::SeparatorText("Plugins");
-   const float pluginListHeight = 130.f * dpi;
-   if (ImGui::BeginChild("##plugins", ImVec2(0, pluginListHeight), ImGuiChildFlags_Borders))
+   const float pluginListHeight = 110.f * dpi;
+   const std::vector<ResURIBuilder::PluginInfo> plugins = builder.GetPlugins(s_picker.kind == ResURIKind::Display);
+   if (ImGui::BeginTable("##plugins", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, pluginListHeight)))
    {
-      for (const ResURIBuilder::PluginInfo& plugin : builder.GetPlugins(s_picker.kind == ResURIKind::Display))
+      ImGui::TableSetupColumn("Plugin");
+      ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthFixed, 90.f * dpi);
+      ImGui::TableSetupColumn("Game");
+      ImGui::TableHeadersRow();
+      for (const ResURIBuilder::PluginInfo& plugin : plugins)
       {
          ImGui::PushID(plugin.id.c_str());
-         const bool isSelected = s_picker.selectedEndpoint == plugin.endpointId && plugin.endpointId != 0;
-         if (ImGui::Selectable(plugin.name.c_str(), isSelected))
-            s_picker.selectedEndpoint = isSelected ? 0 : plugin.endpointId;
-         ImGui::SameLine(200.f * dpi);
+         ImGui::TableNextRow();
+         ImGui::TableNextColumn();
+         const bool isSelected = s_picker.selectedPlugin == plugin.id;
+         if (ImGui::Selectable(plugin.name.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
+            s_picker.selectedPlugin = isSelected ? ""s : plugin.id;
+         ImGui::TableNextColumn();
          if (plugin.isDefaultDisplay)
-            ImGui::TextDisabled("automatic selection");
+            ImGui::TextDisabled("automatic");
          else if (!plugin.loaded)
-         {
             ImGui::TextDisabled("disabled");
-            ImGui::SameLine();
-            if (ImGui::SmallButton("Enable"))
-               builder.LoadPlugin(plugin.id);
-         }
          else if (!plugin.runningGameId.empty())
+            ImGui::Text("running");
+         else
+            ImGui::TextDisabled("idle");
+         ImGui::TableNextColumn();
+         if (!plugin.runningGameId.empty())
+            ImGui::TextUnformatted(plugin.runningGameId.c_str());
+         ImGui::PopID();
+      }
+      ImGui::EndTable();
+   }
+
+   const auto selectedPlugin = std::ranges::find_if(plugins, [](const ResURIBuilder::PluginInfo& p) { return p.id == s_picker.selectedPlugin && !p.isDefaultDisplay; });
+   if (selectedPlugin != plugins.end())
+   {
+      if (!selectedPlugin->loaded)
+      {
+         if (ImGui::Button("Enable"))
+            builder.LoadPlugin(selectedPlugin->id);
+         ImGui::SameLine();
+         ImGui::TextDisabled("%s", selectedPlugin->name.c_str());
+      }
+      else
+      {
+         if (ImGui::Button("Disable"))
+            DisablePlugin(builder, *selectedPlugin);
+         if (selectedPlugin->runningGameId.empty())
          {
-            ImGui::Text("running: %s", plugin.runningGameId.c_str());
             ImGui::SameLine();
-            if (ImGui::SmallButton("Stop"))
-               builder.StopController(plugin.id);
+            ImGui::SetNextItemWidth(160.f * dpi);
+            ImGui::InputTextWithHint("##game", "game id", &s_picker.gameId);
             ImGui::SameLine();
-            if (ImGui::SmallButton("Disable"))
-            {
-               if (g_pplayer->m_scriptInterpreter && g_pplayer->m_pluginAPI.IsScriptContributor(plugin.endpointId))
-               {
-                  g_pplayer->m_scriptInterpreter->Stop(g_pplayer->m_ptable);
-                  ULONG refCount = g_pplayer->m_scriptInterpreter->Release();
-                  g_pplayer->m_scriptInterpreter = nullptr;
-                  assert(refCount == 0);
-               }
-               builder.UnloadPlugin(plugin.id);
-            }
+            if (ImGui::Button("Start"))
+               s_picker.status = std::string(selectedPlugin->id) + ": " + RunStatusMessage(builder.RunController(selectedPlugin->id, s_picker.gameId));
          }
          else
          {
-            ImGui::SetNextItemWidth(140.f * dpi);
-            ImGui::InputTextWithHint("##game", "game id", &s_picker.gameId);
             ImGui::SameLine();
-            if (ImGui::SmallButton("Start"))
-               s_picker.status = std::string(plugin.id) + ": " + RunStatusMessage(builder.RunController(plugin.id, s_picker.gameId));
-            ImGui::SameLine();
-            if (ImGui::SmallButton("Disable"))
-            {
-               if (g_pplayer->m_scriptInterpreter && g_pplayer->m_pluginAPI.IsScriptContributor(plugin.endpointId))
-               {
-                  g_pplayer->m_scriptInterpreter->Stop(g_pplayer->m_ptable);
-                  ULONG refCount = g_pplayer->m_scriptInterpreter->Release();
-                  g_pplayer->m_scriptInterpreter = nullptr;
-                  assert(refCount == 0);
-               }
-               builder.UnloadPlugin(plugin.id);
-            }
+            if (ImGui::Button("Stop"))
+               builder.StopController(selectedPlugin->id);
          }
-         ImGui::PopID();
+         ImGui::SameLine();
+         ImGui::TextDisabled("%s", selectedPlugin->name.c_str());
       }
-      ImGui::EndChild();
    }
 
    // Source selection
@@ -203,97 +218,124 @@ void ResURIPicker::Render()
    ImGui::InputTextWithHint("##filter", FilterHint(s_picker.kind), &s_picker.filter);
 
    const float listHeight = ImGui::GetContentRegionAvail().y - 90.f * dpi;
-   if (ImGui::BeginChild("##items", ImVec2(0, std::max(listHeight, 80.f * dpi)), ImGuiChildFlags_Borders))
+   if (s_picker.kind == ResURIKind::FloatState)
    {
-      if (s_picker.kind == ResURIKind::FloatState)
+      std::vector<ResURIBuilder::FloatItem> items = builder.GetFloatItems(s_picker.filter);
+      if (!s_picker.selectedPlugin.empty())
+         std::erase_if(items, [](const ResURIBuilder::FloatItem& item) { return item.pluginId != s_picker.selectedPlugin; });
+      if (ImGui::BeginTable("##items", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, listHeight)))
       {
-         std::vector<ResURIBuilder::FloatItem> items = builder.GetFloatItems(s_picker.filter);
-         if (s_picker.selectedEndpoint != 0)
-            std::erase_if(items, [endpoint = s_picker.selectedEndpoint](const ResURIBuilder::FloatItem& item) { return item.endpointId != endpoint; });
-
-         // Group items by plugin/group preserving source order
-         std::map<std::pair<std::string, uint32_t>, std::pair<std::string, std::vector<const ResURIBuilder::FloatItem*>>> groups;
+         ImGui::TableSetupColumn("Name");
+         ImGui::TableSetupColumn("Map", ImGuiTableColumnFlags_WidthFixed, 50.f * dpi);
+         ImGui::TableSetupColumn("Group");
+         ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_WidthFixed, 90.f * dpi);
+         ImGui::TableHeadersRow();
+         int rowId = 0;
          for (const ResURIBuilder::FloatItem& item : items)
          {
-            auto& group = groups[{ item.pluginId, item.groupId }];
-            group.first = item.groupName;
-            group.second.push_back(&item);
-         }
-         if (items.empty())
-            ImGui::TextDisabled("No matching state source. Load a plugin or start a controller to expose states.");
-         for (const auto& [key, group] : groups)
-         {
-            ImGui::PushID((key.first + '#' + std::to_string(key.second)).c_str());
-            const std::string header = std::format("{} - {} (group {})", key.first, group.first.empty() ? "States" : group.first, key.second);
-            if (ImGui::CollapsingHeader(header.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
-            {
-               int rowId = 0;
-               for (const ResURIBuilder::FloatItem* item : group.second)
-               {
-                  ImGui::PushID(rowId++);
-                  const auto* sel = std::get_if<ResURIBuilder::FloatItem>(&s_picker.selected);
-                  const bool isSelected = sel != nullptr && sel->endpointId == item->endpointId && sel->groupId == item->groupId && sel->mappingId == item->mappingId;
-                  const std::string label = std::format("{}  (mapping {})", item->name.empty() ? "#" + std::to_string(item->mappingId) : item->name, item->mappingId);
-                  if (ImGui::Selectable(label.c_str(), isSelected))
-                     s_picker.selected = *item;
-                  if (!item->desc.empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-                     ImGui::SetTooltip("%s", item->desc.c_str());
-                  float value;
-                  if (builder.PeekValue(*item, value))
-                  {
-                     ImGui::SameLine(320.f * dpi);
-                     ImGui::Text("%5.2f", value);
-                  }
-                  ImGui::PopID();
-               }
-            }
+            ImGui::PushID(rowId++);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            const auto* sel = std::get_if<ResURIBuilder::FloatItem>(&s_picker.selected);
+            const bool isSelected = sel != nullptr && sel->endpointId == item.endpointId && sel->groupId == item.groupId && sel->mappingId == item.mappingId;
+            const std::string name = item.name.empty() ? "#" + std::to_string(item.mappingId) : item.name;
+            if (ImGui::Selectable(name.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
+               s_picker.selected = item;
+            if (!item.desc.empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+               ImGui::SetTooltip("%s", item.desc.c_str());
+            ImGui::TableNextColumn();
+            ImGui::Text("%u", item.mappingId);
+            ImGui::TableNextColumn();
+            ImGui::Text("%s (%u)", item.groupName.c_str(), item.groupId);
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(item.pluginId.c_str());
             ImGui::PopID();
          }
+         ImGui::EndTable();
       }
-      else if (s_picker.kind == ResURIKind::Display)
+      if (items.empty())
+         ImGui::TextDisabled("No matching state source. Load a plugin or start a controller to expose states.");
+   }
+   else if (s_picker.kind == ResURIKind::Display)
+   {
+      std::vector<ResURIBuilder::DisplayItem> items = builder.GetDisplayItems(s_picker.filter, s_picker.displayFamily, true);
+      if (!s_picker.selectedPlugin.empty())
+         std::erase_if(items, [](const ResURIBuilder::DisplayItem& item) { return item.pluginId != s_picker.selectedPlugin; });
+      if (ImGui::BeginTable("##items", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, listHeight)))
       {
-         std::vector<ResURIBuilder::DisplayItem> items = builder.GetDisplayItems(s_picker.filter, s_picker.displayFamily, true);
-         if (s_picker.selectedEndpoint != 0)
-            std::erase_if(items, [endpoint = s_picker.selectedEndpoint](const ResURIBuilder::DisplayItem& item) { return item.endpointId != endpoint; });
-         if (items.empty())
-            ImGui::TextDisabled("No matching display source. Load a plugin or start a controller to expose displays.");
+         ImGui::TableSetupColumn("Source");
+         ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 75.f * dpi);
+         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 85.f * dpi);
+         ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_WidthFixed, 90.f * dpi);
+         ImGui::TableHeadersRow();
          int rowId = 0;
          for (const ResURIBuilder::DisplayItem& item : items)
          {
             ImGui::PushID(rowId++);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
             const auto* sel = std::get_if<ResURIBuilder::DisplayItem>(&s_picker.selected);
             const bool isSelected = sel != nullptr && sel->endpointId == item.endpointId && sel->resId == item.resId && sel->isDefault == item.isDefault;
-            const std::string label
-               = item.isDefault ? "default - automatic selection"s : std::format("{} - {}x{} [{}] (id {})", item.pluginId, item.width, item.height, HardwareLabel(item.hardware), item.resId);
-            if (ImGui::Selectable(label.c_str(), isSelected))
+            const std::string name = item.isDefault ? "default - automatic selection"s : std::format("#{}", item.resId);
+            if (ImGui::Selectable(name.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
                s_picker.selected = item;
+            if (!item.isDefault)
+            {
+               ImGui::TableNextColumn();
+               ImGui::Text("%ux%u", item.width, item.height);
+               ImGui::TableNextColumn();
+               ImGui::TextUnformatted(HardwareLabel(item.hardware));
+            }
+            else
+            {
+               ImGui::TableNextColumn();
+               ImGui::TableNextColumn();
+            }
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(item.pluginId.c_str());
             ImGui::PopID();
          }
+         ImGui::EndTable();
       }
-      else // ResURIKind::SegDisplay
+      if (items.empty())
+         ImGui::TextDisabled("No matching display source. Load a plugin or start a controller to expose displays.");
+   }
+   else // ResURIKind::SegDisplay
+   {
+      std::vector<ResURIBuilder::SegItem> items = builder.GetSegItems(s_picker.filter);
+      if (!s_picker.selectedPlugin.empty())
+         std::erase_if(items, [](const ResURIBuilder::SegItem& item) { return item.pluginId != s_picker.selectedPlugin; });
+      if (ImGui::BeginTable("##items", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, listHeight)))
       {
-         std::vector<ResURIBuilder::SegItem> items = builder.GetSegItems(s_picker.filter);
-         if (s_picker.selectedEndpoint != 0)
-            std::erase_if(items, [endpoint = s_picker.selectedEndpoint](const ResURIBuilder::SegItem& item) { return item.endpointId != endpoint; });
-         if (items.empty())
-            ImGui::TextDisabled("No matching segment display source. Load a plugin or start a controller to expose displays.");
+         ImGui::TableSetupColumn("Source");
+         ImGui::TableSetupColumn("Elements", ImGuiTableColumnFlags_WidthFixed, 80.f * dpi);
+         ImGui::TableSetupColumn("Plugin", ImGuiTableColumnFlags_WidthFixed, 90.f * dpi);
+         ImGui::TableHeadersRow();
          int rowId = 0;
          for (const ResURIBuilder::SegItem& item : items)
          {
             ImGui::PushID(rowId++);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
             const auto* sel = std::get_if<ResURIBuilder::SegItem>(&s_picker.selected);
             const bool isSelected = sel != nullptr && sel->endpointId == item.endpointId && sel->resId == item.resId;
-            const std::string label = std::format("{} - {} elements (id {})", item.pluginId, item.nElements, item.resId);
-            if (ImGui::Selectable(label.c_str(), isSelected))
+            const std::string name = std::format("#{}", item.resId);
+            if (ImGui::Selectable(name.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
             {
                s_picker.selected = item;
                if (item.nElements <= 1)
                   s_picker.subElement = -1;
             }
+            ImGui::TableNextColumn();
+            ImGui::Text("%u", item.nElements);
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(item.pluginId.c_str());
             ImGui::PopID();
          }
+         ImGui::EndTable();
       }
-      ImGui::EndChild();
+      if (items.empty())
+         ImGui::TextDisabled("No matching segment display source. Load a plugin or start a controller to expose displays.");
    }
 
    // Sub element selection for segment displays
