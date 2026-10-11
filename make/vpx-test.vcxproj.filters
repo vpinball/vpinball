@@ -206,6 +206,9 @@
     <ClCompile Include="../../tests/plugins/plugins/test-msgpluginmanager.cpp">
       <Filter>plugins</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/plugins/plugins/test-resuribuilder.cpp">
+      <Filter>plugins</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/plugins/plugins/test-resuriresolver.cpp">
       <Filter>plugins</Filter>
     </ClCompile>

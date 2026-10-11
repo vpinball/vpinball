@@ -9,6 +9,7 @@
 #include "renderer/Texture.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
+#include "ResURIPicker.h"
 
 namespace VPX::EditorUI
 {
@@ -55,6 +56,7 @@ public:
    void InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals);
    template <class T> void InputRGB(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter);
    template <class T> void InputString(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   template <class T> void InputResURI(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind);
    template <class T> void Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
    template <class T> void ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
@@ -343,6 +345,36 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
       setter(sync.display, value);
       m_modified = m_modifyFieldId;
    }
+   EndSyncField(sync, getter, setter, value);
+   ImGui::PopID();
+}
+
+template <class T>
+inline void PropertyPane::InputResURI(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind)
+{
+   assert(m_inSection);
+   m_modifyFieldId++;
+   PropertyLabel(label);
+   const SyncField<T> sync = BeginSyncField(obj);
+   ImGui::PushID(label.c_str());
+   string value = getter(sync.display);
+   const int fieldId = m_modifyFieldId;
+   T* display = sync.display;
+   ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+   if (ImGui::InputText(("##" + label).c_str(), &value))
+   {
+      setter(display, value);
+      m_modified = fieldId;
+   }
+   ImGui::SameLine();
+   if (ImGui::Button("...", ImVec2(ImGui::GetFrameHeight(), 0.f)))
+      ResURIPicker::Open(kind, value,
+         [this, display, setter, fieldId](const string& uri)
+         {
+            setter(display, uri);
+            m_modified = fieldId;
+         });
+   ResURIPicker::Render();
    EndSyncField(sync, getter, setter, value);
    ImGui::PopID();
 }

@@ -71,6 +71,7 @@ set(VPX_TEST_SOURCES
    tests/plugins/b2s/test-b2s-datamodel.cpp
    tests/plugins/plugins/test-colorspace.cpp
    tests/plugins/plugins/test-msgpluginmanager.cpp
+   tests/plugins/plugins/test-resuribuilder.cpp
    tests/plugins/plugins/test-resuriresolver.cpp
    tests/plugins/upscaledmd/test-upscalers.cpp
    tests/render/test-base-render.cpp
