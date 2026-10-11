@@ -189,6 +189,14 @@ void Light::ClearForOverwrite() { m_curve.ClearPoints(); }
 
 void Light::UpdateAnimation(const float diff_time_msec)
 {
+   // If a controller state is linked through a resuri, it drives the light state (unless locked by the light sequencer)
+   if (!m_d.m_stateSrcLink.empty() && !m_lockedByLS)
+   {
+      float state;
+      if (g_pplayer->m_resURIResolver.TryGetFloatState(m_d.m_stateSrcLink, state))
+         setInPlayState(state);
+   }
+
    if ((m_duration > 0) && (m_timerDurationEndTime < g_pplayer->m_time_msec))
    {
       m_inPlayState = m_finalLightState;
@@ -752,6 +760,7 @@ void Light::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(BPAT), m_d.m_rgblinkpattern);
    writer.WriteString(FID(IMG1), m_d.m_szImage);
    writer.WriteInt(FID(BINT), m_d.m_blinkinterval);
+   writer.WriteString(FID(LINK), m_d.m_stateSrcLink);
    //writer.WriteInt(FID(BCOL), m_d.m_bordercolor);
    writer.WriteFloat(FID(BWTH), m_d.m_intensity);
    writer.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
@@ -833,6 +842,7 @@ void Light::Load(IObjectReader& reader)
          case FID(SHAP): roundLight = true; break;
          case FID(BPAT): m_d.m_rgblinkpattern = reader.AsString(); break;
          case FID(BINT): m_d.m_blinkinterval = reader.AsInt(); break;
+         case FID(LINK): m_d.m_stateSrcLink = reader.AsString(); break;
          //case FID(BCOL): m_d.m_bordercolor = reader.AsInt(); break;
          case FID(BWTH): m_d.m_intensity = reader.AsFloat(); break;
          case FID(TRMS): m_d.m_transmissionScale = reader.AsFloat(); break;

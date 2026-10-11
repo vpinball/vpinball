@@ -68,7 +68,8 @@ public:
    ~ResURIResolver();
 
    float GetFloatState(const std::string &link);
-   
+   bool TryGetFloatState(const std::string &link, float &value);
+
    struct DisplayState
    {
       const DisplaySrcId *source = nullptr;

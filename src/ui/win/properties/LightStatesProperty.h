@@ -20,6 +20,7 @@ protected:
 private:
     EditBox     m_blinkPatternEdit;
     EditBox     m_blinkIntervalEdit;
+    EditBox m_stateSrcLinkEdit;
     ComboBox    m_stateCombo;
     vector<string> m_stateList;
 };

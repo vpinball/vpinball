@@ -16,6 +16,7 @@ LightStatesProperty::LightStatesProperty(const vector<IWinUIPart *> *pvsel) : Ba
 
     m_blinkPatternEdit.SetDialog(this);
     m_blinkIntervalEdit.SetDialog(this);
+    m_stateSrcLinkEdit.SetDialog(this);
     m_stateCombo.SetDialog(this);
 }
 
@@ -34,6 +35,8 @@ void LightStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
         }
         if (dispid == IDC_BLINK_PATTERN_EDIT || dispid == -1)
             m_blinkPatternEdit.SetWindowText(light->m_d.m_rgblinkpattern.c_str());
+        if (dispid == IDC_STATE_SOURCE_EDIT || dispid == -1)
+            m_stateSrcLinkEdit.SetWindowText(light->m_d.m_stateSrcLink.c_str());
         if (dispid == DISPID_Light_BlinkInterval || dispid == -1)
             PropertyDialog::SetIntTextbox(m_blinkIntervalEdit, light->m_d.m_blinkinterval);
         //only show the first element on multi-select
@@ -74,6 +77,17 @@ void LightStatesProperty::UpdateProperties(const int dispid)
                 }
                 break;
             }
+            case IDC_STATE_SOURCE_EDIT:
+            {
+                const string& link = m_stateSrcLinkEdit.GetWindowText().GetString();
+                if (link != light->m_d.m_stateSrcLink)
+                {
+                    PropertyDialog::StartUndo(light);
+                    light->m_d.m_stateSrcLink = link;
+                    PropertyDialog::EndUndo(light);
+                }
+                break;
+            }
             case DISPID_Light_BlinkInterval:
                 CHECK_UPDATE_ITEM(light->m_d.m_blinkinterval, PropertyDialog::GetIntTextbox(m_blinkIntervalEdit), light);
                 break;
@@ -89,6 +103,7 @@ BOOL LightStatesProperty::OnInitDialog()
     m_stateCombo.AttachItem(DISPID_Light_State);
     m_blinkPatternEdit.AttachItem(IDC_BLINK_PATTERN_EDIT);
     m_blinkIntervalEdit.AttachItem(DISPID_Light_BlinkInterval);
+    m_stateSrcLinkEdit.AttachItem(IDC_STATE_SOURCE_EDIT);
     UpdateVisuals();
     m_stateCombo.SetDroppedWidth(20);
 
@@ -96,9 +111,11 @@ BOOL LightStatesProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
     m_resizer.AddChild(m_stateCombo, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_blinkPatternEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_blinkIntervalEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_stateSrcLinkEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }
