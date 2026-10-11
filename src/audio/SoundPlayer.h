@@ -71,7 +71,7 @@ private:
    bool m_hasLastDistance = false;
    std::chrono::steady_clock::time_point m_lastPosTime;
 
-   mutable ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
+   mutable progschj::ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
 
    const string m_callbackId;
    static void OnSoundEnd(void* pUserData, ma_sound* pSound);

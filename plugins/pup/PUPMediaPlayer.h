@@ -102,7 +102,7 @@ private:
 
    const LibAV::LibAV& m_libAv;
 
-   ThreadPool m_commandQueue;
+   progschj::ThreadPool m_commandQueue;
 };
 
 }

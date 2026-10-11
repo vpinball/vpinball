@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ThreadPool.h"
 #include "math/bbox.h"
 #include "physics/collide.h"
 
@@ -13,7 +14,6 @@
 #endif
 
 class HitQuadtree;
-class ThreadPool;
 
 class HitQuadtreeNode final
 {
@@ -98,7 +98,7 @@ private:
    void InitSseArrays();
    float* __restrict l_r_t_b_zl_zh = nullptr; // 4xSIMD rearranged BBox data, layout: 4xleft,4xright,4xtop,4xbottom,4xzlow,4xzhigh, 4xleft... ... ... the last entries are potentially filled with 'invalid' boxes for alignment/padding
 
-   ThreadPool* m_threadPool = nullptr;
+   progschj::ThreadPool* m_threadPool = nullptr;
    vector<HitObject*> m_tmp1, m_tmp2;
 
    size_t m_maxItems = 0;

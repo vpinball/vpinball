@@ -843,7 +843,7 @@ void Player::InitTableSession(const bool isInitial)
       m_frameMutexHeld = false;
       m_renderer->m_renderDevice->m_frameMutex.unlock();
 #endif
-      ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
+      progschj::ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
       for (auto image : m_ptable->m_vimage)
          pool.enqueue(loadImage, image, false);
 

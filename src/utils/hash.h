@@ -80,7 +80,7 @@ struct ankerl::unordered_dense::hash<std::pair<unsigned, unsigned>> {
    using is_avalanching = void;
 
    [[nodiscard]] auto operator()(std::pair<unsigned, unsigned> const& x) const noexcept -> uint64_t {
-      return detail::wyhash::hash((uint64_t)x.first | (((uint64_t)x.second) << 32));
+      return detail::hash_impl::hash_int((uint64_t)x.first | (((uint64_t)x.second) << 32));
    }
 };
 
@@ -89,7 +89,7 @@ struct ankerl::unordered_dense::hash<std::pair<int, int>> {
    using is_avalanching = void;
 
    [[nodiscard]] auto operator()(std::pair<int, int> const& x) const noexcept -> uint64_t {
-      return detail::wyhash::hash((uint64_t)(uint32_t)x.first | (((uint64_t)(uint32_t)x.second) << 32));
+      return detail::hash_impl::hash_int((uint64_t)(uint32_t)x.first | (((uint64_t)(uint32_t)x.second) << 32));
    }
 };
 

@@ -382,7 +382,7 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
             if (shouldDispatch)
             {
                if (quadTree->m_threadPool == nullptr)
-                  quadTree->m_threadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
+                  quadTree->m_threadPool = new progschj::ThreadPool(g_app->GetLogicalNumberOfProcessors());
                quadTree->m_threadPool->enqueue([child, quadTree, childBounds, level, level_empty]
                {
                   set_denormals_flush_to_zero_once(); // the pool's worker threads are not ours to initialize

@@ -264,10 +264,10 @@ FIXES:
 - SDL2 code was updated and modernized to SDL3
 
 - the BASS sound engine was replaced/unified with SDL3+miniaudio, fixing the pitch/volume adjustment of 'ogg' files.
-  As a consequence 'ogg' files should now be favored over legacy 'wav'.
+  As a consequence 'ogg' files should now be favored over legacy 'wav'. In addition, 'flac' files now also work.
   In general, multiple issues/regressions (e.g. too low volume) found in 10.8 were fixed due to this.
 
-- the win32 vpx container regarding has been replaced for all builds with the (heavily modified and optimized) POLE library
+- the win32 vpx/OLE container reading has been replaced for all builds with the (heavily modified and optimized) POLE library
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.62)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes

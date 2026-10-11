@@ -1742,7 +1742,7 @@ HRESULT PinTable::LoadGameFromVPXStorage(VPXFileFeedback &feedback)
          // Sort tasks by storage offset to limit read back and get better reading performance
          std::ranges::sort(loadQueue, [&rootStorage](const LoadTask &a, const LoadTask &b) { return rootStorage.streamOffset(a.name) < rootStorage.streamOffset(b.name); });
  
-         ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
+         progschj::ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
 
          // Dispatch all load tasks & wait, updating the progress bar on UI thread
          feedback.SetLength(static_cast<unsigned int>(loadQueue.size()));
@@ -2664,7 +2664,7 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
    // Load all parts concurrently
    vector<IEditable *> parts(partItems.size());
    {
-      ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
+      progschj::ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
       for (size_t i = 0; i < partItems.size(); ++i)
       {
          pool.enqueue(
