@@ -10,6 +10,7 @@
 namespace VPX::EditorUI
 {
 
+using PinballPlugin::DisplayFamily;
 using PinballPlugin::ResURIKind;
 
 // Modal dialog building a ctrl:// URI toward a controller-exposed source.
@@ -20,7 +21,8 @@ class ResURIPicker
 {
 public:
    // Opens the modal for the given source kind. apply is invoked with the generated URI on validation.
-   static void Open(ResURIKind kind, const std::string& currentUri, std::function<void(const std::string&)> apply);
+   // displayFamily restricts the listed display sources (DMD render modes vs CRT/LCD screens).
+   static void Open(ResURIKind kind, const std::string& currentUri, std::function<void(const std::string&)> apply, DisplayFamily displayFamily = DisplayFamily::Any);
 
    // Renders the modal. Must be called every frame in the same ImGui id scope as the Open call.
    static void Render();

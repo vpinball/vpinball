@@ -148,10 +148,23 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
                [](const Flasher* flasher) { return flasher->m_d.m_renderStyle; }, //
                [](Flasher* flasher, int v) { flasher->m_d.m_renderStyle = v; });
          }
-         props.InputString<Flasher>(
-            m_part, "Source"s, //
-            [](const Flasher* flasher) { return flasher->m_d.m_imageSrcLink; }, //
-            [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; });
+         if (renderMode == FlasherData::DMD || renderMode == FlasherData::DISPLAY)
+            props.InputResURI<Flasher>(
+               m_part, "Source"s, //
+               [](const Flasher* flasher) { return flasher->m_d.m_imageSrcLink; }, //
+               [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; }, //
+               ResURIKind::Display, renderMode == FlasherData::DMD ? DisplayFamily::Dmd : DisplayFamily::NonDmd);
+         else if (renderMode == FlasherData::ALPHASEG)
+            props.InputResURI<Flasher>(
+               m_part, "Source"s, //
+               [](const Flasher* flasher) { return flasher->m_d.m_imageSrcLink; }, //
+               [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; }, //
+               ResURIKind::SegDisplay);
+         else
+            props.InputString<Flasher>(
+               m_part, "Source"s, //
+               [](const Flasher* flasher) { return flasher->m_d.m_imageSrcLink; }, //
+               [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; });
          props.ImageCombo<Flasher>(
             m_part, "Glass"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_szImageA; }, //

@@ -111,6 +111,15 @@ void ControllerLoad(const uint32_t endpointId, const MsgPluginAPI* api)
    display.GetRenderFrame = FakeController::GetDmdFrame;
    g_ctl.displays->AddItem(display);
 
+   DisplaySrcId lcd {};
+   lcd.id = ResId(endpointId, 2);
+   lcd.width = 640;
+   lcd.height = 480;
+   lcd.hardware = CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY;
+   lcd.frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888;
+   lcd.GetRenderFrame = FakeController::GetDmdFrame;
+   g_ctl.displays->AddItem(lcd);
+
    SegSrcId seg {};
    seg.id = ResId(endpointId, 1);
    seg.groupId = ResId(endpointId, 0);
@@ -233,9 +242,10 @@ TEST_CASE("ResURIBuilder source enumeration, URI generation and lifecycle")
    SUBCASE("display and seg items with URIs")
    {
       const auto displays = builder.GetDisplayItems();
-      REQUIRE(displays.size() == 1);
+      REQUIRE(displays.size() == 2);
       CHECK(displays[0].width == 128);
       CHECK(displays[0].resId == 1);
+      CHECK(displays[1].resId == 2);
       CHECK(builder.MakeDisplayURI(displays[0]) == "ctrl://testctl/display?id=1");
 
       const auto segs = builder.GetSegItems();
@@ -243,6 +253,45 @@ TEST_CASE("ResURIBuilder source enumeration, URI generation and lifecycle")
       CHECK(segs[0].nElements == 3);
       CHECK(builder.MakeSegURI(segs[0], -1) == "ctrl://testctl/seg?id=1");
       CHECK(builder.MakeSegURI(segs[0], 2) == "ctrl://testctl/seg?id=1&sub=2");
+   }
+
+   SUBCASE("display family filtering and default pseudo entries")
+   {
+      // Dmd family keeps dot-matrix displays, NonDmd keeps CRT/LCD screens
+      const auto dmds = builder.GetDisplayItems({}, DisplayFamily::Dmd);
+      REQUIRE(dmds.size() == 1);
+      CHECK(dmds[0].resId == 1);
+      const auto screens = builder.GetDisplayItems({}, DisplayFamily::NonDmd);
+      REQUIRE(screens.size() == 1);
+      CHECK(screens[0].resId == 2);
+
+      // withDefault prepends a pseudo item generating a 'ctrl://default' URI honoring the family
+      const auto dmdWithDefault = builder.GetDisplayItems({}, DisplayFamily::Dmd, true);
+      REQUIRE(dmdWithDefault.size() == 2);
+      CHECK(dmdWithDefault[0].isDefault);
+      CHECK(dmdWithDefault[0].defaultDmdOnly == 1);
+      CHECK(builder.MakeDisplayURI(dmdWithDefault[0]) == "ctrl://default/display?dmd_only=1");
+
+      const auto crtWithDefault = builder.GetDisplayItems({}, DisplayFamily::NonDmd, true);
+      REQUIRE(crtWithDefault.size() == 2);
+      CHECK(crtWithDefault[0].isDefault);
+      CHECK(crtWithDefault[0].defaultDmdOnly == 0);
+      CHECK(builder.MakeDisplayURI(crtWithDefault[0]) == "ctrl://default/display?dmd_only=0");
+
+      const auto anyWithDefault = builder.GetDisplayItems({}, DisplayFamily::Any, true);
+      REQUIRE(anyWithDefault.size() == 3);
+      CHECK(anyWithDefault[0].isDefault);
+      CHECK(anyWithDefault[0].defaultDmdOnly == -1);
+      CHECK(builder.MakeDisplayURI(anyWithDefault[0]) == "ctrl://default/display");
+
+      // The pseudo item follows the text filter and the pseudo plugin shows up in the plugin list
+      CHECK(builder.GetDisplayItems("zzz", DisplayFamily::Dmd, true).empty());
+      const auto plugins = builder.GetPlugins(true);
+      REQUIRE(plugins.size() == 4);
+      CHECK(plugins[0].id == "default");
+      CHECK(plugins[0].isDefaultDisplay);
+      CHECK(plugins[0].loaded);
+      CHECK(builder.GetPlugins(false).size() == 3);
    }
 
    SUBCASE("plugin enable callback and load/unload")

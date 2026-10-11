@@ -43,17 +43,18 @@
 //     - 'sub=xx' is used to select the xx-th element of the display (0-based)
 //   . '/state' path allows to access game states
 //     - 'group=xx' where xx is the device group defined by the plugin
-//     - 'io=xx' where xx is the device mapping id (user friendly number, defined by the plugin, unique inside the device group)
+//     - 'mapping=xx' where xx is the device mapping id (user friendly number, defined by the plugin, unique inside the device group)
 //     - 'name=xx' where xx is the user friendly name of the state
 //
 //   examples:
 //   - ctrl://default/display                  => Default DMD or display
 //   - ctrl://default/display?dmd_only         => Default DMD (rejecting LCD or CRT displays)
+//   - ctrl://default/display?dmd_only=0       => Default CRT/LCD display (rejecting dot-matrix displays)
 //   - ctrl://flexdmd/display                  => FlexDMD first DMD
 //   - ctrl://pinmame/display?x=0&y=0          => Relative luminance of the top left dot of PinMAME's first display [Unimplemented]
 //   - ctrl://pinmame/display?override=no      => Untouched version of PinMAME first display (no colorization or upscaling) [Unimplemented]
-//   - ctrl://pinmame/state?group=1&io=11      => Element #11 of PinMAME state group #1 (solenoid #11)
-//   - ctrl://pinmame/state?group=2&io=1       => Element #1 of PinMAME state group #2 (first GI string)
+//   - ctrl://pinmame/state?group=1&mapping=11 => Element #11 of PinMAME state group #1 (solenoid #11)
+//   - ctrl://pinmame/state?group=2&mapping=1  => Element #1 of PinMAME state group #2 (first GI string)
 //   - ctrl://pinmame/seg?id=1                 => Alphanumeric segment display #1
 //   - ctrl://pinmame/seg?id=1&sub=0           => Alphanumeric first element (block of segments forming a number/character) of segment display #1
 //
@@ -77,6 +78,7 @@ public:
    };
    DisplayState GetDisplayState(const std::string &link);
    static inline const std::string DefaultDmdUri = "ctrl://default/display?dmd_only=1"; // The default display, if it is a DMD
+   static inline const std::string DefaultCrtUri = "ctrl://default/display?dmd_only=0"; // The default display, if it is a CRT/LCD
    std::string DumpDisplaySources() const;
    static const DisplaySrcId *GetDefaultDisplaySource(const std::vector<DisplaySrcId> &sources);
    

@@ -21,6 +21,14 @@ enum class ResURIKind
    SegDisplay,
 };
 
+// Hardware family filter applied to display sources
+enum class DisplayFamily
+{
+   Any, // all displays
+   Dmd, // dot-matrix families (plasma, LED, unknown), excluding CRT/LCD screens
+   NonDmd, // CRT/LCD screens only
+};
+
 // UI-agnostic backend shared by the ResURI picker dialogs (live editor & Win32).
 // Enumerates plugins, running controllers and the sources they expose through the
 // Controller plugin API, generates ctrl:// URIs and drives plugin/controller lifecycle.
@@ -42,6 +50,7 @@ public:
       bool loaded = false;
       uint32_t endpointId = 0;
       std::string runningGameId; // Empty when the endpoint has no running controller
+      bool isDefaultDisplay = false; // Pseudo entry for automatic default display selection, no lifecycle commands
    };
 
    struct FloatItem
@@ -65,6 +74,8 @@ public:
       unsigned int height = 0;
       unsigned int hardware = 0;
       unsigned int frameFormat = 0;
+      bool isDefault = false; // Pseudo entry for automatic default display selection
+      int defaultDmdOnly = -1; // dmd_only value for default entries: -1 = any display, 0 = CRT/LCD, 1 = dot-matrix
    };
 
    struct SegItem
@@ -89,11 +100,13 @@ public:
       return v;
    }
 
-   std::vector<PluginInfo> GetPlugins() const;
+   // withDefaultDisplay prepends a pseudo plugin selecting the default display through 'ctrl://default'
+   std::vector<PluginInfo> GetPlugins(bool withDefaultDisplay = false) const;
 
    // Case-insensitive substring filter over the item name, mapping id, group name and plugin id
    std::vector<FloatItem> GetFloatItems(const std::string& filter = {}) const;
-   std::vector<DisplayItem> GetDisplayItems(const std::string& filter = {}) const;
+   // withDefault prepends a pseudo item generating a 'ctrl://default/display' URI honoring the family filter
+   std::vector<DisplayItem> GetDisplayItems(const std::string& filter = {}, DisplayFamily family = DisplayFamily::Any, bool withDefault = false) const;
    std::vector<SegItem> GetSegItems(const std::string& filter = {}) const;
 
    std::string MakeStateURI(const FloatItem& item, StateLinkMode mode) const;
@@ -112,6 +125,9 @@ public:
    void StopController(const std::string& pluginId);
 
 private:
+   // Endpoint id carried by the 'default' pseudo plugin/items (real endpoint ids are small positive indexes)
+   static constexpr uint32_t DefaultEndpointId = 0xFFFFFFFF;
+
    std::string PluginIdForEndpoint(uint32_t endpointId) const;
    static bool MatchesFilter(const std::string& filter, std::initializer_list<std::string> candidates);
 

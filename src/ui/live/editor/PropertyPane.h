@@ -56,7 +56,9 @@ public:
    void InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals);
    template <class T> void InputRGB(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter);
    template <class T> void InputString(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
-   template <class T> void InputResURI(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind);
+   template <class T>
+   void InputResURI(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind,
+      DisplayFamily displayFamily = DisplayFamily::Any);
    template <class T> void Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
    template <class T> void ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
@@ -350,7 +352,8 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
 }
 
 template <class T>
-inline void PropertyPane::InputResURI(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind)
+inline void PropertyPane::InputResURI(
+   T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter, ResURIKind kind, DisplayFamily displayFamily)
 {
    assert(m_inSection);
    m_modifyFieldId++;
@@ -368,12 +371,14 @@ inline void PropertyPane::InputResURI(T* obj, const string& label, const std::fu
    }
    ImGui::SameLine();
    if (ImGui::Button("...", ImVec2(ImGui::GetFrameHeight(), 0.f)))
-      ResURIPicker::Open(kind, value,
+      ResURIPicker::Open(
+         kind, value,
          [this, display, setter, fieldId](const string& uri)
          {
             setter(display, uri);
             m_modified = fieldId;
-         });
+         },
+         displayFamily);
    ResURIPicker::Render();
    EndSyncField(sync, getter, setter, value);
    ImGui::PopID();

@@ -160,6 +160,16 @@ TEST_CASE("ResURIResolver ctrl URI resolution")
       REQUIRE(dmdOnly.source != nullptr);
       CHECK(dmdOnly.source->id.resId == 2);
 
+      // dmd_only=1 behaves like the bare flag
+      ResURIResolver::DisplayState dmdOnly1 = resolver.GetDisplayState("ctrl://default/display?dmd_only=1");
+      REQUIRE(dmdOnly1.source != nullptr);
+      CHECK(dmdOnly1.source->id.resId == 2);
+
+      // dmd_only=0 applies the inverse filter, keeping only CRT/LCD screens
+      ResURIResolver::DisplayState crtOnly = resolver.GetDisplayState("ctrl://default/display?dmd_only=0");
+      REQUIRE(crtOnly.source != nullptr);
+      CHECK(crtOnly.source->id.resId == 3);
+
       // Failures resolve to an empty state
       CHECK(resolver.GetDisplayState("ctrl://unknown/display").source == nullptr);
       CHECK(resolver.GetDisplayState("ctrl://testctl/display?id=9").source == nullptr);
