@@ -131,4 +131,10 @@ private:
    vector<DmdSource> m_dmdSources;
    std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>> m_displaySources;
    static DisplayFrame ControllerOnGetRenderDMD(void* callContext);
+
+   // Contribute VPX table light states through controller plugin API
+   vector<StateDef> m_lightStateDefs;
+   std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<StateSrcId>> m_stateSources;
+   static void MSGPIAPI GetLightState(void* callContext, void* pResult);
+   static void MSGPIAPI SetLightState(void* callContext, const void* pValue);
 };
