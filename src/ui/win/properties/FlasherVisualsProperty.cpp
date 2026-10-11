@@ -7,6 +7,7 @@
 #include "parts/light.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/dialogs/ResURIDialog.h"
 
 
 FlasherVisualsProperty::FlasherVisualsProperty(const vector<IWinUIPart *> *pvsel)
@@ -127,6 +128,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          const int isDisplay = (mode != FlasherData::FLASHER && mode != FlasherData::EXT_RENDER) ? SW_SHOWNORMAL : SW_HIDE;
          GetDlgItem(IDC_STATIC1).ShowWindow(isDisplay);
          m_linkEdit.ShowWindow(isDisplay);
+         GetDlgItem(IDC_IMAGE_LINK_BUTTON).ShowWindow(isDisplay);
          GetDlgItem(IDC_STATIC25).ShowWindow(isDisplay);
          m_glassImageCombo.ShowWindow(isDisplay);
          GetDlgItem(IDC_STATIC26).ShowWindow(isDisplay);
@@ -295,8 +297,53 @@ void FlasherVisualsProperty::UpdateLightmapComboBox(const PinTable *table, const
    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
+BOOL FlasherVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+   if ((LOWORD(wParam) == IDC_IMAGE_LINK_BUTTON) && (HIWORD(wParam) == BN_CLICKED))
+   {
+      string current;
+      PinballPlugin::ResURIKind kind = PinballPlugin::ResURIKind::Display;
+      PinballPlugin::DisplayFamily family = PinballPlugin::DisplayFamily::Any;
+      for (int i = 0; i < SelCount(); i++)
+      {
+         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlasher))
+            continue;
+         Flasher *const flash = (Flasher *)SelAt(i)->GetEditable();
+         current = flash->m_d.m_imageSrcLink;
+         kind = flash->m_d.m_renderMode == FlasherData::ALPHASEG ? PinballPlugin::ResURIKind::SegDisplay : PinballPlugin::ResURIKind::Display;
+         family = flash->m_d.m_renderMode == FlasherData::DMD ? PinballPlugin::DisplayFamily::Dmd
+            : flash->m_d.m_renderMode == FlasherData::DISPLAY ? PinballPlugin::DisplayFamily::NonDmd
+                                                              : PinballPlugin::DisplayFamily::Any;
+         break;
+      }
+      ResURIDialog dlg(
+         kind, current,
+         [this](const string &uri)
+         {
+            for (int i = 0; i < SelCount(); i++)
+            {
+               if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemFlasher))
+                  continue;
+               Flasher *const flash = (Flasher *)SelAt(i)->GetEditable();
+               if (uri != flash->m_d.m_imageSrcLink)
+               {
+                  PropertyDialog::StartUndo(flash);
+                  flash->m_d.m_imageSrcLink = uri;
+                  PropertyDialog::EndUndo(flash);
+               }
+            }
+         },
+         family);
+      dlg.DoModal(GetHwnd());
+      UpdateVisuals(IDC_IMAGE_LINK_EDIT);
+      return TRUE;
+   }
+   return BasePropertyDialog::OnCommand(wParam, lParam);
+}
+
 void FlasherVisualsProperty::UpdateProperties(const int dispid)
 {
+
    FlasherData::RenderMode mode = static_cast<FlasherData::RenderMode>(clamp(m_modeCombo.GetCurSel(), FlasherData::FLASHER, FlasherData::EXT_RENDER));
    const bool isDisplay = mode != FlasherData::FLASHER;
    const bool isDmd = mode == FlasherData::DMD;
@@ -483,6 +530,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
 
    m_resizer.AddChild(m_styleCombo, CResizer::topleft, RD_STRETCH_WIDTH); // Display Group
    m_resizer.AddChild(m_linkEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_IMAGE_LINK_BUTTON), CResizer::topright, 0);
    m_resizer.AddChild(m_glassImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_glassRoughnessEdit, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_glassAmbientButton, CResizer::topleft, RD_STRETCH_WIDTH);

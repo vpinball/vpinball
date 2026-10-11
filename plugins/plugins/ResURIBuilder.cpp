@@ -6,6 +6,7 @@
 #include <format>
 
 using namespace MsgPI;
+using namespace std::string_literals;
 using namespace PinballPlugin::Controller;
 
 namespace PinballPlugin
@@ -57,11 +58,14 @@ bool ResURIBuilder::MatchesFilter(const std::string& filter, std::initializer_li
    return std::ranges::any_of(candidates, contains);
 }
 
-std::vector<ResURIBuilder::PluginInfo> ResURIBuilder::GetPlugins() const
+std::vector<ResURIBuilder::PluginInfo> ResURIBuilder::GetPlugins(bool withDefaultDisplay) const
 {
    const std::vector<ControllerDef> controllers = GetCtrlItems<ControllerDef>(m_msgApi, m_endpointId, m_getControllersMsgId);
 
    std::vector<PluginInfo> plugins;
+   if (withDefaultDisplay)
+      plugins.push_back(
+         { .id = "default"s, .name = "default (auto)"s, .description = "Automatic default display selection"s, .loaded = true, .endpointId = DefaultEndpointId, .isDefaultDisplay = true });
    for (const auto& plugin : m_manager->GetPlugins())
    {
       PluginInfo info;
@@ -113,14 +117,30 @@ std::vector<ResURIBuilder::FloatItem> ResURIBuilder::GetFloatItems(const std::st
       });
 }
 
-std::vector<ResURIBuilder::DisplayItem> ResURIBuilder::GetDisplayItems(const std::string& filter) const
+std::vector<ResURIBuilder::DisplayItem> ResURIBuilder::GetDisplayItems(const std::string& filter, DisplayFamily family, bool withDefault) const
 {
    return m_displaySources.With(
-      [this, &filter](const std::vector<DisplaySrcId>& sources)
+      [this, &filter, family, withDefault](const std::vector<DisplaySrcId>& sources)
       {
          std::vector<DisplayItem> items;
+         if (withDefault && MatchesFilter(filter, { "default"s, "automatic"s }))
+         {
+            DisplayItem item;
+            item.pluginId = "default";
+            item.endpointId = DefaultEndpointId;
+            item.isDefault = true;
+            item.defaultDmdOnly = family == DisplayFamily::Dmd ? 1 : family == DisplayFamily::NonDmd ? 0 : -1;
+            items.push_back(std::move(item));
+         }
+         const auto isScreen = [](unsigned int hardware)
+         {
+            const unsigned int fam = hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
+            return fam == CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY || fam == CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY;
+         };
          for (const DisplaySrcId& src : sources)
          {
+            if ((family == DisplayFamily::Dmd && isScreen(src.hardware)) || (family == DisplayFamily::NonDmd && !isScreen(src.hardware)))
+               continue;
             DisplayItem item;
             item.pluginId = PluginIdForEndpoint(src.id.endpointId);
             item.endpointId = src.id.endpointId;
@@ -163,7 +183,12 @@ std::string ResURIBuilder::MakeStateURI(const FloatItem& item, StateLinkMode mod
    return std::format("ctrl://{}/state?group={}&mapping={}", item.pluginId, item.groupId, item.mappingId);
 }
 
-std::string ResURIBuilder::MakeDisplayURI(const DisplayItem& item) const { return std::format("ctrl://{}/display?id={}", item.pluginId, item.resId); }
+std::string ResURIBuilder::MakeDisplayURI(const DisplayItem& item) const
+{
+   if (item.isDefault)
+      return item.defaultDmdOnly >= 0 ? std::format("ctrl://default/display?dmd_only={}", item.defaultDmdOnly) : "ctrl://default/display"s;
+   return std::format("ctrl://{}/display?id={}", item.pluginId, item.resId);
+}
 
 std::string ResURIBuilder::MakeSegURI(const SegItem& item, int subElement) const
 {

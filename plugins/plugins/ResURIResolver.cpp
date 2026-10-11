@@ -334,10 +334,15 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
             std::vector<DisplaySrcId> filteredSources;
             if (auto dmdOnlyPart = uri.query.find("dmd_only"s); dmdOnlyPart != uri.query.end())
             {
-               std::copy_if(sources.begin(), sources.end(), std::back_inserter(filteredSources), [](const DisplaySrcId &source) {
-                  const unsigned int family = source.hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
-                  return (family != CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY) && (family != CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY);
-               });
+               // dmd_only selects the dot-matrix families, dmd_only=0 selects the CRT/LCD screens
+               const bool dmdOnly = dmdOnlyPart->second != "0"s;
+               std::copy_if(sources.begin(), sources.end(), std::back_inserter(filteredSources),
+                  [dmdOnly](const DisplaySrcId &source)
+                  {
+                     const unsigned int family = source.hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
+                     const bool isScreen = (family == CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY) || (family == CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY);
+                     return dmdOnly != isScreen;
+                  });
             }
             else
                filteredSources = sources;
