@@ -115,11 +115,105 @@ bool ResURIResolver::TryGetFloatState(const string &link, float &value)
          }
 
          floatCacheLambda lambda = nullptr;
-         if (const StateDef *def = FindStateDef(link, sources); def != nullptr && def->dataFormat == CTLPI_STATE_FORMAT_FLOAT && def->GetState != nullptr)
+         if (const StateDef *def = FindStateDef(link, sources);
+            def != nullptr && def->GetState != nullptr && def->dataFormat >= CTLPI_STATE_FORMAT_UINT8 && def->dataFormat <= CTLPI_STATE_FORMAT_DOUBLE)
             lambda = [d = *def](const string &)
             {
                float value;
-               d.GetState(d.callContext, &value);
+               switch (d.dataFormat)
+               {
+               // Relative brightness is normalized to the positive data range of the format
+               case CTLPI_STATE_FORMAT_UINT8:
+               {
+                  uint8_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 255.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_UINT16:
+               {
+                  uint16_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 65535.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_UINT32:
+               {
+                  uint32_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 4294967295.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_UINT64:
+               {
+                  uint64_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 18446744073709551615.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT8:
+               {
+                  int8_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 127.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT16:
+               {
+                  int16_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 32767.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT32:
+               {
+                  int32_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 2147483647.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_INT64:
+               {
+                  int64_t v = 0;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
+                     value /= 9223372036854775807.f;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_FLOAT:
+               {
+                  float v = 0.f;
+                  d.GetState(d.callContext, &v);
+                  value = v;
+                  break;
+               }
+               case CTLPI_STATE_FORMAT_DOUBLE:
+               {
+                  double v = 0.;
+                  d.GetState(d.callContext, &v);
+                  value = (float)v;
+                  break;
+               }
+               default: value = 0.f; break;
+               }
+               // Switch semantics are binary: non-zero means closed
+               if (d.semanticType == CTLPI_STATE_TYPE_SWITCH)
+                  value = value != 0.f ? 1.f : 0.f;
                return value;
             };
          m_floatCache[link] = lambda;
