@@ -333,7 +333,7 @@ BOOL FlasherVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
                }
             }
          },
-         family);
+         GetTable()->GetSettings(), family);
       dlg.DoModal(GetHwnd());
       UpdateVisuals(IDC_IMAGE_LINK_EDIT);
       return TRUE;

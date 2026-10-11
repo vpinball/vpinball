@@ -4,10 +4,14 @@
 #include "ResURIDialog.h"
 
 #include "core/player.h"
+#include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "core/FileLocator.h"
 #include "parts/pintable.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
+
+#include <SDL3/SDL_loadso.h>
 
 using namespace PinballPlugin;
 
@@ -41,66 +45,101 @@ const char* HardwareLabel(unsigned int hardware)
    }
 }
 
-void AddColumn(HWND list, int index, int width, const char* title)
+// Dynamic plugin module loader (same as the one used by Player for the play session)
+class SDLModuleLoader final : public MsgPI::MsgModuleLoader
 {
-   LVCOLUMN lvc = {};
-   lvc.mask = LVCF_TEXT | LVCF_WIDTH;
-   lvc.cx = width;
-   lvc.pszText = const_cast<LPSTR>(title);
-   ListView_InsertColumn(list, index, &lvc);
-}
+public:
+   ~SDLModuleLoader() override = default;
+   void* Link(const std::string& directory, const std::string& file) override
+   {
+#if defined(_MSC_VER) || defined(__MINGW32__)
+      SetDllDirectoryW(MakeWString(directory).c_str()); // The paths are UTF-8
+#endif
+      void* dynamicModule = static_cast<void*>(SDL_LoadObject(file.c_str())); // SDL expects UTF-8
+#if defined(_MSC_VER) || defined(__MINGW32__)
+      SetDllDirectory(NULL);
+#endif
+      return dynamicModule;
+   }
+   void Unlink(void* dynamicModule) override { SDL_UnloadObject(static_cast<SDL_SharedObject*>(dynamicModule)); }
+   void* GetFunction(void* dynamicModule, const std::string& functionName) override
+   {
+      return reinterpret_cast<void*>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(dynamicModule), functionName.c_str()));
+   }
+};
 
 } // namespace
 
-ResURIDialog::ResURIDialog(ResURIKind kind, const std::string& currentUri, const std::function<void(const std::string&)>& apply, DisplayFamily displayFamily)
+ResURIDialog::ResURIDialog(ResURIKind kind, const std::string& currentUri, const std::function<void(const std::string&)>& apply, Settings& tableSettings, DisplayFamily displayFamily)
    : CDialog(IDD_RESURI_PICKER)
    , m_kind(kind)
    , m_displayFamily(displayFamily)
    , m_currentUri(currentUri)
    , m_apply(apply)
+   , m_tableSettings(tableSettings)
 {
 }
 
 BOOL ResURIDialog::OnInitDialog()
 {
-   m_pluginListHwnd = GetDlgItem(IDC_RESURI_PLUGINS).GetHwnd();
-   m_itemListHwnd = GetDlgItem(IDC_RESURI_ITEMS).GetHwnd();
-   ListView_SetExtendedListViewStyle(m_pluginListHwnd, LVS_EX_FULLROWSELECT);
-   ListView_SetExtendedListViewStyle(m_itemListHwnd, LVS_EX_FULLROWSELECT);
-   AddColumn(m_pluginListHwnd, 0, 140, "Plugin");
-   AddColumn(m_pluginListHwnd, 1, 90, "Status");
-   AddColumn(m_pluginListHwnd, 2, 120, "Game");
+   AttachItem(IDC_RESURI_PLUGINS, m_pluginListView);
+   AttachItem(IDC_RESURI_ITEMS, m_itemListView);
+   m_pluginListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
+   m_itemListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
+   m_pluginListView.InsertColumn(0, "Plugin", LVCFMT_LEFT, 160);
+   m_pluginListView.InsertColumn(1, "Status", LVCFMT_LEFT, 90);
+   m_pluginListView.InsertColumn(2, "Game", LVCFMT_LEFT, 125);
    switch (m_kind)
    {
    case ResURIKind::Display:
-      AddColumn(m_itemListHwnd, 0, 140, "Source");
-      AddColumn(m_itemListHwnd, 1, 70, "Size");
-      AddColumn(m_itemListHwnd, 2, 80, "Type");
-      AddColumn(m_itemListHwnd, 3, 55, "Plugin");
+      m_itemListView.InsertColumn(0, "Source", LVCFMT_LEFT, 160);
+      m_itemListView.InsertColumn(1, "Size", LVCFMT_LEFT, 75);
+      m_itemListView.InsertColumn(2, "Type", LVCFMT_LEFT, 85);
+      m_itemListView.InsertColumn(3, "Plugin", LVCFMT_LEFT, 120);
       break;
    case ResURIKind::SegDisplay:
-      AddColumn(m_itemListHwnd, 0, 140, "Source");
-      AddColumn(m_itemListHwnd, 1, 70, "Elements");
-      AddColumn(m_itemListHwnd, 2, 55, "Plugin");
+      m_itemListView.InsertColumn(0, "Source", LVCFMT_LEFT, 160);
+      m_itemListView.InsertColumn(1, "Elements", LVCFMT_LEFT, 80);
+      m_itemListView.InsertColumn(2, "Plugin", LVCFMT_LEFT, 120);
       break;
    default:
-      AddColumn(m_itemListHwnd, 0, 140, "Name");
-      AddColumn(m_itemListHwnd, 1, 50, "Map");
-      AddColumn(m_itemListHwnd, 2, 90, "Group");
-      AddColumn(m_itemListHwnd, 3, 55, "Plugin");
-      AddColumn(m_itemListHwnd, 4, 40, "Value");
+      m_itemListView.InsertColumn(0, "Name", LVCFMT_LEFT, 160);
+      m_itemListView.InsertColumn(1, "Map", LVCFMT_LEFT, 60);
+      m_itemListView.InsertColumn(2, "Group", LVCFMT_LEFT, 110);
+      m_itemListView.InsertColumn(3, "Plugin", LVCFMT_LEFT, 120);
       break;
    }
 
-   MsgPI::MsgPluginManager& manager = g_pplayer->m_pluginManager;
-   m_builder = std::make_unique<ResURIBuilder>(&manager, &manager.GetMsgAPI(), g_pplayer->m_pluginAPI.GetVPXEndPointId());
-   m_builder->onPluginEnableChanged = [](const std::string& pluginId, bool enabled)
+   // No Player exists at design time: the dialog hosts its own plugin manager and VPX endpoint.
+   m_pluginManager = std::make_unique<MsgPI::MsgPluginManager>();
+   m_pluginAPI = std::make_unique<VPXPluginAPIImpl>(*m_pluginManager);
+   m_pluginManager->ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins), [](MsgPI::MsgPlugin&) { });
+   // Mirror the play session: register the enable property and load plugins enabled in the table settings
+   for (const auto& plugin : m_pluginManager->GetPlugins())
    {
-      if (const auto propId = Settings::GetRegistry().GetPropertyId("Plugin." + pluginId, "Enable"s); propId.has_value())
-         g_pplayer->m_ptable->GetSettings().Set(propId.value(), enabled, false);
+      VPX::Properties::PropertyRegistry::PropId enableId;
+      if (const auto existing = Settings::GetRegistry().GetPropertyId("Plugin." + plugin->m_id, "Enable"s); existing.has_value())
+         enableId = existing.value();
+      else
+         enableId = Settings::GetRegistry().Register(
+            std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin->m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin->m_name + '\'', true, false));
+      if (m_tableSettings.GetBool(enableId))
+         plugin->Load(&m_pluginManager->GetMsgAPI());
+   }
+   m_builder = std::make_unique<ResURIBuilder>(m_pluginManager.get(), &m_pluginManager->GetMsgAPI(), m_pluginAPI->GetVPXEndPointId());
+   m_builder->onPluginEnableChanged = [this](const std::string& pluginId, bool enabled)
+   {
+      // Same persistence as the play session: Plugin.<id>.Enable in the table settings (registered on demand)
+      VPX::Properties::PropertyRegistry::PropId enableId;
+      if (const auto existing = Settings::GetRegistry().GetPropertyId("Plugin." + pluginId, "Enable"s); existing.has_value())
+         enableId = existing.value();
+      else
+         enableId = Settings::GetRegistry().Register(
+            std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + pluginId, "Enable"s, "Enable"s, "Enable/Disable plugin '" + pluginId + '\'', true, false));
+      m_tableSettings.Set(enableId, enabled, false);
    };
 
-   CheckRadioButton(IDC_RESURI_LINK_NAME, IDC_RESURI_LINK_MAPPING, IDC_RESURI_LINK_NAME);
+   CheckRadioButton(IDC_RESURI_LINK_NAME, IDC_RESURI_LINK_MAPPING, IDC_RESURI_LINK_MAPPING);
    GetDlgItem(IDC_RESURI_LINK_NAME).ShowWindow(m_kind == ResURIKind::FloatState ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_RESURI_LINK_MAPPING).ShowWindow(m_kind == ResURIKind::FloatState ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_RESURI_SUB).ShowWindow(m_kind == ResURIKind::SegDisplay ? SW_SHOW : SW_HIDE);
@@ -114,33 +153,34 @@ BOOL ResURIDialog::OnInitDialog()
 
 void ResURIDialog::RefreshPlugins()
 {
+   if (!m_builder)
+      return;
+   std::vector<ResURIBuilder::PluginInfo> newList = m_builder->GetPlugins(m_kind == ResURIKind::Display);
+   const bool unchanged = newList.size() == m_pluginList.size()
+      && std::equal(newList.begin(), newList.end(), m_pluginList.begin(), [](const ResURIBuilder::PluginInfo& a, const ResURIBuilder::PluginInfo& b)
+         { return a.id == b.id && a.loaded == b.loaded && a.runningGameId == b.runningGameId && a.isDefaultDisplay == b.isDefaultDisplay; });
+   if (unchanged)
+      return; // Rebuilding the ListView resets the scroll position and steals the selection
+
    std::string selectedId;
    if (m_selectedPluginIndex >= 0 && m_selectedPluginIndex < static_cast<int>(m_pluginList.size()))
       selectedId = m_pluginList[m_selectedPluginIndex].id;
 
-   m_pluginList = m_builder->GetPlugins(m_kind == ResURIKind::Display);
-   ListView_DeleteAllItems(m_pluginListHwnd);
+   m_pluginList = std::move(newList);
+   m_pluginListView.DeleteAllItems();
    m_selectedPluginIndex = -1;
    int idx = 0;
    for (const auto& plugin : m_pluginList)
    {
       if (plugin.id == selectedId)
          m_selectedPluginIndex = idx;
-      LVITEM lv = {};
-      lv.mask = LVIF_TEXT | LVIF_PARAM;
-      lv.iItem = idx;
-      lv.pszText = const_cast<char*>(plugin.name.c_str());
-      lv.lParam = idx;
-      ListView_InsertItem(m_pluginListHwnd, &lv);
-      ListView_SetItemText(m_pluginListHwnd, idx, 1,
-         const_cast<char*>(plugin.isDefaultDisplay ? "automatic"
-               : plugin.loaded                     ? (plugin.runningGameId.empty() ? "idle" : "running")
-                                                   : "disabled"));
-      ListView_SetItemText(m_pluginListHwnd, idx, 2, const_cast<char*>(plugin.runningGameId.c_str()));
+      m_pluginListView.InsertItem(idx, plugin.name.c_str());
+      m_pluginListView.SetItemText(idx, 1, plugin.isDefaultDisplay ? "automatic" : plugin.loaded ? (plugin.runningGameId.empty() ? "idle" : "running") : "disabled");
+      m_pluginListView.SetItemText(idx, 2, plugin.runningGameId.c_str());
       ++idx;
    }
    if (m_selectedPluginIndex >= 0)
-      ListView_SetItemState(m_pluginListHwnd, m_selectedPluginIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+      m_pluginListView.SetItemState(m_selectedPluginIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 }
 
 bool ResURIDialog::SameItem(const Item& a, const Item& b) const
@@ -164,6 +204,8 @@ bool ResURIDialog::SameItem(const Item& a, const Item& b) const
 
 void ResURIDialog::RefreshItems()
 {
+   if (!m_builder)
+      return;
    const std::string filter = GetDlgItemText(IDC_RESURI_FILTER).GetString();
 
    std::optional<Item> previous;
@@ -175,75 +217,88 @@ void ResURIDialog::RefreshItems()
    if (selectedPlugin >= 0 && selectedPlugin < static_cast<int>(m_pluginList.size()))
       endpoint = m_pluginList[selectedPlugin].endpointId;
 
-   m_itemList.clear();
+   std::vector<Item> newList;
    if (m_kind == ResURIKind::Display)
       for (const auto& item : m_builder->GetDisplayItems(filter, m_displayFamily, true))
       {
          if (endpoint == 0 || item.endpointId == endpoint)
-            m_itemList.push_back(item);
+            newList.push_back(item);
       }
    else if (m_kind == ResURIKind::SegDisplay)
       for (const auto& item : m_builder->GetSegItems(filter))
       {
          if (endpoint == 0 || item.endpointId == endpoint)
-            m_itemList.push_back(item);
+            newList.push_back(item);
       }
    else
       for (const auto& item : m_builder->GetFloatItems(filter))
       {
          if (endpoint == 0 || item.endpointId == endpoint)
-            m_itemList.push_back(item);
+            newList.push_back(item);
       }
 
-   ListView_DeleteAllItems(m_itemListHwnd);
+   const bool unchanged = newList.size() == m_itemList.size()
+      && std::equal(newList.begin(), newList.end(), m_itemList.begin(),
+         [](const Item& a, const Item& b)
+         {
+            if (a.index() != b.index())
+               return false;
+            if (const auto* fa = std::get_if<ResURIBuilder::FloatItem>(&a))
+            {
+               const auto& fb = std::get<ResURIBuilder::FloatItem>(b);
+               return fa->pluginId == fb.pluginId && fa->endpointId == fb.endpointId && fa->groupId == fb.groupId && fa->groupName == fb.groupName && fa->mappingId == fb.mappingId
+                  && fa->name == fb.name;
+            }
+            if (const auto* da = std::get_if<ResURIBuilder::DisplayItem>(&a))
+            {
+               const auto& db = std::get<ResURIBuilder::DisplayItem>(b);
+               return da->pluginId == db.pluginId && da->endpointId == db.endpointId && da->resId == db.resId && da->width == db.width && da->height == db.height
+                  && da->hardware == db.hardware && da->isDefault == db.isDefault && da->defaultDmdOnly == db.defaultDmdOnly;
+            }
+            const auto& sa = std::get<ResURIBuilder::SegItem>(a);
+            const auto& sb = std::get<ResURIBuilder::SegItem>(b);
+            return sa.pluginId == sb.pluginId && sa.endpointId == sb.endpointId && sa.resId == sb.resId && sa.nElements == sb.nElements;
+         });
+   if (unchanged)
+      return; // Rebuilding the ListView resets the scroll position and steals the selection
+
+   m_itemList = std::move(newList);
+   m_itemListView.DeleteAllItems();
    m_selectedItemIndex = -1;
    int idx = 0;
    for (const auto& item : m_itemList)
    {
       if (previous.has_value() && SameItem(item, *previous))
          m_selectedItemIndex = idx;
-      LVITEM lv = {};
-      lv.mask = LVIF_TEXT | LVIF_PARAM;
-      lv.iItem = idx;
-      lv.lParam = idx;
       if (const auto* floatItem = std::get_if<ResURIBuilder::FloatItem>(&item))
       {
          const std::string name = floatItem->name.empty() ? "#" + std::to_string(floatItem->mappingId) : floatItem->name;
-         lv.pszText = const_cast<char*>(name.c_str());
-         ListView_InsertItem(m_itemListHwnd, &lv);
-         ListView_SetItemText(m_itemListHwnd, idx, 1, const_cast<char*>(std::to_string(floatItem->mappingId).c_str()));
-         const std::string group = std::format("{} ({})", floatItem->groupName, floatItem->groupId);
-         ListView_SetItemText(m_itemListHwnd, idx, 2, const_cast<char*>(group.c_str()));
-         ListView_SetItemText(m_itemListHwnd, idx, 3, const_cast<char*>(floatItem->pluginId.c_str()));
-         float value;
-         if (m_builder->PeekValue(*floatItem, value))
-            ListView_SetItemText(m_itemListHwnd, idx, 4, const_cast<char*>(std::format("{:.2f}", value).c_str()));
+         m_itemListView.InsertItem(idx, name.c_str());
+         m_itemListView.SetItemText(idx, 1, std::to_string(floatItem->mappingId).c_str());
+         m_itemListView.SetItemText(idx, 2, std::format("{} ({})", floatItem->groupName, floatItem->groupId).c_str());
+         m_itemListView.SetItemText(idx, 3, floatItem->pluginId.c_str());
       }
       else if (const auto* displayItem = std::get_if<ResURIBuilder::DisplayItem>(&item))
       {
-         const std::string name = displayItem->isDefault ? "default - automatic selection"s : "#" + std::to_string(displayItem->resId);
-         lv.pszText = const_cast<char*>(name.c_str());
-         ListView_InsertItem(m_itemListHwnd, &lv);
+         m_itemListView.InsertItem(idx, displayItem->isDefault ? "default - automatic selection" : std::format("#{}", displayItem->resId).c_str());
          if (!displayItem->isDefault)
          {
-            ListView_SetItemText(m_itemListHwnd, idx, 1, const_cast<char*>(std::format("{}x{}", displayItem->width, displayItem->height).c_str()));
-            ListView_SetItemText(m_itemListHwnd, idx, 2, const_cast<char*>(HardwareLabel(displayItem->hardware)));
+            m_itemListView.SetItemText(idx, 1, std::format("{}x{}", displayItem->width, displayItem->height).c_str());
+            m_itemListView.SetItemText(idx, 2, HardwareLabel(displayItem->hardware));
          }
-         ListView_SetItemText(m_itemListHwnd, idx, 3, const_cast<char*>(displayItem->pluginId.c_str()));
+         m_itemListView.SetItemText(idx, 3, displayItem->pluginId.c_str());
       }
       else
       {
          const auto& segItem = std::get<ResURIBuilder::SegItem>(item);
-         const std::string name = "#" + std::to_string(segItem.resId);
-         lv.pszText = const_cast<char*>(name.c_str());
-         ListView_InsertItem(m_itemListHwnd, &lv);
-         ListView_SetItemText(m_itemListHwnd, idx, 1, const_cast<char*>(std::to_string(segItem.nElements).c_str()));
-         ListView_SetItemText(m_itemListHwnd, idx, 2, const_cast<char*>(segItem.pluginId.c_str()));
+         m_itemListView.InsertItem(idx, std::format("#{}", segItem.resId).c_str());
+         m_itemListView.SetItemText(idx, 1, std::to_string(segItem.nElements).c_str());
+         m_itemListView.SetItemText(idx, 2, segItem.pluginId.c_str());
       }
       ++idx;
    }
    if (m_selectedItemIndex >= 0)
-      ListView_SetItemState(m_itemListHwnd, m_selectedItemIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+      m_itemListView.SetItemState(m_selectedItemIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
    UpdateURI();
 }
 
@@ -309,8 +364,17 @@ void ResURIDialog::ApplyAndClose(const std::string& uri)
 {
    if (m_apply)
       m_apply(uri);
-   m_builder.reset(); // must unsubscribe before the dialog object goes away
+   ShutdownPluginHost();
    EndDialog(IDOK);
+}
+
+void ResURIDialog::ShutdownPluginHost()
+{
+   m_builder.reset(); // must unsubscribe before its message endpoints go away
+   if (m_pluginManager)
+      m_pluginManager->UnloadPlugins();
+   m_pluginAPI.reset();
+   m_pluginManager.reset();
 }
 
 BOOL ResURIDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -328,7 +392,7 @@ BOOL ResURIDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       if (m_selectedPluginIndex >= 0 && !m_pluginList[m_selectedPluginIndex].isDefaultDisplay)
       {
          const auto& plugin = m_pluginList[m_selectedPluginIndex];
-         if (g_pplayer->m_scriptInterpreter && g_pplayer->m_pluginAPI.IsScriptContributor(plugin.endpointId))
+         if (g_pplayer && g_pplayer->m_scriptInterpreter && m_pluginAPI->IsScriptContributor(plugin.endpointId))
          {
             g_pplayer->m_scriptInterpreter->Stop(g_pplayer->m_ptable);
             ULONG refCount = g_pplayer->m_scriptInterpreter->Release();
@@ -388,13 +452,13 @@ INT_PTR ResURIDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          const LPNMLISTVIEW lv = reinterpret_cast<LPNMLISTVIEW>(lParam);
          if ((lv->uNewState & LVIS_SELECTED) != 0 && (lv->uOldState & LVIS_SELECTED) == 0)
          {
-            if (hdr->hwndFrom == m_pluginListHwnd)
+            if (hdr->hwndFrom == m_pluginListView.GetHwnd())
             {
                m_selectedPluginIndex = lv->iItem;
                UpdatePluginButtons();
                RefreshItems();
             }
-            else if (hdr->hwndFrom == m_itemListHwnd)
+            else if (hdr->hwndFrom == m_itemListView.GetHwnd())
             {
                m_selectedItemIndex = lv->iItem;
                UpdateURI();
@@ -406,6 +470,8 @@ INT_PTR ResURIDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_TIMER:
       if (wParam == RefreshTimerId)
       {
+         if (m_pluginManager)
+            m_pluginManager->ProcessAsyncCallbacks();
          RefreshPlugins();
          if (m_builder && m_builder->ConsumeSourcesChanged())
             RefreshItems();
@@ -414,7 +480,7 @@ INT_PTR ResURIDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       break;
    case WM_DESTROY:
       KillTimer(RefreshTimerId);
-      m_builder.reset();
+      ShutdownPluginHost();
       break;
    }
    return DialogProcDefault(uMsg, wParam, lParam);

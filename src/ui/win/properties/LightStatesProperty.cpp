@@ -134,7 +134,8 @@ BOOL LightStatesProperty::OnCommand(WPARAM wParam, LPARAM lParam)
          current = ((Light *)SelAt(i)->GetEditable())->m_d.m_stateSrcLink;
          break;
       }
-      ResURIDialog dlg(PinballPlugin::ResURIKind::FloatState, current,
+      ResURIDialog dlg(
+         PinballPlugin::ResURIKind::FloatState, current,
          [this](const string &uri)
          {
             for (int i = 0; i < SelCount(); i++)
@@ -149,7 +150,8 @@ BOOL LightStatesProperty::OnCommand(WPARAM wParam, LPARAM lParam)
                   PropertyDialog::EndUndo(light);
                }
             }
-         });
+         },
+         GetTable()->GetSettings());
       dlg.DoModal(GetHwnd());
       UpdateVisuals(IDC_STATE_SOURCE_EDIT);
       return TRUE;

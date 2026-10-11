@@ -3,6 +3,7 @@
 #pragma once
 
 #include <wxx_dialog.h>
+#include <wxx_listview.h>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -12,12 +13,18 @@
 
 #include "plugins/ResURIBuilder.h"
 
+class VPXPluginAPIImpl;
+class Settings;
+
 // Modal dialog building a ctrl:// URI toward a controller-exposed source (Win32 variant
 // of the live editor ResURI picker, both sharing the ResURIBuilder backend).
+// Since the Win32 editor runs at design time without a Player, the dialog owns its
+// own plugin host: a MsgPluginManager scanning the plugin folder and a
+// VPXPluginAPIImpl providing the 'vpx' endpoint plugins may need.
 class ResURIDialog final : public CDialog
 {
 public:
-   ResURIDialog(PinballPlugin::ResURIKind kind, const std::string& currentUri, const std::function<void(const std::string&)>& apply,
+   ResURIDialog(PinballPlugin::ResURIKind kind, const std::string& currentUri, const std::function<void(const std::string&)>& apply, Settings& tableSettings,
       PinballPlugin::DisplayFamily displayFamily = PinballPlugin::DisplayFamily::Any);
 
 protected:
@@ -34,6 +41,7 @@ private:
    void UpdateSegCombo();
    void UpdateURI();
    void ApplyAndClose(const std::string& uri);
+   void ShutdownPluginHost();
    std::string CurrentURI() const;
    bool SameItem(const Item& a, const Item& b) const;
 
@@ -41,10 +49,15 @@ private:
    const PinballPlugin::DisplayFamily m_displayFamily;
    const std::string m_currentUri;
    const std::function<void(const std::string&)> m_apply;
+   Settings& m_tableSettings;
+
+   // Design-time plugin host (no Player exists while the Win32 editor is open)
+   std::unique_ptr<MsgPI::MsgPluginManager> m_pluginManager;
+   std::unique_ptr<VPXPluginAPIImpl> m_pluginAPI;
    std::unique_ptr<PinballPlugin::ResURIBuilder> m_builder;
 
-   HWND m_pluginListHwnd = nullptr;
-   HWND m_itemListHwnd = nullptr;
+   CListView m_pluginListView;
+   CListView m_itemListView;
 
    std::vector<PinballPlugin::ResURIBuilder::PluginInfo> m_pluginList;
    std::vector<Item> m_itemList;
