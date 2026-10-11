@@ -67,6 +67,7 @@ public:
    float m_intensity_scale;
    float m_modulate_vs_add;
    string m_szLightmap;
+   string m_stateSrcLink; // Optional controller state source (resuri, see ResURIResolver) modulating opacity, overriding the lightmap
 
    float m_height;
    float m_rotX, m_rotY, m_rotZ;

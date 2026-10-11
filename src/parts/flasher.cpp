@@ -228,6 +228,7 @@ void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(FILT), m_d.m_filter);
    writer.WriteInt(FID(FIAM), m_d.m_filterAmount);
    writer.WriteString(FID(LMAP), m_d.m_szLightmap);
+   writer.WriteString(FID(SLNK), m_d.m_stateSrcLink);
    writer.WriteBool(FID(BGLS), m_desktopBackdrop);
    SaveSharedEditableFields(writer);
    m_curve.SavePoints(writer);
@@ -285,6 +286,7 @@ void Flasher::Load(IObjectReader& reader)
          case FID(FILT): m_d.m_filter = static_cast<Filters>(reader.AsInt()); break;
          case FID(FIAM): m_d.m_filterAmount = reader.AsInt(); break;
          case FID(LMAP): m_d.m_szLightmap = reader.AsString(); break;
+         case FID(SLNK): m_d.m_stateSrcLink = reader.AsString(); break;
          case FID(DPNT): m_curve.LoadPointToken(reader); break;
          case FID(FLAX): reader.AsFloat(); break; // Center X: Removed as it has always been computed from dragpoints
          case FID(FLAY): reader.AsFloat(); break; // Center Y: Removed as it has always been computed from dragpoints
@@ -992,7 +994,10 @@ void Flasher::Render(const unsigned int renderMask)
 
    // Update lightmap before checking anything that uses alpha
    float alpha = (float) m_d.m_alpha;
-   if (m_lightmap)
+   float linkState;
+   if (!m_d.m_stateSrcLink.empty() && g_pplayer->m_resURIResolver.TryGetFloatState(m_d.m_stateSrcLink, linkState))
+      alpha *= linkState;
+   else if (m_lightmap)
    {
       if (m_lightmap->m_d.m_intensity != 0.f && m_lightmap->m_d.m_intensity_scale != 0.f)
          alpha *= m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale);

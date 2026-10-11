@@ -18,6 +18,7 @@ public:
 
 protected:
     BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
     INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
     void AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
@@ -33,7 +34,8 @@ private:
     ComboBox    m_imageCombo;
     ComboBox    m_normalMapCombo;
     ComboBox    m_materialCombo;
-    ComboBox    m_lightmapCombo;
+    ComboBox m_lightmapCombo;
+    EditBox m_stateLinkEdit;
     ComboBox    m_reflectionCombo;
     EditBox     m_reflectionAmountEdit;
     ComboBox    m_refractionCombo;

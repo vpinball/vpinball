@@ -213,6 +213,10 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Lightmap"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szLightmap; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szLightmap = v; });
+      props.InputResURI<Primitive>(
+         m_part, "State Link"s, //
+         [](const Primitive* primitive) { return primitive->m_d.m_stateSrcLink; }, //
+         [](Primitive* primitive, const string& v) { primitive->m_d.m_stateSrcLink = v; }, ResURIKind::State, DisplayFamily::Any, -1, false, -1);
 
       props.Separator("Material"s);
       props.MaterialCombo<Primitive>(

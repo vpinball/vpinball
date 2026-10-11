@@ -211,8 +211,9 @@ TEST_CASE("ResURIResolver ctrl URI resolution")
       g_ctl.stateValueA = 1.f;
       CHECK(resolver.GetFloatState("ctrl://testctl/state?group=1&mapping=11") == doctest::Approx(1.f));
 
-      // Non float states, unknown groups and unknown plugins resolve to 0
-      CHECK(resolver.GetFloatState("ctrl://testctl/state?group=1&mapping=7") == 0.f);
+      // Non-float numeric states resolve through their semantics (uint8 switch -> binary),
+      // while unknown groups and unknown plugins still resolve to 0
+      CHECK(resolver.GetFloatState("ctrl://testctl/state?group=1&mapping=7") == doctest::Approx(1.f));
       CHECK(resolver.GetFloatState("ctrl://testctl/state?group=2&mapping=11") == 0.f);
       CHECK(resolver.GetFloatState("ctrl://unknown/state?group=1&mapping=11") == 0.f);
       CHECK(resolver.GetFloatState("ctrl://default/state?group=1&mapping=11") == 0.f);

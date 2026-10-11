@@ -207,6 +207,10 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Lightmap"s, //
          [](const Flasher* flasher) { return flasher->m_d.m_szLightmap; }, //
          [](Flasher* flasher, const string& v) { flasher->m_d.m_szLightmap = v; });
+      props.InputResURI<Flasher>(
+         m_part, "State Link"s, //
+         [](const Flasher* flasher) { return flasher->m_d.m_stateSrcLink; }, //
+         [](Flasher* flasher, const string& v) { flasher->m_d.m_stateSrcLink = v; }, ResURIKind::State, DisplayFamily::Any, -1, false, -1);
       // Alpha Segment (which always uses max blending) and external rendering ignore both of these, see Flasher::Render
       const Flasher *const edited = props.GetEditedPart<Flasher>(m_part);
       const FlasherData::RenderMode renderMode = edited->m_d.m_renderMode;

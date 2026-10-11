@@ -57,6 +57,7 @@ public:
    float m_alpha = 1.0f;
 
    string m_szLightmap;
+   string m_stateSrcLink; // Optional controller state source (resuri, see ResURIResolver) modulating opacity, overriding the lightmap
 
    string m_szReflectionProbe;
    float m_reflectionStrength = 1.0f;
