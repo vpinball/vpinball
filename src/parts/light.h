@@ -44,6 +44,7 @@ public:
    float m_state; // 0..1 is modulated from off to on, 2 is blinking
    string m_rgblinkpattern;
    int m_blinkinterval;
+   string m_stateSrcLink; // Optional controller state source (resuri, see ResURIResolver) driving the light state when resolved
    COLORREF m_color;
    COLORREF m_color2; // color full
    Shape m_shape;

@@ -810,6 +810,7 @@
 #define IDC_BG_TEST_DESKTOP_CHECK       13434
 #define IDC_CAMERA_LAYOUT_MODE          13435
 #define IDC_ADDBLEND_COMBO              13436
+#define IDC_STATE_SOURCE_EDIT 13437
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770

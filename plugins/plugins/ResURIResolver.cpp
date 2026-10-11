@@ -87,11 +87,24 @@ bool ResURIResolver::try_parse_int(const string &str, int &value)
 
 float ResURIResolver::GetFloatState(const string &link)
 {
+   float value = 0.f;
+   TryGetFloatState(link, value);
+   return value;
+}
+
+// The cache stores a null lambda for links that do not resolve to an existing float state
+bool ResURIResolver::TryGetFloatState(const string &link, float &value)
+{
    return m_stateSources->With(
-      [this, &link](const std::vector<StateSrcId> &sources)
+      [this, &link, &value](const std::vector<StateSrcId> &sources)
       {
          if (const auto &cache = m_floatCache.find(link); cache != m_floatCache.end())
-            return cache->second(link);
+         {
+            if (cache->second == nullptr)
+               return false;
+            value = cache->second(link);
+            return true;
+         }
 
          const auto &uri = uri::parse_uri(link);
 
@@ -113,8 +126,8 @@ float ResURIResolver::GetFloatState(const string &link)
          if (endpoint == 0)
          {
             // PLOGE << "Invalid resource URI: " << link;
-            m_floatCache[link] = [](const string &) { return 0.f; };
-            return 0.f;
+            m_floatCache[link] = nullptr;
+            return false;
          }
 
          floatCacheLambda lambda = nullptr;
@@ -179,9 +192,13 @@ float ResURIResolver::GetFloatState(const string &link)
          }
 
          if (lambda == nullptr)
-            lambda = [](const string &) { return 0.f; };
+         {
+            m_floatCache[link] = nullptr;
+            return false;
+         }
          m_floatCache[link] = lambda;
-         return lambda(link);
+         value = lambda(link);
+         return true;
       });
 }
 
