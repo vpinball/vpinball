@@ -1,4 +1,3 @@
-#include "miniz.h"
 /**************************************************************************
  *
  * Copyright 2013-2014 RAD Game Tools and Valve Software
@@ -25,7 +24,7 @@
  *
  **************************************************************************/
 
-
+#include "miniz.h"
 
 typedef unsigned char mz_validate_uint16[sizeof(mz_uint16) == 2 ? 1 : -1];
 typedef unsigned char mz_validate_uint32[sizeof(mz_uint32) == 4 ? 1 : -1];
@@ -34,7 +33,7 @@ typedef unsigned char mz_validate_uint64[sizeof(mz_uint64) == 8 ? 1 : -1];
 #ifdef __cplusplus
 extern "C"
 {
-#endif
+#endif /* __cplusplus */
 
     /* ------------------- zlib-style API's */
 
@@ -157,7 +156,7 @@ mz_ulong mz_crc32(mz_ulong crc, const mz_uint8 *ptr, size_t buf_len)
 
     return ~crc32;
 }
-#endif
+#endif /* 0 */
 
     void mz_free(void *p)
     {
@@ -356,7 +355,7 @@ mz_ulong mz_crc32(mz_ulong crc, const mz_uint8 *ptr, size_t buf_len)
         return mz_deflateBound(NULL, source_len);
     }
 
-#endif /*#ifndef MINIZ_NO_DEFLATE_APIS*/
+#endif /* MINIZ_NO_DEFLATE_APIS */
 
 #ifndef MINIZ_NO_INFLATE_APIS
 
@@ -595,7 +594,7 @@ mz_ulong mz_crc32(mz_ulong crc, const mz_uint8 *ptr, size_t buf_len)
         return mz_uncompress2(pDest, pDest_len, pSource, &source_len);
     }
 
-#endif /*#ifndef MINIZ_NO_INFLATE_APIS*/
+#endif /* MINIZ_NO_INFLATE_APIS */
 
     const char *mz_error(int err)
     {
@@ -613,11 +612,11 @@ mz_ulong mz_crc32(mz_ulong crc, const mz_uint8 *ptr, size_t buf_len)
         return NULL;
     }
 
-#endif /*MINIZ_NO_ZLIB_APIS */
+#endif /* MINIZ_NO_ZLIB_APIS */
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 /*
   This is free and unencumbered software released into the public domain.
