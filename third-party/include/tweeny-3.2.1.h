@@ -1,7 +1,7 @@
 /*
  This file is part of the Tweeny library.
 
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
  Copyright (c) 2016 Guilherme R. Costa
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -81,43 +81,7 @@
 /*
  This file is part of the Tweeny library.
 
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
- Copyright (c) 2016 Guilherme R. Costa
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/**
- * @file tween.h
- * This file contains the core of tweeny: the main tween class.
- */
-
-#ifndef TWEENY_TWEEN_H
-#define TWEENY_TWEEN_H
-
-#include <tuple>
-#include <vector>
-#include <functional>
-
-/*
- This file is part of the Tweeny library.
-
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
  Copyright (c) 2016 Guilherme R. Costa
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -145,8 +109,7 @@
 #ifndef TWEENY_TWEENTRAITS_H
 #define TWEENY_TWEENTRAITS_H
 
-#include <tuple>
-#include <functional>
+#include <cstdint>
 #include <type_traits>
 
 namespace tweeny {
@@ -189,120 +152,10 @@ namespace tweeny {
 }
 
 #endif //TWEENY_TWEENTRAITS_H
-
 /*
  This file is part of the Tweeny library.
 
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
- Copyright (c) 2016 Guilherme R. Costa
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/*
- * This file provides the declarations for a tween point utility class. A tweenpoint holds the tween values,
- * easings and durations.
- */
-
-#ifndef TWEENY_TWEENPOINT_H
-#define TWEENY_TWEENPOINT_H
-
-#include <tuple>
-#include <array>
-
-namespace tweeny {
-    namespace detail {
-        /*
-         * The tweenpoint class aids in the management of a tweening point by the tween class.
-         * This class is private.
-         */
-        template<typename... Ts>
-        struct tweenpoint {
-            typedef detail::tweentraits<Ts...> traits;
-
-            typename traits::valuesType values;
-            typename traits::durationsArrayType durations;
-            typename traits::easingCollection easings;
-            typename traits::callbackType onEnterCallbacks;
-            uint32_t stacked;
-
-            /* Constructs a tweenpoint from a set of values, filling their durations and easings */
-            tweenpoint(Ts... vs);
-
-            /* Set the duration for all the values in this point */
-            template<typename D> void during(D milis);
-
-            /* Sets the duration for each value in this point */
-            template<typename... Ds> void during(Ds... vs);
-
-            /* Sets the easing functions of each value */
-            template<typename... Fs> void via(Fs... fs);
-
-            /* Sets the same easing function for all values */
-            template<typename F> void via(F f);
-
-            /* Returns the highest value in duration array */
-            uint16_t duration() const;
-
-            /* Returns the value of that specific value */
-            uint16_t duration(size_t i) const;
-        };
-    }
-}
-
-/*
- This file is part of the Tweeny library.
-
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
- Copyright (c) 2016 Guilherme R. Costa
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/*
- * This file implements the tweenpoint class
- */
-
-#ifndef TWEENY_TWEENPOINT_TCC
-#define TWEENY_TWEENPOINT_TCC
-
-#include <algorithm>
-#include <type_traits>
-
-/*
- This file is part of the Tweeny library.
-
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
  Copyright (c) 2016 Guilherme R. Costa
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -333,7 +186,6 @@ namespace tweeny {
 #define TWEENY_EASING_H
 
 #include <cmath>
-#include <type_traits>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -816,7 +668,7 @@ namespace tweeny {
             static constexpr struct bounceInEasing {
                 template<typename T>
                 static T run(float position, T start, T end) {
-                    return (end - start) - bounceOut.run((1 - position), T(), end) + start;
+                    return (end - start) - bounceOut.run((1 - position), T(), (end - start)) + start;
                 }
             } bounceIn = bounceInEasing{};
 
@@ -850,8 +702,8 @@ namespace tweeny {
             static constexpr struct bounceInOutEasing {
                 template<typename T>
                 static T run(float position, T start, T end) {
-                    if (position < 0.5f) return static_cast<T>(bounceIn.run(position * 2, T(), end) * .5f + start);
-                    else return static_cast<T>(bounceOut.run((position * 2 - 1), T(), end) * .5f + (end - start) * .5f + start);
+                    if (position < 0.5f) return static_cast<T>(bounceIn.run(position * 2, T(), (end - start)) * .5f + start);
+                    else return static_cast<T>(bounceOut.run((position * 2 - 1), T(), (end - start)) * .5f + (end - start) * .5f + start);
                 }
             } bounceInOut = bounceInOutEasing{};
 
@@ -960,11 +812,10 @@ namespace tweeny {
     };
 }
 #endif //TWEENY_EASING_H
-
 /*
  This file is part of the Tweeny library.
 
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
  Copyright (c) 2016 Guilherme R. Costa
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -993,8 +844,6 @@ namespace tweeny {
 
 #ifndef TWEENY_EASINGRESOLVE_H
 #define TWEENY_EASINGRESOLVE_H
-
-#include <tuple>
 
 namespace tweeny {
     namespace detail {
@@ -1087,11 +936,10 @@ namespace tweeny {
 }
 
 #endif //TWEENY_EASINGRESOLVE_H
-
 /*
  This file is part of the Tweeny library.
 
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
  Copyright (c) 2016 Guilherme R. Costa
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -1125,6 +973,114 @@ namespace tweeny {
     }
 }
 #endif //TWEENY_INT2TYPE_H
+/*
+ This file is part of the Tweeny library.
+
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016 Guilherme R. Costa
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+ * This file provides the declarations for a tween point utility class. A tweenpoint holds the tween values,
+ * easings and durations.
+ */
+
+#ifndef TWEENY_TWEENPOINT_H
+#define TWEENY_TWEENPOINT_H
+
+#include <array>
+
+namespace tweeny {
+    namespace detail {
+        /*
+         * The tweenpoint class aids in the management of a tweening point by the tween class.
+         * This class is private.
+         */
+        template<typename... Ts>
+        struct tweenpoint {
+            typedef detail::tweentraits<Ts...> traits;
+
+            typename traits::valuesType values;
+            typename traits::durationsArrayType durations;
+            typename traits::easingCollection easings;
+            typename traits::callbackType onEnterCallbacks;
+            uint32_t stacked;
+
+            /* Constructs a tweenpoint from a set of values, filling their durations and easings */
+            tweenpoint(Ts... vs);
+
+            /* Set the duration for all the values in this point */
+            template<typename D> void during(D milis);
+
+            /* Sets the duration for each value in this point */
+            template<typename... Ds> void during(Ds... vs);
+
+            /* Sets the easing functions of each value */
+            template<typename... Fs> void via(Fs... fs);
+
+            /* Sets the same easing function for all values */
+            template<typename F> void via(F f);
+
+            /* Returns the highest value in duration array */
+            uint16_t duration() const;
+
+            /* Returns the value of that specific value */
+            uint16_t duration(size_t i) const;
+        };
+    }
+}
+
+#endif //TWEENY_TWEENPOINT_H
+
+/*
+ This file is part of the Tweeny library.
+
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016 Guilherme R. Costa
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+ * This file implements the tweenpoint class
+ */
+
+#ifndef TWEENY_TWEENPOINT_TCC
+#define TWEENY_TWEENPOINT_TCC
+
+#include <algorithm>
 
 namespace tweeny {
     namespace detail {
@@ -1199,8 +1155,96 @@ namespace tweeny {
     }
 }
 #endif //TWEENY_TWEENPOINT_TCC
+/*
+ This file is part of the Tweeny library.
 
-#endif //TWEENY_TWEENPOINT_H
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016 Guilherme R. Costa
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/* This file contains code to help call a function applying a tuple as its arguments.
+ * This code is private and not documented. */
+
+#ifndef TWEENY_DISPATCHER_H
+#define TWEENY_DISPATCHER_H
+
+namespace tweeny {
+    namespace detail {
+        template<int ...> struct seq { };
+        template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> { };
+        template<int ...S> struct gens<0, S...> {
+            typedef seq<S...> type;
+        };
+
+        template<typename R, typename Func, typename TupleType, int ...S>
+        R dispatch(Func && f, TupleType && args, seq<S...>) {
+           return f(std::get<S>(args) ...);
+        }
+
+        template<typename R, typename Func, typename... Ts>
+        R call(Func && f, const std::tuple<Ts...> & args) {
+            return dispatch<R>(f, args, typename gens<sizeof...(Ts)>::type());
+        }
+    }
+}
+
+#endif //TWEENY_DISPATCHER_H
+/*
+ This file is part of the Tweeny library.
+
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016 Guilherme R. Costa
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+ * The purpose of this file is to hold implementations for the tween.h file.
+ */
+/**
+ * @file tween.h
+ * This file contains the core of tweeny: the main tween class.
+ */
+
+#ifndef TWEENY_TWEEN_H
+#define TWEENY_TWEEN_H
+
+#include <tuple>
+#include <vector>
+#include <functional>
+#include <string>
 
 namespace tweeny {
     /**
@@ -1669,12 +1713,26 @@ namespace tweeny {
             const typename detail::tweentraits<T, Ts...>::valuesType peek(uint32_t time) const;
 
             /**
+             * @brief Returns the current time point of the interpolation.
+             *
+             * @returns the current timr point between 0 and total time point (inclusive)
+             */
+            uint32_t currentTimePoint() const; ///< @sa tween::currenttimepoint
+
+            /**
              * @brief Returns the current currentProgress of the interpolation.
              *
              * 0 means its at the values passed in the construction, 1 means the last step.
              * @returns the current currentProgress between 0 and 1 (inclusive)
              */
             float progress() const;
+
+            /**
+             * @brief Returns true if tween reach to end of interpolation progress.
+             *
+             * @returns True means its finished, false means its in progress.
+             */
+            bool isFinished() const;
 
             /**
              * @brief Sets the direction of this tween forward.
@@ -1726,7 +1784,7 @@ namespace tweeny {
         private /* member variables */:
             uint32_t total = 0; // total runtime
             uint16_t currentPoint = 0; // current point
-            float currentProgress = 0; // current progress
+            uint32_t currentProgress = 0; // current progress
             std::vector<detail::tweenpoint<T, Ts...>> points;
             typename traits::valuesType current;
             std::vector<typename traits::callbackType> onStepCallbacks;
@@ -1736,11 +1794,11 @@ namespace tweeny {
         private:
             /* member functions */
             tween(T t, Ts... vs);
-            template<size_t I> void interpolate(float prog, unsigned point, typename traits::valuesType & values, detail::int2type<I>) const;
-            void interpolate(float prog, unsigned point, typename traits::valuesType & values, detail::int2type<0>) const;
-            void render(float p);
+            template<size_t I> void interpolate(uint32_t prog, unsigned point, typename traits::valuesType & values, detail::int2type<I>) const;
+            void interpolate(uint32_t prog, unsigned point, typename traits::valuesType & values, detail::int2type<0>) const;
+            void render(uint32_t p);
             void dispatch(std::vector<typename traits::callbackType> & cbVector);
-            uint16_t pointAt(float progress) const;
+            uint16_t pointAt(uint32_t progress) const;
     };
 
     /**
@@ -1783,7 +1841,9 @@ namespace tweeny {
             T peek(float progress) const; ///< @sa tween::peek
             T peek(uint32_t time) const; ///< @sa tween::peek
             uint32_t duration() const; ///< @sa tween::duration
+            uint32_t currentTimePoint() const; ///< @sa tween::currenttimepoint
             float progress() const; ///< @sa tween::progress
+            bool isFinished() const; ///< @sa tween::isFinished
             tween<T> & forward(); ///< @sa tween::forward
             tween<T> & backward(); ///< @sa tween::backward
             int direction() const; ///< @sa tween::direction
@@ -1796,7 +1856,7 @@ namespace tweeny {
         private /* member variables */:
             uint32_t total = 0; // total runtime
             uint16_t currentPoint = 0; // current point
-            float currentProgress = 0; // current progress
+            uint32_t currentProgress = 0; // current progress
             std::vector<detail::tweenpoint<T>> points;
             T current;
             std::vector<typename traits::callbackType> onStepCallbacks;
@@ -1806,97 +1866,17 @@ namespace tweeny {
         private:
             /* member functions */
             tween(T t);
-            void interpolate(float prog, unsigned point, T & value) const;
-            void render(float p);
+            void interpolate(uint32_t prog, unsigned point, T & value) const;
+            void render(uint32_t p);
             void dispatch(std::vector<typename traits::callbackType> & cbVector);
-            uint16_t pointAt(float progress) const;
+            uint16_t pointAt(uint32_t progress) const;
     };
 }
 
-/*
- This file is part of the Tweeny library.
-
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
- Copyright (c) 2016 Guilherme R. Costa
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/*
- * The purpose of this file is to hold implementations for the tween.h file.
- */
+#endif //TWEENY_TWEEN_H
 
 #ifndef TWEENY_TWEEN_TCC
 #define TWEENY_TWEEN_TCC
-
-/*
- This file is part of the Tweeny library.
-
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
- Copyright (c) 2016 Guilherme R. Costa
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-/* This file contains code to help call a function applying a tuple as its arguments.
- * This code is private and not documented. */
-
-#ifndef TWEENY_DISPATCHER_H
-#define TWEENY_DISPATCHER_H
-
-#include <tuple>
-
-namespace tweeny {
-    namespace detail {
-        template<int ...> struct seq { };
-        template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> { };
-        template<int ...S> struct gens<0, S...> {
-            typedef seq<S...> type;
-        };
-
-        template<typename R, typename Func, typename TupleType, int ...S>
-        R dispatch(Func && f, TupleType && args, seq<S...>) {
-           return f(std::get<S>(args) ...);
-        }
-
-        template<typename R, typename Func, typename... Ts>
-        R call(Func && f, const std::tuple<Ts...> & args) {
-            return dispatch<R>(f, args, typename gens<sizeof...(Ts)>::type());
-        }
-    }
-}
-
-#endif //TWEENY_DISPATCHER_H
 
 namespace tweeny {
 
@@ -2031,7 +2011,11 @@ namespace tweeny {
 
     template<typename T, typename... Ts>
     inline const typename detail::tweentraits<T, Ts...>::valuesType & tween<T, Ts...>::step(int32_t dt, bool suppress) {
-        return step(static_cast<float>(dt)/static_cast<float>(total), suppress);
+        dt *= currentDirection;
+        seek(currentProgress + dt, true);
+        if (!suppress)
+            dispatch(onStepCallbacks);
+        return current;
     }
 
     template<typename T, typename... Ts>
@@ -2041,15 +2025,12 @@ namespace tweeny {
 
     template<typename T, typename... Ts>
     inline const typename detail::tweentraits<T, Ts...>::valuesType & tween<T, Ts...>::step(float dp, bool suppress) {
-        dp *= currentDirection;
-        seek(currentProgress + dp, true);
-        if (!suppress) dispatch(onStepCallbacks);
-        return current;
+        return step(static_cast<int32_t>(dp * total), suppress);
     }
 
     template<typename T, typename... Ts>
-    inline const typename detail::tweentraits<T, Ts...>::valuesType & tween<T, Ts...>::seek(float p, bool suppress) {
-        p = detail::clip(p, 0.0f, 1.0f);
+    inline const typename detail::tweentraits<T, Ts...>::valuesType & tween<T, Ts...>::seek(uint32_t p, bool suppress) {
+        p = detail::clip(p, 0u, total);
         currentProgress = p;
         render(p);
         if (!suppress) dispatch(onSeekCallbacks);
@@ -2058,7 +2039,12 @@ namespace tweeny {
 
     template<typename T, typename... Ts>
     inline const typename detail::tweentraits<T, Ts...>::valuesType & tween<T, Ts...>::seek(int32_t t, bool suppress) {
-        return seek(static_cast<float>(t) / static_cast<float>(total), suppress);
+        return seek(static_cast<uint32_t>(std::abs(t)), suppress);
+    }
+
+	template<typename T, typename... Ts>
+	inline const typename detail::tweentraits<T, Ts...>::valuesType &tween<T, Ts...>::seek(float p, bool suppress) {
+        return seek(static_cast<int32_t>(p * total), suppress);
     }
 
     template<typename T, typename... Ts>
@@ -2068,9 +2054,9 @@ namespace tweeny {
 
     template<typename T, typename... Ts>
     template<size_t I>
-    inline void tween<T, Ts...>::interpolate(float prog, unsigned point, typename traits::valuesType & values, detail::int2type<I>) const {
+    inline void tween<T, Ts...>::interpolate(uint32_t prog, unsigned point, typename traits::valuesType & values, detail::int2type<I>) const {
         auto & p = points.at(point);
-        auto pointDuration = uint32_t(p.duration() - (p.stacked - (prog * static_cast<float>(total))));
+        auto pointDuration = uint32_t(p.duration() - (p.stacked - prog));
         float pointTotal = static_cast<float>(pointDuration) / static_cast<float>(p.duration(I));
         if (pointTotal > 1.0f) pointTotal = 1.0f;
         auto easing = std::get<I>(p.easings);
@@ -2079,9 +2065,9 @@ namespace tweeny {
     }
 
     template<typename T, typename... Ts>
-    inline void tween<T, Ts...>::interpolate(float prog, unsigned point, typename traits::valuesType & values, detail::int2type<0>) const {
+    inline void tween<T, Ts...>::interpolate(uint32_t prog, unsigned point, typename traits::valuesType & values, detail::int2type<0>) const {
         auto & p = points.at(point);
-        auto pointDuration = uint32_t(p.duration() - (p.stacked - (prog * static_cast<float>(total))));
+        auto pointDuration = uint32_t(p.duration() - (p.stacked - prog));
         float pointTotal = static_cast<float>(pointDuration) / static_cast<float>(p.duration(0));
         if (pointTotal > 1.0f) pointTotal = 1.0f;
         auto easing = std::get<0>(p.easings);
@@ -2089,7 +2075,7 @@ namespace tweeny {
     }
 
     template<typename T, typename... Ts>
-    inline void tween<T, Ts...>::render(float p) {
+    inline void tween<T, Ts...>::render(uint32_t p) {
         currentPoint = pointAt(p);
         interpolate(p, currentPoint, current, detail::int2type<sizeof...(Ts) - 1 + 1 /* +1 for the T */>{ });
     }
@@ -2156,21 +2142,31 @@ namespace tweeny {
     template<typename T, typename... Ts>
     const typename detail::tweentraits<T, Ts...>::valuesType tween<T, Ts...>::peek(float progress) const {
         typename detail::tweentraits<T, Ts...>::valuesType values;
-        interpolate(progress, pointAt(progress), values, detail::int2type<sizeof...(Ts) - 1 + 1 /* +1 for the T */>{ });
+        uint32_t time = progress * total;
+        interpolate(time, pointAt(time), values, detail::int2type<sizeof...(Ts) - 1 + 1 /* +1 for the T */>{ });
         return values;
     }
 
     template<typename T, typename... Ts>
     const typename detail::tweentraits<T, Ts...>::valuesType tween<T, Ts...>::peek(uint32_t time) const {
         typename detail::tweentraits<T, Ts...>::valuesType values;
-        float progress = static_cast<float>(time) / static_cast<float>(total);
-        interpolate(progress, pointAt(progress), values, detail::int2type<sizeof...(Ts) - 1 + 1 /* +1 for the T */>{ });
+        interpolate(time, pointAt(time), values, detail::int2type<sizeof...(Ts) - 1 + 1 /* +1 for the T */>{ });
         return values;
     }
 
-  template<typename T, typename... Ts>
-    float tween<T, Ts...>::progress() const {
+    template<typename T, typename... Ts>
+    uint32_t tween<T, Ts...>::currentTimePoint() const {
         return currentProgress;
+    }
+
+    template<typename T, typename... Ts>
+    float tween<T, Ts...>::progress() const {
+        return static_cast<float>(currentProgress) / static_cast<float>(total);
+    }
+
+    template<typename T, typename... Ts>
+    bool tween<T, Ts...>::isFinished() const {
+        return currentProgress == total;
     }
 
     template<typename T, typename... Ts>
@@ -2200,21 +2196,20 @@ namespace tweeny {
         return currentPoint;
     }
 
-    template<typename T, typename... Ts> inline uint16_t tween<T, Ts...>::pointAt(float progress) const {
-        uint32_t t = static_cast<uint32_t>(progress * total);
+    template<typename T, typename... Ts> inline uint16_t tween<T, Ts...>::pointAt(uint32_t progress) const {
+        progress = detail::clip(progress, 0u, total);
         uint16_t point = 0;
-        while (t > points.at(point).stacked) point++;
-        if (point > 0 && t <= points.at(point - 1u).stacked) point--;
+        while (progress > points.at(point).stacked) point++;
+        if (point > 0 && progress <= points.at(point - 1u).stacked) point--;
         return point;
     }
 }
 
 #endif //TWEENY_TWEEN_TCC
-
 /*
  This file is part of the Tweeny library.
 
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
  Copyright (c) 2016 Guilherme R. Costa
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -2367,7 +2362,10 @@ namespace tweeny {
 
     template<typename T>
     inline const T & tween<T>::step(int32_t dt, bool suppress) {
-        return step(static_cast<float>(dt)/static_cast<float>(total), suppress);
+        dt *= currentDirection;
+        seek(currentProgress + dt, true);
+        if (!suppress) dispatch(onStepCallbacks);
+        return current;
     }
 
     template<typename T>
@@ -2377,29 +2375,26 @@ namespace tweeny {
 
     template<typename T>
     inline const T & tween<T>::step(float dp, bool suppress) {
-        dp *= currentDirection;
-        seek(currentProgress + dp, true);
-        if (!suppress) dispatch(onStepCallbacks);
-        return current;
+        return step(static_cast<int32_t>(dp * total), suppress);
     }
 
     template<typename T>
     inline const T & tween<T>::seek(float p, bool suppress) {
-        p = detail::clip(p, 0.0f, 1.0f);
-        currentProgress = p;
-        render(p);
+        return seek(static_cast<int32_t>(p * total), suppress);
+    }
+
+    template<typename T>
+    inline const T & tween<T>::seek(int32_t t, bool suppress) {
+        t = detail::clip(t, 0, (int32_t) total);
+        currentProgress = t;
+        render(t);
         if (!suppress) dispatch(onSeekCallbacks);
         return current;
     }
 
     template<typename T>
-    inline const T & tween<T>::seek(int32_t t, bool suppress) {
-        return seek(static_cast<float>(t) / static_cast<float>(total), suppress);
-    }
-
-    template<typename T>
     inline const T & tween<T>::seek(uint32_t t, bool suppress) {
-        return seek(static_cast<float>(t) / static_cast<float>(total), suppress);
+        return seek(static_cast<int32_t>(t), suppress);
     }
 
     template<typename T>
@@ -2408,9 +2403,9 @@ namespace tweeny {
     }
 
     template<typename T>
-    inline void tween<T>::interpolate(float prog, unsigned point, T & value) const {
+    inline void tween<T>::interpolate(uint32_t prog, unsigned point, T & value) const {
         auto & p = points.at(point);
-        auto pointDuration = uint32_t(p.duration() - (p.stacked - (prog * static_cast<float>(total))));
+        auto pointDuration = uint32_t(p.duration() - (p.stacked - prog));
         float pointTotal = static_cast<float>(pointDuration) / static_cast<float>(p.duration());
         if (pointTotal > 1.0f) pointTotal = 1.0f;
         auto easing = std::get<0>(p.easings);
@@ -2418,7 +2413,7 @@ namespace tweeny {
     }
 
     template<typename T>
-    inline void tween<T>::render(float p) {
+    inline void tween<T>::render(uint32_t p) {
         currentPoint = pointAt(p);
         interpolate(p, currentPoint, current);
     }
@@ -2485,21 +2480,30 @@ namespace tweeny {
     template<typename T>
     T tween<T>::peek(float progress) const {
         T value;
-        interpolate(progress, pointAt(progress), value);
+        interpolate(progress * total, pointAt(progress * total), value);
         return value;
     }
 
     template<typename T>
     T tween<T>::peek(uint32_t time) const {
         T value;
-        float progress = static_cast<float>(time) / static_cast<float>(total);
-        interpolate(progress, pointAt(progress), value);
+        interpolate(time, pointAt(time), value);
         return value;
     }
 
-  template<typename T>
-    float tween<T>::progress() const {
+    template<typename T>
+    uint32_t tween<T>::currentTimePoint() const {
         return currentProgress;
+    }
+
+    template<typename T>
+    float tween<T>::progress() const {
+        return static_cast<float>(currentProgress) / static_cast<float>(total);
+    }
+
+    template<typename T>
+    bool tween<T>::isFinished() const {
+        return currentProgress == total;
     }
 
     template<typename T>
@@ -2529,8 +2533,9 @@ namespace tweeny {
         return currentPoint;
     }
 
-    template<typename T> inline uint16_t tween<T>::pointAt(float progress) const {
-        auto t = static_cast<uint32_t>(progress * total);
+    template<typename T> inline uint16_t tween<T>::pointAt(uint32_t timePoint) const {
+        timePoint = detail::clip(timePoint, 0u, total);
+        auto t = static_cast<uint32_t>(timePoint);
         uint16_t point = 0;
         while (t > points.at(point).stacked) point++;
         if (point > 0 && t <= points.at(point - 1u).stacked) point--;
@@ -2538,8 +2543,29 @@ namespace tweeny {
     }
 }
 #endif //TWEENY_TWEENONE_TCC
+/*
+ This file is part of the Tweeny library.
 
-#endif //TWEENY_TWEEN_H
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016 Guilherme R. Costa
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 /**
  * @brief The tweeny namespace contains all symbols and names for the Tweeny library.
@@ -2560,7 +2586,7 @@ namespace tweeny {
 /*
  This file is part of the Tweeny library.
 
- Copyright (c) 2016-2021 Leonardo Guilherme Lucena de Freitas
+ Copyright (c) 2016-2025 Leonardo Guilherme Lucena de Freitas
  Copyright (c) 2016 Guilherme R. Costa
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of

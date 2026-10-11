@@ -293,7 +293,7 @@
     <ClInclude Include="../../third-party/include/sdl3_image/SDL_image.h">
       <Filter>third-party\SDL3_Image</Filter>
     </ClInclude>
-    <ClInclude Include="../../third-party/include/tweeny-3.2.0.h">
+    <ClInclude Include="../../third-party/include/tweeny-3.2.1.h">
       <Filter>third-party</Filter>
     </ClInclude>
   </ItemGroup>

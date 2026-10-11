@@ -3,7 +3,7 @@
 #include "actors/Group.h"
 #include "AnimationType.h"
 
-#include "tweeny-3.2.0.h"
+#include "tweeny-3.2.1.h"
 
 namespace Flex {
 

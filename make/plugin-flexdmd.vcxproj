@@ -71,7 +71,7 @@
     <ClInclude Include="../../plugins/flexdmd/resources/RegionFilter.h" />
     <ClInclude Include="../../plugins/flexdmd/resources/ResourceDef.h" />
     <ClInclude Include="../../plugins/flexdmd/FlexDMD.h" />
-    <ClInclude Include="../../third-party/include/tweeny-3.2.0.h" />
+    <ClInclude Include="../../third-party/include/tweeny-3.2.1.h" />
     <ClInclude Include="../../plugins/flexdmd/resources/VPXFile.h" />
 	<ClInclude Include="../../plugins/flexdmd/scenes/AnimationType.h" />
     <ClInclude Include="../../plugins/flexdmd/scenes/BackgroundScene.h" />

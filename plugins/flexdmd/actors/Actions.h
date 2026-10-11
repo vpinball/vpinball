@@ -5,7 +5,7 @@
 #include "Group.h"
 #include "plugins/ScriptablePlugin.h"
 
-#include "tweeny-3.2.0.h"
+#include "tweeny-3.2.1.h"
 
 namespace Flex {
 
