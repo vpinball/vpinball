@@ -23,6 +23,8 @@ import kotlinx.coroutines.withContext
 import org.vpinball.app.R
 import org.vpinball.app.Table
 import org.vpinball.app.ui.screens.common.ProgressOverlay
+import org.vpinball.app.util.THUMBNAIL_MAX_PIXELS
+import org.vpinball.app.util.cachedImage
 import org.vpinball.app.util.drawWithGradient
 import org.vpinball.app.util.loadImage
 
@@ -31,7 +33,14 @@ fun LoadingScreen(table: Table, progress: Int, status: String?, modifier: Modifi
     val hazeState = rememberHazeState()
 
     val bitmap by
-        produceState<ImageBitmap?>(null, table.uuid, table.image, table.modifiedAt) { value = withContext(Dispatchers.IO) { table.loadImage() } }
+        produceState<ImageBitmap?>(
+            table.cachedImage() ?: table.cachedImage(THUMBNAIL_MAX_PIXELS),
+            table.uuid,
+            table.image,
+            table.modifiedAt,
+        ) {
+            value = table.cachedImage() ?: withContext(Dispatchers.IO) { table.loadImage() } ?: value
+        }
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Box(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {

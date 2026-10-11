@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -352,10 +354,22 @@ private fun MarqueeRow(
     count: Int? = null,
     inRecentlyPlayed: Boolean = false,
 ) {
+    val listState = rememberLazyListState()
+    val firstUuid = tables.firstOrNull()?.uuid
+    var lastFirstUuid by rememberSaveable { mutableStateOf(firstUuid) }
+
+    LaunchedEffect(firstUuid) {
+        if (inRecentlyPlayed && firstUuid != lastFirstUuid) {
+            lastFirstUuid = firstUuid
+            listState.animateScrollToItem(0)
+        }
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         SectionHeader(title = title, count = count)
 
         LazyRow(
+            state = listState,
             horizontalArrangement = Arrangement.spacedBy(GRID_GAP),
             contentPadding = PaddingValues(horizontal = GRID_PADDING),
             modifier = Modifier.requiredWidth(rowWidth),

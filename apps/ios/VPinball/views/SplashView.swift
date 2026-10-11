@@ -34,19 +34,16 @@ struct SplashView: View {
             VStack {
                 Spacer()
 
-                Text(BuildInfo.provenance)
-                    .font(.caption)
-                    .bold()
-                    .foregroundStyle(.primary)
+                VStack(spacing: 4) {
+                    Text(BuildInfo.provenance)
 
-                Text(BuildInfo.version)
-                    .font(.caption)
-                    .bold()
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.primary)
-                    .padding(.top, 4)
+                    Text(BuildInfo.version)
+                }
+                .font(.caption)
+                .foregroundStyle(Color.secondary)
+                .multilineTextAlignment(.center)
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 24)
         }
     }
 }

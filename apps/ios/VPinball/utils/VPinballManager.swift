@@ -161,14 +161,16 @@ class VPinballManager {
         await MainActor.run {
             VPinballModel.shared.activeTable = table
             MainViewModel.shared.errorMessage = ""
-            tableImageCache.removeAllObjects()
 
             VPinballModel.shared.showHUD(title: table.name,
                                          status: "Launching")
         }
 
         if let tablePath = await TableManager.shared.getLoadedTablePath(table: table),
-           await MainActor.run(body: { VPinballStatus(rawValue: VPinballPlay(tablePath.cstring)) }) == .success
+           await MainActor.run(body: { () -> VPinballStatus? in
+               tableImageCache.removeAllObjects()
+               return VPinballStatus(rawValue: VPinballPlay(tablePath.cstring))
+           }) == .success
         {
             return
         }

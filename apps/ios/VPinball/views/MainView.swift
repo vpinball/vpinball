@@ -312,6 +312,11 @@ struct TableLaunchView: View {
 
     @State private var image: UIImage?
 
+    init(table: Table) {
+        self.table = table
+        _image = State(initialValue: table.cachedThumbnail(maxPixelSize: TableImageView.thumbnailMaxPixelSize))
+    }
+
     var body: some View {
         ZStack {
             Color(.systemBackground)
@@ -339,7 +344,13 @@ struct TableLaunchView: View {
         }
         .ignoresSafeArea()
         .task(id: "\(table.uuid)_\(table.modifiedAt)") {
-            image = await table.uiImageAsync()
+            if let fullImage = await table.uiImageAsync() {
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    image = fullImage
+                }
+            }
         }
     }
 }
