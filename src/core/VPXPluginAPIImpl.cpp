@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "parts/flasher.h"
+#include "parts/light.h"
 #include "renderer/Renderer.h"
 #include "ui/live/LiveUI.h"
 #include "input/PlungerHandler.h"
@@ -666,14 +667,34 @@ void VPXPluginAPIImpl::OnGameStart()
    //m_actionMap[VPXACTION_VRRecenter] = { inputManager.GetVRRecenterActionId(), -1 };
    //m_actionMap[VPXACTION_VRUp] = { inputManager.GetVRUpActionId(), -1 };
    //m_actionMap[VPXACTION_VRDown] = { inputManager.GetVRDownActionId(), -1 };
+
+   // Expose the table lights as a game state source
+   assert(m_lightStateDefs.empty());
+   for (IEditable* const edit : g_pplayer->m_ptable->GetParts())
+      if (edit->GetItemType() == eItemLight)
+      {
+         Light* const light = static_cast<Light*>(edit);
+         m_lightStateDefs.emplace_back(StateDef { light->GetName().c_str(), nullptr, static_cast<uint32_t>(m_lightStateDefs.size()), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, light,
+            &VPXPluginAPIImpl::GetLightState, &VPXPluginAPIImpl::SetLightState });
+      }
+   if (!m_lightStateDefs.empty())
+      m_stateSources->AddItems({ //
+         { .id = { m_vpxPlugin->m_endpointId, 1 },
+            .name = "Lights",
+            .desc = "Table lights in play state (0..1 = Off..On, 2 = Blinking)",
+            .nStates = static_cast<unsigned int>(m_lightStateDefs.size()),
+            .stateDefs = m_lightStateDefs.data() } });
 }
 
 void VPXPluginAPIImpl::OnGameEnd()
 {
    const auto& msgApi = m_msgApi;
 
-   m_dmdSources.clear();
    m_displaySources->ClearItems();
+   m_dmdSources.clear();
+
+   m_stateSources->ClearItems();
+   m_lightStateDefs.clear();
 
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onGameEndMsgId, nullptr);
 
@@ -714,6 +735,13 @@ void VPXPluginAPIImpl::OnDMDUpdated(Flasher* flasher, std::shared_ptr<BaseTextur
       }
    }
 }
+
+// The exposed game state matches the light's script 'State' property (0..1 = Off..On, 2 = Blinking)
+
+void MSGPIAPI VPXPluginAPIImpl::GetLightState(void* callContext, void* pResult) { static_cast<Light*>(callContext)->get_State(static_cast<float*>(pResult)); }
+
+void MSGPIAPI VPXPluginAPIImpl::SetLightState(void* callContext, const void* pValue) { static_cast<Light*>(callContext)->put_State(*static_cast<const float*>(pValue)); }
+
 
 DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(void* callContext)
 {
@@ -813,6 +841,9 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager)
    // Contributed Displays
    m_displaySources
       = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>>(&m_msgApi, m_vpxPlugin->m_endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
+
+   // Contributed States (table lights)
+   m_stateSources = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<StateSrcId>>(&m_msgApi, m_vpxPlugin->m_endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG);
 }
 
 VPXPluginAPIImpl::~VPXPluginAPIImpl()
