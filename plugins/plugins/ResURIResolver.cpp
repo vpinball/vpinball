@@ -145,18 +145,21 @@ bool ResURIResolver::TryGetFloatState(const string &link, float &value)
                {
                   uint32_t v = 0;
                   d.GetState(d.callContext, &v);
-                  value = (float)v;
                   if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
-                     value /= 4294967295.f;
+                     value = (float)((double)v/4294967295.);
+                  else
+                     value = (float)v;
+
                   break;
                }
                case CTLPI_STATE_FORMAT_UINT64:
                {
                   uint64_t v = 0;
                   d.GetState(d.callContext, &v);
-                  value = (float)v;
                   if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
-                     value /= 18446744073709551615.f;
+                     value = (float)((double)v/18446744073709551615.);
+                  else
+                     value = (float)v;
                   break;
                }
                case CTLPI_STATE_FORMAT_INT8:
@@ -181,18 +184,20 @@ bool ResURIResolver::TryGetFloatState(const string &link, float &value)
                {
                   int32_t v = 0;
                   d.GetState(d.callContext, &v);
-                  value = (float)v;
                   if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
-                     value /= 2147483647.f;
+                     value = (float)((double)v/2147483647.);
+                  else
+                     value = (float)v;
                   break;
                }
                case CTLPI_STATE_FORMAT_INT64:
                {
                   int64_t v = 0;
                   d.GetState(d.callContext, &v);
-                  value = (float)v;
                   if (d.semanticType == CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS)
-                     value /= 9223372036854775807.f;
+                     value = (float)((double)v/9223372036854775807.);
+                  else
+                     value = (float)v;
                   break;
                }
                case CTLPI_STATE_FORMAT_FLOAT:
@@ -213,7 +218,7 @@ bool ResURIResolver::TryGetFloatState(const string &link, float &value)
                }
                // Switch semantics are binary: non-zero means closed
                if (d.semanticType == CTLPI_STATE_TYPE_SWITCH)
-                  value = value != 0.f ? 1.f : 0.f;
+                  value = (value != 0.f) ? 1.f : 0.f;
                return value;
             };
          m_floatCache[link] = lambda;
