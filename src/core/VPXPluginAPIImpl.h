@@ -13,6 +13,7 @@
 #include "unordered_dense.h"
 
 class BaseTexture;
+class Settings;
 
 // VPX serves as a plugin host, using the generic messaging plugin API
 // 
@@ -26,7 +27,7 @@ class BaseTexture;
 class VPXPluginAPIImpl
 {
 public:
-   VPXPluginAPIImpl(MsgPI::MsgPluginManager& msgApi);
+   VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager, Settings* settings = nullptr);
    ~VPXPluginAPIImpl();
 
    const VPXPluginAPI& getAPI() const { return m_api; }
@@ -56,7 +57,17 @@ public:
    void OnGameEnd();
 
 private:
+   MsgPI::MsgPluginManager& m_pluginManager;
    const MsgPluginAPI& m_msgApi;
+
+   // Single active instance: plugin-facing entry points are C function pointers without context,
+   // so they route through this pointer (set/cleared by the ctor/dtor; Player and the design-time
+   // editor dialog never coexist).
+   static VPXPluginAPIImpl* s_instance;
+
+   // Design-time settings target: when set, plugin settings are persisted to this object (e.g. the
+   // edited table's settings) instead of the active app settings.
+   Settings* const m_settings;
 
    // VPX API
    std::shared_ptr<MsgPI::MsgPlugin> m_vpxPlugin;
