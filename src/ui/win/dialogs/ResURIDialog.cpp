@@ -212,28 +212,28 @@ void ResURIDialog::RefreshItems()
    if (m_selectedItemIndex >= 0 && m_selectedItemIndex < static_cast<int>(m_itemList.size()))
       previous = m_itemList[m_selectedItemIndex];
 
-   uint32_t endpoint = 0;
+   std::string pluginId;
    const int selectedPlugin = m_selectedPluginIndex;
    if (selectedPlugin >= 0 && selectedPlugin < static_cast<int>(m_pluginList.size()))
-      endpoint = m_pluginList[selectedPlugin].endpointId;
+      pluginId = m_pluginList[selectedPlugin].id;
 
    std::vector<Item> newList;
    if (m_kind == ResURIKind::Display)
       for (const auto& item : m_builder->GetDisplayItems(filter, m_displayFamily, true))
       {
-         if (endpoint == 0 || item.endpointId == endpoint)
+         if (pluginId.empty() || item.pluginId == pluginId)
             newList.push_back(item);
       }
    else if (m_kind == ResURIKind::SegDisplay)
       for (const auto& item : m_builder->GetSegItems(filter))
       {
-         if (endpoint == 0 || item.endpointId == endpoint)
+         if (pluginId.empty() || item.pluginId == pluginId)
             newList.push_back(item);
       }
    else
       for (const auto& item : m_builder->GetFloatItems(filter))
       {
-         if (endpoint == 0 || item.endpointId == endpoint)
+         if (pluginId.empty() || item.pluginId == pluginId)
             newList.push_back(item);
       }
 
