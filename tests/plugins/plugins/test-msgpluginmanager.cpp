@@ -5,6 +5,7 @@
 #include "doctest.h"
 
 #include "plugins/MsgPluginManager.h"
+#include "plugins/ControllerPlugin.h"
 
 #include <filesystem>
 #include <fstream>
@@ -312,4 +313,122 @@ TEST_CASE("MsgPluginManager message API")
       pm.ScanPluginFolder(loader, GetTestTmpDir() / "does-not-exist", [](MsgPlugin&) { FAIL("unexpected plugin"); });
       CHECK(pm.GetPlugins().empty());
    }
+}
+
+namespace
+{
+
+// Fake controller plugin implementing the controller run/stop commands
+struct FakeRunController
+{
+   const MsgPluginAPI* api = nullptr;
+   unsigned int runCmdId = 0;
+   unsigned int runStopId = 0;
+   bool running = false;
+   std::string lastGameId;
+   int stopCalls = 0;
+
+   static void MSGPIAPI OnRunCmd(unsigned int, void* context, void* msgData)
+   {
+      FakeRunController* self = static_cast<FakeRunController*>(context);
+      RunCmdMsg* msg = static_cast<RunCmdMsg*>(msgData);
+      if (self->running)
+         msg->status = CTLPI_RUN_STATUS_RUNNING;
+      else if (std::string(msg->gameId) == "unknown")
+         msg->status = CTLPI_RUN_STATUS_UNKNOWN_GAME;
+      else
+      {
+         self->running = true;
+         self->lastGameId = msg->gameId;
+         msg->status = CTLPI_RUN_STATUS_OK;
+      }
+   }
+
+   static void MSGPIAPI OnRunStop(unsigned int, void* context, void*)
+   {
+      FakeRunController* self = static_cast<FakeRunController*>(context);
+      self->running = false;
+      ++self->stopCalls;
+   }
+};
+
+FakeRunController g_runCtl;
+
+void RunCtlLoad(const uint32_t endpointId, const MsgPluginAPI* api)
+{
+   g_runCtl.api = api;
+   g_runCtl.runCmdId = api->GetMsgID(CTLPI_NAMESPACE, CTLPI_RUN_CMD);
+   g_runCtl.runStopId = api->GetMsgID(CTLPI_NAMESPACE, CTLPI_RUN_STOP);
+   api->SubscribeMsg(endpointId, g_runCtl.runCmdId, FakeRunController::OnRunCmd, &g_runCtl);
+   api->SubscribeMsg(endpointId, g_runCtl.runStopId, FakeRunController::OnRunStop, &g_runCtl);
+}
+
+void RunCtlUnload()
+{
+   g_runCtl.api->UnsubscribeMsg(g_runCtl.runCmdId, FakeRunController::OnRunCmd, &g_runCtl);
+   g_runCtl.api->UnsubscribeMsg(g_runCtl.runStopId, FakeRunController::OnRunStop, &g_runCtl);
+   g_runCtl.api->ReleaseMsgID(g_runCtl.runCmdId);
+   g_runCtl.api->ReleaseMsgID(g_runCtl.runStopId);
+   g_runCtl = {};
+}
+
+} // namespace
+
+TEST_CASE("Controller run/stop commands")
+{
+   MsgPluginManager pm;
+   const MsgPluginAPI& api = pm.GetMsgAPI();
+
+   auto ctl = pm.RegisterPlugin("testctl", "Test Controller", "", "", "", "", RunCtlLoad, RunCtlUnload);
+   auto host = pm.RegisterPlugin("testhost", "Test Host", "", "", "", "", TestPluginLoad, TestPluginUnload);
+   pm.LoadPlugin(*ctl);
+   pm.LoadPlugin(*host);
+
+   const unsigned int runCmdId = api.GetMsgID(CTLPI_NAMESPACE, CTLPI_RUN_CMD);
+   const unsigned int runStopId = api.GetMsgID(CTLPI_NAMESPACE, CTLPI_RUN_STOP);
+
+   SUBCASE("run starts a game, then discards commands until stopped")
+   {
+      RunCmdMsg msg { "afm_113", CTLPI_RUN_STATUS_UNSUPPORTED };
+      api.SendMsg(host->m_endpointId, runCmdId, ctl->m_endpointId, &msg);
+      CHECK(msg.status == CTLPI_RUN_STATUS_OK);
+      CHECK(g_runCtl.running);
+      CHECK(g_runCtl.lastGameId == "afm_113");
+
+      // A running controller discards run commands until a stop has been processed
+      msg = { "mm_109", CTLPI_RUN_STATUS_UNSUPPORTED };
+      api.SendMsg(host->m_endpointId, runCmdId, ctl->m_endpointId, &msg);
+      CHECK(msg.status == CTLPI_RUN_STATUS_RUNNING);
+      CHECK(g_runCtl.lastGameId == "afm_113");
+
+      api.SendMsg(host->m_endpointId, runStopId, ctl->m_endpointId, nullptr);
+      CHECK_FALSE(g_runCtl.running);
+      CHECK(g_runCtl.stopCalls == 1);
+
+      msg = { "mm_109", CTLPI_RUN_STATUS_UNSUPPORTED };
+      api.SendMsg(host->m_endpointId, runCmdId, ctl->m_endpointId, &msg);
+      CHECK(msg.status == CTLPI_RUN_STATUS_OK);
+      CHECK(g_runCtl.lastGameId == "mm_109");
+   }
+
+   SUBCASE("unsupported plugin leaves the sender-initialized status")
+   {
+      RunCmdMsg msg { "game", CTLPI_RUN_STATUS_UNSUPPORTED };
+      api.SendMsg(host->m_endpointId, runCmdId, host->m_endpointId, &msg);
+      CHECK(msg.status == CTLPI_RUN_STATUS_UNSUPPORTED);
+      CHECK_FALSE(g_runCtl.running);
+   }
+
+   SUBCASE("unresolvable game is reported by the target")
+   {
+      RunCmdMsg msg { "unknown", CTLPI_RUN_STATUS_UNSUPPORTED };
+      api.SendMsg(host->m_endpointId, runCmdId, ctl->m_endpointId, &msg);
+      CHECK(msg.status == CTLPI_RUN_STATUS_UNKNOWN_GAME);
+      CHECK_FALSE(g_runCtl.running);
+   }
+
+   api.ReleaseMsgID(runCmdId);
+   api.ReleaseMsgID(runStopId);
+   pm.UnloadPlugin(*ctl);
+   pm.UnloadPlugin(*host);
 }

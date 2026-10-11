@@ -258,6 +258,42 @@ static void OnControllerDestroyed(Controller*)
    controller = nullptr;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Controller run/stop commands (controller plugin API)
+
+static unsigned int runCmdMsgId = 0;
+static unsigned int runStopMsgId = 0;
+
+static void MSGPIAPI OnControllerRunCmd(unsigned int msgId, void* context, void* msgData)
+{
+   RunCmdMsg* const msg = static_cast<RunCmdMsg*>(msgData);
+   if (msg == nullptr)
+      return;
+   if (controller != nullptr && controller->GetRunning())
+   {
+      // Running controllers discard run commands until a stop command has been processed
+      msg->status = CTLPI_RUN_STATUS_RUNNING;
+   }
+   else
+   {
+      if (controller == nullptr)
+         PinMAME_Controller_SCD->CreateObject();
+      controller->SetGameName(msg->gameId);
+      if (controller->GetROMName().empty())
+         msg->status = CTLPI_RUN_STATUS_UNKNOWN_GAME;
+      else
+      {
+         controller->Run();
+         msg->status = controller->GetRunning() ? CTLPI_RUN_STATUS_OK : CTLPI_RUN_STATUS_ERROR;
+      }
+   }
+}
+
+static void MSGPIAPI OnControllerRunStop(unsigned int msgId, void* context, void* msgData)
+{
+   if (controller != nullptr)
+      controller->Stop();
+}
 }
 
 
@@ -396,6 +432,12 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    scriptApi->SubmitTypeLibrary(endpointId);
    scriptApi->SetCOMObjectOverride("VPinMAME.Controller", PinMAME_Controller_SCD);
 
+   // Support controller run/stop commands (e.g. ResURI builder UI starting a game to expose its states)
+   runCmdMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_RUN_CMD);
+   runStopMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_RUN_STOP);
+   msgApi->SubscribeMsg(endpointId, runCmdMsgId, OnControllerRunCmd, nullptr);
+   msgApi->SubscribeMsg(endpointId, runStopMsgId, OnControllerRunStop, nullptr);
+
    PinmameSetMsgAPI(const_cast<MsgPluginAPI*>(msgApi), endpointId);
 }
 
@@ -427,6 +469,10 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
    UnregisterPinMAME_IntArray(arrayLambda);
    UnregisterPinMAME_StructArray(arrayLambda);
 
+   msgApi->UnsubscribeMsg(runCmdMsgId, OnControllerRunCmd, nullptr);
+   msgApi->UnsubscribeMsg(runStopMsgId, OnControllerRunStop, nullptr);
+   msgApi->ReleaseMsgID(runCmdMsgId);
+   msgApi->ReleaseMsgID(runStopMsgId);
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
    PinmameSetMsgAPI(nullptr, 0);

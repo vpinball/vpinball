@@ -83,6 +83,26 @@ typedef struct GetControllersMsg
    ControllerDef* entries;     // Pointer to an array of maxEntryCount entries to be filled
 } GetControllersMsg;
 
+// Request the target endpoint to start a controller emulating the given game.
+// The message must be sent to a given endpoint (SendMsg), the data being a pointer to a RunCmdMsg.
+#define CTLPI_RUN_CMD "ControllerRunCmd:1"
+
+// Request the target endpoint to stop its running controller. There is no message data.
+#define CTLPI_RUN_STOP "ControllerRunStop:1"
+
+// RunCmdMsg status codes
+#define CTLPI_RUN_STATUS_OK 0 // The controller was started (running state is confirmed through the controllers list change event)
+#define CTLPI_RUN_STATUS_UNSUPPORTED (-1) // Sender's initial value: unchanged if no subscriber handles the message
+#define CTLPI_RUN_STATUS_RUNNING 1 // Discarded: a controller is already running (issue CTLPI_RUN_STOP first)
+#define CTLPI_RUN_STATUS_UNKNOWN_GAME 2 // The gameId could not be resolved by the target
+#define CTLPI_RUN_STATUS_ERROR 3 // The game was resolved but the controller failed to start
+
+typedef struct RunCmdMsg
+{
+   const char* gameId; // Identifier of the game to emulate, semantics defined by the target (e.g. PinMAME driver name)
+   int status; // Must be initialized by the sender to CTLPI_RUN_STATUS_UNSUPPORTED, overwritten by the target with a CTLPI_RUN_STATUS_xxx code
+} RunCmdMsg;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

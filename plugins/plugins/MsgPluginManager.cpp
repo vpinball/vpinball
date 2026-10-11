@@ -74,7 +74,9 @@ MsgPluginManager::~MsgPluginManager()
 {
    assert(std::this_thread::get_id() == m_apiThread);
    assert(m_pluginManager == this);
-   m_pluginManager = nullptr;
+   // Plugins must be unloaded while m_pluginManager still points to this manager,
+   // as MsgPlugin::Unload dispatches messages through the message API
+   UnloadPlugins();
    m_plugins.clear();
    for (const auto& msg : m_msgs)
       if (msg.refCount > 0)
@@ -82,6 +84,7 @@ MsgPluginManager::~MsgPluginManager()
          PLOGE << "Message " << msg.name_space << '.' << msg.name << " was not released (leaked reference count: " << msg.refCount << ')';
          assert(false);
       }
+   m_pluginManager = nullptr;
 }
 
 
@@ -466,7 +469,8 @@ void MsgPluginManager::LoadPlugin(MsgPlugin& plugin)
 
 void MsgPluginManager::UnloadPlugin(MsgPlugin& plugin)
 {
-   m_settingHandler(plugin.m_id, SettingAction::UnregisterAll, nullptr);
+   if (m_settingHandler != nullptr)
+      m_settingHandler(plugin.m_id, SettingAction::UnregisterAll, nullptr);
    plugin.Unload();
    {
       // Check for any invalid pending callback
