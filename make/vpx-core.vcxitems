@@ -1018,6 +1018,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/NotesDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/PhysicsOptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/RenderProbeDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/ResURIDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/ScriptErrorDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/SearchSelectDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/SoundDialog.cpp" />
@@ -1962,6 +1963,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/MaterialDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/NotesDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/RenderProbeDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/ResURIDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/ScriptErrorDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/PhysicsOptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/SearchSelectDialog.h" />

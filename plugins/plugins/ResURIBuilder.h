@@ -13,6 +13,14 @@
 namespace PinballPlugin
 {
 
+// Which kind of controller source a ResURI picker can build a link to
+enum class ResURIKind
+{
+   FloatState,
+   Display,
+   SegDisplay,
+};
+
 // UI-agnostic backend shared by the ResURI picker dialogs (live editor & Win32).
 // Enumerates plugins, running controllers and the sources they expose through the
 // Controller plugin API, generates ctrl:// URIs and drives plugin/controller lifecycle.

@@ -565,6 +565,8 @@ set(VPX_WINDOWS_SOURCES
    src/ui/win/dialogs/ScriptErrorDialog.h
    src/ui/win/dialogs/RenderProbeDialog.cpp
    src/ui/win/dialogs/RenderProbeDialog.h
+   src/ui/win/dialogs/ResURIDialog.cpp
+   src/ui/win/dialogs/ResURIDialog.h
    src/ui/win/dialogs/PhysicsOptionsDialog.cpp
    src/ui/win/dialogs/PhysicsOptionsDialog.h
    src/ui/win/dialogs/WhereUsedDialog.cpp

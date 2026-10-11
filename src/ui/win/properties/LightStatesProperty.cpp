@@ -5,6 +5,7 @@
 
 #include "parts/Collection.h"
 #include "parts/light.h"
+#include "ui/win/dialogs/ResURIDialog.h"
 #include "ui/win/resource.h"
 
 
@@ -116,8 +117,44 @@ BOOL LightStatesProperty::OnInitDialog()
     m_resizer.AddChild(m_blinkPatternEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_blinkIntervalEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_stateSrcLinkEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATE_SOURCE_BUTTON), CResizer::topright, 0);
 
     return TRUE;
+}
+
+BOOL LightStatesProperty::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+   if ((LOWORD(wParam) == IDC_STATE_SOURCE_BUTTON) && (HIWORD(wParam) == BN_CLICKED))
+   {
+      string current;
+      for (int i = 0; i < SelCount(); i++)
+      {
+         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
+            continue;
+         current = ((Light *)SelAt(i)->GetEditable())->m_d.m_stateSrcLink;
+         break;
+      }
+      ResURIDialog dlg(PinballPlugin::ResURIKind::FloatState, current,
+         [this](const string &uri)
+         {
+            for (int i = 0; i < SelCount(); i++)
+            {
+               if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemLight))
+                  continue;
+               Light *const light = (Light *)SelAt(i)->GetEditable();
+               if (uri != light->m_d.m_stateSrcLink)
+               {
+                  PropertyDialog::StartUndo(light);
+                  light->m_d.m_stateSrcLink = uri;
+                  PropertyDialog::EndUndo(light);
+               }
+            }
+         });
+      dlg.DoModal(GetHwnd());
+      UpdateVisuals(IDC_STATE_SOURCE_EDIT);
+      return TRUE;
+   }
+   return BasePropertyDialog::OnCommand(wParam, lParam);
 }
 
 INT_PTR LightStatesProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
