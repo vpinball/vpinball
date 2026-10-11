@@ -5,16 +5,12 @@
 #include <functional>
 #include <string>
 
+#include "plugins/ResURIBuilder.h"
+
 namespace VPX::EditorUI
 {
 
-// Which kind of controller source the picker can build a link to
-enum class ResURIKind
-{
-   FloatState,
-   Display,
-   SegDisplay,
-};
+using PinballPlugin::ResURIKind;
 
 // Modal dialog building a ctrl:// URI toward a controller-exposed source.
 // The picker enumerates the loaded plugins and their sources through the shared
