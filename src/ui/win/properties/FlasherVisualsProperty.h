@@ -20,7 +20,7 @@ protected:
 
     void UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName);
 
-private:
+ private:
     ComboBox    m_modeCombo;
     EditBox     m_depthBiasEdit;
     CColorDialog m_colorDialog;
@@ -47,7 +47,8 @@ private:
     HWND        m_hDisplayInEditorCheck = NULL;
 
     EditBox     m_opacityAmountEdit;
-    ComboBox    m_lightmapCombo;
+    ComboBox m_lightmapCombo;
+    EditBox m_stateLinkEdit;
     ComboBox    m_addBlendCombo;
     vector<string> m_addBlendList;
     EditBox     m_modulateEdit;

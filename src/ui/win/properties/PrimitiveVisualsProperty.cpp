@@ -10,6 +10,7 @@
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/dialogs/ResURIDialog.h"
 
 
 PrimitiveVisualsProperty::PrimitiveVisualsProperty(const vector<IWinUIPart *> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
@@ -22,6 +23,7 @@ PrimitiveVisualsProperty::PrimitiveVisualsProperty(const vector<IWinUIPart *> *p
     m_imageCombo.SetDialog(this);
     m_normalMapCombo.SetDialog(this);
     m_lightmapCombo.SetDialog(this);
+    m_stateLinkEdit.SetDialog(this);
     m_reflectionCombo.SetDialog(this);
     m_reflectionAmountEdit.SetDialog(this);
     m_refractionCombo.SetDialog(this);
@@ -101,6 +103,8 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
            PropertyDialog::SetFloatTextbox(m_refractionThicknessEdit, prim->m_d.m_refractionThickness);
         if (dispid == IDC_LIGHTMAP || dispid == -1)
            UpdateLightmapComboBox(prim->GetPTable(), m_lightmapCombo, prim->m_d.m_szLightmap);
+        if (dispid == IDC_STATE_SOURCE_EDIT || dispid == -1)
+           m_stateLinkEdit.SetWindowText(prim->m_d.m_stateSrcLink.c_str());
 
         // Disable playfield settings that are taken from table settings to avoid confusing the user
         if (m_hReflectionEnabledCheck && (dispid == IDC_REFLECT_ENABLED_CHECK || dispid == -1))
@@ -118,32 +122,32 @@ void PrimitiveVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void PrimitiveVisualsProperty::UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName)
 {
-   std::vector<Light*> lights;
+   std::vector<Light *> lights;
    for (IEditable *const pe : table->GetParts())
       if (pe->GetItemType() == ItemTypeEnum::eItemLight)
          lights.push_back((Light *)pe);
 
-    bool need_reset = combo.GetCount() != (int)lights.size() + 1; // Not the same number of items
-    need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
-    if (!need_reset)
-    {
-        bool texelFound = false;
-        for (const auto texel : lights)
-        {
-           if (texel->GetName() == selectName) //!! lstrcmpi?
-              texelFound = true;
-           need_reset |= combo.FindStringExact(1, texel->GetName().c_str()) == CB_ERR; // Combo does not contain an image from the image list
-        }
-        need_reset |= !texelFound; // Selection is not part of image list
-    }
-    if (need_reset)
-    {
-        combo.ResetContent();
-        combo.AddString(_T("<None>"));
-        for (size_t i = 0; i < lights.size(); i++)
-           combo.AddString(lights[i]->GetName().c_str());
-    }
-    combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
+   bool need_reset = combo.GetCount() != (int)lights.size() + 1; // Not the same number of items
+   need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
+   if (!need_reset)
+   {
+      bool texelFound = false;
+      for (const auto texel : lights)
+      {
+         if (texel->GetName() == selectName) //!! lstrcmpi?
+            texelFound = true;
+         need_reset |= combo.FindStringExact(1, texel->GetName().c_str()) == CB_ERR; // Combo does not contain an image from the image list
+      }
+      need_reset |= !texelFound; // Selection is not part of image list
+   }
+   if (need_reset)
+   {
+      combo.ResetContent();
+      combo.AddString(_T("<None>"));
+      for (size_t i = 0; i < lights.size(); i++)
+         combo.AddString(lights[i]->GetName().c_str());
+   }
+   combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
 
 void PrimitiveVisualsProperty::UpdateRenderProbeComboBox(const vector<RenderProbe *> &contentList, const CComboBox &combo, const string &selectName)
@@ -251,9 +255,12 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                }
                 break;
             }
-            case IDC_LIGHTMAP:
-                CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szLightmap, m_lightmapCombo, prim);
-                break;
+            case IDC_LIGHTMAP: CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szLightmap, m_lightmapCombo, prim); break;
+            case IDC_STATE_SOURCE_EDIT:
+               PropertyDialog::StartUndo(prim);
+               prim->m_d.m_stateSrcLink = m_stateLinkEdit.GetWindowText().GetString();
+               PropertyDialog::EndUndo(prim);
+               break;
             case DISPID_REFLECTION_PROBE:
                 CHECK_UPDATE_COMBO_TEXT_STRING(prim->m_d.m_szReflectionProbe, m_reflectionCombo, prim);
                 break;
@@ -311,6 +318,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_legacySidesEdit.AttachItem(IDC_PRIMITIVE_LEGACY_SIDES_EDIT);
     m_edgeFactorUIEdit.AttachItem(IDC_EDGE_FACTOR_UI);
     m_lightmapCombo.AttachItem(IDC_LIGHTMAP);
+    m_stateLinkEdit.AttachItem(IDC_STATE_SOURCE_EDIT);
     m_reflectionCombo.AttachItem(DISPID_REFLECTION_PROBE);
     m_reflectionAmountEdit.AttachItem(IDC_REFLECTION_AMOUNT);
     m_refractionCombo.AttachItem(DISPID_REFRACTION_PROBE);
@@ -337,6 +345,9 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, 0);
     m_resizer.AddChild(m_lightmapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
+    m_resizer.AddChild(m_stateLinkEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATE_SOURCE_BUTTON), CResizer::topright, 0);
 
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_materialCombo, CResizer::topleft, RD_STRETCH_WIDTH);
@@ -374,6 +385,43 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
         AddToolTip("Hide parts behind this one using the depth mask (Should be disabled for transparent parts)", hwndDlg, toolTipHwnd, m_hDepthMaskWriteCheck);
     }
     return TRUE;
+}
+
+BOOL PrimitiveVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+   if ((LOWORD(wParam) == IDC_STATE_SOURCE_BUTTON) && (HIWORD(wParam) == BN_CLICKED))
+   {
+      string current;
+      for (int i = 0; i < SelCount(); i++)
+      {
+         if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
+            continue;
+         current = ((Primitive *)SelAt(i)->GetEditable())->m_d.m_stateSrcLink;
+         break;
+      }
+      ResURIDialog dlg(
+         PinballPlugin::ResURIKind::State, current,
+         [this](const string &uri)
+         {
+            for (int i = 0; i < SelCount(); i++)
+            {
+               if ((SelAt(i) == nullptr) || (SelAt(i)->GetItemType() != eItemPrimitive))
+                  continue;
+               Primitive *const prim = (Primitive *)SelAt(i)->GetEditable();
+               if (uri != prim->m_d.m_stateSrcLink)
+               {
+                  PropertyDialog::StartUndo(prim);
+                  prim->m_d.m_stateSrcLink = uri;
+                  PropertyDialog::EndUndo(prim);
+               }
+            }
+         },
+         GetTable()->GetSettings(), PinballPlugin::DisplayFamily::Any, -1, false, -1);
+      dlg.DoModal(GetHwnd());
+      UpdateVisuals(IDC_STATE_SOURCE_EDIT);
+      return TRUE;
+   }
+   return BasePropertyDialog::OnCommand(wParam, lParam);
 }
 
 INT_PTR PrimitiveVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)

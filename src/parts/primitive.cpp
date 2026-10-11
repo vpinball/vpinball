@@ -926,7 +926,10 @@ void Primitive::Render(const unsigned int renderMask)
 
    // Update lightmap before checking anything that uses alpha
    float alpha = m_d.m_alpha;
-   if (m_lightmap)
+   float linkState;
+   if (!m_d.m_stateSrcLink.empty() && g_pplayer->m_resURIResolver.TryGetFloatState(m_d.m_stateSrcLink, linkState))
+      alpha *= linkState;
+   else if (m_lightmap)
    {
       if (m_lightmap->m_d.m_intensity != 0.f && m_lightmap->m_d.m_intensity_scale != 0.f)
          alpha *= m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale);
@@ -1296,6 +1299,7 @@ void Primitive::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(COLR), m_d.m_color);
 
    writer.WriteString(FID(LMAP), m_d.m_szLightmap);
+   writer.WriteString(FID(SLNK), m_d.m_stateSrcLink);
 
    writer.WriteString(FID(REFL), m_d.m_szReflectionProbe);
    writer.WriteFloat(FID(RSTR), m_d.m_reflectionStrength);
@@ -1474,6 +1478,7 @@ void Primitive::Load(IObjectReader& reader)
          case FID(COLR): m_d.m_color = reader.AsInt(); break;
 
          case FID(LMAP): m_d.m_szLightmap = reader.AsString(); break;
+         case FID(SLNK): m_d.m_stateSrcLink = reader.AsString(); break;
 
          case FID(REFL): m_d.m_szReflectionProbe = reader.AsString(); break;
          case FID(RSTR): m_d.m_reflectionStrength = reader.AsFloat(); break;

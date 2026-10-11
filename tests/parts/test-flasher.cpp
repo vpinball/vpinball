@@ -43,7 +43,8 @@ TEST_CASE("Flasher part")
       flasher->m_d.m_displayTexture = true;
       flasher->m_d.m_isVisible = false;
       flasher->m_d.m_depthBias = 5.f;
-      flasher->m_d.m_szLightmap = "lm.png";
+      flasher->m_d.m_szLightmap = "lm";
+      flasher->m_d.m_stateSrcLink = "ctrl://vpx/state?group=1&name=lm";
       table->AddPart(flasher);
       flasher->Release();
 
@@ -79,7 +80,8 @@ TEST_CASE("Flasher part")
       CHECK(copy->m_d.m_displayTexture == true);
       CHECK(copy->m_d.m_isVisible == false);
       CHECK(copy->m_d.m_depthBias == 5.f);
-      CHECK(copy->m_d.m_szLightmap == "lm.png");
+      CHECK(copy->m_d.m_szLightmap == "lm");
+      CHECK(copy->m_d.m_stateSrcLink == "ctrl://vpx/state?group=1&name=lm");
 
       // The default flasher shape is a 100x100 quad centered on the init position
       REQUIRE(copy->m_curve.GetPoints().size() == flasher->m_curve.GetPoints().size());

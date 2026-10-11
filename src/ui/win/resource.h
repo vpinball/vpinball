@@ -828,6 +828,7 @@
 #define IDC_RESURI_CLEAR 13451
 #define IDC_RESURI_SUB 13452
 #define IDC_IMAGE_LINK_BUTTON 13453
+#define IDC_STATIC31 13454
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770

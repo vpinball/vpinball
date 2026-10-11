@@ -36,7 +36,8 @@ TEST_CASE("Primitive part")
       prim->m_d.m_addBlend = true;
       prim->m_d.m_color = RGB(9, 8, 7);
       prim->m_d.m_alpha = 0.5f;
-      prim->m_d.m_szLightmap = "lm.png";
+      prim->m_d.m_szLightmap = "lm";
+      prim->m_d.m_stateSrcLink = "ctrl://vpx/state?group=1&name=lm";
       prim->m_d.m_szReflectionProbe = "reflProbe";
       prim->m_d.m_reflectionStrength = 0.6f;
       prim->m_d.m_szRefractionProbe = "refrProbe";
@@ -84,7 +85,8 @@ TEST_CASE("Primitive part")
       CHECK(copy->m_d.m_addBlend == true);
       CHECK(copy->m_d.m_color == RGB(9, 8, 7));
       CHECK(copy->m_d.m_alpha == 0.5f);
-      CHECK(copy->m_d.m_szLightmap == "lm.png");
+      CHECK(copy->m_d.m_szLightmap == "lm");
+      CHECK(copy->m_d.m_stateSrcLink == "ctrl://vpx/state?group=1&name=lm");
       CHECK(copy->m_d.m_szReflectionProbe == "reflProbe");
       CHECK(copy->m_d.m_reflectionStrength == 0.6f);
       CHECK(copy->m_d.m_szRefractionProbe == "refrProbe");
