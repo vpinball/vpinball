@@ -461,7 +461,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(LONG *pVal)
    }
    #ifdef _WIN32
    if (g_pplayer->IsVR())
-      *pVal = NULL;
+      *pVal = 0;
    else
       *pVal = (size_t)g_pplayer->m_playfieldWnd->GetNativeHWND();
    #else

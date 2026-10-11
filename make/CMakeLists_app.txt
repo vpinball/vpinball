@@ -334,7 +334,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       $<$<CXX_COMPILER_ID:GNU>:
          -ffast-math
          -ffp-contract=off
-         -Wno-template-body>
+         $<$<COMPILE_LANGUAGE:CXX>:-Wno-template-body>>
    )
 
    set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-mingw-x64")
