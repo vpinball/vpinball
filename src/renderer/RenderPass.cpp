@@ -212,6 +212,7 @@ bool RenderPass::Execute(const bool log)
       if (left == right || bottom == top)
          return false;
       #if defined(ENABLE_BGFX)
+      m_rt->GetRenderDevice()->m_scissorCache = bgfx::setScissor(static_cast<uint16_t>(left), static_cast<uint16_t>(m_rt->GetHeight() - top), static_cast<uint16_t>(right - left), static_cast<uint16_t>(top - bottom));
       #elif defined(ENABLE_OPENGL)
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
@@ -256,8 +257,6 @@ bool RenderPass::Execute(const bool log)
    {
       m_rt->Activate();
       #if defined(ENABLE_BGFX)
-      if (m_areaOfInterest.x != FLT_MAX)
-         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
       #if defined(_DEBUG)
       bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(1,']').c_str());
       #endif
@@ -270,8 +269,6 @@ bool RenderPass::Execute(const bool log)
       assert(m_singleLayerRendering < m_rt->m_nLayers);
       m_rt->Activate(m_singleLayerRendering);
       #if defined(ENABLE_BGFX)
-      if (m_areaOfInterest.x != FLT_MAX)
-         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
       #if defined(_DEBUG)
       bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(m_singleLayerRendering)).append(1,']').c_str());
       #endif
@@ -285,8 +282,6 @@ bool RenderPass::Execute(const bool log)
       {
          m_rt->Activate(layer);
          #if defined(ENABLE_BGFX)
-         if (m_areaOfInterest.x != FLT_MAX)
-            bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
          #if defined(_DEBUG)
          bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(layer)).append(1,']').c_str());
          #endif
@@ -299,6 +294,7 @@ bool RenderPass::Execute(const bool log)
    if (m_areaOfInterest.x != FLT_MAX)
    {
       #if defined(ENABLE_BGFX)
+      m_rt->GetRenderDevice()->m_scissorCache = UINT16_MAX;
       #elif defined(ENABLE_OPENGL)
       glDisable(GL_SCISSOR_TEST);
       #elif defined(ENABLE_DX9)

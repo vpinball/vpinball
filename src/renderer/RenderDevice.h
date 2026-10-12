@@ -296,6 +296,8 @@ public:
    uint16_t m_activeViewClearFlags = BGFX_CLEAR_NONE; // Accumulated clear flags of the active view (BGFX applies a single clear per view, using the last defined state)
    uint32_t m_activeViewClearColor = 0;
    uint64_t m_bgfxState = 0;
+   uint16_t m_scissorCache = UINT16_MAX;
+   void ApplyScissor() const { if (m_scissorCache != UINT16_MAX) bgfx::setScissor(m_scissorCache); }
 
    bool m_frameNoPresent = false; // Flag set when the next frame should be submitted without VBlank sync disabled
    std::binary_semaphore m_rendererInitialized { 0 }; // Semaphore to signal when the renderer is initialized
