@@ -101,9 +101,6 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libserialport64-0.dll" "${PLUGINS_DIR}/dof/libserialport64-0.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/hidapi64.dll" "${PLUGINS_DIR}/dof/hidapi64.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libftdi164.dll" "${PLUGINS_DIR}/dof/libftdi164.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/dof/libgcc_s_seh-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/dof/libstdc++-6.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/dof/libwinpthread-1.dll"
             )
          elseif (ARCH STREQUAL "x86")
             add_custom_command(TARGET DOFPlugin POST_BUILD
@@ -113,7 +110,6 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/hidapi.dll" "${PLUGINS_DIR}/dof/hidapi.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libftdi1.dll" "${PLUGINS_DIR}/dof/libftdi1.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_dw2-1.dll" "${PLUGINS_DIR}/dof/libgcc_s_dw2-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/dof/libstdc++-6.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/dof/libwinpthread-1.dll"
             )
          endif()

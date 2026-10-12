@@ -40,9 +40,9 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
 
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\hidapi64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\hidapi64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
@@ -61,9 +61,9 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
 
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\hidapi.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\hidapi.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
@@ -72,6 +72,14 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
 		)
       </Command>
     </PostBuildEvent>

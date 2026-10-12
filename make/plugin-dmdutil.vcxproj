@@ -32,6 +32,80 @@
         if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
         copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+		if $(Platform) EQU x64 (
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\dmdutil64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\dmdutil64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\dmdutil64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zedmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zedmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zedmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\vni64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\sockpp64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\sockpp64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\sockpp64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+		) ELSE (
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\dmdutil.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\dmdutil.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\dmdutil.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zedmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zedmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zedmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\vni.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\sockpp.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\sockpp.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\sockpp.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport-0.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dmdutil\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dmdutil\"
+		)
       </Command>
     </PostBuildEvent>
     <ClCompile>
