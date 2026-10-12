@@ -347,8 +347,12 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
             m_decoder = nullptr;
             return;
          }
-         m_monoCompensation = static_cast<float>(
-            m_decoder->outputChannels); // When converting to mono, we average additional channel instead of summing them as this used to be done before, so multiply back
+         // When converting to mono, miniaudio averages the source channels instead of
+         // summing them, so a stereo source loses half its energy. Multiply back by the
+         // source channel count to keep a stereo-source playfield sound as loud as a mono
+         // one of the same level. m_decoder->outputChannels is the forced-mono output (1)
+         // and never compensates; converter.channelsIn is the source channel count.
+         m_monoCompensation = static_cast<float>(m_decoder->converter.channelsIn);
 
          m_sound = std::make_unique<ma_sound>();
          ma_sound_config config = ma_sound_config_init_2(engine);
