@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "AudioPlayer.h"
 #include "AudioStreamPlayer.h"
+#include "SoftLimiterNode.h"
 #include "SoundPlayer.h"
 #include "utils/denormals.h"
 #include <SDL3/SDL.h>
@@ -122,7 +123,7 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    int periodSizeInFrames;
    SDL_AudioSpec specs;
    SDL_GetAudioDeviceFormat(pDeviceEx->deviceID, &specs, &periodSizeInFrames);
-   
+
    // Convert SDL format to miniaudio format
    ma_format deviceFormat;
    switch (specs.format)
@@ -286,6 +287,9 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
             m_backglassDevice->device.onData = ma_engine_data_callback_internal;
             m_backglassDevice->device.pUserData = m_backglassEngine.get();
             ma_engine_start(m_backglassEngine.get());
+            // Shared soft limiter on the backglass engine for all plugin audio streams, so
+            // their summed output is rolled off before the device conversion hard-clips it.
+            m_backglassPluginLimiter = SoftLimiterNode::Create(m_backglassEngine.get());
          }
          else
          {
@@ -355,6 +359,7 @@ AudioPlayer::~AudioPlayer()
    m_audioStreams.clear();
    m_pendingDeleteAudioStreams.clear();
    m_music = nullptr;
+   m_backglassPluginLimiter = nullptr;
    if (m_backglassEngine)
       ma_engine_uninit(m_backglassEngine.get());
    if (m_playfieldEngine)
@@ -365,8 +370,6 @@ AudioPlayer::~AudioPlayer()
       ma_device_uninit(&m_backglassDevice->device);
    if (m_maContext)
       ma_context_uninit(m_maContext.get());
-   if (m_backglassSDLDevice != 0)
-      SDL_CloseAudioDevice(m_backglassSDLDevice);
    SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -385,13 +388,11 @@ void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
 
 AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int frequency, int channels, bool isFloat)
 {
-   if (m_backglassSDLDevice == 0)
-   {
-      SDL_AudioSpec deviceSpec;
-      const bool hasDeviceSpec = SDL_GetAudioDeviceFormat(m_backglassAudioDevice, &deviceSpec, nullptr);
-      m_backglassSDLDevice = SDL_OpenAudioDevice(m_backglassAudioDevice, hasDeviceSpec ? & deviceSpec : nullptr);
-   }
-   std::unique_ptr<AudioStreamPlayer> audioStream = AudioStreamPlayer::Create(m_backglassSDLDevice, frequency, channels, isFloat);
+   // Play plugin audio on the backglass engine, routed through the shared limiter.
+   if (m_backglassEngine == nullptr)
+      return nullptr;
+   void* const limiterNode = m_backglassPluginLimiter ? m_backglassPluginLimiter->GetNode() : nullptr;
+   std::unique_ptr<AudioStreamPlayer> audioStream = AudioStreamPlayer::Create(m_backglassEngine.get(), limiterNode, frequency, channels, isFloat);
    if (audioStream == nullptr)
       return nullptr;
    AudioStreamID stream = std::move(audioStream);
@@ -459,7 +460,7 @@ float AudioPlayer::GetMusicPosition() const
 {
    return m_music ? m_music->GetPosition() : 0.f;
 }
-   
+
 void AudioPlayer::SetMusicPosition(float seconds)
 {
    if (m_music) m_music->SetPosition(seconds);
@@ -552,11 +553,11 @@ void AudioPlayer::PlaySoundInternal(Sound* sound, float volume, const float rand
    //   - if 'usesame' is false, always create a new player for the given sound
    // - if restart is false and selected sound player was already playing, settings would be applied without restarting the sound
    // - if restart is true, all playing sounds would be stopped and a new one would be started
-   
+
    if (restart)
       for (const auto& soundPlayer : players)
          soundPlayer->Stop();
-   
+
    for (const auto& soundPlayer : players)
    {
       if (useSame || restart || !soundPlayer->IsPlaying())

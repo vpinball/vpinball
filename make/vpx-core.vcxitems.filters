@@ -192,6 +192,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/audio/SoftLimiterNode.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/audio/SoundPlayer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
@@ -1131,6 +1134,9 @@
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/audio/SoftLimiterNode.h">
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h">

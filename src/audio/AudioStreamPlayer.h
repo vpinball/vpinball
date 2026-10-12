@@ -2,19 +2,24 @@
 
 #pragma once
 
-#include <SDL3/SDL_audio.h>
+struct ma_engine;
 
 namespace VPX
 {
 
-// Stream provided raw buffer audio to the given SDL audio device.
+// Streams plugin-provided raw buffer audio into a miniaudio engine: the plugin pushes PCM
+// via Enqueue into a ring buffer that the engine pulls from, mixed unclamped in the same
+// node graph as VPX's own sounds and routed through a shared soft limiter.
 class AudioStreamPlayer
 {
 public:
-   static std::unique_ptr<AudioStreamPlayer> Create(SDL_AudioDeviceID sdlDevice, int frequency, int channels, bool isFloat);
-   explicit AudioStreamPlayer(SDL_AudioStream* stream);
+   // attachTo is the node to attach the stream's output to (the shared limiter), as void*
+   // (= ma_node) to keep miniaudio.h out of this header; null falls back to the engine endpoint.
+   static std::unique_ptr<AudioStreamPlayer> Create(ma_engine* engine, void* attachTo, int frequency, int channels, bool isFloat);
+   explicit AudioStreamPlayer(ma_engine* engine, void* attachTo, int frequency, int channels, bool isFloat);
    ~AudioStreamPlayer();
 
+   bool IsValid() const { return m_valid; }
    void Enqueue(const uint8_t* buffer, int length);
    void FlushStream();
    int GetQueuedSize() const;
@@ -23,17 +28,19 @@ public:
    void SetMainVolume(const float volume);
 
 private:
-   static void AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
+   void ApplyVolume();
 
-   SDL_AudioStream* const m_stream = nullptr;
-   SDL_AudioSpec m_audioSpec;
+   // Opaque miniaudio state (held via pimpl to keep miniaudio.h out of this header).
+   struct Impl;
+   std::unique_ptr<Impl> m_impl;
+
+   int m_frequency = 0;
+   int m_channels = 0;
+   bool m_isFloat = false;
+   bool m_valid = false;
    float m_mainVolume = 1.f;
    float m_streamVolume = 1.f;
-   float m_throttling = 1.f;
-   uint64_t m_streamedTotal = 0;
-   uint64_t m_startTimestamp = 0;
    string m_name;
-   bool m_resync = false;
 };
 
 }

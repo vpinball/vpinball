@@ -17,7 +17,7 @@ namespace VPX
 
 // Playfield sound playback mode
 // =============================
-// This option select how the playfield table sounds are rendered. While default backglass audio and streamed audio (VPinMAME, 
+// This option select how the playfield table sounds are rendered. While default backglass audio and streamed audio (VPinMAME,
 // AltSound, PuP, FlexDMD, ...) always plays from the front channels of the selected audio device (which may be a
 // different device or not)
 enum SoundConfigTypes : int
@@ -146,13 +146,13 @@ private:
 
    vector<AudioStreamID> m_audioStreams;
    vector<AudioStreamID> m_pendingDeleteAudioStreams;
-   SDL_AudioDeviceID m_backglassSDLDevice = 0;
 
    std::unique_ptr<class SoundPlayer> m_music;
 
    std::unique_ptr<ma_context> m_maContext;
    std::unique_ptr<ma_device_ex> m_backglassDevice;
    std::unique_ptr<ma_engine> m_backglassEngine;
+   std::unique_ptr<class SoftLimiterNode> m_backglassPluginLimiter;
    std::unique_ptr<ma_device_ex> m_playfieldDevice;
    std::unique_ptr<ma_engine> m_playfieldEngine;
 };

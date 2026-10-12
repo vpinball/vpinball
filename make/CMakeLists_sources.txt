@@ -14,6 +14,8 @@ set(VPX_SOURCES
    src/audio/AudioPlayer.h
    src/audio/AudioStreamPlayer.cpp
    src/audio/AudioStreamPlayer.h
+   src/audio/SoftLimiterNode.cpp
+   src/audio/SoftLimiterNode.h
    src/audio/SoundPlayer.cpp
    src/audio/SoundPlayer.h
    src/audio/SpatialAudio.cpp
@@ -289,7 +291,7 @@ set(VPX_SOURCES
    src/ui/live/PlotData.h
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
-   
+
    src/ui/live/editor/BallUIPart.h
    src/ui/live/editor/BallUIPart.cpp
    src/ui/live/editor/BumperUIPart.h
@@ -355,7 +357,7 @@ set(VPX_SOURCES
    src/ui/live/editor/TimerUIPart.cpp
    src/ui/live/editor/TriggerUIPart.h
    src/ui/live/editor/TriggerUIPart.cpp
-   
+
    src/ui/live/ingameui/InGameUI.cpp
    src/ui/live/ingameui/InGameUI.h
    src/ui/live/ingameui/AudioSettingsPage.h
