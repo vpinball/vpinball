@@ -1615,7 +1615,6 @@ SDL_Rect FormBackglass::GetBoundingRectangle(VPXTexture pImage)
 
    SDL_LockSurface(surface);
 
-   const uint32_t* const __restrict pixels = static_cast<uint32_t*>(surface->pixels);
    const int pitch = surface->pitch / (int)sizeof(uint32_t);
    const SDL_PixelFormatDetails* const pfd = SDL_GetPixelFormatDetails(surface->format);
    SDL_Palette* const pal = SDL_GetSurfacePalette(surface);
@@ -1631,9 +1630,10 @@ SDL_Rect FormBackglass::GetBoundingRectangle(VPXTexture pImage)
    bool foundNonTransparent = false;
 
    for (int y = 0; y < h; y++) {
-      for (int x = 0; x < w; x++) {
+      const uint32_t* __restrict pixels = static_cast<uint32_t*>(surface->pixels) + y * pitch;
+      for (int x = 0; x < w; ++x,++pixels) {
          uint8_t r,g,b,alpha;
-         SDL_GetRGBA(pixels[y * pitch + x], pfd, pal, &r, &g, &b, &alpha);
+         SDL_GetRGBA(*pixels, pfd, pal, &r, &g, &b, &alpha);
 
          if (alpha) {
             foundNonTransparent = true;

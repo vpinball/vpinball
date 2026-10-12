@@ -702,7 +702,8 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
             const uint32_t* __restrict mask = reinterpret_cast<const uint32_t*>(maskRow);
             uint32_t* __restrict frame2 = reinterpret_cast<uint32_t*>(frameRow);
             for (int j = 0; j < sdlMask->w; j++, mask++, frame2++)
-               *frame2 = *mask ? *frame2 : 0x00000000u;
+               if (!*mask)
+                  *frame2 = 0x00000000u;
             maskRow += sdlMask->pitch;
             frameRow += selectedFrame.frame->linesize[0];
          }

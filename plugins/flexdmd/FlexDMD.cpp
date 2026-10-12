@@ -463,12 +463,10 @@ float* FlexDMD::UpdateLumFP32Frame()
    const uint8_t* __restrict pixels = static_cast<const uint8_t*>(surf->pixels);
    float* __restrict dst = m_lumFP32Frame;
    const int hw = m_height * m_width;
-   for (int o = 0; o < hw; o++)
+   for (int o = 0; o < hw; ++o,pixels += 3)
    {
-      // CTLPI_DISPLAY_FORMAT_LUM32F is a linear luminance (via VPX's BW_FP32, which the
-      // display shaders use as-is), and the Rec.709 weights only yield a luminance on linear values
+      // CTLPI_DISPLAY_FORMAT_LUM32F is a linear luminance (via VPX's BW_FP32, which the display shaders use as-is), and the Rec.709 weights only yield a luminance on linear values
       *dst++ = VPXColorSpace::SRGBToLuminance(pixels[0], pixels[1], pixels[2]);
-      pixels += 3;
    }
    SDL_UnlockSurface(surf);
    return m_lumFP32Frame;
@@ -526,11 +524,12 @@ void FlexDMD::UpdateRGBAFrame()
    SDL_LockSurface(surf);
    const uint8_t* __restrict pixels = static_cast<const uint8_t*>(surf->pixels);
    uint32_t* __restrict dst = m_rgbaFrame.data();
-   for (int o = 0; o < m_height*m_width; o++)
+   const int hw = m_height * m_width;
+   for (int o = 0; o < hw; ++o,pixels+=3)
       {
-         const uint8_t r = *pixels++;
-         const uint8_t g = *pixels++;
-         const uint8_t b = *pixels++;
+         const uint8_t r = pixels[0];
+         const uint8_t g = pixels[1];
+         const uint8_t b = pixels[2];
          *dst++ = RGB(r, g, b);
       }
    SDL_UnlockSurface(surf);

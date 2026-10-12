@@ -242,8 +242,11 @@ void PUPMediaManager::SetMask(const std::filesystem::path& path)
       const uint32_t maskValue = rgba[0];
       const int rowPadding = (m_mask->pitch / static_cast<int>(sizeof(uint32_t))) - m_mask->w;
       for (int i = 0; i < m_mask->h; i++, rgba += rowPadding)
-         for (int j = 0; j < m_mask->w; j++, rgba++)
+      {
+         uint32_t* const end = rgba + m_mask->w;
+         for (; rgba < end; ++rgba)
             *rgba = (*rgba == maskValue) ? 0x00000000u : 0xFFFFFFFFu;
+      }
       SDL_UnlockSurface(m_mask.get());
    }
    m_player.SetMask(m_mask);
