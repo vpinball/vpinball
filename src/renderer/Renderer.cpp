@@ -3843,6 +3843,9 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       // already sampled with this region cleared, so without this dependency the sorter may run it
       // before the bloom sample and bloom bleeds the content into the region. No-op without bloom
       rd->AddRenderTargetDependency(GetBloomBufferTexture());
+
+      const vec4& region = m_embeddedRegions.back();
+      rd->GetCurrentPass()->m_areaOfInterest = vec4(-1.f + 2.f * region.x, 1.f - 2.f * region.w, -1.f + 2.f * region.z, 1.f - 2.f * region.y);
    }
 
    rd->ResetRenderState();
