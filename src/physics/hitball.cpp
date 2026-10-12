@@ -72,26 +72,22 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
    }
 #endif
 
-#ifndef FIX_PHYSICS
+#ifndef NEW_PHYSICS
    // magnitude of the impulse which is just sufficient to keep the ball from
-   // penetrating the wall (needed for friction computations)
+   // penetrating the wall (needed for friction computations): pre-restitution, see NEW_PHYSICS below
    const float reactionImpulse = m_d.m_mass * fabsf(dot);
 #endif
 
    elasticity = ElasticityWithFalloff(elasticity, elastFalloff, dot);
-
-#ifdef FIX_PHYSICS
-   // Bound the friction cone by the pre-restitution normal impulse m*|v.n|, captured here
-   // before dot is reflected below (dot is still the raw approach speed at this point). Using
-   // the post-restitution impulse m*|dot| instead would over-credit friction by (1+elasticity)
-   // on elastic wall/wire/ramp bounces, bleeding too much tangential speed and stalling balls
-   // climbing wire habitrails or ejecting from scoops/VUKs. The restitution impulse applied
-   // along the normal (below) is unchanged.
-   const float reactionImpulse = m_d.m_mass * fabsf(dot);
-#endif
-
    dot *= -(1.0f + elasticity);
    m_d.m_vel += dot * hitNormal; // apply collision impulse (along normal, so no torque)
+
+#ifdef NEW_PHYSICS
+   // Coulomb bound by the whole applied (post-restitution) normal impulse, like HitFlipper. Elastic bounces lose
+   // noticeably more speed than with the legacy bound tables are tuned on (VUK eject up to -23% height,
+   // 45 degree bounce at elasticity 0.8 -9% speed along the wall)
+   const float reactionImpulse = m_d.m_mass * fabsf(dot);
+#endif
 
    // compute friction impulse
 

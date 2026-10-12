@@ -73,6 +73,8 @@
 //   - spin friction about the contact normal (mu * C_CONTACT_PATCH_RADIUS): point contacts could not stop a ball spinning in place
 //   - ball/ball collisions apply Coulomb friction with C_BALL_BALL_FRICTION (as ball/ball contacts do, see FIX_PHYSICS)
 //   - spin friction between balls uses their relative spin
+//   - Collide3DWall bounds the friction cone by the post-restitution normal impulse (1+elasticity times the legacy one,
+//     like HitFlipper): elastic wall/ramp bounces and VUK/scoop ejects lose a lot more speed, tables need re-tuning
 //#define NEW_PHYSICS
 
 // Active behavioral fixes of the physics engine. Keep this list in
@@ -88,10 +90,9 @@
 //   static (acceleration-directed) branch on walls even with real slip; the clause is now restricted
 //   to support-like contacts (hitnormal.z > 0.5) so walls use slip-directed dynamic friction.
 // - The friction cone used -m(g.n) as its sole normal-force estimate on contacts (~0 on
-//   walls, dead on the top glass) while Collide3DWall budgeted the pre-restitution impulse
-//   (under-counting by 1+elasticity). Contacts now clamp the friction impulse by
-//   mu*m*(the normal delta-v the contact applied this step), and collisions by the post-restitution
-//   impulse, matching HitFlipper's convention.
+//   walls, dead on the top glass). Contacts now clamp the friction impulse by
+//   mu*m*(the normal delta-v the contact applied this step). Collisions (Collide3DWall) keep
+//   their pre-restitution bound (see NEW_PHYSICS).
 // - The flipper moment of inertia uses the real flipper shape instead of a rod; coil torque is
 //   rescaled (m_backwards_compatibility) to keep the free swing, ball impacts do change.
 // - A slow ball embedded deeper than PHYS_TOUCH in the playfield was ignored (and could sink through), now it collides.
