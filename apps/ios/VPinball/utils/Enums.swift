@@ -5,12 +5,15 @@ enum TableGridSize: Int, Hashable {
     case medium = 1
     case large = 2
 
-    func columns(regular: Bool, compactHeight: Bool) -> Int {
-        switch self {
-        case .small: return compactHeight ? 10 : regular ? 6 : 4
-        case .medium: return compactHeight ? 8 : regular ? 4 : 3
-        case .large: return compactHeight ? 6 : regular ? 3 : 2
+    func columns(width: CGFloat, height: CGFloat, spacing: CGFloat, aspect: CGFloat) -> Int {
+        let (minimum, cardWidth, heightFraction): (Int, CGFloat, CGFloat) = switch self {
+        case .small: (4, 100, 0.5)
+        case .medium: (3, 150, 0.66)
+        case .large: (2, 225, 0.9)
         }
+        let target = min(cardWidth, height * heightFraction * aspect)
+        guard width > 0, target > 0 else { return minimum }
+        return max(minimum, Int(((width + spacing) / (target + spacing)).rounded()))
     }
 }
 

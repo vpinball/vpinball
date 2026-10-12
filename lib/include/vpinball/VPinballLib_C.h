@@ -51,6 +51,7 @@ typedef void (*VPinballZipCallback)(int current, int total, const char* filename
 VPINBALLAPI const char* VPinballGetVersionStringFull();
 VPINBALLAPI void VPinballInit(VPinballEventCallback eventCallback, VPinballRumbleCallback rumbleCallback);
 VPINBALLAPI void VPinballLog(VPINBALL_LOG_LEVEL level, const char* message);
+VPINBALLAPI void VPinballSetHint(const char* pName, const char* pValue);
 
 // Settings
 

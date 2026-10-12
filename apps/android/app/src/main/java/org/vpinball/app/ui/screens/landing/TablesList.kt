@@ -125,7 +125,13 @@ fun TablesList(
     val favorites = remember(tables) { tables.favorites() }
 
     BoxWithConstraints(modifier = modifier) {
-        val columns = gridSize.columns(wide = maxWidth >= 600.dp, compactHeight = maxHeight < 480.dp)
+        val columns =
+            gridSize.columns(
+                width = (maxWidth - GRID_PADDING * 2).value,
+                height = maxHeight.value,
+                spacing = GRID_GAP.value,
+                aspect = TABLE_CARD_ASPECT,
+            )
         val cardWidth = (maxWidth - GRID_PADDING * 2 - GRID_GAP * (columns - 1)) / columns
 
         fun LazyGridScope.cards(cardTables: List<Table>) {

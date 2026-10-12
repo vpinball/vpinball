@@ -37,6 +37,7 @@ struct TableImageView: View {
             }
         }
         .clipShape(shape)
+        .contentShape(shape)
         .overlay(shape.strokeBorder(.primary.opacity(0.12), lineWidth: 1))
         .task(id: "\(table.uuid)_\(table.modifiedAt)") {
             if image == nil || image != table.cachedThumbnail(maxPixelSize: Self.thumbnailMaxPixelSize) {

@@ -14,6 +14,7 @@ class StatusBarManager {
     private static var kInstalledKey: UInt8 = 0
     private static var kHiddenKey: UInt8 = 0
     private static var kStyleKey: UInt8 = 0
+    private static var kOrientationLockKey: UInt8 = 0
 
     func attach(to root: UIViewController) {
         attachedRootViewController = root
@@ -44,6 +45,28 @@ class StatusBarManager {
         } else {
             viewController.setNeedsStatusBarAppearanceUpdate()
         }
+    }
+
+    func setOrientationLocked(_ locked: Bool) {
+        ensureAttached()
+        guard let viewController = owningViewController else { return }
+        var orientations: String?
+        if locked {
+            switch viewController.view.window?.windowScene?.effectiveGeometry.interfaceOrientation {
+            case .portrait: orientations = "Portrait"
+            case .portraitUpsideDown: orientations = "PortraitUpsideDown"
+            case .landscapeLeft: orientations = "LandscapeLeft"
+            case .landscapeRight: orientations = "LandscapeRight"
+            default: break
+            }
+        }
+        VPinballSetHint("SDL_ORIENTATIONS".cstring, orientations?.cstring)
+        objc_setAssociatedObject(viewController,
+                                 &Self.kOrientationLockKey,
+                                 NSNumber(value: locked),
+                                 .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        viewController.setNeedsUpdateOfSupportedInterfaceOrientations()
+        viewController.setNeedsUpdateOfPrefersInterfaceOrientationLocked()
     }
 
     func ensureAttached() {
@@ -94,6 +117,14 @@ class StatusBarManager {
                             #selector(getter: UIViewController.childForStatusBarStyle),
                             imp_implementationWithBlock(childNilBlock),
                             "@@:")
+
+            let lockedBlock: @convention(block) (AnyObject) -> Bool = { obj in
+                (objc_getAssociatedObject(obj, &StatusBarManager.kOrientationLockKey) as? NSNumber)?.boolValue ?? false
+            }
+            class_addMethod(sub,
+                            #selector(getter: UIViewController.prefersInterfaceOrientationLocked),
+                            imp_implementationWithBlock(lockedBlock),
+                            "B@:")
 
             objc_registerClassPair(sub)
             subclass = sub

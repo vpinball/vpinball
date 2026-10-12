@@ -49,6 +49,17 @@ VPINBALLAPI void VPinballLog(VPINBALL_LOG_LEVEL level, const char* pMessage)
       VPinballLib::VPinballLib::Instance().Log(level, pMessage);
 }
 
+VPINBALLAPI void VPinballSetHint(const char* pName, const char* pValue)
+{
+   if (pName == nullptr)
+      return;
+
+   if (pValue != nullptr)
+      SDL_SetHint(pName, pValue);
+   else
+      SDL_ResetHint(pName);
+}
+
 VPINBALLAPI int VPinballLoadValueInt(const char* pSectionName, const char* pKey, int defaultValue)
 {
     if (pSectionName == nullptr || pKey == nullptr)
