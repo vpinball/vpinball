@@ -4,6 +4,9 @@ import android.content.Context
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import java.io.File
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 import org.vpinball.app.jni.VPinballDisplayText
 
 object BuildInfo {
@@ -63,12 +66,17 @@ enum class TableGridSize(val value: Int) {
     MEDIUM(1),
     LARGE(2);
 
-    fun columns(wide: Boolean, compactHeight: Boolean): Int =
-        when (this) {
-            SMALL -> if (compactHeight) 10 else if (wide) 6 else 4
-            MEDIUM -> if (compactHeight) 8 else if (wide) 4 else 3
-            LARGE -> if (compactHeight) 6 else if (wide) 3 else 2
-        }
+    fun columns(width: Float, height: Float, spacing: Float, aspect: Float): Int {
+        val (minimum, cardWidth, heightFraction) =
+            when (this) {
+                SMALL -> Triple(4, 100f, 0.5f)
+                MEDIUM -> Triple(3, 150f, 0.66f)
+                LARGE -> Triple(2, 225f, 0.9f)
+            }
+        val target = min(cardWidth, height * heightFraction * aspect)
+        if (width <= 0f || target <= 0f) return minimum
+        return max(minimum, ((width + spacing) / (target + spacing)).roundToInt())
+    }
 
     companion object {
         fun fromInt(value: Int): TableGridSize = entries.firstOrNull { it.value == value } ?: MEDIUM

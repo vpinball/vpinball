@@ -21,6 +21,7 @@ struct VPinballAppView: View {
 
             StatusBarManager.shared.setHidden(!vpinballModel.showMainView,
                                               animated: false)
+            StatusBarManager.shared.setOrientationLocked(vpinballModel.isPlaying)
         }
     }
 

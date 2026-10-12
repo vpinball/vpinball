@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct TableGridView: View {
-    @Environment(\.horizontalSizeClass) private var sizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
+private let gridPadding: CGFloat = 16
+private let gridSpacing: CGFloat = 12
 
+struct TableGridView: View {
     let tables: [Table]
     let gridSize: TableGridSize
     let sortOrder: SortOrder
@@ -12,20 +12,22 @@ struct TableGridView: View {
     let namespace: Namespace.ID
     @Binding var scrollToTable: Table?
 
-    @State private var contentWidth: CGFloat = 0
+    @State private var contentSize: CGSize = .zero
 
     private var isSearching: Bool {
         searchPresented || !searchText.isEmpty
     }
 
     private var columnCount: Int {
-        gridSize.columns(regular: sizeClass == .regular,
-                         compactHeight: verticalSizeClass == .compact)
+        gridSize.columns(width: contentSize.width - gridPadding * 2,
+                         height: contentSize.height,
+                         spacing: gridSpacing,
+                         aspect: TableItemView.aspect)
     }
 
     private var cardWidth: CGFloat {
         let count = CGFloat(columnCount)
-        return max(0, (contentWidth - 32 - 12 * (count - 1)) / count)
+        return max(0, (contentSize.width - gridPadding * 2 - gridSpacing * (count - 1)) / count)
     }
 
     private var sortedTables: [Table] {
@@ -82,13 +84,17 @@ struct TableGridView: View {
 
                     tableGrid(sorted)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, gridPadding)
                 .padding(.vertical, 12)
             }
-            .onGeometryChange(for: CGFloat.self) { proxy in
-                proxy.size.width
-            } action: { width in
-                contentWidth = width
+            .onGeometryChange(for: CGSize.self) { proxy in
+                proxy.size
+            } action: { size in
+                var transaction = Transaction()
+                transaction.disablesAnimations = contentSize == .zero
+                withTransaction(transaction) {
+                    contentSize = size
+                }
             }
             .scrollEdgeEffectStyle(.hard, for: .bottom)
             .scrollEdgeEffectHidden(true, for: .bottom)
@@ -134,7 +140,7 @@ struct TableGridView: View {
 
                     tableGrid(results)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, gridPadding)
                 .padding(.vertical, 12)
             }
             .scrollEdgeEffectStyle(.hard, for: .bottom)
@@ -144,7 +150,7 @@ struct TableGridView: View {
     }
 
     private func tableGrid(_ items: [Table]) -> some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12, alignment: .top),
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: gridSpacing, alignment: .top),
                                  count: columnCount),
                   spacing: 16)
         {
@@ -206,7 +212,7 @@ struct MarqueeHeaderView: View {
             .padding(.horizontal, 4)
 
             ScrollView(.horizontal) {
-                HStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: gridSpacing) {
                     ForEach(Array(tables.enumerated()), id: \.offset) { index, table in
                         Button {
                             MainViewModel.shared.play(table, sourceID: "\(sourcePrefix)-\(table.uuid)")
@@ -228,8 +234,8 @@ struct MarqueeHeaderView: View {
             }
             .scrollPosition($scrollPosition)
             .scrollIndicators(.hidden)
-            .contentMargins(.horizontal, 16, for: .scrollContent)
-            .padding(.horizontal, -16)
+            .contentMargins(.horizontal, gridPadding, for: .scrollContent)
+            .padding(.horizontal, -gridPadding)
             .onChange(of: tables.first?.uuid) { _, _ in
                 guard inRecentlyPlayed else { return }
                 withAnimation(.snappy) {
