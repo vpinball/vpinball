@@ -79,7 +79,7 @@ private:
    VPXTexture CreateLightImage(VPXTexture image, eDualMode dualmode, const string& firstromkey_, const string& secondromkey_);
    VPXTexture CreateLightImage(VPXTexture image, eDualMode dualmode, const string& firstromkey_, const string& secondromkey_, int& romid, eRomIDType& romidtype, bool& rominverted);
    void CheckBulbs(int romid, eRomIDType romidtype, bool rominverted, eDualMode dualmode);
-   SDL_Rect GetBoundingRectangle(VPXTexture pImage);
+   static SDL_Rect GetBoundingRectangle(SDL_Surface* sourceSurface);
    VPXTexture CropImageToTransparency(VPXTexture pImage, VPXTexture pOffImage, SDL_Point& loc, SDL_Rect& size);
    VPXTexture Base64ToImage(const char* image);
    Sound* Base64ToWav(const char* data);
