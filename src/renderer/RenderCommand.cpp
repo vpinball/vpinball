@@ -106,9 +106,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       //CHECKD3D(m_rd->GetCoreDevice()->EndScene());
       #endif
 
-      m_copyFrom->CopyTo(m_copyTo, m_copyColor, m_copyDepth,
-         (int) m_copySrcRect.x, (int) m_copySrcRect.y, (int) m_copySrcRect.z, (int) m_copySrcRect.w, 
-         (int) m_copyDstRect.x, (int) m_copyDstRect.y, (int) m_copyDstRect.z, (int) m_copyDstRect.w, m_copySrcLayer);
+      m_copyFrom->CopyTo(m_copyTo, m_copyColor, m_copyDepth, (int)m_copySrcRect.x, (int)m_copySrcRect.y, (int)m_copySrcRect.z, (int)m_copySrcRect.w, (int)m_copyDstRect.x,
+         (int)m_copyDstRect.y, (int)m_copyDstRect.z, (int)m_copyDstRect.w, m_copySrcLayer, m_copyDstLayer);
 
       #if defined(ENABLE_DX9)
       //CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
