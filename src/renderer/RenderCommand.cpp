@@ -24,6 +24,7 @@ void RenderCommand::Clear()
    if (GetShaderState())
       GetShaderState()->m_samplers.clear();
    m_mb = nullptr;
+   m_dependency = nullptr;
 }
 
 bool RenderCommand::IsFullClear(const bool hasDepth) const
