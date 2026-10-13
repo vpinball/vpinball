@@ -172,7 +172,7 @@ void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    // The generated colliders are one sided (line segments collide on their normal side,
    // the top face from above, the bottom one from below), so they expect the canonical
    // winding, otherwise the wall becomes a trap that lets balls in without letting them out.
-   NormalizeWindingOrder(vvertex);
+   const bool reversedWinding = NormalizeWindingOrder(vvertex);
 
    const int count = (int)vvertex.size();
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
@@ -199,7 +199,7 @@ void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const RenderVertex &pv2 = vvertex[(i + 1) % count];
       const RenderVertex &pv3 = vvertex[(i + 2) % count];
 
-      AddLine(physics, pv2, pv3, isUI);
+      AddLine(physics, pv2, pv3, isUI, reversedWinding);
    }
 
    Hit3DPoly *const ph3dpolyt = new Hit3DPoly(this, rgv3Dt, count);
@@ -260,35 +260,49 @@ void Surface::SetupHitObject(PhysicsEngine* physics, HitObject * const obj, cons
 
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
 
-void Surface::AddLine(PhysicsEngine* physics, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI)
+void Surface::AddLine(PhysicsEngine *physics, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI, const bool bothDirections)
 {
    const float bottom = m_d.m_heightbottom;
    const float top = m_d.m_heighttop;
 
-   LineSeg *plineseg;
-   if (!pv1.slingshot)
+   const auto addLineSeg = [&](const RenderVertex &pa, const RenderVertex &pb, const bool slingMesh)
    {
-      plineseg = new LineSeg(this, pv1, pv2, bottom, top);
-   }
-   else
-   {
-      LineSegSlingshot *const plinesling = new LineSegSlingshot(this, pv1, pv2, bottom, top);
-      plineseg = (LineSeg *)plinesling;
+      LineSeg *plineseg;
+      if (!pv1.slingshot)
+      {
+         plineseg = new LineSeg(this, pa, pb, bottom, top);
+      }
+      else
+      {
+         LineSegSlingshot *const plinesling = new LineSegSlingshot(this, pa, pb, bottom, top);
+         plineseg = (LineSeg *)plinesling;
 
-      plinesling->m_force = m_d.m_slingshotforce;
-      
-      if (!isUI)
-         m_vlinesling.push_back(plinesling);
-   }
+         plinesling->m_force = m_d.m_slingshotforce;
 
-   SetupHitObject(physics, plineseg, isUI);
+         if (slingMesh && !isUI)
+            m_vlinesling.push_back(plinesling);
+      }
 
-   if (pv1.slingshot)  // slingshots always have hit events
-   {
-      plineseg->m_obj = (IFireEvents*)this;
-      plineseg->m_fe = true;
-      plineseg->m_threshold = m_d.m_threshold;
-   }
+      SetupHitObject(physics, plineseg, isUI);
+
+      if (pv1.slingshot) // slingshots always have hit events
+      {
+         plineseg->m_obj = (IFireEvents *)this;
+         plineseg->m_fe = true;
+         plineseg->m_threshold = m_d.m_threshold;
+      }
+   };
+
+   addLineSeg(pv1, pv2, true);
+
+   // Backward compatibility with tables released before the winding normalization:
+   // a surface authored with a reversed (clockwise) outline relied on the one-sided
+   // colliders facing the opposite way (e.g. a wall keeping the ball inside its
+   // outline, see issue #4149). Add the segment collider in the reverse direction
+   // too, so a reversed wall stays solid from both sides. The slingshot animation
+   // mesh is only generated for the canonical direction.
+   if (bothDirections)
+      addLineSeg(pv2, pv1, false);
 
    // add lower edge as a line
    if (!isUI && m_d.m_heightbottom != 0.f)
