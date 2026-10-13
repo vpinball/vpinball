@@ -224,9 +224,9 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          {
             #if defined(ENABLE_BGFX)
             if (m_mb->m_vb->m_isStatic)
-               bgfx::setVertexBuffer(0, m_mb->m_vb->GetStaticBuffer(), m_mb->m_vb->GetVertexOffset(), m_indicesCount);
+               bgfx::setVertexBuffer(0, m_mb->m_vb->GetStaticBuffer(), m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount);
             else
-               bgfx::setVertexBuffer(0, m_mb->m_vb->GetDynamicBuffer(), m_mb->m_vb->GetVertexOffset(), m_indicesCount);
+               bgfx::setVertexBuffer(0, m_mb->m_vb->GetDynamicBuffer(), m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount);
             bgfx::setInstanceCount(nInstances);
             if (m_primitiveType == RenderDevice::TRIANGLELIST)
                bgfx::setState(m_rd->m_bgfxState);
