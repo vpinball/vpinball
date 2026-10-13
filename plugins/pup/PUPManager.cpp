@@ -367,7 +367,8 @@ void PUPManager::LoadFonts()
          if (entry.is_regular_file())
          {
             std::filesystem::path szFontPath = entry.path();
-            if (lowerCase(szFontPath.extension()) == ".ttf")
+            const string szFontExt = lowerCase(szFontPath.extension());
+            if (szFontExt == ".ttf" || szFontExt == ".otf")
             {
                if (TTF_Font* pTTFFont = TTF_OpenFont(PluginStrings::PathToUTF8(szFontPath).c_str(), 8))
                {
