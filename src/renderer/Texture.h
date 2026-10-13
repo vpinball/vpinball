@@ -181,8 +181,8 @@ public:
 public:
    string m_name; // Image name (used as a unique identifier)
    float m_alphaTestValue = static_cast<float>(-1.0 / 255.0); // Alpha test value (defaults to negative, that is to say disabled)
-   unsigned int m_width = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
-   unsigned int m_height = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
+   mutable unsigned int m_width = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
+   mutable unsigned int m_height = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
 
 private:
    Texture(string name, PinBinary* ppb, unsigned int width, unsigned int height); // Private to forbid uninitialized objects
@@ -197,6 +197,7 @@ private:
 
    // These fields are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable std::weak_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
+   mutable std::mutex m_imageBufferMutex; // Serializes lazy decode/cache of m_imageBuffer (preload & texture compression workers race the logic thread)
    mutable HBITMAP m_hbmGDIVersion = nullptr;
    mutable bool m_isMD5Dirty = true;
    mutable uint8_t m_md5Hash[16] = {};
