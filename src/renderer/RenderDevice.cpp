@@ -149,6 +149,9 @@ void RenderDevice::OnScreenshotCaptured(const char* _filePath, uint32_t _width, 
       if (index < 0)
          return;
       m_screenshotFilename.erase(m_screenshotFilename.begin() + index);
+      // Keep the window list in sync so that each entry still maps to its capture file (used by the request loop, notably for capture retries)
+      if (index < (int)m_screenshotWindow.size())
+         m_screenshotWindow.erase(m_screenshotWindow.begin() + index);
 
       bool success = false;
       if (auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA); tex)
@@ -196,6 +199,9 @@ void RenderDevice::OnScreenshotCaptured(const char* _filePath, uint32_t _width, 
       m_screenshotSuccess &= success;
       if (m_screenshotFilename.empty())
       {
+         // Release the request state to stop the render thread request loop (window list and retry countdown)
+         m_screenshotWindow.clear();
+         m_screenshotFrameDelay = 0;
          fireCallback = true;
          callbackSuccess = m_screenshotSuccess;
          callback = m_screenshotCallback;
@@ -1029,6 +1035,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
                PLOGE << "Screenshot capture timed out. Requesting it again";
                for (size_t i = 0; i < m_screenshotWindow.size(); i++)
                   bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), PathToUTF8(m_screenshotFilename[i]).c_str());
+               m_screenshotFrameDelay = 0; // Rearm timeout for the next retry (wait another 60 frames before retrying again)
             }
          }
       }
@@ -1120,6 +1127,7 @@ void RenderDevice::CaptureGLScreenshot()
    assert(m_screenshotFilename.size() == 1);
    const std::filesystem::path screenshotFilename = m_screenshotFilename[0];
    m_screenshotFilename.clear();
+   m_screenshotWindow.clear();
    m_screenshotFrameDelay = 0;
    bool success = false;
    int width = m_outputWnd[0]->GetWidth();
@@ -1152,6 +1160,7 @@ void RenderDevice::CaptureDX9Screenshot()
    assert(m_screenshotFilename.size() == 1);
    const std::filesystem::path screenshotFilename = m_screenshotFilename[0];
    m_screenshotFilename.clear();
+   m_screenshotWindow.clear();
    bool success = false;
    m_screenshotFrameDelay = 0;
    IDirect3DDevice9* pd3dDevice = GetCoreDevice();
