@@ -2728,6 +2728,8 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
 
 void RenderDevice::SubmitRenderFrame()
 {
+   // A pending command dependency is only valid for the frame being recorded: drop it to avoid keeping a pointer on a recycled pass
+   m_nextRenderCommandDependency = nullptr;
    #ifdef ENABLE_BGFX
    if (std::this_thread::get_id() != m_renderThread.get_id())
    {
@@ -2756,6 +2758,8 @@ void RenderDevice::SubmitRenderFrame()
 void RenderDevice::DiscardRenderFrame()
 {
    m_currentPass = nullptr;
+   // A pending command dependency is only valid for the frame being recorded: drop it to avoid keeping a pointer on a recycled pass
+   m_nextRenderCommandDependency = nullptr;
    m_renderFrame->Discard();
    #ifdef ENABLE_BGFX
    ResetActiveView();
