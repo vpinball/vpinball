@@ -213,6 +213,8 @@ bool RenderPass::Execute(const bool log)
          return false;
       #if defined(ENABLE_BGFX)
       m_rt->GetRenderDevice()->m_scissorCache = bgfx::setScissor(static_cast<uint16_t>(left), static_cast<uint16_t>(m_rt->GetHeight() - top), static_cast<uint16_t>(right - left), static_cast<uint16_t>(top - bottom));
+      // Only keep the cached rect, applied by each draw (ApplyScissor): the pending draw state would leak into the next pass if this one submits no draw
+      bgfx::setScissor(UINT16_MAX);
       #elif defined(ENABLE_OPENGL)
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));

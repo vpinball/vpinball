@@ -352,7 +352,9 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
          // source channel count to keep a stereo-source playfield sound as loud as a mono
          // one of the same level. m_decoder->outputChannels is the forced-mono output (1)
          // and never compensates; converter.channelsIn is the source channel count.
-         m_monoCompensation = static_cast<float>(m_decoder->converter.channelsIn);
+         // Backglass sounds are not downmixed to mono and keep their historical gain of
+         // outputChannels (always 2), whatever the source channel count.
+         m_monoCompensation = static_cast<float>(m_outputTarget == SNDOUT_BACKGLASS ? m_decoder->outputChannels : m_decoder->converter.channelsIn);
 
          m_sound = std::make_unique<ma_sound>();
          ma_sound_config config = ma_sound_config_init_2(engine);

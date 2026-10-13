@@ -112,6 +112,8 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
       m_b2s->m_backglassOnImage.m_romUpdater
          = ResolveRomPropUpdater(items, &m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId, m_b2s->m_backglassOnImage.m_romInverted);
 
+   // TODO revisit: B2SValue is a script (B2SSetData) attribute, but is also applied to ROM states here. PinMAME lamps are 0..1, so bulbs
+   // with B2SValue >= 2 never light, B2SValue = 1 only lights at full brightness, and RomInverted is ignored whenever B2SValue > 0
    for (auto& bulb : m_b2s->m_backglassIlluminations)
       switch (bulb->m_snippitType)
       {

@@ -206,6 +206,7 @@ static unsigned int getVpxApiMsgId = 0;
 static uint32_t endpointId;
 
 static Controller* controller = nullptr;
+static Controller* runCmdController = nullptr; // Controller created by a run command, owned by the plugin until stopped
 
 PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
@@ -253,8 +254,10 @@ static void OnControllerGameEnd(Controller*)
 {
 }
 
-static void OnControllerDestroyed(Controller*)
+static void OnControllerDestroyed(Controller* destroyed)
 {
+   if (runCmdController == destroyed)
+      runCmdController = nullptr;
    controller = nullptr;
 }
 
@@ -263,6 +266,13 @@ static void OnControllerDestroyed(Controller*)
 
 static unsigned int runCmdMsgId = 0;
 static unsigned int runStopMsgId = 0;
+
+static void ReleaseRunCmdController()
+{
+   // Destroying the controller stops it, and OnControllerDestroyed clears runCmdController and controller
+   if (runCmdController != nullptr)
+      runCmdController->Release();
+}
 
 static void MSGPIAPI OnControllerRunCmd(unsigned int msgId, void* context, void* msgData)
 {
@@ -277,7 +287,7 @@ static void MSGPIAPI OnControllerRunCmd(unsigned int msgId, void* context, void*
    else
    {
       if (controller == nullptr)
-         PinMAME_Controller_SCD->CreateObject();
+         runCmdController = static_cast<Controller*>(PinMAME_Controller_SCD->CreateObject());
       controller->SetGameName(msg->gameId);
       if (controller->GetROMName().empty())
          msg->status = CTLPI_RUN_STATUS_UNKNOWN_GAME;
@@ -286,12 +296,16 @@ static void MSGPIAPI OnControllerRunCmd(unsigned int msgId, void* context, void*
          controller->Run();
          msg->status = controller->GetRunning() ? CTLPI_RUN_STATUS_OK : CTLPI_RUN_STATUS_ERROR;
       }
+      if (msg->status != CTLPI_RUN_STATUS_OK)
+         ReleaseRunCmdController();
    }
 }
 
 static void MSGPIAPI OnControllerRunStop(unsigned int msgId, void* context, void* msgData)
 {
-   if (controller != nullptr)
+   if (runCmdController != nullptr)
+      ReleaseRunCmdController();
+   else if (controller != nullptr)
       controller->Stop();
 }
 }
@@ -305,6 +319,7 @@ using namespace PinMAME;
 MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    controller = nullptr;
+   runCmdController = nullptr;
    endpointId = sessionId;
    msgApi = api;
 
@@ -335,6 +350,8 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    RegisterPinMAME_StructArray(arrayLambda);
    PinMAME_Controller_SCD->CreateObject = []()
    {
+      // A controller started by a run command (e.g. from the ResURI picker) gives way to the one requested by the script
+      ReleaseRunCmdController();
       assert(controller == nullptr); // We do not support having multiple instance running concurrently
 
       PinmameConfig config = {
@@ -443,6 +460,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
 MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
 {
+   ReleaseRunCmdController();
    if (controller)
    {
       int nRemainingRef = 0;
