@@ -2294,7 +2294,8 @@ void RenderDevice::NextView()
    if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 1)
    {
       PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
-      SubmitRenderFrame();
+      // Flush the views encoded so far, then keep on recording the remaining passes with fresh view ids.
+      // Do not re-enter SubmitRenderFrame/RenderFrame::Execute here as we may be called from inside it.
       bgfx::frame(BGFX_FRAME_FLUSH);
       ResetActiveView();
    }
