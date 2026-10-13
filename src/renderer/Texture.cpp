@@ -1093,6 +1093,7 @@ void Texture::Save(IObjectWriter& writer, PinTable* pt) const
 
 bool Texture::IsHDR() const
 {
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    auto buffer = m_imageBuffer.lock();
    if (buffer)
       return buffer->m_format == BaseTexture::RGB_FP16 || buffer->m_format == BaseTexture::RGBA_FP16
@@ -1103,8 +1104,12 @@ bool Texture::IsHDR() const
 
 size_t Texture::GetEstimatedGPUSize() const
 {
+   std::shared_ptr<BaseTexture> buffer;
+   {
+      const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
+      buffer = m_imageBuffer.lock();
+   }
    size_t estimatedSize;
-   auto buffer = m_imageBuffer.lock();
    if (buffer)
       estimatedSize = static_cast<size_t>(buffer->height()) * static_cast<size_t>(buffer->pitch());
    else
@@ -1115,6 +1120,7 @@ size_t Texture::GetEstimatedGPUSize() const
 
 std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    auto buffer = m_imageBuffer.lock();
    if (buffer)
       return buffer;
@@ -1125,16 +1131,20 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
    if (m_width != buffer->m_realWidth)
    {
       PLOGE << "Corrupted file: image '" << m_name << "' width (" << buffer->m_realWidth << ") does not match the width (" << m_width << ") of the image datablock.";
-      const_cast<Texture*>(this)->m_width = buffer->m_realWidth;
+      m_width = buffer->m_realWidth;
    }
    if (m_height != buffer->m_realHeight)
    {
       PLOGE << "Corrupted file: image '" << m_name << "' height (" << buffer->m_realHeight << ") does not match the height (" << m_height << ") of the image datablock.";
-      const_cast<Texture*>(this)->m_height = buffer->m_realHeight;
+      m_height = buffer->m_realHeight;
    }
    buffer->SetName(GetName());
    m_imageBuffer = buffer;
-   UpdateOpaque();
+   if (m_isOpaqueDirty)
+   {
+      m_isOpaqueDirty = false;
+      m_isOpaque = buffer->IsOpaque();
+   }
    return buffer;
 }
 
@@ -1192,6 +1202,7 @@ void Texture::SetMD5Hash(uint8_t* md5) const
 {
    memcpy(m_md5Hash, md5, sizeof(m_md5Hash));
    m_isMD5Dirty = false;
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    auto buffer = m_imageBuffer.lock();
    if (buffer)
       buffer->SetMD5Hash(md5);
@@ -1210,6 +1221,7 @@ void Texture::SetIsOpaque(const bool v) const
 {
    m_isOpaque = v;
    m_isOpaqueDirty = false;
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    auto buffer = m_imageBuffer.lock();
    if (buffer)
       buffer->SetIsOpaque(v);
