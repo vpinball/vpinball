@@ -168,7 +168,8 @@ private:
    uint64_t m_tableSessionStartTime = 0; // Start time of the current uninterrupted play run in us, or 0 while the game is paused or stats are not tracked
    uint64_t m_tableSessionPlayTime = 0; // Accumulated play time of the current table session in us, excluding paused time
 
-   LoadProgress &m_loadProgress; // Load progress reporter provided by the caller (a dialog for the Win32 editor, logging elsewhere)
+   LoadProgress m_defaultLoadProgress; // Logging reporter used after construction, as the caller's one may be gone by then
+   LoadProgress *m_loadProgress; // The caller's reporter during construction (a dialog for the Win32 editor, logging elsewhere), then m_defaultLoadProgress
 
 #pragma region Main Loop
 public:

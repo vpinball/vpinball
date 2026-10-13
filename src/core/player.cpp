@@ -89,7 +89,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    : m_ptable(table)
    , m_playMode(playMode)
    , m_pluginAPI(m_pluginManager)
-   , m_loadProgress(loadProgress)
+   , m_loadProgress(&loadProgress)
    , m_osThreadId(std::this_thread::get_id())
    , m_backglassOutput(VPXWindowId::VPXWINDOW_Backglass)
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
@@ -181,7 +181,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    m_renderProfiler->NewFrame(0);
    g_frameProfiler = &m_logicProfiler;
 
-   m_loadProgress.SetProgress("Creating Player..."s, 0.f);
+   m_loadProgress->SetProgress("Creating Player..."s, 0.f);
 
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__x86_64__))
    {
@@ -311,7 +311,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
 
    set_lowest_possible_win_timer_resolution();
 
-   m_loadProgress.SetProgress("Initializing Renderer..."s, m_loadProgress.GetProgress() + progressStartupLength);
+   m_loadProgress->SetProgress("Initializing Renderer..."s, m_loadProgress->GetProgress() + progressStartupLength);
 
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
 
@@ -387,7 +387,8 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
       m_liveUI->PushNotification("This is a an early & unstable version of the Live Editor, only meant for testing.", 10000);
    }
 
-   m_loadProgress.SetProgress("Starting..."s, 100);
+   m_loadProgress->SetProgress("Starting..."s, 100);
+   m_loadProgress = &m_defaultLoadProgress; // The caller's reporter only lives during construction, later session reloads (table switches) log
 
    // Perform a quick render to avoid displaying a blank screen while starting
    m_renderer->DisableStaticPrePass(true);
@@ -588,7 +589,7 @@ void Player::InitTableSession(const bool isInitial)
    }
 
    PLOGI << "Initializing physics"; // For profiling
-   m_loadProgress.SetProgress("Initializing Physics..."s, m_loadProgress.GetProgress() + progressRendererLength);
+   m_loadProgress->SetProgress("Initializing Physics..."s, m_loadProgress->GetProgress() + progressRendererLength);
    // Need to set timecur here, for init functions that set timers
    m_physics = new PhysicsEngine(m_ptable);
    m_physics->SetImplicitPlayfieldMesh(m_implicitPlayfieldMesh != nullptr);
@@ -715,7 +716,7 @@ void Player::InitTableSession(const bool isInitial)
 #ifndef ENABLE_BGFX
       vector<std::pair<Texture*, bool>> deferredUploads;
 #endif
-      auto loadImage = [progressPos = m_loadProgress.GetProgress() + progressPhysicLength, maxTexDim,
+      auto loadImage = [progressPos = m_loadProgress->GetProgress() + progressPhysicLength, maxTexDim,
 #ifdef ENABLE_BGFX
                           texCompressor = texCompressor.get(),
 #else
@@ -829,7 +830,7 @@ void Player::InitTableSession(const bool isInitial)
                   const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
                   std::erase_if(m_texLoadStats.inFlight, [image](const std::pair<const Texture *, bool> &e) { return e.first == image; });
                }
-               m_loadProgress.SetProgress("Loading Textures..."s, progressPos + progressTextureLength * static_cast<float>(nLoadPerformed) / (static_cast<float>(m_ptable->m_vimage.size()) - 1.f));
+               m_loadProgress->SetProgress("Loading Textures..."s, progressPos + progressTextureLength * static_cast<float>(nLoadPerformed) / (static_cast<float>(m_ptable->m_vimage.size()) - 1.f));
             }
          }
          {
@@ -845,7 +846,7 @@ void Player::InitTableSession(const bool isInitial)
 #endif
       progschj::ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
       for (auto image : m_ptable->m_vimage)
-         pool.enqueue(loadImage, image, false);
+         pool.enqueue_block(loadImage, image, false);
 
       bool showLoadingUI = false;
       while (pool.has_work_in_flight())
@@ -923,7 +924,7 @@ void Player::InitTableSession(const bool isInitial)
    //----------------------------------------------------------------------------------
 
    PLOGI << "Initializing renderer"; // For profiling
-   m_loadProgress.SetProgress("Initializing Visuals..."s);
+   m_loadProgress->SetProgress("Initializing Visuals..."s);
 
    // Setup rendering and timers
    RenderState state;
@@ -947,7 +948,7 @@ void Player::InitTableSession(const bool isInitial)
    if (!IsEditorMode())
    {
       PLOGI << "Starting script"; // For profiling
-      m_loadProgress.SetProgress("Starting Game Scripts..."s, m_loadProgress.GetProgress() + progressVisualLength);
+      m_loadProgress->SetProgress("Starting Game Scripts..."s, m_loadProgress->GetProgress() + progressVisualLength);
 
       // Setup script interpreter and run the main script
       CComObject<ScriptInterpreter>::CreateInstance(&m_scriptInterpreter);

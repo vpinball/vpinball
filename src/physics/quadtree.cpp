@@ -383,12 +383,31 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
             {
                if (quadTree->m_threadPool == nullptr)
                   quadTree->m_threadPool = new progschj::ThreadPool(g_app->GetLogicalNumberOfProcessors());
-               quadTree->m_threadPool->enqueue([child, quadTree, childBounds, level, level_empty]
+               std::future<void> queued = quadTree->m_threadPool->enqueue([child, quadTree, childBounds, level, level_empty]
                {
                   set_denormals_flush_to_zero_once(); // the pool's worker threads are not ours to initialize
                   child->CreateNextLevel(quadTree, childBounds, level + 1, level_empty);
                });
-               continue;
+               // A full queue drops the task, returning a ready future holding would_block. As workers dispatch here too,
+               // enqueue_block could deadlock with all of them waiting for room: build the node on this thread instead
+               bool dropped = false;
+               if (queued.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+               {
+                  try
+                  {
+                     queued.get();
+                  }
+                  catch (const progschj::would_block&)
+                  {
+                     dropped = true;
+                  }
+                  catch (...)
+                  {
+                     // Already ran: its errors are ignored, as for tasks still running
+                  }
+               }
+               if (!dropped)
+                  continue;
             }
             shouldDispatch = true;
          }

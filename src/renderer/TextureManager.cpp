@@ -8,6 +8,7 @@
 
 std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const memtex, const bool force_linear_rgb)
 {
+   const std::lock_guard lock(m_mapMutex);
    const uint64_t hash = memtex->GetLiveHash();
    const SamplerVariant variant = SamplerVariantOf(force_linear_rgb);
    const Iter it = m_map.find(hash);
@@ -48,6 +49,7 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
 
 void TextureManager::AddPendingUpload(ITexManCacheable* memtex, std::shared_ptr<const BaseTexture> bitmap)
 {
+   const std::lock_guard lock(m_mapMutex);
    const CIter it = m_map.find(memtex->GetLiveHash());
    if (it == m_map.end())
    {
@@ -60,6 +62,7 @@ void TextureManager::AddPendingUpload(ITexManCacheable* memtex, std::shared_ptr<
 
 void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
 {
+   const std::lock_guard lock(m_mapMutex);
    const CIter it = m_map.find(memtex->GetLiveHash());
    if (it == m_map.end())
    {
@@ -76,6 +79,7 @@ void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
 
 vector<ITexManCacheable*> TextureManager::GetLoadedTextures() const
 {
+   const std::lock_guard lock(m_mapMutex);
    std::vector<ITexManCacheable*> keys;
    for (const auto& it : m_map)
       if (!it.second.isPlaceHolder && !it.second.pendingUpload)
@@ -85,6 +89,7 @@ vector<ITexManCacheable*> TextureManager::GetLoadedTextures() const
 
 bool TextureManager::IsLinearRGB(ITexManCacheable* memtex) const
 {
+   const std::lock_guard lock(m_mapMutex);
    const CIter it = m_map.find(memtex->GetLiveHash());
    // A placeholder aliases both variants onto a single sRGB sampler, so it is not a linear upload
    return it != m_map.end() && !it->second.isPlaceHolder && it->second.samplers[VARIANT_LINEAR] != nullptr;
@@ -92,6 +97,7 @@ bool TextureManager::IsLinearRGB(ITexManCacheable* memtex) const
 
 void TextureManager::SetDirty(ITexManCacheable* memtex)
 {
+   const std::lock_guard lock(m_mapMutex);
    const Iter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())
       for (bool& dirty : it->second.dirty) // Every live variant needs refreshing, not just the next one drawn
@@ -100,6 +106,7 @@ void TextureManager::SetDirty(ITexManCacheable* memtex)
 
 void TextureManager::UnloadTexture(ITexManCacheable* memtex)
 {
+   const std::lock_guard lock(m_mapMutex);
    const CIter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())
       m_map.erase(it);
@@ -107,5 +114,6 @@ void TextureManager::UnloadTexture(ITexManCacheable* memtex)
 
 void TextureManager::UnloadAll()
 {
+   const std::lock_guard lock(m_mapMutex);
    m_map.clear();
 }

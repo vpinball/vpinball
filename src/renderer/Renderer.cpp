@@ -695,7 +695,7 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
       progschj::ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
 
       for (unsigned int y = 0; y < rad_env_yres; ++y) {
-         pool.enqueue([y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres] {
+         pool.enqueue_block([y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres] {
             for (unsigned int x = 0; x < rad_env_xres; ++x)
             {
                // transfo from envmap to normal direction

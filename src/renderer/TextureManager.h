@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "unordered_dense.h"
 
 #include "Texture.h"
@@ -46,6 +48,9 @@ private:
       std::shared_ptr<const class BaseTexture> pendingUpload;
    };
    RenderDevice& m_rd;
+   // Guards m_map, as loader threads register and upload textures while the main thread renders the loading UI.
+   // Held for whole calls: code run under it (sampler creation, bitmap decode) must not call back into the manager.
+   mutable std::mutex m_mapMutex;
    ankerl::unordered_dense::map<uint64_t, MapEntry> m_map;
    typedef ankerl::unordered_dense::map<uint64_t, MapEntry>::iterator Iter;
    typedef ankerl::unordered_dense::map<uint64_t, MapEntry>::const_iterator CIter;
