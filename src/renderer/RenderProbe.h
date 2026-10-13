@@ -51,7 +51,7 @@ public:
    bool GetReflectionNoLightmaps() const { return m_disableLightReflection; }
    void SetReflectionNoLightmaps(const bool disableLightmaps) { m_disableLightReflection = disableLightmaps; }
    void ExtendAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax);
-   void ApplyAreaOfInterest(RenderPass* pass = nullptr);
+   void ApplyAreaOfInterest();
 
    // Load/Save
    void Save(IObjectWriter& writer, bool saveForUndo);
@@ -98,6 +98,6 @@ private:
    RenderTarget* m_dynamicRT = nullptr;
    RenderTarget* m_prerenderRT = nullptr; // Prerendered static parts, accumulated over successive frames
    int m_staticAccumCount = 0; // Number of samples accumulated so far in the static parts prerender
-   RenderPass* m_finalPass = nullptr; // Pass after roughness has been applied
    RenderPass* m_copyPass = nullptr; // Pass that performs the screen space copy
+   vector<RenderPass*> m_probePasses; // Passes recorded by this probe's renders since the last ApplyAreaOfInterest (which applies the area of interest to them only)
 };

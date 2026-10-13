@@ -17,6 +17,7 @@ public:
 
    RenderCommand* NewCommand();
 
+   const vector<RenderPass*>& GetPasses() const { return m_passes; }
    RenderPass* AddPass(const string& name, RenderTarget* const rt);
    void AddBeginOfFrameCmd(const std::function<void()>& cmd) { m_beginOfFrameCmds.push_back(cmd); }
    void AddEndOfFrameCmd(const std::function<void()>& cmd) { m_endOfFrameCmds.push_back(cmd); }

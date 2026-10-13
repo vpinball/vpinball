@@ -113,6 +113,11 @@ public:
    // (retained) RenderFrame API: Following calls will enqueue rendercommand to the renderframe.
    // Getters returns the state of the renderframe, not the of the renderdevice.
    RenderPass* GetCurrentPass() { return m_currentPass; }
+   const vector<RenderPass*>& GetRenderFramePasses() const
+   {
+      assert(m_renderFrame != nullptr);
+      return m_renderFrame->GetPasses();
+   }
    RenderTarget* GetCurrentRenderTarget() const { assert(m_currentPass != nullptr); return m_currentPass->m_rt; }
    void SetRenderTarget(const string& passName, RenderTarget* rt, const bool useRTContent = true, const bool forceNewPass = false);
    void AddRenderTargetDependency(RenderTarget* rt, const bool needDepth = false);
