@@ -32,3 +32,16 @@ TEST_CASE("RenderFrame deferred commands")
       CHECK(calls == 1);
    }
 }
+
+TEST_CASE("RenderCommand recycling")
+{
+   SUBCASE("Clear resets the pass dependency")
+   {
+      RenderCommand cmd(nullptr);
+      CHECK(cmd.m_dependency == nullptr);
+      RenderPass pass("test"s, nullptr);
+      cmd.m_dependency = &pass;
+      cmd.Clear();
+      CHECK(cmd.m_dependency == nullptr);
+   }
+}

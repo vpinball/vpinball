@@ -42,7 +42,7 @@ public:
 
    string ToString(bool detailled) const;
 
-   RenderPass* m_dependency;
+   RenderPass* m_dependency = nullptr;
 
 private:
    enum Command
