@@ -287,5 +287,8 @@ void RenderFrame::Discard()
    m_passes.clear();
    // Drop deferred frame commands as they capture resources owned by this frame (recycled command/passes) and must not be kept for the next frame
    m_beginOfFrameCmds.clear();
+   // Run deferred end of frame commands as they are the cleanup point of resources released by this frame (deferred deletions)
+   for (const auto& cmd : m_endOfFrameCmds)
+      cmd();
    m_endOfFrameCmds.clear();
 }
