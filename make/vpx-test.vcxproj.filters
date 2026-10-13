@@ -218,6 +218,9 @@
     <ClCompile Include="../../tests/render/test-base-render.cpp">
       <Filter>render</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/render/test-renderframe.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../tests/physics/physics-harness.h">

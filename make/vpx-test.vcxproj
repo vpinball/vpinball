@@ -110,6 +110,7 @@
     <ClCompile Include="../../tests/plugins/plugins/test-resuriresolver.cpp" />
     <ClCompile Include="../../tests/plugins/upscaledmd/test-upscalers.cpp" />
     <ClCompile Include="../../tests/render/test-base-render.cpp" />
+    <ClCompile Include="../../tests/render/test-renderframe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../tests/physics/physics-harness.h" />
