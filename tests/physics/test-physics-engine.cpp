@@ -147,6 +147,28 @@ TEST_CASE("PhysicsEngine: wall collisions")
       CHECK(d.m_vel.Length() < 1.f);
    }
 
+   SUBCASE("ball stays inside a wall with a reversed point order")
+   {
+      // Backward compatibility for outlines authored clockwise (issue #4149): the
+      // colliders are added in both directions, so a ball inside the outline does
+      // not escape through the wall's inner face
+      harness.AddWall({ Vertex2D(700.f, 400.f), Vertex2D(900.f, 400.f), Vertex2D(900.f, 600.f), Vertex2D(700.f, 600.f) }, 0.f, 100.f);
+      Ball *const ball = harness.AddBall(800.f, 500.f, 0.f, 100.f, 0.f, 0.f); // +100 VPU/T toward the right edge
+      harness.Start();
+
+      float maxX = 0.f;
+      const bool bounced = harness.AdvanceUntil(
+         [&]()
+         {
+            maxX = max(maxX, ball->m_hitBall.m_d.m_pos.x);
+            return ball->m_hitBall.m_d.m_vel.x < 0.f;
+         },
+         2000);
+
+      CHECK(bounced);
+      CHECK(maxX < 900.f); // the ball bounced off the inside of the wall (contact at ~875)
+   }
+
    SUBCASE("raw hit object: ball bounces off a circle")
    {
       harness.AddHitObject(std::make_unique<HitCircle>(nullptr, Vertex2D(500.f, 800.f), 50.f, 0.f, 100.f));
