@@ -595,7 +595,9 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
          PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(visual.srcUri);
          if (dmd.state.frame == nullptr)
             continue;
-         LoadGlass(visual);
+         if (m_glassEnabled)
+            LoadGlass(visual);
+         const VPXTexture glass = m_glassEnabled ? visual.glass : nullptr;
          if (!visual.hasUploadedFrame || (visual.dmdTex == nullptr) || (dmd.state.frameId != visual.uploadedFrameId) || (*dmd.source != visual.uploadedSrc))
          {
             m_vpxApi->UpdateTexture(&visual.dmdTex, dmd.source->width, dmd.source->height,
@@ -608,11 +610,11 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
             visual.hasUploadedFrame = true;
          }
          vec4 glassArea;
-         if (visual.glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
+         if (glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            VPXTextureInfo* texInfo = m_vpxApi->GetTextureInfo(visual.glass);
+            VPXTextureInfo* texInfo = m_vpxApi->GetTextureInfo(glass);
             glassArea.x = visual.glassArea.x / static_cast<float>(texInfo->width);
             glassArea.y = visual.glassArea.y / static_cast<float>(texInfo->height);
             glassArea.z = visual.glassArea.z / static_cast<float>(texInfo->width);
@@ -632,7 +634,7 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
          }
          ctx->DrawDisplay(ctx, style,
             // First layer: glass
-            visual.glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
+            glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
             glassArea.x, glassArea.y, glassArea.z, glassArea.w, // Glass texture coordinates (inside overall glass texture)
             visual.glassAmbient.x, visual.glassAmbient.y, visual.glassAmbient.z, // Glass lighting from room
             // Second layer: emitter
@@ -648,13 +650,15 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
          PinballPlugin::ResURIResolver::SegDisplayState frame = m_resURIResolver.GetSegDisplayState(visual.srcUri);
          if ((frame.state.frame == nullptr) || (frame.source->nElements != visual.nElements))
             continue;
-         LoadGlass(visual);
+         if (m_glassEnabled)
+            LoadGlass(visual);
+         const VPXTexture glass = m_glassEnabled ? visual.glass : nullptr;
          vec4 glassArea;
-         if (visual.glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
+         if (glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            VPXTextureInfo* texInfo = m_vpxApi->GetTextureInfo(visual.glass);
+            VPXTextureInfo* texInfo = m_vpxApi->GetTextureInfo(glass);
             glassArea.x = visual.glassArea.x / static_cast<float>(texInfo->width);
             glassArea.y = visual.glassArea.y / static_cast<float>(texInfo->height);
             glassArea.z = visual.glassArea.z / static_cast<float>(texInfo->width);
@@ -692,7 +696,7 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
             segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
             ctx->DrawSegDisplay(ctx, style, hint,
                // First layer: glass
-               visual.glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
+               glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
                segGlassArea.x, segGlassArea.y, segGlassArea.z, segGlassArea.w, // Glass texture coordinates (inside overall glass texture, cut for each element)
                visual.glassAmbient.x, visual.glassAmbient.y, visual.glassAmbient.z, // Glass lighting from room
                // Second layer: emitter

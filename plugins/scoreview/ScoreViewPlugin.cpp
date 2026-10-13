@@ -21,6 +21,7 @@ namespace ScoreView
 {
 
 MSGPI_FOLDER_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Folder where custom ScoreView layouts are stored", true, "", 1024);
+MSGPI_BOOL_VAL_SETTING(enableGlassProp, "EnableGlass", "Enable Glass", "Draw the glass overlay effect over score displays", true, true);
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
@@ -77,6 +78,7 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
          scoreView->Load(path);
       }
    }
+   scoreView->SetGlassEnabled(enableGlassProp_Get() != 0);
    return scoreView->Render(ctx) ? 1 : 0;
 }
 
@@ -120,6 +122,7 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 
    msgApi->RegisterSetting(endpointId, &layoutFolderProp);
+   msgApi->RegisterSetting(endpointId, &enableGlassProp);
 }
 
 MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload()

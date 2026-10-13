@@ -67,6 +67,7 @@ public:
    bool IsMatched() const { return m_bestLayout != nullptr && m_bestLayout->unmatchedVisuals == 0; }
    void Load(const std::filesystem::path& path);
    void Reset() { m_layouts.clear(); }
+   void SetGlassEnabled(bool enabled) { m_glassEnabled = enabled; }
 
    bool Render(VPXRenderContext2D* ctx);
 
@@ -129,6 +130,7 @@ private:
    };
 
    vector<Layout> m_layouts;
+   bool m_glassEnabled = true;
    bool m_invalidBestLayout = true;
    Layout* m_bestLayout = nullptr;
 
