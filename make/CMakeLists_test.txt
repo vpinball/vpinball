@@ -75,6 +75,7 @@ set(VPX_TEST_SOURCES
    tests/plugins/plugins/test-resuriresolver.cpp
    tests/plugins/upscaledmd/test-upscalers.cpp
    tests/render/test-base-render.cpp
+   tests/render/test-renderframe.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
 )

@@ -11,7 +11,6 @@
 
 RenderFrame::RenderFrame(RenderDevice* renderDevice)
    : m_rd(renderDevice)
-   , m_rdState(std::make_unique<RenderDeviceState>(renderDevice))
 {
 }
 
@@ -147,6 +146,8 @@ bool RenderFrame::Execute(const bool log)
    if (!m_passes.empty())
    {
       // Save render/shader states
+      if (m_rdState == nullptr)
+         m_rdState = std::make_unique<RenderDeviceState>(m_rd);
       m_rd->CopyRenderAndShaderStates(true, *m_rdState);
 
       // Clear last render pass to avoid cross frame references
@@ -284,5 +285,7 @@ void RenderFrame::Discard()
    }
    m_passPool.insert(m_passPool.end(), m_passes.begin(), m_passes.end());
    m_passes.clear();
+   // Drop deferred frame commands as they capture resources owned by this frame (recycled command/passes) and must not be kept for the next frame
+   m_beginOfFrameCmds.clear();
    m_endOfFrameCmds.clear();
 }
