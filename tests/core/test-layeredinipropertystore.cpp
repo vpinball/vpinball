@@ -16,6 +16,7 @@ struct TestPropIds
    PropertyRegistry::PropId boolProp;
    PropertyRegistry::PropId intProp;
    PropertyRegistry::PropId enumProp;
+   PropertyRegistry::PropId numEnumProp;
    PropertyRegistry::PropId floatProp;
    PropertyRegistry::PropId stringProp;
    PropertyRegistry::PropId contextualInt;
@@ -27,6 +28,7 @@ TestPropIds RegisterTestProps(PropertyRegistry& registry)
    ids.boolProp = registry.Register(std::make_unique<BoolPropertyDef>("TestGroup"s, "BoolProp"s, "Bool"s, ""s, false, true));
    ids.intProp = registry.Register(std::make_unique<IntPropertyDef>("TestGroup"s, "IntProp"s, "Int"s, ""s, false, 0, 100, 42));
    ids.enumProp = registry.Register(std::make_unique<EnumPropertyDef>("TestGroup"s, "EnumProp"s, "Enum"s, ""s, false, 0, 1, vector<string> { "Zero"s, "One"s, "Two"s }));
+   ids.numEnumProp = registry.Register(std::make_unique<EnumPropertyDef>("TestGroup"s, "NumEnum"s, "Num"s, ""s, false, 0, 1, vector<string> { "2"s, "3"s, "4"s, "5"s }));
    ids.floatProp = registry.Register(std::make_unique<FloatPropertyDef>("TestGroup"s, "FloatProp"s, "Float"s, ""s, false, 0.f, 10.f, 0.5f, 2.5f));
    ids.stringProp = registry.Register(std::make_unique<StringPropertyDef>("TestGroup"s, "StringProp"s, "String"s, ""s, false, "default"s));
    ids.contextualInt = registry.Register(std::make_unique<IntPropertyDef>("TestGroup"s, "CtxInt"s, "Ctx"s, ""s, true, 0, 100, 5));
@@ -113,6 +115,46 @@ TEST_CASE("LayeredINIPropertyStore")
       CHECK(loaded.GetInt(ids.boolProp) == 0);
       CHECK(loaded.GetInt(ids.enumProp) == 1); // untouched stays at default
       CHECK(!loaded.IsModified());
+   }
+
+   SUBCASE("enum with numeric labels round-trips by label")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-numenum.ini";
+
+      {
+         LayeredINIPropertyStore store(registry);
+         store.SetIniPath(iniPath);
+         store.Set(ids.numEnumProp, 3); // the "5" entry
+         store.Save();
+      }
+      REQUIRE(FileExists(iniPath));
+
+      // On disk the enum is written as its label, not the integer index
+      mINI::INIStructure ini;
+      REQUIRE(mINI::INIFile(iniPath).read(ini));
+      CHECK(ini["TestGroup"s]["NumEnum"s] == "5");
+
+      // A fresh store reads the label back to the correct index
+      LayeredINIPropertyStore loaded(registry);
+      loaded.SetIniPath(iniPath);
+      CHECK(loaded.Load());
+      CHECK(loaded.GetInt(ids.numEnumProp) == 3);
+   }
+
+   SUBCASE("enum integer-index fallback still parses")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      LayeredINIPropertyStore store(registry);
+
+      // EnumProp has non-numeric labels { "Zero", "One", "Two" }; a bare integer in
+      // the ini is parsed as the index via the fallback path.
+      mINI::INIStructure ini;
+      ini["TestGroup"s]["EnumProp"s] = "2";
+      store.Load(ini);
+      CHECK(store.GetInt(ids.enumProp) == 2);
    }
 
    SUBCASE("undefined properties are persisted as empty values")
