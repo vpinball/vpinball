@@ -135,7 +135,6 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    // FIXME most render target are not blit destination and are only used as write target then GPU sampling
    default: texFlags = BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST; break;
    }
-   bgfx::TextureFormat::Enum m_colorFormat;
    switch (format)
    {
    case colorFormat::RED16F: m_colorFormat = bgfx::TextureFormat::R16F; break;

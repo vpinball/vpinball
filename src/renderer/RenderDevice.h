@@ -334,7 +334,7 @@ private:
    // Pending uploads are written by the logic thread (e.g. during table load) and consumed by the render thread
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
    std::mutex m_pendingTextureUploadsMutex;
-   std::unique_ptr<ShaderState> m_uniformState = nullptr;
+
 
    class tBGFXCallback : public bgfx::CallbackI
    {
