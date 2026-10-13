@@ -638,7 +638,7 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
 
 #if defined(ENABLE_BGFX)
    assert(dest->m_nMSAASamples == 1);
-   if (w1 == w2 && h1 == h2)
+   if (pw1 == pw2 && ph1 == ph2)
    {
       // BGFX does not support blitting multiple layers at once on all target platform (supported on Vulkan, not supported on DX11, untested for the other backends)
       bgfx::TextureRegion src;
@@ -647,11 +647,11 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
       {
          if (copyColor)
          {
-            src.init(m_color_tex, px1, py1, w1, h1);
+            src.init(m_color_tex, px1, py1, pw1, ph1);
             src.mip = 0;
             src.z = pz1 + z;
             src.depth = 1;
-            dst.init(dest->m_color_tex, px2, py2, w2, h2);
+            dst.init(dest->m_color_tex, px2, py2, pw2, ph2);
             dst.mip = 0;
             dst.z = pz2 + z;
             dst.depth = 1;
@@ -661,11 +661,11 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
          {
             if (m_nMSAASamples > 1)
                ResolveMSAADepth();
-            src.init(m_depth_tex, px1, py1, w1, h1);
+            src.init(m_depth_tex, px1, py1, pw1, ph1);
             src.mip = 0;
             src.z = pz1 + z;
             src.depth = 1;
-            dst.init(dest->m_depth_tex, px2, py2, w2, h2);
+            dst.init(dest->m_depth_tex, px2, py2, pw2, ph2);
             dst.mip = 0;
             dst.z = pz2 + z;
             dst.depth = 1;
@@ -675,26 +675,21 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    }
    else
    {
-      assert((dstLayer == 0) || ((dstLayer == -1) && (dest->m_nLayers == 1)));
-      assert(srcLayer >= 0);
-      const float px1 = 2.f * (static_cast<float>(x2)      / static_cast<float>(dest->GetWidth())) - 1.f;
-      const float py1 = 2.f * (static_cast<float>(y2)      / static_cast<float>(dest->GetHeight())) - 1.f;
-      const float px2 = 2.f * (static_cast<float>(x2 + w2) / static_cast<float>(dest->GetWidth())) - 1.f;
-      const float py2 = 2.f * (static_cast<float>(y2 + h2) / static_cast<float>(dest->GetHeight())) - 1.f;
-      const float qx1 =        static_cast<float>(x1)      / static_cast<float>(m_width);
-      const float qy1 = 1.f -  static_cast<float>(y1)      / static_cast<float>(m_height);
-      const float qx2 =        static_cast<float>(x1 + w1) / static_cast<float>(m_width);
-      const float qy2 = 1.f -  static_cast<float>(y1 + h1) / static_cast<float>(m_height);
-      const Vertex3D_TexelOnly verts[4] = {
-         { px1, py1, 0.0f, qx1, qy1 },
-         { px2, py1, 0.0f, qx2, qy1 },
-         { px1, py2, 0.0f, qx1, qy2 },
-         { px2, py2, 0.0f, qx2, qy2 }
-      };
+      assert(dstLayer == 0 || (dstLayer == -1 && dest->m_nLayers == 1));
+      assert(srcLayer >= 0 || m_nLayers == 1);
+      const float dx1 = 2.f * (static_cast<float>(px2) / static_cast<float>(dest->GetWidth())) - 1.f;
+      const float dy1 = 2.f * (static_cast<float>(py2) / static_cast<float>(dest->GetHeight())) - 1.f;
+      const float dx2 = 2.f * (static_cast<float>(px2 + pw2) / static_cast<float>(dest->GetWidth())) - 1.f;
+      const float dy2 = 2.f * (static_cast<float>(py2 + ph2) / static_cast<float>(dest->GetHeight())) - 1.f;
+      const float qx1 = static_cast<float>(px1) / static_cast<float>(m_width);
+      const float qy1 = 1.f - static_cast<float>(py1) / static_cast<float>(m_height);
+      const float qx2 = static_cast<float>(px1 + pw1) / static_cast<float>(m_width);
+      const float qy2 = 1.f - static_cast<float>(py1 + ph1) / static_cast<float>(m_height);
+      const Vertex3D_TexelOnly verts[4] = { { dx1, dy1, 0.0f, qx1, qy1 }, { dx2, dy1, 0.0f, qx2, qy1 }, { dx1, dy2, 0.0f, qx1, qy2 }, { dx2, dy2, 0.0f, qx2, qy2 } };
       Shader* shader = m_rd->m_FBShader;
       shader->SetTechnique(ShaderTechnique::fb_mirror);
       shader->SetVector(ShaderUniform::w_h_height, 1.f, 1.f, 1.f, 0.f);
-      shader->SetInt(ShaderUniform::layer, srcLayer);
+      shader->SetInt(ShaderUniform::layer, srcLayer < 0 ? 0 : srcLayer);
       shader->SetTexture(ShaderUniform::tex_fb_unfiltered, GetColorSampler());
       shader->Begin();
       bgfx::TransientVertexBuffer tvb; // TODO only allocate one per frame instead of one per CopyTo
@@ -737,7 +732,7 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    assert(srcLayer == -1); // Layered rendering is not supported for DirectX 9
    if (copyColor)
    {
-      CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, w1 == w2 && h1 == h2 ? D3DTEXF_NONE : D3DTEXF_LINEAR));
+      CHECKD3D(m_rd->GetCoreDevice()->StretchRect(m_color_surface, nullptr, dest->m_color_surface, nullptr, pw1 == pw2 && ph1 == ph2 ? D3DTEXF_NONE : D3DTEXF_LINEAR));
    }
    if (m_has_depth && dest->m_has_depth && copyDepth)
    {
