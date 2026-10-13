@@ -412,6 +412,15 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
 {
    assert(m_ownTexture);
    assert(surf != nullptr); // Same invariant as the constructor: callers can substitute the fallback texture
+   // The native texture was allocated with m_width/m_height and all backends re-upload
+   // inside that allocation (BGFX update region, glTexSubImage2D, DX9 UpdateTexture), so
+   // a differently sized bitmap would corrupt it: reject the update, keeping previous content
+   if (surf->width() != m_width || surf->height() != m_height)
+   {
+      assert(false);
+      PLOGE << "Texture '" << m_name << "' update has a different size (" << surf->width() << 'x' << surf->height() << " vs " << m_width << 'x' << m_height << "), keeping previous content";
+      return;
+   }
    m_rd->m_curTextureUpdates++;
 
 #if defined(ENABLE_BGFX)
