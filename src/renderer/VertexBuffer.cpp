@@ -5,6 +5,14 @@
 #include "RenderDevice.h"
 #include "Shader.h"
 
+#if defined(ENABLE_BGFX)
+// BGFX does not expose the release function in its API so we access it directly somewhat hackily
+namespace bgfx
+{
+extern void release(const bgfx::Memory* _mem);
+}
+#endif
+
 
 class SharedVertexBuffer final : public SharedBuffer<VertexFormat, VertexBuffer>
 {
@@ -59,7 +67,7 @@ SharedVertexBuffer::~SharedVertexBuffer()
    #if defined(ENABLE_BGFX)
    for (const PendingUpload& upload : m_pendingUploads)
       if (upload.mem)
-         delete upload.mem;
+         bgfx::release(upload.mem);
       else
          delete[] upload.data;
    #else
