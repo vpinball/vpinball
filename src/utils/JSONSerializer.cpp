@@ -178,6 +178,7 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
          { FID(MOVA), "modulate_vs_add" },
          { FID(RDMD), "render_mode" },
          { FID(RSTL), "render_style" },
+         { FID(SLNK), "state_src_link" },
       });
 
       m[eItemFlipper] = MakePartMap({
@@ -295,6 +296,7 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
          { FID(IMG1), "image" },
          { FID(IMMO), "image_mode" },
          { FID(LIDB), "depth_bias" },
+         { FID(LINK), "state_src_link" },
          { FID(RADI), "radius" },
          { FID(SHAP), "shape" },
          { FID(SHBM), "show_bulb_mesh" },
@@ -362,7 +364,7 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
          { FID(PIDB), "depth_bias" }, { FID(REEN), "reflection_enabled" }, { FID(REFL), "reflection_probe" }, { FID(REFR), "refraction_probe" }, { FID(RFCT), "friction" },
          { FID(RSCT), "scatter" }, { FID(RSTR), "reflection_strength" }, { FID(RTHI), "refraction_thickness" }, { FID(RTV0), "prim_rot1_x" }, { FID(RTV1), "prim_rot1_y" },
          { FID(RTV2), "prim_rot1_z" }, { FID(RTV3), "prim_trans_x" }, { FID(RTV4), "prim_trans_y" }, { FID(RTV5), "prim_trans_z" }, { FID(RTV6), "prim_rot2_x" },
-         { FID(RTV7), "prim_rot2_y" }, { FID(RTV8), "prim_rot2_z" }, { FID(SCOL), "side_color" }, { FID(SIDS), "sides" }, { FID(SIMG), "side_image" }, { FID(STRE), "static_rendering" },
+         { FID(RTV7), "prim_rot2_y" }, { FID(RTV8), "prim_rot2_z" }, { FID(SCOL), "side_color" }, { FID(SIDS), "sides" }, { FID(SIMG), "side_image" }, { FID(SLNK), "state_src_link" }, { FID(STRE), "static_rendering" },
          { FID(THRS), "threshold" }, { FID(TVIS), "visible" }, { FID(U3DM), "use_mesh" }, { FID(VPOS), "position" }, { FID(VSIZ), "size" }, { FID(ZMSK), "use_depth_mask" },
          // The mesh binary fields (M3VN/M3FN/M3CX/M3CY/M3CI/M3CJ/M3DX/M3DI/M3AX/M3AY) are
          // intentionally unmapped: the mesh is stored as a GLB file under meshes/
@@ -490,6 +492,7 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
       m[eItemTrigger] = MakePartMap({
          { FID(ANSP), "anim_speed" },
          { FID(EBLD), "enabled" },
+         { FID(LINK), "state_src_link" },
          { FID(MATR), "material" },
          { FID(RADI), "radius" },
          { FID(REEN), "reflection_enabled" },
@@ -792,66 +795,154 @@ namespace
 class FilesystemSerializer final : public JSONSerializer::Serializer
 {
 public:
-   explicit FilesystemSerializer(const std::filesystem::path& basePath)
+   FilesystemSerializer(const std::filesystem::path& basePath, const bool replacePack)
       : m_basePath(basePath)
+      , m_replacePack(replacePack)
    {
+      // Stale files are only removed from an existing pack, never from an unrelated folder the pack is saved into
+      std::ifstream manifest(basePath / "manifest.json", std::ios::binary);
+      std::stringstream content;
+      if (manifest && (content << manifest.rdbuf()))
+      {
+         const nlohmann::json doc = nlohmann::json::parse(content.str(), nullptr, false);
+         m_isExistingPack = doc.is_object() && doc.value("file_format", ""s) == "vpinball-pack"s;
+      }
    }
 
    void AddTextFile(const std::filesystem::path& path, const std::string& content) override
    {
-      const std::filesystem::path fullPath = m_basePath / path;
-      std::error_code ec;
-      std::filesystem::create_directories(fullPath.parent_path(), ec);
-      std::ofstream out(fullPath, std::ios::binary | std::ios::trunc);
-      if (out)
-         out << content;
-      else
-      {
-         PLOGE << "Failed to write pack file: " << PathToUTF8(fullPath);
-         m_hasError = true;
-      }
+      std::ofstream out = Create(path);
+      out << content;
+      out.close();
+      if (out.fail())
+         Fail(path);
    }
 
    void AddBinaryFile(const std::filesystem::path& path, const std::vector<uint8_t>& data) override
    {
-      const std::filesystem::path fullPath = m_basePath / path;
-      std::error_code ec;
-      std::filesystem::create_directories(fullPath.parent_path(), ec);
-      std::ofstream out(fullPath, std::ios::binary | std::ios::trunc);
-      if (out)
-         out.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
-      else
+      std::ofstream out = Create(path);
+      out.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+      out.close();
+      if (out.fail())
+         Fail(path);
+   }
+
+   // Removes the files of the pack folders this save did not write (deleted or renamed items), which the loader would
+   // load back. When merging, only removes those sharing their stem with a written file (an image now saved with
+   // another extension would otherwise be paired with the new sidecar).
+   bool Finalize() override
+   {
+      if (m_hasError || !m_isExistingPack)
+         return !m_hasError;
+      for (const char* const folder : { "parts", "collections", "materials", "renderprobes", "images", "sounds", "fonts", "meshes" })
       {
-         PLOGE << "Failed to write pack file: " << PathToUTF8(fullPath);
-         m_hasError = true;
+         std::error_code ec;
+         vector<std::filesystem::path> staleFiles;
+         for (auto it = std::filesystem::recursive_directory_iterator(m_basePath / folder, ec); !ec && it != std::filesystem::recursive_directory_iterator(); it.increment(ec))
+            if (it->is_regular_file(ec) && !IsWritten(it->path()) && (m_replacePack || SharesStemWithWritten(it->path())))
+               staleFiles.push_back(it->path());
+         for (const std::filesystem::path& file : staleFiles)
+            if (!std::filesystem::remove(file, ec))
+            {
+               PLOGW << "Failed to remove stale pack file: " << PathToUTF8(file);
+            }
       }
+      return true;
    }
 
    bool HasError() const override { return m_hasError; }
 
 private:
+   std::ofstream Create(const std::filesystem::path& path)
+   {
+      const std::filesystem::path fullPath = m_basePath / path;
+      std::error_code ec;
+      std::filesystem::create_directories(fullPath.parent_path(), ec);
+      m_written.push_back(fullPath.lexically_normal());
+      return std::ofstream(fullPath, std::ios::binary | std::ios::trunc);
+   }
+
+   void Fail(const std::filesystem::path& path)
+   {
+      PLOGE << "Failed to write pack file: " << PathToUTF8(m_basePath / path);
+      m_hasError = true;
+   }
+
+   bool SharesStemWithWritten(const std::filesystem::path& file) const
+   {
+      const std::filesystem::path normFile = file.lexically_normal();
+      const string lowerStem = lowerCase(PathToUTF8(normFile.parent_path() / normFile.stem()));
+      return std::ranges::any_of(m_written, [&lowerStem](const std::filesystem::path& written) { return lowerCase(PathToUTF8(written.parent_path() / written.stem())) == lowerStem; });
+   }
+
+   bool IsWritten(const std::filesystem::path& file) const
+   {
+      const std::filesystem::path normFile = file.lexically_normal();
+      const string lowerFile = lowerCase(PathToUTF8(normFile));
+      const bool nonAscii = std::ranges::any_of(lowerFile, [](const char c) { return static_cast<unsigned char>(c) >= 0x80; });
+      for (const std::filesystem::path& written : m_written)
+      {
+         if (written == normFile)
+            return true;
+         // A written file may be listed with another case on a case insensitive file system
+         std::error_code ec;
+         if ((nonAscii ? written.parent_path() == normFile.parent_path() : lowerCase(PathToUTF8(written)) == lowerFile) && std::filesystem::equivalent(written, file, ec))
+            return true;
+      }
+      return false;
+   }
+
    const std::filesystem::path m_basePath;
+   const bool m_replacePack;
+   vector<std::filesystem::path> m_written;
+   bool m_isExistingPack = false;
    bool m_hasError = false;
 };
 
 class ZipSerializer final : public JSONSerializer::Serializer
 {
 public:
+   // Writes to a temporary file that replaces the target only once complete, so a failed save keeps the existing pack
    explicit ZipSerializer(const std::filesystem::path& zipPath)
       : m_zipPath(zipPath)
+      , m_tmpPath(std::filesystem::path(zipPath) += ".tmp")
    {
       memset(&m_zipArchive, 0, sizeof(m_zipArchive));
    }
 
-   ~ZipSerializer() override { Finalize(); }
+   // Not finalized (failed or aborted save): discards the partial archive
+   ~ZipSerializer() override
+   {
+      if (m_zipArchive.m_pState)
+         mz_zip_writer_end(&m_zipArchive);
+      std::error_code ec;
+      std::filesystem::remove(m_tmpPath, ec);
+   }
 
    bool Finalize() override
    {
       if (m_zipArchive.m_pState)
       {
-         if (!mz_zip_writer_finalize_archive(&m_zipArchive))
+         if (!m_hasError && !mz_zip_writer_finalize_archive(&m_zipArchive))
             m_hasError = true;
-         mz_zip_writer_end(&m_zipArchive);
+         if (!mz_zip_writer_end(&m_zipArchive))
+            m_hasError = true;
+         if (!m_hasError)
+         {
+            std::error_code ec;
+            std::filesystem::rename(m_tmpPath, m_zipPath, ec);
+            if (ec)
+            {
+               // Renaming fails if the file is held open, fall back to overwriting it
+               PLOGW << "Failed to replace pack file by renaming (" << ec.message() << "), overwriting it instead";
+               std::filesystem::copy_file(m_tmpPath, m_zipPath, std::filesystem::copy_options::overwrite_existing, ec);
+               if (ec)
+               {
+                  PLOGE << "Failed to save pack to " << PathToUTF8(m_zipPath) << " (" << ec.message() << ')';
+                  m_hasError = true;
+               }
+            }
+         }
       }
       return !m_hasError;
    }
@@ -863,9 +954,11 @@ public:
 private:
    void AddMem(const std::filesystem::path& path, const void* data, const size_t size)
    {
-      if (!m_zipArchive.m_pState && !mz_zip_writer_init_file(&m_zipArchive, PathToUTF8(m_zipPath).c_str(), 0))
+      if (m_hasError)
+         return;
+      if (!m_zipArchive.m_pState && !mz_zip_writer_init_file(&m_zipArchive, PathToUTF8(m_tmpPath).c_str(), 0))
       {
-         PLOGE << "Failed to initialize zip writer for: " << PathToUTF8(m_zipPath);
+         PLOGE << "Failed to initialize zip writer for: " << PathToUTF8(m_tmpPath);
          m_hasError = true;
          return;
       }
@@ -881,6 +974,7 @@ private:
    bool HasError() const override { return m_hasError; }
 
    const std::filesystem::path m_zipPath;
+   const std::filesystem::path m_tmpPath;
    mz_zip_archive m_zipArchive;
    bool m_hasError = false;
 };
@@ -983,11 +1077,11 @@ private:
 } // anonymous namespace
 
 
-std::unique_ptr<JSONSerializer::Serializer> JSONSerializer::CreateWriter(const std::filesystem::path& path)
+std::unique_ptr<JSONSerializer::Serializer> JSONSerializer::CreateWriter(const std::filesystem::path& path, const bool replacePack)
 {
    std::error_code ec;
    if (std::filesystem::is_directory(path, ec) || (!std::filesystem::exists(path, ec) && !path.has_extension()))
-      return std::make_unique<FilesystemSerializer>(path);
+      return std::make_unique<FilesystemSerializer>(path, replacePack);
    return std::make_unique<ZipSerializer>(path);
 }
 

@@ -146,6 +146,8 @@ PinTable::~PinTable()
 
    for (auto pcol : m_vcollection)
       pcol->Release();
+   for (auto pcol : m_vremovedCollection)
+      pcol->Release();
 
    m_psgt->Release();
    m_psgt = nullptr;
@@ -480,7 +482,8 @@ void PinTable::RemoveCollection(CComObject<Collection> *collection)
    if (idx != -1)
       m_vcollection.erase(m_vcollection.begin() + idx);
    SetCollectionContent(collection, {}); // Drop the members' cross references to the removed collection
-   collection->Release();
+   // Deleted parts held by undo records may still refer to it (see Undelete): keep it alive until the table is released
+   m_vremovedCollection.push_back(collection);
 }
 
 void PinTable::RenameCollection(Collection *collection, const string &newName)
@@ -760,6 +763,7 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
          ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
          return hr;
       }
+      SetDirtyScript(eSaveClean); // The Win32 code view does this too, other frontends edit the script directly
       SetNonUndoableDirty(eSaveClean);
 #ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
@@ -832,6 +836,7 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
          m_tableEditor->m_pcv->SetClean(eSaveClean);
       }
 #endif
+      SetDirtyScript(eSaveClean); // The Win32 code view does this too, other frontends edit the script directly
       SetNonUndoableDirty(eSaveClean);
 
       // A legacy .vpt table, or a name without the .vpx extension, was saved as .vpx: from now on, the table is this file
@@ -1122,38 +1127,73 @@ static void UpdateTableInfoFile(const PinTable *const table, const std::function
    if (infoPath.empty())
       return;
 
+   // The file belongs to frontends: if it exists but can not be read or parsed, it is left untouched
    nlohmann::ordered_json doc = nlohmann::ordered_json::object();
-   try
+   std::error_code ec;
+   if (std::filesystem::exists(infoPath, ec) && std::filesystem::file_size(infoPath, ec) > 0)
    {
-      std::stringstream buffer;
-      std::ifstream file(infoPath);
-      buffer << file.rdbuf();
-      file.close();
-      const string content = buffer.str();
-      if (!content.empty())
-         doc = nlohmann::ordered_json::parse(content, nullptr, false);
+      try
+      {
+         std::ifstream file(infoPath, std::ios::binary);
+         std::stringstream buffer;
+         if (!file || !(buffer << file.rdbuf()))
+         {
+            PLOGE << "Failed to read table info file " << infoPath << ", leaving it unmodified";
+            return;
+         }
+         doc = nlohmann::ordered_json::parse(buffer.str(), nullptr, false);
+      }
+      catch (...)
+      {
+         doc = nlohmann::ordered_json(nlohmann::ordered_json::value_t::discarded);
+      }
+      if (!doc.is_object())
+      {
+         PLOGE << "Invalid table info file " << infoPath << ", leaving it unmodified";
+         return;
+      }
    }
-   catch (...)
+   else if (ec)
    {
-      PLOGE << "Failed to read table info file " << infoPath;
+      PLOGE << "Failed to access table info file " << infoPath << " (" << ec.message() << "), leaving it unmodified";
+      return;
    }
-   if (!doc.is_object())
-      doc = nlohmann::ordered_json::object();
 
    nlohmann::ordered_json &vpx = doc["VPX"];
    if (!vpx.is_object())
       vpx = nlohmann::ordered_json::object();
 
+   // Write to a temporary file then replace, so that a failed write does not destroy the frontend data
+   std::filesystem::path tmpPath = infoPath;
+   tmpPath += ".tmp";
+   bool written = false;
    try
    {
       update(vpx);
-      std::ofstream file(infoPath);
-      file << doc.dump(1, '\t');
+      const string content = doc.dump(1, '\t');
+      std::ofstream file(tmpPath, std::ios::binary | std::ios::trunc);
+      file << content;
+      file.close();
+      written = !file.fail();
    }
    catch (...)
    {
+   }
+   if (written)
+   {
+      std::filesystem::rename(tmpPath, infoPath, ec);
+      if (ec)
+      {
+         // Renaming fails if the file is held open, fall back to overwriting it
+         std::filesystem::copy_file(tmpPath, infoPath, std::filesystem::copy_options::overwrite_existing, ec);
+         written = !ec;
+      }
+   }
+   if (!written)
+   {
       PLOGE << "Failed to write table info file " << infoPath;
    }
+   std::filesystem::remove(tmpPath, ec); // No-op if renamed
 }
 
 void PinTable::UpdateInfoFileOnGameStart()
@@ -1747,7 +1787,7 @@ HRESULT PinTable::LoadGameFromVPXStorage(VPXFileFeedback &feedback)
          // Dispatch all load tasks & wait, updating the progress bar on UI thread
          feedback.SetLength(static_cast<unsigned int>(loadQueue.size()));
          for (const LoadTask &task : loadQueue)
-            pool.enqueue(task.task);
+            pool.enqueue_block(task.task);
          while (pool.has_work_in_flight())
          {
             SDL_Delay(10);
@@ -2317,16 +2357,48 @@ struct PackFilePool
 {
    std::filesystem::path Unique(const std::filesystem::path &folder, const string &baseName, const string &ext)
    {
-      const auto isUsed = [this](const std::filesystem::path &file)
-      { return std::ranges::find_if(used, [&file](const std::filesystem::path &u) { return lowerCase(PathToUTF8(u)) == lowerCase(PathToUTF8(file)); }) != used.end(); };
-      std::filesystem::path file = folder / (baseName + ext);
-      for (int index = 2; isUsed(file); ++index)
-         file = folder / (baseName + "_"s + std::to_string(index) + ext);
-      used.push_back(file);
-      return file;
+      return folder / (UniqueStem(folder, baseName, { ext }) + ext);
    }
-   vector<std::filesystem::path> used;
+   // Reserves a file stem free for all the given extensions (a data file and its sidecar must share their stem)
+   string UniqueStem(const std::filesystem::path &folder, const string &baseName, std::initializer_list<string> exts)
+   {
+      const auto isUsed = [this, &folder, &exts](const string &stem)
+      {
+         return std::ranges::any_of(exts, [this, &folder, &stem](const string &ext)
+            { return std::ranges::find(used, lowerCase(PathToUTF8(folder / (stem + ext)))) != used.end(); });
+      };
+      string stem = baseName;
+      for (int index = 2; isUsed(stem); ++index)
+         stem = baseName + '_' + std::to_string(index);
+      for (const string &ext : exts)
+         used.push_back(lowerCase(PathToUTF8(folder / (stem + ext))));
+      return stem;
+   }
+   vector<string> used; // Lower case, as packs may be saved to case insensitive file systems
 };
+
+// An item's name is its pack file stem: the document only stores it when they differ (sanitized or made unique)
+static void SetPackDocName(nlohmann::ordered_json &doc, const string &name, const std::filesystem::path &file)
+{
+   if (PathToUTF8(file.stem()) != name)
+      doc["name"] = name;
+}
+
+// Builds the JSON document of a table asset (material, render probe), which saves itself as an element of a table array
+static nlohmann::ordered_json BuildPackTableAssetDoc(JSONSerializer::Serializer *const pack, const char *const arrayField, const char *const typeName, const std::function<void(JSONObjectWriter &)> &save)
+{
+   JSONObjectWriter writer(eItemTable, pack);
+   save(writer);
+   if (writer.HasError())
+      return nullptr;
+   const nlohmann::ordered_json &fields = writer.Json();
+   nlohmann::ordered_json doc;
+   doc["$type"] = typeName;
+   if (fields.contains(arrayField) && fields[arrayField].is_array() && !fields[arrayField].empty())
+      doc.update(fields[arrayField][0]);
+   doc.erase("name"); // The name is the file name
+   return doc;
+}
 
 // Builds the JSON document of a pack entity: "$type" first, then the serialized fields, the name being the file name
 static nlohmann::ordered_json BuildPackDoc(JSONSerializer::Serializer *const pack, int nodeKind, const char *const typeName, const std::function<void(JSONObjectWriter &)> &save)
@@ -2363,55 +2435,58 @@ static void WritePackMesh(JSONSerializer::Serializer &pack, PackFilePool &pool, 
 // Writes an image to the pack: the original file bytes alongside a JSON sidecar holding the import metadata
 static void WritePackImage(JSONSerializer::Serializer &pack, PackFilePool &pool, const Texture *const tex)
 {
-   const string baseName = JSONSerializer::SanitizeFileName(tex->m_name);
    string ext = lowerCase(PathToUTF8(tex->GetFilePath().extension()));
-   if (ext.empty())
+   if (ext.empty() || ext == ".json"s)
       ext = ".png"s;
-   const std::filesystem::path dataFile = pool.Unique("images", baseName, ext);
+   const string stem = pool.UniqueStem("images", JSONSerializer::SanitizeFileName(tex->m_name), { ext, ".json"s });
+   const std::filesystem::path dataFile = std::filesystem::path("images") / (stem + ext);
    pack.AddBinaryFile(dataFile, vector<uint8_t>(tex->GetFileRaw(), tex->GetFileRaw() + tex->GetFileSize()));
    nlohmann::ordered_json sidecar;
    sidecar["$type"] = "image";
+   SetPackDocName(sidecar, tex->m_name, dataFile);
    sidecar["import_path"] = PathToUTF8(tex->GetFilePath());
    sidecar["width"] = tex->m_width;
    sidecar["height"] = tex->m_height;
    sidecar["alpha_test"] = tex->m_alphaTestValue * 255.f; // 0..255 scale, negative when disabled
    sidecar["md5"] = HexMD5(tex->GetMD5Hash());
    sidecar["opaque"] = tex->IsOpaque();
-   pack.AddTextFile(pool.Unique("images", baseName, ".json"s), sidecar.dump(2));
+   pack.AddTextFile(std::filesystem::path("images") / (stem + ".json"s), sidecar.dump(2));
 }
 
 // Writes a sound to the pack: the original file bytes alongside a JSON sidecar holding the import properties
 static void WritePackSound(JSONSerializer::Serializer &pack, PackFilePool &pool, const VPX::Sound *const pps)
 {
-   const string baseName = JSONSerializer::SanitizeFileName(pps->GetName());
    string ext = lowerCase(PathToUTF8(pps->GetImportPath().extension()));
-   if (ext.empty())
+   if (ext.empty() || ext == ".json"s)
       ext = ".wav"s;
-   const std::filesystem::path dataFile = pool.Unique("sounds", baseName, ext);
+   const string stem = pool.UniqueStem("sounds", JSONSerializer::SanitizeFileName(pps->GetName()), { ext, ".json"s });
+   const std::filesystem::path dataFile = std::filesystem::path("sounds") / (stem + ext);
    pack.AddBinaryFile(dataFile, vector<uint8_t>(pps->GetFileRaw(), pps->GetFileRaw() + pps->GetFileSize()));
    nlohmann::ordered_json sidecar;
    sidecar["$type"] = "sound";
+   SetPackDocName(sidecar, pps->GetName(), dataFile);
    sidecar["import_path"] = PathToUTF8(pps->GetImportPath());
    sidecar["output_target"] = pps->GetOutputTarget() == VPX::SNDOUT_BACKGLASS ? "backglass" : "playfield";
    sidecar["volume_offset"] = pps->GetVolume();
    sidecar["left_right_offset"] = pps->GetPan();
    sidecar["rear_front_offset"] = pps->GetFrontRearFade(); // -100 is full rear, +100 is full front
-   pack.AddTextFile(pool.Unique("sounds", baseName, ".json"s), sidecar.dump(2));
+   pack.AddTextFile(std::filesystem::path("sounds") / (stem + ".json"s), sidecar.dump(2));
 }
 
 // Writes a font to the pack: the raw file bytes alongside a JSON sidecar holding the import properties
 static void WritePackFont(JSONSerializer::Serializer &pack, PackFilePool &pool, const PinFont *const font)
 {
-   const string baseName = JSONSerializer::SanitizeFileName(font->m_name);
    string ext = lowerCase(PathToUTF8(font->m_path.extension()));
-   if (ext.empty())
+   if (ext.empty() || ext == ".json"s)
       ext = ".ttf"s;
-   const std::filesystem::path dataFile = pool.Unique("fonts", baseName, ext);
+   const string stem = pool.UniqueStem("fonts", JSONSerializer::SanitizeFileName(font->m_name), { ext, ".json"s });
+   const std::filesystem::path dataFile = std::filesystem::path("fonts") / (stem + ext);
    pack.AddBinaryFile(dataFile, font->m_buffer);
    nlohmann::ordered_json sidecar;
    sidecar["$type"] = "font";
+   SetPackDocName(sidecar, font->m_name, dataFile);
    sidecar["import_path"] = PathToUTF8(font->m_path);
-   pack.AddTextFile(pool.Unique("fonts", baseName, ".json"s), sidecar.dump(2));
+   pack.AddTextFile(std::filesystem::path("fonts") / (stem + ".json"s), sidecar.dump(2));
 }
 
 // Writes the manifest identifying the pack format and its version
@@ -2667,7 +2742,7 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
       progschj::ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
       for (size_t i = 0; i < partItems.size(); ++i)
       {
-         pool.enqueue(
+         pool.enqueue_block(
             [this, i, &partItems, &parts, &nLoadedItems, pack]
             {
                ++nLoadedItems;
@@ -2943,7 +3018,7 @@ HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback 
 {
    m_savingActive = true;
 
-   const auto pack = JSONSerializer::CreateWriter(path);
+   const auto pack = JSONSerializer::CreateWriter(path, true);
    int csaveditems = 0;
    feedback.SetLength(static_cast<unsigned int>(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size()));
 
@@ -2968,7 +3043,8 @@ HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback 
       if (type == eItemPrimitive)
          WritePackMesh(*pack, pool, piedit, doc);
       const std::filesystem::path file = pool.Unique("parts", JSONSerializer::SanitizeFileName(piedit->GetName().empty() ? "part"s : piedit->GetName()), ".json"s);
-      partNames.push_back(piedit->GetName());
+      SetPackDocName(doc, piedit->GetName(), file);
+      partNames.push_back(PathToUTF8(file.stem())); // The ordered lists of table.json refer to the pack files
       pack->AddTextFile(file, doc.dump(2));
       feedback.SetProgress(++csaveditems);
    }
@@ -2985,7 +3061,8 @@ HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback 
          return E_FAIL;
       }
       const std::filesystem::path file = pool.Unique("collections", JSONSerializer::SanitizeFileName(pcol->m_name), ".json"s);
-      collectionNames.push_back(pcol->m_name);
+      SetPackDocName(doc, pcol->m_name, file);
+      collectionNames.push_back(PathToUTF8(file.stem()));
       pack->AddTextFile(file, doc.dump(2));
       feedback.SetProgress(++csaveditems);
    }
@@ -3035,8 +3112,9 @@ HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback 
             fileDoc["$type"] = "material";
             fileDoc.update(matDoc);
             const std::filesystem::path file = pool.Unique("materials", JSONSerializer::SanitizeFileName(matName), ".json"s);
+            SetPackDocName(fileDoc, matName, file);
             pack->AddTextFile(file, fileDoc.dump(2));
-            materialNames.push_back(matName);
+            materialNames.push_back(PathToUTF8(file.stem()));
          }
          doc["materials"] = materialNames;
       }
@@ -3052,8 +3130,9 @@ HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback 
             fileDoc["$type"] = "renderprobe";
             fileDoc.update(probeDoc);
             const std::filesystem::path file = pool.Unique("renderprobes", JSONSerializer::SanitizeFileName(probeName), ".json"s);
+            SetPackDocName(fileDoc, probeName, file);
             pack->AddTextFile(file, fileDoc.dump(2));
-            probeNames.push_back(probeName);
+            probeNames.push_back(PathToUTF8(file.stem()));
          }
          doc["renderprobes"] = probeNames;
       }
@@ -3094,12 +3173,12 @@ HRESULT PinTable::SaveToJSON(const std::filesystem::path &path, VPXFileFeedback 
 }
 
 // Saves a partial pack holding only the given parts, completed by their part group ancestors, the members of
-// the selected part groups, and the assets they reference by name (materials, collections, images, sounds, fonts)
+// the selected part groups, and the assets they reference by name (materials, render probes, collections, images, sounds, fonts)
 HRESULT PinTable::SavePartsToJSONPack(const std::filesystem::path &path, const vector<IEditable *> &selection, VPXFileFeedback &feedback)
 {
    m_savingActive = true;
 
-   const auto pack = JSONSerializer::CreateWriter(path);
+   const auto pack = JSONSerializer::CreateWriter(path, false); // Merges into an existing folder pack, keeping its other items
    PackFilePool pool;
 
    // The exported set is the selection completed by the members of the selected part groups and the group ancestors of the selected parts
@@ -3136,6 +3215,7 @@ HRESULT PinTable::SavePartsToJSONPack(const std::filesystem::path &path, const v
       if (type == eItemPrimitive)
          WritePackMesh(*pack, pool, part, doc);
       const std::filesystem::path file = pool.Unique("parts", JSONSerializer::SanitizeFileName(part->GetName().empty() ? "part"s : part->GetName()), ".json"s);
+      SetPackDocName(doc, part->GetName(), file);
       partNames.insert(part->GetName());
       pack->AddTextFile(file, doc.dump(2));
       partDocs.push_back(std::move(doc));
@@ -3158,7 +3238,9 @@ HRESULT PinTable::SavePartsToJSONPack(const std::filesystem::path &path, const v
       if (members.empty())
          continue;
       doc["parts"] = members;
-      pack->AddTextFile(pool.Unique("collections", JSONSerializer::SanitizeFileName(pcol->m_name), ".json"s), doc.dump(2));
+      const std::filesystem::path file = pool.Unique("collections", JSONSerializer::SanitizeFileName(pcol->m_name), ".json"s);
+      SetPackDocName(doc, pcol->m_name, file);
+      pack->AddTextFile(file, doc.dump(2));
       feedback.SetProgress(++csaveditems);
    }
 
@@ -3177,14 +3259,29 @@ HRESULT PinTable::SavePartsToJSONPack(const std::filesystem::path &path, const v
    for (Material *const mat : m_materials)
       if (referenced.contains(mat->m_name))
       {
-         nlohmann::ordered_json doc = BuildPackDoc(pack.get(), JSONSerializer::kMaterialNode, "material", [mat](JSONObjectWriter &w) { mat->Save(w, false); });
+         nlohmann::ordered_json doc = BuildPackTableAssetDoc(pack.get(), "materials", "material", [mat](JSONObjectWriter &w) { mat->Save(w, false); });
          if (doc.is_null())
          {
             m_savingActive = false;
             return E_FAIL;
          }
-         pack->AddTextFile(pool.Unique("materials", JSONSerializer::SanitizeFileName(mat->m_name), ".json"s), doc.dump(2));
+         const std::filesystem::path file = pool.Unique("materials", JSONSerializer::SanitizeFileName(mat->m_name), ".json"s);
+         SetPackDocName(doc, mat->m_name, file);
+         pack->AddTextFile(file, doc.dump(2));
          feedback.SetProgress(++csaveditems);
+      }
+   for (RenderProbe *const probe : m_vrenderprobe)
+      if (referenced.contains(probe->GetName()))
+      {
+         nlohmann::ordered_json doc = BuildPackTableAssetDoc(pack.get(), "renderprobes", "renderprobe", [probe](JSONObjectWriter &w) { probe->Save(w, false); });
+         if (doc.is_null())
+         {
+            m_savingActive = false;
+            return E_FAIL;
+         }
+         const std::filesystem::path file = pool.Unique("renderprobes", JSONSerializer::SanitizeFileName(probe->GetName()), ".json"s);
+         SetPackDocName(doc, probe->GetName(), file);
+         pack->AddTextFile(file, doc.dump(2));
       }
    for (const Texture *const tex : m_vimage)
       if (referenced.contains(tex->m_name))
@@ -4715,6 +4812,11 @@ void PinTable::Uncreate(IEditable *pie)
       m_tableEditor->AddMultiSel(uiPart, true, true, false); // Remove the item from the multi-select list
 #endif
 
+   // Collections may have been edited since the creation (not undoable): drop the part from them
+   const vector<Collection *> collections = pie->m_vCollection;
+   for (Collection *const pcollection : collections)
+      RemovePartFromCollection(pcollection, pie);
+
    RemovePart(pie);
 
    pie->Release();
@@ -4723,11 +4825,13 @@ void PinTable::Uncreate(IEditable *pie)
 void PinTable::Undelete(IEditable *pie)
 {
    AddPart(pie);
-   for (size_t i = 0; i < pie->m_vCollection.size(); i++)
-   {
-      Collection *const pcollection = pie->m_vCollection[i];
-      pcollection->AddPart(pie);
-   }
+   // Restore the collection memberships kept on delete, skipping the collections removed meanwhile (not undoable)
+   const vector<Collection *> collections = std::move(pie->m_vCollection);
+   pie->m_vCollection.clear();
+   pie->m_viCollection.clear();
+   for (Collection *const pcollection : collections)
+      if (std::ranges::any_of(m_vcollection, [pcollection](const Collection *col) { return col == pcollection; }))
+         AddPartToCollection(pcollection, pie);
    SetDirtyDraw();
 }
 

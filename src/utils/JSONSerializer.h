@@ -65,8 +65,9 @@ public:
    };
 
    // Creates a pack writer: a folder serializer when path is an existing directory or has no
-   // extension, a zip serializer otherwise (".vpz" extension expected).
-   static std::unique_ptr<Serializer> CreateWriter(const std::filesystem::path& path);
+   // extension, a zip serializer otherwise (".vpz" extension expected). replacePack removes the files of an existing
+   // folder pack that are not saved again, otherwise the saved items are merged into it.
+   static std::unique_ptr<Serializer> CreateWriter(const std::filesystem::path& path, const bool replacePack);
    // Creates a pack reader: a folder deserializer for a directory, a zip deserializer for a file.
    static std::unique_ptr<Deserializer> CreateReader(const std::filesystem::path& path);
 

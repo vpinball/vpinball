@@ -535,6 +535,8 @@ public:
 
 private:
    vector<CComObject<Collection> *> m_vcollection;
+   // Removed collections, kept alive so that deleted parts held for undo never refer to freed (or reused) memory
+   vector<CComObject<Collection> *> m_vremovedCollection;
 #pragma endregion
 
 

@@ -945,6 +945,62 @@ TEST_CASE("VPZ pack keeps fractional flipper rubber dimensions")
    std::filesystem::remove(packPath, ec);
 }
 
+TEST_CASE("VPZ pack keeps names that are not valid file names")
+{
+   std::error_code ec;
+
+   CComObject<PinTable> *table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   TestFileFeedback feedback;
+   REQUIRE(SUCCEEDED(table->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", feedback)));
+
+   // Both pairs sanitize to the same file name ("Mat_1", "snd_1"), the sounds with different data file extensions
+   for (const char *name : { "Mat*1", "Mat?1." })
+   {
+      Material *const mat = new Material();
+      mat->m_name = name;
+      table->m_materials.push_back(mat);
+   }
+   vector<uint8_t> soundData = { 'I', 'D', '3', 0 };
+   VPX::Sound *const sound1 = new VPX::Sound("snd:1", "imported.mp3"s, soundData);
+   sound1->SetFrontRearFade(-75);
+   table->m_vsound.push_back(sound1);
+   VPX::Sound *const sound2 = new VPX::Sound("snd|1 ", "imported.ogg"s, soundData);
+   sound2->SetFrontRearFade(50);
+   table->m_vsound.push_back(sound2);
+
+   for (const bool zip : { false, true })
+   {
+      CAPTURE(zip);
+      const std::filesystem::path packPath = GetTmpDir() / "names.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      if (!zip)
+         REQUIRE(std::filesystem::create_directories(packPath, ec));
+      TestFileFeedback saveFeedback;
+      REQUIRE(SUCCEEDED(table->SaveToJSON(packPath, saveFeedback)));
+
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
+      CheckSameTableContent(table, reloaded);
+      // Each sound keeps its own properties (its data file and sidecar are paired)
+      for (const VPX::Sound *const sound : { sound1, sound2 })
+      {
+         const auto found = std::ranges::find_if(reloaded->m_vsound, [sound](const VPX::Sound *s) { return s->GetName() == sound->GetName(); });
+         REQUIRE(found != reloaded->m_vsound.end());
+         CHECK((*found)->GetFrontRearFade() == sound->GetFrontRearFade());
+         CHECK(lowerCase(PathToUTF8((*found)->GetImportPath().extension())) == lowerCase(PathToUTF8(sound->GetImportPath().extension())));
+      }
+      reloaded->Release();
+      std::filesystem::remove_all(packPath, ec);
+   }
+
+   table->Release();
+}
+
 TEST_CASE("VPZ partial pack export and import")
 {
    std::error_code ec;
@@ -1004,6 +1060,56 @@ TEST_CASE("VPZ partial pack export and import")
       REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
       CHECK(reloaded->GetParts().size() == expected.size());
       reloaded->Release();
+      std::filesystem::remove_all(packPath, ec);
+   }
+
+   SUBCASE("exported materials keep their properties")
+   {
+      for (Material *const mat : table->m_materials)
+         mat->m_fRoughness = 0.375f;
+      const std::filesystem::path packPath = GetTmpDir() / "material-export.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      TestFileFeedback saveFeedback;
+      REQUIRE(SUCCEEDED(table->SavePartsToJSONPack(packPath, table->GetParts(), saveFeedback)));
+
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(packPath, loadFeedback)));
+      CHECK(!reloaded->m_materials.empty());
+      for (const Material *const mat : reloaded->m_materials)
+      {
+         CAPTURE(mat->m_name);
+         CHECK(std::ranges::any_of(table->m_materials, [mat](const Material *m) { return m->m_name == mat->m_name; }));
+         CHECK(mat->m_fRoughness == 0.375f);
+      }
+      reloaded->Release();
+      std::filesystem::remove(packPath, ec);
+   }
+
+   SUBCASE("exporting into a folder pack merges into it")
+   {
+      const std::filesystem::path packPath = GetTmpDir() / "merge-export.vpz";
+      std::filesystem::remove_all(packPath, ec);
+      REQUIRE(std::filesystem::create_directories(packPath, ec));
+      vector<IEditable *> first, second;
+      for (IEditable *const part : table->GetParts())
+         if (part->GetItemType() != eItemPartGroup && part->GetItemType() != eItemDragPoint && part->GetPartGroup() == nullptr)
+            (first.size() <= second.size() ? first : second).push_back(part);
+      REQUIRE(!first.empty());
+      REQUIRE(!second.empty());
+      TestFileFeedback saveFeedback;
+      REQUIRE(SUCCEEDED(table->SavePartsToJSONPack(packPath, first, saveFeedback)));
+      // Files of the pack that do not collide with the merged ones are kept
+      std::filesystem::create_directories(packPath / "images", ec);
+      std::ofstream(packPath / "images" / "zzz-stale.bin", std::ios::binary) << "stale";
+      REQUIRE(SUCCEEDED(table->SavePartsToJSONPack(packPath, second, saveFeedback)));
+      CHECK(std::filesystem::exists(packPath / "images" / "zzz-stale.bin"));
+      for (IEditable *const part : first)
+         CHECK(std::filesystem::exists(packPath / "parts" / (JSONSerializer::SanitizeFileName(part->GetName()) + ".json")));
+      for (IEditable *const part : second)
+         CHECK(std::filesystem::exists(packPath / "parts" / (JSONSerializer::SanitizeFileName(part->GetName()) + ".json")));
       std::filesystem::remove_all(packPath, ec);
    }
 
