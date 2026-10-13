@@ -568,7 +568,7 @@ private:
    };
 
    static TechniqueDef shaderTechniqueNames[static_cast<unsigned int>(ShaderTechnique::COUNT)];
-   static const string shaderAttributeNames[static_cast<unsigned int>(ShaderTechnique::COUNT)];
+   static const string shaderAttributeNames[static_cast<unsigned int>(ShaderAttribute::COUNT)];
    ShaderUniform getUniformByName(const string& name) const;
    ShaderAttribute getAttributeByName(const string& name) const;
    static ShaderTechnique getTechniqueByName(const string& name);

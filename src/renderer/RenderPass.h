@@ -22,6 +22,9 @@ public:
 
    void RecycleCommands(std::vector<RenderCommand*>& commandPool);
 
+   // Marks this pass as interrupted by an intermediate pass and resumed afterwards: the suffix keeps the two segments distinguishable in frame logs
+   void MarkInterrupted() { m_name += '-'; }
+
    unsigned int GetCommandCount() const { return (unsigned int)m_commands.size(); }
 
    RenderTarget* m_rt;

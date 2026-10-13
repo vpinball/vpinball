@@ -234,7 +234,7 @@ void RenderProbe::RenderScreenSpaceTransparency()
    m_copyPass = m_renderer->m_renderDevice->GetCurrentPass();
    m_renderer->m_renderDevice->SetRenderTarget(renderedPass->m_name, renderedPass->m_rt, false);
    m_renderer->m_renderDevice->GetCurrentPass()->AddPrecursor(renderedPass);
-   renderedPass->m_name += '-';
+   renderedPass->MarkInterrupted();
 }
 
 
@@ -468,7 +468,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    m_renderer->m_renderDevice->SetDefaultRenderState();
    
    m_renderer->m_renderDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
-   previousRT->m_name += '-';
+   previousRT->MarkInterrupted();
    m_rendering = false;
 
    return m_dynamicRT;

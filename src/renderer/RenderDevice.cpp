@@ -1888,10 +1888,6 @@ RenderDevice::RenderDevice(
       throw(-1);
    }
 
-   #if defined ENABLE_BGFX
-   m_uniformState = std::make_unique<ShaderState>(UseLowPrecision());
-   #endif
-
    // Initialize uniform to default value
    m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    // FIXME XR
@@ -2956,7 +2952,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    }
    CopyRenderStates(false, initial_state);
    SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
-   initial_rt->m_name += '-';
+   initial_rt->MarkInterrupted();
 }
 
 
