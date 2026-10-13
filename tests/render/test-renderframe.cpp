@@ -20,4 +20,15 @@ TEST_CASE("RenderFrame deferred commands")
       CHECK(frame.Execute() == false);
       CHECK(calls == 0);
    }
+
+   SUBCASE("Discard runs pending end of frame commands")
+   {
+      RenderFrame frame(nullptr);
+      int calls = 0;
+      frame.AddEndOfFrameCmd([&calls]() { ++calls; });
+      frame.Discard();
+      CHECK(calls == 1);
+      CHECK(frame.Execute() == false);
+      CHECK(calls == 1);
+   }
 }
