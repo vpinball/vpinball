@@ -142,35 +142,36 @@ void RenderProbe::ExtendAreaOfInterest(const float xMin, const float xMax, const
    }
 }
 
-void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
+void RenderProbe::ApplyAreaOfInterest()
 {
-   if (pass == nullptr)
+   // Only apply to the passes recorded by this probe's renders. Dependencies must not be followed as they
+   // may reach passes of another scene render using the same render target (e.g. the VR scene render and
+   // the additional desktop scene render when VR desktop display is not an eye mirror) which must not be
+   // clipped with this render's view dependent bounds.
+   for (RenderPass* pass : m_probePasses)
    {
-      pass = m_finalPass;
-      if (pass == nullptr)
-         return;
+      if (m_type == SCREEN_SPACE_TRANSPARENCY)
+      {
+         // Since we don't know where the sampling will occur, we only apply AOI to the blur passes,
+         // with a small arbitrary margin to account for IOR shift
+         if (pass == m_copyPass)
+            continue;
+         constexpr float margin = 0.05f;
+         pass->m_areaOfInterest.x = m_reflection_clip_bounds.x - margin;
+         pass->m_areaOfInterest.y = m_reflection_clip_bounds.y - margin;
+         pass->m_areaOfInterest.z = m_reflection_clip_bounds.z + margin;
+         pass->m_areaOfInterest.w = m_reflection_clip_bounds.w + margin;
+      }
+      else
+      {
+         // TODO we should enlarge the AOI to account for the blur kernel size
+         // We do not apply to pass with just a clear command to avoid sampling artefacts
+         if (!(pass->m_commands.size() == 1 && pass->m_commands[0]->IsFullClear(false)))
+            pass->m_areaOfInterest = m_reflection_clip_bounds;
+      }
    }
-   if (m_type == SCREEN_SPACE_TRANSPARENCY)
-   {
-      // Since we don't know where the sampling will occur, we only apply AOI to the blur passes, 
-      // with a small arbitrary margin to account for IOR shift
-      if (pass == m_copyPass)
-         return;
-      constexpr float margin = 0.05f;
-      pass->m_areaOfInterest.x = m_reflection_clip_bounds.x - margin;
-      pass->m_areaOfInterest.y = m_reflection_clip_bounds.y - margin;
-      pass->m_areaOfInterest.z = m_reflection_clip_bounds.z + margin;
-      pass->m_areaOfInterest.w = m_reflection_clip_bounds.w + margin;
-   }
-   else
-   {
-      // TODO we should enlarge the AOI to account for the blur kernel size
-      // We do not apply to pass with just a clear command to avoid sampling artefacts
-      if (!(pass->m_dependencies.empty() && pass->m_commands.size() == 1 && pass->m_commands[0]->IsFullClear(false)))
-         pass->m_areaOfInterest = m_reflection_clip_bounds;
-   }
-   for (RenderPass* subpass : pass->m_dependencies)
-      ApplyAreaOfInterest(subpass);
+   // Consume the pass list so that a following scene render (e.g. VR desktop scene) only applies its own bounds to its own passes
+   m_probePasses.clear();
 }
 
 
@@ -206,7 +207,6 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
          m_renderer->m_renderDevice->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
       }
    }
-   m_finalPass = m_renderer->m_renderDevice->GetCurrentPass();
 }
 
 
@@ -220,6 +220,7 @@ void RenderProbe::RenderScreenSpaceTransparency()
    
    m_dirty = false;
    RenderPass* const renderedPass = m_renderer->m_renderDevice->GetCurrentPass();
+   const size_t firstPass = m_renderer->m_renderDevice->GetRenderFramePasses().size();
    if (m_dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
@@ -230,8 +231,10 @@ void RenderProbe::RenderScreenSpaceTransparency()
    m_renderer->m_renderDevice->m_basicShader->SetTextureNull(ShaderUniform::tex_refraction);
    m_renderer->m_renderDevice->SetRenderTarget(m_name, m_dynamicRT, false);
    m_renderer->m_renderDevice->BlitRenderTarget(renderedPass->m_rt, m_dynamicRT, true, true);
-   ApplyRoughness(m_dynamicRT, m_roughness);
    m_copyPass = m_renderer->m_renderDevice->GetCurrentPass();
+   ApplyRoughness(m_dynamicRT, m_roughness);
+   const vector<RenderPass*>& framePasses = m_renderer->m_renderDevice->GetRenderFramePasses();
+   m_probePasses.insert(m_probePasses.end(), framePasses.begin() + firstPass, framePasses.end());
    m_renderer->m_renderDevice->SetRenderTarget(renderedPass->m_name, renderedPass->m_rt, false);
    m_renderer->m_renderDevice->GetCurrentPass()->AddPrecursor(renderedPass);
    renderedPass->MarkInterrupted();
@@ -319,6 +322,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 
    m_rendering = true;
    RenderPass* const previousRT = m_renderer->m_renderDevice->GetCurrentPass();
+   const size_t firstPass = m_renderer->m_renderDevice->GetRenderFramePasses().size();
 
    m_renderer->m_renderDevice->ResetRenderState();
    m_renderer->m_renderDevice->CopyRenderAndShaderStates(true, *m_rdState);
@@ -466,7 +470,9 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    m_renderer->m_render_mask = prevRenderMask;
    m_renderer->m_renderDevice->CopyRenderAndShaderStates(false, *m_rdState);
    m_renderer->m_renderDevice->SetDefaultRenderState();
-   
+
+   const vector<RenderPass*>& framePasses = m_renderer->m_renderDevice->GetRenderFramePasses();
+   m_probePasses.insert(m_probePasses.end(), framePasses.begin() + firstPass, framePasses.end());
    m_renderer->m_renderDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
    previousRT->MarkInterrupted();
    m_rendering = false;
