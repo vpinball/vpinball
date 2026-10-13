@@ -189,7 +189,7 @@ public:
          return index;
       return m_min - 1;
    }
-   const string& GetEnum(int index) const { return m_values[GetValid(index)]; }
+   const string& GetEnum(int index) const { return m_values[GetValid(index) - m_min]; }
 
 protected:
    bool equals(const PropertyDef& other) const override
