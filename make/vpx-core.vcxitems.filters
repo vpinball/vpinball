@@ -2925,10 +2925,16 @@
     <None Include="$(SolutionDir)/../../src/scripts/nuova.vbs">
       <Filter>scripts</Filter>
     </None>
+    <None Include="$(SolutionDir)/../../src/scripts/p2k.vbs">
+      <Filter>scripts</Filter>
+    </None>
     <None Include="$(SolutionDir)/../../src/scripts/PDB.vbs">
       <Filter>scripts</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/scripts/peyper.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/scripts/pinheck.vbs">
       <Filter>scripts</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/scripts/Play1.vbs">
@@ -2938,6 +2944,9 @@
       <Filter>scripts</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/scripts/Play4.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/scripts/playbar.vbs">
       <Filter>scripts</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/scripts/s4.vbs">
@@ -2980,6 +2989,9 @@
       <Filter>scripts</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/scripts/taito.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/scripts/tecnoplay.vbs">
       <Filter>scripts</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/scripts/UltraDMD_Options.vbs">

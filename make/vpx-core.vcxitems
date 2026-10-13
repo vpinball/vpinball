@@ -1204,11 +1204,14 @@
     <None Include="$(SolutionDir)/../../src/scripts/NudgePlugIn_robBlurNoAccel.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/NudgePlugIn_robNoAccel.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/nuova.vbs" />
+    <None Include="$(SolutionDir)/../../src/scripts/p2k.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/PDB.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/peyper.vbs" />
+    <None Include="$(SolutionDir)/../../src/scripts/pinheck.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/Play1.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/Play2.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/Play4.vbs" />
+    <None Include="$(SolutionDir)/../../src/scripts/playbar.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/s11.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/s4.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/s6.vbs" />
@@ -1223,6 +1226,7 @@
     <None Include="$(SolutionDir)/../../src/scripts/stern.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/sys80.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/taito.vbs" />
+    <None Include="$(SolutionDir)/../../src/scripts/tecnoplay.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/UltraDMD_Options.vbs" />
     <None Include="$(SolutionDir)/../../src/scripts/vbsdoc_outdated.html" />
     <None Include="$(SolutionDir)/../../src/scripts/VPMKeys.vbs" />
