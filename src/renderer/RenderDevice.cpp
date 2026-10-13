@@ -2143,6 +2143,13 @@ bool RenderDevice::DepthBufferReadBackAvailable() const
 void RenderDevice::CaptureScreenshot(const vector<VPX::Window*>& wnd, const vector<std::filesystem::path>& filename, const std::function<void(bool)>& callback, int frameDelay)
 {
    assert(frameDelay >= 1);
+   assert(wnd.size() == filename.size()); // Each requested window must have a target capture file
+   if (wnd.empty() || wnd.size() != filename.size())
+   {
+      PLOGE << "Invalid screenshot capture request.";
+      callback(false);
+      return;
+   }
    {
       // The render thread concurrently reads this state in its screenshot request loop and BGFX callback
       std::lock_guard lock(m_screenshotMutex);
