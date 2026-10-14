@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Standalone player (no Win32 editor, libwinevbs as VBScript engine), built from the same shared items as vpx, for the BGFX configurations only -->
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{8F1E2BFA-0BD3-4AA9-B317-33EB3E1B7921}</ProjectGuid>
+    <ProjectName>vpx-standalone</ProjectName>
+    <RootNamespace>vpx-standalone</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="vpx-core.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <PropertyGroup>
+    <TargetExt>.exe</TargetExt>
+    <TargetName Condition="'$(Platform)'=='x64'">VPinballX_BGFXStandalone64</TargetName>
+    <TargetName Condition="'$(Platform)'=='Win32'">VPinballX_BGFXStandalone</TargetName>
+    <!-- Import library of libwinevbs, made from make/winevbs64-msvc.def -->
+    <WineVbsDef Condition="'$(Platform)'=='x64'">$(SolutionDir)..\..\make\winevbs64-msvc.def</WineVbsDef>
+    <WineVbsDef Condition="'$(Platform)'=='Win32'">$(SolutionDir)..\..\make\winevbs-msvc.def</WineVbsDef>
+    <WineVbsLib>$(IntDir)$([System.IO.Path]::GetFileNameWithoutExtension('$(WineVbsDef)')).lib</WineVbsLib>
+    <VcToolsBinDir Condition="'$(Platform)'=='x64'">$(VC_ExecutablePath_x64)\</VcToolsBinDir>
+    <VcToolsBinDir Condition="'$(Platform)'=='Win32'">$(VC_ExecutablePath_x86)\</VcToolsBinDir>
+    <SDL3TtfLib Condition="'$(Platform)'=='x64'">SDL3_ttf64.lib</SDL3TtfLib>
+    <SDL3TtfLib Condition="'$(Platform)'=='Win32'">SDL3_ttf.lib</SDL3TtfLib>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>__STANDALONE__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <!-- libwinevbs first, so that the COM/OLE functions it provides are not resolved to the system ole32/oleaut32 -->
+      <AdditionalDependencies>$(WineVbsLib);$(SDL3TtfLib);%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <Manifest>
+      <!-- UTF-8 process code page (see the manifest file) -->
+      <AdditionalManifestFiles>$(MSBuildThisFileDirectory)..\..\src\ui\win\res\utf8.manifest;%(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <!-- The Win32 editor, its resources and the registered COM type library are not part of the standalone build -->
+    <ClCompile Remove="$(SolutionDir)/../../src/ui/win/**" />
+    <ClInclude Remove="$(SolutionDir)/../../src/ui/win/**" />
+    <ResourceCompile Remove="$(SolutionDir)/../../src/ui/win/**" />
+    <None Remove="$(SolutionDir)/../../src/ui/win/**" />
+    <Image Remove="$(SolutionDir)/../../src/ui/win/**" />
+    <Midl Remove="$(SolutionDir)/../../src/core/vpinball.idl" />
+    <!-- Scriptable classes dispatch through the IDispatch implementations generated from the IDL (see tools/idl) -->
+    <ClCompile Include="$(SolutionDir)/../../src/core/generated/vpinball_standalone_i.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/generated/vpinball_standalone_i_proxy.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/main.cpp" />
+  </ItemGroup>
+  <Import Project="vpx-plugins.props" />
+  <Target Name="VpxStandaloneCheckConfiguration" BeforeTargets="PrepareForBuild">
+    <Error Condition="!$(Configuration.EndsWith('_BGFX'))" Text="vpx-standalone only supports the BGFX configurations" />
+  </Target>
+  <Target Name="VpxStandaloneWineVbsImportLib" BeforeTargets="Link" Inputs="$(WineVbsDef)" Outputs="$(WineVbsLib)">
+    <Exec Command="&quot;$(VcToolsBinDir)lib.exe&quot; /nologo /def:&quot;$(WineVbsDef)&quot; /machine:$(PlatformTarget) /out:&quot;$(WineVbsLib)&quot;" />
+  </Target>
+  <!-- Objects created by libwinevbs must never reach the system OLE implementation (see make/winevbs64-msvc.def) -->
+  <Target Name="VpxStandaloneCheckImports" AfterTargets="Link">
+    <Exec Command="&quot;$(VcToolsBinDir)dumpbin.exe&quot; /nologo /dependents &quot;$(TargetPath)&quot;" ConsoleToMSBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_VpxDependents" />
+    </Exec>
+    <Error Condition="$(_VpxDependents.ToLowerInvariant().Contains('ole32.dll')) Or $(_VpxDependents.ToLowerInvariant().Contains('oleaut32.dll')) Or $(_VpxDependents.ToLowerInvariant().Contains('combase.dll'))"
+           Text="$(TargetFileName) imports from the system OLE libraries, see $(WineVbsDef). Dependencies: $(_VpxDependents)" />
+  </Target>
+  <!-- The plugins copy themselves into the vpx outputs only, so take the plugins folder from the vpx output of the same configuration -->
+  <Target Name="VpxStandaloneCopyPlugins" AfterTargets="Build">
+    <ItemGroup>
+      <_VpxPluginFiles Include="$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_VpxPluginFiles)" DestinationFiles="@(_VpxPluginFiles->'$(OutDir)plugins\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

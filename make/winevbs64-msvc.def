@@ -1,0 +1,59 @@
+; Import library of libwinevbs (winevbs64.dll) for the MSVC standalone build (vpx-standalone.vcxproj).
+;
+; It is linked first, so these functions come from libwinevbs instead of ole32/oleaut32: what is exchanged with the
+; script engine (BSTR, VARIANT, SAFEARRAY, task memory) must be allocated and freed by the same implementation.
+; The build fails if the executable still imports from ole32, oleaut32 or combase.
+;
+; Compared to libwinevbs's winevbs64.def (MinGW build):
+; - MultiByteToWideChar/WideCharToMultiByte stay with kernel32: libwinevbs has its own ANSI code page, while the path
+;   conversions use the Windows one (UTF-8 through the manifest)
+; - SafeArrayLock/SafeArrayUnlock and LoadTypeLib/LoadRegTypeLib are added for Microsoft's ATL (CComSafeArray,
+;   CComTypeInfoHolder). The type library ones fail, like GetTypeInfo of wine's ATL
+; - AtlInternalQueryInterface (wine's ATL, Microsoft's has its own) and the GUIDs (uuid.lib or local) are left out
+; - CoTaskMemFree is not listed: nothing uses it, and libwinevbs's CoTaskMemRealloc is a stub
+LIBRARY "winevbs64.dll"
+EXPORTS
+; libwinevbs public API
+libwinevbs_init
+libwinevbs_shutdown
+libwinevbs_log
+libwinevbs_hresult_name
+
+; COM
+CoCreateInstance
+CoTaskMemAlloc
+
+; BSTR
+SysAllocString
+SysAllocStringLen
+SysFreeString
+SysStringLen
+
+; VARIANT
+VariantInit
+VariantClear
+VariantCopy
+VariantCopyInd
+VariantChangeType
+VariantChangeTypeEx
+
+; SAFEARRAY
+SafeArrayCreate
+SafeArrayCreateVector
+SafeArrayDestroy
+SafeArrayGetElement
+SafeArrayPutElement
+SafeArrayGetLBound
+SafeArrayGetUBound
+SafeArrayGetDim
+SafeArrayAccessData
+SafeArrayUnaccessData
+SafeArrayLock
+SafeArrayUnlock
+
+; Type libraries
+LoadTypeLib
+LoadRegTypeLib
+
+; VBScript
+VBScriptFactory_CreateInstance

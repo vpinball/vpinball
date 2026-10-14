@@ -897,12 +897,13 @@ BOOL CodeViewer::PreTranslateMessage(MSG &msg)
    if (!IsWindow())
       return FALSE;
 
+   // The Find/Replace dialog has no menu, so it also gets the Alt combinations for its mnemonics (IsDialogMessage ignores messages for other windows)
+   if (m_findReplace.IsWindow() && m_findReplace.IsDialogMessage(msg))
+      return TRUE;
+
    // The Alt combinations are what opens the menu, so they must not be given to IsDialogMessage
    if (IsAltKeyMessage(msg.message))
       return FALSE;
-
-   if (m_findReplace.IsWindow() && m_findReplace.IsDialogMessage(msg))
-      return TRUE;
 
    if (IsDialogMessage(msg))
       return TRUE;
