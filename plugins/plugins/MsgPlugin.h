@@ -185,8 +185,18 @@ typedef struct MsgSettingDef
 } MsgSettingDef;
 
 // C++ helpers to define settings
-#define MSGPI_FLOAT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, stepVal, defValue, getter, setter) \
-   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_FLOAT, .intDef = { minValue, maxValue, stepVal, defValue, getter, setter } }
+#define MSGPI_FLOAT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, stepVal, defValue, getter, setter)                                                     \
+   static MsgSettingDef varName                                                                                                                                                              \
+   {                                                                                                                                                                                         \
+      .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FLOAT,                                              \
+      .floatDef                                                                                                                                                                              \
+         = { minValue,                                                                                                                                                                       \
+              maxValue,                                                                                                                                                                      \
+              stepVal,                                                                                                                                                                       \
+              defValue,                                                                                                                                                                      \
+              getter,                                                                                                                                                                        \
+              setter }                                                                                                                                                                       \
+   }
 #define MSGPI_INT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, defValue, getter, setter) \
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, maxValue, defValue, nullptr, getter, setter } }
 #define MSGPI_ENUM_SETTING(varName, id, propName, propDescription, propEditable, minValue, nValues, values, defValue, getter, setter) \
