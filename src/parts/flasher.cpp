@@ -1068,7 +1068,7 @@ void Flasher::Render(const unsigned int renderMask)
    m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    const vec4 color = convertColor(m_d.m_color, alpha * m_d.m_intensity_scale / 100.0f);
-   const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+   const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.0001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
 
    // Signed 'modulate vs add' factor the shaders encode their output with: negative absorbs the background instead of amplifying it, 0 asks for a plain opaque output (see fs_flasher.sc / fs_display.sc)
    const float signedModulateVsAdd = m_d.m_addBlend == FlasherData::AB_ABSORB ? -clampedModulateVsAdd : clampedModulateVsAdd;
