@@ -901,6 +901,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/EditorClipboard.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/LoadProgress.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/BallControl.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/DebuggerUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp" />
@@ -1000,7 +1001,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TriggerWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/worker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/codeviewedit.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/Debugger.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/codeview.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/hitrectsur.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/hitsur.cpp" />
@@ -1846,6 +1846,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/EditorClipboard.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/LoadProgress.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/DebuggerUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h" />
@@ -1949,7 +1950,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/worker.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/codeview.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/codeviewedit.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/Debugger.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/hitrectsur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/hitsur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/paintsur.h" />

@@ -62,8 +62,6 @@ using namespace VPX;
 
 //
 
-#define RECOMPUTEBUTTONCHECK (WM_USER+100)
-
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__x86_64__))
 #ifdef _MSC_VER
  #define init_cpu_detection int regs[4]; __cpuid(regs, 1);
@@ -1554,11 +1552,6 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
    {
       m_playing = willPlay;
 
-#ifdef VPX_ENABLE_WIN32_EDITOR
-      if (m_debuggerDialog.IsWindow())
-         m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
-#endif
-
       if (m_playing)
       {
          if (m_trackTableSessionStats)
@@ -2610,26 +2603,18 @@ void Player::FinishFrame()
 
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)
-      exit(-9999); 
+      exit(-9999);
 
+   // Open debugger window (LiveUI, cross-platform)
+   if (m_showDebugger && !m_ptable->IsLocked()
 #ifdef VPX_ENABLE_WIN32_EDITOR
-   // Open debugger window
-   if (g_pvp && m_showDebugger && !m_ptable->IsLocked() && !g_pvp->m_disable_pause_menu)
-   {
-      m_debugMode = true;
-      m_showDebugger = false;
-
-      if (!m_debuggerDialog.IsWindow())
-      {
-         m_debuggerDialog.Create(m_playfieldWnd->GetNativeHWND());
-         m_debuggerDialog.ShowWindow();
-      }
-      else
-         m_debuggerDialog.SetForegroundWindow();
-
-      EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
-   }
+      && (!g_pvp || !g_pvp->m_disable_pause_menu)
 #endif
+   )
+   {
+      m_showDebugger = false;
+      m_liveUI->m_debuggerUI.Open();
+   }
 
    #if defined(_MSC_VER) && !defined(__STANDALONE__)
       // Legacy hacky Win32 focus management: keep VPX focused & overlayed by the ancillary COM created window

@@ -483,6 +483,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/BallControl.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/DebuggerUI.cpp">
+      <Filter>ui\live</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
@@ -787,9 +790,6 @@
       <Filter>ui\win</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/codeviewedit.cpp">
-      <Filter>ui\win</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/Debugger.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/codeview.cpp">
@@ -1574,6 +1574,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h">
       <Filter>ui\live</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/DebuggerUI.h">
+      <Filter>ui\live</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h">
       <Filter>ui\live</Filter>
     </ClInclude>
@@ -1878,9 +1881,6 @@
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/worker.h">
-      <Filter>ui\win</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/Debugger.h">
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/codeview.h">

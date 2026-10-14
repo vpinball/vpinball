@@ -15,6 +15,7 @@
 #include "NotificationOverlay.h"
 #include "PlumbOverlay.h"
 #include "BallControl.h"
+#include "DebuggerUI.h"
 
 class LiveUI final : public UserMessageSink
 {
@@ -50,6 +51,10 @@ public:
 
    // Ball Control
    BallControl m_ballControl;
+
+   // Debugger (play/pause/step, ball control, script console)
+   DebuggerUI m_debuggerUI;
+   bool IsDebuggerOpened() const { return m_debuggerUI.IsOpened(); }
 
    // Editor UI
    VPX::EditorUI::EditorUI m_editorUI;

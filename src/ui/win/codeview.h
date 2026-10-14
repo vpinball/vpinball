@@ -60,8 +60,6 @@ public:
 
    void MarginClick(const Sci_Position position, const int modifiers);
 
-   void AddToDebugOutput(const string& szText);
-
    BOOL PreTranslateMessage(MSG& msg) override;
 
    void SetScript(const string& script);
