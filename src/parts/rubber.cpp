@@ -1056,6 +1056,14 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
    Vertex2D * middlePoints = nullptr;
    int splinePoints;
    const Vertex2D * const rgvLocal = GetSplineVertex(splinePoints, nullptr, &middlePoints, (_accuracy != -1) ? 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)) : -1.f);
+   if (rgvLocal == nullptr)
+   {
+      m_numVertices = 0;
+      m_numIndices = 0;
+      m_vertices.clear();
+      m_ringIndices.clear();
+      return;
+   }
    const int numRings = splinePoints - 1;
    const int numSegments = accuracy;
    m_numVertices = numRings*numSegments;

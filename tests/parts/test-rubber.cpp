@@ -6,6 +6,7 @@
 #include "parts/pintable.h"
 #include "parts/rubber.h"
 #include "math/dragpoint.h"
+#include "physics/PhysicsEngine.h"
 
 #include "doctest.h"
 
@@ -84,6 +85,20 @@ TEST_CASE("Rubber part")
       Rubber* const liveCopy = rubber->CopyForPlay();
       CHECK(StreamsEqual(SavePartToStream(rubber), SavePartToStream(liveCopy)));
       liveCopy->Release();
+   }
+
+   SUBCASE("mesh generation on a curve without control points")
+   {
+      Rubber* const rubber = Rubber::COMCreate();
+      rubber->Init(100.f, 200.f, false);
+      rubber->SetName("Rubber-Degen");
+      table->AddPart(rubber);
+      rubber->Release();
+
+      // PhysicSetup drives GenerateMesh for the hit shape: an empty curve must not crash
+      rubber->m_curve.ClearPoints();
+      PhysicsEngine physics(table);
+      rubber->PhysicSetup(&physics, false);
    }
 
    SUBCASE("editor transforms move the curve")
