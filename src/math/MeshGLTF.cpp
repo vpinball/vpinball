@@ -259,6 +259,11 @@ bool Mesh::LoadGLB(const uint8_t* data, const size_t size)
          return false;
       }
       const tinygltf::Accessor& idxAccessor = model.accessors[prim->indices];
+      if (idxAccessor.count % 3 != 0)
+      {
+         PLOGE << "GLB mesh index count is not a multiple of 3";
+         return false;
+      }
       const tinygltf::BufferView& idxView = model.bufferViews[idxAccessor.bufferView];
       const tinygltf::Buffer& idxBuffer = model.buffers[idxView.buffer];
       const size_t idxBase = idxView.byteOffset + idxAccessor.byteOffset;

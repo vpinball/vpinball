@@ -1324,6 +1324,56 @@ TEST_CASE("Mesh GLB round-trip")
    }
 }
 
+// Rebuilds a GLB container with its JSON document transformed by the given function
+template <typename F> static vector<uint8_t> PatchGlbJson(const vector<uint8_t> &glb, F patch)
+{
+   REQUIRE(glb.size() >= 20);
+   uint32_t jsonLength;
+   memcpy(&jsonLength, glb.data() + 12, sizeof(jsonLength));
+   REQUIRE(20 + jsonLength + 8 <= glb.size());
+   nlohmann::json json = nlohmann::json::parse(glb.begin() + 20, glb.begin() + 20 + jsonLength);
+   patch(json);
+   const string jsonText = json.dump();
+   const size_t paddedLength = (jsonText.size() + 3) & ~size_t(3);
+   const vector<uint8_t> bin(glb.begin() + 20 + jsonLength, glb.end()); // chunk header and data
+
+   vector<uint8_t> patched(glb.begin(), glb.begin() + 12); // magic and version
+   const auto push32 = [&patched](const uint32_t v)
+   {
+      for (int i = 0; i < 4; ++i)
+         patched.push_back(static_cast<uint8_t>(v >> (8 * i)));
+   };
+   push32(0); // total length, patched below
+   push32(static_cast<uint32_t>(paddedLength));
+   patched.insert(patched.end(), { 'J', 'S', 'O', 'N' });
+   patched.insert(patched.end(), jsonText.begin(), jsonText.end());
+   patched.resize(20 + paddedLength, ' ');
+   patched.insert(patched.end(), bin.begin(), bin.end());
+   const uint32_t totalLength = static_cast<uint32_t>(patched.size());
+   memcpy(patched.data() + 8, &totalLength, sizeof(totalLength));
+   return patched;
+}
+
+TEST_CASE("Mesh GLB loading rejects malformed accessors")
+{
+   Mesh mesh;
+   mesh.m_vertices.resize(4);
+   mesh.m_vertices[0] = { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f };
+   mesh.m_vertices[1] = { 100.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f };
+   mesh.m_vertices[2] = { 100.f, 100.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f };
+   mesh.m_vertices[3] = { 0.f, 100.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f };
+   mesh.m_indices = { 0, 1, 2, 0, 2, 3 };
+   vector<uint8_t> glb;
+   REQUIRE(mesh.SaveGLB(glb));
+
+   SUBCASE("index count not a multiple of 3")
+   {
+      const vector<uint8_t> malformed = PatchGlbJson(glb, [](nlohmann::json &json) { json["accessors"][json["meshes"][0]["primitives"][0]["indices"].get<int>()]["count"] = 7; });
+      Mesh loaded;
+      CHECK(!loaded.LoadGLB(malformed.data(), malformed.size()));
+   }
+}
+
 
 TEST_CASE("Bundled table templates pass hash validation")
 {
