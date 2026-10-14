@@ -74,6 +74,9 @@ void RenderProbe::RenderRelease()
    m_dynamicRT = nullptr;
    delete m_blurRT;
    m_blurRT = nullptr;
+   // Passes belong to the render frame of the released renderer
+   m_probePasses.clear();
+   m_copyPass = nullptr;
 }
 
 void RenderProbe::MarkDirty()

@@ -2652,8 +2652,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          continue;
       }
 
-      vec4* balls = new vec4[MAX_BALL_SHADOW];
-      balls[1] = vec4(pball->m_lastRenderedPos, pball->GetRadius());
+      const vec4 prevBall(pball->m_lastRenderedPos, pball->GetRadius());
 
       const Vertex3D_TexelOnly verts[4] = {};
       m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_motionblur);
@@ -2663,7 +2662,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
       ShaderState* ss = m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
       updatedVertices[nQuads] = (Vertex3D_TexelOnly*)m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices();
       m_renderDevice->AddBeginOfFrameCmd(
-         [this, pball, view, ss, cmdVerts = updatedVertices[nQuads], balls, invX, invY, padX, padY]()
+         [this, pball, view, ss, cmdVerts = updatedVertices[nQuads], prevBall, invX, invY, padX, padY]()
          {
             RenderTarget* tempRT = GetMotionBlurBufferTexture();
             const vec3 posl = pball->GetPosition() + m_renderDevice->GetPredictedDisplayDelay() * pball->GetVelocity();
@@ -2703,9 +2702,11 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
             ss->SetVector(ShaderUniform::w_h_height, &whHeightWithNSamples);
 
             pball->m_lastRenderedPos = newPos;
+            // Local, as a discarded frame drops this command without running it
+            vec4 balls[MAX_BALL_SHADOW] = {};
             balls[0] = vec4(newPos, pball->GetRadius());
+            balls[1] = prevBall;
             ss->SetVector(ShaderUniform::balls, balls, MAX_BALL_SHADOW);
-            delete[] balls;
          });
 
       nQuads++;
@@ -2925,7 +2926,11 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       assert(outputBackBuffer == m_renderDevice->m_outputWnd[0]->GetBackBuffer()); // XR swapchain
       // Rendering is already directly being performed to the XR swapchain image, so nothing to do except for depth buffer
       // TODO we should directly use the swapchain depth buffer too to avoid the copy
-      // FIXME this will not work as the current backbuffer is declared as not having a depth buffer (even if it has like here), beside BGFX does not support blitting depth to the default backbuffer
+      // FIXME this does not work:
+      // - the XR swapchain back buffer is declared without depth buffer, so the depth copy does nothing
+      // - BGFX does not support blitting depth to the default back buffer
+      // - BGFX with supersampling != 1: sizes differ, so CopyTo draws with a single layer shader that ignores copyColor/copyDepth,
+      //   drawing the untonemapped scene over the left eye (and asserting on stereo targets in debug)
       if (g_pplayer->m_vrDevice->UseDepthBuffer())
       {
          // Copy depth buffer to OpenXR swapchain's current depth target
@@ -3865,9 +3870,12 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
    }
    m_ancillaryWndRendered[window] = rendered;
 
-   // Highlight the display selected in the in game UI with a colored frame, drawn on top
-   // of the window content
-   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED && g_pplayer->m_liveUI->m_inGameUI.IsOpened(s_displaySettingsPages[window]))
+   // Highlight the display selected in the in game UI with a colored frame, drawn on top of the window content.
+   // This also shows the display when nothing is rendered (e.g. ScoreView without a matching display source)
+   const bool isAdjusted = g_pplayer->m_liveUI->m_inGameUI.IsOpened(s_displaySettingsPages[window]);
+   const bool wasAdjusted = m_ancillaryWndAdjusted[window];
+   m_ancillaryWndAdjusted[window] = isAdjusted;
+   if (isAdjusted)
    {
       constexpr int border = 10;
       constexpr float fr = 0.f, fg = 1.f, fb = 0.2f;
@@ -3881,9 +3889,10 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
 
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
-      if (!rendered)
+      // Drop the pass when nothing is rendered (avoids a useless clear), but clear once after adjusting to remove the highlight frame
+      if (!rendered && !isAdjusted && !wasAdjusted)
       {
-         m_renderDevice->GetCurrentPass()->ClearCommands(); // No rendering done, clear the pass (avoids a useless clear)
+         m_renderDevice->GetCurrentPass()->ClearCommands();
       }
       else
       {

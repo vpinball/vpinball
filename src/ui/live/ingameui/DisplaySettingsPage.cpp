@@ -169,15 +169,21 @@ void DisplaySettingsPage::BuildPage()
       return;
    }
 
+   // Additional views are rendered by plugins. Without any, there is nothing to set up
+   if (m_player->m_ancillaryWndRenderers[m_wndId].empty())
+   {
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info,
+         "No renderer is available for this display with the played table. Enable a plugin providing one (B2S, PinUp Player, ScoreView, ...) to set it up."s));
+      return;
+   }
+
    // Ancillary windows are created non focusable so they never steal focus from the playfield. Allow focus while
    // positioning them through this page, so the user can click and drag the window directly.
    if (GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW)
       GetOutput(m_wndId).GetWindow()->SetFocusable(true);
 
-   // Additional views are rendered by plugins, when multiple are available, a priority defined by the user is used
+   // When multiple renderers are available, a priority defined by the user is used
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Renderer priority"s));
-   if (m_player->m_ancillaryWndRenderers[m_wndId].empty())
-      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "The played table does not have any renderer available for this view"s));
    const string section = m_wndId == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"s : m_wndId == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView"s : "Topper"s;
    // Sort by name so sliders keep fixed positions while adjusting priorities
    vector<AncillaryRendererDef> renderers = m_player->m_ancillaryWndRenderers[m_wndId];

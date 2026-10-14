@@ -263,7 +263,8 @@ private:
    void RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers);
    std::unique_ptr<RenderTarget> m_ancillaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1];
    bool m_ancillaryWndRendered[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether a renderer claimed the window on the last frame
-   int m_ancillaryWndRotation[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Live rotation of the window content, in clockwise degrees
+   bool m_ancillaryWndAdjusted[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether the window's display settings page was open on the last frame
+   int m_ancillaryWndRotation [VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Live rotation of the window content, in clockwise degrees
    struct AncillaryRenderSetup
    {
       bool isOutputLinear;
