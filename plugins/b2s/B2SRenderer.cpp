@@ -112,17 +112,18 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
       m_b2s->m_backglassOnImage.m_romUpdater
          = ResolveRomPropUpdater(items, &m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId, m_b2s->m_backglassOnImage.m_romInverted);
 
-   // TODO revisit: B2SValue is a script (B2SSetData) attribute, but is also applied to ROM states here. PinMAME lamps are 0..1, so bulbs
-   // with B2SValue >= 2 never light, B2SValue = 1 only lights at full brightness, and RomInverted is ignored whenever B2SValue > 0
+   // The reference only defines a matching value (B2SValue as RomIDValue) on B2SID bulbs; ROM events and
+   // script writes share the same lamp channel there, so the value filter applies to both paths
    for (auto& bulb : m_b2s->m_backglassIlluminations)
+   {
+      const int romValue = bulb->m_b2sId >= 0 ? bulb->m_b2sValue : 0;
       switch (bulb->m_snippitType)
       {
-      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, bulb->m_b2sValue); break;
+      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
       case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
-      case B2SSnippitType::SelfRotatingImage:
-         bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, bulb->m_b2sValue);
-         break;
+      case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
       }
+   }
 
    // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
    for (auto* scores : { &m_b2s->m_backglassScores, &m_b2s->m_dmdScores })
@@ -278,9 +279,12 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
       float state = 0.f;
       const bool scripted = server && server->GetBulbState(*bulb, state);
       if (scripted)
-         bulb->m_brightness = (bulb->m_b2sValue > 0) ? //
-            ((static_cast<int>(state) == bulb->m_b2sValue) ? 1.f : 0.f)
-                                                     : state;
+      {
+         const int romValue = bulb->m_b2sId >= 0 ? bulb->m_b2sValue : 0;
+         bulb->m_brightness = (romValue > 0) ? //
+            ((static_cast<int>(state) == romValue) ? 1.f : 0.f)
+                                             : state;
+      }
       else if (!locked) // While the illumination group is locked by an animation, ROM updates are suspended
          bulb->m_romUpdater();
       float rotation = 0.f;
