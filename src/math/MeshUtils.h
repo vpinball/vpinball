@@ -519,9 +519,9 @@ void PolygonToTriangles(const RenderVertexCont& rgv, vector<unsigned int>& pvpol
 {
    // There should be this many convex triangles.
    // If not, the polygon is self-intersecting
+   if (pvpoly.size() < 3)
+      return;
    const size_t tricount = pvpoly.size() - 2;
-
-   assert(tricount > 0);
 
    // check if the polygon is in right orientation, otherwise flip it over
    if(support_both_winding_orders && (DetermineWindingOrder(rgv) == Clockwise))
