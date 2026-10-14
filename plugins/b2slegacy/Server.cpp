@@ -219,7 +219,6 @@ void Server::UpdateStateSrc()
             m_lampStateNames[index] = std::format("Illumination #{}", id);
             m_lampStateDefs.emplace_back(StateDef {
                m_lampStateNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, &m_lampStateIds[index], GetLampState, nullptr });
-            index++;
          }
       }
 
