@@ -6,6 +6,7 @@
 #include "parts/pintable.h"
 #include "parts/ramp.h"
 #include "math/dragpoint.h"
+#include "physics/PhysicsEngine.h"
 
 #include "doctest.h"
 
@@ -116,6 +117,42 @@ TEST_CASE("Ramp part")
       CHECK(ramp->GetSurfaceHeight(start.x, start.y) == doctest::Approx(10.f));
       CHECK(ramp->GetSurfaceHeight(end.x, end.y) == doctest::Approx(90.f));
       CHECK(ramp->GetSurfaceHeight((start.x + end.x) * 0.5f, (start.y + end.y) * 0.5f) == doctest::Approx(50.f).epsilon(0.05));
+   }
+
+   SUBCASE("degenerate curve is handled safely")
+   {
+      Ramp* const ramp = Ramp::COMCreate();
+      ramp->Init(0.f, 0.f, false);
+      ramp->SetName("Ramp5");
+      ramp->m_d.m_heightbottom = 10.f;
+      ramp->m_d.m_heighttop = 90.f;
+      table->AddPart(ramp);
+      ramp->Release();
+
+      // Empty curve: height queries report "not on ramp" and AddPoint appends a control point
+      ramp->m_curve.ClearPoints();
+      CHECK(ramp->GetSurfaceHeight(0.f, 0.f) == 0.f);
+      ramp->AddPoint(Vertex2D(50.f, 50.f), true);
+      REQUIRE(ramp->m_curve.GetPoints().size() == 1);
+      CHECK(ramp->m_curve.GetPoints()[0]->GetX() == doctest::Approx(50.f));
+      CHECK(ramp->m_curve.GetPoints()[0]->GetY() == doctest::Approx(50.f));
+      CHECK(ramp->m_curve.GetPoints()[0]->GetZ() == doctest::Approx(10.f));
+
+      // Physics setup over an empty curve adds no collider and does not crash
+      ramp->m_curve.ClearPoints();
+      PhysicsEngine physics(table);
+      ramp->PhysicSetup(&physics, false);
+
+      // Coincident control points produce a zero-length curve: generated heights stay finite
+      ramp->m_curve.PushPoint(std::make_unique<DragPoint>(&ramp->m_curve, 10.f, 10.f, 0.f, true));
+      ramp->m_curve.PushPoint(std::make_unique<DragPoint>(&ramp->m_curve, 10.f, 10.f, 0.f, true));
+      int cvertex = -1;
+      float* heights = nullptr;
+      const Vertex2D* const verts = ramp->GetRampVertex(cvertex, &heights, nullptr, nullptr, nullptr, -1.f, true);
+      for (int i = 0; i < cvertex; i++)
+         CHECK(std::isfinite(heights[i]));
+      delete[] heights;
+      delete[] verts;
    }
 
    SUBCASE("editor transforms move the curve")

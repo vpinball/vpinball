@@ -308,7 +308,7 @@ Vertex2D *Ramp::GetRampVertex(
          currentlength += length;
       }
 
-      const float percentage = currentlength / totallength;
+      const float percentage = (totallength != 0.f) ? currentlength / totallength : 0.f;
       float widthcur = percentage * (m_d.m_widthtop - m_d.m_widthbottom) + m_d.m_widthbottom;
       if (ppheight)
       {
@@ -382,7 +382,7 @@ float Ramp::GetSurfaceHeight(float x, float y) const
    const float topHeight = m_d.m_heighttop;
    const float bottomHeight = m_d.m_heightbottom;
 
-   return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
+   return vvertex[iSeg].z + ((totallength != 0.f) ? startlength / totallength : 0.f) * (topHeight - bottomHeight) + bottomHeight;
 }
 
 
@@ -394,10 +394,6 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
       return;
-
-   float *rgheight1;
-   int cvertex;
-   const Vertex2D *const rgvLocal = GetRampVertex(cvertex, &rgheight1, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, true);
 
    float wallheightright, wallheightleft;
    if (m_d.m_type == RampTypeFlat)
@@ -437,6 +433,10 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       ShowError("Unknown Ramp type");
       return;
    }
+
+   float *rgheight1;
+   int cvertex;
+   const Vertex2D *const rgvLocal = GetRampVertex(cvertex, &rgheight1, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, true);
 
    // Add line segments for right ramp wall.
    if (wallheightright > 0.f)
@@ -772,6 +772,9 @@ void Ramp::Render(const unsigned int renderMask)
       if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
          GenerateVertexBuffer();
 
+      if (m_rampVertex == 0)
+         return; // nothing to draw on a degenerate curve
+
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
@@ -955,6 +958,16 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    const int numRings = splinePoints;
    const int numSegments = accuracy;
+   if (numRings < 2)
+   {
+      // a wire needs at least 2 rings to be drawn, emit an empty mesh otherwise
+      m_numVertices = 0;
+      m_numIndices = 0;
+      m_meshIndices.clear();
+      delete[] rgvLocal;
+      delete[] middlePoints;
+      return;
+   }
    m_numVertices = numRings*numSegments;
    m_numIndices = 6 * ((numRings-1)*numSegments); //m_numVertices*2+2;
 
@@ -1260,6 +1273,15 @@ void Ramp::AddPoint(const Vertex2D &v, const bool smooth)
    int iSeg;
    Vertex2D vOut;
    ClosestPointOnPolygon(vvertex, v, vOut, iSeg, false);
+
+   if (iSeg == -1)
+   {
+      // the point does not project on any curve segment (e.g. empty curve): append it at the end
+      const float z = m_curve.GetPoints().empty() ? m_d.m_heightbottom : m_curve.GetPoints().back()->GetZ();
+      m_curve.InsertPoint(m_curve.GetPoints().size(), std::make_unique<DragPoint>(&m_curve, v.x, v.y, z, smooth));
+      m_curve.OnPointsModified();
+      return;
+   }
 
    // Go through vertices (including iSeg itself) counting control points until iSeg
    int icp = 0;
@@ -1745,7 +1767,7 @@ void Ramp::ExportMesh(ObjLoader& loader)
          Vertex3D_NoTex2 *rampMesh = nullptr;
          GenerateRampMesh(&rampMesh);
          const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-         const int listLength = (m_rampVertex - 1) * 6;
+         const int listLength = max(0, (m_rampVertex - 1) * 6);
          unsigned int numVers = m_numVertices * 3;
          if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
             numVers = m_numVertices;
@@ -1910,6 +1932,18 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    float *rgheight;
    float *rgratio = nullptr;
    const Vertex2D * const rgvLocal = GetRampVertex(m_rampVertex, &rgheight, nullptr, (m_d.m_imagealignment == ImageModeWorld) ? nullptr : &rgratio, nullptr, -1, true);
+
+   if (m_rampVertex == 0)
+   {
+      // degenerate curve, emit an empty mesh
+      m_numVertices = 0;
+      m_numIndices = 0;
+      m_meshIndices.clear();
+      delete[] rgvLocal;
+      delete[] rgheight;
+      delete[] rgratio;
+      return;
+   }
 
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
