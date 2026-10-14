@@ -10,6 +10,10 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 
+#ifndef __STANDALONE__
+#include <wxx_wincore.h> // Add CDC, CClientDC, CBitmap, CFont (Win32 editor decal text rendering)
+#endif
+
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
 

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <wxx_dialog.h>
+
 class PinTableWnd;
 
 class PhysicsOptionsDialog final : public CDialog

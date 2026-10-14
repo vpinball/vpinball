@@ -2,11 +2,6 @@
 
 #pragma once
 
-#ifdef VPX_ENABLE_WIN32_EDITOR
-#include <wxx_stdcontrols.h> // Add CButton, CEdit, CListBox (also pulls in the Win32xx app framework: CWinApp, CDialog, ...)
-#include <wxx_commondlg.h> // Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog
-#endif
-
 #include "audio/AudioPlayer.h"
 #include "core/ScriptInterpreter.h"
 #include "input/InputManager.h"

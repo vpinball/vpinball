@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <wxx_dialog.h>
+
 class AboutDialog final : public CDialog
 {
 public:

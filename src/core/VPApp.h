@@ -2,6 +2,10 @@
 
 #pragma once
 
+#ifndef __STANDALONE__
+#include <wxx_appcore.h> // Add CWinApp
+#endif
+
 #include "FileLocator.h"
 
 

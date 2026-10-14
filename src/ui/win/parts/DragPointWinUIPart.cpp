@@ -2,6 +2,8 @@
 
 #include "core/stdafx.h"
 
+#include <wxx_wincore.h> // Add CMenu
+
 #include "math/dragpoint.h"
 #include "parts/pintable.h"
 #include "ui/win/parts/DragPointWinUIPart.h"

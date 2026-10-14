@@ -6,6 +6,7 @@
 #include <wxx_appcore.h>     // Add CCriticalSection, CObject, CWinThread, CWinApp
 #include <wxx_commondlg.h>   // Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include <wxx_docking.h>
+#include <wxx_stdcontrols.h> // Add CEdit
 
 class NotesEdit final : public CEdit
 {
