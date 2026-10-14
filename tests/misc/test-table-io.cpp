@@ -5,6 +5,7 @@
 
 #include "core/VPApp.h"
 #include "math/Mesh.h"
+#include "math/MeshUtils.h"
 #include "parts/flipper.h"
 #include "parts/Material.h"
 #include "parts/PartGroup.h"
@@ -1405,6 +1406,19 @@ TEST_CASE("Mesh GLB loading rejects malformed accessors")
       const vector<uint8_t> malformed = PatchGlbJson(glb, [](nlohmann::json &json) { json["accessors"][json["meshes"][0]["primitives"][0]["indices"].get<int>()]["count"] = 6000000; });
       Mesh loaded;
       CHECK(!loaded.LoadGLB(malformed.data(), malformed.size()));
+   }
+}
+
+
+TEST_CASE("PolygonToTriangles on degenerate polygons")
+{
+   const vector<RenderVertex> vertices(3);
+   for (const vector<unsigned int> poly : { vector<unsigned int> {}, vector<unsigned int> { 0 }, vector<unsigned int> { 0, 1 } })
+   {
+      vector<unsigned int> pvpoly = poly;
+      vector<unsigned int> tris;
+      PolygonToTriangles(vertices, pvpoly, tris, true);
+      CHECK(tris.empty());
    }
 }
 
