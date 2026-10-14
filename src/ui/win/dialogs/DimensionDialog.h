@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <wxx_dialog.h>
 #include <wxx_listview.h>		// Add CListView
 #include "core/TableDB.h"
 

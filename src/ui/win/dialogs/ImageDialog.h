@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <wxx_dialog.h>
+
 #include "WhereUsedDialog.h"
 
 class PinTableWnd;

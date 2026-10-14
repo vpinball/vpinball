@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <wxx_wincore.h> // Add CWnd, CDC, CMenu, ...
+
 #include "core/pinundo.h"
 #include "parts/light.h"
 #include "parts/pintable.h"

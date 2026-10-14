@@ -4,6 +4,7 @@
 
 #include "ui/win/resource.h"
 
+#include <wxx_wincore.h> // Needed first: wxx_controls.h alone lacks the CString definition
 #include <wxx_controls.h> // Add CComboBox
 #include <wxx_dialog.h>
 #include <wxx_docking.h>

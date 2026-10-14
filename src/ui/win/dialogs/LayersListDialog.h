@@ -3,7 +3,9 @@
 #pragma once
 
 #include "ui/win/resource.h" // win32xx related IDW_*
+#include <wxx_dialog.h>
 #include <wxx_docking.h>
+#include <wxx_stdcontrols.h> // Add CButton, CEdit
 #include <wxx_treeview.h>
 
 class LayerTreeView final : public CTreeView

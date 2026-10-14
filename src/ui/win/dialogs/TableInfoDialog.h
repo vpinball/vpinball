@@ -2,8 +2,11 @@
 
 #pragma once
 
+#include <wxx_wincore.h> // Needed first: wxx_controls.h alone lacks the CString definition
 #include <wxx_controls.h> // Add CComboBox
+#include <wxx_dialog.h>
 #include <wxx_listview.h> // Add CListView
+#include <wxx_stdcontrols.h> // Add CEdit
 
 class PinTableWnd;
 

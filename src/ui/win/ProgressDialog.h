@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include <wxx_wincore.h> // Needed first: wxx_controls.h alone lacks the CString definition
 #include <wxx_controls.h>
 #include <wxx_dialog.h>
+#include <wxx_stdcontrols.h> // Add CStatic
 
 #include "ui/LoadProgress.h"
 

@@ -3,8 +3,11 @@
 #pragma once
 
 #include "ui/win/resource.h" // win32xx related IDW_*
+#include <wxx_wincore.h> // Needed first: wxx_controls.h alone lacks the CString definition
 #include <wxx_controls.h> // Add CComboBox, CToolTip
+#include <wxx_dialog.h>
 #include <wxx_docking.h>
+#include <wxx_stdcontrols.h> // Add CButton
 
 class WinEditor;
 

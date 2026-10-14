@@ -4,6 +4,8 @@
 
 #include "PropertyDialog.h"
 
+#include <wxx_commondlg.h> // Add CColorDialog, CFontDialog
+
 class DecalVisualsProperty final : public BasePropertyDialog
 {
 public:

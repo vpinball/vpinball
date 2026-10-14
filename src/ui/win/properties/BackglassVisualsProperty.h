@@ -4,6 +4,8 @@
 
 #include "PropertyDialog.h"
 
+#include <wxx_commondlg.h> // Add CColorDialog
+
 class BackglassVisualsProperty final : public BasePropertyDialog
 {
 public:

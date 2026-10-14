@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atlcom.h>
+#include <wxx_commondlg.h> // Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog (also pulls in the Win32xx framework: CWnd, CDialog, ...)
 #include "codeviewedit.h"
 #include "core/ScriptInterpreter.h"
 #include "utils/vector.h"
