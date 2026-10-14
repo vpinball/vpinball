@@ -97,7 +97,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
       if (dist_ls > 0.25f) //!! magic distance, must be a new place if only by a little
       {
          m_obj->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
-         m_TimeReset = m_physics->GetTimeMsec() + 100;
+         (m_animatedSegment ? m_animatedSegment : this)->m_TimeReset = m_physics->GetTimeMsec() + 100;
 
          m_physics->PlaySlingshotRumble();
       }

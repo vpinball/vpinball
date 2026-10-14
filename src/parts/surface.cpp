@@ -265,16 +265,17 @@ void Surface::AddLine(PhysicsEngine *physics, const RenderVertex &pv1, const Ren
    const float bottom = m_d.m_heightbottom;
    const float top = m_d.m_heighttop;
 
-   const auto addLineSeg = [&](const RenderVertex &pa, const RenderVertex &pb, const bool slingMesh)
+   const auto addLineSeg = [&](const RenderVertex &pa, const RenderVertex &pb, const bool slingMesh) -> LineSegSlingshot *
    {
       LineSeg *plineseg;
+      LineSegSlingshot *plinesling = nullptr;
       if (!pv1.slingshot)
       {
          plineseg = new LineSeg(this, pa, pb, bottom, top);
       }
       else
       {
-         LineSegSlingshot *const plinesling = new LineSegSlingshot(this, pa, pb, bottom, top);
+         plinesling = new LineSegSlingshot(this, pa, pb, bottom, top);
          plineseg = (LineSeg *)plinesling;
 
          plinesling->m_force = m_d.m_slingshotforce;
@@ -291,18 +292,22 @@ void Surface::AddLine(PhysicsEngine *physics, const RenderVertex &pv1, const Ren
          plineseg->m_fe = true;
          plineseg->m_threshold = m_d.m_threshold;
       }
+      return plinesling;
    };
 
-   addLineSeg(pv1, pv2, true);
-
-   // Backward compatibility with tables released before the winding normalization:
-   // a surface authored with a reversed (clockwise) outline relied on the one-sided
-   // colliders facing the opposite way (e.g. a wall keeping the ball inside its
-   // outline, see issue #4149). Add the segment collider in the reverse direction
-   // too, so a reversed wall stays solid from both sides. The slingshot animation
-   // mesh is only generated for the canonical direction.
-   if (bothDirections)
-      addLineSeg(pv2, pv1, false);
+   if (!bothDirections)
+      addLineSeg(pv1, pv2, true);
+   else
+   {
+      // Backward compatibility: tables with a reversed (clockwise) outline relied on the
+      // one-sided colliders facing inward (e.g. a wall keeping the ball inside, see #4149),
+      // so collide both ways. The authored direction keeps the slingshot mesh, and the
+      // canonical segment animates it on its hits
+      LineSegSlingshot *const canonical = addLineSeg(pv1, pv2, false);
+      LineSegSlingshot *const authored = addLineSeg(pv2, pv1, true);
+      if (canonical)
+         canonical->m_animatedSegment = authored;
+   }
 
    // add lower edge as a line
    if (!isUI && m_d.m_heightbottom != 0.f)

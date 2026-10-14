@@ -43,6 +43,7 @@ public:
    uint32_t m_TimeReset; // Time at which to pull in slingshot, Zero means the slingshot is currently reset
    bool m_animations;
    bool m_iframe;
+   LineSegSlingshot *m_animatedSegment = nullptr; // Segment to animate on hits instead of this one (i.e. reversed outlines, see Surface::AddLine)
 };
 
 class Hit3DPoly final : public HitObject
