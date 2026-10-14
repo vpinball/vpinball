@@ -646,7 +646,7 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
       case VisualType::SegDisplay:
       {
          PinballPlugin::ResURIResolver::SegDisplayState frame = m_resURIResolver.GetSegDisplayState(visual.srcUri);
-         if ((frame.state.frame == nullptr) || (frame.source->nElements != visual.nElements))
+         if ((frame.state.frame == nullptr) || (frame.source->nElements != visual.nElements) || (frame.source->nElements > CTLPI_SEG_MAX_DISP_ELEMENTS))
             continue;
          LoadGlass(visual);
          vec4 glassArea;
