@@ -1061,6 +1061,8 @@ void Surface::InitPostLoad()
    assert(m_ptable != nullptr);
 
    const size_t cvertex = m_curve.GetPoints().size();
+   if (cvertex == 0)
+      return; // nothing to fix up on an empty outline
 
    float miny = FLT_MAX;
    size_t minyindex = 0;

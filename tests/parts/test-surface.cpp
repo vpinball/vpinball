@@ -105,6 +105,18 @@ TEST_CASE("Surface part")
       liveCopy->Release();
    }
 
+   SUBCASE("legacy inside-out fixup on empty outline")
+   {
+      Surface* const surface = Surface::COMCreate();
+      surface->Init(100.f, 200.f, false);
+      surface->SetName("Wall-Degen");
+      surface->m_curve.ClearPoints();
+      surface->m_onLoadInsideOutOuterWall = true; // as if loaded from an old table with INNR=false
+      table->AddPart(surface); // triggers InitPostLoad
+      surface->Release();
+      CHECK(surface->m_curve.GetPoints().empty());
+   }
+
    SUBCASE("editor transforms move the curve")
    {
       Surface* const surface = Surface::COMCreate();
