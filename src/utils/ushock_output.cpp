@@ -185,7 +185,8 @@ void ushock_output_init()
       }
 
       HidP_GetCaps(HidParsedData, &Capabilities);
-      assert(Capabilities.InputReportByteLength <= sizeof(inbuffer));
+      Capabilities.InputReportByteLength = min<USHORT>(Capabilities.InputReportByteLength, sizeof(inbuffer));
+      Capabilities.OutputReportByteLength = min<USHORT>(Capabilities.OutputReportByteLength, sizeof(buffer));
 
       if (HidParsedData) HidD_FreePreparsedData(HidParsedData); //make sure not null, otherwise crash		
 
