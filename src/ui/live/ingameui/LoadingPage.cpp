@@ -113,7 +113,7 @@ void LoadingPage::BuildPage()
          for (size_t i = 0; i < inFlight.size() && i < maxListed; ++i)
          {
             const Texture* const tex = inFlight[i].first;
-            ImGui::TextWrapped("%s (%ux%u %s)%s", tex->m_name.c_str(), tex->m_width, tex->m_height, tex->IsHDR() ? "HDR" : "LDR", inFlight[i].second ? (discarded ? " - discarded" : " - compressing") : " - pending");
+            ImGui::TextWrapped("%s (%ux%u %s)%s", tex->m_name.c_str(), tex->m_width.load(), tex->m_height.load(), tex->IsHDR() ? "HDR" : "LDR", inFlight[i].second ? (discarded ? " - discarded" : " - compressing") : " - pending");
          }
          if (inFlight.size() > maxListed)
             ImGui::Text("... and %d more", static_cast<int>(inFlight.size() - maxListed));

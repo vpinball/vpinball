@@ -858,34 +858,41 @@ void BaseTexture::UpdateMD5() const
 {
    if (!m_isMD5Dirty)
       return;
-   m_isMD5Dirty = false;
+   const std::lock_guard<std::mutex> lock(m_lazyMutex);
+   if (!m_isMD5Dirty) // Computed meanwhile by another thread
+      return;
    generateMD5((uint8_t*)m_data, pitch() * height(), m_md5Hash);
+   m_isMD5Dirty = false;
 }
 
 void BaseTexture::UpdateOpaque() const
 {
    if (!m_isOpaqueDirty)
       return;
-   m_isOpaqueDirty = false;
-   m_isOpaque = true;
+   const std::lock_guard<std::mutex> lock(m_lazyMutex);
+   if (!m_isOpaqueDirty) // Computed meanwhile by another thread
+      return;
+   bool opaque = true;
    if (m_format == RGBA || m_format == SRGBA)
    {
       // RGBA_FP16/RGBA_FP32 could be transparent but for the time being, the alpha channel is always opaque, only added for driver's texture format support
-      uint8_t* const __restrict pdst = m_data;
+      const uint8_t* const __restrict pdst = m_data;
       constexpr unsigned int stride = 4;
-      for (unsigned int y = 0; y < m_height && m_isOpaque; ++y)
+      for (unsigned int y = 0; y < m_height && opaque; ++y)
       {
          const size_t offs = (size_t)(m_height - y - 1) * (m_width * stride);
          for (size_t o = offs; o < m_width * stride + offs; o += stride)
          {
             if (pdst[o + 3] != 255)
             {
-               m_isOpaque = false;
+               opaque = false;
                break;
             }
          }
       }
    }
+   m_isOpaque = opaque;
+   m_isOpaqueDirty = false;
 }
 
 
@@ -1120,30 +1127,40 @@ size_t Texture::GetEstimatedGPUSize() const
 
 std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
-   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
-   auto buffer = m_imageBuffer.lock();
-   if (buffer)
-      return buffer;
+   {
+      const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
+      if (auto buffer = m_imageBuffer.lock())
+         return buffer;
+   }
+   // Decode without holding m_imageBufferMutex, so that the other accessors do not wait for it
+   const std::lock_guard<std::mutex> decodeLock(m_decodeMutex);
+   {
+      const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
+      if (auto buffer = m_imageBuffer.lock()) // Decoded meanwhile by another thread
+         return buffer;
+   }
    //PLOGD << "Decoding image " << m_name;
-   buffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
+   auto buffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
    if (buffer == nullptr)
       return nullptr;
    if (m_width != buffer->m_realWidth)
    {
-      PLOGE << "Corrupted file: image '" << m_name << "' width (" << buffer->m_realWidth << ") does not match the width (" << m_width << ") of the image datablock.";
+      PLOGE << "Corrupted file: image '" << m_name << "' width (" << buffer->m_realWidth << ") does not match the width (" << m_width.load() << ") of the image datablock.";
       m_width = buffer->m_realWidth;
    }
    if (m_height != buffer->m_realHeight)
    {
-      PLOGE << "Corrupted file: image '" << m_name << "' height (" << buffer->m_realHeight << ") does not match the height (" << m_height << ") of the image datablock.";
+      PLOGE << "Corrupted file: image '" << m_name << "' height (" << buffer->m_realHeight << ") does not match the height (" << m_height.load() << ") of the image datablock.";
       m_height = buffer->m_realHeight;
    }
    buffer->SetName(GetName());
+   const bool opaque = m_isOpaqueDirty && buffer->IsOpaque(); // Scans the pixels, so done before locking
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    m_imageBuffer = buffer;
    if (m_isOpaqueDirty)
    {
+      m_isOpaque = opaque;
       m_isOpaqueDirty = false;
-      m_isOpaque = buffer->IsOpaque();
    }
    return buffer;
 }
@@ -1193,16 +1210,23 @@ void Texture::UpdateMD5() const
 {
    if (!m_isMD5Dirty)
       return;
-   m_isMD5Dirty = false;
-   generateMD5(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), m_md5Hash);
-   SetMD5Hash(m_md5Hash);
+   uint8_t md5[16];
+   generateMD5(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), md5);
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
+   if (m_isMD5Dirty) // Otherwise computed meanwhile by another thread, and maybe already read without locking
+      SetMD5HashLocked(md5);
 }
 
 void Texture::SetMD5Hash(uint8_t* md5) const
 {
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
+   SetMD5HashLocked(md5);
+}
+
+void Texture::SetMD5HashLocked(uint8_t* md5) const
+{
    memcpy(m_md5Hash, md5, sizeof(m_md5Hash));
    m_isMD5Dirty = false;
-   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    auto buffer = m_imageBuffer.lock();
    if (buffer)
       buffer->SetMD5Hash(md5);
@@ -1212,16 +1236,23 @@ void Texture::UpdateOpaque() const
 {
    if (!m_isOpaqueDirty)
       return;
-   m_isOpaqueDirty = false;
-   const auto bitmap = GetRawBitmap(false, 0);
-   m_isOpaque = bitmap ? bitmap->IsOpaque() : false;
+   const auto bitmap = GetRawBitmap(false, 0); // Also computes the opacity if it decodes the image
+   if (!m_isOpaqueDirty)
+      return;
+   const bool opaque = bitmap ? bitmap->IsOpaque() : false; // Scans the pixels, so done before locking
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
+   if (m_isOpaqueDirty)
+   {
+      m_isOpaque = opaque;
+      m_isOpaqueDirty = false;
+   }
 }
 
 void Texture::SetIsOpaque(const bool v) const
 {
+   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    m_isOpaque = v;
    m_isOpaqueDirty = false;
-   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
    auto buffer = m_imageBuffer.lock();
    if (buffer)
       buffer->SetIsOpaque(v);

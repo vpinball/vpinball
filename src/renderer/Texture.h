@@ -6,6 +6,8 @@
 
 #include "parts/pinbinary.h"
 
+#include <atomic>
+
 #define MIN_TEXTURE_SIZE 8u
 
 class ITexManCacheable
@@ -115,11 +117,11 @@ public:
 
    bool IsMD5HashComputed() const { return !m_isMD5Dirty; }
    uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
-   void SetMD5Hash(uint8_t* md5) const { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
+   void SetMD5Hash(uint8_t* md5) const { const std::lock_guard<std::mutex> lock(m_lazyMutex); memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
 
    bool IsOpaqueComputed() const { return !m_isOpaqueDirty; }
    bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
-   void SetIsOpaque(const bool v) const { m_isOpaque = v; m_isOpaqueDirty = false; }
+   void SetIsOpaque(const bool v) const { const std::lock_guard<std::mutex> lock(m_lazyMutex); m_isOpaque = v; m_isOpaqueDirty = false; }
 
 private:
    BaseTexture(const unsigned int w, const unsigned int h, const Format format, const bool allocate = true);
@@ -138,10 +140,12 @@ private:
    std::weak_ptr<BaseTexture> m_selfPointer;
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
-   mutable bool m_isMD5Dirty = true;
+   // Written under m_lazyMutex (shared between threads). Dirty flags are cleared after the value is set, so a reader seeing a clear flag needs no lock
+   mutable std::mutex m_lazyMutex; // Taken after m_aliasMutex
+   mutable std::atomic<bool> m_isMD5Dirty { true };
    mutable uint8_t m_md5Hash[16] = {};
-   mutable bool m_isOpaqueDirty = true;
-   mutable bool m_isOpaque = true;
+   mutable std::atomic<bool> m_isOpaqueDirty { true };
+   mutable std::atomic<bool> m_isOpaque { true };
    mutable std::mutex m_aliasMutex;
    mutable ankerl::unordered_dense::map<Format, std::shared_ptr<BaseTexture>> m_aliases;
 };
@@ -181,14 +185,16 @@ public:
 public:
    string m_name; // Image name (used as a unique identifier)
    float m_alphaTestValue = static_cast<float>(-1.0 / 255.0); // Alpha test value (defaults to negative, that is to say disabled)
-   mutable unsigned int m_width = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
-   mutable unsigned int m_height = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
+   // FIXME should be const, but invalid sizes from some files are fixed when decoding the image datablock (atomic as this may run on a worker thread)
+   mutable std::atomic<unsigned int> m_width { 0 };
+   mutable std::atomic<unsigned int> m_height { 0 };
 
 private:
    Texture(string name, PinBinary* ppb, unsigned int width, unsigned int height); // Private to forbid uninitialized objects
 
    void UpdateMD5() const;
    void SetMD5Hash(uint8_t *md5) const;
+   void SetMD5HashLocked(uint8_t *md5) const; // Caller must hold m_imageBufferMutex
 
    void UpdateOpaque() const;
 
@@ -197,12 +203,14 @@ private:
 
    // These fields are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable std::weak_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
-   mutable std::mutex m_imageBufferMutex; // Serializes lazy decode/cache of m_imageBuffer (preload & texture compression workers race the logic thread)
+   mutable std::mutex m_decodeMutex; // Serializes the lazy decode, so concurrent requests decode once (taken before m_imageBufferMutex)
+   mutable std::mutex m_imageBufferMutex; // Guards m_imageBuffer and the MD5/opacity writes below, held briefly (preload & compression workers race the logic thread)
    mutable HBITMAP m_hbmGDIVersion = nullptr;
-   mutable bool m_isMD5Dirty = true;
+   // Dirty flags are cleared after the value is set, so a reader seeing a clear flag needs no lock
+   mutable std::atomic<bool> m_isMD5Dirty { true };
    mutable uint8_t m_md5Hash[16] = {};
-   mutable bool m_isOpaqueDirty = true;
-   mutable bool m_isOpaque = true;
+   mutable std::atomic<bool> m_isOpaqueDirty { true };
+   mutable std::atomic<bool> m_isOpaque { true };
 };
 
 

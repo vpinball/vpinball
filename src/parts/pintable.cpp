@@ -2445,8 +2445,8 @@ static void WritePackImage(JSONSerializer::Serializer &pack, PackFilePool &pool,
    sidecar["$type"] = "image";
    SetPackDocName(sidecar, tex->m_name, dataFile);
    sidecar["import_path"] = PathToUTF8(tex->GetFilePath());
-   sidecar["width"] = tex->m_width;
-   sidecar["height"] = tex->m_height;
+   sidecar["width"] = tex->m_width.load();
+   sidecar["height"] = tex->m_height.load();
    sidecar["alpha_test"] = tex->m_alphaTestValue * 255.f; // 0..255 scale, negative when disabled
    sidecar["md5"] = HexMD5(tex->GetMD5Hash());
    sidecar["opaque"] = tex->IsOpaque();

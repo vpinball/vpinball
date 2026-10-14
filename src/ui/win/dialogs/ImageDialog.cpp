@@ -902,7 +902,7 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText_Safe(hwndListView, index, 1, PathToString(ppi->GetFilePath()).c_str());
-   ListView_SetItemText_Safe(hwndListView, index, 2, (std::to_string(ppi->m_width) + 'x' + std::to_string(ppi->m_height)).c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 2, (std::to_string(ppi->m_width.load()) + 'x' + std::to_string(ppi->m_height.load())).c_str());
    ListView_SetItemText_Safe(hwndListView, index, 3, usedStringNo);
 
    m_overallFilesize += ppi->GetFileSize();
