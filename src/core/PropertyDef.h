@@ -182,12 +182,10 @@ public:
    }
    int ParseEnum(const string& v) const
    {
-      int index = GetEnum(v);
-      if (index >= m_min)
+      // Enums are saved as their index; parse that first, then fall back to a label
+      if (int index; try_parse_int(v, index) && IsValid(index))
          return index;
-      if (try_parse_int(v, index) && m_min <= index && index < (m_min + (int)m_values.size()))
-         return index;
-      return m_min - 1;
+      return GetEnum(v);
    }
    const string& GetEnum(int index) const { return m_values[GetValid(index) - m_min]; }
 

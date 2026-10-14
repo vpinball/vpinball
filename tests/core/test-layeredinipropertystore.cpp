@@ -17,6 +17,7 @@ struct TestPropIds
    PropertyRegistry::PropId intProp;
    PropertyRegistry::PropId enumProp;
    PropertyRegistry::PropId numEnumProp;
+   PropertyRegistry::PropId minOneEnumProp;
    PropertyRegistry::PropId floatProp;
    PropertyRegistry::PropId stringProp;
    PropertyRegistry::PropId contextualInt;
@@ -29,6 +30,7 @@ TestPropIds RegisterTestProps(PropertyRegistry& registry)
    ids.intProp = registry.Register(std::make_unique<IntPropertyDef>("TestGroup"s, "IntProp"s, "Int"s, ""s, false, 0, 100, 42));
    ids.enumProp = registry.Register(std::make_unique<EnumPropertyDef>("TestGroup"s, "EnumProp"s, "Enum"s, ""s, false, 0, 1, vector<string> { "Zero"s, "One"s, "Two"s }));
    ids.numEnumProp = registry.Register(std::make_unique<EnumPropertyDef>("TestGroup"s, "NumEnum"s, "Num"s, ""s, false, 0, 1, vector<string> { "2"s, "3"s, "4"s, "5"s }));
+   ids.minOneEnumProp = registry.Register(std::make_unique<EnumPropertyDef>("TestGroup"s, "MinOneEnum"s, "MinOne"s, ""s, false, 1, 1, vector<string> { "Authentic"s, "Fantasy"s }));
    ids.floatProp = registry.Register(std::make_unique<FloatPropertyDef>("TestGroup"s, "FloatProp"s, "Float"s, ""s, false, 0.f, 10.f, 0.5f, 2.5f));
    ids.stringProp = registry.Register(std::make_unique<StringPropertyDef>("TestGroup"s, "StringProp"s, "String"s, ""s, false, "default"s));
    ids.contextualInt = registry.Register(std::make_unique<IntPropertyDef>("TestGroup"s, "CtxInt"s, "Ctx"s, ""s, true, 0, 100, 5));
@@ -117,7 +119,7 @@ TEST_CASE("LayeredINIPropertyStore")
       CHECK(!loaded.IsModified());
    }
 
-   SUBCASE("enum with numeric labels round-trips by label")
+   SUBCASE("enum with numeric labels round-trips as its index")
    {
       PropertyRegistry registry;
       const auto ids = RegisterTestProps(registry);
@@ -131,30 +133,90 @@ TEST_CASE("LayeredINIPropertyStore")
       }
       REQUIRE(FileExists(iniPath));
 
-      // On disk the enum is written as its label, not the integer index
+      // On disk the enum is written as its integer index, not the label. The label of
+      // index 3 is "5", so a label-first parse would misread the index as a label.
       mINI::INIStructure ini;
       REQUIRE(mINI::INIFile(iniPath).read(ini));
-      CHECK(ini["TestGroup"s]["NumEnum"s] == "5");
+      CHECK(ini["TestGroup"s]["NumEnum"s] == "3");
 
-      // A fresh store reads the label back to the correct index
+      // A fresh store reads the index back to the same value (index is parsed first)
       LayeredINIPropertyStore loaded(registry);
       loaded.SetIniPath(iniPath);
       CHECK(loaded.Load());
       CHECK(loaded.GetInt(ids.numEnumProp) == 3);
    }
 
-   SUBCASE("enum integer-index fallback still parses")
+   SUBCASE("enum with range starting at 1 round-trips through save and load")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-minone.ini";
+
+      for (const int value : { 1, 2 }) // Authentic, Fantasy
+      {
+         {
+            LayeredINIPropertyStore store(registry);
+            store.SetIniPath(iniPath);
+            store.Set(ids.minOneEnumProp, value);
+            store.Save();
+         }
+         mINI::INIStructure ini;
+         REQUIRE(mINI::INIFile(iniPath).read(ini));
+         CHECK(ini["TestGroup"s]["MinOneEnum"s] == std::to_string(value)); // stored as the index, offset included
+
+         LayeredINIPropertyStore loaded(registry);
+         loaded.SetIniPath(iniPath);
+         CHECK(loaded.Load());
+         CHECK(loaded.GetInt(ids.minOneEnumProp) == value);
+      }
+
+      // A label read must apply the m_min offset: "Fantasy" is index 2, not 1
+      LayeredINIPropertyStore byLabel(registry);
+      mINI::INIStructure labelIni;
+      labelIni["TestGroup"s]["MinOneEnum"s] = "Fantasy";
+      byLabel.Load(labelIni);
+      CHECK(byLabel.GetInt(ids.minOneEnumProp) == 2);
+   }
+
+   SUBCASE("enum parses an integer index before a numeric label")
    {
       PropertyRegistry registry;
       const auto ids = RegisterTestProps(registry);
       LayeredINIPropertyStore store(registry);
 
-      // EnumProp has non-numeric labels { "Zero", "One", "Two" }; a bare integer in
-      // the ini is parsed as the index via the fallback path.
+      // NumEnum labels are { "2", "3", "4", "5" }. A stored "3" must be read as index 3
+      // (the "5" entry), not as the label "3" (index 1).
       mINI::INIStructure ini;
-      ini["TestGroup"s]["EnumProp"s] = "2";
+      ini["TestGroup"s]["NumEnum"s] = "3";
       store.Load(ini);
-      CHECK(store.GetInt(ids.enumProp) == 2);
+      CHECK(store.GetInt(ids.numEnumProp) == 3);
+   }
+
+   SUBCASE("enum label value loads, and is rewritten as an index on the next real save")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-labelheal.ini";
+
+      // A file written by a transient earlier build holds the label text, not the index.
+      {
+         mINI::INIStructure ini;
+         ini["TestGroup"s]["NumEnum"s] = "5"; // label for index 3
+         REQUIRE(mINI::INIFile(iniPath).write(ini));
+      }
+
+      LayeredINIPropertyStore store(registry);
+      store.SetIniPath(iniPath);
+      REQUIRE(store.Load());
+      CHECK(store.GetInt(ids.numEnumProp) == 3); // the label is read via the fallback
+
+      // Load leaves the store unmodified, so a save would be a no-op and the label stays.
+      // Only once the user changes a setting does a real save rewrite the enum as its index.
+      store.Set(ids.intProp, 7);
+      store.Save();
+      mINI::INIStructure after;
+      REQUIRE(mINI::INIFile(iniPath).read(after));
+      CHECK(after["TestGroup"s]["NumEnum"s] == "3");
    }
 
    SUBCASE("undefined properties are persisted as empty values")

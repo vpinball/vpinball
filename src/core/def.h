@@ -1022,7 +1022,8 @@ inline string trim_string(const string& str)
 inline bool try_parse_int(const string& str, int& value)
 {
    const string tmp = trim_string(str);
-   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
+   const auto [ptr, ec] = std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value);
+   return ec == std::errc{} && ptr == tmp.c_str() + tmp.length();
 }
 bool try_parse_float(const string& str, float& value);
 // copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
