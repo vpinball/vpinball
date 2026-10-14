@@ -1371,7 +1371,13 @@ void Primitive::Load(IObjectReader& reader)
          case FID(M3DN): m_d.m_meshFileName = reader.AsString(); break;
          case FID(M3VN):
          {
-            m_numVertices = reader.AsInt();
+            const int numVertices = reader.AsInt();
+            if (numVertices < 0 || numVertices > 0x400000) // arbitrary sanity bound, largest real meshes are far smaller
+            {
+               ShowError("Invalid vertex count in primitive mesh data");
+               break;
+            }
+            m_numVertices = numVertices;
             if (!m_mesh.m_animationFrames.empty())
             {
                for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
@@ -1388,14 +1394,24 @@ void Primitive::Load(IObjectReader& reader)
             break;
          }
 #ifdef COMPRESS_MESHES
-         case FID(M3AY): m_compressedAnimationVertices = reader.AsInt(); break;
+         case FID(M3AY):
+         {
+            const int size = reader.AsInt();
+            if (size < 0 || size > 0x4000000) // arbitrary sanity bound on compressed blob size
+            {
+               ShowError("Invalid animation data size in primitive mesh data");
+               break;
+            }
+            m_compressedAnimationVertices = size;
+            break;
+         }
          case FID(M3AX):
          {
             Mesh::FrameData frameData;
             frameData.m_frameVerts.clear();
             frameData.m_frameVerts.resize(m_numVertices);
 
-            mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData) * m_mesh.NumVertices());
+            mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData) * frameData.m_frameVerts.size());
             mz_uint8 *const c = new mz_uint8[m_compressedAnimationVertices];
             reader.AsRaw(c, m_compressedAnimationVertices);
             const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
@@ -1405,7 +1421,17 @@ void Primitive::Load(IObjectReader& reader)
             m_mesh.m_animationFrames.push_back(frameData);
             break;
          }
-         case FID(M3CY): m_compressedVertices = reader.AsInt(); break;
+         case FID(M3CY):
+         {
+            const int size = reader.AsInt();
+            if (size < 0 || size > 0x4000000) // arbitrary sanity bound on compressed blob size
+            {
+               ShowError("Invalid vertex data size in primitive mesh data");
+               break;
+            }
+            m_compressedVertices = size;
+            break;
+         }
          case FID(M3CX):
          {
             m_mesh.m_vertices.clear();
@@ -1421,7 +1447,17 @@ void Primitive::Load(IObjectReader& reader)
             break;
          }
 #endif
-         case FID(M3FN): m_numIndices = reader.AsInt(); break;
+         case FID(M3FN):
+         {
+            const int numIndices = reader.AsInt();
+            if (numIndices < 0 || numIndices > 0x1000000) // arbitrary sanity bound, largest real meshes are far smaller
+            {
+               ShowError("Invalid index count in primitive mesh data");
+               break;
+            }
+            m_numIndices = numIndices;
+            break;
+         }
          case FID(M3DI):
          {
             m_mesh.m_indices.resize(m_numIndices);
@@ -1437,7 +1473,17 @@ void Primitive::Load(IObjectReader& reader)
             break;
          }
 #ifdef COMPRESS_MESHES
-         case FID(M3CJ): m_compressedIndices = reader.AsInt(); break;
+         case FID(M3CJ):
+         {
+            const int size = reader.AsInt();
+            if (size < 0 || size > 0x4000000) // arbitrary sanity bound on compressed blob size
+            {
+               ShowError("Invalid index data size in primitive mesh data");
+               break;
+            }
+            m_compressedIndices = size;
+            break;
+         }
          case FID(M3CI):
          {
             m_mesh.m_indices.resize(m_numIndices);

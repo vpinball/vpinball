@@ -5,6 +5,10 @@
 
 #include "parts/pintable.h"
 #include "parts/primitive.h"
+#include "math/Mesh.h"
+#include "utils/BiffWriter.h"
+#include "utils/BiffReader.h"
+#include "miniz/miniz.h"
 
 #include "doctest.h"
 
@@ -178,6 +182,36 @@ TEST_CASE("Primitive part")
 
       // A file that can not be written fails the export (it used to write through a null file handle)
       CHECK_FALSE(prim->m_mesh.SaveWavefrontObj(GetTestTmpDir() / "missing_folder" / "mesh.obj", "Prim5"s, MeshUnits::VPUnits));
+   }
+
+   SUBCASE("load bounds embedded mesh counts")
+   {
+      // Crafted stream: the vertex count shrinks after the vertex blob was loaded,
+      // so the M3AX decompression buffer must follow the claimed count and not the
+      // already loaded mesh size (pre-fix: uncompress() overflowed the frame buffer)
+      InMemStream stream;
+      {
+         const ItemTypeEnum type = eItemPrimitive;
+         stream.Write(&type, sizeof(int));
+         BiffWriter writer(&stream, nullptr);
+         writer.WriteInt(FID(M3VN), 64);
+         vector<Vertex3D_NoTex2> verts(64);
+         writer.WriteRaw(FID(M3DX), verts.data(), (int)(sizeof(Vertex3D_NoTex2) * verts.size()));
+         writer.WriteInt(FID(M3VN), 1);
+         vector<Mesh::VertData> frame(64);
+         mz_ulong clen = compressBound((mz_ulong)(sizeof(Mesh::VertData) * frame.size()));
+         vector<mz_uint8> compressed(clen);
+         REQUIRE(compress2(compressed.data(), &clen, (const unsigned char*)frame.data(), (mz_ulong)(sizeof(Mesh::VertData) * frame.size()), MZ_BEST_COMPRESSION) == Z_OK);
+         writer.WriteInt(FID(M3AY), (int)clen);
+         writer.WriteRaw(FID(M3AX), compressed.data(), (int)clen);
+         writer.EndObject();
+      }
+
+      Primitive* const prim = Primitive::COMCreate();
+      LoadPartFromStream(prim, stream);
+      REQUIRE(prim->m_mesh.m_animationFrames.size() == 1);
+      CHECK(prim->m_mesh.m_animationFrames[0].m_frameVerts.size() == 1);
+      prim->Release();
    }
 
    SUBCASE("editor transforms")
