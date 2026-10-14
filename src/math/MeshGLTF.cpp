@@ -64,10 +64,19 @@ bool ReadFloatAccessor(const tinygltf::Model& model, const int accessorIndex, st
    const tinygltf::Accessor& accessor = model.accessors[accessorIndex];
    if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || accessor.count == 0)
       return false;
+   if (accessor.bufferView < 0 || accessor.bufferView >= static_cast<int>(model.bufferViews.size()))
+      return false;
    const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+   if (bufferView.buffer < 0 || bufferView.buffer >= static_cast<int>(model.buffers.size()))
+      return false;
    const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
    const size_t stride = bufferView.byteStride ? bufferView.byteStride : numComponents * sizeof(float);
+   const size_t elementSize = numComponents * sizeof(float);
+   if (stride < elementSize || bufferView.byteOffset > buffer.data.size() || accessor.byteOffset > buffer.data.size() - bufferView.byteOffset)
+      return false;
    const size_t base = bufferView.byteOffset + accessor.byteOffset;
+   if (elementSize > buffer.data.size() - base || accessor.count - 1 > (buffer.data.size() - base - elementSize) / stride)
+      return false;
    out.resize(accessor.count * numComponents);
    for (size_t i = 0; i < accessor.count; i++)
       memcpy(out.data() + i * numComponents, buffer.data.data() + base + i * stride, numComponents * sizeof(float));
@@ -264,11 +273,37 @@ bool Mesh::LoadGLB(const uint8_t* data, const size_t size)
          PLOGE << "GLB mesh index count is not a multiple of 3";
          return false;
       }
+      if (idxAccessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE && idxAccessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT
+         && idxAccessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+      {
+         PLOGE << "GLB mesh has an unsupported index component type";
+         return false;
+      }
+      if (idxAccessor.bufferView < 0 || idxAccessor.bufferView >= static_cast<int>(model.bufferViews.size()))
+      {
+         PLOGE << "GLB mesh index accessor references an invalid buffer view";
+         return false;
+      }
       const tinygltf::BufferView& idxView = model.bufferViews[idxAccessor.bufferView];
+      if (idxView.buffer < 0 || idxView.buffer >= static_cast<int>(model.buffers.size()))
+      {
+         PLOGE << "GLB mesh index buffer view references an invalid buffer";
+         return false;
+      }
       const tinygltf::Buffer& idxBuffer = model.buffers[idxView.buffer];
-      const size_t idxBase = idxView.byteOffset + idxAccessor.byteOffset;
       const size_t idxCompSize = (idxAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) ? 1 : (idxAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) ? 2 : 4;
       const size_t idxStride = idxView.byteStride ? idxView.byteStride : idxCompSize;
+      if (idxStride < idxCompSize || idxView.byteOffset > idxBuffer.data.size() || idxAccessor.byteOffset > idxBuffer.data.size() - idxView.byteOffset)
+      {
+         PLOGE << "GLB mesh index accessor runs past its buffer";
+         return false;
+      }
+      const size_t idxBase = idxView.byteOffset + idxAccessor.byteOffset;
+      if (idxCompSize > idxBuffer.data.size() - idxBase || (idxAccessor.count != 0 && idxAccessor.count - 1 > (idxBuffer.data.size() - idxBase - idxCompSize) / idxStride))
+      {
+         PLOGE << "GLB mesh index accessor runs past its buffer";
+         return false;
+      }
       m_indices.resize(idxAccessor.count);
       for (size_t i = 0; i < idxAccessor.count; i += 3)
       {
