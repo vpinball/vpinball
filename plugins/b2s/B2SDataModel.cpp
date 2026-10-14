@@ -239,7 +239,8 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    , m_fontSize(GetIntAttribute(root, ""s, "FontSize"s, 0))
    , m_fontStyle(GetIntAttribute(root, ""s, "FontStyle"s, 0))
 {
-   if (m_snippitType == B2SSnippitType::MechRotatingImage)
+   // Rotating images are always shown at startup; lamp writes only toggle their rotation (reference behavior)
+   if (m_snippitType == B2SSnippitType::MechRotatingImage || m_snippitType == B2SSnippitType::SelfRotatingImage)
       m_brightness = 1.f;
    else
       m_brightness = m_initialState ? 1.f : 0.f;
@@ -996,8 +997,14 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
          for (const string& group : animation.GetLightsInvolved())
             animatedGroups[group] = true;
       for (const auto& bulb : m_backglassIlluminations)
+      {
+         // RomInverted is never applied to the lit background channel (reference forces TopRomInverted off)
          bulb->m_bakedIntoBackground = bulb->m_romId != 0 && bulb->m_romId == m_backglassOnImage.m_romId && bulb->m_romIdType == m_backglassOnImage.m_romIdType && !bulb->m_romInverted
             && animatedGroups.find(bulb->m_name) == animatedGroups.end();
+         // An initially lit bulb on the lit-background channel lights the glass at startup (reference ShowStartupImages)
+         if (bulb->m_bakedIntoBackground && bulb->m_initialState && !bulb->m_isImageSnippit)
+            m_backglassOnImage.m_brightness = 1.f;
+      }
    }
 }
 

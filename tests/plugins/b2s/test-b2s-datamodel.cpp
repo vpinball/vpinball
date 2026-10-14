@@ -861,6 +861,44 @@ TEST_CASE("B2S bulbs baked into the background image")
    CHECK(!table->m_dmdIlluminations[0]->m_bakedIntoBackground);
 }
 
+TEST_CASE("B2S initial state and rotating images")
+{
+   const auto table = LoadTable(R"(
+      <DirectB2SData>
+         <Images>
+            <BackglassOnImage Value="" RomID="4" RomIDType="1"/>
+         </Images>
+         <Illumination>
+            <Bulb Name="litbaked" Parent="Backglass" RomID="4" RomIDType="1" InitialState="1"/>
+            <Bulb Name="litsnippit" Parent="Backglass" RomID="4" RomIDType="1" InitialState="1" IsImageSnippit="1"/>
+            <Bulb Name="litother" Parent="Backglass" RomID="7" RomIDType="1" InitialState="1"/>
+            <Bulb Name="mech" Parent="Backglass" RomID="1" RomIDType="4" SnippitType="2" SnippitRotatingSteps="10"/>
+            <Bulb Name="selfrot" Parent="Backglass" RomID="2" RomIDType="1" SnippitType="1"/>
+            <Bulb Name="unlit" Parent="Backglass" RomID="8" RomIDType="1"/>
+         </Illumination>
+      </DirectB2SData>)");
+
+   const auto bulb = [&table](const char* name) -> B2SBulb*
+   {
+      for (auto& b : table->m_backglassIlluminations)
+         if (b->m_name == name)
+            return b.get();
+      return nullptr;
+   };
+
+   // An initially lit bulb on the lit-background channel lights the glass at startup (ShowStartupImages);
+   // snippits are excluded there, as are bulbs on other channels
+   CHECK(table->m_backglassOnImage.m_brightness == doctest::Approx(1.f));
+
+   // Rotating images start visible regardless of InitialState
+   CHECK(bulb("mech")->m_brightness == doctest::Approx(1.f));
+   CHECK(bulb("selfrot")->m_brightness == doctest::Approx(1.f));
+
+   // Standard bulbs reflect their InitialState
+   CHECK(bulb("litother")->m_brightness == doctest::Approx(1.f));
+   CHECK(bulb("unlit")->m_brightness == doctest::Approx(0.f));
+}
+
 TEST_CASE("B2S dual backglass mode")
 {
    const auto table = LoadTable(R"(
