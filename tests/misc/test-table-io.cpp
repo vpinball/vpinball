@@ -1051,7 +1051,20 @@ TEST_CASE("VPZ partial pack export and import")
          CHECK(std::filesystem::exists(packPath / "parts" / (JSONSerializer::SanitizeFileName(part->GetName()) + ".json")));
       // Assets not referenced by the exported parts are not included
       CHECK(!std::filesystem::exists(packPath / "sounds"));
-      CHECK(!std::filesystem::exists(packPath / "renderprobes"));
+      // The render probes named by the exported parts are included, the other ones are not
+      std::set<string> referenced;
+      const std::function<void(const nlohmann::ordered_json &)> collectStrings = [&referenced, &collectStrings](const nlohmann::ordered_json &node)
+      {
+         for (const auto &item : node)
+            if (item.is_string())
+               referenced.insert(item.get<string>());
+            else if (item.is_object() || item.is_array())
+               collectStrings(item);
+      };
+      for (const std::filesystem::path &partFile : partFiles)
+         collectStrings(nlohmann::ordered_json::parse(std::ifstream(partFile)));
+      for (const RenderProbe *const probe : table->m_vrenderprobe)
+         CHECK(std::filesystem::exists(packPath / "renderprobes" / (JSONSerializer::SanitizeFileName(probe->GetName()) + ".json")) == referenced.contains(probe->GetName()));
 
       // The partial pack loads as a table holding only the exported parts
       CComObject<PinTable> *reloaded;
@@ -1096,7 +1109,7 @@ TEST_CASE("VPZ partial pack export and import")
       REQUIRE(std::filesystem::create_directories(packPath, ec));
       vector<IEditable *> first, second;
       for (IEditable *const part : table->GetParts())
-         if (part->GetItemType() != eItemPartGroup && part->GetItemType() != eItemDragPoint && part->GetPartGroup() == nullptr)
+         if (part->GetItemType() != eItemPartGroup && part->GetItemType() != eItemDragPoint)
             (first.size() <= second.size() ? first : second).push_back(part);
       REQUIRE(!first.empty());
       REQUIRE(!second.empty());
