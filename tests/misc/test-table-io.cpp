@@ -1372,6 +1372,40 @@ TEST_CASE("Mesh GLB loading rejects malformed accessors")
       Mesh loaded;
       CHECK(!loaded.LoadGLB(malformed.data(), malformed.size()));
    }
+
+   SUBCASE("attribute accessor references an invalid buffer view")
+   {
+      const vector<uint8_t> malformed
+         = PatchGlbJson(glb, [](nlohmann::json &json) { json["accessors"][json["meshes"][0]["primitives"][0]["attributes"]["POSITION"].get<int>()]["bufferView"] = 99; });
+      Mesh loaded;
+      CHECK(!loaded.LoadGLB(malformed.data(), malformed.size()));
+   }
+
+   SUBCASE("attribute accessor count runs past the buffer")
+   {
+      const vector<uint8_t> malformed
+         = PatchGlbJson(glb, [](nlohmann::json &json) { json["accessors"][json["meshes"][0]["primitives"][0]["attributes"]["POSITION"].get<int>()]["count"] = 1000000; });
+      Mesh loaded;
+      CHECK(!loaded.LoadGLB(malformed.data(), malformed.size()));
+   }
+
+   SUBCASE("index accessor with a signed component type")
+   {
+      const vector<uint8_t> malformed = PatchGlbJson(glb,
+         [](nlohmann::json &json)
+         {
+            json["accessors"][json["meshes"][0]["primitives"][0]["indices"].get<int>()]["componentType"] = 5122; // SHORT
+         });
+      Mesh loaded;
+      CHECK(!loaded.LoadGLB(malformed.data(), malformed.size()));
+   }
+
+   SUBCASE("index accessor count runs past the buffer")
+   {
+      const vector<uint8_t> malformed = PatchGlbJson(glb, [](nlohmann::json &json) { json["accessors"][json["meshes"][0]["primitives"][0]["indices"].get<int>()]["count"] = 6000000; });
+      Mesh loaded;
+      CHECK(!loaded.LoadGLB(malformed.data(), malformed.size()));
+   }
 }
 
 
