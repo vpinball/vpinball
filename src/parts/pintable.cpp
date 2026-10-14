@@ -6959,6 +6959,29 @@ STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
    return S_OK;
 }
 
+namespace
+{
+// A recognized 2-entry toggle (on/off, hide/show, true/false, in either order) is
+// stored as a logical bool: true is on, false is off, independent of the array order.
+// Storage, the registered default and the UI checkbox use that logical value directly;
+// these helpers are the single place that maps it to and from the value the script
+// declared and branches on (one of minValue/maxValue).
+//
+// 'reversed' (array on-entry first, e.g. Array("On","Off"); registered displayScale < 0)
+// means the on state is minValue; otherwise ("Off","On") the on state is maxValue.
+
+float ToggleLogicalToScript(bool reversed, float minValue, float maxValue, bool on)
+{
+   return on ? (reversed ? minValue : maxValue) : (reversed ? maxValue : minValue);
+}
+
+// Any value other than the on endpoint is treated as off.
+bool ToggleScriptToLogical(bool reversed, float minValue, float maxValue, float val)
+{
+   return val == (reversed ? minValue : maxValue);
+}
+}
+
 std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOption(
    BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values)
 {
@@ -7032,13 +7055,15 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
          string second = lowerCase(trim_string(literals[1]));
          if ((first == "off" && second == "on") || (first == "hide" && second == "show") || (first == "false" && second == "true"))
          {
-            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, true, defaultValue != minValue));
+            const bool boolDefault = ToggleScriptToLogical(false, minValue, maxValue, defaultValue);
+            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, true, boolDefault));
             m_tableOptions.emplace_back(propId, 1.f, ""s, m_settings.GetBool(propId) ? 1.f : 0.f);
             return propId;
          }
          else if ((first == "on" && second == "off") || (first == "show" && second == "hide") || (first == "true" && second == "false"))
          {
-            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, true, defaultValue != minValue));
+            const bool boolDefault = ToggleScriptToLogical(true, minValue, maxValue, defaultValue);
+            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, true, boolDefault));
             m_tableOptions.emplace_back(propId, -1.f, ""s, m_settings.GetBool(propId) ? 1.f : 0.f);
             return propId;
          }
@@ -7096,7 +7121,10 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
       if ((option.id.type == prop.value().type) && (option.id.index == prop.value().index))
       {
          if (Settings::GetRegistry().GetProperty(option.id)->m_type == VPX::Properties::PropertyDef::Type::Bool)
-            *param = minValue + option.value;
+         {
+            const bool reversed = option.displayScale < 0.f;
+            *param = ToggleLogicalToScript(reversed, minValue, maxValue, option.value != 0.f);
+         }
          else
             *param = option.value;
          return S_OK;
@@ -7112,7 +7140,16 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
    if (!prop.has_value())
       return E_FAIL;
    if (Settings::GetRegistry().GetProperty(prop.value())->m_type == VPX::Properties::PropertyDef::Type::Bool)
-      m_settings.Set(prop.value(), val != minValue, true);
+   {
+      bool reversed = false;
+      for (const auto& option : m_tableOptions)
+         if ((option.id.type == prop.value().type) && (option.id.index == prop.value().index))
+         {
+            reversed = option.displayScale < 0.f;
+            break;
+         }
+      m_settings.Set(prop.value(), ToggleScriptToLogical(reversed, minValue, maxValue, val), true);
+   }
    else
       m_settings.Set(prop.value(), val, true);
    return S_OK;

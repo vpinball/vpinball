@@ -26,7 +26,6 @@ void TableOptionsPage::BuildPage()
    for (const PinTable::TableOption& option : m_player->m_ptable->GetOptions())
    {
       const VPX::Properties::PropertyRegistry::PropId id = option.id;
-      const bool isReversed = option.displayScale < 0.f;
       switch (Settings::GetRegistry().GetProperty(option.id)->m_type)
       {
       case VPX::Properties::PropertyDef::Type::Float:
@@ -48,11 +47,12 @@ void TableOptionsPage::BuildPage()
             }));
          break;
       case VPX::Properties::PropertyDef::Type::Bool:
+         // The checkbox is the logical on/off value; array-order mapping lives in PinTable::get_Option/put_Option.
          AddItem(std::make_unique<InGameUIItem>(
             option.id, //
-            [this, id, isReversed]() { return isReversed ? (GetOption(id)->value == 0.f) : (GetOption(id)->value != 0.f); }, //
-            [this, id, isReversed](bool v) {
-               m_player->m_ptable->SetOptionLiveValue(id, isReversed ? (v ? 0.f : 1.f) : (v ? 1.f : 0.f));
+            [this, id]() { return GetOption(id)->value != 0.f; }, //
+            [this, id](bool v) {
+               m_player->m_ptable->SetOptionLiveValue(id, v ? 1.f : 0.f);
                m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::Changed);
             }));
          break;
