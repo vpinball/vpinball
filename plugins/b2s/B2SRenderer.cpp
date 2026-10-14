@@ -104,26 +104,29 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
 {
    if (m_b2s->m_backglassOnImage.m_image)
       m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
-   for (auto& bulb : m_b2s->m_backglassIlluminations)
-      bulb->m_romUpdater = []() { /* No ROM source */ };
+   for (auto* bulbs : { &m_b2s->m_backglassIlluminations, &m_b2s->m_dmdIlluminations })
+      for (auto& bulb : *bulbs)
+         bulb->m_romUpdater = []() { /* No ROM source */ };
 
 
+   // The reference forces TopRomInverted to False for the BackglassOnImage channel
    if (m_b2s->m_backglassOnImage.m_image)
       m_b2s->m_backglassOnImage.m_romUpdater
-         = ResolveRomPropUpdater(items, &m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId, m_b2s->m_backglassOnImage.m_romInverted);
+         = ResolveRomPropUpdater(items, &m_b2s->m_backglassOnImage.m_romProbe, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId, false);
 
    // The reference only defines a matching value (B2SValue as RomIDValue) on B2SID bulbs; ROM events and
    // script writes share the same lamp channel there, so the value filter applies to both paths
-   for (auto& bulb : m_b2s->m_backglassIlluminations)
-   {
-      const int romValue = bulb->m_b2sId >= 0 ? bulb->m_b2sValue : 0;
-      switch (bulb->m_snippitType)
+   for (auto* bulbs : { &m_b2s->m_backglassIlluminations, &m_b2s->m_dmdIlluminations })
+      for (auto& bulb : *bulbs)
       {
-      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
-      case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
-      case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
+         const int romValue = bulb->m_b2sId >= 0 ? bulb->m_b2sValue : 0;
+         switch (bulb->m_snippitType)
+         {
+         case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romProbe, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
+         case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
+         case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
+         }
       }
-   }
 
    // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
    for (auto* scores : { &m_b2s->m_backglassScores, &m_b2s->m_dmdScores })
@@ -276,26 +279,52 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
       if (bulb->m_bakedIntoBackground)
          continue; // Drawn as part of the lit background image
       const bool locked = server && !bulb->m_name.empty() && server->IsIlluminationLocked(bulb->m_name);
-      float state = 0.f;
-      const bool scripted = server && server->GetBulbState(*bulb, state);
-      if (scripted)
+      // ROM polling: a ROM state change counts as a write into the same channel as script writes
+      // (the reference routes both through the same shared state, the most recent one wins), so the
+      // probe keeps updating even while a script write is in control. Probes are suspended while the
+      // illumination group is locked by an animation, and the first observation does not count as a
+      // change. Mech values are rotation steps, not visibility writes, and never take the channel.
+      if (!locked)
       {
-         const int romValue = bulb->m_b2sId >= 0 ? bulb->m_b2sValue : 0;
-         bulb->m_brightness = (romValue > 0) ? //
-            ((static_cast<int>(state) == romValue) ? 1.f : 0.f)
-                                             : state;
-      }
-      else if (!locked) // While the illumination group is locked by an animation, ROM updates are suspended
+         float* const probe = bulb->m_snippitType == B2SSnippitType::MechRotatingImage ? &bulb->m_mechRot
+            : bulb->m_snippitType == B2SSnippitType::SelfRotatingImage                 ? &bulb->m_romOn
+                                                                                       : &bulb->m_romProbe;
+         const float prev = *probe;
          bulb->m_romUpdater();
+         if (server != nullptr && prev >= 0.f && *probe != prev && bulb->m_romIdType != B2SRomIDType::Mech)
+            bulb->m_romStamp = server->NextStamp();
+      }
+      float state = 0.f;
+      bool fromLamp = false;
+      const bool scripted = server && server->GetBulbState(*bulb, state, &fromLamp);
+      // Script writes on the lamp channel of a rotating image drive its rotation instead of its
+      // visibility (reference): for mech images the value selects the rotation step, for self
+      // rotating images it toggles the spinning, most recent write between script and ROM wins
+      const int lampId = (bulb->m_romIdType == B2SRomIDType::Lamp && bulb->m_romId > 0) ? bulb->m_romId : -1;
+      uint64_t lampWriteStamp = 0;
+      float lampWriteState = 0.f;
+      const bool lampWinsRotation = server != nullptr && !locked && lampId > 0 && server->GetScriptedLampState(lampId, lampWriteState, &lampWriteStamp) && lampWriteStamp > bulb->m_romStamp;
       float rotation = 0.f;
       if (bulb->m_snippitType == B2SSnippitType::MechRotatingImage)
+      {
+         // Mech rotating images stay visible (the channel value only selects the rotation step);
+         // illumination group writes still drive their visibility
+         if (scripted && !fromLamp)
+            bulb->m_brightness = state;
+         if (lampWinsRotation)
+            bulb->m_mechRot = lampWriteState;
          rotation = 360.f * (bulb->m_mechRot / static_cast<float>(bulb->m_snippitRotatingSteps));
+      }
       else if (bulb->m_snippitType == B2SSnippitType::SelfRotatingImage)
       {
-         // Self rotating images spin while their driving state is on; scripted state wins over the ROM
-         // lamp state (same as illumination). Rotation only toggles on state transitions so that explicit
-         // B2SStartRotation calls keep spinning until B2SStopRotation or a state write (reference behaviour).
-         const float spin = scripted ? bulb->m_brightness : bulb->m_romOn;
+         if (scripted && !fromLamp)
+            bulb->m_brightness = state;
+         float spin = std::max(0.f, bulb->m_romOn);
+         if (lampWinsRotation)
+            spin = (bulb->m_b2sId >= 0 && bulb->m_b2sValue > 0) ? (static_cast<int>(lampWriteState) == bulb->m_b2sValue ? 1.f : 0.f)
+                                                                : ((lampWriteState != 0.f) != bulb->m_romInverted ? 1.f : 0.f);
+         // Rotation only toggles on state transitions so that explicit B2SStartRotation calls keep
+         // spinning until B2SStopRotation or a state write (reference behaviour)
          const bool spinOn = spin >= 0.5f;
          if (spinOn != bulb->m_spinDriverOn)
          {
@@ -305,11 +334,15 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
             else
                bulb->StopRotation();
          }
-         if (!scripted)
-            bulb->m_brightness = std::max(bulb->m_brightness, bulb->m_romOn);
          bulb->UpdateRotation(elapsed);
          rotation = bulb->GetRotationAngle();
       }
+      else if (scripted)
+         bulb->m_brightness = state;
+      else if (bulb->m_romStamp > 0 || (server == nullptr && bulb->m_romProbe >= 0.f))
+         // The probe only takes over once a ROM change was actually observed: the first observation
+         // is the initial state read, not a write, so InitialState survives until the first event
+         bulb->m_brightness = bulb->m_romProbe;
       if (bulb->m_offImage && bulb->m_brightness < 1.f)
       {
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_offImage);
@@ -436,13 +469,19 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
       // Reel rolling: resolve the rolling direction, the illuminated image selection and the per-digit
       // hold flags. A digit waits while a less significant digit has a pending 9->0 / 0->9 wrap (carry).
       const bool rollUp = scores.m_reelRollingDirection != B2SReelRollingDirection::Down;
-      // ReelIlluB2SID is in lamp-id space: script B2SSetData writes take precedence, else the ROM lamp state applies
-      float illuState = reel.m_reelIllu;
-      if (server == nullptr || !server->GetScriptedLampState(reel.m_reelIlluB2SID, illuState))
+      // ReelIlluB2SID is in lamp-id space: script B2SSetData writes and ROM lamp states share the
+      // channel; the most recent change wins
       {
+         const float prevIllu = reel.m_reelIllu;
          reel.m_reelIlluUpdater();
-         illuState = reel.m_reelIllu;
+         if (server != nullptr && prevIllu >= 0.f && reel.m_reelIllu != prevIllu)
+            reel.m_reelIlluStamp = server->NextStamp();
       }
+      float illuState = std::max(0.f, reel.m_reelIllu);
+      uint64_t illuLampStamp = 0;
+      float scriptedIllu = 0.f;
+      if (server != nullptr && server->GetScriptedLampState(reel.m_reelIlluB2SID, scriptedIllu, &illuLampStamp) && illuLampStamp > reel.m_reelIlluStamp)
+         illuState = scriptedIllu;
       const bool illuminated = reel.m_reelIlluB2SID > 0 && (reel.m_reelIlluB2SValue > 0 ? (static_cast<int>(illuState) == reel.m_reelIlluB2SValue) : (illuState != 0.f));
       vector<char> hold(static_cast<size_t>(std::max(0, reel.m_digits)), 0);
       bool lowerWrapPending = false;
@@ -587,10 +626,10 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    m_grillCut = showGrillProp_Get() ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
 
    const VPXTextureInfo* bgTexInfo = nullptr;
-   if (m_b2s->m_backglassImage.m_image)
-      bgTexInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
-   else if (m_b2s->m_backglassOffImage.m_image)
+   if (m_b2s->m_backglassOffImage.m_image)
       bgTexInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
+   else if (m_b2s->m_backglassImage.m_image)
+      bgTexInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
    m_b2sWidth = bgTexInfo ? static_cast<float>(bgTexInfo->width) : 1024.f;
    m_b2sHeight = (bgTexInfo ? static_cast<float>(bgTexInfo->height) : 768.f) - m_grillCut;
 
@@ -609,32 +648,40 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    UpdateAnimations(m_b2s->m_backglassAnimations, elapsed, server, dualMode);
 
    // Draw background
-   m_b2s->m_backglassOnImage.m_romUpdater();
-   if (m_b2s->m_backglassOnImage.m_image == nullptr || m_b2s->m_backglassOnImage.m_brightness < 1.f)
+   B2SImage& onImage = m_b2s->m_backglassOnImage;
    {
-      if (m_b2s->m_backglassImage.m_image)
+      const float prev = onImage.m_romProbe;
+      onImage.m_romUpdater();
+      if (server != nullptr && prev >= 0.f && onImage.m_romProbe != prev)
+         onImage.m_romStamp = server->NextStamp();
+   }
+   // The lit background is also driven by script writes on its lamp channel (reference MyB2SSetData):
+   // the most recent write between script and ROM wins, RomInverted is never applied to this channel
+   uint64_t onLampStamp = 0;
+   float onLampState = 0.f;
+   if (server != nullptr && onImage.m_romIdType == B2SRomIDType::Lamp && onImage.m_romId > 0 && server->GetScriptedLampState(onImage.m_romId, onLampState, &onLampStamp)
+      && onLampStamp > onImage.m_romStamp)
+      onImage.m_brightness = (onLampState != 0.f) ? 1.f : 0.f;
+   else if (onImage.m_romProbe >= 0.f)
+      onImage.m_brightness = onImage.m_romProbe;
+
+   if (onImage.m_image == nullptr || onImage.m_brightness < 1.f)
+   {
+      // The unlit variant is the OffImage when the file provides one (the reference's DarkImage)
+      const B2SImage& darkImage = m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage : m_b2s->m_backglassImage;
+      if (darkImage.m_image)
       {
-         const VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
-         ctx->DrawImage(ctx, m_b2s->m_backglassImage.m_image, 1.f, 1.f, 1.f, 1.f,
-            0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
-            0.f, 0.f, 0.f, // No rotation
-            0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
-      }
-      else if (m_b2s->m_backglassOffImage.m_image)
-      {
-         const VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
-         ctx->DrawImage(ctx, m_b2s->m_backglassOffImage.m_image, 1.f, 1.f, 1.f, 1.f,
-            0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
-            0.f, 0.f, 0.f, // No rotation
+         const VPXTextureInfo* texInfo = GetTextureInfo(darkImage.m_image);
+         ctx->DrawImage(ctx, darkImage.m_image, 1.f, 1.f, 1.f, 1.f, 0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut, 0.f, 0.f,
+            0.f, // No rotation
             0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
       }
    }
-   if (m_b2s->m_backglassOnImage.m_image)
+   if (onImage.m_image)
    {
-      const VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOnImage.m_image);
-      ctx->DrawImage(ctx, m_b2s->m_backglassOnImage.m_image, 1.f, 1.f, 1.f, m_b2s->m_backglassOnImage.m_brightness,
-         0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
-         0.f, 0.f, 0.f, // No rotation
+      const VPXTextureInfo* texInfo = GetTextureInfo(onImage.m_image);
+      ctx->DrawImage(ctx, onImage.m_image, 1.f, 1.f, 1.f, onImage.m_brightness, 0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut, 0.f,
+         0.f, 0.f, // No rotation
          0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
    }
 

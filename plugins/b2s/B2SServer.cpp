@@ -436,13 +436,14 @@ void MSGPIAPI B2SServer::GetScoreDigit(void* callContext, void* pResult)
 
 void B2SServer::B2SSetPos(int id, int xpos, int ypos)
 {
-   // id is a lamp ROM id (the B2SID of scripted bulbs): moves all bulbs driven by this lamp (respecting no illumination locks for now)
+   // id is a lamp ROM id (the B2SID of scripted bulbs): moves all bulbs driven by this lamp.
+   // Bulbs of an illumination group locked by a running animation are not moved (reference behavior).
    const std::shared_ptr<B2STable> b2s = AcquireB2STable();
    if (b2s == nullptr)
       return;
    for (const auto* bulbs : { &b2s->m_backglassIlluminations, &b2s->m_dmdIlluminations })
       for (const auto& bulb : *bulbs)
-         if (bulb->m_romId > 0 && bulb->m_romId == id && bulb->m_romIdType == B2SRomIDType::Lamp)
+         if (bulb->m_romId > 0 && bulb->m_romId == id && bulb->m_romIdType == B2SRomIDType::Lamp && (bulb->m_name.empty() || !IsIlluminationLocked(bulb->m_name)))
          {
             bulb->m_locationX = xpos;
             bulb->m_locationY = ypos;
@@ -673,38 +674,56 @@ float B2SServer::GetLampState(int b2sId) const
    return it == m_lampStates.end() ? 0.f : it->second.value.load();
 }
 
-bool B2SServer::GetScriptedLampState(int b2sId, float& state) const
+bool B2SServer::GetScriptedLampState(int b2sId, float& state, uint64_t* stamp) const
 {
    const auto it = m_lampStates.find(b2sId);
    if (it == m_lampStates.end())
       return false;
    state = it->second.value.load();
+   if (stamp != nullptr)
+      *stamp = it->second.stamp.load();
    return true;
 }
 
-bool B2SServer::GetBulbState(const B2SBulb& bulb, float& state) const
+bool B2SServer::GetBulbState(const B2SBulb& bulb, float& state, bool* fromLampChannel) const
 {
-   // Resolves the effective scripted state of a bulb: most recent write wins between its own B2S id and its illumination group.
-   // While a bulb's illumination group is locked by a running animation, only group writes (performed by animations) apply.
+   // Resolves the effective scripted state of a bulb: most recent write wins between its lamp channel, its
+   // illumination group and the ROM state (the reference routes all of them through the same shared state).
+   // The lamp channel is the B2SID of scripted bulbs, or the RomID of lamp-typed ROM bulbs, as both are
+   // registered in the reference's UsedRomLampIDs collection.
+   // While a bulb's illumination group is locked by a running animation, only group writes apply.
    const bool locked = !bulb.m_name.empty() && IsIlluminationLocked(bulb.m_name);
+   const int lampId = (bulb.m_romIdType == B2SRomIDType::Lamp && bulb.m_romId > 0) ? bulb.m_romId : -1;
+   const int romValue = bulb.m_b2sId >= 0 ? bulb.m_b2sValue : 0;
    bool scripted = false;
+   bool lampWon = false;
    uint64_t stamp = 0;
    // A bulb only falls under scripted control once its lamp id has actually been written; before that it keeps
-   // its initial state or follows the ROM lamp channel (B2SID bulbs are bound to it), as the reference does
-   if (bulb.m_b2sId >= 0 && !locked)
-      if (const auto it = m_lampStates.find(bulb.m_b2sId); it != m_lampStates.end())
+   // its initial state or follows the ROM lamp channel, as the reference does. Lamp-id writes apply
+   // RomInverted (value-matched writes and group writes don't).
+   if (lampId > 0 && !locked)
+      if (const auto it = m_lampStates.find(lampId); it != m_lampStates.end())
       {
+         const float value = it->second.value.load();
+         state = romValue > 0 ? (static_cast<int>(value) == romValue ? 1.f : 0.f) : ((value != 0.f) != bulb.m_romInverted ? 1.f : 0.f);
+         stamp = it->second.stamp.load();
          scripted = true;
-         state = it->second.value;
-         stamp = it->second.stamp;
+         lampWon = true;
       }
    if (!bulb.m_name.empty())
       if (const auto it = m_groupStates.find(bulb.m_name); it != m_groupStates.end() && it->second.stamp.load() > stamp)
       {
-         state = it->second.value;
-         stamp = it->second.stamp;
+         const float value = it->second.value.load();
+         state = romValue > 0 ? (static_cast<int>(value) == romValue ? 1.f : 0.f) : (value != 0.f ? 1.f : 0.f);
+         stamp = it->second.stamp.load();
          scripted = true;
+         lampWon = false;
       }
+   // A ROM change observed after the last script write wins the channel
+   if (scripted && stamp <= bulb.m_romStamp)
+      scripted = false;
+   if (fromLampChannel != nullptr)
+      *fromLampChannel = lampWon;
    return scripted;
 }
 

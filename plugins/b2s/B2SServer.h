@@ -152,8 +152,9 @@ public:
 
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetLampState(int b2sId) const;
-   bool GetScriptedLampState(int b2sId, float& state) const; // True when the script wrote this lamp id through B2SSetData
-   bool GetBulbState(const B2SBulb& bulb, float& state) const;
+   bool GetScriptedLampState(int b2sId, float& state, uint64_t* stamp = nullptr) const; // True when the script wrote this lamp id through B2SSetData
+   bool GetBulbState(const B2SBulb& bulb, float& state, bool* fromLampChannel = nullptr) const;
+   uint64_t NextStamp() const { return ++m_lampStamp; }
    int GetScoreDigit(int digit) const;
    int GetScoreDigitSegments(int digit) const; // Explicit B2SSetLED segment mask, -1 = none
    bool ConsumeScoreDigitRoll(int digit); // Returns and clears the rolling flag set by B2SSetScore/B2SSetReel
@@ -225,7 +226,7 @@ private:
    };
    std::map<int, LampState> m_lampStates;
    std::map<string, LampState> m_groupStates;
-   std::atomic<uint64_t> m_lampStamp { 0 }; // Monotonic write counter used to resolve most recent state writes
+   mutable std::atomic<uint64_t> m_lampStamp { 0 }; // Monotonic write counter used to resolve most recent state writes (script or ROM)
    std::atomic<bool> m_scoreDisplaysHidden { false };
    std::map<string, int> m_illuminationLocks; // Ref-counted animation locks, keyed by illumination group (bulb name)
    mutable std::mutex m_illuminationLockMutex;
