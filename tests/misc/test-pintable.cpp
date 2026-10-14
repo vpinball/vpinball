@@ -153,6 +153,72 @@ TEST_CASE("PinTable part")
       table->Release();
    }
 
+   SUBCASE("ON/OFF toggle option round-trips in its declared domain")
+   {
+      // Stars registers Ambience/Background Music as Option(name, 1, 2, 1, 2, 0,
+      // Array("ON","OFF")) and branches on the declared value (1 = ON, 2 = OFF), so the
+      // option must round-trip in that 1..2 domain, not the stored bool {0,1} domain.
+      PinTable* const table = CreateTestTable();
+
+      // Array("ON","OFF") as a VT_ARRAY|VT_VARIANT of BSTRs.
+      SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, 0, 2);
+      REQUIRE(psa != nullptr);
+      {
+         LONG idx = 0;
+         CComVariant on(L"ON");
+         SafeArrayPutElement(psa, &idx, &on);
+         idx = 1;
+         CComVariant off(L"OFF");
+         SafeArrayPutElement(psa, &idx, &off);
+      }
+      VARIANT values;
+      VariantInit(&values);
+      V_VT(&values) = VT_ARRAY | VT_VARIANT;
+      V_ARRAY(&values) = psa;
+
+      BSTR name = SysAllocString(L"Ambience");
+
+      // Unset: the script receives the declared default (2 = OFF).
+      float v = -1.f;
+      REQUIRE(table->get_Option(name, 1.f, 2.f, 1.f, 2.f, 0, values, &v) == S_OK);
+      CHECK(v == 2.f);
+
+      // ON round-trips through the ini: set ON, save, reload (as on relaunch), re-seed the
+      // live value as RegisterOption does, read back. Proves the key persists and decodes
+      // to the declared ON value.
+      const auto id = table->GetOptions().front().id;
+      const std::filesystem::path iniPath = GetTestTmpDir() / "pintable-toggle-roundtrip.ini";
+      std::filesystem::remove(iniPath);
+
+      REQUIRE(table->put_Option(name, 1.f, 2.f, 1.f, 2.f, 0, values, 1.f) == S_OK);
+      table->GetSettings().SetIniPath(iniPath);
+      table->GetSettings().Save();
+      REQUIRE(FileExists(iniPath)); // the override was written, not stripped
+      table->GetSettings().Load(false); // relaunch: reload from the ini we just wrote
+      table->SetOptionLiveValue(id, table->GetSettings().GetBool(id) ? 1.f : 0.f);
+      v = -1.f;
+      REQUIRE(table->get_Option(name, 1.f, 2.f, 1.f, 2.f, 0, values, &v) == S_OK);
+      CHECK(v == 1.f); // ON
+      // The stored logical value drives the UI checkbox (checked = value != 0), so ON must
+      // store true for the checkbox and the script value to agree.
+      CHECK(table->GetSettings().GetBool(id));
+
+      // OFF round-trips the same way.
+      REQUIRE(table->put_Option(name, 1.f, 2.f, 1.f, 2.f, 0, values, 2.f) == S_OK);
+      table->GetSettings().Save();
+      table->GetSettings().Load(false);
+      table->SetOptionLiveValue(id, table->GetSettings().GetBool(id) ? 1.f : 0.f);
+      v = -1.f;
+      REQUIRE(table->get_Option(name, 1.f, 2.f, 1.f, 2.f, 0, values, &v) == S_OK);
+      CHECK(v == 2.f); // OFF
+      CHECK_FALSE(table->GetSettings().GetBool(id)); // checkbox unchecked, agrees with OFF
+
+      std::filesystem::remove(iniPath);
+      SysFreeString(name);
+      VariantClear(&values);
+      table->Release();
+   }
+
    SUBCASE("collections are owned by the table")
    {
       PinTable* const table = CreateTestTable();
