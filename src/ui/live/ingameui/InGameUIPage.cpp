@@ -338,11 +338,13 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       case VPX::Properties::PropertyDef::Type::Enum:
          if (isInitialPress)
          {
-            const int nValues = static_cast<int>(dynamic_cast<VPX::Properties::EnumPropertyDef*>(item->m_property.get())->m_values.size());
+            const auto prop = dynamic_cast<VPX::Properties::EnumPropertyDef*>(item->m_property.get());
+            const int nValues = static_cast<int>(prop->m_values.size());
+            const int index = std::clamp(item->GetIntValue() - prop->m_min, 0, nValues - 1); // Clamped, as a stored value may be out of range
             if (direction < 0.f)
-               item->SetValue((item->GetIntValue() + nValues - 1) % nValues);
+               item->SetValue(prop->m_min + (index + nValues - 1) % nValues);
             else
-               item->SetValue((item->GetIntValue() + 1) % nValues);
+               item->SetValue(prop->m_min + (index + 1) % nValues);
          }
          break;
 
