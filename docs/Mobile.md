@@ -2,7 +2,7 @@
 
 Visual Pinball is a free, open source pinball simulator. The same player that runs on desktop computers also runs on your phone, tablet or VR headset, so you can play the hundreds of tables the community has built.
 
-[![Download on the App Store](https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1700524800)](https://apps.apple.com/us/app/visual-pinball/id6547859926?itscg=30200&itsct=apps_box_badge&mttnsubad=6547859926)
+[![Download on the App Store](https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1700524800)](https://apps.apple.com/us/app/visual-pinball/id6547859926?itscg=30200&itsct=apps_box_badge&mttnsubad=6547859926) [![Get it on Google Play](img/mobile/google-play-badge.svg)](https://play.google.com/store/apps/details?id=org.vpinball.vpinball_bgfx)
 
 ## Contents
 
@@ -39,7 +39,7 @@ The app comes with an example table so you can try it right away.
 
 **iPhone and iPad:** install *Visual Pinball* from the [App Store](https://apps.apple.com/us/app/visual-pinball/id6547859926). Needs iOS 26 or later.
 
-**Android:** install *Visual Pinball* from Google Play, or install an APK. Needs a 64-bit device running Android 13 or later. Google Play may warn you when installing an APK from another source.
+**Android:** install *Visual Pinball* from [Google Play](https://play.google.com/store/apps/details?id=org.vpinball.vpinball_bgfx), or install an APK. Needs a 64-bit device running Android 13 or later. Google Play may warn you when installing an APK from another source.
 
 **Meta Quest:** the Quest version is installed by sideloading. See [Meta Quest](#meta-quest) below.
 
