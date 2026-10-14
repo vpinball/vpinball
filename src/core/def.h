@@ -392,7 +392,7 @@ public:
 };
 
 #ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
+#define M_PI 3.14159265358979323846 // Same as the Windows SDK's (=full double precision)
 #endif
 
 #ifndef M_PIf

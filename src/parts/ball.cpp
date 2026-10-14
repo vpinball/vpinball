@@ -446,7 +446,7 @@ void Ball::Render(const unsigned int renderMask)
    // may be modified while the update command is executed.
    // Note that this code must be kept in sync with the ball motion blur code
    ShaderState *ss = m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
-   AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it and keep a reference on the renderdevice
+   AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it until the end of frame command below releases it
    m_renderer->m_renderDevice->AddBeginOfFrameCmd(
       [this, rotScale = rot * scale, ss, rd = m_renderer->m_renderDevice, scheduleTimestamp = usec()]()
       {
@@ -465,6 +465,11 @@ void Ball::Render(const unsigned int renderMask)
             posl.z -= m_hitBall.m_d.m_radius;
          const Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(ShaderUniform::orientation, &m3D_fulll.m[0][0]);
+      });
+   // Release from an end of frame command, as these also run when the frame is discarded (begin of frame commands are then dropped)
+   m_renderer->m_renderDevice->AddEndOfFrameCmd(
+      [this]()
+      {
          // Release on main thread as Ball methods are not multithreaded
          g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
