@@ -722,8 +722,8 @@ private:
 // base/ns/rom/rom.cromc -- then directly -- base/rom/rom.cromc -- so legacy
 // layouts keep working. pinmame/altcolor is a legacy base only defined for
 // pinmame controllers, so it is searched for them alone, directly (the
-// pinmame folder already carries the namespace). Returns the directory under
-// which rom/ sits.
+// pinmame folder already carries the namespace). Returns the rom directory
+// with its casing as found on disk.
 static std::filesystem::path GetColorization(const std::string_view& gameNs, const std::string_view& gameId)
 {
    const std::filesystem::path cromc = PluginStrings::PathFromUTF8(std::format("{}{}", gameId, ".cROMc"));
@@ -752,17 +752,21 @@ static std::filesystem::path GetColorization(const std::string_view& gameNs, con
       for (const std::filesystem::path& base : bases)
       {
          if (auto path = find_case_insensitive_file_path(base / gameIdPath / cromc); !path.empty())
-            return path.parent_path().parent_path();
+            return path.parent_path();
          else if (path = find_case_insensitive_file_path(base / gameIdPath / crz); !path.empty())
-            return path.parent_path().parent_path();
+            return path.parent_path();
       }
    }
 
    // Priority 3: global setting path
    if (std::filesystem::path serumPath = PluginStrings::PathFromUTF8OrNative(serumPathProp_Get()); !serumPath.empty())
       for (const std::filesystem::path& base : { serumPath / gameNsPath, serumPath })
-         if (!find_case_insensitive_file_path(base / gameIdPath / cromc).empty() || !find_case_insensitive_file_path(base / gameIdPath / crz).empty())
-            return base;
+      {
+         if (auto path = find_case_insensitive_file_path(base / gameIdPath / cromc); !path.empty())
+            return path.parent_path();
+         else if (path = find_case_insensitive_file_path(base / gameIdPath / crz); !path.empty())
+            return path.parent_path();
+      }
 
    return std::filesystem::path();
 }
@@ -803,8 +807,8 @@ static void OnControllerChanged()
          }
          const ControllerDef& selectedController = items.front();
          const std::string_view currentGameId = PinballPlugin::Controller::CtrlGetGameKey(selectedController.gameId);
-         const std::filesystem::path serumPath = GetColorization(PinballPlugin::Controller::CtrlGetGameNamespace(selectedController.gameId), currentGameId);
-         LOGI(std::format("Loading from '{}' for '{}'", PluginStrings::PathToUTF8(serumPath), selectedController.gameId));
+         const std::filesystem::path romPath = GetColorization(PinballPlugin::Controller::CtrlGetGameNamespace(selectedController.gameId), currentGameId);
+         LOGI(std::format("Loading from '{}' for '{}'", PluginStrings::PathToUTF8(romPath), selectedController.gameId));
 
          // Claim the game before loading it, not after.
          //
@@ -832,7 +836,7 @@ static void OnControllerChanged()
          dmdEventSrcGameId = selectedController.gameId;
          dmdEventSrc->SetItem({ .covered = { selectedController.endpointId, dmdEventSrcGameId.c_str() }, .triggerEventName = "OnDmdTrigger:1" });
 
-         colorizer = std::make_unique<SerumColorizer>(serumPath, currentGameId, selectedController.endpointId);
+         colorizer = std::make_unique<SerumColorizer>(romPath.parent_path(), PluginStrings::PathToUTF8(romPath.filename()), selectedController.endpointId);
 
          if (colorizer->ProvidesDmdTriggers())
             LOGI(std::format("Providing {} DMD trigger(s) for '{}'", colorizer->TriggerCount(), dmdEventSrcGameId));
