@@ -129,18 +129,22 @@ static void SetupAltSound()
    {
       std::filesystem::path altsoundFolder = PluginStrings::PathFromUTF8OrNative(altsoundFolderProp_Get());
       if (!altsoundFolder.empty())
+      {
          basePath = altsoundFolder.parent_path();
+         altsoundGamePath = find_case_insensitive_file_path(altsoundFolder / PluginStrings::PathFromUTF8(gameId));
+      }
    }
 
    if (basePath.empty())
       return;
 
-   // The library appends 'altsound/<rom>' to the base as is: on case sensitive file systems, these folders need this exact case
-   const std::filesystem::path libraryGamePath = basePath / "altsound"sv / PluginStrings::PathFromUTF8(gameId);
+   // The library appends 'altsound/<rom>' to the base as is: pass the rom folder name as found on disk, the 'altsound' folder still needs this exact case
+   const string romName = altsoundGamePath.empty() ? gameId : PluginStrings::PathToUTF8(altsoundGamePath.filename());
+   const std::filesystem::path libraryGamePath = basePath / "altsound"sv / PluginStrings::PathFromUTF8(romName);
    if (std::error_code ec; !std::filesystem::exists(libraryGamePath, ec))
    {
       if (!altsoundGamePath.empty())
-         LOGW(std::format("AltSound folder {} is not used: it must be named 'altsound/{}', with this case", PluginStrings::PathToUTF8(altsoundGamePath), gameId));
+         LOGW(std::format("AltSound folder {} is not used: its parent folder must be named 'altsound', with this case", PluginStrings::PathToUTF8(altsoundGamePath)));
       return;
    }
    if (altsoundGamePath.empty())
@@ -158,7 +162,7 @@ static void SetupAltSound()
 
    LOGI(std::format("Initializing AltSound for game: {}, basePath: {}", gameId, PluginStrings::PathToUTF8(basePath)));
 
-   if (!AltSoundInit(PluginStrings::PathToNative(basePath), gameId, 44100, 2, BUFFER_SIZE_FRAMES))
+   if (!AltSoundInit(PluginStrings::PathToNative(basePath), romName, 44100, 2, BUFFER_SIZE_FRAMES))
    {
       LOGE("Failed to initialize AltSound for game: " + gameId);
       return;
