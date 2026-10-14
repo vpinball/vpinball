@@ -48,7 +48,7 @@ public:
    STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
    STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
    STDMETHOD(AddObject)(BSTR Name, IDispatch *pdisp);
-#ifdef _WIN64
+#if defined(_WIN64) || defined(__STANDALONE__) // The standalone interface is generated from the 64 bit IDL
    STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ SIZE_T *pVal);
 #else
    STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ LONG *pVal);

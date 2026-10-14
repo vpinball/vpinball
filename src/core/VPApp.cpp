@@ -25,7 +25,10 @@
 #include <locale>
 #include <codecvt>
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(VPX_HAS_WIN32_SDK)
+#ifndef __ANDROID__
+#define SDL_MAIN_NOIMPL
+#endif
 #include <SDL3/SDL_main.h>
 #endif
 
@@ -124,6 +127,11 @@ CComModule VPApp::m_module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
+#elif defined(_MSC_VER)
+// Microsoft's ATL objects lock the module when constructed, so one must exist. A bare one: CComModule also links ATL's
+// registry parser, which mixes libwinevbs's CoTaskMemAlloc with the system CoTaskMemFree/Realloc
+class VPXAtlModule final : public ATL::CAtlModuleT<VPXAtlModule> { };
+static VPXAtlModule s_atlModule;
 #endif
 
 
@@ -146,7 +154,16 @@ VPApp::VPApp()
 
    IsOnWine(); // init static variable in there
 
-   #ifdef _MSC_VER
+   #ifdef VPX_HAS_WIN32_SDK
+      // Window class of all SDL windows, which some tools look for (e.g. VPinMAME looks for the 'VPPlayer' window). SDL keeps
+      // the first registration, and registers its own 'SDL_app' class when its video subsystem starts, so do it before that
+      #ifndef __STANDALONE__ // The standalone build has no resources
+         SDL_SetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON, std::to_string(IDI_TABLE).c_str());
+      #endif
+      SDL_RegisterApp("VPPlayer", 0, GetModuleHandle(nullptr));
+   #endif
+
+   #if defined(_MSC_VER) && !defined(__STANDALONE__)
       HINSTANCE instance = GetInstanceHandle();
 
       // disable auto-rotate on tablets
@@ -231,6 +248,9 @@ VPApp::VPApp()
 
 VPApp::~VPApp()
 {
+   #ifdef VPX_HAS_WIN32_SDK
+      SDL_UnregisterApp();
+   #endif
    #ifndef __STANDALONE__
       m_module.RevokeClassObjects();
       m_module.Term();

@@ -26,8 +26,14 @@
 #define COMPRESS_MESHES // uses miniz for compressing the meshes
 
 // Intent named capabilities derived from the target selection (win32ui+com or standalone builds)
-#ifndef __STANDALONE__
+#if !defined(__STANDALONE__) || defined(_MSC_VER)
+// Windows SDK and its libraries (Win32 editor and MSVC standalone builds; the MinGW standalone build uses wine's headers instead)
+#define VPX_HAS_WIN32_SDK
 #define CRASH_HANDLER
+// CryptoAPI, table hashing no longer needs it (utils/TableHash.h only cross checks against it), but the legacy VP8/VP9 script decryption still does
+#define VPX_HAS_CRYPTOAPI
+#endif
+#ifndef __STANDALONE__
 // The win32xx based table editor (src/ui/win): its window, the script editor, the
 // debugger and layer panes, and the undo stack that backs them. Only this build can
 // edit a table, so PinTable::m_tableEditor is null everywhere else
@@ -39,8 +45,6 @@
 #define VPX_HAS_SCRIPT_DEBUGGER
 // IObjectSafety / IInternetHostSecurityManager: vetting the ActiveX controls a table script instantiates. Windows Active Script only
 #define VPX_HAS_ACTIVEX_SECURITY
-// CryptoAPI, table hashing no longer needs it (utils/TableHash.h only cross checks against it), but the legacy VP8/VP9 script decryption still does
-#define VPX_HAS_CRYPTOAPI
 #else
 // No registered typelib, so scriptable classes instead carry a hand written IDispatch implementation generated from the IDL (see tools/idl/)
 #define VPX_MANUAL_SCRIPT_DISPATCH
@@ -112,6 +116,7 @@
 
 // VR Support
 
+// TODO the MSVC standalone build could support XR too (its third-party package has the OpenXR loader), untested so far
 #if !defined(__STANDALONE__) && defined(ENABLE_BGFX)
 #define ENABLE_XR
 #endif

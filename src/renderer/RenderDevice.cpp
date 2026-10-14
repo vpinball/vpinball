@@ -33,7 +33,7 @@
 #include "renderer/SearchTex.h"
 
 #if defined(ENABLE_BGFX)
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(_MSC_VER) // wine's headers (non MSVC standalone builds) define _WIN64 on any 64 bit target
 #pragma push_macro("_WIN64")
 #undef _WIN64
 #endif
@@ -41,7 +41,7 @@
 #include <bx/string.h>
 #include <bgfx/bgfx.h>
 #include <bimg/bimg.h>
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(_MSC_VER)
 #pragma pop_macro("_WIN64")
 #endif
 
@@ -531,7 +531,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    // Unlock requesting thread and start render loop
    rd->m_rendererInitialized.release();
 
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(_WIN32) // bgfx/GLES lockup workaround for Android, not needed on Windows
    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #endif
 
@@ -2296,7 +2296,7 @@ void RenderDevice::NextView()
 {
    if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 1)
    {
-      PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
+      PLOGE << "BGFX view limit reached: flushing the views encoded so far (without presenting) to continue the frame. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
       // Flush the views encoded so far, then keep on recording the remaining passes with fresh view ids.
       // Do not re-enter SubmitRenderFrame/RenderFrame::Execute here as we may be called from inside it.
       bgfx::frame(BGFX_FRAME_FLUSH);

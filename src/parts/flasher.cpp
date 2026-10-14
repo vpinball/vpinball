@@ -725,7 +725,7 @@ void Flasher::ResetVideoCap()
 // if PASSED a blank title then we treat this as STOP capture and free resources.
 STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
     if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
 
     // if PASS blank title then we treat as STOP capture and free resources.  Should be called on table1_exit

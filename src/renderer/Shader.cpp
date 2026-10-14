@@ -14,7 +14,7 @@
 #include <plog/Initializers/RollingFileInitializer.h>
 
 #if defined(ENABLE_BGFX)
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(_MSC_VER) // wine's headers (non MSVC standalone builds) define _WIN64 on any 64 bit target
 #pragma push_macro("_WIN64")
 #undef _WIN64
 #endif
@@ -22,7 +22,7 @@
 #include <bx/file.h>
 #include <bx/readerwriter.h>
 #include <bgfx/bgfx.h>
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(_MSC_VER)
 #pragma pop_macro("_WIN64")
 #endif
 

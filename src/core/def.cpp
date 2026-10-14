@@ -518,7 +518,7 @@ void SetThreadName(const std::string& name)
 // This exists such that we only check if we're on wine once, and assign the result of this function to a static const var
 static bool IsOnWineInternal()
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    // See https://www.winehq.org/pipermail/wine-devel/2008-September/069387.html
    const HMODULE ntdllHandle = GetModuleHandleW(L"ntdll.dll");
    assert(ntdllHandle != nullptr && "Could not GetModuleHandleW(L\"ntdll.dll\")");
@@ -626,7 +626,7 @@ void write_file(const std::filesystem::path& filename, const vector<uint8_t>& da
 
 bool IsNetworkPath(const std::filesystem::path& path)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    // Windows: a UNC path (\\server\share or //server/share) is always remote. Otherwise ask the
    // drive type of the path's root.
    const std::wstring wpath = path.native();

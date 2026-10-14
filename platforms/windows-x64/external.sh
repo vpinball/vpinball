@@ -28,6 +28,7 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  LIBMYSOFA_SHA: ${LIBMYSOFA_SHA}"
 echo "  LIBSPATIALAUDIO_SHA: ${LIBSPATIALAUDIO_SHA}"
 echo "  ZLIB_SHA: ${ZLIB_SHA}"
@@ -417,6 +418,43 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
+# build libwinevbs (VBScript engine of the standalone build), with MinGW like ffmpeg as Wine's code does not build with MSVC (yet).
+# Only the DLL and header are used, vpx-standalone.vcxproj makes the import library (see make/winevbs64-msvc.def)
+#
+
+LIBWINEVBS_EXPECTED_SHA="${LIBWINEVBS_SHA}-001"
+LIBWINEVBS_FOUND_SHA="$([ -f libwinevbs/cache.txt ] && cat libwinevbs/cache.txt || echo "")"
+
+if [ "${LIBWINEVBS_EXPECTED_SHA}" != "${LIBWINEVBS_FOUND_SHA}" ]; then
+   echo "Building libwinevbs. Expected: ${LIBWINEVBS_EXPECTED_SHA}, Found: ${LIBWINEVBS_FOUND_SHA}"
+
+   rm -rf libwinevbs
+   mkdir libwinevbs
+   cd libwinevbs
+
+   curl -sL https://github.com/vpinball/libwinevbs/archive/${LIBWINEVBS_SHA}.tar.gz -o libwinevbs-${LIBWINEVBS_SHA}.tar.gz
+   tar xzf libwinevbs-${LIBWINEVBS_SHA}.tar.gz
+   mv libwinevbs-${LIBWINEVBS_SHA} libwinevbs
+   cd libwinevbs
+   CURRENT_DIR="$(pwd)"
+   "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
+      cd \"${CURRENT_DIR}\" &&
+      cmake \
+         -DBUILD_SHARED=ON \
+         -DPLATFORM=win-mingw \
+         -DARCH=x64 \
+         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+         -B build &&
+      cmake --build build -- -j$(nproc)
+   "
+   cd ..
+
+   echo "$LIBWINEVBS_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build zlib
 #
 
@@ -611,6 +649,10 @@ for LIB in avcodec avformat avutil swresample swscale; do
    mkdir -p ../../../third-party/include/${DIR}
    cp ffmpeg/ffmpeg/${DIR}/*.h ../../../third-party/include/${DIR}
 done
+
+cp libwinevbs/libwinevbs/build/winevbs64.dll ../../../third-party/runtime-libs/windows-x64
+mkdir -p ../../../third-party/include/libwinevbs
+cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwinevbs/
 
 cp zlib/zlib/build/${BUILD_TYPE}/zlibstatic.lib ../../../third-party/build-libs/windows-x64
 

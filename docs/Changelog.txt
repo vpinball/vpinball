@@ -65,6 +65,8 @@ FEATURES:
 - move the plumb simulation to VPX's physics engine with an improved physics model. NudgePlugIn_xxx.vbs files that were used depending on each user setup are not needed anymore and were removed.
   Emulation of the plumb must be enabled in the settings, and adjusted to user setup. The LiveUI offers a dedicated UI with live feedback to ease this process.
   When plumb emulation is enabled, in the lower left corner, a little overlay with the live plumb position will fade in/out when the plumb is approaching the Tilt threshold.
+  Note that the defaults were also changed (threshold 1 -> 4 degrees, now adjustable up to 15 degrees, damping 100% -> 20%), so the plumb tilts less easily but swings longer.
+  (Setups that kept the previous defaults will behave differently, setups with explicitly adjusted values are not affected)
 
 - add support to visual screen nudge to sensor based nudge (strength/disabling is available in the 'Nudge/Tilt Settings' page).
 
@@ -224,6 +226,17 @@ FIXES:
 - fix different maximum tessellation/detail levels for ramps & rubbers, dependent on static vs non-static rendering
 
 - improve 'resting' ball detection and better filtering for physics hit events
+
+- physics behavior changes that may make existing tables play slightly differently, but are more physically correct:
+  . ball-ball contacts are now handled as resting contacts (like ball vs. playfield/walls), and the ball-ball contact normal is now evaluated at the actual hit time.
+    Balls resting against each other (e.g. lined up in a trough or lock, or stacked on a slope) are now stable, instead of jittering/creeping.
+  . contact forces now take the ball mass into account, so balls with a non-default mass rest/roll differently on surfaces (no change for the default mass of 1).
+  . walls (surfaces) whose points are defined in reversed (clockwise) order used to collide only from the inside (balls passed through them from the outside and then got trapped).
+    They now collide from both sides, so they are solid from the outside like walls with the regular point order.
+  . nudge: the cabinet model was recalibrated against real cabinet recordings (lower oscillation frequencies, no more 'magic' displacement factors), and the peak acceleration of
+    keyboard & gamepad cabinet-model nudges was raised from 0.5g to 0.7g (1.4x). Nudges therefore move the ball more and tilt the plumb more easily than before (Adjust the nudge strength settings if needed).
+  . plunger: the speed of a plunger speed sensor (e.g. Pinscape) is now correctly converted to the plunger's travel range (from rest position to fully retracted),
+    so launches with a speed sensor are weaker than before (about 17% with the usual rest position of 1/6 of the range).
 
 - improve flipper latency reporting in the performance UI
 

@@ -6,7 +6,7 @@
 #include "core/vpversion.h"
 #include "parts/Collection.h"
 #include "parts/pintable.h"
-#ifndef __STANDALONE__
+#if !defined(__STANDALONE__) || defined(_MSC_VER) // MinGW standalone imports the GUIDs from libwinevbs
 #include <initguid.h>
 #endif
 
@@ -406,6 +406,8 @@ STDMETHODIMP ScriptInterpreter::GetWindow(HWND *phwnd)
    // We are supposed to return the window to be used as a parent for modal dialog. Why not just nullptr ?
 #ifndef __STANDALONE__
    *phwnd = GetDesktopWindow();
+#else
+   *phwnd = nullptr;
 #endif
    return S_OK;
 }

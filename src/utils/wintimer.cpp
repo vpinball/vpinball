@@ -29,14 +29,14 @@ static HMODULE hNtDll = nullptr;
 static ULONG win_timer_old_period = -1;
 #endif
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
 static TIMECAPS win_timer_caps;
 static MMRESULT win_timer_result = TIMERR_NOCANDO;
 #endif
 
 void set_lowest_possible_win_timer_resolution()
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
 	// First crank up the multimedia timer resolution to its max
 	// this gives the system much finer timeslices (usually 1-2ms)
 	win_timer_result = timeGetDevCaps(&win_timer_caps, sizeof(win_timer_caps));
@@ -80,7 +80,7 @@ void restore_win_timer_resolution()
 	}
 #endif
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
 	if (win_timer_result == TIMERR_NOERROR)
 	{
 		timeEndPeriod(win_timer_caps.wPeriodMin);

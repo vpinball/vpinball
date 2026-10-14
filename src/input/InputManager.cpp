@@ -1013,7 +1013,7 @@ bool InputManager::IsPressed(int actionId) const
 
 int InputManager::GetWindowVirtualKeyForAction(unsigned int actionId) const
 {
-   #ifndef __STANDALONE__
+   #ifdef VPX_HAS_WIN32_SDK
       // Very basic and inefficient way of searching for a keyboard mapping, but this is only used once to detect table mirroring
       assert(0 <= (int)actionId && actionId < static_cast<unsigned int>(m_inputActions.size()));
       vector<ButtonMapping> mapping;

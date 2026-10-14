@@ -2,6 +2,9 @@
 #include "core/ScriptGlobalTable.h"
 #include "olectl.h"
 #include <libwinevbs/libwinevbs.h>
+#ifdef _MSC_VER
+#pragma warning(disable : 4996) // Generated code uses plain/POSIX CRT string functions (a _CRT_* define would come after the precompiled header)
+#endif
 
 #include "parts/ball.h"
 #include "parts/bumper.h"

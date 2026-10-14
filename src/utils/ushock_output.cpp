@@ -38,7 +38,7 @@
 // Win32 HID enumeration and access code, and there are gazillions
 // of rote examples on stackoverflow that do basically the same
 // things]
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
 extern "C" {
 #include "setupapi.h"
 #include "hidsdi.h"
@@ -47,7 +47,7 @@ extern "C" {
 
 static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    GUID hidGUID;
    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
    DWORD requiredSize;
@@ -124,7 +124,7 @@ static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 
 static HANDLE hid_connect(uint32_t vendorID, uint32_t productID, uint32_t * const versionNumber = nullptr)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    DWORD index = 0;
    HIDD_ATTRIBUTES deviceAttributes;
 
@@ -159,7 +159,7 @@ static HANDLE hid_connect(uint32_t vendorID, uint32_t productID, uint32_t * cons
 }
 
 static HANDLE hnd = hid_connect(0x04b4, 0x6470);
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
 static OVERLAPPED ol;
 static PHIDP_PREPARSED_DATA HidParsedData;
 static HIDP_CAPS Capabilities;
@@ -167,7 +167,7 @@ static HIDP_CAPS Capabilities;
 
 void ushock_output_init()
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    // 0x4b4 == Ultracade, 0x6470 == Ushock
 
    if (hnd != INVALID_HANDLE_VALUE)
@@ -270,7 +270,7 @@ void ushock_output_knock(const int count)
 
 void ushock_output_update(const uint32_t cur_time_msec)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    uint8_t mask = (uint8_t)(sMask & 0xff);
 
    if (sKnockStamp)
@@ -344,7 +344,7 @@ void ushock_output_shutdown()
 {
    if (hnd != INVALID_HANDLE_VALUE)
    {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
       CloseHandle(hnd);
 #endif
       hnd = INVALID_HANDLE_VALUE;

@@ -115,6 +115,9 @@ public class IDLParserToCpp {
 		outputStream.write("#include \"core/ScriptGlobalTable.h\"\n".getBytes());
 		outputStream.write("#include \"olectl.h\"\n".getBytes());
 		outputStream.write("#include <libwinevbs/libwinevbs.h>\n".getBytes());
+		outputStream.write("#ifdef _MSC_VER\n".getBytes());
+		outputStream.write("#pragma warning(disable : 4996) // Generated code uses plain/POSIX CRT string functions (a _CRT_* define would come after the precompiled header)\n".getBytes());
+		outputStream.write("#endif\n".getBytes());
 
 		if (includes != null && includes.size() > 0) {
 			outputStream.write("\n".getBytes());

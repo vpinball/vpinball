@@ -23,9 +23,11 @@
 #include <filesystem>
 #endif
 
-#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(__MINGW32__) || (defined(__APPLE__) && defined(TARGET_OS_OSX) && TARGET_OS_OSX))
+#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(_WIN32) || (defined(__APPLE__) && defined(TARGET_OS_OSX) && TARGET_OS_OSX))
 #include <csignal>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 void OnSignalHandler(int signum)
 {
@@ -252,11 +254,11 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    return retval;
 }
 
-#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(__MINGW32__))
+#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(_WIN32))
 extern int g_argc;
 extern const char **g_argv;
 int main(int argc, const char** argv) {
-#ifdef __MINGW32__
+#ifdef _WIN32
    signal(SIGINT, OnSignalHandler);
 #else
    struct sigaction sigIntHandler;

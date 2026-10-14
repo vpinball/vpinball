@@ -15,7 +15,7 @@
 
 #include <atlsafe.h>
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
 #include "serial.h"
 static serial Serial;
 #endif
@@ -448,7 +448,7 @@ STDMETHODIMP ScriptGlobalTable::put_ShowCursor(VARIANT_BOOL enable)
    return S_OK;
 }
 
-#ifdef _WIN64
+#if defined(_WIN64) || defined(__STANDALONE__)
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(SIZE_T *pVal)
 #else
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(LONG *pVal)
@@ -1054,7 +1054,7 @@ STDMETHODIMP ScriptGlobalTable::get_VersionRevision(int *pVal)
 
 STDMETHODIMP ScriptGlobalTable::OpenSerial(BSTR device)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    return Serial.open(MakeString(device)) ? S_OK : E_FAIL;
 #else
    return E_FAIL;
@@ -1063,7 +1063,7 @@ STDMETHODIMP ScriptGlobalTable::OpenSerial(BSTR device)
 
 STDMETHODIMP ScriptGlobalTable::CloseSerial()
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    Serial.close();
 #endif
    return S_OK;
@@ -1071,7 +1071,7 @@ STDMETHODIMP ScriptGlobalTable::CloseSerial()
 
 STDMETHODIMP ScriptGlobalTable::FlushSerial()
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    Serial.flush();
 #endif
    return S_OK;
@@ -1079,7 +1079,7 @@ STDMETHODIMP ScriptGlobalTable::FlushSerial()
 
 STDMETHODIMP ScriptGlobalTable::SetupSerial(int baud, int bits, int parity, int stopbit, VARIANT_BOOL rts, VARIANT_BOOL dtr)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    Serial.setup(serial::get_baud(baud),serial::get_bits(bits),parity == 0 ? SERIAL_PARITY_NONE : (parity == 1 ? SERIAL_PARITY_EVEN : SERIAL_PARITY_ODD),serial::get_stopbit(stopbit));
    Serial.set_rts(VBTOb(rts));
    Serial.set_dtr(VBTOb(dtr));
@@ -1090,7 +1090,7 @@ STDMETHODIMP ScriptGlobalTable::SetupSerial(int baud, int bits, int parity, int 
 
 STDMETHODIMP ScriptGlobalTable::ReadSerial(int size, VARIANT *pVal)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, size);
 
    VARIANT *pData;
@@ -1113,7 +1113,7 @@ STDMETHODIMP ScriptGlobalTable::ReadSerial(int size, VARIANT *pVal)
 
 STDMETHODIMP ScriptGlobalTable::WriteSerial(VARIANT pVal)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    SAFEARRAY *psa = pVal.parray;
    SAFEARRAYBOUND *psafearraybound = &((psa->rgsabound)[0]);
    const LONG size = (LONG)psafearraybound->cElements;
@@ -1136,7 +1136,7 @@ STDMETHODIMP ScriptGlobalTable::WriteSerial(VARIANT pVal)
 
 STDMETHODIMP ScriptGlobalTable::GetSerialDevices(VARIANT *pVal)
 {
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    static vector<string> availablePorts;
    serial::list_ports(availablePorts);
 

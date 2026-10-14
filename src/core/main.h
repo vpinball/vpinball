@@ -34,7 +34,7 @@
  #include "minid3d9.h"
 #endif
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    #include <mmsystem.h>
 #endif
 
@@ -54,7 +54,7 @@
 
 #include <oleauto.h>
 
-#ifndef __STANDALONE__
+#ifdef VPX_HAS_WIN32_SDK
    #include <wincrypt.h>
 #endif
 
@@ -95,13 +95,14 @@ using std::wstring;
    #endif
 
 #else
-   #define fopen_s(pFile, filename, mode) (((*(pFile)) = fopen((filename), (mode))) == nullptr)
-   #define fprintf_s fprintf
-   #define fscanf_s fscanf
+   #ifndef _MSC_VER // MSVC provides the secure CRT functions (and deprecates the plain ones)
+      #define fopen_s(pFile, filename, mode) (((*(pFile)) = fopen((filename), (mode))) == nullptr)
+      #define fprintf_s fprintf
+      #define fscanf_s fscanf
+      #define sscanf_s sscanf
+   #endif
 
-   #define sscanf_s sscanf
-
-   #ifndef __MINGW32__
+   #ifndef _WIN32
       #define localtime_s(x, y) localtime_r(y, x)
       #define gmtime_s(x, y) gmtime_r(y, x)
       // asctime_r needs at least 26 bytes and takes no size, so that argument is dropped
@@ -113,6 +114,7 @@ using std::wstring;
 
    #define _ASSERTE(expr) ((void)0)
 
+   #ifndef VPX_HAS_WIN32_SDK // Otherwise from wincrypt.h and mmsystem.h
    typedef ULONG_PTR HCRYPTKEY;
 
    #pragma pack(push, 1)
@@ -126,6 +128,7 @@ using std::wstring;
       WORD cbSize;
    } WAVEFORMATEX;
    #pragma pack(pop)
+   #endif
 
    #include <atldef.h>
    #include <atlcom.h>

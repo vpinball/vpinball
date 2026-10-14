@@ -62,9 +62,9 @@ static void NormalizeNormals()
 }
 #endif
 
-// fscanf_s takes the sizes of string buffers, but standalone builds map it to fscanf (see main.h) which does not:
+// fscanf_s takes the sizes of string buffers, but non MSVC standalone builds map it to fscanf (see main.h) which does not:
 // the widths in the formats bound the reads there
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(_MSC_VER)
 #define SCANF_BUFFER_SIZE(buffer)
 #else
 #define SCANF_BUFFER_SIZE(buffer) , static_cast<unsigned int>(std::size(buffer))
