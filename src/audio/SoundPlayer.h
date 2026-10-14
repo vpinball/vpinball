@@ -5,6 +5,7 @@
 #include "AudioPlayer.h"
 #include "ThreadPool.h"
 
+#include <atomic>
 #include <chrono>
 
 struct ma_decoder;
@@ -71,6 +72,9 @@ private:
    bool m_hasLastDistance = false;
    std::chrono::steady_clock::time_point m_lastPosTime;
 
+   // Shared with the loop-restart task enqueued by OnSoundEnd on the audio thread, so a task
+   // dispatched around destruction never calls ma_sound_start on an uninitialized/freed sound
+   const std::shared_ptr<std::atomic<bool>> m_alive = std::make_shared<std::atomic<bool>>(true);
    mutable progschj::ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
 
    const string m_callbackId;
