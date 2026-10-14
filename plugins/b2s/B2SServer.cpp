@@ -436,13 +436,13 @@ void MSGPIAPI B2SServer::GetScoreDigit(void* callContext, void* pResult)
 
 void B2SServer::B2SSetPos(int id, int xpos, int ypos)
 {
-   // id is a RomID: moves all bulbs driven by this ROM id (respecting no illumination locks for now)
+   // id is a lamp ROM id (the B2SID of scripted bulbs): moves all bulbs driven by this lamp (respecting no illumination locks for now)
    const std::shared_ptr<B2STable> b2s = AcquireB2STable();
    if (b2s == nullptr)
       return;
    for (const auto* bulbs : { &b2s->m_backglassIlluminations, &b2s->m_dmdIlluminations })
       for (const auto& bulb : *bulbs)
-         if (bulb->m_romId == id)
+         if (bulb->m_romId > 0 && bulb->m_romId == id && bulb->m_romIdType == B2SRomIDType::Lamp)
          {
             bulb->m_locationX = xpos;
             bulb->m_locationY = ypos;
@@ -689,15 +689,15 @@ bool B2SServer::GetBulbState(const B2SBulb& bulb, float& state) const
    const bool locked = !bulb.m_name.empty() && IsIlluminationLocked(bulb.m_name);
    bool scripted = false;
    uint64_t stamp = 0;
+   // A bulb only falls under scripted control once its lamp id has actually been written; before that it keeps
+   // its initial state or follows the ROM lamp channel (B2SID bulbs are bound to it), as the reference does
    if (bulb.m_b2sId >= 0 && !locked)
-   {
-      scripted = true;
       if (const auto it = m_lampStates.find(bulb.m_b2sId); it != m_lampStates.end())
       {
+         scripted = true;
          state = it->second.value;
          stamp = it->second.stamp;
       }
-   }
    if (!bulb.m_name.empty())
       if (const auto it = m_groupStates.find(bulb.m_name); it != m_groupStates.end() && it->second.stamp.load() > stamp)
       {

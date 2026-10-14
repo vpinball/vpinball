@@ -207,9 +207,10 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    , m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
    , m_b2sId(GetIntAttribute(root, ""s, "B2SID"s, -1))
    , m_b2sValue(GetIntAttribute(root, ""s, "B2SValue"s, 0))
-   , m_romId(GetIntAttribute(root, ""s, "RomID"s, -1))
-   , m_romIdType(static_cast<B2SRomIDType>(GetIntAttribute(root, ""s, "RomIDType"s, 0)))
-   , m_romInverted(GetBoolAttribute(root, ""s, "RomInverted"s, false))
+   // A B2SID replaces the ROM binding entirely: it is a lamp ROM id with B2SValue as matching value (reference behaviour)
+   , m_romId(m_b2sId >= 0 ? m_b2sId : GetIntAttribute(root, ""s, "RomID"s, -1))
+   , m_romIdType(m_b2sId >= 0 ? B2SRomIDType::Lamp : static_cast<B2SRomIDType>(GetIntAttribute(root, ""s, "RomIDType"s, 0)))
+   , m_romInverted(m_b2sId >= 0 ? false : GetBoolAttribute(root, ""s, "RomInverted"s, false))
    , m_initialState(GetBoolAttribute(root, ""s, "InitialState"s, false))
    , m_dualMode(static_cast<B2SDualMode>(GetIntAttribute(root, ""s, "DualMode"s, 0)))
    , m_intensity(GetIntAttribute(root, ""s, "Intensity"s, 0))
@@ -995,14 +996,8 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
          for (const string& group : animation.GetLightsInvolved())
             animatedGroups[group] = true;
       for (const auto& bulb : m_backglassIlluminations)
-      {
-         // A B2SID driven bulb matches a Lamp ROM channel, without inversion
-         const int romId = bulb->m_b2sId > 0 ? bulb->m_b2sId : bulb->m_romId;
-         const B2SRomIDType romIdType = bulb->m_b2sId > 0 ? B2SRomIDType::Lamp : bulb->m_romIdType;
-         const bool romInverted = bulb->m_b2sId > 0 ? false : bulb->m_romInverted;
-         bulb->m_bakedIntoBackground
-            = romId != 0 && romId == m_backglassOnImage.m_romId && romIdType == m_backglassOnImage.m_romIdType && !romInverted && animatedGroups.find(bulb->m_name) == animatedGroups.end();
-      }
+         bulb->m_bakedIntoBackground = bulb->m_romId != 0 && bulb->m_romId == m_backglassOnImage.m_romId && bulb->m_romIdType == m_backglassOnImage.m_romIdType && !bulb->m_romInverted
+            && animatedGroups.find(bulb->m_name) == animatedGroups.end();
    }
 }
 
