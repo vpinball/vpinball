@@ -3,8 +3,8 @@
 #pragma once
 
 #ifdef VPX_ENABLE_WIN32_EDITOR
-#include <wxx_stdcontrols.h> // Add CButton, CEdit, CListBox
-#include "ui/win/Debugger.h"
+#include <wxx_stdcontrols.h> // Add CButton, CEdit, CListBox (also pulls in the Win32xx app framework: CWinApp, CDialog, ...)
+#include <wxx_commondlg.h> // Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog
 #endif
 
 #include "audio/AudioPlayer.h"
@@ -351,13 +351,7 @@ private:
    volatile CloseState m_closing = CS_PLAYING;
 
 public:
-   bool m_debugWindowActive = false;
-   bool m_debugMode = false;
-   bool m_showDebugger = false;
-   HWND m_hwndDebugOutput = nullptr;
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   DebuggerDialog m_debuggerDialog;
-#endif
+   bool m_showDebugger = false; // Set to request opening the LiveUI debugger window (consumed by the player loop)
 
    bool m_debugBalls = false;    // Draw balls in the foreground via 'O' key
 

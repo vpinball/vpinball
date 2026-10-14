@@ -71,4 +71,3 @@
 #define IDS_TB_WALL                     104
 #define IDS_UNSECURECONTROL1            172
 #define IDS_UNSECURECONTROL2            173
-#define ID_DEBUGWINDOW                  295

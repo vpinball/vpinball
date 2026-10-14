@@ -29,7 +29,8 @@ Record &operator<<(Record &record, const ImVec2 &pt) { return record << '(' << p
 }
 
 LiveUI::LiveUI(RenderDevice *const rd)
-   : m_ballControl(*this) 
+   : m_ballControl(*this)
+   , m_debuggerUI(*this)
    , m_inGameUI(*this)
    , m_perfUI(g_pplayer)
    , m_editorUI(*this)
@@ -381,6 +382,9 @@ void LiveUI::RenderUI()
 
    // Tweak UI (aligned to playfield view, using custom flipper controls)
    m_inGameUI.Update();
+
+   // Debugger tool window (may be opened along other UIs)
+   m_debuggerUI.Update();
 
    if (!m_player->IsPlaying() && !m_player->m_isLoading && !m_editorUI.IsOpened())
    {

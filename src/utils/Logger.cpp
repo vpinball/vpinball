@@ -21,11 +21,8 @@
 #endif
 
 #include "core/VPApp.h"
-#ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/codeview.h"
-#include "ui/win/PinTableWnd.h"
-#include "ui/win/WinEditor.h"
-#endif
+#include "core/player.h"
+#include "ui/live/LiveUI.h"
 
 
 class DebugAppender final : public plog::IAppender
@@ -38,11 +35,10 @@ public:
 
    void write(const plog::Record &record) PLOG_OVERRIDE
    {
-#ifdef VPX_ENABLE_WIN32_EDITOR // this sink writes to the script editor debug output
-      if ((std::this_thread::get_id() != m_uiThreadId) || (g_pvp == nullptr) || (g_pvp->GetActiveTableEditor() == nullptr))
+      // This sink writes to the debugger window script console
+      if ((std::this_thread::get_id() != m_uiThreadId) || (g_pplayer == nullptr) || (g_pplayer->m_liveUI == nullptr))
          return;
-      g_pvp->GetActiveTableEditor()->m_pcv->AddToDebugOutput(record.getMessage());
-#endif
+      g_pplayer->m_liveUI->m_debuggerUI.AddLog(record.getMessage());
    }
 
 private:

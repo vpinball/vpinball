@@ -52,6 +52,14 @@ void BallControl::Update(const int width, const int height)
    const bool leftFlipperJustPressed = leftFlipperPressed && !m_prevLeftFlipperPressed;
    m_prevLeftFlipperPressed = leftFlipperPressed;
 
+   // Ignore mouse when it is interacting with a UI window (e.g. debugger tool window)
+   if (ImGui::GetIO().WantCaptureMouse)
+   {
+      if (leftFlipperJustPressed)
+         ReleaseDragTarget();
+      return;
+   }
+
    switch (m_mode)
    {
    case ThrowNewBall:
