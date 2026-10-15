@@ -223,7 +223,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (pt)
                   {
                      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-                     pt->m_tableEditor->UpdatePropertyImageList();
+                     m_tableEditor->UpdatePropertyImageList();
                   }
                }
                return TRUE;
@@ -495,7 +495,7 @@ void ImageDialog::Import()
          g_settingsService.GetAppSettings().SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
       pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-      pt->m_tableEditor->UpdatePropertyImageList();
+      m_tableEditor->UpdatePropertyImageList();
       SetFocus();
    }
 }
@@ -725,7 +725,7 @@ void ImageDialog::Reimport()
                      UpdateSizeText();
                   }
                   pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-                  pt->m_tableEditor->UpdatePropertyImageList();
+                  m_tableEditor->UpdatePropertyImageList();
                }
                else
                   MessageBox(PathToString(filePath).c_str(), "FILE NOT FOUND!", MB_OK);
@@ -772,7 +772,7 @@ void ImageDialog::UpdateAll()
                UpdateSizeText();
             }
             pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-            pt->m_tableEditor->UpdatePropertyImageList();
+            m_tableEditor->UpdatePropertyImageList();
          }
          else
             errorOccurred = true;
@@ -839,7 +839,7 @@ void ImageDialog::ReimportFrom()
                   UpdateSizeText();
                }
                pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-               pt->m_tableEditor->UpdatePropertyImageList();
+               m_tableEditor->UpdatePropertyImageList();
                // Display new image
                GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(true);
             }

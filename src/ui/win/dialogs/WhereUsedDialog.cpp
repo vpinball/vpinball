@@ -380,11 +380,10 @@ void WhereUsedDialog::EditObject(HWND hWhereListView)
          IEditable *const pedit = m_tableEditor->m_table->GetElementByName(controlName);
          if (pedit != nullptr)
          {
-            CCO(PinTable) *const pt = m_tableEditor->m_table;
-            if (IWinUIPart *const psel = pt->m_tableEditor->GetUIPart(pedit); psel != nullptr)
+            if (IWinUIPart *const psel = m_tableEditor->GetUIPart(pedit); psel != nullptr)
             {
-               pt->m_tableEditor->AddMultiSel(psel, false, false, false);
-               pt->m_tableEditor->RefreshProperties();
+               m_tableEditor->AddMultiSel(psel, false, false, false);
+               m_tableEditor->RefreshProperties();
             }
          }
       }

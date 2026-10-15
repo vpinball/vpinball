@@ -727,19 +727,20 @@ void PropertyDialog::UpdateTabs(const vector<IWinUIPart *> &pvsel)
 
 void PropertyDialog::StartUndo(IEditable *const part)
 {
-   part->GetPTable()->m_tableEditor->BeginUndo();
-   part->GetPTable()->m_tableEditor->MarkForUndo(part);
+   PinTableWnd *const editor = static_cast<PinTableWnd *>(part->GetPTable()->m_tableEditor);
+   editor->BeginUndo();
+   editor->MarkForUndo(part);
 }
 
 void PropertyDialog::EndUndo(IEditable *const part)
 {
-   part->GetPTable()->m_tableEditor->EndUndo();
+   static_cast<PinTableWnd *>(part->GetPTable()->m_tableEditor)->EndUndo();
    part->GetPTable()->SetDirtyDraw();
 }
 
 void PropertyDialog::UpdateStatusBarInfo(IEditable *const part)
 {
-   if (PinTableWnd *const editor = part->GetPTable()->m_tableEditor; editor != nullptr)
+   if (PinTableWnd *const editor = static_cast<PinTableWnd *>(part->GetPTable()->m_tableEditor); editor != nullptr)
       if (IWinUIPart *const uiPart = editor->GetUIPart(part); uiPart != nullptr)
          uiPart->UpdateStatusBarInfo();
 }
