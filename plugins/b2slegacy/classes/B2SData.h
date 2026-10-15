@@ -125,6 +125,8 @@ public:
    AnimationCollection* GetUsedAnimationGIStringIDs() { return &m_usedAnimationGIStringIDs; }
    AnimationCollection* GetUsedRandomAnimationGIStringIDs() { return &m_usedRandomAnimationGIStringIDs; }
    int GetLEDCoordMax() const { return m_ledCoordMax; }
+   // <DMD> children of the <Displays> element (mutable: authored through the plugin UI)
+   vector<B2SDMDDisplay>* GetDMDDisplays() { return &m_dmdDisplays; }
    bool IsLampsData() const;
    bool IsSolenoidsData() const;
    bool IsGIStringsData() const;
@@ -203,6 +205,7 @@ private:
    vector<vector<SDL_FPoint>> m_led14Seg;
    vector<vector<SDL_FPoint>> m_led16Seg;
    int m_ledCoordMax = 103;
+   vector<B2SDMDDisplay> m_dmdDisplays;
    AnimationCollection m_usedAnimationLampIDs;
    AnimationCollection m_usedRandomAnimationLampIDs;
    AnimationCollection m_usedAnimationSolenoidIDs;

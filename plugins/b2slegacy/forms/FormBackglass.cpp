@@ -131,6 +131,8 @@ FormBackglass::~FormBackglass()
       m_vpxApi->DeleteTexture(m_pSecondLightImage4Fantasy);
    if (m_pTopAndSecondLightImage4Fantasy)
       m_vpxApi->DeleteTexture(m_pTopAndSecondLightImage4Fantasy);
+   if (m_pDocImage)
+      m_vpxApi->DeleteTexture(m_pDocImage);
 }
 
 void FormBackglass::OnPaint(VPXRenderContext2D* const ctx)
@@ -443,6 +445,31 @@ void FormBackglass::LoadB2SData()
       m_pB2SData->SetSmallGrillHeight(std::max(topnode->FirstChildElement("GrillHeight")->IntAttribute("Small"), 0));
    if (topnode->FirstChildElement("DualBackglass"))
       m_pB2SData->SetDualBackglass(topnode->FirstChildElement("DualBackglass")->IntAttribute("Value") == 1);
+
+   // Optional plugin-authored <Displays> element (ignored by other B2S tools): its <DMD> children
+   // declare DMD overlays; other display kinds (CRT/LCD) may be added as children later
+   if (const tinyxml2::XMLElement* displays = topnode->FirstChildElement("Displays"))
+   {
+      for (const tinyxml2::XMLElement* dmd = displays->FirstChildElement("DMD"); dmd != nullptr; dmd = dmd->NextSiblingElement("DMD"))
+      {
+         B2SDMDDisplay& display = m_pB2SData->GetDMDDisplays()->emplace_back();
+         const char* const target = dmd->Attribute("Target");
+         display.target = target != nullptr && string_to_lower(target) == "scoreview"s ? 1 : 0;
+         if (const char* const source = dmd->Attribute("Source"); source != nullptr)
+            display.source = source;
+         display.x = dmd->IntAttribute("X", 0);
+         display.y = dmd->IntAttribute("Y", 0);
+         display.w = dmd->IntAttribute("W", 0);
+         display.h = dmd->IntAttribute("H", 0);
+      }
+      // A display targeted at the score view creates it even without DMD artwork content
+      for (const B2SDMDDisplay& display : *m_pB2SData->GetDMDDisplays())
+         if (display.target == 1)
+         {
+            CheckDMDForm();
+            break;
+         }
+   }
 
    // maybe set current dual mode to get for sure
    if (!m_pB2SData->IsDualBackglass())
@@ -1053,6 +1080,13 @@ void FormBackglass::LoadB2SData()
       }
       // starting image is the dark image
       SetBackgroundImage(GetDarkImage());
+
+      // Keep an uncut, unresized copy of the artwork: the authored <DMD> display bounds and the
+      // 'detect position' search live in this document space (B2SScreen later cuts the grill band
+      // out of the displayed images and resizes them)
+      if (m_pDocImage)
+         m_vpxApi->DeleteTexture(m_pDocImage);
+      m_pDocImage = GetDarkImage() != nullptr ? VPXGraphics::DuplicateTexture(m_vpxApi, GetDarkImage()) : nullptr;
 
       // DMD image
       VPXTexture pImage = nullptr;

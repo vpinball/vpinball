@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Form.h"
+#include "../classes/B2SScreen.h"
 #include "../classes/B2SSettings.h"
 #include "../classes/B2SData.h"
 #include "../utils/Timer.h"
@@ -59,6 +60,10 @@ public:
    bool IsSecondRomInverted() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomInverted4Fantasy : m_secondRomInverted4Authentic; }
    FormDMD* GetFormDMD() const { return m_pFormDMD; }
    B2SScreen* GetB2SScreen() const { return m_pB2SScreen; }
+   // The authored <DMD> display bounds live in the native artwork space; the displayed
+   // background is grill-cut by B2SScreen then resized, so the doc reference is a separate copy
+   VPXTexture GetOverlayDocImage() const override { return m_pDocImage != nullptr ? m_pDocImage : GetBackgroundImage(); }
+   SDL_Rect GetOverlayDocCut() const override { return m_pB2SScreen != nullptr ? m_pB2SScreen->GetBackglassCutOff() : SDL_Rect { 0, 0, 0, 0 }; }
    void ResizeSomeImages();
    bool IsValid() const { return m_valid; }
 
@@ -93,6 +98,7 @@ private:
    B2SScreen* m_pB2SScreen = nullptr;
    B2SAnimation* m_pB2SAnimation = nullptr;
    FormDMD* m_pFormDMD = nullptr;
+   VPXTexture m_pDocImage = nullptr; // Native, uncut artwork: the document space of the authored <DMD> displays
    Timer* m_pStartupTimer = nullptr;
    Timer* m_pRotateTimer = nullptr;
    int m_rotateSlowDownSteps = 0;
