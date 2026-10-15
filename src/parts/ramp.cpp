@@ -735,6 +735,8 @@ void Ramp::Render(const unsigned int renderMask)
    {
       if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
          PrepareHabitrail();
+      if (!m_meshBuffer)
+         return; // Nothing to draw on a degenerate curve
 
       if (isUIPass)
       {
@@ -774,8 +776,8 @@ void Ramp::Render(const unsigned int renderMask)
       if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
          GenerateVertexBuffer();
 
-      if (m_rampVertex == 0)
-         return; // nothing to draw on a degenerate curve
+      if (!m_meshBuffer)
+         return; // Nothing to draw on a degenerate curve
 
       if (isUIPass)
       {
@@ -1063,6 +1065,12 @@ void Ramp::PrepareHabitrail()
    Vertex3D_NoTex2 *tmpBuf1 = nullptr;
    Vertex3D_NoTex2 *tmpBuf2 = nullptr;
    GenerateWireMesh(&tmpBuf1, &tmpBuf2);
+   if (m_numIndices == 0) // Degenerate curve: no mesh buffer (buffers can not be empty)
+   {
+      delete[] tmpBuf1;
+      delete[] tmpBuf2;
+      return;
+   }
 
    switch (m_d.m_type)
    {
@@ -2132,11 +2140,18 @@ void Ramp::GenerateVertexBuffer()
 
    Vertex3D_NoTex2 *tmpBuffer = nullptr;
    GenerateRampMesh(&tmpBuffer);
+   if (m_numIndices == 0) // Degenerate curve: no mesh buffer (buffers can not be empty)
+   {
+      delete[] tmpBuffer;
+      m_meshBuffer = nullptr;
+      m_meshEdgeBuffer = nullptr;
+      return;
+   }
    std::shared_ptr<VertexBuffer> dynamicVertexBuffer
       = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices * 3, (float *)tmpBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    delete[] tmpBuffer;
 
    std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_meshIndices);
-   
+
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
 }

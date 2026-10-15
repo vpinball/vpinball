@@ -546,13 +546,15 @@ void Rubber::RenderSetup(Renderer *renderer)
 
    GenerateMesh();
 
+   const Vertex2D& center2D = m_curve.GetCenter();
+   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
+
+   if (m_numIndices == 0) // Degenerate curve: no mesh buffer (buffers can not be empty)
+      return;
    std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, (float *)m_vertices.data(), !m_d.m_staticRendering);
    std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_ringIndices);
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
    UpdateRubber(true, m_d.m_height);
-
-   const Vertex2D& center2D = m_curve.GetCenter();
-   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
 }
 
 void Rubber::RenderRelease()
@@ -582,7 +584,8 @@ void Rubber::Render(const unsigned int renderMask)
    || (isReflectionPass && !m_d.m_reflectionEnabled)
    || m_d.m_thickness == 0
    || (isDynamicOnly && m_d.m_staticRendering)
-   || (isStaticOnly && !m_d.m_staticRendering))
+   || (isStaticOnly && !m_d.m_staticRendering)
+   || m_meshBuffer == nullptr) // Degenerate curve
       return;
 
    if (m_dynamicVertexBufferRegenerate && !m_d.m_staticRendering)
