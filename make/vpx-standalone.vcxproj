@@ -23,8 +23,6 @@
     <!-- VC_ExecutablePath_* can be a ';' list (one dir per host arch); take the first -->
     <VcToolsBinDir Condition="'$(Platform)'=='x64'">$(VC_ExecutablePath_x64.Split(';')[0])\</VcToolsBinDir>
     <VcToolsBinDir Condition="'$(Platform)'=='Win32'">$(VC_ExecutablePath_x86.Split(';')[0])\</VcToolsBinDir>
-    <SDL3TtfLib Condition="'$(Platform)'=='x64'">SDL3_ttf64.lib</SDL3TtfLib>
-    <SDL3TtfLib Condition="'$(Platform)'=='Win32'">SDL3_ttf.lib</SDL3TtfLib>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -32,7 +30,7 @@
     </ClCompile>
     <Link>
       <!-- libwinevbs first, so that the COM/OLE functions it provides are not resolved to the system ole32/oleaut32 -->
-      <AdditionalDependencies>$(WineVbsLib);$(SDL3TtfLib);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(WineVbsLib);%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <Manifest>
