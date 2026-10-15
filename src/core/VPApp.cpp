@@ -174,7 +174,8 @@ VPApp::VPApp()
       #ifdef _ATL_FREE_THREADED
          const HRESULT hRes = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
       #else
-         const HRESULT hRes = CoInitialize(nullptr);
+         // OLE, not only COM (clipboard, drag & drop, in-place activation), as COM objects created by table scripts may need it
+         const HRESULT hRes = OleInitialize(nullptr);
       #endif
       _ASSERTE(SUCCEEDED(hRes));
       
@@ -215,7 +216,10 @@ VPApp::VPApp()
 
       INITCOMMONCONTROLSEX iccex;
       iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-      iccex.dwICC = ICC_COOL_CLASSES;
+      // Same set as win32xx, for all commands, as COM objects created by table scripts may use them, too
+      iccex.dwICC = ICC_COOL_CLASSES | ICC_WIN95_CLASSES | ICC_DATE_CLASSES | ICC_INTERNET_CLASSES | ICC_NATIVEFNTCTL_CLASS | ICC_PAGESCROLLER_CLASS | ICC_USEREX_CLASSES;
+      InitCommonControlsEx(&iccex);
+      iccex.dwICC = ICC_LINK_CLASS; // Separately, as it needs version 6 of the common controls
       InitCommonControlsEx(&iccex);
    #endif
    
@@ -250,7 +254,11 @@ VPApp::~VPApp()
    #ifndef __STANDALONE__
       m_module.RevokeClassObjects();
       m_module.Term();
-      CoUninitialize();
+      #ifdef _ATL_FREE_THREADED
+         CoUninitialize();
+      #else
+         OleUninitialize();
+      #endif
    #else
       libwinevbs_shutdown();
    #endif

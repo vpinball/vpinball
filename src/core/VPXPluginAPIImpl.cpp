@@ -391,8 +391,10 @@ void MSGPIAPI VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* mes
       return;
    static const char* typeNames[] = { "Failure", "Invalid argument", "Null pointer", "Not implemented" };
    const char* typeName = type < std::size(typeNames) ? typeNames[type] : "Unknown error";
-   PLOGE << "Script error reported by plugin (" << typeName << "): " << (message ? message : "");
-   s_instance->m_dynamicTypeLibrary.ReportCallError(message);
+   // Without a message, report the error type, as an empty pending error would mean no error
+   const string text = (message && *message) ? message : ("Plugin reported an error: "s + typeName);
+   PLOGE << "Script error reported by plugin (" << typeName << "): " << text;
+   s_instance->m_dynamicTypeLibrary.ReportCallError(text);
 }
 
 ScriptClassDef* MSGPIAPI VPXPluginAPIImpl::GetClassDef(const char* typeName)

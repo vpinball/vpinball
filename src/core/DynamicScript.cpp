@@ -884,12 +884,13 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
    return "<< bug >>"s;
 }
 
-void DynamicTypeLibrary::ReportCallError(const char* message) const
+void DynamicTypeLibrary::ReportCallError(const string& message) const
 {
    // Only reports coming from the thread executing a member call are recorded, so that
-   // unrelated plugin notifications (e.g. timer driven polls) do not corrupt script calls.
+   // unrelated plugin notifications (e.g. timer driven polls) do not corrupt script calls
+   assert(!message.empty());
    if ((std::this_thread::get_id() == m_callThread.load()) && m_pendingCallError.empty())
-      m_pendingCallError = message ? message : "";
+      m_pendingCallError = message.empty() ? "Unknown plugin error"s : message;
 }
 
 HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef* classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult,

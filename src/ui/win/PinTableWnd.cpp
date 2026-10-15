@@ -48,6 +48,9 @@ public:
 // signals the completion event, and reports the result back to the table window.
 static void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 {
+   // Low priority, so that an autosave does not compete with the game during an editor play session
+   SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_LOWEST);
+
    const AutoSavePackage *const pasp = (AutoSavePackage *)lParam;
 
    InMemStructuredStorage *const pstgroot = pasp->pstg;

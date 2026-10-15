@@ -36,7 +36,7 @@ public:
    // processed. When a call is in flight on the calling thread, the message is recorded so that
    // Invoke can surface it as DISP_E_EXCEPTION to the script engine. Reports from other threads
    // (e.g. a plugin timer polling a missing provider) or outside of any call are ignored.
-   void ReportCallError(const char *message) const;
+   void ReportCallError(const string &message) const; // message must not be empty (an empty pending error means no error)
 
 private:
    void UnregisterTypeUsers(unsigned int id);
