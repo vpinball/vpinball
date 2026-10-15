@@ -504,169 +504,6 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Settings API
-
-void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef)
-{
-   if (action == MsgPI::MsgPluginManager::SettingAction::UnregisterAll)
-   {
-      // We keep the property definition in the settings, but we remove reference to the plugin owned memory block with live data
-      m_pluginSettings.erase(
-         std::remove_if(m_pluginSettings.begin(), m_pluginSettings.end(), [&pluginId](const PluginSetting& x) { return x.pluginId == pluginId; }), m_pluginSettings.end());
-      return;
-   }
-
-   const auto item = std::ranges::find_if(
-      m_pluginSettings, [&pluginId, &settingDef](const PluginSetting& setting) { return setting.pluginId == pluginId && setting.setting->propId == settingDef->propId; });
-
-   // Register property and get or set value
-   Settings& settings = m_settings != nullptr ? *m_settings : g_settingsService.GetActiveSettings();
-   const bool asTableOverride = m_settings != nullptr || g_pplayer != nullptr;
-   const std::string sectionName = "Plugin."s + pluginId;
-   switch (settingDef->type)
-   {
-   case MSGPI_SETTING_TYPE_FLOAT:
-   {
-      const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description,
-         false,
-         settingDef->floatDef.minVal, settingDef->floatDef.maxVal, settingDef->floatDef.step, settingDef->floatDef.defVal));
-      if (item == m_pluginSettings.end())
-         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
-      else
-      {
-         item->propId = newId;
-         item->setting = settingDef;
-      }
-      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
-         settings.Set(newId, settingDef->floatDef.Get(), asTableOverride);
-      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-         settingDef->floatDef.Set(Settings::GetRegistry().GetFloatProperty(newId)->GetValid(settings.GetFloat(newId)));
-      break;
-   }
-
-   case MSGPI_SETTING_TYPE_INT:
-      if (settingDef->intDef.values)
-      {
-         vector<string> values;
-         for (int i = settingDef->intDef.minVal; i <= settingDef->intDef.maxVal; i++)
-            values.emplace_back(settingDef->intDef.values[i - settingDef->intDef.minVal]);
-         const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
-            sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->intDef.minVal, settingDef->intDef.defVal, values));
-         if (item == m_pluginSettings.end())
-            m_pluginSettings.emplace_back(pluginId, newId, settingDef);
-         else
-         {
-            item->propId = newId;
-            item->setting = settingDef;
-         }
-         if (action == MsgPI::MsgPluginManager::SettingAction::Save)
-            settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
-         else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-            settingDef->intDef.Set(Settings::GetRegistry().GetEnumProperty(newId)->GetValid(settings.GetInt(newId)));
-      }
-      else
-      {
-         const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(
-            sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->intDef.minVal, settingDef->intDef.maxVal, settingDef->intDef.defVal));
-         if (item == m_pluginSettings.end())
-            m_pluginSettings.emplace_back(pluginId, newId, settingDef);
-         else
-         {
-            item->propId = newId;
-            item->setting = settingDef;
-         }
-         if (action == MsgPI::MsgPluginManager::SettingAction::Save)
-            settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
-         else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-            settingDef->intDef.Set(Settings::GetRegistry().GetIntProperty(newId)->GetValid(settings.GetInt(newId)));
-      }
-      break;
-
-   case MSGPI_SETTING_TYPE_BOOL:
-   {
-      const auto newId = Settings::GetRegistry().Register(
-         std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->boolDef.defVal));
-      if (item == m_pluginSettings.end())
-         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
-      else
-      {
-         item->propId = newId;
-         item->setting = settingDef;
-      }
-      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
-         settings.Set(newId, settingDef->boolDef.Get(), asTableOverride);
-      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-         settingDef->boolDef.Set(settings.GetBool(newId));
-      break;
-   }
-
-   case MSGPI_SETTING_TYPE_STRING:
-   {
-      const auto newId = Settings::GetRegistry().Register(
-         std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->stringDef.defVal));
-      if (item == m_pluginSettings.end())
-         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
-      else
-      {
-         item->propId = newId;
-         item->setting = settingDef;
-      }
-      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
-         settings.Set(newId, settingDef->stringDef.Get(), asTableOverride);
-      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-      {
-         const string& value = settings.GetString(newId);
-         settingDef->stringDef.Set(value.c_str());
-      }
-      break;
-   }
-
-   case MSGPI_SETTING_TYPE_FOLDER:
-   {
-      const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(
-         sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->folderDef.defVal, VPX::Properties::StringPropertyDef::PathType::Folder));
-      if (item == m_pluginSettings.end())
-         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
-      else
-      {
-         item->propId = newId;
-         item->setting = settingDef;
-      }
-      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
-         settings.Set(newId, settingDef->folderDef.Get(), asTableOverride);
-      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-      {
-         const string& value = settings.GetString(newId);
-         settingDef->folderDef.Set(value.c_str());
-      }
-      break;
-   }
-
-   case MSGPI_SETTING_TYPE_FILE:
-   {
-      const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description,
-         false, settingDef->fileDef.defVal, VPX::Properties::StringPropertyDef::PathType::File, settingDef->fileDef.fileFilter != nullptr ? settingDef->fileDef.fileFilter : ""));
-      if (item == m_pluginSettings.end())
-         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
-      else
-      {
-         item->propId = newId;
-         item->setting = settingDef;
-      }
-      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
-         settings.Set(newId, settingDef->fileDef.Get(), asTableOverride);
-      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
-      {
-         const string& value = settings.GetString(newId);
-         settingDef->fileDef.Set(value.c_str());
-      }
-      break;
-   }
-   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 // Expose VPX contributions through plugin API
 
 #include "plugins/ControllerPlugin.h"
@@ -814,7 +651,6 @@ DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(void* callContext)
 VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager, Settings* settings)
    : m_pluginManager(pluginManager)
    , m_msgApi(pluginManager.GetMsgAPI())
-   , m_settings(settings)
    , m_apiThread(std::this_thread::get_id())
    , m_getVPXAPIMsgId(m_msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API))
    , m_onGameStartMsgId(m_msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START))
@@ -824,10 +660,6 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager, Setti
 {
    assert(s_instance == nullptr);
    s_instance = this;
-
-   // Message host
-   pluginManager.SetSettingsHandler(
-      [this](const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef) { UpdateSetting(pluginId, action, settingDef); });
 
    // VPX API
    m_api.version = 1;
@@ -860,6 +692,9 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager, Setti
       []() { /* Load: nothing to do */ });
    m_vpxPlugin->Load(&m_msgApi);
    m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getVPXAPIMsgId, &OnGetVPXPluginAPI, this);
+
+   // Plugin settings & UI sheets APIs (MsgPlugin settings + PagedUI)
+   m_pluginUI = std::make_unique<VPXPluginPagedUI>(pluginManager, m_msgApi, m_vpxPlugin->m_endpointId, settings);
 
    // Logging API
    m_loggingApi.version = 1;
@@ -900,6 +735,8 @@ VPXPluginAPIImpl::~VPXPluginAPIImpl()
 
    m_dmdSources.clear();
    m_displaySources = nullptr;
+
+   m_pluginUI = nullptr; // Retires the sheets before the API subscriptions are released
 
    m_msgApi.UnsubscribeMsg(m_getVPXAPIMsgId, &OnGetVPXPluginAPI, this);
    m_msgApi.ReleaseMsgID(m_getVPXAPIMsgId);

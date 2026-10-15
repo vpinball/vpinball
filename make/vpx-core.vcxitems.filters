@@ -177,6 +177,9 @@
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/PagedUIPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ControllerPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
@@ -247,6 +250,9 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginPagedUI.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp">
@@ -1227,6 +1233,9 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginPagedUI.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h">
