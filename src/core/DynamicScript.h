@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <atomic>
+#include <thread>
 #include <variant>
 #include "plugins/ScriptablePlugin.h"
 #include "unordered_dense.h"
@@ -29,6 +31,12 @@ public:
    int ResolveMemberId(const ScriptClassDef *classDef, const char *memberName) const;
 
    HRESULT Invoke(const ScriptClassDef * classDef, void *nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *, UINT *) const;
+
+   // Called through the plugin OnError callback to report a failure while a member call is being
+   // processed. When a call is in flight on the calling thread, the message is recorded so that
+   // Invoke can surface it as DISP_E_EXCEPTION to the script engine. Reports from other threads
+   // (e.g. a plugin timer polling a missing provider) or outside of any call are ignored.
+   void ReportCallError(const char *message) const;
 
 private:
    void UnregisterTypeUsers(unsigned int id);
@@ -64,6 +72,14 @@ private:
    };
    std::vector<TypeDef> m_types; // id (index in vector, corresponding to a case insensitive type name) to type definition
    ankerl::unordered_dense::map<string, int> m_typenames; // Name to type id map
+
+   // Error reported while a member call is processed: m_callThread identifies the thread executing
+   // the call (empty when no call runs), m_callDepth tracks nested calls, m_pendingCallError the
+   // first reported error of the current call. Only touched on the call thread, except the atomic
+   // m_callThread which is read from other threads to filter out their reports.
+   mutable std::atomic<std::thread::id> m_callThread;
+   mutable int m_callDepth = 0;
+   mutable std::string m_pendingCallError;
 };
 
 
