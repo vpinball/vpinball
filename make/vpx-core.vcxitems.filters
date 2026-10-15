@@ -807,9 +807,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/codeview.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/worker.cpp">
-      <Filter>ui\win</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/AboutDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
@@ -1899,9 +1896,6 @@
       <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/resource.h">
-      <Filter>ui\win</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/worker.h">
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/codeview.h">

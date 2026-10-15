@@ -108,8 +108,6 @@ public:
    void ToggleToolbar();
    void SetEnableMenuItems();
 
-   HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
-
    void SetAutoSaveMinutes(const int minutes);
    void ShowDrawingOrderDialog(bool select);
 
@@ -232,8 +230,6 @@ private:
    //CMenu m_mainMenu;
    vector<std::filesystem::path> m_recentTableList;
 
-   HANDLE  m_workerthread;
-   unsigned int m_workerthreadid;
    bool    m_closing;
    HMODULE m_scintillaDll;
 
