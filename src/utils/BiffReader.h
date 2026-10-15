@@ -5,6 +5,10 @@
 #include "fileio.h"
 #include "TableHash.h"
 
+#ifdef VPX_HAS_CRYPTOAPI
+#include <wincrypt.h> // HCRYPTKEY
+#endif
+
 #include "pole/pole.h"
 
 

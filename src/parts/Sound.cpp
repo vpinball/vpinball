@@ -55,6 +55,22 @@ struct WaveHeader
    uint32_t dwDataSize; // Sampled data size
 };
 
+// The WAVEFORMATEX blob as serialized inside the sound stream — a persisted file
+// layout, not an OS dependency (never passed to a Win32 API)
+#pragma pack(push, 1)
+struct WavFmt
+{
+   uint16_t wFormatTag;
+   uint16_t nChannels;
+   uint32_t nSamplesPerSec;
+   uint32_t nAvgBytesPerSec;
+   uint16_t nBlockAlign;
+   uint16_t wBitsPerSample;
+   uint16_t cbSize;
+};
+#pragma pack(pop)
+static_assert(sizeof(WavFmt) == 18);
+
 #ifndef MAKEFOURCC
 #define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32_t)(BYTE)(ch0) | ((uint32_t)(BYTE)(ch1) << 8) | ((uint32_t)(BYTE)(ch2) << 16) | ((uint32_t)(BYTE)(ch3) << 24))
 #endif
@@ -121,7 +137,7 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
       const uint64_t settingsSize = LoadFileVersion >= NEW_SOUND_FORMAT_VERSION ? sizeof(uint8_t) + 4 * sizeof(int32_t) : sizeof(bool);
       const uint64_t size = stream.size();
       const uint64_t available = size > start + settingsSize ? size - start - settingsSize : 0;
-      uint8_t head[sizeof(WAVEFORMATEX) + sizeof(int32_t)];
+      uint8_t head[sizeof(WavFmt) + sizeof(int32_t)];
       const uint64_t headSize = stream.read(head, sizeof(head));
       stream.seek(start);
       const auto fills = [&](const size_t offset)
@@ -133,7 +149,7 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
          return len >= 0 && offset + sizeof(int32_t) + static_cast<uint64_t>(len) == available;
       };
       const bool rawFits = fills(0);
-      const bool wavFits = fills(sizeof(WAVEFORMATEX));
+      const bool wavFits = fills(sizeof(WavFmt));
       return rawFits == wavFits ? isWav(fsPath) : wavFits;
    };
 
@@ -141,7 +157,7 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
    vector<uint8_t> data;
    if (isStoredAsWav())
    {
-      WAVEFORMATEX wfx;
+      WavFmt wfx;
       stream.read(reinterpret_cast<unsigned char*>(&wfx), sizeof(wfx));
 
       int32_t cdata;
@@ -245,7 +261,7 @@ void Sound::SaveToStream(InMemStream* pstm) const
    if (HasStorableWavHeader(m_data))
    {
       const auto waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
-      WAVEFORMATEX wfx;
+      WavFmt wfx;
       wfx.wFormatTag = waveHeader->wFormatTag;
       wfx.nChannels = waveHeader->wNChannels;
       wfx.nSamplesPerSec = waveHeader->dwNSamplesPerSec;
@@ -253,7 +269,7 @@ void Sound::SaveToStream(InMemStream* pstm) const
       wfx.nBlockAlign = waveHeader->wNBlockAlign;
       wfx.wBitsPerSample = waveHeader->wBitsPerSample;
       wfx.cbSize = 0;
-      pstm->Write(&wfx, sizeof(WAVEFORMATEX));
+      pstm->Write(&wfx, sizeof(WavFmt));
       const int32_t sampleDataLength = static_cast<int32_t>(m_data.size() - sizeof(WaveHeader));
       pstm->Write(&sampleDataLength, sizeof(int32_t));
       pstm->Write(m_data.data() + sizeof(WaveHeader), static_cast<size_t>(sampleDataLength));

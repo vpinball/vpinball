@@ -34,10 +34,6 @@
  #include "minid3d9.h"
 #endif
 
-#ifdef VPX_HAS_WIN32_SDK
-   #include <mmsystem.h>
-#endif
-
 #include <atlbase.h>
 
 #ifndef __STANDALONE__
@@ -53,10 +49,6 @@
 #endif
 
 #include <oleauto.h>
-
-#ifdef VPX_HAS_WIN32_SDK
-   #include <wincrypt.h>
-#endif
 
 #ifndef __STANDALONE__
    #include <intrin.h>
@@ -86,13 +78,13 @@ using std::wstring;
 
 
 #ifndef __STANDALONE__
-   #include <commdlg.h>
-   #include <dlgs.h>
-   #include <cderr.h>
-
-   #ifndef WM_THEMECHANGED
-     #define WM_THEMECHANGED            0x031A
-   #endif
+// commdlg/dlgs/cderr: required by win32xx headers (wxx_appcore.h uses PRINTDLG, wxx_commondlg.h
+// uses OPENFILENAME/pshHelp/CDERR_* ...) which never include them, and by the ui/win file
+// dialogs. Kept here as the framework's expected pre-include rather than repeating it ahead of
+// every wxx header.
+#include <commdlg.h>
+#include <dlgs.h>
+#include <cderr.h>
 
 #else
    #ifndef _MSC_VER // MSVC provides the secure CRT functions (and deprecates the plain ones)
@@ -114,26 +106,14 @@ using std::wstring;
 
    #define _ASSERTE(expr) ((void)0)
 
-   #ifndef VPX_HAS_WIN32_SDK // Otherwise from wincrypt.h and mmsystem.h
-   typedef ULONG_PTR HCRYPTKEY;
+#ifndef VPX_HAS_WIN32_SDK // Otherwise from wincrypt.h
+typedef ULONG_PTR HCRYPTKEY;
+#endif
 
-   #pragma pack(push, 1)
-   typedef struct {
-      WORD wFormatTag;
-      WORD nChannels;
-      DWORD nSamplesPerSec;
-      DWORD nAvgBytesPerSec;
-      WORD nBlockAlign;
-      WORD wBitsPerSample;
-      WORD cbSize;
-   } WAVEFORMATEX;
-   #pragma pack(pop)
-   #endif
-
-   #include <atldef.h>
-   #include <atlcom.h>
-   #include <atlcomcli.h>
-   #include <atlsafe.h>
+#include <atldef.h>
+#include <atlcom.h>
+#include <atlcomcli.h>
+#include <atlsafe.h>
 #endif
 
 

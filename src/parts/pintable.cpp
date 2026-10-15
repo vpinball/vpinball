@@ -3,6 +3,10 @@
 #include "core/stdafx.h"
 #include "pintable.h"
 
+#ifdef VPX_HAS_CRYPTOAPI
+#include <wincrypt.h> // legacy VP8/VP9 script decryption
+#endif
+
 #include "audio/AudioPlayer.h"
 #include "core/editablereg.h"
 #include "core/resourceid.h"
