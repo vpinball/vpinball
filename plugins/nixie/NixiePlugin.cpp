@@ -48,7 +48,7 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
       nixie->Load(tablePath.replace_extension(".nix"));
 
       // Then try  a file matching the table's parent folder name with nix extension
-      if (!nixie->HasLayouts())
+      if (!nixie->HasLayouts(ctx->window))
       {
          std::filesystem::path folderFile = tablePath.parent_path().filename();
          folderFile += ".nix"; // Appended, instead of replace_extension, otherwise "AFM 1.2" turns into "AFM 1.nix"
@@ -56,14 +56,14 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
       }
 
       // Allow the user to provide a custom folder (out of application path) with his default layouts ?
-      if (!nixie->HasLayouts())
+      if (!nixie->HasLayouts(ctx->window))
       {
          if (std::string customPath = layoutFolderProp_Get(); !customPath.empty())
             nixie->Load(PluginStrings::PathFromUTF8OrNative(customPath));
       }
 
       // Finally defaults to base layouts provided with the plugin
-      if (!nixie->HasLayouts())
+      if (!nixie->HasLayouts(ctx->window))
       {
          // Load default layouts provided with plugin
          std::filesystem::path path;

@@ -80,6 +80,7 @@ void Nixie::Parse(const std::filesystem::path& path)
    layout.height = 1080.f;
    layout.fit = Nixie::Contain;
    bool hasSection = false;
+   vector<Layout> parsed;
    const auto endLayout = [&]() -> bool
    {
       if (layout.visuals.empty())
@@ -126,9 +127,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          case VisualType::Image: break;
          }
       }
-      // TODO avoid duplicates
-      m_invalidBestLayout = true;
-      m_layouts.push_back(layout);
+      parsed.push_back(layout);
       return true;
    };
    {
@@ -485,6 +484,13 @@ void Nixie::Parse(const std::filesystem::path& path)
    }
    if (hasSection && !endLayout())
       return;
+   // Only keep the layouts of a fully valid file, so that a broken file falls back to the next layout source
+   // TODO avoid duplicates
+   if (!parsed.empty())
+   {
+      m_invalidBestLayout = true;
+      m_layouts.insert(m_layouts.end(), parsed.begin(), parsed.end());
+   }
 #undef CHECK_FIELD
 }
 

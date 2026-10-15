@@ -6,6 +6,7 @@
 
 #include "plugins/ResURIResolver.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <unordered_dense.h>
 
@@ -68,7 +69,7 @@ public:
    Nixie(const MsgPluginAPI* api, unsigned int endpointId, VPXPluginAPI* vpxApi);
    ~Nixie();
 
-   bool HasLayouts() const { return !m_layouts.empty(); }
+   bool HasLayouts(const VPXWindowId window) const { return std::ranges::any_of(m_layouts, [window](const Layout& layout) { return layout.window == window; }); }
    bool IsMatched() const { return m_bestLayout != nullptr && m_bestLayout->unmatchedVisuals == 0; }
    void Load(const std::filesystem::path& path);
    void Reset() { m_layouts.clear(); }
