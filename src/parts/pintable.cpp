@@ -5276,6 +5276,19 @@ string PinTable::AuditTable(bool log) const
       //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be statically rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
    }
 
+   // The flasher VideoCap API (capturing the window of an external application) is deprecated in favor of plugins and may be removed in a future version
+   bool usesVideoCap = false;
+   for (const auto part : m_vedit)
+      if (part->GetItemType() == eItemFlasher && StrFindNoCase(m_script_text, string(part->GetName()) + ".videocap"s) != string::npos)
+      {
+         ss << ". Error: Flasher '" << part->GetName()
+            << "' uses the deprecated 'VideoCap' API (VideoCapWidth/VideoCapHeight/VideoCapUpdate). It is superseded by plugins and may be removed in a future version.\r\n";
+         usesVideoCap = true;
+      }
+   if (!usesVideoCap && (FindIndexOf(identifiers, "videocapwidth"s) != -1 || FindIndexOf(identifiers, "videocapheight"s) != -1 || FindIndexOf(identifiers, "videocapupdate"s) != -1))
+      ss << ". Error: script uses the deprecated Flasher 'VideoCap' API (VideoCapWidth/VideoCapHeight/VideoCapUpdate). It is superseded by plugins and may be removed in a future "
+            "version.\r\n";
+
    if ((FindIndexOf(identifiers, "loadvpm"s) != -1) || (FindIndexOf(identifiers, "loadvpmalt"s) != -1))
    {
       if (!hasPinMameTimer)
