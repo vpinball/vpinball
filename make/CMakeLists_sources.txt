@@ -545,8 +545,6 @@ set(VPX_WINDOWS_SOURCES
    src/ui/win/WinUIPartRegistry.h
    src/ui/win/paintsur.cpp
    src/ui/win/paintsur.h
-   src/ui/win/worker.cpp
-   src/ui/win/worker.h
    src/ui/win/resource.h
    src/ui/win/vpinball.rc
 

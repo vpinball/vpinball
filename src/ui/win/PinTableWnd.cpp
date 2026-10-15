@@ -20,13 +20,60 @@
 #include "ui/win/PinTableMDI.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
-#include "ui/win/worker.h"
 #include "ui/win/WinUIPartRegistry.h"
 #include "utils/BiffReader.h"
+#include "utils/fileio.h"
 
 #include "ui/win/dialogs/SearchSelectDialog.h"
 #include "ui/win/dialogs/Win32ProgressBar.h"
 #include "FreeImage.h"
+#include "pole/pole.h"
+
+#include <thread>
+
+// Window message posted back to the table window when a background autosave write completes
+#define DONE_AUTOSAVE (WM_USER + 200)
+
+class AutoSavePackage final
+{
+public:
+   InMemStructuredStorage *pstg;
+   int tableindex;
+   PinTable *table;
+   HWND hwndtable;
+};
+
+// Runs on a background thread: writes the storage serialized by AutoSave() to the autosave file,
+// signals the completion event, and reports the result back to the table window.
+static void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
+{
+   const AutoSavePackage *const pasp = (AutoSavePackage *)lParam;
+
+   InMemStructuredStorage *const pstgroot = pasp->pstg;
+
+   const std::filesystem::path dir = g_app->m_fileLocator.GetTablePath(pasp->table, FileLocator::TableSubFolder::AutoSave, true);
+   const std::filesystem::path fn = dir.empty() ? dir : dir / std::format("AutoSave{}.vpx", pasp->tableindex);
+
+   HRESULT hr = E_FAIL;
+   if (!fn.empty())
+   {
+      POLE::Storage storage(POLE::PathToFilename(fn).c_str());
+      if (storage.open(true, true, true) && storage.result() == POLE::Storage::Ok)
+      {
+         const bool written = pstgroot->WriteToStorage(storage);
+         storage.close();
+         hr = (written && !storage.hasWriteError()) ? S_OK : E_FAIL;
+      }
+   }
+
+   delete pstgroot;
+
+   SetEvent(hEvent);
+
+   PostMessage(pasp->hwndtable, DONE_AUTOSAVE, (WPARAM)hEvent, hr);
+
+   delete pasp;
+}
 
 
 PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
@@ -2190,7 +2237,8 @@ void PinTableWnd::AutoSave()
 
    if (hr == S_OK)
    {
-      const HANDLE hEvent = m_vpxEditor->PostWorkToWorkerThread(COMPLETE_AUTOSAVE, (LPARAM)pasp);
+      const HANDLE hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+      std::thread(CompleteAutoSave, hEvent, (LPARAM)pasp).detach();
       m_vAsyncHandles.push_back(hEvent);
 
       m_vpxEditor->SetActionCur("Completing AutoSave"s);

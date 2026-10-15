@@ -35,7 +35,6 @@
 #include "ui/win/ProgressDialog.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinUIPartRegistry.h"
-#include "ui/win/worker.h"
 #include "utils/fileio.h"
 #include "utils/objloader.h"
 
@@ -122,8 +121,6 @@ WinEditor::WinEditor(HINSTANCE appInstance)
 
    m_NextTableID = 1;
 
-   m_workerthread = nullptr;//Workerthread - only for hanging scripts and autosave - will be created later
-
    m_ToolCur = IDC_SELECT;
 
    m_hbmInPlayMode = nullptr;
@@ -160,40 +157,11 @@ WinEditor::~WinEditor()
 }
 
 
-//Post Work to the worker Thread
-//Creates Worker-Thread if not present
-//See Worker::VPWorkerThreadStart for infos
-//workid int for the type of message (COMPLETE_AUTOSAVE)
-//Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
-//returns Handle to Event that get ack. If event is finished (unsure)
-HANDLE WinEditor::PostWorkToWorkerThread(int workid, LPARAM lParam)
-{
-   // Check if Workerthread was created once, otherwise create
-   if (!m_workerthread)
-   {
-      g_hWorkerStarted = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-      m_workerthread = (HANDLE)_beginthreadex(nullptr, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
-      if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
-      {
-      }
-      SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST);
-   }
-   HANDLE hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-   PostThreadMessage(m_workerthreadid, workid, (WPARAM)hEvent, lParam);
-   return hEvent;
-}
-
 void WinEditor::SetAutoSaveMinutes(const int minutes)
 {
    m_autosaveTime = (minutes <= 0) ? -1 : minutes * (60 * 1000); // convert to milliseconds
 }
 
-//Post Work to the worker Thread
-//Creates Worker-Thread if not present
-//See Worker::VPWorkerThreadStart for infos
-//workid int for the type of message (COMPLETE_AUTOSAVE)
-//Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
-//returns Handle to Event that get ack. If event is finished (unsure)
 void WinEditor::InitTools()
 {
    m_ToolCur = IDC_SELECT;
