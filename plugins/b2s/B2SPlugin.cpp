@@ -3,6 +3,7 @@
 #include "common.h"
 
 #include "plugins/MsgPlugin.h"
+#include "plugins/PagedUIPlugin.h"
 
 #include "B2SServer.h"
 
@@ -19,8 +20,9 @@ LPI_IMPLEMENT_CPP // Implement shared log support
 static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
+static PagedUIPluginAPI* pagedUIApi = nullptr;
 static uint32_t endpointId;
-static unsigned int getVpxApiId, getScriptApiId;
+static unsigned int getVpxApiId, getScriptApiId, getPagedUIApiId;
 static std::thread::id apiThread;
 static int nServer = 0;
 
@@ -258,9 +260,11 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
 
+   getPagedUIApiId = msgApi->GetMsgID(PAGEDUIPI_NAMESPACE, PAGEDUIPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getPagedUIApiId, &pagedUIApi);
+
    B2SServer::RegisterSettings(msgApi, endpointId);
    B2SRenderer::RegisterSettings(msgApi, endpointId);
-   DMDOverlay::DMDOverlay::RegisterSettings(msgApi, endpointId);
 
    nServer = 0;
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
@@ -280,7 +284,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
       if (nServer > 0)
          LOGE("Invalid script: multiple B2S server are created."s);
       nServer++;
-      B2SServer* server = new B2SServer(msgApi, endpointId, vpxApi, B2S_Server_SCD);
+      B2SServer* server = new B2SServer(msgApi, endpointId, vpxApi, pagedUIApi, B2S_Server_SCD);
       server->SetOnDestroyHandler([](B2SServer*) { nServer--; });
       return static_cast<void*>(server);
    };
@@ -307,6 +311,8 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
    
    msgApi->ReleaseMsgID(getVpxApiId);
    msgApi->ReleaseMsgID(getScriptApiId);
+   msgApi->ReleaseMsgID(getPagedUIApiId);
    vpxApi = nullptr;
+   pagedUIApi = nullptr;
    msgApi = nullptr;
 }

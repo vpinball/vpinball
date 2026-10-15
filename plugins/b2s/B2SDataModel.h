@@ -508,6 +508,7 @@ public:
    const B2SImage m_dmdImage;
    const vector<B2SSound> m_sounds;
    const B2SReel m_reels;
+   vector<B2SDMDDisplay> m_dmdDisplays; // <DMD> children of the <Displays> element (mutable: authored through the plugin UI)
    B2SScores m_backglassScores;
    B2SScores m_dmdScores;
    vector<std::unique_ptr<B2SBulb>> m_backglassIlluminations;

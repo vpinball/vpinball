@@ -24,6 +24,8 @@ public:
    ~B2SRenderer();
 
    static void RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId);
+   // Fills the renderer owned entries (ShowGrill, DualMode) of the plugin declared "settings" sheet
+   static void FillSettingsItems(PagedUIItemDef* items);
 
    bool Render(VPXRenderContext2D* context, class B2SServer* server);
 
@@ -31,6 +33,7 @@ private:
    std::function<void()> ResolveRomPropUpdater(const std::vector<StateSrcId>& items, float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted = false, const int romValue = 0) const;
    bool RenderBackglass(VPXRenderContext2D* context, class B2SServer* server);
    bool RenderScoreView(VPXRenderContext2D* context, class B2SServer* server);
+   void RenderDisplays(VPXRenderContext2D* ctx, B2SServer* server, int target, VPXTexture backImage);
    void RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed, B2SDualMode dualMode);
    void RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores, float elapsed);
    void UpdateAnimations(vector<B2SAnimation>& animations, float elapsed, B2SServer* server, B2SDualMode dualMode);
@@ -41,6 +44,7 @@ private:
    std::shared_ptr<B2STable> m_b2s;
 
    const MsgPluginAPI* const m_msgApi;
+   const VPXPluginAPI* const m_vpxApi;
    const unsigned int m_endpointId;
    PinballPlugin::Controller::CtrlItemConsumer<ControllerDef> m_pinmameControllers;
    mutable PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
@@ -49,8 +53,7 @@ private:
 
    PinballPlugin::ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;
-   DMDOverlay::DMDOverlay m_scoreViewDmdOverlay;
-   DMDOverlay::DMDOverlay m_backglassDmdOverlay;
+   vector<std::unique_ptr<DMDOverlay::DMDOverlay>> m_dmdOverlays; // One per <DMD> display of the edited document, in enumeration order
 
    std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;

@@ -952,6 +952,24 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
    , m_dmdIlluminations(GetFilteredPtrList<B2SBulb>(root, "Illumination"s, "Bulb"s, true))
    , m_dmdAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, true))
 {
+   // Optional plugin-authored <Displays> element (ignored by other B2S tools): its <DMD> children
+   // declare DMD overlays; other display kinds (CRT/LCD) may be added as children later
+   if (const tinyxml2::XMLElement* displays = GetNode(root, "Displays"s))
+   {
+      for (const tinyxml2::XMLElement* dmd = displays->FirstChildElement("DMD"); dmd != nullptr; dmd = dmd->NextSiblingElement("DMD"))
+      {
+         B2SDMDDisplay& display = m_dmdDisplays.emplace_back();
+         const char* const target = dmd->Attribute("Target");
+         display.target = target != nullptr && string_to_lower(target) == "scoreview"s ? 1 : 0;
+         if (const char* const source = dmd->Attribute("Source"); source != nullptr)
+            display.source = source;
+         display.x = dmd->IntAttribute("X", 0);
+         display.y = dmd->IntAttribute("Y", 0);
+         display.w = dmd->IntAttribute("W", 0);
+         display.h = dmd->IntAttribute("H", 0);
+      }
+   }
+
    // Score digit numbering: displays without an explicit B2SStartDigit are numbered sequentially
    // over all Score nodes in file order (both backglass and DMD parents share the same counter)
    if (const tinyxml2::XMLElement* scoresNode = GetNode(root, "Scores"s); scoresNode != nullptr)

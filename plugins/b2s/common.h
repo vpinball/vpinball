@@ -95,4 +95,32 @@ bool DecodeWav(const vector<uint8_t>& wav, WavData& out);
 
 // Parses a 'name=factor;name2=factor2' slowdown list (AnimationSlowDowns plugin setting), returns the factor for 'name' or 1
 int B2SAnimationSlowDown(const string& list, const string& name);
+
+struct B2SOverlayDoc;
+
+// A user-authored <DMD> child of the document's <Displays> node: a DMD rendered on top of the
+// artwork of one of the views. The document may contain any number of them; other display kinds
+// (CRT/LCD style displays) may be added as children later. Presence implies enabled.
+struct B2SDMDDisplay final
+{
+   int target = 0; // View the display is rendered on: 0 = backglass, 1 = score view
+   string source; // Controller resource URI (ResURIResolver syntax); empty = default DMD
+   // Bounds in the B2S document space: pixels of the artwork image, origin at its top left,
+   // spanning the whole image including the grill area (clipped away when the grill is hidden)
+   int x = 0, y = 0, w = 0, h = 0;
+   int detectRequest = 0; // Runtime only (not persisted): requests automatic bounds detection
+   B2SOverlayDoc* doc = nullptr; // Runtime only (not persisted): back link used by the editing page
+};
+
+// The document being authored through the in game UI: file under edit, its live <Displays>
+// content, and the artwork bounds used to limit the edited display rects (0 when unknown)
+struct B2SOverlayDoc final
+{
+   std::filesystem::path path;
+   vector<B2SDMDDisplay> displays;
+   int backglassW = 0, backglassH = 0;
+   int scoreViewW = 0, scoreViewH = 0;
+   std::function<void()> requestRefresh; // Asks the host to rebuild the editing page (display added/removed)
+   vector<B2SDMDDisplay> editBackup; // Runtime only: displays captured at BeginEdit, restored on cancel and used for dirty state
+};
 }

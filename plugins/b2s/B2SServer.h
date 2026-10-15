@@ -15,12 +15,14 @@
 #include "B2SDataModel.h"
 #include "B2SRenderer.h"
 
+#include "plugins/PagedUIPlugin.h"
+
 namespace B2S {
 
 class B2SServer final : public PinballPlugin::Scriptable::IScriptProxy
 {
 public:
-   B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef);
+   B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, const PagedUIPluginAPI* const pagedUIApi, ScriptClassDef* serverClassDef);
    ~B2SServer();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -178,6 +180,10 @@ public:
    int GetHideB2SDMD() const;
    int GetHideDMD() const; // -1 = no override, 1 = force hidden
 
+   // Live DMD overlay configuration, authored through the document editing UI
+   B2SOverlayDoc& GetOverlayDoc() { return m_overlayDoc; }
+   const B2SOverlayDoc& GetOverlayDoc() const { return m_overlayDoc; }
+
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override;
 
 private:
@@ -198,10 +204,17 @@ private:
    static std::shared_ptr<B2STable> LoadB2SFile(const std::filesystem::path& path);
    std::filesystem::path FindB2SFile() const;
    void TryLoadB2S();
+   std::filesystem::path m_b2sPath;
    std::filesystem::path m_tableDir;
    string m_tableName; // Table file stem by default, scripts may override through TableName
    std::filesystem::path m_workingDir; // Script override through WorkingDir/SetPath
    std::atomic<bool> m_launchBackglass { true };
+
+   // Authoring of the loaded document (DMD overlay setup stored in the .directb2s itself)
+   const PagedUIPluginAPI* const m_pagedUIApi;
+   B2SOverlayDoc m_overlayDoc;
+   bool m_overlaySheetRegistered = false;
+   void RegisterOverlaySheet();
    void ApplyScoreDigit(int digit, int value, bool roll);
    void ApplyScoreSegments(int digit, int segMask);
    std::function<void(B2SServer*)> m_onDestroyHandler;

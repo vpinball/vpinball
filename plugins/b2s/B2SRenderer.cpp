@@ -24,13 +24,9 @@ MSGPI_ENUM_VAL_SETTING(dualModeProp, "DualMode", "Dual Mode", "Active mode for d
 B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* const vpxApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s)
    : m_b2s(b2s)
    , m_msgApi(msgApi)
+   , m_vpxApi(vpxApi)
    , m_endpointId(endpointId)
    , m_resURIResolver(*msgApi, endpointId, true, false, false)
-   , m_scoreViewDmdOverlay(vpxApi, m_resURIResolver, m_dmdTex, m_b2s->m_dmdImage.m_image)
-   , m_backglassDmdOverlay(vpxApi, m_resURIResolver, m_dmdTex,
-        m_b2s->m_backglassImage.m_image         ? m_b2s->m_backglassImage.m_image
-           : m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage.m_image
-                                                : m_b2s->m_backglassOnImage.m_image)
    , m_pinmameControllers(
         msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
         [](std::vector<ControllerDef>& items)
@@ -38,7 +34,12 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* c
            const string pinmamePrefix(PMPI_GAMEID_PREFIX);
            std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
         },
-        nullptr, [this]() { m_stateSources.Refresh(); m_segSources.Refresh(); })
+        nullptr,
+        [this]()
+        {
+           m_stateSources.Refresh();
+           m_segSources.Refresh();
+        })
    , m_segSources(
         msgApi, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG,
         [this](std::vector<SegSrcId>& items)
@@ -70,12 +71,9 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* c
                     });
               });
         },
-        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& items) { OnStateSrcChanged({ }); }); },
+        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& items) { OnStateSrcChanged({}); }); },
         [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& items) { OnStateSrcChanged(items); }); })
 {
-   m_backglassDmdOverlay.LoadSettings(false);
-   m_scoreViewDmdOverlay.LoadSettings(true);
-
    const VPXTextureInfo* dmdTexInfo = nullptr;
    if (m_b2s->m_dmdImage.m_image)
       dmdTexInfo = GetTextureInfo(m_b2s->m_dmdImage.m_image);
@@ -98,6 +96,32 @@ void B2SRenderer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned in
 {
    msgApi->RegisterSetting(endpointId, &showGrillProp);
    msgApi->RegisterSetting(endpointId, &dualModeProp);
+}
+
+namespace
+{
+   int MSGPIAPI ShowGrillGet(void*) { return showGrillProp_Get(); }
+   void MSGPIAPI ShowGrillSet(void*, int v) { showGrillProp_Set(v); }
+   int MSGPIAPI DualModeGet(void*) { return dualModeProp_Get(); }
+   void MSGPIAPI DualModeSet(void*, int v) { dualModeProp_Set(v); }
+}
+
+void B2SRenderer::FillSettingsItems(PagedUIItemDef* items)
+{
+   items[0] = {};
+   items[0].type = PAGEDUI_ITEM_BOOL;
+   items[0].id = "ShowGrill";
+   items[0].label = "Show Grill";
+   items[0].tooltip = "Show Grill";
+   items[0].storage = PAGEDUI_STORAGE_HOST;
+   items[0].boolProp = { 0, &ShowGrillGet, &ShowGrillSet };
+   items[1] = {};
+   items[1].type = PAGEDUI_ITEM_ENUM;
+   items[1].id = "DualMode";
+   items[1].label = "Dual Mode";
+   items[1].tooltip = "Active mode for dual backglasses (authentic or fantasy)";
+   items[1].storage = PAGEDUI_STORAGE_HOST;
+   items[1].enumProp = { 1, 2, dualModeValues, 1, &DualModeGet, &DualModeSet };
 }
 
 void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
@@ -635,9 +659,6 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    m_b2sWidth = bgTexInfo ? static_cast<float>(bgTexInfo->width) : 1024.f;
    m_b2sHeight = (bgTexInfo ? static_cast<float>(bgTexInfo->height) : 768.f) - m_grillCut;
 
-   m_backglassDmdOverlay.SetEnableOverride(server->GetHideDMD());
-   m_backglassDmdOverlay.LoadSettings(false);
-
    ctx->srcWidth = m_b2sWidth;
    ctx->srcHeight = m_b2sHeight;
 
@@ -687,10 +708,13 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
          0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
    }
 
-   // Draw illuminations, scores and DMD overlay
+   // Draw illuminations, scores and DMD overlays
    RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed, dualMode);
    RenderScores(ctx, server, m_b2s->m_backglassScores, elapsed);
-   m_backglassDmdOverlay.Render(ctx);
+   const VPXTexture backImage = m_b2s->m_backglassImage.m_image ? m_b2s->m_backglassImage.m_image
+      : m_b2s->m_backglassOffImage.m_image                      ? m_b2s->m_backglassOffImage.m_image
+                                                                : m_b2s->m_backglassOnImage.m_image;
+   RenderDisplays(ctx, server, 0, backImage);
 
    return true;
 }
@@ -703,9 +727,6 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
       return false;
 
    // Update to latest settings state
-   m_scoreViewDmdOverlay.SetEnableOverride(server->GetHideDMD());
-   m_scoreViewDmdOverlay.LoadSettings(true);
-
    ctx->srcWidth = m_dmdWidth;
    ctx->srcHeight = m_dmdHeight;
 
@@ -722,12 +743,28 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
          0.f, 0.f, 0.f, // No rotation
          0.f, 0.f, m_dmdWidth, m_dmdHeight);
 
-   // Draw illuminations, scores and DMD overlay
+   // Draw illuminations, scores and DMD overlays
    RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations, elapsed, B2SDualMode::Both); // Reference does not dual-filter score view bulbs
    RenderScores(ctx, server, m_b2s->m_dmdScores, elapsed);
-   m_scoreViewDmdOverlay.Render(ctx);
+   RenderDisplays(ctx, server, 1, m_b2s->m_dmdImage.m_image);
 
    return true;
 }
 
+// Renders the <DMD> displays of the document targeted at this view, growing the overlay pool on
+// demand (a display presence in the document means enabled; HideDMD overrides them all)
+void B2SRenderer::RenderDisplays(VPXRenderContext2D* ctx, B2SServer* server, int target, VPXTexture backImage)
+{
+   size_t n = 0;
+   for (B2SDMDDisplay& display : server->GetOverlayDoc().displays)
+   {
+      if (display.target != target)
+         continue;
+      if (n >= m_dmdOverlays.size())
+         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::DMDOverlay>(m_vpxApi, m_resURIResolver, m_dmdTex));
+      m_dmdOverlays[n]->SetEnableOverride(server->GetHideDMD());
+      m_dmdOverlays[n]->Render(ctx, &display, backImage);
+      n++;
+   }
+}
 }
