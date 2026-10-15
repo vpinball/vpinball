@@ -169,7 +169,6 @@ public:
    const string& GetName() const override { return m_name; }
    void SetIsOpaque(const bool v) const;
 
-   HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override; // Lazily created view of the image, suitable for GPU sampling
 
    size_t GetEstimatedGPUSize() const;
@@ -206,7 +205,6 @@ private:
    mutable std::weak_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
    mutable std::mutex m_decodeMutex; // Serializes the lazy decode, so concurrent requests decode once (taken before m_imageBufferMutex)
    mutable std::mutex m_imageBufferMutex; // Guards m_imageBuffer and the MD5/opacity writes below, held briefly (preload & compression workers race the logic thread)
-   mutable HBITMAP m_hbmGDIVersion = nullptr;
    // Dirty flags are cleared after the value is set, so a reader seeing a clear flag needs no lock
    mutable std::atomic<bool> m_isMD5Dirty { true };
    mutable uint8_t m_md5Hash[16] = {};

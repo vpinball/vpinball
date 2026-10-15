@@ -18,6 +18,7 @@
 #include "ui/win/dialogs/SoundDialog.h"
 #include "ui/win/dialogs/TableInfoDialog.h"
 #include "ui/win/parts/TableWinUIPart.h"
+#include "ui/win/TextureGDI.h"
 #include "unordered_dense.h"
 
 #include <memory>
@@ -156,6 +157,9 @@ public:
    IWinUIPart *GetUIPart(DragPoint *point);
 
    CComObject<PinTable> *const m_table;
+
+   // Lazily created GDI views of the table's textures, cached for editor painting (freed with this editor)
+   TextureGDICache m_gdiTextureCache;
 
    // UI parts stacked under the mouse at the last HitTest call, front to back (used by the context menu "stacked elements" list and the drawing order dialog)
    vector<IWinUIPart *> m_allHitElements;

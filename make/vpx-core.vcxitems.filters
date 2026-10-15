@@ -720,6 +720,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/IWinUIPart.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/TextureGDI.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.cpp">
       <Filter>ui\win\parts</Filter>
     </ClCompile>
@@ -1818,6 +1821,9 @@
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.h">
+      <Filter>ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/TextureGDI.h">
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.h">

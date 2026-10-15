@@ -24,6 +24,7 @@
 #include "parts/timer.h"
 #include "parts/trigger.h"
 #include "ui/win/PinTableWnd.h"
+#include "ui/win/TextureGDI.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
@@ -331,7 +332,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                const int x = (xsize - width) / 2;
                const int y = (ysize - height) / 2;
 
-               if (HBITMAP hbmp = ppi->GetGDIBitmap())
+               if (HBITMAP hbmp = m_tableEditor->m_gdiTextureCache.Get(*ppi))
                {
                   HDC hdcDD = CreateCompatibleDC(nullptr);
                   HBITMAP oldHBM = (HBITMAP)SelectObject(hdcDD, hbmp);
@@ -669,6 +670,7 @@ void ImageDialog::DeleteImage()
                m_doNotChange = false;
                m_overallFilesize -= ppi->GetFileSize();
                m_overallGPUsize -= ppi->GetEstimatedGPUSize();
+               m_tableEditor->m_gdiTextureCache.Remove(*ppi); // ppi is deleted below, drop its cached GDI view
                pt->RemoveImage(ppi);
 
                // The previous selection is now deleted, so look again from the top of the list

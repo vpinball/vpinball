@@ -534,6 +534,8 @@ set(VPX_WINDOWS_SOURCES
    src/ui/win/PinTableMDI.h
    src/ui/win/PinTableWnd.cpp
    src/ui/win/PinTableWnd.h
+   src/ui/win/TextureGDI.cpp
+   src/ui/win/TextureGDI.h
    src/ui/win/WinEditor.cpp
    src/ui/win/WinEditor.h
    src/ui/win/WinApp.cpp
