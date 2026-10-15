@@ -252,6 +252,8 @@ set(VPX_SOURCES
    src/renderer/Sampler.h
    src/renderer/Shader.cpp
    src/renderer/Shader.h
+   src/renderer/TextRenderer.cpp
+   src/renderer/TextRenderer.h
    src/renderer/Texture.cpp
    src/renderer/Texture.h
    src/renderer/TextureCompressor.cpp

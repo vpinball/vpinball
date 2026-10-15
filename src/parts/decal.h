@@ -13,6 +13,7 @@
 #include "utils/fileio.h"
 
 class MeshBuffer;
+typedef struct TTF_Font TTF_Font;
 
 class DecalData final : public BaseProperty
 {
@@ -90,6 +91,10 @@ public:
 
 private:
    void GetTextSize(int * const px, int * const py);
+
+   TTF_Font *LoadFont();
+   void CloseFont();
+   TTF_Font *m_pFont = nullptr; // Lazily loaded by LoadFont
 
    Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;

@@ -10,18 +10,46 @@
 #include "physics/PhysicsEngine.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
+#include "renderer/TextRenderer.h"
 #include "renderer/trace.h"
 
-#ifndef __STANDALONE__
-#include <wxx_wincore.h> // Add CDC, CClientDC, CBitmap, CFont (Win32 editor decal text rendering)
-#endif
+#include <SDL3_ttf/SDL_ttf.h>
 
 
-#define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
+// Equivalent of the GDI AUTOLEADING metric (tm.tmAscent - tm.tmInternalLeading / 4): the spacing between
+// stacked glyph cells, minus a quarter of the font's internal leading for tighter stacking
+static int GetAutoLeading(const TTF_Font *font)
+{
+   const int internalLeading = std::max(0, TTF_GetFontLineSkip(font) - (TTF_GetFontAscent(font) - TTF_GetFontDescent(font)));
+   return TTF_GetFontAscent(font) - internalLeading / 4;
+}
+
+// GDI's DrawText with DT_WORDBREAK on a 1 pixel wide rectangle wraps the text at word
+// boundaries, one word per line
+static vector<string> WrapWords(const string &text)
+{
+   vector<string> lines;
+   size_t start = 0;
+   while (start < text.size())
+   {
+      start = text.find_first_not_of(" \t\r\n", start);
+      if (start == string::npos)
+         break;
+      const size_t end = text.find_first_of(" \t\r\n", start);
+      lines.push_back(text.substr(start, end == string::npos ? string::npos : end - start));
+      if (end == string::npos)
+         break;
+      start = end;
+   }
+   if (lines.empty())
+      lines.emplace_back();
+   return lines;
+}
 
 Decal::~Decal()
 {
    assert(m_renderer == nullptr);
+   CloseFont();
 }
 
 Decal *Decal::CopyForPlay() const
@@ -101,6 +129,23 @@ void Decal::WriteRegDefaults()
 }
 
 
+TTF_Font *Decal::LoadFont()
+{
+   if (m_pFont == nullptr)
+      m_pFont = TextRenderer::LoadFont(m_d.m_font, m_ptable);
+   return m_pFont;
+}
+
+void Decal::CloseFont()
+{
+   if (m_pFont)
+   {
+      TTF_CloseFont(m_pFont);
+      TTF_Quit();
+      m_pFont = nullptr;
+   }
+}
+
 string Decal::GetFontName() const
 {
    return m_d.m_font.name;
@@ -108,55 +153,37 @@ string Decal::GetFontName() const
 
 void Decal::GetTextSize(int * const px, int * const py)
 {
-#ifndef __STANDALONE__
+   TTF_Font *const font = LoadFont();
+   if (font == nullptr)
+   {
+      *px = *py = 0;
+      return;
+   }
    const int len = (int)m_d.m_text.length();
-   LOGFONT lf = m_d.m_font.ToLogFont();
-   const HFONT hFont = CreateFontIndirect(&lf);
-   constexpr int alignment = DT_LEFT;
-
-   const CClientDC clientDC(nullptr);
-   const CFont hFontOld = clientDC.SelectObject(hFont);
-
-   TEXTMETRIC tm;
-   clientDC.GetTextMetrics(tm);
    if (m_d.m_verticalText)
    {
-      // Do huge amounts of work to get rid of the descent and internal ascent of the font, because it leaves ugly spaces
-      *py = AUTOLEADING * len;
+      // Each character is drawn in its own cell, stacked with the font's auto leading
+      *py = GetAutoLeading(font) * len;
       *px = 0;
       for (int i = 0; i < len; i++)
       {
-         RECT rcOut;
-         rcOut.left = 0;
-         rcOut.top = 0;		//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
-         rcOut.right = 0x1;
-         rcOut.bottom = 0x1;
-         ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str() + i, 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
-
-         *px = max(*px, (int)rcOut.right);
+         int w, h;
+         TTF_GetStringSize(font, m_d.m_text.c_str() + i, 1, &w, &h);
+         *px = max(*px, w);
       }
    }
    else
    {
-      *py = tm.tmAscent;
-
-      RECT rcOut;
-      rcOut.left = 0;
-      rcOut.top = 0;			//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
-      rcOut.right = 0x1;
-      rcOut.bottom = 0x1;
-      ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str(), len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
-
-      *px = rcOut.right;
+      *py = TTF_GetFontAscent(font);
+      // The text is wrapped at word boundaries: the width is the widest word
+      *px = 0;
+      for (const string &line : WrapWords(m_d.m_text))
+      {
+         int w, h;
+         TTF_GetStringSize(font, line.c_str(), line.length(), &w, &h);
+         *px = max(*px, w);
+      }
    }
-
-   clientDC.SelectObject(hFontOld);
-
-   DeleteObject(hFont);
-#else
-   *py = 10;
-   *px = max(6, 6 * static_cast<int>(m_d.m_text.length()));
-#endif
 }
 
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
@@ -334,123 +361,113 @@ void Decal::RenderSetup(Renderer *renderer)
    EnsureSize();
    UpdateBounds();
 
-#ifndef __STANDALONE__
-   if (m_d.m_decaltype == DecalText)
+   // Re-resolve the font now that the table (and its embedded fonts) is fully available
+   CloseFont();
+   if (TTF_Font *const font = m_d.m_decaltype == DecalText ? LoadFont() : nullptr; font)
    {
-      RECT rcOut = { };
       const int len = (int)m_d.m_text.length();
-      LOGFONT lf = m_d.m_font.ToLogFont();
-      const HFONT hFont = CreateFontIndirect(&lf);
-      int alignment = DT_LEFT;
+      const int ascent = TTF_GetFontAscent(font);
+      const int descent = -TTF_GetFontDescent(font); // SDL_ttf reports a negative descent
+      const int internalLeading = max(0, TTF_GetFontLineSkip(font) - (ascent + descent));
+      const int autoLeading = ascent - internalLeading / 4;
+      const int lineHeight = TTF_GetFontLineSkip(font);
 
-      const CClientDC clientDC(nullptr);
-
-      CFont hFontOld = clientDC.SelectObject(hFont);
-
-      TEXTMETRIC tm;
-      clientDC.GetTextMetrics(tm);
-
+      int imgW = 0;
+      int imgH = 0;
       float charheight;
       if (m_d.m_verticalText)
       {
-         int maxwidth = 0;
-
          for (int i = 0; i < len; i++)
          {
-            rcOut.left = 0;
-            rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing
-            rcOut.right = 1;
-            rcOut.bottom = 1;
-            ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str() + i, 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
-            maxwidth = max(maxwidth, (int)rcOut.right);
+            int w, h;
+            TTF_GetStringSize(font, m_d.m_text.c_str() + i, 1, &w, &h);
+            imgW = max(imgW, w);
          }
-
-         rcOut.bottom += AUTOLEADING * (len - 1);
-         rcOut.right = maxwidth;
+         imgH = autoLeading * (len - 1) + (ascent + descent);
 
          charheight = m_realheight / (float)len;
       }
       else
       {
-         rcOut.left = 0;
-         rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing
-         rcOut.right = 1;
-         rcOut.bottom = 1;
-         ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str(), len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+         const vector<string> lines = WrapWords(m_d.m_text);
+         for (const string &line : lines)
+         {
+            int w, h;
+            TTF_GetStringSize(font, line.c_str(), line.length(), &w, &h);
+            imgW = max(imgW, w);
+         }
+         imgH = (int)lines.size() * lineHeight;
 
          charheight = m_realheight;
       }
 
-      clientDC.SelectObject(hFontOld);
+      imgW = max(1, imgW);
+      imgH = max(1, imgH);
 
       // Calculate the percentage of the texture which is for oomlats and commas.
-      const float invascent = charheight / (float)tm.tmAscent;
-      m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
-      m_descent = (float)tm.tmDescent * invascent;
-
-      m_textImg = BaseTexture::Create(rcOut.right, rcOut.bottom, BaseTexture::SRGBA);
+      const float invascent = charheight / (float)ascent;
+      m_leading = (float)internalLeading * invascent /*m_d.m_height*/;
+      m_descent = (float)descent * invascent;
 
       if (m_d.m_color == RGB(255, 255, 255))
          m_d.m_color = RGB(254, 255, 255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
       else if (m_d.m_color == RGB(0, 0, 0))
          m_d.m_color = RGB(0, 0, 1);
 
-      BITMAPINFO bmi = {};
-      bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-      bmi.bmiHeader.biWidth = m_textImg->width();
-      bmi.bmiHeader.biHeight = -(LONG)m_textImg->height();
-      bmi.bmiHeader.biPlanes = 1;
-      bmi.bmiHeader.biBitCount = 32;
-      bmi.bmiHeader.biCompression = BI_RGB;
-      bmi.bmiHeader.biSizeImage = 0;
+      m_textImg = BaseTexture::Create(imgW, imgH, BaseTexture::SRGBA);
 
-      void *bits;
-      const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
-
-      assert(hbm);
-
-      CDC dc;
-      dc.CreateCompatibleDC(nullptr);
-      const CBitmap oldBmp = dc.SelectObject(hbm);
-
-      dc.SelectObject(static_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
-      dc.PatBlt(0, 0, rcOut.right, rcOut.bottom, PATCOPY);
-
-      hFontOld = dc.SelectObject(hFont);
-
-      dc.SetTextColor(m_d.m_color);
-      dc.SetBkMode(TRANSPARENT);
-      dc.SetTextAlign(TA_LEFT | TA_TOP | TA_NOUPDATECP);
-      alignment = DT_CENTER;
-
-      if (m_d.m_verticalText)
+      SDL_Surface *const surface = SDL_CreateSurface(imgW, imgH, SDL_PIXELFORMAT_ABGR8888);
+      if (surface)
       {
-         for (int i = 0; i < len; i++)
+         SDL_FillSurfaceRect(surface, nullptr, SDL_MapRGBA(SDL_GetPixelFormatDetails(surface->format), nullptr, 255, 255, 255, 255));
+
+         const SDL_Color textColor = { GetRValue(m_d.m_color), GetGValue(m_d.m_color), GetBValue(m_d.m_color), 255 };
+         if (m_d.m_verticalText)
          {
-            rcOut.top = AUTOLEADING * i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing
-            rcOut.bottom = rcOut.top + 100;
-            dc.DrawText(m_d.m_text.c_str() + i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+            // Each character is centered in its own cell, stacked with the font's auto leading
+            for (int i = 0; i < len; i++)
+            {
+               SDL_Surface *const glyph = TTF_RenderText_Blended(font, m_d.m_text.c_str() + i, 1, textColor);
+               if (glyph)
+               {
+                  const SDL_Rect dst = { (imgW - glyph->w) / 2, autoLeading * i, glyph->w, glyph->h };
+                  SDL_BlitSurface(glyph, nullptr, surface, &dst);
+                  SDL_DestroySurface(glyph);
+               }
+            }
          }
-      }
-      else
-         dc.DrawText(m_d.m_text.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+         else
+         {
+            // Each word is centered on its own line
+            const vector<string> lines = WrapWords(m_d.m_text);
+            for (size_t i = 0; i < lines.size(); i++)
+            {
+               if (lines[i].empty())
+                  continue;
+               SDL_Surface *const line = TTF_RenderText_Blended(font, lines[i].c_str(), lines[i].length(), textColor);
+               if (line)
+               {
+                  const SDL_Rect dst = { (imgW - line->w) / 2, (int)i * lineHeight, line->w, line->h };
+                  SDL_BlitSurface(line, nullptr, surface, &dst);
+                  SDL_DestroySurface(line);
+               }
+            }
+         }
 
-      // Copy and set to opaque
-      const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
-            D3DCOLOR* __restrict dest = (D3DCOLOR*)m_textImg->data();
-      for (unsigned int i = 0; i < m_textImg->height(); i++)
-      {
-         for (unsigned int l = 0; l < m_textImg->width(); l++, dest++, bitsd++)
-            *dest = *bitsd | 0xFF000000u;
-         dest += m_textImg->pitch()/4 - m_textImg->width();
-      }
+         // Copy and set to opaque
+         const uint32_t *__restrict src = (const uint32_t *)surface->pixels;
+         uint32_t *__restrict dest = (uint32_t *)m_textImg->data();
+         for (unsigned int i = 0; i < m_textImg->height(); i++)
+         {
+            for (unsigned int l = 0; l < m_textImg->width(); l++, dest++, src++)
+               *dest = *src | 0xFF000000u;
+            src += surface->pitch / 4 - m_textImg->width();
+            dest += m_textImg->pitch() / 4 - m_textImg->width();
+         }
 
-      dc.SelectObject(hFontOld);
-      dc.SelectObject(oldBmp);
-      DeleteObject(hFont);
-      DeleteObject(hbm);
+         SDL_DestroySurface(surface);
+      }
    }
-#endif
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -529,6 +546,7 @@ void Decal::RenderRelease()
    assert(m_renderer != nullptr);
    m_textImg = nullptr;
    m_meshBuffer = nullptr;
+   CloseFont();
    m_renderer = nullptr;
 }
 

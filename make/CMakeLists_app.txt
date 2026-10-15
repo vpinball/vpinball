@@ -195,6 +195,7 @@ if(PLATFORM STREQUAL "windows")
       zlibstatic.lib
       $<IF:$<STREQUAL:${ARCH},x64>,freeimage64.lib,freeimage.lib>
       $<IF:$<STREQUAL:${ARCH},x64>,SDL364.lib,SDL3.lib>
+      $<IF:$<STREQUAL:${ARCH},x64>,SDL3_ttf64.lib,SDL3_ttf.lib>
    )
 
    if(RENDERER STREQUAL "BGFX")
@@ -265,6 +266,7 @@ if(PLATFORM STREQUAL "windows")
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,freeimage64.dll,freeimage.dll>" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SciLexerVP64.dll,SciLexerVP.dll>" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SDL364.dll,SDL3.dll>" "$<TARGET_FILE_DIR:vpinball>"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SDL3_ttf64.dll,SDL3_ttf.dll>" "$<TARGET_FILE_DIR:vpinball>"
       )
       if(RENDERER STREQUAL "BGFX")
          add_custom_command(TARGET vpinball POST_BUILD

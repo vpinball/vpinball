@@ -10,8 +10,11 @@
 #include "renderer/RenderCommand.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
+#include "renderer/TextRenderer.h"
 #include "renderer/trace.h"
 #include "utils/color.h"
+
+#include <SDL3_ttf/SDL_ttf.h>
 
 
 Textbox::~Textbox()
@@ -200,17 +203,6 @@ void Textbox::RenderSetup(Renderer *renderer)
    assert(m_renderer == nullptr);
    m_renderer = renderer;
 
-#ifndef __STANDALONE__
-   FONTDESC oleFD = m_d.m_font.ToOLEFontDesc();
-   OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFontPlay);
-   delete[] oleFD.lpstrName;
-
-   CY size;
-   m_pIFontPlay->get_Size(&size);
-   size.int64 = (LONGLONG)(size.int64 / 1.5 * (g_pplayer->m_playfieldWnd->GetWidth() * g_pplayer->m_playfieldWnd->GetHeight()));
-   m_pIFontPlay->put_Size(size);
-#endif
-
    const int width = (int)max(m_d.m_v1.x, m_d.m_v2.x) - (int)min(m_d.m_v1.x, m_d.m_v2.x);
    const int height = (int)max(m_d.m_v1.y, m_d.m_v2.y) - (int)min(m_d.m_v1.y, m_d.m_v2.y);
    if (width > 0 && height > 0)
@@ -225,15 +217,12 @@ void Textbox::RenderRelease()
 {
    assert(m_renderer != nullptr);
    m_texture = nullptr;
-   SAFE_RELEASE(m_pIFontPlay);
-#ifdef __STANDALONE__
    if (m_pFont)
    {
       TTF_CloseFont(m_pFont);
       TTF_Quit();
       m_pFont = nullptr;
    }
-#endif
    m_renderer = nullptr;
 }
 
@@ -339,72 +328,6 @@ void Textbox::Render(const unsigned int renderMask)
          rcOut.right = width - border * 2;
          rcOut.bottom = height - border * 2;
 
-#ifndef __STANDALONE__
-         BITMAPINFO bmi = {};
-         bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-         bmi.bmiHeader.biWidth = width;
-         bmi.bmiHeader.biHeight = -height;
-         bmi.bmiHeader.biPlanes = 1;
-         bmi.bmiHeader.biBitCount = 32;
-         bmi.bmiHeader.biCompression = BI_RGB;
-         bmi.bmiHeader.biSizeImage = 0;
-
-         void *bits;
-         const HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
-         assert(hbm);
-
-         const HDC hdc = CreateCompatibleDC(nullptr);
-         const HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
-
-         const HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
-         const HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
-         PatBlt(hdc, 0, 0, width, height, PATCOPY);
-         SelectObject(hdc, hbrushold);
-         DeleteObject(hbrush);
-
-         HFONT hFont;
-         m_pIFontPlay->get_hFont(&hFont);
-         const HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
-         SetTextColor(hdc, m_d.m_fontcolor);
-         SetBkMode(hdc, TRANSPARENT);
-         SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
-
-         int alignment;
-         switch (m_d.m_talign)
-         {
-         case TextAlignLeft: alignment = DT_LEFT; break;
-
-         default:
-         case TextAlignCenter: alignment = DT_CENTER; break;
-
-         case TextAlignRight: alignment = DT_RIGHT; break;
-         }
-
-         DrawText(hdc, m_d.m_text.c_str(), (int)m_d.m_text.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-
-         GdiFlush(); // make sure everything is drawn
-
-         // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
-         const D3DCOLOR *__restrict bitsd = (D3DCOLOR *)bits;
-         D3DCOLOR *__restrict dest = (D3DCOLOR *)m_texture->data();
-         for (unsigned int i = 0; i < m_texture->height(); i++)
-         {
-            for (unsigned int l = 0; l < m_texture->width(); l++, dest++, bitsd++)
-            {
-               const D3DCOLOR src = *bitsd;
-               if (m_d.m_transparent && ((src & 0xFFFFFFu) == m_d.m_backcolor))
-                  *dest = 0x00000000; // set to black & alpha full transparent
-               else
-                  *dest = ((src & 0x000000FFu) << 16) | (src & 0x0000FF00u) | ((src & 0x0000FF0000u) >> 16) | 0xFF000000u;
-            }
-            dest += m_texture->pitch() / 4 - m_texture->width();
-         }
-
-         SelectObject(hdc, oldFont);
-         SelectObject(hdc, oldBmp);
-         DeleteDC(hdc);
-         DeleteObject(hbm);
-#else
          SDL_Surface* pSurface = SDL_CreateSurface(m_texture->width(), m_texture->height(), SDL_PIXELFORMAT_ABGR8888);
          if (pSurface) {
             SDL_FillSurfaceRect(pSurface, NULL,
@@ -457,7 +380,6 @@ void Textbox::Render(const unsigned int renderMask)
             memcpy(m_texture->data(), pSurface->pixels, pSurface->pitch * pSurface->h);
             SDL_DestroySurface(pSurface);
          }
-#endif
          m_renderer->m_renderDevice->m_texMan.SetDirty(m_texture.get());
       }
 
@@ -673,147 +595,12 @@ STDMETHODIMP Textbox::put_Visible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-#ifdef __STANDALONE__
-#ifdef VPX_HAS_WIN32_SDK
-// File of an installed Windows font, from the registry list of installed fonts. Its entries are named
-// '<face>[ & <face>...] (TrueType|OpenType)', with a file name relative to the Windows font folder, or
-// a full path for the fonts installed for the current user only
-static std::filesystem::path FindWindowsFontFile(const string& face)
-{
-   const wstring wface = MakeWString(face);
-   for (const HKEY root : { HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE })
-   {
-      HKEY key;
-      if (RegOpenKeyExW(root, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts", 0, KEY_READ, &key) != ERROR_SUCCESS)
-         continue;
-      wstring file;
-      WCHAR name[512];
-      WCHAR data[MAX_PATH];
-      for (DWORD i = 0; file.empty(); i++)
-      {
-         DWORD nameLength = static_cast<DWORD>(std::size(name));
-         DWORD dataSize = sizeof(data);
-         DWORD type;
-         const LSTATUS result = RegEnumValueW(key, i, name, &nameLength, nullptr, &type, reinterpret_cast<LPBYTE>(data), &dataSize);
-         if (result == ERROR_NO_MORE_ITEMS)
-            break;
-         if (result != ERROR_SUCCESS || type != REG_SZ)
-            continue;
-         wstring faces(name, nameLength);
-         if (const size_t format = faces.rfind(L" ("); format != wstring::npos)
-            faces.resize(format);
-         for (size_t start = 0; start <= faces.size();)
-         {
-            const size_t end = std::min(faces.find(L" & ", start), faces.size());
-            if (_wcsicmp(faces.substr(start, end - start).c_str(), wface.c_str()) == 0)
-            {
-               file.assign(data, wcsnlen(data, dataSize / sizeof(WCHAR)));
-               break;
-            }
-            start = end + 3;
-         }
-      }
-      RegCloseKey(key);
-      if (!file.empty())
-      {
-         std::filesystem::path path(file);
-         if (path.is_relative())
-         {
-            WCHAR windowsDir[MAX_PATH];
-            const UINT length = GetWindowsDirectoryW(windowsDir, static_cast<UINT>(std::size(windowsDir)));
-            path = std::filesystem::path(wstring(windowsDir, length)) / L"Fonts" / path;
-         }
-         return path;
-      }
-   }
-   return {};
-}
-#endif
-
 TTF_Font* Textbox::LoadFont()
 {
    // The font cannot change during play, so load it once and keep it until RenderRelease
-   if (m_pFont)
-      return m_pFont;
-
-   if (!TTF_Init())
-   {
-      PLOGW << "Unable to initialize SDL_ttf: " << SDL_GetError();
-      return nullptr;
-   }
-
-   TTF_Font* pFont = nullptr;
-
-   string fontName = m_d.m_font.name;
-   std::erase(fontName, ' ');
-
-   // Font faces to look for, best match first, with the file suffix used for the fonts provided along the table and the
-   // face name suffix of installed fonts. The style a face lacks is synthesized by SDL_ttf (unless it is already built in)
-   struct FontStyle
-   {
-      string fileSuffix;
-      string faceSuffix;
-      bool bold, italic;
-   };
-   vector<FontStyle> styles;
-   if (m_d.m_font.IsBold() && m_d.m_font.IsItalic())
-      styles.push_back({ "-BoldItalic"s, " Bold Italic"s, true, true });
-   if (m_d.m_font.IsBold())
-      styles.push_back({ "-Bold"s, " Bold"s, true, false });
-   if (m_d.m_font.IsItalic())
-      styles.push_back({ "-Italic"s, " Italic"s, false, true });
-   styles.push_back({ "-Regular"s, string(), false, false });
-
-   const std::filesystem::path tablePath = PathFromFilename(GetPTable()->m_filename);
-
-   std::filesystem::path path;
-   const FontStyle* faceStyle = &styles.back();
-   for (const auto& style : styles) {
-      path = find_case_insensitive_file_path(tablePath / (fontName + style.fileSuffix + ".ttf"));
-#ifdef VPX_HAS_WIN32_SDK
-      if (path.empty())
-         path = FindWindowsFontFile(m_d.m_font.name + style.faceSuffix);
-#endif
-      if (!path.empty()) {
-         pFont = TTF_OpenFont(PathToUTF8(path).c_str(), (float)(m_d.m_font.size / 10000.)); // SDL expects UTF-8
-         if (pFont) {
-            PLOGI << "Font loaded: path=" << PathToUTF8(path);
-            faceStyle = &style;
-            break;
-         }
-      }
-   }
-
-   if (!pFont) {
-      path = tablePath / (fontName + styles[0].fileSuffix + ".ttf");
-      PLOGW << "Unable to locate font: path=" << PathToUTF8(path);
-
-      path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets) / "LiberationSans-Regular.ttf"sv;
-      pFont = TTF_OpenFont(PathToUTF8(path).c_str(), (float)(m_d.m_font.size / 10000.)); // SDL expects UTF-8
-      if (pFont) {
-         PLOGW << "Default font loaded: path=" << PathToUTF8(path);
-      }
-      else {
-         PLOGW << "Unable to load font: path=" << PathToUTF8(path);
-         TTF_Quit();
-         return nullptr;
-      }
-   }
-
-   TTF_FontStyleFlags style = TTF_STYLE_NORMAL;
-   if (m_d.m_font.IsBold() && !faceStyle->bold)
-      style |= TTF_STYLE_BOLD;
-   if (m_d.m_font.IsItalic() && !faceStyle->italic)
-      style |= TTF_STYLE_ITALIC;
-   if (m_d.m_font.IsUnderline())
-      style |= TTF_STYLE_UNDERLINE;
-   if (m_d.m_font.IsStrikeThrough())
-      style |= TTF_STYLE_STRIKETHROUGH;
-   TTF_SetFontStyle(pFont, style);
-
-   m_pFont = pFont;
-   return pFont;
+   if (m_pFont == nullptr)
+      m_pFont = TextRenderer::LoadFont(m_d.m_font, GetPTable());
+   return m_pFont;
 }
-#endif
 
 #pragma endregion
