@@ -7,7 +7,8 @@
 #include <filesystem>
 #include <charconv>
 
-namespace ScoreView {
+namespace Nixie
+{
 
 constexpr inline char cLower(char c)
 {
@@ -18,9 +19,7 @@ constexpr inline char cLower(char c)
 
 static inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
-   return strA.length() == strB.length()
-      && std::equal(strA.begin(), strA.end(), strB.begin(),
-         [](char a, char b) { return cLower(a) == cLower(b); });
+   return strA.length() == strB.length() && std::equal(strA.begin(), strA.end(), strB.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
 inline void StrToLower(std::filesystem::path& path)
@@ -81,19 +80,18 @@ bool try_parse_float(const string& str, float& value)
    value = std::strtof(p, &e);
    return (p != e);
 #else
-   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc {});
 #endif
 }
 
 bool try_parse_int(const string& str, int& value)
 {
    const string tmp = trim_string(str);
-   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc {});
 }
 
 #ifdef _WIN32
-template <class T>
-static T GetModulePath(HMODULE hModule)
+template <class T> static T GetModulePath(HMODULE hModule)
 {
    T path;
    DWORD size = MAX_PATH;
@@ -122,7 +120,7 @@ std::filesystem::path GetPluginPath()
 {
 #ifdef _WIN32
    HMODULE hm = nullptr;
-   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("ScoreViewPluginLoad"), &hm) == 0)
+   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("NixiePluginLoad"), &hm) == 0)
       return std::filesystem::path();
 
 #ifdef _UNICODE

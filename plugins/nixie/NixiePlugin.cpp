@@ -11,78 +11,79 @@
 
 #include "common.h"
 
-#include "ScoreView.h"
+#include "Nixie.h"
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
 
-namespace ScoreView
+namespace Nixie
 {
 
-MSGPI_FOLDER_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Folder where custom ScoreView layouts are stored", true, "", 1024);
+MSGPI_FOLDER_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Folder where custom Nixie layouts are stored", true, "", 1024);
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
-static const MsgPluginAPI* msgApi = nullptr;
+   static const MsgPluginAPI* msgApi
+   = nullptr;
 static unsigned int getVpxApiId;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
-static std::unique_ptr<ScoreView> scoreView;
+static std::unique_ptr<Nixie> nixie;
 
 static int OnRender(VPXRenderContext2D* ctx, void*)
 {
    if ((ctx->window != VPXWindowId::VPXWINDOW_Backglass) && (ctx->window != VPXWindowId::VPXWINDOW_ScoreView))
       return false;
-   if (scoreView == nullptr)
+   if (nixie == nullptr)
    {
       VPXTableInfo tableInfo {};
       vpxApi->GetTableInfo(&tableInfo);
       std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path);
 
-      scoreView = std::make_unique<ScoreView>(msgApi, endpointId, vpxApi);
+      nixie = std::make_unique<Nixie>(msgApi, endpointId, vpxApi);
 
       // First try  a file matching the table file with scv extension
-      scoreView->Load(tablePath.replace_extension(".scv"));
+      nixie->Load(tablePath.replace_extension(".scv"));
 
       // Then try  a file matching the table's parent folder name with scv extension
-      if (!scoreView->HasLayouts())
+      if (!nixie->HasLayouts())
       {
          std::filesystem::path folderFile = tablePath.parent_path().filename();
          folderFile += ".scv"; // Appended, instead of replace_extension, otherwise "AFM 1.2" turns into "AFM 1.scv"
-         scoreView->Load(tablePath.parent_path() / folderFile);
+         nixie->Load(tablePath.parent_path() / folderFile);
       }
 
       // Allow the user to provide a custom folder (out of application path) with his default layouts ?
-      if (!scoreView->HasLayouts())
+      if (!nixie->HasLayouts())
       {
          if (std::string customPath = layoutFolderProp_Get(); !customPath.empty())
-            scoreView->Load(PluginStrings::PathFromUTF8OrNative(customPath));
+            nixie->Load(PluginStrings::PathFromUTF8OrNative(customPath));
       }
 
       // Finally defaults to base layouts provided with the plugin
-      if (!scoreView->HasLayouts())
+      if (!nixie->HasLayouts())
       {
          // Load default layouts provided with plugin
          std::filesystem::path path;
-         #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
          VPXInfo vpxInfo {};
          vpxApi->GetVpxInfo(&vpxInfo);
-         path = PluginStrings::PathFromNative(vpxInfo.path) / "plugins"sv / "scoreview"sv;
-         #else
+         path = PluginStrings::PathFromNative(vpxInfo.path) / "plugins"sv / "nixie"sv;
+#else
          path = GetPluginPath();
-         #endif
+#endif
          path = path / "layouts"sv;
-         scoreView->Load(path);
+         nixie->Load(path);
       }
    }
-   return scoreView->Render(ctx) ? 1 : 0;
+   return nixie->Render(ctx) ? 1 : 0;
 }
 
 static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
-   static constexpr AncillaryRendererDef entry = { "ScoreView", "ScoreView", "Renderer for generic score displays", nullptr, OnRender };
+   static constexpr AncillaryRendererDef entry = { "Nixie", "Nixie", "Renderer for generic score displays", nullptr, OnRender };
    GetAncillaryRendererMsg* msg = static_cast<GetAncillaryRendererMsg*>(msgData);
    if (msg->window == VPXWindowId::VPXWINDOW_ScoreView)
    {
@@ -92,20 +93,15 @@ static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData
    }
 }
 
-static void OnGameStart(const unsigned int eventId, void* userData, void* eventData)
-{
-}
+static void OnGameStart(const unsigned int eventId, void* userData, void* eventData) { }
 
-static void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
-{
-   scoreView = nullptr;
-}
+static void OnGameEnd(const unsigned int eventId, void* userData, void* eventData) { nixie = nullptr; }
 
 }
 
-using namespace ScoreView;
+using namespace Nixie;
 
-MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI NixiePluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -122,9 +118,9 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
    msgApi->RegisterSetting(endpointId, &layoutFolderProp);
 }
 
-MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload()
+MSGPI_EXPORT void MSGPIAPI NixiePluginUnload()
 {
-   scoreView = nullptr;
+   nixie = nullptr;
    msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer, nullptr);
    msgApi->UnsubscribeMsg(onGameStartId, OnGameStart, nullptr);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd, nullptr);

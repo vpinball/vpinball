@@ -5,55 +5,55 @@
   </ImportGroup>
   
   <ItemGroup>
-    <ClCompile Include="../../plugins/scoreview/common.cpp" />
-    <ClCompile Include="../../plugins/scoreview/ScoreViewPlugin.cpp" />
-    <ClCompile Include="../../plugins/scoreview/ScoreView.cpp" />
+    <ClCompile Include="../../plugins/nixie/common.cpp" />
+    <ClCompile Include="../../plugins/nixie/NixiePlugin.cpp" />
+    <ClCompile Include="../../plugins/nixie/Nixie.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../plugins/scoreview/common.h" />
-    <ClInclude Include="../../plugins/scoreview/ScoreView.h" />
+    <ClInclude Include="../../plugins/nixie/common.h" />
+    <ClInclude Include="../../plugins/nixie/Nixie.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="../../plugins/scoreview/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/nixie/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\scoreview\"
-        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\scoreview\layouts"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\scoreview\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\scoreview\"
-        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\scoreview\layouts\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\nixie\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\nixie\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\nixie\layouts" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\nixie\layouts"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\nixie\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\nixie\"
+        copy /y  "$(SolutionDir)..\..\plugins\nixie\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\nixie\layouts\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\scoreview\"
-        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\scoreview\layouts"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\scoreview\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\scoreview\"
-        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\scoreview\layouts\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\nixie\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\nixie\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\nixie\layouts" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\nixie\layouts"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\nixie\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\nixie\"
+        copy /y  "$(SolutionDir)..\..\plugins\nixie\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\nixie\layouts\"
 
-        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\scoreview\"
-        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\scoreview\layouts"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\scoreview\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\scoreview\"
-        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\scoreview\layouts\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\nixie\" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\nixie\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\nixie\layouts" md "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\nixie\layouts"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\nixie\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\nixie\"
+        copy /y  "$(SolutionDir)..\..\plugins\nixie\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\nixie\layouts\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../../plugins/scoreview;$(SolutionDir)../../third-party/include/;$(SolutionDir)../../src/core</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../plugins/nixie;$(SolutionDir)../../third-party/include/;$(SolutionDir)../../src/core</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <PropertyGroup>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../plugins;$(SolutionDir)../../plugins/scoreview</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../plugins;$(SolutionDir)../../plugins/nixie</IncludePath>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{91425C91-FDB2-4170-A5C9-A068357E59E3}</ProjectGuid>
-    <RootNamespace>plugin-scoreview</RootNamespace>
+    <RootNamespace>plugin-nixie</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   

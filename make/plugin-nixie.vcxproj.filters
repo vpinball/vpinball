@@ -7,13 +7,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../plugins/scoreview/common.cpp">
+    <ClCompile Include="../../plugins/nixie/common.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="../../plugins/scoreview/ScoreViewPlugin.cpp">
+    <ClCompile Include="../../plugins/nixie/NixiePlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="../../plugins/scoreview/ScoreView.cpp">
+    <ClCompile Include="../../plugins/nixie/Nixie.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp">
@@ -21,10 +21,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../plugins/scoreview/common.h">
+    <ClInclude Include="../../plugins/nixie/common.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="../../plugins/scoreview/ScoreView.h">
+    <ClInclude Include="../../plugins/nixie/Nixie.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
@@ -32,7 +32,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="../../plugins/scoreview/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/nixie/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
   </ItemGroup>

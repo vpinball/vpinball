@@ -231,15 +231,15 @@ if "%vsv%" == "2026" (
 
 
 REM ***************************************************************************************************
-copy /V /Y "plugin-scoreview.vcxproj" "../.build/vsproject/plugin-scoreview.vcxproj"
-copy /V /Y "plugin-scoreview.vcxproj.filters" "../.build/vsproject/plugin-scoreview.vcxproj.filters"
+copy /V /Y "plugin-nixie.vcxproj" "../.build/vsproject/plugin-nixie.vcxproj"
+copy /V /Y "plugin-nixie.vcxproj.filters" "../.build/vsproject/plugin-nixie.vcxproj.filters"
 
 if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-scoreview.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-nixie.vcxproj" /out:"../.build/vsproject/plugin-nixie.vcxproj"
 )
 
 if "%vsv%" == "2026" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-scoreview.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-nixie.vcxproj" /out:"../.build/vsproject/plugin-nixie.vcxproj"
 )
 
 
