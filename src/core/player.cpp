@@ -35,7 +35,6 @@
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
 #ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/worker.h"
@@ -1599,9 +1598,9 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
 
 #ifdef VPX_ENABLE_WIN32_EDITOR // report to the script editor
    if (m_ptable->m_tableEditor)
-      m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
+      m_ptable->m_tableEditor->OnScriptError(type, line, column, description, stackDump);
    else if (m_ptable->m_liveBaseTable && m_ptable->m_liveBaseTable->m_tableEditor)
-      m_ptable->m_liveBaseTable->m_tableEditor->m_pcv->OnScriptError(type, line, column, description, stackDump);
+      m_ptable->m_liveBaseTable->m_tableEditor->OnScriptError(type, line, column, description, stackDump);
 #endif
 }
 

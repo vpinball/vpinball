@@ -39,7 +39,6 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 #ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #endif
 #include "utils/BiffReader.h"
@@ -370,7 +369,7 @@ void PinTable::AddPart(IEditable *const part)
       m_scriptableNames.insert(id);
 #ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
-         m_tableEditor->m_pcv->AddItem(scriptable, false);
+         m_tableEditor->OnScriptableAdded(scriptable, false);
 #endif
    }
 }
@@ -393,7 +392,7 @@ void PinTable::RemovePart(IEditable *const part)
       m_scriptableNames.erase(it);
 #ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
-         m_tableEditor->m_pcv->RemoveItem(scriptable);
+         m_tableEditor->OnScriptableRemoved(scriptable);
 #endif
    }
    part->m_ptable = nullptr;
@@ -414,7 +413,7 @@ void PinTable::RenamePart(IEditable *const part, const string& newName)
    m_scriptableNames.insert(id);
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
-      m_tableEditor->m_pcv->ReplaceName(scriptable, newName); // Before the rename, as the code view finds the item by its current name
+      m_tableEditor->OnScriptableRenamed(scriptable, newName); // Before the rename, as the code view finds the item by its current name
 #endif
    scriptable->m_name = newName;
 }
@@ -459,7 +458,7 @@ void PinTable::AddCollection(CComObject<Collection> *collection)
    m_scriptableNames.insert(id);
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
-      m_tableEditor->m_pcv->AddItem((IScriptable *)collection, false);
+      m_tableEditor->OnScriptableAdded((IScriptable *)collection, false);
 #endif
 }
 
@@ -470,7 +469,7 @@ void PinTable::RemoveCollection(CComObject<Collection> *collection)
    m_scriptableNames.erase(it);
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
-      m_tableEditor->m_pcv->RemoveItem((IScriptable *)collection);
+      m_tableEditor->OnScriptableRemoved((IScriptable *)collection);
 #endif
    const int idx = FindIndexOf(m_vcollection, collection);
    assert(idx != -1);
@@ -492,7 +491,7 @@ void PinTable::RenameCollection(Collection *collection, const string &newName)
    m_scriptableNames.insert(id);
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
-      m_tableEditor->m_pcv->ReplaceName(collection, newName); // Before the rename, as the code view finds the item by its current name
+      m_tableEditor->OnScriptableRenamed(collection, newName); // Before the rename, as the code view finds the item by its current name
 #endif
    collection->m_name = newName;
 }
@@ -698,9 +697,8 @@ PinTable* PinTable::CopyForPlay() const
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (live_table->m_tableEditor)
    {
-      live_table->m_tableEditor->m_pcv->AddItem(live_table, false);
-      live_table->m_tableEditor->m_pcv->AddItem(live_table->m_psgt, true);
-      //live_table->m_tableEditor->m_pcv->AddItem(live_table->m_tableEditor->m_pcv->m_pdm, false);
+      live_table->m_tableEditor->OnScriptableAdded(live_table, false);
+      live_table->m_tableEditor->OnScriptableAdded(live_table->m_psgt, true);
    }
 #endif
 
@@ -764,7 +762,7 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
       if (m_tableEditor)
       {
          m_tableEditor->SetCleanPoint(eSaveClean);
-         m_tableEditor->m_pcv->SetClean(eSaveClean);
+         m_tableEditor->SetScriptClean(eSaveClean);
       }
 #endif
       // Save user custom settings file (if any) along the table file, only once saved (a failed 'Save As' must not leave an orphan settings file)
@@ -828,7 +826,7 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
       if (m_tableEditor)
       {
          m_tableEditor->SetCleanPoint(eSaveClean);
-         m_tableEditor->m_pcv->SetClean(eSaveClean);
+         m_tableEditor->SetScriptClean(eSaveClean);
       }
 #endif
       SetDirtyScript(eSaveClean); // The Win32 code view does this too, other frontends edit the script directly
@@ -1527,10 +1525,9 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
    {
-      m_tableEditor->m_pcv->SetScript(m_script_text);
-      m_tableEditor->m_pcv->AddItem(this, false);
-      m_tableEditor->m_pcv->AddItem(m_psgt, true);
-      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
+      m_tableEditor->SetScript(m_script_text);
+      m_tableEditor->OnScriptableAdded(this, false);
+      m_tableEditor->OnScriptableAdded(m_psgt, true);
    }
 #endif
 
@@ -3683,7 +3680,7 @@ void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
    m_external_script_cp1252 = m_script_text.size() != buffer.size() - bom; // Only converted (and so longer) if it was not UTF-8
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
-      m_tableEditor->m_pcv->SetScript(m_script_text);
+      m_tableEditor->SetScript(m_script_text);
 #endif
 
    m_external_script_name = scriptPath;

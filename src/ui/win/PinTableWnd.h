@@ -5,6 +5,7 @@
 #include <wxx_wincore.h> // Add CWnd, CDC, CMenu, ...
 
 #include "core/pinundo.h"
+#include "core/ScriptInterpreter.h"
 #include "math/bbox.h"
 #include "parts/light.h"
 #include "parts/pintable.h"
@@ -138,6 +139,16 @@ public:
    void OnPartAdded(IEditable *part);
    void OnPartRemoved(IEditable *part);
 
+   // Script editor (code view) notifications
+   void SetScript(const string &script);
+   void OnScriptableAdded(IScriptable *scriptable, bool global);
+   void OnScriptableRemoved(IScriptable *scriptable);
+   void OnScriptableRenamed(IScriptable *scriptable, const string &newName); // Must be called before the rename, as the code view finds the item by its current name
+   void SetScriptClean(SaveDirtyState sds);
+   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
+   bool IsScriptEditorVisible() const;
+   void SetScriptEditorVisible(bool visible);
+
    // Returns the UI part owned by this editor for the given table part, i.e. an entry of m_uiParts, or m_tablePart
    // for the table itself. nullptr if none.
    IWinUIPart *GetUIPart(IEditable *part);
@@ -148,8 +159,6 @@ public:
 
    // UI parts stacked under the mouse at the last HitTest call, front to back (used by the context menu "stacked elements" list and the drawing order dialog)
    vector<IWinUIPart *> m_allHitElements;
-
-   std::unique_ptr<class CodeViewer> m_pcv;
 
    ViewSetupID m_currentBackglassMode = ViewSetupID::BG_DESKTOP; // POV shown in the UI (not persisted)
 
@@ -211,6 +220,9 @@ private:
 
    // Multi-selection: selected UI parts, primary selection first. Contains only the table's UI part when nothing is selected.
    vector<IWinUIPart *> m_vmultisel;
+
+   // Script editor (code view) owned by this editor
+   std::unique_ptr<class CodeViewer> m_pcv;
 
    // Selection snapshot stored in undo records and restored on undo. Entries are stored as (editable, sub part
    // index) so that they stay valid when the corresponding UI parts are destroyed and recreated (undo reloads
