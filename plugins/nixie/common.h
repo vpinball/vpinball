@@ -42,7 +42,7 @@ using std::vector;
 // VPX main API
 #include "plugins/VPXPlugin.h"
 
-namespace ScoreView
+namespace Nixie
 {
 
 #ifdef _MSC_VER
@@ -51,8 +51,17 @@ namespace ScoreView
 #define PATH_SEPARATOR_CHAR '/'
 #endif
 
-template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { assert(!(mx < mn)); const T c = x < mx ? x : mx; return c < mn ? mn : c; }
-template <typename T> constexpr __forceinline T saturate(const T x) { const T c = x < T { 1 } ? x : T { 1 }; return c < T { 0 } ? T { 0 } : c; }
+template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx)
+{
+   assert(!(mx < mn));
+   const T c = x < mx ? x : mx;
+   return c < mn ? mn : c;
+}
+template <typename T> constexpr __forceinline T saturate(const T x)
+{
+   const T c = x < T { 1 } ? x : T { 1 };
+   return c < T { 0 } ? T { 0 } : c;
+}
 
 string TrimLeading(const string& str, const string& whitespace);
 string TrimTrailing(const string& str, const string& whitespace);

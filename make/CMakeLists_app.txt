@@ -787,7 +787,7 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
       PinMAMEPlugin
       PUPPlugin
       RemoteControlPlugin
-      ScoreViewPlugin
+      NixiePlugin
       SerumPlugin
       VNIPlugin
       WMPPlugin

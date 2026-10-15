@@ -41,7 +41,7 @@
     <ProjectReference Include="plugin-remote-control.vcxproj">
       <Project>{57516b53-6e7e-4618-93b3-4f5222f28807}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-scoreview.vcxproj">
+    <ProjectReference Include="plugin-nixie.vcxproj">
       <Project>{91425C91-FDB2-4170-A5C9-A068357E59E3}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-serum.vcxproj">

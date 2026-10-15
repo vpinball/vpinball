@@ -53,7 +53,7 @@ tasks {
             doFirst { destinationDir.listFiles()?.forEach { it.deleteRecursively() } }
             from(repoDir.resolve("src/assets")) { into("assets") }
             from(repoDir.resolve("src/scripts")) { into("scripts") }
-            from(repoDir.resolve("plugins/scoreview/layouts")) { into("plugins/scoreview/layouts") }
+            from(repoDir.resolve("plugins/nixie/layouts")) { into("plugins/nixie/layouts") }
             from(repoDir.resolve("plugins/flexdmd/assets")) { into("plugins/flexdmd/assets") }
             from(repoDir.resolve("plugins/inspector/assets")) { into("plugins/inspector/assets") }
             into(destinationDir)

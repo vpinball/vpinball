@@ -1,40 +1,40 @@
 # plugin CMake file to be included in main project CMakelists
 
-# --- ScoreView plugin ---
+# --- Nixie plugin ---
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}")
 
-set(SCOREVIEW_PLUGIN_SOURCES
-   plugins/scoreview/common.cpp
-   plugins/scoreview/common.h
-   plugins/scoreview/ScoreViewPlugin.cpp
-   plugins/scoreview/ScoreView.h
-   plugins/scoreview/ScoreView.cpp
+set(NIXIE_PLUGIN_SOURCES
+   plugins/nixie/common.cpp
+   plugins/nixie/common.h
+   plugins/nixie/NixiePlugin.cpp
+   plugins/nixie/Nixie.h
+   plugins/nixie/Nixie.cpp
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 )
 
 if(BUILD_SHARED)
-   add_library(ScoreViewPlugin MODULE ${SCOREVIEW_PLUGIN_SOURCES})
+   add_library(NixiePlugin MODULE ${NIXIE_PLUGIN_SOURCES})
 
    if(NOT (PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw"))
-      target_compile_definitions(ScoreViewPlugin PRIVATE
+      target_compile_definitions(NixiePlugin PRIVATE
          "__forceinline=__attribute__((always_inline)) inline"
       )
    endif()
 
-   target_include_directories(ScoreViewPlugin PUBLIC
+   target_include_directories(NixiePlugin PUBLIC
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
-      plugins/scoreview
+      plugins/nixie
    )
 
    if(PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw")
       if(MSVC)
-         set_target_properties(ScoreViewPlugin PROPERTIES
+         set_target_properties(NixiePlugin PROPERTIES
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
          )
          set(OPT_COMMON
@@ -56,46 +56,46 @@ if(BUILD_SHARED)
             /std:c++20
             $<$<NOT:$<STREQUAL:${ARCH},x64>>:/arch:SSE2>
          )
-         target_compile_options(ScoreViewPlugin PUBLIC
+         target_compile_options(NixiePlugin PUBLIC
             $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
             $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
          )
-         target_link_options(ScoreViewPlugin PUBLIC
+         target_link_options(NixiePlugin PUBLIC
             $<$<CONFIG:Release>:/INCREMENTAL:NO>
             $<$<CONFIG:Release>:/OPT:REF>
             $<$<CONFIG:Release>:/OPT:ICF>
             $<$<CONFIG:Release>:/LTCG>
          )
       endif()
-      set_target_properties(ScoreViewPlugin PROPERTIES
+      set_target_properties(NixiePlugin PROPERTIES
          PREFIX ""
-         OUTPUT_NAME "$<IF:$<STREQUAL:${ARCH},x64>,plugin-scoreview64,plugin-scoreview>"
+         OUTPUT_NAME "$<IF:$<STREQUAL:${ARCH},x64>,plugin-nixie64,plugin-nixie>"
       )
    else()
-      set_target_properties(ScoreViewPlugin PROPERTIES
+      set_target_properties(NixiePlugin PROPERTIES
          PREFIX ""
-         OUTPUT_NAME "plugin-scoreview"
+         OUTPUT_NAME "plugin-nixie"
       )
       if(PLATFORM STREQUAL "macos")
-         set_target_properties(ScoreViewPlugin PROPERTIES
+         set_target_properties(NixiePlugin PROPERTIES
             SUFFIX ".dylib"
          )
       endif()
    endif()
 
-   set_target_properties(ScoreViewPlugin PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/scoreview"
+   set_target_properties(NixiePlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/nixie"
    )
 
-   add_custom_command(TARGET ScoreViewPlugin POST_BUILD
-      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/scoreview/plugin.cfg" "${PLUGINS_DIR}/scoreview/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/scoreview/layouts" "${PLUGINS_DIR}/scoreview/layouts"
+   add_custom_command(TARGET NixiePlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/nixie/plugin.cfg" "${PLUGINS_DIR}/nixie/plugin.cfg"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/nixie/layouts" "${PLUGINS_DIR}/nixie/layouts"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")
-      add_custom_command(TARGET ScoreViewPlugin POST_BUILD
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/scoreview/libgcc_s_seh-1.dll"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/scoreview/libstdc++-6.dll"
+      add_custom_command(TARGET NixiePlugin POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/nixie/libgcc_s_seh-1.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/nixie/libstdc++-6.dll"
       )
    endif()
 endif()
@@ -103,30 +103,30 @@ endif()
 if(BUILD_STATIC)
    add_compile_options(-fPIC)
 
-   add_library(ScoreViewPlugin STATIC ${SCOREVIEW_PLUGIN_SOURCES})
+   add_library(NixiePlugin STATIC ${NIXIE_PLUGIN_SOURCES})
 
    if(PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw")
-      target_include_directories(ScoreViewPlugin PUBLIC
+      target_include_directories(NixiePlugin PUBLIC
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
-         plugins/scoreview
+         plugins/nixie
       )
    else()
-      target_include_directories(ScoreViewPlugin PUBLIC
+      target_include_directories(NixiePlugin PUBLIC
          ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
          ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
-         plugins/scoreview
+         plugins/nixie
       )
    endif()
 
-   target_compile_definitions(ScoreViewPlugin PRIVATE
+   target_compile_definitions(NixiePlugin PRIVATE
       "__forceinline=__attribute__((always_inline)) inline"
    )
 
-   set_target_properties(ScoreViewPlugin PROPERTIES
+   set_target_properties(NixiePlugin PROPERTIES
       PREFIX ""
-      OUTPUT_NAME "plugin-scoreview"
+      OUTPUT_NAME "plugin-nixie"
    )
 endif()
