@@ -376,10 +376,7 @@ public:
 
    bool m_noTimeCorrect = false; // Used so the frame after debugging does not do normal time correction
 
-   // Used to detect script hangs (modal is used by script to tell VPX that it is in a modal state, so disabling watch dog)
-   bool m_detectScriptHang;
-   int m_lastKnownGoodCounter = 0;
-   int m_modalRefCount = 0;
+   bool m_detectScriptHang; // Arm the script interpreter's hang watchdog (a script call that does not return is interrupted)
 
    Primitive *m_implicitPlayfieldMesh = nullptr;
    Flasher *m_implicitVRBackglass = nullptr;
