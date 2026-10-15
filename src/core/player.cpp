@@ -2592,11 +2592,9 @@ void Player::FinishFrame()
    // Close requested with user input
    if (m_closing == CS_USER_INPUT)
    {
-#ifdef VPX_ENABLE_WIN32_EDITOR
-      if (g_pvp && g_pvp->m_disable_pause_menu)
+      if (m_disablePauseMenu)
          SetCloseState(CS_STOP_PLAY);
       else
-#endif
       {
          m_closing = CS_PLAYING;
          m_liveUI->OpenInGameUI();
@@ -2608,11 +2606,7 @@ void Player::FinishFrame()
       exit(-9999);
 
    // Open debugger window (LiveUI, cross-platform)
-   if (m_showDebugger && !m_ptable->IsLocked()
-#ifdef VPX_ENABLE_WIN32_EDITOR
-      && (!g_pvp || !g_pvp->m_disable_pause_menu)
-#endif
-   )
+   if (m_showDebugger && !m_ptable->IsLocked() && !m_disablePauseMenu)
    {
       m_showDebugger = false;
       m_liveUI->m_debuggerUI.Open();

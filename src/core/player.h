@@ -370,6 +370,8 @@ private:
 public:
    bool m_showDebugger = false; // Set to request opening the LiveUI debugger window (consumed by the player loop)
 
+   bool m_disablePauseMenu = false; // Pause menu (in-game UI) and debugger opening disabled; mirrors the -DisablePauseMenu command line flag
+
    bool m_debugBalls = false;    // Draw balls in the foreground via 'O' key
 
    bool m_noTimeCorrect = false; // Used so the frame after debugging does not do normal time correction

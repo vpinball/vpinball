@@ -911,7 +911,8 @@ void WinEditor::DoPlay(const int playMode)
          loadProgress.Create(GetHwnd());
          loadProgress.ShowWindow(SW_SHOWNORMAL);
       }
-      new Player(sessionTable, sessionMode, loadProgress);
+      Player *const player = new Player(sessionTable, sessionMode, loadProgress);
+      player->m_disablePauseMenu = m_disable_pause_menu;
       loadProgress.Destroy();
    }
 
@@ -950,7 +951,8 @@ void WinEditor::DoPlay(const int playMode)
          loadProgress.Create(GetHwnd());
          loadProgress.ShowWindow(SW_SHOWNORMAL);
       }
-      new Player(sessionTable, sessionMode, loadProgress);
+      Player *const player = new Player(sessionTable, sessionMode, loadProgress);
+      player->m_disablePauseMenu = m_disable_pause_menu;
       loadProgress.Destroy();
       if (g_pplayer == nullptr)
       {
