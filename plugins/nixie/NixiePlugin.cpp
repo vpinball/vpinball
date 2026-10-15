@@ -44,14 +44,14 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
 
       nixie = std::make_unique<Nixie>(msgApi, endpointId, vpxApi);
 
-      // First try  a file matching the table file with scv extension
-      nixie->Load(tablePath.replace_extension(".scv"));
+      // First try  a file matching the table file with nix extension
+      nixie->Load(tablePath.replace_extension(".nix"));
 
-      // Then try  a file matching the table's parent folder name with scv extension
+      // Then try  a file matching the table's parent folder name with nix extension
       if (!nixie->HasLayouts())
       {
          std::filesystem::path folderFile = tablePath.parent_path().filename();
-         folderFile += ".scv"; // Appended, instead of replace_extension, otherwise "AFM 1.2" turns into "AFM 1.scv"
+         folderFile += ".nix"; // Appended, instead of replace_extension, otherwise "AFM 1.2" turns into "AFM 1.nix"
          nixie->Load(tablePath.parent_path() / folderFile);
       }
 
