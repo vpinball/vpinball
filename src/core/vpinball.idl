@@ -2203,9 +2203,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(46), helpstring("property DMDPixels")] HRESULT DMDPixels([in] VARIANT pVal);
                 [propput, id(47), helpstring("property DMDColoredPixels")] HRESULT DMDColoredPixels([in] VARIANT pVal);
 
-                [propput, id(560), helpstring("property VideoCapWidth")] HRESULT VideoCapWidth([in] long cWidth);
-                [propput, id(561), helpstring("property VideoCapHeight")] HRESULT VideoCapHeight([in] long cHeight);
-                [propput, id(562), helpstring("property VideoCapUpdate")] HRESULT VideoCapUpdate([in] BSTR cWinTitle);
+                // Deprecated: external window capture is superseded by plugins and may be removed in a future version
+                [propput, id(560), helpstring("property VideoCapWidth (deprecated: superseded by plugins, may be removed)")] HRESULT VideoCapWidth([in] long cWidth);
+                [propput, id(561), helpstring("property VideoCapHeight (deprecated: superseded by plugins, may be removed)")] HRESULT VideoCapHeight([in] long cHeight);
+                [propput, id(562), helpstring("property VideoCapUpdate (deprecated: superseded by plugins, may be removed)")] HRESULT VideoCapUpdate([in] BSTR cWinTitle);
 
                 [propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
                 [propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);

@@ -697,6 +697,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    return S_OK;
 }
 
+// Deprecated: external window capture is superseded by plugins and may be removed in a future version
 STDMETHODIMP Flasher::put_VideoCapWidth(LONG cWidth)
 {
     if (m_videoCapWidth != cWidth) ResetVideoCap(); //resets capture
@@ -705,6 +706,7 @@ STDMETHODIMP Flasher::put_VideoCapWidth(LONG cWidth)
     return S_OK;
 }
 
+// Deprecated: external window capture is superseded by plugins and may be removed in a future version
 STDMETHODIMP Flasher::put_VideoCapHeight(LONG cHeight)
 {
     if (m_videoCapHeight != cHeight) ResetVideoCap(); //resets capture
@@ -724,10 +726,18 @@ void Flasher::ResetVideoCap()
    }
 }
 
+// Deprecated: external window capture is superseded by plugins and may be removed in a future version
 // if PASSED a blank title then we treat this as STOP capture and free resources.
 STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 {
 #ifdef VPX_HAS_WIN32_SDK
+   static bool warned = false; // one deprecation notice per session is enough
+   if (!warned)
+   {
+      warned = true;
+      PLOGW << "Flasher '" << GetName() << "': the VideoCap API is deprecated (superseded by plugins) and may be removed in a future version";
+   }
+
     if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
 
     // if PASS blank title then we treat as STOP capture and free resources.  Should be called on table1_exit

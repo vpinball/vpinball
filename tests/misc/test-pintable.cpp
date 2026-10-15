@@ -6,6 +6,7 @@
 #include "parts/pintable.h"
 #include "parts/timer.h"
 #include "parts/bumper.h"
+#include "parts/flasher.h"
 #include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/surface.h"
@@ -233,6 +234,31 @@ TEST_CASE("PinTable part")
 
       REQUIRE(table->GetCollections().size() == 1);
       CHECK(table->GetCollections()[0]->m_name == "Col1");
+
+      table->Release();
+   }
+
+   SUBCASE("audit reports deprecated flasher VideoCap API use")
+   {
+      PinTable* const table = CreateTestTable();
+
+      Flasher* const flasher = Flasher::COMCreate();
+      flasher->Init(100.f, 200.f, false);
+      flasher->SetName("Flasher1");
+      table->AddPart(flasher);
+      flasher->Release();
+
+      table->m_script_text = "Sub Table1_Init\nFlasher1.VideoCapWidth = 320\nFlasher1.VideoCapUpdate \"cap\"\nEnd Sub\n";
+      const string audit = table->AuditTable(false);
+      CHECK(audit.find("deprecated") != string::npos);
+      CHECK(audit.find("Flasher1") != string::npos);
+
+      // Indirect use (e.g. through a With block or an expression) still reports a generic error
+      table->m_script_text = "Sub Table1_Init\nVideoCapUpdate \"cap\"\nEnd Sub\n";
+      CHECK(table->AuditTable(false).find("VideoCap") != string::npos);
+
+      table->m_script_text = "Sub Table1_Init\nEnd Sub\n";
+      CHECK(table->AuditTable(false).find("VideoCap") == string::npos);
 
       table->Release();
    }

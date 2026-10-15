@@ -258,6 +258,7 @@ public:
    STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
    STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
 
+   // Deprecated: external window capture is superseded by plugins and may be removed in a future version
    STDMETHOD(put_VideoCapWidth)(/*[in]*/ LONG cWidth);
    STDMETHOD(put_VideoCapHeight)(/*[in]*/ LONG cHeight);
    STDMETHOD(put_VideoCapUpdate)(/*[in]*/ BSTR cWinTitle);

@@ -951,9 +951,9 @@ DMDWidth(int) - set width of DMD
 DMDHeight(int) - set height of DMD
 DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height
 DMDColoredPixels(VARIANT) - set array of (long-)values (0..255,0..255,0..255), size needs to match the previously set width and height
-VideoCapWidth(int) - width of the window content to capture
-VideoCapHeight(int) - height of the window content to capture
-VideoCapUpdate(string) - uses the window title of the window content to capture, which is then copied into the flasher texture each time this function is called
+VideoCapWidth(int) - DEPRECATED: superseded by plugins, may be removed in a future version. Width of the window content to capture
+VideoCapHeight(int) - DEPRECATED: superseded by plugins, may be removed in a future version. Height of the window content to capture
+VideoCapUpdate(string) - DEPRECATED: superseded by plugins, may be removed in a future version. Uses the window title of the window content to capture, which is then copied into the flasher texture each time this function is called
 UserValue(any) - can store any user defined value for re-use later-on
 
 
