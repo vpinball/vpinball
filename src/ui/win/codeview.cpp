@@ -668,43 +668,37 @@ void CodeViewer::InitPreferences()
 
 int CodeViewer::OnCreate(CREATESTRUCT& cs)
 {
-   m_haccel = LoadAccelerators(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDR_CODEVIEWACCEL)); // Accelerator keys
+   m_haccel = LoadAccelerators(GetApp()->GetInstanceHandle(), MAKEINTRESOURCE(IDR_CODEVIEWACCEL)); // Accelerator keys
 
    m_hwndMain = GetHwnd();
    SetWindowLongPtr(GWLP_USERDATA, (size_t)this);
 
    /////////////////// Item / Event Lists //!! ALL THIS STUFF IS NOT RES/DPI INDEPENDENT! also see WM_SIZE handler
 
-   m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText", WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
    ::SetWindowText(m_hwndItemText, "Table component:");
    ::SendMessage(m_hwndItemText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   m_hwndItemList = CreateWindowEx(0, "ComboBox", "Objects",
-      WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      5, 30+2, 330, 400, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndItemList = CreateWindowEx(
+      0, "ComboBox", "Objects", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL, 5, 30 + 2, 330, 400, m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
    ::SetWindowLongPtr(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
    ::SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndEventText = CreateWindowEx(0, "Static", "EventsText", WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
    ::SetWindowText(m_hwndEventText, "Create Sub from component:");
    ::SendMessage(m_hwndEventText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
-      WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      360 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndEventList = CreateWindowEx(
+      0, "ComboBox", "Events", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL, 360 + 5, 30 + 2, 330, 400, m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
    ::SetWindowLongPtr(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
    ::SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText", WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
    ::SetWindowText(m_hwndFunctionText, "Go to Sub/Function:");
    ::SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
-      WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-      730 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndFunctionList
+      = CreateWindowEx(0, "ComboBox", "Functions", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 730 + 5, 30 + 2, 330, 400, m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
    ::SetWindowLongPtr(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
    ::SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
@@ -717,19 +711,16 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    //////////////////////// Last error widget
 
-   m_hwndLastErrorTextArea = CreateWindowEx(0, "Edit", "",
-      WS_CHILD | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE,
-      0, 0, 0, 0, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndLastErrorTextArea = CreateWindowEx(0, "Edit", "", WS_CHILD | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE, 0, 0, 0, 0, m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
    ::SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
    ::SendMessage(m_hwndLastErrorTextArea, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
 
    //////////////////////// Scintilla text editor
 
-   m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
-      WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
-      0, 30+2 +40, 0, 0, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
+   m_hwndScintilla = CreateWindowEx(0, "Scintilla", "", WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN, 0, 30 + 2 + 40, 0, 0,
+      m_hwndMain, nullptr, GetApp()->GetInstanceHandle(), 0);
 
-	::SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // The script text is UTF-8 (Scintilla defaults to the ANSI code page)
+   ::SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // The script text is UTF-8 (Scintilla defaults to the ANSI code page)
 
 	//if still using old dll load VB lexer instead
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
@@ -1629,7 +1620,7 @@ void CodeViewer::PreCreate(CREATESTRUCT& cs)
    cs.cx = w;
    cs.cy = h;
    cs.style = WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-   cs.hInstance = g_app->GetInstanceHandle();
+   cs.hInstance = GetApp()->GetInstanceHandle();
    cs.lpszClass = "CVFrame";
    cs.lpszName = "Script";
 }
@@ -1637,8 +1628,8 @@ void CodeViewer::PreCreate(CREATESTRUCT& cs)
 void CodeViewer::PreRegisterClass(WNDCLASS& wc)
 {
    wc.style = CS_DBLCLKS;
-   wc.hInstance = g_app->GetInstanceHandle();
-   wc.hIcon = LoadIcon(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDI_SCRIPT));
+   wc.hInstance = GetApp()->GetInstanceHandle();
+   wc.hIcon = LoadIcon(GetApp()->GetInstanceHandle(), MAKEINTRESOURCE(IDI_SCRIPT));
    wc.lpszClassName = "CVFrame";
    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
    wc.lpszMenuName = MAKEINTRESOURCE(IDR_SCRIPTMENU);//nullptr;
@@ -2118,8 +2109,7 @@ BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
          return TRUE;
       case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
          SetLastErrorVisibility(!m_lastErrorWidgetVisible); return TRUE;
-      case ID_SCRIPT_PREFERENCES:
-         DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc, (LPARAM)pcv); return TRUE;
+      case ID_SCRIPT_PREFERENCES: DialogBoxParam(GetApp()->GetInstanceHandle(), MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc, (LPARAM)pcv); return TRUE;
       case ID_FIND:
          pcv->ShowFindDialog(); return TRUE;
       case ID_REPLACE:

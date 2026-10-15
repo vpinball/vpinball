@@ -222,7 +222,8 @@ Win32EditCommand::Win32EditCommand(const std::filesystem::path& tableFilename)
 
 void Win32EditCommand::Execute()
 {
-   WinEditor vpxEditor(g_app->GetInstanceHandle());
+   WinApp winApp; // win32++ application object: must exist before any wxx window is created
+   WinEditor vpxEditor(winApp.GetInstanceHandle());
    g_pvp = &vpxEditor;
    vpxEditor.m_open_minimized = m_minimized;
    vpxEditor.m_disable_pause_menu = m_disablePauseMenu;
@@ -242,7 +243,7 @@ void Win32EditCommand::Execute()
       if (vpxEditor.m_table_played_via_SelectTableOnStart)
          vpxEditor.DoPlay(0);
    }
-   g_app->m_winApp->Run();
+   winApp.Run();
    g_pvp = nullptr;
 }
 #endif

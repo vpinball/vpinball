@@ -976,6 +976,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinEditor.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinApp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/Win32DialogSink.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/ResourceStrings.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/IWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.cpp" />

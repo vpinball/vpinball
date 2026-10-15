@@ -288,7 +288,7 @@ void PinTableWnd::ExportBlueprint()
    //need to get a file name
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_app->GetInstanceHandle();
+   ofn.hInstance = GetApp()->GetInstanceHandle();
    ofn.hwndOwner = m_vpxEditor->GetHwnd();
    ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
    char szBlueprintFileName[MAXSTRING];
@@ -430,7 +430,7 @@ void PinTableWnd::ExportBackdropPOV()
 {
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_app->GetInstanceHandle();
+   ofn.hInstance = GetApp()->GetInstanceHandle();
    ofn.hwndOwner = m_vpxEditor->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
@@ -493,7 +493,7 @@ void PinTableWnd::ExportPhysics()
 
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_app->GetInstanceHandle();
+   ofn.hInstance = GetApp()->GetInstanceHandle();
    ofn.hwndOwner = m_vpxEditor->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
@@ -886,7 +886,7 @@ LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void PinTableWnd::SetMouseCursor()
 {
-   HINSTANCE hinst = g_app->GetInstanceHandle();
+   HINSTANCE hinst = GetApp()->GetInstanceHandle();
    static int oldTool = -1;
 
    if (oldTool != m_vpxEditor->m_ToolCur)
@@ -2169,7 +2169,7 @@ void PinTableWnd::AutoSave()
 
    InMemStructuredStorage *const pstgroot = new InMemStructuredStorage();
 
-   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
+   Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
    const HRESULT hr = m_table->SaveToStorage(pstgroot, feedback);
 
    SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));

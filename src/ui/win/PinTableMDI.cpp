@@ -43,7 +43,7 @@ bool PinTableMDI::CanClose() const
         if (result == IDCANCEL)
             return false;
 
-        Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
+        Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
         if (result == IDYES)
         {
            m_vpxEditor->SetActionCur(LocalString(IDS_SAVING).m_szbuffer);

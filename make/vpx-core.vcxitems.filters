@@ -711,6 +711,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/Win32DialogSink.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/ResourceStrings.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>

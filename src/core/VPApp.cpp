@@ -61,7 +61,6 @@
 #include "parts/PartGroup.h"
 
 #ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/WinApp.h"
 #include "ui/win/WinEditor.h"
 #endif
 
@@ -138,9 +137,6 @@ static VPXAtlModule s_atlModule;
 
 VPApp::VPApp()
    : m_logicalNumberOfProcessors(SDL_GetNumLogicalCPUCores())
-#ifndef __STANDALONE__
-   , m_winApp(std::make_unique<WinApp>())
-#endif
 {
    g_app = this;
 
@@ -168,7 +164,7 @@ VPApp::VPApp()
    #endif
 
    #if defined(_MSC_VER) && !defined(__STANDALONE__)
-      HINSTANCE instance = GetInstanceHandle();
+      HINSTANCE instance = GetModuleHandle(nullptr);
 
       // disable auto-rotate on tablets
       #if (_WIN32_WINNT <= 0x0601)
@@ -370,7 +366,3 @@ void VPApp::InitInstance(bool isPlay)
    g_settingsService.GetAppSettings().SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
    g_settingsService.GetAppSettings().Save();
 }
-
-#ifndef __STANDALONE__
-HINSTANCE VPApp::GetInstanceHandle() const { return m_winApp->GetInstanceHandle(); }
-#endif

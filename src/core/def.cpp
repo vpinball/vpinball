@@ -157,17 +157,10 @@ wstring f2wz(const float f, const bool can_convert_decimal_point)
    return wz;
 }
 
+#ifdef __STANDALONE__
 LocalString::LocalString(const int resid)
 {
    m_szbuffer[0] = '\0';
-#ifndef __STANDALONE__
-   if (resid > 0)
-   {
-      // Note that with the char version of LoadString one cannot get a pointer to the internal buffer directly
-      /*const int cchar =*/LoadString(g_app->GetInstanceHandle(), resid, m_szbuffer, sizeof(m_szbuffer));
-      m_szbuffer[std::size(m_szbuffer)-1] = '\0'; // in case of truncation
-   }
-#else
    static const ankerl::unordered_dense::map<int, const char*> ids_map = {
      { IDS_SCRIPT, "Script" },
      { IDS_SAVEERROR, "There was an error saving the file." },
@@ -194,20 +187,12 @@ LocalString::LocalString(const int resid)
    const ankerl::unordered_dense::map<int, const char*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
       strncpy_s(m_szbuffer, std::size(m_szbuffer), it->second);
-#endif
 }
+#endif
 
+#ifdef __STANDALONE__
 LocalStringW::LocalStringW(const int resid)
 {
-#ifndef __STANDALONE__
-   if (resid > 0)
-   {
-      LPWSTR strPtr = nullptr;
-      const int len = LoadStringW(g_app->GetInstanceHandle(), resid, reinterpret_cast<LPWSTR>(&strPtr), 0);
-      if (len > 0 && strPtr)
-         m_buffer = wstring(strPtr, len);
-   }
-#else
    static const ankerl::unordered_dense::map<int, const wstring> ids_map = {
      { IDS_SCRIPT, L"Script"s },
      { IDS_TB_BUMPER, L"Bumper"s },
@@ -233,8 +218,8 @@ LocalStringW::LocalStringW(const int resid)
    const ankerl::unordered_dense::map<int, const wstring>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
       m_buffer = it->second;
-#endif
 }
+#endif
 
 // Formats a byte size/value into a human-readable string (e.g. 1305486 -> 1.2 MiB).
 string SizeToReadable(const size_t bytes)

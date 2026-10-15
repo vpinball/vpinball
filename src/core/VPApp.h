@@ -34,13 +34,7 @@ public:
 #ifdef VPX_HAS_REGISTERED_TYPELIB
    static CComModule m_module;
 #endif
-#ifndef __STANDALONE__
-   // The win32++ application object, defined in ui/win/WinApp.h (kept opaque here to
-   // keep the win32xx dependency out of this widely included header)
-   class WinApp;
-   std::unique_ptr<WinApp> m_winApp;
-   HINSTANCE GetInstanceHandle() const;
-#endif
+
 
 private:
    std::filesystem::path m_commandLineCustomSettingsFileName; // Override default ini filename, must be defined before InitInstance

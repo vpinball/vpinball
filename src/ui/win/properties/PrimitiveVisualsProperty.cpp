@@ -377,7 +377,8 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_refractionThicknessEdit, CResizer::topright, RD_STRETCH_WIDTH);
 
     const HWND hwndDlg = GetHwnd();
-    const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_app->GetInstanceHandle(), NULL);
+    const HWND toolTipHwnd = CreateWindowEx(
+       NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, GetApp()->GetInstanceHandle(), NULL);
     if (toolTipHwnd)
     {
         ::SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);

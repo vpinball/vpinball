@@ -1025,7 +1025,7 @@ void WinEditor::LoadFileName(const std::filesystem::path& filename, const bool u
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    PinTableWnd *const ppt = mdiTable->GetTableWnd();
-   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_hwndStatusBar);
    const HRESULT hr = ppt->m_table->LoadGameFromFilename(filename, feedback);
 
    const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
@@ -2138,7 +2138,7 @@ void WinEditor::ExportTableMesh()
    //need to get a file name
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = g_app->GetInstanceHandle();
+   ofn.hInstance = GetApp()->GetInstanceHandle();
    ofn.hwndOwner = GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
@@ -2189,7 +2189,7 @@ void WinEditor::SaveTable(const bool saveAs)
       // Need to get a file name: wide dialog, so that any file name can be used
       OPENFILENAMEW ofn = {};
       ofn.lStructSize = sizeof(OPENFILENAMEW);
-      ofn.hInstance = g_app->GetInstanceHandle();
+      ofn.hInstance = GetApp()->GetInstanceHandle();
       ofn.hwndOwner = GetHwnd();
       ofn.lpstrFilter = L"Visual Pinball Tables (*.vpx)\0*.vpx\0";
 
@@ -2227,7 +2227,7 @@ void WinEditor::SaveTable(const bool saveAs)
       renamed = true;
    }
 
-   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_hwndStatusBar);
    SetActionCur(LocalString(IDS_SAVING).m_szbuffer);
    SetCursorCur(IDC_WAIT);
    hr = ptCur->Save(feedback);
@@ -2269,7 +2269,7 @@ void WinEditor::OpenNewTable(size_t tableId)
    ppt->m_glassTopHeight = ppt->m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)
       ppt->m_rgcolorcustom[i] = RGB(0, 0, 0);
-   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_hwndStatusBar);
+   Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_hwndStatusBar);
    ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path), feedback);
    ppt->m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_NextTableID);
    m_NextTableID++;

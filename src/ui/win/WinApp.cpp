@@ -3,14 +3,12 @@
 #include "core/stdafx.h"
 #include "ui/win/WinApp.h"
 
-#ifdef VPX_ENABLE_WIN32_EDITOR
-
 #include "core/extern.h"
 #include "core/player.h"
 #include "ui/win/WinEditor.h"
 
 
-BOOL VPApp::WinApp::OnIdle(LONG)
+BOOL WinApp::OnIdle(LONG)
 {
    if (g_pplayer)
       g_pplayer->m_pluginManager.ProcessAsyncCallbacks();
@@ -37,7 +35,7 @@ static bool IsRealDialogWindow(HWND hWnd)
    return wc.cbWndExtra >= DLGWINDOWEXTRA;
 }
 
-BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
+BOOL WinApp::PreTranslateMessage(MSG &msg)
 {
    if (g_pvp && g_pvp->IsWindow() && msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
    {
@@ -66,5 +64,3 @@ BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
    }
    return __super::PreTranslateMessage(msg);
 }
-
-#endif
