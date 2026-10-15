@@ -20,8 +20,9 @@
     <WineVbsDef Condition="'$(Platform)'=='x64'">$(SolutionDir)..\..\make\winevbs64-msvc.def</WineVbsDef>
     <WineVbsDef Condition="'$(Platform)'=='Win32'">$(SolutionDir)..\..\make\winevbs-msvc.def</WineVbsDef>
     <WineVbsLib>$(IntDir)$([System.IO.Path]::GetFileNameWithoutExtension('$(WineVbsDef)')).lib</WineVbsLib>
-    <VcToolsBinDir Condition="'$(Platform)'=='x64'">$(VC_ExecutablePath_x64)\</VcToolsBinDir>
-    <VcToolsBinDir Condition="'$(Platform)'=='Win32'">$(VC_ExecutablePath_x86)\</VcToolsBinDir>
+    <!-- VC_ExecutablePath_* can be a ';' list (one dir per host arch); take the first -->
+    <VcToolsBinDir Condition="'$(Platform)'=='x64'">$(VC_ExecutablePath_x64.Split(';')[0])\</VcToolsBinDir>
+    <VcToolsBinDir Condition="'$(Platform)'=='Win32'">$(VC_ExecutablePath_x86.Split(';')[0])\</VcToolsBinDir>
     <SDL3TtfLib Condition="'$(Platform)'=='x64'">SDL3_ttf64.lib</SDL3TtfLib>
     <SDL3TtfLib Condition="'$(Platform)'=='Win32'">SDL3_ttf.lib</SDL3TtfLib>
   </PropertyGroup>
