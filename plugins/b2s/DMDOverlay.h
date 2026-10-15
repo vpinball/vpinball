@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "common.h"
+
 #include "plugins/ResURIResolver.h"
+#include "plugins/PagedUIPlugin.h"
 #include "plugins/VPXPlugin.h"
 
 #include <future>
@@ -14,16 +17,19 @@ namespace DMDOverlay
 class DMDOverlay final
 {
 public:
-   DMDOverlay(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage);
+   DMDOverlay(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex);
    ~DMDOverlay();
-   void Render(VPXRenderContext2D* context);
+   // Renders one <DMD> display of the document (bounds in B2S document space); backImage is the
+   // artwork the 'detect position' bounds detection searches in
+   void Render(VPXRenderContext2D* context, B2S::B2SDMDDisplay* display, VPXTexture backImage);
 
-   static void RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId);
-   void LoadSettings(bool isScoreView);
    // HideDMD plugin setting override: -1 = no override, 0 = force visible, 1 = force hidden
    void SetEnableOverride(int enableOverride) { m_enableOverride = enableOverride; }
 
-   void UpdateBackgroundImage(VPXTexture backImage);
+   // Document editing page (see plugins/PagedUIPlugin.h): fills the sheet callbacks editing the
+   // given document (sheet 'context' will be the doc pointer). CommitEdit rewrites the document's
+   // <DMDOverlay> element. The caller still defines the sheet name/description.
+   static void InitEditSheetDef(PagedUISheetDef* sheet, B2S::B2SOverlayDoc* doc);
 
 private:
    template <class T> class vec4 final
@@ -48,12 +54,8 @@ private:
    const VPXPluginAPI* const m_vpxApi;
 
    vec4<int> m_frame;
-   bool m_enable = false;
    int m_enableOverride = -1;
 
-   bool m_detectDmdFrame = false;
-   VPXTexture m_backImage = nullptr;
-   CtlResId m_detectSrcId { };
    bool m_stopSearching = false;
    std::future<vec4<int>> m_frameSearch;
 

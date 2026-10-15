@@ -14,6 +14,7 @@
 namespace B2S
 {
 
+
 MSGPI_INT_VAL_SETTING(allAnimationSlowDownProp, "AllAnimationSlowDown", "Global animation slowdown", "Slowdown factor applied to all backglass animations", true, 1, 100, 1);
 MSGPI_STRING_VAL_SETTING(animationSlowDownsProp, "AnimationSlowDowns", "Per-animation slowdowns", "Semicolon separated 'name=factor' animation slowdown overrides", true, "", 1024);
 static const char* usedLEDTypeValues[] = { "Auto", "Rendered", "Dream7" };
@@ -30,12 +31,92 @@ void B2SServer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int 
    msgApi->RegisterSetting(endpointId, &hideDMDProp);
 }
 
-B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef)
+namespace
+{
+   // The plugin redefines its default "settings" sheet when a backglass file is loaded, to group the
+   // settings under a section header and to expose the file editor (which the host appends as a
+   // navigation entry below the last header). Items reuse the RegisterSetting ids, so they share the
+   // same host persisted properties.
+
+   int MSGPIAPI AllSlowdownGet(void*) { return allAnimationSlowDownProp_Get(); }
+   void MSGPIAPI AllSlowdownSet(void*, int v) { allAnimationSlowDownProp_Set(v); }
+   const char* MSGPIAPI SlowdownsGet(void*) { return animationSlowDownsProp_Get(); }
+   void MSGPIAPI SlowdownsSet(void*, const char* v) { animationSlowDownsProp_Set(v); }
+   int MSGPIAPI LedTypeGet(void*) { return usedLEDTypeProp_Get(); }
+   void MSGPIAPI LedTypeSet(void*, int v) { usedLEDTypeProp_Set(v); }
+   int MSGPIAPI HideB2SDMDGet(void*) { return hideB2SDMDProp_Get(); }
+   void MSGPIAPI HideB2SDMDSet(void*, int v) { hideB2SDMDProp_Set(v); }
+   int MSGPIAPI HideDMDGet(void*) { return hideDMDProp_Get(); }
+   void MSGPIAPI HideDMDSet(void*, int v) { hideDMDProp_Set(v); }
+
+   void FillHeader(PagedUIItemDef& item, const char* label)
+   {
+      item = PagedUIItemDef {};
+      item.type = PAGEDUI_ITEM_HEADER;
+      item.label = label;
+   }
+
+   unsigned int MSGPIAPI SettingsPageCount(void*) { return 1; }
+
+   void MSGPIAPI SettingsPageInfo(void*, unsigned int, PagedUIPageInfo* info)
+   {
+      info->id = "settings";
+      info->title = nullptr;
+      info->info = nullptr;
+   }
+
+   unsigned int MSGPIAPI SettingsItemCount(void*, const char*) { return 9; }
+
+   void MSGPIAPI SettingsGetItems(void*, const char*, PagedUIItemDef* items)
+   {
+      FillHeader(items[0], "Backglass Settings");
+      B2SRenderer::FillSettingsItems(items + 1); // items[1..2]: ShowGrill, DualMode
+      items[3] = {};
+      items[3].type = PAGEDUI_ITEM_ENUM;
+      items[3].id = "UsedLEDType";
+      items[3].label = "Used LED type";
+      items[3].tooltip = "Force the LED display type (Auto = as declared by the .directb2s file)";
+      items[3].storage = PAGEDUI_STORAGE_HOST;
+      items[3].enumProp = { 0, 3, usedLEDTypeValues, 0, &LedTypeGet, &LedTypeSet };
+      items[4] = {};
+      items[4].type = PAGEDUI_ITEM_BOOL;
+      items[4].id = "HideB2SDMD";
+      items[4].label = "Hide B2S DMD";
+      items[4].tooltip = "Hide the score view window";
+      items[4].storage = PAGEDUI_STORAGE_HOST;
+      items[4].boolProp = { 0, &HideB2SDMDGet, &HideB2SDMDSet };
+      items[5] = {};
+      items[5].type = PAGEDUI_ITEM_BOOL;
+      items[5].id = "HideDMD";
+      items[5].label = "Hide DMD";
+      items[5].tooltip = "Hide the DMD overlays";
+      items[5].storage = PAGEDUI_STORAGE_HOST;
+      items[5].boolProp = { 0, &HideDMDGet, &HideDMDSet };
+      items[6] = {};
+      items[6].type = PAGEDUI_ITEM_INT;
+      items[6].id = "AllAnimationSlowDown";
+      items[6].label = "Global animation slowdown";
+      items[6].tooltip = "Slowdown factor applied to all backglass animations";
+      items[6].storage = PAGEDUI_STORAGE_HOST;
+      items[6].intProp = { 1, 100, 1, nullptr, &AllSlowdownGet, &AllSlowdownSet };
+      items[7] = {};
+      items[7].type = PAGEDUI_ITEM_STRING;
+      items[7].id = "AnimationSlowDowns";
+      items[7].label = "Per-animation slowdowns";
+      items[7].tooltip = "Semicolon separated 'name=factor' animation slowdown overrides";
+      items[7].storage = PAGEDUI_STORAGE_HOST;
+      items[7].stringProp = { "", &SlowdownsGet, &SlowdownsSet };
+      FillHeader(items[8], "Modify Backglass");
+   }
+}
+
+B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, const PagedUIPluginAPI* const pagedUIApi, ScriptClassDef* serverClassDef)
    : m_controllerClassProxy(msgApi, endpointId, "PinMAME_"s, "PinMAME_Controller"s, "B2S_"s, serverClassDef)
    , m_controllerProxy(m_controllerClassProxy)
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
    , m_vpxApi(vpxApi)
+   , m_pagedUIApi(pagedUIApi)
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_ancillaryRendererDef({ "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", this, OnRender })
@@ -79,6 +160,12 @@ B2SServer::~B2SServer()
    m_exposedControllers.ClearItems();
    m_exposedStates.ClearItems();
    m_audioSrc.ClearItems();
+
+   if (m_overlaySheetRegistered && m_pagedUIApi != nullptr)
+   {
+      m_pagedUIApi->UnregisterSheet(m_endpointId, "backglass");
+      m_pagedUIApi->UnregisterSheet(m_endpointId, "settings");
+   }
 
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
@@ -160,6 +247,8 @@ void B2SServer::TryLoadB2S()
    const std::filesystem::path b2sFilename = FindB2SFile();
    if (b2sFilename.empty())
       return;
+   m_b2sPath = b2sFilename;
+   RegisterOverlaySheet();
    // B2S file format is heavily unoptimized so perform loading asynchronously (all assets are directly included in the XML file using Base64 encoding)
    m_loadedB2S = std::async(std::launch::async, LoadB2SFile, b2sFilename);
 }
@@ -177,6 +266,35 @@ void B2SServer::SetWorkingDir(const string& workingDir)
    m_workingDir = PluginStrings::PathFromNative(workingDir.c_str());
    TryLoadB2S();
 }
+
+void B2SServer::RegisterOverlaySheet()
+{
+   if (m_pagedUIApi == nullptr || m_overlaySheetRegistered || m_b2sPath.empty())
+      return;
+   // The plugin declared "settings" sheet replaces the implicit default page (same items, sectioned)
+   PagedUISheetDef settingsSheet {};
+   settingsSheet.version = 1;
+   settingsSheet.id = "settings";
+   settingsSheet.name = "Backglass Settings";
+   settingsSheet.description = "Settings of the backglass renderer";
+   settingsSheet.GetPageCount = &SettingsPageCount;
+   settingsSheet.GetPageInfo = &SettingsPageInfo;
+   settingsSheet.GetItemCount = &SettingsItemCount;
+   settingsSheet.GetItems = &SettingsGetItems;
+   m_pagedUIApi->RegisterSheet(m_endpointId, &settingsSheet);
+
+   m_overlayDoc.path = m_b2sPath;
+   m_overlayDoc.requestRefresh = [this]() { m_pagedUIApi->RequestSheetRefresh(m_endpointId, "backglass"); };
+   const string name = "Modify \""s + PluginStrings::PathToUTF8(m_b2sPath.filename()) + "\"";
+   PagedUISheetDef sheet {};
+   sheet.version = 1;
+   sheet.name = name.c_str();
+   sheet.description = "Layout of the loaded backglass document";
+   DMDOverlay::DMDOverlay::InitEditSheetDef(&sheet, &m_overlayDoc);
+   m_pagedUIApi->RegisterSheet(m_endpointId, &sheet);
+   m_overlaySheetRegistered = true;
+}
+
 
 int B2SServer::GetAnimationSlowDown(const string& name) const { return B2SAnimationSlowDown(animationSlowDownsProp_Get(), name); }
 
@@ -261,6 +379,26 @@ std::shared_ptr<B2STable> B2SServer::AcquireB2STable()
    if (!m_b2s && m_loadedB2S.valid() && m_loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
    {
       m_b2s = m_loadedB2S.get();
+      // Document editing: the live configuration starts from the loaded file
+      m_overlayDoc.displays = m_b2s->m_dmdDisplays;
+      for (auto& display : m_overlayDoc.displays)
+         display.doc = &m_overlayDoc;
+      // Artwork bounds of the edited views, used to limit the overlay rect editing ranges
+      const B2SImage& backImage = m_b2s->m_backglassImage.m_image ? m_b2s->m_backglassImage : m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage : m_b2s->m_backglassOnImage;
+      if (backImage.m_image)
+         if (const VPXTextureInfo* texInfo = GetTextureInfo(backImage.m_image))
+         {
+            m_overlayDoc.backglassW = texInfo->width;
+            m_overlayDoc.backglassH = texInfo->height;
+         }
+      if (m_b2s->m_dmdImage.m_image)
+         if (const VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_dmdImage.m_image))
+         {
+            m_overlayDoc.scoreViewW = texInfo->width;
+            m_overlayDoc.scoreViewH = texInfo->height;
+         }
+      if (m_pagedUIApi != nullptr)
+         m_pagedUIApi->RequestSheetRefresh(m_endpointId, "backglass");
       // Pre-register all animation-involved illumination groups so that animation group writes on the
       // render thread update existing map nodes instead of inserting while the script thread may read them
       for (const auto* animations : { &m_b2s->m_backglassAnimations, &m_b2s->m_dmdAnimations })
