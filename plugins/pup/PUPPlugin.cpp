@@ -5,6 +5,7 @@
 
 #include "plugins/MsgPlugin.h"
 #include "plugins/ControllerPlugin.h"
+#include "plugins/PagedUIPlugin.h"
 
 #include "PUPManager.h"
 #include "PUPScreen.h"
@@ -49,6 +50,7 @@ namespace PUP {
 static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
+static PagedUIPluginAPI* pagedUIApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onControllersChangedId;
 static unsigned int getControllersId;
@@ -280,6 +282,10 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
    msgApi->ReleaseMsgID(getScriptApiId);
+
+   const unsigned int getPagedUIApiId = msgApi->GetMsgID(PAGEDUIPI_NAMESPACE, PAGEDUIPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getPagedUIApiId, &pagedUIApi);
+   msgApi->ReleaseMsgID(getPagedUIApiId);
    RegisterPUP_PinDisplay([](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); });
    PUP_PinDisplay_SCD->CreateObject = []()
    {
@@ -300,7 +306,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
       else
          LOGW("PUP folder was not found (settings is '" + PluginStrings::PathToUTF8(pupFolder) + "')");
    }
-   pupManager = std::make_unique<PUPManager>(msgApi, endpointId, rootPath);
+   pupManager = std::make_unique<PUPManager>(msgApi, endpointId, pagedUIApi, rootPath);
 
    onControllersChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG);
    getControllersId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
@@ -325,6 +331,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
 
    scriptApi = nullptr;
    vpxApi = nullptr;
+   pagedUIApi = nullptr;
    msgApi = nullptr;
 
    TTF_Quit();

@@ -13,10 +13,16 @@
     <ClCompile Include="../../plugins/plugins/B2SPluginEventStream.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/pup/PUPPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/pup/PUPCustomPos.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/pup/PUPDMDOverlay.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/pup/PUPFont.cpp">
@@ -57,10 +63,16 @@
     <ClInclude Include="../../plugins/plugins/B2SPluginEventStream.h">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/pup/LibAv.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/pup/PUPCustomPos.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/pup/PUPDMDOverlay.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/pup/PUPFont.h">

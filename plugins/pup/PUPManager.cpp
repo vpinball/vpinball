@@ -6,6 +6,8 @@
 #include "PUPCustomPos.h"
 #include "LibAv.h"
 
+#include <nlohmann/json.hpp>
+
 #include <filesystem>
 #include <fstream>
 
@@ -34,10 +36,12 @@ MSGPI_INT_VAL_SETTING(pupTopperPadBottom, "TopperPadBottom", "Topper Bottom Pad"
 MSGPI_FILE_VAL_SETTING(pupTopperFrameOverlayPath, "TopperFrameOverlay", "Topper Frame Overlay", "Path to an image that will be rendered as an overlay on the topper display", true, "",
    "bmp;jpg;jpeg;png;tga;webp;exr;hdr", 1024);
 
-PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::filesystem::path& rootPath)
+PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const PagedUIPluginAPI* pagedUIApi, const std::filesystem::path& rootPath)
    : m_szRootPath(rootPath)
    , m_endpointId(endpointId)
    , m_msgApi(msgApi)
+   , m_pagedUIApi(pagedUIApi)
+   , m_resURIResolver(*msgApi, endpointId, true, false, false)
    , m_getVpxApiId(m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API))
    , m_getAuxRendererId(m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
@@ -231,6 +235,11 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
    if (m_szPath.empty())
       return;
 
+   // Load the authored display list and expose it through the in game UI
+   m_overlayDoc.path = m_szPath / "displays.pup";
+   LoadDisplays();
+   RegisterOverlaySheet();
+
    // Load playlists
    LoadPlaylists();
 
@@ -332,6 +341,19 @@ void PUPManager::Unload()
    m_screenOrder.clear();
    m_screenMap.clear();
 
+   if (m_overlaySheetRegistered && m_pagedUIApi != nullptr)
+   {
+      m_pagedUIApi->UnregisterSheet(m_endpointId, "displays");
+      m_overlaySheetRegistered = false;
+   }
+   m_overlayDoc = PUPOverlayDoc {};
+   m_dmdOverlays.clear();
+   if (m_dmdTex && m_vpxApi)
+   {
+      m_vpxApi->DeleteTexture(m_dmdTex);
+      m_dmdTex = nullptr;
+   }
+
    m_dmd = nullptr;
    m_dmdTriggerCount = 0;
    m_dmdTriggerDataLoaded = false;
@@ -423,6 +445,90 @@ void PUPManager::LoadPlaylists()
          }
       }
    }
+}
+
+// Loads the authored display list of the pack: a JSON file matching the other .pup files of
+// the folder, holding a 'Displays' array of { Target, Source, X, Y, W, H } objects (Target:
+// "Backglass", "ScoreView" or "Topper"; Source: controller resource URI or empty for the
+// default DMD; X/Y/W/H: bounds in window pixels from the top left)
+void PUPManager::LoadDisplays()
+{
+   m_overlayDoc.displays.clear();
+   const std::filesystem::path szDisplaysPath = find_case_insensitive_file_path(m_overlayDoc.path);
+   if (!szDisplaysPath.empty())
+   {
+      std::ifstream displaysFile;
+      displaysFile.open(szDisplaysPath, std::ifstream::in);
+      if (displaysFile.is_open())
+      {
+         try
+         {
+            const nlohmann::json json = nlohmann::json::parse(displaysFile);
+            // Expected shape: { "Displays": [ ... ] }; a bare top level array is also accepted
+            const nlohmann::json& displays = json.is_object() && json.contains("Displays") ? json["Displays"] : json;
+            if (displays.is_array())
+               for (const nlohmann::json& entry : displays)
+               {
+                  if (!entry.is_object())
+                     continue;
+                  PUPDMDDisplay& display = m_overlayDoc.displays.emplace_back();
+                  const string target = entry.value("Target", "Backglass"s);
+                  display.target = StrCompareNoCase(target, "ScoreView"s) ? 1 : StrCompareNoCase(target, "Topper"s) ? 2 : 0;
+                  display.source = entry.value("Source", ""s);
+                  display.x = entry.value("X", 0);
+                  display.y = entry.value("Y", 0);
+                  display.w = entry.value("W", 0);
+                  display.h = entry.value("H", 0);
+               }
+         }
+         catch (const std::exception& e)
+         {
+            LOGE("Failed to parse " + PluginStrings::PathToUTF8(szDisplaysPath) + ": " + e.what());
+         }
+      }
+      else
+      {
+         LOGE("Unable to load " + PluginStrings::PathToUTF8(szDisplaysPath));
+      }
+   }
+   for (PUPDMDDisplay& display : m_overlayDoc.displays)
+      display.doc = &m_overlayDoc;
+}
+
+void PUPManager::RegisterOverlaySheet()
+{
+   if (m_pagedUIApi == nullptr || m_overlaySheetRegistered || m_overlayDoc.path.empty())
+      return;
+   m_overlayDoc.requestRefresh = [this]() { m_pagedUIApi->RequestSheetRefresh(m_endpointId, "displays"); };
+   const string name = "Modify \""s + PluginStrings::PathToUTF8(m_overlayDoc.path.filename()) + "\"";
+   PagedUISheetDef sheet {};
+   sheet.version = 1;
+   sheet.name = name.c_str();
+   sheet.description = "Layout of the loaded PinUp Player displays";
+   PUPDMDOverlay::InitEditSheetDef(&sheet, &m_overlayDoc);
+   m_pagedUIApi->RegisterSheet(m_endpointId, &sheet);
+   m_overlaySheetRegistered = true;
+}
+
+// Renders the displays of the document targeted at this window, growing the overlay pool on
+// demand (a display presence in the document means enabled)
+int PUPManager::RenderDisplays(VPXRenderContext2D* ctx, int target)
+{
+   if (m_vpxApi == nullptr)
+      return 0;
+   m_overlayDoc.winW[target] = static_cast<int>(ctx->srcWidth);
+   m_overlayDoc.winH[target] = static_cast<int>(ctx->srcHeight);
+   int n = 0;
+   for (PUPDMDDisplay& display : m_overlayDoc.displays)
+   {
+      if (display.target != target)
+         continue;
+      if (n >= static_cast<int>(m_dmdOverlays.size()))
+         m_dmdOverlays.emplace_back(std::make_unique<PUPDMDOverlay>(m_vpxApi, m_resURIResolver, m_dmdTex));
+      m_dmdOverlays[n]->Render(ctx, &display);
+      n++;
+   }
+   return n;
 }
 
 bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
@@ -797,11 +903,13 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    int padRight = 0;
    int padTop = 0;
    int padBottom = 0;
+   int displayTarget = -1; // Target index of the authored displays: 0 = backglass, 1 = score view, 2 = topper
    std::shared_ptr<PUPScreen> rootScreen = nullptr;
    switch (renderCtx->window)
    {
    case VPXWindowId::VPXWINDOW_Topper:
       rootScreen = me->GetScreen(0);
+      displayTarget = 2;
       padLeft = pupTopperPadLeft_Get();
       padRight = pupTopperPadRight_Get();
       padTop = pupTopperPadTop_Get();
@@ -811,6 +919,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       rootScreen = me->GetScreen(2);
       if (!isUsableRoot(rootScreen))
          rootScreen = me->GetScreen(6);
+      displayTarget = 0;
       padLeft = pupBGPadLeft_Get();
       padRight = pupBGPadRight_Get();
       padTop = pupBGPadTop_Get();
@@ -820,6 +929,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       rootScreen = me->GetScreen(5);
       if (!isUsableRoot(rootScreen))
          rootScreen = me->GetScreen(1);
+      displayTarget = 1;
       padLeft = pupSVPadLeft_Get();
       padRight = pupSVPadRight_Get();
       padTop = pupSVPadTop_Get();
@@ -827,14 +937,16 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       break;
    default: break;
    }
-   if (!isUsableRoot(rootScreen))
-      return false;
-
-   if (!LibAV::LibAV::GetInstance().isLoaded)
-      return false;
 
    renderCtx->srcWidth = renderCtx->outWidth;
    renderCtx->srcHeight = renderCtx->outHeight;
+
+   // Authored displays still render (and claim the window) even without a usable screen tree
+   if (!isUsableRoot(rootScreen))
+      return displayTarget >= 0 && me->RenderDisplays(renderCtx, displayTarget) > 0;
+
+   if (!LibAV::LibAV::GetInstance().isLoaded)
+      return false;
    rootScreen->SetBounds(padLeft, padTop, static_cast<int>(renderCtx->srcWidth) - padLeft - padRight, static_cast<int>(renderCtx->srcHeight) - padTop - padBottom);
 
    // Render all children of rootScreen according to the following render order:
@@ -877,6 +989,10 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    renderScreens(false, true, 0, 1);
    renderScreens(false, true, 2, 3);
    renderScreens(true, true, 0, 3);
+
+   // Authored displays render on top of the screen tree
+   if (displayTarget >= 0)
+      me->RenderDisplays(renderCtx, displayTarget);
 
    // Set Game time after rendering to avoid updating while rendering if the decode thread are waiting for it
    if (me->m_vpxApi)

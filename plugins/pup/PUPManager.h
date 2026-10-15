@@ -6,7 +6,11 @@
 
 #include "plugins/B2SPluginEventStream.h"
 #include "plugins/ControllerPlugin.h"
+#include "plugins/PagedUIPlugin.h"
+#include "plugins/ResURIResolver.h"
 #include "plugins/VPXPlugin.h"
+
+#include "PUPDMDOverlay.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4251) // In PupDMD: std::map<uint16_t,PUPDMD::Hash,std::less<uint16_t>,std::allocator<std::pair<const uint16_t,PUPDMD::Hash>>> needs dll-interface
@@ -84,7 +88,7 @@ class PUPTrigger;
 class PUPManager final
 {
 public:
-   PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::filesystem::path& rootPath);
+   PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const PagedUIPluginAPI* pagedUIApi, const std::filesystem::path& rootPath);
    ~PUPManager();
 
    const MsgPluginAPI* GetMsgAPI() const { return m_msgApi; }
@@ -120,6 +124,9 @@ private:
    void UnloadFonts();
    void LoadFonts();
    void LoadPlaylists();
+   void LoadDisplays();
+   void RegisterOverlaySheet();
+   int RenderDisplays(VPXRenderContext2D* ctx, int target);
 
    void Start();
    void Stop();
@@ -140,7 +147,15 @@ private:
 
    const uint32_t m_endpointId;
    const MsgPluginAPI* const m_msgApi;
+   const PagedUIPluginAPI* const m_pagedUIApi;
    const VPXPluginAPI* m_vpxApi = nullptr;
+
+   // Document being authored through the in game UI (see PUPDMDOverlay.h InitEditSheetDef)
+   PUPOverlayDoc m_overlayDoc;
+   bool m_overlaySheetRegistered = false;
+   PinballPlugin::ResURIResolver m_resURIResolver;
+   VPXTexture m_dmdTex = nullptr;
+   vector<std::unique_ptr<PUPDMDOverlay>> m_dmdOverlays; // One per display of the edited document, in enumeration order
 
    std::unique_ptr<PUPDMD::DMD> m_dmd;
    // Triggers in the loaded pack that only a DMD frame match can fire, and what

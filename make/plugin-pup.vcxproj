@@ -7,8 +7,10 @@
   <ItemGroup>
     <ClCompile Include="../../plugins/pup/common.cpp" />
     <ClCompile Include="../../plugins/plugins/B2SPluginEventStream.cpp" />
+    <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
     <ClCompile Include="../../plugins/pup/PUPPlugin.cpp" />
     <ClCompile Include="../../plugins/pup/PUPCustomPos.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPDMDOverlay.cpp" />
     <ClCompile Include="../../plugins/pup/PUPFont.cpp" />
     <ClCompile Include="../../plugins/pup/PUPImage.cpp" />
     <ClCompile Include="../../plugins/pup/PUPLabel.cpp" />
@@ -23,8 +25,10 @@
   <ItemGroup>
     <ClInclude Include="../../plugins/pup/common.h" />
     <ClInclude Include="../../plugins/plugins/B2SPluginEventStream.h" />
+    <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../plugins/pup/LibAv.h" />
     <ClInclude Include="../../plugins/pup/PUPCustomPos.h" />
+    <ClInclude Include="../../plugins/pup/PUPDMDOverlay.h" />
     <ClInclude Include="../../plugins/pup/PUPFont.h" />
     <ClInclude Include="../../plugins/pup/PUPImage.h" />
     <ClInclude Include="../../plugins/pup/PUPLabel.h" />
