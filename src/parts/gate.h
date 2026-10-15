@@ -9,6 +9,8 @@
 #include "renderer/Renderable.h"
 #include "utils/eventproxy.h"
 
+class HitGate;
+class LineSeg;
 
 class GateData final : public BaseProperty
 {

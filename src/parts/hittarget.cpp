@@ -15,6 +15,8 @@
 #include "meshes/hitTargetT1SlimMesh.h"
 #include "meshes/hitTargetT2SlimMesh.h"
 #include "parts/Collection.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"

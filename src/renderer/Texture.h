@@ -4,6 +4,7 @@
 
 #include "unordered_dense.h"
 
+#include "math/math.h"
 #include "parts/pinbinary.h"
 
 #include <atomic>

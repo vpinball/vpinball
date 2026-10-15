@@ -11,6 +11,7 @@
 #include "renderer/Texture.h"
 #include "utils/eventproxy.h"
 
+class BumperHitCircle;
 class MeshBuffer;
 
 class BumperData final : public BaseProperty

@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "math/bbox.h"
+#include "math/math.h"
 
 // Implementation of supporting function for logging of all math objects
 namespace plog

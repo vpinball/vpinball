@@ -11,6 +11,7 @@
 #include "parts/Material.h"
 #include "parts/Sound.h"
 #include "parts/primitive.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"

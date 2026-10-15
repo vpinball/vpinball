@@ -4,6 +4,7 @@
 #include "PlumbOverlay.h"
 
 #include "imgui/imgui.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/Renderer.h"
 #include "ui/live/LiveUI.h"
 

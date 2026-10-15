@@ -20,6 +20,8 @@
 #include "renderer/VertexBuffer.h"
 #include "parts/ball.h"
 #include "parts/PartGroup.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "ui/live/LiveUI.h"
 #include "utils/objloader.h"
 

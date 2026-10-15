@@ -15,7 +15,9 @@
 #include <span>
 
 
+class Hit3DPoly;
 class MeshBuffer;
+class TriggerHitCircle;
 
 class TriggerData final : public BaseProperty
 {

@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "pintable.h"
 
+#include "audio/AudioPlayer.h"
 #include "core/editablereg.h"
 #include "core/resourceid.h"
 #include "core/ScriptGlobalTable.h"
@@ -31,6 +32,7 @@
 #include "parts/textbox.h"
 #include "parts/timer.h"
 #include "parts/trigger.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/Renderer.h"
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"

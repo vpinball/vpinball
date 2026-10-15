@@ -8,6 +8,8 @@
 #include <wxx_stdcontrols.h> // Add CButton, CEdit
 #include <wxx_treeview.h>
 
+class IEditable;
+
 class LayerTreeView final : public CTreeView
 {
 public:

@@ -2,6 +2,12 @@
 
 #pragma once
 
+#include "math/vector.h"
+
+class Ball;
+class LiveUI;
+class Settings;
+
 class BallControl final
 {
 public:

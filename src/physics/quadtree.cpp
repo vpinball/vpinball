@@ -8,6 +8,7 @@
 #include "parts/hittarget.h"
 #include "parts/primitive.h"
 #include "physics/hitable.h"
+#include "physics/PhysicsEngine.h"
 #include "utils/denormals.h"
 
 #include "ThreadPool.h"

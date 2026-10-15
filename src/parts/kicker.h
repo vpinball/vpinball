@@ -6,6 +6,7 @@
 
 #include "core/resourceid.h"
 #include "parts/pintable.h"
+#include "physics/collide.h"
 #include "physics/hitable.h"
 #include "renderer/Renderable.h"
 #include "utils/eventproxy.h"

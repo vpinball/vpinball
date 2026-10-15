@@ -7,6 +7,8 @@
 #include "math/matrix.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/Renderer.h"

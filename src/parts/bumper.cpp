@@ -9,6 +9,8 @@
 #include "meshes/bumperCapMesh.h"
 #include "meshes/bumperRingMesh.h"
 #include "meshes/bumperSocketMesh.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Renderer.h"

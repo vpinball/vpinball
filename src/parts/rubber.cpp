@@ -7,6 +7,8 @@
 #include "core/VPApp.h"
 #include "math/matrix.h"
 #include "parts/Collection.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/MeshBuffer.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Renderer.h"

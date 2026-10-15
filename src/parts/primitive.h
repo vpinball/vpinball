@@ -14,6 +14,7 @@
 #include "unordered_dense.h"
 
 
+class HitObject;
 class MeshBuffer;
 
 // Indices for RotAndTra:

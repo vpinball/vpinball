@@ -8,6 +8,8 @@
 #include "math/matrix.h"
 #include "parts/Collection.h"
 #include "parts/light.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"

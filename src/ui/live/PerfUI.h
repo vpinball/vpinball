@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "core/player.h"
 #include "PlotData.h"
+
+class Player;
 
 class PerfUI final
 {

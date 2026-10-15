@@ -6,6 +6,8 @@
 //#include "forsyth.h"
 #include "core/VPApp.h"
 #include "parts/Collection.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Renderer.h"

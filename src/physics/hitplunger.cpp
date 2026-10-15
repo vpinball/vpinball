@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "hitplunger.h"
 #include "parts/plunger.h"
 
 #include "input/PlungerHandler.h"
+#include "physics/PhysicsEngine.h"
 #include "ui/live/LiveUI.h"
 
 #define PLUNGERHEIGHT 50.0f

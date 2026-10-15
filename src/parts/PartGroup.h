@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include "core/ieditable.h"
 #include "core/resourceid.h"
+#include "core/Scriptable.h"
 #include "utils/eventproxy.h"
 #include "utils/fileio.h"
 #include "timer.h"
