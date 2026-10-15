@@ -57,8 +57,8 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
    case WM_INITDIALOG:
    {
-      const HWND toolTipHwnd = CreateWindowEx(
-         0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_app->GetInstanceHandle(), nullptr);
+      const HWND toolTipHwnd = CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(),
+         nullptr, GetApp()->GetInstanceHandle(), nullptr);
 
       //Get active pinball table (one currently selected...you can edit more than one at a time)
       CCO(PinTable) *const pt = m_tableEditor->m_table;

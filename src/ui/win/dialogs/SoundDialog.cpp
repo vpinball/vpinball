@@ -69,7 +69,7 @@ BOOL SoundDialog::OnInitDialog()
       static_cast<VPX::SoundConfigTypes>(g_settingsService.GetAppSettings().GetPlayer_Sound3D()));
 
    const HWND toolTipHwnd = CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr,
-      g_app->GetInstanceHandle(), nullptr);
+      GetApp()->GetInstanceHandle(), nullptr);
    hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    AddToolTip("Import a new sound from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
    AddToolTip("ReImport selected sound(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
@@ -464,7 +464,7 @@ void SoundDialog::Export()
 
          OPENFILENAME ofn = {};
          ofn.lStructSize = sizeof(OPENFILENAME);
-         ofn.hInstance = g_app->GetInstanceHandle();
+         ofn.hInstance = GetApp()->GetInstanceHandle();
          ofn.hwndOwner = m_tableEditor->m_vpxEditor->GetHwnd();
          ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3/.flac)\0*.wav;*.ogg;*.mp3;*.flac\0";
 

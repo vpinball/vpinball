@@ -14,7 +14,7 @@ namespace VPX::WinUI
 
 RotatePointsDialog::RotatePointsDialog(PinTableWnd *editor)
 {
-   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_ROTATE), editor->m_vpxEditor->GetHwnd(), RotateProc, (size_t)editor);
+   DialogBoxParam(GetApp()->GetInstanceHandle(), MAKEINTRESOURCE(IDD_ROTATE), editor->m_vpxEditor->GetHwnd(), RotateProc, (size_t)editor);
 }
 
 int RotatePointsDialog::m_applyCount = 0;
@@ -152,7 +152,7 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
 
 ScalePointsDialog::ScalePointsDialog(PinTableWnd *editor)
 {
-   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_SCALE), editor->m_vpxEditor->GetHwnd(), ScaleProc, (size_t)editor);
+   DialogBoxParam(GetApp()->GetInstanceHandle(), MAKEINTRESOURCE(IDD_SCALE), editor->m_vpxEditor->GetHwnd(), ScaleProc, (size_t)editor);
 }
 
 int ScalePointsDialog::m_applyCount = 0;
@@ -327,7 +327,7 @@ INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wP
 
 TranslatePointsDialog::TranslatePointsDialog(PinTableWnd *editor)
 {
-   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_TRANSLATE), editor->m_vpxEditor->GetHwnd(), TranslateProc, (size_t)editor);
+   DialogBoxParam(GetApp()->GetInstanceHandle(), MAKEINTRESOURCE(IDD_TRANSLATE), editor->m_vpxEditor->GetHwnd(), TranslateProc, (size_t)editor);
 }
 
 int TranslatePointsDialog::m_applyCount = 0;

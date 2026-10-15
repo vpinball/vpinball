@@ -480,7 +480,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             strncpy_s(szFileName, std::size(szFileName), "Materials.mat");
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_app->GetInstanceHandle();
+            ofn.hInstance = GetApp()->GetInstanceHandle();
             ofn.hwndOwner = m_tableEditor->m_vpxEditor->GetHwnd();
             ofn.lpstrFile = szFileName;
             //TEXT

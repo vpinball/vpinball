@@ -33,7 +33,8 @@ BOOL EditorOptionsDialog::OnInitDialog()
 {
     m_toolTip = new CToolTip();
 
-    const HWND toolTipHwnd = ::CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_app->GetInstanceHandle(), nullptr);
+    const HWND toolTipHwnd = ::CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(),
+       nullptr, GetApp()->GetInstanceHandle(), nullptr);
     if (toolTipHwnd)
     {
         ::SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
