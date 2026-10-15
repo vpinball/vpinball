@@ -163,7 +163,7 @@ WinEditor::~WinEditor()
 //Post Work to the worker Thread
 //Creates Worker-Thread if not present
 //See Worker::VPWorkerThreadStart for infos
-//workid int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)
+//workid int for the type of message (COMPLETE_AUTOSAVE)
 //Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
 //returns Handle to Event that get ack. If event is finished (unsure)
 HANDLE WinEditor::PostWorkToWorkerThread(int workid, LPARAM lParam)
@@ -191,7 +191,7 @@ void WinEditor::SetAutoSaveMinutes(const int minutes)
 //Post Work to the worker Thread
 //Creates Worker-Thread if not present
 //See Worker::VPWorkerThreadStart for infos
-//workid int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)
+//workid int for the type of message (COMPLETE_AUTOSAVE)
 //Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
 //returns Handle to Event that get ack. If event is finished (unsure)
 void WinEditor::InitTools()

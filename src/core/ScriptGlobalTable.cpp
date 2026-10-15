@@ -4,6 +4,7 @@
 #include "ScriptGlobalTable.h"
 
 #include "audio/AudioPlayer.h"
+#include "core/ScriptInterpreter.h"
 #include "core/VPApp.h"
 #include "core/vpversion.h"
 #include "core/VPXPluginAPIImpl.h"
@@ -32,20 +33,16 @@ void ScriptGlobalTable::Init(PinTable *pt)
 
 STDMETHODIMP ScriptGlobalTable::BeginModal()
 {
-   if (g_pplayer)
-      g_pplayer->m_modalRefCount++;
+   if (g_pplayer && g_pplayer->m_scriptInterpreter)
+      g_pplayer->m_scriptInterpreter->EnterScriptModal();
 
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::EndModal()
 {
-   if (g_pplayer)
-   {
-      if (g_pplayer->m_modalRefCount > 0)
-         g_pplayer->m_modalRefCount--;
-      g_pplayer->m_lastKnownGoodCounter++;
-   }
+   if (g_pplayer && g_pplayer->m_scriptInterpreter)
+      g_pplayer->m_scriptInterpreter->ExitScriptModal();
 
    return S_OK;
 }

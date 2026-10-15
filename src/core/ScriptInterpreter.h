@@ -1,5 +1,9 @@
 #pragma once
 
+#include <atomic>
+#include <functional>
+#include <thread>
+
 #include <activscp.h>
 #include <activdbg.h>
 #include <atlcom.h>
@@ -28,7 +32,19 @@ public:
    virtual ~ScriptInterpreter();
 
    void Start(PinTable *table);
-   void Stop(PinTable *table, bool interruptDirectly = false);
+   void Stop(PinTable *table);
+
+   // Script hang watchdog: while armed, a background thread interrupts the script when a script call
+   // does not return within the hang timeout (tracked through OnEnterScript/OnLeaveScript). The gate
+   // predicate tells whether a stalled script may be interrupted (e.g. only while actually playing).
+   void StartHangWatch(const std::function<bool()> &mayInterrupt);
+   void StopHangWatch();
+   void EnterScriptModal() { m_scriptModalCount++; } // Script entered a modal state (e.g. modal dialog), suppressing hang detection
+   void ExitScriptModal()
+   {
+      if (m_scriptModalCount > 0)
+         m_scriptModalCount--;
+   }
    void AddItem(IScriptable *scriptable, const bool global)
    {
 #ifdef VPX_MANUAL_SCRIPT_DISPATCH
@@ -89,6 +105,15 @@ public:
    END_COM_MAP()
 
 private:
+   void HangWatchLoop();
+   static constexpr uint64_t s_hangWatchTimeoutUsec = 1000 * 1000;
+   std::function<bool()> m_hangWatchGate; // Assigned before the watchdog thread starts, cleared after it joins
+   std::thread m_hangWatchThread;
+   std::atomic<bool> m_hangWatchStop { false };
+   std::atomic<int> m_scriptCallDepth { 0 };
+   std::atomic<uint64_t> m_scriptEnterUsec { 0 };
+   std::atomic<int> m_scriptModalCount { 0 };
+
    bool IsControlAlreadyOkayed(const CONFIRMSAFETY *pcs) const;
    void AddControlToOkayedList(const CONFIRMSAFETY *pcs) const;
    static bool IsControlMarkedSafe(const CONFIRMSAFETY *pcs);

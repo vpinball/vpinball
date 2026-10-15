@@ -34,10 +34,6 @@
 #include "ui/live/ingameui/HomePage.h"
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
-#ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/WinEditor.h"
-#include "ui/win/worker.h"
-#endif
 #include "unordered_dense.h"
 #include "utils/denormals.h"
 #include "utils/ushock_output.h"
@@ -582,8 +578,6 @@ void Player::InitTableSession(const bool isInitial)
    m_time_sec = 0.0;
    m_time_msec = 0;
    m_last_frame_time_msec = 0;
-   m_lastKnownGoodCounter = 0;
-   m_modalRefCount = 0;
    m_nScriptErrorNotification = 0;
    m_pauseMusicRefCount = 0;
 
@@ -946,10 +940,8 @@ void Player::InitTableSession(const bool isInitial)
       }
       m_ptable->FireOptionEvent(PinTable::OptionEventType::Initialized);
 
-#ifdef VPX_ENABLE_WIN32_EDITOR
-      if (m_detectScriptHang && g_pvp)
-         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
-#endif
+      if (m_detectScriptHang)
+         m_scriptInterpreter->StartHangWatch([this]() { return IsPlaying(false); });
    }
 
    // Suspend play if started
@@ -996,10 +988,6 @@ void Player::ShutdownTableSession()
    if (!IsEditorMode())
    {
       m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-#ifdef VPX_ENABLE_WIN32_EDITOR
-      if (m_detectScriptHang && g_pvp)
-         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
-#endif
    }
 
    if (m_scriptInterpreter)
@@ -1551,7 +1539,6 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
       {
          if (m_trackTableSessionStats)
             m_tableSessionStartTime = usec();
-         m_lastKnownGoodCounter++; // Reset hang script detection
          m_noTimeCorrect = true; // Disable physics engine time correction on next physic update
          UnpauseMusic();
          PLOGI << "Unpausing Game";
@@ -2474,7 +2461,6 @@ void Player::PrepareFrame()
    m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PREPARE_FRAME);
 
    m_overall_frames++; // This causes the next VPinMAME <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
-   m_lastKnownGoodCounter++;
    m_startFrameTick = usec();
 
    m_pluginAPI.BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);

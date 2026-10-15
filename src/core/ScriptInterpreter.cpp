@@ -6,6 +6,9 @@
 #include "core/vpversion.h"
 #include "parts/Collection.h"
 #include "parts/pintable.h"
+#include "utils/wintimer.h"
+
+#include <chrono>
 #if !defined(__STANDALONE__) || defined(_MSC_VER) // MinGW standalone imports the GUIDs from libwinevbs
 #include <initguid.h>
 #endif
@@ -70,6 +73,8 @@ ScriptInterpreter::ScriptInterpreter()
 
 ScriptInterpreter::~ScriptInterpreter()
 {
+   StopHangWatch();
+
    if (m_pScript)
    {
       // Cleanly wait for the script to end to allow Exit event, triggered just before closing, to be processed
@@ -129,8 +134,10 @@ void ScriptInterpreter::Start(PinTable* table)
          AddItem(editable->GetIScriptable(), false);
 }
 
-void ScriptInterpreter::Stop(PinTable *table, bool interruptDirectly)
+void ScriptInterpreter::Stop(PinTable *table)
 {
+   StopHangWatch();
+
    if (m_pScript == nullptr)
       return;
 
@@ -139,14 +146,11 @@ void ScriptInterpreter::Stop(PinTable *table, bool interruptDirectly)
    if (state != SCRIPTSTATE_CLOSED && state != SCRIPTSTATE_UNINITIALIZED)
    {
       m_pScript->Close();
-      if (!interruptDirectly)
+      const uint32_t startWaitTick = msec();
+      while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
       {
-         const uint32_t startWaitTick = msec();
-         while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
-         {
-            Sleep(16);
-            m_pScript->GetScriptState(&state);
-         }
+         Sleep(16);
+         m_pScript->GetScriptState(&state);
       }
       if (state != SCRIPTSTATE_CLOSED)
       {
@@ -168,6 +172,63 @@ void ScriptInterpreter::Stop(PinTable *table, bool interruptDirectly)
    for (auto editable : table->GetParts())
       if (editable->GetIScriptable())
          RemoveItem(editable->GetIScriptable());
+}
+
+void ScriptInterpreter::StartHangWatch(const std::function<bool()> &mayInterrupt)
+{
+   StopHangWatch();
+   m_hangWatchGate = mayInterrupt;
+   m_hangWatchStop = false;
+   m_hangWatchThread = std::thread(&ScriptInterpreter::HangWatchLoop, this);
+}
+
+void ScriptInterpreter::StopHangWatch()
+{
+   m_hangWatchStop = true;
+   if (m_hangWatchThread.joinable())
+      m_hangWatchThread.join();
+   m_hangWatchGate = nullptr;
+}
+
+void ScriptInterpreter::HangWatchLoop()
+{
+   // A hung script (e.g. an infinite loop) runs on the game thread, so detection must happen here. A
+   // script call that does not return for more than the timeout while the game is playing is
+   // interrupted; InterruptScriptThread is the only IActiveScript entry point allowed off the script
+   // thread, and the raised exception is reported through the regular OnScriptError pipeline.
+   bool hangReported = false;
+   while (!m_hangWatchStop)
+   {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      if (m_hangWatchStop)
+         break;
+      if (m_pScript == nullptr || m_scriptCallDepth == 0 || m_scriptModalCount > 0 || (m_hangWatchGate && !m_hangWatchGate()))
+      {
+         hangReported = false;
+         continue;
+      }
+      if (usec() - m_scriptEnterUsec < s_hangWatchTimeoutUsec)
+      {
+         hangReported = false;
+         continue;
+      }
+      if (!hangReported)
+      {
+         hangReported = true;
+         PLOGE << "Script hang detected: a script call did not return within " << (s_hangWatchTimeoutUsec / 1000) << "ms, interrupting the script";
+      }
+      EXCEPINFO eiInterrupt = {};
+      eiInterrupt.bstrDescription = MakeWideBSTR(LocalStringW(IDS_HANG).m_buffer);
+      eiInterrupt.wCode = 2345;
+      const HRESULT hr = m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+      SysFreeString(eiInterrupt.bstrDescription);
+      if (FAILED(hr))
+      {
+         // e.g. libwinevbs stubs InterruptScriptThread out: the hang is reported but the script cannot be unwound
+         PLOGE << "Script engine does not support interrupting a running script (InterruptScriptThread failed)";
+         break;
+      }
+   }
 }
 
 void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const bool global)
@@ -393,9 +454,23 @@ STDMETHODIMP ScriptInterpreter::OnScriptTerminate(const VARIANT *pvr, const EXCE
 
 STDMETHODIMP ScriptInterpreter::OnStateChange(SCRIPTSTATE ssScriptState) { return S_OK; }
 
-STDMETHODIMP ScriptInterpreter::OnEnterScript() { return S_OK; }
+STDMETHODIMP ScriptInterpreter::OnEnterScript()
+{
+   // Track time spent inside script code for the hang watchdog. Script calls always run on the same
+   // thread, so the enter timestamp is stored before the depth is raised, ensuring the watchdog never
+   // sees a nonzero depth without a fresh timestamp.
+   if (m_scriptCallDepth == 0)
+      m_scriptEnterUsec = usec();
+   m_scriptCallDepth++;
+   return S_OK;
+}
 
-STDMETHODIMP ScriptInterpreter::OnLeaveScript() { return S_OK; }
+STDMETHODIMP ScriptInterpreter::OnLeaveScript()
+{
+   if (m_scriptCallDepth > 0)
+      m_scriptCallDepth--;
+   return S_OK;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

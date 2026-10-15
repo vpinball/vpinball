@@ -2,31 +2,12 @@
 #include "worker.h"
 
 #include "core/VPApp.h"
-#include "ui/win/resource.h"
 #include "utils/fileio.h"
 
 #include "pole/pole.h"
 
 
 HANDLE g_hWorkerStarted;
-
-static size_t hangSnoopTimerID;
-static int lastHangSnoopValue;
-
-VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-   const int newvalue = g_pplayer->m_lastKnownGoodCounter;
-   if (newvalue == lastHangSnoopValue && !g_pplayer->m_modalRefCount && g_pplayer->IsPlaying(false))
-   {
-      // Nothing happened since the last time - we are probably hung
-      EXCEPINFO eiInterrupt = {};
-      eiInterrupt.bstrDescription = MakeWideBSTR(LocalStringW(IDS_HANG).m_buffer);
-      //eiInterrupt.scode = E_NOTIMPL;
-      eiInterrupt.wCode = 2345;
-      g_pplayer->m_scriptInterpreter->Stop(g_pplayer->m_ptable, true);
-   }
-   lastHangSnoopValue = newvalue;
-}
 
 unsigned int WINAPI VPWorkerThreadStart(void *param)
 {
@@ -45,24 +26,6 @@ unsigned int WINAPI VPWorkerThreadStart(void *param)
       {
          const HANDLE hEvent = (HANDLE)msg.wParam;
          CompleteAutoSave(hEvent, msg.lParam);
-      }
-      break;
-
-      case HANG_SNOOP_START:
-      {
-         lastHangSnoopValue = -1;
-         hangSnoopTimerID = SetTimer(nullptr, 0, 1000, (TIMERPROC)HangSnoopProc);
-         const HANDLE hEvent = (HANDLE)msg.wParam;
-         CloseHandle(hEvent);
-         //HangSnoopProc(nullptr, 0, 0, 0);
-      }
-      break;
-
-      case HANG_SNOOP_STOP:
-      {
-         KillTimer(nullptr, hangSnoopTimerID);
-         const HANDLE hEvent = (HANDLE)msg.wParam;
-         CloseHandle(hEvent);
       }
       break;
 
