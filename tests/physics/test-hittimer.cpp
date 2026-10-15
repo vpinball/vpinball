@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "../vpx-test.h"
 
+#include "core/ieditable.h"
 #include "physics/hittimer.h"
 #include "physics/physconst.h"
 

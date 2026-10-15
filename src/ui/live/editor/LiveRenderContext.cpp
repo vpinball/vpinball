@@ -4,6 +4,7 @@
 #include "LiveRenderContext.h"
 
 #include "math/matrix.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/Renderer.h"
 #include "utils/color.h"
 

@@ -13,6 +13,8 @@
 #include "renderer/Renderable.h"
 #include "utils/eventproxy.h"
 
+class HitObject;
+class LineSegSlingshot;
 class MeshBuffer;
 
 class SurfaceData final : public BaseProperty

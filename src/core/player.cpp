@@ -9,6 +9,7 @@
 #include <array>
 #include <filesystem>
 
+#include "audio/AudioPlayer.h"
 #include "core/editablereg.h"
 #include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
@@ -16,7 +17,11 @@
 #include "parts/flasher.h"
 #include "parts/light.h"
 #include "parts/primitive.h"
+#include "parts/Sound.h"
 #include "physics/cabinet/NudgeHandler.h"
+#include "physics/hittimer.h"
+#include "physics/PhysicsEngine.h"
+#include "plugins/ControllerPlugin.h"
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"

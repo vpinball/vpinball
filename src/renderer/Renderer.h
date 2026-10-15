@@ -12,6 +12,7 @@
 #include "parts/PartGroup.h"
 #include "renderer/RenderProbe.h"
 
+class IEditable;
 class Renderable;
 class PinTable;
 class Renderer final

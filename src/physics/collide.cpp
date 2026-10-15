@@ -9,8 +9,10 @@ static std::mutex mtx;
 
 #include "imgui/imgui.h"
 
+#include "collide.h"
 #include "parts/Collection.h"
 #include "parts/hittarget.h"
+#include "physics/PhysicsEngine.h"
 
 float c_hardScatter = 0.0f;
 

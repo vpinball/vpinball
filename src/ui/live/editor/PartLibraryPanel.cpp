@@ -8,6 +8,7 @@
 #include "fonts/IconsForkAwesome.h"
 #include "parts/ball.h"
 #include "parts/pintable.h"
+#include "physics/PhysicsEngine.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"

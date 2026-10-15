@@ -3,7 +3,9 @@
 #include "core/stdafx.h"
 #include "AudioSettingsPage.h"
 
+#include "audio/AudioPlayer.h"
 #include "parts/pintable.h"
+#include "parts/Sound.h"
 
 namespace VPX::InGameUI
 {

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "math/bbox.h"
 #include "sur.h"
 
 class HitRectSur final : public Sur

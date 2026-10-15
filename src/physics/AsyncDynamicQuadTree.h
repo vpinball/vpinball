@@ -19,6 +19,7 @@
 // Note that updating the quadtree is a fairly heavy multithreaded operation, so it should be only performed
 // when the editable won't be moved again.
 
+class HitQuadtree;
 class PhysicsEngine;
 
 class AsyncDynamicQuadTree final

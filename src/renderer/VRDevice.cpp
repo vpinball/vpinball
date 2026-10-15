@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "VRDevice.h"
 
+#include "audio/AudioPlayer.h"
 #include "core/VPApp.h"
 #include "core/vpversion.h"
 #include "math/matrix.h"

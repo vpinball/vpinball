@@ -11,6 +11,7 @@
 
 #include "unordered_dense.h"
 
+class HitObject;
 
 class HitTargetData final : public BaseProperty
 {

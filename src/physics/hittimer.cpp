@@ -4,6 +4,8 @@
 
 #include "hittimer.h"
 
+#include "core/ieditable.h"
+
 
 HitTimer::HitTimer(const string& name, int interval, IFireEvents* handler)
    : m_name(name)

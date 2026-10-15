@@ -5,6 +5,7 @@
 #include "RenderDevice.h"
 
 #if defined(ENABLE_BGFX)
+#include "math/math.h"
 #include "TextureCompressor.h"
 #include <bx/allocator.h>
 #include <bx/readerwriter.h>

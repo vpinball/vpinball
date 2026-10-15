@@ -5,6 +5,7 @@
 #include <wxx_wincore.h> // Add CWnd, CDC, CMenu, ...
 
 #include "core/pinundo.h"
+#include "math/bbox.h"
 #include "parts/light.h"
 #include "parts/pintable.h"
 #include "ui/win/dialogs/CollectionManagerDialog.h"

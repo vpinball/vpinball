@@ -7,6 +7,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "math/matrix.h"
 #include "parts/light.h"
+#include "physics/PhysicsEngine.h"
 #include "plugins/MsgPluginManager.h"
 #include "renderer/Renderer.h"
 #include "renderer/trace.h"

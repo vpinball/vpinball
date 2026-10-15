@@ -3,6 +3,7 @@
 #pragma once
 
 #include "core/ieditable.h"
+#include "math/bbox.h"
 
 
 enum eObjType : unsigned char

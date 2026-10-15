@@ -4,6 +4,7 @@
 
 #include <wxx_dialog.h>
 
+class IEditable;
 class PinTableWnd;
 
 class DrawingOrderDialog final : public CDialog

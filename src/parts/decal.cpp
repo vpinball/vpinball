@@ -6,6 +6,8 @@
 #include "decal.h"
 
 #include "core/VPApp.h"
+#include "physics/collideex.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"

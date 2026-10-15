@@ -6,6 +6,7 @@
 #include "parts/pintable.h"
 #include "parts/Collection.h"
 #include "parts/PartGroup.h"
+#include "physics/hittimer.h"
 
 IEditable::IEditable()
 {

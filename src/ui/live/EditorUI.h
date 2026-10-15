@@ -29,6 +29,13 @@ class Renderer;
 class DragPoint;
 class PartGroup;
 class FRect3D;
+struct HitTestResult;
+class IEditable;
+
+namespace VPX
+{
+class Sound;
+}
 
 namespace VPX::EditorUI
 {

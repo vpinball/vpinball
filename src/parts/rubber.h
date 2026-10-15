@@ -13,6 +13,7 @@
 #include "unordered_dense.h"
 
 
+class HitObject;
 class MeshBuffer;
 
 class RubberData final : public BaseProperty

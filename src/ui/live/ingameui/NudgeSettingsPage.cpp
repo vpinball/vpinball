@@ -6,6 +6,7 @@
 #include "parts/pintable.h"
 #include "physics/cabinet/GamepadNudge.h"
 #include "physics/cabinet/NudgeHandler.h"
+#include "physics/PhysicsEngine.h"
 #include "implot/implot.h"
 #include "ui/live/LiveUI.h"
 #include "ui/live/ingameui/NudgeSensorSettingsPage.h"

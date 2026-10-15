@@ -23,8 +23,10 @@
 //   - flipper button press to coil drive is even shorter - again suggesting a faster sample rate of the button is better
 
 #include "core/stdafx.h"
+#include "hitflipper.h"
 #include "parts/flipper.h"
 
+#include "physics/PhysicsEngine.h"
 #include "ui/live/LiveUI.h"
 #include "imgui/imgui.h"
 

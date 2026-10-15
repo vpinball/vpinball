@@ -43,6 +43,7 @@ class IScriptable;
 class Collection;
 class EventProxyBase;
 class HitTimer;
+class PhysicsEngine;
 class PinTable;
 
 class IFireEvents

@@ -5,6 +5,7 @@
 
 #include "implot/implot.h"
 #include "input/PlungerHandler.h"
+#include "physics/PhysicsEngine.h"
 #include "ui/live/LiveUI.h"
 #include "ui/live/ingameui/PlungerSensorSettingsPage.h"
 

@@ -3,8 +3,10 @@
 #include "core/stdafx.h"
 #include "VRSettingsPage.h"
 
+#include "audio/AudioPlayer.h"
 #include "renderer/VRDevice.h"
 #include "parts/flasher.h"
+#include "parts/Sound.h"
 #include "ui/live/LiveUI.h"
 #include "utils/color.h"
 

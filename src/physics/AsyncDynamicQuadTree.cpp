@@ -6,6 +6,7 @@
 #include "parts/pintable.h"
 #include "physics/quadtree.h"
 #include "physics/hitable.h"
+#include "physics/PhysicsEngine.h"
 #include "utils/denormals.h"
 
 #include <algorithm>

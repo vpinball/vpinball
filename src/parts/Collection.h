@@ -2,6 +2,8 @@
 
 #include "utils/eventproxy.h"
 
+class IEditable;
+
 class Collection :
    public IDispatchImpl<ICollection, &IID_ICollection, &LIBID_VPinballLib>,
    public CComObjectRoot,

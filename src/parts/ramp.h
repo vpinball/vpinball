@@ -11,6 +11,8 @@
 #include "utils/eventproxy.h"
 
 
+class HitObject;
+class HitTriangle;
 class MeshBuffer;
 
 class RampData final : public BaseProperty

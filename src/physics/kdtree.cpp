@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "kdtree.h"
 
+#include "physics/PhysicsEngine.h"
+
 // Ported at: VisualPinball.Engine/Physics/HitKd.cs
 
 HitKD::HitKD(PhysicsEngine* physics)

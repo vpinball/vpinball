@@ -4,6 +4,8 @@
 
 #include <optional>
 
+#include "audio/AudioPlayer.h"
+
 class Collection;
 class Material;
 class Texture;
@@ -12,7 +14,6 @@ struct WhereUsedInfo;
 namespace VPX
 {
 class Sound;
-struct SoundSpec;
 }
 
 namespace VPX::EditorUI

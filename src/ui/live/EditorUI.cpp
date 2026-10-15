@@ -22,6 +22,7 @@
 #include "math/dragpoint.h"
 #include "math/matrix.h"
 
+#include "physics/PhysicsEngine.h"
 #include "plugins/VPXPlugin.h"
 
 #include "renderer/Anaglyph.h"

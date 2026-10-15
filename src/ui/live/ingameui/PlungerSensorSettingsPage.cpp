@@ -5,6 +5,7 @@
 
 #include "input/PlungerHandler.h"
 #include "parts/pintable.h"
+#include "physics/PhysicsEngine.h"
 #include "ui/live/LiveUI.h"
 
 #include "implot/implot.h"

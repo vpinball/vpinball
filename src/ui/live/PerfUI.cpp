@@ -6,6 +6,7 @@
 #include "core/VPApp.h"
 #include "parts/Collection.h"
 #include "parts/flipper.h"
+#include "physics/PhysicsEngine.h"
 #include "renderer/Renderer.h"
 #include "utils/wintimer.h"
 

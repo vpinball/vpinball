@@ -2,6 +2,8 @@
 
 #pragma once
 
+class IFireEvents;
+
 class HitTimer final
 {
 public:

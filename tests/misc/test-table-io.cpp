@@ -10,6 +10,7 @@
 #include "parts/Material.h"
 #include "parts/PartGroup.h"
 #include "parts/pintable.h"
+#include "parts/Sound.h"
 #include "parts/surface.h"
 #include "renderer/RenderProbe.h"
 #include "utils/fileio.h"

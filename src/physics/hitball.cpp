@@ -1,10 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "hitball.h"
 #include "parts/ball.h"
 
 #include "math/matrix.h"
 #include "physics/cabinet/NudgeHandler.h"
+#include "physics/PhysicsEngine.h"
 #include "ui/live/LiveUI.h"
 
 HitBall::HitBall()

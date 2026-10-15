@@ -4,6 +4,8 @@
 
 #include "unordered_dense.h"
 
+#include "core/ieditable.h"
+
 typedef IEditable*(*CreateFuncType)();
 typedef IEditable*(*CreateAndInitFuncType)(float x, float y);
 
