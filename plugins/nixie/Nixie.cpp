@@ -51,7 +51,7 @@ void Nixie::Load(const std::filesystem::path& path)
    {
       for (const auto& entry : std::filesystem::directory_iterator(path))
       {
-         if (!entry.is_directory() && lowerCase(entry.path().extension()) == ".scv")
+         if (!entry.is_directory() && lowerCase(entry.path().extension()) == ".nix")
          {
             std::ifstream ifs(entry.path());
             Parse(entry.path());
@@ -73,12 +73,64 @@ void Nixie::Parse(const std::filesystem::path& path)
       LOGE(std::format("Invalid field '{}: {}' at line {} in Nixie file {}", key, value, lineIndex, PluginStrings::PathToUTF8(path)));                                                       \
       return;                                                                                                                                                                                \
    }
-   static const string whitespace = " \t"s;
+   static const string whitespace = " \t\r"s;
    Layout layout = {};
    layout.path = path;
    layout.width = 1920.f;
    layout.height = 1080.f;
    layout.fit = Nixie::Contain;
+   bool hasSection = false;
+   const auto endLayout = [&]() -> bool
+   {
+      if (layout.visuals.empty())
+      {
+         LOGE("Layout section without visuals in Nixie file " + PluginStrings::PathToUTF8(path));
+         return false;
+      }
+      for (auto& visual : layout.visuals)
+      {
+         switch (visual.type)
+         {
+         case VisualType::DMD:
+            if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
+            {
+               LOGE("DMD display needs Size to be defined in Nixie file " + PluginStrings::PathToUTF8(path));
+               return false;
+            }
+            break;
+
+         case VisualType::Screen:
+            if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
+            {
+               LOGE("Screen display needs Size to be defined in Nixie file " + PluginStrings::PathToUTF8(path));
+               return false;
+            }
+            break;
+
+         case VisualType::SegDisplay:
+            if (visual.nElements == -1)
+               visual.nElements = (int)visual.xOffsets.size();
+            if (visual.nElements == 0)
+            {
+               LOGE("Segment display needs at least one of XPos/NElements to be defined in Nixie file " + PluginStrings::PathToUTF8(path));
+               return false;
+            }
+            if (visual.xOffsets.empty())
+            {
+               visual.xOffsets.reserve(visual.nElements);
+               for (int i = 0; i < visual.nElements; i++)
+                  visual.xOffsets.push_back(visual.w * static_cast<float>(i) / static_cast<float>(visual.nElements));
+            }
+            break;
+
+         case VisualType::Image: break;
+         }
+      }
+      // TODO avoid duplicates
+      m_invalidBestLayout = true;
+      m_layouts.push_back(layout);
+      return true;
+   };
    {
       Visual* visual = nullptr;
       const auto parseArray = [](const string& value) -> vector<float>
@@ -128,12 +180,40 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          if (indent < expectedIndent)
          {
-            if (indent <= 1)
+            if (indent <= 2)
                visual = nullptr;
             expectedIndent = indent;
          }
          if (line[afterIndent] == '#')
             continue;
+
+         // A '- <display>' line starts a new layout section targeting the given ancillary window display
+         if ((indent == 0) && (line[afterIndent] == '-'))
+         {
+            if (hasSection && !endLayout())
+               return;
+            layout = {};
+            layout.path = path;
+            layout.width = 1920.f;
+            layout.height = 1080.f;
+            layout.fit = Nixie::Contain;
+            visual = nullptr;
+            const string target = TrimLeading(string(line.cbegin() + afterIndent + 1, line.cend()), whitespace);
+            if (target == "Backglass")
+               layout.window = VPXWindowId::VPXWINDOW_Backglass;
+            else if (target == "ScoreView")
+               layout.window = VPXWindowId::VPXWINDOW_ScoreView;
+            else if (target == "Topper")
+               layout.window = VPXWindowId::VPXWINDOW_Topper;
+            else
+            {
+               LOGE(std::format("Unknown target display '{}' at line {} in Nixie file {}", target, lineIndex, PluginStrings::PathToUTF8(path)));
+               return;
+            }
+            hasSection = true;
+            expectedIndent = 1;
+            continue;
+         }
          const auto colon = line.find(':');
          if (colon == string::npos)
          {
@@ -151,17 +231,17 @@ void Nixie::Parse(const std::filesystem::path& path)
 
          if (key == "Width")
          {
-            CHECK_FIELD((indent == 0) && try_parse_float(value, fValue) && (fValue >= 1.f));
+            CHECK_FIELD((indent == 1) && try_parse_float(value, fValue) && (fValue >= 1.f));
             layout.width = fValue;
          }
          else if (key == "Height")
          {
-            CHECK_FIELD((indent == 0) && try_parse_float(value, fValue) && (fValue >= 1.f));
+            CHECK_FIELD((indent == 1) && try_parse_float(value, fValue) && (fValue >= 1.f));
             layout.height = fValue;
          }
          else if (key == "Fit")
          {
-            CHECK_FIELD(indent == 0);
+            CHECK_FIELD(indent == 1);
             if (value == "Contain")
                layout.fit = Nixie::Contain;
             else
@@ -172,12 +252,12 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          if (key == "Visuals")
          {
-            CHECK_FIELD(indent == 0);
-            expectedIndent = 1;
+            CHECK_FIELD(indent == 1);
+            expectedIndent = 2;
          }
          else if (key == "- DMD")
          {
-            CHECK_FIELD(indent == 1);
+            CHECK_FIELD(indent == 2);
             expectedIndent = indent + 1;
             layout.visuals.push_back({ VisualType::DMD });
             visual = &layout.visuals.back();
@@ -192,7 +272,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "- Screen")
          {
-            CHECK_FIELD(indent == 1);
+            CHECK_FIELD(indent == 2);
             expectedIndent = indent + 1;
             layout.visuals.push_back({ VisualType::Screen });
             visual = &layout.visuals.back();
@@ -207,7 +287,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "- SegDisplay")
          {
-            CHECK_FIELD(indent == 1);
+            CHECK_FIELD(indent == 2);
             expectedIndent = indent + 1;
             layout.visuals.push_back({ VisualType::SegDisplay });
             visual = &layout.visuals.back();
@@ -223,7 +303,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "- Image")
          {
-            CHECK_FIELD(indent == 1);
+            CHECK_FIELD(indent == 2);
             expectedIndent = indent + 1;
             layout.visuals.push_back({ VisualType::Image });
             visual = &layout.visuals.back();
@@ -232,7 +312,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "Rect")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr));
+            CHECK_FIELD((indent == 3) && (visual != nullptr));
             const auto rect = parseArray(value);
             CHECK_FIELD(rect.size() == 4);
             visual->x = rect[0];
@@ -243,7 +323,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "Pad")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr)); // Display pad inside rect
+            CHECK_FIELD((indent == 3) && (visual != nullptr)); // Display pad inside rect
             const auto rect = parseArray(value);
             CHECK_FIELD(rect.size() == 4);
             visual->glassPad.x = saturate(rect[0] / layout.height);
@@ -255,7 +335,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "Style")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr));
+            CHECK_FIELD((indent == 3) && (visual != nullptr));
             if (visual->type == VisualType::DMD)
             {
                if (value == "Neon Plasma")
@@ -317,12 +397,12 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "Src")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr));
+            CHECK_FIELD((indent == 3) && (visual != nullptr));
             visual->srcUri = value;
          }
          else if (key == "Size")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::DMD || visual->type == VisualType::Screen)); // DMD & Screen size
+            CHECK_FIELD((indent == 3) && (visual != nullptr) && (visual->type == VisualType::DMD || visual->type == VisualType::Screen)); // DMD & Screen size
             const auto size = parseArray(value);
             CHECK_FIELD(size.size() == 2);
             visual->displaySize.x = static_cast<int>(size[0]);
@@ -330,7 +410,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "Type")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::SegDisplay)); // Seg display hardware family hint
+            CHECK_FIELD((indent == 3) && (visual != nullptr) && (visual->type == VisualType::SegDisplay)); // Seg display hardware family hint
             if (value == "Atari")
                visual->segFamilyHint = VPXSegDisplayHint::Atari;
             else if (value == "Bally")
@@ -347,24 +427,24 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "XPos")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::SegDisplay)); // Seg display sub element offsets
+            CHECK_FIELD((indent == 3) && (visual != nullptr) && (visual->type == VisualType::SegDisplay)); // Seg display sub element offsets
             visual->xOffsets = parseArray(value);
             CHECK_FIELD(!visual->xOffsets.empty() && (visual->nElements == -1 || (int)visual->xOffsets.size() == visual->nElements));
          }
          else if (key == "NElements")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::SegDisplay) && try_parse_int(value, visual->nElements)); // Number of seg display elements
+            CHECK_FIELD((indent == 3) && (visual != nullptr) && (visual->type == VisualType::SegDisplay) && try_parse_int(value, visual->nElements)); // Number of seg display elements
             CHECK_FIELD(visual->xOffsets.empty() || (int)visual->xOffsets.size() == visual->nElements);
          }
          else if (key == "Glass")
          {
-            CHECK_FIELD((indent == 2) && (visual != nullptr));
-            expectedIndent = 3;
+            CHECK_FIELD((indent == 3) && (visual != nullptr));
+            expectedIndent = 4;
             visual->style = value;
          }
          else if (key == "Tint")
          {
-            CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass tint
+            CHECK_FIELD((indent == 4) && (visual != nullptr)); // Glass tint
             const auto tint = parseArray(value);
             CHECK_FIELD(tint.size() == 3);
             visual->glassTint.x = tint[0];
@@ -373,17 +453,17 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "Roughness")
          {
-            CHECK_FIELD((indent == 3) && (visual != nullptr) && try_parse_float(value, fValue)); // Glass roughness
+            CHECK_FIELD((indent == 4) && (visual != nullptr) && try_parse_float(value, fValue)); // Glass roughness
             visual->glassRoughness = fValue;
          }
          else if (key == "Image")
          {
-            CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image path
+            CHECK_FIELD((indent == 4) && (visual != nullptr)); // Glass image path
             visual->glassPath = value;
          }
          else if (key == "Area")
          {
-            CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image area
+            CHECK_FIELD((indent == 4) && (visual != nullptr)); // Glass image area
             const auto rect = parseArray(value);
             CHECK_FIELD(rect.size() == 4);
             visual->glassArea.x = rect[0];
@@ -393,7 +473,7 @@ void Nixie::Parse(const std::filesystem::path& path)
          }
          else if (key == "Ambient")
          {
-            CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image ambient
+            CHECK_FIELD((indent == 4) && (visual != nullptr)); // Glass image ambient
             const auto rect = parseArray(value);
             CHECK_FIELD(rect.size() == 3)
             visual->glassAmbient.x = InvsRGB(rect[0]);
@@ -403,48 +483,8 @@ void Nixie::Parse(const std::filesystem::path& path)
          //PLOGD << indent << ": " << key << " => " << value;
       }
    }
-   for (auto& visual : layout.visuals)
-   {
-      switch (visual.type)
-      {
-      case VisualType::DMD:
-         if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
-         {
-            LOGE("DMD display needs Size to be defined in Nixie file " + PluginStrings::PathToUTF8(path));
-            return;
-         }
-         break;
-
-      case VisualType::Screen:
-         if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
-         {
-            LOGE("Screen display needs Size to be defined in Nixie file " + PluginStrings::PathToUTF8(path));
-            return;
-         }
-         break;
-
-      case VisualType::SegDisplay:
-         if (visual.nElements == -1)
-            visual.nElements = (int)visual.xOffsets.size();
-         if (visual.nElements == 0)
-         {
-            LOGE("Segment display needs at least one of XPos/NElements to be defined in Nixie file " + PluginStrings::PathToUTF8(path));
-            return;
-         }
-         if (visual.xOffsets.empty())
-         {
-            visual.xOffsets.reserve(visual.nElements);
-            for (int i = 0; i < visual.nElements; i++)
-               visual.xOffsets.push_back(visual.w * static_cast<float>(i) / static_cast<float>(visual.nElements));
-         }
-         break;
-
-      case VisualType::Image: break;
-      }
-   }
-   // TODO avoid duplicates
-   m_invalidBestLayout = true;
-   m_layouts.push_back(layout);
+   if (hasSection && !endLayout())
+      return;
 #undef CHECK_FIELD
 }
 
@@ -479,20 +519,22 @@ void Nixie::LoadGlass(Visual& visual)
    }
 }
 
-void Nixie::Select(const float scoreW, const float scoreH)
+void Nixie::Select(const VPXWindowId window, const float scoreW, const float scoreH)
 {
    m_bestLayout = nullptr;
-   if (m_layouts.empty())
-      return;
 
    // Evaluate output aspect ratio
    const float rtAR = scoreW / scoreH;
 
-   // Evaluate layouts against current context
+   // Evaluate layouts targeting this window against current context
    PinballPlugin::ResURIResolver::SegDisplayState segDisplay;
    PinballPlugin::ResURIResolver::DisplayState display;
+   vector<Layout*> layouts;
    for (auto& layout : m_layouts)
    {
+      if (layout.window != window)
+         continue;
+      layouts.push_back(&layout);
       const float layoutAR = layout.width / layout.height;
       layout.unfittedPixels = (rtAR > layoutAR) ? (layoutAR / rtAR) : (rtAR / layoutAR);
       layout.matchedVisuals = 0;
@@ -542,15 +584,17 @@ void Nixie::Select(const float scoreW, const float scoreH)
    // - with a maximum of satisfied visuals
    // - with displays size matching visuals (16 alphanum vs 20 alphanum, 128x32,...)
    // - with the best matching layout aspect ratio
-   m_bestLayout = &*std::max_element(m_layouts.begin(), m_layouts.end(),
-      [](const Layout& a, const Layout& b) -> bool
+   if (layouts.empty())
+      return;
+   m_bestLayout = *std::max_element(layouts.begin(), layouts.end(),
+      [](const Layout* a, const Layout* b) -> bool
       {
-         if (a.unmatchedVisuals != b.unmatchedVisuals) // The least unmatched visuals
-            return a.unmatchedVisuals > b.unmatchedVisuals;
-         if (a.matchedVisuals != b.matchedVisuals) // The maximum matched visual
-            return a.matchedVisuals < b.matchedVisuals;
-         if (a.unfittedPixels != b.unfittedPixels) // The one fitting the output better
-            return a.unfittedPixels < b.unfittedPixels;
+         if (a->unmatchedVisuals != b->unmatchedVisuals) // The least unmatched visuals
+            return a->unmatchedVisuals > b->unmatchedVisuals;
+         if (a->matchedVisuals != b->matchedVisuals) // The maximum matched visual
+            return a->matchedVisuals < b->matchedVisuals;
+         if (a->unfittedPixels != b->unfittedPixels) // The one fitting the output better
+            return a->unfittedPixels < b->unfittedPixels;
          return false;
       });
 
@@ -563,7 +607,7 @@ bool Nixie::Render(VPXRenderContext2D* ctx)
    if (m_invalidBestLayout)
    {
       m_invalidBestLayout = false;
-      Select(ctx->outWidth, ctx->outHeight);
+      Select(ctx->window, ctx->outWidth, ctx->outHeight);
    }
 
    if (m_bestLayout == nullptr)

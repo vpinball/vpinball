@@ -77,7 +77,7 @@ public:
 
 private:
    void Parse(const std::filesystem::path& path);
-   void Select(const float scoreW, const float scoreH);
+   void Select(const VPXWindowId window, const float scoreW, const float scoreH);
 
    enum Fit
    {
@@ -127,6 +127,7 @@ private:
    struct Layout
    {
       std::filesystem::path path;
+      VPXWindowId window;
       float width, height;
       Fit fit;
       vector<Visual> visuals;

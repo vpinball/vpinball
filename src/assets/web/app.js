@@ -644,7 +644,7 @@ function formatDate(dateString) {
 }
 
 const FileTypeHelper = {
-  EDITABLE_EXTENSIONS: new Set(['vbs', 'ini', 'txt', 'xml', 'json', 'fnt', 'scv', 'pup']),
+  EDITABLE_EXTENSIONS: new Set(['vbs', 'ini', 'txt', 'xml', 'json', 'fnt', 'nix', 'pup']),
   READ_ONLY_EXTENSIONS: new Set(['log', 'html']),
   IMAGE_EXTENSIONS: new Set(['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']),
   VIDEO_EXTENSIONS: new Set(['mp4', 'webm', 'ogg']),
@@ -666,7 +666,7 @@ const FileTypeHelper = {
       txt: SVG_ICONS.file, log: SVG_ICONS.file, ini: SVG_ICONS.settings,
       json: SVG_ICONS.code, xml: SVG_ICONS.code, vbs: SVG_ICONS.code,
       html: SVG_ICONS.web, zip: SVG_ICONS.zip, fnt: SVG_ICONS.font,
-      scv: SVG_ICONS.settings, pup: SVG_ICONS.settings,
+      nix: SVG_ICONS.settings, pup: SVG_ICONS.settings,
       mp4: SVG_ICONS.video, webm: SVG_ICONS.video, ogg: SVG_ICONS.video,
       mp3: SVG_ICONS.audio, wav: SVG_ICONS.audio, m4a: SVG_ICONS.audio
     };
