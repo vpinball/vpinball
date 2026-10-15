@@ -690,6 +690,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/SystemInfoPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinFontRegistrar.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
@@ -1797,6 +1800,9 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.h">
+      <Filter>ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinFontRegistrar.h">
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.h">

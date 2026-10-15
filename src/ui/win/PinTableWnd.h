@@ -18,6 +18,7 @@
 #include "ui/win/dialogs/SoundDialog.h"
 #include "ui/win/dialogs/TableInfoDialog.h"
 #include "ui/win/parts/TableWinUIPart.h"
+#include "ui/win/PinFontRegistrar.h"
 #include "ui/win/TextureGDI.h"
 #include "unordered_dense.h"
 
@@ -139,6 +140,8 @@ public:
    void OnPartRemoved(IEditable *part) final;
 
    // ITableEditorSink notifications (also see Redraw, RefreshProperties and SetCleanPoint above)
+   void OnFontAdded(PinFont *font) final;
+   void OnFontRemoved(PinFont *font) final;
    void OnDirtyStateChanged(SaveDirtyState sds) final;
    void OnTableBoundsChanged() final;
    void SetScript(const string &script) final;
@@ -217,6 +220,10 @@ private:
 
    bool m_moving = false;
    short2 m_oldMousePos;
+
+   // The table's embedded fonts, registered with GDI while this editor lives so font pickers resolve them
+   // (kept in sync by the OnFontAdded/OnFontRemoved sink notifications)
+   PinFontRegistrar m_fontRegistrar;
 
    vector<HANDLE> m_vAsyncHandles;
 

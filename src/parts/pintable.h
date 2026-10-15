@@ -79,6 +79,10 @@ public:
    virtual void OnPartAdded(IEditable *part) = 0;
    virtual void OnPartRemoved(IEditable *part) = 0;
 
+   // Table resource lifecycle
+   virtual void OnFontAdded(PinFont *font) = 0;
+   virtual void OnFontRemoved(PinFont *font) = 0; // Called before the font is deleted
+
    // Script view bookkeeping
    virtual void OnScriptableAdded(IScriptable *scriptable, bool global) = 0;
    virtual void OnScriptableRemoved(IScriptable *scriptable) = 0;

@@ -111,6 +111,7 @@ PinTableWnd::~PinTableWnd()
    m_vpxEditor->ReleasePropSel(m_vmultisel);
    m_uiParts.clear();
    m_table->m_tableEditor = nullptr;
+   m_fontRegistrar.UnregisterAll(); // fonts are deleted with the table below
    m_table->Release();
    if (m_hbmOffScreen)
       DeleteObject(m_hbmOffScreen);
@@ -2046,7 +2047,6 @@ void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)
       m_table->AddFont(ppb);
       const int index = AddListBinary(hwndListView, ppb);
       ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
-      ppb->Register();
    }
    else
       delete ppb;
@@ -2286,6 +2286,10 @@ void PinTableWnd::OnPartRemoved(IEditable *part)
       ClearMultiSel();
    m_uiParts.erase(part);
 }
+
+void PinTableWnd::OnFontAdded(PinFont *font) { m_fontRegistrar.Register(font); }
+
+void PinTableWnd::OnFontRemoved(PinFont *font) { m_fontRegistrar.Unregister(font); }
 
 void PinTableWnd::SetScript(const string &script) { m_pcv->SetScript(script); }
 
