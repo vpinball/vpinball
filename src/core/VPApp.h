@@ -2,10 +2,6 @@
 
 #pragma once
 
-#ifndef __STANDALONE__
-#include <wxx_appcore.h> // Add CWinApp
-#endif
-
 #include "FileLocator.h"
 
 
@@ -39,17 +35,11 @@ public:
    static CComModule m_module;
 #endif
 #ifndef __STANDALONE__
-   class WinApp final : public CWinApp
-   {
-   public:
-      WinApp() = default;
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   protected:
-      BOOL OnIdle(LONG) override;
-      BOOL PreTranslateMessage(MSG& msg) override;
-#endif
-   } m_winApp;
-   HINSTANCE GetInstanceHandle() const { return m_winApp.GetInstanceHandle(); }
+   // The win32++ application object, defined in ui/win/WinApp.h (kept opaque here to
+   // keep the win32xx dependency out of this widely included header)
+   class WinApp;
+   std::unique_ptr<WinApp> m_winApp;
+   HINSTANCE GetInstanceHandle() const;
 #endif
 
 private:
