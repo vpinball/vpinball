@@ -31,7 +31,6 @@
 #include "parts/timer.h"
 #include "parts/trigger.h"
 #include "ui/VPXFileFeedback.h"
-#include "ui/win/codeview.h"
 #include "ui/win/PinTableMDI.h"
 #include "ui/win/ProgressDialog.h"
 #include "ui/win/resource.h"
@@ -1136,7 +1135,7 @@ void WinEditor::SetEnableMenuItems()
    if (editor)
    {
       CComObject<PinTable> *const ptCur = editor->m_table;
-      mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((editor->m_pcv != nullptr && editor->m_pcv->m_visible && !editor->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | (editor->IsScriptEditorVisible() ? MF_CHECKED : MF_UNCHECKED));
 
       mainMenu.EnableMenuItem(IDM_CLOSE, enabled);
       mainMenu.EnableMenuItem(ID_EDIT_UNDO, ptCur->IsLocked() ? grayed : enabled);
@@ -1944,8 +1943,7 @@ void WinEditor::ToggleScriptEditor()
    if (editor)
    {
       const bool alwaysViewScript = g_settingsService.GetAppSettings().GetEditor_AlwaysViewScript();
-      editor->m_pcv->SetVisible(alwaysViewScript || !(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized));
-      //SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized, 0));
+      editor->SetScriptEditorVisible(alwaysViewScript || !editor->IsScriptEditorVisible());
    }
 }
 

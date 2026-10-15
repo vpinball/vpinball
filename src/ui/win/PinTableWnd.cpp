@@ -2232,6 +2232,25 @@ void PinTableWnd::OnPartRemoved(IEditable *part)
    m_uiParts.erase(part);
 }
 
+void PinTableWnd::SetScript(const string &script) { m_pcv->SetScript(script); }
+
+void PinTableWnd::OnScriptableAdded(IScriptable *scriptable, const bool global) { m_pcv->AddItem(scriptable, global); }
+
+void PinTableWnd::OnScriptableRemoved(IScriptable *scriptable) { m_pcv->RemoveItem(scriptable); }
+
+void PinTableWnd::OnScriptableRenamed(IScriptable *scriptable, const string &newName) { m_pcv->ReplaceName(scriptable, newName); }
+
+void PinTableWnd::SetScriptClean(const SaveDirtyState sds) { m_pcv->SetClean(sds); }
+
+void PinTableWnd::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
+{
+   m_pcv->OnScriptError(type, line, column, description, stackDump);
+}
+
+bool PinTableWnd::IsScriptEditorVisible() const { return m_pcv->m_visible && !m_pcv->m_minimized; }
+
+void PinTableWnd::SetScriptEditorVisible(const bool visible) { m_pcv->SetVisible(visible); }
+
 IWinUIPart *PinTableWnd::GetUIPart(IEditable *part)
 {
    if (part == nullptr)
