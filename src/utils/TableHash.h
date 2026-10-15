@@ -4,6 +4,10 @@
 
 #include "md2.h"
 
+#ifdef VPX_HAS_CRYPTOAPI
+#include <wincrypt.h> // HCRYPTPROV, HCRYPTHASH
+#endif
+
 // The MD2 stored in a table file's 'GameStg/MAC' stream. It covers the version, the
 // TableInfo streams, the custom info tags, GameData and the collections - not the game
 // items, sounds, images or fonts, which are written with a null hash.

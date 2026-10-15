@@ -2,6 +2,9 @@
 
 #include "core/stdafx.h"
 #include <ctime>
+#ifdef VPX_HAS_WIN32_SDK
+#include <mmsystem.h> // TIMECAPS, timeGetDevCaps, timeBeginPeriod
+#endif
 //#ifndef _MSC_VER
 //#include <unistd.h>
 //#endif
