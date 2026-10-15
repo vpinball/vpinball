@@ -64,12 +64,13 @@ void PUPDMDOverlay::Render(VPXRenderContext2D* ctx, PUPDMDDisplay* display)
    }
 
    VPXDisplayRenderStyle style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma;
-   switch (dmd.source->hardware & 0xFFFF0000)
+   switch (dmd.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK)
    {
    case CTLPI_DISPLAY_HARDWARE_NEON_PLASMA: style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma; break;
    case CTLPI_DISPLAY_HARDWARE_RED_LED: style = VPXDisplayRenderStyle::VPXDMDStyle_RedLED; break;
    case CTLPI_DISPLAY_HARDWARE_RGB_LED: style = VPXDisplayRenderStyle::VPXDMDStyle_GenLED; break;
    case CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY: style = VPXDisplayRenderStyle::VPXDMDStyle_CRT; break;
+   case CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY: style = VPXDisplayRenderStyle::VPXDMDStyle_Pixelated; break;
    }
    ctx->DrawDisplay(ctx, style,
       // First layer: glass
