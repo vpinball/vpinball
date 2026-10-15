@@ -934,9 +934,11 @@ void WinEditor::DoPlay(const int playMode)
 
    // Switch to Player's main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop).
    // Consecutive sessions are run when the player ends on a table switch request to a different base table.
+   bool appExitRequested = false;
    while (true)
    {
       g_pplayer->GameLoop();
+      appExitRequested |= (g_pplayer->GetCloseState() == Player::CS_CLOSE_APP);
       PinTable *const nextTable = g_pplayer->TakeTableSwitch(sessionMode);
       delete g_pplayer;
       assert(g_pplayer == nullptr);
@@ -960,6 +962,11 @@ void WinEditor::DoPlay(const int playMode)
          break;
       }
    }
+
+   // Play session ended with a request to close the application: go through the normal frame close path
+   // (dirty-table prompts, settings persistence). Posted, so it is processed once the message loop resumes.
+   if (appExitRequested)
+      PostMessage(WM_CLOSE, 0, 0);
 
    // The table settings may have been edited during play (camera, rendering, ...), so copy them back to the editor table's settings
    table->GetSettings().Load(live_table->GetSettings());

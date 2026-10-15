@@ -1357,8 +1357,6 @@ Player::~Player()
 {
    assert(g_pplayer == this && g_pplayer->m_closing != CS_CLOSED);
 
-   // note if application exit was requested, and set the new closing state to CLOSED
-   const bool appExitRequested = (m_closing == CS_CLOSE_APP);
    m_closing = CS_CLOSED;
    PLOGI << "Closing player...";
 
@@ -1423,12 +1421,6 @@ Player::~Player()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
-
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   // Close application if requested
-   if (appExitRequested && g_pvp)
-      g_pvp->PostMessage(WM_CLOSE, 0, 0);
-#endif
 
    #ifdef ENABLE_XR
    if (m_vrDevice)
