@@ -123,7 +123,7 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
          switch (bulb->m_snippitType)
          {
          case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romProbe, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
-         case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
+         case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechProbe, bulb->m_romIdType, bulb->m_romId); break;
          case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
          }
       }
@@ -286,7 +286,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
       // change. Mech values are rotation steps, not visibility writes, and never take the channel.
       if (!locked)
       {
-         float* const probe = bulb->m_snippitType == B2SSnippitType::MechRotatingImage ? &bulb->m_mechRot
+         float* const probe = bulb->m_snippitType == B2SSnippitType::MechRotatingImage ? &bulb->m_mechProbe
             : bulb->m_snippitType == B2SSnippitType::SelfRotatingImage                 ? &bulb->m_romOn
                                                                                        : &bulb->m_romProbe;
          const float prev = *probe;
@@ -313,6 +313,8 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
             bulb->m_brightness = state;
          if (lampWinsRotation)
             bulb->m_mechRot = lampWriteState;
+         else if (bulb->m_mechProbe >= 0.f)
+            bulb->m_mechRot = bulb->m_mechProbe;
          rotation = 360.f * (bulb->m_mechRot / static_cast<float>(bulb->m_snippitRotatingSteps));
       }
       else if (bulb->m_snippitType == B2SSnippitType::SelfRotatingImage)
