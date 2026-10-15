@@ -2159,7 +2159,7 @@ void PinTableWnd::EndAutoSaveCounter()
 
 void PinTableWnd::AutoSave()
 {
-   if (m_table->m_sdsCurrentDirtyState <= eSaveAutosaved)
+   if (m_table->GetDirtyState() <= SaveDirtyState::Autosaved)
       return;
 
    m_vpxEditor->KillTimer(WinEditor::TIMER_ID_AUTOSAVE);
@@ -2172,9 +2172,9 @@ void PinTableWnd::AutoSave()
    Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
    const HRESULT hr = m_table->SaveToStorage(pstgroot, feedback);
 
-   SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
-   m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
-   m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->m_sdsNonUndoableDirty, (int)eSaveAutosaved));
+   SetCleanPoint((SaveDirtyState)min((int)m_table->GetPropDirtyState(), (int)SaveDirtyState::Autosaved));
+   m_pcv->SetClean((SaveDirtyState)min((int)m_table->GetScriptDirtyState(), (int)SaveDirtyState::Autosaved));
+   m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->GetNonUndoableDirtyState(), (int)SaveDirtyState::Autosaved));
 
    AutoSavePackage *const pasp = new AutoSavePackage();
    pasp->pstg = pstgroot;

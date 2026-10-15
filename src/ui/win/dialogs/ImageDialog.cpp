@@ -222,7 +222,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   CCO(PinTable) *const pt = m_tableEditor->m_table;
                   if (pt)
                   {
-                     pt->SetNonUndoableDirty(eSaveDirty);
+                     pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                      pt->m_tableEditor->UpdatePropertyImageList();
                   }
                }
@@ -277,7 +277,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   ppi->m_alphaTestValue = v;
                   CCO(PinTable) *const pt = m_tableEditor->m_table;
-                  pt->SetNonUndoableDirty(eSaveDirty);
+                  pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                }
 
                const int count = ListView_GetSelectedCount(GetDlgItem(IDC_SOUNDLIST).GetHwnd());
@@ -400,7 +400,7 @@ void ImageDialog::UpdateImages()
                 {
                     ppi->m_alphaTestValue = v;
                     CCO(PinTable) *const pt = m_tableEditor->m_table;
-                    pt->SetNonUndoableDirty(eSaveDirty);
+                    pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                 }
 
                 sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
@@ -432,7 +432,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ::SetFocus(hImageList);
             ListView_EditLabel(hImageList, sel);
             CCO(PinTable) *const pt = m_tableEditor->m_table;
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          }
          break;
       }
@@ -494,7 +494,7 @@ void ImageDialog::Import()
       if (index != string::npos)
          g_settingsService.GetAppSettings().SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
-      pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
       pt->m_tableEditor->UpdatePropertyImageList();
       SetFocus();
    }
@@ -678,7 +678,7 @@ void ImageDialog::DeleteImage()
          }
          if (lastsel != -1)
             ListView_SetItemState(hImageList, lastsel, LVNI_SELECTED | LVNI_FOCUSED, LVNI_SELECTED | LVNI_FOCUSED);
-         pt->SetNonUndoableDirty(eSaveDirty);
+         pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
 
          UpdateSizeText();
       }
@@ -724,7 +724,7 @@ void ImageDialog::Reimport()
 
                      UpdateSizeText();
                   }
-                  pt->SetNonUndoableDirty(eSaveDirty);
+                  pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                   pt->m_tableEditor->UpdatePropertyImageList();
                }
                else
@@ -771,7 +771,7 @@ void ImageDialog::UpdateAll()
 
                UpdateSizeText();
             }
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
             pt->m_tableEditor->UpdatePropertyImageList();
          }
          else
@@ -838,7 +838,7 @@ void ImageDialog::ReimportFrom()
 
                   UpdateSizeText();
                }
-               pt->SetNonUndoableDirty(eSaveDirty);
+               pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                pt->m_tableEditor->UpdatePropertyImageList();
                // Display new image
                GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(true);

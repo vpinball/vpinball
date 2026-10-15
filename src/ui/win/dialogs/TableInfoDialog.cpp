@@ -263,7 +263,7 @@ void TableInfoDialog::OnOK()
       pt->m_customInfo.emplace_back(m_customListView.GetItemText(i, 0, MAXSTRING).GetString(), // name
          m_customListView.GetItemText(i, 1, MAXSTRING).GetString()); // value
 
-   pt->SetNonUndoableDirty(eSaveDirty);
+   pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    CDialog::OnOK();
 }
 

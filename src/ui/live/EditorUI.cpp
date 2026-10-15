@@ -192,7 +192,7 @@ bool EditorUI::SaveTable()
    RestorePartsVisibility(); // Save the authored visibility, not the editor display state
    if (FAILED(m_table->Save(feedback)))
       return false;
-   m_undo.SetCleanPoint(eSaveClean);
+   m_undo.SetCleanPoint(SaveDirtyState::Clean);
    // Start a new undo record on next edit (instead of merging it with the previous one), so that the table gets marked dirty again
    m_lastUndoPart = nullptr;
    m_lastUndoId = 0;
@@ -261,7 +261,7 @@ void EditorUI::LoadTableDialog(const bool folder)
       return;
    // Loading another table discards the edited table's unsaved changes: ask for confirmation first
    m_pendingLoadFolder = folder;
-   if (m_table->FDirty())
+   if (m_table->GetDirtyState() != SaveDirtyState::Clean)
    {
       m_pendingNewTable.reset();
       m_pendingClose.reset();
@@ -274,7 +274,7 @@ void EditorUI::LoadTableDialog(const bool folder)
 void EditorUI::RequestClose(const int closeState)
 {
    // Only closing a full editor session loses the edited table (a live edit started from the Win32 editor or a play test gets back to its editor)
-   if (m_player->IsEditorMode() && !IsInspectMode() && m_table->FDirty())
+   if (m_player->IsEditorMode() && !IsInspectMode() && m_table->GetDirtyState() != SaveDirtyState::Clean)
    {
       m_pendingNewTable.reset();
       m_pendingClose = closeState;
@@ -326,7 +326,7 @@ void EditorUI::NewTable(const NewTableTemplate templateType)
    if (IsInspectMode())
       return;
    // Creating a new table discards the edited table's unsaved changes: ask for confirmation first
-   if (m_table->FDirty())
+   if (m_table->GetDirtyState() != SaveDirtyState::Clean)
    {
       m_pendingNewTable = templateType;
       m_pendingClose.reset();
@@ -1750,7 +1750,7 @@ void EditorUI::CreateCollection(bool fromSelection)
       }
    m_table->AddCollection(pcol);
    pcol->Release();
-   m_table->SetNonUndoableDirty(eSaveDirty);
+   m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
    SetSelection(Selection(pcol));
 }
 

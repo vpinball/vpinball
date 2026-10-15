@@ -182,7 +182,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          Material *const pmat = (Material *)lvitem.lParam;
          size_t type = SendDlgItemMessage(IDC_MATERIAL_TYPE, CB_GETCURSEL, 0, 0);
          if (pmat->m_type != type)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_type = (Material::MaterialType)type;
          SetEditedMaterial(*pmat);
       }
@@ -226,7 +226,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                            pmat->m_cBase = m_colorDialog.GetColor();
                        }
                    }
-                   pt->SetNonUndoableDirty(eSaveDirty);
+                   pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                    pt->m_tableEditor->UpdatePropertyMaterialList();
                }
            }
@@ -269,7 +269,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                            pmat->m_cGlossy = m_colorDialog.GetColor();
                        }
                    }
-                   pt->SetNonUndoableDirty(eSaveDirty);
+                   pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                    pt->m_tableEditor->UpdatePropertyMaterialList();
                }
            }
@@ -312,7 +312,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                            pmat->m_cClearcoat = m_colorDialog.GetColor();
                        }
                    }
-                   pt->SetNonUndoableDirty(eSaveDirty);
+                   pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                    pt->m_tableEditor->UpdatePropertyMaterialList();
                }
            }
@@ -355,7 +355,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                            pmat->m_cRefractionTint = m_colorDialog.GetColor();
                        }
                    }
-                   pt->SetNonUndoableDirty(eSaveDirty);
+                   pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                    pt->m_tableEditor->UpdatePropertyMaterialList();
                }
            }
@@ -386,7 +386,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                pt->AddMaterial(pNewMat);
                AddListMaterial(m_hMaterialList, pNewMat);
             }
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
             pt->m_tableEditor->UpdatePropertyMaterialList();
          }
          break;
@@ -397,7 +397,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
          pt->AddMaterial(pmat);
          AddListMaterial(m_hMaterialList, pmat);
-         pt->SetNonUndoableDirty(eSaveDirty);
+         pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pt->m_tableEditor->UpdatePropertyMaterialList();
 
          break;
@@ -452,7 +452,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (index != string::npos)
                g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(szFilename[0].substr(0, index), false);
 
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
             pt->m_tableEditor->UpdatePropertyMaterialList();
          }
          break;
@@ -585,7 +585,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                    ListView_GetNextItem(m_hMaterialList, -1, LVNI_SELECTED);
                }
             }
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
             pt->m_tableEditor->UpdatePropertyMaterialList();
          }
          break;
@@ -658,56 +658,56 @@ void MaterialDialog::SaveEditedMaterial(Material& mat)
    float fv;
    fv = saturate(getItemText(IDC_DIFFUSE_EDIT));
    if (mat.m_fWrapLighting != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fWrapLighting = fv;
    fv = saturate(getItemText(IDC_GLOSSY_EDIT));
    if (mat.m_fRoughness != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fRoughness = fv;
    fv = saturate(getItemText(IDC_GLOSSY_IMGLERP_EDIT));
    if (mat.m_fGlossyImageLerp != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fGlossyImageLerp = fv;
    fv = saturate(getItemText(IDC_THICKNESS_EDIT));
    if (mat.m_fThickness != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fThickness = fv;
    fv = saturate(getItemText(IDC_SPECULAR_EDIT));
    if (mat.m_fEdge != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fEdge = fv;
    fv = saturate(getItemText(IDC_OPACITY_EDIT));
    if (mat.m_fOpacity != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fOpacity = fv;
    size_t type = SendDlgItemMessage(IDC_MATERIAL_TYPE, CB_GETCURSEL, 0, 0);
    if (mat.m_type != type)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_type = (Material::MaterialType)type;
    size_t checked = IsDlgButtonChecked(IDC_OPACITY_CHECK);
    if (mat.m_bOpacityActive != (checked == 1))
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_bOpacityActive = (checked == 1);
    fv = saturate(getItemText(IDC_EDGEALPHA_EDIT));
    if (mat.m_fEdgeAlpha != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fEdgeAlpha = fv;
 
    fv = getItemText(IDC_MAT_ELASTICITY);
    if (mat.m_fElasticity != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fElasticity = fv;
    fv = getItemText(IDC_MAT_ELASTICITY_FALLOFF);
    if (mat.m_fElasticityFalloff != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fElasticityFalloff = fv;
    fv = max(getItemText(IDC_MAT_FRICTION), 0.f); // Friction can not be negative
    if (mat.m_fFriction != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fFriction = fv;
    fv = getItemText(IDC_MAT_SCATTER_ANGLE);
    if (mat.m_fScatterAngle != fv)
-         pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fScatterAngle = fv;
 
    pt->m_tableEditor->UpdatePropertyMaterialList();
@@ -787,7 +787,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   pmat->m_name = textBuf;
                   ListView_SetItemText_Safe(m_hMaterialList, pinfo->item.iItem, 0, pmat->m_name.c_str());
                }
-               pt->SetNonUndoableDirty(eSaveDirty);
+               pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                pt->m_tableEditor->UpdatePropertyMaterialList();
                return TRUE;
             }
@@ -903,67 +903,67 @@ void MaterialDialog::OnOK()
          float fv;
          fv = getItemText(IDC_DIFFUSE_EDIT);
          if (pmat->m_fWrapLighting != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fWrapLighting = fv;
 
          fv = getItemText(IDC_GLOSSY_EDIT);
          if (pmat->m_fRoughness != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fRoughness = fv;
 
          fv = getItemText(IDC_GLOSSY_IMGLERP_EDIT);
          if (pmat->m_fGlossyImageLerp != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fGlossyImageLerp = fv;
 
          fv = getItemText(IDC_THICKNESS_EDIT);
          if (pmat->m_fThickness != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fThickness = fv;
 
          fv = getItemText(IDC_SPECULAR_EDIT);
          if (pmat->m_fEdge != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fEdge = fv;
 
          fv = getItemText(IDC_OPACITY_EDIT);
          if (pmat->m_fOpacity != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fOpacity = fv;
 
          size_t type = SendDlgItemMessage(IDC_MATERIAL_TYPE, CB_SETCURSEL, pmat->m_type, 0);
          if (pmat->m_type != type)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_type = (Material::MaterialType)type;
 
          size_t checked = IsDlgButtonChecked(IDC_OPACITY_CHECK);
          if (pmat->m_bOpacityActive != (checked == 1))
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_bOpacityActive = (checked == 1);
 
          fv = getItemText(IDC_EDGEALPHA_EDIT);
          if (pmat->m_fEdgeAlpha != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fEdgeAlpha = fv;
 
          fv = getItemText(IDC_MAT_ELASTICITY);
          if (pmat->m_fElasticity != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fElasticity = fv;
 
          fv = getItemText(IDC_MAT_ELASTICITY_FALLOFF);
          if (pmat->m_fElasticityFalloff != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fElasticityFalloff = fv;
 
          fv = max(getItemText(IDC_MAT_FRICTION), 0.f); // Friction can not be negative
          if (pmat->m_fFriction != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fFriction = fv;
 
          fv = getItemText(IDC_MAT_SCATTER_ANGLE);
          if (pmat->m_fScatterAngle != fv)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          pmat->m_fScatterAngle = fv;
 
          // The previous selection is now deleted, so look again from the top of the list

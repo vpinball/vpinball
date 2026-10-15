@@ -103,7 +103,7 @@ bool PinUndo::IsUndoPastCleanPoint() const { return !m_undoRecords.empty() && m_
 
 void PinUndo::SetCleanPoint(const SaveDirtyState sds)
 {
-   if (sds == eSaveClean)
+   if (sds == SaveDirtyState::Clean)
       m_cleanpoint = m_undoRecords.size();
    m_dirtyState = sds;
    m_table->SetDirty(sds);
@@ -257,20 +257,20 @@ std::any PinUndo::Undo()
    std::any editorState = std::move(m_undoRecords.back()->m_editorState);
    m_undoRecords.pop_back();
 
-   if ((m_undoRecords.size() == m_cleanpoint) && (m_dirtyState > eSaveClean)) // UNDONE - how could we get here without m_fDirty being true?
+   if ((m_undoRecords.size() == m_cleanpoint) && (m_dirtyState > SaveDirtyState::Clean)) // UNDONE - how could we get here without m_fDirty being true?
    {
-      m_dirtyState = eSaveClean;
-      m_table->SetDirty(eSaveClean);
+      m_dirtyState = SaveDirtyState::Clean;
+      m_table->SetDirty(SaveDirtyState::Clean);
    }
-   else if (/*m_vur.size() < m_cleanpoint && */ (m_dirtyState < eSaveDirty))
+   else if (/*m_vur.size() < m_cleanpoint && */ (m_dirtyState < SaveDirtyState::Dirty))
    {
       // If we're not clean, we must be dirty (always process this case for autosave, even though to the user it wouldn't appear to matter)
       if (m_undoRecords.size() < m_cleanpoint)
       {
          m_cleanpoint = -1; // Can't redo yet
       }
-      m_dirtyState = eSaveDirty;
-      m_table->SetDirty(eSaveDirty);
+      m_dirtyState = SaveDirtyState::Dirty;
+      m_table->SetDirty(SaveDirtyState::Dirty);
    }
 
    return editorState;
@@ -301,10 +301,10 @@ void PinUndo::EndUndo()
    assert(m_nUndoLayer > 0);
    if (m_nUndoLayer > 0)
       m_nUndoLayer--;
-   if (m_nUndoLayer == 0 && (m_dirtyState < eSaveDirty))
+   if (m_nUndoLayer == 0 && (m_dirtyState < SaveDirtyState::Dirty))
    {
-      m_dirtyState = eSaveDirty;
-      m_table->SetDirty(eSaveDirty);
+      m_dirtyState = SaveDirtyState::Dirty;
+      m_table->SetDirty(SaveDirtyState::Dirty);
    }
 }
 

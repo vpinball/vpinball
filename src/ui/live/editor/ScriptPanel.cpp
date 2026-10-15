@@ -139,7 +139,7 @@ void ScriptPanel::SyncExternalScript()
    if (script != m_extTable->m_script_text)
    {
       m_extTable->m_script_text = script;
-      m_extTable->SetDirtyScript(eSaveDirty);
+      m_extTable->SetDirtyScript(SaveDirtyState::Dirty);
    }
 }
 
@@ -232,7 +232,7 @@ void ScriptPanel::Render()
       if (readOnly)
          flags |= ImGuiInputTextFlags_ReadOnly;
       if (ImGui::InputTextMultiline("##script", &m_editor.m_table->m_script_text, ImVec2(-FLT_MIN, -FLT_MIN), flags))
-         m_editor.m_table->SetDirtyScript(eSaveDirty);
+         m_editor.m_table->SetDirtyScript(SaveDirtyState::Dirty);
    }
    ImGui::End();
 }

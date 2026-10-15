@@ -254,7 +254,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
    }
    else
    {
-      pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
       if (m_drawingOrderSelect)
       {
          if (idx < ptw->GetMultiSelCount() - 1)
