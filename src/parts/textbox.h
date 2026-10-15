@@ -12,9 +12,7 @@
 #include "utils/eventproxy.h"
 #include "utils/fileio.h"
 
-#ifdef __STANDALONE__
-#include <SDL3_ttf/SDL_ttf.h>
-#endif
+typedef struct TTF_Font TTF_Font;
 
 class TextboxData final
 {
@@ -97,12 +95,8 @@ private:
    DisplaySrcId m_uploadedSrc {};
    unsigned int m_uploadedFrameId = 0;
    bool m_hasUploadedFrame = false;
-   IFont *m_pIFontPlay = nullptr; // Our font, scaled to match play window resolution
-
-#ifdef __STANDALONE__
    TTF_Font* LoadFont();
    TTF_Font* m_pFont = nullptr; // Lazily loaded by LoadFont, kept for the play session
-#endif
 
 public:
    // ITextbox
