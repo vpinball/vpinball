@@ -4,6 +4,7 @@
 
 #include "parts/flasher.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/TextureGDI.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/FlasherWinUIPart.h"
@@ -36,7 +37,7 @@ void FlasherWinUIPart::UIRenderPass1(Sur * const psur)
    {
       psur->Polygon(vvertex);
    }
-   else if (const Texture *const ppi = m_flasher->m_ptable->GetImage(m_flasher->m_d.m_szImageA); ppi && ppi->GetGDIBitmap())
+   else if (const Texture* const ppi = m_flasher->m_ptable->GetImage(m_flasher->m_d.m_szImageA); ppi && m_editor->m_gdiTextureCache.Get(*ppi))
    {
       if (m_flasher->m_d.m_imagealignment == ImageModeWrap)
       {
@@ -52,11 +53,12 @@ void FlasherWinUIPart::UIRenderPass1(Sur * const psur)
             if (v.y > _maxy) _maxy = v.y;
          }
 
-         psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
+         psur->PolygonImage(vvertex, m_editor->m_gdiTextureCache.Get(*ppi), _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
       }
       else
       {
-         psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), m_flasher->m_ptable->m_left, m_flasher->m_ptable->m_top, m_flasher->m_ptable->m_right, m_flasher->m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+         psur->PolygonImage(vvertex, m_editor->m_gdiTextureCache.Get(*ppi), m_flasher->m_ptable->m_left, m_flasher->m_ptable->m_top, m_flasher->m_ptable->m_right,
+            m_flasher->m_ptable->m_bottom, ppi->m_width, ppi->m_height);
       }
    }
    else

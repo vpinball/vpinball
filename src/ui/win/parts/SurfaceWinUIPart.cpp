@@ -4,6 +4,7 @@
 
 #include "parts/surface.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/TextureGDI.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/SurfaceWinUIPart.h"
@@ -33,8 +34,9 @@ void SurfaceWinUIPart::UIRenderPass1(Sur* const psur)
    m_surface->m_curve.GetRgVertex(vvertex);
    if (!m_surface->m_ptable->RenderSolid() || !m_surface->m_d.m_displayTexture)
       psur->Polygon(vvertex);
-   else if (const Texture* const ppi = m_surface->m_ptable->GetImage(m_surface->m_d.m_szImage); ppi && ppi->GetGDIBitmap())
-      psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), m_surface->m_ptable->m_left, m_surface->m_ptable->m_top, m_surface->m_ptable->m_right, m_surface->m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+   else if (const Texture* const ppi = m_surface->m_ptable->GetImage(m_surface->m_d.m_szImage); ppi && m_editor->m_gdiTextureCache.Get(*ppi))
+      psur->PolygonImage(vvertex, m_editor->m_gdiTextureCache.Get(*ppi), m_surface->m_ptable->m_left, m_surface->m_ptable->m_top, m_surface->m_ptable->m_right, m_surface->m_ptable->m_bottom,
+         ppi->m_width, ppi->m_height);
    else
       psur->Polygon(vvertex);
 }

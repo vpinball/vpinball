@@ -19,6 +19,7 @@
 #include "ui/win/paintsur.h"
 #include "ui/win/PinTableMDI.h"
 #include "ui/win/sur.h"
+#include "ui/win/TextureGDI.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/WinUIPartRegistry.h"
 #include "utils/BiffReader.h"
@@ -603,11 +604,11 @@ void PinTableWnd::RenderTable(Sur *const psur)
    {
       Texture *const ppi = m_table->GetImage((!m_vpxEditor->m_desktopBackdropView) ? m_table->m_image : m_table->m_BG_image[m_table->GetViewMode()]);
 
-      if (ppi && ppi->GetGDIBitmap())
+      if (ppi && m_gdiTextureCache.Get(*ppi))
       {
          CDC dc;
          dc.CreateCompatibleDC(nullptr);
-         const CBitmap hbmOld = dc.SelectObject(ppi->GetGDIBitmap());
+         const CBitmap hbmOld = dc.SelectObject(m_gdiTextureCache.Get(*ppi));
 
          psur->Image(frect.left, frect.top, frect.right, frect.bottom, dc.GetHDC(), ppi->m_width, ppi->m_height);
 

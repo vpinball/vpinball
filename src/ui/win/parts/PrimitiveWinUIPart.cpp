@@ -4,6 +4,7 @@
 
 #include "parts/primitive.h"
 #include "ui/win/sur.h"
+#include "ui/win/TextureGDI.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/PrimitiveWinUIPart.h"
 
@@ -58,7 +59,7 @@ void PrimitiveWinUIPart::UIRenderPass2(Sur* const psur)
    if (m_primitive->m_d.m_displayTexture)
    {
       Texture* const ppi = m_primitive->m_ptable->GetImage(m_primitive->m_d.m_szImage);
-      if (ppi && ppi->GetGDIBitmap())
+      if (ppi && m_editor->m_gdiTextureCache.Get(*ppi))
       {
          vector<Vertex2D> triangles;
          m_primitive->GetEditorTriangles(triangles);
@@ -71,7 +72,8 @@ void PrimitiveWinUIPart::UIRenderPass2(Sur* const psur)
             rv.y = v.y;
             vvertex.push_back(rv);
          }
-         psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), m_primitive->m_ptable->m_left, m_primitive->m_ptable->m_top, m_primitive->m_ptable->m_right, m_primitive->m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+         psur->PolygonImage(vvertex, m_editor->m_gdiTextureCache.Get(*ppi), m_primitive->m_ptable->m_left, m_primitive->m_ptable->m_top, m_primitive->m_ptable->m_right,
+            m_primitive->m_ptable->m_bottom, ppi->m_width, ppi->m_height);
       }
    }
 }

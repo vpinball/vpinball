@@ -1165,47 +1165,6 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
    return buffer;
 }
 
-HBITMAP Texture::GetGDIBitmap() const
-{
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   if (m_hbmGDIVersion)
-      return m_hbmGDIVersion;
-
-   const auto buffer = GetRawBitmap(false, 0);
-   if (buffer == nullptr)
-      return NULL;
-
-   const HDC hdcScreen = GetDC(nullptr);
-   m_hbmGDIVersion = CreateCompatibleBitmap(hdcScreen, m_width, m_height);
-   const HDC hdcNew = CreateCompatibleDC(hdcScreen);
-   const HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, m_hbmGDIVersion);
-
-   BITMAPINFO bmi = {};
-   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-   bmi.bmiHeader.biWidth = m_width;
-   bmi.bmiHeader.biHeight = -(LONG)m_height;
-   bmi.bmiHeader.biPlanes = 1;
-   bmi.bmiHeader.biBitCount = 32;
-   bmi.bmiHeader.biCompression = BI_RGB;
-   bmi.bmiHeader.biSizeImage = 0;
-
-   std::shared_ptr<BaseTexture> bgr32bits = buffer->ToBGRA();
-   SetStretchBltMode(hdcNew, COLORONCOLOR);
-   StretchDIBits(hdcNew,
-      0, 0, m_width, m_height,
-      0, 0, m_width, m_height,
-      bgr32bits->data(), &bmi, DIB_RGB_COLORS, SRCCOPY);
-   bgr32bits = nullptr;
-
-   SelectObject(hdcNew, hbmOld);
-   DeleteDC(hdcNew);
-   ReleaseDC(nullptr, hdcScreen);
-   return m_hbmGDIVersion;
-#else
-   return nullptr;
-#endif
-}
-
 void Texture::UpdateMD5() const
 {
    if (!m_isMD5Dirty)
