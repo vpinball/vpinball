@@ -37,7 +37,9 @@ static bool IsRealDialogWindow(HWND hWnd)
 
 BOOL WinApp::PreTranslateMessage(MSG &msg)
 {
-   if (g_pvp && g_pvp->IsWindow() && msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
+   // The WinEditor frame registers itself as this thread's main window on creation (wxx CFrame::OnCreate)
+   const CWnd *const mainWnd = CWnd::GetCWndPtr(GetMainWnd());
+   if (mainWnd != nullptr && mainWnd->IsWindow() && msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
    {
       // Always forward F1-F12 to the main VPinball class to open subdialogs from everywhere
       if (const int keyPressed = LOWORD(msg.wParam); (keyPressed >= VK_F1 && keyPressed <= VK_F12))
@@ -50,7 +52,7 @@ BOOL WinApp::PreTranslateMessage(MSG &msg)
          return __super::PreTranslateMessage(msg);
 
       // Skip accelerators for control of the main editor embedded dialogs (property pane edits, to avoid Delete, Copy/Paste, Undo,... conflicts, support tabbing through pane control)
-      if (CWnd focus = g_pvp->GetFocus(); focus != nullptr && g_pvp->IsChild(focus) && focus.GetClassName() == WC_EDIT)
+      if (CWnd focus = mainWnd->GetFocus(); focus != nullptr && mainWnd->IsChild(focus) && focus.GetClassName() == WC_EDIT)
       {
          while (focus != nullptr)
          {

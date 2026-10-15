@@ -60,10 +60,6 @@
 #include "parts/rubber.h"
 #include "parts/PartGroup.h"
 
-#ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/WinEditor.h"
-#endif
-
 #if !defined(__STANDALONE__)
 
 #if defined(ENABLE_DX9)
@@ -258,7 +254,6 @@ VPApp::~VPApp()
    #else
       libwinevbs_shutdown();
    #endif
-   g_pvp = nullptr;
    g_app = nullptr;
 
    g_settingsService.GetAppSettings().Save();
