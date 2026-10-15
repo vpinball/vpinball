@@ -471,24 +471,25 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
 
    // Mark for undo before changing anything, so that undo restores the old name (and the surface references below)
    PinTable *const pt = editable->GetPTable();
-   pt->m_tableEditor->BeginUndo();
-   pt->m_tableEditor->MarkForUndo(editable);
+   PinTableWnd *const tableEditor = GetTableEditor(pt);
+   tableEditor->BeginUndo();
+   tableEditor->MarkForUndo(editable);
 
    editable->SetName(name);
    const string newName = editable->GetIScriptable()->m_name; // SetName may adjust it (length, uniqueness)
    if (newName == oldName)
    {
-      pt->m_tableEditor->EndUndo();
-      pt->m_tableEditor->DiscardUndo();
+      tableEditor->EndUndo();
+      tableEditor->DiscardUndo();
       return;
    }
 
-   SetPropSel(pt->m_tableEditor->GetMultiSelParts());
+   SetPropSel(tableEditor->GetMultiSelParts());
    GetLayersListDialog()->Update();
 
-   pt->UpdateSurfaceReferences(editable, oldName, [pt](IEditable *part) { pt->m_tableEditor->MarkForUndo(part); });
+   pt->UpdateSurfaceReferences(editable, oldName, [tableEditor](IEditable *part) { tableEditor->MarkForUndo(part); });
 
-   pt->m_tableEditor->EndUndo();
+   tableEditor->EndUndo();
    pt->SetDirtyDraw();
 }
 
@@ -576,6 +577,7 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       CComObject<PinTable> *const ptCur = GetActiveTable();
       if (ptCur)
       {
+         PinTableWnd *const tableEditor = GetActiveTableEditor();
          if (ptCur->IsLocked())
          {
             if (IDYES
@@ -583,25 +585,25 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
                              "to unlock the table ?",
                   "Table Unlocking", MB_YESNO | MB_ICONINFORMATION))
             {
-               ptCur->m_tableEditor->StartUndo();
+               tableEditor->StartUndo();
                ptCur->ToggleLock();
-               ptCur->m_tableEditor->StopUndo();
+               tableEditor->StopUndo();
             }
          }
          else if (!ptCur->IsLocked())
          {
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
-               ptCur->m_tableEditor->StartUndo();
+               tableEditor->StartUndo();
                ptCur->ToggleLock();
-               ptCur->m_tableEditor->StopUndo();
+               tableEditor->StopUndo();
                string msg = ptCur->AuditTable(true);
                InfoDialog info(msg);
                info.DoModal();
             }
          }
-         ptCur->m_tableEditor->ClearMultiSel();
-         SetPropSel(ptCur->m_tableEditor->GetMultiSelParts());
+         tableEditor->ClearMultiSel();
+         SetPropSel(tableEditor->GetMultiSelParts());
          GetLayersListDialog()->ResetView();
          ToggleToolbar();
          SetEnableMenuItems();
@@ -731,8 +733,8 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       return true;
 
    case ID_EDIT_UNDO:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
-         ptCur->m_tableEditor->Undo();
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+         ptCur->Undo();
       return true;
 
    case ID_FILE_EXPORT_BLUEPRINT:
@@ -1080,6 +1082,14 @@ PinTableWnd* WinEditor::GetActiveTableEditor()
 {
    if (const auto mdiTable = (PinTableMDI *)GetActiveMDIChild(); mdiTable && !m_unloadingTable)
       return mdiTable->GetTableWnd();
+   return nullptr;
+}
+
+PinTableWnd *WinEditor::GetTableEditor(const PinTable *const table) const
+{
+   for (PinTableWnd *const editor : m_vtable)
+      if (editor->m_table == table)
+         return editor;
    return nullptr;
 }
 
@@ -1929,10 +1939,9 @@ void WinEditor::ToggleBackglassView()
       ptT->m_table->SetDirtyDraw();
    }
 
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur)
+   if (PinTableWnd *const tableEditor = GetActiveTableEditor(); tableEditor)
       // Set selection to something in the new view (unless hiding table elements)
-      ptCur->m_tableEditor->AddMultiSel(ptCur->m_tableEditor->GetUIPart(ptCur), false, true, false);
+      tableEditor->AddMultiSel(tableEditor->GetUIPart(tableEditor->m_table), false, true, false);
 
    ToggleToolbar();
 }
@@ -1955,17 +1964,17 @@ void WinEditor::ShowSearchSelect()
 
 void WinEditor::SetDefaultPhysics()
 {
-   CComObject<PinTable> * const ptCur = GetActiveTable();
+   PinTableWnd *const ptCur = GetActiveTableEditor();
    if (ptCur)
    {
       const int answ = MessageBox(LocalString(IDS_DEFAULTPHYSICS).m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
       if (answ == IDYES)
       {
-         ptCur->m_tableEditor->BeginUndo();
-         for (IWinUIPart *const uiPart : ptCur->m_tableEditor->GetMultiSelParts())
+         ptCur->BeginUndo();
+         for (IWinUIPart *const uiPart : ptCur->GetMultiSelParts())
             if (IEditable *const editable = uiPart->GetEditable(); editable)
                editable->SetDefaultPhysics(true);
-         ptCur->m_tableEditor->EndUndo();
+         ptCur->EndUndo();
       }
    }
 }

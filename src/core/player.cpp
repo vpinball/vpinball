@@ -35,7 +35,6 @@
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
 #ifdef VPX_ENABLE_WIN32_EDITOR
-#include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/worker.h"
 #endif
@@ -1596,12 +1595,11 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
       m_nScriptErrorNotification++;
    }
 
-#ifdef VPX_ENABLE_WIN32_EDITOR // report to the script editor
+   // Report to the script editor, if any
    if (m_ptable->m_tableEditor)
       m_ptable->m_tableEditor->OnScriptError(type, line, column, description, stackDump);
    else if (m_ptable->m_liveBaseTable && m_ptable->m_liveBaseTable->m_tableEditor)
       m_ptable->m_liveBaseTable->m_tableEditor->OnScriptError(type, line, column, description, stackDump);
-#endif
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)

@@ -27,7 +27,7 @@ __forceinline void ListView_SetItemText_Safe(HWND hwndLV, WPARAM iItem, int iSub
 class PinTableMDI;
 class IWinUIPart;
 
-class PinTableWnd final : public CWnd
+class PinTableWnd final : public CWnd, public ITableEditorSink
 {
 public:
    explicit PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table);
@@ -51,7 +51,7 @@ public:
    // Moves the entry at 'from' to position 'to' in the selection (used by the drawing-order dialog)
    void MoveSelection(const int from, const int to);
    void SelectItem(IScriptable *piscript);
-   void RefreshProperties();
+   void RefreshProperties() final;
    void UpdatePropertyImageList();
    void UpdatePropertyMaterialList();
    void AssignSelectionToPartGroup(PartGroup *group);
@@ -68,7 +68,7 @@ public:
    void EndUndo();
    void DiscardUndo(); // Drop the last (ended) record, leaving no trace
    void Undo();
-   void SetCleanPoint(SaveDirtyState sds);
+   void SetCleanPoint(SaveDirtyState sds) final;
    void StartUndo();
    void StopUndo();
 
@@ -89,7 +89,6 @@ public:
 
    void SetMouseCursor();
    void SetMouseCapture();
-   void SetCaption(const string &caption);
    int ShowMessageBox(const char *text) const;
 
    void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, IWinUIPart *psel);
@@ -103,10 +102,9 @@ public:
    void ListFonts(HWND hwndListView);
    int AddListBinary(HWND hwndListView, PinBinary *ppb);
 
-   void Redraw();
+   void Redraw() final;
    void SetDefaultView();
    void GetViewRect(FRect *pfrect) const;
-   void SetMyScrollInfo();
    POINT GetScreenPoint() const;
    void ExportBlueprint();
    void ImportBackdropPOV();
@@ -136,16 +134,18 @@ public:
    void CloseAllDialogs();
 
    void OnPartChanged(IEditable *part);
-   void OnPartAdded(IEditable *part);
-   void OnPartRemoved(IEditable *part);
+   void OnPartAdded(IEditable *part) final;
+   void OnPartRemoved(IEditable *part) final;
 
-   // Script editor (code view) notifications
-   void SetScript(const string &script);
-   void OnScriptableAdded(IScriptable *scriptable, bool global);
-   void OnScriptableRemoved(IScriptable *scriptable);
-   void OnScriptableRenamed(IScriptable *scriptable, const string &newName); // Must be called before the rename, as the code view finds the item by its current name
-   void SetScriptClean(SaveDirtyState sds);
-   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
+   // ITableEditorSink notifications (also see Redraw, RefreshProperties and SetCleanPoint above)
+   void OnDirtyStateChanged(SaveDirtyState sds) final;
+   void OnTableBoundsChanged() final;
+   void SetScript(const string &script) final;
+   void OnScriptableAdded(IScriptable *scriptable, bool global) final;
+   void OnScriptableRemoved(IScriptable *scriptable) final;
+   void OnScriptableRenamed(IScriptable *scriptable, const string &newName) final; // Must be called before the rename, as the code view finds the item by its current name
+   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump) final;
+
    bool IsScriptEditorVisible() const;
    void SetScriptEditorVisible(bool visible);
 
@@ -201,6 +201,11 @@ private:
    void Paint(HDC hdc);
    void Render3DProjection(Sur *const psur);
    void RenderTable(Sur *const psur);
+
+   // Editor window UI: caption (with dirty marker) and scrollbar ranges, updated internally and
+   // through OnDirtyStateChanged/OnTableBoundsChanged
+   void SetCaption(const string &caption);
+   void SetMyScrollInfo();
 
    PinTableMDI *m_mdiTable = nullptr;
 

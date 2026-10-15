@@ -227,7 +227,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        }
                    }
                    pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-                   pt->m_tableEditor->UpdatePropertyMaterialList();
+                   m_tableEditor->UpdatePropertyMaterialList();
                }
            }
            break;
@@ -270,7 +270,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        }
                    }
                    pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-                   pt->m_tableEditor->UpdatePropertyMaterialList();
+                   m_tableEditor->UpdatePropertyMaterialList();
                }
            }
            break;
@@ -313,7 +313,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        }
                    }
                    pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-                   pt->m_tableEditor->UpdatePropertyMaterialList();
+                   m_tableEditor->UpdatePropertyMaterialList();
                }
            }
            break;
@@ -356,7 +356,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                        }
                    }
                    pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-                   pt->m_tableEditor->UpdatePropertyMaterialList();
+                   m_tableEditor->UpdatePropertyMaterialList();
                }
            }
            break;
@@ -387,7 +387,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                AddListMaterial(m_hMaterialList, pNewMat);
             }
             pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-            pt->m_tableEditor->UpdatePropertyMaterialList();
+            m_tableEditor->UpdatePropertyMaterialList();
          }
          break;
       }
@@ -398,7 +398,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          pt->AddMaterial(pmat);
          AddListMaterial(m_hMaterialList, pmat);
          pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-         pt->m_tableEditor->UpdatePropertyMaterialList();
+         m_tableEditor->UpdatePropertyMaterialList();
 
          break;
       }
@@ -453,7 +453,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(szFilename[0].substr(0, index), false);
 
             pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-            pt->m_tableEditor->UpdatePropertyMaterialList();
+            m_tableEditor->UpdatePropertyMaterialList();
          }
          break;
       }
@@ -586,7 +586,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                }
             }
             pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-            pt->m_tableEditor->UpdatePropertyMaterialList();
+            m_tableEditor->UpdatePropertyMaterialList();
          }
          break;
       }
@@ -710,7 +710,7 @@ void MaterialDialog::SaveEditedMaterial(Material& mat)
       pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    mat.m_fScatterAngle = fv;
 
-   pt->m_tableEditor->UpdatePropertyMaterialList();
+   m_tableEditor->UpdatePropertyMaterialList();
 }
 
 INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -788,7 +788,7 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ListView_SetItemText_Safe(m_hMaterialList, pinfo->item.iItem, 0, pmat->m_name.c_str());
                }
                pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
-               pt->m_tableEditor->UpdatePropertyMaterialList();
+               m_tableEditor->UpdatePropertyMaterialList();
                return TRUE;
             }
             case LVN_ITEMCHANGING:
@@ -969,7 +969,7 @@ void MaterialDialog::OnOK()
          // The previous selection is now deleted, so look again from the top of the list
          sel = ListView_GetNextItem(m_hMaterialList, sel, LVNI_SELECTED);
 
-         pt->m_tableEditor->UpdatePropertyMaterialList();
+         m_tableEditor->UpdatePropertyMaterialList();
       }
    }
    SavePosition();

@@ -177,7 +177,7 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_APPLY_TO_TABLE:
       if (pt != nullptr)
       {
-         pt->m_tableEditor->StartUndo();
+         m_tableEditor->StartUndo();
          float value = sz2f(GetDlgItemText(IDC_VP_WIDTH).GetString());
          if (value > 0.f)
             pt->put_Width(value);
@@ -190,7 +190,7 @@ BOOL DimensionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          value = sz2f(GetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT).GetString());
          if (value > 0.f)
             pt->m_glassBottomHeight = INCHESTOVPU(value);
-         pt->m_tableEditor->StopUndo();
+         m_tableEditor->StopUndo();
       }
       UpdateApplyState();
       return TRUE;

@@ -190,12 +190,12 @@ BOOL TablePhysicsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
    {
    case IDC_IMPORT_PHYSICS_BUTTON:
    {
-      ((PinTable *)SelAt(0)->GetEditable())->m_tableEditor->ImportPhysics();
+      GetTableEditor()->ImportPhysics();
       return TRUE;
    }
    case IDC_EXPORT_PHYSICS_BUTTON:
    {
-      ((PinTable *)SelAt(0)->GetEditable())->m_tableEditor->ExportPhysics();
+      GetTableEditor()->ExportPhysics();
       return TRUE;
    }
    default: break;

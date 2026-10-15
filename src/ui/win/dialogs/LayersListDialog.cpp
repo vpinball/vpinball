@@ -151,9 +151,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_SELECT:
       if (m_activeTable && GetSelectedPartGroup())
       {
-         m_activeTable->m_tableEditor->ClearMultiSel();
-         m_activeTable->m_tableEditor->AddMultiSel(m_activeTable->m_tableEditor->GetUIPart(GetSelectedPartGroup()), true, false, false);
-         m_activeTable->m_tableEditor->RefreshProperties();
+         m_activeTableEditor->ClearMultiSel();
+         m_activeTableEditor->AddMultiSel(m_activeTableEditor->GetUIPart(GetSelectedPartGroup()), true, false, false);
+         m_activeTableEditor->RefreshProperties();
          m_activeTable->SetDirtyDraw();
       }
       return TRUE;
@@ -166,9 +166,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             m_activeTable->GetUniqueName(ItemTypeEnum::eItemPartGroup, partGroup->GetIScriptable()->m_name);
             m_activeTable->AddPart(partGroup);
             partGroup->SetPartGroup(GetSelectedPartGroup());
-            m_activeTable->m_tableEditor->BeginUndo();
-            m_activeTable->m_tableEditor->MarkForCreate(partGroup);
-            m_activeTable->m_tableEditor->EndUndo();
+            m_activeTableEditor->BeginUndo();
+            m_activeTableEditor->MarkForCreate(partGroup);
+            m_activeTableEditor->EndUndo();
             Update();
          }
       }
@@ -177,8 +177,8 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_DELETE_LAYER_BUTTON:
       if (PartGroup* toDelete = GetSelectedPartGroup(); m_activeTable && toDelete)
       {
-         m_activeTable->m_tableEditor->SelectItem(toDelete);
-         m_activeTable->m_tableEditor->DeleteSelection();
+         m_activeTableEditor->SelectItem(toDelete);
+         m_activeTableEditor->DeleteSelection();
       }
       return TRUE;
 
@@ -202,7 +202,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void LayersListDialog::AssignToSelectedGroup()
 {
-   if (m_activeTable == nullptr || m_activeTable->m_tableEditor->MultiSelIsEmpty())
+   if (m_activeTable == nullptr || m_activeTableEditor->MultiSelIsEmpty())
       return;
 
    PartGroup* group = GetSelectedPartGroup();
@@ -212,20 +212,21 @@ void LayersListDialog::AssignToSelectedGroup()
       return;
    }
 
-   m_activeTable->m_tableEditor->AssignSelectionToPartGroup(group);
+   m_activeTableEditor->AssignSelectionToPartGroup(group);
 }
 
-void LayersListDialog::SetActiveTable(PinTable* ptable)
+void LayersListDialog::SetActiveTable(PinTableWnd* tableEditor)
 {
-   if (m_activeTable != ptable)
+   if (m_activeTableEditor != tableEditor)
    {
-      m_activeTable = ptable;
-      m_layerTreeView.SetActiveTable(ptable);
+      m_activeTableEditor = tableEditor;
+      m_activeTable = tableEditor ? tableEditor->m_table : nullptr;
+      m_layerTreeView.SetActiveTable(tableEditor);
       if (IsSyncedOnSelection())
       {
          if (m_activeTable)
          {
-            IWinUIPart* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
+            IWinUIPart* const sel = m_activeTableEditor->GetSelectedItem();
             m_layerTreeView.Select(sel ? sel->GetEditable() : nullptr);
          }
          else
@@ -242,7 +243,7 @@ void LayersListDialog::Update()
    m_layerTreeView.Update();
    if (IsSyncedOnSelection())
    {
-      IWinUIPart* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
+      IWinUIPart* const sel = m_activeTableEditor->GetSelectedItem();
       m_layerTreeView.Select(sel ? sel->GetEditable() : nullptr);
    }
    UpdateCommands();
@@ -288,9 +289,10 @@ void CDockLayers::OnClose()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void LayerTreeView::SetActiveTable(PinTable* ptable)
+void LayerTreeView::SetActiveTable(PinTableWnd* tableEditor)
 {
-   m_activeTable = ptable;
+   m_activeTableEditor = tableEditor;
+   m_activeTable = tableEditor ? tableEditor->m_table : nullptr;
    Update();
 }
 
@@ -575,7 +577,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             PartGroup* group = (hSelectedDrop == m_hRootItem) ? nullptr 
                              : (dropTarget->editable->GetItemType() == eItemPartGroup) ? static_cast<PartGroup*>(dropTarget->editable)
                              : dropTarget->editable->GetPartGroup();
-            m_activeTable->m_tableEditor->BeginUndo();
+            m_activeTableEditor->BeginUndo();
             for (const auto& dragItem : m_DragItems)
             {
                auto existing = std::ranges::find_if(m_content, [dragItem](const TreeEntry& te) { return te.item == dragItem; });
@@ -586,7 +588,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
                existing->editable->SetPartGroup(group);
                Select(existing->editable);
             }
-            m_activeTable->m_tableEditor->EndUndo();
+            m_activeTableEditor->EndUndo();
             Update();
          }
          m_DragItems.clear();
@@ -648,7 +650,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       auto existing = std::ranges::find_if(m_content, [pinfo](const TreeEntry& te) { return te.item == pinfo->item.hItem; });
       if (existing != m_content.end())
       {
-         m_activeTable->m_tableEditor->m_vpxEditor->RenameEditable(existing->editable, pinfo->item.pszText);
+         m_activeTableEditor->m_vpxEditor->RenameEditable(existing->editable, pinfo->item.pszText);
          Update();
       }
       return TRUE;
@@ -741,7 +743,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
       return FALSE;
    auto selected = selectedItem->editable;
 
-   m_activeTable->m_tableEditor->ClearMultiSel();
+   m_activeTableEditor->ClearMultiSel();
    if (selected->GetItemType() == eItemPartGroup)
       std::ranges::for_each(m_content,
          [&, selected](const TreeEntry& te)
@@ -750,11 +752,11 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
             while (pg != nullptr && pg != selected)
                pg = pg->GetPartGroup();
             if (pg == selected)
-               m_activeTable->m_tableEditor->AddMultiSel(m_activeTable->m_tableEditor->GetUIPart(te.editable), true, false, false);
+               m_activeTableEditor->AddMultiSel(m_activeTableEditor->GetUIPart(te.editable), true, false, false);
          });
    else
-      m_activeTable->m_tableEditor->AddMultiSel(m_activeTable->m_tableEditor->GetUIPart(selected), true, false, false);
-   m_activeTable->m_tableEditor->RefreshProperties();
+      m_activeTableEditor->AddMultiSel(m_activeTableEditor->GetUIPart(selected), true, false, false);
+   m_activeTableEditor->RefreshProperties();
    m_activeTable->SetDirtyDraw();
    return TRUE;
 }

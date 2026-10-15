@@ -115,7 +115,11 @@ void PinTableWnd::Undo()
    OnPartChanged(m_table);
 }
 
-void PinTableWnd::SetCleanPoint(const SaveDirtyState sds) { m_undo.SetCleanPoint(sds); }
+void PinTableWnd::SetCleanPoint(const SaveDirtyState sds)
+{
+   m_undo.SetCleanPoint(sds);
+   m_pcv->SetClean(sds);
+}
 
 vector<PinTableWnd::UndoSelectionEntry> PinTableWnd::CaptureUndoSelection() const
 {
@@ -2172,7 +2176,9 @@ void PinTableWnd::AutoSave()
    Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
    const HRESULT hr = m_table->SaveToStorage(pstgroot, feedback);
 
-   SetCleanPoint((SaveDirtyState)min((int)m_table->GetPropDirtyState(), (int)SaveDirtyState::Autosaved));
+   // Autosave is not a real save: each dirty domain is only downgraded to Autosaved, so bypass SetCleanPoint
+   // (which would feed the prop domain's level into the script save state)
+   m_undo.SetCleanPoint((SaveDirtyState)min((int)m_table->GetPropDirtyState(), (int)SaveDirtyState::Autosaved));
    m_pcv->SetClean((SaveDirtyState)min((int)m_table->GetScriptDirtyState(), (int)SaveDirtyState::Autosaved));
    m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->GetNonUndoableDirtyState(), (int)SaveDirtyState::Autosaved));
 
@@ -2240,7 +2246,9 @@ void PinTableWnd::OnScriptableRemoved(IScriptable *scriptable) { m_pcv->RemoveIt
 
 void PinTableWnd::OnScriptableRenamed(IScriptable *scriptable, const string &newName) { m_pcv->ReplaceName(scriptable, newName); }
 
-void PinTableWnd::SetScriptClean(const SaveDirtyState sds) { m_pcv->SetClean(sds); }
+void PinTableWnd::OnDirtyStateChanged(const SaveDirtyState sds) { SetCaption(sds > SaveDirtyState::Clean ? m_table->m_title + '*' : m_table->m_title); }
+
+void PinTableWnd::OnTableBoundsChanged() { SetMyScrollInfo(); }
 
 void PinTableWnd::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
 {

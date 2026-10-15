@@ -107,7 +107,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
       m_vpxEditor->m_ptableActive = m_tableWnd->m_table;
       if (m_vpxEditor->GetLayersDocker() != nullptr)
       {
-         m_vpxEditor->GetLayersListDialog()->SetActiveTable(m_tableWnd->m_table);
+         m_vpxEditor->GetLayersListDialog()->SetActiveTable(m_tableWnd.get());
          m_tableWnd->RefreshProperties();
       }
    }
