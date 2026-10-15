@@ -4801,12 +4801,6 @@ bool PinTable::FDirty() const
 
 void PinTable::Uncreate(IEditable *pie)
 {
-#ifdef VPX_ENABLE_WIN32_EDITOR
-   IWinUIPart *const uiPart = m_tableEditor ? m_tableEditor->GetUIPart(pie) : nullptr;
-   if (uiPart && uiPart->m_selectstate != IWinUIPart::SelectState::NotSelected)
-      m_tableEditor->AddMultiSel(uiPart, true, true, false); // Remove the item from the multi-select list
-#endif
-
    // Collections may have been edited since the creation (not undoable): drop the part from them
    const vector<Collection *> collections = pie->m_vCollection;
    for (Collection *const pcollection : collections)
