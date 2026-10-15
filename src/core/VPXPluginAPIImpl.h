@@ -8,6 +8,7 @@
 #include "plugins/MsgPluginManager.h"
 
 #include "core/DynamicScript.h"
+#include "core/VPXPluginPagedUI.h"
 #include "renderer/Texture.h"
 
 #include "unordered_dense.h"
@@ -44,13 +45,9 @@ public:
 
    bool IsScriptContributor(const unsigned int endpointId) const;
 
-   struct PluginSetting
-   {
-      string pluginId;
-      VPX::Properties::PropertyRegistry::PropId propId;
-      MsgSettingDef* setting;
-   };
-   const vector<PluginSetting>& GetPluginSettings() const { return m_pluginSettings; }
+   // Plugin contributed settings and UI sheets (MsgPlugin settings + PagedUI APIs, see
+   // plugins/PagedUIPlugin.h) are implemented by a dedicated component
+   VPXPluginPagedUI& PluginUI() { return *m_pluginUI; }
 
    void OnGameStart();
    void OnDMDUpdated(Flasher* flasher, std::shared_ptr<BaseTexture> frame);
@@ -64,10 +61,6 @@ private:
    // so they route through this pointer (set/cleared by the ctor/dtor; Player and the design-time
    // editor dialog never coexist).
    static VPXPluginAPIImpl* s_instance;
-
-   // Design-time settings target: when set, plugin settings are persisted to this object (e.g. the
-   // edited table's settings) instead of the active app settings.
-   Settings* const m_settings;
 
    // VPX API
    std::shared_ptr<MsgPI::MsgPlugin> m_vpxPlugin;
@@ -101,9 +94,8 @@ private:
 
    static void MSGPIAPI RunScript(const char* script);
 
-   // Plugin settings
-   void UpdateSetting(const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef);
-   vector<PluginSetting> m_pluginSettings;
+   // Plugin settings & UI sheets implementation (MsgPlugin settings + PagedUI APIs)
+   std::unique_ptr<VPXPluginPagedUI> m_pluginUI;
 
    // Plugin logging API
    static void MSGPIAPI OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData);

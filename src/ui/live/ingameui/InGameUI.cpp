@@ -89,6 +89,12 @@ void InGameUI::Navigate(const string &path, bool isBack)
    }
 }
 
+void InGameUI::RequestRebuildAll()
+{
+   for (const auto &page : m_activePages)
+      page->RequestRebuild();
+}
+
 void InGameUI::NavigateBack()
 {
    assert(IsOpened());

@@ -5,8 +5,12 @@
 
 #include "core/TournamentFile.h"
 #include "core/VPApp.h"
+#include "core/VPXPluginAPIImpl.h"
+#include "plugins/MsgPluginManager.h"
 #include "renderer/Renderer.h"
 #include "ui/live/LiveUI.h"
+#include "ui/live/ingameui/InGameUI.h"
+#include "ui/live/ingameui/PluginSettingsPage.h"
 
 
 namespace VPX::InGameUI

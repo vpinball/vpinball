@@ -818,6 +818,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/TournamentFile.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginPagedUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIBuilder.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -962,6 +963,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSensorSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PluginSettingsPage.cpp" />
+
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.cpp" />
@@ -1681,6 +1683,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\extras\miniaudio_libvorbis.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\miniaudio.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPlugin.h" />
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/PagedUIPlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ControllerPlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ScriptablePlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPluginManager.h" />
@@ -1720,6 +1723,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/TournamentFile.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginPagedUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/ButtonMapping.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/InputAction.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/InputManager.h" />
@@ -1913,6 +1917,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSensorSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PluginSettingsPage.h" />
+
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.h" />

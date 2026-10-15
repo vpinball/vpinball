@@ -3,6 +3,7 @@ set(VPX_SOURCES
    plugins/plugins/MsgPluginManager.h
    plugins/plugins/MsgPluginManager.cpp
    plugins/plugins/VPXPlugin.h
+   plugins/plugins/PagedUIPlugin.h
    plugins/plugins/ControllerPlugin.h
    plugins/plugins/ScriptablePlugin.h
    plugins/plugins/ResURIBuilder.h
@@ -65,6 +66,8 @@ set(VPX_SOURCES
    src/core/vpversion.h
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp
+   src/core/VPXPluginPagedUI.h
+   src/core/VPXPluginPagedUI.cpp
 
    src/input/ButtonMapping.h
    src/input/InputAction.h

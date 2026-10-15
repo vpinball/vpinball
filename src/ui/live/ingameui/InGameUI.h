@@ -27,6 +27,7 @@ public:
    void AddPage(const string &path, const std::function<std::unique_ptr<InGameUIPage>()>& pageFactory);
    void Navigate(const string &path, bool isBack = false);
    void NavigateBack();
+   void RequestRebuildAll();
 
    bool IsFlipperNav() const { return m_useFlipperNav; }
    void OnUIUpAction();
