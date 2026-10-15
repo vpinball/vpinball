@@ -27,6 +27,18 @@
 #include "ui/win/WinEditor.h"
 
 
+// The parts the dialog operates on, in dialog order: either the current selection or all hit elements
+static vector<IEditable *> GetDrawingOrderParts(const PinTableWnd *const ptw, const bool drawingOrderSelect)
+{
+   const vector<IWinUIPart *> &uiParts = drawingOrderSelect ? ptw->GetMultiSelParts() : ptw->m_allHitElements;
+   vector<IEditable *> parts;
+   parts.reserve(uiParts.size());
+   for (IWinUIPart *const uiPart : uiParts)
+      parts.push_back(uiPart->GetEditable());
+   return parts;
+}
+
+
 DrawingOrderDialog::DrawingOrderDialog(PinTableWnd *tableEditor, bool select)
    : CDialog(IDD_DRAWING_ORDER)
    , m_tableEditor(tableEditor)
@@ -229,14 +241,14 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
          if (m_drawingOrderSelect)
          {
             ptw->MoveSelection(idx, idx - 1);
-            pt->ReorderParts(m_drawingOrderSelect);
+            pt->ReorderParts(GetDrawingOrderParts(ptw, m_drawingOrderSelect));
          }
          else
          {
             IWinUIPart * const psel = ptw->m_allHitElements[idx];
             ptw->m_allHitElements.erase(ptw->m_allHitElements.begin() + idx);
             ptw->m_allHitElements.insert(ptw->m_allHitElements.begin() + (idx - 1), psel);
-            pt->ReorderParts(m_drawingOrderSelect);
+            pt->ReorderParts(GetDrawingOrderParts(ptw, m_drawingOrderSelect));
          }
       }
    }
@@ -262,7 +274,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
             ::SetFocus(hOrderList);
             ptw->MoveSelection(idx, idx + 1);
-            pt->ReorderParts(m_drawingOrderSelect);
+            pt->ReorderParts(GetDrawingOrderParts(ptw, m_drawingOrderSelect));
          }
       }
       else
@@ -292,7 +304,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             else
                ptw->m_allHitElements.insert(ptw->m_allHitElements.begin() + (idx+1), psel);
 
-            pt->ReorderParts(m_drawingOrderSelect);
+            pt->ReorderParts(GetDrawingOrderParts(ptw, m_drawingOrderSelect));
          }
       }
    }

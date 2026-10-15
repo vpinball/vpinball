@@ -434,8 +434,6 @@ public:
    void Uncreate(IEditable *pie);
    void Undelete(IEditable *pie);
 
-   void ReorderParts(bool isDrawingOrder);
-
 #pragma region Scene Parts
 public:
    const vector<IEditable *> &GetParts() const { return m_vedit; }
@@ -446,6 +444,7 @@ public:
    bool HasRegisteredName(IEditable *part) const { return part == this ? m_nameRegistered : HasPart(part); }
    void MovePartToFront(IEditable *part);
    void MovePartToBack(IEditable *part);
+   void ReorderParts(const vector<IEditable *> &orderedParts); // Move the given parts to the end of m_vedit, preserving their relative order
    IEditable *GetElementByName(const char *const name) const;
 
 private:
