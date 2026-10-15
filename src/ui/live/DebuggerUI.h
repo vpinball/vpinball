@@ -18,6 +18,7 @@ public:
       : m_liveUI(liveUI)
    {
    }
+   ~DebuggerUI() { Close(); } // Saves the window geometry if the player closes while it is opened
 
    void Open();
    void Close();
@@ -48,12 +49,12 @@ private:
    bool m_autoScroll = true;
 
    // Immediate script evaluation input line with history
-   char m_inputBuf[256] = {};
+   string m_input;
    vector<string> m_history;
    int m_historyPos = -1;
 
    int m_stepMs = 10; // Timed simulation step duration for the Step button
 
-   int m_ballSize = 50; // Mirror of the Editor.ThrowBallSize setting, edited while the window is opened
-   float m_ballMass = 1.f; // Mirror of the Editor.ThrowBallMass setting, edited while the window is opened
+   int m_ballSize = 50; // Edited value of the Editor.ThrowBallSize setting, written back on each change
+   float m_ballMass = 1.f; // Edited value of the Editor.ThrowBallMass setting, written back on each change
 };

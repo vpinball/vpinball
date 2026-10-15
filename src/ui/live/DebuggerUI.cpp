@@ -6,6 +6,7 @@
 #include "core/player.h"
 #include "core/Settings.h"
 #include "fonts/ForkAwesome.h"
+#include "imgui/imgui_stdlib.h"
 #include "ui/live/LiveUI.h"
 
 
@@ -25,13 +26,13 @@ void DebuggerUI::Close()
    if (!m_isOpened)
       return;
    m_isOpened = false;
-   g_settingsService.GetAppSettings().SetEditor_ThrowBallSize(m_ballSize, false);
-   g_settingsService.GetAppSettings().SetEditor_ThrowBallMass(m_ballMass, false);
    SaveWindowGeometry();
 }
 
 void DebuggerUI::SaveWindowGeometry() const
 {
+   if (m_lastSize.x <= 0.f) // Not rendered yet
+      return;
    Settings &settings = g_settingsService.GetAppSettings();
    settings.SetEditor_DebuggerPosX(static_cast<int>(m_lastPos.x), false);
    settings.SetEditor_DebuggerPosY(static_cast<int>(m_lastPos.y), false);
@@ -50,8 +51,8 @@ void DebuggerUI::AddLog(const string &line)
 
 void DebuggerUI::EvaluateCommand()
 {
-   const string cmd = m_inputBuf;
-   m_inputBuf[0] = '\0';
+   const string cmd = std::move(m_input);
+   m_input.clear();
    if (cmd.empty())
       return;
    m_history.push_back(cmd);
@@ -136,12 +137,19 @@ void DebuggerUI::Update()
       if (ballChanged)
          m_liveUI.m_ballControl.SetMode(ballControl, throwBalls);
       ImGui::SetNextItemWidth(80.f * uiScale);
-      ImGui::InputInt("Ball Size", &m_ballSize, 1, 10);
-      m_ballSize = clamp(m_ballSize, 5, 500);
+      // Applied on change, as balls are thrown with the current settings
+      if (ImGui::InputInt("Ball Size", &m_ballSize, 1, 10))
+      {
+         m_ballSize = clamp(m_ballSize, 5, 500);
+         g_settingsService.GetAppSettings().SetEditor_ThrowBallSize(m_ballSize, false);
+      }
       ImGui::SameLine();
       ImGui::SetNextItemWidth(80.f * uiScale);
-      ImGui::InputFloat("Mass", &m_ballMass, 0.1f, 1.f, "%.2f");
-      m_ballMass = clamp(m_ballMass, 0.05f, 100.f);
+      if (ImGui::InputFloat("Mass", &m_ballMass, 0.1f, 1.f, "%.2f"))
+      {
+         m_ballMass = clamp(m_ballMass, 0.05f, 100.f);
+         g_settingsService.GetAppSettings().SetEditor_ThrowBallMass(m_ballMass, false);
+      }
 
       // Console output
       ImGui::Separator();
@@ -164,8 +172,7 @@ void DebuggerUI::Update()
 
       // Immediate script evaluation
       ImGui::SetNextItemWidth(-1.f);
-      if (ImGui::InputTextWithHint("##Eval", "VBScript statement (Enter to evaluate)", m_inputBuf, std::size(m_inputBuf),
-             ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory, &DebuggerUI::HistoryCallback, this))
+      if (ImGui::InputTextWithHint("##Eval", "VBScript statement (Enter to evaluate)", &m_input, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory, &DebuggerUI::HistoryCallback, this))
       {
          EvaluateCommand();
          ImGui::SetKeyboardFocusHere(-1);
