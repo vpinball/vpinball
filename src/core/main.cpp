@@ -200,8 +200,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    ScopedUserMessageSink scopedMessageSink(&win32DialogSink);
 #endif
 
-   int retval = 0;
-   try
+   const auto run = []() -> int
    {
       #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
       s_OriginalNVidiaThreadOptimization = GetNVIDIAThreadOptimization();
@@ -222,20 +221,28 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       // display or a working video driver.
 
       // Run the application
-      if (cmdLine.m_command)
-         cmdLine.m_command->Execute();
-   }
+      if (!cmdLine.m_command)
+         return 0;
+      cmdLine.m_command->Execute();
+      return cmdLine.m_command->GetExitCode();
+   };
 
+   int retval = 0;
+#ifdef __STANDALONE__
+   try
+   {
+      retval = run();
+   }
    catch (const std::exception &e)
    {
-#ifndef __STANDALONE__
-      // Display the exception and quit (win32xx CException carries its message via GetText)
-      ShowFatalException(e);
-#else
       ShowMessage(MsgSeverity::Fatal, e.what(), "Unhandled exception");
-#endif
       retval = -1;
    }
+#else
+   // Unexpected exceptions are not caught, so that they can reach the crash handler (stack trace, minidump).
+   // win32xx exceptions (of the editor) are reported by Win32EditCommand
+   retval = run();
+#endif
 
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 
    if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)

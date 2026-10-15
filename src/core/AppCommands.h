@@ -8,6 +8,7 @@ class AppCommand
 public:
    virtual ~AppCommand() = default;
    virtual void Execute() = 0;
+   virtual int GetExitCode() const { return 0; } // Process exit code, once executed
 };
 
 class ShowInfoAndExitCommand : public AppCommand
@@ -84,10 +85,14 @@ public:
    explicit Win32EditCommand(const std::filesystem::path& tableFilename);
    ~Win32EditCommand() override = default;
    void Execute() override;
+   int GetExitCode() const override { return m_exitCode; }
 
    // Legacy behavior, somewhat hacky/buggy as they rely on global options to get expected behavior
    bool m_minimized = false; // Run the editor minimized, usually in conjunction with the global option to select table on start
    bool m_disablePauseMenu = false; // Disable the pause menu in the editor, leading to escape key to exit
+
+private:
+   int m_exitCode = 0;
 };
 #endif
 

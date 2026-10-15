@@ -19,8 +19,3 @@ public:
 private:
    const HWND m_parent;
 };
-
-
-// Reports an exception as a fatal error dialog, using win32xx's CException::GetText when the
-// exception is one (keeps the win32xx dependency out of the call sites, e.g. main.cpp)
-void ShowFatalException(const std::exception& e);

@@ -5282,17 +5282,29 @@ string PinTable::AuditTable(bool log) const
    }
 
    // The flasher VideoCap API (capturing the window of an external application) is deprecated in favor of plugins and may be removed in a future version
-   bool usesVideoCap = false;
-   for (const auto part : m_vedit)
-      if (part->GetItemType() == eItemFlasher && StrFindNoCase(m_script_text, string(part->GetName()) + ".videocap"s) != string::npos)
+   if (FindIndexOf(identifiers, "videocapwidth"s) != -1 || FindIndexOf(identifiers, "videocapheight"s) != -1 || FindIndexOf(identifiers, "videocapupdate"s) != -1)
+   {
+      // Name the flashers referenced as '<name>.VideoCap...' (whole name, case insensitive like VBScript), or the script for an indirect use
+      const string script = lowerCase(m_script_text);
+      bool attributed = false;
+      for (const auto part : m_vedit)
       {
-         ss << ". Error: Flasher '" << part->GetName()
-            << "' uses the deprecated 'VideoCap' API (VideoCapWidth/VideoCapHeight/VideoCapUpdate). It is superseded by plugins and may be removed in a future version.\r\n";
-         usesVideoCap = true;
+         if (part->GetItemType() != eItemFlasher)
+            continue;
+         const string ref = lowerCase(string(part->GetName())) + ".videocap";
+         for (size_t pos = script.find(ref); pos != string::npos; pos = script.find(ref, pos + 1))
+         {
+            if (pos > 0 && (isalnum(static_cast<unsigned char>(script[pos - 1])) || script[pos - 1] == '_'))
+               continue; // Part of a longer name
+            ss << ". Error: Flasher '" << part->GetName()
+               << "' uses the deprecated 'VideoCap' API (VideoCapWidth/VideoCapHeight/VideoCapUpdate). It is superseded by plugins and may be removed in a future version.\r\n";
+            attributed = true;
+            break;
+         }
       }
-   if (!usesVideoCap && (FindIndexOf(identifiers, "videocapwidth"s) != -1 || FindIndexOf(identifiers, "videocapheight"s) != -1 || FindIndexOf(identifiers, "videocapupdate"s) != -1))
-      ss << ". Error: script uses the deprecated Flasher 'VideoCap' API (VideoCapWidth/VideoCapHeight/VideoCapUpdate). It is superseded by plugins and may be removed in a future "
-            "version.\r\n";
+      if (!attributed)
+         ss << ". Error: script uses the deprecated Flasher 'VideoCap' API (VideoCapWidth/VideoCapHeight/VideoCapUpdate). It is superseded by plugins and may be removed in a future version.\r\n";
+   }
 
    if ((FindIndexOf(identifiers, "loadvpm"s) != -1) || (FindIndexOf(identifiers, "loadvpmalt"s) != -1))
    {
