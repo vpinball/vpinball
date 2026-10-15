@@ -9,6 +9,7 @@
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
 #include "plugins/ControllerPlugin.h"
+#include "plugins/PagedUIPlugin.h"
 #include "utils/PinMAMEAPI.h"
 
 namespace B2SLegacy {
@@ -18,7 +19,7 @@ class PinMAMEAPI;
 class Server : public PinballPlugin::Scriptable::IScriptProxy
 {
 public:
-   Server(const MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef);
+   Server(const MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, const PagedUIPluginAPI* pagedUIApi, ScriptClassDef* pinmameClassDef);
    ~Server();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -110,6 +111,8 @@ public:
    void SetLockDisplay(bool lockDisplay) { }
    FormBackglass* GetFormBackglass() const { return m_pFormBackglass; }
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
+   B2SOverlayDoc& GetOverlayDoc() { return m_overlayDoc; }
+   const B2SOverlayDoc& GetOverlayDoc() const { return m_overlayDoc; }
    uint32_t GetEndpointId() const { return m_endpointId; }
    void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;
@@ -160,6 +163,7 @@ private:
    void ShowBackglassForm();
    void HideBackglassForm();
    void KillBackglassForm();
+   void RegisterOverlaySheet();
    static int RandomStarter(int top);
 
    B2SSettings* m_pB2SSettings = nullptr;
@@ -216,7 +220,12 @@ private:
 
    const MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;
+   const PagedUIPluginAPI* const m_pagedUIApi;
    const uint32_t m_endpointId;
+
+   // Document being authored through the in game UI (see utils/DMDOverlay.h InitEditSheetDef)
+   B2SOverlayDoc m_overlayDoc;
+   bool m_overlaySheetRegistered = false;
 
    const unsigned int m_onGetAuxRendererId;
    const unsigned int m_onAuxRendererChgId;

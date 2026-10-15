@@ -24,6 +24,7 @@ using namespace std::string_view_literals;
 #include "classes/PictureBoxAnimation.h"
 #include "classes/B2SScreen.h"
 #include "utils/PinMAMEAPI.h"
+#include "utils/DMDOverlay.h"
 
 #include <algorithm>
 #include <random>
@@ -69,9 +70,10 @@ static std::string CreateGuidString()
    return std::string(buf);
 }
 
-Server::Server(const MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* serverClassDef)
+Server::Server(const MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, const PagedUIPluginAPI* pagedUIApi, ScriptClassDef* serverClassDef)
    : m_msgApi(msgApi)
    , m_vpxApi(vpxApi)
+   , m_pagedUIApi(pagedUIApi)
    , m_endpointId(endpointId)
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
@@ -131,6 +133,9 @@ Server::~Server()
 
    m_stateSources.Unsubscribe();
    m_pinmameControllers.Unsubscribe();
+
+   if (m_overlaySheetRegistered && m_pagedUIApi != nullptr)
+      m_pagedUIApi->UnregisterSheet(m_endpointId, "backglass");
 
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
@@ -1907,7 +1912,8 @@ void Server::Startup()
 
 void Server::ShowBackglassForm()
 {
-   if (!m_pFormBackglass)
+   const bool created = !m_pFormBackglass;
+   if (created)
       m_pFormBackglass = new FormBackglass(m_vpxApi, m_msgApi, m_endpointId, m_pB2SData);
 
    m_pFormBackglass->Show();
@@ -1915,6 +1921,31 @@ void Server::ShowBackglassForm()
    m_pFormBackglass->BringToFront();
    m_pFormBackglass->SetTopMost(false);
    m_pB2SData->SetBackglassVisible(true);
+
+   // Document editing: the live configuration starts from the displays parsed from the file
+   if (created && !m_pB2SData->GetBackglassFileName().empty())
+   {
+      m_overlayDoc.path = PluginStrings::PathFromUTF8(m_pB2SData->GetBackglassFileName());
+      m_overlayDoc.displays = *m_pB2SData->GetDMDDisplays();
+      for (B2SDMDDisplay& display : m_overlayDoc.displays)
+         display.doc = &m_overlayDoc;
+      RegisterOverlaySheet();
+   }
+}
+
+void Server::RegisterOverlaySheet()
+{
+   if (m_pagedUIApi == nullptr || m_overlaySheetRegistered || m_overlayDoc.path.empty())
+      return;
+   m_overlayDoc.requestRefresh = [this]() { m_pagedUIApi->RequestSheetRefresh(m_endpointId, "backglass"); };
+   const string name = "Modify \""s + PluginStrings::PathToUTF8(m_overlayDoc.path.filename()) + "\"";
+   PagedUISheetDef sheet {};
+   sheet.version = 1;
+   sheet.name = name.c_str();
+   sheet.description = "Layout of the loaded backglass document";
+   DMDOverlay::DMDOverlay::InitEditSheetDef(&sheet, &m_overlayDoc);
+   m_pagedUIApi->RegisterSheet(m_endpointId, &sheet);
+   m_overlaySheetRegistered = true;
 }
 
 void Server::HideBackglassForm()
@@ -1933,6 +1964,11 @@ void Server::KillBackglassForm()
       delete m_pFormBackglass;
       m_pFormBackglass = nullptr;
    }
+
+   m_overlayDoc.displays.clear();
+   m_overlayDoc.path.clear();
+   m_overlayDoc.backglassW = m_overlayDoc.backglassH = 0;
+   m_overlayDoc.scoreViewW = m_overlayDoc.scoreViewH = 0;
 }
 
 int Server::RandomStarter(int top)

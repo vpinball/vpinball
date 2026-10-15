@@ -22,6 +22,12 @@ public:
    B2SData* GetB2SData() const { return m_pB2SData; }
    void OnPaint(VPXRenderContext2D* const ctx) override;
 
+   // Document space of the authored <DMD> displays: the artwork texture at its native resolution
+   // (the displayed background may be grill-cut and resized) and the document band that was cut
+   // away from it (empty when the whole artwork is rendered)
+   virtual VPXTexture GetOverlayDocImage() const { return GetBackgroundImage(); }
+   virtual SDL_Rect GetOverlayDocCut() const { return { 0, 0, 0, 0 }; }
+
 protected:
    const MsgPluginAPI* m_msgApi = nullptr;
    B2SData* m_pB2SData = nullptr;
@@ -30,8 +36,8 @@ protected:
 private:
    PinballPlugin::ResURIResolver* m_pResURIResolver = nullptr;
    VPXTexture m_dmdTex = nullptr;
-   DMDOverlay::DMDOverlay* m_pDmdOverlay = nullptr;
-   bool m_isScoreView = false;
+   vector<std::unique_ptr<DMDOverlay::DMDOverlay>> m_dmdOverlays; // One per <DMD> display of the edited document, in enumeration order
+   int m_dmdDisplayTarget = 0; // View rendered by this form: 0 = backglass, 1 = score view
    bool m_topMost = false;
 };
 

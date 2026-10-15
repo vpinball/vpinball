@@ -163,6 +163,7 @@ void B2SData::ClearAll(bool donotclearnames)
    m_ledDisplayDigits.clear();
    m_illuminations.clear();
    m_dmdIlluminations.clear();
+   m_dmdDisplays.clear();
    m_useIlluminationLocks = false;
    m_illuminationGroups.clear();
    m_illuminationLocks.clear();

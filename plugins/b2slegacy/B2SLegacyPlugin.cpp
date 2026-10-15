@@ -5,6 +5,7 @@
 #include "plugins/ScriptablePlugin.h"
 #include "plugins/LoggingPlugin.h"
 #include "plugins/VPXPlugin.h"
+#include "plugins/PagedUIPlugin.h"
 
 #include "Server.h"
 #include "utils/DMDOverlay.h"
@@ -16,9 +17,11 @@ LPI_IMPLEMENT_CPP // Implement shared log support
 static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
+static PagedUIPluginAPI* pagedUIApi = nullptr;
 static uint32_t endpointId = 0;
 static unsigned int getVpxApiId = 0;
 static unsigned int getScriptApiId = 0;
+static unsigned int getPagedUIApiId = 0;
 static int nServer = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -222,7 +225,8 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const M
    getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
 
-   DMDOverlay::DMDOverlay::RegisterSettings(msgApi, endpointId);
+   getPagedUIApiId = msgApi->GetMsgID(PAGEDUIPI_NAMESPACE, PAGEDUIPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getPagedUIApiId, &pagedUIApi);
 
    nServer = 0;
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
@@ -242,7 +246,7 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const M
       if (nServer > 0)
          LOGE("Invalid script: multiple B2S server are created."s);
       nServer++;
-      Server* server = new Server(msgApi, endpointId, vpxApi, B2SLegacy_Server_SCD);
+      Server* server = new Server(msgApi, endpointId, vpxApi, pagedUIApi, B2SLegacy_Server_SCD);
       server->SetOnDestroyHandler([](Server*) { nServer--; });
       return static_cast<void*>(server);
    };
@@ -269,7 +273,9 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload()
    
    msgApi->ReleaseMsgID(getVpxApiId);
    msgApi->ReleaseMsgID(getScriptApiId);
+   msgApi->ReleaseMsgID(getPagedUIApiId);
    vpxApi = nullptr;
    scriptApi = nullptr;
+   pagedUIApi = nullptr;
    msgApi = nullptr;
 }

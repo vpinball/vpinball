@@ -3,7 +3,11 @@
 #include "DMDOverlay.h"
 #include "../common.h" // Needed for logging
 
+#include "tinyxml2/tinyxml2.h"
+#include "plugins/PluginStrings.h"
+
 #include <cmath>
+#include <deque>
 #include <vector>
 #include <stack>
 #include <algorithm>
@@ -11,6 +15,8 @@
 #include <tuple>
 #include <format>
 #include <vector>
+#include <fstream>
+#include <iterator>
 
 using std::string;
 using namespace std::string_literals;
@@ -22,24 +28,9 @@ using std::vector;
 namespace B2SLegacy::DMDOverlay
 {
 
-MSGPI_BOOL_VAL_SETTING(scoreViewDMDOverlayProp, "ScoreViewDMDOverlay", "ScoreView DMD Overlay", "Enable a DMD overlay on the Score View", true, false);
-MSGPI_BOOL_VAL_SETTING(scoreViewDMDAutoPosProp, "ScoreViewDMDAutoPos", "ScoreView DMD Automatic position", "Enable automatic DMD bounds detection", true, false);
-MSGPI_FLOAT_VAL_SETTING(scoreViewDMDXProp, "ScoreViewDMDX", "ScoreView DMD X position", "Horizontal position in percent: 0 = left, 50 = centered, 100 = right", true, 0.f, 100.f, 0.1f, 0.f);
-MSGPI_FLOAT_VAL_SETTING(scoreViewDMDYProp, "ScoreViewDMDY", "ScoreView DMD Y position", "Vertical position in percent: 0 = top, 50 = centered, 100 = bottom", true, 0.f, 100.f, 0.1f, 0.f);
-MSGPI_FLOAT_VAL_SETTING(scoreViewDMDWProp, "ScoreViewDMDW", "ScoreView DMD width", "Width in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
-MSGPI_FLOAT_VAL_SETTING(scoreViewDMDHProp, "ScoreViewDMDH", "ScoreView DMD height", "Height in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
-
-MSGPI_BOOL_VAL_SETTING(backglassDMDOverlayProp, "BackglassDMDOverlay", "Backglass DMD Overlay", "Enable a DMD overlay on the Backglass", true, false);
-MSGPI_BOOL_VAL_SETTING(backglassDMDAutoPosProp, "BackglassDMDAutoPos", "Backglass DMD Automatic position", "Enable automatic DMD bounds detection", true, false);
-MSGPI_FLOAT_VAL_SETTING(backglassDMDXProp, "BackglassDMDX", "Backglass DMD X position", "Horizontal position in percent: 0 = left, 50 = centered, 100 = right", true, 0.f, 100.f, 0.1f, 0.f);
-MSGPI_FLOAT_VAL_SETTING(backglassDMDYProp, "BackglassDMDY", "Backglass DMD Y position", "Vertical position in percent: 0 = top, 50 = centered, 100 = bottom", true, 0.f, 100.f, 0.1f, 0.f);
-MSGPI_FLOAT_VAL_SETTING(backglassDMDWProp, "BackglassDMDW", "Backglass DMD width", "Width in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
-MSGPI_FLOAT_VAL_SETTING(backglassDMDHProp, "BackglassDMDH", "Backglass DMD height", "Height in percent of the display", true, 0.f, 100.f, 0.1f, 0.f);
-
-DMDOverlay::DMDOverlay(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage)
+DMDOverlay::DMDOverlay(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex)
    : m_resURIResolver(resURIResolver)
    , m_dmdTex(dmdTex)
-   , m_backImage(backImage)
    , m_vpxApi(vpxApi)
 {
 }
@@ -51,120 +42,55 @@ DMDOverlay::~DMDOverlay()
       m_frameSearch.wait();
 }
 
-void DMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
+void DMDOverlay::Render(VPXRenderContext2D* ctx, B2SDMDDisplay* display, VPXTexture docImage, int docW, int docH, int docCutY, int docCutH)
 {
-   msgApi->RegisterSetting(endpointId, &backglassDMDOverlayProp);
-   msgApi->RegisterSetting(endpointId, &backglassDMDAutoPosProp);
-   msgApi->RegisterSetting(endpointId, &backglassDMDXProp);
-   msgApi->RegisterSetting(endpointId, &backglassDMDYProp);
-   msgApi->RegisterSetting(endpointId, &backglassDMDWProp);
-   msgApi->RegisterSetting(endpointId, &backglassDMDHProp);
-   msgApi->RegisterSetting(endpointId, &scoreViewDMDOverlayProp);
-   msgApi->RegisterSetting(endpointId, &scoreViewDMDAutoPosProp);
-   msgApi->RegisterSetting(endpointId, &scoreViewDMDXProp);
-   msgApi->RegisterSetting(endpointId, &scoreViewDMDYProp);
-   msgApi->RegisterSetting(endpointId, &scoreViewDMDWProp);
-   msgApi->RegisterSetting(endpointId, &scoreViewDMDHProp);
-}
-
-void DMDOverlay::LoadSettings(bool isScoreView)
-{
-   const bool wasDetecting = m_detectDmdFrame;
-   if (isScoreView)
-   {
-      m_enable = scoreViewDMDOverlayProp_Val != 0;
-      m_detectDmdFrame = scoreViewDMDAutoPosProp_Val != 0;
-      if (!m_detectDmdFrame)
-      {
-         m_manualFrame = vec4<float>(scoreViewDMDXProp_Val, scoreViewDMDYProp_Val, scoreViewDMDWProp_Val, scoreViewDMDHProp_Val);
-      }
-   }
-   else
-   {
-      m_enable = backglassDMDOverlayProp_Val != 0;
-      m_detectDmdFrame = backglassDMDAutoPosProp_Val != 0;
-      if (!m_detectDmdFrame)
-      {
-         m_manualFrame = vec4<float>(backglassDMDXProp_Val, backglassDMDYProp_Val, backglassDMDWProp_Val, backglassDMDHProp_Val);
-      }
-   }
-   if (m_detectDmdFrame && !wasDetecting)
-   {
-      m_frame = vec4<int>();
-      m_detectSrcId.id = 0;
-   }
-}
-
-void DMDOverlay::UpdateBackgroundImage(VPXTexture backImage)
-{
-   if (m_backImage != backImage)
-   {
-      m_backImage = backImage;
-      if (m_detectDmdFrame)
-      {
-         m_frame = vec4<int>();
-         m_detectSrcId.id = 0;
-      }
-   }
-}
-
-void DMDOverlay::Render(VPXRenderContext2D* ctx)
-{
-   if (!m_enable)
-      return;
-
-   PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(PinballPlugin::ResURIResolver::DefaultDmdUri);
+   PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(display->source.empty() ? PinballPlugin::ResURIResolver::DefaultDmdUri : display->source);
    if (dmd.state.frame == nullptr)
       return;
 
-   // When DMD source change, search for the DMD sub frame as it depends on the DMD source aspect ratio
-   if (m_detectDmdFrame && m_backImage && m_detectSrcId.id != dmd.source->id.id)
+   // Bounds detection request, issued by the 'Detect position' action of the editing page:
+   // the detected frame is written back into the document fields (see below)
+   if (display->detectRequest != 0 && !m_frameSearch.valid() && docImage != nullptr)
    {
-      if (m_frameSearch.valid())
+      display->detectRequest = 0;
+      const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(docImage);
+      if (texInfo != nullptr)
       {
-         m_stopSearching = true;
-         if (m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-            std::ignore = m_frameSearch.get();
-         return;
-      }
-      else
-      {
-         m_frame = vec4<int>();
          m_stopSearching = false;
-         m_detectSrcId.id = dmd.source->id.id;
          const float ar = static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
-         const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
-         if (texInfo != nullptr)
-            m_frameSearch = std::async(std::launch::async, [this, texInfo, ar]() { return SearchDmdSubFrame(m_backImage, texInfo, ar); });
+         m_frameSearch = std::async(std::launch::async, [this, docImage, texInfo, ar]() { return SearchDmdSubFrame(docImage, texInfo, ar); });
+      }
+   }
+   if (m_frameSearch.valid() && m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+   {
+      const vec4<int> frame = m_frameSearch.get();
+      if (frame.z != 0 && frame.w != 0)
+      {
+         display->x = frame.x;
+         display->y = frame.y;
+         display->w = frame.z;
+         display->h = frame.w;
       }
    }
 
-   if (m_frameSearch.valid() && m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-      m_frame = m_frameSearch.get();
-
-   if (!m_detectDmdFrame)
-   {
-      const float w = m_manualFrame.z;
-      const float h = m_manualFrame.w;
-      const float x = m_manualFrame.x * (100.f - w) / 100.f;
-      const float y = m_manualFrame.y * (100.f - h) / 100.f;
-      m_frame = vec4<int>(static_cast<int>(x * ctx->srcWidth / 100.f), static_cast<int>((100.f - y - h) * ctx->srcHeight / 100.f),
-         static_cast<int>(w * ctx->srcWidth / 100.f), static_cast<int>(h * ctx->srcHeight / 100.f));
-   }
-
+   // Map the display bounds from the B2S document space (native artwork, y downward) to the
+   // render space (view size, y upward). The rendered artwork is the document image anisotropically
+   // scaled, minus a cut band: doc rows [docCutY, docCutY + docCutH) are not displayed, doc rows
+   // below them shift up (grill clipped away when hidden, small grill band removed when shown)
+   const int docVisH = std::max(1, docH - docCutH);
+   const float scaleX = ctx->srcWidth / static_cast<float>(docW);
+   const float scaleY = ctx->srcHeight / static_cast<float>(docVisH);
+   const auto mapY = [docCutY, docCutH](int y) { return y <= docCutY ? y : std::max(y - docCutH, docCutY); };
+   const int visY0 = mapY(display->y);
+   const int visY1 = mapY(display->y + display->h);
+   m_frame.x = static_cast<int>(display->x * scaleX);
+   m_frame.y = static_cast<int>(ctx->srcHeight - visY1 * scaleY);
+   m_frame.z = static_cast<int>(display->w * scaleX);
+   m_frame.w = static_cast<int>((visY1 - visY0) * scaleY);
    if (m_frame.z == 0 || m_frame.w == 0)
       return;
-
-   // Our position is defined against the back image, so set its size as coordinate references for draw calls
-   if (m_detectDmdFrame && m_backImage)
-   {
-      const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
-      if (texInfo)
-      {
-         ctx->srcWidth = static_cast<float>(texInfo->width);
-         ctx->srcHeight = static_cast<float>(texInfo->height);
-      }
-   }
+   if (m_frame.y + m_frame.w <= 0 || m_frame.y >= static_cast<int>(ctx->srcHeight))
+      return; // Fully inside the grill (hidden) or off the artwork
 
    // The texture is owned by the form, hence the null test: it may still have to be created here
    if (!m_hasUploadedFrame || (m_dmdTex == nullptr) || (dmd.state.frameId != m_uploadedFrameId) || (*dmd.source != m_uploadedSrc))
@@ -342,9 +268,230 @@ DMDOverlay::vec4<int> DMDOverlay::SearchDmdSubFrame(VPXTexture image, const VPXT
       }
    }
 
-   bestFrame.y = texInfo->height - 1 - bestFrame.y - bestFrame.w;
-
    return bestFrame;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Document editing page (PagedUIPlugin): enumerates the <DMD> children of the document's
+// <Displays> node, one section per display plus an 'add' action. Property item contexts
+// directly point at the edited field of the display entries of doc->displays. CommitEdit
+// patches the document file.
+
+namespace
+{
+
+   int MSGPIAPI OverlayFieldGet(void* context) { return *static_cast<int*>(context); }
+   void MSGPIAPI OverlayFieldSet(void* context, int value) { *static_cast<int*>(context) = value; }
+   const char* MSGPIAPI OverlaySourceGet(void* context) { return static_cast<B2SLegacy::B2SDMDDisplay*>(context)->source.c_str(); }
+   void MSGPIAPI OverlaySourceSet(void* context, const char* value) { static_cast<B2SLegacy::B2SDMDDisplay*>(context)->source = value != nullptr ? value : ""; }
+   void MSGPIAPI OverlayDetectRun(void* context) { static_cast<B2SLegacy::B2SDMDDisplay*>(context)->detectRequest = 1; }
+   void MSGPIAPI OverlayRemoveRun(void* context)
+   {
+      auto* const display = static_cast<B2SLegacy::B2SDMDDisplay*>(context);
+      B2SLegacy::B2SOverlayDoc* const doc = display->doc;
+      std::erase_if(doc->displays, [display](const B2SLegacy::B2SDMDDisplay& d) { return &d == display; });
+      if (doc->requestRefresh)
+         doc->requestRefresh();
+   }
+   void MSGPIAPI OverlayAddRun(void* context)
+   {
+      auto* const doc = static_cast<B2SLegacy::B2SOverlayDoc*>(context);
+      B2SLegacy::B2SDMDDisplay& display = doc->displays.emplace_back();
+      display.doc = doc;
+      if (doc->requestRefresh)
+         doc->requestRefresh();
+   }
+
+   // Edit session: the host only tracks item value changes through its docSnapshot, so the document
+   // itself is captured here to detect (and discard) structural changes such as added/removed displays
+   void MSGPIAPI OverlayBeginEdit(void* context)
+   {
+      auto* const doc = static_cast<B2SLegacy::B2SOverlayDoc*>(context);
+      doc->editBackup = doc->displays;
+   }
+
+   // Persisted fields only: detectRequest and the doc back link are runtime state
+   static bool SameDisplay(const B2SLegacy::B2SDMDDisplay& a, const B2SLegacy::B2SDMDDisplay& b)
+   {
+      return a.target == b.target && a.source == b.source && a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h;
+   }
+
+   int MSGPIAPI OverlayIsDirty(void* context)
+   {
+      auto* const doc = static_cast<B2SLegacy::B2SOverlayDoc*>(context);
+      return doc->displays.size() != doc->editBackup.size() || !std::equal(doc->displays.begin(), doc->displays.end(), doc->editBackup.begin(), SameDisplay);
+   }
+
+   void MSGPIAPI OverlayEndEdit(void* context, int committed)
+   {
+      auto* const doc = static_cast<B2SLegacy::B2SOverlayDoc*>(context);
+      // Discard uncommitted changes: item values are reverted through their Set callbacks, this covers
+      // the structural changes (added/removed displays) including edits made after a save in the same
+      // session (the backup is re-based on each successful commit)
+      if (!committed || OverlayIsDirty(context))
+      {
+         doc->displays = doc->editBackup;
+         for (B2SLegacy::B2SDMDDisplay& display : doc->displays)
+            display.doc = doc;
+      }
+      doc->editBackup.clear();
+   }
+
+   unsigned int MSGPIAPI OverlayPageCount(void*) { return 1; }
+   void MSGPIAPI OverlayPageInfo(void*, unsigned int, PagedUIPageInfo* info)
+   {
+      info->id = "displays";
+      info->title = nullptr;
+      info->info = nullptr;
+   }
+   unsigned int MSGPIAPI OverlayItemCount(void* context, const char*) { return static_cast<unsigned int>(static_cast<B2SLegacy::B2SOverlayDoc*>(context)->displays.size()) * 9 + 1; }
+
+   void FillOverlayItem(PagedUIItemDef& item, const char* id, const char* label, const char* tooltip)
+   {
+      item = PagedUIItemDef {};
+      item.id = id;
+      item.label = label;
+      item.tooltip = tooltip;
+      item.storage = PAGEDUI_STORAGE_PLUGIN;
+   }
+
+   void FillOverlayInt(PagedUIItemDef& item, const char* id, const char* label, const char* tooltip, int* field, int maxVal)
+   {
+      FillOverlayItem(item, id, label, tooltip);
+      item.type = PAGEDUI_ITEM_INT;
+      item.context = field;
+      item.intProp.minVal = 0;
+      item.intProp.maxVal = maxVal;
+      item.intProp.defVal = 0;
+      item.intProp.format = nullptr;
+      item.intProp.Get = &OverlayFieldGet;
+      item.intProp.Set = &OverlayFieldSet;
+   }
+
+   void MSGPIAPI OverlayGetItems(void* context, const char*, PagedUIItemDef* items)
+   {
+      auto* const doc = static_cast<B2SLegacy::B2SOverlayDoc*>(context);
+      // Generated ids/labels are kept in static storage: they are consumed by the host right
+      // after this call and the callbacks only run on the API thread. A deque keeps the
+      // pointers stable: item ids are the c_str() of these strings, read after the loop
+      static std::deque<string> strings;
+      strings.clear();
+      const auto str = [](string s) { return strings.emplace_back(std::move(s)).c_str(); };
+      static const char* targetValues[] = { "Backglass", "Score view" };
+      for (unsigned int i = 0; i < doc->displays.size(); i++)
+      {
+         B2SLegacy::B2SDMDDisplay& display = doc->displays[i];
+         const int maxW = display.target == 1 ? (doc->scoreViewW > 0 ? doc->scoreViewW : 0xFFFF) : (doc->backglassW > 0 ? doc->backglassW : 0xFFFF);
+         const int maxH = display.target == 1 ? (doc->scoreViewH > 0 ? doc->scoreViewH : 0xFFFF) : (doc->backglassH > 0 ? doc->backglassH : 0xFFFF);
+         PagedUIItemDef* const it = items + i * 9;
+         FillOverlayItem(it[0], nullptr, str(std::format("DMD display #{}", i + 1)), nullptr);
+         it[0].type = PAGEDUI_ITEM_HEADER;
+         FillOverlayItem(it[1], str(std::format("dmd{}.target", i)), "Show on", "View the display is rendered on");
+         it[1].type = PAGEDUI_ITEM_ENUM;
+         it[1].context = &display.target;
+         it[1].enumProp = { 0, 2, targetValues, 0, &OverlayFieldGet, &OverlayFieldSet };
+         FillOverlayItem(it[2], str(std::format("dmd{}.source", i)), "Source", "Controller resource URI of the DMD to render (ctrl://..., empty = default DMD)");
+         it[2].type = PAGEDUI_ITEM_STRING;
+         it[2].context = &display;
+         it[2].stringProp.defVal = "";
+         it[2].stringProp.Get = &OverlaySourceGet;
+         it[2].stringProp.Set = &OverlaySourceSet;
+         FillOverlayItem(it[3], str(std::format("dmd{}.detect", i)), "Detect position", "Automatically detect the DMD bounds on the artwork image");
+         it[3].type = PAGEDUI_ITEM_ACTION;
+         it[3].context = &display;
+         it[3].action.Run = &OverlayDetectRun;
+         FillOverlayInt(it[4], str(std::format("dmd{}.x", i)), "X position", "Overlay bounds in artwork pixels, from the top left of the image", &display.x, maxW);
+         FillOverlayInt(it[5], str(std::format("dmd{}.y", i)), "Y position", "Overlay bounds in artwork pixels, from the top left of the image (grill included)", &display.y, maxH);
+         FillOverlayInt(it[6], str(std::format("dmd{}.w", i)), "Width", "Overlay bounds in artwork pixels", &display.w, maxW);
+         FillOverlayInt(it[7], str(std::format("dmd{}.h", i)), "Height", "Overlay bounds in artwork pixels", &display.h, maxH);
+         FillOverlayItem(it[8], str(std::format("dmd{}.remove", i)), "Remove display", "Remove this display from the backglass file");
+         it[8].type = PAGEDUI_ITEM_ACTION;
+         it[8].context = &display;
+         it[8].action.Run = &OverlayRemoveRun;
+      }
+      PagedUIItemDef& addItem = items[doc->displays.size() * 9];
+      FillOverlayItem(addItem, "dmdAdd", "Add DMD display", "Add a DMD overlay to the backglass file");
+      addItem.type = PAGEDUI_ITEM_ACTION;
+      addItem.context = doc;
+      addItem.action.Run = &OverlayAddRun;
+   }
+
+   // Rewrites only the <DMD> children of the document's <Displays> element, leaving all other
+   // content (including the embedded base64 images) untouched
+   int MSGPIAPI OverlayCommitEdit(void* context)
+   {
+      auto* const doc = static_cast<B2SLegacy::B2SOverlayDoc*>(context);
+      if (doc->path.empty())
+         return 1;
+      std::ifstream in(doc->path, std::ios::binary);
+      if (!in)
+      {
+         LOGE("Failed to open B2S file for writing: " + PluginStrings::PathToUTF8(doc->path));
+         return 1;
+      }
+      const std::string buffer((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+      in.close();
+      tinyxml2::XMLDocument xmlDoc;
+      if (xmlDoc.Parse(buffer.c_str(), buffer.size()) != tinyxml2::XML_SUCCESS)
+      {
+         LOGE("Failed to parse B2S file: " + PluginStrings::PathToUTF8(doc->path));
+         return 1;
+      }
+      tinyxml2::XMLElement* root = xmlDoc.FirstChildElement("DirectB2SData");
+      if (root == nullptr)
+         return 1;
+      auto* displays = root->FirstChildElement("Displays");
+      if (displays == nullptr)
+         displays = static_cast<tinyxml2::XMLElement*>(root->InsertEndChild(xmlDoc.NewElement("Displays")));
+      // Remove the previously authored DMD children; children of other display kinds are preserved
+      while (tinyxml2::XMLElement* dmd = displays->FirstChildElement("DMD"))
+         displays->DeleteChild(dmd);
+      for (const B2SLegacy::B2SDMDDisplay& display : doc->displays)
+      {
+         auto* const e = xmlDoc.NewElement("DMD");
+         e->SetAttribute("Target", display.target == 1 ? "ScoreView" : "Backglass");
+         if (!display.source.empty())
+            e->SetAttribute("Source", display.source.c_str());
+         e->SetAttribute("X", display.x);
+         e->SetAttribute("Y", display.y);
+         e->SetAttribute("W", display.w);
+         e->SetAttribute("H", display.h);
+         displays->InsertEndChild(e);
+      }
+      tinyxml2::XMLPrinter printer;
+      xmlDoc.Print(&printer);
+      std::ofstream out(doc->path, std::ios::binary | std::ios::trunc);
+      if (!out)
+      {
+         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc->path));
+         return 1;
+      }
+      out << printer.CStr();
+      out.close();
+      if (out.fail())
+      {
+         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc->path));
+         return 1;
+      }
+      doc->editBackup = doc->displays; // Saved state becomes the new dirty baseline
+      return 0;
+   }
+
+} // namespace
+
+
+void DMDOverlay::InitEditSheetDef(PagedUISheetDef* sheet, B2SLegacy::B2SOverlayDoc* doc)
+{
+   sheet->id = "backglass";
+   sheet->context = doc;
+   sheet->GetPageCount = &OverlayPageCount;
+   sheet->GetPageInfo = &OverlayPageInfo;
+   sheet->GetItemCount = &OverlayItemCount;
+   sheet->GetItems = &OverlayGetItems;
+   sheet->BeginEdit = &OverlayBeginEdit;
+   sheet->CommitEdit = &OverlayCommitEdit;
+   sheet->EndEdit = &OverlayEndEdit;
+   sheet->IsDirty = &OverlayIsDirty;
+}
 }
