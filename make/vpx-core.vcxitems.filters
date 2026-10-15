@@ -705,6 +705,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinEditor.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinApp.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/Win32DialogSink.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
@@ -1803,6 +1809,12 @@
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinEditor.h">
+      <Filter>ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinApp.h">
+      <Filter>ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/Win32DialogSink.h">
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.h">

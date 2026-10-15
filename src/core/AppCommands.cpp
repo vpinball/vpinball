@@ -12,6 +12,8 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 #ifdef VPX_ENABLE_WIN32_EDITOR
+#include "ui/win/Win32DialogSink.h"
+#include "ui/win/WinApp.h"
 #include "ui/win/WinEditor.h"
 #endif
 #include "utils/BiffReader.h"
@@ -240,7 +242,7 @@ void Win32EditCommand::Execute()
       if (vpxEditor.m_table_played_via_SelectTableOnStart)
          vpxEditor.DoPlay(0);
    }
-   g_app->m_winApp.Run();
+   g_app->m_winApp->Run();
    g_pvp = nullptr;
 }
 #endif

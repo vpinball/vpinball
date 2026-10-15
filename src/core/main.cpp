@@ -12,6 +12,10 @@
 #include "core/AppCommands.h"
 #include "core/VPApp.h"
 
+#ifndef __STANDALONE__
+#include "ui/win/Win32DialogSink.h"
+#endif
+
 #include <initguid.h>
 
 #define SET_CRT_DEBUG_FIELD(a) _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
@@ -222,23 +226,16 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          cmdLine.m_command->Execute();
    }
 
-#ifndef __STANDALONE__
-   // catch all CException types
-   catch (const CException &e)
-   {
-      // Display the exception and quit
-      ShowMessage(MsgSeverity::Fatal, e.GetText(), e.what());
-
-      retval = -1;
-   }
-#else
    catch (const std::exception &e)
    {
+#ifndef __STANDALONE__
+      // Display the exception and quit (win32xx CException carries its message via GetText)
+      ShowFatalException(e);
+#else
       ShowMessage(MsgSeverity::Fatal, e.what(), "Unhandled exception");
-
+#endif
       retval = -1;
    }
-#endif
 
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 
    if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)

@@ -974,6 +974,8 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinEditor.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinApp.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/Win32DialogSink.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/IWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.cpp" />
@@ -1922,6 +1924,8 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/IWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinEditor.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinApp.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/Win32DialogSink.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.h" />
