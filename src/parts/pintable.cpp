@@ -433,28 +433,21 @@ void PinTable::MovePartToBack(IEditable* part)
    SetDirtyDraw();
 }
 
-void PinTable::ReorderParts(bool isDrawingOrder)
+void PinTable::ReorderParts(const vector<IEditable *> &orderedParts)
 {
-#ifdef VPX_ENABLE_WIN32_EDITOR // DrawingOrderDialog is its sole caller
-   const vector<IWinUIPart *> &selection = isDrawingOrder ? m_tableEditor->GetMultiSelParts() : m_tableEditor->m_allHitElements;
-   if (!selection.empty())
+   if (!orderedParts.empty())
    {
       SetNonUndoableDirty(eSaveDirty);
-      for (int i = (int)selection.size() - 1; i >= 0; i--)
-      {
-         IEditable *const pedit = selection[i]->GetEditable();
-         RemoveFromVectorSingle(m_vedit, pedit);
-      }
+      for (int i = (int)orderedParts.size() - 1; i >= 0; i--)
+         RemoveFromVectorSingle(m_vedit, orderedParts[i]);
 
-      for (int i = (int)selection.size() - 1; i >= 0; i--)
+      for (int i = (int)orderedParts.size() - 1; i >= 0; i--)
       {
-         IEditable *const pedit = selection[i]->GetEditable();
-         if (FindIndexOf(m_vedit, pedit) != -1)
-            continue; // Already re-added: the selection may contain multiple selects of a part (part and sub parts)
-         m_vedit.push_back(pedit);
+         if (FindIndexOf(m_vedit, orderedParts[i]) != -1)
+            continue; // Already re-added: the list may contain multiple selects of a part (part and sub parts)
+         m_vedit.push_back(orderedParts[i]);
       }
    }
-#endif
 }
 
 void PinTable::AddCollection(CComObject<Collection> *collection)
