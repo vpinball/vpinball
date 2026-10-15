@@ -82,7 +82,7 @@ void CollectionManagerDialog::EditCollection()
 
       CollectionDialog *colDlg = new CollectionDialog(cds);
       if (colDlg->DoModal() >= 0)
-         pt->m_table->SetNonUndoableDirty(eSaveDirty);
+         pt->m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
 
       ListView_SetItemText_Safe(hListHwnd, sel, 0, pcol->m_name.c_str());
       ListView_SetItemText_Safe(hListHwnd, sel, 1, std::to_string(pcol->GetParts().size()).c_str());
@@ -153,7 +153,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
             if (lowerCase(newName) != lowerCase(pcol->m_name) && !pt->m_table->IsNameUnique(newName)) // Its own name takes itself
                newName = pt->m_table->GetUniqueName(newName);
             pt->m_table->RenameCollection(pcol, newName);
-            pt->m_table->SetNonUndoableDirty(eSaveDirty);
+            pt->m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          }
          if (hListHwnd)
             ListView_SetItemText_Safe(hListHwnd, pinfo->item.iItem, 0, pcol->m_name.c_str());
@@ -186,13 +186,13 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_NEW:
         {
             pt->NewCollection(hListHwnd, false);
-            pt->m_table->SetNonUndoableDirty(eSaveDirty);
+            pt->m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             break;
         }
         case IDC_CREATEFROMSELECTION:
         {
             pt->NewCollection(hListHwnd, true);
-            pt->m_table->SetNonUndoableDirty(eSaveDirty);
+            pt->m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             break;
         }
         case IDC_EDIT:
@@ -279,7 +279,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                     CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem.lParam;
                     pt->m_table->RemoveCollection(pcol);
                     ListView_DeleteItem(hListHwnd, sel);
-                    pt->m_table->SetNonUndoableDirty(eSaveDirty);
+                    pt->m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
                 }
             }
             break;

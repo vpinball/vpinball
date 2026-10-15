@@ -245,7 +245,7 @@ INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
                     pps->SetName(pinfo->item.pszText);
                     if (pt)
-                        pt->SetNonUndoableDirty( eSaveDirty );
+                       pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                     return TRUE;
                 }
                 break;
@@ -367,7 +367,7 @@ void SoundDialog::Import()
          if (VPX::Sound* sound = pt->ImportSound(file))
             ListView_SetItemState(hSoundList, AddListSound(sound), LVIS_SELECTED, LVIS_SELECTED);
 
-      pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    }
 
    SetFocus();
@@ -396,7 +396,7 @@ void SoundDialog::ReImport()
             if (std::filesystem::exists(importPath))
             {
                pt->ReImportSound(pps, importPath);
-               pt->SetNonUndoableDirty(eSaveDirty);
+               pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
             }
             else
                MessageBox(PathToString(importPath).c_str(), "FILE NOT FOUND!", MB_OK);
@@ -404,7 +404,7 @@ void SoundDialog::ReImport()
             sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
          }
       }
-      //pt->SetNonUndoableDirty(eSaveDirty);
+      //pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    }
     SetFocus();
 }
@@ -437,7 +437,7 @@ void SoundDialog::ReImportFrom()
             if (index != string::npos)
                g_settingsService.GetAppSettings().SetRecentDir_SoundDir(szFileName[0].substr(0, index), false);
 
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          }
       }
    }
@@ -550,7 +550,7 @@ void SoundDialog::SoundToBG()
          case VPX::SNDOUT_TABLE:
          default: ListView_SetItemText_Safe(hSoundList, sel, 2, "Table"); break;
          }
-         pt->SetNonUndoableDirty(eSaveDirty);
+         pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
          sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED); //next selected item
       }
    }
@@ -587,13 +587,13 @@ void SoundDialog::SoundPosition()
 				pps->SetFrontRearFade(spd.m_fade);
 				pps->SetVolume(spd.m_volume);
 
-				pt->SetNonUndoableDirty(eSaveDirty);
+            pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
 
-				sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED); //next selected item
-			}
-			ListSounds();
-			SetFocus();
-		}
+            sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED); //next selected item
+         }
+         ListSounds();
+         SetFocus();
+      }
    }
 }
 
@@ -624,7 +624,7 @@ void SoundDialog::DeleteSound()
             sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
          }
       }
-      pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    }
     SetFocus();
 }

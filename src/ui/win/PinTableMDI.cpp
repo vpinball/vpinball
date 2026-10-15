@@ -35,26 +35,27 @@ PinTableMDI::~PinTableMDI()
 
 bool PinTableMDI::CanClose() const
 {
-    if (m_tableWnd->m_table != nullptr && m_tableWnd->m_table->FDirty())
-    {
-        const string szText = LocalString(IDS_SAVE_CHANGES1).m_szbuffer /*"Do you want to save the changes you made to '"*/ + m_tableWnd->m_table->m_title + LocalString(IDS_SAVE_CHANGES2).m_szbuffer;
-        const int result = MessageBox(szText.c_str(), "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
+   if (m_tableWnd->m_table != nullptr && m_tableWnd->m_table->GetDirtyState() != SaveDirtyState::Clean)
+   {
+      const string szText
+         = LocalString(IDS_SAVE_CHANGES1).m_szbuffer /*"Do you want to save the changes you made to '"*/ + m_tableWnd->m_table->m_title + LocalString(IDS_SAVE_CHANGES2).m_szbuffer;
+      const int result = MessageBox(szText.c_str(), "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
 
-        if (result == IDCANCEL)
-            return false;
+      if (result == IDCANCEL)
+         return false;
 
-        Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
-        if (result == IDYES)
-        {
-           m_vpxEditor->SetActionCur(LocalString(IDS_SAVING).m_szbuffer);
-           m_vpxEditor->SetCursorCur(IDC_WAIT);
-           const bool failed = m_tableWnd->m_table->Save(feedback) != S_OK;
-           m_vpxEditor->SetActionCur(string());
-           m_vpxEditor->SetCursorCur(IDC_ARROW);
-           if (failed)
-              MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
-        }
-    }
+      Win32ProgressBar feedback(GetApp()->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
+      if (result == IDYES)
+      {
+         m_vpxEditor->SetActionCur(LocalString(IDS_SAVING).m_szbuffer);
+         m_vpxEditor->SetCursorCur(IDC_WAIT);
+         const bool failed = m_tableWnd->m_table->Save(feedback) != S_OK;
+         m_vpxEditor->SetActionCur(string());
+         m_vpxEditor->SetCursorCur(IDC_ARROW);
+         if (failed)
+            MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
+      }
+   }
     return true;
 }
 

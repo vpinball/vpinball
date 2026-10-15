@@ -736,7 +736,7 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
       [&editor, sound](const string &v)
       {
          sound->SetName(v);
-         editor.m_table->SetNonUndoableDirty(eSaveDirty);
+         editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       });
 
    ImGui::BeginDisabled(editor.m_table->m_liveBaseTable != nullptr); // Sound list actions are not supported in inspection mode as sounds are shared
@@ -774,7 +774,7 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          [&editor](VPX::Sound *s, int v)
          {
             s->SetOutputTarget(static_cast<VPX::SoundOutTypes>(v));
-            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          });
       props.InputFloat<VPX::Sound>(
          sound, "Volume"s, //
@@ -782,7 +782,7 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          [&editor](VPX::Sound *s, float v)
          {
             s->SetVolume(quantizeSignedPercent(v));
-            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          },
          PropertyPane::Unit::None, 2);
       props.InputFloat<VPX::Sound>(
@@ -791,7 +791,7 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          [&editor](VPX::Sound *s, float v)
          {
             s->SetPan(quantizeSignedPercent(v));
-            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          },
          PropertyPane::Unit::None, 2);
       props.InputFloat<VPX::Sound>(
@@ -800,7 +800,7 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          [&editor](VPX::Sound *s, float v)
          {
             s->SetFrontRearFade(quantizeSignedPercent(v));
-            editor.m_table->SetNonUndoableDirty(eSaveDirty);
+            editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          },
          PropertyPane::Unit::None, 2);
       props.EndSection();
@@ -843,7 +843,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
          if (lowerCase(name) != lowerCase(edited->m_name) && !editedTable->IsNameUnique(name))
             name = editedTable->GetUniqueName(name);
          editedTable->RenameCollection(edited, name);
-         editedTable->SetNonUndoableDirty(eSaveDirty);
+         editedTable->SetNonUndoableDirty(SaveDirtyState::Dirty);
       });
 
    // Actions on the table's collection list are only available when editing the base table
@@ -863,7 +863,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
       if (ImGui::Button("Move Up"))
       {
          table->MoveCollectionUp(collections[colIndex]);
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       ImGui::EndDisabled();
       if (ImGui::IsItemHovered())
@@ -873,7 +873,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
       if (ImGui::Button("Move Down"))
       {
          table->MoveCollectionDown(collections[colIndex]);
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       ImGui::EndDisabled();
       if (ImGui::IsItemHovered())
@@ -892,7 +892,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
                      break;
                   }
                editor.m_selection = Selection();
-               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+               editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             });
       }
       props.EndSection();
@@ -908,7 +908,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
          PinTable *dirtyTable = editor.m_table;
          if (dirtyTable->m_liveBaseTable && dirtyTable->GetLiveFromStartup<Collection>(col) != nullptr)
             dirtyTable = dirtyTable->m_liveBaseTable;
-         dirtyTable->SetNonUndoableDirty(eSaveDirty);
+         dirtyTable->SetNonUndoableDirty(SaveDirtyState::Dirty);
       };
       props.Checkbox<Collection>(
          collection, "Fire events for this collection"s, //
@@ -957,7 +957,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
                vector<IEditable *> newContent(members);
                newContent.push_back(part);
                editedTable->SetCollectionContent(edited, newContent);
-               editedTable->SetNonUndoableDirty(eSaveDirty);
+               editedTable->SetNonUndoableDirty(SaveDirtyState::Dirty);
             }
          ImGui::EndCombo();
       }
@@ -1011,7 +1011,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
          else
             newContent.erase(newContent.begin() + removeIndex);
          editedTable->SetCollectionContent(edited, newContent);
-         editedTable->SetNonUndoableDirty(eSaveDirty);
+         editedTable->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       props.EndSection();
    }
@@ -1109,7 +1109,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
          sel = imported;
          editor.m_selection = Selection(imported.back());
          editor.m_outlinerImageAnchor = imported.back();
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       else
          m_actionStatus = "Failed to import the selected file(s)"s;
@@ -1126,7 +1126,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
          if (Texture *const tex = table->ImportImage(PathFromUTF8(file), old->m_name))
          {
             replaceImage(old, tex);
-            table->SetNonUndoableDirty(eSaveDirty);
+            table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          }
          else
             m_actionStatus = "Failed to reimport '"s + file + '\'';
@@ -1210,7 +1210,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
                editor.m_multiSelImages.clear();
                editor.m_outlinerImageAnchor = nullptr;
                editor.m_selection = Selection();
-               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+               editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             });
       }
       ImGui::EndDisabled();
@@ -1236,7 +1236,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
                      missing++;
                if (missing > 0)
                   m_actionStatus = std::to_string(missing) + " file(s) not found or failed to load";
-               m_editor.m_table->SetNonUndoableDirty(eSaveDirty);
+               m_editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             });
       }
 
@@ -1282,7 +1282,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
                missing++;
          if (missing > 0)
             m_actionStatus = std::to_string(missing) + " file(s) not found or failed to load";
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       ImGui::EndDisabled();
 
@@ -1316,7 +1316,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
          sel = imported;
          editor.m_selection = Selection(imported.back());
          editor.m_outlinerSoundAnchor = imported.back();
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       else
          m_actionStatus = "Failed to import the selected file(s)"s;
@@ -1328,7 +1328,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
       if (m_pendingSoundReimportTarget != nullptr)
       {
          table->ReImportSound(m_pendingSoundReimportTarget, PathFromUTF8(file));
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       m_pendingSoundReimportTarget = nullptr;
       g_settingsService.GetAppSettings().SetRecentDir_SoundDir(PathToString(PathFromUTF8(file).parent_path()), false);
@@ -1390,7 +1390,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
                      missing++;
                if (missing > 0)
                   m_actionStatus = std::to_string(missing) + " file(s) not found"s;
-               m_editor.m_table->SetNonUndoableDirty(eSaveDirty);
+               m_editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             });
       }
       ImGui::EndDisabled();
@@ -1446,7 +1446,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
       {
          for (VPX::Sound *const sound : sel)
             sound->SetOutputTarget((sound->GetOutputTarget() != VPX::SNDOUT_BACKGLASS) ? VPX::SNDOUT_BACKGLASS : VPX::SNDOUT_TABLE);
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       ImGui::SameLine();
       if (ImGui::Button("Delete"))
@@ -1460,7 +1460,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
                editor.m_multiSelSounds.clear();
                editor.m_outlinerSoundAnchor = nullptr;
                editor.m_selection = Selection();
-               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+               editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             });
       }
       ImGui::EndDisabled();
@@ -1511,7 +1511,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
             editor.m_selection = Selection(pmat);
             editor.m_outlinerMaterialAnchor = pmat;
          }
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          g_settingsService.GetAppSettings().SetRecentDir_MaterialDir(PathToString(PathFromUTF8(file).parent_path()), false);
       }
    }
@@ -1565,7 +1565,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
          sel.push_back(pmat);
          editor.m_selection = Selection(pmat);
          editor.m_outlinerMaterialAnchor = pmat;
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
 
       ImGui::SameLine();
@@ -1582,7 +1582,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
          sel = clones;
          editor.m_selection = Selection(clones.back());
          editor.m_outlinerMaterialAnchor = clones.back();
-         table->SetNonUndoableDirty(eSaveDirty);
+         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       ImGui::EndDisabled();
 
@@ -1640,7 +1640,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
                editor.m_multiSelMaterials.clear();
                editor.m_outlinerMaterialAnchor = nullptr;
                editor.m_selection = Selection();
-               editor.m_table->SetNonUndoableDirty(eSaveDirty);
+               editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             });
       }
       ImGui::EndDisabled();

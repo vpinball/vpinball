@@ -436,7 +436,7 @@ void PinTable::ReorderParts(const vector<IEditable *> &orderedParts)
 {
    if (!orderedParts.empty())
    {
-      SetNonUndoableDirty(eSaveDirty);
+      SetNonUndoableDirty(SaveDirtyState::Dirty);
       for (int i = (int)orderedParts.size() - 1; i >= 0; i--)
          RemoveFromVectorSingle(m_vedit, orderedParts[i]);
 
@@ -756,13 +756,13 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
          ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
          return hr;
       }
-      SetDirtyScript(eSaveClean); // The Win32 code view does this too, other frontends edit the script directly
-      SetNonUndoableDirty(eSaveClean);
+      SetDirtyScript(SaveDirtyState::Clean); // The Win32 code view does this too, other frontends edit the script directly
+      SetNonUndoableDirty(SaveDirtyState::Clean);
 #ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
       {
-         m_tableEditor->SetCleanPoint(eSaveClean);
-         m_tableEditor->SetScriptClean(eSaveClean);
+         m_tableEditor->SetCleanPoint(SaveDirtyState::Clean);
+         m_tableEditor->SetScriptClean(SaveDirtyState::Clean);
       }
 #endif
       // Save user custom settings file (if any) along the table file, only once saved (a failed 'Save As' must not leave an orphan settings file)
@@ -825,12 +825,12 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
 #ifdef VPX_ENABLE_WIN32_EDITOR
       if (m_tableEditor)
       {
-         m_tableEditor->SetCleanPoint(eSaveClean);
-         m_tableEditor->SetScriptClean(eSaveClean);
+         m_tableEditor->SetCleanPoint(SaveDirtyState::Clean);
+         m_tableEditor->SetScriptClean(SaveDirtyState::Clean);
       }
 #endif
-      SetDirtyScript(eSaveClean); // The Win32 code view does this too, other frontends edit the script directly
-      SetNonUndoableDirty(eSaveClean);
+      SetDirtyScript(SaveDirtyState::Clean); // The Win32 code view does this too, other frontends edit the script directly
+      SetNonUndoableDirty(SaveDirtyState::Clean);
 
       // A legacy .vpt table, or a name without the .vpx extension, was saved as .vpx: from now on, the table is this file
       if (vpxPath != m_filename)
@@ -1456,7 +1456,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
       m_pbTempScreenshot = nullptr;
    }
 
-   SetDirty(eSaveClean);
+   SetDirty(SaveDirtyState::Clean);
 
    m_title = TitleFromFilename(filename);
    // A read only table cannot be saved over, so say so in the title. On Windows this
@@ -1532,7 +1532,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 #endif
 
    // Loading (including an overriding .vbs) is not a user edit, but filling the code viewer raised the script dirty flag
-   SetDirtyScript(eSaveClean);
+   SetDirtyScript(SaveDirtyState::Clean);
 
    return hr;
 }
@@ -4727,7 +4727,7 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename, const bo
 
    // update properties UI
    if (!toUserSettings)
-      SetNonUndoableDirty(eSaveDirty);
+      SetNonUndoableDirty(SaveDirtyState::Dirty);
 #ifdef VPX_ENABLE_WIN32_EDITOR
    if (m_tableEditor)
       m_tableEditor->RefreshProperties();
@@ -4758,42 +4758,39 @@ void PinTable::ExportBackdropPOV(const std::filesystem::path &filename) const
 
 void PinTable::SetDirtyScript(SaveDirtyState sds)
 {
+   const SaveDirtyState prevDirtyState = GetDirtyState();
    m_sdsDirtyScript = sds;
-   CheckDirty();
+   CheckDirty(prevDirtyState);
 }
 
 void PinTable::SetDirty(SaveDirtyState sds)
 {
+   const SaveDirtyState prevDirtyState = GetDirtyState();
    m_sdsDirtyProp = sds;
-   CheckDirty();
+   CheckDirty(prevDirtyState);
 }
 
 void PinTable::SetNonUndoableDirty(SaveDirtyState sds)
 {
+   const SaveDirtyState prevDirtyState = GetDirtyState();
    m_sdsNonUndoableDirty = sds;
-   CheckDirty();
+   CheckDirty(prevDirtyState);
 }
 
-void PinTable::CheckDirty()
-{
-   const SaveDirtyState sdsNewDirtyState = (SaveDirtyState)max(max((int)m_sdsDirtyProp, (int)m_sdsDirtyScript), (int)m_sdsNonUndoableDirty);
+SaveDirtyState PinTable::GetDirtyState() const { return (SaveDirtyState)max(max((int)m_sdsDirtyProp, (int)m_sdsDirtyScript), (int)m_sdsNonUndoableDirty); }
 
+void PinTable::CheckDirty(const SaveDirtyState prevDirtyState)
+{
+   const SaveDirtyState dirtyState = GetDirtyState();
 #ifdef VPX_ENABLE_WIN32_EDITOR
-   if (m_tableEditor && sdsNewDirtyState != m_sdsCurrentDirtyState)
+   if (m_tableEditor && dirtyState != prevDirtyState)
    {
-      if (sdsNewDirtyState > eSaveClean)
+      if (dirtyState > SaveDirtyState::Clean)
          m_tableEditor->SetCaption(m_title + '*');
       else
          m_tableEditor->SetCaption(m_title);
    }
 #endif
-
-   m_sdsCurrentDirtyState = sdsNewDirtyState;
-}
-
-bool PinTable::FDirty() const
-{
-   return (m_sdsCurrentDirtyState > eSaveClean);
 }
 
 void PinTable::Uncreate(IEditable *pie)

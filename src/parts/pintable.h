@@ -474,8 +474,11 @@ public:
 
    void SetDirty(SaveDirtyState sds);
    void SetNonUndoableDirty(SaveDirtyState sds);
-   void CheckDirty();
-   bool FDirty() const;
+   // Aggregate dirty state: the worst of the per-domain states
+   SaveDirtyState GetDirtyState() const;
+   SaveDirtyState GetPropDirtyState() const { return m_sdsDirtyProp; }
+   SaveDirtyState GetScriptDirtyState() const { return m_sdsDirtyScript; }
+   SaveDirtyState GetNonUndoableDirtyState() const { return m_sdsNonUndoableDirty; }
 
    VPX::Sound *GetSound(const string &name) const;
 
@@ -548,7 +551,7 @@ public:
    bool IsLocked() const { return (m_tablelocked & 1) != 0; }
    void ToggleLock() { m_tablelocked++; }
 
-   bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_external_script_name.empty(); }
+   bool TournamentModePossible() const { return IsLocked() && GetDirtyState() == SaveDirtyState::Clean && m_external_script_name.empty(); }
 
    // Override automatic ini path (used for commandline override)
    void SetSettingsFileName(const std::filesystem::path &path)
@@ -723,11 +726,6 @@ public:
 
    CComObject<class ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
 
-   SaveDirtyState m_sdsDirtyProp = eSaveClean;
-   SaveDirtyState m_sdsDirtyScript = eSaveClean;
-   SaveDirtyState m_sdsNonUndoableDirty = eSaveClean;
-   SaveDirtyState m_sdsCurrentDirtyState = eSaveClean;
-
    // Table info
    string m_tableName;
    string m_author;
@@ -815,6 +813,14 @@ public:
    bool m_winEditorBackdrop = true;
 
 private:
+   // Dirty state is tracked per domain: parts/props (managed by the undo system), script (managed by the
+   // script editor) and edits not covered by undo (e.g. LiveUI ones). They are kept separate since the
+   // prop domain is rewritten by undo bookkeeping and the script domain by the script editor savepoint.
+   SaveDirtyState m_sdsDirtyProp = SaveDirtyState::Clean;
+   SaveDirtyState m_sdsDirtyScript = SaveDirtyState::Clean;
+   SaveDirtyState m_sdsNonUndoableDirty = SaveDirtyState::Clean;
+   void CheckDirty(SaveDirtyState prevDirtyState);
+
    unsigned int m_tablelocked = 0;
 
    string m_notesText;

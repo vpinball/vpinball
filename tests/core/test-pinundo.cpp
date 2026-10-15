@@ -66,14 +66,14 @@ TEST_CASE("PinUndo")
    SUBCASE("clean point tracking")
    {
       PinUndo undo(table);
-      undo.SetCleanPoint(eSaveClean);
+      undo.SetCleanPoint(SaveDirtyState::Clean);
       undo.BeginUndo();
       undo.EndUndo();
-      CHECK(table->FDirty()); // ending an undo record marks the table dirty
+      CHECK(table->GetDirtyState() != SaveDirtyState::Clean); // ending an undo record marks the table dirty
       CHECK_FALSE(undo.IsUndoPastCleanPoint());
-      undo.SetCleanPoint(eSaveClean);
+      undo.SetCleanPoint(SaveDirtyState::Clean);
       CHECK(undo.IsUndoPastCleanPoint()); // record count matches the clean point again
-      CHECK_FALSE(table->FDirty());
+      CHECK_FALSE(table->GetDirtyState() != SaveDirtyState::Clean);
    }
 
    SUBCASE("undoing a deletion restores the part")

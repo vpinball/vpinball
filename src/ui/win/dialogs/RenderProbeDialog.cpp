@@ -241,7 +241,7 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
       pb->SetReflectionPlane(plane);
       pb->SetReflectionMode((RenderProbe::ReflectionMode)reflectionMode);
       CCO(PinTable) *const pt = m_tableEditor->m_table;
-      pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
    }
 }
 
@@ -256,7 +256,7 @@ BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
       RenderProbe* rp = pt->NewRenderProbe();
       rp->SetName("New Render Probe"s);
-      pt->SetNonUndoableDirty(eSaveDirty);
+      pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
       UpdateList();
       break;
    }
@@ -291,7 +291,7 @@ BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             {
                pt->RemoveRenderProbe(pcol);
                ListView_DeleteItem(hListHwnd, sel);
-               pt->SetNonUndoableDirty(eSaveDirty);
+               pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
                UpdateList();
             }
          }

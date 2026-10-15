@@ -405,7 +405,7 @@ size_t CodeViewer::GetWordUnderCaret(char *buf)
 
 void CodeViewer::SetClean(const SaveDirtyState sds)
 {
-   if (sds == eSaveClean)
+   if (sds == SaveDirtyState::Clean)
       ::SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
    m_tableEditor->m_table->SetDirtyScript(sds);
 }
@@ -2274,7 +2274,7 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
          //also see SCN_MODIFIED handling which does more finegrained updating calls
          if (pcv->m_errorLineNumber != -1)
             pcv->UncolorError();
-         pcv->m_tableEditor->m_table->SetDirtyScript(eSaveDirty);
+         pcv->m_tableEditor->m_table->SetDirtyScript(SaveDirtyState::Dirty);
 
          // Called on every single edit, so fetch straight into the table's script
          const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
@@ -2314,12 +2314,12 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       // Scintilla tracks the save point itself, so undoing/redoing back across it also updates the table dirty state
       case SCN_SAVEPOINTREACHED:
       {
-         pcv->m_tableEditor->m_table->SetDirtyScript(eSaveClean);
+         pcv->m_tableEditor->m_table->SetDirtyScript(SaveDirtyState::Clean);
          break;
       }
       case SCN_SAVEPOINTLEFT:
       {
-         pcv->m_tableEditor->m_table->SetDirtyScript(eSaveDirty);
+         pcv->m_tableEditor->m_table->SetDirtyScript(SaveDirtyState::Dirty);
          break;
       }
       case SCN_DWELLSTART:
