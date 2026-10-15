@@ -25,10 +25,4 @@ public:
 
 class PinFont final : public PinBinary
 {
-public:
-   void Register();
-   void UnRegister();
-
-private:
-   string m_szTempFile; // temporary file name for registering font
 };

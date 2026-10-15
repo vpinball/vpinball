@@ -131,10 +131,7 @@ PinTable::~PinTable()
          delete m_vimage[i];
 
       for (size_t i = 0; i < m_vfont.size(); i++)
-      {
-         m_vfont[i]->UnRegister();
          delete m_vfont[i];
-      }
    }
 
    for (size_t i = 0; i < m_vliveimage.size(); i++)
@@ -2021,10 +2018,8 @@ void PinTable::FinalizeLoadedParts(vector<IEditable *> &parts)
             m_vfont.erase(m_vfont.begin() + i);
             --i;
          }
-         else
-         {
-            font->Register();
-         }
+         else if (m_tableEditor)
+            m_tableEditor->OnFontAdded(font);
       }
 
    PLOGI << "Images, Sounds, Fonts and Parts loaded"; // For profiling
@@ -4050,13 +4045,19 @@ void PinTable::RemoveSound(VPX::Sound *const pps)
    delete pps;
 }
 
-void PinTable::AddFont(PinFont *const ppf) { m_vfont.push_back(ppf); }
+void PinTable::AddFont(PinFont *const ppf)
+{
+   m_vfont.push_back(ppf);
+   if (m_tableEditor)
+      m_tableEditor->OnFontAdded(ppf);
+}
 
 void PinTable::RemoveFont(PinFont * const ppf)
 {
    RemoveFromVectorSingle(m_vfont, ppf);
 
-   ppf->UnRegister();
+   if (m_tableEditor)
+      m_tableEditor->OnFontRemoved(ppf);
    delete ppf;
 }
 
