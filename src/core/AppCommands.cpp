@@ -224,7 +224,6 @@ void Win32EditCommand::Execute()
 {
    WinApp winApp; // win32++ application object: must exist before any wxx window is created
    WinEditor vpxEditor(winApp.GetInstanceHandle());
-   g_pvp = &vpxEditor;
    vpxEditor.m_open_minimized = m_minimized;
    vpxEditor.m_disable_pause_menu = m_disablePauseMenu;
    vpxEditor.Create(nullptr);
@@ -244,7 +243,6 @@ void Win32EditCommand::Execute()
          vpxEditor.DoPlay(0);
    }
    winApp.Run();
-   g_pvp = nullptr;
 }
 #endif
 
