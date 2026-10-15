@@ -884,7 +884,16 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
    return "<< bug >>"s;
 }
 
-HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO*, UINT* puArgErr) const
+void DynamicTypeLibrary::ReportCallError(const char* message) const
+{
+   // Only reports coming from the thread executing a member call are recorded, so that
+   // unrelated plugin notifications (e.g. timer driven polls) do not corrupt script calls.
+   if ((std::this_thread::get_id() == m_callThread.load()) && m_pendingCallError.empty())
+      m_pendingCallError = message ? message : "";
+}
+
+HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef* classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult,
+   EXCEPINFO* pExcepInfo, UINT* puArgErr) const
 {
    assert(classDef->name.id != TypeID::TYPEID_UNRESOLVED);
    assert(classDef->name.id < m_types.size());
@@ -1021,6 +1030,15 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
 
    ScriptVariant retValue;
    InitScriptVariant(memberDef.type, retValue);
+
+   // Track the call so that errors reported through the plugin OnError callback while it is
+   // processed can be raised as an actual script error instead of only being logged. Outer
+   // pending state is saved and restored to support nested calls (e.g. a plugin running script).
+   const std::string outerCallError = std::move(m_pendingCallError);
+   m_pendingCallError.clear();
+   if (m_callDepth++ == 0)
+      m_callThread = std::this_thread::get_id();
+   HRESULT callResult = S_OK;
    try
    {
       memberDef.Call(nativeObject, memberIndex, args, &retValue);
@@ -1028,13 +1046,19 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    catch (const std::exception& e)
    {
       PLOGE << "Standard exception occurred while processing script call: " << e.what();
-      return DISP_E_EXCEPTION;
+      callResult = DISP_E_EXCEPTION;
    }
    catch (...)
    {
       PLOGE << "Exception occured while processing script call";
-      return DISP_E_EXCEPTION;
+      callResult = DISP_E_EXCEPTION;
    }
+   const std::string callError = std::move(m_pendingCallError);
+   m_pendingCallError = outerCallError;
+   if (--m_callDepth == 0)
+      m_callThread = std::thread::id {};
+   if (callResult != S_OK)
+      return callResult;
 
    // Update byref args and dispose temporary allocations
    for (unsigned int i = 0; i < pDispParams->cArgs; i++)
@@ -1089,6 +1113,21 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
          }
       }
       ReleaseScriptVariant(memberDef.callArgType[i], args[i]);
+   }
+
+   // Raise an error reported through the plugin OnError callback during the call as a script error
+   if (!callError.empty())
+   {
+      if (memberDef.type.id != TypeID::TYPEID_VOID)
+         ReleaseScriptVariant(memberDef.type, retValue);
+      if (pExcepInfo != nullptr)
+      {
+         *pExcepInfo = EXCEPINFO {};
+         pExcepInfo->bstrSource = MakeWideBSTR(classDef->name.name + "."s + memberDef.name.name);
+         pExcepInfo->bstrDescription = MakeWideBSTR(callError);
+         pExcepInfo->scode = E_FAIL;
+      }
+      return DISP_E_EXCEPTION;
    }
 
    // Convert then dispose the return value if any

@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <thread>
 
 // Counts how many string elements have had their ScriptString::Release called, so the
 // test can verify the host walks the array and releases each element (not just the block).
@@ -121,7 +122,7 @@ static VARIANT SafeArrayGet2D(SAFEARRAY* psa, LONG row, LONG col)
 }
 
 // Helper: invoke a property setter by name on a DynamicDispatch with a single BSTR argument.
-static HRESULT InvokePropertyPut(DynamicDispatch* disp, const wchar_t* name, const wchar_t* value)
+static HRESULT InvokePropertyPut(DynamicDispatch* disp, const wchar_t* name, const wchar_t* value, EXCEPINFO* pExcepInfo = nullptr)
 {
    DISPID dispId = -1;
    BSTR bstrName = SysAllocString(name);
@@ -140,7 +141,7 @@ static HRESULT InvokePropertyPut(DynamicDispatch* disp, const wchar_t* name, con
    VARIANT result;
    VariantInit(&result);
    UINT argErr = 0;
-   hr = disp->Invoke(dispId, IID_NULL, 0, DISPATCH_PROPERTYPUT, &params, &result, nullptr, &argErr);
+   hr = disp->Invoke(dispId, IID_NULL, 0, DISPATCH_PROPERTYPUT, &params, &result, pExcepInfo, &argErr);
    VariantClear(&arg);
    VariantClear(&result);
    return hr;
@@ -396,4 +397,110 @@ TEST_CASE("Plugin member that does not set its return value yields a safe defaul
    delete static_cast<int*>(obj);
    typeLib.UnregisterScriptClass(&testNoRetClass);
    typeLib.UnregisterScriptArray(&intArrayDef);
+}
+
+
+// Handlers for call error reporting checks: an error reported through the plugin OnError
+// callback while a member call is processed must surface as a script error
+// (DISP_E_EXCEPTION with a populated EXCEPINFO) instead of being only logged, as happens
+// when a proxy (e.g. B2S's PinMAME controller mirror) forwards to a plugin that is not loaded.
+namespace TestPluginCallError
+{
+
+static DynamicTypeLibrary* g_typeLib = nullptr;
+
+static void ok_Method(void*, int, ScriptVariant*, ScriptVariant*) { }
+
+static void fail_Method(void*, int, ScriptVariant*, ScriptVariant*) { g_typeLib->ReportCallError("the plugin providing class 'Test_Missing' is not loaded"); }
+
+// A report from another thread while a call is in flight (e.g. a plugin timer polling a
+// missing provider on the render thread) must not fail the running call.
+static void offThread_Method(void*, int, ScriptVariant*, ScriptVariant*)
+{
+   std::thread([]() { g_typeLib->ReportCallError("error reported from another thread"); }).join();
+}
+
+static void put_Prop(void*, int, ScriptVariant*, ScriptVariant*) { g_typeLib->ReportCallError("the plugin providing class 'Test_Missing' is not loaded"); }
+
+static ScriptClassDef testErrClass = { { "TestErrClass" }, []() { return static_cast<void*>(new int(0)); }, 6,
+   {
+      { { "AddRef" }, { "ulong" }, 0, {}, TestPluginArrays::TestAddRef },
+      { { "Release" }, { "ulong" }, 0, {}, TestPluginArrays::TestRelease },
+      { { "OkMethod" }, { "void" }, 0, {}, ok_Method },
+      { { "FailMethod" }, { "void" }, 0, {}, fail_Method },
+      { { "OffThreadMethod" }, { "void" }, 0, {}, offThread_Method },
+      { { "Prop" }, { "void" }, 1, { { "string" } }, put_Prop },
+   } };
+
+} // namespace TestPluginCallError
+
+
+// Helper: invoke a method by name on a DynamicDispatch, returning the HRESULT.
+static HRESULT InvokeMethod(DynamicDispatch* disp, const wchar_t* name, EXCEPINFO* pExcepInfo)
+{
+   DISPID dispId = -1;
+   BSTR bstrName = SysAllocString(name);
+   LPOLESTR names[] = { bstrName };
+   HRESULT hr = disp->GetIDsOfNames(IID_NULL, names, 1, 0, &dispId);
+   SysFreeString(bstrName);
+   if (hr != S_OK)
+      return hr;
+
+   VARIANT result;
+   VariantInit(&result);
+   DISPPARAMS params = { nullptr, nullptr, 0, 0 };
+   UINT argErr = 0;
+   hr = disp->Invoke(dispId, IID_NULL, 0, DISPATCH_METHOD, &params, &result, pExcepInfo, &argErr);
+   VariantClear(&result);
+   return hr;
+}
+
+
+TEST_CASE("Plugin errors reported during a call are raised as script errors")
+{
+   using namespace TestPluginCallError;
+
+   DynamicTypeLibrary typeLib;
+   typeLib.RegisterScriptClass(&testErrClass);
+   typeLib.ResolveAllClasses();
+   g_typeLib = &typeLib;
+
+   void* obj = testErrClass.CreateObject();
+   DynamicDispatch* disp = new DynamicDispatch(&typeLib, &testErrClass, obj);
+
+   SUBCASE("error during a method call fails the invoke")
+   {
+      EXCEPINFO excepInfo = {};
+      CHECK(InvokeMethod(disp, L"FailMethod", &excepInfo) == DISP_E_EXCEPTION);
+      REQUIRE(excepInfo.bstrDescription != nullptr);
+      CHECK(MakeString(excepInfo.bstrDescription) == "the plugin providing class 'Test_Missing' is not loaded");
+      SysFreeString(excepInfo.bstrDescription);
+      SysFreeString(excepInfo.bstrSource);
+   }
+
+   SUBCASE("error during a property setter fails the invoke")
+   {
+      EXCEPINFO excepInfo = {};
+      CHECK(InvokePropertyPut(disp, L"Prop", L"value", &excepInfo) == DISP_E_EXCEPTION);
+      SysFreeString(excepInfo.bstrDescription);
+      SysFreeString(excepInfo.bstrSource);
+   }
+
+   SUBCASE("report outside of a call does not poison the next invoke")
+   {
+      typeLib.ReportCallError("stray error report");
+      EXCEPINFO excepInfo = {};
+      CHECK(InvokeMethod(disp, L"OkMethod", &excepInfo) == S_OK);
+   }
+
+   SUBCASE("report from another thread does not fail the call")
+   {
+      EXCEPINFO excepInfo = {};
+      CHECK(InvokeMethod(disp, L"OffThreadMethod", &excepInfo) == S_OK);
+   }
+
+   g_typeLib = nullptr;
+   disp->Release();
+   delete static_cast<int*>(obj);
+   typeLib.UnregisterScriptClass(&testErrClass);
 }

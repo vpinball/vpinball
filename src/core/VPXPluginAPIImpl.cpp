@@ -392,7 +392,7 @@ void MSGPIAPI VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* mes
    static const char* typeNames[] = { "Failure", "Invalid argument", "Null pointer", "Not implemented" };
    const char* typeName = type < std::size(typeNames) ? typeNames[type] : "Unknown error";
    PLOGE << "Script error reported by plugin (" << typeName << "): " << (message ? message : "");
-   // FIXME implement in DynamicDispatch (raise an actual script error instead of just logging)
+   s_instance->m_dynamicTypeLibrary.ReportCallError(message);
 }
 
 ScriptClassDef* MSGPIAPI VPXPluginAPIImpl::GetClassDef(const char* typeName)

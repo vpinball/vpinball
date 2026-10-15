@@ -135,7 +135,7 @@ typedef struct ScriptablePluginAPI
    void (MSGPIAPI *UnregisterScriptTypeAlias)(const char* name);
    void (MSGPIAPI *UnregisterScriptArrayType)(ScriptArrayDef* type);
 
-   // If called while processing a call, the scripting engine will handle the call failure
+   // If called while processing a call, the call fails and a script error is raised in the calling script
    void (MSGPIAPI *OnError)(unsigned int type, const char* message);
 
    // Allows to request a COM object to be overriden by our own implementation
@@ -524,7 +524,6 @@ public:
    const ScriptClassDef* GetBaseClassDef() const { return m_baseClassDef; }
    const ScriptClassDef* GetProxyClassDef() const { return m_proxyClassDef; }
 
-private:
    void ReportCallError(const int memberIndex, const std::string& reason) const
    {
       if (m_scriptApi == nullptr)
@@ -533,6 +532,7 @@ private:
       m_scriptApi->OnError(PSC_ERR_FAIL, ("Call to '" + memberName + "' failed: " + reason).c_str());
    }
 
+private:
    inline bool IsNameMatch(const std::string_view& proxyName, const std::string_view& className) const
    {
       const std::string_view name1 = proxyName.starts_with(m_proxyPrefix) ? proxyName.substr(m_proxyPrefix.length()) : proxyName;
@@ -613,7 +613,7 @@ public:
          m_instance = m_classProxy.GetBaseClassDef()->CreateObject();
       if (m_instance == nullptr)
       {
-         // FIXME Report error to caller (failed to create object)
+         m_classProxy.ReportCallError(memberIndex, "the plugin providing the proxied class failed to create an object");
          return;
       }
       m_classProxy.ForwardCall(m_instance, memberIndex, pArgs, pRet);
