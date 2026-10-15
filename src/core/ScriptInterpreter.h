@@ -40,11 +40,7 @@ public:
    void StartHangWatch(const std::function<bool()> &mayInterrupt);
    void StopHangWatch();
    void EnterScriptModal() { m_scriptModalCount++; } // Script entered a modal state (e.g. modal dialog), suppressing hang detection
-   void ExitScriptModal()
-   {
-      if (m_scriptModalCount > 0)
-         m_scriptModalCount--;
-   }
+   void ExitScriptModal();
    void AddItem(IScriptable *scriptable, const bool global)
    {
 #ifdef VPX_MANUAL_SCRIPT_DISPATCH

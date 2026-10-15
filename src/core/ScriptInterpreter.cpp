@@ -231,6 +231,14 @@ void ScriptInterpreter::HangWatchLoop()
    }
 }
 
+void ScriptInterpreter::ExitScriptModal()
+{
+   if (m_scriptModalCount > 0)
+      m_scriptModalCount--;
+   // a script call may go on after the modal state: restart the hang timeout (script thread, like OnEnterScript)
+   m_scriptEnterUsec = usec();
+}
+
 void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const bool global)
 {
    if (auto it = m_scriptItemMap.find(name); it != m_scriptItemMap.end())

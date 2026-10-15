@@ -444,7 +444,13 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
          errorStream << L"\r\n";
          GetVpxEditor()->EnableWindow(FALSE);
          ScriptErrorDialog scriptErrorDialog(errorStream.str());
+         // Reported from inside the failing script call: suspend the hang watchdog while dialog is open
+         ScriptInterpreter* const scriptInterpreter = g_pplayer ? g_pplayer->m_scriptInterpreter : nullptr;
+         if (scriptInterpreter)
+            scriptInterpreter->EnterScriptModal();
          scriptErrorDialog.DoModal();
+         if (scriptInterpreter)
+            scriptInterpreter->ExitScriptModal();
          m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
          GetVpxEditor()->EnableWindow(TRUE);
 
