@@ -101,7 +101,7 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 │   │   ├── xxx.cfg
 │   │   └── yyy.cfg
 │   └── alias.txt
-├── pupvideos/                               <= PinUp player plugin will look here for pinup videos
+├── pupvideos/                               <= PinUp Player plugin will look here for pinup videos
 │   └── xxx/
 │       └── ...
 ├── scripts/                                 <= When a table loads additional script, they are searched here as well as in core script folder
