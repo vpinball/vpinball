@@ -13,6 +13,8 @@ set(NIXIE_PLUGIN_SOURCES
    plugins/nixie/NixiePlugin.cpp
    plugins/nixie/Nixie.h
    plugins/nixie/Nixie.cpp
+   plugins/nixie/NixieLayoutFile.h
+   plugins/nixie/NixieLayoutFile.cpp
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 )

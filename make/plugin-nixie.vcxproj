@@ -8,11 +8,13 @@
     <ClCompile Include="../../plugins/nixie/common.cpp" />
     <ClCompile Include="../../plugins/nixie/NixiePlugin.cpp" />
     <ClCompile Include="../../plugins/nixie/Nixie.cpp" />
+    <ClCompile Include="../../plugins/nixie/NixieLayoutFile.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../plugins/nixie/common.h" />
     <ClInclude Include="../../plugins/nixie/Nixie.h" />
+    <ClInclude Include="../../plugins/nixie/NixieLayoutFile.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
   </ItemGroup>
   <ItemGroup>

@@ -177,8 +177,6 @@ public:
    int GetAnimationSlowDown(const string& name) const;
    int GetAllAnimationSlowDown() const;
    int GetUsedLEDType() const;
-   int GetHideB2SDMD() const;
-   int GetHideDMD() const; // -1 = no override, 1 = force hidden
 
    // Live DMD overlay configuration, authored through the document editing UI
    B2SOverlayDoc& GetOverlayDoc() { return m_overlayDoc; }

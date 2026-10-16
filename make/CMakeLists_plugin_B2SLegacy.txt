@@ -106,6 +106,9 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/forms/FormDMD.h
    plugins/b2slegacy/forms/FormDMD.cpp
 
+   plugins/nixie/NixieLayoutFile.h
+   plugins/nixie/NixieLayoutFile.cpp
+   plugins/plugins/OverlayDisplayOptions.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 

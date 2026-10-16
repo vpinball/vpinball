@@ -4,6 +4,7 @@
 
 #include "common.h"
 
+#include "plugins/OverlayDisplayOptions.h"
 #include "plugins/ResURIResolver.h"
 #include "plugins/PagedUIPlugin.h"
 #include "plugins/VPXPlugin.h"
@@ -24,6 +25,18 @@ struct PUPDMDDisplay final
    string source; // Controller resource URI (ResURIResolver syntax); empty = default DMD
    // Bounds in the target window space: pixels of the rendered window, origin at its top left
    int x = 0, y = 0, w = 0, h = 0;
+   PinballPlugin::OverlayDisplayOptions options; // Render style, dot size, tint and glass options
+   // Image covering the display as a glass: path relative to the pack root, inside the
+   // 'PUPDisplays' folder of the pack
+   string glassImage;
+   // Runtime only (not persisted): file picked through the editing page or set by a Nixie
+   // import, copied into the 'PUPDisplays' folder by the next successful commit (empty = none)
+   string glassPending;
+   // Runtime only (not persisted): resolved pixel size of the effective glass file (the staged
+   // pick when present, else the pack-relative glassImage), cached against its path
+   // (0 when there is no glass image or it fails to load)
+   string glassImgKey;
+   int glassImgW = 0, glassImgH = 0;
    PUPOverlayDoc* doc = nullptr; // Runtime only (not persisted): back link used by the editing page
 };
 
@@ -37,6 +50,7 @@ struct PUPOverlayDoc final
    int winH[3] = { 0, 0, 0 };
    std::function<void()> requestRefresh; // Asks the host to rebuild the editing page (display added/removed)
    vector<PUPDMDDisplay> editBackup; // Runtime only: displays captured at BeginEdit, restored on cancel and used for dirty state
+   string importPath; // Runtime only (not persisted): Nixie layout file selected by the 'import' file item
 };
 
 class PUPDMDOverlay final
@@ -56,6 +70,11 @@ private:
    PinballPlugin::ResURIResolver& m_resURIResolver;
    VPXTexture& m_dmdTex;
    const VPXPluginAPI* const m_vpxApi;
+
+   // Glass image texture owned by the overlay, recreated when the display's glass
+   // image path changes (m_glassPath is the resolved path it was created from)
+   VPXTexture m_glassTex = nullptr;
+   string m_glassPath;
 
    // Identity of the frame last uploaded to the texture, to avoid a full copy plus a GPU re-upload every frame
    DisplaySrcId m_uploadedSrc {};

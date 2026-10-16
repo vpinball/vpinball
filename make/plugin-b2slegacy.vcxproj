@@ -52,6 +52,7 @@
     <ClCompile Include="..\..\plugins\b2slegacy\utils\PinMAMEAPI.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\utils\Timer.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\utils\VPXGraphics.cpp" />
+    <ClCompile Include="../../plugins/nixie/NixieLayoutFile.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
   </ItemGroup>
@@ -105,6 +106,8 @@
     <ClInclude Include="..\..\plugins\b2slegacy\utils\PinMAMEAPI.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\utils\Timer.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\utils\VPXGraphics.h" />
+    <ClInclude Include="../../plugins/nixie/NixieLayoutFile.h" />
+    <ClInclude Include="../../plugins/plugins/OverlayDisplayOptions.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h" />
   </ItemGroup>

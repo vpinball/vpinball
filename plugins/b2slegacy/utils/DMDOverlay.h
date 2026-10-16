@@ -55,6 +55,11 @@ private:
 
    vec4<int> m_frame;
 
+   // Glass image texture owned by the overlay, recreated when the display's embedded
+   // image changes (identified by a hash of its encoded content)
+   VPXTexture m_glassTex = nullptr;
+   size_t m_glassHash = 0;
+
    bool m_stopSearching = false;
    std::future<vec4<int>> m_frameSearch;
 

@@ -32,6 +32,9 @@ using std::vector;
 // VPX main API
 #include "plugins/VPXPlugin.h"
 
+// Shared authored display options (Nixie option set)
+#include "plugins/OverlayDisplayOptions.h"
+
 namespace B2S
 {
 
@@ -108,7 +111,13 @@ struct B2SDMDDisplay final
    // Bounds in the B2S document space: pixels of the artwork image, origin at its top left,
    // spanning the whole image including the grill area (clipped away when the grill is hidden)
    int x = 0, y = 0, w = 0, h = 0;
+   PinballPlugin::OverlayDisplayOptions options; // Render style, dot size, tint and glass options
+   vector<uint8_t> glassImage; // Encoded content of the glass image file (persisted as base64)
    int detectRequest = 0; // Runtime only (not persisted): requests automatic bounds detection
+   // Runtime only (not persisted): resolved pixel size of glassImage, cached against a hash
+   // of the encoded content (0 when there is no glass image or it fails to decode)
+   size_t glassImgHash = 0;
+   int glassImgW = 0, glassImgH = 0;
    B2SOverlayDoc* doc = nullptr; // Runtime only (not persisted): back link used by the editing page
 };
 
@@ -122,5 +131,6 @@ struct B2SOverlayDoc final
    int scoreViewW = 0, scoreViewH = 0;
    std::function<void()> requestRefresh; // Asks the host to rebuild the editing page (display added/removed)
    vector<B2SDMDDisplay> editBackup; // Runtime only: displays captured at BeginEdit, restored on cancel and used for dirty state
+   string importPath; // Runtime only (not persisted): Nixie layout file selected by the 'import' file item
 };
 }

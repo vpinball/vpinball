@@ -1926,6 +1926,7 @@ void Server::ShowBackglassForm()
    if (created && !m_pB2SData->GetBackglassFileName().empty())
    {
       m_overlayDoc.path = PluginStrings::PathFromUTF8(m_pB2SData->GetBackglassFileName());
+      m_overlayDoc.vpxApi = m_vpxApi;
       m_overlayDoc.displays = *m_pB2SData->GetDMDDisplays();
       for (B2SDMDDisplay& display : m_overlayDoc.displays)
          display.doc = &m_overlayDoc;
@@ -1966,6 +1967,8 @@ void Server::KillBackglassForm()
    }
 
    m_overlayDoc.displays.clear();
+   m_overlayDoc.editBackup.clear();
+   m_overlayDoc.importPath.clear();
    m_overlayDoc.path.clear();
    m_overlayDoc.backglassW = m_overlayDoc.backglassH = 0;
    m_overlayDoc.scoreViewW = m_overlayDoc.scoreViewH = 0;
