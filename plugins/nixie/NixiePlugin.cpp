@@ -24,8 +24,7 @@ MSGPI_FOLDER_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Fol
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
-   static const MsgPluginAPI* msgApi
-   = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static unsigned int getVpxApiId;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;

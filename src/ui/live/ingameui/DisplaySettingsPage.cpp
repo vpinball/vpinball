@@ -173,7 +173,7 @@ void DisplaySettingsPage::BuildPage()
    if (m_player->m_ancillaryWndRenderers[m_wndId].empty())
    {
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info,
-         "No renderer is available for this display with the played table. Enable a plugin providing one (B2S, PinUp Player, ScoreView, ...) to set it up."s));
+         "No renderer is available for this display with the played table. Enable a plugin providing one (B2S, PinUp Player, Nixie, ...) to set it up."s));
       return;
    }
 
