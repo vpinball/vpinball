@@ -450,7 +450,9 @@ void PUPManager::LoadPlaylists()
 // Loads the authored display list of the pack: a JSON file matching the other .pup files of
 // the folder, holding a 'Displays' array of { Target, Source, X, Y, W, H } objects (Target:
 // "Backglass", "ScoreView" or "Topper"; Source: controller resource URI or empty for the
-// default DMD; X/Y/W/H: bounds in window pixels from the top left)
+// default DMD; X/Y/W/H: bounds in window pixels from the top left) with the optional render
+// style ('Style' name, 'Dots' size, emitter 'Tint') and 'Glass' object (Image path relative
+// to the pack root inside 'PUPDisplays', Area, Tint, Roughness, Ambient, Pad)
 void PUPManager::LoadDisplays()
 {
    m_overlayDoc.displays.clear();
@@ -466,6 +468,18 @@ void PUPManager::LoadDisplays()
             const nlohmann::json json = nlohmann::json::parse(displaysFile);
             // Expected shape: { "Displays": [ ... ] }; a bare top level array is also accepted
             const nlohmann::json& displays = json.is_object() && json.contains("Displays") ? json["Displays"] : json;
+            const auto parseFloats = [](const nlohmann::json& j, float* values, int count)
+            {
+               if (!j.is_array())
+                  return false;
+               for (int i = 0; i < count; i++)
+               {
+                  if (i >= static_cast<int>(j.size()) || !j[i].is_number())
+                     return false;
+                  values[i] = j[i].get<float>();
+               }
+               return true;
+            };
             if (displays.is_array())
                for (const nlohmann::json& entry : displays)
                {
@@ -479,6 +493,52 @@ void PUPManager::LoadDisplays()
                   display.y = entry.value("Y", 0);
                   display.w = entry.value("W", 0);
                   display.h = entry.value("H", 0);
+                  const string style = entry.value("Style", ""s);
+                  display.options.style = PinballPlugin::OverlayDisplayStyleIndex(style.empty() ? nullptr : style.c_str());
+                  float f[4];
+                  if (parseFloats(entry.value("Dots", nlohmann::json {}), f, 2))
+                  {
+                     display.options.sizeW = static_cast<int>(f[0]);
+                     display.options.sizeH = static_cast<int>(f[1]);
+                  }
+                  if (parseFloats(entry.value("Tint", nlohmann::json {}), f, 3))
+                  {
+                     display.options.tintR = f[0];
+                     display.options.tintG = f[1];
+                     display.options.tintB = f[2];
+                  }
+                  if (const nlohmann::json& glass = entry.value("Glass", nlohmann::json {}); glass.is_object())
+                  {
+                     display.glassImage = glass.value("Image", ""s);
+                     if (parseFloats(glass.value("Area", nlohmann::json {}), f, 4))
+                     {
+                        display.options.glassAreaX = static_cast<int>(f[0]);
+                        display.options.glassAreaY = static_cast<int>(f[1]);
+                        display.options.glassAreaW = static_cast<int>(f[2]);
+                        display.options.glassAreaH = static_cast<int>(f[3]);
+                     }
+                     if (parseFloats(glass.value("Tint", nlohmann::json {}), f, 3))
+                     {
+                        display.options.glassTintR = f[0];
+                        display.options.glassTintG = f[1];
+                        display.options.glassTintB = f[2];
+                     }
+                     if (const nlohmann::json& roughness = glass.value("Roughness", nlohmann::json {}); roughness.is_number())
+                        display.options.glassRoughness = roughness.get<float>();
+                     if (parseFloats(glass.value("Ambient", nlohmann::json {}), f, 3))
+                     {
+                        display.options.glassAmbientR = f[0];
+                        display.options.glassAmbientG = f[1];
+                        display.options.glassAmbientB = f[2];
+                     }
+                     if (parseFloats(glass.value("Pad", nlohmann::json {}), f, 4))
+                     {
+                        display.options.glassPadL = f[0];
+                        display.options.glassPadT = f[1];
+                        display.options.glassPadR = f[2];
+                        display.options.glassPadB = f[3];
+                     }
+                  }
                }
          }
          catch (const std::exception& e)

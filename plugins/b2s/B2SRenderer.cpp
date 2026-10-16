@@ -723,8 +723,6 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 {
    if (m_b2s->m_dmdImage.m_image == nullptr && m_b2s->m_dmdIlluminations.empty())
       return false;
-   if (server->GetHideB2SDMD() == 1) // HideB2SDMD plugin setting
-      return false;
 
    // Update to latest settings state
    ctx->srcWidth = m_dmdWidth;
@@ -762,7 +760,6 @@ void B2SRenderer::RenderDisplays(VPXRenderContext2D* ctx, B2SServer* server, int
          continue;
       if (n >= m_dmdOverlays.size())
          m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::DMDOverlay>(m_vpxApi, m_resURIResolver, m_dmdTex));
-      m_dmdOverlays[n]->SetEnableOverride(server->GetHideDMD());
       m_dmdOverlays[n]->Render(ctx, &display, backImage);
       n++;
    }

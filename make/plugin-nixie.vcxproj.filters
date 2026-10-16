@@ -16,6 +16,9 @@
     <ClCompile Include="../../plugins/nixie/Nixie.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/nixie/NixieLayoutFile.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -25,6 +28,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/nixie/Nixie.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/nixie/NixieLayoutFile.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h">

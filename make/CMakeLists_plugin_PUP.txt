@@ -9,8 +9,11 @@ set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/${PLATFORM}-${ARC
 set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}")
 
 set(PUP_PLUGIN_SOURCES
+   plugins/nixie/NixieLayoutFile.h
+   plugins/nixie/NixieLayoutFile.cpp
    plugins/plugins/B2SPluginEventStream.h
    plugins/plugins/B2SPluginEventStream.cpp
+   plugins/plugins/OverlayDisplayOptions.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 

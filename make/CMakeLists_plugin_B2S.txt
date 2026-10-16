@@ -20,6 +20,9 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/DMDOverlay.h
    plugins/b2s/DMDOverlay.cpp
    
+   plugins/nixie/NixieLayoutFile.h
+   plugins/nixie/NixieLayoutFile.cpp
+   plugins/plugins/OverlayDisplayOptions.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
    

@@ -11,6 +11,7 @@
     <ClCompile Include="../../plugins/b2s/B2SRenderer.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp" />
     <ClCompile Include="../../plugins/b2s/DMDOverlay.cpp" />
+    <ClCompile Include="../../plugins/nixie/NixieLayoutFile.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
   </ItemGroup>
@@ -20,6 +21,8 @@
     <ClInclude Include="../../plugins/b2s/B2SRenderer.h" />
     <ClInclude Include="../../plugins/b2s/B2SServer.h" />
     <ClInclude Include="../../plugins/b2s/DMDOverlay.h" />
+    <ClInclude Include="../../plugins/nixie/NixieLayoutFile.h" />
+    <ClInclude Include="../../plugins/plugins/OverlayDisplayOptions.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h" />
   </ItemGroup>

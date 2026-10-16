@@ -15,20 +15,16 @@ namespace B2S
 {
 
 
-MSGPI_INT_VAL_SETTING(allAnimationSlowDownProp, "AllAnimationSlowDown", "Global animation slowdown", "Slowdown factor applied to all backglass animations", true, 1, 100, 1);
-MSGPI_STRING_VAL_SETTING(animationSlowDownsProp, "AnimationSlowDowns", "Per-animation slowdowns", "Semicolon separated 'name=factor' animation slowdown overrides", true, "", 1024);
 static const char* usedLEDTypeValues[] = { "Auto", "Rendered", "Dream7" };
 MSGPI_ENUM_VAL_SETTING(usedLEDTypeProp, "UsedLEDType", "Used LED type", "Force the LED display type (Auto = as declared by the .directb2s file)", true, 0, 3, usedLEDTypeValues, 0);
-MSGPI_BOOL_VAL_SETTING(hideB2SDMDProp, "HideB2SDMD", "Hide B2S DMD", "Hide the score view window", true, false);
-MSGPI_BOOL_VAL_SETTING(hideDMDProp, "HideDMD", "Hide DMD", "Hide the DMD overlays", true, false);
+MSGPI_INT_VAL_SETTING(allAnimationSlowDownProp, "AllAnimationSlowDown", "Global animation slowdown", "Slowdown factor applied to all backglass animations", true, 1, 100, 1);
+MSGPI_STRING_VAL_SETTING(animationSlowDownsProp, "AnimationSlowDowns", "Per-animation slowdowns", "Semicolon separated 'name=factor' animation slowdown overrides", true, "", 1024);
 
 void B2SServer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
 {
+   msgApi->RegisterSetting(endpointId, &usedLEDTypeProp);
    msgApi->RegisterSetting(endpointId, &allAnimationSlowDownProp);
    msgApi->RegisterSetting(endpointId, &animationSlowDownsProp);
-   msgApi->RegisterSetting(endpointId, &usedLEDTypeProp);
-   msgApi->RegisterSetting(endpointId, &hideB2SDMDProp);
-   msgApi->RegisterSetting(endpointId, &hideDMDProp);
 }
 
 namespace
@@ -44,10 +40,6 @@ namespace
    void MSGPIAPI SlowdownsSet(void*, const char* v) { animationSlowDownsProp_Set(v); }
    int MSGPIAPI LedTypeGet(void*) { return usedLEDTypeProp_Get(); }
    void MSGPIAPI LedTypeSet(void*, int v) { usedLEDTypeProp_Set(v); }
-   int MSGPIAPI HideB2SDMDGet(void*) { return hideB2SDMDProp_Get(); }
-   void MSGPIAPI HideB2SDMDSet(void*, int v) { hideB2SDMDProp_Set(v); }
-   int MSGPIAPI HideDMDGet(void*) { return hideDMDProp_Get(); }
-   void MSGPIAPI HideDMDSet(void*, int v) { hideDMDProp_Set(v); }
 
    void FillHeader(PagedUIItemDef& item, const char* label)
    {
@@ -65,7 +57,7 @@ namespace
       info->info = nullptr;
    }
 
-   unsigned int MSGPIAPI SettingsItemCount(void*, const char*) { return 9; }
+   unsigned int MSGPIAPI SettingsItemCount(void*, const char*) { return 7; }
 
    void MSGPIAPI SettingsGetItems(void*, const char*, PagedUIItemDef* items)
    {
@@ -79,34 +71,20 @@ namespace
       items[3].storage = PAGEDUI_STORAGE_HOST;
       items[3].enumProp = { 0, 3, usedLEDTypeValues, 0, &LedTypeGet, &LedTypeSet };
       items[4] = {};
-      items[4].type = PAGEDUI_ITEM_BOOL;
-      items[4].id = "HideB2SDMD";
-      items[4].label = "Hide B2S DMD";
-      items[4].tooltip = "Hide the score view window";
+      items[4].type = PAGEDUI_ITEM_INT;
+      items[4].id = "AllAnimationSlowDown";
+      items[4].label = "Global animation slowdown";
+      items[4].tooltip = "Slowdown factor applied to all backglass animations";
       items[4].storage = PAGEDUI_STORAGE_HOST;
-      items[4].boolProp = { 0, &HideB2SDMDGet, &HideB2SDMDSet };
+      items[4].intProp = { 1, 100, 1, nullptr, &AllSlowdownGet, &AllSlowdownSet };
       items[5] = {};
-      items[5].type = PAGEDUI_ITEM_BOOL;
-      items[5].id = "HideDMD";
-      items[5].label = "Hide DMD";
-      items[5].tooltip = "Hide the DMD overlays";
+      items[5].type = PAGEDUI_ITEM_STRING;
+      items[5].id = "AnimationSlowDowns";
+      items[5].label = "Per-animation slowdowns";
+      items[5].tooltip = "Semicolon separated 'name=factor' animation slowdown overrides";
       items[5].storage = PAGEDUI_STORAGE_HOST;
-      items[5].boolProp = { 0, &HideDMDGet, &HideDMDSet };
-      items[6] = {};
-      items[6].type = PAGEDUI_ITEM_INT;
-      items[6].id = "AllAnimationSlowDown";
-      items[6].label = "Global animation slowdown";
-      items[6].tooltip = "Slowdown factor applied to all backglass animations";
-      items[6].storage = PAGEDUI_STORAGE_HOST;
-      items[6].intProp = { 1, 100, 1, nullptr, &AllSlowdownGet, &AllSlowdownSet };
-      items[7] = {};
-      items[7].type = PAGEDUI_ITEM_STRING;
-      items[7].id = "AnimationSlowDowns";
-      items[7].label = "Per-animation slowdowns";
-      items[7].tooltip = "Semicolon separated 'name=factor' animation slowdown overrides";
-      items[7].storage = PAGEDUI_STORAGE_HOST;
-      items[7].stringProp = { "", &SlowdownsGet, &SlowdownsSet };
-      FillHeader(items[8], "Modify Backglass");
+      items[5].stringProp = { "", &SlowdownsGet, &SlowdownsSet };
+      FillHeader(items[6], "Modify Backglass");
    }
 }
 
@@ -285,7 +263,7 @@ void B2SServer::RegisterOverlaySheet()
 
    m_overlayDoc.path = m_b2sPath;
    m_overlayDoc.requestRefresh = [this]() { m_pagedUIApi->RequestSheetRefresh(m_endpointId, "backglass"); };
-   const string name = "Modify \""s + PluginStrings::PathToUTF8(m_b2sPath.filename()) + "\"";
+   const string name = "Edit \""s + PluginStrings::PathToUTF8(m_b2sPath.filename()) + "\"";
    PagedUISheetDef sheet {};
    sheet.version = 1;
    sheet.name = name.c_str();
@@ -301,10 +279,6 @@ int B2SServer::GetAnimationSlowDown(const string& name) const { return B2SAnimat
 int B2SServer::GetAllAnimationSlowDown() const { return allAnimationSlowDownProp_Get(); }
 
 int B2SServer::GetUsedLEDType() const { return usedLEDTypeProp_Get(); }
-
-int B2SServer::GetHideB2SDMD() const { return hideB2SDMDProp_Get(); }
-
-int B2SServer::GetHideDMD() const { return hideDMDProp_Get() ? 1 : -1; }
 
 static std::string CreateGuidString()
 {
