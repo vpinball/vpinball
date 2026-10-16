@@ -365,8 +365,12 @@ jobs:
           key: ${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.EXT_HASH }}
       - name: Setup build tools
         run: |
-          # cmake can't find fxc.exe so copy one into the a directory in the path
-          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x86/fxc.exe" /mingw64/bin
+          FXC=$(find "/c/Program Files (x86)/Windows Kits/10/bin" -type f -iname fxc.exe 2>/dev/null | sort -rV | head -n1)
+          if [[ -z "$FXC" ]]; then
+            echo "::error::fxc.exe not found in any installed Windows SDK"
+            exit 1
+          fi
+          cygpath -w "$(dirname "$FXC")" >> "$GITHUB_PATH"
       - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
