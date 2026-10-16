@@ -47,7 +47,7 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const Pa
    , m_onAuxRendererChgId(m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_getAudioSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG))
    , m_onAudioSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_SRC_CHG_MSG))
-   , m_audioSrcDef({ .id = { endpointId, 0 }, .overrideId = { 0, 0 }, .name = "PUP Player", .desc = "PinUp Player audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS })
+   , m_audioSrcDef({ .id = { endpointId, 0 }, .overrideId = { 0, 0 }, .name = "PinUp Player", .desc = "PinUp Player audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS })
 {
    msgApi->RegisterSetting(endpointId, &pupMainVolume);
    m_mainVolume = pupMainVolume_Get();
@@ -1009,7 +1009,7 @@ void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* 
 {
    auto me = static_cast<PUPManager*>(context);
    auto msg = static_cast<GetAncillaryRendererMsg*>(msgData);
-   static constexpr AncillaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", nullptr, Render };
+   static constexpr AncillaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp Player backglass", nullptr, Render };
    if (msg->window == VPXWindowId::VPXWINDOW_Backglass || msg->window == VPXWindowId::VPXWINDOW_ScoreView || msg->window == VPXWindowId::VPXWINDOW_Topper)
    {
       if (msg->count < msg->maxEntryCount) 

@@ -1356,7 +1356,7 @@ PropBoolDyn(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, tru
 PropBoolDyn(PluginDMDUtil, Enable, "Enable"s, "Enable DMDUtil plugin"s, false);
 PropBoolDyn(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, true);
 PropBoolDyn(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, true);
-PropBoolDyn(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, true);
+PropBoolDyn(PluginPUP, Enable, "Enable"s, "Enable PinUp Player plugin"s, true);
 PropBoolDyn(PluginNixie, Enable, "Enable"s, "Enable Nixie plugin"s, true);
 PropBoolDyn(PluginSerum, Enable, "Enable"s, "Enable Serum plugin"s, true);
 PropBoolDyn(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, true);
