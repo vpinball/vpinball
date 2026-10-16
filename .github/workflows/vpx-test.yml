@@ -58,8 +58,12 @@ jobs:
       - name: Setup build tools (DX9)
         if: matrix.type == 'DX9'
         run: |
-          # cmake can't find fxc.exe so copy one into a directory in the path
-          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x86/fxc.exe" /mingw64/bin
+          FXC=$(find "/c/Program Files (x86)/Windows Kits/10/bin" -type f -iname fxc.exe 2>/dev/null | sort -rV | head -n1)
+          if [[ -z "$FXC" ]]; then
+            echo "::error::fxc.exe not found in any installed Windows SDK"
+            exit 1
+          fi
+          cygpath -w "$(dirname "$FXC")" >> "$GITHUB_PATH"
       - name: Build vpx-test
         run: |
           cmake -DRENDERER=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -G "Visual Studio 18 2026" -A x64 -B build
