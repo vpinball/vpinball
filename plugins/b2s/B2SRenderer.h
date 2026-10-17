@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "B2SDataModel.h"
-#include "DMDOverlay.h"
+#include "DMDOverlay/DMDOverlay.h"
 
 #include "plugins/ControllerPlugin.h"
 #include "plugins/ResURIResolver.h"
@@ -53,7 +53,7 @@ private:
 
    PinballPlugin::ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;
-   vector<std::unique_ptr<DMDOverlay::DMDOverlay>> m_dmdOverlays; // One per <DMD> display of the edited document, in enumeration order
+   vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per <DMD> display of the edited document, in enumeration order
 
    std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;

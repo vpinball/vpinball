@@ -2,12 +2,13 @@
 
 #pragma once
 
-// Display option block shared by the authored display records of the B2S and PUP
-// display overlay plugins. It mirrors the per visual option set of Nixie layout
-// files (see plugins/nixie/NixieLayoutFile.h): render style, expected source dot size,
-// emitter tint and the glass layer (image area, tint, roughness, ambient, pad).
-// It also provides the PagedUI item builders editing these options so that all
-// overlay plugins present the same editing surface.
+// Display option block shared by the authored display records of the display overlay plugins
+// (B2S, B2SLegacy, PUP): an identical copy of this file lives inside the DMDOverlay folder of
+// each plugin. It mirrors the per visual option set of Nixie layout files (see
+// plugins/nixie/NixieLayoutFile.h): render style, expected source dot size, emitter tint and
+// the glass layer (image area, tint, roughness, ambient, pad). It also provides the PagedUI
+// item builders editing these options so that all overlay plugins present the same editing
+// surface.
 
 #include <algorithm>
 #include <cmath>
@@ -17,8 +18,8 @@
 #include <string>
 
 #include "nixie/NixieLayoutFile.h"
-#include "PagedUIPlugin.h"
-#include "VPXPlugin.h"
+#include "plugins/PagedUIPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 namespace PinballPlugin
 {
@@ -216,7 +217,7 @@ namespace OverlayUI
    inline int FillDisplayOptionItems(PagedUIItemDef* items, const std::function<const char*(std::string)>& str, const char* prefix, OverlayDisplayOptions* o)
    {
       static const char* styleValues[] = { "Auto", "Neon Plasma", "Red LED", "Green LED", "Yellow LED", "Generic Plasma", "Generic LED", "LCD", "CRT" };
-	  int i = 0;
+      int i = 0;
       FillItem(items[i], nullptr, "Display", "Rendering of the display emitter");
       items[i++].type = PAGEDUI_ITEM_HEADER;
       FillItem(items[i], str(std::string(prefix) + "style"), "Style", "Render style of the display; 'Auto' derives it from the source hardware");
@@ -228,7 +229,7 @@ namespace OverlayUI
       FillFloatItem(items[i++], str(std::string(prefix) + "tintB"), "Tint - Blue", "Tint of the display emitter", &o->tintB, 0.f, 1.f, 1.f);
       FillItem(items[i], nullptr, "Glass", "Glass covering the display");
       items[i++].type = PAGEDUI_ITEM_HEADER;
-	  return i;
+      return i;
    }
 
    // Emits the glass layer items except the section header (emitted last by
@@ -239,7 +240,7 @@ namespace OverlayUI
    // the enumeration call.
    inline int FillDisplayGlassItems(PagedUIItemDef* items, const std::function<const char*(std::string)>& str, const char* prefix, OverlayDisplayOptions* o, int glassW, int glassH)
    {
-	  int i = 0;
+      int i = 0;
       FillFloatItem(items[i++], str(std::string(prefix) + "glassRoughness"), "Roughness", "Roughness of the glass surface", &o->glassRoughness, 0.f, 1.f, 0.f);
       FillFloatItem(items[i++], str(std::string(prefix) + "glassTintR"), "Tint - Red", "Tint applied to the glass image", &o->glassTintR, 0.f, 1.f, 1.f);
       FillFloatItem(items[i++], str(std::string(prefix) + "glassTintG"), "Tint - Green", "Tint applied to the glass image", &o->glassTintG, 0.f, 1.f, 1.f);

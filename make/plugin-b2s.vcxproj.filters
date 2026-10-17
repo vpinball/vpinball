@@ -22,8 +22,8 @@
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="../../plugins/b2s/DMDOverlay.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="../../plugins/b2s/DMDOverlay/DMDOverlay.cpp">
+      <Filter>source\DMDOverlay</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/nixie/NixieLayoutFile.cpp">
       <Filter>source</Filter>
@@ -48,14 +48,14 @@
     <ClInclude Include="../../plugins/b2s/B2SServer.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="../../plugins/b2s/DMDOverlay.h">
-      <Filter>source</Filter>
+    <ClInclude Include="../../plugins/b2s/DMDOverlay/DMDOverlay.h">
+      <Filter>source\DMDOverlay</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/nixie/NixieLayoutFile.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="../../plugins/plugins/OverlayDisplayOptions.h">
-      <Filter>source</Filter>
+    <ClInclude Include="../../plugins/b2s/DMDOverlay/OverlayDisplayOptions.h">
+      <Filter>source\DMDOverlay</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
       <Filter>source</Filter>

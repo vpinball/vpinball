@@ -139,8 +139,8 @@
     <ClCompile Include="..\..\plugins\b2slegacy\forms\FormDMD.cpp">
       <Filter>source\forms</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\plugins\b2slegacy\utils\DMDOverlay.cpp">
-      <Filter>source\utils</Filter>
+    <ClCompile Include="..\..\plugins\b2slegacy\DMDOverlay\DMDOverlay.cpp">
+      <Filter>source\DMDOverlay</Filter>
     </ClCompile>
     <ClCompile Include="..\..\plugins\b2slegacy\utils\GraphicsPath.cpp">
       <Filter>source\utils</Filter>
@@ -297,8 +297,8 @@
     <ClInclude Include="..\..\plugins\b2slegacy\forms\FormDMD.h">
       <Filter>source\forms</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\plugins\b2slegacy\utils\DMDOverlay.h">
-      <Filter>source\utils</Filter>
+    <ClInclude Include="..\..\plugins\b2slegacy\DMDOverlay\DMDOverlay.h">
+      <Filter>source\DMDOverlay</Filter>
     </ClInclude>
     <ClInclude Include="..\..\plugins\b2slegacy\utils\Brush.h">
       <Filter>source\utils</Filter>
@@ -327,8 +327,8 @@
     <ClInclude Include="../../plugins/nixie/NixieLayoutFile.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="../../plugins/plugins/OverlayDisplayOptions.h">
-      <Filter>source</Filter>
+    <ClInclude Include="../../plugins/b2slegacy/DMDOverlay/OverlayDisplayOptions.h">
+      <Filter>source\DMDOverlay</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
       <Filter>source</Filter>

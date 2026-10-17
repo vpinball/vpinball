@@ -223,7 +223,7 @@ private:
    const PagedUIPluginAPI* const m_pagedUIApi;
    const uint32_t m_endpointId;
 
-   // Document being authored through the in game UI (see utils/DMDOverlay.h InitEditSheetDef)
+   // Document being authored through the in game UI (see DMDOverlay/DMDOverlay.h InitEditSheetDef)
    B2SOverlayDoc m_overlayDoc;
    bool m_overlaySheetRegistered = false;
 

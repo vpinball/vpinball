@@ -24,11 +24,26 @@ using namespace std::string_view_literals;
 #include "classes/PictureBoxAnimation.h"
 #include "classes/B2SScreen.h"
 #include "utils/PinMAMEAPI.h"
-#include "utils/DMDOverlay.h"
+#include "DMDOverlay/DMDOverlay.h"
 
 #include <algorithm>
+#include <fstream>
+#include <iterator>
 #include <random>
 
+#include <cstddef> // for size_t, ptrdiff_t
+// Define ssize_t for Windows
+#if defined(_WIN32) && !defined(__SSIZE_T_DEFINED)
+#if defined(_WIN64)
+typedef __int64 ssize_t;
+#else
+typedef int ssize_t;
+#endif
+#define __SSIZE_T_DEFINED
+#endif
+
+#include "base64.h"
+#include "tinyxml2/tinyxml2.h"
 #include "plugins/PluginStrings.h"
 
 
@@ -1910,6 +1925,103 @@ void Server::Startup()
     LOGI("B2S table filename set to '"s + m_pB2SData->GetTableFileName() + '\'');
 }
 
+namespace
+{
+   // Rewrites only the <DMD> children of the document's <Displays> element, leaving all other
+   // content (including the embedded base64 images) untouched (Doc::commitEdit hook)
+   int CommitOverlayDoc(B2SOverlayDoc& doc)
+   {
+      if (doc.path.empty())
+         return 1;
+      std::ifstream in(doc.path, std::ios::binary);
+      if (!in)
+      {
+         LOGE("Failed to open B2S file for writing: " + PluginStrings::PathToUTF8(doc.path));
+         return 1;
+      }
+      const std::string buffer((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+      in.close();
+      tinyxml2::XMLDocument xmlDoc;
+      if (xmlDoc.Parse(buffer.c_str(), buffer.size()) != tinyxml2::XML_SUCCESS)
+      {
+         LOGE("Failed to parse B2S file: " + PluginStrings::PathToUTF8(doc.path));
+         return 1;
+      }
+      tinyxml2::XMLElement* root = xmlDoc.FirstChildElement("DirectB2SData");
+      if (root == nullptr)
+         return 1;
+      auto* displays = root->FirstChildElement("Displays");
+      if (displays == nullptr)
+         displays = static_cast<tinyxml2::XMLElement*>(root->InsertEndChild(xmlDoc.NewElement("Displays")));
+      // Remove the previously authored DMD children; children of other display kinds are preserved
+      while (tinyxml2::XMLElement* dmd = displays->FirstChildElement("DMD"))
+         displays->DeleteChild(dmd);
+      for (const B2SDMDDisplay& display : doc.displays)
+      {
+         auto* const e = xmlDoc.NewElement("DMD");
+         e->SetAttribute("Target", display.target == 1 ? "ScoreView" : "Backglass");
+         if (!display.source.empty())
+            e->SetAttribute("Source", display.source.c_str());
+         e->SetAttribute("X", display.x);
+         e->SetAttribute("Y", display.y);
+         e->SetAttribute("W", display.w);
+         e->SetAttribute("H", display.h);
+         const PinballPlugin::OverlayDisplayOptions& o = display.options;
+         if (o.style > 0 && o.style <= 8)
+            e->SetAttribute("Style", PinballPlugin::OverlayDisplayStyleNames[o.style - 1]);
+         if (o.sizeW > 0 || o.sizeH > 0)
+            e->SetAttribute("Dots", std::format("{},{}", o.sizeW, o.sizeH).c_str());
+         if (o.tintR != 1.f || o.tintG != 1.f || o.tintB != 1.f)
+         {
+            const float tint[] = { o.tintR, o.tintG, o.tintB };
+            e->SetAttribute("Tint", PinballPlugin::OverlayFormatFloats(tint, 3).c_str());
+         }
+         if (o.glassTintR != 1.f || o.glassTintG != 1.f || o.glassTintB != 1.f)
+         {
+            const float tint[] = { o.glassTintR, o.glassTintG, o.glassTintB };
+            e->SetAttribute("GlassTint", PinballPlugin::OverlayFormatFloats(tint, 3).c_str());
+         }
+         if (o.glassRoughness != 0.f)
+            e->SetAttribute("GlassRoughness", PinballPlugin::OverlayFormatFloats(&o.glassRoughness, 1).c_str());
+         if (o.glassAmbientR != 1.f || o.glassAmbientG != 1.f || o.glassAmbientB != 1.f)
+         {
+            const float ambient[] = { o.glassAmbientR, o.glassAmbientG, o.glassAmbientB };
+            e->SetAttribute("GlassAmbient", PinballPlugin::OverlayFormatFloats(ambient, 3).c_str());
+         }
+         if (o.glassAreaX != 0 || o.glassAreaY != 0 || o.glassAreaW != 0 || o.glassAreaH != 0)
+            e->SetAttribute("GlassArea", std::format("{},{},{},{}", o.glassAreaX, o.glassAreaY, o.glassAreaW, o.glassAreaH).c_str());
+         if (o.glassPadL != 0.f || o.glassPadT != 0.f || o.glassPadR != 0.f || o.glassPadB != 0.f)
+         {
+            const float pad[] = { o.glassPadL, o.glassPadT, o.glassPadR, o.glassPadB };
+            e->SetAttribute("GlassPad", PinballPlugin::OverlayFormatFloats(pad, 4).c_str());
+         }
+         if (!display.glassImage.empty())
+         {
+            auto* const image = xmlDoc.NewElement("GlassImage");
+            image->SetAttribute("Value", to_base64(display.glassImage.data(), display.glassImage.size()).c_str());
+            e->InsertEndChild(image);
+         }
+         displays->InsertEndChild(e);
+      }
+      tinyxml2::XMLPrinter printer;
+      xmlDoc.Print(&printer);
+      std::ofstream out(doc.path, std::ios::binary | std::ios::trunc);
+      if (!out)
+      {
+         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc.path));
+         return 1;
+      }
+      out << printer.CStr();
+      out.close();
+      if (out.fail())
+      {
+         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc.path));
+         return 1;
+      }
+      return 0;
+   }
+}
+
 void Server::ShowBackglassForm()
 {
    const bool created = !m_pFormBackglass;
@@ -1927,6 +2039,39 @@ void Server::ShowBackglassForm()
    {
       m_overlayDoc.path = PluginStrings::PathFromUTF8(m_pB2SData->GetBackglassFileName());
       m_overlayDoc.vpxApi = m_vpxApi;
+      // Bind the shared overlay document to the plugin data model (see DMDOverlay/DMDOverlay.h):
+      // two views, bounds mapped to the grill-cut view by Form::OnPaint (mapQuad), glass image
+      // embedded as base64, persistence by CommitOverlayDoc
+      static const char* targetNames[] = { "Backglass", "Score view" };
+      m_overlayDoc.log = [](const char* func, int line, unsigned int level, const std::string& message) { LPILog_CPP(func, line, level, message); };
+      m_overlayDoc.targetCount = 2;
+      m_overlayDoc.targetNames = targetNames;
+      m_overlayDoc.detectable = true;
+      m_overlayDoc.hasGlass = [](const B2SDMDDisplay& display) { return !display.glassImage.empty(); };
+      m_overlayDoc.glassBytes = [](B2SDMDDisplay& display) -> const vector<uint8_t>*
+      {
+         if (display.glassImage.empty())
+         {
+            display.glassKey = 0;
+            return nullptr;
+         }
+         size_t hash = 14695981039346656037ull;
+         for (const uint8_t byte : display.glassImage)
+            hash = (hash ^ byte) * 1099511628211ull;
+         display.glassKey = hash;
+         return &display.glassImage;
+      };
+      m_overlayDoc.setGlass = [](B2SDMDDisplay& display, const std::filesystem::path& picked)
+      {
+         if (!DMDOverlay::ReadFileBytes(picked, display.glassImage))
+         {
+            LOGE("Failed to read glass image file: "s + PluginStrings::PathToUTF8(picked));
+            return false;
+         }
+         return true;
+      };
+      m_overlayDoc.clearGlass = [](B2SDMDDisplay& display) { display.glassImage.clear(); };
+      m_overlayDoc.commitEdit = &CommitOverlayDoc;
       m_overlayDoc.displays = *m_pB2SData->GetDMDDisplays();
       for (B2SDMDDisplay& display : m_overlayDoc.displays)
          display.doc = &m_overlayDoc;
@@ -1942,9 +2087,10 @@ void Server::RegisterOverlaySheet()
    const string name = "Modify \""s + PluginStrings::PathToUTF8(m_overlayDoc.path.filename()) + "\"";
    PagedUISheetDef sheet {};
    sheet.version = 1;
+   sheet.id = "backglass";
    sheet.name = name.c_str();
    sheet.description = "Layout of the loaded backglass document";
-   DMDOverlay::DMDOverlay::InitEditSheetDef(&sheet, &m_overlayDoc);
+   DMDOverlay::InitEditSheetDef(&sheet, &m_overlayDoc);
    m_pagedUIApi->RegisterSheet(m_endpointId, &sheet);
    m_overlaySheetRegistered = true;
 }
@@ -1970,8 +2116,8 @@ void Server::KillBackglassForm()
    m_overlayDoc.editBackup.clear();
    m_overlayDoc.importPath.clear();
    m_overlayDoc.path.clear();
-   m_overlayDoc.backglassW = m_overlayDoc.backglassH = 0;
-   m_overlayDoc.scoreViewW = m_overlayDoc.scoreViewH = 0;
+   for (int target = 0; target < 3; target++)
+      m_overlayDoc.viewW[target] = m_overlayDoc.viewH[target] = 0;
 }
 
 int Server::RandomStarter(int top)

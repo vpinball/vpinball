@@ -208,6 +208,11 @@ void PUPManager::SetGameDir(const string& szRomName)
    SetGameDir(controller);
 }
 
+namespace
+{
+   int CommitOverlayDoc(PUPOverlayDoc& doc);
+}
+
 void PUPManager::LoadConfig(const ControllerDef& controller)
 {
    const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
@@ -237,6 +242,61 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
 
    // Load the authored display list and expose it through the in game UI
    m_overlayDoc.path = m_szPath / "displays.pup";
+   // Bind the shared overlay document to the plugin data model (see DMDOverlay/DMDOverlay.h):
+   // three windows, bounds in window pixels rendered through the default full-view flip (no
+   // mapQuad hook), glass image referenced by a pack-relative path staged until commit copies
+   // it into the pack's 'PUPDisplays' folder, JSON persistence by CommitOverlayDoc
+   static const char* targetNames[] = { "Backglass", "Score view", "Topper" };
+   m_overlayDoc.vpxApi = m_vpxApi;
+   m_overlayDoc.log = [](const char* func, int line, unsigned int level, const std::string& message) { LPILog_CPP(func, line, level, message); };
+   m_overlayDoc.targetCount = 3;
+   m_overlayDoc.targetNames = targetNames;
+   m_overlayDoc.hasGlass = [](const PUPDMDDisplay& display) { return !display.glassPending.empty() || !display.glassPath.empty(); };
+   m_overlayDoc.glassBytes = [](PUPDMDDisplay& display) -> const vector<uint8_t>*
+   {
+      // The staged pick resolves to a file before the commit copies it into the pack; the
+      // persisted path is relative to the pup pack root. The file content is cached in
+      // glassCache, keyed by the resolved path
+      std::filesystem::path wanted;
+      if (!display.glassPending.empty())
+         wanted = PluginStrings::PathFromNative(display.glassPending.c_str());
+      else if (display.doc != nullptr && !display.glassPath.empty())
+         wanted = display.doc->path.parent_path() / PluginStrings::PathFromUTF8(display.glassPath);
+      if (wanted.empty())
+      {
+         display.glassKey = 0;
+         display.glassCache.clear();
+         return nullptr;
+      }
+      wanted = wanted.lexically_normal();
+      const std::filesystem::path resolved = find_case_insensitive_file_path(wanted);
+      const string key = PluginStrings::PathToUTF8(resolved.empty() ? wanted : resolved);
+      size_t hash = 14695981039346656037ull;
+      for (const char c : key)
+         hash = (hash ^ static_cast<uint8_t>(c)) * 1099511628211ull;
+      if (hash != display.glassKey)
+      {
+         display.glassKey = hash;
+         display.glassCache.clear();
+         if (resolved.empty() || !DMDOverlay::ReadFileBytes(resolved, display.glassCache))
+            LOGE("Missing glass file: "s + PluginStrings::PathToUTF8(wanted));
+      }
+      return display.glassCache.empty() ? nullptr : &display.glassCache;
+   };
+   m_overlayDoc.setGlass = [](PUPDMDDisplay& display, const std::filesystem::path& picked)
+   {
+      // The picked file is staged: it lands in 'PUPDisplays' at the next successful commit, so
+      // cancelling the edit leaves no orphan files. The staged path keeps the picker encoding
+      display.glassPending = PluginStrings::PathToNative(picked);
+      display.glassPath = "PUPDisplays/"s + PluginStrings::PathToUTF8(picked.filename());
+      return true;
+   };
+   m_overlayDoc.clearGlass = [](PUPDMDDisplay& display)
+   {
+      display.glassPath.clear();
+      display.glassPending.clear();
+   };
+   m_overlayDoc.commitEdit = &CommitOverlayDoc;
    LoadDisplays();
    RegisterOverlaySheet();
 
@@ -447,6 +507,95 @@ void PUPManager::LoadPlaylists()
    }
 }
 
+namespace
+{
+   // Copies the glass images staged by a file pick or a Nixie import into the pack's
+   // 'PUPDisplays' folder, deduplicating names; updates glassPath to the stored
+   // relative path and clears the staged source
+   void CopyStagedGlassImages(PUPOverlayDoc& doc)
+   {
+      const std::filesystem::path glassDir = doc.path.parent_path() / "PUPDisplays";
+      for (PUPDMDDisplay& display : doc.displays)
+      {
+         if (display.glassPending.empty())
+            continue;
+         const std::filesystem::path src = PluginStrings::PathFromNative(display.glassPending.c_str());
+         std::error_code ec;
+         std::filesystem::create_directories(glassDir, ec);
+         std::filesystem::path dst = glassDir / src.filename();
+         if (!std::filesystem::equivalent(src, dst, ec))
+         {
+            for (int n = 1; std::filesystem::exists(dst, ec); n++)
+            {
+               std::filesystem::path candidate = src.stem();
+               candidate += "_" + std::to_string(n);
+               candidate += src.extension();
+               dst = glassDir / candidate;
+            }
+            if (!std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing, ec))
+               LOGE("Failed to copy glass image " + PluginStrings::PathToUTF8(src) + " to " + PluginStrings::PathToUTF8(dst) + ": " + ec.message());
+         }
+         display.glassPath = "PUPDisplays/"s + PluginStrings::PathToUTF8(dst.filename());
+         display.glassPending.clear();
+      }
+   }
+
+   // Rewrites the whole document file: a JSON 'Displays' array of { Target, Source, X, Y, W, H,
+   // plus the optional render style/tint/glass fields }, matching the other .pup files of the pack
+   // (Doc::commitEdit hook)
+   int CommitOverlayDoc(PUPOverlayDoc& doc)
+   {
+      if (doc.path.empty())
+         return 1;
+      CopyStagedGlassImages(doc);
+      std::ofstream out(doc.path, std::ios::binary | std::ios::trunc);
+      if (!out)
+      {
+         LOGE("Failed to write displays file: " + PluginStrings::PathToUTF8(doc.path));
+         return 1;
+      }
+      static const char* targetNames[] = { "Backglass", "ScoreView", "Topper" };
+      nlohmann::json json;
+      json["Displays"] = nlohmann::json::array();
+      for (const PUPDMDDisplay& display : doc.displays)
+      {
+         const char* const target = display.target >= 0 && display.target < 3 ? targetNames[display.target] : targetNames[0];
+         nlohmann::json entry = { { "Target", target }, { "Source", display.source }, { "X", display.x }, { "Y", display.y }, { "W", display.w }, { "H", display.h } };
+         const PinballPlugin::OverlayDisplayOptions& o = display.options;
+         if (o.style > 0 && o.style <= 8)
+            entry["Style"] = PinballPlugin::OverlayDisplayStyleNames[o.style - 1];
+         if (o.sizeW > 0 || o.sizeH > 0)
+            entry["Dots"] = { o.sizeW, o.sizeH };
+         if (o.tintR != 1.f || o.tintG != 1.f || o.tintB != 1.f)
+            entry["Tint"] = { o.tintR, o.tintG, o.tintB };
+         nlohmann::json glass;
+         if (!display.glassPath.empty())
+            glass["Image"] = display.glassPath;
+         if (o.glassAreaX != 0 || o.glassAreaY != 0 || o.glassAreaW != 0 || o.glassAreaH != 0)
+            glass["Area"] = { o.glassAreaX, o.glassAreaY, o.glassAreaW, o.glassAreaH };
+         if (o.glassTintR != 1.f || o.glassTintG != 1.f || o.glassTintB != 1.f)
+            glass["Tint"] = { o.glassTintR, o.glassTintG, o.glassTintB };
+         if (o.glassRoughness != 0.f)
+            glass["Roughness"] = o.glassRoughness;
+         if (o.glassAmbientR != 1.f || o.glassAmbientG != 1.f || o.glassAmbientB != 1.f)
+            glass["Ambient"] = { o.glassAmbientR, o.glassAmbientG, o.glassAmbientB };
+         if (o.glassPadL != 0.f || o.glassPadT != 0.f || o.glassPadR != 0.f || o.glassPadB != 0.f)
+            glass["Pad"] = { o.glassPadL, o.glassPadT, o.glassPadR, o.glassPadB };
+         if (!glass.empty())
+            entry["Glass"] = glass;
+         json["Displays"].push_back(entry);
+      }
+      out << json.dump(4);
+      out.close();
+      if (out.fail())
+      {
+         LOGE("Failed to write displays file: " + PluginStrings::PathToUTF8(doc.path));
+         return 1;
+      }
+      return 0;
+   }
+}
+
 // Loads the authored display list of the pack: a JSON file matching the other .pup files of
 // the folder, holding a 'Displays' array of { Target, Source, X, Y, W, H } objects (Target:
 // "Backglass", "ScoreView" or "Topper"; Source: controller resource URI or empty for the
@@ -509,7 +658,7 @@ void PUPManager::LoadDisplays()
                   }
                   if (const nlohmann::json& glass = entry.value("Glass", nlohmann::json {}); glass.is_object())
                   {
-                     display.glassImage = glass.value("Image", ""s);
+                     display.glassPath = glass.value("Image", ""s);
                      if (parseFloats(glass.value("Area", nlohmann::json {}), f, 4))
                      {
                         display.options.glassAreaX = static_cast<int>(f[0]);
@@ -563,9 +712,10 @@ void PUPManager::RegisterOverlaySheet()
    const string name = "Modify \""s + PluginStrings::PathToUTF8(m_overlayDoc.path.filename()) + "\"";
    PagedUISheetDef sheet {};
    sheet.version = 1;
+   sheet.id = "displays";
    sheet.name = name.c_str();
    sheet.description = "Layout of the loaded PinUp Player displays";
-   PUPDMDOverlay::InitEditSheetDef(&sheet, &m_overlayDoc);
+   DMDOverlay::InitEditSheetDef(&sheet, &m_overlayDoc);
    m_pagedUIApi->RegisterSheet(m_endpointId, &sheet);
    m_overlaySheetRegistered = true;
 }
@@ -576,16 +726,16 @@ int PUPManager::RenderDisplays(VPXRenderContext2D* ctx, int target)
 {
    if (m_vpxApi == nullptr)
       return 0;
-   m_overlayDoc.winW[target] = static_cast<int>(ctx->srcWidth);
-   m_overlayDoc.winH[target] = static_cast<int>(ctx->srcHeight);
+   m_overlayDoc.viewW[target] = static_cast<int>(ctx->srcWidth);
+   m_overlayDoc.viewH[target] = static_cast<int>(ctx->srcHeight);
    int n = 0;
    for (PUPDMDDisplay& display : m_overlayDoc.displays)
    {
       if (display.target != target)
          continue;
       if (n >= static_cast<int>(m_dmdOverlays.size()))
-         m_dmdOverlays.emplace_back(std::make_unique<PUPDMDOverlay>(m_vpxApi, m_resURIResolver, m_dmdTex));
-      m_dmdOverlays[n]->Render(ctx, &display);
+         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, m_resURIResolver, m_dmdTex));
+      m_dmdOverlays[n]->Render(ctx, display, nullptr);
       n++;
    }
    return n;

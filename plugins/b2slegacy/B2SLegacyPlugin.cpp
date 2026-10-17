@@ -8,7 +8,7 @@
 #include "plugins/PagedUIPlugin.h"
 
 #include "Server.h"
-#include "utils/DMDOverlay.h"
+#include "DMDOverlay/DMDOverlay.h"
 
 namespace B2SLegacy {
 
