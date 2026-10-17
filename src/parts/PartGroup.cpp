@@ -116,6 +116,10 @@ void PartGroup::Load(IObjectReader& reader)
          case FID(TMON): m_timerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_timerInterval = reader.AsInt(); break;
          case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
+         // Deprecated: the view visibility mask (m_viewVisibilityMask) was removed as it was
+         // never implemented. Read and discard the int so old files carrying the field do not
+         // get reported as unread/skipped.
+         case FID(VMSK): reader.AsInt(); break;
          case FID(PMSK): m_d.m_playerModeVisibilityMask = reader.AsUInt(); break;
          case FID(SPRF): m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(reader.AsInt()); break;
          default: LoadSharedEditableField(tag, reader); break;

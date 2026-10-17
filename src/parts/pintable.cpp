@@ -1247,8 +1247,6 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(NDGT), m_nudgeTime);
    writer.WriteInt(FID(PHML), m_PhysicsMaxLoops);
 
-   //writer.WriteFloat(FID(IMTCOL), m_transcolor);
-
    writer.WriteBool(FID(REEL), m_renderEMReels);
    writer.WriteBool(FID(DECL), m_renderDecals);
 
