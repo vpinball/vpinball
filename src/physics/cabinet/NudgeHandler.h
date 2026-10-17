@@ -63,8 +63,12 @@ public:
    void ApplyKeyboardImpulse(float angle, float force);
 
    void StepOneMillisecond();
-   const Vertex2D& GetCabinetAcceleration() const; // m/s^2
-   const Vertex2D& GetCabinetOffset() const; // m
+   Vertex2D GetCabinetAcceleration() const; // m/s^2
+   Vertex2D GetCabinetOffset() const; // m
+
+   // Mirrored table (left <-> right): sensors and external nudges measure the physical cabinet, so their X axis is
+   // mirrored. Keyboard nudges are not, they are already expressed for the table (script, or swapped by the caller)
+   void SetMirrored(bool mirrored) { m_mirrored = mirrored; }
 
    enum KeyboardNudgeMode
    {
@@ -96,6 +100,7 @@ private:
    Vertex2D m_noNudge = Vertex2D(0.f, 0.f);
    KeyboardNudgeMode m_keyboardNudgeMode;
    int m_keyboardNudgeIndex = 0;
+   bool m_mirrored = false;
 
    // External nudge state override (e.g. remote control plugin)
    bool m_externalOverride = false;

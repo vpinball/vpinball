@@ -535,7 +535,7 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
 {
    // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
    // (during initial table load, the loading UI is displayed and interactive, so events must flow)
-   if (m_player->m_overall_frames < 5 && !m_player->m_isLoading)
+   if (m_player->m_overall_frames < 5 && !m_player->m_isLoading && !m_acceptStartupEvents)
       return;
 
    // Discard keyboard events when the UI is capturing the keyboard (e.g. for control input)
@@ -581,7 +581,7 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
 
    // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
    // (during initial table load, the loading UI is displayed and interactive, so events must flow)
-   if (m_player->m_overall_frames < 5 && !m_player->m_isLoading)
+   if (m_player->m_overall_frames < 5 && !m_player->m_isLoading && !m_acceptStartupEvents)
       return;
 
    uint32_t id = deviceId << 16 | axisId;
@@ -643,7 +643,7 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
 {
    // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
    // (during initial table load, the loading UI is displayed and interactive, so events must flow)
-   if (m_player->m_overall_frames < 5 && !m_player->m_isLoading)
+   if (m_player->m_overall_frames < 5 && !m_player->m_isLoading && !m_acceptStartupEvents)
       return;
 
    if (m_player->IsVR())
@@ -747,9 +747,11 @@ void InputManager::CreateInputActions()
                constexpr float baseForce = 2.f;
                const float angle = (rand_mt_01() - 0.5f) * 15.f * baseForce;
                const float force = (0.6f + rand_mt_01() * 0.8f) * baseForce;
-               if (action.GetActionId() == m_leftNudgeActionId)
+               // On a mirrored table, the physical left side is the table's right side
+               const bool mirrored = m_player->m_tblMirrorEnabled;
+               if (action.GetActionId() == (mirrored ? m_rightNudgeActionId : m_leftNudgeActionId))
                   m_nudgeHandler->ApplyKeyboardImpulse(75.f + angle, force);
-               else if (action.GetActionId() == m_rightNudgeActionId)
+               else if (action.GetActionId() == (mirrored ? m_leftNudgeActionId : m_rightNudgeActionId))
                   m_nudgeHandler->ApplyKeyboardImpulse(285.f + angle, force);
                else if (action.GetActionId() == m_centerNudgeActionId)
                   m_nudgeHandler->ApplyKeyboardImpulse(angle, force);

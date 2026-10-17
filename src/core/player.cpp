@@ -582,13 +582,27 @@ void Player::InitTableSession(const bool isInitial)
    m_pauseMusicRefCount = 0;
 
    m_tblMirrorEnabled = m_ptable->GetSettings().GetPlayer_Mirror();
-#ifdef VPX_HAS_WIN32_SDK
    if (isInitial)
    {
+      // Flipper buttons held while the table loads: both mirror the table, the left one alone swaps the desktop/FSS view.
+      // Pending input events are processed first, so that the buttons of every input device are seen (a joystick is
+      // opened on its arrival event, then reports its pressed buttons on a later update)
+      m_pininput.SetAcceptStartupEvents(true);
+      for (int i = 0; i < 3; i++)
+      {
+         ProcessOSMessages();
+         SDL_Delay(10);
+      }
+      m_pininput.SetAcceptStartupEvents(false);
+      bool leftFlipPressed = m_pininput.IsPressed(m_pininput.GetLeftFlipperActionId());
+      bool rightFlipPressed = m_pininput.IsPressed(m_pininput.GetRightFlipperActionId());
+#ifdef VPX_HAS_WIN32_SDK
+      // Keys held since before the window got the focus are not reported as events: also check the keyboard directly
       const int vkLeftFlip = m_pininput.GetWindowVirtualKeyForAction(m_pininput.GetLeftFlipperActionId());
       const int vkRightFlip = m_pininput.GetWindowVirtualKeyForAction(m_pininput.GetRightFlipperActionId());
-      const bool leftFlipPressed = (GetAsyncKeyState(VK_LSHIFT) & 0x8000) || ((vkLeftFlip != ~0u) && (GetAsyncKeyState(vkLeftFlip) & 0x8000));
-      const bool rightFlipPressed = (GetAsyncKeyState(VK_RSHIFT) & 0x8000) || ((vkRightFlip != ~0u) && (GetAsyncKeyState(vkRightFlip) & 0x8000));
+      leftFlipPressed |= (GetAsyncKeyState(VK_LSHIFT) & 0x8000) || ((vkLeftFlip != ~0u) && (GetAsyncKeyState(vkLeftFlip) & 0x8000));
+      rightFlipPressed |= (GetAsyncKeyState(VK_RSHIFT) & 0x8000) || ((vkRightFlip != ~0u) && (GetAsyncKeyState(vkRightFlip) & 0x8000));
+#endif
 
       // if both flippers are hold, then mirror table
       if (leftFlipPressed && rightFlipPressed)
@@ -609,8 +623,13 @@ void Player::InitTableSession(const bool isInitial)
          }
       }
    }
-#endif
 
+   if (m_tblMirrorEnabled && IsVR())
+   {
+      PLOGW << "Table mirroring is not supported in VR, so disabled (for now)";
+      m_tblMirrorEnabled = false;
+   }
+   m_pininput.m_nudgeHandler->SetMirrored(m_tblMirrorEnabled);
    if (m_tblMirrorEnabled)
    {
       m_audioPlayer->SetMirrored(true);

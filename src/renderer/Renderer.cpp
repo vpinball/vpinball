@@ -3167,7 +3167,10 @@ void Renderer::Render3DScene()
    if (!m_disableStaticPrepass && m_visualNudgeStrength > 0.0f && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
    {
       // FIXME Screen offset is applied in clip space (-1..1, -1..1) independently of the output resolution resulting in non uniform scaling of nudge
-      const Vertex2D offset = m_visualNudgeStrength * g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset() * 2.f;
+      Vertex2D offset = m_visualNudgeStrength * g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset() * 2.f;
+      // The offset is in table space, but applied after the mirroring flip: mirror it back to the screen
+      if (g_pplayer->m_tblMirrorEnabled)
+         offset.x = -offset.x;
       SetScreenOffset(offset.x, offset.y);
    }
    else

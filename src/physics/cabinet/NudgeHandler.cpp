@@ -54,27 +54,29 @@ void NudgeHandler::StepOneMillisecond()
       sensor->StepOneMillisecond();
 }
 
-const Vertex2D& NudgeHandler::GetCabinetAcceleration() const
+Vertex2D NudgeHandler::GetCabinetAcceleration() const
 {
+   const auto physical = [this](const Vertex2D& v) { return m_mirrored ? Vertex2D(-v.x, v.y) : v; };
    if (m_externalOverride)
-      return m_externalAcceleration;
+      return physical(m_externalAcceleration);
    if (m_keyboardNudge->IsActive())
       return m_keyboardNudge->GetCabinetAcceleration();
    for (const auto& sensor : m_sensors)
       if (sensor->IsActive())
-         return sensor->GetCabinetAcceleration();
+         return physical(sensor->GetCabinetAcceleration());
    return m_noNudge;
 }
 
-const Vertex2D& NudgeHandler::GetCabinetOffset() const
+Vertex2D NudgeHandler::GetCabinetOffset() const
 {
+   const auto physical = [this](const Vertex2D& v) { return m_mirrored ? Vertex2D(-v.x, v.y) : v; };
    if (m_externalOverride)
-      return m_externalDisplacement;
+      return physical(m_externalDisplacement);
    if (m_keyboardNudge->IsActive())
       return m_keyboardNudge->GetCabinetOffset();
    for (const auto& sensor : m_sensors)
       if (sensor->IsActive())
-         return sensor->GetCabinetOffset();
+         return physical(sensor->GetCabinetOffset());
    return m_noNudge;
 }
 

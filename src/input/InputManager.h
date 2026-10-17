@@ -108,6 +108,8 @@ public:
 
    void HandleSDLEvent(const SDL_Event& e);
    void PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_t timestampNs, bool isPressed);
+   // Input events are discarded during the first game frames, except while this is set (to detect all buttons held at startup)
+   void SetAcceptStartupEvents(bool accept) { m_acceptStartupEvents = accept; }
    void PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t timestampNs, float position);
    void PushTouchEvent(float relativeX, float relativeY, uint64_t timestampNs, bool isPressed);
 
@@ -286,6 +288,7 @@ private:
    void Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs);
    uint32_t m_autoStartTimestamp = 0;
    bool m_gameStartedOnce = false;
+   bool m_acceptStartupEvents = false;
    bool m_autoStartPressed = false;
    bool m_autoStartDoneOnce = false;
    int m_autoStartDirectStateSlot = -1;

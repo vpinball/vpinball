@@ -74,9 +74,11 @@ private:
          m_dirty = false;
          for (unsigned int eye = 0; eye < m_nEyes; eye++)
          {
-            m_matReflectedView[eye] = m_matReflection * m_matView[eye];
+            // Mirrored table: each eye shows the flipped view of the other eye, as flipping alone would invert the stereo depth
+            const unsigned int srcEye = (m_flip != NONE && m_nEyes == 2) ? 1 - eye : eye;
+            m_matReflectedView[eye] = m_matReflection * m_matView[srcEye];
             m_matModelView[eye] = m_matModel * m_matReflectedView[eye];
-            m_matModelViewProj[eye] = m_matModelView[eye] * m_matProj[eye];
+            m_matModelViewProj[eye] = m_matModelView[eye] * m_matProj[srcEye];
             m_matModelViewInverse[eye] = Matrix3D::MatrixInverse(m_matModelView[eye]);
             m_matModelViewInverseTranspose[eye] = m_matModelViewInverse[eye];
             m_matModelViewInverseTranspose[eye].Transpose();
@@ -85,7 +87,7 @@ private:
 
             const Vertex3Ds camPos = invReflectedView.GetOrthoNormalPos();
             m_cameraPos[eye] = vec4(camPos.x, camPos.y, camPos.z, 0.f);
-            m_matRotViewProj[eye] = m_matReflectedView[eye].GetRotationPart() * m_matProj[eye];
+            m_matRotViewProj[eye] = m_matReflectedView[eye].GetRotationPart() * m_matProj[srcEye];
 
             const Matrix3D viewRot = invReflectedView.GetRotationPart();
             m_viewVec[eye] = viewRot * Vertex3Ds { 0.f, 0.f, 1.f };
