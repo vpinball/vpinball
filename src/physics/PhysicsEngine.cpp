@@ -390,6 +390,7 @@ void PhysicsEngine::StartPhysics()
    m_startTime_usec = usec();
    m_curPhysicsFrameTime = m_startTime_usec;
    m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
+   m_physicsStarted = true;
 
 #ifdef PLAYBACK
    if (m_playback)
@@ -407,6 +408,10 @@ void PhysicsEngine::StartPhysics()
 
 void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 {
+   // Simulation can only run once it has been started (timestamps are set by StartPhysics)
+   if (!m_physicsStarted)
+      return;
+
    if (g_pplayer)
       g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    uint64_t initial_time_usec = targetTimeUs;
@@ -430,7 +435,8 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       const uint64_t curPhysicsFrameTime = m_startTime_usec + (uint64_t)(m_time_sec * 1000000.0);
       if (initial_time_usec > curPhysicsFrameTime)
       {
-         const uint64_t timeShift = initial_time_usec - curPhysicsFrameTime;
+         // m_time_sec can lag m_curPhysicsFrameTime by up to one step: cap the shift so the frame boundary never overshoots the target
+         const uint64_t timeShift = min(initial_time_usec - curPhysicsFrameTime, initial_time_usec > m_curPhysicsFrameTime ? initial_time_usec - m_curPhysicsFrameTime : (uint64_t)0);
          m_startTime_usec += timeShift;
          m_nextPhysicsFrameTime += timeShift;
          m_curPhysicsFrameTime += timeShift;
