@@ -1434,8 +1434,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    if (!ec && (perms & std::filesystem::perms::owner_write) == std::filesystem::perms::none)
       m_title += " [READ ONLY]"sv;
 
-   PLOGI << "InitTablePostLoad"; // For profiling
-
    // Not registered if a part already uses it (it would then be removed with that part's name on rename)
    m_nameRegistered = !m_name.empty() && m_scriptableNames.insert(lowerCase(m_name)).second;
 
@@ -1497,6 +1495,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
    // Loading (including an overriding .vbs) is not a user edit, but filling the code viewer raised the script dirty flag
    SetDirtyScript(SaveDirtyState::Clean);
+
+   PLOGI << "Table loaded"; // For profiling
 
    return hr;
 }

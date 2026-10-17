@@ -1464,8 +1464,6 @@ LRESULT WinEditor::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 // Called when window is initially updated to be able to perform initial setup of the window and its children
 void WinEditor::OnInitialUpdate()
 {
-   PLOGI << "OnInitialUpdate";
-
    LoadEditorSetupFromSettings();
 
    SetAccelerators(IDR_VPACCEL);
