@@ -24,6 +24,18 @@ static unsigned int getScriptApiId = 0;
 static unsigned int getPagedUIApiId = 0;
 static int nServer = 0;
 
+// Only one B2S implementation can run at a time: if B2S is already loaded, this plugin stays inactive and tells
+// the user, right away if enabled in game, else when the game starts (no notification can be shown while plugins load)
+static bool inactive = false;
+static unsigned int onGameStartId = 0;
+static constexpr const char* inactiveMessage = "The B2SLegacy plugin is inactive because the B2S plugin is enabled too. Disable one of them in the plugin settings.";
+
+static void MSGPIAPI OnGameStartInactive(const unsigned int, void*, void*)
+{
+   if (vpxApi)
+      vpxApi->PushNotification(inactiveMessage, 10000);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Script interface
 //
@@ -222,11 +234,23 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const M
    getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
 
+   inactive = msgApi->GetPluginEndpoint("B2S") != 0;
+   if (inactive)
+   {
+      LOGE(inactiveMessage);
+      onGameStartId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+      msgApi->SubscribeMsg(endpointId, onGameStartId, OnGameStartInactive, nullptr);
+      OnGameStartInactive(onGameStartId, nullptr, nullptr);
+      return;
+   }
+
    getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
 
    getPagedUIApiId = msgApi->GetMsgID(PAGEDUIPI_NAMESPACE, PAGEDUIPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getPagedUIApiId, &pagedUIApi);
+
+   Server::StartFileWriter(msgApi, endpointId, vpxApi);
 
    nServer = 0;
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
@@ -256,7 +280,19 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const M
 
 MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload()
 {
+   if (inactive)
+   {
+      msgApi->UnsubscribeMsg(onGameStartId, OnGameStartInactive, nullptr);
+      msgApi->ReleaseMsgID(onGameStartId);
+      msgApi->ReleaseMsgID(getVpxApiId);
+      inactive = false;
+      vpxApi = nullptr;
+      msgApi = nullptr;
+      return;
+   }
+
    assert(nServer == 0);
+   Server::StopFileWriter();
    scriptApi->SetCOMObjectOverride("B2S.Server", nullptr);
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); };
    auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->UnregisterScriptArrayType(sad); };
