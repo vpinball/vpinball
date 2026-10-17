@@ -43,6 +43,8 @@
     <ClCompile>
       <!-- Log messages are UTF-8 like all narrow strings, must be the same for all sources using plog -->
       <PreprocessorDefinitions>PLOG_CHAR_IS_UTF8=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- Allow AddressSanitizer (EnableASAN) to be toggled on/off without MSVC STL container annotation false positives -->
+      <PreprocessorDefinitions>_DISABLE_STRING_ANNOTATION=1;_DISABLE_VECTOR_ANNOTATION=1;_DISABLE_OPTIONAL_ANNOTATION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Midl>
       <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
