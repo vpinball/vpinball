@@ -25,6 +25,10 @@
 //                   Image:     ./Glass-Dirty-1.webp
 //                   Area:      [0,0,1024,256]
 //                   Ambient:   [0.4,0.4,0.4]
+//           - Picture:
+//               Rect: [0,0,64,64]
+//               Image: ./logo.png
+//               Tint: [1,1,1]
 //
 // Parsed values keep the authored semantics: visual Rects are expressed in layout
 // space with the origin at the top left, and Ambient values are sRGB (consumers
@@ -95,7 +99,7 @@ enum VisualType
    DMD,
    Screen,
    SegDisplay,
-   Image
+   Picture
 };
 
 struct Visual
