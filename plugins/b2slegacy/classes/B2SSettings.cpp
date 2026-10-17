@@ -5,7 +5,6 @@
 namespace B2SLegacy {
 
 MSGPI_BOOL_VAL_SETTING(hideGrillProp, "B2SHideGrill", "Hide grill", "Hide the grill area at the bottom of the backglass. Applies after restarting the table", true, false); // VB uses CheckedState_Indeterminate
-MSGPI_BOOL_VAL_SETTING(hideB2SProp, "B2SHideB2SDMD", "Hide B2S DMD", "Hide the B2S score view (DMD) artwork. Applies after restarting the table", true, false);
 MSGPI_BOOL_VAL_SETTING(hideB2SBackglassProp, "B2SHideB2SBackglass", "Hide B2S backglass", "Do not render the backglass. Applies after restarting the table", true, false);
 MSGPI_INT_VAL_SETTING(dualModeProp, "B2SDualMode", "Dual mode", "Artwork set for dual mode backglasses (1 = Authentic, 2 = Fantasy). Applies after restarting the table", true, eDualMode_2_Authentic, eDualMode_2_Fantasy, eDualMode_2_Authentic);
 
@@ -24,7 +23,6 @@ void B2SSettings::Load(bool resetLogs)
 {
    ClearAll();
    m_msgApi->RegisterSetting(m_endpointId, &hideGrillProp);
-   m_msgApi->RegisterSetting(m_endpointId, &hideB2SProp);
    m_msgApi->RegisterSetting(m_endpointId, &hideB2SBackglassProp);
    m_msgApi->RegisterSetting(m_endpointId, &dualModeProp);
    m_hideGrill = hideGrillProp_Val;
@@ -34,7 +32,7 @@ void B2SSettings::Load(bool resetLogs)
 
 bool B2SSettings::IsRestartPending() const
 {
-   return (hideGrillProp_Val != 0) != m_hideGrill || (hideB2SProp_Val != 0) != m_hideB2SDMD || (hideB2SBackglassProp_Val != 0) != m_hideB2SBackglass || dualModeProp_Val != m_currentDualMode;
+   return (hideGrillProp_Val != 0) != m_hideGrill || (hideB2SBackglassProp_Val != 0) != m_hideB2SBackglass || dualModeProp_Val != m_currentDualMode;
 }
 
 void B2SSettings::ClearAll()

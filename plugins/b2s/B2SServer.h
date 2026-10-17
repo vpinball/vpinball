@@ -182,6 +182,11 @@ public:
    B2SOverlayDoc& GetOverlayDoc() { return m_overlayDoc; }
    const B2SOverlayDoc& GetOverlayDoc() const { return m_overlayDoc; }
 
+   // Worker thread saving the edited documents (see CommitOverlayDoc), started at plugin load. Stopping it at plugin
+   // unload waits for the pending saves and reports their errors
+   static void StartFileWriter(const MsgPluginAPI* msgApi, unsigned int endpointId, const VPXPluginAPI* vpxApi);
+   static void StopFileWriter();
+
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override;
 
 private:

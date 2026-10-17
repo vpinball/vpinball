@@ -118,6 +118,7 @@ void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdVie
          m_backglassSmallGrillHeight = backglassSmallGrillHeight;
 
          m_backglassCutOff = { 0, static_cast<int>(m_vpxApi->GetTextureInfo(pFormBackglass->GetDarkImage())->height - backglassGrillHeight - backglassSmallGrillHeight), static_cast<int>(m_vpxApi->GetTextureInfo(pFormBackglass->GetDarkImage())->width), backglassSmallGrillHeight };
+         m_backglassDocCutOff = m_backglassCutOff;
 
          // shrink some images to remove the small grill
          pFormBackglass->SetDarkImage4Authentic(CutOutImage(pFormBackglass->GetDarkImage4Authentic(), backglassGrillHeight, backglassSmallGrillHeight));
@@ -151,6 +152,7 @@ void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdVie
          m_backglassSmallGrillHeight = backglassSmallGrillHeight;
 
          m_backglassCutOff = { 0, static_cast<int>(m_vpxApi->GetTextureInfo(pFormBackglass->GetDarkImage())->height - backglassGrillHeight), static_cast<int>(m_vpxApi->GetTextureInfo(pFormBackglass->GetDarkImage())->width), backglassGrillHeight };
+         m_backglassDocCutOff = m_backglassCutOff;
 
          // shrink some images to remove the grill
          pFormBackglass->SetDarkImage4Authentic(ResizeImage(pFormBackglass->GetDarkImage4Authentic(), backglassGrillHeight));

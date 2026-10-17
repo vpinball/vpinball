@@ -256,7 +256,8 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
    {
       // The staged pick resolves to a file before the commit copies it into the pack; the
       // persisted path is relative to the pup pack root. The file content is cached in
-      // glassCache, keyed by the resolved path
+      // glassCache, keyed by the wanted path: this is called every frame, so the file system
+      // is only accessed (case insensitive lookup, read) when the path changes
       std::filesystem::path wanted;
       if (!display.glassPending.empty())
          wanted = PluginStrings::PathFromNative(display.glassPending.c_str());
@@ -269,8 +270,7 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
          return nullptr;
       }
       wanted = wanted.lexically_normal();
-      const std::filesystem::path resolved = find_case_insensitive_file_path(wanted);
-      const string key = PluginStrings::PathToUTF8(resolved.empty() ? wanted : resolved);
+      const string key = PluginStrings::PathToUTF8(wanted);
       size_t hash = 14695981039346656037ull;
       for (const char c : key)
          hash = (hash ^ static_cast<uint8_t>(c)) * 1099511628211ull;
@@ -278,8 +278,9 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
       {
          display.glassKey = hash;
          display.glassCache.clear();
+         const std::filesystem::path resolved = find_case_insensitive_file_path(wanted);
          if (resolved.empty() || !DMDOverlay::ReadFileBytes(resolved, display.glassCache))
-            LOGE("Missing glass file: "s + PluginStrings::PathToUTF8(wanted));
+            LOGE("Missing glass file: " + key);
       }
       return display.glassCache.empty() ? nullptr : &display.glassCache;
    };
@@ -408,11 +409,6 @@ void PUPManager::Unload()
    }
    m_overlayDoc = PUPOverlayDoc {};
    m_dmdOverlays.clear();
-   if (m_dmdTex && m_vpxApi)
-   {
-      m_vpxApi->DeleteTexture(m_dmdTex);
-      m_dmdTex = nullptr;
-   }
 
    m_dmd = nullptr;
    m_dmdTriggerCount = 0;
@@ -721,7 +717,9 @@ void PUPManager::RegisterOverlaySheet()
 }
 
 // Renders the displays of the document targeted at this window, growing the overlay pool on
-// demand (a display presence in the document means enabled)
+// demand (a display presence in the document means enabled). Each display keeps the overlay of its
+// document index whatever its target, so that the overlay state (glass texture, uploaded frame) is
+// not shared between displays of different windows
 int PUPManager::RenderDisplays(VPXRenderContext2D* ctx, int target)
 {
    if (m_vpxApi == nullptr)
@@ -729,13 +727,14 @@ int PUPManager::RenderDisplays(VPXRenderContext2D* ctx, int target)
    m_overlayDoc.viewW[target] = static_cast<int>(ctx->srcWidth);
    m_overlayDoc.viewH[target] = static_cast<int>(ctx->srcHeight);
    int n = 0;
-   for (PUPDMDDisplay& display : m_overlayDoc.displays)
+   for (size_t i = 0; i < m_overlayDoc.displays.size(); i++)
    {
+      PUPDMDDisplay& display = m_overlayDoc.displays[i];
       if (display.target != target)
          continue;
-      if (n >= static_cast<int>(m_dmdOverlays.size()))
-         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, m_resURIResolver, m_dmdTex));
-      m_dmdOverlays[n]->Render(ctx, display, nullptr);
+      while (i >= m_dmdOverlays.size())
+         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, m_resURIResolver));
+      m_dmdOverlays[i]->Render(ctx, display, nullptr);
       n++;
    }
    return n;

@@ -21,8 +21,6 @@ Form::Form(VPXPluginAPI* vpxApi, const MsgPluginAPI* msgApi, uint32_t endpointId
 Form::~Form()
 {
    delete m_pResURIResolver;
-   if (m_dmdTex && m_vpxApi)
-      m_vpxApi->DeleteTexture(m_dmdTex);
 }
 
 void Form::Show()
@@ -81,7 +79,7 @@ void Form::OnPaint(VPXRenderContext2D* const ctx)
          if (display.target != m_dmdDisplayTarget)
             continue;
          if (n >= m_dmdOverlays.size())
-            m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, *m_pResURIResolver, m_dmdTex));
+            m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, *m_pResURIResolver));
          m_dmdOverlays[n]->Render(ctx, display, docImage);
          n++;
       }

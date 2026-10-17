@@ -750,18 +750,19 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 }
 
 // Renders the <DMD> displays of the document targeted at this view, growing the overlay pool on
-// demand (a display presence in the document means enabled; HideDMD overrides them all)
+// demand (a display presence in the document means enabled). Each display keeps the overlay of its
+// document index whatever its target, so that the overlay state (glass texture, uploaded frame,
+// bounds search) is not shared between the backglass and score view displays
 void B2SRenderer::RenderDisplays(VPXRenderContext2D* ctx, B2SServer* server, int target, VPXTexture backImage)
 {
-   size_t n = 0;
-   for (B2SDMDDisplay& display : server->GetOverlayDoc().displays)
+   vector<B2SDMDDisplay>& displays = server->GetOverlayDoc().displays;
+   for (size_t i = 0; i < displays.size(); i++)
    {
-      if (display.target != target)
+      if (displays[i].target != target)
          continue;
-      if (n >= m_dmdOverlays.size())
-         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, m_resURIResolver, m_dmdTex));
-      m_dmdOverlays[n]->Render(ctx, display, backImage);
-      n++;
+      while (i >= m_dmdOverlays.size())
+         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, m_resURIResolver));
+      m_dmdOverlays[i]->Render(ctx, displays[i], backImage);
    }
 }
 }

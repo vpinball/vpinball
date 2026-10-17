@@ -113,7 +113,7 @@ struct Doc final
 class Renderer final
 {
 public:
-   Renderer(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex);
+   Renderer(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver);
    ~Renderer();
    // Renders one display of the document: resolves the source frame, runs a pending 'Detect
    // position' bounds search against 'artwork' (nullptr disables it), maps the document
@@ -124,7 +124,9 @@ private:
    vec4<int> SearchDmdSubFrame(VPXTexture image, const VPXTextureInfo* const texInfo, float dmdAspectRatio, const LogFn& log) const;
 
    PinballPlugin::ResURIResolver& m_resURIResolver;
-   VPXTexture& m_dmdTex;
+   // Source frame texture owned by the overlay: as only new frames are uploaded, it can not be shared
+   // between displays (a display would show the frame last uploaded by another one)
+   VPXTexture m_dmdTex = nullptr;
    const VPXPluginAPI* const m_vpxApi;
 
    // Glass image texture owned by the overlay, recreated when the content provided by the

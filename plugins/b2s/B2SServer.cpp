@@ -5,9 +5,13 @@
 #include "B2SServer.h"
 
 #include <algorithm>
+#include <condition_variable>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <mutex>
 #include <random>
+#include <thread>
 
 #include <cstddef> // for size_t, ptrdiff_t
 // Define ssize_t for Windows
@@ -100,36 +104,61 @@ namespace
       FillHeader(items[6], "Modify Backglass");
    }
 
-   // Rewrites only the <DMD> children of the document's <Displays> element, leaving all other
-   // content (including the embedded base64 images) untouched (Doc::commitEdit hook)
-   int CommitOverlayDoc(B2SOverlayDoc& doc)
+   // Saving rewrites the whole .directb2s, can be too slow for the game thread, and also can fail: so saves are
+   // queued to a worker thread, which writes a temporary file and renames it over the original, so that a failed
+   // save can't leave a truncated file. Errors are reported on the main thread (log and notification)
+   struct FileWriter
    {
-      if (doc.path.empty())
-         return 1;
-      std::ifstream in(doc.path, std::ios::binary);
-      if (!in)
+      const MsgPluginAPI* msgApi = nullptr;
+      unsigned int endpointId = 0;
+      const VPXPluginAPI* vpxApi = nullptr;
+      std::mutex mutex;
+      std::condition_variable cv;
+      std::thread thread;
+      bool stop = false;
+      vector<std::pair<std::filesystem::path, vector<B2SDMDDisplay>>> jobs; // Pending saves, at most one per file
+      vector<string> errors; // Failed saves, not yet reported
+   };
+   FileWriter fileWriter;
+
+   void MSGPIAPI ReportSaveErrors(void*)
+   {
+      vector<string> errors;
       {
-         LOGE("Failed to open B2S file for writing: " + PluginStrings::PathToUTF8(doc.path));
-         return 1;
+         std::lock_guard lock(fileWriter.mutex);
+         errors.swap(fileWriter.errors);
       }
+      for (const string& error : errors)
+      {
+         LOGE(error);
+         if (fileWriter.vpxApi != nullptr)
+            fileWriter.vpxApi->PushNotification(error.c_str(), 10000);
+      }
+   }
+
+   // Rewrites only the <DMD> children of the file's <Displays> element, leaving all other content (including the
+   // embedded base64 images) untouched. Returns an error message, or an empty string on success
+   string WriteDisplays(const std::filesystem::path& path, const vector<B2SDMDDisplay>& displays)
+   {
+      const string failed = "Failed to save the DMD displays to " + PluginStrings::PathToUTF8(path);
+      std::ifstream in(path, std::ios::binary);
+      if (!in)
+         return failed + " (can't read it)";
       const std::string buffer((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
       in.close();
       tinyxml2::XMLDocument xmlDoc;
       if (xmlDoc.Parse(buffer.c_str(), buffer.size()) != tinyxml2::XML_SUCCESS)
-      {
-         LOGE("Failed to parse B2S file: " + PluginStrings::PathToUTF8(doc.path));
-         return 1;
-      }
+         return failed + " (can't parse it)";
       tinyxml2::XMLElement* root = xmlDoc.FirstChildElement("DirectB2SData");
       if (root == nullptr)
-         return 1;
-      auto* displays = root->FirstChildElement("Displays");
-      if (displays == nullptr)
-         displays = static_cast<tinyxml2::XMLElement*>(root->InsertEndChild(xmlDoc.NewElement("Displays")));
+         return failed + " (not a B2S file)";
+      auto* displaysNode = root->FirstChildElement("Displays");
+      if (displaysNode == nullptr)
+         displaysNode = static_cast<tinyxml2::XMLElement*>(root->InsertEndChild(xmlDoc.NewElement("Displays")));
       // Remove the previously authored DMD children; children of other display kinds are preserved
-      while (tinyxml2::XMLElement* dmd = displays->FirstChildElement("DMD"))
-         displays->DeleteChild(dmd);
-      for (const B2SDMDDisplay& display : doc.displays)
+      while (tinyxml2::XMLElement* dmd = displaysNode->FirstChildElement("DMD"))
+         displaysNode->DeleteChild(dmd);
+      for (const B2SDMDDisplay& display : displays)
       {
          auto* const e = xmlDoc.NewElement("DMD");
          e->SetAttribute("Target", display.target == 1 ? "ScoreView" : "Backglass");
@@ -174,25 +203,99 @@ namespace
             image->SetAttribute("Value", to_base64(display.glassImage.data(), display.glassImage.size()).c_str());
             e->InsertEndChild(image);
          }
-         displays->InsertEndChild(e);
+         displaysNode->InsertEndChild(e);
       }
       tinyxml2::XMLPrinter printer;
       xmlDoc.Print(&printer);
-      std::ofstream out(doc.path, std::ios::binary | std::ios::trunc);
+      std::filesystem::path tmpPath = path;
+      tmpPath += ".tmp";
+      std::ofstream out(tmpPath, std::ios::binary | std::ios::trunc);
+      if (out)
+      {
+         out << printer.CStr();
+         out.close();
+      }
+      std::error_code ec;
       if (!out)
       {
-         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc.path));
-         return 1;
+         std::filesystem::remove(tmpPath, ec);
+         return failed + " (can't write it)";
       }
-      out << printer.CStr();
-      out.close();
-      if (out.fail())
+      std::filesystem::rename(tmpPath, path, ec);
+      if (ec)
       {
-         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc.path));
-         return 1;
+         std::filesystem::remove(tmpPath, ec);
+         return failed + " (can't replace it)";
       }
+      return {};
+   }
+
+   void FileWriterLoop()
+   {
+      std::unique_lock lock(fileWriter.mutex);
+      while (true)
+      {
+         fileWriter.cv.wait(lock, [] { return fileWriter.stop || !fileWriter.jobs.empty(); });
+         if (fileWriter.jobs.empty())
+            return; // Stop requested, all saves done
+         auto [path, displays] = std::move(fileWriter.jobs.front());
+         fileWriter.jobs.erase(fileWriter.jobs.begin());
+         lock.unlock();
+         string error = WriteDisplays(path, displays);
+         lock.lock();
+         if (!error.empty())
+         {
+            fileWriter.errors.push_back(std::move(error));
+            fileWriter.msgApi->RunOnMainThread(fileWriter.endpointId, 0., ReportSaveErrors, nullptr);
+         }
+      }
+   }
+
+   // Doc::commitEdit hook: queues the save, so the page reports the document as saved once queued and a failure
+   // is notified later
+   int CommitOverlayDoc(B2SOverlayDoc& doc)
+   {
+      if (doc.path.empty())
+         return 1;
+      {
+         std::lock_guard lock(fileWriter.mutex);
+         if (!fileWriter.thread.joinable())
+            return 1;
+         // A newer save of the same file replaces the pending one
+         const auto job = std::ranges::find_if(fileWriter.jobs, [&doc](const auto& job) { return job.first == doc.path; });
+         if (job != fileWriter.jobs.end())
+            job->second = doc.displays;
+         else
+            fileWriter.jobs.emplace_back(doc.path, doc.displays);
+      }
+      fileWriter.cv.notify_one();
       return 0;
    }
+}
+
+void B2SServer::StartFileWriter(const MsgPluginAPI* msgApi, unsigned int endpointId, const VPXPluginAPI* vpxApi)
+{
+   assert(!fileWriter.thread.joinable());
+   fileWriter.msgApi = msgApi;
+   fileWriter.endpointId = endpointId;
+   fileWriter.vpxApi = vpxApi;
+   fileWriter.stop = false;
+   fileWriter.thread = std::thread(FileWriterLoop);
+}
+
+void B2SServer::StopFileWriter()
+{
+   if (!fileWriter.thread.joinable())
+      return;
+   {
+      std::lock_guard lock(fileWriter.mutex);
+      fileWriter.stop = true;
+   }
+   fileWriter.cv.notify_one();
+   fileWriter.thread.join(); // Pending saves are completed
+   fileWriter.msgApi->FlushPendingCallbacks(fileWriter.endpointId); // Reports their errors
+   fileWriter.msgApi = nullptr;
+   fileWriter.vpxApi = nullptr;
 }
 
 B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, const PagedUIPluginAPI* const pagedUIApi, ScriptClassDef* serverClassDef)

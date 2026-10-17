@@ -52,8 +52,7 @@ private:
    mutable PinballPlugin::Controller::CtrlItemConsumer<SegSrcId> m_segSources;
 
    PinballPlugin::ResURIResolver m_resURIResolver;
-   VPXTexture m_dmdTex = nullptr;
-   vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per <DMD> display of the edited document, in enumeration order
+   vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per <DMD> display of the edited document, by document index
 
    std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;

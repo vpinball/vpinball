@@ -30,13 +30,12 @@ namespace DMDOverlay
 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Renderer: resolves the display source through the ResURIResolver, uploads new frames to the
-// shared texture, maintains a per-display glass texture (encoded content provided through the
+// Renderer: resolves the display source through the ResURIResolver, uploads new frames to its
+// own texture, maintains a per-display glass texture (encoded content provided through the
 // Doc::glassBytes hook) and draws both layers in the quad mapped by Doc::mapQuad.
 
-Renderer::Renderer(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex)
+Renderer::Renderer(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver)
    : m_resURIResolver(resURIResolver)
-   , m_dmdTex(dmdTex)
    , m_vpxApi(vpxApi)
 {
 }
@@ -48,6 +47,8 @@ Renderer::~Renderer()
       m_frameSearch.wait();
    if (m_glassTex != nullptr && m_vpxApi != nullptr)
       m_vpxApi->DeleteTexture(m_glassTex);
+   if (m_dmdTex != nullptr && m_vpxApi != nullptr)
+      m_vpxApi->DeleteTexture(m_dmdTex);
 }
 
 void Renderer::Render(VPXRenderContext2D* ctx, Display& display, VPXTexture artwork)

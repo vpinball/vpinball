@@ -63,7 +63,7 @@ public:
    // The authored <DMD> display bounds live in the native artwork space; the displayed
    // background is grill-cut by B2SScreen then resized, so the doc reference is a separate copy
    VPXTexture GetOverlayDocImage() const override { return m_pDocImage != nullptr ? m_pDocImage : GetBackgroundImage(); }
-   SDL_Rect GetOverlayDocCut() const override { return m_pB2SScreen != nullptr ? m_pB2SScreen->GetBackglassCutOff() : SDL_Rect { 0, 0, 0, 0 }; }
+   SDL_Rect GetOverlayDocCut() const override { return m_pB2SScreen != nullptr ? m_pB2SScreen->GetBackglassDocCutOff() : SDL_Rect { 0, 0, 0, 0 }; }
    void ResizeSomeImages();
    bool IsValid() const { return m_valid; }
 

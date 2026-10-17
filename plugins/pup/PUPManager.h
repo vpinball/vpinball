@@ -163,8 +163,7 @@ private:
    PUPOverlayDoc m_overlayDoc;
    bool m_overlaySheetRegistered = false;
    PinballPlugin::ResURIResolver m_resURIResolver;
-   VPXTexture m_dmdTex = nullptr;
-   vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per display of the edited document, in enumeration order
+   vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per display of the edited document, by document index
 
    std::unique_ptr<PUPDMD::DMD> m_dmd;
    // Triggers in the loaded pack that only a DMD frame match can fire, and what

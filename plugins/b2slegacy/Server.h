@@ -113,6 +113,11 @@ public:
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
    B2SOverlayDoc& GetOverlayDoc() { return m_overlayDoc; }
    const B2SOverlayDoc& GetOverlayDoc() const { return m_overlayDoc; }
+
+   // Worker thread saving the edited documents (see CommitOverlayDoc), started at plugin load. Stopping it at plugin
+   // unload waits for the pending saves and reports their errors
+   static void StartFileWriter(const MsgPluginAPI* msgApi, unsigned int endpointId, const VPXPluginAPI* vpxApi);
+   static void StopFileWriter();
    uint32_t GetEndpointId() const { return m_endpointId; }
    void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;

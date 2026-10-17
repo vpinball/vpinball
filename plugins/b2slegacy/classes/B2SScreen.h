@@ -43,6 +43,8 @@ public:
    const string& GetBackgroundPath() const { return m_backgroundPath; }
    void SetBackgroundPath(const string& backgroundPath) { m_backgroundPath = backgroundPath; }
    SDL_Rect& GetBackglassCutOff() { return m_backglassCutOff; }
+   // The cut off band in native artwork pixels (GetBackglassCutOff is rescaled to the backglass form)
+   const SDL_Rect& GetBackglassDocCutOff() const { return m_backglassDocCutOff; }
    bool IsDMDToBeShown() const { return m_dmdToBeShown; }
    void SetDMDToBeShown(const bool dmdToBeShown) { m_dmdToBeShown = dmdToBeShown; }
    const SDL_FRect& GetRescaleBackglass() const { return m_rescaleBackglass; }
@@ -86,6 +88,7 @@ private:
    SDL_Point m_backgroundLocation = { 0, 0 };
    string m_backgroundPath;
    SDL_Rect m_backglassCutOff = { 0, 0, 0, 0 };
+   SDL_Rect m_backglassDocCutOff = { 0, 0, 0, 0 };
    bool m_dmdToBeShown = false;
    SDL_FRect m_rescaleBackglass = { 0, 0, 1.0f, 1.0f };
 };
