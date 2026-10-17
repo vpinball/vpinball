@@ -929,6 +929,10 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
          {
          case FID(NAME): name = reader.AsString(); break;
          case FID(PATH): path = reader.AsString(); break;
+         // Deprecated: old files stored the image's internal name (a length prefixed string)
+         // next to the display name (NAME) and file path (PATH). Read and discard it so the
+         // field is consumed and does not get reported as unread/skipped.
+         case FID(INME): reader.AsString(); break;
          case FID(WDTH): width = reader.AsInt(); break;
          case FID(HGHT): height = reader.AsInt(); break;
          case FID(ALTV): alphaTestValue = reader.AsFloat() * (float)(1.0 / 255.0); break;

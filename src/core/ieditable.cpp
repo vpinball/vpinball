@@ -126,6 +126,12 @@ void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
       m_onLoadExpectedPartGroup = reader.AsString();
       break;
    }
+   // 'Backglass/desktop' flag (m_desktopBackdrop is a shared IEditable member): the editable
+   // types that can be a backdrop (decal, flasher, light, lightseq, timer) read it in their own
+   // field handler, but older files may still carry it on other types. Read it here into the
+   // shared member so the field is consumed (and the flag preserved) instead of reported as an
+   // unhandled token.
+   case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
    default:
    {
       PLOGE << "Unhandled token: " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF);
