@@ -2144,7 +2144,7 @@ void Renderer::RenderStatics()
    }
 
    // Copy the accumulated background + static part renders
-   m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
+   m_renderDevice->SetRenderTarget("PreRender Compose"s, GetMSAABackBufferTexture());
    m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
    if (m_staticPrepassAccumCount >= STATIC_PRERENDER_ITERATIONS)
    {
@@ -2168,6 +2168,7 @@ void Renderer::RenderStatics()
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_fb_unfiltered);
    }
+   m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture(), true, true); // Force new pass to avoid sorting the statics composite draw calls with 3D rendering draw calls
 }
 
 void Renderer::RenderDynamics()
