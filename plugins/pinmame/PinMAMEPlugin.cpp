@@ -16,6 +16,7 @@
 #include "ControllerSettings.h"
 #include "Controller.h"
 
+#include <array>
 #include <filesystem>
 #include <cassert>
 #include <charconv>
@@ -241,6 +242,59 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
 }
 
 
+#ifdef _WIN32
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Visual PinMAME folders (Windows registry), used when no other PinMAME folder is defined
+
+// A string value from the registry (expanded if needed), or an empty string if it is missing
+static std::wstring ReadRegistryString(HKEY root, const wchar_t* subKey, const wchar_t* name, REGSAM view)
+{
+   HKEY hKey;
+   if (RegOpenKeyExW(root, subKey, 0, KEY_QUERY_VALUE | view, &hKey) != ERROR_SUCCESS)
+      return {};
+   std::wstring value;
+   DWORD size = 0;
+   LSTATUS status = RegGetValueW(hKey, nullptr, name, RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, nullptr, nullptr, &size);
+   while (status == ERROR_SUCCESS || status == ERROR_MORE_DATA)
+   {
+      value.resize(size / sizeof(wchar_t) + 1);
+      size = static_cast<DWORD>(value.size() * sizeof(wchar_t));
+      status = RegGetValueW(hKey, nullptr, name, RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, nullptr, value.data(), &size);
+      if (status == ERROR_SUCCESS)
+      {
+         value.resize(wcsnlen(value.c_str(), value.size()));
+         break;
+      }
+   }
+   RegCloseKey(hKey);
+   return status == ERROR_SUCCESS ? value : std::wstring();
+}
+
+// Visual PinMAME's install folder: the one of the registered VPinMAME controller (any bitness), as long as its dll still exists
+static std::filesystem::path GetVPinMAMEInstallPath()
+{
+   for (const REGSAM view : { (REGSAM)0, (REGSAM)KEY_WOW64_64KEY, (REGSAM)KEY_WOW64_32KEY })
+   {
+      const std::filesystem::path dllPath = ReadRegistryString(HKEY_CLASSES_ROOT, L"CLSID\\{F389C8B7-144F-4C63-A2E3-246D168F9D39}\\InprocServer32", nullptr, view);
+      if (std::error_code ec; !dllPath.empty() && std::filesystem::is_regular_file(dllPath, ec))
+         return dllPath.parent_path();
+   }
+   return {};
+}
+
+// Visual PinMAME's folder settings (each one may list several folders separated by ';'), indexed by PINMAME_FILE_TYPE,
+// empty if not set. Visual PinMAME writes all of them on its first run, defaulting to subfolders of its install folder
+static std::array<std::filesystem::path, PINMAME_FILE_TYPE_HIGHSCORE + 1> GetVPinMAMEFolders()
+{
+   static constexpr const wchar_t* names[] = { L"rompath", L"nvram_directory", L"samplepath", L"cfg_directory", L"hiscore_directory" };
+   std::array<std::filesystem::path, PINMAME_FILE_TYPE_HIGHSCORE + 1> folders;
+   for (size_t i = 0; i < folders.size(); i++)
+      folders[i] = ReadRegistryString(HKEY_CURRENT_USER, L"Software\\Freeware\\Visual PinMame\\globals", names[i], 0);
+   return folders;
+}
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Overall game messages
 
@@ -429,6 +483,23 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       #elif defined(__APPLE__) || defined(__linux__)
       if (const std::filesystem::path homePath = PluginStrings::PathFromNative(getenv("HOME")); pinmamePath.empty() && !homePath.empty())
          pinmamePath = homePath / ".pinmame"sv;
+      #elif defined(_WIN32)
+      // Visual PinMAME's folders: its install folder (also holding VPMAlias.txt) and its own folder settings on top
+      std::array<std::filesystem::path, PINMAME_FILE_TYPE_HIGHSCORE + 1> vpmFolders;
+      if (pinmamePath.empty())
+      {
+         vpmFolders = GetVPinMAMEFolders();
+         pinmamePath = GetVPinMAMEInstallPath();
+         if (pinmamePath.empty() && !vpmFolders[PINMAME_FILE_TYPE_ROMS].empty())
+         {
+            // Not installed (anymore): use the folder holding the first ROM folder
+            const std::wstring& romFolders = vpmFolders[PINMAME_FILE_TYPE_ROMS].native();
+            const std::filesystem::path romPath = std::filesystem::path(romFolders.substr(0, romFolders.find(L';'))).lexically_normal();
+            pinmamePath = (romPath.has_filename() ? romPath : romPath.parent_path()).parent_path();
+         }
+         if (!pinmamePath.empty())
+            LOGI("Using Visual PinMAME folders from " + PluginStrings::PathToUTF8(pinmamePath));
+      }
       #endif
 
       // FIXME implement a last resort or just ask the user to define its path setup in the settings ?
@@ -438,6 +509,20 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, PluginStrings::PathToNative(pinmamePath / ""sv).c_str());
 
       Controller* pController = new Controller(msgApi, endpointId, config, memmapPath, gamedefPath);
+
+      #ifdef _WIN32
+      // Apply Visual PinMAME's folder settings over the subfolders of pinmamePath. libpinmame keeps them for later
+      // controllers, so the ones applied for a previous controller are removed again if this one doesn't use them
+      static std::array<bool, PINMAME_FILE_TYPE_HIGHSCORE + 1> vpmFolderApplied {};
+      for (size_t i = 0; i < vpmFolders.size(); i++)
+      {
+         if (vpmFolders[i].empty() && !vpmFolderApplied[i])
+            continue;
+         PinmameSetPath(static_cast<PINMAME_FILE_TYPE>(i), PluginStrings::PathToNative(vpmFolders[i]).c_str());
+         vpmFolderApplied[i] = !vpmFolders[i].empty();
+      }
+      #endif
+
       pController->SetOnDestroyHandler(OnControllerDestroyed);
       pController->SetOnGameStartHandler(OnControllerGameStart);
       pController->SetOnGameEndHandler(OnControllerGameEnd);
