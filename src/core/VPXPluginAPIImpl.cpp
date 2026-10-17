@@ -51,15 +51,15 @@ void MSGPIAPI VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
 
 unsigned int MSGPIAPI VPXPluginAPIImpl::PushNotification(const char* msg, const int lengthMs)
 {
-   if (g_pplayer == nullptr)
-      return 0; // Only allowed in game
+   if (g_pplayer == nullptr || g_pplayer->m_liveUI == nullptr)
+      return 0; // Only allowed in game, once the UI exists (not while plugins load or the player shuts down)
    return g_pplayer->m_liveUI->PushNotification(msg, lengthMs);
 }
 
 void MSGPIAPI VPXPluginAPIImpl::UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs)
 {
-   if (g_pplayer == nullptr)
-      return; // Only allowed in game
+   if (g_pplayer == nullptr || g_pplayer->m_liveUI == nullptr)
+      return; // Only allowed in game, once the UI exists (not while plugins load or the player shuts down)
    g_pplayer->m_liveUI->PushNotification(msg, lengthMs, handle);
 }
 

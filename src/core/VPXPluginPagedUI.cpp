@@ -24,6 +24,9 @@ void VPXPluginPagedUI::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
          if (sheet->pluginId == pluginId)
             sheet->retired = true;
       CollectRetiredSheets();
+      // If the plugin is loaded again, it starts with its defaults: the persisted values must be pushed to it again
+      const string pushPrefix = pluginId + '/';
+      std::erase_if(m_pushedSheetItems, [&pushPrefix](const string& key) { return key.starts_with(pushPrefix); });
       return;
    }
 
@@ -354,7 +357,7 @@ void MSGPIAPI VPXPluginPagedUI::RegisterSheet(const uint32_t endpointId, const P
       PLOGE << "Invalid UI sheet registration for '" << sheetDef->id << "' (missing page enumeration callbacks)";
       return;
    }
-   MsgEndpointInfo info;
+   MsgEndpointInfo info {};
    s_instance->m_msgApi.GetEndpointInfo(endpointId, &info);
    if (info.id == nullptr)
       return;
@@ -395,7 +398,7 @@ void MSGPIAPI VPXPluginPagedUI::UnregisterSheet(const uint32_t endpointId, const
    // A plugin declared default page that goes away reveals the implicit settings sheet again
    if (std::string_view { sheetId } == "settings")
    {
-      MsgEndpointInfo info;
+      MsgEndpointInfo info {};
       s_instance->m_msgApi.GetEndpointInfo(endpointId, &info);
       if (info.id != nullptr)
          s_instance->EnsureImplicitSettingsSheet(info.id);
@@ -404,7 +407,7 @@ void MSGPIAPI VPXPluginPagedUI::UnregisterSheet(const uint32_t endpointId, const
 
 void MSGPIAPI VPXPluginPagedUI::RequestSheetRefresh(const uint32_t endpointId, const char* sheetId)
 {
-   if (g_pplayer != nullptr)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr) // No UI while plugins load or the player shuts down
       g_pplayer->m_liveUI->m_inGameUI.RequestRebuildAll();
 }
 

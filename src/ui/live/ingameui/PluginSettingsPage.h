@@ -50,12 +50,15 @@ protected:
    // plugin's other sheets
    void AddPluginEnableItem();
    void AddSheetNavItems();
+   // Switches to the sheet now registered for this page if the displayed one was retired (plugin disabled then
+   // enabled again, or sheet registered again by the plugin)
+   void RebindSheet();
 
    // Sheets are shared_ptr'ed as pages may outlive the API implementation (game teardown)
    std::shared_ptr<VPXPluginPagedUI::UISheet> m_sheet;
    const bool m_pluginRoot;
    const string m_pluginId;
-   const string m_sheetId;
+   string m_sheetId;
    string m_pageId;
 };
 
