@@ -57,6 +57,7 @@ public:
    const vector<HitObject *>& GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
    vector<HitObject *> GetUIHitObjects(IEditable *editable);
 
+   bool IsStarted() const { return m_physicsStarted; }
    uint64_t GetStartTime() const { return m_startTime_usec; }
    uint64_t GetCurrentTime() const { return m_curPhysicsFrameTime; }
 
@@ -123,9 +124,10 @@ private:
    bool m_recordContacts = false; // flag for DoHitTest()
    vector<CollisionEvent> m_contacts;
 
-   uint64_t m_startTime_usec; // Time when the simulation started (creation of this object)
-   uint64_t m_curPhysicsFrameTime; // Time where the last machine simulation (physics, timers, scripts,...) stopped
-   uint64_t m_nextPhysicsFrameTime; // Time at which the next physics update should be
+   bool m_physicsStarted = false; // True once StartPhysics initialized the simulation timestamps
+   uint64_t m_startTime_usec = 0; // Time when the simulation started (creation of this object)
+   uint64_t m_curPhysicsFrameTime = 0; // Time where the last machine simulation (physics, timers, scripts,...) stopped
+   uint64_t m_nextPhysicsFrameTime = 0; // Time at which the next physics update should be
    uint64_t m_lastFlipTime = 0;
 
    unsigned int m_onUpdatePhysicsMsgId;
@@ -156,11 +158,11 @@ private:
    AsyncDynamicQuadTree* m_UIQuadTtree = nullptr;
 
    // Physics stats
-   uint32_t m_phys_iterations;
-   uint32_t m_phys_max_iterations;
-   uint32_t m_phys_max;
-   uint64_t m_phys_total_iterations;
-   uint64_t m_count; // Number of frames included in the total variant of the counters
+   uint32_t m_phys_iterations = 0;
+   uint32_t m_phys_max_iterations = 0;
+   uint32_t m_phys_max = 0;
+   uint64_t m_phys_total_iterations = 0;
+   uint64_t m_count = 0; // Number of frames included in the total variant of the counters
 
 #ifdef DEBUGPHYSICS
 public:

@@ -1989,6 +1989,11 @@ public:
    {
       std::lock_guard lock(m_captureMutex);
 
+      // Physics timestamps are only initialized when the game starts: skip the update until then
+      // (the initial quick render triggers a game logic update before StartPhysics is called)
+      if (!m_player->m_physics->IsStarted())
+         return;
+
       m_player->m_physics->UpdatePhysics(max(m_captureTime, m_player->m_physics->GetCurrentTime()));
       m_player->FireTimers(-2);
 
