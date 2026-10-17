@@ -126,7 +126,13 @@ bool Parse(const std::filesystem::path& path, std::vector<Layout>& layouts, std:
             }
             break;
 
-         case VisualType::Image: break;
+         case VisualType::Picture:
+            if (visual.srcUri.empty())
+            {
+               error = "Picture visual needs Image to be defined in Nixie file " + PluginStrings::PathToUTF8(path);
+               return false;
+            }
+            break;
          }
       }
       parsed.push_back(layout);
@@ -299,14 +305,14 @@ bool Parse(const std::filesystem::path& path, std::vector<Layout>& layouts, std:
             visual->nElements = -1;
             visual->segFamilyHint = VPXSegDisplayHint::Generic;
          }
-         else if (key == "- Image")
+         else if (key == "- Picture")
          {
             CHECK_FIELD(indent == 2);
             expectedIndent = indent + 1;
-            layout.visuals.push_back({ VisualType::Image });
+            layout.visuals.push_back({ VisualType::Picture });
             visual = &layout.visuals.back();
-            // Not yet supported
-            CHECK_FIELD(false);
+            visual->srcUri = string();
+            visual->tint = vec3(1.f, 1.f, 1.f);
          }
          else if (key == "Rect")
          {
@@ -392,7 +398,7 @@ bool Parse(const std::filesystem::path& path, std::vector<Layout>& layouts, std:
          }
          else if (key == "Src")
          {
-            CHECK_FIELD((indent == 3) && (visual != nullptr));
+            CHECK_FIELD((indent == 3) && (visual != nullptr) && (visual->type != VisualType::Picture)); // Display/segment data source (pictures use Image)
             visual->srcUri = value;
          }
          else if (key == "Size")
@@ -439,12 +445,21 @@ bool Parse(const std::filesystem::path& path, std::vector<Layout>& layouts, std:
          }
          else if (key == "Tint")
          {
-            CHECK_FIELD((indent == 4) && (visual != nullptr)); // Glass tint
+            CHECK_FIELD(((indent == 3) || (indent == 4)) && (visual != nullptr));
             const auto tint = parseArray(value);
             CHECK_FIELD(tint.size() == 3);
-            visual->glassTint.x = tint[0];
-            visual->glassTint.y = tint[1];
-            visual->glassTint.z = tint[2];
+            if (indent == 3) // Visual tint (emitter tint for displays, image tint for Image visuals)
+            {
+               visual->tint.x = tint[0];
+               visual->tint.y = tint[1];
+               visual->tint.z = tint[2];
+            }
+            else // Glass tint
+            {
+               visual->glassTint.x = tint[0];
+               visual->glassTint.y = tint[1];
+               visual->glassTint.z = tint[2];
+            }
          }
          else if (key == "Roughness")
          {
@@ -453,8 +468,14 @@ bool Parse(const std::filesystem::path& path, std::vector<Layout>& layouts, std:
          }
          else if (key == "Image")
          {
-            CHECK_FIELD((indent == 4) && (visual != nullptr)); // Glass image path
-            visual->glassPath = value;
+            CHECK_FIELD(((indent == 3) || (indent == 4)) && (visual != nullptr));
+            if (indent == 3) // Picture image file path
+            {
+               CHECK_FIELD(visual->type == VisualType::Picture);
+               visual->srcUri = value;
+            }
+            else // Glass image path
+               visual->glassPath = value;
          }
          else if (key == "Area")
          {

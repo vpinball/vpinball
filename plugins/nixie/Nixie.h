@@ -53,6 +53,7 @@ private:
       }
       // Live data (not serialized)
       VPXTexture glass = nullptr;
+      VPXTexture pictureTex = nullptr; // Borrowed from the shared m_images cache (not owned)
       VPXTexture dmdTex = nullptr;
       // Identity of the frame last uploaded to dmdTex, to avoid a full copy plus a GPU re-upload every frame
       DisplaySrcId uploadedSrc {};
@@ -79,6 +80,7 @@ private:
    PinballPlugin::ResURIResolver m_resURIResolver;
 
    void LoadGlass(Visual& visual);
+   VPXTexture LoadTexture(const std::string& relPath); // Load (and cache) an image file next to the selected layout file
    ankerl::unordered_dense::map<string, VPXTexture> m_images;
 
    VPXPluginAPI* const m_vpxApi;

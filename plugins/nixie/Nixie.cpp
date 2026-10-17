@@ -101,35 +101,36 @@ void Nixie::Parse(const std::filesystem::path& path)
    m_layouts.insert(m_layouts.end(), layouts.begin(), layouts.end());
 }
 
+VPXTexture Nixie::LoadTexture(const std::string& relPath)
+{
+   const auto texImage = m_images.find(relPath);
+   if (texImage != m_images.end())
+      return texImage->second;
+   VPXTexture texture = nullptr;
+   const std::filesystem::path fullPath = m_bestLayout->path.parent_path() / PluginStrings::PathFromUTF8(relPath);
+   std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
+   if (file.is_open())
+   {
+      const std::streamsize size = file.tellg();
+      file.seekg(0, std::ios::beg);
+      std::vector<uint8_t> buffer((size_t)size);
+      file.read(reinterpret_cast<char*>(buffer.data()), size);
+      file.close();
+      texture = m_vpxApi->CreateTexture(buffer.data(), static_cast<int>(size));
+   }
+   else
+   {
+      LOGE("Missing texture file: " + PluginStrings::PathToUTF8(fullPath));
+   }
+   m_images[relPath] = texture;
+   return texture;
+}
+
 void Nixie::LoadGlass(Visual& visual)
 {
    assert((visual.type == VisualType::DMD) || (visual.type == VisualType::Screen) || (visual.type == VisualType::SegDisplay));
    if ((visual.glass == nullptr) && !visual.glassPath.empty())
-   {
-      auto texImage = m_images.find(visual.glassPath);
-      if (texImage != m_images.end())
-         visual.glass = texImage->second;
-      else
-      {
-         const std::filesystem::path fullPath = m_bestLayout->path.remove_filename() / PluginStrings::PathFromUTF8(visual.glassPath);
-         std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
-         if (file.is_open())
-         {
-            std::streamsize size = file.tellg();
-            file.seekg(0, std::ios::beg);
-            std::vector<uint8_t> buffer((size_t)size);
-            file.read(reinterpret_cast<char*>(buffer.data()), size);
-            file.close();
-            visual.glass = m_vpxApi->CreateTexture(buffer.data(), static_cast<int>(size));
-         }
-         else
-         {
-            LOGE("Missing glass file: " + PluginStrings::PathToUTF8(fullPath));
-            visual.glass = nullptr;
-         }
-         m_images[visual.glassPath] = visual.glass;
-      }
-   }
+      visual.glass = LoadTexture(visual.glassPath);
 }
 
 void Nixie::Select(const VPXWindowId window, const float scoreW, const float scoreH)
@@ -187,7 +188,7 @@ void Nixie::Select(const VPXWindowId window, const float scoreW, const float sco
                layout.matchedVisuals++;
             break;
 
-         case VisualType::Image: break;
+         case VisualType::Picture: break;
          }
       }
    }
@@ -363,7 +364,20 @@ bool Nixie::Render(VPXRenderContext2D* ctx)
          break;
       }
 
-      case VisualType::Image: break;
+      case VisualType::Picture:
+      {
+         if (visual.pictureTex == nullptr)
+            visual.pictureTex = LoadTexture(visual.srcUri);
+         if (visual.pictureTex == nullptr)
+            continue;
+         const VPXTextureInfo* texInfo = m_vpxApi->GetTextureInfo(visual.pictureTex);
+         ctx->DrawImage(ctx, visual.pictureTex, //
+            visual.tint.x, visual.tint.y, visual.tint.z, 1.f, // tint color and alpha
+            0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), // whole image
+            0.f, 0.f, 0.f, // no pivot point nor rotation
+            px + visual.x, py + visual.y, visual.w, visual.h); // Render quad
+         break;
+      }
       }
    }
    return true;
