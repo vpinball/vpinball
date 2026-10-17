@@ -32,8 +32,9 @@ using std::vector;
 // VPX main API
 #include "plugins/VPXPlugin.h"
 
-// Shared authored display options (Nixie option set)
-#include "plugins/OverlayDisplayOptions.h"
+// Shared authored DMD overlay support (document model, editing sheet, renderer and the
+// Nixie option set): an identical copy lives in each overlay plugin's DMDOverlay folder
+#include "DMDOverlay/DMDOverlay.h"
 
 namespace B2S
 {
@@ -99,38 +100,12 @@ bool DecodeWav(const vector<uint8_t>& wav, WavData& out);
 // Parses a 'name=factor;name2=factor2' slowdown list (AnimationSlowDowns plugin setting), returns the factor for 'name' or 1
 int B2SAnimationSlowDown(const string& list, const string& name);
 
-struct B2SOverlayDoc;
-
-// A user-authored <DMD> child of the document's <Displays> node: a DMD rendered on top of the
-// artwork of one of the views. The document may contain any number of them; other display kinds
-// (CRT/LCD style displays) may be added as children later. Presence implies enabled.
-struct B2SDMDDisplay final
-{
-   int target = 0; // View the display is rendered on: 0 = backglass, 1 = score view
-   string source; // Controller resource URI (ResURIResolver syntax); empty = default DMD
-   // Bounds in the B2S document space: pixels of the artwork image, origin at its top left,
-   // spanning the whole image including the grill area (clipped away when the grill is hidden)
-   int x = 0, y = 0, w = 0, h = 0;
-   PinballPlugin::OverlayDisplayOptions options; // Render style, dot size, tint and glass options
-   vector<uint8_t> glassImage; // Encoded content of the glass image file (persisted as base64)
-   int detectRequest = 0; // Runtime only (not persisted): requests automatic bounds detection
-   // Runtime only (not persisted): resolved pixel size of glassImage, cached against a hash
-   // of the encoded content (0 when there is no glass image or it fails to decode)
-   size_t glassImgHash = 0;
-   int glassImgW = 0, glassImgH = 0;
-   B2SOverlayDoc* doc = nullptr; // Runtime only (not persisted): back link used by the editing page
-};
-
-// The document being authored through the in game UI: file under edit, its live <Displays>
-// content, and the artwork bounds used to limit the edited display rects (0 when unknown)
-struct B2SOverlayDoc final
-{
-   std::filesystem::path path;
-   vector<B2SDMDDisplay> displays;
-   int backglassW = 0, backglassH = 0;
-   int scoreViewW = 0, scoreViewH = 0;
-   std::function<void()> requestRefresh; // Asks the host to rebuild the editing page (display added/removed)
-   vector<B2SDMDDisplay> editBackup; // Runtime only: displays captured at BeginEdit, restored on cancel and used for dirty state
-   string importPath; // Runtime only (not persisted): Nixie layout file selected by the 'import' file item
-};
+// The authored overlay document is the shared DMDOverlay model: a user-authored <DMD> child
+// of the document's <Displays> node is a display rendered on top of the artwork of one of the
+// views (target 0 = backglass, 1 = score view), in artwork pixels with the origin at its top
+// left, spanning the whole image including the grill area (clipped away when the grill is
+// hidden). The glass image is embedded: glassImage holds the encoded content of the image
+// file, persisted as base64. The plugin binds the model hooks in B2SServer.cpp.
+using B2SDMDDisplay = DMDOverlay::Display;
+using B2SOverlayDoc = DMDOverlay::Doc;
 }

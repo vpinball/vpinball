@@ -14,8 +14,9 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/B2SLegacyPlugin.cpp
    plugins/b2slegacy/Server.h
    plugins/b2slegacy/Server.cpp
-   plugins/b2slegacy/utils/DMDOverlay.h
-   plugins/b2slegacy/utils/DMDOverlay.cpp
+   plugins/b2slegacy/DMDOverlay/DMDOverlay.h
+   plugins/b2slegacy/DMDOverlay/DMDOverlay.cpp
+   plugins/b2slegacy/DMDOverlay/OverlayDisplayOptions.h
    plugins/b2slegacy/utils/Timer.h
    plugins/b2slegacy/utils/Timer.cpp
    plugins/b2slegacy/utils/Matrix.h
@@ -108,7 +109,6 @@ set(B2SLEGACY_PLUGIN_SOURCES
 
    plugins/nixie/NixieLayoutFile.h
    plugins/nixie/NixieLayoutFile.cpp
-   plugins/plugins/OverlayDisplayOptions.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 

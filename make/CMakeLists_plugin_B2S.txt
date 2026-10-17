@@ -17,12 +17,12 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/B2SRenderer.cpp
    plugins/b2s/B2SServer.h
    plugins/b2s/B2SServer.cpp
-   plugins/b2s/DMDOverlay.h
-   plugins/b2s/DMDOverlay.cpp
+   plugins/b2s/DMDOverlay/DMDOverlay.h
+   plugins/b2s/DMDOverlay/DMDOverlay.cpp
+   plugins/b2s/DMDOverlay/OverlayDisplayOptions.h
    
    plugins/nixie/NixieLayoutFile.h
    plugins/nixie/NixieLayoutFile.cpp
-   plugins/plugins/OverlayDisplayOptions.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
    

@@ -13,7 +13,6 @@ set(PUP_PLUGIN_SOURCES
    plugins/nixie/NixieLayoutFile.cpp
    plugins/plugins/B2SPluginEventStream.h
    plugins/plugins/B2SPluginEventStream.cpp
-   plugins/plugins/OverlayDisplayOptions.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 
@@ -24,8 +23,9 @@ set(PUP_PLUGIN_SOURCES
    plugins/pup/PUPPlugin.cpp
    plugins/pup/PUPCustomPos.h
    plugins/pup/PUPCustomPos.cpp
-   plugins/pup/PUPDMDOverlay.h
-   plugins/pup/PUPDMDOverlay.cpp
+   plugins/pup/DMDOverlay/DMDOverlay.h
+   plugins/pup/DMDOverlay/DMDOverlay.cpp
+   plugins/pup/DMDOverlay/OverlayDisplayOptions.h
    plugins/pup/PUPFont.h
    plugins/pup/PUPFont.cpp
    plugins/pup/PUPImage.h

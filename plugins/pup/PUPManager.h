@@ -10,7 +10,7 @@
 #include "plugins/ResURIResolver.h"
 #include "plugins/VPXPlugin.h"
 
-#include "PUPDMDOverlay.h"
+#include "DMDOverlay/DMDOverlay.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4251) // In PupDMD: std::map<uint16_t,PUPDMD::Hash,std::less<uint16_t>,std::allocator<std::pair<const uint16_t,PUPDMD::Hash>>> needs dll-interface
@@ -85,6 +85,15 @@ class PUPScreen;
 class PUPPlaylist;
 class PUPTrigger;
 
+// The authored overlay document is the shared DMDOverlay model: a user-authored record of the
+// pack's 'displays.pup' file is a DMD rendered on top of the content of one of the ancillary
+// windows (target 0 = backglass, 1 = score view, 2 = topper), in window pixels with the origin
+// at the top left. The glass image is referenced by a path relative to the pack root, inside
+// its 'PUPDisplays' folder (glassPath), with a picked file staged in glassPending until commit.
+// The plugin binds the model hooks in PUPManager.cpp.
+using PUPDMDDisplay = DMDOverlay::Display;
+using PUPOverlayDoc = DMDOverlay::Doc;
+
 class PUPManager final
 {
 public:
@@ -150,12 +159,12 @@ private:
    const PagedUIPluginAPI* const m_pagedUIApi;
    const VPXPluginAPI* m_vpxApi = nullptr;
 
-   // Document being authored through the in game UI (see PUPDMDOverlay.h InitEditSheetDef)
+   // Document being authored through the in game UI (see DMDOverlay/DMDOverlay.h InitEditSheetDef)
    PUPOverlayDoc m_overlayDoc;
    bool m_overlaySheetRegistered = false;
    PinballPlugin::ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;
-   vector<std::unique_ptr<PUPDMDOverlay>> m_dmdOverlays; // One per display of the edited document, in enumeration order
+   vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per display of the edited document, in enumeration order
 
    std::unique_ptr<PUPDMD::DMD> m_dmd;
    // Triggers in the loaded pack that only a DMD frame match can fire, and what

@@ -7,7 +7,7 @@
 #include "FormDMD.h"
 #include "../common.h"
 #include "../Server.h"
-#include "../utils/DMDOverlay.h"
+#include "../DMDOverlay/DMDOverlay.h"
 #include "../classes/B2SVersionInfo.h"
 #include "../classes/B2SScreen.h"
 #include "../classes/B2SAnimation.h"

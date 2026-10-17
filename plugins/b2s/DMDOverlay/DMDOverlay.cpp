@@ -1,54 +1,47 @@
 // license:GPLv3+
 
 #include "DMDOverlay.h"
-#include "common.h" // Needed for logging
 
-#include <cstddef> // for size_t, ptrdiff_t
-// Define ssize_t for Windows
-#if defined(_WIN32) && !defined(__SSIZE_T_DEFINED)
-#if defined(_WIN64)
-typedef __int64 ssize_t;
-#else
-typedef int ssize_t;
-#endif
-#define __SSIZE_T_DEFINED
-#endif
-
-#include "base64.h"
-#include "tinyxml2/tinyxml2.h"
-#include "nixie/NixieLayoutFile.h"
+// Logging goes through the Doc::log hook (bound by the plugin): only the level constants and
+// the function macro of the shared logging support are used here
+#include "plugins/LoggingPlugin.h"
 #include "plugins/PluginStrings.h"
 
-#include <cmath>
-#include <deque>
-#include <vector>
-#include <stack>
+#include "nixie/NixieLayoutFile.h"
+
 #include <algorithm>
-#include <string>
-#include <tuple>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <deque>
 #include <format>
-#include <vector>
 #include <fstream>
 #include <iterator>
+#include <stack>
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace std::string_literals;
-using namespace std::string_view_literals;
-
 using std::vector;
 
 
 namespace DMDOverlay
 {
 
-DMDOverlay::DMDOverlay(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex)
+///////////////////////////////////////////////////////////////////////////////
+// Renderer: resolves the display source through the ResURIResolver, uploads new frames to the
+// shared texture, maintains a per-display glass texture (encoded content provided through the
+// Doc::glassBytes hook) and draws both layers in the quad mapped by Doc::mapQuad.
+
+Renderer::Renderer(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex)
    : m_resURIResolver(resURIResolver)
    , m_dmdTex(dmdTex)
    , m_vpxApi(vpxApi)
 {
 }
 
-DMDOverlay::~DMDOverlay()
+Renderer::~Renderer()
 {
    m_stopSearching = true;
    if (m_frameSearch.valid())
@@ -57,57 +50,53 @@ DMDOverlay::~DMDOverlay()
       m_vpxApi->DeleteTexture(m_glassTex);
 }
 
-void DMDOverlay::Render(VPXRenderContext2D* ctx, B2S::B2SDMDDisplay* display, VPXTexture backImage)
+void Renderer::Render(VPXRenderContext2D* ctx, Display& display, VPXTexture artwork)
 {
-   // The display is enabled by its sole presence in the document, the HideDMD script overlay
-   // overrides it: -1 = no override, 0 = force visible, 1 = force hidden
-   if (m_enableOverride == 1)
-      return;
-
-   PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(display->source.empty() ? PinballPlugin::ResURIResolver::DefaultDmdUri : display->source);
+   // The display is enabled by its sole presence in the document
+   PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(display.source.empty() ? PinballPlugin::ResURIResolver::DefaultDmdUri : display.source);
    if (dmd.state.frame == nullptr)
       return;
 
+   Doc* const doc = display.doc;
+
    // Bounds detection request, issued by the 'Detect position' action of the editing page:
    // the detected frame is written back into the document fields (see below)
-   if (display->detectRequest != 0 && !m_frameSearch.valid() && backImage != nullptr)
+   if (display.detectRequest != 0 && !m_frameSearch.valid() && artwork != nullptr)
    {
-      display->detectRequest = 0;
-      const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(backImage);
+      display.detectRequest = 0;
+      const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(artwork);
       if (texInfo != nullptr)
       {
          m_stopSearching = false;
-         const float ar = display->options.sizeW > 0 && display->options.sizeH > 0 ? static_cast<float>(display->options.sizeW) / static_cast<float>(display->options.sizeH)
-                                                                                  : static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
-         m_frameSearch = std::async(std::launch::async, [this, backImage, texInfo, ar]() { return SearchDmdSubFrame(backImage, texInfo, ar); });
+         const float ar = display.options.sizeW > 0 && display.options.sizeH > 0 ? static_cast<float>(display.options.sizeW) / static_cast<float>(display.options.sizeH)
+                                                                                 : static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
+         const LogFn log = doc != nullptr ? doc->log : nullptr;
+         m_frameSearch = std::async(std::launch::async, [this, artwork, texInfo, ar, log]() { return SearchDmdSubFrame(artwork, texInfo, ar, log); });
       }
    }
    if (m_frameSearch.valid() && m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
    {
-      const vec4<int> frame = m_frameSearch.get();
-      if (frame.z != 0 && frame.w != 0)
+      const vec4<int> detected = m_frameSearch.get();
+      if (detected.z != 0 && detected.w != 0)
       {
-         display->x = frame.x;
-         display->y = frame.y;
-         display->w = frame.z;
-         display->h = frame.w;
+         display.x = detected.x;
+         display.y = detected.y;
+         display.w = detected.z;
+         display.h = detected.w;
       }
    }
 
-   // Bounds are authored in the B2S document space (origin at the top left of the backglass
-   // image, y downward, spanning the full image including the grill area). Flip to the bottom
-   // up render space of the view: whatever falls in the grill is clipped away when the grill
-   // is hidden (srcHeight excludes it) and drawn when it is shown
-   m_frame.x = display->x;
-   m_frame.y = static_cast<int>(ctx->srcHeight) - display->y - display->h;
-   m_frame.z = display->w;
-   m_frame.w = display->h;
-   if (m_frame.z == 0 || m_frame.w == 0)
+   // Map the authored bounds (document space, origin at the top left) to the render quad
+   // (bottom-up render space of the view) through the plugin hook; the default maps the
+   // bounds against the whole view, flipping the origin
+   const vec4<int> frame
+      = doc != nullptr && doc->mapQuad != nullptr ? doc->mapQuad(ctx, display) : vec4<int>(display.x, static_cast<int>(ctx->srcHeight) - display.y - display.h, display.w, display.h);
+   if (frame.z == 0 || frame.w == 0)
       return;
-   if (m_frame.y + m_frame.w <= 0 || m_frame.y >= static_cast<int>(ctx->srcHeight))
-      return; // Fully inside the grill (hidden) or off the artwork
+   if (frame.y + frame.w <= 0 || frame.y >= static_cast<int>(ctx->srcHeight))
+      return; // Fully clipped away or off the view
 
-   // The texture is owned by the form, hence the null test: it may still have to be created here
+   // The texture is owned by the plugin, hence the null test: it may still have to be created here
    if (!m_hasUploadedFrame || (m_dmdTex == nullptr) || (dmd.state.frameId != m_uploadedFrameId) || (*dmd.source != m_uploadedSrc))
    {
       switch (dmd.source->frameFormat)
@@ -122,19 +111,17 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx, B2S::B2SDMDDisplay* display, VP
       m_hasUploadedFrame = true;
    }
 
-   // The glass texture is owned by the overlay: (re)create it when the display's
-   // embedded image content changes (identified by a hash of its encoded bytes)
-   if (!display->glassImage.empty())
+   // The glass texture is owned by the overlay: (re)create it when the content provided by the
+   // Doc::glassBytes hook changes (identified by the key the hook maintains on the display)
+   const vector<uint8_t>* const glass = doc != nullptr && doc->glassBytes != nullptr ? doc->glassBytes(display) : nullptr;
+   if (glass != nullptr && !glass->empty() && display.glassKey != 0)
    {
-      size_t hash = 14695981039346656037ull;
-      for (const uint8_t byte : display->glassImage)
-         hash = (hash ^ byte) * 1099511628211ull;
-      if (hash != m_glassHash)
+      if (display.glassKey != m_glassHash || m_glassTex == nullptr)
       {
          if (m_glassTex != nullptr)
             m_vpxApi->DeleteTexture(m_glassTex);
-         m_glassTex = m_vpxApi->CreateTexture(display->glassImage.data(), static_cast<int>(display->glassImage.size()));
-         m_glassHash = m_glassTex != nullptr ? hash : 0;
+         m_glassTex = m_vpxApi->CreateTexture(const_cast<uint8_t*>(glass->data()), static_cast<int>(glass->size()));
+         m_glassHash = m_glassTex != nullptr ? display.glassKey : 0;
       }
    }
    else if (m_glassTex != nullptr)
@@ -144,7 +131,7 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx, B2S::B2SDMDDisplay* display, VP
       m_glassHash = 0;
    }
 
-   const PinballPlugin::OverlayDisplayOptions& o = display->options;
+   const PinballPlugin::OverlayDisplayOptions& o = display.options;
    vec4<float> glassArea;
    if (m_glassTex == nullptr || o.glassAreaW == 0 || o.glassAreaH == 0)
       glassArea = vec4<float>(0.f, 0.f, 1.f, 1.f);
@@ -179,10 +166,10 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx, B2S::B2SDMDDisplay* display, VP
       m_dmdTex, dmdTint.x, dmdTint.y, dmdTint.z, 1.f, 1.f, // DMD emitter, emitter tint, emitter brightness, emitter alpha
       glassPad.x, glassPad.y, glassPad.z, glassPad.w, // Emitter padding (from glass border)
       // Render quad
-      static_cast<float>(m_frame.x), static_cast<float>(m_frame.y), static_cast<float>(m_frame.z), static_cast<float>(m_frame.w));
+      static_cast<float>(frame.x), static_cast<float>(frame.y), static_cast<float>(frame.z), static_cast<float>(frame.w));
 }
 
-DMDOverlay::vec4<int> DMDOverlay::SearchDmdSubFrame(VPXTexture image, const VPXTextureInfo* const texInfo, float dmdAspectRatio) const
+vec4<int> Renderer::SearchDmdSubFrame(VPXTexture image, const VPXTextureInfo* const texInfo, float dmdAspectRatio, const LogFn& log) const
 {
    unsigned int pos_step;
    switch (texInfo->format)
@@ -206,7 +193,8 @@ DMDOverlay::vec4<int> DMDOverlay::SearchDmdSubFrame(VPXTexture image, const VPXT
    {
       const float lumLimit = (lumMin + lumMax) * 0.5f;
 
-      LOGD(std::format("DMD area search thr: {} area is {},{} {}x{}", lumLimit, searchFrame.x, searchFrame.y, searchFrame.z, searchFrame.w));
+      if (log != nullptr)
+         log(LPI_FUNC, __LINE__, LPI_LVL_DEBUG, std::format("DMD area search thr: {} area is {},{} {}x{}", lumLimit, searchFrame.x, searchFrame.y, searchFrame.z, searchFrame.w));
 
       // Find the largest dark rectangle in the background image
       vec4<int> subFrame;
@@ -302,8 +290,10 @@ DMDOverlay::vec4<int> DMDOverlay::SearchDmdSubFrame(VPXTexture image, const VPXT
          }
       }
 
-      LOGD(std::format("DMD area search {} -> {}, thr: {} lead to {},{} {}x{} Heur:{}, PrevHeur: {}", lumMin, lumMax, lumLimit, subFrame.x, subFrame.y, subFrame.z, subFrame.w,
-         heuristic(subFrame), heuristic(bestFrame)));
+      if (log != nullptr)
+         log(LPI_FUNC, __LINE__, LPI_LVL_DEBUG,
+            std::format("DMD area search {} -> {}, thr: {} lead to {},{} {}x{} Heur:{}, PrevHeur: {}", lumMin, lumMax, lumLimit, subFrame.x, subFrame.y, subFrame.z, subFrame.w,
+               heuristic(subFrame), heuristic(bestFrame)));
 
       // There are no heuristics between luminance levels, this can lead to unwanted behavior (for example drifting inside a box)
       if (subFrame.w > 0) // && (bestFrame.w == 0 || (heuristic(subFrame) > 0.6f * heuristic(bestFrame))))
@@ -323,16 +313,16 @@ DMDOverlay::vec4<int> DMDOverlay::SearchDmdSubFrame(VPXTexture image, const VPXT
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Document editing page (PagedUIPlugin): the root page enumerates the <DMD> children of
-// the document's <Displays> node, one section per display with an 'options' subpage
-// editing the render style and the glass layer, plus 'add' and Nixie 'import' actions.
-// Property item contexts directly point at the edited field of the display entries of
-// doc->displays. CommitEdit patches the document file.
+// Document editing page (PagedUIPlugin): the root page enumerates the displays of the
+// document, one section per display with an 'options' subpage editing the render style and
+// the glass layer, plus 'add' and Nixie 'import' actions. Property item contexts directly
+// point at the edited field of the display entries of doc->displays. CommitEdit delegates
+// the document rewrite to the plugin-provided Doc::commitEdit hook.
 
 namespace
 {
 
-   bool ReadFileBytes(const std::filesystem::path& path, vector<uint8_t>& out)
+   bool ReadFileBytesImpl(const std::filesystem::path& path, vector<uint8_t>& out)
    {
       std::ifstream file(path, std::ios::binary | std::ios::ate);
       if (!file.is_open())
@@ -344,64 +334,65 @@ namespace
       return file.good() || file.gcount() == size;
    }
 
-   // Lazily resolves the pixel size of the embedded glass image, cached against a hash of
-   // its encoded content: the image area fields need the image bounds at enumeration time
-   void GlassImageSize(B2S::B2SDMDDisplay& display)
+   // Lazily resolves the pixel size of the glass image, cached against the content key
+   // maintained by the Doc::glassBytes hook: the image area fields need the image bounds
+   // at enumeration time
+   void GlassImageSize(Display& display)
    {
-      size_t hash = 14695981039346656037ull;
-      for (const uint8_t byte : display.glassImage)
-         hash = (hash ^ byte) * 1099511628211ull;
-      if (hash == display.glassImgHash)
+      Doc* const doc = display.doc;
+      const vector<uint8_t>* const glass = doc != nullptr && doc->glassBytes != nullptr ? doc->glassBytes(display) : nullptr;
+      const size_t key = glass != nullptr && !glass->empty() ? display.glassKey : 0;
+      if (key == display.glassSizeKey)
          return;
-      display.glassImgHash = hash;
+      display.glassSizeKey = key;
       display.glassImgW = display.glassImgH = 0;
-      if (!display.glassImage.empty())
-         if (VPXTexture texture = B2S::CreateTexture(display.glassImage.data(), static_cast<int>(display.glassImage.size())))
+      if (key != 0 && doc != nullptr && doc->vpxApi != nullptr)
+         if (VPXTexture texture = doc->vpxApi->CreateTexture(const_cast<uint8_t*>(glass->data()), static_cast<int>(glass->size())))
          {
-            if (const VPXTextureInfo* const info = B2S::GetTextureInfo(texture))
+            if (const VPXTextureInfo* const info = doc->vpxApi->GetTextureInfo(texture))
             {
                display.glassImgW = static_cast<int>(info->width);
                display.glassImgH = static_cast<int>(info->height);
             }
-            B2S::DeleteTexture(texture);
+            doc->vpxApi->DeleteTexture(texture);
          }
    }
 
    int MSGPIAPI OverlayFieldGet(void* context) { return *static_cast<int*>(context); }
    void MSGPIAPI OverlayFieldSet(void* context, int value) { *static_cast<int*>(context) = value; }
-   const char* MSGPIAPI OverlaySourceGet(void* context) { return static_cast<B2S::B2SDMDDisplay*>(context)->source.c_str(); }
-   void MSGPIAPI OverlaySourceSet(void* context, const char* value) { static_cast<B2S::B2SDMDDisplay*>(context)->source = value != nullptr ? value : ""; }
-   // The embedded image has no file path to display: Get reports the empty string
-   const char* MSGPIAPI OverlayGlassGet(void*) { return ""; }
+   const char* MSGPIAPI OverlaySourceGet(void* context) { return static_cast<Display*>(context)->source.c_str(); }
+   void MSGPIAPI OverlaySourceSet(void* context, const char* value) { static_cast<Display*>(context)->source = value != nullptr ? value : ""; }
+   // The picker reports the staged pick (empty when the glass storage has no file
+   // representation, e.g. an embedded image)
+   const char* MSGPIAPI OverlayGlassGet(void* context) { return static_cast<Display*>(context)->glassPending.c_str(); }
    void MSGPIAPI OverlayGlassSet(void* context, const char* value)
    {
-      // Get always reports an empty path (the image is embedded), so empty values are
-      // also emitted when a pick is reverted: only an actual pick updates the image
+      auto* const display = static_cast<Display*>(context);
+      Doc* const doc = display->doc;
       if (value == nullptr || *value == '\0')
-         return;
-      auto* const display = static_cast<B2S::B2SDMDDisplay*>(context);
-      vector<uint8_t> image;
-      if (!ReadFileBytes(PluginStrings::PathFromNative(value), image))
       {
-         LOGE("Failed to read glass image file: "s + value);
-         return;
+         // Reverting to the snapshot value also lands here: drop the staged pick if any
+         // (the 'Remove glass image' action drops the glass image entirely)
+         display->glassPending.clear();
       }
-      display->glassImage = std::move(image);
-      if (display->doc != nullptr && display->doc->requestRefresh)
-         display->doc->requestRefresh();
+      else if (doc == nullptr || doc->setGlass == nullptr || !doc->setGlass(*display, PluginStrings::PathFromNative(value)))
+         return;
+      if (doc != nullptr && doc->requestRefresh)
+         doc->requestRefresh();
    }
    void MSGPIAPI OverlayGlassRemoveRun(void* context)
    {
-      auto* const display = static_cast<B2S::B2SDMDDisplay*>(context);
-      display->glassImage.clear();
+      auto* const display = static_cast<Display*>(context);
+      if (display->doc != nullptr && display->doc->clearGlass != nullptr)
+         display->doc->clearGlass(*display);
       if (display->doc != nullptr && display->doc->requestRefresh)
          display->doc->requestRefresh();
    }
-   const char* MSGPIAPI OverlayImportGet(void* context) { return static_cast<B2S::B2SOverlayDoc*>(context)->importPath.c_str(); }
-   void MSGPIAPI OverlayImportSet(void* context, const char* value) { static_cast<B2S::B2SOverlayDoc*>(context)->importPath = value != nullptr ? value : ""; }
+   const char* MSGPIAPI OverlayImportGet(void* context) { return static_cast<Doc*>(context)->importPath.c_str(); }
+   void MSGPIAPI OverlayImportSet(void* context, const char* value) { static_cast<Doc*>(context)->importPath = value != nullptr ? value : ""; }
    void MSGPIAPI OverlayImportRun(void* context)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
+      auto* const doc = static_cast<Doc*>(context);
       if (doc->importPath.empty())
          return;
       const std::filesystem::path nixPath = PluginStrings::PathFromNative(doc->importPath.c_str());
@@ -409,23 +400,25 @@ namespace
       string error;
       if (!PinballPlugin::NixieFile::Parse(nixPath, layouts, error))
       {
-         LOGE(error);
+         if (doc->log != nullptr)
+            doc->log(LPI_FUNC, __LINE__, LPI_LVL_ERROR, error);
          return;
       }
       for (const PinballPlugin::NixieFile::Layout& layout : layouts)
       {
-         const int target = layout.window == VPXWindowId::VPXWINDOW_ScoreView ? 1 : layout.window == VPXWindowId::VPXWINDOW_Backglass ? 0 : -1;
-         if (target < 0)
+         const int target = layout.window == VPXWindowId::VPXWINDOW_ScoreView ? 1
+            : layout.window == VPXWindowId::VPXWINDOW_Topper                  ? 2
+            : layout.window == VPXWindowId::VPXWINDOW_Backglass               ? 0
+                                                                              : -1;
+         if (target < 0 || target >= doc->targetCount)
             continue;
-         const int boundW = target == 1 ? doc->scoreViewW : doc->backglassW;
-         const int boundH = target == 1 ? doc->scoreViewH : doc->backglassH;
-         const float dstW = boundW > 0 ? static_cast<float>(boundW) : layout.width;
-         const float dstH = boundH > 0 ? static_cast<float>(boundH) : layout.height;
+         const float dstW = doc->viewW[target] > 0 ? static_cast<float>(doc->viewW[target]) : layout.width;
+         const float dstH = doc->viewH[target] > 0 ? static_cast<float>(doc->viewH[target]) : layout.height;
          for (const PinballPlugin::NixieFile::Visual& visual : layout.visuals)
          {
             if (visual.type != PinballPlugin::NixieFile::DMD && visual.type != PinballPlugin::NixieFile::Screen)
                continue;
-            B2S::B2SDMDDisplay& display = doc->displays.emplace_back();
+            Display& display = doc->displays.emplace_back();
             display.doc = doc;
             display.target = target;
             display.source = visual.srcUri == "ctrl://default/display" ? "" : visual.srcUri;
@@ -434,30 +427,28 @@ namespace
             display.w = static_cast<int>(std::lround(visual.w * dstW / layout.width));
             display.h = static_cast<int>(std::lround(visual.h * dstH / layout.height));
             PinballPlugin::ApplyNixieVisualOptions(display.options, visual);
-            if (!visual.glassPath.empty())
-            {
-               const std::filesystem::path glassPath = nixPath.parent_path() / PluginStrings::PathFromUTF8(visual.glassPath);
-               if (!ReadFileBytes(glassPath, display.glassImage))
-                  LOGE("Failed to read glass image file: " + PluginStrings::PathToUTF8(glassPath));
-            }
+            if (!visual.glassPath.empty() && doc->setGlass != nullptr)
+               doc->setGlass(display, nixPath.parent_path() / PluginStrings::PathFromUTF8(visual.glassPath));
          }
       }
       if (doc->requestRefresh)
          doc->requestRefresh();
    }
-   void MSGPIAPI OverlayDetectRun(void* context) { static_cast<B2S::B2SDMDDisplay*>(context)->detectRequest = 1; }
+   void MSGPIAPI OverlayDetectRun(void* context) { static_cast<Display*>(context)->detectRequest = 1; }
    void MSGPIAPI OverlayRemoveRun(void* context)
    {
-      auto* const display = static_cast<B2S::B2SDMDDisplay*>(context);
-      B2S::B2SOverlayDoc* const doc = display->doc;
-      std::erase_if(doc->displays, [display](const B2S::B2SDMDDisplay& d) { return &d == display; });
+      auto* const display = static_cast<Display*>(context);
+      Doc* const doc = display->doc;
+      if (doc == nullptr)
+         return;
+      std::erase_if(doc->displays, [display](const Display& d) { return &d == display; });
       if (doc->requestRefresh)
          doc->requestRefresh();
    }
    void MSGPIAPI OverlayAddRun(void* context)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
-      B2S::B2SDMDDisplay& display = doc->displays.emplace_back();
+      auto* const doc = static_cast<Doc*>(context);
+      Display& display = doc->displays.emplace_back();
       display.doc = doc;
       display.options.glassRoughness = 0.1f;
       if (doc->requestRefresh)
@@ -468,39 +459,40 @@ namespace
    // itself is captured here to detect (and discard) structural changes such as added/removed displays
    void MSGPIAPI OverlayBeginEdit(void* context)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
+      auto* const doc = static_cast<Doc*>(context);
       doc->editBackup = doc->displays;
    }
 
-   // Persisted fields only: detectRequest and the doc back link are runtime state
-   static bool SameDisplay(const B2S::B2SDMDDisplay& a, const B2S::B2SDMDDisplay& b)
+   // Persisted fields only: detectRequest, the glass content cache and the doc back link are runtime state
+   static bool SameDisplay(const Display& a, const Display& b)
    {
       return a.target == b.target && a.source == b.source && a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h //
-         && a.glassImage == b.glassImage && PinballPlugin::SameOverlayDisplayOptions(a.options, b.options);
+         && a.glassImage == b.glassImage && a.glassPath == b.glassPath && a.glassPending == b.glassPending //
+         && PinballPlugin::SameOverlayDisplayOptions(a.options, b.options);
    }
 
    int MSGPIAPI OverlayIsDirty(void* context)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
+      auto* const doc = static_cast<Doc*>(context);
       return doc->displays.size() != doc->editBackup.size() || !std::equal(doc->displays.begin(), doc->displays.end(), doc->editBackup.begin(), SameDisplay);
    }
 
    void MSGPIAPI OverlayEndEdit(void* context, int committed)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
+      auto* const doc = static_cast<Doc*>(context);
       // Discard uncommitted changes: item values are reverted through their Set callbacks, this covers
       // the structural changes (added/removed displays) including edits made after a save in the same
       // session (the backup is re-based on each successful commit)
       if (!committed || OverlayIsDirty(context))
       {
          doc->displays = doc->editBackup;
-         for (B2S::B2SDMDDisplay& display : doc->displays)
+         for (Display& display : doc->displays)
             display.doc = doc;
       }
       doc->editBackup.clear();
    }
 
-   unsigned int MSGPIAPI OverlayPageCount(void* context) { return 1 + static_cast<unsigned int>(static_cast<B2S::B2SOverlayDoc*>(context)->displays.size()); }
+   unsigned int MSGPIAPI OverlayPageCount(void* context) { return 1 + static_cast<unsigned int>(static_cast<Doc*>(context)->displays.size()); }
    void MSGPIAPI OverlayPageInfo(void*, unsigned int pageIndex, PagedUIPageInfo* info)
    {
       // Generated ids are interned for the duration of the enumeration call (see GetItems)
@@ -512,11 +504,13 @@ namespace
       info->info = nullptr;
    }
 
-   // Root page: 'add' action, 10 items per display, then the 3 'import' items
-   constexpr unsigned int kRootDisplayItems = 10;
+   // Root page: 'add' action, the per-display items ('Detect position' only when the plugin
+   // detects bounds on an artwork), then the 3 'import' items
+   unsigned int RootDisplayItemCount(const Doc* doc) { return doc->detectable ? 10 : 9; }
+
    unsigned int MSGPIAPI OverlayItemCount(void* context, const char* pageId)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
+      auto* const doc = static_cast<Doc*>(context);
       // Display subpage: shared display option items (incl. the glass section header), shared
       // glass option items (image area fields only when a glass image is defined), then the
       // image file picker or the remove action
@@ -525,38 +519,17 @@ namespace
          const unsigned int i = static_cast<unsigned int>(atoi(pageId + 3));
          if (i >= doc->displays.size())
             return 0;
-         B2S::B2SDMDDisplay& display = doc->displays[i];
+         Display& display = doc->displays[i];
          GlassImageSize(display);
-         return PinballPlugin::OverlayUI::OverlayDisplayOptionItemCount + PinballPlugin::OverlayUI::OverlayGlassOptionItemCount(display.glassImage.empty() ? 0 : 1) + 1;
+         const bool hasGlass = doc->hasGlass != nullptr && doc->hasGlass(display);
+         return PinballPlugin::OverlayUI::OverlayDisplayOptionItemCount + PinballPlugin::OverlayUI::OverlayGlassOptionItemCount(hasGlass ? 1 : 0) + 1;
       }
-      return static_cast<unsigned int>(doc->displays.size()) * kRootDisplayItems + 4;
+      return static_cast<unsigned int>(doc->displays.size()) * RootDisplayItemCount(doc) + 4;
    }
 
-   void FillOverlayItem(PagedUIItemDef& item, const char* id, const char* label, const char* tooltip)
-   {
-      item = PagedUIItemDef {};
-      item.id = id;
-      item.label = label;
-      item.tooltip = tooltip;
-      item.storage = PAGEDUI_STORAGE_PLUGIN;
-   }
-
-   void FillOverlayInt(PagedUIItemDef& item, const char* id, const char* label, const char* tooltip, int* field, int maxVal)
-   {
-      FillOverlayItem(item, id, label, tooltip);
-      item.type = PAGEDUI_ITEM_INT;
-      item.context = field;
-      item.intProp.minVal = 0;
-      item.intProp.maxVal = maxVal;
-      item.intProp.defVal = 0;
-      item.intProp.format = nullptr;
-      item.intProp.Get = &OverlayFieldGet;
-      item.intProp.Set = &OverlayFieldSet;
-   }
-
-   // Options subpage of one display: render options, then the glass section (shared
-   // glass option items, then the image file picker embedded in the document)
-   void FillDisplayPageItems(PagedUIItemDef* items, B2S::B2SDMDDisplay& display, unsigned int i, const std::function<const char*(string)>& str)
+   // Options subpage of one display: render options, then the glass section (shared glass
+   // option items, then the image file picker or the remove action)
+   void FillDisplayPageItems(PagedUIItemDef* items, Display& display, unsigned int i, const std::function<const char*(string)>& str)
    {
       const string prefix = std::format("dmd{}.", i);
       PagedUIItemDef* it = items;
@@ -565,7 +538,8 @@ namespace
       // When a glass is defined the texture section only shows the image area fields (bounded by
       // the decoded image size, with a fallback range when it cannot be resolved) and the remove
       // action; the file picker replaces them when there is no glass image
-      const bool hasGlass = !display.glassImage.empty();
+      Doc* const doc = display.doc;
+      const bool hasGlass = doc != nullptr && doc->hasGlass != nullptr && doc->hasGlass(display);
       it += PinballPlugin::OverlayUI::FillDisplayGlassItems(it, str, prefix.c_str(), &display.options,
          hasGlass && display.glassImgW > 0 ? display.glassImgW
             : hasGlass                     ? 0xFFFF
@@ -575,14 +549,14 @@ namespace
                                            : 0);
       if (hasGlass)
       {
-         FillOverlayItem(it[0], str(prefix + "glassRemove"), "Remove glass image", "Remove the embedded glass image from the display");
+         PinballPlugin::OverlayUI::FillItem(it[0], str(prefix + "glassRemove"), "Remove glass image", "Remove the glass image from the display");
          it[0].type = PAGEDUI_ITEM_ACTION;
          it[0].context = &display;
          it[0].action.Run = &OverlayGlassRemoveRun;
       }
       else
       {
-         FillOverlayItem(it[0], str(prefix + "glassFile"), "Glass image", "Pick an image file to embed in the document as the glass covering the display");
+         PinballPlugin::OverlayUI::FillItem(it[0], str(prefix + "glassFile"), "Glass image", "Pick an image file as the glass covering the display");
          it[0].type = PAGEDUI_ITEM_FILE;
          it[0].context = &display;
          it[0].fileProp.defVal = "";
@@ -594,7 +568,7 @@ namespace
 
    void MSGPIAPI OverlayGetItems(void* context, const char* pageId, PagedUIItemDef* items)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
+      auto* const doc = static_cast<Doc*>(context);
       // Generated ids/labels are kept in static storage: they are consumed by the host right
       // after this call and the callbacks only run on the API thread. A deque keeps the
       // pointers stable: item ids are the c_str() of these strings, read after the loop
@@ -608,163 +582,85 @@ namespace
             FillDisplayPageItems(items, doc->displays[i], i, str);
          return;
       }
-      static const char* targetValues[] = { "Backglass", "Score view" };
-      FillOverlayItem(items[0], "dmdAdd", "Add DMD display", "Add a DMD overlay to the backglass file");
+      const unsigned int displayItems = RootDisplayItemCount(doc);
+      PinballPlugin::OverlayUI::FillItem(items[0], "dmdAdd", "Add DMD display", "Add a DMD overlay to the document");
       items[0].type = PAGEDUI_ITEM_ACTION;
       items[0].context = doc;
       items[0].action.Run = &OverlayAddRun;
       for (unsigned int i = 0; i < doc->displays.size(); i++)
       {
-         B2S::B2SDMDDisplay& display = doc->displays[i];
-         const int maxW = display.target == 1 ? (doc->scoreViewW > 0 ? doc->scoreViewW : 0xFFFF) : (doc->backglassW > 0 ? doc->backglassW : 0xFFFF);
-         const int maxH = display.target == 1 ? (doc->scoreViewH > 0 ? doc->scoreViewH : 0xFFFF) : (doc->backglassH > 0 ? doc->backglassH : 0xFFFF);
-         PagedUIItemDef* const it = items + 1 + i * kRootDisplayItems;
-         FillOverlayItem(it[0], nullptr, str(std::format("DMD display #{}", i + 1)), nullptr);
-         it[0].type = PAGEDUI_ITEM_HEADER;
-         FillOverlayItem(it[1], str(std::format("dmd{}.target", i)), "Show on", "View the display is rendered on");
-         it[1].type = PAGEDUI_ITEM_ENUM;
-         it[1].context = &display.target;
-         it[1].enumProp = { 0, 2, targetValues, 0, &OverlayFieldGet, &OverlayFieldSet };
-         FillOverlayItem(it[2], str(std::format("dmd{}.source", i)), "Source", "Controller resource URI of the DMD to render (ctrl://..., empty = default DMD)");
-         it[2].type = PAGEDUI_ITEM_STRING;
-         it[2].context = &display;
-         it[2].stringProp.defVal = "";
-         it[2].stringProp.Get = &OverlaySourceGet;
-         it[2].stringProp.Set = &OverlaySourceSet;
-         FillOverlayItem(it[3], str(std::format("dmd{}.detect", i)), "Detect position", "Automatically detect the DMD bounds on the artwork image");
-         it[3].type = PAGEDUI_ITEM_ACTION;
-         it[3].context = &display;
-         it[3].action.Run = &OverlayDetectRun;
-         FillOverlayInt(it[4], str(std::format("dmd{}.x", i)), "X position", "Overlay bounds in artwork pixels, from the top left of the image", &display.x, maxW);
-         FillOverlayInt(it[5], str(std::format("dmd{}.y", i)), "Y position", "Overlay bounds in artwork pixels, from the top left of the image (grill included)", &display.y, maxH);
-         FillOverlayInt(it[6], str(std::format("dmd{}.w", i)), "Width", "Overlay bounds in artwork pixels", &display.w, maxW);
-         FillOverlayInt(it[7], str(std::format("dmd{}.h", i)), "Height", "Overlay bounds in artwork pixels", &display.h, maxH);
-         FillOverlayItem(it[8], str(std::format("dmd{}.options", i)), "Options", "Render style, tint and glass options of the display");
-         it[8].type = PAGEDUI_ITEM_SUBPAGE;
-         it[8].subpage.pageId = str(std::format("dmd{}", i));
-         FillOverlayItem(it[9], str(std::format("dmd{}.remove", i)), "Remove display", "Remove this display from the backglass file");
-         it[9].type = PAGEDUI_ITEM_ACTION;
-         it[9].context = &display;
-         it[9].action.Run = &OverlayRemoveRun;
+         Display& display = doc->displays[i];
+         const int target = std::clamp(display.target, 0, doc->targetCount - 1);
+         const int maxW = doc->viewW[target] > 0 ? doc->viewW[target] : 0xFFFF;
+         const int maxH = doc->viewH[target] > 0 ? doc->viewH[target] : 0xFFFF;
+         PagedUIItemDef* const it = items + 1 + i * displayItems;
+         unsigned int n = 0;
+         PinballPlugin::OverlayUI::FillItem(it[n], nullptr, str(std::format("DMD display #{}", i + 1)), nullptr);
+         it[n++].type = PAGEDUI_ITEM_HEADER;
+         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.target", i)), "Show on", "View the display is rendered on");
+         it[n].type = PAGEDUI_ITEM_ENUM;
+         it[n].context = &display.target;
+         it[n++].enumProp = { 0, doc->targetCount, doc->targetNames, 0, &OverlayFieldGet, &OverlayFieldSet };
+         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.source", i)), "Source", "Controller resource URI of the DMD to render (ctrl://..., empty = default DMD)");
+         it[n].type = PAGEDUI_ITEM_STRING;
+         it[n].context = &display;
+         it[n].stringProp.defVal = "";
+         it[n].stringProp.Get = &OverlaySourceGet;
+         it[n++].stringProp.Set = &OverlaySourceSet;
+         if (doc->detectable)
+         {
+            PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.detect", i)), "Detect position", "Automatically detect the DMD bounds on the artwork image");
+            it[n].type = PAGEDUI_ITEM_ACTION;
+            it[n].context = &display;
+            it[n++].action.Run = &OverlayDetectRun;
+         }
+         PinballPlugin::OverlayUI::FillIntItem(it[n++], str(std::format("dmd{}.x", i)), "X position", "Overlay bounds in document space, from the top left", &display.x, maxW);
+         PinballPlugin::OverlayUI::FillIntItem(it[n++], str(std::format("dmd{}.y", i)), "Y position", "Overlay bounds in document space, from the top left", &display.y, maxH);
+         PinballPlugin::OverlayUI::FillIntItem(it[n++], str(std::format("dmd{}.w", i)), "Width", "Overlay bounds in document space", &display.w, maxW);
+         PinballPlugin::OverlayUI::FillIntItem(it[n++], str(std::format("dmd{}.h", i)), "Height", "Overlay bounds in document space", &display.h, maxH);
+         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.options", i)), "Options", "Render style, tint and glass options of the display");
+         it[n].type = PAGEDUI_ITEM_SUBPAGE;
+         it[n++].subpage.pageId = str(std::format("dmd{}", i));
+         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.remove", i)), "Remove display", "Remove this display from the document");
+         it[n].type = PAGEDUI_ITEM_ACTION;
+         it[n].context = &display;
+         it[n++].action.Run = &OverlayRemoveRun;
       }
-      PagedUIItemDef* const tail = items + 1 + doc->displays.size() * kRootDisplayItems;
-      FillOverlayItem(tail[0], nullptr, str("Import from a Nixie layout file"s), nullptr);
+      PagedUIItemDef* const tail = items + 1 + doc->displays.size() * displayItems;
+      PinballPlugin::OverlayUI::FillItem(tail[0], nullptr, str("Import from a Nixie layout file"s), nullptr);
       tail[0].type = PAGEDUI_ITEM_HEADER;
-      FillOverlayItem(tail[1], "importNix", "Nixie file", "Nixie layout file (.nix) to import displays from");
+      PinballPlugin::OverlayUI::FillItem(tail[1], "importNix", "Nixie file", "Nixie layout file (.nix) to import displays from");
       tail[1].type = PAGEDUI_ITEM_FILE;
       tail[1].context = doc;
       tail[1].fileProp.defVal = "";
       tail[1].fileProp.fileFilter = "nix";
       tail[1].fileProp.Get = &OverlayImportGet;
       tail[1].fileProp.Set = &OverlayImportSet;
-      FillOverlayItem(tail[2], "importRun", "Import displays", "Append the DMD and screen visuals of the Nixie file to the document displays");
+      PinballPlugin::OverlayUI::FillItem(tail[2], "importRun", "Import displays", "Append the DMD and screen visuals of the Nixie file to the document displays");
       tail[2].type = PAGEDUI_ITEM_ACTION;
       tail[2].context = doc;
       tail[2].action.Run = &OverlayImportRun;
    }
 
-   // Rewrites only the <DMD> children of the document's <Displays> element, leaving all other
-   // content (including the embedded base64 images) untouched
+   // Persists the document through the plugin hook; the saved state becomes the new dirty baseline
    int MSGPIAPI OverlayCommitEdit(void* context)
    {
-      auto* const doc = static_cast<B2S::B2SOverlayDoc*>(context);
-      if (doc->path.empty())
+      auto* const doc = static_cast<Doc*>(context);
+      if (doc->commitEdit == nullptr || doc->commitEdit(*doc) != 0)
          return 1;
-      std::ifstream in(doc->path, std::ios::binary);
-      if (!in)
-      {
-         LOGE("Failed to open B2S file for writing: " + PluginStrings::PathToUTF8(doc->path));
-         return 1;
-      }
-      const std::string buffer((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-      in.close();
-      tinyxml2::XMLDocument xmlDoc;
-      if (xmlDoc.Parse(buffer.c_str(), buffer.size()) != tinyxml2::XML_SUCCESS)
-      {
-         LOGE("Failed to parse B2S file: " + PluginStrings::PathToUTF8(doc->path));
-         return 1;
-      }
-      tinyxml2::XMLElement* root = xmlDoc.FirstChildElement("DirectB2SData");
-      if (root == nullptr)
-         return 1;
-      auto* displays = root->FirstChildElement("Displays");
-      if (displays == nullptr)
-         displays = static_cast<tinyxml2::XMLElement*>(root->InsertEndChild(xmlDoc.NewElement("Displays")));
-      // Remove the previously authored DMD children; children of other display kinds are preserved
-      while (tinyxml2::XMLElement* dmd = displays->FirstChildElement("DMD"))
-         displays->DeleteChild(dmd);
-      for (const B2S::B2SDMDDisplay& display : doc->displays)
-      {
-         auto* const e = xmlDoc.NewElement("DMD");
-         e->SetAttribute("Target", display.target == 1 ? "ScoreView" : "Backglass");
-         if (!display.source.empty())
-            e->SetAttribute("Source", display.source.c_str());
-         e->SetAttribute("X", display.x);
-         e->SetAttribute("Y", display.y);
-         e->SetAttribute("W", display.w);
-         e->SetAttribute("H", display.h);
-         const PinballPlugin::OverlayDisplayOptions& o = display.options;
-         if (o.style > 0 && o.style <= 8)
-            e->SetAttribute("Style", PinballPlugin::OverlayDisplayStyleNames[o.style - 1]);
-         if (o.sizeW > 0 || o.sizeH > 0)
-            e->SetAttribute("Dots", std::format("{},{}", o.sizeW, o.sizeH).c_str());
-         if (o.tintR != 1.f || o.tintG != 1.f || o.tintB != 1.f)
-         {
-            const float tint[] = { o.tintR, o.tintG, o.tintB };
-            e->SetAttribute("Tint", PinballPlugin::OverlayFormatFloats(tint, 3).c_str());
-         }
-         if (o.glassTintR != 1.f || o.glassTintG != 1.f || o.glassTintB != 1.f)
-         {
-            const float tint[] = { o.glassTintR, o.glassTintG, o.glassTintB };
-            e->SetAttribute("GlassTint", PinballPlugin::OverlayFormatFloats(tint, 3).c_str());
-         }
-         if (o.glassRoughness != 0.f)
-            e->SetAttribute("GlassRoughness", PinballPlugin::OverlayFormatFloats(&o.glassRoughness, 1).c_str());
-         if (o.glassAmbientR != 1.f || o.glassAmbientG != 1.f || o.glassAmbientB != 1.f)
-         {
-            const float ambient[] = { o.glassAmbientR, o.glassAmbientG, o.glassAmbientB };
-            e->SetAttribute("GlassAmbient", PinballPlugin::OverlayFormatFloats(ambient, 3).c_str());
-         }
-         if (o.glassAreaX != 0 || o.glassAreaY != 0 || o.glassAreaW != 0 || o.glassAreaH != 0)
-            e->SetAttribute("GlassArea", std::format("{},{},{},{}", o.glassAreaX, o.glassAreaY, o.glassAreaW, o.glassAreaH).c_str());
-         if (o.glassPadL != 0.f || o.glassPadT != 0.f || o.glassPadR != 0.f || o.glassPadB != 0.f)
-         {
-            const float pad[] = { o.glassPadL, o.glassPadT, o.glassPadR, o.glassPadB };
-            e->SetAttribute("GlassPad", PinballPlugin::OverlayFormatFloats(pad, 4).c_str());
-         }
-         if (!display.glassImage.empty())
-         {
-            auto* const image = xmlDoc.NewElement("GlassImage");
-            image->SetAttribute("Value", to_base64(display.glassImage.data(), display.glassImage.size()).c_str());
-            e->InsertEndChild(image);
-         }
-         displays->InsertEndChild(e);
-      }
-      tinyxml2::XMLPrinter printer;
-      xmlDoc.Print(&printer);
-      std::ofstream out(doc->path, std::ios::binary | std::ios::trunc);
-      if (!out)
-      {
-         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc->path));
-         return 1;
-      }
-      out << printer.CStr();
-      out.close();
-      if (out.fail())
-      {
-         LOGE("Failed to write B2S file: " + PluginStrings::PathToUTF8(doc->path));
-         return 1;
-      }
-      doc->editBackup = doc->displays; // Saved state becomes the new dirty baseline
+      doc->editBackup = doc->displays;
+      if (doc->requestRefresh)
+         doc->requestRefresh();
       return 0;
    }
 
 } // namespace
 
 
-void DMDOverlay::InitEditSheetDef(PagedUISheetDef* sheet, B2S::B2SOverlayDoc* doc)
+bool ReadFileBytes(const std::filesystem::path& path, std::vector<uint8_t>& out) { return ReadFileBytesImpl(path, out); }
+
+void InitEditSheetDef(PagedUISheetDef* sheet, Doc* doc)
 {
-   sheet->id = "backglass";
    sheet->context = doc;
    sheet->GetPageCount = &OverlayPageCount;
    sheet->GetPageInfo = &OverlayPageInfo;
@@ -775,4 +671,5 @@ void DMDOverlay::InitEditSheetDef(PagedUISheetDef* sheet, B2S::B2SOverlayDoc* do
    sheet->EndEdit = &OverlayEndEdit;
    sheet->IsDirty = &OverlayIsDirty;
 }
+
 }

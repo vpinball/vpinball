@@ -759,8 +759,8 @@ void B2SRenderer::RenderDisplays(VPXRenderContext2D* ctx, B2SServer* server, int
       if (display.target != target)
          continue;
       if (n >= m_dmdOverlays.size())
-         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::DMDOverlay>(m_vpxApi, m_resURIResolver, m_dmdTex));
-      m_dmdOverlays[n]->Render(ctx, &display, backImage);
+         m_dmdOverlays.emplace_back(std::make_unique<DMDOverlay::Renderer>(m_vpxApi, m_resURIResolver, m_dmdTex));
+      m_dmdOverlays[n]->Render(ctx, display, backImage);
       n++;
    }
 }

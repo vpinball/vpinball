@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../controls/Control.h"
-#include "../utils/DMDOverlay.h"
+#include "../DMDOverlay/DMDOverlay.h"
 #include "plugins/ResURIResolver.h"
 
 namespace B2SLegacy {
@@ -36,7 +36,7 @@ protected:
 private:
    PinballPlugin::ResURIResolver* m_pResURIResolver = nullptr;
    VPXTexture m_dmdTex = nullptr;
-   vector<std::unique_ptr<DMDOverlay::DMDOverlay>> m_dmdOverlays; // One per <DMD> display of the edited document, in enumeration order
+   vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per <DMD> display of the edited document, in enumeration order
    int m_dmdDisplayTarget = 0; // View rendered by this form: 0 = backglass, 1 = score view
    bool m_topMost = false;
 };
