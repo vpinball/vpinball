@@ -237,6 +237,7 @@ private:
    bool m_dirty = true;
    std::unique_ptr<Animation> m_animation;
    RenderState m_renderState;
+   int m_canonHeight = 0; // largest output height seen; text is prerendered at this height and scaled down per output
    int m_animationFrame = 0;
    uint64_t m_animationStart = 0;
    std::future<RenderState> m_pendingTextureUpdate;
