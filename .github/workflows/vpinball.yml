@@ -255,7 +255,17 @@ jobs:
               --apple-id "${{ secrets.MACOS_CODESIGN_APPLE_ID }}" \
               --password "${{ secrets.MACOS_CODESIGN_PASSWORD }}" \
               --team-id "${{ secrets.MACOS_CODESIGN_TEAM_ID }}"
-            xcrun stapler staple VPinballX_${{ matrix.type }}.app
+            for attempt in 1 2 3; do
+              if xcrun stapler staple VPinballX_${{ matrix.type }}.app; then
+                break
+              fi
+              if [[ $attempt == 3 ]]; then
+                echo "stapler staple failed after $attempt attempts" >&2
+                exit 1
+              fi
+              echo "stapler staple attempt $attempt failed, retrying in 10s..." >&2
+              sleep 10
+            done
           fi
           create-dmg \
             --volname "VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}" \
