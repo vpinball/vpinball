@@ -97,16 +97,11 @@ jobs:
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"x64","config":"Release"},
               {"os":"ubuntu-24.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x64","config":"Release"},
-              {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x86","config":"Release"},
-              {"os":"macos-15","type":"GL","platform":"macos","arch":"arm64","config":"Release"},
-              {"os":"macos-15","type":"GL","platform":"macos","arch":"x64","config":"Release"},
-              {"os":"ubuntu-24.04","type":"GL","platform":"linux","arch":"x64","config":"Release"}
+              {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x86","config":"Release"}
             ]}'
             SBC='{"include":[
               {"os":"ubuntu-24.04-arm","type":"BGFX","board":"rpi","platform":"linux","arch":"aarch64","config":"Release"},
-              {"os":"ubuntu-24.04-arm","type":"BGFX","board":"rk3588","platform":"linux","arch":"aarch64","config":"Release"},
-              {"os":"ubuntu-24.04-arm","type":"GL","board":"rpi","platform":"linux","arch":"aarch64","config":"Release"},
-              {"os":"ubuntu-24.04-arm","type":"GL","board":"rk3588","platform":"linux","arch":"aarch64","config":"Release"}
+              {"os":"ubuntu-24.04-arm","type":"BGFX","board":"rk3588","platform":"linux","arch":"aarch64","config":"Release"}
             ]}'
             DX='{"include":[
               {"platform":"windows","arch":"x64","config":"Release"},
@@ -118,8 +113,7 @@ jobs:
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows-mingw","arch":"x64","config":"Release"},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"arm64","config":"Release"},
-              {"os":"ubuntu-24.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"},
-              {"os":"ubuntu-24.04","type":"GL","platform":"linux","arch":"x64","config":"Release"}
+              {"os":"ubuntu-24.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"}
             ]}'
             SBC='{"include":[
               {"os":"ubuntu-24.04-arm","type":"BGFX","board":"rpi","platform":"linux","arch":"aarch64","config":"Release"}
@@ -301,9 +295,6 @@ jobs:
             mkdir stage
             cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} stage
             cp -a build/${{ matrix.config }}/*.{so,so.*} stage
-            if [[ "${{ matrix.type }}" == "GL" ]]; then
-              cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} stage
-            fi
             cp -r build/${{ matrix.config }}/assets stage
             cp -r build/${{ matrix.config }}/plugins stage
             cp -r build/${{ matrix.config }}/scripts stage
@@ -465,9 +456,6 @@ jobs:
           mkdir stage
           cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} stage
           cp -a build/${{ matrix.config }}/*.{so,so.*} stage
-          if [[ "${{ matrix.type }}" == "GL" ]]; then
-            cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} stage
-          fi
           cp -r build/${{ matrix.config }}/assets stage
           cp -r build/${{ matrix.config }}/plugins stage
           cp -r build/${{ matrix.config }}/scripts stage

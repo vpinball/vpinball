@@ -45,7 +45,7 @@ The following features were introduced by the OpenGL version:
 - Hardware Adaptive sync (a way of synchronizing between CPU and GPU, which leads to slightly better synchronization when using the 'Adaptive Sync' settings in the video preferences),
 - Enhanced texture compression (gives more performance with lower quality impact).
 
-This flavor is available as a window player/editor application and as a standalone player that runs on a lot of platforms: Linux, Mac, iPhone, Android, RaspBerry,...
+This flavor is only available for Windows, as a window player/editor application.
 
 
 <sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
