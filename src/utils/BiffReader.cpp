@@ -254,7 +254,7 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
       return static_cast<uint64_t>(m_dataPos);
    };
 
-   uint64_t pos = skip ? getStreamPos() : 0;
+   const uint64_t pos = skip ? getStreamPos() : 0;
    while (true)
    {
       if (m_version > 30)
@@ -294,7 +294,7 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
 
    if (skip)
    {
-      uint64_t newpos = getStreamPos();
+      const uint64_t newpos = getStreamPos();
       const int sizeRead = static_cast<int>(newpos - pos);
       if (const int toSkip = recordSize - sizeRead; toSkip > 0)
       {

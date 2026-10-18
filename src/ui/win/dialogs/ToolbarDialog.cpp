@@ -304,11 +304,11 @@ void ToolbarDialog::EnableButtons()
         m_lightseqButton.EnableWindow(lockable);
         m_flasherButton.EnableWindow(lockable);
 
-        BOOL lockableNo3D = m_vpxEditor->m_desktopBackdropView ? lockable : FALSE;
+        const BOOL lockableNo3D = m_vpxEditor->m_desktopBackdropView ? lockable : FALSE;
         m_textboxButton.EnableWindow(lockableNo3D);
         m_reelButton.EnableWindow(lockableNo3D);
 
-        BOOL lockableNoBG = m_vpxEditor->m_desktopBackdropView ? FALSE : lockable;
+        const BOOL lockableNoBG = m_vpxEditor->m_desktopBackdropView ? FALSE : lockable;
         m_wallButton.EnableWindow(lockableNoBG);
         m_gateButton.EnableWindow(lockableNoBG);
         m_rampButton.EnableWindow(lockableNoBG);

@@ -159,10 +159,10 @@ void PaintSur::Polygon(const vector<RenderVertex> &rgv)
 void PaintSur::PolygonImage(
    const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 {
-   int ix = ScaleX(left);
-   int iy = ScaleY(top);
-   int ix2 = ScaleX(right);
-   int iy2 = ScaleY(bottom);
+   const int ix = ScaleX(left);
+   const int iy = ScaleY(top);
+   const int ix2 = ScaleX(right);
+   const int iy2 = ScaleY(bottom);
 
    // Clamp destination rect to a safe GDI range (with margin)
    constexpr int GDI_LIMIT = 16383; // GDI is based on shorts, within -32768 / 32767. We apply simple limits that leads to height/width within this range (twice the limit)

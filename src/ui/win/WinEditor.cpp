@@ -1657,6 +1657,8 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    char buf1[MAX_PATH], buf2[MAX_PATH];
    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, std::size(buf1));
    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, std::size(buf2));
+   buf1[std::size(buf1)-1] = '\0';
+   buf2[std::size(buf2)-1] = '\0';
 
    if (nItem2 == -1 || nItem1 == -1)
       return 0;
@@ -1677,10 +1679,12 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
    lvf.lParam = lSortParam2;
    const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
 
-   char buf1[64] = {};
-   char buf2[64] = {};
+   char buf1[64];
+   char buf2[64];
    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, std::size(buf1));
    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, std::size(buf2));
+   buf1[std::size(buf1)-1] = '\0';
+   buf2[std::size(buf2)-1] = '\0';
    int value1, value2;
    if(!try_parse_int(string(buf1), value1))
       value1 = 0;

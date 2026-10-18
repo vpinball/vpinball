@@ -310,7 +310,7 @@ private:
 
       Matrix5f() { SetZero(); }
 
-      void SetZero() { std::memset(&m[0][0], 0, sizeof(m)); }
+      void SetZero() { std::memset(&(m[0][0]), 0, sizeof(m)); }
 
       void SetIdentity()
       {

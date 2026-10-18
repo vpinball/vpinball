@@ -370,6 +370,7 @@ void WhereUsedDialog::EditObject(HWND hWhereListView)
       char controlName[256];
       //Make the call to get the item text from the listview item at the 'sel' index and subitem 1.  Store the listview item text in 'controlName'.
       ListView_GetItemText(hWhereListView, sel, 1, controlName, std::size(controlName));
+      controlName[std::size(controlName)-1] = '\0';
       //Make sure the controlName returned isn't 'Decal' as Decal doesn't support a unique name so we can't issue the 'GetElementByName' method on it.
       if (controlName == "Decal"sv)
       {

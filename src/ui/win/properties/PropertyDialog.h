@@ -329,9 +329,17 @@ public:
 
     static string GetComboBoxText(const CComboBox &combo)
     {
-       vector<char> buf(combo.GetLBTextLen(combo.GetCurSel()) + 1);
-       combo.GetLBText(combo.GetCurSel(), buf.data());
-       return buf.data();
+       const int sel = combo.GetCurSel();
+       if (sel == CB_ERR)
+          return {};
+       const int len = combo.GetLBTextLen(sel);
+       if (len == CB_ERR)
+          return {};
+
+       std::string text(len+1, '\0');
+       combo.GetLBText(sel, text.data());
+       text.resize(len);
+       return text;
     }
 
     static int GetComboBoxIndex(const CComboBox &combo, const vector<string>& contentList)
@@ -375,39 +383,39 @@ private:
 
 #define CHECK_UPDATE_ITEM(classValue, uiValue, element)\
 {\
-    auto value = uiValue; \
-    if(classValue != value) \
-    { \
-        PropertyDialog::StartUndo(element); \
-        classValue = value; \
-        PropertyDialog::EndUndo(element); \
-    }\
+   const auto value = uiValue; \
+   if(classValue != value) \
+   { \
+      PropertyDialog::StartUndo(element); \
+      classValue = value; \
+      PropertyDialog::EndUndo(element); \
+   }\
 }
 #define CHECK_UPDATE_COMBO_TEXT_STRING(classValue, uiCombo, element)\
 {\
-    const string name = PropertyDialog::GetComboBoxText(uiCombo); \
-    if(name != classValue) \
-    { \
-        PropertyDialog::StartUndo(element); \
-        classValue = name; \
-        PropertyDialog::EndUndo(element); \
-    }\
+   const string name = PropertyDialog::GetComboBoxText(uiCombo); \
+   if(name != classValue) \
+   { \
+      PropertyDialog::StartUndo(element); \
+      classValue = name; \
+      PropertyDialog::EndUndo(element); \
+   }\
 }
 
 #define CHECK_UPDATE_VALUE_SETTER(classSetter, classGetter, uiGetter, uiGetterParameter, element) \
 {\
-    auto value = uiGetter(uiGetterParameter); \
-    if (classGetter() != value) \
-    { \
-        PropertyDialog::StartUndo(element); \
-        classSetter(value); \
-        PropertyDialog::EndUndo(element); \
-    }\
+   const auto value = uiGetter(uiGetterParameter); \
+   if(classGetter() != value) \
+   { \
+      PropertyDialog::StartUndo(element); \
+      classSetter(value); \
+      PropertyDialog::EndUndo(element); \
+   }\
 }
 
 #define CHECK_UPDATE_COMBO_VALUE_SETTER(classSetter, classGetter, uiComboValue, element) \
 {\
-   auto value = uiComboValue; \
+   const auto value = uiComboValue; \
    if(classGetter() != value) \
    { \
       PropertyDialog::StartUndo(element); \

@@ -227,6 +227,9 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
          ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
          ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
          ListView_GetItemText(hOrderList, idx, 2, text2, std::size(text2));
+         text0[std::size(text0)-1] = '\0';
+         text1[std::size(text1)-1] = '\0';
+         text2[std::size(text2)-1] = '\0';
          ListView_DeleteItem(hOrderList, idx);
          lv.iItem = idx - 1;
          lv.iSubItem = 0;
@@ -262,6 +265,9 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
             ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
             ListView_GetItemText(hOrderList, idx, 2, text2, std::size(text2));
+            text0[std::size(text0)-1] = '\0';
+            text1[std::size(text1)-1] = '\0';
+            text2[std::size(text2)-1] = '\0';
             ListView_DeleteItem(hOrderList, idx);
             lv.iItem = idx + 1;
             lv.iSubItem = 0;
@@ -284,6 +290,9 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
             ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
             ListView_GetItemText(hOrderList, idx, 2, text2, std::size(text2));
+            text0[std::size(text0)-1] = '\0';
+            text1[std::size(text1)-1] = '\0';
+            text2[std::size(text2)-1] = '\0';
             ListView_DeleteItem(hOrderList, idx);
             lv.iItem = idx + 1;
             lv.iSubItem = 0;
