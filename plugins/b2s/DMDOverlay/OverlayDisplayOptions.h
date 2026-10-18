@@ -3,7 +3,7 @@
 #pragma once
 
 // Display option block shared by the authored display records of the display overlay plugins
-// (B2S, B2SLegacy, PUP): an identical copy of this file lives inside the DMDOverlay folder of
+// (B2S, PUP): an identical copy of this file lives inside the DMDOverlay folder of
 // each plugin. It mirrors the per visual option set of Nixie layout files (see
 // plugins/nixie/NixieLayoutFile.h): render style, expected source dot size, emitter tint and
 // the glass layer (image area, tint, roughness, ambient, pad). It also provides the PagedUI
