@@ -2,8 +2,8 @@
 
 #pragma once
 
-// Shared implementation of the authored DMD overlay documents used by the B2S, B2SLegacy and
-// PUP plugins: an identical copy of this folder lives inside each plugin and provides all the
+// Shared implementation of the authored DMD overlay documents used by the B2S and PUP
+// plugins: an identical copy of this folder lives inside each plugin and provides all the
 // code they have in common:
 //   - the document model (Display records collected in a Doc)
 //   - the in-game UI editing support (InitEditSheetDef fills the PagedUI sheet callbacks)

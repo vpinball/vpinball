@@ -164,7 +164,6 @@ FEATURES:
   This feature is still in early stage and should be considered as a 'feature preview' as it will most likely evolve more, and the programming interface is not yet fully stabilized, so breaking changes may still happen!
   The following plugins are included with VPX:
   . AlphaDMD: render alpahanumeric segment displays inside any DMD (physical or virtual)
-  . B2S legacy: render the backglass and fullDMD of B2S files to VPX anciliary windows
   . B2S: a newer B2S renderer which supports light fading, better mech animation, but is still far from feature complete, expect more changes!
   . DMDUtil: supports rendering to physical DMDs (ZeDMD,...)
   . DOF: a preliminary port of the Direct Output Framework which allows to drive all kinds of physical feedback hardware (lights, shaker, fan,...)

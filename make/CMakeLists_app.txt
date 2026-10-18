@@ -777,7 +777,6 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
       AltSoundPlugin
       AlphaDMDPlugin
       B2SPlugin
-      B2SLegacyPlugin
       DMDUtilPlugin
       DOFPlugin
       FlexDMDPlugin

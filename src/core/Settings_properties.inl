@@ -1353,7 +1353,6 @@ PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 1
 // Default core plugins enable state
 PropBoolDyn(PluginAltSound, Enable, "Enable"s, "Enable AltSound plugin"s, true);
 PropBoolDyn(PluginB2S, Enable, "Enable"s, "Enable B2S plugin"s, true);
-PropBoolDyn(PluginB2SLegacy, Enable, "Enable"s, "Enable B2SLegacy plugin"s, false);
 PropBoolDyn(PluginDMDUtil, Enable, "Enable"s, "Enable DMDUtil plugin"s, false);
 PropBoolDyn(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, true);
 PropBoolDyn(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, true);
