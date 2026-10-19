@@ -412,6 +412,7 @@ public:
    void ClearForOverwrite() final;
    void Load(IObjectReader &reader) final;
    PinTable *CopyForPlay() const final; // Not exactly const as we add a reference, and copied table keeps a non const reference on this
+   bool IsPlayerSessionObject(const IEditable *part) const; // Part added to this table by the running player session (implicit playfield, runtime ball,...): not part of the authored table
    Vertex2D GetCenter() const final { return { 0.f, 0.f }; }
    void FlipY(const Vertex2D &pvCenter) final { }
    void FlipX(const Vertex2D &pvCenter) final { }
