@@ -17,6 +17,8 @@ public:
    void MarkForUndo(IEditable * const pie, const bool saveForUndo = true);
    void MarkForCreate(IEditable *const pie);
    void MarkForDelete(IEditable *const pie);
+   // Records a change that is not a part edit (asset, script, table property): the callback restores the previous state when the record is undone
+   void MarkForAction(std::function<void()> undo);
    void EndUndo();
    // Undoes the last record, returning the editor state captured when it was begun (empty if none)
    std::any Undo();
