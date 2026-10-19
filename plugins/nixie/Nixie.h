@@ -81,7 +81,7 @@ private:
 
    void LoadGlass(Visual& visual);
    VPXTexture LoadTexture(const std::string& relPath); // Load (and cache) an image file next to the selected layout file
-   ankerl::unordered_dense::map<string, VPXTexture> m_images;
+   ankerl::unordered_dense::map<string, VPXTexture> m_images; // Keyed by resolved file path
 
    VPXPluginAPI* const m_vpxApi;
    const MsgPluginAPI* const m_msgApi;

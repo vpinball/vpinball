@@ -19,6 +19,7 @@
 //               Style: Neon Plasma
 //               Src: ctrl://default/display
 //               Size: [128, 32]
+//               Tint: [1,0.5,0.2]
 //               Glass:
 //                   Tint:      [1,1,1]
 //                   Roughness: 0.1
@@ -29,6 +30,10 @@
 //               Rect: [0,0,64,64]
 //               Image: ./logo.png
 //               Tint: [1,1,1]
+//
+// Tint directly under a visual (not inside Glass) tints what the visual emits: the
+// dots or segments of DMD, Screen and SegDisplay visuals, the image of a Picture.
+// Inside Glass, Tint only applies to the glass layer.
 //
 // Parsed values keep the authored semantics: visual Rects are expressed in layout
 // space with the origin at the top left, and Ambient values are sRGB (consumers

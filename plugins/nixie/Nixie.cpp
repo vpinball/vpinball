@@ -103,11 +103,13 @@ void Nixie::Parse(const std::filesystem::path& path)
 
 VPXTexture Nixie::LoadTexture(const std::string& relPath)
 {
-   const auto texImage = m_images.find(relPath);
+   // Cached by resolved path, as layouts loaded from different folders may use the same relative path for different files
+   const std::filesystem::path fullPath = (m_bestLayout->path.parent_path() / PluginStrings::PathFromUTF8(relPath)).lexically_normal();
+   const string key = PluginStrings::PathToUTF8(fullPath);
+   const auto texImage = m_images.find(key);
    if (texImage != m_images.end())
       return texImage->second;
    VPXTexture texture = nullptr;
-   const std::filesystem::path fullPath = m_bestLayout->path.parent_path() / PluginStrings::PathFromUTF8(relPath);
    std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
    if (file.is_open())
    {
@@ -122,7 +124,7 @@ VPXTexture Nixie::LoadTexture(const std::string& relPath)
    {
       LOGE("Missing texture file: " + PluginStrings::PathToUTF8(fullPath));
    }
-   m_images[relPath] = texture;
+   m_images[key] = texture;
    return texture;
 }
 
