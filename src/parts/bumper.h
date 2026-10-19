@@ -159,6 +159,10 @@ private:
    std::shared_ptr<MeshBuffer> m_socketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_ringMeshBuffer;
    std::shared_ptr<MeshBuffer> m_capMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_baseEdgeBuffer; // Editor wireframes, built on demand
+   std::shared_ptr<MeshBuffer> m_socketEdgeBuffer;
+   std::shared_ptr<MeshBuffer> m_ringEdgeBuffer;
+   std::shared_ptr<MeshBuffer> m_capEdgeBuffer;
 
    Matrix3D m_fullMatrix;
    Vertex3D_NoTex2 *m_ringVertices = nullptr;
