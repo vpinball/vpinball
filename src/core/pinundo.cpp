@@ -27,6 +27,7 @@ public:
    void MarkForCreate(IEditable *const pie);
    void MarkForDelete(IEditable *const pie);
 
+   vector<std::function<void()>> m_actions;
    vector<std::unique_ptr<InMemStream>> m_vstm;
    vector<IEditable *> m_vieCreate;
    vector<IEditable *> m_vieDelete;
@@ -161,6 +162,18 @@ void PinUndo::MarkForDelete(IEditable *const pie)
    m_undoRecords.back()->MarkForDelete(pie);
 }
 
+void PinUndo::MarkForAction(std::function<void()> undo)
+{
+   assert(!m_undoRecords.empty());
+   assert(m_nUndoLayer > 0);
+   if (m_undoRecords.empty())
+      return;
+   if (m_nUndoLayer <= 0)
+      BeginUndo();
+
+   m_undoRecords.back()->m_actions.push_back(std::move(undo));
+}
+
 std::any PinUndo::Undo()
 {
    assert(m_nUndoLayer == 0);
@@ -169,6 +182,10 @@ std::any PinUndo::Undo()
 
    if (!HasUndo())
       return {};
+
+   // Non part changes first, most recent first: a part restored below may refer to an asset they bring back
+   for (auto it = m_undoRecords.back()->m_actions.rbegin(); it != m_undoRecords.back()->m_actions.rend(); ++it)
+      (*it)();
 
    for (IEditable *editable : m_undoRecords.back()->m_vieDelete)
    {
