@@ -45,7 +45,6 @@ UndoRecord::~UndoRecord()
 
 void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 {
-#ifdef VPX_ENABLE_WIN32_EDITOR
    if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
       return;
 
@@ -59,10 +58,9 @@ void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
    pstm->Write(&pie, sizeof(IEditable *));
 
    BiffWriter writer(pstm.get(), nullptr);
-   pie->Save(writer, true);
+   pie->Save(writer, saveForUndo);
 
    m_vstm.push_back(std::move(pstm));
-#endif
 }
 
 void UndoRecord::MarkForCreate(IEditable *const pie)
