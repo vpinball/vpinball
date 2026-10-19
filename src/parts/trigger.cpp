@@ -241,9 +241,17 @@ void Trigger::RenderSetup(Renderer *renderer)
    m_doAnimation = false;
    m_moveDown = false;
    m_animHeightOffset = 0.0f;
+   UpdateMesh();
+}
+
+void Trigger::UpdateMesh()
+{
+   m_meshBuffer = nullptr;
+   m_triggerVertices = nullptr;
+   m_meshShape = m_d.m_shape;
    m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
-   if (!m_d.m_visible || m_d.m_shape == TriggerNone)
+   if (m_d.m_shape == TriggerNone)
       return;
 
    const StaticMeshData meshData = SetupMeshData(m_d.m_shape);
@@ -251,6 +259,8 @@ void Trigger::RenderSetup(Renderer *renderer)
       return;
 
    m_triggerVertices = GenerateMesh(m_boundingSphereCenter);
+   if (m_triggerVertices == nullptr)
+      return;
    std::shared_ptr<IndexBuffer> triggerIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, (unsigned int)meshData.indices.size(), meshData.indices.data());
    std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, (unsigned int)meshData.vertices.size(), (float *)m_triggerVertices->data(), true);
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, triggerIndexBuffer, true);
@@ -340,7 +350,12 @@ void Trigger::Render(const unsigned int renderMask)
    || isStaticOnly 
    || (isReflectionPass && !m_d.m_reflectionEnabled))
       return;
-      
+
+   if (m_meshBuffer == nullptr || m_meshShape != m_d.m_shape)
+      UpdateMesh();
+   if (m_meshBuffer == nullptr)
+      return;
+
    if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
    {
       m_vertexBuffer_animHeightOffset = m_animHeightOffset;
