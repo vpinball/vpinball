@@ -18,7 +18,7 @@ public:
 
    void SetGameTime(double gameTime);
 
-   void Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length);
+   bool Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length);
    void Pause();
    void Resume();
    void SetAsBackGround(bool isBackground);
@@ -38,12 +38,11 @@ public:
    void SetBounds(const SDL_Rect& rect);
    void SetMask(const std::filesystem::path& path);
 
-   void SetOnMainEndCallback(std::function<void()> callback) { m_onMainEndCallback = std::move(callback); }
-
 private:
    void OnPlayerEnd();
    void PlayBackground();
    void StartCurrent();
+   void ApplyDuckPrefix(const std::filesystem::path& path);
 
    PUPMediaPlayer m_player;
 
@@ -68,8 +67,6 @@ private:
       bool setViaSetBackGround = false;
    };
    BackgroundConfig m_bg;
-
-   std::function<void()> m_onMainEndCallback;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
 

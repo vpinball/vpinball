@@ -121,8 +121,8 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
       szFolderPath.filename(), // Subfolder
       parts[2], // Description
       (string_to_int(parts[3], 0) == 1), // Randomize
-      string_to_int(parts[4], 0), // Rest seconds
-      static_cast<float>(string_to_int(parts[5], 0)), // Volume
+      string_to_int(parts[4], 30), // Rest seconds
+      static_cast<float>(string_to_int(parts[5], 100)), // Volume
       string_to_int(parts[6], 0)); // Priority
 
    return pPlaylist;
