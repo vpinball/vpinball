@@ -87,9 +87,9 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
       mode = PUPScreen::Mode::ForceBack;
    else if (StrCompareNoCase(parts[5], "ForcePopBack"s))
       mode = PUPScreen::Mode::ForcePopBack;
-   else if (StrCompareNoCase(parts[5], "MusicOnly"s))
+   else if (StrCompareNoCase(parts[5], "MusicOnly"s) || StrCompareNoCase(parts[5], "ForceHide"s))
       mode = PUPScreen::Mode::MusicOnly;
-   else if (StrCompareNoCase(parts[5], "Off"s))
+   else if (StrCompareNoCase(parts[5], "Off"s) || StrCompareNoCase(parts[5], "Disable"s) || StrCompareNoCase(parts[5], "JavaScript"s))
       mode = PUPScreen::Mode::Off;
    else {
       LOGE("Invalid screen mode: " + parts[5]);
@@ -611,12 +611,12 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
 
    case 2:
       if (m_hudVisible)
-         m_overlay.Render(ctx, m_rect, m_screenAlpha);
+         m_overlay.Render(ctx, m_rect, m_screenAlpha * m_overlayAlpha);
       break;
 
    case 3:
       for (PUPLabel* pLabel : m_labels)
-         pLabel->Render(ctx, m_rect, m_pagenum, m_screenAlpha);
+         pLabel->Render(ctx, m_rect, m_pagenum, m_screenAlpha * m_overlayAlpha);
       break;
    }
 }

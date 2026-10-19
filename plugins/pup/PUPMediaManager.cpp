@@ -119,10 +119,17 @@ void PUPMediaManager::StartCurrent()
 void PUPMediaManager::ApplyDuckPrefix(const std::filesystem::path& path)
 {
    const string name = PluginStrings::PathToUTF8(path.filename());
-   if (name.size() < 3 || name[0] != '-' || name[1] < '0' || name[1] > '9' || name[2] < '0' || name[2] > '9')
+   if (name.size() < 3 || name[0] != '-')
       return;
-   const int percent = (name[1] - '0') * 10 + (name[2] - '0');
-   m_pScreen->GetManager()->DuckAllExcept(percent == 0 ? 1 : percent, m_pScreen->GetScreenNum(), false);
+   int percent = m_pScreen->GetDefaultDuck();
+   if (name[1] >= '0' && name[1] <= '9' && name[2] >= '0' && name[2] <= '9')
+   {
+      percent = (name[1] - '0') * 10 + (name[2] - '0');
+      if (percent == 0)
+         percent = 1;
+   }
+   if (percent > 0)
+      m_pScreen->GetManager()->DuckAllExcept(percent, m_pScreen->GetScreenNum(), false);
 }
 
 void PUPMediaManager::PlayBackground()
