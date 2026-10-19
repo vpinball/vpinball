@@ -85,7 +85,15 @@ void PUPMediaPlayer::SetMask(std::shared_ptr<SDL_Surface> mask)
    });
 }
 
-void PUPMediaPlayer::SetGameTime(double gameTime) { m_gameTime = gameTime; }
+void PUPMediaPlayer::SetGameTime(double gameTime)
+{
+   const double now = static_cast<double>(SDL_GetTicks()) / 1000.0;
+   if (m_lastGameTime >= 0.0 && gameTime <= m_lastGameTime)
+      m_gameTimeOffset += now - m_lastGameTimeWall;
+   m_lastGameTime = gameTime;
+   m_lastGameTimeWall = now;
+   m_gameTime = gameTime + m_gameTimeOffset;
+}
 
 double PUPMediaPlayer::GetPlayTime() const
 {
