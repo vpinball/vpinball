@@ -806,7 +806,8 @@ void InputManager::CreateInputActions()
                CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
                DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
                m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
-               m_player->SetCloseState(g_isMobile ? Player::CS_CLOSE_CAPTURE_SCREENSHOT : g_isStandalone ? Player::CS_CLOSE_APP : Player::CS_STOP_PLAY);
+               // A play test stacked over an editor session gets back to the editor, like the Win32 editor does
+               m_player->SetCloseState(m_player->HasStackedTableSession() ? Player::CS_STOP_PLAY : g_isMobile ? Player::CS_CLOSE_CAPTURE_SCREENSHOT : g_isStandalone ? Player::CS_CLOSE_APP : Player::CS_STOP_PLAY);
             }
             else if (isPressed && m_player->m_liveUI->IsInGameUIOpened())
             {
