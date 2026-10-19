@@ -247,11 +247,11 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       pScreen,
       pPlaylist,
       szPlayFile,
-      parts[7].empty() ? pPlaylist->GetVolume() : string_to_float(parts[7], 0), // volume
+      parts[7].empty() ? pPlaylist->GetVolume() : string_to_float(parts[7], 100), // volume
       parts[8].empty() ? pPlaylist->GetPriority() : string_to_int(parts[8], 0), // priority
       string_to_int(parts[9], 0), // length
       string_to_int(parts[10], 0), // counter
-      parts[11].empty() ? pPlaylist->GetRestSeconds() : string_to_int(parts[11], 0), // rest seconds
+      string_to_int(parts[11], 0), // rest seconds
       playAction
    );
 }

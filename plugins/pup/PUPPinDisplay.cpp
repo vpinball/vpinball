@@ -64,7 +64,7 @@ void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
    {
       PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
       if (pPlaylist)
-         pScreen->Play(pPlaylist, std::filesystem::path(), pPlaylist->GetVolume(), 0, PlayAction::Normal, 0);
+         pScreen->Play(pPlaylist, std::filesystem::path(), static_cast<float>(pScreen->GetDefaultVolume()), 0, PlayAction::Normal, 0);
       else
          LOGE(std::format("Playlist not found: screenNum={}, playlist={}", screenNum, playlist));
    }
@@ -89,7 +89,7 @@ void PUPPinDisplay::play(int screenNum, const string& playlist, const string& pl
          LOGE(std::format("Playlist not found: screen={{{}}}, playlist={}", pScreen->ToString(false), playlist));
          return;
       }
-      pScreen->Play(playlist, PluginStrings::PathFromUTF8(playfilename), pPlaylist->GetVolume(), 0);
+      pScreen->Play(playlist, PluginStrings::PathFromUTF8(playfilename), static_cast<float>(pScreen->GetDefaultVolume()), 0);
    }
 }
 
@@ -128,14 +128,14 @@ void PUPPinDisplay::setVolume(int screenNum, int vol)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->SetVolume(static_cast<float>(vol));
+      pScreen->SetDefaultVolume(vol);
 }
 
 void PUPPinDisplay::setVolumeCurrent(int screenNum, int vol)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->SetVolumeCurrent(static_cast<float>(vol));
+      pScreen->SetVolumeCurrent(vol);
 }
 
 void PUPPinDisplay::playpause(int screenNum)
@@ -333,12 +333,12 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         break;
                      case 10:
                         // set all displays all volume { "mt":301, "SN": XX, "FN":10, "VL":9}  VL=volume level
-                        NOT_IMPLEMENTED(std::format("Set all displays all volume not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        m_pupManager.SetDefaultVolumeAll(json["VL"s].as<int>(0));
                         break;
                      case 11:
                         // set all volume { "mt":301, "SN": XX, "FN":11, "VL":9}  VL=volume level
                         LOGD(std::format("Set all volume requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-                        pScreen->SetVolume(static_cast<float>(json["VL"s].as<double>()));
+                        pScreen->SetVolumeCurrent(json["VL"s].as<int>(0));
                         break;
                      case 12:
                         // "{ ""mt"":301, ""SN"": 18, ""FN"":12 }" 'STOPSCREEN
@@ -373,6 +373,10 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                            pScreen->m_screenAlpha = 1.f;
                         break;
                      }
+                     case 26:
+                        // set screen volume multiplier { "mt":301, "SN": XX, "FN":26, "VL":100 }
+                        pScreen->SetVolumeMultiplier(json["VL"s].as<int>(0));
+                        break;
                      case 30:
                         // {'mt':301, 'SN': XX, 'FN':30, 'PM':1 } set (play ?) jukebox mode: jukebox mode will auto advance to next media in playlist and you can use next/prior sub to manuall advance
                         NOT_IMPLEMENTED(std::format("Jukebox mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
@@ -402,8 +406,8 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                      {
                         // See PUPDMD AudioDuckPuP — temporarily duck all screens except master
                         // "{ ""mt"":301, ""SN"": "& MasterPuPID& ", ""FN"": 42, ""DV"": "&VolLevel&" , ""ALL"":1 }"
-                        float duckLevel = static_cast<float>(json["DV"s].as<int>(50)) / 100.0f;
-                        m_pupManager.DuckAllExcept(sn, duckLevel);
+                        const int duckPercent = json["DV"s].as<int>(0);
+                        m_pupManager.DuckAllExcept(duckPercent == 0 ? 1 : duckPercent, sn, json["ALL"s].as<int>(0) == 1);
                         break;
                      }
                      case 45:

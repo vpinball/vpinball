@@ -993,43 +993,37 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
    return -1;
 }
 
-void PUPManager::DuckAllExcept(int masterScreenNum, float duckLevel)
+void PUPManager::DuckAllExcept(int percent, int masterScreenNum, bool all)
 {
-   m_duckMasterScreen = masterScreenNum;
-   m_preDuckVolumes.clear();
+   if (percent == -1)
+   {
+      Unduck();
+      return;
+   }
    for (const auto& [key, screen] : m_screenMap)
    {
-      if (key != masterScreenNum)
-      {
-         m_preDuckVolumes[key] = screen->GetVolume();
-         screen->SetVolume(duckLevel);
-      }
-   }
-   auto masterScreen = GetScreen(masterScreenNum);
-   if (masterScreen)
-   {
-      masterScreen->SetOnMainEndCallback([this]() {
-         Unduck();
-      });
+      if (key == masterScreenNum && !all)
+         screen->SetDuckMaster(true);
+      else
+         screen->Duck(percent);
    }
 }
 
 void PUPManager::Unduck()
 {
-   for (const auto& [key, volume] : m_preDuckVolumes)
+   for (const auto& [key, screen] : m_screenMap)
    {
-      auto screen = GetScreen(key);
-      if (screen)
-         screen->SetVolume(volume);
+      if (screen->IsDuckMaster())
+         screen->SetDuckMaster(false);
+      else
+         screen->Unduck();
    }
-   m_preDuckVolumes.clear();
-   if (m_duckMasterScreen >= 0)
-   {
-      auto masterScreen = GetScreen(m_duckMasterScreen);
-      if (masterScreen)
-         masterScreen->SetOnMainEndCallback(nullptr);
-   }
-   m_duckMasterScreen = -1;
+}
+
+void PUPManager::SetDefaultVolumeAll(int volume)
+{
+   for (const auto& [key, screen] : m_screenMap)
+      screen->SetDefaultVolume(volume);
 }
 
 void PUPManager::QueueDOFEvent(char c, int id, int value)
@@ -1083,6 +1077,8 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       for (const auto& [key, screen] : me->m_screenMap)
          screen->SetMainVolume(volume);
    }
+   for (const auto& [key, screen] : me->m_screenMap)
+      screen->UpdateVolumeFade();
 
    // A usable root must exist, must be a canvas rather than a positioned element (a childless
    // screen positioned on another screen; a screen whose custom position references itself has

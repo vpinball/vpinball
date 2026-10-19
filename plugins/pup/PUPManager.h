@@ -124,8 +124,9 @@ public:
 
    void QueueDOFEvent(char c, int id, int value);
 
-   void DuckAllExcept(int masterScreenNum, float duckLevel);
+   void DuckAllExcept(int percent, int masterScreenNum, bool all);
    void Unduck();
+   void SetDefaultVolumeAll(int volume);
 
 private:
    void ApplyGameDir(const std::filesystem::path& path, const std::string_view& gameId, const ControllerDef& controller);
@@ -188,9 +189,6 @@ private:
 
    std::mutex m_eventMutex;
    std::unique_ptr<B2SPluginEventStream> m_B2SPluginEventStream;
-
-   int m_duckMasterScreen = -1;
-   ankerl::unordered_dense::map<int, float> m_preDuckVolumes;
 };
 
 }
