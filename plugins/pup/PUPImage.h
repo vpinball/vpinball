@@ -27,6 +27,7 @@ private:
 
    std::mutex m_loadMutex;
    std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_pendingSurface;
+   bool m_pendingReady = false;
    std::atomic<bool> m_loading { false };
 };
 

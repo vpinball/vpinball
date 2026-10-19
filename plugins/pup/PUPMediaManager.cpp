@@ -64,12 +64,15 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 
    if (isBg)
    {
-      LOGD(std::format("BG CONFIG: screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(szPath.filename())));
+      const bool bgPlaying = !mainPlaying && m_bg.active && m_bg.szPath == szPath && m_player.IsPlaying();
+      LOGD(std::format("BG CONFIG: screen={}, file={}, alreadyPlaying={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(szPath.filename()), bgPlaying));
       m_bg.szPath = szPath;
       m_bg.volume = volume;
       m_bg.active = true;
       pPlaylist->MarkPlayed();
-      if (m_queue.empty())
+      if (bgPlaying)
+         m_player.SetVolume(volume);
+      else if (!mainPlaying)
          PlayBackground();
       return true;
    }
@@ -209,9 +212,13 @@ void PUPMediaManager::SetVolume(float volume)
 void PUPMediaManager::Stop()
 {
    LOGD(std::format("STOP: screen={}, queueDepth={}, bgActive={}", m_pScreen->GetScreenNum(), m_queue.size(), m_bg.active));
+   const bool mainPlaying = !m_queue.empty();
    m_queue.clear();
    if (m_bg.active && !m_bg.szPath.empty())
-      PlayBackground();
+   {
+      if (mainPlaying || !m_player.IsPlaying())
+         PlayBackground();
+   }
    else
       m_player.Stop();
 }
