@@ -3360,6 +3360,10 @@ vector<IEditable *> PinTable::ImportParts(PinTable *const source, PartGroup *con
       { return std::ranges::find_if(m_materials, [mat](const Material *const m) { return StrCompareNoCase(m->m_name, mat->m_name); }) != m_materials.end(); });
    mergeAssets(source->m_vrenderprobe, m_vrenderprobe, [this](const RenderProbe *const probe) { return GetRenderProbe(probe->GetName()) != nullptr; });
 
+   // A running session looks assets up through hash maps built at its start: add the merged ones
+   if (g_pplayer && g_pplayer->m_ptable == this)
+      SetupLookUpTables(true);
+
    return imported;
 }
 
