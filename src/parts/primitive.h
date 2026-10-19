@@ -100,6 +100,7 @@ public:
 
    STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Sides)(/*[in]*/ int newVal);
+   void SetSides(int sides);
    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_SideColor)(/*[out, retval]*/ OLE_COLOR *pVal);
