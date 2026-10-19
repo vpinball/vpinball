@@ -394,7 +394,10 @@ void PartLibraryPanel::ImportPack(const std::filesystem::path &path)
    const vector<IEditable *> imported = table->ImportParts(temp, target);
    temp->Release();
    for (IEditable *const part : imported)
+   {
+      part->AddRef(); // Created parts keep a creation reference, released by the undo record (see PinTable::Uncreate)
       m_editor.m_undo.MarkForCreate(part);
+   }
 
    // Player side setup, same as part creation
    for (IEditable *const part : imported)
