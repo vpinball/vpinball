@@ -83,8 +83,8 @@ private:
       int age = 0;
    };
    vector<FrameInfo> m_frames;
-   VPXTexture m_holdTexture = nullptr;
-   uint64_t m_endTicks = 0;
+   std::atomic<VPXTexture> m_holdTexture = nullptr;
+   std::atomic<uint64_t> m_endTicks = 0;
    SwsContext* m_swsContext = nullptr;
    uint64_t m_lastRenderTicks = 0;
 
