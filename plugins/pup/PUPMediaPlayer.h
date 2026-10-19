@@ -51,6 +51,9 @@ private:
    double GetPlayTime() const;
    bool m_syncOnGameTime = false;
    double m_gameTime = -1.0;
+   double m_lastGameTime = -1.0;
+   double m_lastGameTimeWall = 0.0;
+   double m_gameTimeOffset = 0.0;
    double m_startTimestamp = 0.0; // timestamp in seconds when the play command was called
 
    std::filesystem::path m_filename;
