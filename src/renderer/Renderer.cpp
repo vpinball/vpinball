@@ -3593,9 +3593,10 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    };
    if (rotation != 0.f)
    {
-      const float px = lerp(vx1, vx2, (pivotX - texX) / (float)tex->width());
-      const float py = lerp(vy1, vy2, (pivotY - texY) / (float)tex->height());
-      const Matrix3D matRot = Matrix3D::MatrixTranslate(-px, -py, 0.f) * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0)) * Matrix3D::MatrixTranslate(px, py, 0.f);
+      const float px = lerp(vx1, vx2, (pivotX - texX) / texW);
+      const float py = lerp(vy1, vy2, (pivotY - texY) / texH);
+      const Matrix3D matRot = Matrix3D::MatrixTranslate(-px, -py, 0.f) * Matrix3D::MatrixScale(ctx->srcWidth, ctx->srcHeight, 1.f) * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0))
+         * Matrix3D::MatrixScale(1.f / ctx->srcWidth, 1.f / ctx->srcHeight, 1.f) * Matrix3D::MatrixTranslate(px, py, 0.f);
       matRot.TransformPositions(vertices, vertices, 4);
    }
    static_cast<AncillaryRenderSetup*>(ctx->rendererData)->displayTransform.TransformVertices(vertices, vertices, 4);
