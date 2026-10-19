@@ -359,29 +359,31 @@ void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
       std::rotate(it, it + 1, m_labels.end());
 }
 
-void PUPScreen::SetPage(int pagenum, int seconds)
+void PUPScreen::SetPage(int pagenum, int durationMs)
 {
    assert(std::this_thread::get_id() == m_apiThread);
 
    // Reapply each label's on-show default ONLY when the page actually changes. A same-page
    // hold (e.g. KOTH ball-save LabelShowPage(5,1,3)) must leave script-toggled labels alone -
    // that was the disappearing-bonus-labels bug.
-   const bool pageChanged = (pagenum != m_pagenum);
+   if (pagenum == m_pagenum)
+   {
+      if (m_pageExpiry && durationMs > 0)
+         m_pageExpiry += static_cast<uint64_t>(durationMs);
+      return;
+   }
    m_pagenum = pagenum;
 
-   if (pageChanged)
-   {
-      for (const auto& label : m_labels)
-         label->SetVisible(label->GetOnShowVisible());
-   }
+   for (const auto& label : m_labels)
+      label->SetVisible(label->GetOnShowVisible());
 
-   if (seconds == 0)
+   if (durationMs <= 0)
    {
       m_defaultPagenum = pagenum;
       m_pageExpiry = 0;
    }
    else
-      m_pageExpiry = SDL_GetTicks() + static_cast<uint64_t>(seconds) * 1000;
+      m_pageExpiry = SDL_GetTicks() + static_cast<uint64_t>(durationMs);
 }
 
 void PUPScreen::UpdateTimers()

@@ -49,6 +49,7 @@ public:
    void SetSpecial(const string& szSpecial);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum, float screenAlpha = 1.f);
    const string& GetName() const { return m_szName; }
+   int GetPagenum() const { return m_pagenum; }
    bool IsAnimating() const { return m_animation != nullptr; }
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
    string ToString() const;

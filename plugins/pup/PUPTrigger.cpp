@@ -125,6 +125,11 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
       m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SkipSamePriority, m_length); };
       break;
 
+   case PlayAction::QueueSameP:
+   case PlayAction::QueueAlways:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, m_playAction, m_length); };
+      break;
+
    case PlayAction::StopPlayer:
       m_action = [&]() { m_pScreen->Stop(m_priority); };
       break;
@@ -210,6 +215,10 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       playAction = PlayAction::SkipSamePriority;
    else if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s))
       playAction = PlayAction::CustomFunction;
+   else if (StrCompareNoCase(triggerPlayAction, "QueueSameP"s))
+      playAction = PlayAction::QueueSameP;
+   else if (StrCompareNoCase(triggerPlayAction, "QueueAlways"s))
+      playAction = PlayAction::QueueAlways;
    else
       playAction = PlayAction::Normal;
 
@@ -251,7 +260,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       pPlaylist,
       szPlayFile,
       parts[7].empty() ? pPlaylist->GetVolume() : string_to_float(parts[7], 100), // volume
-      parts[8].empty() ? pPlaylist->GetPriority() : string_to_int(parts[8], 0), // priority
+      string_to_int(parts[8], 0), // priority
       string_to_int(parts[9], 0), // length
       string_to_int(parts[10], 0), // counter
       string_to_int(parts[11], 0), // rest seconds

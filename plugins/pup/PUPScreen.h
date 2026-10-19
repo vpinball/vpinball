@@ -102,7 +102,8 @@ public:
    PUPLabel* GetLabel(const string& labelName);
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
-   void SetPage(int pagenum, int seconds);
+   void SetPage(int pagenum, int durationMs);
+   const vector<PUPLabel*>& GetLabels() const { return m_labels; }
 
    void AddPlaylist(PUPPlaylist* pPlaylist);
    PUPPlaylist* GetPlaylist(const string& szFolder);

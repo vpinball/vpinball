@@ -618,6 +618,14 @@ void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, const
    //                                 playing and then autoreturn
    //   Sub PDMDSplashPagePlayingHUD 'will show labelpage and auto return to def after current
    //                                 video stopped
+   if (StrCompareNoCase(Special, "forceshow"s) || StrCompareNoCase(Special, "forcehide"s))
+   {
+      const bool show = StrCompareNoCase(Special, "forceshow"s);
+      for (PUPLabel* pLabel : pScreen->GetLabels())
+         if (pLabel->GetPagenum() == PageNum && PageNum >= 0)
+            pLabel->SetVisible(show && pLabel->GetOnShowVisible());
+      return;
+   }
    if (StrCompareNoCase(Special, "hidehudplay"s))
    {
       pScreen->m_hudReturn = PUPScreen::HudReturn::RestoreHud;
@@ -627,7 +635,11 @@ void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, const
       pScreen->m_hudReturn = PUPScreen::HudReturn::ReplayTrigger;
    else
       pScreen->m_hudReturn = PUPScreen::HudReturn::None;
-   pScreen->SetPage(PageNum, Seconds);
+   if (StrCompareNoCase(Special, "clear"s))
+      for (PUPLabel* pLabel : pScreen->GetLabels())
+         if (pLabel->GetPagenum() == PageNum)
+            pLabel->SetCaption(""s);
+   pScreen->SetPage(PageNum, Seconds >= 501 ? Seconds : Seconds * 1000);
 }
 
 void PUPPinDisplay::LabelInit(int screenNum)
@@ -736,7 +748,7 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
    if (!pScreen)
       return;
 
-   if (playtype < static_cast<int>(PlayAction::Normal) || playtype > static_cast<int>(PlayAction::CustomFunction)) {
+   if (playtype < static_cast<int>(PlayAction::Normal) || playtype == 10 || playtype > static_cast<int>(PlayAction::QueueAlways)) {
       NOT_IMPLEMENTED("Not implemented: playevent playtype=" + std::to_string(playtype));
       return;
    }

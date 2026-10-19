@@ -14,11 +14,13 @@ public:
    static std::unique_ptr<PUPCustomPos> CreateFromCSV(const string& line);
 
    int GetSourceScreen() const { return m_sourceScreen; }
+   int GetRotation() const { return m_rotation; }
    SDL_Rect ScaledRect(int w, int h) const;
    string ToString() const;
 
 private:
    int m_sourceScreen = 0;
+   int m_rotation = 0;
    SDL_FRect m_frect { };
 };
 

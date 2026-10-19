@@ -1245,7 +1245,8 @@ void PUPManager::OnGetAudioSrc(const unsigned int eventId, void* context, void* 
 const string& PlayActionToString(PlayAction value)
 {
    static const string actionStrings[] = { "PlayAction::Normal"s, "PlayAction::Loop"s, "PlayAction::SplashReset"s, "PlayAction::SplashReturn"s, "PlayAction::StopPlayer"s,
-      "PlayAction::StopFile"s, "PlayAction::SetBG"s, "PlayAction::PlaySSF"s, "PlayAction::SkipSamePriority"s, "PlayAction::CustomFunction"s };
+      "PlayAction::StopFile"s, "PlayAction::SetBG"s, "PlayAction::PlaySSF"s, "PlayAction::SkipSamePriority"s, "PlayAction::CustomFunction"s, "Unknown"s,
+      "PlayAction::QueueSameP"s, "PlayAction::QueueAlways"s };
    static const string error = "Unknown"s;
    if ((int)value < 0 || (size_t)value >= std::size(actionStrings))
       return error;
