@@ -644,9 +644,25 @@ void B2SServer::OnGetRenderer(const unsigned int, void* userData, void* msgData)
 
 void B2SServer::ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet)
 {
-   m_controllerProxy.ForwardCall(me, memberIndex, pArgs, pRet);
+   const ScriptClassMemberDef& member = m_controllerProxy.GetProxyClass().GetProxyClassDef()->members[memberIndex];
+   const char* methodName = member.name.name;
 
-   const char* methodName = m_controllerProxy.GetProxyClass().GetProxyClassDef()->members[memberIndex].name.name;
+   // Without the PinMAME plugin, forwarded calls would raise script errors and the table would never load (not even
+   // allowing to fix the settings in game): they are skipped (returning defaults) and the user is told once a ROM is
+   // set. Tables without a ROM (EM, originals) only call Run/Stop, whose bookkeeping below still runs
+   if (!HasController())
+   {
+      if (!m_controllerMissingReported && member.nArgs == 1 && methodName == "GameName"sv && pArgs[0].vString.string && pArgs[0].vString.string[0])
+      {
+         m_controllerMissingReported = true;
+         static constexpr const char* message = "This table runs a ROM through the B2S plugin, which needs the PinMAME plugin. Enable the PinMAME plugin or disable the B2S plugin in the plugin settings.";
+         LOGE(message);
+         m_vpxApi->PushNotification(message, 10000);
+      }
+   }
+   else
+      m_controllerProxy.ForwardCall(me, memberIndex, pArgs, pRet);
+
    if (methodName == "GameName"sv)
    {
       SetB2SName("");
@@ -1245,7 +1261,7 @@ bool B2SServer::GetB2SIsAnimationRunning(const string& animationName) const
 
 void B2SServer::PulseSwitch(int switchId)
 {
-   if (m_setSwitchIndex < 0)
+   if (m_setSwitchIndex < 0 || !HasController())
       return;
    // Pulse the switch on the message API thread: set on, then released after 200ms (as the reference implementation)
    const auto thunk = [](void* userData)

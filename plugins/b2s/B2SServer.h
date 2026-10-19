@@ -192,6 +192,9 @@ public:
 private:
    PinballPlugin::Scriptable::ScriptClassProxy m_controllerClassProxy;
    PinballPlugin::Scriptable::ScriptObjectProxy m_controllerProxy;
+   // Controller calls are forwarded to the PinMAME plugin, only needed by tables running a ROM (see ForwardCall)
+   bool HasController() const { return m_controllerClassProxy.GetBaseClassDef() != nullptr; }
+   bool m_controllerMissingReported = false;
 
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
