@@ -37,7 +37,7 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
       return false;
    }
 
-   if (!isBg && mainPlaying && priority < currentPriority)
+   if (!isBg && mainPlaying && priority < currentPriority && action != PlayAction::QueueAlways)
    {
       LOGD(std::format("Dropping lower priority: screen={}, current={}, new={}, file={}", m_pScreen->GetScreenNum(), currentPriority, priority, PluginStrings::PathToUTF8(szPlayFile)));
       return false;
@@ -89,6 +89,13 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
    }
 
    const PlayItem item{szPath, volume, priority, length, action == PlayAction::Loop};
+
+   if ((action == PlayAction::QueueSameP || action == PlayAction::QueueAlways) && mainPlaying)
+   {
+      m_queue.insert(m_queue.begin() + 1, item);
+      pPlaylist->MarkPlayed();
+      return true;
+   }
 
    // SplashReset/SplashReturn push at front without popping; the displaced item resumes when the splash ends.
    // SplashReturn would seek-resume the displaced item, but the player doesn't expose seek so for now
