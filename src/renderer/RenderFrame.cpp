@@ -264,12 +264,14 @@ bool RenderFrame::Execute(const bool log)
       m_rd->CopyRenderAndShaderStates(false, *m_rdState);
    }
 
-   if (!m_endOfFrameCmds.empty())
+   // Commands may queue further commands while running (e.g. releasing a part defers its GPU resource destruction): run on a detached batch
+   while (!m_endOfFrameCmds.empty())
    {
       rendered = true;
-      for (const auto& cmd : m_endOfFrameCmds)
+      vector<std::function<void()>> cmds;
+      cmds.swap(m_endOfFrameCmds);
+      for (const auto& cmd : cmds)
          cmd();
-      m_endOfFrameCmds.clear();
    }
 
    return rendered;
