@@ -173,7 +173,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          props.InputInt<Primitive>(
             m_part, "Sides"s, //
             [](const Primitive* primitive) { return primitive->m_d.m_Sides; }, //
-            [](Primitive* primitive, int v) { primitive->m_d.m_Sides = v; });
+            [](Primitive* primitive, int v) { primitive->SetSides(v); });
          props.Checkbox<Primitive>(
             m_part, "Draw Textures Inside"s, //
             [](const Primitive* primitive) { return primitive->m_d.m_drawTexturesInside; }, //

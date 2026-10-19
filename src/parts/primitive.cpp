@@ -1338,7 +1338,7 @@ void Primitive::Load(IObjectReader& reader)
          case FID(RTV8): m_d.m_aRotAndTra[8] = reader.AsFloat(); break;
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
          case FID(NRMA): m_d.m_szNormalMap = reader.AsString(); break;
-         case FID(SIDS): m_d.m_Sides = reader.AsInt(); break;
+         case FID(SIDS): m_d.m_Sides = clamp(reader.AsInt(), 3, Max_Primitive_Sides); break;
          case FID(NAME): m_name = MakeString(reader.AsWideString()); break;
          case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
          case FID(SCOL): m_d.m_SideColor = reader.AsInt(); break;
@@ -1689,17 +1689,27 @@ STDMETHODIMP Primitive::get_Sides(int *pVal)
 
 STDMETHODIMP Primitive::put_Sides(int newVal)
 {
-   if (newVal > Max_Primitive_Sides)
-      newVal = Max_Primitive_Sides;
-
-   if (m_d.m_Sides != newVal)
-   {
-      m_d.m_Sides = newVal;
-      if (!m_d.m_use3DMesh)
-         m_vertexBufferRegenerate = true;
-   }
-
+   SetSides(newVal);
    return S_OK;
+}
+
+// The built-in mesh topology depends on the side count: rebuild it and the render/physics state (a regenerate flag is not enough, the vertex buffer is static and sized for the old mesh)
+void Primitive::SetSides(int sides)
+{
+   sides = clamp(sides, 3, Max_Primitive_Sides);
+   if (m_d.m_Sides == sides)
+      return;
+   m_d.m_Sides = sides;
+   if (m_d.m_use3DMesh)
+      return;
+   CalculateBuiltinOriginal();
+   if (m_renderer)
+      m_renderer->ReinitRenderable(this);
+   if (g_pplayer && g_pplayer->m_physics)
+   {
+      m_physicMatrix.Scale(0.f, 0.f, 0.f); // Invalidate to force update
+      g_pplayer->m_physics->Update(this);
+   }
 }
 
 STDMETHODIMP Primitive::get_Material(BSTR *pVal)
