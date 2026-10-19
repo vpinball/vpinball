@@ -31,16 +31,12 @@ void PUPImage::Clear()
    m_pSurface.reset();
    std::lock_guard lock(m_loadMutex);
    m_pendingSurface.reset();
+   m_pendingReady = false;
 }
 
 void PUPImage::Load(const std::filesystem::path& szFile)
 {
    m_file = szFile;
-
-   if (m_pTexture) {
-      DeleteTexture(m_pTexture);
-      m_pTexture = nullptr;
-   }
    m_pSurface.reset();
 
    m_loading.store(true);
@@ -51,6 +47,7 @@ void PUPImage::Load(const std::filesystem::path& szFile)
       {
          std::lock_guard lock(m_loadMutex);
          m_pendingSurface = std::move(surface);
+         m_pendingReady = true;
       }
       m_loading.store(false);
    }).detach();
@@ -61,7 +58,8 @@ void PUPImage::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, float
    // Pick up async-loaded surface
    {
       std::lock_guard lock(m_loadMutex);
-      if (m_pendingSurface) {
+      if (m_pendingReady) {
+         m_pendingReady = false;
          m_pSurface = std::move(m_pendingSurface);
          if (m_pTexture) {
             DeleteTexture(m_pTexture);

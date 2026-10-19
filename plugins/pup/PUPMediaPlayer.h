@@ -33,6 +33,8 @@ public:
 
 private:
    void StopBlocking();
+   void RenderHold(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha);
+   void RenderLastFrame(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha);
    void Run();
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
    void HandleAudioFrame(AVFrame* pFrame, bool sync);
@@ -81,6 +83,8 @@ private:
       int age = 0;
    };
    vector<FrameInfo> m_frames;
+   VPXTexture m_holdTexture = nullptr;
+   uint64_t m_endTicks = 0;
    SwsContext* m_swsContext = nullptr;
    uint64_t m_lastRenderTicks = 0;
 
