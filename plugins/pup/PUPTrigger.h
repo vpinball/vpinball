@@ -24,9 +24,9 @@ public:
          : m_type(type), m_number(number), m_expected(expected) {}
       const char m_type; // Trigger type
       const int m_number; // Trigger id
-      const int m_expected; // Expected value or -1 for default (triggered if non 0)
+      const int m_expected; // Expected value, 1 when not given
 
-      bool IsTriggered() const { return ((m_expected == -1) && (m_value > 0)) || ((m_expected != -1) && (m_value == m_expected)); }
+      bool IsTriggered() const { return m_value == m_expected; }
       int m_value = 0; // Current value
    };
 
@@ -52,7 +52,8 @@ public:
    void Invoke();
 
 private:
-   PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PlayAction playAction);
+   PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PlayAction playAction, bool useDefaults);
+   void Fire(bool checkRest);
    const string m_szDescript;
    const string m_szTrigger;
    vector<PUPTriggerCondition> m_conditions;
@@ -69,6 +70,8 @@ private:
    std::function<void()> m_action;
 
    uint64_t m_lastTriggered = 0;
+   int m_hitCount = 0;
+   bool m_delayPending = false;
 };
 
 }

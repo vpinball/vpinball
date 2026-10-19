@@ -123,6 +123,7 @@ public:
    PUPFont* GetFont(const string& szFont);
 
    void QueueDOFEvent(char c, int id, int value);
+   void RunLater(double seconds, std::function<void()> fn);
 
    void DuckAllExcept(int percent, int masterScreenNum, bool all);
    void Unduck();
@@ -189,6 +190,7 @@ private:
 
    std::mutex m_eventMutex;
    std::unique_ptr<B2SPluginEventStream> m_B2SPluginEventStream;
+   std::shared_ptr<int> m_runToken = std::make_shared<int>(0);
 };
 
 }
