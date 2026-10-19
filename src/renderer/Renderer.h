@@ -107,6 +107,8 @@ public:
    void DrawWireframe(IEditable* const renderable, const vec4& fillColor, const vec4& edgeColor, bool withDepthMask);
 
    void ReinitRenderable(IRenderable* part) { if (part) m_renderableToInit.push_back(part); }
+   void SetupRenderable(IRenderable* part) { if (part) m_renderableToSetup.push_back(part); }
+   void DropRenderable(IRenderable* part) { std::erase(m_renderableToInit, part); std::erase(m_renderableToSetup, part); }
 
    void SetTable(PinTable* table); // Rebind to a new table (currently limited to base table / live copy swaps)
 
@@ -351,6 +353,7 @@ private:
    unsigned int m_visibilityMask = 0xFFFF;
 
    vector<IRenderable*> m_renderableToInit;
+   vector<IRenderable*> m_renderableToSetup;
 
    bool m_dynamicAO;
    bool m_disableAO;
