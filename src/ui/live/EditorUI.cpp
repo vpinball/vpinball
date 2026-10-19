@@ -160,6 +160,7 @@ void EditorUI::SetTable(PinTable *const table)
    m_savedMultiSel.clear();
    m_savedOutlinerAnchor = nullptr;
    ClearSelection();
+   m_dynamicParts.clear();
    m_editables.clear();
    m_editableMap.clear();
    m_partGroupUseHistory.clear();
@@ -432,8 +433,6 @@ void EditorUI::RenderUI()
    ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
    ImGuizmo::BeginFrame();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-
-   const auto previousMultiSel = m_multiSel;
 
    // In desktop backdrop mode, only backdrop parts can be selected and edited, and conversely
    {
@@ -1339,23 +1338,23 @@ void EditorUI::RenderUI()
       }
    }
 
-   if (m_multiSel != previousMultiSel)
+   // Selected parts are kept dynamic in the UI quadtree so that they can be edited interactively. The selection also changes outside
+   // of this pass (automation, undo, table switches) and parts get re-added as static (undelete), so the state is synced rather than
+   // derived from selection changes
+   std::erase_if(m_dynamicParts, [this](IEditable *edit) { return FindIndexOf(m_table->GetParts(), edit) == -1; });
+   for (IEditable *const edit : m_dynamicParts)
+      if (!IsEditableSelected(edit) && !m_player->m_physics->IsStatic(edit))
+         m_player->m_physics->SetStatic(edit);
+   std::erase_if(m_dynamicParts, [this](IEditable *edit) { return !IsEditableSelected(edit); });
+   for (const auto &part : m_multiSel)
    {
-      for (const auto &part : previousMultiSel)
-      {
-         IEditable *edit = part->GetEditable();
-         if (std::ranges::find(m_multiSel, part) == m_multiSel.end() // Not selected anymore
-            && FindIndexOf(m_table->GetParts(), edit) != -1 // Not deleted
-            && (edit->GetIHitable() != nullptr) && (edit->GetItemType() != eItemBall))
-            m_player->m_physics->SetStatic(edit);
-      }
-      for (const auto &part : m_multiSel)
-      {
-         IEditable *edit = part->GetEditable();
-         if (std::ranges::find(previousMultiSel, part) == previousMultiSel.end() // Newly selected
-            && (edit->GetIHitable() != nullptr) && (edit->GetItemType() != eItemBall))
-            m_player->m_physics->SetDynamic(edit);
-      }
+      IEditable *const edit = part->GetEditable();
+      if (edit->GetIHitable() == nullptr || edit->GetItemType() == eItemBall)
+         continue;
+      if (m_player->m_physics->IsStatic(edit))
+         m_player->m_physics->SetDynamic(edit);
+      if (FindIndexOf(m_dynamicParts, edit) == -1)
+         m_dynamicParts.push_back(edit);
    }
 }
 
