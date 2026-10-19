@@ -704,20 +704,20 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          assert(typeDef.arrayDef->type.id != TypeID::TYPEID_UNRESOLVED);
          const TypeDef& arrayTypeDef = m_types[typeDef.arrayDef->type.id];
          assert(arrayTypeDef.category == TypeDef::TD_NATIVE); // Other types are not yet supported
-         VARIANT varValue;
-         VariantInit(&varValue);
-         LONG ix[2];
+         // Filled in-place rather than with a locked, bounds checked SafeArrayPutElement per element. The source is row
+         // major while the SAFEARRAY is column major: element (i,j) is at i + j * len0
+         VARIANT* pData;
+         SafeArrayAccessData(psa, reinterpret_cast<void**>(&pData));
+         const unsigned int len0 = sv.vArray->lengths[0], len1 = sv.vArray->lengths[1];
          #define COPY_ARRAY(natType, varType) { \
-               V_VT(&varValue) = VT_##varType; \
                const natType* const pSrc = reinterpret_cast<natType*>(&sv.vArray->lengths[2]); \
-               for (ix[0] = 0; ix[0] < static_cast<LONG>(sv.vArray->lengths[0]); ix[0]++) \
-               { \
-                  for (ix[1] = 0; ix[1] < static_cast<LONG>(sv.vArray->lengths[1]); ix[1]++) \
+               for (unsigned int i = 0; i < len0; i++) \
+                  for (unsigned int j = 0; j < len1; j++) \
                   { \
-                     V_##varType(&varValue) = pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]]; \
-                     SafeArrayPutElement(psa, ix, &varValue); \
+                     VARIANT* const pDst = &pData[i + j * len0]; \
+                     V_VT(pDst) = VT_##varType; \
+                     V_##varType(pDst) = pSrc[i * len1 + j]; \
                   } \
-               } \
             }
          switch (arrayTypeDef.nativeType.id)
          {
@@ -736,35 +736,30 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          case TypeID::TYPEID_STRING:
          {
             const ScriptString* const pSrc = reinterpret_cast<const ScriptString*>(&sv.vArray->lengths[2]);
-            for (ix[0] = 0; ix[0] < static_cast<LONG>(sv.vArray->lengths[0]); ix[0]++)
-            {
-               for (ix[1] = 0; ix[1] < static_cast<LONG>(sv.vArray->lengths[1]); ix[1]++)
+            for (unsigned int i = 0; i < len0; i++)
+               for (unsigned int j = 0; j < len1; j++)
                {
-                  VariantInit(&varValue);
-                  V_VT(&varValue) = VT_BSTR;
-                  V_BSTR(&varValue) = ScriptStringToBSTR(pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]].string);
-                  SafeArrayPutElement(psa, ix, &varValue);
-                  VariantClear(&varValue);
+                  VARIANT* const pDst = &pData[i + j * len0];
+                  V_VT(pDst) = VT_BSTR;
+                  V_BSTR(pDst) = ScriptStringToBSTR(pSrc[i * len1 + j].string);
                }
-            }
             break;
          }
          case TypeID::TYPEID_BOOL:
          {
-            V_VT(&varValue) = VT_BOOL;
             const char* pSrc = reinterpret_cast<const char*>(&sv.vArray->lengths[2]);
-            for (ix[0] = 0; ix[0] < static_cast<LONG>(sv.vArray->lengths[0]); ix[0]++)
-            {
-               for (ix[1] = 0; ix[1] < static_cast<LONG>(sv.vArray->lengths[1]); ix[1]++)
+            for (unsigned int i = 0; i < len0; i++)
+               for (unsigned int j = 0; j < len1; j++)
                {
-                  V_BOOL(&varValue) = pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]] ? VARIANT_TRUE : VARIANT_FALSE;
-                  SafeArrayPutElement(psa, ix, &varValue);
+                  VARIANT* const pDst = &pData[i + j * len0];
+                  V_VT(pDst) = VT_BOOL;
+                  V_BOOL(pDst) = pSrc[i * len1 + j] ? VARIANT_TRUE : VARIANT_FALSE;
                }
-            }
             break;
          }
          default: assert(false); // not yet implemented
          }
+         SafeArrayUnaccessData(psa);
          #undef COPY_ARRAY
          V_VT(cv) = VT_ARRAY | VT_VARIANT;
          V_ARRAY(cv) = psa;
@@ -1016,7 +1011,10 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef* classDef, void* nativeO
       if (!COMToScriptVariant(&pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]))
       {
          PLOGE << "Failed to convert a parameter in call to " << classDef->name.name << '.' << memberDef.name.name;
-         *puArgErr = pDispParams->cArgs - 1 - i;
+         for (unsigned int j = 0; j < i; j++)
+            ReleaseScriptVariant(memberDef.callArgType[j], args[j]);
+         if (puArgErr != nullptr)
+            *puArgErr = pDispParams->cArgs - 1 - i;
          return DISP_E_TYPEMISMATCH;
       }
    }
