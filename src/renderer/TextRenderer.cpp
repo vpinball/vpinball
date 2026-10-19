@@ -148,7 +148,9 @@ TTF_Font *TextRenderer::LoadFont(const FontDesc &font, const PinTable *table)
       {
          pFont = TTF_OpenFontIO(SDL_IOFromConstMem(embedded->m_buffer.data(), embedded->m_buffer.size()), true, ptSize);
          if (pFont)
+	 {
             PLOGI << "Embedded font loaded: name=" << embedded->m_name;
+	 }
       }
    }
 
