@@ -203,6 +203,10 @@ void Bumper::RenderRelease()
    m_ringMeshBuffer = nullptr;
    m_capMeshBuffer = nullptr;
    m_socketMeshBuffer = nullptr;
+   m_baseEdgeBuffer = nullptr;
+   m_ringEdgeBuffer = nullptr;
+   m_capEdgeBuffer = nullptr;
+   m_socketEdgeBuffer = nullptr;
    delete[] m_ringVertices;
    m_ringVertices = nullptr;
    if (m_baseTexture)
@@ -234,6 +238,19 @@ void Bumper::Render(const unsigned int renderMask)
    if (isReflectionPass && !m_d.m_reflectionEnabled)
       return;
 
+   // Editor wireframe of a mesh part, from an edge buffer built on first use
+   const auto drawEdges = [this](std::shared_ptr<MeshBuffer>& edgeBuffer, const std::shared_ptr<MeshBuffer>& meshBuffer, const WORD* indices, unsigned int numIndices, const Vertex3Ds& pos)
+   {
+      if (meshBuffer == nullptr)
+         return;
+      if (edgeBuffer == nullptr)
+      {
+         vector<unsigned int> edgeIndices(indices, indices + numIndices);
+         edgeBuffer = meshBuffer->CreateEdgeMeshBuffer(edgeIndices);
+      }
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, edgeBuffer, RenderDevice::LINELIST, 0, edgeBuffer->m_ib->m_count);
+   };
+
    if (m_d.m_baseVisible)
    {
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
@@ -241,7 +258,8 @@ void Bumper::Render(const unsigned int renderMask)
       {
          if (renderMask & Renderer::UI_FILL)
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
-         // FIXME render wireframe
+         if (renderMask & Renderer::UI_EDGES)
+            drawEdges(m_baseEdgeBuffer, m_baseMeshBuffer, bumperBaseIndices, bumperBaseNumIndices, pos);
       }
       else
       {
@@ -264,7 +282,8 @@ void Bumper::Render(const unsigned int renderMask)
       {
          if (renderMask & Renderer::UI_FILL)
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
-         // FIXME render wireframe
+         if (renderMask & Renderer::UI_EDGES)
+            drawEdges(m_capEdgeBuffer, m_capMeshBuffer, bumperCapIndices, bumperCapNumIndices, pos);
       }
       else
       {
@@ -287,7 +306,8 @@ void Bumper::Render(const unsigned int renderMask)
       {
          if (renderMask & Renderer::UI_FILL)
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
-         // FIXME render wireframe
+         if (renderMask & Renderer::UI_EDGES)
+            drawEdges(m_ringEdgeBuffer, m_ringMeshBuffer, bumperRingIndices, bumperRingNumIndices, pos);
       }
       else
       {
@@ -315,7 +335,8 @@ void Bumper::Render(const unsigned int renderMask)
       {
          if (renderMask & Renderer::UI_FILL)
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
-         // FIXME render wireframe
+         if (renderMask & Renderer::UI_EDGES)
+            drawEdges(m_socketEdgeBuffer, m_socketMeshBuffer, bumperSocketIndices, bumperSocketNumIndices, pos);
       }
       else
       {
