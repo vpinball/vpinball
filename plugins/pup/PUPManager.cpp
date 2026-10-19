@@ -392,6 +392,8 @@ ControllerDef PUPManager::SelectControllerForGame(const std::string_view& gameKe
 
 void PUPManager::Unload()
 {
+   m_runToken = std::make_shared<int>(0);
+
    // Run any still-queued trigger invokes (see QueueDOFEvent) while the triggers
    // and screens they point to are still alive.
    m_msgApi->FlushPendingCallbacks(m_endpointId);
@@ -1035,36 +1037,41 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
    {
       for (auto& [cmd, triggers] : screen->GetTriggers())
       {
-         const bool wasTriggered = triggers[0]->IsTriggered();
+         bool matched = false;
          for (auto& trigger : triggers[0]->GetTriggers())
          {
             if (trigger.m_type == c && trigger.m_number == id)
             {
                trigger.m_value = value;
-               break;
+               matched = true;
             }
          }
-         const bool isTriggered = triggers[0]->IsTriggered();
-         if (isTriggered && !wasTriggered)
+         if (matched && triggers[0]->IsTriggered())
          {
             for (const auto& trigger : triggers)
             {
                // Dispatch trigger action on main thread
                m_msgApi->RunOnMainThread(m_endpointId, 0.001, [](void* userData) { static_cast<PUPTrigger*>(userData)->Invoke(); }, trigger);
             }
-            // Reset trigger condition values so the trigger can fire again
-            // when the same B2SData event is sent repeatedly (e.g., D9=1 each ball)
-            for (auto& trigger : triggers[0]->GetTriggers())
-            {
-               if (trigger.m_type == c && trigger.m_number == id)
-               {
-                  trigger.m_value = 0;
-                  break;
-               }
-            }
          }
       }
    }
+}
+
+void PUPManager::RunLater(double seconds, std::function<void()> fn)
+{
+   struct Pending
+   {
+      std::weak_ptr<int> token;
+      std::function<void()> fn;
+   };
+   auto* pending = new Pending { m_runToken, std::move(fn) };
+   m_msgApi->RunOnMainThread(m_endpointId, seconds, [](void* userData)
+   {
+      std::unique_ptr<Pending> p(static_cast<Pending*>(userData));
+      if (!p->token.expired())
+         p->fn();
+   }, pending);
 }
 
 int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
