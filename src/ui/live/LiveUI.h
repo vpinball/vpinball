@@ -82,6 +82,8 @@ private:
    void NewFrame();
    void AddMousePosEvent(bool isTouch, float x, float y) const;
    void UpdateScale();
+   void UpdatePlayfieldWindowFrame();
+   bool m_playfieldWindowFramed = false;
 
    vector<std::shared_ptr<MeshBuffer>> m_meshBuffers;
 

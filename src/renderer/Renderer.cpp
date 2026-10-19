@@ -108,6 +108,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderWidth = wnd->GetPixelWidth();
       m_renderHeight = wnd->GetPixelHeight();
    }
+   m_renderSourceWidth = wnd->GetPixelWidth();
+   m_renderSourceHeight = wnd->GetPixelHeight();
    const float AAfactor = m_table->GetSettings().GetPlayer_AAFactor();
    const int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
    const int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
@@ -501,6 +503,73 @@ void Renderer::DisableBallLighting(bool disableLightingForBalls)
 {
    vec4 prev = m_renderDevice->m_ballShader->GetVector(ShaderUniform::w_h_disableLighting);
    m_renderDevice->m_ballShader->SetVector(ShaderUniform::w_h_disableLighting, prev.x, prev.y, disableLightingForBalls ? 1.f : 0.f, prev.w);
+}
+
+void Renderer::ResizeRenderTargets()
+{
+   if (m_stereo3D == STEREO_VR)
+      return;
+   const VPX::Window* const wnd = m_renderDevice->m_outputWnd[0];
+   const int wndWidth = wnd->GetPixelWidth(), wndHeight = wnd->GetPixelHeight();
+   if ((wndWidth == m_renderSourceWidth && wndHeight == m_renderSourceHeight) || wndWidth <= 0 || wndHeight <= 0)
+      return;
+   m_renderSourceWidth = wndWidth;
+   m_renderSourceHeight = wndHeight;
+
+   // Keep the current supersampling factor and stereo layout
+   const float AAfactor = static_cast<float>(GetBackBufferTexture()->GetWidth()) / static_cast<float>(m_renderWidth);
+   if (m_stereo3D == STEREO_SBS)
+   {
+      m_renderWidth = wndWidth / 2;
+      m_renderHeight = wndHeight;
+   }
+   else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
+   {
+      m_renderWidth = wndWidth;
+      m_renderHeight = wndHeight / 2;
+   }
+   else
+   {
+      m_renderWidth = wndWidth;
+      m_renderHeight = wndHeight;
+   }
+   const int renderWidthAA = max(1, static_cast<int>(static_cast<float>(m_renderWidth) * AAfactor));
+   const int renderHeightAA = max(1, static_cast<int>(static_cast<float>(m_renderHeight) * AAfactor));
+   PLOGI << "Playfield window resized to " << wndWidth << 'x' << wndHeight << ", rendering at " << renderWidthAA << 'x' << renderHeightAA;
+
+   // Frames already submitted may still reference the previous targets: release them at the end of the frame being prepared
+   vector<RenderTarget*> released { m_pOffscreenBackBufferTexture1, m_pOffscreenBackBufferTexture2, m_pOffscreenMSAABackBufferTexture, m_pBloomBufferTexture, m_pBloomTmpBufferTexture,
+      m_pPostProcessRenderTarget1, m_pPostProcessRenderTarget2, m_pReflectionBufferTexture, m_pMotionBlurBufferTexture, m_pAORenderTarget1, m_pAORenderTarget2, m_staticPrepassRT };
+   std::erase(released, nullptr);
+   m_renderDevice->AddEndOfFrameCmd([released]() { for (RenderTarget* rt : released) delete rt; });
+
+   const RenderTarget* const previous = GetBackBufferTexture();
+   const SurfaceType rtType = previous->m_type;
+   const colorFormat renderFormat = previous->GetColorFormat();
+   if (m_pOffscreenMSAABackBufferTexture)
+      m_pOffscreenMSAABackBufferTexture = new RenderTarget(m_renderDevice, rtType, "MSAABackBuffer"s, renderWidthAA, renderHeightAA, renderFormat, true,
+         m_pOffscreenMSAABackBufferTexture->GetMSAASamples(), "Fatal Error: unable to create MSAA render buffer!");
+   m_pOffscreenBackBufferTexture1 = new RenderTarget(m_renderDevice, rtType, "BackBuffer1"s, renderWidthAA, renderHeightAA, renderFormat, true, previous->GetMSAASamples(),
+      "Fatal Error: unable to create offscreen back buffer");
+   m_pOffscreenBackBufferTexture2 = m_pOffscreenBackBufferTexture1->Duplicate("BackBuffer2"s, false);
+   m_pBloomBufferTexture = new RenderTarget(m_renderDevice, rtType, "BloomBuffer1"s, max(1, m_renderWidth / 4), max(1, m_renderHeight / 4), renderFormat, false, 1,
+      "Fatal Error: unable to create bloom buffer!");
+   m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
+
+   // Lazily recreated at the new size when next used
+   m_pPostProcessRenderTarget1 = nullptr;
+   m_pPostProcessRenderTarget2 = nullptr;
+   m_pReflectionBufferTexture = nullptr;
+   m_pMotionBlurBufferTexture = nullptr;
+   m_pAORenderTarget1 = nullptr;
+   m_pAORenderTarget2 = nullptr;
+   m_staticPrepassRT = nullptr;
+   m_isStaticPrepassDirty = true;
+
+   m_renderDevice->m_basicShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
+   m_renderDevice->m_ballShader->SetVector(ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
+   DisableBallLighting(m_table->GetSettings().GetPlayer_DisableLightingForBalls());
+   InitLayout();
 }
 
 void Renderer::SwapBackBufferRenderTargets()
@@ -3118,6 +3187,8 @@ void Renderer::RenderUIScene()
 
 void Renderer::Render3DScene()
 {
+   ResizeRenderTargets();
+
    // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    SwapBackBufferRenderTargets();
 

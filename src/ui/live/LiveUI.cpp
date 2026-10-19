@@ -290,8 +290,23 @@ void LiveUI::HandleSDLEvent(SDL_Event &e) const
    }
 }
 
+// A windowed playfield gets a frame while editing or play testing so that it can be moved and resized like a regular editor window
+void LiveUI::UpdatePlayfieldWindowFrame()
+{
+   VPX::Window* const wnd = m_player->m_playfieldWnd;
+   if (wnd == nullptr || wnd->GetWindowMode() != VPX::Window::Windowed || m_player->IsVR() || g_isMobile)
+      return;
+   const bool framed = m_editorUI.IsOpened() || m_player->m_ptable->m_liveBaseTable != nullptr;
+   if (framed == m_playfieldWindowFramed)
+      return;
+   m_playfieldWindowFramed = framed;
+   SDL_SetWindowBordered(wnd->GetCore(), framed);
+   SDL_SetWindowResizable(wnd->GetCore(), framed);
+}
+
 void LiveUI::NewFrame()
 {
+   UpdatePlayfieldWindowFrame();
    ImGuiIO &io = ImGui::GetIO();
    if (m_editorUI.IsOpened() || SDL_CursorVisible())
       io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
