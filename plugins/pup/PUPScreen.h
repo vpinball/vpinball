@@ -54,6 +54,7 @@ public:
    bool IsTransparent() const { return m_transparent; }
 
    float m_screenAlpha = 1.0f;
+   float m_overlayAlpha = 1.0f;
    bool m_hudVisible = true;
    bool m_padTextAlways = false;
    // Action queued by LabelShowPage, applied when the main media ends.
@@ -79,6 +80,8 @@ public:
    void Unduck();
    bool IsDuckMaster() const { return m_duckMaster; }
    void SetDuckMaster(bool master) { m_duckMaster = master; }
+   int GetDefaultDuck() const { return m_defaultDuck; }
+   void SetDefaultDuck(int percent) { m_defaultDuck = percent; }
 
    const std::unique_ptr<PUPCustomPos>& GetCustomPos() const { return m_pCustomPos; }
    void SetCustomPos(const string& szCustomPos);
@@ -151,6 +154,7 @@ private:
    int m_currentVolume = 100;
    bool m_duckMaster = false;
    int m_duckOrigVolume = -1;
+   int m_defaultDuck = -1;
    int m_fadeVolume = -1;
    int m_fadeTarget = 0;
    int m_volumeFadeStep = 0;

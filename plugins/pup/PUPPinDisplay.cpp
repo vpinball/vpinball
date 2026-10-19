@@ -265,7 +265,8 @@ void PUPPinDisplay::SetB2SFilter(const string& value)
 void PUPPinDisplay::Show(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   NOT_IMPLEMENTED("Not implemented: screenNum=" + std::to_string(screenNum));
+   if (pScreen && (pScreen->GetMode() == PUPScreen::Mode::Off || pScreen->GetMode() == PUPScreen::Mode::MusicOnly))
+      pScreen->SetMode(PUPScreen::Mode::Show);
 }
 
 void PUPPinDisplay::Hide(int screenNum)
@@ -297,6 +298,38 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                if (pScreen) {
                   int fn = json["FN"s].as<int>();
                   switch (fn) {
+                     case 1:
+                        // show screen { "mt":301, "SN": XX, "FN":1 }
+                        Show(sn);
+                        break;
+                     case 18:
+                        // reset to ForceBack { "mt":301, "SN": XX, "FN":18 }
+                        pScreen->SetTopmost(false);
+                        pScreen->SetMode(PUPScreen::Mode::ForceBack);
+                        break;
+                     case 20:
+                     {
+                        // set screen alpha { "mt":301, "SN": XX, "FN":20, "AM":1, "AV":255 }
+                        const int am = json["AM"s].as<int>(0);
+                        pScreen->m_screenAlpha = am ? static_cast<float>(json["AV"s].as<int>(255)) / 255.f : 1.f;
+                        break;
+                     }
+                     case 27:
+                        // show label page { "mt":301, "SN": XX, "FN":27, "PN":1, "HS":3, "EX":"" }
+                        LabelShowPage(sn, json["PN"s].as<int>(0), json["HS"s].as<int>(0), json["EX"s].as_str());
+                        break;
+                     case 28:
+                        // hide screen { "mt":301, "SN": XX, "FN":28 }
+                        Hide(sn);
+                        break;
+                     case 40:
+                        // set volume { "mt":301, "SN": XX, "FN":40, "VL":9 }
+                        pScreen->SetVolumeCurrent(json["VL"s].as<int>(0));
+                        break;
+                     case 54:
+                        // default duck percent for '-xx' file names { "mt":301, "SN": XX, "FN":54, "DV":50 }
+                        pScreen->SetDefaultDuck(json["DV"s].as<int>(-1));
+                        break;
                      case 2:
                         // See pDisableLoopRefresh — form state flags (FF/FO), controls Windows form redraw
                         // { "mt":301, "SN": XX, "FN": 2, "FF":0/1, "FO":0/1 }
@@ -342,7 +375,8 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         break;
                      case 12:
                         // "{ ""mt"":301, ""SN"": 18, ""FN"":12 }" 'STOPSCREEN
-                        NOT_IMPLEMENTED("StopScreen? not implemented. szMsg=" + szMsg);
+                        pScreen->Stop();
+                        pScreen->SetMode(PUPScreen::Mode::Off);
                         break;
                      case 15:
                         // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %
@@ -364,13 +398,10 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         break;
                      case 22:
                      {
-                        // set screen transparency { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 }
+                        // set overlay alpha { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 }
                         // AV: Alpha Value (0-255), AM: Alpha mode enabled (1) or disabled (0)
-                        int am = json["AM"s].as<int>(0);
-                        if (am)
-                           pScreen->m_screenAlpha = static_cast<float>(json["AV"s].as<int>(255)) / 255.f;
-                        else
-                           pScreen->m_screenAlpha = 1.f;
+                        const int am = json["AM"s].as<int>(0);
+                        pScreen->m_overlayAlpha = am ? static_cast<float>(json["AV"s].as<int>(255)) / 255.f : 1.f;
                         break;
                      }
                      case 26:
