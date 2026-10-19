@@ -94,6 +94,7 @@ private:
    // Multi selection of editable parts: all currently selected parts, with m_selection.GetPart() being the
    // active one (property pane target and gizmo pivot). Empty unless m_selection.GetType() == S_EDITABLE.
    vector<std::shared_ptr<EditorUIPart>> m_multiSel;
+   vector<IEditable *> m_dynamicParts; // Parts made dynamic in the UI quadtree because they are selected
    std::shared_ptr<EditorUIPart> m_outlinerAnchor; // Anchor part for shift+click range selection in the outliner
    // Multi selection of shared resources (images, sounds, materials): all selected items, with
    // m_selection's payload being the active one. Empty unless m_selection has the matching type.

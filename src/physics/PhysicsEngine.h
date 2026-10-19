@@ -24,6 +24,7 @@ public:
    // Only supported for UI for the time being
    void SetDynamic(IEditable *editable) { GetUIQuadTree()->SetDynamic(editable); }
    void SetStatic(IEditable *editable) { GetUIQuadTree()->SetStatic(editable); }
+   bool IsStatic(IEditable *editable) { return GetUIQuadTree()->IsStatic(editable); }
 
    // Allow to update/add/remove parts after initial setup (live edit). Editing suspends the simulation,
    // immediately updates the colliders (they may be displayed in the editor), and defers the static
