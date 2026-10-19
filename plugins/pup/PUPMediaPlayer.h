@@ -54,6 +54,7 @@ private:
    double m_lastGameTime = -1.0;
    double m_lastGameTimeWall = 0.0;
    double m_gameTimeOffset = 0.0;
+   double m_gameTimeOffsetBase = 0.0;
    double m_startTimestamp = 0.0; // timestamp in seconds when the play command was called
 
    std::filesystem::path m_filename;
