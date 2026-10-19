@@ -1,33 +1,100 @@
-Index: implot.cpp
-===================================================================
---- implot.cpp	(revision 4204)
-+++ implot.cpp	(working copy)
-@@ -55,12 +55,14 @@
- 
- */
- 
-+#include "stdafx.h"
-+
+--- implot.cpp (upstream)
++++ implot.cpp (VPX)
+@@ -191,6 +191,9 @@
  #ifndef IMGUI_DEFINE_MATH_OPERATORS
  #define IMGUI_DEFINE_MATH_OPERATORS
  #endif
- 
++
++#include "core/stdafx.h"
++
  #include "implot.h"
--#include "imgui_internal.h"
-+#include "..\imgui_internal.h"
- #ifdef _MSC_VER
- #define sprintf sprintf_s
- #endif
-Index: implot.h
-===================================================================
---- implot.h	(revision 4204)
-+++ implot.h	(working copy)
-@@ -23,7 +23,7 @@
- // ImPlot v0.3 WIP
+ #ifndef IMGUI_DISABLE
+ #include "implot_internal.h"
+--- implot.h (upstream)
++++ implot.h (VPX)
+@@ -46,7 +46,7 @@
+ // [SECTION] Obsolete API
  
  #pragma once
 -#include "imgui.h"
-+#include "..\imgui.h"
++#include "imgui/imgui.h"
+ #ifndef IMGUI_DISABLE
  
  //-----------------------------------------------------------------------------
- // Basic types and flags
+@@ -539,20 +539,20 @@
+     template <typename ...Args>
+     ImPlotSpec(Args... args) {
+         static_assert((sizeof ...(Args)) % 2 == 0, "Odd number of arguments! You must provide (ImPlotProp, value) pairs!");
+-        SetProp(args...);
++        SetPropImPlot(args...);
+     }
+ 
+-    // Set properties from (ImPlotProp,value) pairs in any order, e.g. SetProp(ImPlotProp_LineColor, my_color, ImPlotProp_Marker, 4.0f)
++    // Set properties from (ImPlotProp,value) pairs in any order, e.g. SetPropImPlot(ImPlotProp_LineColor, my_color, ImPlotProp_Marker, 4.0f)
+     template <typename Arg, typename ...Args>
+-    void SetProp(ImPlotProp prop, Arg arg, Args... args) {
++    void SetPropImPlot(ImPlotProp prop, Arg arg, Args... args) {
+         static_assert((sizeof ...(Args)) % 2 == 0, "Odd number of arguments! You must provide (ImPlotProp,value) pairs!");
+-        SetProp(prop, arg);
+-        SetProp(args...);
++        SetPropImPlot(prop, arg);
++        SetPropImPlot(args...);
+     }
+ 
+     // Set a property from a scalar value.
+     template <typename T>
+-    void SetProp(ImPlotProp prop, T v) {
++    void SetPropImPlot(ImPlotProp prop, T v) {
+         switch (prop) {
+         case ImPlotProp_LineColor       : LineColor       = ImGui::ColorConvertU32ToFloat4((ImU32)v); return;
+         case ImPlotProp_LineWeight      : LineWeight      = (float)v;                                 return;
+@@ -572,7 +572,7 @@
+     }
+ 
+     // Set a property from a pointer value.
+-    void SetProp(ImPlotProp prop, ImU32* v) {
++    void SetPropImPlot(ImPlotProp prop, ImU32* v) {
+         switch (prop) {
+         case ImPlotProp_LineColors       : LineColors       = v;  return;
+         case ImPlotProp_FillColors       : FillColors       = v;  return;
+@@ -584,7 +584,7 @@
+     }
+ 
+     // Set a property from a float pointer value.
+-    void SetProp(ImPlotProp prop, float* v) {
++    void SetPropImPlot(ImPlotProp prop, float* v) {
+         switch (prop) {
+         case ImPlotProp_MarkerSizes : MarkerSizes = v; return;
+         default: break;
+@@ -593,7 +593,7 @@
+     }
+ 
+     // Set a property from an ImVec4 value.
+-    void SetProp(ImPlotProp prop, const ImVec4& v) {
++    void SetPropImPlot(ImPlotProp prop, const ImVec4& v) {
+         switch (prop) {
+         case ImPlotProp_LineColor       : LineColor       = v; return;
+         case ImPlotProp_FillColor       : FillColor       = v; return;
+--- implot_internal.h (upstream)
++++ implot_internal.h (VPX)
+@@ -38,7 +38,7 @@
+ 
+ #ifndef IMGUI_DISABLE
+ #include <time.h>
+-#include "imgui_internal.h"
++#include "imgui/imgui_internal.h"
+ 
+ // Support for pre-1.84 versions. ImPool's GetSize() -> GetBufSize()
+ #if (IMGUI_VERSION_NUM < 18303)
+--- implot_items.cpp (upstream)
++++ implot_items.cpp (VPX)
+@@ -26,6 +26,9 @@
+ #ifndef IMGUI_DEFINE_MATH_OPERATORS
+ #define IMGUI_DEFINE_MATH_OPERATORS
+ #endif
++
++#include "core/stdafx.h"
++
+ #include "implot.h"
+ #ifndef IMGUI_DISABLE
+ #include "implot_internal.h"

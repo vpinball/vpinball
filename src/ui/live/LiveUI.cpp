@@ -592,7 +592,7 @@ void LiveUI::UpdateTouchUI()
       drawList->AddRectFilled(topLeft, bottomRight, fillColor);
 
       constexpr ImColor borderColor(255, 255, 255, 20);
-      drawList->AddRect(topLeft, bottomRight, borderColor, 0.0f, ImDrawFlags_RoundCornersAll, 2.0f);
+      drawList->AddRect(topLeft, bottomRight, borderColor, 0.0f, ImDrawFlags_RoundAll, 2.0f);
    }
    ImGui::End();
    ImGui::PopStyleVar(2);

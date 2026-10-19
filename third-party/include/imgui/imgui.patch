@@ -1,86 +1,108 @@
-Index: imgui.cpp
-===================================================================
---- imgui.cpp	(revision 4201)
-+++ imgui.cpp	(working copy)
-@@ -799,7 +799,7 @@
+--- imconfig.h (v1.93.0)
++++ imconfig.h (VPX)
+@@ -34,8 +34,12 @@
+ //---- Disable all of Dear ImGui or don't implement standard windows/tools.
+ // It is very strongly recommended to NOT disable the demo windows and debug tool during development. They are extremely useful in day to day work. Please read comments in imgui_demo.cpp.
+ //#define IMGUI_DISABLE                                     // Disable everything: all headers and source files will be empty.
+-//#define IMGUI_DISABLE_DEMO_WINDOWS                        // Disable demo windows: ShowDemoWindow()/ShowStyleEditor() will be empty.
+-//#define IMGUI_DISABLE_DEBUG_TOOLS                         // Disable metrics/debugger and other debug tools: ShowMetricsWindow(), ShowDebugLogWindow() and ShowIDStackToolWindow() will be empty.
++#define IMGUI_DISABLE_DEMO_WINDOWS                        // Disable demo windows: ShowDemoWindow()/ShowStyleEditor() will be empty.
++#if defined(__clang__) //!! workaround for 1.92, in general comment out this define again after fix
++#ifndef IMGUI_DISABLE_DEBUG_TOOLS
++#define IMGUI_DISABLE_DEBUG_TOOLS                         // Disable metrics/debugger and other debug tools: ShowMetricsWindow(), ShowDebugLogWindow() and ShowIDStackToolWindow() will be empty.
++#endif
++#endif
+ 
+ //---- Don't implement some functions to reduce linkage requirements.
+ //#define IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS   // [Win32] Don't implement default clipboard handler. Won't use and link with OpenClipboard/GetClipboardData/CloseClipboard etc. (user32.lib/.a, kernel32.lib/.a)
+@@ -126,7 +130,8 @@
+ // Your renderer backend will need to support it (most example renderer backends support both 16/32-bit indices).
+ // Another way to allow large meshes while keeping 16-bit indices is to handle ImDrawCmd::VtxOffset in your renderer.
+ // Read about ImGuiBackendFlags_RendererHasVtxOffset for details.
+-//#define ImDrawIdx unsigned int
++#include <cstdint>
++#define ImDrawIdx uint32_t
+ 
+ //---- Override ImDrawCallback signature (will need to modify renderer backends accordingly)
+ //struct ImDrawList;
+@@ -153,3 +158,6 @@
+     void MyFunction(const char* name, MyMatrix44* mtx);
+ }
+ */
++
++#include <memory>
++#define ImTextureID std::shared_ptr<class Sampler>
+--- imgui.cpp (v1.93.0)
++++ imgui.cpp (VPX)
+@@ -1285,7 +1285,7 @@
  //-------------------------------------------------------------------------
  // [SECTION] INCLUDES
  //-------------------------------------------------------------------------
 -
-+#include "stdafx.h"
++#include "core/stdafx.h"
  #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
  #define _CRT_SECURE_NO_WARNINGS
  #endif
-Index: imgui_draw.cpp
-===================================================================
---- imgui_draw.cpp	(revision 4201)
-+++ imgui_draw.cpp	(working copy)
-@@ -21,7 +21,7 @@
- // [SECTION] Default font data (ProggyClean.ttf)
+--- imgui_draw.cpp (v1.93.0)
++++ imgui_draw.cpp (VPX)
+@@ -24,7 +24,7 @@
+ // [SECTION] Default font data (ProggyForever.ttf)
  
  */
 -
-+#include "stdafx.h"
++#include "core/stdafx.h"
  #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
  #define _CRT_SECURE_NO_WARNINGS
  #endif
-Index: imgui_impl_dx9.cpp
-===================================================================
---- imgui_impl_dx9.cpp	(revision 4201)
-+++ imgui_impl_dx9.cpp	(working copy)
-@@ -22,12 +22,13 @@
- //  2018-02-16: Misc: Obsoleted the io.RenderDrawListsFn callback and exposed ImGui_ImplDX9_RenderDrawData() in the .h file so you can call it yourself.
- //  2018-02-06: Misc: Removed call to ImGui::Shutdown() which is not available from 1.60 WIP, user needs to call CreateContext/DestroyContext themselves.
+--- imgui_tables.cpp (v1.93.0)
++++ imgui_tables.cpp (VPX)
+@@ -189,6 +189,8 @@
+ // [SECTION] Header mess
+ //-----------------------------------------------------------------------------
  
-+#include "stdafx.h"
- #include "imgui.h"
- #include "imgui_impl_dx9.h"
- 
- // DirectX
- #include <d3d9.h>
--#define DIRECTINPUT_VERSION 0x0800
-+//#define DIRECTINPUT_VERSION 0x0800
- #include <dinput.h>
- 
- // DirectX data
-Index: imgui_impl_win32.cpp
-===================================================================
---- imgui_impl_win32.cpp	(revision 4201)
-+++ imgui_impl_win32.cpp	(working copy)
-@@ -7,6 +7,7 @@
- //  [X] Platform: Keyboard arrays indexed using VK_* Virtual Key Codes, e.g. ImGui::IsKeyPressed(VK_SPACE).
- //  [X] Platform: Gamepad support. Enabled with 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad'.
- 
-+#include "stdafx.h"
- #include "imgui.h"
- #include "imgui_impl_win32.h"
- #ifndef WIN32_LEAN_AND_MEAN
-Index: imgui_impl_win32.h
-===================================================================
---- imgui_impl_win32.h	(revision 4201)
-+++ imgui_impl_win32.h	(working copy)
-@@ -22,9 +22,9 @@
- // Win32 message handler your application need to call.
- // - Intentionally commented out in a '#if 0' block to avoid dragging dependencies on <windows.h> from this helper.
- // - You should COPY the line below into your .cpp code to forward declare the function and then you can call it.
--#if 0
-+//#if 0
- extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
--#endif
-+//#endif
- 
- // DPI-related helpers (optional)
- // - Use to enable DPI awareness without having to create an application manifest.
-Index: imgui_widgets.cpp
-===================================================================
---- imgui_widgets.cpp	(revision 4201)
-+++ imgui_widgets.cpp	(working copy)
-@@ -27,7 +27,7 @@
++#include "core/stdafx.h"
++
+ #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+ #define _CRT_SECURE_NO_WARNINGS
+ #endif
+--- imgui_widgets.cpp (v1.93.0)
++++ imgui_widgets.cpp (VPX)
+@@ -31,7 +31,7 @@
  // [SECTION] Widgets: Columns, BeginColumns, EndColumns, etc.
  
  */
 -
-+#include "stdafx.h"
++#include "core/stdafx.h"
  #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
  #define _CRT_SECURE_NO_WARNINGS
+ #endif
+--- imgui_stdlib.cpp (v1.93.0)
++++ imgui_stdlib.cpp (VPX)
+@@ -16,6 +16,8 @@
+ //   ImGui::InputText("my string", &my_string);
+ // }
+ 
++#include "core/stdafx.h"
++
+ // See more C++ related extension (fmt, RAII, syntactic sugar) on Wiki:
+ //   https://github.com/ocornut/imgui/wiki/Useful-Extensions#cness
+ 
+--- imgui_impl_sdl3.cpp (v1.93.0)
++++ imgui_impl_sdl3.cpp (VPX)
+@@ -1,3 +1,5 @@
++// Warning VPX modified version: disable access to global mouse state to support rotated UI
++
+ // dear imgui: Platform Backend for SDL3
+ // This needs to be used along with a Renderer (e.g. SDL_GPU, DirectX11, OpenGL3, Vulkan..)
+ // (Info: SDL3 is a cross-platform general purpose library for handling windows, inputs, graphics context creation, etc.)
+@@ -90,7 +92,9 @@
+ #endif
+ 
+ #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
+-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1
++// Warning: VPX modification: disable access to global mouse state to support rotated UI
++//#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1
++#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0
+ #else
+ #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0
  #endif
