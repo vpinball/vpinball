@@ -1510,7 +1510,7 @@ void Player::OnFocusChanged()
    if (m_closing == CS_CLOSED)
       return;
 
-   SetPlayState(m_wantsToPlay);
+   SetPlayState(m_wantsToPlay, m_pauseTimeTarget == 0 ? 0 : max(1u, m_pauseTimeTarget - min(m_pauseTimeTarget, m_time_msec)));
 
    if (m_playfieldWnd->IsFocused())
    {
