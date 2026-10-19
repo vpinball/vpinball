@@ -430,6 +430,9 @@ void Player::InitTableSession(const bool isInitial)
 
    // Prepare table for playing
 
+   if (!isInitial)
+      m_loadProgress->SetProgress("Starting Table Session..."s, 0.f);
+
    PLOGI << "Compiling script"; // For profiling
 
    // make sure the load directory is the active directory
