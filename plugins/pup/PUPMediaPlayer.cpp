@@ -390,6 +390,9 @@ void PUPMediaPlayer::RenderLastFrame(VPXRenderContext2D* const ctx, const SDL_Re
 
 void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha)
 {
+   if (!m_running && m_holdTexture == nullptr && !IsPlaying() && (SDL_GetTicks() - m_endTicks) >= 100)
+      return;
+
    std::lock_guard lock(m_mutex);
 
    if (!m_running)
