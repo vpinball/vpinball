@@ -27,15 +27,15 @@ ScriptInterpreter::ScriptInterpreter()
    // Note: For standalone, CoCreateInstance resolves to libwinevbs's implementation via the
    // filtered import library. Alternatively, VBScriptFactory_CreateInstance() from winevbs64.dll
    // could be called directly here to avoid any dependency on import library symbol ordering.
-   const HRESULT vbScriptResult = CoCreateInstance(
-      CLSID_VBScript, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IActiveScriptParse, (LPVOID *)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
+   // VBScript (and the debug manager below) only exist as in-process servers, so no handler or local server fallback
+   const HRESULT vbScriptResult = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_INPROC_SERVER, IID_IActiveScriptParse, (LPVOID *)&m_pScriptParse);
    if (vbScriptResult != S_OK)
       return;
 
 #ifdef VPX_HAS_SCRIPT_DEBUGGER
    // This can fail on some systems (I tested with wine 6.9 and this fails)
    // In that case, m_pProcessDebugManager will remain as nullptr
-   const HRESULT debugResult = CoCreateInstance(CLSID_ProcessDebugManager, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IProcessDebugManager, (LPVOID *)&m_pProcessDebugManager); //!! dto.?
+   const HRESULT debugResult = CoCreateInstance(CLSID_ProcessDebugManager, 0, CLSCTX_INPROC_SERVER, IID_IProcessDebugManager, (LPVOID *)&m_pProcessDebugManager);
 
    // Also check if we have a debugger installed
    // If not, we should abandon the process debug manager and fall back to plain basic errors
@@ -565,7 +565,8 @@ STDMETHODIMP ScriptInterpreter::OnScriptErrorDebug(IActiveScriptErrorDebug *pScr
 // Internet Security interface
 
 
-HRESULT STDMETHODCALLTYPE ScriptInterpreter::GetSecurityId(BYTE *pbSecurityId, DWORD *pcbSecurityId, DWORD_PTR dwReserved) { return S_OK; }
+// No zone based security (the policy is decided by ProcessUrlAction/QueryCustomPolicy), so no security id to provide
+HRESULT STDMETHODCALLTYPE ScriptInterpreter::GetSecurityId(BYTE *pbSecurityId, DWORD *pcbSecurityId, DWORD_PTR dwReserved) { return E_NOTIMPL; }
 
 HRESULT STDMETHODCALLTYPE ScriptInterpreter::ProcessUrlAction(
    DWORD dwAction, BYTE __RPC_FAR *pPolicy, DWORD cbPolicy, BYTE __RPC_FAR *pContext, DWORD cbContext, DWORD dwFlags, DWORD dwReserved)
