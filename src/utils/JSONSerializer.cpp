@@ -1114,6 +1114,13 @@ JSONObjectWriter::JSONObjectWriter(const int nodeKind, JSONSerializer::Serialize
 
 void JSONObjectWriter::BeginObject(const int objectId, const bool isArray, const bool isSkippable)
 {
+   // An object that begins by declaring itself (materials, render probes: BeginObject(FID(MATR)) at the root) is the document itself, not a field of it
+   if (m_stack.size() == 1 && m_root.is_null())
+   {
+      m_root = nlohmann::ordered_json::object();
+      m_stack.push_back({ &m_root, m_nodeKind });
+      return;
+   }
    const Scope& top = m_stack.back();
    const char* const name = top.node ? JSONSerializer::GetFieldName(top.nodeKind, objectId) : nullptr;
    if (name == nullptr)
