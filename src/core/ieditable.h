@@ -299,6 +299,7 @@ public:
    HRESULT put_UserValue(VARIANT *newVal);
 
    PinTable *m_ptable = nullptr; // This may only be set by PinTable in AddPart/RemovePart (guarantee reverse reference with table's list of parts)
+   bool m_renderReleasePending = false; // A deferred (end of frame) render release is queued: the render resources are still set up until it runs
 
    bool m_desktopBackdrop = false; // if true, the element is part of the desktop backdrop
 

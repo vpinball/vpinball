@@ -1951,16 +1951,20 @@ void EditorUI::DeleteSelection()
          m_editableMap.erase(it);
          RemoveFromVectorSingle(m_editables, uiPart);
       }
-      // Release the player side resources (restored by PinUndo::Undo), the render ones at the end of the frame as the render thread may still use them
+      // Release the player side resources (restored by PinUndo::Undo), the render ones at the end of the frame as the render thread may still use them.
+      // The release runs on the render thread: an undelete that happens before it must not touch the render state (see PinUndo::Undo)
       if (edit->GetIHitable())
          m_player->m_physics->Remove(edit);
       if (edit->m_phittimer)
          m_player->TimerRelease(edit);
+      m_renderer->DropRenderable(edit->GetIRenderable());
       edit->AddRef(); // Keep the part alive until its deferred render release has been processed
+      edit->m_renderReleasePending = true;
       m_renderer->m_renderDevice->AddEndOfFrameCmd([edit]()
          {
-            if (edit->m_ptable == nullptr && edit->GetIRenderable()) // Unless undeleted meanwhile
+            if (edit->GetIRenderable())
                edit->GetIRenderable()->RenderRelease();
+            edit->m_renderReleasePending = false;
             edit->Release();
          });
       m_undo.MarkForDelete(edit); // The undo record keeps the part alive (until undone or dropped)

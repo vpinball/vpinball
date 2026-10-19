@@ -363,6 +363,7 @@ void Renderer::SetTable(PinTable *const table)
 
    // Drop renderable initialization requests targeting the previous table
    m_renderableToInit.clear();
+   m_renderableToSetup.clear();
 
    // Re-evaluate the cached table settings (they may have been edited during the previous session)
    ApplyTableSettings();
@@ -3137,6 +3138,9 @@ void Renderer::Render3DScene()
       renderable->RenderSetup(this);
    }
    m_renderableToInit.clear();
+   for (auto renderable : m_renderableToSetup)
+      renderable->RenderSetup(this);
+   m_renderableToSetup.clear();
 
    // Update backdrop visibility and visibility mask
    // For the time being, the Render3DScene only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
