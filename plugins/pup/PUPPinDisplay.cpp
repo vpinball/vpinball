@@ -727,11 +727,10 @@ int PUPPinDisplay::GameUpdate(const string& GameTitle, int Func, int FuncData, c
 
 string PUPPinDisplay::GetVersion() const
 {
-   constexpr int nVersionNo0 = 1;
-   constexpr int nVersionNo1 = 5;
+   constexpr int nVersionNo0 = 2;
+   constexpr int nVersionNo1 = 0;
    constexpr int nVersionNo2 = 99;
-   constexpr int nVersionNo3 = 99;
-   static const string version = std::to_string(nVersionNo0) + '.' + std::to_string(nVersionNo1) + '.' + std::to_string(nVersionNo2) + '.' + std::to_string(nVersionNo3);
+   static const string version = std::to_string(nVersionNo0) + '.' + std::to_string(nVersionNo1) + '.' + std::to_string(nVersionNo2);
    return version;
 }
 
