@@ -14,7 +14,7 @@ public:
    ~PinUndo();
 
    void BeginUndo();
-   void MarkForUndo(IEditable * const pie, const bool saveForUndo = false);
+   void MarkForUndo(IEditable * const pie, const bool saveForUndo = true);
    void MarkForCreate(IEditable *const pie);
    void MarkForDelete(IEditable *const pie);
    void EndUndo();
