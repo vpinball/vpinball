@@ -130,8 +130,12 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       const std::filesystem::path musicPath = PathFromUTF8(normalize_path_separators(musicNameStr));
 
       const std::filesystem::path musicDir = g_app->m_fileLocator.GetTablePath(m_table, FileLocator::TableSubFolder::Music, false);
-      const std::filesystem::path path = find_case_insensitive_file_path(musicDir / musicPath.relative_path());
-      if (!path.empty() && !path.lexically_relative(musicDir).empty() && g_pplayer->m_audioPlayer->PlayMusic(path))
+      std::filesystem::path path;
+      if (musicPath.is_absolute())
+         path = find_case_insensitive_file_path(musicPath);
+      if (path.empty())
+         path = find_case_insensitive_file_path(musicDir / musicPath.relative_path());
+      if (!path.empty() && g_pplayer->m_audioPlayer->PlayMusic(path))
       {
          g_pplayer->m_audioPlayer->SetMusicVolume(m_table->m_TableMusicVolume * volume);
       }
