@@ -34,43 +34,43 @@ if(PLATFORM STREQUAL "windows")
       set_source_files_properties(src/shaders/hlsl_glsl/BallShader.hlsl PROPERTIES
          VS_SHADER_TYPE Effect
          VS_SHADER_MODEL 2.0
-         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_ball.h"
+         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src/shaders/hlsl_ball.h"
          VS_SHADER_ENTRYPOINT ballShaderCode
       )
       set_source_files_properties(src/shaders/hlsl_glsl/BasicShader.hlsl PROPERTIES
          VS_SHADER_TYPE Effect
          VS_SHADER_MODEL 2.0
-         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_basic.h"
+         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src/shaders/hlsl_basic.h"
          VS_SHADER_ENTRYPOINT basicShaderCode
       )
       set_source_files_properties(src/shaders/hlsl_glsl/DMDShader.hlsl PROPERTIES
          VS_SHADER_TYPE Effect
          VS_SHADER_MODEL 2.0
-         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_dmd.h"
+         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src/shaders/hlsl_dmd.h"
          VS_SHADER_ENTRYPOINT dmdShaderCode
       )
       set_source_files_properties(src/shaders/hlsl_glsl/FBShader.hlsl PROPERTIES
          VS_SHADER_TYPE Effect
          VS_SHADER_MODEL 2.0
-         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_postprocess.h"
+         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src/shaders/hlsl_postprocess.h"
          VS_SHADER_ENTRYPOINT FBShaderCode
       )
       set_source_files_properties(src/shaders/hlsl_glsl/FlasherShader.hlsl PROPERTIES
          VS_SHADER_TYPE Effect
          VS_SHADER_MODEL 2.0
-         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_flasher.h"
+         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src/shaders/hlsl_flasher.h"
          VS_SHADER_ENTRYPOINT flasherShaderCode
       )
       set_source_files_properties(src/shaders/hlsl_glsl/LightShader.hlsl PROPERTIES
          VS_SHADER_TYPE Effect
          VS_SHADER_MODEL 2.0
-         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_light.h"
+         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src/shaders/hlsl_light.h"
          VS_SHADER_ENTRYPOINT lightShaderCode
       )
       set_source_files_properties(src/shaders/hlsl_glsl/UIShader.hlsl PROPERTIES
          VS_SHADER_TYPE Effect
          VS_SHADER_MODEL 2.0
-         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_ui.h"
+         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src/shaders/hlsl_ui.h"
          VS_SHADER_ENTRYPOINT uiShaderCode
       )
    endif()
@@ -84,10 +84,33 @@ if(PLATFORM STREQUAL "windows")
       src/core/stdafx.h
    )
 
+   # The Visual Studio generator runs MIDL on the .idl automatically (outputs go to
+   # the intermediate dir). Other generators need an explicit rule emitting the same
+   # files into ${_vpx_intdir}, which is already on the include path.
+   if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+      set(_vpx_midl_dir "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>")
+      add_custom_command(
+         OUTPUT "${_vpx_midl_dir}/vpinball.tlb"
+                "${_vpx_midl_dir}/vpinball.h"
+                "${_vpx_midl_dir}/vpinball_i.c"
+         COMMAND "${CMAKE_COMMAND}" -E make_directory "${_vpx_midl_dir}"
+         COMMAND midl /nologo /env x64 /Oicf /h vpinball.h /tlb vpinball.tlb /iid vpinball_i.c "${CMAKE_CURRENT_SOURCE_DIR}/src/core/vpinball.idl"
+         WORKING_DIRECTORY "${_vpx_midl_dir}"
+         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/core/vpinball.idl"
+         VERBATIM
+      )
+      add_custom_target(vpinball_midl DEPENDS
+         "${_vpx_midl_dir}/vpinball.tlb"
+         "${_vpx_midl_dir}/vpinball.h"
+         "${_vpx_midl_dir}/vpinball_i.c"
+      )
+      add_dependencies(vpinball vpinball_midl)
+   endif()
+
    if(RENDERER STREQUAL "BGFX")
       target_include_directories(vpinball PUBLIC
          ${CMAKE_CURRENT_SOURCE_DIR}
-         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
+         ${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}
          third-party/include
          third-party/include/win32xx/include
          third-party/include/compat/msvc
@@ -105,7 +128,7 @@ if(PLATFORM STREQUAL "windows")
       target_include_directories(vpinball PUBLIC
          $ENV{DXSDK_DIR}/Include
          ${CMAKE_CURRENT_SOURCE_DIR}
-         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
+         ${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}
          third-party/include
          third-party/include/win32xx/include
          src
@@ -127,8 +150,8 @@ if(PLATFORM STREQUAL "windows")
       target_include_directories(vpinball PUBLIC
          $ENV{DXSDK_DIR}/Include
          ${CMAKE_CURRENT_SOURCE_DIR}
-         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
-         ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src
+         ${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}
+         ${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}/src
          third-party/include
          third-party/include/winsdk
          third-party/include/win32xx/include
