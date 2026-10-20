@@ -1114,8 +1114,9 @@ JSONObjectWriter::JSONObjectWriter(const int nodeKind, JSONSerializer::Serialize
 
 void JSONObjectWriter::BeginObject(const int objectId, const bool isArray, const bool isSkippable)
 {
-   // An object that begins by declaring itself (materials, render probes: BeginObject(FID(MATR)) at the root) is the document itself, not a field of it
-   if (m_stack.size() == 1 && m_root.is_null())
+   // An object declaring itself at the root of its own writer (materials, render probes: BeginObject(FID(MATR))) is the document itself.
+   // If the id is a field of the writer's kind (e.g. a table writer collecting materials), it is a regular sub object
+   if (m_stack.size() == 1 && m_root.is_null() && JSONSerializer::GetFieldName(m_nodeKind, objectId) == nullptr)
    {
       m_root = nlohmann::ordered_json::object();
       m_stack.push_back({ &m_root, m_nodeKind });
