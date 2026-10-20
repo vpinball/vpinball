@@ -203,7 +203,7 @@ float3 allenwpCurve(float3 x)
     s += awp_crossover_point;
 
     // Sigmoid power function toe:
-    float3 t = pow(x, agx_params.x);
+    float3 t = pow(x, agx_params.xxx);
     t = t / (t + agx_params.y);
 
     return lerp(t, s, step(awp_crossover_point, x));
