@@ -74,9 +74,24 @@ void RenderProbe::RenderRelease()
    m_dynamicRT = nullptr;
    delete m_blurRT;
    m_blurRT = nullptr;
+   delete m_desktopPrerenderRT;
+   m_desktopPrerenderRT = nullptr;
+   delete m_desktopDynamicRT;
+   m_desktopDynamicRT = nullptr;
+   delete m_desktopBlurRT;
+   m_desktopBlurRT = nullptr;
+   m_desktopStaticAccumCount = 0;
    // Passes belong to the render frame of the released renderer
    m_probePasses.clear();
    m_copyPass = nullptr;
+}
+
+void RenderProbe::SwapDesktopTargets()
+{
+   std::swap(m_dynamicRT, m_desktopDynamicRT);
+   std::swap(m_prerenderRT, m_desktopPrerenderRT);
+   std::swap(m_blurRT, m_desktopBlurRT);
+   std::swap(m_staticAccumCount, m_desktopStaticAccumCount);
 }
 
 void RenderProbe::MarkDirty()

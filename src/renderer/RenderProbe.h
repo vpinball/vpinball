@@ -63,6 +63,7 @@ public:
    bool IsRendering() const { return m_rendering; }
    bool IsStaticAccumulationPending() const; // True while this probe still has samples to accumulate for its static parts prerender
    void MarkDirtyStatics(); // Mark the prerendered static parts as dirty, they are lazily accumulated again over the next frames
+   void SwapDesktopTargets();
    RenderTarget* Render(const unsigned int renderMask); // Lazily update render probe and returns it
    void RenderRelease();
 
@@ -98,6 +99,10 @@ private:
    RenderTarget* m_dynamicRT = nullptr;
    RenderTarget* m_prerenderRT = nullptr; // Prerendered static parts, accumulated over successive frames
    int m_staticAccumCount = 0; // Number of samples accumulated so far in the static parts prerender
+   RenderTarget* m_desktopDynamicRT = nullptr;
+   RenderTarget* m_desktopPrerenderRT = nullptr;
+   RenderTarget* m_desktopBlurRT = nullptr;
+   int m_desktopStaticAccumCount = 0;
    RenderPass* m_copyPass = nullptr; // Pass that performs the screen space copy
    vector<RenderPass*> m_probePasses; // Passes recorded by this probe's renders since the last ApplyAreaOfInterest (which applies the area of interest to them only)
 };

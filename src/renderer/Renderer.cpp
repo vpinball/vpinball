@@ -3548,6 +3548,8 @@ void Renderer::SwapDesktopTargets()
    std::swap(m_pAORenderTarget2, m_desktopAO2);
    std::swap(m_renderWidth, m_desktopRenderWidth);
    std::swap(m_renderHeight, m_desktopRenderHeight);
+   for (RenderProbe* probe : m_table->m_vrenderprobe)
+      probe->SwapDesktopTargets();
 }
 
 
