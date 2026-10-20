@@ -142,6 +142,14 @@ endif()
 if(PLATFORM STREQUAL "windows")
    add_compile_options(/Zc:__cplusplus)
 
+   # Intermediate dir where generated files (e.g. compiled DX9 shaders) are placed.
+   # $(IntDir) is a Visual Studio macro; use $<CONFIG> for other multi-config generators.
+   if(CMAKE_GENERATOR MATCHES "Visual Studio")
+      set(_vpx_intdir "$(IntDir)")
+   else()
+      set(_vpx_intdir "$<CONFIG>")
+   endif()
+
    if(RENDERER STREQUAL "BGFX")
       add_compile_options(/Zc:preprocessor)
    endif()
