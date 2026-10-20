@@ -124,7 +124,8 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       if (m_libAv._avformat_open_input(&pFormatContext, PluginStrings::PathToUTF8(filename).c_str(), nullptr, nullptr) != 0)
       {
          LOGE("Unable to open: filename=" + PluginStrings::PathToUTF8(filename));
-         m_pendingPlay--;
+         if (--m_pendingPlay == 0)
+            ReleaseHoldTexture();
          return;
       }
 
@@ -199,7 +200,8 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       {
          LOGE("No video or audio stream found: filename=" + PluginStrings::PathToUTF8(filename));
          m_libAv._avformat_close_input(&pFormatContext);
-         m_pendingPlay--;
+         if (--m_pendingPlay == 0)
+            ReleaseHoldTexture();
          return;
       }
 
@@ -219,6 +221,12 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          m_audioStream = audioStream;
          m_pAudioContext = pAudioContext;
          m_firstRenderPending = pVideoContext != nullptr;
+         // Audio only media: no video frame will replace the held one
+         if (pVideoContext == nullptr && m_holdTexture)
+         {
+            DeleteTexture(m_holdTexture);
+            m_holdTexture = nullptr;
+         }
          m_lastDecodedPts = 0.0;
          m_lastRenderTicks = 0;
          m_running = true;
@@ -253,6 +261,17 @@ void PUPMediaPlayer::Stop()
          StopBlocking();
          m_pendingStop--;
       });
+}
+
+// Drops the frame held from the previous media (see StopBlocking) when no new media replaces it (failed play)
+void PUPMediaPlayer::ReleaseHoldTexture()
+{
+   std::lock_guard lock(m_mutex);
+   if (m_holdTexture)
+   {
+      DeleteTexture(m_holdTexture);
+      m_holdTexture = nullptr;
+   }
 }
 
 void PUPMediaPlayer::StopBlocking()

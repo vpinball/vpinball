@@ -33,6 +33,7 @@ public:
 
 private:
    void StopBlocking();
+   void ReleaseHoldTexture();
    void RenderHold(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha);
    void RenderLastFrame(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha);
    void Run();

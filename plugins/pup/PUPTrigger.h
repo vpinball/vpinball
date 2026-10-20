@@ -24,9 +24,11 @@ public:
          : m_type(type), m_number(number), m_expected(expected) {}
       const char m_type; // Trigger type
       const int m_number; // Trigger id
-      const int m_expected; // Expected value, 1 when not given
+      const int m_expected; // Expected value, -1 when not given (any non zero value)
 
-      bool IsTriggered() const { return m_value == m_expected; }
+      // TODO f03f32689 (REA of PinUP Player) made a missing value mean exactly 1. Values are raw controller states (GI 0..8,
+      // modulated outputs, segment bitmasks), which would then not fire. Kept "any non zero" until checked against PinUP Player
+      bool IsTriggered() const { return (m_expected == -1) ? (m_value != 0) : (m_value == m_expected); }
       int m_value = 0; // Current value
    };
 

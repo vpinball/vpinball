@@ -1044,21 +1044,32 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
    {
       for (auto& [cmd, triggers] : screen->GetTriggers())
       {
-         bool matched = false;
+         // Fire when a matched condition becomes true, or gets the same value again (e.g. D9=1 each ball). A condition without
+         // "=value" does not refire while its non zero value changes (GI dimming, lamp fading)
+         bool fire = false;
          for (auto& trigger : triggers[0]->GetTriggers())
          {
             if (trigger.m_type == c && trigger.m_number == id)
             {
+               const bool wasTriggered = trigger.IsTriggered();
+               const bool sameValue = trigger.m_value == value;
                trigger.m_value = value;
-               matched = true;
+               fire |= trigger.IsTriggered() && (!wasTriggered || sameValue);
             }
          }
-         if (matched && triggers[0]->IsTriggered())
+         if (fire && triggers[0]->IsTriggered())
          {
             for (const auto& trigger : triggers)
             {
                // Dispatch trigger action on main thread
                m_msgApi->RunOnMainThread(m_endpointId, 0.001, [](void* userData) { static_cast<PUPTrigger*>(userData)->Invoke(); }, trigger);
+            }
+            // D values are events (script B2SData is never reset): clear them once used, so "D9=1,W5=1" does not refire
+            // on a later W5 change. Segment display states (also D) are only sent again when they change
+            for (auto& trigger : triggers[0]->GetTriggers())
+            {
+               if (trigger.m_type == 'D')
+                  trigger.m_value = 0;
             }
          }
       }

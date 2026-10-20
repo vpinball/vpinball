@@ -91,11 +91,17 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
       return false;
    }
 
-   const PlayItem item{szPath, volume, priority, length, action == PlayAction::Loop};
+   const bool queue = (action == PlayAction::QueueSameP || action == PlayAction::QueueAlways) && mainPlaying;
+   const PlayItem item{szPath, volume, priority, length, action == PlayAction::Loop, queue};
 
-   if ((action == PlayAction::QueueSameP || action == PlayAction::QueueAlways) && mainPlaying)
+   if (queue)
    {
-      m_queue.insert(m_queue.begin() + 1, item);
+      // First in, first out: after the current item and the queued ones, before the items displaced by a splash
+      // TODO FIFO is assumed from the "Queue" naming, check against PinUP Player
+      auto pos = m_queue.begin() + 1;
+      while (pos != m_queue.end() && pos->queued)
+         ++pos;
+      m_queue.insert(pos, item);
       pPlaylist->MarkPlayed();
       return true;
    }
@@ -306,12 +312,10 @@ bool PUPMediaManager::IsBackgroundPlaying() { return m_bg.active && !m_bg.szPath
 
 void PUPMediaManager::Render(VPXRenderContext2D* const ctx, float alpha)
 {
-   if (m_player.IsPlaying()) {
-      if (m_currentAlpha < 255) {
-         m_currentAlpha = std::min(255, m_currentAlpha + m_fadeStep);
-      }
-      m_player.Render(ctx, m_bounds, alpha * (static_cast<float>(m_currentAlpha) / 255.f));
-   }
+   if (m_player.IsPlaying() && m_currentAlpha < 255)
+      m_currentAlpha = std::min(255, m_currentAlpha + m_fadeStep);
+   // Also when not playing: the player keeps showing the last frame of an ended media until the next one starts
+   m_player.Render(ctx, m_bounds, alpha * (static_cast<float>(m_currentAlpha) / 255.f));
 }
 
 void PUPMediaManager::SetFadeStep(int step)
