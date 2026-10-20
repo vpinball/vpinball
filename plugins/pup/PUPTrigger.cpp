@@ -58,10 +58,10 @@ static vector<PUPTrigger::PUPTriggerCondition> ParseConditions(const string& tri
       }
       else if (token.length() >= 2)
       {
-         // Parse triggers without state (e.g., "S10"): any non zero value triggers
+         // Parse triggers without state (e.g., "S10")
          type = token[0];
          index = string_to_int(token.substr(1), -1);
-         expected = -1;
+         expected = 1;
       }
       else
       {
@@ -297,8 +297,7 @@ std::function<void()> PUPTrigger::Trigger() {
 }
 
 void PUPTrigger::Fire(bool checkRest) {
-   // TODO Counter semantics from REA of PinUP Player (f03f32689): fires on hits 1, N+1, 2N+1..., counter 1 meaning every hit
-   // (it would otherwise never fire). Check whether PinUP Player fires on the first or the Nth hit
+   // Fires on hits 1, N+1, 2N+1... like PinUP Player, except for counter 1: it never fires in PinUP Player, here it fires on every hit
    if (m_counter > 1) {
       m_hitCount++;
       if (m_hitCount >= m_counter) {

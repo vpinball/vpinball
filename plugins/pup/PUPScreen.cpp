@@ -109,7 +109,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
 
    // Optional initial background playlist
    if (PUPPlaylist* const backgroundPlaylist = parts[2].empty() ? nullptr : screen->GetPlaylist(parts[2]); backgroundPlaylist)
-      screen->Play(backgroundPlaylist, PluginStrings::PathFromUTF8(parts[3]), -1.f, -1, PlayAction::SetBG, 0); // -1: playlist volume (0 would be clamped to 1%)
+      screen->Play(backgroundPlaylist, PluginStrings::PathFromUTF8(parts[3]), 0.f, -1, PlayAction::SetBG, 0);
 
    return screen;
 }
@@ -368,13 +368,7 @@ void PUPScreen::SetPage(int pagenum, int durationMs)
    // that was the disappearing-bonus-labels bug.
    if (pagenum == m_pagenum)
    {
-      if (durationMs <= 0)
-      {
-         // Without duration, the current page becomes the default (ending a pending timed display)
-         m_defaultPagenum = pagenum;
-         m_pageExpiry = 0;
-      }
-      else if (m_pageExpiry)
+      if (m_pageExpiry && durationMs > 0)
          m_pageExpiry += static_cast<uint64_t>(durationMs);
       return;
    }

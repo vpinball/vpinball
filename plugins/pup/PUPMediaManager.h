@@ -53,7 +53,6 @@ private:
       int priority = 0;
       int length = 0;
       bool loop = false;
-      bool queued = false; // Added by a queue play action
    };
 
    // Playback queue. front() is currently playing; the rest are pending.
