@@ -2392,6 +2392,8 @@ static nlohmann::ordered_json BuildPackTableAssetDoc(JSONSerializer::Serializer 
    doc["$type"] = typeName;
    if (fields.contains(arrayField) && fields[arrayField].is_array() && !fields[arrayField].empty())
       doc.update(fields[arrayField][0]);
+   else if (fields.is_object())
+      doc.update(fields); // The root object declared itself as the document
    doc.erase("name"); // The name is the file name
    return doc;
 }
