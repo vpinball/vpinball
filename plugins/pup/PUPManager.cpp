@@ -221,14 +221,21 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
    // entirely from script (PuPlayer.Init / playlistadd) before B2SInit ever fires.
    // In both cases, if we already have state for this ROM, keep it - just make
    // sure the manager is running and the initial DOF event has been queued.
-   if (!m_szPath.empty() && lowerCase(string(gameId)) == lowerCase(m_szRomName) && m_controller.endpointId == controller.endpointId)
+   if (!m_szPath.empty() && StrCompareNoCase(string(gameId), m_szRomName) && (m_controller.endpointId == controller.endpointId || m_controller.endpointId == 0))
    {
       LOGI("Same ROM, skipping re-init"s);
-      if (!IsRunning())
+      const bool wasRunning = IsRunning();
+      if (m_controller.endpointId != controller.endpointId)
       {
-         Start();
-         QueueDOFEvent('D', 0, 1);
+         if (wasRunning)
+            Stop();
+         m_controllerGameId = controller.gameId != nullptr ? controller.gameId : "";
+         m_controller = { controller.endpointId, m_controllerGameId.c_str() };
       }
+      if (!IsRunning())
+         Start();
+      if (!wasRunning)
+         QueueDOFEvent('D', 0, 1);
       return;
    }
 
@@ -373,7 +380,7 @@ ControllerDef PUPManager::SelectControllerForGame(const std::string_view& gameKe
    const ControllerDef* selected = nullptr;
    for (const ControllerDef& controller : controllers)
    {
-      if (PinballPlugin::Controller::CtrlGetGameKey(controller.gameId) != gameKey)
+      if (!StrCompareNoCase(string(PinballPlugin::Controller::CtrlGetGameKey(controller.gameId)), string(gameKey)))
          continue;
       if (PinballPlugin::Controller::CtrlGetGameNamespace(controller.gameId) == "pinmame"sv)
       {
