@@ -113,6 +113,8 @@ Game* Controller::GetGames(const string& name) const
          pGame->game = new Game(const_cast<Controller*>(pGame->controller), *pPinmameGame, pGame->settings);
       },
       &cbData);
+   if (cbData.game == nullptr)
+      cbData.game = new Game(const_cast<Controller*>(this), name, settings);
    return cbData.game;
 }
 
