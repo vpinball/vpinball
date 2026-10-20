@@ -1119,7 +1119,7 @@ void JSONObjectWriter::BeginObject(const int objectId, const bool isArray, const
    if (m_stack.size() == 1 && m_root.is_null() && JSONSerializer::GetFieldName(m_nodeKind, objectId) == nullptr)
    {
       m_root = nlohmann::ordered_json::object();
-      m_stack.push_back({ &m_root, m_nodeKind });
+      m_stack.push_back({ &m_root, JSONSerializer::GetSubObjectKind(m_nodeKind, objectId) });
       return;
    }
    const Scope& top = m_stack.back();
