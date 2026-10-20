@@ -64,6 +64,7 @@ public:
    bool IsStaticAccumulationPending() const; // True while this probe still has samples to accumulate for its static parts prerender
    void MarkDirtyStatics(); // Mark the prerendered static parts as dirty, they are lazily accumulated again over the next frames
    void SwapDesktopTargets();
+   void ReleaseRenderTargets(); // Release the render targets sized after the main render (on resize), recreated on next use
    RenderTarget* Render(const unsigned int renderMask); // Lazily update render probe and returns it
    void RenderRelease();
 

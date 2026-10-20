@@ -36,6 +36,9 @@ public:
             m_matModelViewInverse[i] = mvp.m_matModelViewInverse[i];
             m_matModelViewInverseTranspose[i] = mvp.m_matModelViewInverseTranspose[i];
             m_matModelViewProj[i] = mvp.m_matModelViewProj[i];
+            m_matFlippedProj[i] = mvp.m_matFlippedProj[i];
+            m_matRotViewProj[i] = mvp.m_matRotViewProj[i];
+            m_cameraPos[i] = mvp.m_cameraPos[i];
             m_viewVec[i] = mvp.m_viewVec[i];
          }
       }
@@ -45,6 +48,8 @@ public:
    const Matrix3D& GetModel() const { return m_matModel; }
    const Matrix3D& GetView(const unsigned int eye) const { Update(); return m_matReflectedView[eye]; }
    const Matrix3D& GetProj(const unsigned int eye) const { return m_matProj[eye]; }
+   // Projection matching GetView, including the flip: maps view space positions to the rendered (possibly flipped) image
+   const Matrix3D& GetFlippedProj(const unsigned int eye) const { Update(); return m_matFlippedProj[eye]; }
    const Matrix3D& GetModelView(const unsigned int eye) const { Update(); return m_matModelView[eye]; }
    const Matrix3D& GetModelViewInverse(const unsigned int eye) const { Update(); return m_matModelViewInverse[eye]; }
    const Matrix3D& GetModelViewInverseTranspose(const unsigned int eye) const { Update(); return m_matModelViewInverseTranspose[eye]; }
@@ -79,6 +84,7 @@ private:
             m_matReflectedView[eye] = m_matReflection * m_matView[srcEye];
             m_matModelView[eye] = m_matModel * m_matReflectedView[eye];
             m_matModelViewProj[eye] = m_matModelView[eye] * m_matProj[srcEye];
+            m_matFlippedProj[eye] = m_matProj[srcEye];
             m_matModelViewInverse[eye] = Matrix3D::MatrixInverse(m_matModelView[eye]);
             m_matModelViewInverseTranspose[eye] = m_matModelViewInverse[eye];
             m_matModelViewInverseTranspose[eye].Transpose();
@@ -94,7 +100,7 @@ private:
             m_viewVec[eye].NormalizeSafe();
          }
 
-         // Flip is a clipspace flip, applied after projection
+         // Flip is a clipspace flip, applied after projection to every matrix that projects to the rendered image
          switch (m_flip)
          {
          case NONE: break;
@@ -102,14 +108,22 @@ private:
          {
             static constexpr Matrix3D flipx{-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
             for (unsigned int eye = 0; eye < m_nEyes; eye++)
+            {
                m_matModelViewProj[eye] = m_matModelViewProj[eye] * flipx;
+               m_matRotViewProj[eye] = m_matRotViewProj[eye] * flipx;
+               m_matFlippedProj[eye] = m_matFlippedProj[eye] * flipx;
+            }
             break;
          }
          case FLIPY:
          {
             static constexpr Matrix3D flipy{1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
             for (unsigned int eye = 0; eye < m_nEyes; eye++)
+            {
                m_matModelViewProj[eye] = m_matModelViewProj[eye] * flipy;
+               m_matRotViewProj[eye] = m_matRotViewProj[eye] * flipy;
+               m_matFlippedProj[eye] = m_matFlippedProj[eye] * flipy;
+            }
             break;
          }
          default: assert(false); break;
@@ -126,6 +140,7 @@ private:
    FlipMode m_flip = NONE;
    mutable Matrix3D m_matReflectedView[2];
    mutable Matrix3D m_matModelView[2];
+   mutable Matrix3D m_matFlippedProj[2];
    mutable Matrix3D m_matModelViewInverse[2];
    mutable Matrix3D m_matModelViewInverseTranspose[2];
    mutable Matrix3D m_matModelViewProj[2];

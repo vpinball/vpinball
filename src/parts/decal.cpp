@@ -613,6 +613,7 @@ void Decal::Render(const unsigned int renderMask)
    if (m_desktopBackdrop)
    {
       m_renderer->m_renderDevice->SetRenderStateDepthBias(0.0f);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // Backdrop is not mirrored: the mirrored default cull mode must not apply
       static constexpr vec4 staticColor { 1.0f, 1.0f, 1.0f, 1.0f };
       m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::cBase_Alpha, &staticColor);
       m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);

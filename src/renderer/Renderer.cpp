@@ -565,6 +565,8 @@ void Renderer::ResizeRenderTargets()
    m_pAORenderTarget2 = nullptr;
    m_staticPrepassRT = nullptr;
    m_isStaticPrepassDirty = true;
+   for (RenderProbe* probe : m_table->m_vrenderprobe)
+      probe->ReleaseRenderTargets();
 
    m_renderDevice->m_basicShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    m_renderDevice->m_ballShader->SetVector(ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
@@ -1151,7 +1153,8 @@ void Renderer::ApplyViewJitter(const float xpixoff, const float ypixoff)
 void Renderer::SetFlip(ModelViewProj::FlipMode flipMode)
 {
    assert(m_stereo3D != STEREO_VR);
-   m_initialMVP.SetFlip(flipMode);
+   // Set on the current MVP: InitLayout recomputes it, then copies it to the initial MVP (which resets the current MVP each frame)
+   m_mvp.SetFlip(flipMode);
    InitLayout();
 }
 
@@ -1795,6 +1798,8 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
       m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::tex_sprite, tex, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassArea, 0.f, 0.f, 1.f, 1.f);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   // Screen space quad, not mirrored: the mirrored default cull mode must not apply
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
@@ -2111,7 +2116,7 @@ void Renderer::RenderDynamics()
    Matrix3D matProj[2];
    const int nEyes = m_renderDevice->m_nEyes;
    for (int eye = 0; eye < nEyes; eye++)
-      matProj[eye] = GetMVP().GetProj(eye);
+      matProj[eye] = GetMVP().GetFlippedProj(eye);
    m_renderDevice->m_basicShader->SetMatrix(ShaderUniform::matProj, &matProj[0], nEyes);
    m_renderDevice->m_ballShader->SetMatrix(ShaderUniform::matProj, &matProj[0], nEyes);
 
@@ -2691,7 +2696,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    m_mvp.SetModel(Matrix3D::MatrixIdentity());
    for (int eye = 0; eye < nEyes; eye++)
    {
-      matProj[eye] = GetMVP().GetProj(eye);
+      matProj[eye] = GetMVP().GetFlippedProj(eye);
       matProjInv[eye] = matProj[eye];
       matProjInv[eye].Invert();
    }
@@ -2746,10 +2751,10 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
             float yMax = -FLT_MAX;
             for (int eye = 0; eye < nEyes; eye++)
                Ball::m_ash.computeProjBounds(
-                  GetMVP().GetProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
+                  GetMVP().GetFlippedProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
             const float prevLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length();
             for (int eye = 0; eye < nEyes; eye++)
-               Ball::m_ash.computeProjBounds(GetMVP().GetProj(eye), newPos.x, newPos.y, newPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
+               Ball::m_ash.computeProjBounds(GetMVP().GetFlippedProj(eye), newPos.x, newPos.y, newPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
             const float fullLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length() - prevLen;
 
             // Add a margin as the visual nudge may cause some filtering

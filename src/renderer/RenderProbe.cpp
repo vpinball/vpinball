@@ -118,6 +118,21 @@ void RenderProbe::MarkDirtyStatics()
    m_staticAccumCount = 0;
 }
 
+void RenderProbe::ReleaseRenderTargets()
+{
+   if (m_renderer == nullptr)
+      return;
+   // Deferred to end of frame, as already submitted frames may still use them
+   vector<RenderTarget*> released { m_prerenderRT, m_dynamicRT, m_blurRT };
+   std::erase(released, nullptr);
+   if (!released.empty())
+      m_renderer->m_renderDevice->AddEndOfFrameCmd([released]() { for (RenderTarget* rt : released) delete rt; });
+   m_prerenderRT = nullptr;
+   m_dynamicRT = nullptr;
+   m_blurRT = nullptr;
+   m_staticAccumCount = 0;
+}
+
 RenderTarget* RenderProbe::Render(const unsigned int renderMask)
 {
    assert(m_renderer != nullptr);

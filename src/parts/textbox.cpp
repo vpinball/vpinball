@@ -268,6 +268,7 @@ void Textbox::Render(const unsigned int renderMask)
    {
       m_renderer->m_renderDevice->ResetRenderState();
       m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // Backdrop is not mirrored: the mirrored default cull mode must not apply
 
       const float vx1 = x * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth();
       const float vy1 = y * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight();
