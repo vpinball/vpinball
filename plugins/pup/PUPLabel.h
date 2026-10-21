@@ -45,12 +45,15 @@ public:
    const string& GetCaption() const { return m_szCaption; }
    void SetCaption(const string& szCaption);
    bool GetOnShowVisible() const { return m_onShowVisible; }
+   bool IsVisible() const { return m_visible; }
    void SetVisible(bool visible);
    void SetSpecial(const string& szSpecial);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum, float screenAlpha = 1.f);
    const string& GetName() const { return m_szName; }
    int GetPagenum() const { return m_pagenum; }
+   bool GetDoDefault() const { return m_doDefault; }
    bool IsAnimating() const { return m_animation != nullptr; }
+   void ClearAnimation();
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
    string ToString() const;
 
@@ -79,6 +82,7 @@ private:
    bool m_italic = false;
    float m_alpha = 1.0f;
    bool m_useAbsolutePos = false;
+   bool m_doDefault = true;
    float m_zoom = 100.0f;
    int m_gradColor = 0;
    int m_gradState = 0;

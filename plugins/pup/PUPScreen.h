@@ -61,11 +61,10 @@ public:
    enum class HudReturn
    {
       None,
-      RestoreHud,    // "hidehudplay": re-show the HUD overlay
-      ReplayTrigger, // "returnplay":  re-fire m_lastPlayedTrigger
+      RestoreHud,  // "hidehudplay": re-show the HUD overlay
+      RestorePage, // "returnplay":  return to the default page
    };
    HudReturn m_hudReturn = HudReturn::None;
-   PUPTrigger* m_lastPlayedTrigger = nullptr;
    void OnMainMediaEnd();
 
    int GetDefaultVolume() const { return m_defaultVolume; }
@@ -102,7 +101,8 @@ public:
    PUPLabel* GetLabel(const string& labelName);
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
-   void SetPage(int pagenum, int durationMs);
+   int GetPage() const { return m_pagenum; }
+   void SetPage(int pagenum, int durationMs, const string& special = ""s);
    const vector<PUPLabel*>& GetLabels() const { return m_labels; }
 
    void AddPlaylist(PUPPlaylist* pPlaylist);

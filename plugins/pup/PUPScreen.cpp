@@ -256,13 +256,17 @@ void PUPScreen::OnMainMediaEnd()
 {
    assert(std::this_thread::get_id() == m_apiThread);
    // Resolve whatever LabelShowPage queued when a splash page started.
-   // Clear state before any replay so a re-entrant trigger doesn't loop here.
    const HudReturn action = m_hudReturn;
    m_hudReturn = HudReturn::None;
    if (action == HudReturn::RestoreHud)
+   {
+      SetPage(m_defaultPagenum, 0);
       m_hudVisible = true;
-   else if (action == HudReturn::ReplayTrigger && m_lastPlayedTrigger)
-      m_lastPlayedTrigger->Invoke();
+      if (PUPLabel* pBackground = GetLabel("pBackground"s); pBackground && !pBackground->IsAnimating())
+         pBackground->SetVisible(true);
+   }
+   else if (action == HudReturn::RestorePage)
+      SetPage(m_defaultPagenum, 0);
 
    m_fadeVolume = -1;
    m_duckOrigVolume = -1;
@@ -359,31 +363,66 @@ void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
       std::rotate(it, it + 1, m_labels.end());
 }
 
-void PUPScreen::SetPage(int pagenum, int durationMs)
+void PUPScreen::SetPage(int pagenum, int durationMs, const string& special)
 {
    assert(std::this_thread::get_id() == m_apiThread);
 
-   // Reapply each label's on-show default ONLY when the page actually changes. A same-page
-   // hold (e.g. KOTH ball-save LabelShowPage(5,1,3)) must leave script-toggled labels alone -
-   // that was the disappearing-bonus-labels bug.
-   if (pagenum == m_pagenum)
+   // Mirrors PinUpDisplayX TtextForm.SetPageNum: hidehudplay/returnplay arm an action for
+   // the end of the current media, forceshow/forcehide only touch visibility, a same-page
+   // call with nothing armed just clears animations and extends the timer, otherwise the
+   // page switches, animations end, and labels on the new page get 'clear' / their default
+   // visibility (pages above 1 only, and only when dodefault is on).
+   const string szSpecial = lowerCase(special);
+   if (szSpecial == "hidehudplay"s)
    {
+      m_hudReturn = HudReturn::RestoreHud;
+      m_hudVisible = false;
+      if (PUPLabel* pBackground = GetLabel("pBackground"s); pBackground && !pBackground->IsAnimating())
+         pBackground->SetVisible(false);
+   }
+   else if (szSpecial == "returnplay"s)
+      m_hudReturn = HudReturn::RestorePage;
+   else
+      m_hudReturn = HudReturn::None;
+
+   if (special == "forceshow"s || special == "forcehide"s)
+   {
+      if (pagenum >= 0)
+         for (PUPLabel* pLabel : m_labels)
+            if (pLabel->GetPagenum() == pagenum)
+               pLabel->SetVisible(special == "forceshow"s && pLabel->GetOnShowVisible());
+      return;
+   }
+
+   if (pagenum == m_pagenum && m_hudReturn == HudReturn::None)
+   {
+      for (PUPLabel* pLabel : m_labels)
+         pLabel->ClearAnimation();
       if (m_pageExpiry && durationMs > 0)
          m_pageExpiry += static_cast<uint64_t>(durationMs);
       return;
    }
+
    m_pagenum = pagenum;
-
-   for (const auto& label : m_labels)
-      label->SetVisible(label->GetOnShowVisible());
-
-   if (durationMs <= 0)
+   for (PUPLabel* pLabel : m_labels)
    {
-      m_defaultPagenum = pagenum;
-      m_pageExpiry = 0;
+      pLabel->ClearAnimation();
+      if (pLabel->GetPagenum() != pagenum)
+         continue;
+      if (szSpecial == "clear"s)
+         pLabel->SetCaption(""s);
+      if (pagenum > 1 && pLabel->GetDoDefault())
+         pLabel->SetVisible(pLabel->GetOnShowVisible());
    }
-   else
+
+   if (durationMs > 0)
       m_pageExpiry = SDL_GetTicks() + static_cast<uint64_t>(durationMs);
+   else
+   {
+      m_pageExpiry = 0;
+      if (pagenum >= 0)
+         m_defaultPagenum = pagenum;
+   }
 }
 
 void PUPScreen::UpdateTimers()
@@ -393,7 +432,7 @@ void PUPScreen::UpdateTimers()
    if (m_pageExpiry && now >= m_pageExpiry)
    {
       m_pageExpiry = 0;
-      m_pagenum = m_defaultPagenum;
+      SetPage(m_defaultPagenum, 0);
    }
    if (m_imageExpiry && now >= m_imageExpiry)
    {

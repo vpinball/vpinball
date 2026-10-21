@@ -541,7 +541,7 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
       return;
 
    if (!pScreen->IsLabelInit())
-      pScreen->SetLabelInit();
+      LabelInit(screenNum);
 
    pScreen->AddLabel(new PUPLabel(&m_pupManager, LabelName, FontName, static_cast<float>(Size), Color,
       static_cast<float>(Angle) / 10.0f, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign,
@@ -570,10 +570,6 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
    if (!pScreen)
       return;
 
-   // See pDMDSetHUD — pBackground visibility controls the HUD layer
-   if (StrCompareNoCase(LabelName, "pBackground"s))
-      pScreen->m_hudVisible = Visible;
-
    PUPLabel* pLabel = pScreen->GetLabel(LabelName);
    if (!pLabel) {
       if (m_warnedLabels[screenNum].find(LabelName) == m_warnedLabels[screenNum].end())
@@ -585,10 +581,14 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
    }
 
    pLabel->SetCaption(Caption);
-   // Animations override visibility in the renderer — a label with an active
-   // animation renders regardless of m_visible
-   if (!pLabel->IsAnimating())
+   // PUP sets visibility for a normal caption only while that label's page is
+   // current. The "`u`" caption is the exception: it can update visibility of any label.
+   const bool updateVisibility = (Caption == "`u`"s) || (pLabel->GetPagenum() == pScreen->GetPage());
+   if (updateVisibility && !pLabel->IsAnimating())
       pLabel->SetVisible(Visible);
+   // See pDMDSetHUD — pBackground visibility also controls the HUD layer
+   if (StrCompareNoCase(LabelName, "pBackground"s))
+      pScreen->m_hudVisible = pLabel->IsVisible();
    pLabel->SetSpecial(Special);
 }
 
@@ -618,28 +618,7 @@ void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, const
    //                                 playing and then autoreturn
    //   Sub PDMDSplashPagePlayingHUD 'will show labelpage and auto return to def after current
    //                                 video stopped
-   if (StrCompareNoCase(Special, "forceshow"s) || StrCompareNoCase(Special, "forcehide"s))
-   {
-      const bool show = StrCompareNoCase(Special, "forceshow"s);
-      for (PUPLabel* pLabel : pScreen->GetLabels())
-         if (pLabel->GetPagenum() == PageNum && PageNum >= 0)
-            pLabel->SetVisible(show && pLabel->GetOnShowVisible());
-      return;
-   }
-   if (StrCompareNoCase(Special, "hidehudplay"s))
-   {
-      pScreen->m_hudReturn = PUPScreen::HudReturn::RestoreHud;
-      pScreen->m_hudVisible = false;
-   }
-   else if (StrCompareNoCase(Special, "returnplay"s))
-      pScreen->m_hudReturn = PUPScreen::HudReturn::ReplayTrigger;
-   else
-      pScreen->m_hudReturn = PUPScreen::HudReturn::None;
-   if (StrCompareNoCase(Special, "clear"s))
-      for (PUPLabel* pLabel : pScreen->GetLabels())
-         if (pLabel->GetPagenum() == PageNum)
-            pLabel->SetCaption(""s);
-   pScreen->SetPage(PageNum, Seconds >= 501 ? Seconds : Seconds * 1000);
+   pScreen->SetPage(PageNum, Seconds >= 501 ? Seconds : Seconds * 1000, Special);
 }
 
 void PUPPinDisplay::LabelInit(int screenNum)
@@ -648,11 +627,14 @@ void PUPPinDisplay::LabelInit(int screenNum)
    if (pScreen)
    {
       pScreen->SetLabelInit();
-      // See pDMDSetHUD — pBackground label created automatically during LabelInit
+      // See pDMDSetHUD — pBackground label created automatically during LabelInit.
+      // PUP always draws it behind the user labels, even if LabelNew was called first.
       if (!pScreen->GetLabel("pBackground"))
       {
-         pScreen->AddLabel(new PUPLabel(&m_pupManager, "pBackground"s, "Liberation Sans"s, 50.f, 0xFF, 0.f,
-            PUP_LABEL_XALIGN_CENTER, PUP_LABEL_YALIGN_CENTER, 0.f, 0.f, -1, true));
+         PUPLabel* pBackground = new PUPLabel(&m_pupManager, "pBackground"s, "Liberation Sans"s, 50.f, 0xFF, 0.f,
+            PUP_LABEL_XALIGN_CENTER, PUP_LABEL_YALIGN_CENTER, 0.f, 0.f, -1, true);
+         pScreen->AddLabel(pBackground);
+         pScreen->SendLabelToBack(pBackground);
       }
    }
 }
