@@ -499,11 +499,31 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          break;
       }
 
-      case 10:
-         // See pDMDLabelClone / pDMDLabelCloneDelay - delayed show.
-         // True cloning (creating a duplicate label) is not yet implemented
-         NOT_IMPLEMENTED("at=10 clone not implemented"s);
+      case 9:
+      {
+         // See pDMDLabelFlashFilter - invert filter flashing.
+         if (json["len"s].exists() && json["fq"s].as<int>(0) > 0)
+         {
+            m_animation = std::make_unique<Animation>(this, animLength, foregroundColor, json["fq"s].as<int>());
+            m_animation->m_invertFilter = true;
+            m_animation->m_filterMode = json["fm"s].as<int>(0);
+         }
+         else
+            LOGE("Invalid label filter animation specified: {" + szSpecial + '}');
          break;
+      }
+
+      case 10:
+      {
+         // See pDMDLabelClone / pDMDLabelCloneDelay - delayed show. PUP draws a
+         // temporary copy over the label; showing this label after the delay is
+         // visually equivalent (the copy has the same text, font and position).
+         const int delay = json["dl"s].as<int>(0);
+         m_animation = std::make_unique<Animation>(this, animLength, foregroundColor, 0);
+         m_animation->m_delayShow = delay;
+         m_animation->m_visible = (delay <= 0);
+         break;
+      }
 
       default:
          LOGE("Unsupported Label.SetSpecial animation type: " + std::to_string(animType));
@@ -1127,14 +1147,22 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       {
          m_animationFrame = expectedFrame;
          // TODO perform conversion on the ancillary thread and not at render time
-         SDL_Surface* surf = m_renderState.m_pAnimation->frames[m_animationFrame];
+         SDL_Surface* const frame = m_renderState.m_pAnimation->frames[m_animationFrame];
+         SDL_Surface* surf = frame;
          if (surf->format != SDL_PIXELFORMAT_RGBA32)
             surf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_RGBA32);
-         SDL_LockSurface(surf);
-         // TODO handle situations where width != pitch
-         UpdateTexture(&m_renderState.m_pTexture, surf->w, surf->h, VPXTextureFormat::VPXTEXFMT_sRGBA8, surf->pixels);
-         SDL_UnlockSurface(surf);
-         if (surf != m_renderState.m_pAnimation->frames[m_animationFrame])
+         if (surf && m_filterMode > 0 && surf == frame)
+            surf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_RGBA32);
+         if (surf && m_filterMode > 0)
+            ApplyFilter(surf, m_filterMode);
+         if (surf)
+         {
+            SDL_LockSurface(surf);
+            // TODO handle situations where width != pitch
+            UpdateTexture(&m_renderState.m_pTexture, surf->w, surf->h, VPXTextureFormat::VPXTEXFMT_sRGBA8, surf->pixels);
+            SDL_UnlockSurface(surf);
+         }
+         if (surf != frame)
             SDL_DestroySurface(surf);
       }
    }
@@ -1780,6 +1808,11 @@ void PUPLabel::Animation::Restore()
       m_label->m_color = m_savedColor;
       m_label->m_dirty = true;
    }
+   if (m_invertFilter && m_label->m_filterMode != m_savedFilterMode)
+   {
+      m_label->m_filterMode = m_savedFilterMode;
+      m_label->m_dirty = true;
+   }
 }
 
 bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect)
@@ -1807,8 +1840,22 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
 
    if (m_flashingPeriod)
    {
-      // See pDMDLabelFlash - start hidden, then toggle visibility every fq milliseconds
-      m_visible = ((elapsed / m_flashingPeriod) & 1) != 0;
+      if (m_invertFilter)
+      {
+         // See pDMDLabelFlashFilter - toggle the label's filter every fq ms.
+         const bool filterOn = ((elapsed / m_flashingPeriod) & 1) != 0;
+         const int newFilterMode = filterOn ? m_filterMode : 0;
+         if (m_label->m_filterMode != newFilterMode)
+         {
+            m_label->m_filterMode = newFilterMode;
+            m_label->m_dirty = true;
+         }
+      }
+      else
+      {
+         // See pDMDLabelFlash - start hidden, then toggle visibility every fq milliseconds
+         m_visible = ((elapsed / m_flashingPeriod) & 1) != 0;
+      }
       m_color = m_foregroundColor;
    }
 
