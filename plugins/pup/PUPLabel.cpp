@@ -349,6 +349,16 @@ void PUPLabel::ClearAnimationInternal()
    }
 }
 
+float PUPLabel::EffectiveSize() const
+{
+   // PinUP's 'size' key sets TFont.Size in points at 96 dpi, i.e. an em height of 96/72 the
+   // pixel value, while LabelNew 'sz' and 'fonth' set the Windows cell height. Our font
+   // metrics work in cell heights, so convert the em height back through the font's ratio.
+   if (!m_sizeIsPoints || !m_pFont)
+      return m_size;
+   return m_size * (96.f / 72.f) / m_pFont->GetWinScale();
+}
+
 SDL_FPoint PUPLabel::GetShadowOffsetPixels(float fontHeight) const
 {
    return { m_xOffsetIsPercent ? fontHeight * m_xoffset / 100.f : m_xoffset, m_yOffsetIsPercent ? fontHeight * m_yoffset / 100.f : m_yoffset };
@@ -572,11 +582,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "size")
          {
-            // See pDMDLabelSetSizeText - height as percent of display height
-            const float newSize = static_cast<float>(json["size"s].as<double>());
-            if (m_size != newSize)
+            // See pDMDLabelSetSizeText - percent of display height, applied by PinUP as a point size
+            const float newSize = std::max(1.f, static_cast<float>(json["size"s].as<double>()));
+            if (m_size != newSize || !m_sizeIsPoints)
             {
                m_size = newSize;
+               m_sizeIsPoints = true;
                m_dirty = true;
             }
          }
@@ -604,9 +615,10 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "fonth")
          {
             const float newSize = static_cast<float>(value.as<double>());
-            if (m_size != newSize)
+            if (m_size != newSize || m_sizeIsPoints)
             {
                m_size = newSize;
+               m_sizeIsPoints = false;
                m_dirty = true;
             }
          }
@@ -1072,8 +1084,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       else if (m_pFont)
          m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor]() {
             std::lock_guard lock(m_mutex);
-            const float fontHeight = (m_size / 100.0f) * static_cast<float>(rect.h);
-            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, m_size, fontColor, m_shadowType, m_shadowColor, GetShadowOffsetPixels(fontHeight));
+            const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
+            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, EffectiveSize(), fontColor, m_shadowType, m_shadowColor, GetShadowOffsetPixels(fontHeight));
          });
    }
 
@@ -1233,7 +1245,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    if (m_shadowType == 2)
    {
-      const float fontHeight = (m_size / 100.0f) * static_cast<float>(rect.h);
+      const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
       const SDL_FPoint shadowOffset = GetShadowOffsetPixels(fontHeight);
       dest.x += static_cast<float>(static_cast<int>(shadowOffset.x)) * -2.f;
    }
@@ -1965,7 +1977,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
          }
          else if (m_label->m_type == PUP_LABEL_TYPE_TEXT)
          {
-            const float labelSize = std::max(1.f, m_label->m_size);
+            const float labelSize = std::max(1.f, m_label->EffectiveSize());
             startScale /= labelSize;
             endScale /= labelSize;
          }

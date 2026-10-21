@@ -64,6 +64,7 @@ private:
 
    PUPFont* m_pFont;
    float m_size;
+   bool m_sizeIsPoints = false; // 'size' key: PinUP applies it as TFont.Size (points), 'sz'/'fonth' are cell heights
    int m_color;
    float m_angle;
    PUP_LABEL_XALIGN m_xAlign;
@@ -192,6 +193,7 @@ private:
    RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath);
    RenderState UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels);
    void ClearAnimationInternal();
+   float EffectiveSize() const;
    SDL_FPoint GetShadowOffsetPixels(float fontHeight) const;
 
    class Animation {
