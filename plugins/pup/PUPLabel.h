@@ -83,6 +83,7 @@ private:
    float m_alpha = 1.0f;
    bool m_useAbsolutePos = false;
    bool m_doDefault = true;
+   bool m_disposeOnAnimEnd = false;
    float m_zoom = 100.0f;
    int m_gradColor = 0;
    int m_gradState = 0;
@@ -90,12 +91,13 @@ private:
    float m_autoFitWidth = 0;
    float m_autoFitHeight = 0;
    PUPScreen* m_pScreen = nullptr;
-   int m_anigif = 0;
+   int m_anigif = 0; // frame interval in milliseconds, 0 to use the image's own frame delays
    bool m_gifLoop = true;
    int m_gifStart = -1;
    int m_gifEnd = -1;
    bool m_hideOnAnimEnd = false;
    bool m_animating = false;
+   bool m_disposePending = false;
    bool m_imageWidthSet = false;
    bool m_imageHeightSet = false;
 

@@ -648,15 +648,19 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "anigif")
          {
-            // See pDMDPNGAnimate - speed is frame timer, 100 is ~30fps
-            m_anigif = value.as<int>();
-            m_animating = m_anigif > 0;
+            // See pDMDPNGAnimate. PUP maps 100 to a 40 ms frame time and lower
+            // values to progressively slower frames (0 -> 330 ms).
+            const int speed = value.as<int>();
+            m_anigif = (speed >= 100) ? 40 : 30 + static_cast<int>(lroundf((100 - speed) / 10.f * 30.f));
+            m_animating = true;
+            m_animationFrame = -1;
+            m_animationStart = SDL_GetTicks();
             m_dirty = true;
          }
          else if (key == "animate")
          {
-            // See pDMDPNGAnimate / pDMDPNGAnimateOnce - animation interval in ms, 0 stops
-            int interval = value.as<int>();
+            // See pDMDPNGAnimate / pDMDPNGAnimateOnce - frame interval in ms, 0 stops
+            const int interval = value.as<int>();
             if (interval < 1)
             {
                m_animating = false;
@@ -666,14 +670,19 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                m_visible = true;
                m_anigif = interval;
                m_animating = true;
+               m_animationFrame = -1;
+               m_animationStart = SDL_GetTicks();
                m_dirty = true;
             }
          }
          else if (key == "anistart")
          {
-            int interval = value.as<int>();
+            // See pDMDPNGAnimate - frame interval in ms, 0 stops
+            const int interval = value.as<int>();
             m_anigif = interval;
             m_animating = interval > 0;
+            m_animationFrame = -1;
+            m_animationStart = SDL_GetTicks();
             m_dirty = true;
          }
          else if (key == "gifloop")
@@ -707,7 +716,8 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "anidispose")
          {
-            // See pDMDPNGAnimateOnceAndDispose - marks for cleanup after play
+            // See pDMDPNGAnimateOnceAndDispose - release the image when playback ends
+            m_disposeOnAnimEnd = (value.as<int>() == 1);
          }
          else if (key == "width")
          {
@@ -789,6 +799,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          {
             m_doDefault = (value.as<int>() == 1);
          }
+         else if (key == "anihide")
+         {
+            // See pDMDLabelHideAni - stop any label animation and hide it
+            m_animation.reset();
+            m_visible = false;
+         }
          else if (key == "v2")
          {
             // See pupCreateLabel / pupCreateLabelImage
@@ -822,6 +838,31 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum, float screenAlpha)
 {
    std::lock_guard lock(m_mutex);
+
+   if (m_disposePending)
+   {
+      // Wait (without blocking while holding the lock) until a texture update launched
+      // before the animation ended has completed before releasing its source surface.
+      if (m_pendingTextureUpdate.valid())
+      {
+         if (m_pendingTextureUpdate.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+            return;
+         (void)m_pendingTextureUpdate.get();
+      }
+      m_szPath.clear();
+      m_type = PUP_LABEL_TYPE_TEXT;
+      m_szCaption.clear();
+      m_renderState = RenderState {};
+      if (m_pSourceImage)
+      {
+         SDL_DestroySurface(m_pSourceImage);
+         m_pSourceImage = nullptr;
+         m_sourceImagePath.clear();
+      }
+      m_disposePending = false;
+      m_dirty = false;
+      return;
+   }
 
    // PUP draws labels with a negative page number on every page (page -1 is used
    // for persistent labels such as pBackground).
@@ -876,37 +917,62 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       const int endFrame = (m_gifEnd >= 0 && m_gifEnd < frameCount) ? m_gifEnd : frameCount - 1;
 
       int expectedFrame = startFrame;
-      if (startFrame != endFrame)
+      if (startFrame != endFrame && m_animating)
       {
-         int elapsed = static_cast<int>(SDL_GetTicks() - m_animationStart);
-         float speed = m_anigif > 0 ? m_anigif / 100.f : 1.f;
-         elapsed = static_cast<int>(elapsed * speed);
-         const int startOffset = startFrame > 0 ? m_renderState.m_accumulatedDelays[startFrame - 1] : 0;
-         const int rangeDuration = m_renderState.m_accumulatedDelays[endFrame] - startOffset;
-         if (rangeDuration > 0)
+         const int elapsed = static_cast<int>(SDL_GetTicks() - m_animationStart);
+         bool finished = false;
+         if (m_anigif > 0)
          {
-            if (m_gifLoop)
+            // PUP's anigif/anistart/animate values are per-frame intervals in ms,
+            // not a multiplier on the file's own delays.
+            const int rangeFrames = endFrame - startFrame + 1;
+            const int rangeDuration = m_anigif * rangeFrames;
+            if (!m_gifLoop && elapsed >= rangeDuration)
             {
-               elapsed = elapsed % rangeDuration;
+               expectedFrame = endFrame;
+               finished = m_animating;
             }
-            else if (elapsed >= rangeDuration)
+            else
+               expectedFrame = startFrame + (elapsed / m_anigif) % rangeFrames;
+         }
+         else
+         {
+            const int startOffset = startFrame > 0 ? m_renderState.m_accumulatedDelays[startFrame - 1] : 0;
+            const int rangeDuration = m_renderState.m_accumulatedDelays[endFrame] - startOffset;
+            int frameTime = elapsed;
+            if (rangeDuration > 0)
             {
-               elapsed = rangeDuration - 1;
-               if (m_animating)
+               if (m_gifLoop)
+                  frameTime = elapsed % rangeDuration;
+               else if (elapsed >= rangeDuration)
                {
-                  m_animating = false;
-                  if (m_hideOnAnimEnd)
-                     m_visible = false;
+                  frameTime = rangeDuration - 1;
+                  finished = m_animating;
                }
             }
+            const auto& delays = m_renderState.m_accumulatedDelays;
+            expectedFrame = static_cast<int>(std::upper_bound(delays.begin() + startFrame, delays.begin() + endFrame + 1, startOffset + frameTime) - delays.begin());
+            if (expectedFrame > endFrame)
+               expectedFrame = endFrame;
+            if (expectedFrame < startFrame)
+               expectedFrame = startFrame;
          }
-         const auto& delays = m_renderState.m_accumulatedDelays;
-         expectedFrame = static_cast<int>(std::upper_bound(delays.begin() + startFrame, delays.begin() + endFrame + 1, startOffset + elapsed) - delays.begin());
-         if (expectedFrame > endFrame)
-            expectedFrame = endFrame;
-         if (expectedFrame < startFrame)
-            expectedFrame = startFrame;
+         if (finished)
+         {
+            m_animating = false;
+            if (m_hideOnAnimEnd)
+               m_visible = false;
+            if (m_disposeOnAnimEnd)
+            {
+               // See pDMDPNGAnimateOnceAndDispose: release the animation/image at the
+               // next render, once any in-flight texture update has completed.
+               m_disposePending = true;
+               return;
+            }
+         }
       }
+      else if (!m_animating && m_animationFrame >= startFrame && m_animationFrame <= endFrame)
+         expectedFrame = m_animationFrame;
       if (expectedFrame != m_animationFrame)
       {
          m_animationFrame = expectedFrame;
