@@ -261,7 +261,6 @@ void PUPScreen::OnMainMediaEnd()
    if (action == HudReturn::RestoreHud)
    {
       SetPage(m_defaultPagenum, 0);
-      m_hudVisible = true;
       if (PUPLabel* pBackground = GetLabel("pBackground"s); pBackground && !pBackground->IsAnimating())
          pBackground->SetVisible(true);
    }
@@ -324,6 +323,20 @@ vector<PUPTrigger*>* PUPScreen::GetTriggers(const string& szTrigger)
    assert(std::this_thread::get_id() == m_apiThread);
    ankerl::unordered_dense::map<string, vector<PUPTrigger*>>::iterator it = m_triggerMap.find(szTrigger);
    return it != m_triggerMap.end() ? &it->second : nullptr;
+}
+
+void PUPScreen::LabelInit()
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_labelInit = true;
+   // PinUP's label canvas always starts with a pBACKGROUND label drawn below the others.
+   if (!GetLabel("pBackground"s))
+   {
+      PUPLabel* const pBackground = new PUPLabel(m_pManager, "pBackground"s, "Liberation Sans"s, 50.f, 0xFF, 0.f,
+         PUP_LABEL_XALIGN_CENTER, PUP_LABEL_YALIGN_CENTER, 0.f, 0.f, -1, true);
+      AddLabel(pBackground);
+      SendLabelToBack(pBackground);
+   }
 }
 
 void PUPScreen::AddLabel(PUPLabel* pLabel)
@@ -402,7 +415,6 @@ void PUPScreen::SetPage(int pagenum, int durationMs, const string& special)
    if (szSpecial == "hidehudplay"s)
    {
       m_hudReturn = HudReturn::RestoreHud;
-      m_hudVisible = false;
       if (PUPLabel* pBackground = GetLabel("pBackground"s); pBackground && !pBackground->IsAnimating())
          pBackground->SetVisible(false);
    }
@@ -567,7 +579,15 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
 
    case PUPPlaylist::Function::Overlays:
    case PUPPlaylist::Function::Alphas:
-      m_overlay.Load(pPlaylist->GetPlayFilePath(szPlayFile));
+      // PinUP routes both through assignAlphaFramePNG: the file becomes the pBackground
+      // label's image, stretched over the label canvas, so it follows pBackground's
+      // visibility (pDMDSetHUD, hidehudplay) and sits below the other labels.
+      LabelInit();
+      if (PUPLabel* pBackground = GetLabel("pBackground"s))
+      {
+         pBackground->SetCaption(PluginStrings::PathToUTF8(pPlaylist->GetFolder() / szPlayFile));
+         pBackground->SetSpecial("{\"mt\":2, \"width\":100, \"height\":100, \"xpos\":50, \"ypos\":50}"s);
+      }
       break;
 
    case PUPPlaylist::Function::Shapes:
@@ -676,12 +696,9 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
          m_staticImage.Render(ctx, m_rect, m_screenAlpha);
       break;
 
-   case 2:
-      if (m_hudVisible)
-         m_overlay.Render(ctx, m_rect, m_screenAlpha * m_overlayAlpha);
-      break;
-
    case 3:
+      if (!m_hudVisible)
+         break;
       // PUP draws the animation copies after all regular labels, so an animated
       // label overlays the rest of the page regardless of its creation order.
       for (PUPLabel* pLabel : m_labels)
