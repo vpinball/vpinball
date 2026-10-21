@@ -352,16 +352,15 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         break;
                      }
                      case 5:
-                        // Bring this screen to the front of its siblings.
+                        // Send this screen to the back of its siblings (PinUP: TControl.SendToBack).
                         // { "mt":301, "SN": XX, "FN":5 }
-                        LOGD(std::format("Bring screen to front requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-                        m_pupManager.SendScreenToFront(pScreen.get());
+                        LOGD(std::format("Send screen to back requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        m_pupManager.SendScreenToBack(pScreen.get());
                         break;
                      case 6:
-                        // Enforce topmost — flip the screen's topmost flag on and raise it to front.
+                        // Bring this screen to the front of its siblings (PinUP: TControl.BringToFront, no topmost change).
                         // { "mt":301, "SN": XX, "FN":6 }
-                        LOGD(std::format("Enforce screen topmost requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-                        pScreen->SetTopmost(true);
+                        LOGD(std::format("Bring screen to front requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
                         m_pupManager.SendScreenToFront(pScreen.get());
                         break;
                      case 10:
@@ -427,7 +426,9 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         break;
                      case 34:
                         // "{ ""mt"":301, ""SN"": "& pDisp &", ""FN"": 34 }"             'hideoverlay text during next videoplay on DMD auto return
-                        NOT_IMPLEMENTED(std::format("Unknown function not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        // Labels are hidden and LabelSet/LabelShowPage ignored until the current media ends.
+                        pScreen->m_hideDuringPlay = true;
+                        pScreen->m_hudVisible = false;
                         break;
                      case 41:
                         // 'set safeloop mode on current playing media.  Good for background videos that refresh often?  { "mt":301, "SN": XX, "FN":41 }
@@ -567,6 +568,9 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
+      return;
+
+   if (pScreen->m_hideDuringPlay)
       return;
 
    PUPLabel* pLabel = pScreen->GetLabel(LabelName);

@@ -255,6 +255,11 @@ void PUPScreen::Unduck()
 void PUPScreen::OnMainMediaEnd()
 {
    assert(std::this_thread::get_id() == m_apiThread);
+   if (m_hideDuringPlay)
+   {
+      m_hideDuringPlay = false;
+      m_hudVisible = true;
+   }
    // Resolve whatever LabelShowPage queued when a splash page started.
    const HudReturn action = m_hudReturn;
    m_hudReturn = HudReturn::None;
@@ -405,6 +410,8 @@ void PUPScreen::RemoveLabel(PUPLabel* pLabel)
 void PUPScreen::SetPage(int pagenum, int durationMs, const string& special)
 {
    assert(std::this_thread::get_id() == m_apiThread);
+   if (m_hideDuringPlay)
+      return;
 
    // Mirrors PinUpDisplayX TtextForm.SetPageNum: hidehudplay/returnplay arm an action for
    // the end of the current media, forceshow/forcehide only touch visibility, a same-page

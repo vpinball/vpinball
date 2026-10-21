@@ -56,6 +56,7 @@ public:
    float m_screenAlpha = 1.0f;
    float m_overlayAlpha = 1.0f;
    bool m_hudVisible = true; // FN 3: the whole label overlay shown or hidden
+   bool m_hideDuringPlay = false; // FN 34: labels hidden and label commands ignored until the current media ends
    bool m_padTextAlways = false;
    // Action queued by LabelShowPage, applied when the main media ends.
    enum class HudReturn
