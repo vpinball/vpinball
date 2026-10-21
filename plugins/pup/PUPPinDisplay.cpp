@@ -590,6 +590,10 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
    if (StrCompareNoCase(LabelName, "pBackground"s))
       pScreen->m_hudVisible = pLabel->IsVisible();
    pLabel->SetSpecial(Special);
+
+   // See pDMDLabelDispose - remove the label after applying the update
+   if (pLabel->GetDoDispose())
+      pScreen->RemoveLabel(pLabel);
 }
 
 void PUPPinDisplay::LabelSetEx()

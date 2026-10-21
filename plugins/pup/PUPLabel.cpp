@@ -89,10 +89,10 @@ static SDL_Surface* RotateSurface(SDL_Surface* const src, float angleDeg)
 }
 
 // See pDMDLabelSetFilter - apply pixel filter to an RGBA32 surface
-// fmode: 1=invertRGB, 2=invert(+alpha), 3=grayscale, 4=invertalpha, 5=clear
+// fmode: 1=invertRGB, 2=invert(+alpha), 3=grayscale, 4=invertalpha, 5=clear, 6=blur
 static void ApplyFilter(SDL_Surface* surf, int filterMode)
 {
-   if (!surf || filterMode <= 0 || filterMode > 5)
+   if (!surf || filterMode <= 0 || filterMode > 6)
       return;
 
    SDL_LockSurface(surf);
@@ -141,6 +141,50 @@ static void ApplyFilter(SDL_Surface* surf, int filterMode)
       }
    }
    SDL_UnlockSurface(surf);
+
+   if (filterMode == 6)
+   {
+      // PUP filter 6 is a box blur (radius 5). Keep it simple and separable so the
+      // costly row pass is only executed once per frame.
+      constexpr int radius = 5;
+      SDL_LockSurface(surf);
+      uint32_t* const pixels = (uint32_t*)surf->pixels;
+      const int pitch = surf->pitch / 4;
+      vector<uint32_t> tmp(static_cast<size_t>(surf->w) * surf->h);
+      for (int y = 0; y < surf->h; y++)
+      {
+         for (int x = 0; x < surf->w; x++)
+         {
+            uint32_t r = 0, g = 0, b = 0, a = 0;
+            int count = 0;
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+               const int sx = std::clamp(x + dx, 0, surf->w - 1);
+               const uint32_t px = pixels[y * pitch + sx];
+               r += px & 0xFF; g += (px >> 8) & 0xFF; b += (px >> 16) & 0xFF; a += (px >> 24) & 0xFF;
+               count++;
+            }
+            tmp[static_cast<size_t>(y) * surf->w + x] = ((a / count) << 24) | ((b / count) << 16) | ((g / count) << 8) | (r / count);
+         }
+      }
+      for (int y = 0; y < surf->h; y++)
+      {
+         for (int x = 0; x < surf->w; x++)
+         {
+            uint32_t r = 0, g = 0, b = 0, a = 0;
+            int count = 0;
+            for (int dy = -radius; dy <= radius; dy++)
+            {
+               const int sy = std::clamp(y + dy, 0, surf->h - 1);
+               const uint32_t px = tmp[static_cast<size_t>(sy) * surf->w + x];
+               r += px & 0xFF; g += (px >> 8) & 0xFF; b += (px >> 16) & 0xFF; a += (px >> 24) & 0xFF;
+               count++;
+            }
+            pixels[y * pitch + x] = ((a / count) << 24) | ((b / count) << 16) | ((g / count) << 8) | (r / count);
+         }
+      }
+      SDL_UnlockSurface(surf);
+   }
 }
 
 #ifndef GetRValue
@@ -293,6 +337,11 @@ void PUPLabel::SetVisible(bool visible)
 void PUPLabel::ClearAnimation()
 {
    std::lock_guard lock(m_mutex);
+   ClearAnimationInternal();
+}
+
+void PUPLabel::ClearAnimationInternal()
+{
    m_animation.reset();
 }
 
@@ -450,15 +499,17 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "zback")
          {
-            // See pDMDLabelSendToBack
-            if (value.as<int>() == 1)
+            // See pDMDLabelSendToBack. PUP puts -1 behind everything and any other
+            // value just in front of the first (background) label.
+            if (value.as<int>() == -1)
                m_pScreen->SendLabelToBack(this);
+            else
+               m_pScreen->SendLabelToBackground(this);
          }
          else if (key == "ztop")
          {
             // See pDMDLabelSendToFront
-            if (value.as<int>() == 1)
-               m_pScreen->SendLabelToFront(this);
+            m_pScreen->SendLabelToFront(this);
          }
          else if (key == "size")
          {
@@ -845,10 +896,27 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          {
             m_doDefault = (value.as<int>() == 1);
          }
+         else if (key == "maxlen")
+         {
+            // See pDMDLabelSetMaxLen - trim text captions to a maximum length
+            const int maxLen = value.as<int>();
+            if (m_type == PUP_LABEL_TYPE_TEXT && maxLen > 0 && static_cast<int>(m_szCaption.length()) > maxLen)
+            {
+               m_szCaption.resize(maxLen);
+               m_dirty = true;
+            }
+         }
+         else if (key == "dispose")
+         {
+            // See pDMDLabelDispose - hide and remove the label after this update
+            ClearAnimationInternal();
+            m_visible = false;
+            m_doDispose = true;
+         }
          else if (key == "anihide")
          {
             // See pDMDLabelHideAni - stop any label animation and hide it
-            m_animation.reset();
+            ClearAnimationInternal();
             m_visible = false;
          }
          else if (key == "v2")
@@ -1351,7 +1419,6 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
    }
 
    const int lineCount = 1 + static_cast<int>(std::count(text.begin(), text.end(), '\n'));
-   rs.m_logicalHeight = fontHeight * static_cast<float>(lineCount);
 
    // See pDMDLabelSetAutoSize - shrink font until text fits within autow/autoh dimensions
    const float maxW = (m_autoFitWidth > 0) ? (m_autoFitWidth / 100.0f) * static_cast<float>(outWidth) : 0;
@@ -1378,6 +1445,8 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
       pTextSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), textColor, 0);
    }
 
+   rs.m_logicalHeight = adjustedHeight * static_cast<float>(lineCount);
+
    {
       SDL_Surface* pConverted = SDL_ConvertSurface(pTextSurface, SDL_PIXELFORMAT_RGBA32);
       if (pConverted)
@@ -1394,11 +1463,17 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
       const int pitch = pTextSurface->pitch / 4;
       const int h = pTextSurface->h;
       const int hm1 = (h > 1 ? h - 1 : 1);
+      // gradstate is the percentage of the text kept at the start color before
+      // the gradient starts (PUP 1..100).
+      const int startLine = static_cast<int>(floorf(hm1 * (std::clamp(m_gradState, 0, 100) / 100.0f)));
+      const int gradHeight = std::max(1, hm1 - startLine);
       for (int y = 0; y < h; y++)
       {
-         const uint32_t gr = GetRValue(m_color) + y * ((int)GetRValue(m_gradColor) - GetRValue(m_color)) / hm1;
-         const uint32_t gg = GetGValue(m_color) + y * ((int)GetGValue(m_gradColor) - GetGValue(m_color)) / hm1;
-         const uint32_t gb = GetBValue(m_color) + y * ((int)GetBValue(m_gradColor) - GetBValue(m_color)) / hm1;
+         const int gy = std::clamp(y - startLine, 0, gradHeight);
+         const int sR = GetRValue(color), sG = GetGValue(color), sB = GetBValue(color);
+         const uint32_t gr = sR + gy * ((int)GetRValue(m_gradColor) - sR) / gradHeight;
+         const uint32_t gg = sG + gy * ((int)GetGValue(m_gradColor) - sG) / gradHeight;
+         const uint32_t gb = sB + gy * ((int)GetBValue(m_gradColor) - sB) / gradHeight;
          const uint32_t g = (gb << 16) | (gg << 8) | gr;
          size_t ofs = y*pitch;
          for (int x = 0; x < pTextSurface->w; x++,ofs++)

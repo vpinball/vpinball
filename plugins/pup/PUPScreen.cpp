@@ -363,6 +363,32 @@ void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
       std::rotate(it, it + 1, m_labels.end());
 }
 
+void PUPScreen::SendLabelToBackground(PUPLabel* pLabel)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   auto it = std::find(m_labels.begin(), m_labels.end(), pLabel);
+   if (it == m_labels.end())
+      return;
+   // PUP's zback value other than -1 puts the label just in front of the first
+   // (background) label rather than behind everything.
+   const size_t target = std::min<size_t>(1, m_labels.size() - 1);
+   if (static_cast<size_t>(it - m_labels.begin()) == target)
+      return;
+   m_labels.erase(it);
+   m_labels.insert(m_labels.begin() + target, pLabel);
+}
+
+void PUPScreen::RemoveLabel(PUPLabel* pLabel)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   auto it = std::find(m_labels.begin(), m_labels.end(), pLabel);
+   if (it == m_labels.end())
+      return;
+   m_labelMap.erase(lowerCase(pLabel->GetName()));
+   m_labels.erase(it);
+   delete pLabel;
+}
+
 void PUPScreen::SetPage(int pagenum, int durationMs, const string& special)
 {
    assert(std::this_thread::get_id() == m_apiThread);
