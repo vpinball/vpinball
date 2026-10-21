@@ -73,9 +73,10 @@ static vector<PUPTrigger::PUPTriggerCondition> ParseConditions(const string& tri
 }
 
 PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume,
-   int priority, int length, int counter, int restSeconds, PlayAction playAction, bool useDefaults)
+   int priority, int length, int counter, int restSeconds, PlayAction playAction, bool useDefaults, const string& szCustomFunction)
    : m_szDescript(szDescript)
    , m_szTrigger(szTrigger)
+   , m_szCustomFunction(szCustomFunction)
    , m_pScreen(pScreen)
    , m_pPlaylist(pPlaylist)
    , m_active(active)
@@ -138,6 +139,15 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
       m_action = [&]() { m_pScreen->Stop(m_pPlaylist, m_szPlayFile); };
       break;
 
+   case PlayAction::CustomFunction:
+      m_action = [&]()
+      {
+         m_pScreen->GetManager()->CustomFunction(m_pScreen->GetScreenNum(), m_szCustomFunction);
+         if (!m_szPlayFile.empty())
+            m_pScreen->GetManager()->SendMsg(PluginStrings::PathToUTF8(m_szPlayFile));
+      };
+      break;
+
    default:
       LOGE("Invalid play action: " + PlayActionToString(m_playAction));
       m_action = [](){};
@@ -170,9 +180,10 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
    }
 
    if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s)) {
-      // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
-      NOT_IMPLEMENTED("CustomFunc not implemented: " + line);
-      return nullptr;
+      // The playlist column holds the custom function JSON, applied to this screen. The
+      // file column, when set, is posted as a regular PuP message (PinUP SendSelfPuPMSG).
+      return new PUPTrigger(active, parts[2], parts[3], pScreen, nullptr, PluginStrings::PathFromUTF8(parts[6]), 100.f, 0, 0, string_to_int(parts[10], 0),
+         string_to_int(parts[11], 0), PlayAction::CustomFunction, false, triggerPlaylist);
    }
 
    // Sometimes an empty playlist but with description is used as a comment/separator.
@@ -325,7 +336,7 @@ string PUPTrigger::ToString() const {
       ", descript=" + m_szDescript +
       ", trigger=" + m_szTrigger +
       ", screen={" + m_pScreen->ToString() + '}' +
-      ", playlist={" + m_pPlaylist->ToString() + '}' +
+      ", playlist={" + (m_pPlaylist ? m_pPlaylist->ToString() : m_szCustomFunction) + '}' +
       ", playFile=" + PluginStrings::PathToUTF8(m_szPlayFile) +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
