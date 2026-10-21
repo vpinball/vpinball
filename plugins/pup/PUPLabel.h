@@ -204,6 +204,7 @@ private:
 
       bool Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect);
       void Restore();
+      void SetMotionTiming(int motionLen, int motionTween) { m_motionLen = motionLen; m_motionTween = motionTween; }
       bool IsFade() const { return m_alphaStart != m_alphaEnd; }
       bool IsScreenFade() const { return m_screenFade; }
       bool IsZoom() const { return m_zoomStart != m_zoomEnd; }
@@ -223,6 +224,8 @@ private:
       bool m_hasPixelY = false;
       float m_pixelX = 0.f;
       float m_pixelY = 0.f;
+      bool m_zoomIsPulse = false; // at=4 (bounce) vs at=3 (single zoom)
+      bool m_zoomUseDrawHeight = false; // at=3 'ns' flag: percentages of the label instead of the display
 
    private:
       void CaptureState();
@@ -268,7 +271,7 @@ private:
    public:
       int m_delayShow = 0;
       int m_numStart = INT_MIN;
-      int m_numEnd = INT_MAX;
+      int m_numEnd = INT_MIN;
       int m_numFormat = 0;
       string m_numText;
    };

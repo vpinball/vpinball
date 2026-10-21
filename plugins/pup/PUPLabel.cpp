@@ -425,10 +425,14 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
       case 3:
       {
-         // See pDMDZoomBig - zoom from hstart% to hend% over len ms
+         // See pDMDZoomBig - zoom from hstart% to hend% over mlen ms
+         // 'ns' makes the percentages relative to the label instead of the display.
          const float hstart = static_cast<float>(json["hstart"s].as<double>(100));
          const float hend = static_cast<float>(json["hend"s].as<double>(200));
          m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 1000, foregroundColor, hstart, hend, 0);
+         m_animation->m_zoomIsPulse = false;
+         m_animation->m_zoomUseDrawHeight = json["ns"s].exists();
+         m_animation->SetMotionTiming(motionLength, motionTween);
          break;
       }
 
@@ -436,25 +440,28 @@ void PUPLabel::SetSpecial(const string& szSpecial)
       {
          // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart% and hend%
          // See pDMDLabelPulseNumber - numstart/numend count up during animation.
-         // pspeed=0 means use a default bounce speed derived from the zoom range.
          const float hstart = static_cast<float>(json["hstart"s].as<double>(80));
          const float hend = static_cast<float>(json["hend"s].as<double>(120));
-         int pspeed = json["pspeed"s].as<int>(0);
-         if (pspeed == 0)
-            pspeed = std::max(1, static_cast<int>(hend - hstart));
+         const int pspeed = json["pspeed"s].as<int>(0);
          m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 3000, foregroundColor, hstart, hend, pspeed);
-         m_animation->m_numStart = json["numstart"s].as<int>(INT_MIN); // INT_MIN = no number counting
-         m_animation->m_numEnd = json["numend"s].as<int>(INT_MIN);
-         m_animation->m_numFormat = json["numformat"s].as<int>(0); // 0=plain, 1=thousands separators
+         m_animation->m_zoomIsPulse = true;
+         m_animation->SetMotionTiming(motionLength, motionTween);
+         if (json["numend"s].exists())
+         {
+            m_animation->m_numStart = json["numstart"s].as<int>(0);
+            m_animation->m_numEnd = json["numend"s].as<int>(0);
+            m_animation->m_numFormat = json["numformat"s].as<int>(0);
+         }
          break;
       }
 
       case 5:
       {
-         // See pDMDLabelFadeOut / pDMDLabelFadeIn - alpha ease from astart to aend over len ms
+         // See pDMDLabelFadeOut / pDMDLabelFadeIn - alpha ease from astart to aend over mlen ms
          const int astart = json["astart"s].as<int>(255);
          const int aend = json["aend"s].as<int>(0);
          m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 1000, foregroundColor, astart, aend, 0, false);
+         m_animation->SetMotionTiming(motionLength, motionTween);
          break;
       }
 
@@ -463,7 +470,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          // See pDMDLabelFadePulse - alpha oscillates between astart and aend
          const int astart = json["astart"s].as<int>(70);
          const int aend = json["aend"s].as<int>(255);
-         const int pspeed = json["pspeed"s].as<int>(40);
+         const int pspeed = json["pspeed"s].as<int>(1);
          m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 3000, foregroundColor, astart, aend, std::max(1, pspeed), false);
          break;
       }
@@ -474,18 +481,21 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          const int astart = json["astart"s].as<int>(255);
          const int aend = json["aend"s].as<int>(0);
          m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 1000, foregroundColor, astart, aend, 0, true);
+         m_animation->SetMotionTiming(motionLength, motionTween);
          break;
       }
 
       case 8:
       {
-         // See pDMDLabelWiggleText / pDMDLabelWiggleImage - rotation bounces between rstart and rend
-         const float rstart = static_cast<float>(json["rstart"s].as<double>(-45)) / 10.0f;
-         const float rend = static_cast<float>(json["rend"s].as<double>(45)) / 10.0f;
-         int rspeed = json["rspeed"s].as<int>(5);
+         // See pDMDLabelWiggleText / pDMDLabelWiggleImage - rotation bounces between rstart and rend.
+         // PUP values are degrees, not tenths of degrees (unlike LabelNew/SetRotate).
+         const float rstart = static_cast<float>(json["rstart"s].as<double>(-45));
+         const float rend = static_cast<float>(json["rend"s].as<double>(45));
+         int rspeed = json["rspeed"s].as<int>(1);
          if (rspeed == 0)
-            rspeed = std::max(1, static_cast<int>(fabsf(rend - rstart)));
+            rspeed = 1;
          m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 3000, foregroundColor, rstart, rend, rspeed, 0);
+         m_animation->SetMotionTiming(motionLength, motionTween);
          break;
       }
 
@@ -1008,8 +1018,10 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    int fontColor = m_animation ? m_animation->m_color : m_color;
 
-   // Re-bake the texture when the rotation angle moves (static 'rotate' plus any wiggle).
-   const float wantAngle = m_angle + ((m_animation && m_animation->IsWiggle()) ? m_animation->m_wiggle : 0.f);
+   // Re-bake the texture when the rotation angle moves. PUP's wiggle animation sets an
+   // absolute rotation rather than adding an offset to the label angle, and PUP's rotate
+   // runs the opposite way from RotateSurface (PUP stores 360 - angle/10 for 'rotate').
+   const float wantAngle = (m_animation && m_animation->IsWiggle()) ? -m_animation->m_wiggle : m_angle;
    if (wantAngle != m_renderAngle)
    {
       m_renderAngle = wantAngle;
@@ -1633,6 +1645,50 @@ string PUPLabel::ToString() const
       m_xPos, m_yPos, m_pagenum, PluginStrings::PathToUTF8(m_szPath));
 }
 
+namespace
+{
+   float ApplyTween(float pos, int tween)
+   {
+      switch (tween)
+      {
+      default:
+      // Robert Penner easing functions (see https://easings.net)
+      case 0: break;
+      case 1: pos = pos * pos; break;
+      case 2: pos = pos * (2.f - pos); break;
+      case 3: pos = pos < 0.5f ? 2.f * pos * pos : -1.f + (4.f - 2.f * pos) * pos; break;
+      case 4: pos = pos * pos * pos; break;
+      case 5: { float t = pos - 1.f; pos = t * t * t + 1.f; } break;
+      case 6: pos = pos < 0.5f ? 4.f * pos * pos * pos : (pos - 1.f) * (2.f * pos - 2.f) * (2.f * pos - 2.f) + 1.f; break;
+      case 7: pos = pos * pos * pos * pos; break;
+      case 8: { float t = pos - 1.f; pos = -(t * t * t * t) + 1.f; } break;
+      case 9: pos = pos < 0.5f ? 8.f * pos * pos * pos * pos : -8.f * (pos - 1.f) * (pos - 1.f) * (pos - 1.f) * (pos - 1.f) + 1.f; break;
+      case 10: pos = pos * pos * pos * pos * pos; break;
+      }
+      return pos;
+   }
+
+   string FormatPupNumber(int num, int format)
+   {
+      string numStr = std::to_string(num);
+      if (format == 1)
+      {
+         const int firstDigit = (num < 0) ? 1 : 0; // No separator after the minus sign
+         int insertPos = static_cast<int>(numStr.length()) - 3;
+         while (insertPos > firstDigit)
+         {
+            numStr.insert(insertPos, ",");
+            insertPos -= 3;
+         }
+         // PUP's %2.0n formatting pads to 2 characters and adds spaces around the value
+         if (numStr.length() < 2)
+            numStr.insert(0, 1, ' ');
+         numStr = ' ' + numStr + ' ';
+      }
+      return numStr;
+   }
+}
+
 PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int flashingPeriod)
    : m_color(foregroundColor)
    , m_label(label)
@@ -1735,12 +1791,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       // Set the final number before restoring the rest of the label state.
       if (m_numStart != INT_MIN)
       {
-         string numStr = std::to_string(m_numEnd);
-         if (m_numFormat == 1)
-         {
-            int insertPos = static_cast<int>(numStr.length()) - 3;
-            while (insertPos > ((m_numEnd < 0) ? 1 : 0)) { numStr.insert(insertPos, ","); insertPos -= 3; } // No separator after the minus sign
-         }
+         const string numStr = FormatPupNumber(m_numEnd, m_numFormat);
          if (numStr != m_numText)
          {
             m_numText = numStr;
@@ -1756,8 +1807,8 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
 
    if (m_flashingPeriod)
    {
-      // See pDMDLabelFlash - toggle visibility every fq milliseconds
-      m_visible = ((elapsed / m_flashingPeriod) & 1) == 0;
+      // See pDMDLabelFlash - start hidden, then toggle visibility every fq milliseconds
+      m_visible = ((elapsed / m_flashingPeriod) & 1) != 0;
       m_color = m_foregroundColor;
    }
 
@@ -1770,41 +1821,49 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
    if (m_motionLen)
    {
       float pos = saturate(static_cast<float>(elapsed) / static_cast<float>(m_motionLen));
-      switch (m_motionTween)
-      {
-      default:
-      // Robert Penner easing functions (see https://easings.net)
-      case 0: break;
-      case 1: pos = pos * pos; break;
-      case 2: pos = pos * (2.f - pos); break;
-      case 3: pos = pos < 0.5f ? 2.f * pos * pos : -1.f + (4.f - 2.f * pos) * pos; break;
-      case 4: pos = pos * pos * pos; break;
-      case 5: { float t = pos - 1.f; pos = t * t * t + 1.f; } break;
-      case 6: pos = pos < 0.5f ? 4.f * pos * pos * pos : (pos - 1.f) * (2.f * pos - 2.f) * (2.f * pos - 2.f) + 1.f; break;
-      case 7: pos = pos * pos * pos * pos; break;
-      case 8: { float t = pos - 1.f; pos = -(t * t * t * t) + 1.f; } break;
-      case 9: pos = pos < 0.5f ? 8.f * pos * pos * pos * pos : -8.f * (pos - 1.f) * (pos - 1.f) * (pos - 1.f) * (pos - 1.f) + 1.f; break;
-      case 10: pos = pos * pos * pos * pos * pos; break;
-      }
+      pos = ApplyTween(pos, m_motionTween);
+
       const float xBase = labelRect.x;
       const float xLeft = static_cast<float>(screenRect.x) - labelRect.w;
       const float xRight = static_cast<float>(screenRect.x) + static_cast<float>(screenRect.w);
       const float yBase = labelRect.y;
       const float yTop = static_cast<float>(screenRect.y) - labelRect.h;
       const float yBottom = static_cast<float>(screenRect.y) + static_cast<float>(screenRect.h);
-      // -1 = off-screen left/top, 0 = current position, 1 = off-screen right/bottom,
-      // other values = percentage position (see pDMDLabelMoveTO)
       const float screenW = static_cast<float>(screenRect.w);
       const float screenH = static_cast<float>(screenRect.h);
-      // TODO: position interpretation when only end is specified (no start) is uncertain.
-      // GOTG bumper pops use ype:150 with no yps - video shows upward movement.
-      // Current: treat as pixel offset upward from current position when start is absent.
-      const float xs = m_xps == 0 ? xBase : m_xps == 1 ? xRight : m_xps == -1 ? xLeft : static_cast<float>(screenRect.x) + screenW * (float)m_xps / 100.f;
-      const float xe = m_xpe == 0 ? xBase : m_xpe == 1 ? xRight : m_xpe == -1 ? xLeft
-         : (m_xps == 0 ? xBase - static_cast<float>(m_xpe) : static_cast<float>(screenRect.x) + screenW * (float)m_xpe / 100.f);
-      const float ys = m_yps == 0 ? yBase : m_yps == 1 ? yBottom : m_yps == -1 ? yTop : static_cast<float>(screenRect.y) + screenH * (float)m_yps / 100.f;
-      const float ye = m_ype == 0 ? yBase : m_ype == 1 ? yBottom : m_ype == -1 ? yTop
-         : (m_yps == 0 ? yBase - static_cast<float>(m_ype) : static_cast<float>(screenRect.y) + screenH * (float)m_ype / 100.f);
+
+      // PUP position values: -1 = off-screen left/top, 0 = current position,
+      // 1 = off-screen right/bottom, 2 = the 'xp'/'yp' pixel position (end only, already
+      // applied to the base position by Render), otherwise a percentage of the display.
+      const auto mapX = [&](float value, bool isStart) -> float
+      {
+         if (value == 0.f)
+            return xBase;
+         if (value == 1.f)
+            return xRight;
+         if (value == -1.f)
+            return xLeft;
+         if (value == 2.f && !isStart)
+            return xBase;
+         return static_cast<float>(screenRect.x) + screenW * value / 100.f;
+      };
+      const auto mapY = [&](float value, bool isStart) -> float
+      {
+         if (value == 0.f)
+            return yBase;
+         if (value == 1.f)
+            return yBottom;
+         if (value == -1.f)
+            return yTop;
+         if (value == 2.f && !isStart)
+            return yBase;
+         return static_cast<float>(screenRect.y) + screenH * value / 100.f;
+      };
+
+      const float xs = mapX(m_xps, true);
+      const float xe = mapX(m_xpe, false);
+      const float ys = mapY(m_yps, true);
+      const float ye = mapY(m_ype, false);
       m_color = pos < 1.0f ? m_motionColor : m_foregroundColor;
       m_xOffset = lerp(xs, xe, pos) - xBase;
       m_yOffset = lerp(ys, ye, pos) - yBase;
@@ -1817,9 +1876,8 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       if (m_pulseSpeed > 0)
       {
          // See pDMDLabelFadePulse - bounce alpha between astart and aend
-         // Approximate one full cycle takes range/speed*2 ticks * 33ms
-         const float range = static_cast<float>(m_alphaEnd - m_alphaStart);
-         const float periodMs = (range / static_cast<float>(m_pulseSpeed)) * (float)(2.0 * 33.0);
+         const float range = fabsf(static_cast<float>(m_alphaEnd - m_alphaStart));
+         const float periodMs = std::max(1.f, (range / static_cast<float>(m_pulseSpeed)) * (2.f * 30.f));
          const float cyclePos = fmodf(static_cast<float>(elapsed), periodMs) / periodMs;
          const float t = cyclePos < 0.5f ? cyclePos * 2.0f : 2.0f - cyclePos * 2.0f;
          m_alpha = as + t * (ae - as);
@@ -1827,7 +1885,8 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       else
       {
          // See pDMDLabelFadeOut / pDMDLabelFadeIn / pDMDScreenFadeOut / pDMDScreenFadeIn
-         float pos = saturate(static_cast<float>(elapsed) / static_cast<float>(m_lengthMs));
+         const float fadeMs = static_cast<float>(m_motionLen > 0 ? m_motionLen : static_cast<int>(m_lengthMs));
+         const float pos = saturate(static_cast<float>(elapsed) / std::max(1.f, fadeMs));
          m_alpha = as + pos * (ae - as);
       }
       m_color = m_foregroundColor;
@@ -1835,20 +1894,43 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
 
    if (m_zoomStart != m_zoomEnd)
    {
-      if (m_zoomPulseSpeed != 0)
+      if (m_zoomIsPulse)
       {
-         // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart and hend
-         // Approximate one full cycle (start->end->start) every 500ms
-         const float periodMs = 500.0f;
+         // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart and hend.
+         // PUP advances by pspeed pixels every 30 ms; a missing speed defaults to 3% of the label height.
+         const float rangePx = fabsf(m_zoomEnd - m_zoomStart) * labelRect.h / 100.f;
+         const float speedPx = (m_zoomPulseSpeed > 0) ? static_cast<float>(m_zoomPulseSpeed) : std::max(1.f, labelRect.h * 0.03f);
+         const float periodMs = std::max(1.f, (rangePx / speedPx) * (2.f * 30.f));
          const float cyclePos = fmodf(static_cast<float>(elapsed), periodMs) / periodMs;
          const float t = cyclePos < 0.5f ? cyclePos * 2.0f : 2.0f - cyclePos * 2.0f;
          m_zoom = m_zoomStart + t * (m_zoomEnd - m_zoomStart);
       }
       else
       {
-         // See pDMDZoomBig - zoom from hstart to hend over len ms
-         float pos = saturate(static_cast<float>(elapsed) / static_cast<float>(m_lengthMs));
-         m_zoom = m_zoomStart + pos * (m_zoomEnd - m_zoomStart);
+         // See pDMDZoomBig - hstart/hend are pixel heights expressed as a
+         // percentage of the display, or of the label when 'ns' is set.
+         float startScale = m_zoomStart;
+         float endScale = m_zoomEnd;
+         if (m_zoomUseDrawHeight)
+         {
+            startScale /= 100.f;
+            endScale /= 100.f;
+         }
+         else if (m_label->m_type == PUP_LABEL_TYPE_TEXT)
+         {
+            const float labelSize = std::max(1.f, m_label->m_size);
+            startScale /= labelSize;
+            endScale /= labelSize;
+         }
+         else
+         {
+            // Image labels are zoomed to a pixel height derived from the display height.
+            const float currentHeight = std::max(1.f, labelRect.h);
+            startScale = (static_cast<float>(screenRect.h) * m_zoomStart / 100.f) / currentHeight;
+            endScale = (static_cast<float>(screenRect.h) * m_zoomEnd / 100.f) / currentHeight;
+         }
+         const float pos = ApplyTween(saturate(static_cast<float>(elapsed) / std::max(1.f, static_cast<float>(m_motionLen))), m_motionTween);
+         m_zoom = 100.f * (startScale + pos * (endScale - startScale));
       }
       m_color = m_foregroundColor;
    }
@@ -1856,7 +1938,9 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
    if (m_wiggleStart != m_wiggleEnd)
    {
       // See pDMDLabelWiggleText / pDMDLabelWiggleImage - bounce rotation between rstart and rend.
-      const float periodMs = 300.0f;
+      // PUP advances by rspeed degrees every 30 ms.
+      const float range = fabsf(m_wiggleEnd - m_wiggleStart);
+      const float periodMs = std::max(1.f, (range / static_cast<float>(std::max(1, m_wiggleSpeed))) * (2.f * 30.f));
       const float cyclePos = fmodf(static_cast<float>(elapsed), periodMs) / periodMs;
       const float t = cyclePos < 0.5f ? cyclePos * 2.0f : 2.0f - cyclePos * 2.0f;
       m_wiggle = m_wiggleStart + t * (m_wiggleEnd - m_wiggleStart);
@@ -1866,23 +1950,9 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
    // See pDMDLabelPulseNumber - interpolate number and update label caption
    if (m_numStart != INT_MIN)
    {
-      float pos = saturate(static_cast<float>(elapsed) / static_cast<float>(m_lengthMs));
-      int num = (pos >= 1.f) ? m_numEnd : m_numStart + static_cast<int>(pos * static_cast<float>(m_numEnd - m_numStart));
-      string numStr;
-      if (m_numFormat == 1)
-      {
-         numStr = std::to_string(num);
-         const int firstDigit = (num < 0) ? 1 : 0; // No separator after the minus sign
-         int insertPos = static_cast<int>(numStr.length()) - 3;
-         while (insertPos > firstDigit)
-         {
-            numStr.insert(insertPos, ",");
-            insertPos -= 3;
-         }
-      }
-      else
-         numStr = std::to_string(num);
-
+      const float pos = ApplyTween(saturate(static_cast<float>(elapsed) / std::max(1.f, static_cast<float>(m_motionLen))), m_motionTween);
+      const int num = (pos >= 1.f) ? m_numEnd : m_numStart + static_cast<int>(lroundf(pos * static_cast<float>(m_numEnd - m_numStart)));
+      const string numStr = FormatPupNumber(num, m_numFormat);
       if (numStr != m_numText)
       {
          m_numText = numStr;
