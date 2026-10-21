@@ -258,7 +258,6 @@ void Spinner::ExportMesh(ObjLoader& loader)
    }
 
    transformedVertices.resize(spinnerPlateNumVertices);
-   m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(transformedVertices.data());
 
    const string subObjName = name + "Plate";
@@ -305,12 +304,10 @@ void Spinner::RenderSetup(Renderer *renderer)
    }
    bracketVertexBuffer->Unlock();
 
+   // The plate animation is applied through the object transform, so the vertex buffer holds the mesh in object space and is static
    std::shared_ptr<IndexBuffer> plateIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, spinnerPlateNumFaces, spinnerPlateIndices);
-   std::shared_ptr<VertexBuffer> plateVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, spinnerPlateNumVertices, nullptr, true);
+   std::shared_ptr<VertexBuffer> plateVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, spinnerPlateNumVertices, (float *)spinnerPlate);
    m_plateMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
-
-   m_vertexBuffer_spinneranimangle = -FLT_MAX;
-   UpdatePlate(nullptr);
 }
 
 void Spinner::RenderRelease()
@@ -368,32 +365,26 @@ void Spinner::Render(const unsigned int renderMask)
    const bool plateVisible = m_phitspinner ? m_phitspinner->m_spinnerMover.m_visible : m_d.m_visible;
    if (plateVisible && !isStaticOnly)
    {
-      UpdatePlate(nullptr);
+      const float angle = m_phitspinner ? m_phitspinner->m_spinnerMover.m_angle : clamp(0.f, ANGTORAD(min(m_d.m_angleMin, m_d.m_angleMax)), ANGTORAD(max(m_d.m_angleMin, m_d.m_angleMax)));
+      const Matrix3D vertMatrix = (Matrix3D::MatrixRotateX(-angle) * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation))) * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length)
+         * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
+      m_renderer->UpdateBasicShaderMatrix(vertMatrix);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
       m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
       m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
+      m_renderer->UpdateBasicShaderMatrix();
    }
 }
 
-void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
+// Used by the OBJ mesh exporter only; rendering applies the same transform through the object matrix
+void Spinner::UpdatePlate(Vertex3D_NoTex2 *const vertBuffer)
 {
-   const float angle = m_phitspinner ? m_phitspinner->m_spinnerMover.m_angle
-      : clamp(0.f, ANGTORAD(min(m_d.m_angleMin, m_d.m_angleMax)), ANGTORAD(max(m_d.m_angleMin, m_d.m_angleMax)));
-
-   // early out in case still same rotation
-   if (angle == m_vertexBuffer_spinneranimangle)
-       return;
-
-   m_vertexBuffer_spinneranimangle = angle;
+   const float angle = m_phitspinner ? m_phitspinner->m_spinnerMover.m_angle : clamp(0.f, ANGTORAD(min(m_d.m_angleMin, m_d.m_angleMax)), ANGTORAD(max(m_d.m_angleMin, m_d.m_angleMax)));
 
    const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(-angle)
                              * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
-   Vertex3D_NoTex2 *buf;
-   if (vertBuffer == nullptr)
-      m_plateMeshBuffer->m_vb->Lock(buf);
-   else
-      buf = vertBuffer;
+   Vertex3D_NoTex2 *buf = vertBuffer;
 
    for (unsigned int i = 0; i < spinnerPlateNumVertices; i++)
    {

@@ -106,8 +106,6 @@ private:
    HitSpinner *m_phitspinner = nullptr;
    float m_lastAngle;
 
-   float m_vertexBuffer_spinneranimangle = -FLT_MAX;
-
    // ISpinner
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

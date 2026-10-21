@@ -249,7 +249,6 @@ void Trigger::UpdateMesh()
    m_meshBuffer = nullptr;
    m_triggerVertices = nullptr;
    m_meshShape = m_d.m_shape;
-   m_vertexBuffer_animHeightOffset = -FLT_MAX;
 
    if (m_d.m_shape == TriggerNone)
       return;
@@ -262,7 +261,8 @@ void Trigger::UpdateMesh()
    if (m_triggerVertices == nullptr)
       return;
    std::shared_ptr<IndexBuffer> triggerIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, (unsigned int)meshData.indices.size(), meshData.indices.data());
-   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, (unsigned int)meshData.vertices.size(), (float *)m_triggerVertices->data(), true);
+   // The hit animation is applied through the object transform, so the vertex buffer is static
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, (unsigned int)meshData.vertices.size(), (float *)m_triggerVertices->data());
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, triggerIndexBuffer, true);
 }
 
@@ -356,25 +356,7 @@ void Trigger::Render(const unsigned int renderMask)
    if (m_meshBuffer == nullptr)
       return;
 
-   if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
-   {
-      m_vertexBuffer_animHeightOffset = m_animHeightOffset;
-      const Vertex3D_NoTex2 *const verts = m_triggerVertices->data();
-      Vertex3D_NoTex2 *buf;
-      m_meshBuffer->m_vb->Lock(buf);
-      for (unsigned int i = 0; i < m_meshBuffer->m_vb->m_count; i++)
-      {
-         buf[i].x = verts[i].x;
-         buf[i].y = verts[i].y;
-         buf[i].z = verts[i].z + m_animHeightOffset;
-         buf[i].nx = verts[i].nx;
-         buf[i].ny = verts[i].ny;
-         buf[i].nz = verts[i].nz;
-         buf[i].tu = verts[i].tu;
-         buf[i].tv = verts[i].tv;
-      }
-      m_meshBuffer->m_vb->Unlock();
-   }
+   m_renderer->UpdateBasicShaderMatrix(Matrix3D::MatrixTranslate(0.f, 0.f, m_animHeightOffset));
 
    m_renderer->m_renderDevice->ResetRenderState();
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
@@ -382,12 +364,13 @@ void Trigger::Render(const unsigned int renderMask)
    m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
    m_renderer->m_renderDevice->DrawMesh(
       m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_meshBuffer->m_ib->m_count);
+   m_renderer->UpdateBasicShaderMatrix();
 }
 
 #pragma endregion
 
 
-void Trigger::ExportMesh(ObjLoader& loader)
+void Trigger::ExportMesh(ObjLoader &loader)
 {
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
