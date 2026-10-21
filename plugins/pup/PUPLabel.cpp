@@ -342,7 +342,11 @@ void PUPLabel::ClearAnimation()
 
 void PUPLabel::ClearAnimationInternal()
 {
-   m_animation.reset();
+   if (m_animation)
+   {
+      m_animation->Restore();
+      m_animation.reset();
+   }
 }
 
 SDL_FPoint PUPLabel::GetShadowOffsetPixels(float fontHeight) const
@@ -381,43 +385,50 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                mColor = ?
          */
       std::lock_guard lock(m_mutex);
-      switch (json["at"s].as<int>(0))
+
+      // PUP runs one animation per label unless 'ad' asks for parallel animations.
+      // This implementation still supports a single active animation, but at least
+      // matches the default behavior of replacing the previous one.
+      if (json["ad"s].as<int>(0) == 0)
+         ClearAnimationInternal();
+      else if (m_animation)
+         LOGW("Parallel label animations (ad=1) are not fully supported; replacing the active animation: label=" + m_szName);
+
+      const int foregroundColor = json["fc"s].as<int>(m_color);
+      const int alphaFade = json["af"s].as<int>(0);
+      const int animType = json["at"s].as<int>(0);
+      const int animLength = json["len"s].as<int>(0);
+      int motionLength = json["mlen"s].as<int>(0);
+      if (motionLength == 0)
+         motionLength = animLength;
+      const int motionTween = json["tt"s].as<int>(0);
+
+      switch (animType)
       {
       case 1:
          // See pDMDLabelFlash - fq is the toggle interval in milliseconds, fc is optional
-         if (json["len"s].exists() && json["fq"s].exists() && json["fq"s].as<int>() > 0)
-            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(), json["fc"s].as<int>(m_color), json["fq"s].as<int>());
+         if (json["len"s].exists() && json["fq"s].as<int>(0) > 0)
+            m_animation = std::make_unique<Animation>(this, animLength, foregroundColor, json["fq"s].as<int>());
          else
-         {
             LOGE("Invalid label animation specified: {" + szSpecial + '}');
-         }
          break;
 
       case 2:
          // See pDMDLabelMoveHorz / pDMDLabelMoveVert / pDMDLabelMoveTO
          // See pDMDLabelMoveHorzFade / pDMDLabelMoveVertFade - af = alpha fade start time (ms before end)
          if (json["len"s].exists())
-         {
-            int len = json["len"s].as<int>();
-            int mlen = json["mlen"s].as<int>(0);
-            if (mlen == 0)
-               mlen = len;
-            m_animation = std::make_unique<Animation>(this, len, json["fc"s].as<int>(m_color), static_cast<float>(json["xps"s].as<double>(0)), static_cast<float>(json["xpe"s].as<double>(0)),
-               static_cast<float>(json["yps"s].as<double>(0)), static_cast<float>(json["ype"s].as<double>(0)), mlen, json["tt"s].as<int>(0), json["mColor"s].as<int>(m_color));
-            m_animation->m_alphaFade = json["af"s].as<int>(0);
-         }
+            m_animation = std::make_unique<Animation>(this, animLength, foregroundColor, static_cast<float>(json["xps"s].as<double>(0)), static_cast<float>(json["xpe"s].as<double>(0)),
+               static_cast<float>(json["yps"s].as<double>(0)), static_cast<float>(json["ype"s].as<double>(0)), motionLength, motionTween, json["mColor"s].as<int>(foregroundColor));
          else
-         {
             LOGE("Invalid label animation specified: {" + szSpecial + '}');
-         }
          break;
 
       case 3:
       {
          // See pDMDZoomBig - zoom from hstart% to hend% over len ms
-         float hstart = static_cast<float>(json["hstart"s].as<double>(100)); // default 100% (normal size)
-         float hend = static_cast<float>(json["hend"s].as<double>(200)); // default 200% (double size)
-         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), hstart, hend, 0); // 1000ms fallback
+         const float hstart = static_cast<float>(json["hstart"s].as<double>(100));
+         const float hend = static_cast<float>(json["hend"s].as<double>(200));
+         m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 1000, foregroundColor, hstart, hend, 0);
          break;
       }
 
@@ -426,12 +437,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart% and hend%
          // See pDMDLabelPulseNumber - numstart/numend count up during animation.
          // pspeed=0 means use a default bounce speed derived from the zoom range.
-         float hstart = static_cast<float>(json["hstart"s].as<double>(80)); // default 80% from pDMDLabelPulseText
-         float hend = static_cast<float>(json["hend"s].as<double>(120)); // default 120% from pDMDLabelPulseText
+         const float hstart = static_cast<float>(json["hstart"s].as<double>(80));
+         const float hend = static_cast<float>(json["hend"s].as<double>(120));
          int pspeed = json["pspeed"s].as<int>(0);
          if (pspeed == 0)
             pspeed = std::max(1, static_cast<int>(hend - hstart));
-         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), hstart, hend, pspeed); // 3000ms fallback if len missing
+         m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 3000, foregroundColor, hstart, hend, pspeed);
          m_animation->m_numStart = json["numstart"s].as<int>(INT_MIN); // INT_MIN = no number counting
          m_animation->m_numEnd = json["numend"s].as<int>(INT_MIN);
          m_animation->m_numFormat = json["numformat"s].as<int>(0); // 0=plain, 1=thousands separators
@@ -441,40 +452,40 @@ void PUPLabel::SetSpecial(const string& szSpecial)
       case 5:
       {
          // See pDMDLabelFadeOut / pDMDLabelFadeIn - alpha ease from astart to aend over len ms
-         int astart = json["astart"s].as<int>(255); // default 255 (fully visible) from pDMDLabelFadeOut
-         int aend = json["aend"s].as<int>(0); // default 0 (invisible) from pDMDLabelFadeOut
-         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, false); // 1000ms fallback
+         const int astart = json["astart"s].as<int>(255);
+         const int aend = json["aend"s].as<int>(0);
+         m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 1000, foregroundColor, astart, aend, 0, false);
          break;
       }
 
       case 6:
       {
          // See pDMDLabelFadePulse - alpha oscillates between astart and aend
-         int astart = json["astart"s].as<int>(70); // default 70 (dim) from pDMDLabelFadePulse
-         int aend = json["aend"s].as<int>(255); // default 255 (full) from pDMDLabelFadePulse
-         int pspeed = json["pspeed"s].as<int>(40); // default 40 (alpha units per tick) from pDMDLabelFadePulse
-         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), astart, aend, pspeed, false); // 3000ms fallback
+         const int astart = json["astart"s].as<int>(70);
+         const int aend = json["aend"s].as<int>(255);
+         const int pspeed = json["pspeed"s].as<int>(40);
+         m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 3000, foregroundColor, astart, aend, std::max(1, pspeed), false);
          break;
       }
 
       case 7:
       {
          // See pDMDScreenFadeOut / pDMDScreenFadeIn - same as at=5 but for parent screen
-         int astart = json["astart"s].as<int>(255); // default 255 from pDMDScreenFadeOut
-         int aend = json["aend"s].as<int>(0); // default 0 from pDMDScreenFadeOut
-         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, true); // 1000ms fallback
+         const int astart = json["astart"s].as<int>(255);
+         const int aend = json["aend"s].as<int>(0);
+         m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 1000, foregroundColor, astart, aend, 0, true);
          break;
       }
 
       case 8:
       {
          // See pDMDLabelWiggleText / pDMDLabelWiggleImage - rotation bounces between rstart and rend
-         float rstart = static_cast<float>(json["rstart"s].as<double>(-45)) / 10.0f; // default -4.5 deg from pDMDLabelWiggleText
-         float rend = static_cast<float>(json["rend"s].as<double>(45)) / 10.0f; // default +4.5 deg from pDMDLabelWiggleText
-         int rspeed = json["rspeed"s].as<int>(5); // default 5 from pDMDLabelWiggleText, 0 = use range as speed
+         const float rstart = static_cast<float>(json["rstart"s].as<double>(-45)) / 10.0f;
+         const float rend = static_cast<float>(json["rend"s].as<double>(45)) / 10.0f;
+         int rspeed = json["rspeed"s].as<int>(5);
          if (rspeed == 0)
             rspeed = std::max(1, static_cast<int>(fabsf(rend - rstart)));
-         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), rstart, rend, rspeed, 0); // 3000ms fallback
+         m_animation = std::make_unique<Animation>(this, animLength > 0 ? animLength : 3000, foregroundColor, rstart, rend, rspeed, 0);
          break;
       }
 
@@ -484,7 +495,25 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          NOT_IMPLEMENTED("at=10 clone not implemented"s);
          break;
 
-      default: LOGE("Unsupported Label.SetSpecial animation type: " + std::to_string(json["at"s].as<int>(0))); break;
+      default:
+         LOGE("Unsupported Label.SetSpecial animation type: " + std::to_string(animType));
+         break;
+      }
+
+      if (m_animation)
+      {
+         m_animation->m_type = animType;
+         m_animation->m_alphaFade = alphaFade;
+         if (json["xp"s].exists())
+         {
+            m_animation->m_hasPixelX = true;
+            m_animation->m_pixelX = static_cast<float>(json["xp"s].as<int>());
+         }
+         if (json["yp"s].exists())
+         {
+            m_animation->m_hasPixelY = true;
+            m_animation->m_pixelY = static_cast<float>(json["yp"s].as<int>());
+         }
       }
    }
    break;
@@ -582,15 +611,9 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "stopani")
          {
-            // See pDMDLabelStopAnis - stop any pup animations on label/image (zoom/flash/pulse), not animated gifs
-            m_animation = nullptr;
-            m_alpha = 1.0f;
-            m_zoom = 100.0f;
-            m_gradState = 0;
-            m_filterMode = 0;
-            m_autoFitWidth = 0;
-            m_autoFitHeight = 0;
-            m_dirty = true;
+            // See pDMDLabelStopAnis - stop any pup animations on label/image (zoom/flash/pulse), not animated gifs.
+            // PUP ends the animation, restoring the label's pre-animation state.
+            ClearAnimationInternal();
          }
          else if (key == "rotate")
          {
@@ -1176,39 +1199,33 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    }
 
    bool visible = true;
-   int color = 0xFFFFFFFF;
    if (m_animation)
    {
+      if (m_animation->m_type == 1 || m_animation->m_type == 2 || m_animation->m_type == 10)
+      {
+         if (m_animation->m_hasPixelX)
+            dest.x = static_cast<float>(rect.x) + m_animation->m_pixelX;
+         if (m_animation->m_hasPixelY)
+            dest.y = static_cast<float>(rect.y) + m_animation->m_pixelY;
+      }
+
       if (m_animation->Update(rect, dest))
       {
-         if (m_animation->IsScreenFade() && m_pScreen)
-            m_pScreen->m_screenAlpha = m_animation->m_alpha;
-         else if (m_animation->IsFade())
-            m_alpha = m_animation->m_alpha;
-         if (m_animation->IsZoom())
-            m_zoom = m_animation->m_zoom;
-         if (m_animation->m_alphaFade > 0)
-            m_alpha = 0.f;
-         // Persist final motion position so label stays where the animation left it
-         m_xPos += (m_animation->m_xOffset / static_cast<float>(rect.w)) * 100.f;
-         m_yPos += (m_animation->m_yOffset / static_cast<float>(rect.h)) * 100.f;
-         m_animation = nullptr;
+         // The animation restored the label's pre-animation state itself.
+         m_animation.reset();
          return;
       }
-      else
-      {
-         // See pDMDScreenFadeOut / pDMDScreenFadeIn - at=7 fades the entire screen
-         if (m_animation->IsScreenFade() && m_pScreen)
-            m_pScreen->m_screenAlpha = m_animation->m_alpha;
 
-         dest.x += m_animation->m_xOffset;
-         dest.y += m_animation->m_yOffset;
-         visible = m_animation->m_visible;
-         color = m_animation->m_color;
-      }
+      // See pDMDScreenFadeOut / pDMDScreenFadeIn - at=7 fades the label overlay (FN 22 multiplier)
+      if (m_animation->IsScreenFade() && m_pScreen)
+         m_pScreen->m_overlayAlpha = m_animation->m_alpha;
+
+      dest.x += m_animation->m_xOffset;
+      dest.y += m_animation->m_yOffset;
+      visible = m_animation->m_visible;
    }
 
-   float alpha = (m_animation ? m_animation->m_alpha : m_alpha) * screenAlpha;
+   float alpha = ((m_animation && !m_animation->IsScreenFade()) ? m_animation->m_alpha : m_alpha) * screenAlpha;
 
    float zoom = m_animation ? m_animation->m_zoom : m_zoom;
    if (zoom != 100.0f)
@@ -1224,8 +1241,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    if (visible && alpha > 0.f)
    {
-      // FIXME implement color (as the animation may animate it)
-      // Rotation is baked into the texture (see RotateSurface), so none is applied here.
+      // Rotation and animated text color are baked into the texture (see RotateSurface /
+      // UpdateLabelTexture), so none are applied here.
       const VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
       ClipDrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, alpha,
          0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height),
@@ -1425,7 +1442,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
    const float maxH = (m_autoFitHeight > 0) ? (m_autoFitHeight / 100.0f) * static_cast<float>(outHeight) : 0;
    float adjustedHeight = fontHeight;
 
-   SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), 255 };
+   SDL_Color textColor = { GetRValue(color), GetGValue(color), GetBValue(color), 255 };
    SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), textColor, 0);
    if (!pTextSurface)
    {
@@ -1617,18 +1634,19 @@ string PUPLabel::ToString() const
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int flashingPeriod)
-   : m_color(label->m_color)
+   : m_color(foregroundColor)
    , m_label(label)
    , m_lengthMs(lengthMs)
    , m_foregroundColor(foregroundColor)
    , m_startTimestamp(SDL_GetTicks())
    , m_flashingPeriod(flashingPeriod)
 {
+   CaptureState();
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float xps, float xpe, float yps, float ype, int motionLen, int motionTween, int motionColor)
-   : m_label(label)
-   , m_color(label->m_color)
+   : m_color(foregroundColor)
+   , m_label(label)
    , m_lengthMs(lengthMs)
    , m_foregroundColor(foregroundColor)
    , m_startTimestamp(SDL_GetTicks())
@@ -1640,11 +1658,12 @@ PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foreg
    , m_motionTween(motionTween)
    , m_motionColor(motionColor)
 {
+   CaptureState();
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int alphaStart, int alphaEnd, int pulseSpeed, bool screenFade)
-   : m_label(label)
-   , m_color(label->m_color)
+   : m_color(foregroundColor)
+   , m_label(label)
    , m_lengthMs(lengthMs)
    , m_foregroundColor(foregroundColor)
    , m_startTimestamp(SDL_GetTicks())
@@ -1654,11 +1673,12 @@ PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foreg
    , m_screenFade(screenFade)
 {
    m_alpha = static_cast<float>(m_alphaStart) / 255.0f;
+   CaptureState();
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float zoomStart, float zoomEnd, int zoomPulseSpeed)
-   : m_label(label)
-   , m_color(label->m_color)
+   : m_color(foregroundColor)
+   , m_label(label)
    , m_lengthMs(lengthMs)
    , m_foregroundColor(foregroundColor)
    , m_startTimestamp(SDL_GetTicks())
@@ -1667,11 +1687,12 @@ PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foreg
    , m_zoomPulseSpeed(zoomPulseSpeed)
 {
    m_zoom = m_zoomStart;
+   CaptureState();
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float wiggleStart, float wiggleEnd, int wiggleSpeed, int dummy)
-   : m_label(label)
-   , m_color(label->m_color)
+   : m_color(foregroundColor)
+   , m_label(label)
    , m_lengthMs(lengthMs)
    , m_foregroundColor(foregroundColor)
    , m_startTimestamp(SDL_GetTicks())
@@ -1681,19 +1702,37 @@ PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foreg
 {
    (void)dummy;
    m_wiggle = m_wiggleStart;
+   CaptureState();
+}
+
+void PUPLabel::Animation::CaptureState()
+{
+   m_savedVisible = m_label->m_visible;
+   m_savedAlpha = m_label->m_alpha;
+   m_savedZoom = m_label->m_zoom;
+   m_savedColor = m_label->m_color;
+   m_savedFilterMode = m_label->m_filterMode;
+}
+
+void PUPLabel::Animation::Restore()
+{
+   m_label->m_visible = m_savedVisible;
+   m_label->m_alpha = m_savedAlpha;
+   m_label->m_zoom = m_savedZoom;
+   if (m_label->m_color != m_savedColor)
+   {
+      m_label->m_color = m_savedColor;
+      m_label->m_dirty = true;
+   }
 }
 
 bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect)
 {
-   uint64_t elapsed = SDL_GetTicks() - m_startTimestamp;
+   const uint64_t elapsed = SDL_GetTicks() - m_startTimestamp;
 
    if (elapsed >= m_lengthMs)
    {
-      m_color = m_label->m_color;
-      m_xOffset = 0.f;
-      m_yOffset = 0.f;
-      m_alpha = static_cast<float>(m_alphaEnd) / 255.0f;
-      m_zoom = m_zoomEnd;
+      // Set the final number before restoring the rest of the label state.
       if (m_numStart != INT_MIN)
       {
          string numStr = std::to_string(m_numEnd);
@@ -1702,10 +1741,16 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
             int insertPos = static_cast<int>(numStr.length()) - 3;
             while (insertPos > ((m_numEnd < 0) ? 1 : 0)) { numStr.insert(insertPos, ","); insertPos -= 3; } // No separator after the minus sign
          }
-         PUPLabel* label = const_cast<PUPLabel*>(m_label);
-         label->m_szCaption = numStr;
-         label->m_dirty = true;
+         if (numStr != m_numText)
+         {
+            m_numText = numStr;
+            m_label->m_szCaption = numStr;
+            m_label->m_dirty = true;
+         }
       }
+      if (m_screenFade && m_label->m_pScreen)
+         m_label->m_pScreen->m_overlayAlpha = static_cast<float>(m_alphaEnd) / 255.f;
+      Restore();
       return true;
    }
 
@@ -1763,13 +1808,6 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       m_color = pos < 1.0f ? m_motionColor : m_foregroundColor;
       m_xOffset = lerp(xs, xe, pos) - xBase;
       m_yOffset = lerp(ys, ye, pos) - yBase;
-
-      if (m_alphaFade > 0)
-      {
-         const int fadeStart = static_cast<int>(m_lengthMs) - m_alphaFade;
-         if (static_cast<int>(elapsed) > fadeStart)
-            m_alpha = 1.0f - saturate(static_cast<float>(elapsed - fadeStart) / static_cast<float>(m_alphaFade));
-      }
    }
 
    if (m_alphaStart != m_alphaEnd)
@@ -1848,10 +1886,18 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       if (numStr != m_numText)
       {
          m_numText = numStr;
-         PUPLabel* label = const_cast<PUPLabel*>(m_label);
-         label->m_szCaption = numStr;
-         label->m_dirty = true;
+         m_label->m_szCaption = numStr;
+         m_label->m_dirty = true;
       }
+   }
+
+   // See pDMDLabelMoveHorzFade / pDMDLabelMoveVertFade - fade the last 'af' ms.
+   // PUP applies this to the animated copy, so only the copy-based types (1-4, 10) see it.
+   if (m_alphaFade > 50 && (m_type <= 4 || m_type == 10))
+   {
+      const int fadeStart = static_cast<int>(m_lengthMs) - m_alphaFade;
+      if (static_cast<int>(elapsed) > fadeStart)
+         m_alpha = saturate(static_cast<float>(static_cast<int>(m_lengthMs) - static_cast<int>(elapsed)) / static_cast<float>(m_alphaFade));
    }
 
    return false;

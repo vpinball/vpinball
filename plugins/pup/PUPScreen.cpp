@@ -682,8 +682,14 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
       break;
 
    case 3:
+      // PUP draws the animation copies after all regular labels, so an animated
+      // label overlays the rest of the page regardless of its creation order.
       for (PUPLabel* pLabel : m_labels)
-         pLabel->Render(ctx, m_rect, m_pagenum, m_screenAlpha * m_overlayAlpha);
+         if (!pLabel->IsAnimating())
+            pLabel->Render(ctx, m_rect, m_pagenum, m_screenAlpha * m_overlayAlpha);
+      for (PUPLabel* pLabel : m_labels)
+         if (pLabel->IsAnimating())
+            pLabel->Render(ctx, m_rect, m_pagenum, m_screenAlpha * m_overlayAlpha);
       break;
    }
 }
