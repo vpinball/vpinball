@@ -257,6 +257,12 @@ void PUPLabel::SetVisible(bool visible)
    m_visible = visible;
 }
 
+void PUPLabel::ClearAnimation()
+{
+   std::lock_guard lock(m_mutex);
+   m_animation.reset();
+}
+
 void PUPLabel::SetSpecial(const string& szSpecial)
 {
    #if LOG_PUPLABEL
@@ -738,6 +744,10 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                m_dirty = true;
             }
          }
+         else if (key == "dodefault")
+         {
+            m_doDefault = (value.as<int>() == 1);
+         }
          else if (key == "v2")
          {
             // See pupCreateLabel / pupCreateLabelImage
@@ -772,7 +782,9 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 {
    std::lock_guard lock(m_mutex);
 
-   if ((!m_visible && !m_animation) || pagenum != m_pagenum || m_szCaption.empty())
+   // PUP draws labels with a negative page number on every page (page -1 is used
+   // for persistent labels such as pBackground).
+   if ((!m_visible && !m_animation) || (m_pagenum >= 0 && pagenum != m_pagenum) || m_szCaption.empty())
       return;
 
    int fontColor = m_animation ? m_animation->m_color : m_color;
