@@ -226,6 +226,8 @@ private:
       float m_pixelY = 0.f;
       bool m_zoomIsPulse = false; // at=4 (bounce) vs at=3 (single zoom)
       bool m_zoomUseDrawHeight = false; // at=3 'ns' flag: percentages of the label instead of the display
+      bool m_invertFilter = false; // at=9
+      int m_filterMode = 0; // at=9 filter to toggle
 
    private:
       void CaptureState();
