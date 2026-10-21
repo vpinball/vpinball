@@ -52,6 +52,7 @@ public:
    const string& GetName() const { return m_szName; }
    int GetPagenum() const { return m_pagenum; }
    bool GetDoDefault() const { return m_doDefault; }
+   bool GetDoDispose() const { return m_doDispose; }
    bool IsAnimating() const { return m_animation != nullptr; }
    void ClearAnimation();
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
@@ -86,6 +87,7 @@ private:
    float m_alpha = 1.0f;
    bool m_useAbsolutePos = false;
    bool m_doDefault = true;
+   bool m_doDispose = false;
    bool m_disposeOnAnimEnd = false;
    float m_zoom = 100.0f;
    int m_gradColor = 0;
@@ -189,6 +191,7 @@ private:
    };
    RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath);
    RenderState UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels);
+   void ClearAnimationInternal();
    SDL_FPoint GetShadowOffsetPixels(float fontHeight) const;
 
    class Animation {

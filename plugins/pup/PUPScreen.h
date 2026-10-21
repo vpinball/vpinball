@@ -101,6 +101,8 @@ public:
    PUPLabel* GetLabel(const string& labelName);
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
+   void SendLabelToBackground(PUPLabel* pLabel);
+   void RemoveLabel(PUPLabel* pLabel);
    int GetPage() const { return m_pagenum; }
    void SetPage(int pagenum, int durationMs, const string& special = ""s);
    const vector<PUPLabel*>& GetLabels() const { return m_labels; }
