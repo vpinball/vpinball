@@ -336,7 +336,7 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         NOT_IMPLEMENTED(std::format("Loop refresh flags not implemented: screen={{{}}}, FF={}, FO={}", pScreen->ToString(false), json["FF"s].as<int>(0), json["FO"s].as<int>(0)));
                         break;
                      case 3:
-                        // See pDMDSetHUD — show/hide overlay window (overlay image + labels)
+                        // Show/hide the label overlay window (every label of the screen)
                         // { "mt":301, "SN": XX, "FN":3, "OT": 0 } - OT 0/1
                         pScreen->m_hudVisible = (json["OT"s].as<int>(0) != 0);
                         break;
@@ -540,8 +540,7 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
    if (!pScreen)
       return;
 
-   if (!pScreen->IsLabelInit())
-      LabelInit(screenNum);
+   pScreen->LabelInit();
 
    pScreen->AddLabel(new PUPLabel(&m_pupManager, LabelName, FontName, static_cast<float>(Size), Color,
       static_cast<float>(Angle) / 10.0f, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign,
@@ -586,9 +585,6 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
    const bool updateVisibility = (Caption == "`u`"s) || (pLabel->GetPagenum() == pScreen->GetPage());
    if (updateVisibility && !pLabel->IsAnimating())
       pLabel->SetVisible(Visible);
-   // See pDMDSetHUD — pBackground visibility also controls the HUD layer
-   if (StrCompareNoCase(LabelName, "pBackground"s))
-      pScreen->m_hudVisible = pLabel->IsVisible();
    pLabel->SetSpecial(Special);
 
    // See pDMDLabelDispose - remove the label after applying the update
@@ -629,18 +625,7 @@ void PUPPinDisplay::LabelInit(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-   {
-      pScreen->SetLabelInit();
-      // See pDMDSetHUD — pBackground label created automatically during LabelInit.
-      // PUP always draws it behind the user labels, even if LabelNew was called first.
-      if (!pScreen->GetLabel("pBackground"))
-      {
-         PUPLabel* pBackground = new PUPLabel(&m_pupManager, "pBackground"s, "Liberation Sans"s, 50.f, 0xFF, 0.f,
-            PUP_LABEL_XALIGN_CENTER, PUP_LABEL_YALIGN_CENTER, 0.f, 0.f, -1, true);
-         pScreen->AddLabel(pBackground);
-         pScreen->SendLabelToBack(pBackground);
-      }
-   }
+      pScreen->LabelInit();
 }
 
 const string& PUPPinDisplay::GetGetGame() const
