@@ -175,7 +175,6 @@ public:
    void GetEditorWireframe(vector<Vertex2D> &edges) const;
 
 private:
-   void UpdateTarget();
    void SetupHitObject(class PhysicsEngine* physics, HitObject * obj, const bool setHitObject, const bool isUI);
    void AddHitEdge(class PhysicsEngine *physics, ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi,
       const Vertex3Ds &vj, const bool setHitObject, const bool isUI);

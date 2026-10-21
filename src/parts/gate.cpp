@@ -291,11 +291,9 @@ void Gate::RenderSetup(Renderer *renderer)
    bracketVertexBuffer->Unlock();
    m_bracketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
+   // The wire animation is applied through the object transform, so the vertex buffer holds the mesh in object space and is static
    std::shared_ptr<IndexBuffer> wireIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_numIndices, m_indices);
-   std::shared_ptr<VertexBuffer> wireVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, nullptr, true);
-   wireVertexBuffer->Lock(buf);
-   GenerateWireMesh(buf);
-   wireVertexBuffer->Unlock();
+   std::shared_ptr<VertexBuffer> wireVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, (float *)m_vertices);
    m_wireMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
 }
 
@@ -306,7 +304,6 @@ void Gate::RenderRelease()
    m_bracketMeshBuffer = nullptr;
    m_wireEdgeMeshBuffer = nullptr;
    m_bracketEdgeMeshBuffer = nullptr;
-   m_vertexbuffer_angle = FLT_MAX;
    m_renderer = nullptr;
 }
 
@@ -337,21 +334,10 @@ void Gate::Render(const unsigned int renderMask)
    || (isReflectionPass && !m_d.m_reflectionEnabled))
       return;
 
-   if (float angle = m_phitgate ? m_phitgate->m_gateMover.m_angle : 0.f; angle != m_vertexbuffer_angle)
-   {
-      m_vertexbuffer_angle = angle;
-
-      const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(m_d.m_twoWay ? angle : -angle)
-                                * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
-      const Matrix3D vertMatrix = (fullMatrix
-                                 * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length))
-                                 * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
-      Vertex3D_NoTex2 *buf;
-      m_wireMeshBuffer->m_vb->Lock(buf);
-      vertMatrix.TransformPositions(m_vertices, buf, m_numVertices);
-      fullMatrix.TransformNormals(m_vertices, buf, m_numVertices);
-      m_wireMeshBuffer->m_vb->Unlock();
-   }
+   const float angle = m_phitgate ? m_phitgate->m_gateMover.m_angle : 0.f;
+   const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(m_d.m_twoWay ? angle : -angle) * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
+   const Matrix3D vertMatrix
+      = (fullMatrix * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length)) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
 
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
 
@@ -361,7 +347,9 @@ void Gate::Render(const unsigned int renderMask)
       {
          if (m_d.m_showBracket)
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+         m_renderer->UpdateBasicShaderMatrix(vertMatrix);
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+         m_renderer->UpdateBasicShaderMatrix();
       }
       if (renderMask & Renderer::UI_EDGES)
       {
@@ -375,7 +363,10 @@ void Gate::Render(const unsigned int renderMask)
                vertices.push_back(m_vertices[i]);
             m_wireEdgeMeshBuffer = m_wireMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
          }
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
+         m_renderer->UpdateBasicShaderMatrix(vertMatrix);
+         m_renderer->m_renderDevice->DrawMesh(
+            m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
+         m_renderer->UpdateBasicShaderMatrix();
          if (m_d.m_showBracket)
          {
             if (m_bracketEdgeMeshBuffer == nullptr)
@@ -388,7 +379,8 @@ void Gate::Render(const unsigned int renderMask)
                   vertices.push_back(gateBracket[i]);
                m_bracketEdgeMeshBuffer = m_bracketMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
             }
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
+            m_renderer->m_renderDevice->DrawMesh(
+               m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
          }
       }
    }
@@ -398,15 +390,17 @@ void Gate::Render(const unsigned int renderMask)
       m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
       if (m_d.m_showBracket)
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+      m_renderer->UpdateBasicShaderMatrix(vertMatrix);
       m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_renderer->UpdateBasicShaderMatrix();
    }
 }
 
 #pragma endregion
 
-void Gate::ExportMesh(ObjLoader& loader)
+void Gate::ExportMesh(ObjLoader &loader)
 {
-   const string& name = m_name;
+   const string &name = m_name;
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    if (m_d.m_showBracket)

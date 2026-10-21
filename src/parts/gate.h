@@ -109,7 +109,6 @@ private:
    HitGate *m_phitgate = nullptr;
    float m_lastAngle = FLT_MAX;
 
-   float m_vertexbuffer_angle = FLT_MAX;
    std::shared_ptr<MeshBuffer> m_wireMeshBuffer;
    std::shared_ptr<MeshBuffer> m_bracketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_wireEdgeMeshBuffer;

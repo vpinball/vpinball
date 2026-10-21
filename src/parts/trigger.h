@@ -144,7 +144,6 @@ private:
    TriggerShape m_meshShape = TriggerNone;
    Vertex3Ds m_boundingSphereCenter;
    float m_animHeightOffset = 0.f;
-   float m_vertexBuffer_animHeightOffset = -FLT_MAX;
    bool m_doAnimation = false;
    bool m_moveDown = false;
 
