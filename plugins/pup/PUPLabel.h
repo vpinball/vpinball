@@ -96,6 +96,8 @@ private:
    int m_gifEnd = -1;
    bool m_hideOnAnimEnd = false;
    bool m_animating = false;
+   bool m_imageWidthSet = false;
+   bool m_imageHeightSet = false;
 
    PUP_LABEL_TYPE m_type = PUP_LABEL_TYPE_TEXT;
    std::filesystem::path m_szPath;
@@ -123,6 +125,8 @@ private:
          : m_pTexture(other.m_pTexture)
          , m_prerenderedHeight(other.m_prerenderedHeight)
          , m_prerenderedColor(other.m_prerenderedColor)
+         , m_sourceWidth(other.m_sourceWidth)
+         , m_sourceHeight(other.m_sourceHeight)
          , m_width(other.m_width)
          , m_height(other.m_height)
          , m_logicalHeight(other.m_logicalHeight)
@@ -145,6 +149,8 @@ private:
 
             m_prerenderedHeight = other.m_prerenderedHeight;
             m_prerenderedColor = other.m_prerenderedColor;
+            m_sourceWidth = other.m_sourceWidth;
+            m_sourceHeight = other.m_sourceHeight;
             m_pTexture = other.m_pTexture;
             m_pAnimation = std::move(other.m_pAnimation);
             m_accumulatedDelays = std::move(other.m_accumulatedDelays);
@@ -164,6 +170,8 @@ private:
       VPXTexture m_pTexture = nullptr;
       int m_prerenderedHeight = 0; // Height used to evaluate text rendering
       int m_prerenderedColor = 0; // Color used for prerendering the text
+      int m_sourceWidth = 0; // Native width of the loaded image/animation
+      int m_sourceHeight = 0; // Native height of the loaded image/animation
       float m_width = 0; // Width of rendered text (unused for images)
       float m_height = 0; // Height of rendered text (unused for images)
       float m_logicalHeight = 0; // Windows-equivalent text-box height for alignment

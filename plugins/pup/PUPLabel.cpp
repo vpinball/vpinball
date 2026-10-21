@@ -193,13 +193,30 @@ void PUPLabel::SetCaption(const string& szCaption)
    std::ranges::replace(szText.begin(), szText.end(), '~', '\n');
    szText = string_replace_all(szText, "\\r"s, '\n');
 
+   // PUP supports an embedded color suffix: "SOME TEXT|16744448". The color is
+   // applied before the caption-change test so a color-only update still redraws.
+   int embeddedColor = -1;
+   if (const size_t colorPos = szText.find('|'); colorPos != string::npos)
+   {
+      embeddedColor = string_to_int(szText.substr(colorPos + 1), 16744448);
+      szText.resize(colorPos);
+   }
+
    {
       std::lock_guard lock(m_mutex);
+
+      if (embeddedColor >= 0 && m_color != embeddedColor)
+      {
+         m_color = embeddedColor;
+         m_dirty = true;
+      }
+
       if (m_szCaption == szText)
          return;
 
       const string szExt = extension_from_path(szText);
-      const bool isImageCaption = (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg" || szExt == "jpeg");
+      const bool isAnimatedImage = (szExt == "gif" || szExt == "apng" || szExt == "agif");
+      const bool isImageCaption = (isAnimatedImage || szExt == "png" || szExt == "bmp" || szExt == "jpg" || szExt == "jpeg");
 
       if (!isImageCaption)
       {
@@ -226,12 +243,28 @@ void PUPLabel::SetCaption(const string& szCaption)
       std::filesystem::path szPath;
       if (pPlaylist)
          szPath = pPlaylist->GetPlayFilePath(fs_path.lexically_relative(playlistFolder));
+      if (szPath.empty())
+      {
+         // PUP also accepts a caption that is a path relative to the pack root,
+         // without requiring a matching playlist entry.
+         szPath = find_case_insensitive_file_path(m_pScreen->GetManager()->GetPath() / fs_path);
+         if (!szPath.empty() && !std::filesystem::is_regular_file(szPath))
+            szPath.clear();
+      }
       if (!szPath.empty())
       {
+         const bool pathChanged = (m_szPath != szPath);
          m_szPath = szPath;
-         m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+         m_type = isAnimatedImage ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
          m_szCaption = szText;
          m_dirty = true;
+         if (pathChanged)
+         {
+            m_anigif = 0;
+            m_animating = (m_type == PUP_LABEL_TYPE_GIF);
+            m_animationFrame = -1;
+            m_animationStart = SDL_GetTicks();
+         }
       }
       else
       {
@@ -679,20 +712,28 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "width")
          {
             // See pDMDLabelSetSizeImage - width/height as percent of display dimensions
-            const float newWidth = static_cast<float>(value.as<double>());
-            if (m_imageWidth != newWidth)
+            if (m_type != PUP_LABEL_TYPE_TEXT)
             {
-               m_imageWidth = newWidth;
-               m_dirty = true;
+               const float newWidth = static_cast<float>(value.as<double>());
+               m_imageWidthSet = true;
+               if (m_imageWidth != newWidth)
+               {
+                  m_imageWidth = newWidth;
+                  m_dirty = true;
+               }
             }
          }
          else if (key == "height")
          {
-            const float newHeight = static_cast<float>(value.as<double>());
-            if (m_imageHeight != newHeight)
+            if (m_type != PUP_LABEL_TYPE_TEXT)
             {
-               m_imageHeight = newHeight;
-               m_dirty = true;
+               const float newHeight = static_cast<float>(value.as<double>());
+               m_imageHeightSet = true;
+               if (m_imageHeight != newHeight)
+               {
+                  m_imageHeight = newHeight;
+                  m_dirty = true;
+               }
             }
          }
          else if (key == "autow")
@@ -891,9 +932,18 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    }
    else
    {
+      // PUP uses the native image size until width/height are explicitly set,
+      // except pBackground which is always stretched to the display size.
       // Scale the dest by m_imageScale* so a rotated (grown) texture keeps its on-screen size.
-      width = (m_imageWidth / 100.0f) * static_cast<float>(rect.w) * m_renderState.m_imageScaleX;
-      height = (m_imageHeight / 100.0f) * static_cast<float>(rect.h) * m_renderState.m_imageScaleY;
+      const bool isBackground = StrCompareNoCase(m_szName, "pBackground"s);
+      const float baseWidth = isBackground ? static_cast<float>(rect.w)
+         : m_imageWidthSet ? (m_imageWidth / 100.0f) * static_cast<float>(rect.w)
+                           : static_cast<float>(m_renderState.m_sourceWidth);
+      const float baseHeight = isBackground ? static_cast<float>(rect.h)
+         : m_imageHeightSet ? (m_imageHeight / 100.0f) * static_cast<float>(rect.h)
+                            : static_cast<float>(m_renderState.m_sourceHeight);
+      width = baseWidth * m_renderState.m_imageScaleX;
+      height = baseHeight * m_renderState.m_imageScaleY;
    }
 
    SDL_FRect dest = { static_cast<float>(rect.x), static_cast<float>(rect.y), width, height };
@@ -1027,6 +1077,8 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
             image = newImage;
          }
          if (image) {
+            rs.m_sourceWidth = image->w;
+            rs.m_sourceHeight = image->h;
             if (m_filterMode > 0)
                ApplyFilter(image, m_filterMode);
             rs.m_pTexture = CreateTexture(image);
@@ -1064,6 +1116,8 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
                }
             }
             SDL_Surface* const tex = work ? work : m_pSourceImage;
+            rs.m_sourceWidth = m_pSourceImage->w;
+            rs.m_sourceHeight = m_pSourceImage->h;
             rs.m_imageScaleX = static_cast<float>(tex->w) / static_cast<float>(m_pSourceImage->w);
             rs.m_imageScaleY = static_cast<float>(tex->h) / static_cast<float>(m_pSourceImage->h);
             rs.m_pTexture = CreateTexture(tex);
@@ -1088,6 +1142,8 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
          rs.m_totalDuration = accum;
          SDL_Surface* image = rs.m_pAnimation->frames[0];
          if (image) {
+            rs.m_sourceWidth = image->w;
+            rs.m_sourceHeight = image->h;
             if (image->format == SDL_PIXELFORMAT_RGBA32)
                rs.m_pTexture = CreateTexture(image);
             else {
