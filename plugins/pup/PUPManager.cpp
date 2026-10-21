@@ -1076,6 +1076,22 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
    }
 }
 
+void PUPManager::SetMessageHandler(void* owner, std::function<void(int, const string&)> customFunction, std::function<void(const string&)> sendMsg)
+{
+   m_messageHandlerOwner = owner;
+   m_customFunction = std::move(customFunction);
+   m_sendMsg = std::move(sendMsg);
+}
+
+void PUPManager::ClearMessageHandler(void* owner)
+{
+   if (m_messageHandlerOwner != owner)
+      return;
+   m_messageHandlerOwner = nullptr;
+   m_customFunction = nullptr;
+   m_sendMsg = nullptr;
+}
+
 void PUPManager::RunLater(double seconds, std::function<void()> fn)
 {
    struct Pending

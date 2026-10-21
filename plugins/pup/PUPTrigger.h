@@ -52,10 +52,11 @@ public:
    void Invoke();
 
 private:
-   PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PlayAction playAction, bool useDefaults);
+   PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PlayAction playAction, bool useDefaults, const string& szCustomFunction = ""s);
    void Fire(bool checkRest);
    const string m_szDescript;
    const string m_szTrigger;
+   const string m_szCustomFunction;
    vector<PUPTriggerCondition> m_conditions;
    PUPScreen* const m_pScreen;
    PUPPlaylist* const m_pPlaylist;
