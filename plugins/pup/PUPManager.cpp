@@ -1009,6 +1009,10 @@ void PUPManager::DuckAllExcept(int percent, int masterScreenNum, bool all)
       Unduck();
       return;
    }
+   // PinUP ignores a new duck request while another screen is still the duck source.
+   for (const auto& [key, screen] : m_screenMap)
+      if (screen->IsDuckMaster())
+         return;
    for (const auto& [key, screen] : m_screenMap)
    {
       if (key == masterScreenNum && !all)
