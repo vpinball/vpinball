@@ -296,6 +296,11 @@ void PUPLabel::ClearAnimation()
    m_animation.reset();
 }
 
+SDL_FPoint PUPLabel::GetShadowOffsetPixels(float fontHeight) const
+{
+   return { m_xOffsetIsPercent ? fontHeight * m_xoffset / 100.f : m_xoffset, m_yOffsetIsPercent ? fontHeight * m_yoffset / 100.f : m_yoffset };
+}
+
 void PUPLabel::SetSpecial(const string& szSpecial)
 {
    #if LOG_PUPLABEL
@@ -631,6 +636,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          {
             // See pDMDLabelSetShadow / pDMDLabelSetBorder - shadow displacement as % of font height
             const float newXOffset = static_cast<float>(value.as<double>());
+            m_xOffsetIsPercent = true;
             if (m_xoffset != newXOffset)
             {
                m_xoffset = newXOffset;
@@ -640,11 +646,24 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "yoffset")
          {
             const float newYOffset = static_cast<float>(value.as<double>());
+            m_yOffsetIsPercent = true;
             if (m_yoffset != newYOffset)
             {
                m_yoffset = newYOffset;
                m_dirty = true;
             }
+         }
+         else if (key == "xoffpix")
+         {
+            m_xoffset = static_cast<float>(value.as<int>());
+            m_xOffsetIsPercent = false;
+            m_dirty = true;
+         }
+         else if (key == "yoffpix")
+         {
+            m_yoffset = static_cast<float>(value.as<int>());
+            m_yOffsetIsPercent = false;
+            m_dirty = true;
          }
          else if (key == "anigif")
          {
@@ -767,9 +786,19 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "outline")
          {
-            // See pDMDLabelSetBorder / pDMDLabelSetOutShadow - outline=1 upgrades shadow to border mode (type 2)
+            // See pDMDLabelSetBorder / pDMDLabelSetOutShadow.
+            // PUP keeps a plain drop shadow when outline is 0, and otherwise sets the
+            // shadow type to outline when 1 (or to the raw outline value). This also
+            // covers the legacy meaning where outline held the shadow type itself.
             const int newOutline = value.as<int>();
-            const int newShadowType = (newOutline == 1) ? 2 : m_shadowType;
+            int newShadowType = m_shadowType;
+            if (m_shadowType == 1)
+            {
+               if (newOutline == 1)
+                  newShadowType = 2;
+            }
+            else
+               newShadowType = (newOutline == 1) ? 2 : newOutline;
             if (m_outline != newOutline || m_shadowType != newShadowType)
             {
                m_outline = newOutline;
@@ -792,6 +821,23 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             if (m_italic != newItalic)
             {
                m_italic = newItalic;
+               m_dirty = true;
+            }
+         }
+         else if (key == "underline")
+         {
+            const bool newUnderline = (value.as<int>() == 1);
+            if (m_underline != newUnderline)
+            {
+               m_underline = newUnderline;
+               m_dirty = true;
+            }
+         }
+         else if (key == "normal")
+         {
+            if (m_bold || m_italic || m_underline)
+            {
+               m_bold = m_italic = m_underline = false;
                m_dirty = true;
             }
          }
@@ -903,7 +949,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       else if (m_pFont)
          m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor]() {
             std::lock_guard lock(m_mutex);
-            return UpdateLabelTexture(rect.h, m_pFont, m_szCaption, m_size, fontColor, m_shadowType, m_shadowColor, { m_xoffset, m_yoffset} );
+            const float fontHeight = (m_size / 100.0f) * static_cast<float>(rect.h);
+            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, m_size, fontColor, m_shadowType, m_shadowColor, GetShadowOffsetPixels(fontHeight));
          });
    }
 
@@ -1056,7 +1103,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    if (m_shadowType == 2)
    {
       const float fontHeight = (m_size / 100.0f) * static_cast<float>(rect.h);
-      dest.x += static_cast<float>(static_cast<int>(fontHeight * (m_xoffset / 100.0f))) * -2.f;
+      const SDL_FPoint shadowOffset = GetShadowOffsetPixels(fontHeight);
+      dest.x += static_cast<float>(static_cast<int>(shadowOffset.x)) * -2.f;
    }
 
    bool visible = true;
@@ -1227,7 +1275,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    return rs;
 }
 
-PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset)
+PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels)
 {
    SetThreadName("PUPLabel.Upd." + m_szName);
 
@@ -1243,11 +1291,12 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
    // FIXME TTF_STYLE_BOLD gives bad results (test with Blood Machines, during Bonus sequence)
    // style |= m_bold ? TTF_STYLE_BOLD : 0;
    if (m_italic) style |= TTF_STYLE_ITALIC;
+   if (m_underline) style |= TTF_STYLE_UNDERLINE;
 
    const PUPFont::SizeMetrics metrics = pFont->Apply(fontHeight);
    TTF_Font* const pTTFFont = pFont->GetTTFFont();
 
-   const float shadowTop = (m_shadowType == 2) ? static_cast<float>(SDL_max(1, static_cast<int>(SDL_max(std::abs(fontHeight * (m_xoffset / 100.0f)), std::abs(fontHeight * (m_yoffset / 100.0f)))) - 2)) : 0.f;
+   const float shadowTop = (m_shadowType == 2) ? static_cast<float>(SDL_max(1, static_cast<int>(SDL_max(std::abs(offsetPixels.x), std::abs(offsetPixels.y))) - 2)) : 0.f;
    rs.m_baselineOffset = metrics.winAscent - metrics.sdlAscent - shadowTop;
 
    // FIXME TTF_SetFontOutline does not gives clean outlines
@@ -1305,7 +1354,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
    rs.m_logicalHeight = fontHeight * static_cast<float>(lineCount);
 
    // See pDMDLabelSetAutoSize - shrink font until text fits within autow/autoh dimensions
-   const float maxW = (m_autoFitWidth > 0) ? (m_autoFitWidth / 100.0f) * static_cast<float>(outHeight) * (16.0f / 9.0f) : 0;
+   const float maxW = (m_autoFitWidth > 0) ? (m_autoFitWidth / 100.0f) * static_cast<float>(outWidth) : 0;
    const float maxH = (m_autoFitHeight > 0) ? (m_autoFitHeight / 100.0f) * static_cast<float>(outHeight) : 0;
    float adjustedHeight = fontHeight;
 
@@ -1363,8 +1412,8 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
       SDL_UnlockSurface(pTextSurface);
    }
 
-   const int xoffset = static_cast<int>(fontHeight * (offset.x / 100.0f));
-   const int yoffset = static_cast<int>(fontHeight * (offset.y / 100.0f));
+   const int xoffset = static_cast<int>(offsetPixels.x);
+   const int yoffset = static_cast<int>(offsetPixels.y);
    const int absxoff = abs(xoffset);
    const int absyoff = abs(yoffset);
 

@@ -73,13 +73,16 @@ private:
    bool m_visible;
    string m_szCaption;
    int m_pagenum;
-   int m_shadowColor = 0;
+   int m_shadowColor = 0x808080; // PUP's default shadow color (gray)
    int m_shadowType = 0;
-   float m_xoffset = 0;
-   float m_yoffset = 0;
+   float m_xoffset = 3.f; // PUP defaults to a 3 pixel drop shadow until xoffset/yoffset are set
+   float m_yoffset = 3.f;
+   bool m_xOffsetIsPercent = false;
+   bool m_yOffsetIsPercent = false;
    int m_outline = 0;
    bool m_bold = false;
    bool m_italic = false;
+   bool m_underline = false;
    float m_alpha = 1.0f;
    bool m_useAbsolutePos = false;
    bool m_doDefault = true;
@@ -185,7 +188,8 @@ private:
       int m_totalDuration = 0;
    };
    RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath);
-   RenderState UpdateLabelTexture(int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset);
+   RenderState UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels);
+   SDL_FPoint GetShadowOffsetPixels(float fontHeight) const;
 
    class Animation {
    public:
