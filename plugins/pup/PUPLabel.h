@@ -203,6 +203,7 @@ private:
       Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float wiggleStart, float wiggleEnd, int wiggleSpeed, int dummy);
 
       bool Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect);
+      void Restore();
       bool IsFade() const { return m_alphaStart != m_alphaEnd; }
       bool IsScreenFade() const { return m_screenFade; }
       bool IsZoom() const { return m_zoomStart != m_zoomEnd; }
@@ -216,11 +217,27 @@ private:
       float m_wiggle = 0.f;
       int m_color;
 
+      // PUP animation nuances
+      int m_type = 0; // 'at'
+      bool m_hasPixelX = false; // 'xp' / 'yp': pixel position of the animated copy
+      bool m_hasPixelY = false;
+      float m_pixelX = 0.f;
+      float m_pixelY = 0.f;
+
    private:
-      const PUPLabel* m_label;
+      void CaptureState();
+
+      PUPLabel* m_label;
       const unsigned int m_lengthMs;
       const int m_foregroundColor;
       const uint64_t m_startTimestamp;
+
+      // State to restore when the animation ends or is stopped
+      bool m_savedVisible = true;
+      float m_savedAlpha = 1.f;
+      float m_savedZoom = 100.f;
+      int m_savedColor = 0;
+      int m_savedFilterMode = 0;
 
       int m_flashingPeriod = 0;
 
