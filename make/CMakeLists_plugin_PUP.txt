@@ -44,6 +44,8 @@ set(PUP_PLUGIN_SOURCES
    plugins/pup/PUPPlaylist.cpp
    plugins/pup/PUPScreen.h
    plugins/pup/PUPScreen.cpp
+   plugins/pup/PUPSound.h
+   plugins/pup/PUPSound.cpp
    plugins/pup/PUPTrigger.h
    plugins/pup/PUPTrigger.cpp
 )
