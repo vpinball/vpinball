@@ -6,7 +6,9 @@
 
 #include <atomic>
 #include <functional>
+#include <future>
 #include <mutex>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "Texture.h"
@@ -53,6 +55,12 @@ public:
 
    std::shared_ptr<const CompressedTexture> LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded = nullptr);
 
+   // Single-writer coordination wrapper around LoadOrCompress: for a non-empty cacheFile, ensures each
+   // unique cache file is compressed and written by exactly one worker. Duplicate workers (tables may
+   // embed byte-identical images producing the same MD5-keyed cache file) wait and reuse the first
+   // worker's shared result instead of racing on the same temporary file and redoing the heavy encode.
+   std::shared_ptr<const CompressedTexture> LoadOrCompressCoordinated(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded);
+
    std::shared_ptr<BaseTexture> LoadCached(const std::filesystem::path& cacheFile);
 
    void LogStats() const;
@@ -67,6 +75,13 @@ private:
    // Cache files referenced while loading this session (written by the loading threads), used by CleanCache to detect stale entries
    std::mutex m_usedCacheFilesMutex;
    std::unordered_set<std::filesystem::path> m_usedCacheFiles;
+
+   // In-flight compression coordination, keyed on cacheFile.filename() (the MD5 + optional _MaxTex suffix,
+   // i.e. the exact identity of the cached payload). The shared_future covers both "still compressing" and
+   // "already done" with one mechanism. m_inFlightMutex guards m_inFlight only and is never held across the
+   // heavy compression or file write.
+   std::mutex m_inFlightMutex;
+   std::unordered_map<std::filesystem::path, std::shared_future<std::shared_ptr<const CompressedTexture>>> m_inFlight;
 
    std::atomic<uint64_t> m_nCompressed { 0 };
    std::atomic<uint64_t> m_nLoaded { 0 };

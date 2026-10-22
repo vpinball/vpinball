@@ -649,9 +649,9 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
             std::error_code ec;
             std::filesystem::rename(tmpFile, cacheFile, ec);
             if (ec)
-	    {
-               PLOGE << "Failed to write compressed texture cache " << cacheFile;
-	    }
+            {
+               PLOGE << "Failed to write compressed texture cache " << cacheFile << ": " << ec.message();
+            }
          }
          else
          {
@@ -663,6 +663,63 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
          PLOGW << "Compressed texture '" << tex.GetName() << "' is too large to be cached";
       }
    }
+   return result;
+}
+
+std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompressCoordinated(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded)
+{
+   // Empty cacheFile means compress-in-memory, do not write (used for m_resizedOnLowMem): no coordination.
+   if (cacheFile.empty())
+      return LoadOrCompress(tex, cacheFile, isCompressionDiscarded);
+
+   const std::filesystem::path key = cacheFile.filename();
+
+   // Claim or find the in-flight entry. The mutex guards m_inFlight only and is released before any heavy work.
+   std::promise<std::shared_ptr<const CompressedTexture>> promise;
+   std::shared_future<std::shared_ptr<const CompressedTexture>> future;
+   bool isProducer;
+   {
+      const std::lock_guard lock(m_inFlightMutex);
+      const auto [it, inserted] = m_inFlight.try_emplace(key);
+      isProducer = inserted;
+      if (inserted)
+         it->second = promise.get_future().share();
+      else
+         future = it->second;
+   }
+
+   if (!isProducer)
+   {
+      // Wait for the producer, then reuse its shared result (pointer copy, no re-compress, no disk re-read).
+      std::shared_ptr<const CompressedTexture> result = future.get();
+      if (result != nullptr)
+         return result;
+      // The producer's compression failed or was aborted: fall back to our own independent path. The producer
+      // has already erased the dead key, so this does not immediately re-find the failed future.
+      return LoadOrCompress(tex, cacheFile, isCompressionDiscarded);
+   }
+
+   // Producer: run the compress-and-write lock-free, then fulfill the promise (even on exception/early return)
+   // and erase the key so the map does not grow unbounded across the loading session.
+   std::shared_ptr<const CompressedTexture> result;
+   struct Fulfiller
+   {
+      TextureCompressor* self;
+      const std::filesystem::path& key;
+      std::promise<std::shared_ptr<const CompressedTexture>>& promise;
+      std::shared_ptr<const CompressedTexture>* result;
+      ~Fulfiller()
+      {
+         {
+            const std::lock_guard lock(self->m_inFlightMutex);
+            self->m_inFlight.erase(key);
+         }
+         // Set the promise last so a waiter that wakes immediately does not re-find the key we just erased.
+         promise.set_value(*result);
+      }
+   } fulfiller { this, key, promise, &result };
+
+   result = LoadOrCompress(tex, cacheFile, isCompressionDiscarded);
    return result;
 }
 
@@ -712,7 +769,7 @@ std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool 
    if (buffer == nullptr)
       buffer = image->GetRawBitmap(resizeOnLowMem, m_maxTexDim);
    if (buffer && buffer->m_compressed == nullptr && IsSupported(*buffer) && (!isCompressionDiscarded || !isCompressionDiscarded()))
-      buffer->m_compressed = LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile, isCompressionDiscarded);
+      buffer->m_compressed = LoadOrCompressCoordinated(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile, isCompressionDiscarded);
    return buffer;
 }
 
