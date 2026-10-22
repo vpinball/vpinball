@@ -6,6 +6,7 @@ extern "C" int g_argc;
 extern "C" int WinMain(void*, void*, void*, int);
 
 void OnSignalHandler(int signum);
+bool OnAppTerminate();
 
 @interface VPXAppDelegate : NSObject <NSApplicationDelegate>
 - (void)makeWindowExit;
@@ -46,8 +47,9 @@ void OnSignalHandler(int signum);
         } else {
           NSAlert* alert = [[NSAlert alloc] init];
           [alert setMessageText:
-                     @"VPinballX_GL\n\nYou must choose a VPX table to start, run using the command line "
-                     @" to set arguments, or\ndouble click a \".vpx\" file."];
+                     [NSString stringWithFormat:@"%@\n\nYou must choose a VPX table to start, run using the command line "
+                                                @" to set arguments, or\ndouble click a \".vpx\" file.",
+                                                [[NSProcessInfo processInfo] processName]]];
           [alert addButtonWithTitle:@"OK"];
           [alert setAlertStyle:NSAlertStyleWarning];
           [panel close];
@@ -64,6 +66,11 @@ void OnSignalHandler(int signum);
 {
   int status = WinMain(NULL, NULL, NULL, 0);
   exit(status);
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
+{
+  return OnAppTerminate() ? NSTerminateCancel : NSTerminateNow;
 }
 
 - (BOOL)application:(NSApplication*)sender openFile:(NSString*)filename
@@ -99,6 +106,17 @@ int main(int argc, const char* argv[])
     g_argv = (char**)argv;
 
     NSApplication* vpxApp = [NSApplication sharedApplication];
+
+    NSMenu* mainMenu = [[NSMenu alloc] init];
+    NSMenuItem* appMenuItem = [[NSMenuItem alloc] init];
+    NSMenu* appMenu = [[NSMenu alloc] init];
+    [appMenu addItemWithTitle:[@"Quit " stringByAppendingString:[[NSProcessInfo processInfo] processName]]
+                       action:@selector(terminate:)
+                keyEquivalent:@"q"];
+    [appMenuItem setSubmenu:appMenu];
+    [mainMenu addItem:appMenuItem];
+    [vpxApp setMainMenu:mainMenu];
+
     VPXAppDelegate* delegate = [[VPXAppDelegate alloc] init];
     [vpxApp setDelegate:delegate];
     [vpxApp run];
