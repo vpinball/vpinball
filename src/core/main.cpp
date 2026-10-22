@@ -59,6 +59,17 @@ void OnSignalHandler(int signum)
 }
 #endif
 
+#if defined(__STANDALONE__) && defined(__APPLE__) && defined(TARGET_OS_OSX) && TARGET_OS_OSX
+bool OnAppTerminate()
+{
+   if (g_pplayer == nullptr)
+      return false;
+   PLOGI << "Closing from application quit";
+   g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
+   return true;
+}
+#endif
+
 
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 // The OpenGL implementation will fail on NVIDIA drivers when Threaded Optimization is enabled so we disable it for this app
