@@ -21,6 +21,8 @@ New in 3.62 (Update by mfuegemann, JP, Mike Welsh, toxie)
   Also, changed behavior for Capcom tables without UseVPMModSol: the flipper outputs 45-48 follow the lower
   flipper coils (before: potential noise from other coils), and 33-36 the upper ones in the games that feature them
   (Breakshot, Pool Player, Big Bang Bar, Flipper Football)
+- Fixed cvpmTimer.Update: when a timer fired while a callback queued with GetRef (AddTimer2) waited behind it,
+  the queue shift copied that callback a second time without Set, which stopped the script with error 450
 
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)

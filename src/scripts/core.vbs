@@ -255,7 +255,6 @@ Class cvpmTimer
 						Else
 						   mQue3(jj) = mQue3(jj+1)
 						End If
-						mQue3(jj) = mQue3(jj+1)
 						mQue4(jj) = mQue4(jj+1)
 					Next
 					ii = ii - 1
