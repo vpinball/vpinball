@@ -233,8 +233,12 @@ void PUPLabel::SetCaption(const string& szCaption)
    if (szCaption == "`u`")
       return;
 
-   string szText = szCaption;
-   std::ranges::replace(szText.begin(), szText.end(), '~', '\n');
+   // FN 46 pad mode: PinUP turns '~' into two spaces instead of a line break and
+   // wraps text captions in a space on each side.
+   const bool padText = m_pScreen && m_pScreen->m_padTextAlways;
+   string szText = padText ? string_replace_all(szCaption, "~"s, "  "s) : szCaption;
+   if (!padText)
+      std::ranges::replace(szText.begin(), szText.end(), '~', '\n');
    szText = string_replace_all(szText, "\\r"s, '\n');
 
    // PUP supports an embedded color suffix: "SOME TEXT|16744448". The color is
@@ -264,6 +268,8 @@ void PUPLabel::SetCaption(const string& szCaption)
 
       if (!isImageCaption)
       {
+         if (padText && !szText.empty())
+            szText = ' ' + szText + ' ';
          // A plain caption (e.g. " " from pDMDLabelShow/pDMDLabelHide) must keep an existing
          // image, not convert the label to text and wipe it.
          if (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF)
@@ -1447,24 +1453,6 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
                                             TTF_HORIZONTAL_ALIGN_LEFT);
 
    string text = szCaption;
-   if (m_pScreen && m_pScreen->m_padTextAlways)
-   {
-      // FN=46 / pDMDAlwaysPAD: ensure caption and each newline are bracketed by spaces.
-      if (text.empty() || text.front() != ' ')
-         text.insert(0, 1, ' ');
-      if (text.back() != ' ')
-         text += ' ';
-      for (size_t pos = text.find('\n'); pos != string::npos; pos = text.find('\n', pos + 2))
-      {
-         if (pos > 0 && text[pos - 1] != ' ')
-         {
-            text.insert(pos, 1, ' ');
-            pos++;
-         }
-         if (pos + 1 >= text.size() || text[pos + 1] != ' ')
-            text.insert(pos + 1, 1, ' ');
-      }
-   }
 
    // Replace any codepoint the font cannot render with a space, keeping newlines. This must
    // walk UTF-8 by codepoint: TTF_FontHasGlyph takes a Unicode codepoint, so testing raw bytes
