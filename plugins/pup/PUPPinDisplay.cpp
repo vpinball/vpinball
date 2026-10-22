@@ -521,6 +521,14 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
             else
                NOT_IMPLEMENTED(std::format("Not implemented: mt={}, szMsg={}", mt, szMsg));
             break;
+         case 402:
+            // PuPSound { "mt":402, "SN":XX, "ns":"name.wav", "sX":0, "sY":0, "sZ":0, "vol":100, "sp":"" }
+            m_pupManager.PlaySound(json["ns"s].as_str(), json["sX"s].as<int>(0), json["sY"s].as<int>(0), json["sZ"s].as<int>(0), json["vol"s].as<int>(100), json["sp"s].as_str());
+            break;
+         case 400:
+         case 401:
+            // SoundAdd / SoundPlay: ignored by PinUP Player
+            break;
          default:
             NOT_IMPLEMENTED(std::format("Not implemented: mt={}, szMsg={}", mt, szMsg));
             break;
@@ -674,17 +682,19 @@ void PUPPinDisplay::SetGetRoot(const string& value)
 
 void PUPPinDisplay::SoundAdd(const string& sname, const string& fname, int svol, double sX, double sy, const string& SP)
 {
-   NOT_IMPLEMENTED(std::format("Not implemented: sname={}, fname={}, svol={}, sX={}, sy={}, SP={}", sname, fname, svol, sX, sy, SP));
+   // Ignored by PinUP Player: sounds come from PUPSOUNDS\*.wav through PuPSound
+   LOGD("SoundAdd ignored: sname=" + sname);
 }
 
 void PUPPinDisplay::SoundPlay(const string& sname)
 {
-   NOT_IMPLEMENTED("Not implemented: sname=" + sname);
+   // Ignored by PinUP Player: sounds come from PUPSOUNDS\*.wav through PuPSound
+   LOGD("SoundPlay ignored: sname=" + sname);
 }
 
 void PUPPinDisplay::PuPSound(const string& sname, int sX, int sy, int sz, int vol, const string& SP)
 {
-   NOT_IMPLEMENTED(std::format("Not implemented: sname={}, sX={}, sy={}, sz={}, vol={}, SP={}", sname, sX, sy, sz, vol, SP));
+   m_pupManager.PlaySound(sname, sX, sy, sz, vol, SP);
 }
 
 void PUPPinDisplay::InitPuPMenu(int Param1)
@@ -755,6 +765,8 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
       return;
    }
    case PlayAction::PlaySSF:
+      m_pupManager.PlaySound(playfilename, 0, 0, 0, volume < 0 ? 100 : volume, ""s);
+      return;
    case PlayAction::CustomFunction:
       NOT_IMPLEMENTED("Not implemented: playevent playtype=" + std::to_string(playtype));
       return;

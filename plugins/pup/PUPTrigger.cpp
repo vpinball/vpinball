@@ -139,6 +139,18 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
       m_action = [&]() { m_pScreen->Stop(m_pPlaylist, m_szPlayFile); };
       break;
 
+   case PlayAction::PlaySSF:
+      m_action = [&]()
+      {
+         int pos[3] = { 0, 0, 0 };
+         std::istringstream stream(m_szCustomFunction);
+         string field;
+         for (int i = 0; i < 3 && std::getline(stream, field, ','); i++)
+            pos[i] = string_to_int(trim_string(field), 0);
+         m_pScreen->GetManager()->PlaySound(PluginStrings::PathToUTF8(m_szPlayFile), pos[0], pos[1], pos[2], static_cast<int>(m_volume), ""s);
+      };
+      break;
+
    case PlayAction::CustomFunction:
       m_action = [&]()
       {
@@ -177,6 +189,18 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
    if (!active) {
       LOGD("Inactive trigger: " + line);
       return nullptr;
+   }
+
+   if (StrCompareNoCase(triggerPlayAction, "PlaySSF"s)) {
+      // The file column is the sound name and the counter column its "x,y,z" position;
+      // PinUP plays nothing when fewer than three position fields are given.
+      if (std::count(parts[10].begin(), parts[10].end(), ',') < 2)
+      {
+         LOGE("PlaySSF trigger without a x,y,z position: " + line);
+         return nullptr;
+      }
+      return new PUPTrigger(active, parts[2], parts[3], pScreen, nullptr, PluginStrings::PathFromUTF8(parts[6]), parts[7].empty() ? 100.f : string_to_float(parts[7], 100), 0, 0, 0,
+         string_to_int(parts[11], 0), PlayAction::PlaySSF, false, parts[10]);
    }
 
    if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s)) {

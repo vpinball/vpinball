@@ -176,6 +176,7 @@ void PUPManager::ApplyGameDir(const std::filesystem::path& path, const std::stri
 
    // Load Fonts
    LoadFonts();
+   m_sounds.Load(m_szPath);
 }
 
 void PUPManager::SetGameDir(const ControllerDef& controller)
@@ -425,6 +426,7 @@ void PUPManager::Unload()
    m_reportedMissingIdentification = false;
 
    UnloadFonts();
+   m_sounds.Unload();
 
    for (auto& playlist : m_playlists)
       delete playlist;
