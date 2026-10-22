@@ -8,7 +8,7 @@
 #include "B2SServer.h"
 
 namespace B2S {
-   
+
 LPI_IMPLEMENT_CPP // Implement shared log support
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ static PagedUIPluginAPI* pagedUIApi = nullptr;
 static uint32_t endpointId;
 static unsigned int getVpxApiId, getScriptApiId, getPagedUIApiId;
 static std::thread::id apiThread;
-static int nServer = 0;
+static B2SServer* s_server = nullptr;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Script interface
@@ -267,7 +267,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    B2SRenderer::RegisterSettings(msgApi, endpointId);
    B2SServer::StartFileWriter(msgApi, endpointId, vpxApi);
 
-   nServer = 0;
+   s_server = nullptr;
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
    auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->RegisterScriptArrayType(sad); };
    RegisterB2S_Server(classLambda);
@@ -282,12 +282,17 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    m_settingsProxy = std::make_unique<PinballPlugin::Scriptable::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_Settings", "B2S_", B2S_Settings_SCD);
    B2S_Server_SCD->CreateObject = []()
    {
-      if (nServer > 0)
-         LOGE("Invalid script: multiple B2S server are created."s);
-      nServer++;
-      B2SServer* server = new B2SServer(msgApi, endpointId, vpxApi, pagedUIApi, B2S_Server_SCD);
-      server->SetOnDestroyHandler([](B2SServer*) { nServer--; });
-      return static_cast<void*>(server);
+      // A table may create B2S.Server more than once. Share one instance so a second
+      // create cannot build a rival whose later destruction would unregister the UI
+      // sheets the live server still needs.
+      if (s_server != nullptr)
+      {
+         s_server->AddRef();
+         return static_cast<void*>(s_server);
+      }
+      s_server = new B2SServer(msgApi, endpointId, vpxApi, pagedUIApi, B2S_Server_SCD);
+      s_server->SetOnDestroyHandler([](B2SServer*) { s_server = nullptr; });
+      return static_cast<void*>(s_server);
    };
    scriptApi->SubmitTypeLibrary(endpointId);
    scriptApi->SetCOMObjectOverride("B2S.Server", B2S_Server_SCD);
@@ -295,7 +300,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
 
 MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
 {
-   assert(nServer == 0);
+   assert(s_server == nullptr);
    B2SServer::StopFileWriter();
    scriptApi->SetCOMObjectOverride("B2S.Server", nullptr);
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); };
@@ -310,7 +315,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
    UnregisterB2S_GameSettings(classLambda);
    UnregisterB2S_Settings(classLambda);
    UnregisterB2S_Server(classLambda);
-   
+
    msgApi->ReleaseMsgID(getVpxApiId);
    msgApi->ReleaseMsgID(getScriptApiId);
    msgApi->ReleaseMsgID(getPagedUIApiId);
