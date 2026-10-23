@@ -36,6 +36,8 @@ void PUPImage::Clear()
 
 void PUPImage::Load(const std::filesystem::path& szFile)
 {
+   if (szFile == m_file)
+      return;
    m_file = szFile;
    m_pSurface.reset();
 
