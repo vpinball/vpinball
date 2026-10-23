@@ -585,6 +585,7 @@ void Decal::Render(const unsigned int renderMask)
       else
          m_renderer->m_renderDevice->m_basicShader->SetTechnique(ShaderTechnique::bg_decal_with_texture);
       m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_color, m_textImg.get());
+      m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(-1.f); // Text is not alpha tested (the backdrop decal shader always tests, so do not inherit the previous draw's value)
    }
    else
    {
