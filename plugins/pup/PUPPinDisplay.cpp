@@ -267,19 +267,15 @@ void PUPPinDisplay::SetB2SFilter(const string& value)
 void PUPPinDisplay::Show(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   if (pScreen && (pScreen->GetMode() == PUPScreen::Mode::Off || pScreen->GetMode() == PUPScreen::Mode::MusicOnly))
-      pScreen->SetMode(PUPScreen::Mode::Show);
+   if (pScreen)
+      pScreen->SetHidden(false);
 }
 
 void PUPPinDisplay::Hide(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   if (!pScreen)
-      return;
-
-   // Is off the same as Hide?
-   // Seems to be called for the music screens
-   pScreen->SetMode(PUPScreen::Mode::MusicOnly);
+   if (pScreen)
+      pScreen->SetHidden(true);
 }
 
 void PUPPinDisplay::B2SInit(const string& tName, const string& romName)
@@ -383,8 +379,8 @@ void PUPPinDisplay::CustomFunction(int sn, const string& szMsg)
             break;
          case 12:
             // "{ ""mt"":301, ""SN"": 18, ""FN"":12 }" 'STOPSCREEN
-            pScreen->Stop();
             pScreen->SetMode(PUPScreen::Mode::Off);
+            pScreen->Stop();
             break;
          case 15:
             // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %

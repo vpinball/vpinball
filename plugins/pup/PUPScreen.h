@@ -53,6 +53,9 @@ public:
 
    bool IsTransparent() const { return m_transparent; }
 
+   bool IsHidden() const { return m_hidden; }
+   void SetHidden(bool hidden) { m_hidden = hidden; }
+
    float m_screenAlpha = 1.0f;
    float m_overlayAlpha = 1.0f;
    bool m_hudVisible = true; // FN 3: the whole label overlay shown or hidden
@@ -149,6 +152,7 @@ private:
 
    Mode m_mode;
    bool m_topmost = false;
+   bool m_hidden = false;
    bool m_transparent;
    float m_mainVolume = 1.f;
    int m_volumeMultiplier;

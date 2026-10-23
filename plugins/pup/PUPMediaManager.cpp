@@ -164,7 +164,7 @@ void PUPMediaManager::ApplyDuckPrefix(const std::filesystem::path& path)
 
 void PUPMediaManager::PlayBackground()
 {
-   if (m_bg.active && !m_bg.szPath.empty())
+   if (m_bg.active && !m_bg.szPath.empty() && m_pScreen->GetMode() != PUPScreen::Mode::Off)
    {
       LOGD(std::format("BG PLAY: screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(m_bg.szPath.filename())));
       m_bgEndTicks = 0;
@@ -231,7 +231,7 @@ void PUPMediaManager::Stop()
    LOGD(std::format("STOP: screen={}, queueDepth={}, bgActive={}", m_pScreen->GetScreenNum(), m_queue.size(), m_bg.active));
    const bool mainPlaying = !m_queue.empty();
    m_queue.clear();
-   if (m_bg.active && !m_bg.szPath.empty())
+   if (m_bg.active && !m_bg.szPath.empty() && m_pScreen->GetMode() != PUPScreen::Mode::Off)
    {
       if (mainPlaying || !m_player.IsPlaying())
          PlayBackground();

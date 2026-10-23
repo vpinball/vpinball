@@ -700,7 +700,7 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
    // in PUPManager::Render. The screen still renders its background, overlay, labels and static
    // image when no main video is playing, so packs that drive a screen purely via background
    // videos, overlays, or labels stay visible.
-   if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
+   if (m_mode == Mode::Off || m_mode == Mode::MusicOnly || m_hidden)
       return;
 
    switch (pass)
