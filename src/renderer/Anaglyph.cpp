@@ -86,16 +86,21 @@ void Anaglyph::SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum
    // We solve this for the 2 eyes at once by resolving the sum function (the right way would be to use the generalized jacobian, but...)
    if (!m_sRGBDisplay)
    {
+      // d(V^g)/dg = V^g * ln(V), V = 0 contributes nothing (avoids 0 * -inf)
+      const auto dpow = [](const float v, const double g) { return v > 0.f ? powd(v, g) * logd(v) : 0.; };
       double gamma = 2.4;
       for (int i = 0; i < 100; i++)
       {
          const double f = powd(leftLum.x, gamma)  + powd(leftLum.y, gamma)  + powd(leftLum.z, gamma)  - 1.
                         + powd(rightLum.x, gamma) + powd(rightLum.y, gamma) + powd(rightLum.z, gamma) - 1.;
-         const double fp = powd(leftLum.x, gamma)  / logd(leftLum.x)  + powd(leftLum.y, gamma)  / logd(leftLum.y)  + powd(leftLum.z, gamma)  / logd(leftLum.z)
-                         + powd(rightLum.x, gamma) / logd(rightLum.x) + powd(rightLum.y, gamma) / logd(rightLum.y) + powd(rightLum.z, gamma) / logd(rightLum.z);
+         const double fp = dpow(leftLum.x, gamma)  + dpow(leftLum.y, gamma)  + dpow(leftLum.z, gamma)
+                         + dpow(rightLum.x, gamma) + dpow(rightLum.y, gamma) + dpow(rightLum.z, gamma);
+         if (fp == 0.)
+            break;
          gamma -= f / fp;
       }
-      m_displayGamma = (float)gamma;
+      if (std::isfinite(gamma) && gamma > 0.)
+         m_displayGamma = (float)gamma;
    }
 
    // Evaluate relative luminance of each color channel through eye filters (needed for dynamic desaturation and luminance filter)
