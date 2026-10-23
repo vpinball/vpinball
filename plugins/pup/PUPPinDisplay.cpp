@@ -488,11 +488,8 @@ void PUPPinDisplay::CustomFunction(int sn, const string& szMsg)
             //       PuPlayer.SendMSG "{...""FN"":55,""FS"":255}"
             //   Sub pTransitionFadeON(PupID)   ' re-enable transition fade
             //       PuPlayer.SendMSG "{...""FN"":55,""FS"":10}"
-            if (json["FS"s].exists()) {
-               const int fs = json["FS"s].as<int>();
-               if (fs >= 0)
-                  pScreen->SetFadeStep(fs);
-            }
+            if (json["FS"s].exists())
+               pScreen->SetFadeStep(json["FS"s].as<int>());
             break;
          case 57:
             // "Overlay Hide" (OH) toggle for a screen that has text/label overlays.
