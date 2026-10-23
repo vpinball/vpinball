@@ -1297,7 +1297,7 @@ void Shader::ApplyUniform(const ShaderUniform uniformName)
          // - adjust the sampling state (filter, wrapping, ...) of the choosen texture stage (partly done by DirectX effect framework which only applies the ones defined in the effect file)
          // - set the shader constant buffer to point to the selected texture stage (done by DirectX effect framework)
          // So, for DirectX, we simply fetch the Texture, DirectX will then use the texture for one or more samplers, applying there default states if any
-         // This is not perfect though since we also use sampler state overrides that can break here if not defined correctly
+         // Sampler state overrides are set before BeginPass on the registers found at load time, so states defined in the effect file take precedence
          int unit = desc.sampler;
          assert(0 <= unit && unit < TEXTURESET_STATE_CACHE_SIZE);
 
@@ -1311,9 +1311,12 @@ void Shader::ApplyUniform(const ShaderUniform uniformName)
             m_renderDevice->m_curTextureChanges++;
          }
 
-         // Apply the texture sampling states
+         // Apply the texture sampling states to the sampler registers that sample this texture in the current technique
          //CHECKD3D(m_renderDevice->GetCoreDevice()->SetSamplerState(unit, D3DSAMP_SRGBTEXTURE, !tex->IsLinear()));
-         m_renderDevice->SetSamplerState(unit, filter, clampu, clampv);
+         const uint32_t registers = m_samplerRegisters[static_cast<unsigned int>(m_state->m_technique)][unit];
+         for (int reg = 0; reg < static_cast<int>(TEXTURESET_STATE_CACHE_SIZE); reg++)
+            if (registers & (1u << reg))
+               m_renderDevice->SetSamplerState(reg, filter, clampu, clampv);
          #endif
       }
       break;
@@ -2442,6 +2445,43 @@ void Shader::Load()
             // TODO we do not filter on technique for DX9. Not a big problem, but not that clean either (all uniforms are applied for all techniques)
             for (int j = 0; j < static_cast<unsigned int>(ShaderTechnique::COUNT); j++)
                m_uniforms[j].push_back(uniformIndex);
+      }
+   }
+
+   // The TEXUNIT semantic only identifies the texture (TextureN), sampler registers are assigned by the compiler per pixel shader,
+   // so collect the registers used by each technique to apply the sampler states (filter, address modes) to them
+   memset(m_samplerRegisters, 0, sizeof(m_samplerRegisters));
+   for (unsigned int t = 0; t < static_cast<unsigned int>(ShaderTechnique::COUNT); t++)
+   {
+      const D3DXHANDLE technique = m_shader->GetTechniqueByName(shaderTechniqueNames[t].name.c_str());
+      const D3DXHANDLE pass = technique ? m_shader->GetPass(technique, 0) : nullptr;
+      D3DXPASS_DESC pass_desc;
+      if (pass == nullptr || FAILED(m_shader->GetPassDesc(pass, &pass_desc)))
+         continue;
+      for (const DWORD* const function : { pass_desc.pVertexShaderFunction, pass_desc.pPixelShaderFunction })
+      {
+         LPD3DXCONSTANTTABLE constants = nullptr;
+         if (function == nullptr || FAILED(D3DXGetShaderConstantTable(function, &constants)))
+            continue;
+         D3DXCONSTANTTABLE_DESC table_desc;
+         constants->GetDesc(&table_desc);
+         for (UINT i = 0; i < table_desc.Constants; i++)
+         {
+            D3DXCONSTANT_DESC constant_desc;
+            UINT count = 1;
+            if (FAILED(constants->GetConstantDesc(constants->GetConstant(nullptr, i), &constant_desc, &count)) || constant_desc.RegisterSet != D3DXRS_SAMPLER)
+               continue;
+            const ShaderUniform uniformIndex = getUniformByName(constant_desc.Name);
+            const int unit = uniformIndex == ShaderUniform::COUNT ? -1 : m_uniform_desc[static_cast<unsigned int>(uniformIndex)].sampler;
+            if (function == pass_desc.pVertexShaderFunction || unit < 0 || constant_desc.RegisterIndex + constant_desc.RegisterCount > TEXTURESET_STATE_CACHE_SIZE)
+            {
+               PLOGE << "Unsupported sampler " << constant_desc.Name << " in technique " << shaderTechniqueNames[t].name;
+               continue;
+            }
+            for (UINT reg = constant_desc.RegisterIndex; reg < constant_desc.RegisterIndex + constant_desc.RegisterCount; reg++)
+               m_samplerRegisters[t][unit] |= 1u << reg;
+         }
+         constants->Release();
       }
    }
 }

@@ -631,6 +631,8 @@ public:
    ID3DXEffect* m_shader = nullptr;
    static constexpr unsigned int TEXTURESET_STATE_CACHE_SIZE = 32;
    std::shared_ptr<const Sampler> m_boundTexture[TEXTURESET_STATE_CACHE_SIZE];
+   // For each technique and texture unit, bitmask of the pixel shader sampler registers that sample it (assigned by the compiler, not by the TEXUNIT semantic)
+   uint32_t m_samplerRegisters[static_cast<unsigned int>(ShaderTechnique::COUNT)][TEXTURESET_STATE_CACHE_SIZE];
 
 public:
    void UnbindSamplers();
