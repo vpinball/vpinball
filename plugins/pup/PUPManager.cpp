@@ -406,6 +406,7 @@ ControllerDef PUPManager::SelectControllerForGame(const std::string_view& gameKe
 void PUPManager::Unload()
 {
    m_runToken = std::make_shared<int>(0);
+   m_ticking = false;
 
    // Run any still-queued trigger invokes (see QueueDOFEvent) while the triggers
    // and screens they point to are still alive.
@@ -756,8 +757,22 @@ int PUPManager::RenderDisplays(VPXRenderContext2D* ctx, int target)
    return n;
 }
 
+void PUPManager::Tick()
+{
+   const double gameTime = m_vpxApi ? m_vpxApi->GetGameTime() : 0.0;
+   for (const auto& [key, screen] : m_screenMap)
+      screen->Update(gameTime);
+   RunLater(0.05, [this]() { Tick(); });
+}
+
 bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 {
+   if (!m_ticking)
+   {
+      m_ticking = true;
+      RunLater(0.05, [this]() { Tick(); });
+   }
+
    std::unique_lock lock(m_eventMutex);
 
    if (std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum()); existing)
