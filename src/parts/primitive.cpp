@@ -1090,8 +1090,11 @@ void Primitive::Render(const unsigned int renderMask)
                m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(
                   img ? ShaderTechnique::basic_with_texture : ShaderTechnique::basic_without_texture, 
                   *mat, img ? pinAlphaTest >= 0.f && !img->IsOpaque() : false, nMap, false, false);
-               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias, 
+               // OpenGL & BGFX shaders derive doReflections from the reflection factor: null it so that only the reflection pass applies it
+               m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::mirrorNormal_factor, n.x, n.y, n.z, 0.f);
+               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias,
                   m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
+               m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);
                is_reflection_only_pass = true;
             }
             if (is_reflection_only_pass)

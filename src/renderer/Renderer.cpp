@@ -1412,6 +1412,52 @@ void Renderer::UpdateBallShaderMatrix()
 #endif
 }
 
+#if defined(ENABLE_OPENGL)
+// Basic shader matrix block for screen space rendering (desktop backdrop, ancillary outputs). World and view are identity so that shaders see the
+// vertex position as table position (e.g. classic light halos), like on DX9. Layout depends on the shader eye count (see BasicShader.glfx)
+static void SetBasicShaderScreenSpaceMatrices(RenderDevice* const rd, const Matrix3D& matWorldViewProj)
+{
+   const Matrix3D identity = Matrix3D::MatrixIdentity();
+   if (rd->m_nEyes == 2)
+   {
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView[2];
+         Matrix3D matWorldView[2];
+         Matrix3D matWorldViewInverseTranspose[2];
+         Matrix3D matWorldViewProj[2];
+      } matrices;
+      matrices.matWorld = identity;
+      for (int eye = 0; eye < 2; eye++)
+      {
+         matrices.matView[eye] = identity;
+         matrices.matWorldView[eye] = identity;
+         matrices.matWorldViewInverseTranspose[eye] = identity;
+         matrices.matWorldViewProj[eye] = matWorldViewProj;
+      }
+      rd->m_basicShader->SetUniformBlock(ShaderUniform::basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   }
+   else
+   {
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView;
+         Matrix3D matWorldView;
+         Matrix3D matWorldViewInverseTranspose;
+         Matrix3D matWorldViewProj;
+      } matrices;
+      matrices.matWorld = identity;
+      matrices.matView = identity;
+      matrices.matWorldView = identity;
+      matrices.matWorldViewInverseTranspose = identity;
+      matrices.matWorldViewProj = matWorldViewProj;
+      rd->m_basicShader->SetUniformBlock(ShaderUniform::basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   }
+}
+#endif
+
 void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD)
 {
    Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
@@ -1458,17 +1504,7 @@ void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool fl
    if (basic)
    {
 #if defined(ENABLE_OPENGL)
-      struct
-      {
-         Matrix3D matWorld;
-         Matrix3D matView;
-         Matrix3D matWorldView;
-         Matrix3D matWorldViewInverseTranspose;
-         Matrix3D matWorldViewProj[2];
-      } matrices;
-      memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-      memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-      m_renderDevice->m_basicShader->SetUniformBlock(ShaderUniform::basicMatrixBlock, &matrices.matWorld.m[0][0]);
+      SetBasicShaderScreenSpaceMatrices(m_renderDevice, matWorldViewProj[0]);
 
 #elif defined(ENABLE_DX9)
       m_renderDevice->m_basicShader->SetMatrix(ShaderUniform::matWorldViewProj, &matWorldViewProj[0]);
@@ -1522,8 +1558,36 @@ static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const std::filesystem::
    return tex.get();
 }
 
+// World space position derivatives of a display quad along its u and v coordinates (tangent, bitangent)
+static void ComputeDisplayTangents(const Vertex3D_NoTex2* const vertices, Vertex3Ds& tangent, Vertex3Ds& bitangent)
+{
+   const Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
+   const Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
+   const Vertex3Ds v2(vertices[3].x, vertices[3].y, vertices[3].z);
+   const Vertex2D u0(vertices[0].tu, vertices[0].tv);
+   const Vertex2D u1(vertices[1].tu, vertices[1].tv);
+   const Vertex2D u2(vertices[3].tu, vertices[3].tv);
+   const Vertex3Ds dv1 = v1 - v0;
+   const Vertex3Ds dv2 = v2 - v0;
+   const Vertex2D duv1 = u1 - u0;
+   const Vertex2D duv2 = u2 - u0;
+   const float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
+   tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
+   bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
+}
+
+int Renderer::GetDisplayUnmirrorAxis(const bool isBackdrop, const Vertex3D_NoTex2* const vertices, const bool unmirror) const
+{
+   if (!unmirror || !g_pplayer->m_tblMirrorEnabled || isBackdrop || (vertices == nullptr))
+      return -1;
+   // Mirror mode mirrors the table along its x axis: flip back along the display axis closest to it
+   Vertex3Ds tangent, bitangent;
+   ComputeDisplayTangents(vertices, tangent, bitangent);
+   return fabsf(tangent.x) * bitangent.Length() >= fabsf(bitangent.x) * tangent.Length() ? 0 : 1;
+}
+
 void Renderer::SetupDisplayRenderer(const bool isBackdrop, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness,
-   ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+   ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient, const bool unmirror)
 {
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassTint_Roughness, glassTint.x, glassTint.y, glassTint.z, // Glass tint
       glassRougness); // Glass roughness (high roughness leads to emitted light 'glowing' on glass)
@@ -1535,22 +1599,13 @@ void Renderer::SetupDisplayRenderer(const bool isBackdrop, const Vertex3D_NoTex2
    float parallaxU = 0.f, parallaxV = 0.f;
    if (!isBackdrop && (vertices != nullptr))
    { // (fake) depth by applying some parallax mapping (i stereo based on left eye view)
-      const Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
-      const Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
-      const Vertex3Ds v2(vertices[3].x, vertices[3].y, vertices[3].z);
-      const Vertex2D u0(vertices[0].tu, vertices[0].tv);
-      const Vertex2D u1(vertices[1].tu, vertices[1].tv);
-      const Vertex2D u2(vertices[3].tu, vertices[3].tv);
-      const Vertex3Ds dv1 = v1 - v0;
-      const Vertex3Ds dv2 = v2 - v0;
-      const Vertex2D duv1 = u1 - u0;
-      const Vertex2D duv2 = u2 - u0;
-      const float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
-      Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
-      Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
+      Vertex3Ds tangent, bitangent;
+      ComputeDisplayTangents(vertices, tangent, bitangent);
       const Matrix3D& mv = GetMVP().GetModelView(0);
       tangent = mv.MultiplyVectorNoTranslate(tangent);
       bitangent = mv.MultiplyVectorNoTranslate(bitangent);
+      const Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
+      const Vertex3Ds v2(vertices[3].x, vertices[3].y, vertices[3].z);
       Vertex3Ds eye = (v1 + v2) * 0.5f; // Assume a rectangle shape, use opposite corners to get its center
       eye = mv.MultiplyVectorNoPerspective(eye);
       eye.Normalize();
@@ -1561,14 +1616,23 @@ void Renderer::SetupDisplayRenderer(const bool isBackdrop, const Vertex3D_NoTex2
       parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
    }
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassArea, &glassArea);
-   m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassPad, emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV);
+   // Display uv = uv * (1 + padA + padB) - padA (see vs_dmd.sc): padA' = -(1 + padA), padB' = -(1 + padB) give 1 - display uv,
+   // flipping the content along with its parallax offset
+   vec4 pad(emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV); // Left, right, top, bottom
+   switch (GetDisplayUnmirrorAxis(isBackdrop, vertices, unmirror))
+   {
+   case 0: pad.x = -(1.f + pad.x); pad.y = -(1.f + pad.y); break;
+   case 1: pad.z = -(1.f + pad.z); pad.w = -(1.f + pad.w); break;
+   default: break;
+   }
+   m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassPad, &pad);
 }
 
 void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs,
    const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
-   const vec4& glassArea, const vec3& glassAmbient)
+   const vec4& glassArea, const vec3& glassAmbient, const bool unmirror)
 {
-   SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient);
+   SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient, unmirror);
 
    Texture* segSDF = nullptr;
    switch (type)
@@ -1610,7 +1674,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
 }
 
 void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const float addBlendModulate, const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices,
-   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient, const bool unmirror)
 {
    // Legacy DMD renderer
    if (IsLegacyDMDRenderer(profile))
@@ -1618,14 +1682,16 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
       assert(addBlendModulate == 0.f); // The legacy renderer has no additive blend encoding, it outputs a plain alpha blended color
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW_FP32 ? 1.f : 0.f);
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
-      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassArea, 0.f, 0.f, 1.f, 1.f);
+      // Legacy shader samples at glassArea.xy + uv * glassArea.zw: unmirror maps u (or v) to 1 - u (or 1 - v)
+      const int unmirrorAxis = GetDisplayUnmirrorAxis(isBackdrop, vertices, unmirror);
+      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassArea, unmirrorAxis == 0 ? 1.f : 0.f, unmirrorAxis == 1 ? 1.f : 0.f, unmirrorAxis == 0 ? -1.f : 1.f, unmirrorAxis == 1 ? -1.f : 1.f);
       m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::tex_dmd, dmd.get());
       m_renderDevice->m_DMDShader->SetTechnique(ShaderTechnique::basic_DMD_world);
    }
    // New DMD renderer
    else
    {
-      SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient);
+      SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient, unmirror);
 
       const float fullBrightness = brightness * m_dmdDotColor[profile].w;
       const vec4 dotColor = dmd->m_format == BaseTexture::BW_FP32 ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
@@ -1652,9 +1718,9 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
 
 void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const float addBlendModulate,
    const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
-   const vec4& glassArea, const vec3& glassAmbient)
+   const vec4& glassArea, const vec3& glassAmbient, const bool unmirror)
 {
-   SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient);
+   SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient, unmirror);
 
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vColor_Intensity, color.x * brightness, color.y * brightness,
       color.z * brightness, // CRT tint (applied for luminance as well as sRGB frames)
@@ -3570,6 +3636,7 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    std::shared_ptr<BaseTexture> const tex = g_pplayer->m_pluginAPI.GetTexture(texture);
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    rdl->ResetRenderState();
+   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // 2D (not mirrored) or on a double sided flasher: the mirrored default cull mode must not apply
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rdl->SetRenderState(RenderState::ZENABLE, ctx->is2D ? RenderState::RS_FALSE : RenderState::RS_TRUE);
    rdl->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
@@ -3625,6 +3692,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    rdl->ResetRenderState();
+   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // 2D (not mirrored) or on a double sided flasher: the mirrored default cull mode must not apply
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rdl->SetRenderState(RenderState::ZENABLE, ctx->is2D ? RenderState::RS_FALSE : RenderState::RS_TRUE);
    rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -3667,12 +3735,16 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    const float alpha, const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW, const float srcH)
 {
    assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
+#if !defined(ENABLE_BGFX)
+   return; // Segment displays are only implemented by the BGFX shaders
+#endif
    const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
    VPXPluginAPIImpl& vxpApi = g_pplayer->m_pluginAPI;
    std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    // Use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
    rdl->ResetRenderState();
+   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // 2D (not mirrored) or on a double sided flasher: the mirrored default cull mode must not apply
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rdl->SetRenderState(RenderState::ZENABLE, ctx->is2D ? RenderState::RS_FALSE : RenderState::RS_TRUE);
    rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
@@ -3795,17 +3867,7 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
    rd->m_DMDShader->SetMatrix(ShaderUniform::matRotViewProj, &matWorldViewProj[0], eyes);
    rd->m_DMDShader->SetVector(ShaderUniform::cameraPosWorld, &cameraPosWorld[0], eyes);
 #elif defined(ENABLE_OPENGL)
-   struct
-   {
-      Matrix3D matWorld;
-      Matrix3D matView[2];
-      Matrix3D matWorldView[2];
-      Matrix3D matWorldViewInverseTranspose[2];
-      Matrix3D matWorldViewProj[2];
-   } matrices;
-   memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-   memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-   rd->m_basicShader->SetUniformBlock(ShaderUniform::basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   SetBasicShaderScreenSpaceMatrices(rd, matWorldViewProj[0]);
    rd->m_DMDShader->SetMatrix(ShaderUniform::matWorldViewProj, &matWorldViewProj[0], eyes);
 #elif defined(ENABLE_DX9)
    rd->m_basicShader->SetMatrix(ShaderUniform::matWorldViewProj, &matWorldViewProj[0], eyes);
@@ -3863,6 +3925,8 @@ void Renderer::DrawEmbeddedQuad(RenderTarget* outputRT, int x, int y, int w, int
    rd->m_DMDShader->SetVector(ShaderUniform::vColor_Intensity, r, g, b, 1.f);
    rd->m_DMDShader->SetTechnique(ShaderTechnique::basic_noDMD_notex);
    rd->m_DMDShader->SetVector(ShaderUniform::glassArea, 0.f, 0.f, 1.f, 1.f);
+   // Screen space quad, not mirrored: the mirrored default cull mode must not apply
+   rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    rd->DrawTexturedQuad(rd->m_DMDShader, vertices);
    rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);

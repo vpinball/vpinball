@@ -1218,7 +1218,7 @@ void Flasher::Render(const unsigned int renderMask)
             const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
             m_renderer->SetupDMDRender(dmdProfile, m_desktopBackdrop, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, addModulate, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
-               glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
+               glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f), true /* unmirror */);
             // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
             // There we shift the depthbias to reproduce this behavior for backward compatibility.
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
@@ -1237,7 +1237,7 @@ void Flasher::Render(const unsigned int renderMask)
             const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);
             m_renderer->SetupCRTRender(crtProfile, m_desktopBackdrop, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, addModulate, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
-               glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
+               glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f), true /* unmirror */);
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
@@ -1245,6 +1245,7 @@ void Flasher::Render(const unsigned int renderMask)
          break;
 
       case FlasherData::ALPHASEG:
+#if defined(ENABLE_BGFX) // Segment displays are only implemented by the BGFX shaders
          if (const PinballPlugin::ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink);
             segs.state.frame != nullptr && segs.source->nElements != 0)
          {
@@ -1261,10 +1262,11 @@ void Flasher::Render(const unsigned int renderMask)
                m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices.data(),
                vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
                vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f),
-               vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
+               vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f), true /* unmirror */);
             // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
+#endif
          break;
 
       case FlasherData::EXT_RENDER:
@@ -1298,8 +1300,18 @@ void Flasher::Render(const unsigned int renderMask)
             }
             else
             {
-               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(width, height, 0.f) //
-                  * ((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX))) //
+               const Matrix3D rotation = (Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX));
+               // Mirror mode: flip the whole layout back along its axis closest to the table x axis so that it stays readable
+               // (its displays are therefore not unmirrored on their own, see Renderer::SetupDisplayRenderer)
+               float flipX = 1.f, flipY = 1.f;
+               if (g_pplayer->m_tblMirrorEnabled)
+               {
+                  if (fabsf(rotation.MultiplyVectorNoTranslate(Vertex3Ds(1.f, 0.f, 0.f)).x) >= fabsf(rotation.MultiplyVectorNoTranslate(Vertex3Ds(0.f, 1.f, 0.f)).x))
+                     flipX = -1.f;
+                  else
+                     flipY = -1.f;
+               }
+               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(flipX * width, flipY * height, 0.f) * rotation //
                   * Matrix3D::MatrixTranslate(m_curve.GetMinBound().x + 0.5f * width, m_curve.GetMinBound().y + 0.5f * height, m_d.m_height);
                context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
                context->outWidth = width;

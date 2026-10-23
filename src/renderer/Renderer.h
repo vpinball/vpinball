@@ -79,7 +79,9 @@ public:
 
 private:
    void SetupDisplayRenderer(const bool isBackdrop, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness,
-      ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
+      ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient, const bool unmirror);
+   // Display axis to flip for 'unmirror': 0 = u, 1 = v, -1 = none
+   int GetDisplayUnmirrorAxis(const bool isBackdrop, const Vertex3D_NoTex2* const vertices, const bool unmirror) const;
 
    ShadeMode m_shadeMode = ShadeMode::Default;
 
@@ -88,19 +90,21 @@ public:
    int GetAncillaryWindowRotation(VPXWindowId window) const;
    void SetAncillaryWindowRotation(VPXWindowId window, int clockwiseDegrees);
 
+   // 'unmirror' flips the display content back in mirror mode so that it stays readable. Only for displays that are scene objects of their
+   // own (e.g. flashers): ancillary renderer content is flipped as a whole (see Flasher::Render) and backdrop displays are not mirrored
    void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
-      const vec4& glassArea, const vec3& glassAmbient);
+      const vec4& glassArea, const vec3& glassAmbient, const bool unmirror = false);
    // 'alpha' is plain opacity, only applied by the legacy DMD renderer. 'addBlendModulate' is the signed 'modulate vs
    // add' factor the other ones have to encode their output with, 0 asking for a plain opaque one instead, and the
    // sign selecting whether the background is amplified or absorbed (see fs_display.sc). The caller is the one setting
    // up the blend state matching it, see Flasher::Render
    void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const float addBlendModulate,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
-      const vec4& glassArea, const vec3& glassAmbient);
+      const vec4& glassArea, const vec3& glassAmbient, const bool unmirror = false);
    void SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const float addBlendModulate,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
-      const vec4& glassArea, const vec3& glassAmbient);
+      const vec4& glassArea, const vec3& glassAmbient, const bool unmirror = false);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop = false);
