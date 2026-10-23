@@ -789,7 +789,7 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
          case 4:  parent = /*std::move*/(PUPScreen::CreateFromCSV(this, R"(4,"Music","",,0,MusicOnly,0,)"s, m_playlists)); break;
          case 5:  parent = /*std::move*/(PUPScreen::CreateFromCSV(this, R"(5,"FullDMD 16x9","",,0,ForceBack,0,)"s, m_playlists)); break;
          case 6:  parent = /*std::move*/(PUPScreen::CreateFromCSV(this, R"(6,"Backglass 4x3-5x4","",,0,ForceBack,0,)"s, m_playlists)); break;
-         default: parent = /*std::move*/(PUPScreen::CreateFromCSV(this, '(' + std::to_string(pCustomPos->GetSourceScreen()) + R"(,"","",,0,ForceBack,0,)"s, m_playlists)); break;
+         default: parent = /*std::move*/(PUPScreen::CreateFromCSV(this, std::to_string(pCustomPos->GetSourceScreen()) + R"(,"","",,0,ForceBack,0,)"s, m_playlists)); break;
          }
          if (parent)
          {
