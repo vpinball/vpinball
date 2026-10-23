@@ -6,7 +6,6 @@
 #include "PUPScreen.h"
 #include "PUPLabel.h"
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <charconv>
@@ -91,32 +90,27 @@ void PUPPinDisplay::play(int screenNum, const string& playlist, const string& pl
 
 void PUPPinDisplay::setWidth(int screenNum, int width)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, width={}", screenNum, width));
 }
 
 void PUPPinDisplay::setHeight(int screenNum, int Height)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, height={}", screenNum, Height));
 }
 
 void PUPPinDisplay::setPosX(int screenNum, int Posx)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, Posx={}", screenNum, Posx));
 }
 
 void PUPPinDisplay::setPosY(int screenNum, int PosY)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, PosY={}", screenNum, PosY));
 }
 
 void PUPPinDisplay::setAspect(int screenNum, int aspectWide, int aspectHigh)
 {
    //**** Set 0,0 to fittoscreen.
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, aspectWide={}, aspectHigh={}", screenNum, aspectWide, aspectHigh));
 }
 
@@ -168,7 +162,6 @@ bool PUPPinDisplay::GetisPlaying(int screenNum) const
 
 void PUPPinDisplay::SetisPlaying(int screenNum, bool value)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, value={}", screenNum, value));
 }
 
@@ -199,13 +192,11 @@ void PUPPinDisplay::SetBackGround(int screenNum, int mode)
 
 void PUPPinDisplay::BlockPlay(int screenNum, int mode)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, mode={}", screenNum, mode));
 }
 
 void PUPPinDisplay::SetScreen(int screenNum)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}", screenNum));
 }
 
@@ -525,7 +516,6 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
 
 void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int mode, const string& Special)
 {
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, startPos={}, endPos={}, mode={}, special={}", screenNum, StartPos, EndPos, mode, Special));
 }
 

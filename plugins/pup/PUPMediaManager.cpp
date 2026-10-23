@@ -298,7 +298,6 @@ void PUPMediaManager::SetBounds(const SDL_Rect& rect)
 void PUPMediaManager::SetMask(const std::filesystem::path& path)
 {
    // Defines a transparency mask from the pixel at 0,0 that is applied to the rendering inside this screen
-   m_mask.reset();
    m_mask = std::shared_ptr<SDL_Surface>(IMG_Load(PluginStrings::PathToUTF8(path).c_str()), SDL_DestroySurface);
    if (m_mask && m_mask->format != SDL_PIXELFORMAT_RGBA32)
       m_mask = std::shared_ptr<SDL_Surface>(SDL_ConvertSurface(m_mask.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);

@@ -80,7 +80,8 @@ void PUPSoundBank::Unload()
 bool PUPSoundBank::Queue(uint32_t streamId, const Sample& sample, int volume, int x)
 {
    const LibAV::LibAV& libAv = LibAV::LibAV::GetInstance();
-   if (!libAv.isLoaded || sample.frames == 0)
+   const float gain = std::clamp(static_cast<float>(volume) / 100.f, 0.f, 2.f);
+   if (!libAv.isLoaded || sample.frames == 0 || gain <= 0.f)
       return false;
 
    // Listener at the origin, x runs -10 (left) .. 10 (right): constant power pan
@@ -106,13 +107,7 @@ bool PUPSoundBank::Queue(uint32_t streamId, const Sample& sample, int volume, in
    msg->sampleRate = sample.sampleRate;
    msg->bufferSize = static_cast<unsigned int>(bufferSize);
    msg->buffer = reinterpret_cast<uint8_t*>(buffer);
-   msg->volume = std::clamp(static_cast<float>(volume) / 100.f, 0.f, 2.f);
-   if (msg->volume <= 0.f)
-   {
-      libAv._av_free(buffer);
-      delete msg;
-      return false;
-   }
+   msg->volume = gain;
    UpdateAudioStream(msg);
    return true;
 }

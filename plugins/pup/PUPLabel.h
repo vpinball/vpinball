@@ -143,7 +143,6 @@ private:
          , m_imageScaleY(other.m_imageScaleY)
          , m_pAnimation(std::move(other.m_pAnimation))
          , m_accumulatedDelays(std::move(other.m_accumulatedDelays))
-         , m_totalDuration(other.m_totalDuration)
       {
          other.m_pTexture = nullptr;
       }
@@ -162,7 +161,6 @@ private:
             m_pTexture = other.m_pTexture;
             m_pAnimation = std::move(other.m_pAnimation);
             m_accumulatedDelays = std::move(other.m_accumulatedDelays);
-            m_totalDuration = other.m_totalDuration;
             m_width = other.m_width;
             m_height = other.m_height;
             m_logicalHeight = other.m_logicalHeight;
@@ -188,7 +186,6 @@ private:
       float m_imageScaleY = 1.f;
       std::shared_ptr<IMG_Animation> m_pAnimation;
       vector<int> m_accumulatedDelays;
-      int m_totalDuration = 0;
    };
    RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath);
    RenderState UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels);

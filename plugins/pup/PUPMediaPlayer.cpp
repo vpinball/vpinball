@@ -459,7 +459,7 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
    for (int i = 0; i < static_cast<int>(m_frames.size()); i++)
    {
       m_frames[i].age++;
-      if (const double delta = abs(playPts - m_frames[i].pts); m_frames[i].valid && (delta < bestDelta))
+      if (const double delta = std::fabs(playPts - m_frames[i].pts); m_frames[i].valid && (delta < bestDelta))
       {
          bestDelta = delta;
          selectedFrameSlot = i;

@@ -1419,7 +1419,6 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
             accum += rs.m_pAnimation->delays[i];
             rs.m_accumulatedDelays[i] = accum;
          }
-         rs.m_totalDuration = accum;
          SDL_Surface* image = rs.m_pAnimation->frames[0];
          if (image) {
             rs.m_sourceWidth = image->w;

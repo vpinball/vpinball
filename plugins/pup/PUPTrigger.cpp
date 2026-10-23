@@ -72,14 +72,14 @@ static vector<PUPTrigger::PUPTriggerCondition> ParseConditions(const string& tri
    return triggers;
 }
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume,
+PUPTrigger::PUPTrigger(const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume,
    int priority, int length, int counter, int restSeconds, PlayAction playAction, bool useDefaults, const string& szCustomFunction)
    : m_szDescript(szDescript)
    , m_szTrigger(szTrigger)
    , m_szCustomFunction(szCustomFunction)
+   , m_conditions(ParseConditions(szTrigger))
    , m_pScreen(pScreen)
    , m_pPlaylist(pPlaylist)
-   , m_active(active)
    , m_szPlayFile(szPlayFile)
    , m_volume(volume)
    , m_priority(priority)
@@ -87,83 +87,58 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
    , m_counter(counter)
    , m_restSeconds(restSeconds)
    , m_playAction(playAction)
-   , m_conditions(ParseConditions(szTrigger))
+   , m_useDefaults(useDefaults && playAction != PlayAction::PlaySSF)
 {
+}
+
+void PUPTrigger::Run()
+{
+   if (m_useDefaults)
+   {
+      m_pScreen->Play(m_pPlaylist, std::filesystem::path(), static_cast<float>(m_pScreen->GetDefaultVolume()), 0, PlayAction::Normal, 0);
+      return;
+   }
    switch (m_playAction) {
    case PlayAction::Normal:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::Normal, m_length); };
-      break;
-
    case PlayAction::Loop:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::Loop, m_length); };
-      break;
-
    case PlayAction::SetBG:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SetBG, m_length); };
-      break;
-
    case PlayAction::SplashReset:
-      m_action = [&]()
-      {
-         // Play splash video, background will restart from beginning when splash ends
-         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SplashReset, m_length);
-      };
-      break;
-
    case PlayAction::SplashReturn:
-      m_action = [&]()
-      {
-         // Play splash video, background will resume from where it left off when splash ends
-         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SplashReturn, m_length);
-      };
-      break;
-
    case PlayAction::SkipSamePriority:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SkipSamePriority, m_length); };
-      break;
-
    case PlayAction::QueueSameP:
    case PlayAction::QueueAlways:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, m_playAction, m_length); };
+      m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, m_playAction, m_length);
       break;
 
    case PlayAction::StopPlayer:
-      m_action = [&]() { m_pScreen->Stop(m_priority); };
+      m_pScreen->Stop(m_priority);
       break;
 
    case PlayAction::StopFile:
-      m_action = [&]() { m_pScreen->Stop(m_pPlaylist, m_szPlayFile); };
+      m_pScreen->Stop(m_pPlaylist, m_szPlayFile);
       break;
 
    case PlayAction::PlaySSF:
-      m_action = [&]()
-      {
-         int pos[3] = { 0, 0, 0 };
-         std::istringstream stream(m_szCustomFunction);
-         string field;
-         for (int i = 0; i < 3 && std::getline(stream, field, ','); i++)
-            pos[i] = string_to_int(trim_string(field), 0);
-         m_pScreen->GetManager()->PlaySound(PluginStrings::PathToUTF8(m_szPlayFile), pos[0], pos[1], pos[2], static_cast<int>(m_volume), ""s);
-      };
+   {
+      int pos[3] = { 0, 0, 0 };
+      std::istringstream stream(m_szCustomFunction);
+      string field;
+      for (int i = 0; i < 3 && std::getline(stream, field, ','); i++)
+         pos[i] = string_to_int(trim_string(field), 0);
+      m_pScreen->GetManager()->PlaySound(PluginStrings::PathToUTF8(m_szPlayFile), pos[0], pos[1], pos[2], static_cast<int>(m_volume), ""s);
       break;
+   }
 
    case PlayAction::CustomFunction:
-      m_action = [&]()
-      {
-         m_pScreen->GetManager()->CustomFunction(m_pScreen->GetScreenNum(), m_szCustomFunction);
-         if (!m_szPlayFile.empty())
-            m_pScreen->GetManager()->SendMsg(PluginStrings::PathToUTF8(m_szPlayFile));
-      };
+      m_pScreen->GetManager()->CustomFunction(m_pScreen->GetScreenNum(), m_szCustomFunction);
+      if (!m_szPlayFile.empty())
+         m_pScreen->GetManager()->SendMsg(PluginStrings::PathToUTF8(m_szPlayFile));
       break;
 
    default:
       LOGE("Invalid play action: " + PlayActionToString(m_playAction));
-      m_action = [](){};
       break;
    }
-
-   if (useDefaults && m_playAction != PlayAction::PlaySSF)
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, std::filesystem::path(), static_cast<float>(m_pScreen->GetDefaultVolume()), 0, PlayAction::Normal, 0); };
 }
 
 PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
@@ -186,8 +161,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
    if (screen != pScreen->GetScreenNum())
       return nullptr;
 
-   bool active = (string_to_int(parts[1], 0) == 1);
-   if (!active) {
+   if (string_to_int(parts[1], 0) != 1) {
       LOGD("Inactive trigger: " + line);
       return nullptr;
    }
@@ -200,14 +174,14 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
          LOGE("PlaySSF trigger without a x,y,z position: " + line);
          return nullptr;
       }
-      return new PUPTrigger(active, parts[2], parts[3], pScreen, nullptr, PluginStrings::PathFromUTF8(parts[6]), parts[7].empty() ? 100.f : string_to_float(parts[7], 100), 0, 0, 0,
+      return new PUPTrigger(parts[2], parts[3], pScreen, nullptr, PluginStrings::PathFromUTF8(parts[6]), parts[7].empty() ? 100.f : string_to_float(parts[7], 100), 0, 0, 0,
          string_to_int(parts[11], 0), PlayAction::PlaySSF, false, parts[10]);
    }
 
    if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s)) {
       // The playlist column holds the custom function JSON, applied to this screen. The
       // file column, when set, is posted as a regular PuP message (PinUP SendSelfPuPMSG).
-      return new PUPTrigger(active, parts[2], parts[3], pScreen, nullptr, PluginStrings::PathFromUTF8(parts[6]), 100.f, 0, 0, string_to_int(parts[10], 0),
+      return new PUPTrigger(parts[2], parts[3], pScreen, nullptr, PluginStrings::PathFromUTF8(parts[6]), 100.f, 0, 0, string_to_int(parts[10], 0),
          string_to_int(parts[11], 0), PlayAction::CustomFunction, false, triggerPlaylist);
    }
 
@@ -258,38 +232,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
    else
       playAction = PlayAction::Normal;
 
-   std::istringstream stream(parts[3]);
-   string triggerString;
-   while (std::getline(stream, triggerString, ','))
-   {
-      if (triggerString.empty())
-      {
-         LOGE("Empty token found in trigger string: " + parts[3]);
-         continue;
-      }
-      const size_t equalPos = triggerString.find('=');
-      string name;
-      int value = -1; // Default state for the trigger
-      if (equalPos != string::npos)
-      {
-         // Parse triggers with state (e.g., "W5=1")
-         name = triggerString.substr(0, equalPos);
-         value = string_to_int(triggerString.substr(equalPos + 1), -1);
-      }
-      else
-      {
-         // Parse triggers without state (e.g., "S10")
-         name = triggerString;
-      }
-      if (name.empty())
-      {
-         LOGE("Invalid trigger name in trigger string: " + parts[3]);
-         continue;
-      }
-   }
-
    return new PUPTrigger(
-      active,
       parts[2], // descript
       parts[3], // trigger
       pScreen,
@@ -316,10 +259,10 @@ bool PUPTrigger::IsResting() const
    return (SDL_GetTicks() - m_lastTriggered) < ((uint64_t)m_restSeconds * 1000);
 }
 
-std::function<void()> PUPTrigger::Trigger() {
+void PUPTrigger::Invoke() {
    if (m_pScreen->GetMode() == PUPScreen::Mode::Off) {
       LOGD(std::format("Skipping trigger on Off screen: trigger={{{}}}", ToString()));
-      return [](){};
+      return;
    }
    if (m_restSeconds < 0) {
       if (!m_delayPending) {
@@ -327,9 +270,9 @@ std::function<void()> PUPTrigger::Trigger() {
          const double delay = (m_restSeconds > -99) ? -m_restSeconds : -m_restSeconds / 1000.0;
          m_pScreen->GetManager()->RunLater(delay, [this]() { m_delayPending = false; Fire(false); });
       }
-      return [](){};
+      return;
    }
-   return [this]() { Fire(true); };
+   Fire(true);
 }
 
 void PUPTrigger::Fire(bool checkRest) {
@@ -349,16 +292,11 @@ void PUPTrigger::Fire(bool checkRest) {
    }
    m_lastTriggered = SDL_GetTicks();
    LOGD(std::format("Processing trigger: trigger={{{}}}", ToString()));
-   m_action();
-}
-
-void PUPTrigger::Invoke() {
-   Trigger()();
+   Run();
 }
 
 string PUPTrigger::ToString() const {
-   return "active="s + ((m_active == true) ? "true" : "false") +
-      ", descript=" + m_szDescript +
+   return "descript=" + m_szDescript +
       ", trigger=" + m_szTrigger +
       ", screen={" + m_pScreen->ToString() + '}' +
       ", playlist={" + (m_pPlaylist ? m_pPlaylist->ToString() : m_szCustomFunction) + '}' +

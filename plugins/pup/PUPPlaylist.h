@@ -10,7 +10,6 @@ class PUPPlaylist final
 {
 public:
    PUPPlaylist(PUPManager* manager, const std::filesystem::path& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
-   ~PUPPlaylist();
 
    static PUPPlaylist* CreateFromCSV(PUPManager* manager, const string& line);
 
@@ -35,6 +34,7 @@ public:
    const std::filesystem::path& PeekNextPlayFile() const;
    std::filesystem::path GetPlayFilePath(const std::filesystem::path& szFilename);
    bool IsResting() const;
+   bool HasFiles() const { return !m_fileMap.empty(); }
    void MarkPlayed();
    string ToString() const;
 

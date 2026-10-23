@@ -87,11 +87,6 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const std::filesystem::path& szFol
       std::shuffle(m_files.begin(), m_files.end(), std::mt19937(std::random_device {}()));
 }
 
-PUPPlaylist::~PUPPlaylist()
-{
-   m_files.clear();
-}
-
 PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 {
    if (trim_string(line).empty())
@@ -108,32 +103,6 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
       return nullptr;
    }
 
-   bool hasFiles = false;
-   try
-   {
-      for (const auto& entry : std::filesystem::directory_iterator(szFolderPath))
-      {
-         if (entry.is_regular_file())
-         {
-            std::filesystem::path szFilename = entry.path().filename();
-            if (!szFilename.empty() && szFilename != ".")
-            {
-               hasFiles = true;
-               break;
-            }
-         }
-      }
-   }
-   catch (const std::filesystem::filesystem_error&)
-   {
-      LOGE("Failed to enumerate playlist folder: " + PluginStrings::PathToUTF8(szFolderPath));
-   }
-
-   if (!hasFiles) {
-      // TODO add to a pup pack audit, we log as info as not a big deal.
-      LOGW("Playlist folder " + PluginStrings::PathToUTF8(szFolderPath) + " is empty");
-   }
-
    PUPPlaylist* pPlaylist = new PUPPlaylist(
       manager, //
       szFolderPath.filename(), // Subfolder
@@ -142,6 +111,11 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
       string_to_int(parts[4], 30), // Rest seconds
       static_cast<float>(string_to_int(parts[5], 100)), // Volume
       string_to_int(parts[6], 0)); // Priority
+
+   if (!pPlaylist->HasFiles()) {
+      // TODO add to a pup pack audit, we log as info as not a big deal.
+      LOGW("Playlist folder " + PluginStrings::PathToUTF8(szFolderPath) + " is empty");
+   }
 
    return pPlaylist;
 }

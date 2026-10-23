@@ -18,7 +18,6 @@ set(PUP_PLUGIN_SOURCES
 
    plugins/pup/common.h
    plugins/pup/common.cpp
-   plugins/pup/common.cpp
    plugins/pup/LibAv.h
    plugins/pup/PUPPlugin.cpp
    plugins/pup/PUPCustomPos.h
