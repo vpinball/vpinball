@@ -1136,7 +1136,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
          return false;
       for (const auto& screen : me->m_screenOrder)
       {
-         if (screen->GetMode() == PUPScreen::Mode::Off || screen->GetMode() == PUPScreen::Mode::MusicOnly)
+         if (screen->GetMode() == PUPScreen::Mode::Off || screen->GetMode() == PUPScreen::Mode::MusicOnly || screen->IsHidden())
             continue;
          const PUPScreen* parent = screen.get();
          while (parent && parent != root.get())
