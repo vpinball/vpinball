@@ -130,10 +130,11 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
       return true;
    }
 
-   // SplashReset/SplashReturn push at front without popping; the displaced item resumes when the splash ends.
-   // SplashReturn would seek-resume the displaced item, but the player doesn't expose seek so for now
-   // both restart the displaced item from the beginning.
    const bool splash = (action == PlayAction::SplashReset || action == PlayAction::SplashReturn);
+   if (splash && !m_queue.empty())
+      m_queue.front().resumeAt = (action == PlayAction::SplashReturn) ? m_player.GetPosition() : 0.0;
+   else if (splash && IsBackgroundPlaying())
+      m_bgResumeAt = (action == PlayAction::SplashReturn) ? m_player.GetPosition() : 0.0;
    if (!splash && !m_queue.empty())
       m_queue.pop_front();
    m_queue.push_front(item);
@@ -149,7 +150,8 @@ void PUPMediaManager::StartCurrent()
       return;
    const PlayItem& head = m_queue.front();
    LOGD(std::format("MAIN PLAY: screen={}, vol={:.0f}, pri={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, PluginStrings::PathToUTF8(head.szPath.filename())));
-   m_player.Play(head.szPath, head.volume);
+   m_player.Play(head.szPath, head.volume, head.resumeAt);
+   m_queue.front().resumeAt = 0.0;
    m_player.SetLoop(head.loop);
    m_loopCount = m_player.GetLoopCount();
    m_currentAlpha = (m_fadeStep < 255) ? m_fadeStep : 255;
@@ -178,7 +180,8 @@ void PUPMediaManager::PlayBackground()
    {
       LOGD(std::format("BG PLAY: screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(m_bg.szPath.filename())));
       m_bgEndTicks = 0;
-      m_player.Play(m_bg.szPath, m_bg.volume);
+      m_player.Play(m_bg.szPath, m_bg.volume, m_bgResumeAt);
+      m_bgResumeAt = 0.0;
       m_player.SetLoop(true);
       m_loopCount = m_player.GetLoopCount();
       ApplyDuckPrefix(m_bg.szPath);

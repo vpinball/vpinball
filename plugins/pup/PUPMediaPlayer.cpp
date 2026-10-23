@@ -105,11 +105,11 @@ double PUPMediaPlayer::GetPlayTime() const
    return (m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0)) - m_startTimestamp;
 }
 
-void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
+void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume, double startPosition)
 {
    m_pendingPlay++;
    m_commandQueue.enqueue(
-      [this, filename, volume]()
+      [this, filename, volume, startPosition]()
    {
       LOGD("> Playing filename=" + PluginStrings::PathToUTF8(filename));
 
@@ -205,6 +205,9 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          return;
       }
 
+      if (startPosition > 0.0 && m_libAv._av_seek_frame(pFormatContext, -1, static_cast<int64_t>(startPosition * AV_TIME_BASE), AVSEEK_FLAG_BACKWARD) < 0)
+         LOGE("Unable to resume at position: filename=" + PluginStrings::PathToUTF8(filename));
+
       {
          std::lock_guard lock(m_mutex);
          m_filename = filename;
@@ -218,6 +221,9 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          m_pVideoContext = pVideoContext;
          m_videoPtsBaseValid = false;
          m_videoPtsBase = 0.0;
+         m_audioPtsBaseValid = false;
+         m_audioPtsBase = 0.0;
+         m_position = startPosition;
          m_audioStream = audioStream;
          m_pAudioContext = pAudioContext;
          m_firstRenderPending = pVideoContext != nullptr;
@@ -495,6 +501,7 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
       static_cast<float>(destRect.x), static_cast<float>(destRect.y), static_cast<float>(destRect.w), static_cast<float>(destRect.h));
 
    selectedFrame.age = 0;
+   m_position = selectedFrame.pts + m_videoPtsBase;
 }
 
 void PUPMediaPlayer::Run()
@@ -602,11 +609,14 @@ void PUPMediaPlayer::Run()
             if (duration > 0.0)
             {
                // Keep the timeline continuous across the loop: the tail frames stay valid at
-               // negative pts and play out while the next iteration's frames (pts 0..) decode
-               m_startTimestamp += duration;
-               m_lastDecodedPts -= duration;
+               // negative pts and play out while the next iteration's frames (pts 0..) decode.
+               // A pass resumed mid file only lasted from its start position to the end
+               const double pass = duration - m_videoPtsBase;
+               m_videoPtsBase = 0.0;
+               m_startTimestamp += pass;
+               m_lastDecodedPts -= pass;
                for (auto& frame : m_frames)
-                  frame.pts -= duration;
+                  frame.pts -= pass;
             }
             else
             {
@@ -614,6 +624,7 @@ void PUPMediaPlayer::Run()
                for (auto& frame : m_frames)
                   frame.valid = false;
             }
+            m_audioPtsBaseValid = false;
          }
          continue;
       }
@@ -874,9 +885,19 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
 void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
 {
    // If we have decoded enough data and we did not loop, then wait (if requested). Our aim is to enqueue up to our playing position + a reasonnable buffer
-   if (sync && m_pAudioLoop == pFrame->opaque && AV_NOPTS_VALUE != pFrame->pts)
+   if (sync && AV_NOPTS_VALUE != pFrame->pts)
    {
       const double framePTS = static_cast<double>(pFrame->pts * m_pAudioContext->pkt_timebase.num) / static_cast<double>(m_pAudioContext->pkt_timebase.den);
+      if (!m_audioPtsBaseValid)
+      {
+         m_audioPtsBase = framePTS;
+         m_audioPtsBaseValid = true;
+      }
+      m_position = framePTS;
+   }
+   if (sync && m_pAudioLoop == pFrame->opaque && AV_NOPTS_VALUE != pFrame->pts)
+   {
+      const double framePTS = static_cast<double>(pFrame->pts * m_pAudioContext->pkt_timebase.num) / static_cast<double>(m_pAudioContext->pkt_timebase.den) - m_audioPtsBase;
       const double decodeTS = GetPlayTime() + 0.5; // Target + 500ms buffer
       if (framePTS > decodeTS)
          SDL_Delay(static_cast<uint32_t>(1000.0 * (framePTS - decodeTS)));
