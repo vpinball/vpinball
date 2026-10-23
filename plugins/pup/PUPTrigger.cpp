@@ -241,7 +241,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       playAction = PlayAction::Loop;
    else if (StrCompareNoCase(triggerPlayAction, "SplashReset"s))
       playAction = PlayAction::SplashReset;
-   else if (StrCompareNoCase(triggerPlayAction, "SplashReturn"s))
+   else if (StrCompareNoCase(triggerPlayAction, "SplashResume"s) || StrCompareNoCase(triggerPlayAction, "SplashReturn"s))
       playAction = PlayAction::SplashReturn;
    else if (StrCompareNoCase(triggerPlayAction, "StopPlayer"s))
       playAction = PlayAction::StopPlayer;
