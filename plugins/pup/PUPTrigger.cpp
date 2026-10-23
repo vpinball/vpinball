@@ -95,11 +95,7 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
       break;
 
    case PlayAction::Loop:
-      m_action = [&]()
-      {
-         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::Loop, m_length);
-         m_pScreen->SetLoop(true);
-      };
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::Loop, m_length); };
       break;
 
    case PlayAction::SetBG:

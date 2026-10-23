@@ -23,7 +23,6 @@ public:
    void Stop();
    void SetVolume(float volume);
    void SetLoop(bool loop);
-   void SetLength(int length);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha = 1.f);
 
    void SetName(const string& name);
@@ -62,7 +61,6 @@ private:
    bool m_loop = false;
    int m_playIndex = 0;
    float m_volume = 100.f;
-   int m_length = 0;
 
    bool m_paused = false;
    double m_pauseTimestamp = 0.0;

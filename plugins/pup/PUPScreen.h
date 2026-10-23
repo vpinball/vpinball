@@ -114,7 +114,7 @@ public:
 
    void SetGameTime(double gameTime);
 
-   void Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action = PlayAction::Normal);
+   void Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action = PlayAction::Normal, int length = 0);
    void Play(PUPPlaylist* playlist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length);
    void Stop();
    void Stop(int priority);
@@ -122,7 +122,7 @@ public:
    void Pause();
    void Resume();
    void SetLoop(int state);
-   void SetLength(int length);
+   void SetLength(int seconds);
    void SetAsBackGround(int mode);
    void SetFadeStep(int step);
 
