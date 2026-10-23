@@ -74,6 +74,7 @@ private:
    PUPScreen* const m_pScreen;
    SDL_Rect m_bounds;
 
+   unsigned int m_loopCount = 0;
    int m_fadeStep = 255;
    int m_currentAlpha = 255;
 };

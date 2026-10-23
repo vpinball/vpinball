@@ -588,6 +588,7 @@ void PUPMediaPlayer::Run()
             m_libAv._avcodec_flush_buffers(m_pAudioContext);
          }
          m_playIndex++;
+         m_loopCount++;
          double duration = 0.0;
          if (m_videoStream >= 0)
          {

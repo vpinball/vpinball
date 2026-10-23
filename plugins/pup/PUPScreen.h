@@ -69,7 +69,7 @@ public:
       RestorePage, // "returnplay":  return to the default page
    };
    HudReturn m_hudReturn = HudReturn::None;
-   void OnMainMediaEnd();
+   void OnMediaEnd();
 
    int GetDefaultVolume() const { return m_defaultVolume; }
    int GetCurrentVolume() const { return m_currentVolume; }
