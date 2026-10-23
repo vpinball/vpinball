@@ -64,6 +64,7 @@ public:
 
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
+   bool IsSRGB() const { return m_isSRGB; } // Sampling decodes sRGB to linear (on DX9, the effect sampler state decides instead)
 
    const SurfaceType m_type;
    const string m_name;
@@ -73,6 +74,7 @@ private:
    RenderDevice* const m_rd;
    unsigned int m_width;
    unsigned int m_height;
+   bool m_isSRGB = false;
 
 #if defined(ENABLE_BGFX)
    bgfx::TextureFormat::Enum m_bgfx_format = bgfx::TextureFormat::Enum::Count;

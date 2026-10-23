@@ -303,8 +303,10 @@ private:
 
    RenderTarget* m_pPostProcessRenderTarget1 = nullptr;
    RenderTarget* m_pPostProcessRenderTarget2 = nullptr;
+   RenderTarget* m_pPostProcessRenderTarget3 = nullptr;
    RenderTarget* GetPostProcessRenderTarget1();
    RenderTarget* GetPostProcessRenderTarget2();
+   RenderTarget* GetPostProcessRenderTarget3(); // Third post process buffer (SMAA): the previous back buffer when it has the post process size
    RenderTarget* GetPostProcessRenderTarget(RenderTarget* renderedRT);
 
    RenderTarget* m_pReflectionBufferTexture = nullptr;
@@ -333,6 +335,7 @@ private:
    RenderTarget* m_desktopBackBuffer2 = nullptr;
    RenderTarget* m_desktopPostProcess1 = nullptr;
    RenderTarget* m_desktopPostProcess2 = nullptr;
+   RenderTarget* m_desktopPostProcess3 = nullptr;
    RenderTarget* m_desktopBloom = nullptr;
    RenderTarget* m_desktopBloomTmp = nullptr;
    RenderTarget* m_desktopReflection = nullptr;

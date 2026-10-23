@@ -65,8 +65,6 @@ void main()
         vec4 tpos_kick = mul(matWorld, vec4(pos.x, pos.y, pos.z - 30.0, 1.0));
         vec3 wpos_rel_kick = tpos_kick.xyz - cCameraPosWorld;
         gl_Position.z = mul(mRotViewProj, vec4(wpos_rel_kick, 1.0)).z;
-    #elif defined(CLASSIC_LIGHT)
-        gl_Position.z = max(gl_Position.z, 0.00006103515625); // clamp lights to near clip plane to avoid them being partially clipped // 0.00006103515625 due to 16bit half float
     #endif
     #ifdef TEX
         v_texcoord0 = a_texcoord0;

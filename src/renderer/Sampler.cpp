@@ -45,6 +45,7 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
 {
    // Callers can substitute RenderDevice::m_fallbackTexture, so there is (mostly) something to upload
    assert(surf != nullptr);
+   m_isSRGB = !BaseTexture::IsLinearFormat(surf->m_format) && !force_linear_rgb;
 
 #if defined(ENABLE_BGFX)
    m_usePrecompressed = surf->m_compressed && m_rd->m_compressTextures;

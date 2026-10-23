@@ -1120,7 +1120,7 @@ void Shader::ApplyUniform(const ShaderUniform uniformName)
          glUniform2fv(desc.location, 1, (const GLfloat*)src);
          #elif defined(ENABLE_DX9)
          memcpy(dst, src, ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize);
-         CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
+         CHECKD3D(m_shader->SetFloatArray(desc.handle, (const float*)src, 2));
          #endif
          break;
       }
@@ -1135,7 +1135,7 @@ void Shader::ApplyUniform(const ShaderUniform uniformName)
          glUniform3fv(desc.location, 1, (const GLfloat*)src);
          #elif defined(ENABLE_DX9)
          memcpy(dst, src, ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize);
-         CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
+         CHECKD3D(m_shader->SetFloatArray(desc.handle, (const float*)src, 3));
          #endif
          break;
       }

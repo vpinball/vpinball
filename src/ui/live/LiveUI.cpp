@@ -483,19 +483,18 @@ void LiveUI::RenderUI()
    if (m_rd->m_nEyes == 2)
       matView[1] = matView[0];  
    m_rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &matView[0], m_rd->m_nEyes);
-   #if defined(ENABLE_BGFX) // Only the BGFX UI shader has this uniform (stereo offset, HDR white level)
+   // UI shader parameters: x = VR stereo offset (BGFX), y = texture is sRGB decoded (set per draw, unused on DX9), w = HDR white level (BGFX)
+   vec4 uiParams(0.f, 0.f, 0.f, 0.f);
+   #if defined(ENABLE_BGFX)
    #ifdef ENABLE_XR
    const bool onXrUILayer = m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt == m_player->m_vrDevice->GetUIRenderTarget();
    #else
    const bool onXrUILayer = false;
    #endif
-   m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha,
-      // Stereo offset for VR (fake depth), only when rendering per eye inside the stereo projection layer
-      (m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt->m_nLayers == 2) ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f,
-      0.f, // Unused
-      0.f, // Unused
-      // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 = no conversion (sRGB backbuffer)
-      (!onXrUILayer && m_player->m_playfieldWnd->IsWCGBackBuffer()) ? (m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.)) : 0.f);
+   // Stereo offset for VR (fake depth), only when rendering per eye inside the stereo projection layer
+   uiParams.x = (m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt->m_nLayers == 2) ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f;
+   // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 = no conversion (sRGB backbuffer)
+   uiParams.w = (!onXrUILayer && m_player->m_playfieldWnd->IsWCGBackBuffer()) ? (m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.)) : 0.f;
    #endif
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
@@ -560,6 +559,11 @@ void LiveUI::RenderUI()
          {
             m_rd->m_uiShader->SetVector(ShaderUniform::clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, cmd->GetTexID(), SamplerFilter::SF_BILINEAR);
+            #if !defined(ENABLE_DX9) // DX9 samples raw values (see UIShader.hlsl)
+            // ImGui works in sRGB: the shader re-encodes textures that sampling decodes (table images)
+            uiParams.y = (cmd->GetTexID() != nullptr && cmd->GetTexID()->IsSRGB()) ? 1.f : 0.f;
+            m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, &uiParams);
+            #endif
             m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(0.f, 0.f, 0.f), static_cast<float>(depthSort), m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
             depthSort--;
          }

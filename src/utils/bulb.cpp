@@ -188,7 +188,7 @@ void bulb_init()
 float bulb_filament_temperature_to_emission(const int bulb, const float T)
 {
    if (T < 1500.0f) return 0.f;
-   if (T >= (float)BULB_T_MAX) return (float)locals.t_to_p[BULB_T_MAX - 1500];
+   if (T >= (float)BULB_T_MAX) return (float)(locals.t_to_p[BULB_T_MAX - 1500] / locals.t_to_p[bulbs[bulb].rating_T - 1500]);
    return (float)(locals.t_to_p[(int)T - 1500] / locals.t_to_p[bulbs[bulb].rating_T - 1500]);
    // Linear interpolation is not worth its cost
    // int lower_T = (int) T, upper_T = lower_T+1;

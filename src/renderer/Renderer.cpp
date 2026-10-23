@@ -397,6 +397,7 @@ Renderer::~Renderer()
    delete m_pBloomTmpBufferTexture;
    delete m_pPostProcessRenderTarget1;
    delete m_pPostProcessRenderTarget2;
+   delete m_pPostProcessRenderTarget3;
    delete m_pReflectionBufferTexture;
    delete m_pMotionBlurBufferTexture;
    delete m_pOffscreenVRLeft;
@@ -406,6 +407,7 @@ Renderer::~Renderer()
    delete m_desktopBackBuffer2;
    delete m_desktopPostProcess1;
    delete m_desktopPostProcess2;
+   delete m_desktopPostProcess3;
    delete m_desktopBloom;
    delete m_desktopBloomTmp;
    delete m_desktopReflection;
@@ -539,7 +541,7 @@ void Renderer::ResizeRenderTargets()
 
    // Frames already submitted may still reference the previous targets: release them at the end of the frame being prepared
    vector<RenderTarget*> released { m_pOffscreenBackBufferTexture1, m_pOffscreenBackBufferTexture2, m_pOffscreenMSAABackBufferTexture, m_pBloomBufferTexture, m_pBloomTmpBufferTexture,
-      m_pPostProcessRenderTarget1, m_pPostProcessRenderTarget2, m_pReflectionBufferTexture, m_pMotionBlurBufferTexture, m_pAORenderTarget1, m_pAORenderTarget2, m_staticPrepassRT };
+      m_pPostProcessRenderTarget1, m_pPostProcessRenderTarget2, m_pPostProcessRenderTarget3, m_pReflectionBufferTexture, m_pMotionBlurBufferTexture, m_pAORenderTarget1, m_pAORenderTarget2, m_staticPrepassRT };
    std::erase(released, nullptr);
    m_renderDevice->AddEndOfFrameCmd([released]() { for (RenderTarget* rt : released) delete rt; });
 
@@ -559,6 +561,7 @@ void Renderer::ResizeRenderTargets()
    // Lazily recreated at the new size when next used
    m_pPostProcessRenderTarget1 = nullptr;
    m_pPostProcessRenderTarget2 = nullptr;
+   m_pPostProcessRenderTarget3 = nullptr;
    m_pReflectionBufferTexture = nullptr;
    m_pMotionBlurBufferTexture = nullptr;
    m_pAORenderTarget1 = nullptr;
@@ -602,6 +605,18 @@ RenderTarget* Renderer::GetPostProcessRenderTarget2()
    if (m_pPostProcessRenderTarget2 == nullptr)
       m_pPostProcessRenderTarget2 = GetPostProcessRenderTarget1()->Duplicate("PostProcess2"s);
    return m_pPostProcessRenderTarget2;
+}
+
+RenderTarget* Renderer::GetPostProcessRenderTarget3()
+{
+   // The previous back buffer is unused during post processing: reuse it, unless supersampled as it must have the post process size
+   RenderTarget* pp1 = GetPostProcessRenderTarget1();
+   RenderTarget* previous = GetPreviousBackBufferTexture();
+   if (previous->GetWidth() == pp1->GetWidth() && previous->GetHeight() == pp1->GetHeight())
+      return previous;
+   if (m_pPostProcessRenderTarget3 == nullptr)
+      m_pPostProcessRenderTarget3 = pp1->Duplicate("PostProcess3"s);
+   return m_pPostProcessRenderTarget3;
 }
 
 RenderTarget* Renderer::GetPostProcessRenderTarget(RenderTarget* renderedRT)
@@ -667,7 +682,11 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
    const unsigned int env_xres = envTex->width();
    const unsigned int env_yres = envTex->height();
    BaseTexture::Format env_format = envTex->m_format;
-   const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) ? env_format : BaseTexture::SRGB;
+   assert(env_format != BaseTexture::BW && env_format != BaseTexture::SRGB565); // Unsupported by the sampling below, not expected for environment images
+   // Float result for HDR environments (alpha dropped), sRGB for LDR ones
+   const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGBA_FP16) ? BaseTexture::RGB_FP16
+                                        : (env_format == BaseTexture::RGB_FP32 || env_format == BaseTexture::RGBA_FP32) ? BaseTexture::RGB_FP32
+                                                                                                                        : BaseTexture::SRGB;
    std::shared_ptr<BaseTexture> radTex = BaseTexture::Create(rad_env_xres, rad_env_yres, rad_format);
    uint8_t* const __restrict rad_envmap = static_cast<uint8_t*>(radTex->data());
    bool free_envmap = false;
@@ -676,8 +695,10 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
 #ifdef PREFILTER_ENVMAP_DIFFUSE
    // pre-filter envmap with a gauss (separable/two passes: x and y)
    //!!! not correct to pre-filter like this, but barely visible in the end, and helps to keep number of samples low (otherwise one would have to use >64k samples instead of 4k!)
-   if ((env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) && env_xres > 64)
+   if ((env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32 || env_format == BaseTexture::RGBA_FP16 || env_format == BaseTexture::RGBA_FP32) && env_xres > 64)
    {
+      const unsigned int env_stride = (env_format == BaseTexture::RGBA_FP16 || env_format == BaseTexture::RGBA_FP32) ? 4 : 3; // Alpha is skipped, the filtered result is RGB_FP32
+      const bool env_fp16 = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGBA_FP16);
       const float scale_factor = (float)env_xres*(float)(1.0 / 64.);
       const int xs = (int)(scale_factor*0.5f + 0.5f);
       void* const __restrict envmap2 = malloc(env_xres * env_yres * (3 * 4));
@@ -691,7 +712,7 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
 
       for (int y = 0; y < (int)env_yres; ++y)
       {
-         const int yoffs = y * env_xres * 3;
+         const int yoffs = y * env_xres * env_stride;
          for (int x = 0; x < (int)env_xres; ++x)
          {
             float sum_r = 0.f, sum_g = 0.f, sum_b = 0.f, sum_w = 0.f;
@@ -703,8 +724,8 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
                else if (xt >= (int)env_xres)
                   xt -= env_xres;
                const float w = weights[xt2];
-               const unsigned int offs = xt * 3 + yoffs;
-               if (env_format == BaseTexture::RGB_FP16)
+               const unsigned int offs = xt * env_stride + yoffs;
+               if (env_fp16)
                {
                   sum_r += half2float(((const uint16_t*)envmap)[offs    ]) * w;
                   sum_g += half2float(((const uint16_t*)envmap)[offs + 1]) * w;
@@ -770,9 +791,9 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
          pool.enqueue_block([y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres] {
             for (unsigned int x = 0; x < rad_env_xres; ++x)
             {
-               // transfo from envmap to normal direction
-               const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
-               const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
+               // transfo from envmap to normal direction, at the texel center where the shaders look it up
+               const float phi = ((float)x + 0.5f) / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
+               const float theta = ((float)y + 0.5f) / (float)rad_env_yres * (float)M_PI;
                const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
 
                // draw x samples over hemisphere and collect cosine weighted environment map samples
@@ -844,10 +865,10 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
                   }
                   case BaseTexture::RGBA:
                   {
-                     const uint32_t rgb = ((const uint32_t*)envmap)[offs];
-                     r = (float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0);
+                     const uint32_t rgb = ((const uint32_t*)envmap)[offs]; // bytes are ordered R, G, B, A
+                     r = (float)(rgb & 0x000000FF) * (float)(1.0 /      255.0);
                      g = (float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0);
-                     b = (float)(rgb & 0x000000FF) * (float)(1.0 /      255.0);
+                     b = (float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0);
                      break;
                   }
                   case BaseTexture::SRGB:
@@ -859,10 +880,10 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
                   }
                   case BaseTexture::SRGBA:
                   {
-                     const uint32_t rgb = ((const uint32_t*)envmap)[offs];
-                     r = invGammaApprox((float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0));
+                     const uint32_t rgb = ((const uint32_t*)envmap)[offs]; // bytes are ordered R, G, B, A
+                     r = invGammaApprox((float)(rgb & 0x000000FF) * (float)(1.0 /      255.0));
                      g = invGammaApprox((float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0));
-                     b = invGammaApprox((float)(rgb & 0x000000FF) * (float)(1.0 /      255.0));
+                     b = invGammaApprox((float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0));
                      break;
                   }
                   default:
@@ -1680,7 +1701,9 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
    if (IsLegacyDMDRenderer(profile))
    {
       assert(addBlendModulate == 0.f); // The legacy renderer has no additive blend encoding, it outputs a plain alpha blended color
-      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW_FP32 ? 1.f : 0.f);
+      // w: 0 = luminance, 1 = linear RGB, 2 = sRGB frame (decoded by the DX9 shader, as its effect sampler state can not depend on the texture)
+      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness,
+         dmd->m_format == BaseTexture::BW_FP32 ? 0.f : BaseTexture::IsLinearFormat(dmd->m_format) ? 1.f : 2.f);
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
       // Legacy shader samples at glassArea.xy + uv * glassArea.zw: unmirror maps u (or v) to 1 - u (or 1 - v)
       const int unmirrorAxis = GetDisplayUnmirrorAxis(isBackdrop, vertices, unmirror);
@@ -2652,8 +2675,10 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
       jitter); // sobol(jittertime) * 13.0f); // jitter for dither pattern
 
    ShaderTechnique tonemapTechnique;
-   const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
-   const bool filtered = useAA || (m_screenOffset.x != 0.f) || (m_screenOffset.y != 0.f);
+   // Filter only when resampling, i.e. resolving a supersampled render (bilinear is a 2x2 box filter at the 200% maximum AA factor, larger factors would need
+   // a real downsampling pass). An undersampled render is tonemapped 1:1, then upscaled (see ApplyUpscaling)
+   const bool resample = (render_w != outputRT->GetWidth()) || (render_h != outputRT->GetHeight());
+   const bool filtered = resample || (m_screenOffset.x != 0.f) || (m_screenOffset.y != 0.f);
    if (infoMode == IF_AO_ONLY)
       tonemapTechnique = ShaderTechnique::fb_AO;
    else if (infoMode == IF_RENDER_PROBES)
@@ -2953,14 +2978,14 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
    else if (SMAA)
    {
       assert(renderedRT == GetPostProcessRenderTarget1());
-      // SMAA use 3 passes, all of them using the initial render, so since tonemap use postprocess RT 1, we use the back buffer and post process RT 2
+      // SMAA uses 3 passes, all reading the tonemapped render from post process RT 1, so post process RT 3 and 2 hold the intermediate results
       RenderTarget* sourceRT = renderedRT;
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, sourceRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, sourceRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetVector(
          ShaderUniform::w_h_height, (float)(1.0 / sourceRT->GetWidth()), (float)(1.0 / sourceRT->GetHeight()), (float)sourceRT->GetWidth(), (float)sourceRT->GetHeight());
 
-      RenderTarget* outputRT = GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer
+      RenderTarget* outputRT = GetPostProcessRenderTarget3();
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
@@ -2979,7 +3004,7 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
 
-      outputRT = outputBackBuffer ? outputBackBuffer : GetPreviousBackBufferTexture();
+      outputRT = outputBackBuffer ? outputBackBuffer : GetPostProcessRenderTarget3();
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
@@ -3021,7 +3046,8 @@ RenderTarget* Renderer::ApplySharpening(RenderTarget* renderedRT, RenderTarget* 
 
 RenderTarget* Renderer::ApplyUpscaling(RenderTarget* renderedRT, RenderTarget* outputBackBuffer)
 {
-   if (m_renderWidth >= GetBackBufferTexture()->GetWidth())
+   // Only for an undersampled render (AA factor below 100%), a supersampled one is resolved by the tonemapping
+   if (GetBackBufferTexture()->GetWidth() >= m_renderWidth)
       return renderedRT;
 
    // TODO add AMD FidelityFX Super Resolution (FSR) support
@@ -3387,7 +3413,7 @@ void Renderer::Render3DScene()
 
    const bool hasAntialiasPass = m_FXAA != Disabled;
    const bool hasSharpenPass = m_sharpen != 0;
-   const bool hasUpscalerPass = m_renderWidth < GetBackBufferTexture()->GetWidth();
+   const bool hasUpscalerPass = GetBackBufferTexture()->GetWidth() < m_renderWidth;
    // OpenXR directly renders to the XR render target view without any postprocess needs
    #ifdef ENABLE_XR
    const bool hasStereoPass = (m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR)) || ((m_stereo3D == STEREO_VR) && m_vrApplyColorKey);
@@ -3501,8 +3527,9 @@ void Renderer::RenderDesktopScene(RenderTarget* outputRT)
       m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
    m_renderDevice->m_basicShader->SetVector(
       ShaderUniform::w_h_height, (float)(1.0 / (double)GetBackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetBackBufferTexture()->GetHeight()), 0.0f, 0.0f);
+   const vec4 ballLighting = m_renderDevice->m_ballShader->GetVector(ShaderUniform::w_h_disableLighting); // Keep the 'disable lighting for balls' state (z)
    m_renderDevice->m_ballShader->SetVector(
-      ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
+      ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), ballLighting.z, ballLighting.w);
 
    SwapBackBufferRenderTargets();
    SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, true);
@@ -3596,7 +3623,7 @@ void Renderer::RenderDesktopScene(RenderTarget* outputRT)
    m_renderDevice->m_basicShader->SetVector(
       ShaderUniform::w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    m_renderDevice->m_ballShader->SetVector(
-      ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
+      ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), ballLighting.z, ballLighting.w);
    // The probes now hold renders for the cabinet view: mark them for re-rendering on next frame
    for (auto probe : m_table->m_vrenderprobe)
       probe->MarkDirty();
@@ -3612,6 +3639,7 @@ void Renderer::SwapDesktopTargets()
    std::swap(m_pOffscreenBackBufferTexture2, m_desktopBackBuffer2);
    std::swap(m_pPostProcessRenderTarget1, m_desktopPostProcess1);
    std::swap(m_pPostProcessRenderTarget2, m_desktopPostProcess2);
+   std::swap(m_pPostProcessRenderTarget3, m_desktopPostProcess3);
    std::swap(m_pBloomBufferTexture, m_desktopBloom);
    std::swap(m_pBloomTmpBufferTexture, m_desktopBloomTmp);
    std::swap(m_pReflectionBufferTexture, m_desktopReflection);
