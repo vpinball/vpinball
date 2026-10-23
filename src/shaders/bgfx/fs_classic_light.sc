@@ -51,6 +51,7 @@ uniform vec4 u_basic_shade_mode;
 #define doMetal             (u_basic_shade_mode.x != 0.0)
 #define doNormalMapping     (u_basic_shade_mode.y != 0.0)
 #define doRefractions       (u_basic_shade_mode.z != 0.0)
+#define noMipMaps           (u_basic_shade_mode.w != 0.0)
 
 // Light don't write to depth buffer, so they can have EARLY_DEPTH_STENCIL even when using discard for clip plane
 EARLY_DEPTH_STENCIL void main()
@@ -60,8 +61,12 @@ EARLY_DEPTH_STENCIL void main()
         discard;
     #endif
     #ifdef TEX
-        // FIXME check tex_light_color declaration
-        vec4 pixel = texNoLod(tex_light_color, v_texcoord0); //!! IN.tex0 abused in backglass mode
+        // Mipmapped like other material textures, except in the static prepass (favors sharpness)
+        vec4 pixel;
+        if (noMipMaps)
+            pixel = texNoLod(tex_light_color, v_texcoord0); //!! IN.tex0 abused in backglass mode
+        else
+            pixel = texture2D(tex_light_color, v_texcoord0);
     #else
         vec4 pixel = vec4(lightColor_intensity.rgb, 1.0);
     #endif

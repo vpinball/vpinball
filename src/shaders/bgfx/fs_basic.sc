@@ -85,13 +85,8 @@ mat3 TBN_trafo(const vec3 N, const vec3 V, const vec2 uv)
    // derivatives: edge vectors for tri-pos and tri-uv
    const vec3 dpx = dFdx(V);
    const vec3 dpy = dFdy(V);
-   #if TEX_V_IS_UP
-      const vec2 duvx = dFdx(uv);
-      const vec2 duvy = dFdy(uv);
-   #else
-      const vec2 duvx = dFdx(vec2(uv.x, -uv.y));
-      const vec2 duvy = dFdy(vec2(uv.x, -uv.y));
-   #endif
+   const vec2 duvx = dFdx(uv);
+   const vec2 duvy = dFdy(uv);
 
    // solve linear system
    const vec3 dp2perp = cross(N, dpy);
@@ -100,7 +95,8 @@ mat3 TBN_trafo(const vec3 N, const vec3 V, const vec2 uv)
    const vec3 B = dp2perp * duvx.y + dp1perp * duvy.y;
 
    // construct scale-invariant transformation
-   return mat3(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
+   // T, B, N as columns (mat3() makes them rows on HLSL/SPIR-V/Metal), so mul(TBN, tn) = T * tn.x + B * tn.y + N * tn.z as in the DX9 shader
+   return mtxFromCols(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
 }
 
 #ifdef STEREO

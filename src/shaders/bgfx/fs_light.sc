@@ -16,6 +16,11 @@ uniform vec4 blend_modulate_vs_add; // single float, passed as vec4 (BGFX does n
 // Light don't write to depth buffer, so they can have EARLY_DEPTH_STENCIL even when using discard for clip plane
 EARLY_DEPTH_STENCIL void main()
 {
+    #ifdef CLIP
+    if (v_clipDistance < 0.0)
+        discard;
+    #endif
+
     const vec3 light_dir = v_tablePos - lightCenter_maxRange.xyz;
     const float light_dist = length(light_dir);
     const float len = light_dist * lightCenter_maxRange.w;
