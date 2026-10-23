@@ -569,8 +569,21 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    case 2:
    {
       std::lock_guard lock(m_mutex);
-      for (auto& [key, value] : json.as_object())
+      static constexpr std::string_view keyOrder[] = { "size", "fonth", "xpos", "ypos", "width", "height", "autow", "autoh", "zoom", "xoffset", "yoffset", "anistart", "anigif",
+         "animate", "fname", "color", "xalign", "yalign", "pagenum", "quality", "rotate", "alpha", "xoffpix", "yoffpix", "qual", "bold", "italic", "underline", "normal",
+         "shadowcolor", "shadowtype", "shadowstate", "outline", "gradcolor", "gradstate", "grayscale", "filter", "dodefault", "maxlen", "transcolor", "gifstart", "gifend",
+         "gifloop", "anidispose", "anihide", "aniendhide", "rescale", "ztop", "zback", "forceshow", "forcehide", "stopani", "showstats", "v2", "dispose" };
+      RSJobject& properties = json.as_object();
+      vector<std::pair<string, RSJresource*>> ordered;
+      for (const std::string_view& name : keyOrder)
+         if (auto it = properties.find(string(name)); it != properties.end())
+            ordered.emplace_back(it->first, &it->second);
+      for (auto& [name, property] : properties)
+         if (std::ranges::find(keyOrder, name) == std::end(keyOrder))
+            ordered.emplace_back(name, &property);
+      for (auto& [key, pValue] : ordered)
       {
+         RSJresource& value = *pValue;
          if (key == "mt")
          {
          }
@@ -985,6 +998,14 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             ClearAnimationInternal();
             m_visible = false;
             m_doDispose = true;
+         }
+         else if (key == "forceshow")
+         {
+            m_visible = true;
+         }
+         else if (key == "forcehide")
+         {
+            m_visible = false;
          }
          else if (key == "anihide")
          {
