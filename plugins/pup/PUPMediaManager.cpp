@@ -345,7 +345,7 @@ void PUPMediaManager::Render(VPXRenderContext2D* const ctx, float alpha)
 
 void PUPMediaManager::SetFadeStep(int step)
 {
-   m_fadeStep = (step < 0) ? 255 : std::min(step, 255);
+   m_fadeStep = (step <= 0) ? 255 : std::min(step, 255);
    if (m_fadeStep >= 255)
       m_currentAlpha = 255;
 }
