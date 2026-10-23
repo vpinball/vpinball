@@ -12,10 +12,6 @@
 #include <charconv>
 #include <cassert>
 
-#pragma warning(push)
-#pragma warning(disable : 4267)
-#include "RSJparser/RSJparser.tcc"
-#pragma warning(pop)
 
 namespace PUP {
 
@@ -24,12 +20,10 @@ static const string emptystring;
 PUPPinDisplay::PUPPinDisplay(PUPManager& manager)
    : m_pupManager(manager)
 {
-   m_pupManager.SetMessageHandler(this, [this](int sn, const string& szMsg) { CustomFunction(sn, szMsg); }, [this](const string& szMsg) { SendMSG(szMsg); });
 }
 
 PUPPinDisplay::~PUPPinDisplay()
 {
-   m_pupManager.ClearMessageHandler(this);
    // This object is only a script proxy: tables may create and release several of
    // them for the same game, so do not unload the manager here. Teardown happens
    // on game end (see PUPPlugin OnGameEnd) or through an explicit CloseApp call.
@@ -285,253 +279,12 @@ void PUPPinDisplay::B2SInit(const string& tName, const string& romName)
 
 void PUPPinDisplay::CustomFunction(int sn, const string& szMsg)
 {
-   RSJresource json(szMsg);
-   if (!json["FN"s].exists())
-      return;
-   if (sn == 99)
-   {
-      for (int i = 0; i < 20; i++)
-         if (m_pupManager.GetScreen(i))
-            CustomFunction(i, szMsg);
-      return;
-   }
-   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(sn);
-   if (!pScreen)
-   {
-      LOGE(std::format("Screen not found: screenNum={}, szMsg={}", sn, szMsg));
-      return;
-   }
-   const int fn = json["FN"s].as<int>();
-   switch (fn) {
-         case 1:
-            // show screen { "mt":301, "SN": XX, "FN":1 }
-            Show(sn);
-            break;
-         case 18:
-            // reset to ForceBack { "mt":301, "SN": XX, "FN":18 }
-            pScreen->SetTopmost(false);
-            pScreen->SetMode(PUPScreen::Mode::ForceBack);
-            break;
-         case 20:
-         {
-            // set screen alpha { "mt":301, "SN": XX, "FN":20, "AM":1, "AV":255 }
-            const int am = json["AM"s].as<int>(0);
-            pScreen->m_screenAlpha = am ? static_cast<float>(json["AV"s].as<int>(255)) / 255.f : 1.f;
-            break;
-         }
-         case 27:
-            // show label page { "mt":301, "SN": XX, "FN":27, "PN":1, "HS":3, "EX":"" }
-            LabelShowPage(sn, json["PN"s].as<int>(0), json["HS"s].as<int>(0), json["EX"s].as_str());
-            break;
-         case 28:
-            // hide screen { "mt":301, "SN": XX, "FN":28 }
-            Hide(sn);
-            break;
-         case 40:
-            // set volume { "mt":301, "SN": XX, "FN":40, "VL":9 }
-            pScreen->SetVolumeCurrent(json["VL"s].as<int>(0));
-            break;
-         case 54:
-            // default duck percent for '-xx' file names { "mt":301, "SN": XX, "FN":54, "DV":50 }
-            pScreen->SetDefaultDuck(json["DV"s].as<int>(-1));
-            break;
-         case 2:
-            // See pDisableLoopRefresh — form state flags (FF/FO), controls Windows form redraw
-            // { "mt":301, "SN": XX, "FN": 2, "FF":0/1, "FO":0/1 }
-            NOT_IMPLEMENTED(std::format("Loop refresh flags not implemented: screen={{{}}}, FF={}, FO={}", pScreen->ToString(false), json["FF"s].as<int>(0), json["FO"s].as<int>(0)));
-            break;
-         case 3:
-            // Show/hide the label overlay window (every label of the screen)
-            // { "mt":301, "SN": XX, "FN":3, "OT": 0 } - OT 0/1
-            pScreen->m_hudVisible = (json["OT"s].as<int>(0) != 0);
-            break;
-         case 4:
-         {
-            // set StayOnTop { "mt":301, "SN": XX, "FN":4, "FS":1/0 }
-            // FS=1 pins the screen above its siblings (ForceOn mode + topmost flag);
-            // FS=0 releases it to render under other screens (ForceBack).
-            const bool topmost = (json["FS"s].exists() && json["FS"s].as<int>() == 1);
-            LOGD(std::format("Stay on top requested: screen={{{}}}, fn={}, topmost={}, szMsg={}", pScreen->ToString(false), fn, topmost, szMsg));
-            pScreen->SetTopmost(topmost);
-            pScreen->SetMode(topmost ? PUPScreen::Mode::ForceOn : PUPScreen::Mode::ForceBack);
-            break;
-         }
-         case 5:
-            // Send this screen to the back of its siblings (PinUP: TControl.SendToBack).
-            // { "mt":301, "SN": XX, "FN":5 }
-            LOGD(std::format("Send screen to back requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            m_pupManager.SendScreenToBack(pScreen.get());
-            break;
-         case 6:
-            // Bring this screen to the front of its siblings (PinUP: TControl.BringToFront, no topmost change).
-            // { "mt":301, "SN": XX, "FN":6 }
-            LOGD(std::format("Bring screen to front requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            m_pupManager.SendScreenToFront(pScreen.get());
-            break;
-         case 10:
-            // set all displays all volume { "mt":301, "SN": XX, "FN":10, "VL":9}  VL=volume level
-            m_pupManager.SetDefaultVolumeAll(json["VL"s].as<int>(0));
-            break;
-         case 11:
-            // set all volume { "mt":301, "SN": XX, "FN":11, "VL":9}  VL=volume level
-            LOGD(std::format("Set all volume requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            pScreen->SetVolumeCurrent(json["VL"s].as<int>(0));
-            break;
-         case 12:
-            // "{ ""mt"":301, ""SN"": 18, ""FN"":12 }" 'STOPSCREEN
-            pScreen->SetMode(PUPScreen::Mode::Off);
-            pScreen->Stop();
-            break;
-         case 15:
-            // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %
-            LOGD(std::format("Set screen custompos requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            pScreen->SetCustomPos(json["CP"s].as_str());
-            break;
-         case 16:
-            // start executable
-            //   { ""mt"":301, ""SN"": 2, ""FN"":16, ""EX"": """&PuPMiniGameExe  &""", ""WT"": """&PuPMiniGameTitle&""", ""RS"":1 , ""TO"":15 , ""WZ"":0 , ""SH"": 1 , ""FT"":""Visual Pinball Player"" }
-            //   { ""mt"":301, ""SN"": 2, ""FN"":16, ""EX"": ""Pupinit.bat"", ""WT"": """", ""RS"":1 , ""TO"":15 , ""WZ"":0 , ""SH"": 1 , ""FT"":""Visual Pinball Player"" }
-            // EX: Windows executable / WT: Window Title / WZ: Window Z order / RS: ? / TO: ? / SH: ? / FT: ?
-            NOT_IMPLEMENTED("Executing OS executable is not implemented. szMsg=" + szMsg);
-            break;
-         case 17:
-            // set window z order { ""mt"":301, ""SN"": ""2"", ""FN"":17, ""WT"":""Visual Pinball Player"", ""WZ"": 1, ""WP"": 1 }
-            // See https://learn.microsoft.com/fr-fr/windows/win32/api/winuser/nf-winuser-setwindowpos
-            // WT: Window Title / WZ: hWndInsertAfter / WP: uFlags
-            NOT_IMPLEMENTED("Set OS window z ordering is not implemented. szMsg=" + szMsg);
-            break;
-         case 22:
-         {
-            // set overlay alpha { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 }
-            // AV: Alpha Value (0-255), AM: Alpha mode enabled (1) or disabled (0)
-            const int am = json["AM"s].as<int>(0);
-            pScreen->m_overlayAlpha = am ? static_cast<float>(json["AV"s].as<int>(255)) / 255.f : 1.f;
-            break;
-         }
-         case 26:
-            // set screen volume multiplier { "mt":301, "SN": XX, "FN":26, "VL":100 }
-            pScreen->SetVolumeMultiplier(json["VL"s].as<int>(0));
-            break;
-         case 30:
-            // {'mt':301, 'SN': XX, 'FN':30, 'PM':1 } set (play ?) jukebox mode: jukebox mode will auto advance to next media in playlist and you can use next/prior sub to manuall advance
-            NOT_IMPLEMENTED(std::format("Jukebox mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 31:
-            // pup jukebox control - {'mt':301, 'SN': XX, 'FN':31, 'PM':1 } - PM 1 = next, PM 2 = previous
-            NOT_IMPLEMENTED(std::format("Jukebox mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 32:
-            // "{ ""mt"":301, ""SN"": 1, ""FN"":32, ""FQ"":3 }"   'set no antialias on font render if real
-            NOT_IMPLEMENTED(std::format("Font quality is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 33:
-            // "{ ""mt"":301, ""SN"": 1, ""FN"":33 }"             'set pupdmd for mirror and hide behind other pups
-            // TODO expose the DMD screen to other pluginsthrough the generic controllar plugin API
-            NOT_IMPLEMENTED(std::format("DMD mirroring is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 34:
-            // "{ ""mt"":301, ""SN"": "& pDisp &", ""FN"": 34 }"             'hideoverlay text during next videoplay on DMD auto return
-            // Labels are hidden and LabelSet/LabelShowPage ignored until the current media ends.
-            pScreen->m_hideDuringPlay = true;
-            pScreen->m_hudVisible = false;
-            break;
-         case 41:
-            // 'set safeloop mode on current playing media.  Good for background videos that refresh often?  { "mt":301, "SN": XX, "FN":41 }
-            NOT_IMPLEMENTED(std::format("Safe loop mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 42:
-         {
-            // See PUPDMD AudioDuckPuP — temporarily duck all screens except master
-            // "{ ""mt"":301, ""SN"": "& MasterPuPID& ", ""FN"": 42, ""DV"": "&VolLevel&" , ""ALL"":1 }"
-            const int duckPercent = json["DV"s].as<int>(0);
-            m_pupManager.DuckAllExcept(duckPercent == 0 ? 1 : duckPercent, sn, json["ALL"s].as<int>(0) == 1);
-            break;
-         }
-         case 45:
-            // slow pc mode { "mt":301, "SN":XX, "FN":45, "SP":1 } - SP 0/1 = slow pc mode bool
-            NOT_IMPLEMENTED(std::format("Slow PC mode is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 46:
-            // See pDMDAlwaysPAD — when enabled, treat leading/trailing whitespace in label captions
-            // as shadow-clearance padding rather than rendering it as advance-width glyphs.
-            // { "mt":301, "SN": XX, "FN":46, "PA":1 } - PA 0/1 = pad text bool
-            pScreen->m_padTextAlways = (json["PA"s].as<int>(0) != 0);
-            break;
-         case 50:
-            // pSetAspectRatio(PuPID, arWidth, arHeight) "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 50, ""WIDTH"": "&arWidth&", ""HEIGHT"": "&arHeight&" }"   
-            NOT_IMPLEMENTED(std::format("Set aspect ratio is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 51:
-            // set media play position in ms { "mt":301, "SN": XX, "FN":51, "SP": 3431} - SP position in ms
-            NOT_IMPLEMENTED(std::format("Set precise media position is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 52:
-            // pDMDSetTextQuality(AALevel)  '0 to 4 aa.  4 is sloooooower.  default 1,  perhaps use 2-3 if small desktop view.  only affect text quality.  can set per label too with 'qual' settings.
-            // "{ ""mt"":301, ""SN"": 5, ""FN"":52, ""SC"": "& AALevel &" }"    'slow pc mode
-            NOT_IMPLEMENTED(std::format("Font antialiasing level is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 53:
-            // Experimental frame rescale, FORCE higher frame size to autosize and rescale nicer,  like AA and auto-fit.
-            // "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 53, ""XW"": "&fWidth&", ""YH"": "&fHeight&", ""FR"":1 }"
-            NOT_IMPLEMENTED(std::format("Experimental frame rescale is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         case 55:
-            // Set media transition fade step, read from "FS" field.
-            // { "mt":301, "SN": XX, "FN":55, "FS":<0..255> }
-            //
-            // Exposed in the Matrix tables via two helpers:
-            //   Sub pTransitionFadeOff(PupID)  ' disable transition fade
-            //       PuPlayer.SendMSG "{...""FN"":55,""FS"":255}"
-            //   Sub pTransitionFadeON(PupID)   ' re-enable transition fade
-            //       PuPlayer.SendMSG "{...""FN"":55,""FS"":10}"
-            if (json["FS"s].exists())
-               pScreen->SetFadeStep(json["FS"s].as<int>());
-            break;
-         case 57:
-            // "Overlay Hide" (OH) toggle for a screen that has text/label overlays.
-            // PinUp Player 2.0+ only; older players ignore it.
-            // { "mt":301, "SN": XX, "FN":57, "OH":0/1 } - OH 1 = hide overlay, 0 = show
-            // We don't act on it yet, so sending it produces no visible change on screen.
-            // TODO implement overlay hide/show toggling the screen's overlay (HUD) visibility
-            LOGW(std::format("Overlay hide (OH) toggle not implemented, ignoring: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-         default:
-            NOT_IMPLEMENTED(std::format("Unknown function not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            break;
-   }
+   m_pupManager.CustomFunction(sn, szMsg);
 }
 
 void PUPPinDisplay::SendMSG(const string& szMsg)
 {
-   RSJresource json(szMsg);
-   if (json["mt"s].exists()) {
-      int mt = json["mt"s].as<int>();
-      switch(mt) {
-         case 301:
-            // SN 99 applies the function to every screen
-            if (json["SN"s].exists())
-               CustomFunction(json["SN"s].as<int>(), szMsg);
-            else
-               NOT_IMPLEMENTED(std::format("Not implemented: mt={}, szMsg={}", mt, szMsg));
-            break;
-         case 402:
-            // PuPSound { "mt":402, "SN":XX, "ns":"name.wav", "sX":0, "sY":0, "sZ":0, "vol":100, "sp":"" }
-            m_pupManager.PlaySound(json["ns"s].as_str(), json["sX"s].as<int>(0), json["sY"s].as<int>(0), json["sZ"s].as<int>(0), json["vol"s].as<int>(100), json["sp"s].as_str());
-            break;
-         case 400:
-         case 401:
-            // SoundAdd / SoundPlay: ignored by PinUP Player
-            break;
-         default:
-            NOT_IMPLEMENTED(std::format("Not implemented: mt={}, szMsg={}", mt, szMsg));
-            break;
-      }
-   }
-   else {
-      LOGE("No message type found: szMsg=" + szMsg);
-   }
-
-   return;
+   m_pupManager.SendMsg(szMsg);
 }
 
 /*

@@ -128,10 +128,8 @@ public:
    void QueueDOFEvent(char c, int id, int value);
    void RunLater(double seconds, std::function<void()> fn);
    void PlaySound(const string& name, int x, int y, int z, int vol, const string& special) { m_sounds.Play(name, x, y, z, vol, special); }
-   void SetMessageHandler(void* owner, std::function<void(int, const string&)> customFunction, std::function<void(const string&)> sendMsg);
-   void ClearMessageHandler(void* owner);
-   void CustomFunction(int screenNum, const string& szMsg) const { if (m_customFunction) m_customFunction(screenNum, szMsg); }
-   void SendMsg(const string& szMsg) const { if (m_sendMsg) m_sendMsg(szMsg); }
+   void CustomFunction(int screenNum, const string& szMsg);
+   void SendMsg(const string& szMsg);
 
    void DuckAllExcept(int percent, int masterScreenNum, bool all);
    void Unduck();
@@ -160,9 +158,6 @@ private:
    vector<std::shared_ptr<PUPScreen>> m_screenOrder;
    ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
    PUPSoundBank m_sounds { this };
-   void* m_messageHandlerOwner = nullptr;
-   std::function<void(int, const string&)> m_customFunction;
-   std::function<void(const string&)> m_sendMsg;
    vector<std::unique_ptr<PUPFont>> m_fonts;
    ankerl::unordered_dense::map<string, PUPFont*> m_fontMap;
    ankerl::unordered_dense::map<string, PUPFont*> m_fontFilenameMap;
