@@ -285,7 +285,9 @@ void PUPLabel::SetCaption(const string& szCaption)
       }
 
       const bool wasImage = (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF);
-      std::filesystem::path fs_path = PluginStrings::PathFromUTF8(normalize_path_separators(szText));
+      string szRelPath = normalize_path_separators(szText);
+      szRelPath.erase(0, szRelPath.find_first_not_of(PATH_SEPARATOR_CHAR));
+      std::filesystem::path fs_path = PluginStrings::PathFromUTF8(szRelPath);
       // The playlist is the first path component, the rest is the file path inside
       // the playlist folder (which may contain subfolders, e.g. playlist\player2\foo.png)
       const std::filesystem::path playlistFolder = *fs_path.begin();
