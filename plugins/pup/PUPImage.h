@@ -3,8 +3,7 @@
 #pragma once
 
 #include "common.h"
-#include <mutex>
-#include <atomic>
+#include <future>
 
 namespace PUP {
 
@@ -21,14 +20,14 @@ public:
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, float alpha = 1.f);
 
 private:
-   std::filesystem::path m_file;
-   std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_pSurface;
-   VPXTexture m_pTexture = nullptr;
+   using SurfacePtr = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>;
 
-   std::mutex m_loadMutex;
-   std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_pendingSurface;
-   bool m_pendingReady = false;
-   std::atomic<bool> m_loading { false };
+   std::filesystem::path m_file;
+   SurfacePtr m_pSurface;
+   VPXTexture m_pTexture = nullptr;
+   std::future<SurfacePtr> m_pendingSurface;
+   vector<std::future<SurfacePtr>> m_abandonedLoads;
+   void AbandonPendingLoad();
 };
 
 }

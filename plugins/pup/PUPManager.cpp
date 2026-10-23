@@ -24,22 +24,16 @@ MSGPI_INT_VAL_SETTING(pupBGPadLeft, "BGPadLeft", "Backglass Left Pad", "Left Pad
 MSGPI_INT_VAL_SETTING(pupBGPadRight, "BGPadRight", "Backglass Right Pad", "Right Padding of backglass", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupBGPadTop, "BGPadTop", "Backglass Top Pad", "Top Padding of backglass", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupBGPadBottom, "BGPadBottom", "Backglass Bottom Pad", "Bottom Padding of backglass", true, 0, 4096, 0);
-MSGPI_FILE_VAL_SETTING(pupBGFrameOverlayPath, "BGFrameOverlay", "Backglass Frame Overlay", "Path to an image that will be rendered as an overlay on the backglass display", true, "",
-   "bmp;jpg;jpeg;png;tga;webp;exr;hdr", 1024);
 
 MSGPI_INT_VAL_SETTING(pupSVPadLeft, "SVPadLeft", "Score View Left Pad", "Left Padding of Score View", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupSVPadRight, "SVPadRight", "Score View Right Pad", "Right Padding of Score View", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupSVPadTop, "SVPadTop", "Score View Top Pad", "Top Padding of Score View", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupSVPadBottom, "SVPadBottom", "Score View Bottom Pad", "Bottom Padding of Score View", true, 0, 4096, 0);
-MSGPI_FILE_VAL_SETTING(pupSVFrameOverlayPath, "SVFrameOverlay", "Score View Frame Overlay", "Path to an image that will be rendered as an overlay on the Score View display", true, "",
-   "bmp;jpg;jpeg;png;tga;webp;exr;hdr", 1024);
 
 MSGPI_INT_VAL_SETTING(pupTopperPadLeft, "TopperPadLeft", "Topper Left Pad", "Left Padding of topper", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupTopperPadRight, "TopperPadRight", "Topper Right Pad", "Right Padding of topper", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupTopperPadTop, "TopperPadTop", "Topper Top Pad", "Top Padding of topper", true, 0, 4096, 0);
 MSGPI_INT_VAL_SETTING(pupTopperPadBottom, "TopperPadBottom", "Topper Bottom Pad", "Bottom Padding of topper", true, 0, 4096, 0);
-MSGPI_FILE_VAL_SETTING(pupTopperFrameOverlayPath, "TopperFrameOverlay", "Topper Frame Overlay", "Path to an image that will be rendered as an overlay on the topper display", true, "",
-   "bmp;jpg;jpeg;png;tga;webp;exr;hdr", 1024);
 
 PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const PagedUIPluginAPI* pagedUIApi, const std::filesystem::path& rootPath)
    : m_szRootPath(rootPath)
@@ -60,17 +54,14 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const Pa
    msgApi->RegisterSetting(endpointId, &pupBGPadRight);
    msgApi->RegisterSetting(endpointId, &pupBGPadTop);
    msgApi->RegisterSetting(endpointId, &pupBGPadBottom);
-   //msgApi->RegisterSetting(endpointId, &pupBGFrameOverlayPath);
    msgApi->RegisterSetting(endpointId, &pupSVPadLeft);
    msgApi->RegisterSetting(endpointId, &pupSVPadRight);
    msgApi->RegisterSetting(endpointId, &pupSVPadTop);
    msgApi->RegisterSetting(endpointId, &pupSVPadBottom);
-   //msgApi->RegisterSetting(endpointId, &pupSVFrameOverlayPath);
    msgApi->RegisterSetting(endpointId, &pupTopperPadLeft);
    msgApi->RegisterSetting(endpointId, &pupTopperPadRight);
    msgApi->RegisterSetting(endpointId, &pupTopperPadTop);
    msgApi->RegisterSetting(endpointId, &pupTopperPadBottom);
-   //msgApi->RegisterSetting(endpointId, &pupTopperFrameOverlayPath);
 
    m_msgApi->SubscribeMsg(m_endpointId, m_getAudioSrcId, OnGetAudioSrc, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAudioSrcChangedId, nullptr);
@@ -1378,9 +1369,6 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       for (const auto& [key, screen] : me->m_screenMap)
          screen->SetMainVolume(volume);
    }
-   for (const auto& [key, screen] : me->m_screenMap)
-      screen->UpdateVolumeFade();
-
    // A usable root must exist, must be a canvas rather than a positioned element (a childless
    // screen positioned on another screen; a screen whose custom position references itself has
    // no parent and stays a canvas), and its screen tree must contain something that can render.

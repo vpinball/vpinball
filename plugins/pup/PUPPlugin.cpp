@@ -1,14 +1,12 @@
 // license:GPLv3+
 
 #include "common.h"
-#include <future>
 
 #include "plugins/MsgPlugin.h"
 #include "plugins/ControllerPlugin.h"
 #include "plugins/PagedUIPlugin.h"
 
 #include "PUPManager.h"
-#include "PUPScreen.h"
 #include "PUPPinDisplay.h"
 
 #include "LibAv.h"
@@ -100,7 +98,6 @@ PSC_CLASS_START(PUP_PinDisplay, PUPPinDisplay)
    PSC_FUNCTION1(void, Hide, int)
    PSC_FUNCTION2(void, B2SInit, string, string)
    PSC_FUNCTION1(void, SendMSG, string)
-   PSC_FUNCTION1(void, Show, int)
    PSC_FUNCTION12(void, LabelNew, int, string, string, int, int, int, int, int, int, int, int, bool)
    PSC_FUNCTION5(void, LabelSet, int, string, string, bool, string)
    PSC_FUNCTION0(void, LabelSetEx)
