@@ -774,11 +774,7 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
       break;
    }
 
-   pScreen->Play(playlist, PluginStrings::PathFromUTF8(playfilename), static_cast<float>(volume), priority, action);
-   if (action == PlayAction::Loop)
-      pScreen->SetLoop(1);
-   else if (Seconds > 0)
-      pScreen->SetLength(Seconds);
+   pScreen->Play(playlist, PluginStrings::PathFromUTF8(playfilename), static_cast<float>(volume), priority, action, Seconds);
 }
 
 void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int mode, const string& Special)

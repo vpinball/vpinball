@@ -371,19 +371,6 @@ void PUPMediaPlayer::SetVolume(float volume)
    });
 }
 
-void PUPMediaPlayer::SetLength(int length)
-{
-   m_commandQueue.enqueue([this, length]()
-   {
-      std::lock_guard lock(m_mutex);
-      if (m_length != length)
-      {
-         LOGD("Setting length: length=" + std::to_string(length));
-         m_length = length;
-      }
-   });
-}
-
 void PUPMediaPlayer::RenderHold(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha)
 {
    if (m_holdTexture == nullptr)
@@ -551,8 +538,6 @@ void PUPMediaPlayer::Run()
             SDL_Delay(100);
             continue;
          }
-         if (m_length != 0 && GetPlayTime() >= m_length)
-            break;
          loop = m_loop;
       }
 

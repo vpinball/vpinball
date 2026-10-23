@@ -509,7 +509,7 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
 
 void PUPScreen::SetGameTime(double gameTime) { m_pMediaPlayerManager->SetGameTime(gameTime); }
 
-void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action)
+void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    PUPPlaylist* const pPlaylist = GetPlaylist(szPlaylist);
@@ -518,7 +518,7 @@ void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPl
       LOGE(std::format("Playlist not found: screen={{{}}}, playlist={}", ToString(false), szPlaylist));
       return;
    }
-   Play(pPlaylist, szPlayFile, volume, priority, action, 0);
+   Play(pPlaylist, szPlayFile, volume, priority, action, length);
 }
 
 void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
@@ -653,12 +653,12 @@ void PUPScreen::SetLoop(int state)
    m_pMediaPlayerManager->SetLoop(state != 0);
 }
 
-void PUPScreen::SetLength(int length)
+void PUPScreen::SetLength(int seconds)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   m_pMediaPlayerManager->SetMaxLength(length);
-   if (length > 0 && !m_staticImage.GetFile().empty())
-      m_imageExpiry = SDL_GetTicks() + static_cast<uint64_t>(length) * 1000;
+   m_pMediaPlayerManager->SetLengthFromNow(seconds);
+   if (seconds > 0 && !m_staticImage.GetFile().empty())
+      m_imageExpiry = SDL_GetTicks() + static_cast<uint64_t>(seconds) * 1000;
 }
 
 void PUPScreen::SetAsBackGround(int mode)
