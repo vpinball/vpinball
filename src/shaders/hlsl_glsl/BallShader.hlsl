@@ -48,8 +48,8 @@ sampler2D tex_ball_playfield : TEXUNIT4 = sampler_state // playfield
     MIPFILTER = LINEAR; //!! ?
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-    ADDRESSU  = Wrap;
-    ADDRESSV  = Wrap;
+    ADDRESSU  = Clamp; // screen space probe (previous frame)
+    ADDRESSV  = Clamp;
     SRGBTexture = true;
 };
 

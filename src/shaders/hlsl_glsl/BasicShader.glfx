@@ -509,7 +509,7 @@ void main()
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-      color.rgb = lerp(compute_refraction(worldPos.xyz, gl_FragCoord.xy * w_h_height.xy, N, V, eye), color.rgb, cBase_Alpha.a);
+      color.rgb = lerp(compute_refraction(worldPos.xyz, gl_FragCoord.xy * w_h_height.xy, N, V, eye), color.rgb, color.a);
       color.a = 1.0;
    }
 
@@ -540,7 +540,7 @@ void main()
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos);
    float3 N = normalize(normal);
    BRANCH if (doNormalMapping)
-      N = normal_map(N, V, tex01, eye);
+      N = normal_map(N, -V, tex01, eye);
 
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal, eye), pixel.a);
 
@@ -604,7 +604,7 @@ void main() {
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos);
    float3 N = normalize(normal);
    BRANCH if (doNormalMapping)
-      N = normal_map(N, V, tex01, eye);
+      N = normal_map(N, -V, tex01, eye);
 
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal, eye), pixel.a);
 

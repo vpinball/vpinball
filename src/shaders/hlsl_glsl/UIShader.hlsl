@@ -11,7 +11,7 @@ texture Texture0; // base texture
 sampler2D tex_base_color : TEXUNIT0 = sampler_state // base texture
 {
     Texture	  = (Texture0);
-    SRGBTexture = true;
+    SRGBTexture = false; // ImGui works in sRGB: sample raw values (GL/BGFX re-encode instead, as decoding is part of their texture format)
 };
 
 struct VS_OUTPUT_2D

@@ -30,6 +30,9 @@ flat in int glLayer_gs;
 
 uniform float4 clip_plane;
 
+uniform float4 staticColor_Alpha;
+#define isSRGBTexture (staticColor_Alpha.y != 0.0) // Sampling decodes sRGB to linear (table images)
+
 ////vs_liveui_main
 void main()
 {
@@ -46,7 +49,11 @@ void main()
 {
    if (clipPos.x < clip_plane.x || clipPos.y < clip_plane.y || clipPos.x > clip_plane.z || clipPos.y > clip_plane.w)
       discard;
-   color = texture(tex_base_color, tex0) * color0;
+   color = texture(tex_base_color, tex0);
+   // ImGui works in sRGB: re-encode what the sampler decoded
+   BRANCH if (isSRGBTexture)
+      color.rgb = FBGamma(color.rgb);
+   color *= color0;
 }
 
 

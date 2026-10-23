@@ -351,7 +351,7 @@ float4 ps_main(const in VS_NOTEX_OUTPUT IN, float2 screenSpace : VPOS, uniform b
    BRANCH if (doRefractions)
    {
       // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-      color.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace * w_h_height.xy, N, V), color.rgb, cBase_Alpha.a);
+      color.rgb = lerp(compute_refraction(IN.worldPos.xyz, screenSpace * w_h_height.xy, N, V), color.rgb, color.a);
       color.a = 1.0;
    }
 

@@ -241,8 +241,8 @@ void main()
    // OpenGL texture coordinates are centered on texel center (0,0 is first texel center) so no offset. Rendering is bottom up with regards to DirectX though
    VS_EYE;
    VS_POSITION(float4(vPosition.x, -vPosition.y, 0.0, 1.0), float4(vPosition.x, -vPosition.y, 0.0, 1.0));
-   // Here we apply an offset to sample in between the samples for filtering
-   VS_VARYING(tex0, tc + 0.5 * w_h_height.xy);
+   // Sample at the output pixel center like BGFX: for a 200% supersampled source, this is in between 2x2 texels, averaged by bilinear filtering
+   VS_VARYING(tex0, tc);
 }
 
 
