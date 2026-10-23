@@ -229,6 +229,7 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          }
          m_lastDecodedPts = 0.0;
          m_lastRenderTicks = 0;
+         m_playTicks = SDL_GetTicks();
          m_running = true;
          m_thread = std::thread(&PUPMediaPlayer::Run, this);
       }
@@ -821,11 +822,14 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       selectedFrame.valid = true;
       m_lastDecodedPts = selectedFrame.pts;
       // If playback ran ahead of decoding, resync the clock to the freshest frame instead of
-      // fast-forwarding through the deficit. Only when rendering is current (or never happened,
-      // which throttles decoding for screens that are not displayed) - render stalls are
-      // compensated at render resume so correcting them here too would double count
+      // fast-forwarding through the deficit. Only when rendering is current, or during the first
+      // second before the first render (start delayed by a load stall); a screen that is never
+      // displayed plays on its own clock. Render stalls are compensated at render resume so
+      // correcting them here too would double count
+      if (m_firstRenderPending && SDL_GetTicks() - m_playTicks > 1000)
+         m_firstRenderPending = false;
       const double deficit = GetPlayTime() - selectedFrame.pts;
-      if (deficit > 0.25 && (m_lastRenderTicks == 0 || SDL_GetTicks() - m_lastRenderTicks < 250))
+      if (deficit > 0.25 && (m_lastRenderTicks == 0 ? m_firstRenderPending : SDL_GetTicks() - m_lastRenderTicks < 250))
          m_startTimestamp += deficit;
    }
 }

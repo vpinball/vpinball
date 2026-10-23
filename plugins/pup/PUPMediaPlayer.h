@@ -92,6 +92,7 @@ private:
    std::atomic<uint64_t> m_endTicks = 0;
    SwsContext* m_swsContext = nullptr;
    uint64_t m_lastRenderTicks = 0;
+   uint64_t m_playTicks = 0;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
    std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_scaledMask;
