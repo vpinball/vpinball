@@ -70,11 +70,14 @@ PUPScreen::~PUPScreen()
 
 std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const string& line, const std::vector<PUPPlaylist*>& playlists)
 {
+   if (trim_string(line).empty())
+      return nullptr;
    vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 8) {
-      LOGE(std::format("Failed to parse screen line, expected 8 columns but got {}: {}", parts.size(), line));
+   if (parts.size() < 6) {
+      LOGE(std::format("Failed to parse screen line, expected at least 6 columns but got {}: {}", parts.size(), line));
       return nullptr;
    }
+   parts.resize(std::max<size_t>(parts.size(), 8));
 
    PUPScreen::Mode mode;
    if (StrCompareNoCase(parts[5], "Show"s))
