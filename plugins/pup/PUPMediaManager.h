@@ -54,6 +54,7 @@ private:
       int priority = 0;
       uint64_t endTicks = 0;
       bool loop = false;
+      double resumeAt = 0.0;
    };
 
    // Playback queue. front() is currently playing; the rest are pending.
@@ -68,6 +69,7 @@ private:
    };
    BackgroundConfig m_bg;
    uint64_t m_bgEndTicks = 0;
+   double m_bgResumeAt = 0.0;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
 
