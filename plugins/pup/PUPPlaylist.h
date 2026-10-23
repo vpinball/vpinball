@@ -32,6 +32,7 @@ public:
    PUPPlaylist::Function GetFunction() const { return m_function; }
    std::filesystem::path GetPlayFile(const std::filesystem::path& szFilename);
    const std::filesystem::path& GetNextPlayFile();
+   const std::filesystem::path& PeekNextPlayFile() const;
    std::filesystem::path GetPlayFilePath(const std::filesystem::path& szFilename);
    bool IsResting() const;
    void MarkPlayed();

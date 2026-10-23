@@ -147,6 +147,11 @@ const std::filesystem::path& PUPPlaylist::GetNextPlayFile()
    return file;
 }
 
+const std::filesystem::path& PUPPlaylist::PeekNextPlayFile() const
+{
+   return m_files.empty() ? emptyPath : m_files[m_lastIndex];
+}
+
 std::filesystem::path PUPPlaylist::GetPlayFilePath(const std::filesystem::path& szFilename)
 {
    if (!szFilename.empty()) {

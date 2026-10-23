@@ -533,18 +533,24 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
    {
       // PNGs/JPGs bypass FFmpeg — loaded as static image on the video layer.
       // Persists until replaced by a new image or video play.
-      const string ext = extension_from_path(PluginStrings::PathToUTF8(szPlayFile));
+      const string ext = extension_from_path(PluginStrings::PathToUTF8(szPlayFile.empty() ? pPlaylist->PeekNextPlayFile() : szPlayFile));
       if (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp")
       {
+         const std::filesystem::path imagePath = pPlaylist->GetPlayFilePath(szPlayFile);
+         if (imagePath.empty())
+         {
+            LOGE(std::format("PlayFile not found: screen={{{}}}, playlist={{{}}}, playFile={}", ToString(false), pPlaylist->ToString(), PluginStrings::PathToUTF8(szPlayFile)));
+            break;
+         }
          if (background)
          {
-            m_background.Load(pPlaylist->GetPlayFilePath(szPlayFile));
+            m_background.Load(imagePath);
             m_pMediaPlayerManager->StopBackground();
          }
          else
          {
             Stop();
-            m_staticImage.Load(pPlaylist->GetPlayFilePath(szPlayFile));
+            m_staticImage.Load(imagePath);
             m_imageExpiry = (length > 0) ? (SDL_GetTicks() + static_cast<uint64_t>(length) * 1000) : 0;
          }
          break;
@@ -577,9 +583,11 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
       case Mode::Show:
          break;
       }
-      m_staticImage.Clear();
       if (const int vol = ResolveVolume(volume, pPlaylist); m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, EffectiveVolume(vol), priority, action, length))
+      {
+         m_staticImage.Clear();
          m_currentVolume = vol;
+      }
       break;
    }
 
@@ -620,7 +628,6 @@ void PUPScreen::Stop()
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_pMediaPlayerManager->Stop();
-   m_imageExpiry = 0;
 }
 
 void PUPScreen::Stop(int priority)
