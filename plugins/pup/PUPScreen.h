@@ -116,6 +116,7 @@ public:
    void SetMask(const std::filesystem::path& path);
 
    void SetGameTime(double gameTime);
+   void Update(double gameTime);
 
    void Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action = PlayAction::Normal, int length = 0);
    void Play(PUPPlaylist* playlist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length);

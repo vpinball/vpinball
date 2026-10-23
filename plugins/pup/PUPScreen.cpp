@@ -509,6 +509,14 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
 
 void PUPScreen::SetGameTime(double gameTime) { m_pMediaPlayerManager->SetGameTime(gameTime); }
 
+void PUPScreen::Update(double gameTime)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   UpdateTimers();
+   UpdateVolumeFade();
+   m_pMediaPlayerManager->SetGameTime(gameTime);
+}
+
 void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
 {
    assert(std::this_thread::get_id() == m_apiThread);

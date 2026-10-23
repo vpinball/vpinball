@@ -146,6 +146,7 @@ private:
    int RenderDisplays(VPXRenderContext2D* ctx, int target);
 
    void Start();
+   void Tick();
    void Stop();
 
    float m_mainVolume = 1.f;
@@ -198,6 +199,7 @@ private:
    std::mutex m_eventMutex;
    std::unique_ptr<B2SPluginEventStream> m_B2SPluginEventStream;
    std::shared_ptr<int> m_runToken = std::make_shared<int>(0);
+   bool m_ticking = false;
 };
 
 }
