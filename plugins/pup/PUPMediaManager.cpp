@@ -184,33 +184,23 @@ void PUPMediaManager::Resume()
    m_player.Pause(false);
 }
 
-// See pDMDBackLoopStart - mode=1 saves current file as background config and loops it.
-// mode=0 clears only if set via SetBackGround (not trigger SetBG). Popup screens are excluded.
 void PUPMediaManager::SetAsBackGround(bool isBackground)
 {
-   if (isBackground) {
-      if (m_pScreen->IsPop())
-         return;
-      if (!m_queue.empty())
-      {
-         const PlayItem& head = m_queue.front();
-         m_bg.szPath = head.szPath;
-         m_bg.volume = head.volume;
-         m_bg.active = true;
-         m_bg.setViaSetBackGround = true;
-         m_player.SetLoop(true);
-         m_queue.clear();
-      }
+   if (isBackground && !m_queue.empty())
+   {
+      m_bg.szPath = m_queue.front().szPath;
+      m_bg.volume = m_queue.front().volume;
+      m_bg.active = true;
    }
-   else {
-      if (m_bg.setViaSetBackGround)
-      {
-         m_bg.szPath.clear();
-         m_bg.active = false;
-         m_bg.setViaSetBackGround = false;
-         if (m_queue.empty())
-            m_player.Stop();
-      }
+   else if (!isBackground)
+   {
+      m_bg.szPath.clear();
+      m_bg.active = false;
+   }
+   if (m_pScreen->IsPop() || m_pScreen->GetMode() == PUPScreen::Mode::MusicOnly)
+   {
+      m_bg.szPath.clear();
+      m_bg.active = false;
    }
 }
 
