@@ -81,8 +81,10 @@ PUPPlaylist::~PUPPlaylist()
 
 PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 {
+   if (trim_string(line).empty())
+      return nullptr;
    vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 7) {
+   if (parts.size() < 7) {
       LOGE("Invalid playlist: " + line);
       return nullptr;
    }

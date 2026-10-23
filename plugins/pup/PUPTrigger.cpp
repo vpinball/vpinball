@@ -172,11 +172,16 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
 
 PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
 {
+   if (trim_string(line).empty())
+      return nullptr;
    vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 14) {
-      LOGD("Invalid trigger: " + line);
+   if (parts.size() < 13) {
+      if (parts.size() > 4 && string_to_int(parts[4], -1) != pScreen->GetScreenNum())
+         return nullptr;
+      LOGE(std::format("Failed to parse trigger line, expected at least 13 columns but got {}: {}", parts.size(), line));
       return nullptr;
    }
+   parts.resize(std::max<size_t>(parts.size(), 14));
 
    const string& triggerPlaylist = parts[5];
    const string& triggerPlayAction = parts[12];
