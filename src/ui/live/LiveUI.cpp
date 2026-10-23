@@ -483,6 +483,7 @@ void LiveUI::RenderUI()
    if (m_rd->m_nEyes == 2)
       matView[1] = matView[0];  
    m_rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &matView[0], m_rd->m_nEyes);
+   #if defined(ENABLE_BGFX) // Only the BGFX UI shader has this uniform (stereo offset, HDR white level)
    #ifdef ENABLE_XR
    const bool onXrUILayer = m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt == m_player->m_vrDevice->GetUIRenderTarget();
    #else
@@ -495,6 +496,7 @@ void LiveUI::RenderUI()
       0.f, // Unused
       // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 = no conversion (sRGB backbuffer)
       (!onXrUILayer && m_player->m_playfieldWnd->IsWCGBackBuffer()) ? (m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.)) : 0.f);
+   #endif
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
    m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);

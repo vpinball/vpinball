@@ -88,15 +88,17 @@ string Controller::GetVersion() const
 
 Game* Controller::GetGames(const string& name) const
 {
+   // Game names are case insensitive (PinMAME looks them up ignoring case), so are their settings
+   const string key = string_to_lower(name);
    GameSettings* settings;
-   if (const auto it = m_gameSettings.find(name); it != m_gameSettings.end())
+   if (const auto it = m_gameSettings.find(key); it != m_gameSettings.end())
       settings = it->second;
    else
    {
       // shared settings instance so values written through one Game object
       // are seen by later Games(name) accesses
       settings = new GameSettings();
-      m_gameSettings[name] = settings;
+      m_gameSettings[key] = settings;
    }
    struct GameCBData
    {

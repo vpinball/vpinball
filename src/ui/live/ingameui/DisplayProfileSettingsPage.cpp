@@ -294,6 +294,9 @@ void DisplayProfileSettingsPage::Render(float elapsed)
    }
    else
    {
+      #if !defined(ENABLE_BGFX)
+      return; // Segment displays are only implemented by the BGFX shaders
+      #endif
       height = GetWindowSize().x / 4.f;
       width = height * 96.f / 128.f;
       posx = GetWindowPos().x + (GetWindowSize().x - width) / 2.f;
