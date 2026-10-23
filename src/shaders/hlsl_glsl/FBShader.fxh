@@ -32,23 +32,17 @@ const float2 spline2;
 
 float ReinhardToneMap(float l)
 {
-    l *= exposure;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
 float2 ReinhardToneMap(float2 color)
 {
-    color *= exposure;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 float3 ReinhardToneMap(float3 color)
 {
-    color *= exposure;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, float3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
@@ -111,8 +105,6 @@ float3 ACESFitted(float3 color)
 // Warning: The returned value is already gamma corrected
 float3 FilmicToneMap(float3 color)
 {
-    color *= exposure;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, float3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -152,8 +144,6 @@ float3 PBRNeutralToneMapping(float3 color)
 {
     const float startCompression = 0.8 - 0.04;
     const float desaturation = 0.15;
-
-    color *= exposure;
 
     float x = min(color.x, min(color.y, color.z));
     float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
@@ -225,8 +215,6 @@ float3 AgXToneMapping(float3 color)
         MAT_ROW3_BEGIN -0.855988495690215,  1.32639796461980, -0.238183969428088 MAT_ROW_END,
         MAT_ROW3_BEGIN -0.108898916004672, -0.0270845997150571,  1.40253671195648 MAT_ROW_END
     MAT_END;
-
-    color *= exposure;
 
     // Clamping to non-negative values is required as negative values would result in
     // darker and more saturated colors after applying the inset matrix, and the

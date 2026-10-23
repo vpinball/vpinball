@@ -14,8 +14,7 @@ layout(std140) uniform basicMatrixBlock {
 	mat4 matWorld;
 	mat4 matView[N_EYES];
 	mat4 matWorldView[N_EYES];
-	mat3x4 matWorldViewInverseTranspose[N_EYES];
-	vec4 unusedFillerFormatWorldViewInverseTranspose[N_EYES];
+	mat4 matWorldViewInverseTranspose[N_EYES]; // mat4 to match the 64 bytes per eye uploaded by C++ (a std140 mat3x4 array has a 48 byte stride)
 	mat4 matWorldViewProj[N_EYES];
 };
 
@@ -120,7 +119,7 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv, const float e
    const float3 tn = texture(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
    BRANCH if (objectSpaceNormalMap)
    { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize((matWorldViewInverseTranspose[int(eye)] * float3(tn.x, tn.y, -tn.z)).xyz);
+      return normalize((matWorldViewInverseTranspose[int(eye)] * float4(tn.x, tn.y, -tn.z, 0.0)).xyz);
    }
    else
    { // Tangent space
@@ -204,7 +203,7 @@ void main()
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs]*vNormal).xyz));
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs] * vec4(vNormal, 0.0)).xyz));
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
@@ -228,7 +227,7 @@ void main()
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs]*vNormal).xyz));
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs] * vec4(vNormal, 0.0)).xyz));
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
@@ -505,11 +504,7 @@ void main()
    }
 
    BRANCH if (doReflections)
-#ifndef SHADER_GLES30
       color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
-#else
-      color.rgb += compute_reflection(gl_FragCoord.xy * 0.5 + vec2(0.5), N, eye);
-#endif
 
    BRANCH if (doRefractions)
    {
@@ -631,11 +626,7 @@ void main() {
    }
 
    BRANCH if (doReflections)
-#ifndef SHADER_GLES30
       color.rgb += compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
-#else
-      color.rgb += compute_reflection(gl_FragCoord.xy * 0.5 + vec2(0.5), N, eye);
-#endif
 
    BRANCH if (doRefractions)
    {
@@ -659,11 +650,7 @@ void main()
 {
    FS_LAYER_TO_GLOBAL;
    const float3 N = normalize(normal);
-#ifndef SHADER_GLES30
    color.rgb = compute_reflection(gl_FragCoord.xy * w_h_height.xy, N, eye);
-#else
-   color.rgb = compute_reflection(gl_FragCoord.xy * 0.5 + vec2(0.5), N, eye);
-#endif
    color.a = 1.0;
    color *= staticColor_Alpha;
 }
@@ -769,7 +756,7 @@ void main()
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs]*vNormal).xyz));
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs] * vec4(vNormal, 0.0)).xyz));
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 

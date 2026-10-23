@@ -339,6 +339,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
@@ -352,6 +353,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(FilmicToneMap(result), tex0));
@@ -368,6 +370,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = PBRNeutralToneMapping(result);
@@ -382,6 +385,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(AgXToneMapping(result), tex0));
@@ -403,6 +407,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
@@ -419,6 +424,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(FilmicToneMap(result), tex0));
@@ -438,6 +444,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = PBRNeutralToneMapping(result);
@@ -455,6 +462,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(AgXToneMapping(result), tex0));
@@ -473,6 +481,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
@@ -486,6 +495,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(FilmicToneMap(result), tex0));
@@ -502,6 +512,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = PBRNeutralToneMapping(result);
@@ -516,6 +527,7 @@ void main()
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(AgXToneMapping(result), tex0));
@@ -536,6 +548,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = ReinhardToneMap(result);
@@ -551,6 +564,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(FilmicToneMap(result), tex0));
@@ -569,6 +583,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = PBRNeutralToneMapping(result);
@@ -585,6 +600,7 @@ void main()
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
+   result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
       result = saturate(FBDither(AgXToneMapping(result), tex0));
@@ -651,7 +667,7 @@ void main()
    FS_LAYER_TO_GLOBAL;
    const float offset9x9[3] = float[]( 0.0, 1.3846153846153846, 3.2307692307692304 );
    const float weight9x9[3] = float[]( 0.22697126013264554, 0.31613854089904203, 0.070253009088676 );
-   float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).xyz*weight9x9[0];
+   float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz*weight9x9[0];
    UNROLL for(int i = 1; i < 3; ++i)
       result += (texStereoNoLod(tex_fb_filtered, tex0+float2(0.0,w_h_height.y*offset9x9[i])).xyz
                 +texStereoNoLod(tex_fb_filtered, tex0-float2(0.0,w_h_height.y*offset9x9[i])).xyz)*weight9x9[i];

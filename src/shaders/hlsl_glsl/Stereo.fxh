@@ -89,7 +89,8 @@ void DynamicDesatAnaglyph(const float3 lCol, const float3 rCol, out float3 lDesa
 // lCol/rCol are expected to be in linear color space
 float3 LinearAnaglyph(const float3 lCol, const float3 rCol)
 {
-    const float3 color = (mul(float4(lCol, 1.), Stereo_LeftMat) + mul(float4(rCol, 1.), Stereo_RightMat)).rgb;
+    // One matrix row per output channel (see Anaglyph.cpp), so apply as M.v like the BGFX shader
+    const float3 color = (mul(Stereo_LeftMat, float4(lCol, 1.)) + mul(Stereo_RightMat, float4(rCol, 1.))).rgb;
     // Uncomment to vizualize parts that should exhibit ghosting (clamping always result in ghosting)
     //if (color.r < 0.0 || color.g < 0.0 || color.b < 0.0 || color.r > 1.0 || color.g > 1.0 || color.b > 1.0)
     //    color = vec3(0.0);
@@ -105,5 +106,5 @@ UNIFORM float4x4 Stereo_DeghostFilter; // Cross eye deghosting filter (depending
 float3 DeghostAnaglyph(const float3 lCol, const float3 rCol)
 {
     const float3 color = LinearAnaglyph(lCol, rCol);
-    return mul(pow(color, Stereo_DeghostGamma.rgb), to_float3x3(Stereo_DeghostFilter));
+    return mul(to_float3x3(Stereo_DeghostFilter), pow(color, Stereo_DeghostGamma.rgb));
 }

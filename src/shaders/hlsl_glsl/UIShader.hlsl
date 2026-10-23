@@ -4,10 +4,7 @@
 
 uniform float4x4 matWorldView : WORLDVIEWPROJ;
 
-uniform float4 staticColor_Alpha;
 uniform float4 clip_plane;
-#define stereoOfs staticColor_Alpha.x
-#define sdrScale staticColor_Alpha.a
 
 texture Texture0; // base texture
 
@@ -32,7 +29,7 @@ VS_OUTPUT_2D vs_liveui_main (const in float4 vPosition : POSITION0,
    VS_OUTPUT_2D Out;
    Out.clipPos = vPosition.xy;
    Out.pos = mul(float4(vPosition.x, vPosition.y, 0.0, 1.0), matWorldView);
-   Out.color = sdrScale * float4(vNormal.rgb, vPosition.z);
+   Out.color = float4(vNormal.rgb, vPosition.z); // No WCG (HDR) backbuffer on DX9, so no SDR white level conversion (see fs_imgui.sc)
    Out.tex0 = tc;
    return Out;
 }

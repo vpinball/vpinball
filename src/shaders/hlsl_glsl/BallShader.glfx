@@ -171,7 +171,7 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, eye); // no clearcoat needed as only pointlights so far
 
    BRANCH if(!is_metal && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize((matView[int(eye)] * vec4(N,0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
+      color += DoEnvmapDiffuse(normalize((vec4(N,0.0) * matView[int(eye)]).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?

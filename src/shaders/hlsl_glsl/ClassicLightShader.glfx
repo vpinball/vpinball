@@ -94,8 +94,8 @@ flat in float eye;
 void main()
 {
     FS_LAYER_TO_GLOBAL;
-    // FIXME check tex_light_color declaration
-    float4 pixel = texNoLod(tex_light_color, tex0); //!! IN.tex0 abused in backglass mode
+    // Mipmapped like the other material textures (the static prepass uses a sampler without mipmaps)
+    float4 pixel = texture(tex_light_color, tex0); //!! IN.tex0 abused in backglass mode
 
     // no lighting if HUD vertices or passthrough mode
     BRANCH if (lightingOff)
