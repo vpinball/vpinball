@@ -62,6 +62,7 @@ struct Tables
    {
       for (int i = 0; i < 256; i++)
          srgbToLinear[i] = sRGBToLinearF(static_cast<float>(i) * (float)(1. / 255.));
+      srgbToLinear[255] = 1.f; // the EOTF may land an ulp off at c = 1 depending on float codegen, keep the ends exact
 
       float *const __restrict bt = byteThresholdPad + 1;
       float *const __restrict pt = percentThresholdPad + 1;
