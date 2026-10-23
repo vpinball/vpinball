@@ -65,7 +65,6 @@ private:
       std::filesystem::path szPath;
       float volume = 1.0f;
       bool active = false;
-      bool setViaSetBackGround = false;
    };
    BackgroundConfig m_bg;
    uint64_t m_bgEndTicks = 0;
