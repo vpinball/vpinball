@@ -255,7 +255,7 @@ void PUPScreen::Unduck()
       ApplyVolume(orig);
 }
 
-void PUPScreen::OnMainMediaEnd()
+void PUPScreen::OnMediaEnd()
 {
    assert(std::this_thread::get_id() == m_apiThread);
    if (m_hideDuringPlay)

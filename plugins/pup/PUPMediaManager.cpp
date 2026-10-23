@@ -23,6 +23,15 @@ void PUPMediaManager::SetGameTime(double gameTime)
    CheckEndTime();
    if (!m_queue.empty() && !m_player.IsPlaying())
       OnPlayerEnd();
+   else if (const unsigned int loopCount = m_player.GetLoopCount(); loopCount != m_loopCount)
+   {
+      m_loopCount = loopCount;
+      if (m_player.IsPlaying())
+      {
+         m_pScreen->OnMediaEnd();
+         ApplyDuckPrefix(m_queue.empty() ? m_bg.szPath : m_queue.front().szPath);
+      }
+   }
 }
 
 void PUPMediaManager::CheckEndTime()
@@ -142,6 +151,7 @@ void PUPMediaManager::StartCurrent()
    LOGD(std::format("MAIN PLAY: screen={}, vol={:.0f}, pri={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, PluginStrings::PathToUTF8(head.szPath.filename())));
    m_player.Play(head.szPath, head.volume);
    m_player.SetLoop(head.loop);
+   m_loopCount = m_player.GetLoopCount();
    m_currentAlpha = (m_fadeStep < 255) ? m_fadeStep : 255;
    ApplyDuckPrefix(head.szPath);
 }
@@ -170,6 +180,7 @@ void PUPMediaManager::PlayBackground()
       m_bgEndTicks = 0;
       m_player.Play(m_bg.szPath, m_bg.volume);
       m_player.SetLoop(true);
+      m_loopCount = m_player.GetLoopCount();
       ApplyDuckPrefix(m_bg.szPath);
    }
 }
@@ -230,7 +241,10 @@ void PUPMediaManager::Stop()
 {
    LOGD(std::format("STOP: screen={}, queueDepth={}, bgActive={}", m_pScreen->GetScreenNum(), m_queue.size(), m_bg.active));
    const bool mainPlaying = !m_queue.empty();
+   const bool anyPlaying = mainPlaying || m_player.IsPlaying();
    m_queue.clear();
+   if (anyPlaying)
+      m_pScreen->OnMediaEnd();
    if (m_bg.active && !m_bg.szPath.empty() && m_pScreen->GetMode() != PUPScreen::Mode::Off)
    {
       if (mainPlaying || !m_player.IsPlaying())
@@ -310,12 +324,12 @@ void PUPMediaManager::OnPlayerEnd()
    m_queue.pop_front();
    const uint64_t now = SDL_GetTicks();
    std::erase_if(m_queue, [now](const PlayItem& item) { return item.endTicks && now >= item.endTicks; });
+   m_pScreen->OnMediaEnd();
    if (!m_queue.empty())
    {
       StartCurrent();
       return;
    }
-   m_pScreen->OnMainMediaEnd();
    PlayBackground();
 }
 

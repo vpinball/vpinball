@@ -18,6 +18,7 @@ public:
 
    void Play(const std::filesystem::path& filename, float volume);
    const std::filesystem::path& GetFilename() const { return m_filename; }
+   unsigned int GetLoopCount() const { return m_loopCount.load(); }
    bool IsPlaying();
    void Pause(bool pause);
    void Stop();
@@ -60,6 +61,7 @@ private:
    std::filesystem::path m_filename;
    bool m_loop = false;
    int m_playIndex = 0;
+   std::atomic<unsigned int> m_loopCount = 0;
    float m_volume = 100.f;
 
    bool m_paused = false;
