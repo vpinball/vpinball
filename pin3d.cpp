@@ -208,9 +208,9 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
          pool.enqueue([y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres] {
             for (unsigned int x = 0; x < rad_env_xres; ++x)
             {
-               // transfo from envmap to normal direction
-               const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
-               const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
+               // transfo from envmap to normal direction, at the texel center where the shaders look it up
+               const float phi = ((float)x + 0.5f) / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
+               const float theta = ((float)y + 0.5f) / (float)rad_env_yres * (float)M_PI;
                const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
 
                // draw x samples over hemisphere and collect cosine weighted environment map samples
@@ -264,10 +264,10 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
                   }
                   else if (env_format == BaseTexture::RGBA)
                   {
-                     const DWORD rgb = ((DWORD*)envmap)[offs];
-                     r = (float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0);
+                     const DWORD rgb = ((DWORD*)envmap)[offs]; // bytes are ordered R, G, B, A
+                     r = (float)(rgb & 0x000000FF) * (float)(1.0 /      255.0);
                      g = (float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0);
-                     b = (float)(rgb & 0x000000FF) * (float)(1.0 /      255.0);
+                     b = (float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0);
                   }
                   else if (env_format == BaseTexture::SRGB)
                   {
@@ -277,10 +277,10 @@ BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xre
                   }
                   else if (env_format == BaseTexture::SRGBA)
                   {
-                     const DWORD rgb = ((DWORD*)envmap)[offs];
-                     r = invGammaApprox((float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0));
+                     const DWORD rgb = ((DWORD*)envmap)[offs]; // bytes are ordered R, G, B, A
+                     r = invGammaApprox((float)(rgb & 0x000000FF) * (float)(1.0 /      255.0));
                      g = invGammaApprox((float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0));
-                     b = invGammaApprox((float)(rgb & 0x000000FF) * (float)(1.0 /      255.0));
+                     b = invGammaApprox((float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0));
                   }
                   else
                      assert(!"unknown format");

@@ -60,7 +60,7 @@ sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buf
     ADDRESSV  = Clamp;
 };
  
-sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
+sampler2D texSamplerN : TEXUNIT4 : register(s4) = sampler_state // normal map texture (pinned: the host sets its sampler states on stage 4, the compiler would pick s3 when the diffuse environment is unused, i.e. for metal)
 {
     Texture = (Texture4);
     //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic //!! disallow and always use normal bilerp only? not even mipmaps?
