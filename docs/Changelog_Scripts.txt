@@ -23,6 +23,9 @@ New in 3.62 (Update by mfuegemann, JP, Mike Welsh, toxie)
   (Breakshot, Pool Player, Big Bang Bar, Flipper Football)
 - Fixed cvpmTimer.Update: when a timer fired while a callback queued with GetRef (AddTimer2) waited behind it,
   the queue shift copied that callback a second time without Set, which stopped the script with error 450
+- cvpmTimer.AddTimer2 accepts an object as its ID, and a fired timer no longer keeps a reference to it
+- cvpmTimer.Update removes a timer before calling it, so a callback that raises an error no longer fires on every tick
+  and blocks the timers queued behind it
 
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)
