@@ -282,16 +282,13 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    m_settingsProxy = std::make_unique<PinballPlugin::Scriptable::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_Settings", "B2S_", B2S_Settings_SCD);
    B2S_Server_SCD->CreateObject = []()
    {
-      // A table may create B2S.Server more than once. Share one instance so a second
-      // create cannot build a rival whose later destruction would unregister the UI
-      // sheets the live server still needs.
       if (s_server != nullptr)
       {
          s_server->AddRef();
          return static_cast<void*>(s_server);
       }
       s_server = new B2SServer(msgApi, endpointId, vpxApi, pagedUIApi, B2S_Server_SCD);
-      s_server->SetOnDestroyHandler([](B2SServer*) { s_server = nullptr; });
+      s_server->SetOnDestroyHandler([](B2SServer* server) { if (s_server == server) s_server = nullptr; });
       return static_cast<void*>(s_server);
    };
    scriptApi->SubmitTypeLibrary(endpointId);
