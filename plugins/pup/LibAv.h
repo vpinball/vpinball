@@ -88,6 +88,7 @@ public:
    typedef void(CDECL* fn_swr_free)(struct SwrContext** s);
    typedef int(CDECL* fn_swr_alloc_set_opts2)(struct SwrContext** ps, const AVChannelLayout* out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate, const AVChannelLayout* in_ch_layout, enum AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void* log_ctx);
    typedef int(CDECL* fn_swr_init)(struct SwrContext* s);
+   typedef int(CDECL* fn_swr_set_compensation)(struct SwrContext* s, int sample_delta, int compensation_distance);
    typedef int(CDECL* fn_swr_convert)(struct SwrContext* s, uint8_t* const* out, int out_count, const uint8_t* const* in, int in_count);
 
    typedef struct SwsContext*(CDECL* fn_sws_getCachedContext)(struct SwsContext* context, int srcW, int srcH, enum AVPixelFormat srcFormat, int dstW, int dstH, enum AVPixelFormat dstFormat, int flags, SwsFilter* srcFilter, SwsFilter* dstFilter, const double* param);
@@ -130,6 +131,7 @@ public:
    fn_swr_convert _swr_convert = nullptr;
    fn_swr_free _swr_free = nullptr;
    fn_swr_init _swr_init = nullptr;
+   fn_swr_set_compensation _swr_set_compensation = nullptr;
 
    fn_sws_freeContext _sws_freeContext = nullptr;
    fn_sws_getCachedContext _sws_getCachedContext = nullptr;
@@ -223,7 +225,8 @@ private:
          _swr_convert = reinterpret_cast<fn_swr_convert>(GetProcAddress(hinstLib, "swr_convert"));
          _swr_free = reinterpret_cast<fn_swr_free>(GetProcAddress(hinstLib, "swr_free"));
          _swr_init = reinterpret_cast<fn_swr_init>(GetProcAddress(hinstLib, "swr_init"));
-         isLoaded &= _swr_alloc_set_opts2 && _swr_convert && _swr_free && _swr_init;
+         _swr_set_compensation = reinterpret_cast<fn_swr_set_compensation>(GetProcAddress(hinstLib, "swr_set_compensation"));
+         isLoaded &= _swr_alloc_set_opts2 && _swr_convert && _swr_free && _swr_init && _swr_set_compensation;
       }
 
       hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swscale64-") LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) _T(".dll") : _T("swscale-") LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
@@ -271,6 +274,7 @@ private:
       _swr_convert = &swr_convert;
       _swr_free = &swr_free;
       _swr_init = &swr_init;
+      _swr_set_compensation = &swr_set_compensation;
 
       _sws_freeContext = &sws_freeContext;
       _sws_getCachedContext = &sws_getCachedContext;
