@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <limits>
 #include <sstream>
+#include <thread>
 
 namespace
 {
@@ -640,7 +641,9 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
             header.numMips = result->numMips;
             header.dataSize = result->data.size();
             header.packedSize = packedSize;
-            const std::filesystem::path tmpFile = std::filesystem::path(cacheFile).concat(".tmp");
+            static std::atomic<uint32_t> s_tmpCounter { 0 };
+            const std::filesystem::path tmpFile = std::filesystem::path(cacheFile).concat(
+               '.' + std::to_string(std::hash<std::thread::id> {}(std::this_thread::get_id())) + '_' + std::to_string(s_tmpCounter++) + ".tmp");
             {
                std::ofstream out(tmpFile, std::ios::binary | std::ios::trunc);
                out.write(reinterpret_cast<const char*>(&header), sizeof(header));
@@ -649,9 +652,14 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
             std::error_code ec;
             std::filesystem::rename(tmpFile, cacheFile, ec);
             if (ec)
-	    {
-               PLOGE << "Failed to write compressed texture cache " << cacheFile;
-	    }
+            {
+               std::error_code ec2;
+               std::filesystem::remove(tmpFile, ec2);
+               if (!std::filesystem::exists(cacheFile, ec2))
+               {
+                  PLOGE << "Failed to write compressed texture cache " << cacheFile << ": " << ec.message();
+               }
+            }
          }
          else
          {
