@@ -230,7 +230,7 @@ Class cvpmTimer
 	End Sub
 
 	Public Sub Update
-		Dim ii, jj, sw, obj, mQuecopy
+		Dim ii, jj, sw, obj, mQuecopy, callback, callbackArg
 
 		For Each obj In mSlowUpdates.Keys : obj.Update : Next
 		If mTimers = 0 Then Exit Sub
@@ -240,16 +240,24 @@ Class cvpmTimer
 			If mQue0(ii) <= mNow Then
 				If mQue1(ii)= 0 Then
 					If isObject(mQue3(ii)) Then
-						Call mQue3(ii)(mQue2(ii))
-					ElseIf varType(mQue3(ii)) = vbString Then
-						' Warning: calling Execute is a direct cause of stutters since it triggers OS security. We should avoid using it here
-						If mQue3(ii) > "" Then Execute mQue3(ii) & " " & mQue2(ii) & " "
+					   Set callback = mQue3(ii)
+					Else
+					   callback = mQue3(ii)
+					End If
+					If isObject(mQue2(ii)) Then
+					   Set callbackArg = mQue2(ii)
+					Else
+					   callbackArg = mQue2(ii)
 					End If
 					mTimers = mTimers - 1
 					For jj = ii To mTimers
 						mQue0(jj) = mQue0(jj+1)
 						mQue1(jj) = mQue1(jj+1)
-						mQue2(jj) = mQue2(jj+1)
+						If isObject(mQue2(jj+1)) Then
+						   Set mQue2(jj) = mQue2(jj+1)
+						Else
+						   mQue2(jj) = mQue2(jj+1)
+						End If
 						If isObject(mQue3(jj+1)) Then
 						   Set mQue3(jj) = mQue3(jj+1)
 						Else
@@ -257,7 +265,14 @@ Class cvpmTimer
 						End If
 						mQue4(jj) = mQue4(jj+1)
 					Next
+					mQue2(mTimers+1) = Empty : mQue3(mTimers+1) = Empty
 					ii = ii - 1
+					If isObject(callback) Then
+						Call callback(callbackArg)
+					ElseIf varType(callback) = vbString Then
+						' Warning: calling Execute is a direct cause of stutters since it triggers OS security. We should avoid using it here
+						If callback > "" Then Execute callback & " " & callbackArg & " "
+					End If
 				ElseIf mQue1(ii) = 1 Then
 					mQuecopy = mQue2(ii)
 					Controller.Switch(mQuecopy) = False
@@ -315,7 +330,11 @@ Class cvpmTimer
 		mTimers = mTimers + 1
 		mQue0(mTimers) = mNow + aDelay \ conTimerPulse
 		mQue1(mTimers) = 0
-		mQue2(mTimers) = aID
+		If isObject(aID) Then
+			Set mQue2(mTimers) = aID
+		Else
+			mQue2(mTimers) = aID
+		End If
 		If isObject(aCallback) Then
 			Set mQue3(mTimers) = aCallback
 		Else
