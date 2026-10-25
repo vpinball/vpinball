@@ -469,13 +469,14 @@ void LayerTreeView::Update()
    m_content = newContent;
    
    // Sort tree (somewhat overkill, but since we don't bother inserting items at the right place...)
-   SortChildren(m_hRootItem, false);
+   TVSORTCB sortCB = {};
+   sortCB.hParent = m_hRootItem;
+   sortCB.lpfnCompare = &LayerTreeView::CompareItems;
+   SortChildrenCB(&sortCB, TRUE);
    std::ranges::for_each(m_content, [&](TreeEntry& te)
       {
          if (te.pendingExpand)
             Expand(te.item, TVE_EXPAND);
-         if (te.editable->GetItemType() == eItemPartGroup)
-            SortChildren(te.item, false);
       });
 
    // Persist selection
@@ -499,6 +500,19 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* con
 
    const HTREEITEM item = InsertItem(tvis);
    return item;
+}
+
+int CALLBACK LayerTreeView::CompareItems(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/)
+{
+   const IEditable* const a = reinterpret_cast<const IEditable*>(lParam1);
+   const IEditable* const b = reinterpret_cast<const IEditable*>(lParam2);
+   const bool aIsGroup = (a != nullptr) && (a->GetItemType() == eItemPartGroup);
+   const bool bIsGroup = (b != nullptr) && (b->GetItemType() == eItemPartGroup);
+   if (aIsGroup != bIsGroup)
+      return aIsGroup ? -1 : 1;
+   if ((a == nullptr) || (b == nullptr))
+      return 0;
+   return StrLessNoCase(a->GetName(), b->GetName()) ? -1 : StrLessNoCase(b->GetName(), a->GetName()) ? 1 : 0;
 }
 
 void LayerTreeView::ResetView()
@@ -558,7 +572,16 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
          tvht.pt.y = Pos.y - 20; //
          const HTREEITEM hitTarget = HitTest(tvht);
          if (hitTarget) // if there is a hit
+         {
             SelectDropTarget(hitTarget);
+            if (hitTarget != m_hDropTarget)
+            {
+               m_hDropTarget = hitTarget;
+               m_dropTargetSince = GetTickCount64();
+            }
+            else if ((GetTickCount64() - m_dropTargetSince) >= DROP_DWELL_MS)
+               Expand(hitTarget, TVE_EXPAND);
+         }
          ImageList_DragShowNolock(TRUE);
       }
       break;
@@ -570,26 +593,49 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
          ImageList_EndDrag();
          HTREEITEM hSelectedDrop = GetDropHiLightItem();
          SelectDropTarget(nullptr);
+         m_hDropTarget = nullptr;
          auto dropTarget = std::ranges::find_if(m_content, [hSelectedDrop](const TreeEntry& te) { return te.item == hSelectedDrop; });
          if ((hSelectedDrop == m_hRootItem) || (dropTarget != m_content.end()))
          {
-            SelectItem(hSelectedDrop);
             PartGroup* group = (hSelectedDrop == m_hRootItem) ? nullptr 
                              : (dropTarget->editable->GetItemType() == eItemPartGroup) ? static_cast<PartGroup*>(dropTarget->editable)
                              : dropTarget->editable->GetPartGroup();
-            m_activeTableEditor->BeginUndo();
+            vector<IEditable*> reparented;
             for (const auto& dragItem : m_DragItems)
             {
                auto existing = std::ranges::find_if(m_content, [dragItem](const TreeEntry& te) { return te.item == dragItem; });
                if (existing == m_content.end())
                   continue; // Item destroyed while dragging. Can this even happen ?
-               if (group == nullptr && existing->editable->GetItemType() != eItemPartGroup)
+               IEditable* const dragged = existing->editable;
+               if (dragged->GetPartGroup() == group)
                   continue;
-               existing->editable->SetPartGroup(group);
-               Select(existing->editable);
+               if (dragged->GetItemType() == eItemPartGroup)
+               {
+                  if ((group == dragged) || ((group != nullptr) && group->IsChild(static_cast<PartGroup*>(dragged))))
+                     continue; // A group can't be parented to itself or one of its children
+               }
+               else if (group == nullptr)
+                  continue;
+               reparented.push_back(dragged);
             }
-            m_activeTableEditor->EndUndo();
-            Update();
+            // Reparenting a layer by drag & drop is rare and easily triggered by accident, so it requires dwelling on the drop target
+            const bool isLayerDrop = std::ranges::any_of(reparented, [](const IEditable* e) { return e->GetItemType() == eItemPartGroup; });
+            if (!reparented.empty() && (!isLayerDrop || ((GetTickCount64() - m_dropTargetSince) >= DROP_DWELL_MS)))
+            {
+               SelectItem(hSelectedDrop);
+               m_activeTableEditor->BeginUndo();
+               m_activeTableEditor->MarkForUndo(m_activeTable);
+               for (IEditable* const editable : reparented)
+               {
+                  editable->SetPartGroup(group);
+                  Select(editable);
+               }
+               m_activeTableEditor->EndUndo();
+               Update();
+               const auto moved = std::ranges::find_if(m_content, [&reparented](const TreeEntry& te) { return te.editable == reparented.back(); });
+               if (moved != m_content.end())
+                  EnsureVisible(moved->item);
+            }
          }
          m_DragItems.clear();
          ReleaseCapture();
@@ -634,6 +680,8 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       ImageList_BeginDrag(hImg, 0, 0, 0);
       ImageList_DragEnter(GetHwnd(), lpnmtv->ptDrag.x, lpnmtv->ptDrag.y);
       m_DragItems.push_back(lpnmtv->itemNew.hItem);
+      m_hDropTarget = nullptr;
+      m_dropTargetSince = GetTickCount64();
       SetCapture();
       m_dragging = true;
       return TRUE;

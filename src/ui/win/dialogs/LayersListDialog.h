@@ -37,11 +37,17 @@ protected:
 
 private:
    HTREEITEM AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image);
+   static int CALLBACK CompareItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+
+   // Delay in ms the cursor must dwell on a drop target before it expands, and before a layer reparent is accepted
+   static constexpr ULONGLONG DROP_DWELL_MS = 500;
 
    HTREEITEM   m_hRootItem = nullptr;
    CImageList  m_normalImages;
    CImageList  m_stateImages;
    bool        m_dragging = false;
+   HTREEITEM m_hDropTarget = nullptr;
+   ULONGLONG m_dropTargetSince = 0;
    PinTableWnd* m_activeTableEditor = nullptr;
    PinTable*   m_activeTable = nullptr;
    vector<HTREEITEM> m_DragItems;
