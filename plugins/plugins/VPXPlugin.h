@@ -265,7 +265,7 @@ typedef struct VPXPluginAPI
 
    // --- User Interface
    unsigned int (MSGPIAPI *PushNotification)(const char* msg, const int lengthMs);
-   void (MSGPIAPI *UpdateNotification)(const unsigned int handle, const char* msg, const int lengthMs);
+   unsigned int(MSGPIAPI* UpdateNotification)(const unsigned int handle, const char* msg, const int lengthMs);
 
    // --- View management
    void (MSGPIAPI *DisableStaticPrerendering)(const int /* bool */ disable);

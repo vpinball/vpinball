@@ -75,7 +75,7 @@ private:
    static void MSGPIAPI GetTableInfo(VPXTableInfo* info);
 
    static unsigned int MSGPIAPI PushNotification(const char* msg, const int lengthMs);
-   static void MSGPIAPI UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs);
+   static unsigned int MSGPIAPI UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs);
 
    static void MSGPIAPI DisableStaticPrerendering(const BOOL disable);
    static void MSGPIAPI GetActiveViewSetup(VPXViewSetupDef* view);
