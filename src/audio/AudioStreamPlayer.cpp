@@ -82,7 +82,9 @@ void AudioStreamPlayer::SetStreamVolume(const float volume)
    if (m_streamVolume != volume)
    {
       m_streamVolume = volume;
-      SDL_SetAudioStreamGain(m_stream, m_streamVolume * m_mainVolume);
+      // sqrt loudness curve, matching SoundPlayer::ApplyVolume so the shared
+      // backglass volume setting produces the same perceived level
+      SDL_SetAudioStreamGain(m_stream, sqrtf(m_streamVolume * m_mainVolume));
    }
 }
 
@@ -91,7 +93,7 @@ void AudioStreamPlayer::SetMainVolume(const float volume)
    if (m_mainVolume != volume)
    {
       m_mainVolume = volume;
-      SDL_SetAudioStreamGain(m_stream, m_streamVolume * m_mainVolume);
+      SDL_SetAudioStreamGain(m_stream, sqrtf(m_streamVolume * m_mainVolume));
    }
 }
 
