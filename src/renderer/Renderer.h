@@ -15,6 +15,7 @@
 class IEditable;
 class Renderable;
 class PinTable;
+
 class Renderer final
 {
 public:
@@ -394,8 +395,15 @@ private:
    RenderTarget* m_envRadianceTexture = nullptr;
    #endif
 
-   // Segment display rendering
-   std::unique_ptr<Texture> m_segDisplaySDF[5][9]; // One per SegmentFamily and segment layout
+   // Segment display rendering, one atlas pair per SegmentFamily and segment layout
+   struct SegDisplayAtlas
+   {
+      std::unique_ptr<Texture> sdf; // segment SDF texture (for magnified rendering)
+      std::unique_ptr<Texture> cov; // prefiltered coverage (for minified rendering)
+   };
+   SegDisplayAtlas m_segDisplay[5][9];
+   void GetSegSDF(SegDisplayAtlas& atlas, const char* const name) const;
+
 public:
    vec4 m_segColor[8]; // Base seg color and brightness
    vec4 m_segUnlitColor[8]; // unlit color and back glow

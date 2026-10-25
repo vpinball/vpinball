@@ -82,6 +82,9 @@ vec3 ReinhardToneMap(vec3 color)
 
 #ifdef SEG
 	uniform vec4 alphaSegState[4];
+	#define segTileSize   (displayProperties.xy) // Size in texels of a SDF tile (the texture holds 4 RGBA tiles side by side, each channel being the SDF of a segment)
+
+	SAMPLER2D(displayCov, 2); // Prefiltered version of displayTex: left half holds the sharp coverage, right half the squared SDF (see Renderer::SetupSegmentRenderer)
 #endif
 
 
@@ -237,19 +240,41 @@ void main()
 
 	// Accumulate light from surrounding emitters (somewhat heavy)
 	#if defined(SEG)
+		// Screen space derivatives of the display uv, giving the on-screen footprint of a SDF tile in texels per
+		// output pixel (same evaluation as for CRT displays, see there for more details)
+		vec2 dUvDx = dFdx(displayUv);
+		vec2 dUvDy = dFdy(displayUv);
+		float sdfTexPerPx = max(length(vec2(dUvDx.x, dUvDy.x)) * segTileSize.x, length(vec2(dUvDx.y, dUvDy.y)) * segTileSize.y);
+		const bool downscaled = sdfTexPerPx > 1.0;
+		// Tile mapping in the prefiltered atlas (8 tiles side by side: 4 sharp coverage, then 4 squared SDF)
+		const vec2 covDx = vec2(0.125 * dUvDx.x, dUvDx.y);
+		const vec2 covDy = vec2(0.125 * dUvDy.x, dUvDy.y);
 		vec4 litLum4 = vec4_splat(0.0);
 		vec4 unlitLum4 = vec4_splat(0.0);
 		for (int i = 0; i < 4; i++)
 		{
-			// SDF for 16 segments (4 RGBA tiles, each RGBA channel being the SDF for a given segment)
-			vec4 sdf = texture2D(displayTex, vec2(0.25 * (displayUv.x + float(i)), displayUv.y));
-			// Resolve SDF after texture filtering, widening the transition to the on-screen gradient of the SDF (fwidth) so
-			// that it always spans about one pixel: this antialiases the segment borders, which would otherwise alias more when
-			// the display is downscaled. The lower bound is the fixed width used before, reached as soon as it is magnified.
-			// Not perfect, but it helps
-			vec4 aa = max(0.5 * (abs(dFdx(sdf)) + abs(dFdy(sdf))), vec4_splat(0.025));
-			vec4 sharp = smoothstep(vec4_splat(0.5) - aa, vec4_splat(0.5) + aa, sdf);
-			vec4 diffuse = diffuseStrength * sdf * sdf; // Magic formula to simulate light dispersion at maximum glass roughness
+			vec4 sharp, diffuse;
+			BRANCH if (downscaled)
+			{
+				// When downscaled, filtering the SDF can not recover the segment coverage since the distance field does
+				// not average linearly: the coverage shrinks and the fully lit parts fade away as the display shrinks.
+				// Instead, the prefiltered atlas is used: its mipmaps directly hold the emitted light (sharp coverage and
+				// squared SDF dispersion) integrated over the output pixel footprint
+				const vec2 covUv = vec2(0.125 * (displayUv.x + float(i)), displayUv.y);
+				sharp = texture2DGrad(displayCov, covUv, covDx, covDy);
+				diffuse = diffuseStrength * texture2DGrad(displayCov, covUv + vec2(0.5, 0.0), covDx, covDy);
+			}
+			else
+			{
+				// SDF for 16 segments (4 RGBA tiles, each RGBA channel being the SDF for a given segment)
+				vec4 sdf = texNoLod(displayTex, vec2(0.25 * (displayUv.x + float(i)), displayUv.y));
+				// Resolve the SDF transition over about one output pixel to antialias the segment borders. The SDF varies
+				// by 1/32 per texel (pxrange of 32, see extract-segs.py) so the texel footprint gives the transition width
+				// directly. The lower bound is the fixed width used before, reached as soon as it is magnified
+				vec4 aa = vec4_splat(max(0.5 * sdfTexPerPx / 32.0, 0.025));
+				sharp = smoothstep(vec4_splat(0.5) - aa, vec4_splat(0.5) + aa, sdf);
+				diffuse = diffuseStrength * sdf * sdf; // Magic formula to simulate light dispersion at maximum glass roughness
+			}
 			vec4 light = mix(sharp, diffuse, roughness);
 			//unlitLum4 += light;
 			//litLum4   += light * alphaSegState[i];

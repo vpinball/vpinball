@@ -1572,11 +1572,26 @@ void Renderer::UpdateStereoShaderState()
    }
 }
 
-static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const std::filesystem::path& path)
+// Loads a segment SDF atlas together with its pre-integrated coverage atlas '<name>-cov.png' (generated offline
+// alongside the SDF atlases by src/assets/alphaseg/extract-segs.py and expected to be in sync with them: the left
+// half holds the sharp segment coverage, the right half the squared SDF for glass light dispersion). Box filtered
+// mipmaps of the coverage atlas directly provide the emitted light integrated over each texel footprint, making
+// the segment rendering independent of the display resolution (see fs_display.sc)
+void Renderer::GetSegSDF(SegDisplayAtlas& atlas, const char* const name) const
 {
-   if (tex == nullptr)
-      tex.reset(Texture::CreateFromFile(path, false));
-   return tex.get();
+   if (atlas.sdf != nullptr)
+      return;
+   const std::filesystem::path path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, name);
+   atlas.sdf.reset(Texture::CreateFromFile(path, false));
+   if (atlas.sdf == nullptr)
+      return;
+   atlas.cov.reset(Texture::CreateFromFile(path.parent_path() / (path.stem().string() + "-cov.png"), false));
+   if (atlas.cov != nullptr)
+   {
+      const std::shared_ptr<const BaseTexture> covTex = atlas.cov->GetRawBitmap(false, 0);
+      if (covTex == nullptr || (covTex->m_format != BaseTexture::RGBA && covTex->m_format != BaseTexture::SRGBA) || atlas.cov->m_width != 2 * atlas.sdf->m_width)
+         atlas.cov = nullptr; // Reject out of sync coverage atlases
+   }
 }
 
 // World space position derivatives of a display quad along its u and v coordinates (tangent, bitangent)
@@ -1655,30 +1670,53 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
 {
    SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient, unmirror);
 
-   Texture* segSDF = nullptr;
+   int segIndex = 0;
    switch (type)
    {
-   case CTLPI_SEG_LAYOUT_7: segSDF = GetSegSDF(m_segDisplaySDF[family][0], 
-        (family == SegmentFamily::Gottlieb) ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-gts.png")
-      : (family == SegmentFamily::Bally)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-bally.png")
-      : (family == SegmentFamily::Atari)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-atari.png")
-                                            : g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_7C: segSDF = GetSegSDF(m_segDisplaySDF[family][1],
-        (family == SegmentFamily::Bally)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-bally.png")
-      : (family == SegmentFamily::Atari)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-atari.png")
-                                            : g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_7:
+      segIndex = 0;
+      GetSegSDF(m_segDisplay[family][0],
+         (family == SegmentFamily::Gottlieb)   ? "7seg-gts.png"
+            : (family == SegmentFamily::Bally) ? "7seg-bally.png"
+            : (family == SegmentFamily::Atari) ? "7seg-atari.png"
+                                               : "7seg-williams.png");
+      break;
+   case CTLPI_SEG_LAYOUT_7C:
+      segIndex = 1;
+      GetSegSDF(m_segDisplay[family][1], (family == SegmentFamily::Bally) ? "7seg-c-bally.png" : (family == SegmentFamily::Atari) ? "7seg-c-atari.png" : "7seg-c-williams.png");
+      break;
    // TODO I did not found any reference for a dot only 7 segments display, so we use the comma one which is likely wrong
-   case CTLPI_SEG_LAYOUT_7D: segSDF = GetSegSDF(m_segDisplaySDF[family][2], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_9: segSDF = GetSegSDF(m_segDisplaySDF[family][3], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "9seg-gts.png")); break;
-   case CTLPI_SEG_LAYOUT_9C: segSDF = GetSegSDF(m_segDisplaySDF[family][4], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "9seg-c-gts.png")); break;
-   case CTLPI_SEG_LAYOUT_14: segSDF = GetSegSDF(m_segDisplaySDF[family][5], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_14D: segSDF = GetSegSDF(m_segDisplaySDF[family][6], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-d-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_14DC: segSDF = GetSegSDF(m_segDisplaySDF[family][7],
-        (family == SegmentFamily::Gottlieb) ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-dc-gts.png")
-                                            : g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-dc-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_16: segSDF = GetSegSDF(m_segDisplaySDF[family][8], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "16seg.png")); break;
+   case CTLPI_SEG_LAYOUT_7D:
+      segIndex = 2;
+      GetSegSDF(m_segDisplay[family][2], "7seg-c-williams.png");
+      break;
+   case CTLPI_SEG_LAYOUT_9:
+      segIndex = 3;
+      GetSegSDF(m_segDisplay[family][3], "9seg-gts.png");
+      break;
+   case CTLPI_SEG_LAYOUT_9C:
+      segIndex = 4;
+      GetSegSDF(m_segDisplay[family][4], "9seg-c-gts.png");
+      break;
+   case CTLPI_SEG_LAYOUT_14:
+      segIndex = 5;
+      GetSegSDF(m_segDisplay[family][5], "14seg-williams.png");
+      break;
+   case CTLPI_SEG_LAYOUT_14D:
+      segIndex = 6;
+      GetSegSDF(m_segDisplay[family][6], "14seg-d-williams.png");
+      break;
+   case CTLPI_SEG_LAYOUT_14DC:
+      segIndex = 7;
+      GetSegSDF(m_segDisplay[family][7], (family == SegmentFamily::Gottlieb) ? "14seg-dc-gts.png" : "14seg-dc-williams.png");
+      break;
+   case CTLPI_SEG_LAYOUT_16:
+      segIndex = 8;
+      GetSegSDF(m_segDisplay[family][8], "16seg.png");
+      break;
    }
-   if (segSDF == nullptr)
+   const SegDisplayAtlas& segAtlas = m_segDisplay[family][segIndex];
+   if (segAtlas.sdf == nullptr)
       return;
 
    const float fullBrightness = brightness * m_segColor[profile].w;
@@ -1689,8 +1727,14 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::staticColor_Alpha,
       m_segUnlitColor[profile].x, m_segUnlitColor[profile].y, m_segUnlitColor[profile].z, // Unlit segment color (ambient)
       static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
+   m_renderDevice->m_DMDShader->SetVector(ShaderUniform::displayProperties, 0.25f * static_cast<float>(segAtlas.sdf->m_width),
+      static_cast<float>(segAtlas.sdf->m_height), // Size in texels of a SDF tile (the texture holds 4 tiles side by side)
+      0.f, 0.f); // Unused
    m_renderDevice->m_DMDShader->SetFloat4v(ShaderUniform::alphaSegState, segs, 4);
-   m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::displayTex, segSDF, true, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
+   m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::displayTex, segAtlas.sdf.get(), true, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
+   m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::displayCov,
+      segAtlas.cov != nullptr ? segAtlas.cov.get() : segAtlas.sdf.get(), // Fallback to the raw SDF (downscaling loses some coverage)
+      true, SamplerFilter::SF_ANISOTROPIC, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
    m_renderDevice->m_DMDShader->SetTechnique(ShaderTechnique::display_Seg_world);
 }
 
