@@ -166,8 +166,8 @@
   "blurb": "",
   "description": "---- CONTROLS ------\r\n\r\nPress 5 to run the sub routine named: RunSequence\r\n\r\nPress 4 to run the sub routine named and return the total time: RunSequence\r\n\r\nPress 6 to run the full lightshow\r\n\r\n--- ABOUT -----\r\n\r\nStripped table of sound, gfx to make smaller.\r\n\r\nAdd an HDR image for more brightness.",
   "rules": "",
-  "date_saved": "Sun Oct 25 20:17:18 2026",
-  "save_rev": 37,
+  "date_saved": "Sun Oct 25 22:15:55 2026",
+  "save_rev": 38,
   "parts": [
     "1",
     "Lamps",
