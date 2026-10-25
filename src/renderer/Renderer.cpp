@@ -3884,8 +3884,10 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
       outputRT = embedRT;
       VPX::Window* containerWnd = m_renderDevice->m_outputWnd[m_desktopScenePass ? 1 : 0];
 
-      const float displayScaleX = static_cast<float>(containerWnd->GetPixelWidth()) / static_cast<float>(containerWnd->GetWidth());
-      const float displayScaleY = static_cast<float>(containerWnd->GetPixelHeight()) / static_cast<float>(containerWnd->GetHeight());
+      // Embedded window coordinates are logical units of the container window, while the embed
+      // render target is sized in its output pixels (including full scene antialiasing upscaling)
+      const float displayScaleX = static_cast<float>(outputRT->GetWidth()) / static_cast<float>(containerWnd->GetWidth());
+      const float displayScaleY = static_cast<float>(outputRT->GetHeight()) / static_cast<float>(containerWnd->GetHeight());
 
       const int wndW = output.GetEmbeddedWindow()->GetWidth();
       const int wndH = output.GetEmbeddedWindow()->GetHeight();
