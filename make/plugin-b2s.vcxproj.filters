@@ -25,6 +25,27 @@
     <ClCompile Include="../../plugins/b2s/DMDOverlay/DMDOverlay.cpp">
       <Filter>source\DMDOverlay</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/b2s/seg/Dream7Display.cpp">
+      <Filter>source\seg</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/seg/GraphicsPath.cpp">
+      <Filter>source\seg</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/seg/LEDBox.cpp">
+      <Filter>source\seg</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/seg/Matrix.cpp">
+      <Filter>source\seg</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/seg/SegGraphics.cpp">
+      <Filter>source\seg</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/seg/Segment.cpp">
+      <Filter>source\seg</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/seg/SegmentNumber.cpp">
+      <Filter>source\seg</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/nixie/NixieLayoutFile.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -56,6 +77,39 @@
     </ClInclude>
     <ClInclude Include="../../plugins/b2s/DMDOverlay/OverlayDisplayOptions.h">
       <Filter>source\DMDOverlay</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/Brush.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/Dream7Display.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/GraphicsPath.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/LEDBox.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/Matrix.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/SegDisplay.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/SegGraphics.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/SegTypes.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/Segment.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/SegmentNumber.h">
+      <Filter>source\seg</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/seg/SegmentStyle.h">
+      <Filter>source\seg</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
       <Filter>source</Filter>

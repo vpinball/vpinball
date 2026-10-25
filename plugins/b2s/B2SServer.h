@@ -159,6 +159,7 @@ public:
    uint64_t NextStamp() const { return ++m_lampStamp; }
    int GetScoreDigit(int digit) const;
    int GetScoreDigitSegments(int digit) const; // Explicit B2SSetLED segment mask, -1 = none
+   void ApplyScoreSegments(int digit, int segMask); // Explicit segment mask (CTLPI luminance bit order)
    bool ConsumeScoreDigitRoll(int digit); // Returns and clears the rolling flag set by B2SSetScore/B2SSetReel
    int GetPlayerScore(int player) const;
 
@@ -222,7 +223,6 @@ private:
    bool m_overlaySheetRegistered = false;
    void RegisterOverlaySheet();
    void ApplyScoreDigit(int digit, int value, bool roll);
-   void ApplyScoreSegments(int digit, int segMask);
    std::function<void(B2SServer*)> m_onDestroyHandler;
 
    // Renderer

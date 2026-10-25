@@ -5,6 +5,8 @@
 #include "common.h"
 #include "B2SDataModel.h"
 #include "DMDOverlay/DMDOverlay.h"
+#include "seg/Dream7Display.h"
+#include "seg/LEDBox.h"
 
 #include "plugins/ControllerPlugin.h"
 #include "plugins/ResURIResolver.h"
@@ -13,6 +15,7 @@
 #include <future>
 #include <chrono>
 #include <map>
+#include <unordered_dense.h>
 
 namespace B2S
 {
@@ -24,8 +27,9 @@ public:
    ~B2SRenderer();
 
    static void RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId);
-   // Fills the renderer owned entries (ShowGrill, DualMode) of the plugin declared "settings" sheet
-   static void FillSettingsItems(PagedUIItemDef* items);
+   // Fills the renderer owned entries (ShowGrill, DualMode, UpgradedSegmentRendering) of the plugin
+   // declared "settings" sheet, returns the number of items filled
+   static int FillSettingsItems(PagedUIItemDef* items);
 
    bool Render(VPXRenderContext2D* context, class B2SServer* server);
 
@@ -36,6 +40,8 @@ private:
    void RenderDisplays(VPXRenderContext2D* ctx, B2SServer* server, int target, VPXTexture backImage);
    void RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed, B2SDualMode dualMode);
    void RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores, float elapsed);
+   void RenderLegacyScoreDisplay(VPXRenderContext2D* ctx, B2SServer* server, const B2SScore& reel, bool dream7, const std::vector<SegElementType>& segTypes,
+      const ankerl::unordered_dense::map<int, string>& playerScoreText, ankerl::unordered_dense::map<int, size_t>& playerScoreOffset);
    void UpdateAnimations(vector<B2SAnimation>& animations, float elapsed, B2SServer* server, B2SDualMode dualMode);
    B2SDualMode ActiveDualMode() const;
    void OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start);
@@ -60,6 +66,17 @@ private:
    B2SAnimation* m_lastRandomAnimation = nullptr; // Last animation started through a random trigger
 
    std::map<int, B2SReelDigit> m_reelDigits; // Rolling reel digit states, keyed by resolved digit index
+
+   // Legacy segment renderer (opt-out of the upgraded segment rendering): one rasterized display per score
+   // display, either a single multi-digit Dream7Display or one LEDBox per digit, keyed by the score element
+   struct LegacySegDisplay
+   {
+      bool dream7 = false;
+      bool built = false;
+      std::unique_ptr<seg::Dream7Display> display;
+      vector<std::unique_ptr<seg::LEDBox>> boxes;
+   };
+   std::map<const B2SScore*, LegacySegDisplay> m_legacySegDisplays;
 
    bool m_showGrill = false;
    float m_b2sWidth = 0.f;
