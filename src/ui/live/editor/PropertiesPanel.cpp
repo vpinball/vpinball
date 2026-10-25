@@ -754,12 +754,9 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
       }
       else
       {
-         int volume = sound->GetVolume();
-         sound->SetVolume(100);
-         audioPlayer->PlaySound(sound, (float)volume, 0.f, 0, 0.f, 0.f, 0, false, true);
+         audioPlayer->PlaySound(sound, 1.0f, 0.f, 0, 0.f, 0.f, 0, false, true);
          m_playingSound = sound;
          m_playingSoundObserved = false;
-         sound->SetVolume(volume);
       }
    }
    ImGui::EndDisabled();
