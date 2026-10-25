@@ -517,7 +517,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    {
 #ifdef ENABLE_XR
       g_pplayer->m_vrDevice->CreateSession();
-      rd->m_framePending = true; // Delay first frame preparation
+      rd->m_frameRequested = false; // Delay first frame preparation until the first swapchain image is acquired
 #endif
    }
    else
@@ -574,25 +574,26 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
             BEGIN_SPAN(tagSpanFF, "vpxWaitFrame")
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
             m_outputWnd[0]->SetBackBuffer(vrRenderTarget, false);
-            m_framePending = false;
+            m_frameRequested = true; // Open the render frame gate while a valid output target is bound
             m_frameReadySem.acquire();
+            m_frameRequested = false;
             m_outputWnd[0]->SetBackBuffer(nullptr, false); // as the vrRenderTarget is not valid outside of this scope
             g_pplayer->m_renderProfiler->ExitProfileSection();
             END_SPAN(tagSpanFF)
             if (!m_framePending)
-            {
-               // Block rendering until we will acquire swapchain again
-               m_framePending = true;
-               return;
-            }
+               return; // Nothing was submitted (spurious release or shutdown), wait for the next swapchain acquire
 
             // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like the desktop display,...)
+            bool noPresent;
             {
                BEGIN_SPAN(tagSpan, "VPX->BGFX")
                std::lock_guard lock(m_frameMutex);
                g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
                g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
                SubmitRenderFrame();
+               noPresent = m_frameNoPresent;
+               m_frameNoPresent = false;
+               m_framePending = false; // Frame consumed: release producers waiting for its submission
                g_pplayer->m_vrDevice->UpdateVisibilityMask(this);
                g_pplayer->m_renderProfiler->ExitProfileSection();
                END_SPAN(tagSpan)
@@ -620,7 +621,10 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
             // Request BGFX to submit to GPU (calls bgfx::frame())
             BEGIN_SPAN(tagSpan, "BGFX->GPU")
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
-            Flip();
+            if (noPresent)
+               SubmitAndFlipFrame(false); // Submit-only frames (e.g. texture uploads) are flushed without being presented
+            else
+               Flip();
             m_frameIndex++;
             ProcessVRScreenshot();
             const bgfx::Stats* stats = bgfx::getStats();

@@ -201,7 +201,8 @@ public:
    vector<std::shared_ptr<SharedIndexBuffer>> m_pendingSharedIndexBuffers;
    vector<std::shared_ptr<SharedVertexBuffer>> m_pendingSharedVertexBuffers;
 
-   std::atomic<bool> m_framePending = false;
+   std::atomic<bool> m_framePending = false; // A frame was submitted by the logic thread and is waiting to be executed by the render thread
+   std::atomic<bool> m_frameRequested = true; // The render thread is waiting for a frame with a valid output target bound (XR swapchain acquire window)
 
    const int m_nEyes;
    Shader* m_uiShader = nullptr;
