@@ -74,34 +74,38 @@ namespace
       info->info = nullptr;
    }
 
-   unsigned int MSGPIAPI SettingsItemCount(void*, const char*) { return 7; }
+   unsigned int MSGPIAPI SettingsItemCount(void*, const char*) { return 8; }
 
    void MSGPIAPI SettingsGetItems(void*, const char*, PagedUIItemDef* items)
    {
-      FillHeader(items[0], "Backglass Settings");
-      B2SRenderer::FillSettingsItems(items + 1); // items[1..2]: ShowGrill, DualMode
-      items[3] = {};
-      items[3].type = PAGEDUI_ITEM_ENUM;
-      items[3].id = "UsedLEDType";
-      items[3].label = "Used LED type";
-      items[3].tooltip = "Force the LED display type (Auto = as declared by the .directb2s file)";
-      items[3].storage = PAGEDUI_STORAGE_HOST;
-      items[3].enumProp = { 0, 3, usedLEDTypeValues, 0, &LedTypeGet, &LedTypeSet };
-      items[4] = {};
-      items[4].type = PAGEDUI_ITEM_INT;
-      items[4].id = "AllAnimationSlowDown";
-      items[4].label = "Global animation slowdown";
-      items[4].tooltip = "Slowdown factor applied to all backglass animations";
-      items[4].storage = PAGEDUI_STORAGE_HOST;
-      items[4].intProp = { 1, 100, 1, nullptr, &AllSlowdownGet, &AllSlowdownSet };
-      items[5] = {};
-      items[5].type = PAGEDUI_ITEM_STRING;
-      items[5].id = "AnimationSlowDowns";
-      items[5].label = "Per-animation slowdowns";
-      items[5].tooltip = "Semicolon separated 'name=factor' animation slowdown overrides";
-      items[5].storage = PAGEDUI_STORAGE_HOST;
-      items[5].stringProp = { "", &SlowdownsGet, &SlowdownsSet };
-      FillHeader(items[6], "Modify Backglass");
+      int pos = 0;
+      FillHeader(items[pos++], "Backglass Settings");
+      pos += B2SRenderer::FillSettingsItems(items + pos); // ShowGrill, DualMode, UpgradedSegmentRendering
+      PagedUIItemDef& ledType = items[pos++];
+      ledType = {};
+      ledType.type = PAGEDUI_ITEM_ENUM;
+      ledType.id = "UsedLEDType";
+      ledType.label = "Used LED type";
+      ledType.tooltip = "Force the LED display type (Auto = as declared by the .directb2s file)";
+      ledType.storage = PAGEDUI_STORAGE_HOST;
+      ledType.enumProp = { 0, 3, usedLEDTypeValues, 0, &LedTypeGet, &LedTypeSet };
+      PagedUIItemDef& allSlowdown = items[pos++];
+      allSlowdown = {};
+      allSlowdown.type = PAGEDUI_ITEM_INT;
+      allSlowdown.id = "AllAnimationSlowDown";
+      allSlowdown.label = "Global animation slowdown";
+      allSlowdown.tooltip = "Slowdown factor applied to all backglass animations";
+      allSlowdown.storage = PAGEDUI_STORAGE_HOST;
+      allSlowdown.intProp = { 1, 100, 1, nullptr, &AllSlowdownGet, &AllSlowdownSet };
+      PagedUIItemDef& slowdowns = items[pos++];
+      slowdowns = {};
+      slowdowns.type = PAGEDUI_ITEM_STRING;
+      slowdowns.id = "AnimationSlowDowns";
+      slowdowns.label = "Per-animation slowdowns";
+      slowdowns.tooltip = "Semicolon separated 'name=factor' animation slowdown overrides";
+      slowdowns.storage = PAGEDUI_STORAGE_HOST;
+      slowdowns.stringProp = { "", &SlowdownsGet, &SlowdownsSet };
+      FillHeader(items[pos++], "Modify Backglass");
    }
 
    // Saving rewrites the whole .directb2s, can be too slow for the game thread, and also can fail: so saves are

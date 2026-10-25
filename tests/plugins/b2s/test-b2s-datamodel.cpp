@@ -1006,11 +1006,10 @@ TEST_CASE("b2s LED segment masks")
    CHECK(B2SSegmentTranslateBitCode(0xFF, 7) == 0x00FF);
    // 10 segments: g2 shares bit 6 with g1, i/l stay at 8/9
    CHECK(B2SSegmentTranslateBitCode(0x3FF, 10) == 0x037F);
-   // 14 segments Dream7 order a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2
-   // Dream7 bit7 (dot) lands on the dp bit 15, Dream7 bits 12/13/14 (m/l/k) map to 14/13/12,
-   // and no Dream7 bit drives the CTLPI comma (bit 7)
-   CHECK(B2SSegmentTranslateBitCode(0xFFFF, 14) == 0xFF7F);
-   CHECK(B2SSegmentTranslateBitCode(0x0080, 14) == 0x8000);
-   CHECK(B2SSegmentTranslateBitCode(0x1000, 14) == 0x4000);
-   CHECK(B2SSegmentTranslateBitCode(0x4000, 14) == 0x1000);
+   // 14 segments Dream7 order a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2 -> CTLPI a,b,c,d,e,f,g1,comma,h,i,j,g2,m,l,k,dp
+   // (segment positions are identical; the dot lights both comma bit 7 and dp bit 15)
+   CHECK(B2SSegmentTranslateBitCode(0xFFFF, 14) == 0xFFFF);
+   CHECK(B2SSegmentTranslateBitCode(0x0080, 14) == 0x8080);
+   CHECK(B2SSegmentTranslateBitCode(0x1000, 14) == 0x1000);
+   CHECK(B2SSegmentTranslateBitCode(0x4000, 14) == 0x4000);
 }

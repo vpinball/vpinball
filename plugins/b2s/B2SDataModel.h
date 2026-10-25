@@ -524,4 +524,6 @@ public:
 // (ledSegments is the ReelType suffix: 7, 10 or 14).
 uint16_t B2SSegmentCharMask(char c, int ledSegments);
 uint16_t B2SSegmentTranslateBitCode(uint32_t bits, int ledSegments);
+// Inverse of B2SSegmentTranslateBitCode (CTLPI/PinMAME bit order back to Dream7 order, used by the legacy segment renderer)
+uint16_t B2SSegmentUntranslateBitCode(uint32_t bits, int ledSegments);
 }

@@ -20,6 +20,24 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/DMDOverlay/DMDOverlay.h
    plugins/b2s/DMDOverlay/DMDOverlay.cpp
    plugins/b2s/DMDOverlay/OverlayDisplayOptions.h
+   plugins/b2s/seg/Brush.h
+   plugins/b2s/seg/Dream7Display.h
+   plugins/b2s/seg/Dream7Display.cpp
+   plugins/b2s/seg/GraphicsPath.h
+   plugins/b2s/seg/GraphicsPath.cpp
+   plugins/b2s/seg/LEDBox.h
+   plugins/b2s/seg/LEDBox.cpp
+   plugins/b2s/seg/Matrix.h
+   plugins/b2s/seg/Matrix.cpp
+   plugins/b2s/seg/SegDisplay.h
+   plugins/b2s/seg/SegGraphics.h
+   plugins/b2s/seg/SegGraphics.cpp
+   plugins/b2s/seg/SegTypes.h
+   plugins/b2s/seg/Segment.h
+   plugins/b2s/seg/Segment.cpp
+   plugins/b2s/seg/SegmentNumber.h
+   plugins/b2s/seg/SegmentNumber.cpp
+   plugins/b2s/seg/SegmentStyle.h
    
    plugins/nixie/NixieLayoutFile.h
    plugins/nixie/NixieLayoutFile.cpp

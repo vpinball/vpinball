@@ -1243,9 +1243,9 @@ uint16_t B2SSegmentTranslateBitCode(uint32_t bits, int ledSegments)
    switch (ledSegments)
    {
    case 14:
-      // Dream7 order: a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2 -> CTLPI: a,b,c,d,e,f,g1,comma,h,i,j,g2,k,l,m,dp
-      return static_cast<uint16_t>(
-         (bits & 0x007F) | ((bits & 0x0080) << 8) | (bits & 0x0700) | (bits & 0x0800) | ((bits & 0x1000) << 2) | (bits & 0x2000) | ((bits & 0x4000) >> 2) | (bits & 0x8000));
+      // Dream7 order: a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2 -> CTLPI: a,b,c,d,e,f,g1,comma,h,i,j,g2,m,l,k,dp
+      // (segment positions are identical; the dot lights both comma and dp)
+      return static_cast<uint16_t>(bits | ((bits & 0x0080) << 8));
    case 10:
       // Dream7 order: a,b,c,d,e,f,g1,g2,i,l with g2 also reading bit 6 -> CTLPI 9seg: a..g=0..6, i=8, l=9
       return static_cast<uint16_t>(bits & 0x037F);
@@ -1254,5 +1254,26 @@ uint16_t B2SSegmentTranslateBitCode(uint32_t bits, int ledSegments)
    }
 }
 
+uint16_t B2SSegmentUntranslateBitCode(uint32_t bits, int ledSegments)
+{
+   // Inverse of B2SSegmentTranslateBitCode: the stored CTLPI/PinMAME luminance mask back to
+   // the Dream7 DisplayBitCode segment order expected by the legacy segment renderers.
+   switch (ledSegments)
+   {
+   case 14:
+      // CTLPI: a,b,c,d,e,f,g1,comma,h,i,j,g2,m,l,k,dp -> Dream7: a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2
+      // (positions are identical; the comma lights the dot, the dp lights dot + dot2)
+      return static_cast<uint16_t>((bits & 0x7FFF) | ((bits & 0x8000) ? 0x8080 : 0));
+   case 10:
+      // CTLPI 9seg: a..g=0..6, i=8, l=9 -> Dream7 order is identical
+      return static_cast<uint16_t>(bits & 0x037F);
+   case 16:
+      // CTLPI 16seg (split top/bottom): a1,a2,b,c,d2,d1,e,f,h,i,j,g2,m,l,k,g1 -> Dream7 14seg: a,b,c,d,e,f,g1,dot,h,i,j,g2,m,l,k,dot2
+      return static_cast<uint16_t>(
+         ((bits & 0x0003) ? 0x0001 : 0) | ((bits & 0x000C) >> 1) | ((bits & 0x0030) ? 0x0008 : 0) | ((bits & 0x00C0) >> 2) | ((bits & 0x8000) >> 9) | (bits & 0x0F00) | (bits & 0x7000));
+   case 7:
+   default: return static_cast<uint16_t>(bits & 0x00FF);
+   }
+}
 }
 

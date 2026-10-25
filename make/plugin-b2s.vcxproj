@@ -11,6 +11,13 @@
     <ClCompile Include="../../plugins/b2s/B2SRenderer.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp" />
     <ClCompile Include="../../plugins/b2s/DMDOverlay/DMDOverlay.cpp" />
+    <ClCompile Include="../../plugins/b2s/seg/Dream7Display.cpp" />
+    <ClCompile Include="../../plugins/b2s/seg/GraphicsPath.cpp" />
+    <ClCompile Include="../../plugins/b2s/seg/LEDBox.cpp" />
+    <ClCompile Include="../../plugins/b2s/seg/Matrix.cpp" />
+    <ClCompile Include="../../plugins/b2s/seg/SegGraphics.cpp" />
+    <ClCompile Include="../../plugins/b2s/seg/Segment.cpp" />
+    <ClCompile Include="../../plugins/b2s/seg/SegmentNumber.cpp" />
     <ClCompile Include="../../plugins/nixie/NixieLayoutFile.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
@@ -23,6 +30,17 @@
     <ClInclude Include="../../plugins/b2s/DMDOverlay/DMDOverlay.h" />
     <ClInclude Include="../../plugins/nixie/NixieLayoutFile.h" />
     <ClInclude Include="../../plugins/b2s/DMDOverlay/OverlayDisplayOptions.h" />
+    <ClInclude Include="../../plugins/b2s/seg/Brush.h" />
+    <ClInclude Include="../../plugins/b2s/seg/Dream7Display.h" />
+    <ClInclude Include="../../plugins/b2s/seg/GraphicsPath.h" />
+    <ClInclude Include="../../plugins/b2s/seg/LEDBox.h" />
+    <ClInclude Include="../../plugins/b2s/seg/Matrix.h" />
+    <ClInclude Include="../../plugins/b2s/seg/SegDisplay.h" />
+    <ClInclude Include="../../plugins/b2s/seg/SegGraphics.h" />
+    <ClInclude Include="../../plugins/b2s/seg/SegTypes.h" />
+    <ClInclude Include="../../plugins/b2s/seg/Segment.h" />
+    <ClInclude Include="../../plugins/b2s/seg/SegmentNumber.h" />
+    <ClInclude Include="../../plugins/b2s/seg/SegmentStyle.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h" />
   </ItemGroup>

@@ -17,6 +17,8 @@ namespace B2S {
 static inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
 
 MSGPI_BOOL_VAL_SETTING(showGrillProp, "ShowGrill", "Show Grill", "Show Grill", true, false);
+MSGPI_BOOL_VAL_SETTING(upgradedSegRenderingProp, "UpgradedSegmentRendering", "Upgraded segment rendering",
+   "Render LED score displays with the upgraded segment renderer (turn off for the original B2S segment rendering)", true, true);
 
 static const char* dualModeValues[] = { "Authentic", "Fantasy" };
 MSGPI_ENUM_VAL_SETTING(dualModeProp, "DualMode", "Dual Mode", "Active mode for dual backglasses (authentic or fantasy)", true, 1, 2, dualModeValues, 1);
@@ -96,6 +98,7 @@ void B2SRenderer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned in
 {
    msgApi->RegisterSetting(endpointId, &showGrillProp);
    msgApi->RegisterSetting(endpointId, &dualModeProp);
+   msgApi->RegisterSetting(endpointId, &upgradedSegRenderingProp);
 }
 
 namespace
@@ -104,9 +107,11 @@ namespace
    void MSGPIAPI ShowGrillSet(void*, int v) { showGrillProp_Set(v); }
    int MSGPIAPI DualModeGet(void*) { return dualModeProp_Get(); }
    void MSGPIAPI DualModeSet(void*, int v) { dualModeProp_Set(v); }
+   int MSGPIAPI UpgradedSegGet(void*) { return upgradedSegRenderingProp_Get(); }
+   void MSGPIAPI UpgradedSegSet(void*, int v) { upgradedSegRenderingProp_Set(v); }
 }
 
-void B2SRenderer::FillSettingsItems(PagedUIItemDef* items)
+int B2SRenderer::FillSettingsItems(PagedUIItemDef* items)
 {
    items[0] = {};
    items[0].type = PAGEDUI_ITEM_BOOL;
@@ -122,6 +127,14 @@ void B2SRenderer::FillSettingsItems(PagedUIItemDef* items)
    items[1].tooltip = "Active mode for dual backglasses (authentic or fantasy)";
    items[1].storage = PAGEDUI_STORAGE_HOST;
    items[1].enumProp = { 1, 2, dualModeValues, 1, &DualModeGet, &DualModeSet };
+   items[2] = {};
+   items[2].type = PAGEDUI_ITEM_BOOL;
+   items[2].id = "UpgradedSegmentRendering";
+   items[2].label = "Upgraded segment rendering";
+   items[2].tooltip = "Render LED score displays with the upgraded segment renderer (turn off for the original B2S segment rendering)";
+   items[2].storage = PAGEDUI_STORAGE_HOST;
+   items[2].boolProp = { 1, &UpgradedSegGet, &UpgradedSegSet };
+   return 3;
 }
 
 void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
@@ -455,6 +468,10 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
             default: ret = -1; break;
             }
             server->B2SSetScoreDigit(digitIndex, ret);
+            // Keep the raw segment mask: script digits decode to value-only, but frame-fed displays
+            // need the full mask (alphanumeric glyphs do not decode to a digit). Must be applied
+            // after B2SSetScoreDigit which clears the mask.
+            server->ApplyScoreSegments(digitIndex, bitState);
             digitIndex++;
          }
       }
@@ -487,6 +504,16 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
       {
          if (reel.m_b2sPlayerNo != 0)
             playerScoreOffset[reel.m_b2sPlayerNo] += static_cast<size_t>(std::max(0, reel.m_digits));
+         continue;
+      }
+
+      // Legacy segment rendering (opt-out of the upgraded renderer): rasterize like the original
+      // B2S server — one Dream7Display per LED display, or one simple LED box per digit
+      if (!upgradedSegRenderingProp_Get() && (reel.m_scoreType == B2SScoreRenderer::Dream7 || reel.m_scoreType == B2SScoreRenderer::RenderedLED))
+      {
+         const int usedLEDType = server->GetUsedLEDType();
+         const bool dream7 = (usedLEDType == 2) || (usedLEDType != 1 && reel.m_scoreType == B2SScoreRenderer::Dream7);
+         RenderLegacyScoreDisplay(ctx, server, reel, dream7, segTypes, playerScoreText, playerScoreOffset);
          continue;
       }
 
@@ -643,6 +670,133 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
          }
       }
    }
+}
+
+
+// Legacy segment rendering (UpgradedSegmentRendering opt-out), matching the original B2S server
+// implementation: a Dream7Display spans the whole score display, rendered LED boxes are one box
+// per digit. Both rasterize the segments into a texture which is redrawn only on changes
+// Segment count of a CTLPI_SEG_LAYOUT_xxx element type, matching B2SSegmentUntranslateBitCode's 'ledSegments' values
+static int SegLayoutSegments(SegElementType type)
+{
+   switch (type)
+   {
+   case CTLPI_SEG_LAYOUT_7:
+   case CTLPI_SEG_LAYOUT_7C:
+   case CTLPI_SEG_LAYOUT_7D: return 7;
+   case CTLPI_SEG_LAYOUT_9:
+   case CTLPI_SEG_LAYOUT_9C: return 10;
+   case CTLPI_SEG_LAYOUT_16: return 16;
+   default: return 14;
+   }
+}
+
+void B2SRenderer::RenderLegacyScoreDisplay(VPXRenderContext2D* ctx, B2SServer* server, const B2SScore& reel, bool dream7, const std::vector<SegElementType>& segTypes,
+   const ankerl::unordered_dense::map<int, string>& playerScoreText, ankerl::unordered_dense::map<int, size_t>& playerScoreOffset)
+{
+   LegacySegDisplay& state = m_legacySegDisplays[&reel];
+   if (!state.built || state.dream7 != dream7)
+   {
+      // (Re)build the display, also on a UsedLEDType mode change
+      state = LegacySegDisplay {};
+      state.dream7 = dream7;
+      const uint8_t litR = static_cast<uint8_t>(std::clamp(reel.m_reelLitColor.x * 255.f + 0.5f, 0.f, 255.f));
+      const uint8_t litG = static_cast<uint8_t>(std::clamp(reel.m_reelLitColor.y * 255.f + 0.5f, 0.f, 255.f));
+      const uint8_t litB = static_cast<uint8_t>(std::clamp(reel.m_reelLitColor.z * 255.f + 0.5f, 0.f, 255.f));
+      const uint8_t darkR = static_cast<uint8_t>(std::clamp(reel.m_reelDarkColor.x * 255.f + 0.5f, 0.f, 255.f));
+      const uint8_t darkG = static_cast<uint8_t>(std::clamp(reel.m_reelDarkColor.y * 255.f + 0.5f, 0.f, 255.f));
+      const uint8_t darkB = static_cast<uint8_t>(std::clamp(reel.m_reelDarkColor.z * 255.f + 0.5f, 0.f, 255.f));
+      const uint32_t litColor = seg::RGB(litR, litG, litB);
+      const uint32_t darkColor = seg::RGB(darkR, darkG, darkB);
+      if (dream7)
+      {
+         auto d7 = std::make_unique<seg::Dream7Display>(m_vpxApi);
+         d7->SetRect({ reel.m_locX - 1, reel.m_locY, reel.m_width, reel.m_height });
+         d7->SetType(reel.m_ledSegments == 10 ? seg::SegmentNumberType_TenSegment : reel.m_ledSegments == 14 ? seg::SegmentNumberType_FourteenSegment : seg::SegmentNumberType_SevenSegment);
+         d7->SetScaleMode(seg::ScaleMode_Stretch);
+         d7->SetDigits(reel.m_digits);
+         d7->SetSpacing(static_cast<float>(reel.m_spacing) * 5.f);
+         // Reference color wiring: the glass colors derive from the authored lit segment color
+         d7->SetLightColor(litColor);
+         d7->SetGlassColor(seg::RGB(static_cast<uint8_t>(std::min(255, litR + 50)), static_cast<uint8_t>(std::min(255, litG + 50)), static_cast<uint8_t>(std::min(255, litB + 50))));
+         d7->SetGlassColorCenter(seg::RGB(static_cast<uint8_t>(std::min(255, litR + 70)), static_cast<uint8_t>(std::min(255, litG + 70)), static_cast<uint8_t>(std::min(255, litB + 70))));
+         d7->SetOffColor(darkColor);
+         d7->SetGlassAlpha(140);
+         d7->SetGlassAlphaCenter(255);
+         d7->SetThickness(static_cast<float>(reel.m_thickness) / 100.f * 1.2f);
+         d7->SetShear(static_cast<float>(reel.m_shear) / 100.f);
+         d7->SetGlow(static_cast<float>(std::lround(static_cast<float>(reel.m_glow) / 100.f)));
+         // 'Taxi' patch to shear the third LED display (reference FormBackglass)
+         if (reel.m_id == 3 && string_to_lower(m_b2s->m_name) == "taxi"s)
+         {
+            d7->SetAngle(4.f);
+            d7->SetShear(d7->GetShear() / 2.f);
+         }
+         state.display = std::move(d7);
+      }
+      else
+      {
+         const int width = static_cast<int>(std::lround((reel.m_width - (reel.m_digits - 1) * reel.m_spacing / 2.f) / reel.m_digits));
+         state.boxes.reserve(static_cast<size_t>(reel.m_digits));
+         for (int i = 0; i < reel.m_digits; i++)
+         {
+            auto box = std::make_unique<seg::LEDBox>(m_vpxApi);
+            const int x = static_cast<int>(std::lround((reel.m_locX - 1) + i * (width + reel.m_spacing / 2.f)));
+            box->SetRect({ x, reel.m_locY, width, reel.m_height });
+            box->SetLEDType(reel.m_ledSegments == 10 ? seg::eLEDType_LED10 : reel.m_ledSegments == 14 ? seg::eLEDType_LED14 : seg::eLEDType_LED8);
+            box->SetLitLEDSegmentColor(litColor);
+            box->SetDarkLEDSegmentColor(darkColor);
+            state.boxes.push_back(std::move(box));
+         }
+      }
+      state.built = true;
+   }
+
+   // Feed the digits: an explicit script segment mask (B2SSetLED/B2SSetLEDDisplay, untranslated
+   // back to the Dream7 bit order these renderers expect) wins, else the digit glyph
+   for (int i = 0; i < reel.m_digits; i++)
+   {
+      const int index = reel.m_resolvedStartDigit + i;
+      char c = ' ';
+      if (reel.m_b2sPlayerNo != 0)
+      {
+         const auto it = playerScoreText.find(reel.m_b2sPlayerNo);
+         const size_t offset = playerScoreOffset[reel.m_b2sPlayerNo] + static_cast<size_t>(i);
+         c = (it != playerScoreText.end() && offset < it->second.length()) ? it->second[offset] : ' ';
+      }
+      else
+      {
+         const int digit = server->GetScoreDigit(index);
+         c = (digit >= 0 && digit <= 9) ? static_cast<char>('0' + digit) : (digit >= 10 && digit <= 15) ? static_cast<char>('A' + digit - 10) : ' ';
+      }
+      const int segMask = server->GetScoreDigitSegments(index);
+      // Source segment layout for the mask untranslation: the PinMAME frame element's own layout
+      // when the digit is frame-fed (it may differ from the display's declared type, e.g. a Williams
+      // 16 segment alphanum source driving a Dream7LED14 display), else the declared segment count.
+      const int srcSegs = (index > 0 && index <= static_cast<int>(segTypes.size())) ? SegLayoutSegments(segTypes[static_cast<size_t>(index - 1)]) : reel.m_ledSegments;
+      if (dream7)
+      {
+         if (segMask >= 0)
+            state.display->SetValue(i, B2SSegmentUntranslateBitCode(static_cast<uint32_t>(segMask), srcSegs));
+         else
+            state.display->SetValue(i, string(1, c));
+      }
+      else if (i < static_cast<int>(state.boxes.size()))
+      {
+         if (segMask >= 0)
+            state.boxes[static_cast<size_t>(i)]->SetValue(B2SSegmentUntranslateBitCode(static_cast<uint32_t>(segMask), srcSegs));
+         else
+            state.boxes[static_cast<size_t>(i)]->SetText(string(1, c));
+      }
+   }
+   if (reel.m_b2sPlayerNo != 0)
+      playerScoreOffset[reel.m_b2sPlayerNo] += static_cast<size_t>(reel.m_digits);
+
+   if (dream7)
+      state.display->Render(ctx);
+   else
+      for (auto& box : state.boxes)
+         box->Render(ctx);
 }
 
 
