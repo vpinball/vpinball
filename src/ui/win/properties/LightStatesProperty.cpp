@@ -69,24 +69,24 @@ void LightStatesProperty::UpdateProperties(const int dispid)
             }
             case IDC_BLINK_PATTERN_EDIT:
             {
-                const string& pattern = m_blinkPatternEdit.GetWindowText().GetString();
-                if (pattern != light->m_d.m_rgblinkpattern)
-                {
-                    PropertyDialog::StartUndo(light);
-                    light->m_d.m_rgblinkpattern = pattern;
-                    PropertyDialog::EndUndo(light);
-                }
+               const string pattern = m_blinkPatternEdit.GetWindowText().GetString();
+               if (pattern != light->m_d.m_rgblinkpattern)
+               {
+                  PropertyDialog::StartUndo(light);
+                  light->m_d.m_rgblinkpattern = pattern;
+                  PropertyDialog::EndUndo(light);
+               }
                 break;
             }
             case IDC_STATE_SOURCE_EDIT:
             {
-                const string& link = m_stateSrcLinkEdit.GetWindowText().GetString();
-                if (link != light->m_d.m_stateSrcLink)
-                {
-                    PropertyDialog::StartUndo(light);
-                    light->m_d.m_stateSrcLink = link;
-                    PropertyDialog::EndUndo(light);
-                }
+               const string link = m_stateSrcLinkEdit.GetWindowText().GetString();
+               if (link != light->m_d.m_stateSrcLink)
+               {
+                  PropertyDialog::StartUndo(light);
+                  light->m_d.m_stateSrcLink = link;
+                  PropertyDialog::EndUndo(light);
+               }
                 break;
             }
             case DISPID_Light_BlinkInterval:
