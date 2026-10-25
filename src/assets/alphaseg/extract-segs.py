@@ -4,10 +4,16 @@
 # pip install Pillow
 # pip install lxml
 
-from lxml import etree
+# Alongside each SDF atlas '<name>.png', a pre-integrated coverage atlas '<name>-cov.png' is generated
+# (twice as wide: left half = sharp segment coverage, right half = squared SDF) which is used by VPX for
+# resolution independent minification (see GetSegCov in Renderer.cpp and fs_display.sc). To regenerate only
+# the coverage atlases from the existing SDFs (no msdfgen needed), run with '--cov-only'.
+
 from PIL import Image
 import subprocess
 import os
+import sys
+import glob
 
 img_w = 24
 img_h = 32
@@ -15,6 +21,7 @@ scale = 4
 render = False
 
 def extract_single_path(svg_file, group_id, path_index, out_img, crop_right, crop_bottom):
+    from lxml import etree
     parser = etree.XMLParser(remove_blank_text=False, resolve_entities=False)
     tree = etree.parse(svg_file, parser)
     root = tree.getroot()
@@ -69,6 +76,35 @@ def build_sdf(svg_file, group_id, crop_right, crop_bottom, segs, out_file):
             os.remove(out_img) 
     merged = Image.merge('RGBA', (mergedR, mergedG, mergedB, mergedA))
     merged.save(f'../{out_file}')
+    build_cov(f'../{out_file}', f'../{out_file.replace(".png", "-cov.png")}')
+
+
+def build_cov(sdf_file, out_file):
+    # Pre-integrated atlas: left half = sharp coverage (smoothstep of the SDF over [0.48, 0.52], keeping the
+    # 0.5 border position), right half = squared SDF (glass light dispersion). VPX generates box filtered
+    # mipmaps of it which directly provide the emitted light integrated over each texel footprint.
+    sdf = Image.open(sdf_file).convert('RGBA')
+    w, h = sdf.size
+    ramp = [0] * 256
+    sq = [0] * 256
+    for i in range(256):
+        v = i / 255.0
+        t = min(max((v - 0.48) * 25.0, 0.0), 1.0)
+        ramp[i] = int(t * t * (3.0 - 2.0 * t) * 255.0 + 0.5)
+        sq[i] = int(v * v * 255.0 + 0.5)
+    cov = sdf.point(ramp * 4)
+    sdf2 = sdf.point(sq * 4)
+    out = Image.new('RGBA', (2 * w, h))
+    out.paste(cov, (0, 0))
+    out.paste(sdf2, (w, 0))
+    out.save(out_file)
+
+if len(sys.argv) > 1 and sys.argv[1] == '--cov-only':
+    # Regenerate only the coverage atlases from the existing SDF atlases (no msdfgen run)
+    for sdf_file in glob.glob('../*seg*.png'):
+        if '-cov' not in sdf_file:
+            build_cov(sdf_file, sdf_file.replace('.png', '-cov.png'))
+    sys.exit(0)
 
 # Needed display types:
 # -  7 segments

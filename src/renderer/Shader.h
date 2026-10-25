@@ -179,9 +179,9 @@ enum class ShaderTechnique : unsigned int
    SHADER_TECHNIQUE(display_DMD_world, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::vRes_Alpha_time, ShaderUniform::w_h_height, ShaderUniform::displayProperties, ShaderUniform::glassPad,
       ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::displayTex, ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(display_Seg, ShaderUniform::alphaSegState, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha,
-      ShaderUniform::w_h_height, ShaderUniform::displayTex),
+      ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayCov, ShaderUniform::displayProperties),
    SHADER_TECHNIQUE(display_Seg_world, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::alphaSegState, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness,
-      ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::clip_plane),
+      ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayCov, ShaderUniform::displayProperties, ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(display_CRT, ShaderUniform::vRes_Alpha_time, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity,
       ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayProperties),
    // Lottes-CRT
@@ -421,6 +421,7 @@ enum class ShaderUniform : unsigned int
    SHADER_SAMPLER(
       displayTex, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // DMD (Point sampling), Alpha seg (bilinear sampling), Display (Point sampling)
    SHADER_SAMPLER(displayGlass, 1, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR),
+   SHADER_SAMPLER(displayCov, 2, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // Alpha seg prefiltered coverage atlas
 
    // Flasher Shader
    SHADER_UNIFORM(ShaderUniformType::Float4, alphaTestValueAB_filterMode_addBlend, 1),
