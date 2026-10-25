@@ -52,7 +52,7 @@ void TriggerPhysicsProperty::UpdateProperties(const int dispid)
                 break;
            case IDC_STATE_SOURCE_EDIT:
            {
-              const string &link = m_stateSrcLinkEdit.GetWindowText().GetString();
+              const string link = m_stateSrcLinkEdit.GetWindowText().GetString();
               if (link != trigger->m_d.m_stateSrcLink)
               {
                  PropertyDialog::StartUndo(trigger);
