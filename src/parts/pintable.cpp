@@ -4869,7 +4869,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR soundName, int loopcount, float volume, fl
    VPX::Sound *const sound = GetSound(name);
    if (sound)
    {
-      g_pplayer->m_audioPlayer->PlaySound(sound, volume, randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart));
+      g_pplayer->m_audioPlayer->PlaySound(sound, volume, randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart), m_TableSoundVolume);
    }
    else if (!name.empty() && !m_loggedSoundErrors.contains(name))
    {
@@ -4889,7 +4889,7 @@ STDMETHODIMP PinTable::PlaySoundAt(BSTR soundName, float x, float y, float z, in
    VPX::Sound *const sound = GetSound(name);
    if (sound)
    {
-      g_pplayer->m_audioPlayer->PlaySoundAt(sound, x, y, z, volume, randompitch, pitch, loopcount, VBTOb(usesame), VBTOb(restart));
+      g_pplayer->m_audioPlayer->PlaySoundAt(sound, x, y, z, volume, randompitch, pitch, loopcount, VBTOb(usesame), VBTOb(restart), m_TableSoundVolume);
    }
    else if (!name.empty() && !m_loggedSoundErrors.contains(name))
    {
