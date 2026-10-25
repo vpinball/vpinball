@@ -581,8 +581,10 @@ void AudioPlayer::PlaySoundInternal(Sound* sound, float volume, const float rand
 
 void AudioPlayer::StopSound(Sound* sound)
 {
-   const vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
-   for (const auto& player : players)
+   const auto it = m_soundPlayers.find(sound);
+   if (it == m_soundPlayers.end())
+      return;
+   for (const auto& player : it->second)
       player->Stop();
 }
 
@@ -602,16 +604,17 @@ SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
    specs.nChannels = decoder.outputChannels;
    specs.sampleFrequency = decoder.outputSampleRate;
 
-   if (m_backglassEngine == nullptr)
+   ma_engine* const engine = GetEngine(sound->GetOutputTarget()) ? GetEngine(sound->GetOutputTarget()) : (m_backglassEngine ? m_backglassEngine.get() : m_playfieldEngine.get());
+   if (engine == nullptr)
    {
       ma_decoder_uninit(&decoder);
       return specs;
    }
 
    ma_sound maSound;
-   ma_sound_config config = ma_sound_config_init_2(m_backglassEngine.get());
+   ma_sound_config config = ma_sound_config_init_2(engine);
    config.pDataSource = &decoder;
-   if (ma_sound_init_ex(m_backglassEngine.get(), &config, &maSound))
+   if (ma_sound_init_ex(engine, &config, &maSound))
       return specs;
    float length;
    ma_sound_get_length_in_seconds(&maSound, &length);
