@@ -24,8 +24,9 @@
 'The lower flipper coils come out as sLLFlipper/sLRFlipper (48/46) on every title, besides their own
 'Driver Reference numbers; an upper flipper is its coil's number only (Game of Thrones LE: 18 left, 16 right;
 'WWE: 22 left). Titles with upper flippers have a second leaf on each flipper button, which the
-'flipper keys close with the lower one, and the staged flipper keys too. A table for a cabinet with
-'staged flipper buttons sets Spike1StagedFlippers = True: the upper leaves then follow the staged keys only.
+'flipper keys close with the lower one. A table for a cabinet with staged flipper buttons sets
+'Spike1StagedFlippers = True: the upper leaves then follow the staged keys only (the flipper keys
+'while staged flipper processing is off).
 
 'Solenoid map: coils by their Driver Reference number, 1-32; GAME ON as 33; a coil numbered 0 or
 'above 32 as 51 and up, in number order. Lamps are the LED channels by their Light Reference number
@@ -72,7 +73,8 @@ Private spike1FlipperCoils ' the flipper coils by their Driver Reference numbers
 Private Sub spike1Cabinet(ByVal aGame)
 	Dim title : title = LCase(aGame)
 	If InStr(title, "_") > 0 Then title = Left(title, InStr(title, "_") - 1)
-	swULFlip = 0 : swURFlip = 0 : swTournament = 0 : swLaunch = 0
+	swCoin1 = 0 : swCoin2 = 0 : swCoin3 = 0 : swCoin4 = 0 : swStartButton = 0 : swTilt = 0 : swSlamTilt = 0
+	swLLFlip = 0 : swLRFlip = 0 : swULFlip = 0 : swURFlip = 0 : swTournament = 0 : swLaunch = 0
 	spike1FlipperCoils = Array()
 	Select Case title
 		Case "gbust"					' Ghostbusters
@@ -87,7 +89,10 @@ Private Sub spike1Cabinet(ByVal aGame)
 			swCoin1 = 66 : swCoin2 = 67 : swCoin3 = 68 : swCoin4 = 69
 			swStartButton = 63 : swTournament = 64 : swLaunch = 60 : swTilt = 71 : swSlamTilt = 75
 			swLLFlip = 10 : swLRFlip = 11 : spike1FlipperCoils = Array(3, 8)
-			If Right(LCase(aGame), 1) = "h" Then swULFlip = 12 : swURFlip = 13 : spike1FlipperCoils = Array(3, 8, 18, 16)
+			If Right(LCase(aGame), 1) = "h" Then
+				swULFlip = 12 : swURFlip = 13 : spike1FlipperCoils = Array(3, 8, 18, 16)
+				vpmFlips.FlipperSolNumber(2) = 18 : vpmFlips.FlipperSolNumber(3) = 16
+			End If
 		Case "kiss15"					' KISS
 			swCoin1 = 67 : swCoin2 = 68 : swCoin3 = 69 : swCoin4 = 70
 			swStartButton = 62 : swTournament = 15 : swLaunch = 73 : swTilt = 72 : swSlamTilt = 77
@@ -96,6 +101,7 @@ Private Sub spike1Cabinet(ByVal aGame)
 			swCoin1 = 67 : swCoin2 = 68 : swCoin3 = 69 : swCoin4 = 70
 			swStartButton = 62 : swTournament = 15 : swTilt = 72 : swSlamTilt = 77
 			swLLFlip = 10 : swLRFlip = 11 : swULFlip = 74 : swURFlip = 75 : spike1FlipperCoils = Array(15, 16, 20, 21, 22)
+			vpmFlips.FlipperSolNumber(2) = 22
 		Case "heavym20"					' Heavy Metal
 			swCoin1 = 76 : swCoin2 = 77 : swCoin3 = 78 : swCoin4 = 79
 			swStartButton = 73 : swTournament = 74 : swLaunch = 70 : swTilt = 81 : swSlamTilt = 84
@@ -160,6 +166,21 @@ End Sub
 Set vpmShowDips = GetRef("spike1ShowDips")
 Private vpmDips
 
+' A flipper button leaf: its switch, and the fast flip of its flipper (UseSolenoids = 2)
+Private Sub spike1FlipLeaf(ByVal aUpper, ByVal aRight, ByVal aEnabled)
+	Dim sw
+	If aUpper Then
+		If aRight Then sw = swURFlip Else sw = swULFlip
+		If sw = 0 Then Exit Sub
+		If aRight Then vpmFlips.FlipUR aEnabled Else vpmFlips.FlipUL aEnabled
+	Else
+		If aRight Then sw = swLRFlip Else sw = swLLFlip
+		If sw = 0 Then Exit Sub
+		If aRight Then vpmFlips.FlipR aEnabled Else vpmFlips.FlipL aEnabled
+	End If
+	Controller.Switch(sw) = aEnabled
+End Sub
+
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
 	vpmKeyDown = True ' assume we handle the key
@@ -169,18 +190,18 @@ Function vpmKeyDown(ByVal keycode)
 	With Controller
 		Select Case keycode
 			Case LeftFlipperKey
-				.Switch(swLLFlip) = True : vpmKeyDown = False
-				If swULFlip <> 0 And (Not Spike1StagedFlippers Or keycode = stagedFlipperL) Then .Switch(swULFlip) = True
+				spike1FlipLeaf False, False, True : vpmKeyDown = False
+				If Not Spike1StagedFlippers Or stagedFlipperL = -1 Or keycode = stagedFlipperL Then spike1FlipLeaf True, False, True
 			Case RightFlipperKey
-				.Switch(swLRFlip) = True : vpmKeyDown = False
-				If swURFlip <> 0 And (Not Spike1StagedFlippers Or keycode = stagedFlipperR) Then .Switch(swURFlip) = True
-			Case stagedFlipperL  If swULFlip <> 0 Then .Switch(swULFlip) = True
-			Case stagedFlipperR  If swURFlip <> 0 Then .Switch(swURFlip) = True
+				spike1FlipLeaf False, True, True : vpmKeyDown = False
+				If Not Spike1StagedFlippers Or stagedFlipperR = -1 Or keycode = stagedFlipperR Then spike1FlipLeaf True, True, True
+			Case stagedFlipperL  If Spike1StagedFlippers Then spike1FlipLeaf True, False, True
+			Case stagedFlipperR  If Spike1StagedFlippers Then spike1FlipLeaf True, True, True
 			Case keyInsertCoin1  If swCoin1 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin2  If swCoin2 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin3  If swCoin3 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin4  If swCoin4 <> 0 Then vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
-			Case StartGameKey	 .Switch(swStartButton) = True
+			Case StartGameKey	 If swStartButton <> 0 Then .Switch(swStartButton) = True
 			Case keyFront		 If swTournament <> 0 Then .Switch(swTournament) = True
 			Case keyCancel		 .Switch(swCancel)		= True
 			Case keyDown		 .Switch(swDown)		= True
@@ -203,14 +224,14 @@ Function vpmKeyUp(ByVal keycode)
 	With Controller
 		Select Case keycode
 			Case LeftFlipperKey
-				.Switch(swLLFlip) = False : vpmKeyUp = False
-				If swULFlip <> 0 And (Not Spike1StagedFlippers Or keycode = stagedFlipperL) Then .Switch(swULFlip) = False
+				spike1FlipLeaf False, False, False : vpmKeyUp = False
+				If Not Spike1StagedFlippers Or stagedFlipperL = -1 Or keycode = stagedFlipperL Then spike1FlipLeaf True, False, False
 			Case RightFlipperKey
-				.Switch(swLRFlip) = False : vpmKeyUp = False
-				If swURFlip <> 0 And (Not Spike1StagedFlippers Or keycode = stagedFlipperR) Then .Switch(swURFlip) = False
-			Case stagedFlipperL  If swULFlip <> 0 Then .Switch(swULFlip) = False
-			Case stagedFlipperR  If swURFlip <> 0 Then .Switch(swURFlip) = False
-			Case StartGameKey	 .Switch(swStartButton) = False
+				spike1FlipLeaf False, True, False : vpmKeyUp = False
+				If Not Spike1StagedFlippers Or stagedFlipperR = -1 Or keycode = stagedFlipperR Then spike1FlipLeaf True, True, False
+			Case stagedFlipperL  If Spike1StagedFlippers Then spike1FlipLeaf True, False, False
+			Case stagedFlipperR  If Spike1StagedFlippers Then spike1FlipLeaf True, True, False
+			Case StartGameKey	 If swStartButton <> 0 Then .Switch(swStartButton) = False
 			Case keyFront		 If swTournament <> 0 Then .Switch(swTournament) = False
 			Case keyCancel		 .Switch(swCancel)		= False
 			Case keyDown		 .Switch(swDown)		= False
