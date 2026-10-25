@@ -60,6 +60,36 @@ public:
    const Matrix3D& GetRotViewProj(const unsigned int eye) const { Update(); return m_matRotViewProj[eye]; }
    const vec4& GetCameraPos(const unsigned int eye) const { Update(); return m_cameraPos[eye]; }
 
+   // Tells if an object space box, placed by the current model matrix, may be seen by one of the eyes. It is reported hidden only
+   // when, for every eye, its 8 corners are all beyond the same side plane of the view or all behind the eye (conservative: a box
+   // crossing a corner of the view outside of it is kept, and so is a box beyond the far plane).
+   bool IsBoxVisible(const Vertex3Ds& boxMin, const Vertex3Ds& boxMax) const
+   {
+      Update();
+      for (unsigned int eye = 0; eye < m_nEyes; eye++)
+      {
+         const Matrix3D& mvp = m_matModelViewProj[eye];
+         int left = 0, right = 0, bottom = 0, top = 0, behind = 0;
+         for (int i = 0; i < 8; i++)
+         {
+            const float x = (i & 1) ? boxMax.x : boxMin.x;
+            const float y = (i & 2) ? boxMax.y : boxMin.y;
+            const float z = (i & 4) ? boxMax.z : boxMin.z;
+            const float xp = mvp._11 * x + mvp._21 * y + mvp._31 * z + mvp._41;
+            const float yp = mvp._12 * x + mvp._22 * y + mvp._32 * z + mvp._42;
+            const float wp = mvp._14 * x + mvp._24 * y + mvp._34 * z + mvp._44;
+            left += xp < -wp;
+            right += xp > wp;
+            bottom += yp < -wp;
+            top += yp > wp;
+            behind += wp <= 0.f;
+         }
+         if (left < 8 && right < 8 && bottom < 8 && top < 8 && behind < 8)
+            return true;
+      }
+      return false;
+   }
+
    const unsigned int m_nEyes;
 
 private:
