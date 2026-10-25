@@ -351,10 +351,36 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       case VPX::Properties::PropertyDef::Type::Float:
       {
          auto prop = dynamic_cast<const VPX::Properties::FloatPropertyDef*>(item->m_property.get());
+         // Adjust on a step grid: the one defined by the property if any, otherwise a 'nice' step matching the displayed range and precision
+         float step = prop->m_step;
+         float anchor = prop->m_min;
+         if (step == 0.f)
+         {
+            anchor = 0.f;
+            const float displayScale = fabsf(item->m_floatValueDisplayScale) != 0.f ? fabsf(item->m_floatValueDisplayScale) : 1.f;
+            const float displayRange = (prop->m_max - prop->m_min) * displayScale;
+            // Minimum step is the displayed precision (ex: 0.1 for a '%4.1f' format), then the largest 1-2-5 step fitting 1/64th of the range
+            float displayStep = 1.f;
+            if (const size_t dotPos = item->m_format.find('.');
+               dotPos != string::npos && dotPos + 1 < item->m_format.size() && item->m_format[dotPos + 1] >= '0' && item->m_format[dotPos + 1] <= '9')
+               displayStep = powf(10.f, static_cast<float>('0' - item->m_format[dotPos + 1]));
+            if (displayRange > 0.f && displayRange < FLT_MAX)
+            {
+               const float rangeStep = displayRange / 64.f;
+               const float pow10 = powf(10.f, floorf(log10f(rangeStep)));
+               displayStep = max(displayStep, (5.f * pow10 <= rangeStep) ? 5.f * pow10 : (2.f * pow10 <= rangeStep) ? 2.f * pow10 : pow10);
+            }
+            step = displayStep / displayScale;
+         }
          if (isInitialPress)
-            m_adjustedValue = item->GetFloatValue() + direction * (prop->m_step != 0.f ? prop->m_step : (prop->m_max - prop->m_min) / 32.f);
+         {
+            // Move to the next step in the pressed direction (full step when already on the grid, else closest grid position in this direction)
+            const float pos = (item->GetFloatValue() - anchor) / step;
+            const float gridPos = roundf(pos);
+            m_adjustedValue = anchor + (fabsf(pos - gridPos) < 0.001f ? gridPos + direction : (direction < 0.f ? floorf(pos) : ceilf(pos))) * step;
+         }
          else if (elapsedSincePress > 100)
-            m_adjustedValue += direction * speedFactor * elapsed * (prop->m_max - prop->m_min) / 32.f;
+            m_adjustedValue += direction * speedFactor * elapsed * step;
          item->SetValue(prop->GetSteppedClamped(m_adjustedValue));
          break;
       }
@@ -365,7 +391,7 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
          if (isInitialPress)
             m_adjustedValue = static_cast<float>(item->GetIntValue()) + direction;
          else if (elapsedSincePress > 100)
-            m_adjustedValue += direction * speedFactor * elapsed * static_cast<float>(prop->m_max - prop->m_min) / 32.f;
+            m_adjustedValue += direction * speedFactor * elapsed * static_cast<float>(prop->m_max - prop->m_min) / 64.f;
          item->SetValue(prop->GetClamped(static_cast<int>(round(m_adjustedValue))));
          break;
       }
