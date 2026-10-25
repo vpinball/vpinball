@@ -1437,9 +1437,9 @@ TEST_CASE("PolygonToTriangles on degenerate polygons")
 }
 
 
-TEST_CASE("Bundled table templates pass hash validation")
+TEST_CASE("Bundled table templates load")
 {
-   for (const char *file : { "blankTable.vpx", "strippedTable.vpx", "exampleTable.vpx", "lightSeqTable.vpx" })
+   for (const char *file : { "blankTable.vpz", "strippedTable.vpz", "exampleTable.vpz", "lightSeqTable.vpz" })
    {
       CComObject<PinTable> *table;
       CComObject<PinTable>::CreateInstance(&table);

@@ -1,0 +1,8 @@
+{
+  "$type": "sound",
+  "import_path": "C:\\Users\\vcbou\\Desktop\\BlankTable\\ogg\\fx_ball_drop1.ogg",
+  "output_target": "playfield",
+  "volume_offset": 0,
+  "left_right_offset": 0,
+  "rear_front_offset": 0
+}

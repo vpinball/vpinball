@@ -342,11 +342,11 @@ void EditorUI::LoadTableTemplate(const NewTableTemplate templateType)
    string path;
    switch (templateType)
    {
-   case NewTableTemplate::Stripped: path = "strippedTable.vpx"s; break;
-   case NewTableTemplate::Example: path = "exampleTable.vpx"s; break;
-   case NewTableTemplate::LightSeq: path = "lightSeqTable.vpx"s; break;
+   case NewTableTemplate::Stripped: path = "strippedTable.vpz"s; break;
+   case NewTableTemplate::Example: path = "exampleTable.vpz"s; break;
+   case NewTableTemplate::LightSeq: path = "lightSeqTable.vpz"s; break;
    case NewTableTemplate::Blank:
-   default: path = "blankTable.vpx"s;
+   default: path = "blankTable.vpz"s;
    }
    CComObject<PinTable> *table;
    CComObject<PinTable>::CreateInstance(&table);

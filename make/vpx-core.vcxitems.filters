@@ -2805,16 +2805,16 @@
     <Image Include="$(SolutionDir)/../../src/assets/kickerT1.webp">
       <Filter>assets</Filter>
     </Image>
-    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpx">
+    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpz/**">
       <Filter>assets</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpx">
+    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpz/**">
       <Filter>assets</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpx">
+    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpz/**">
       <Filter>assets</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpx">
+    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpz/**">
       <Filter>assets</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/assets/TableSizes.csv">

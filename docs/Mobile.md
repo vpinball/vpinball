@@ -47,7 +47,7 @@ Android and Quest APKs are produced by the project's [GitHub Actions](https://gi
 
 ## Your first game
 
-When you open the app for the first time, the table list is empty. Tap the **+** button in the bottom right and pick **exampleTable.vpx** under *Built in...*, then tap **OK**:
+When you open the app for the first time, the table list is empty. Tap the **+** button in the bottom right and pick **exampleTable.vpz** under *Built in...*, then tap **OK**:
 
 <p align="center">
 <img src="img/mobile/table-list-empty.webp" width="220">&nbsp;&nbsp;

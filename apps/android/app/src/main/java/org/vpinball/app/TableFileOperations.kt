@@ -80,7 +80,11 @@ class TableFileOperations(private val getTablesPath: () -> String) {
                         return true
                     }
 
-                    fromFile.copyTo(to, overwrite = true)
+                    if (fromFile.isDirectory) {
+                        fromFile.copyRecursively(to, overwrite = true)
+                    } else {
+                        fromFile.copyTo(to, overwrite = true)
+                    }
                     true
                 }
                 "content" -> {
@@ -132,11 +136,11 @@ class TableFileOperations(private val getTablesPath: () -> String) {
             }
         }
 
-    fun listFiles(path: String, ext: String): List<String> {
+    fun listFiles(path: String, ext: String, includeDirectories: Boolean = false): List<String> {
         val files = mutableListOf<String>()
 
         if (SAFFileSystem.isSAFPath(path)) {
-            val result = SAFFileSystem.listFilesRecursive(ext.removePrefix("."))
+            val result = SAFFileSystem.listFilesRecursive(ext.removePrefix("."), includeDirectories)
             if (result.isNotEmpty()) {
                 try {
                     val jsonArray = org.json.JSONArray(result)
@@ -159,7 +163,7 @@ class TableFileOperations(private val getTablesPath: () -> String) {
                 .walkTopDown()
                 .onEnter { dir -> dir.absolutePath != preferencesPath && dir.absolutePath != assetsPath }
                 .forEach { file ->
-                    if (file.isFile) {
+                    if (file.isFile || (includeDirectories && file.isDirectory)) {
                         if (ext.isEmpty() || file.extension.lowercase() == ext.lowercase().removePrefix(".")) {
                             files.add(file.absolutePath)
                         }
@@ -171,6 +175,9 @@ class TableFileOperations(private val getTablesPath: () -> String) {
 
         return files
     }
+
+    // All tables under a folder: ".vpx" files plus ".vpz" folder packs
+    fun listTables(path: String): List<String> = listFiles(path, ".vpx") + listFiles(path, ".vpz", includeDirectories = true)
 
     fun copyDirectory(from: String, to: String): Boolean {
         if (!SAFFileSystem.isSAFPath(from) && SAFFileSystem.isSAFPath(to)) {

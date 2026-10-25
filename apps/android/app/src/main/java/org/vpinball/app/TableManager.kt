@@ -107,7 +107,7 @@ class TableManager(private val context: Context) {
 
                 val newTables =
                     performImport(tempFile.absolutePath) { progress -> withContext(Dispatchers.Main) { onProgress(progress, importMessage) } }
-                tempFile.delete()
+                tempFile.deleteRecursively()
 
                 if (newTables.isEmpty()) {
                     withContext(Dispatchers.Main) {
@@ -128,7 +128,7 @@ class TableManager(private val context: Context) {
                 true
             } catch (e: Exception) {
                 VPinballManager.log(VPinballLogLevel.ERROR, "Import error: ${e.message}")
-                tempFile.delete()
+                tempFile.deleteRecursively()
                 withContext(Dispatchers.Main) { VPinballManager.showError("Import failed: ${e.message}") }
                 false
             }
@@ -349,10 +349,10 @@ class TableManager(private val context: Context) {
         }
 
         onProgress?.invoke(70, "Scanning for tables...")
-        val vpxFiles = fileOps.listFiles(tablesPath, ".vpx")
+        val tablePaths = fileOps.listTables(tablesPath)
 
         onProgress?.invoke(90, "Finalizing...")
-        for (filePath in vpxFiles) {
+        for (filePath in tablePaths) {
             if (!loadedTables.any { buildPath(it.path) == filePath }) {
                 createTable(filePath).let { loadedTables.add(it) }
             }
@@ -462,6 +462,10 @@ class TableManager(private val context: Context) {
                 val table = importVPX(path)
                 if (table != null) listOf(table) else emptyList()
             }
+            "vpz" -> {
+                val table = importVPZ(path)
+                if (table != null) listOf(table) else emptyList()
+            }
             else -> {
                 VPinballManager.log(VPinballLogLevel.ERROR, "Unsupported file extension: $ext")
                 emptyList()
@@ -492,6 +496,37 @@ class TableManager(private val context: Context) {
         return createTable(destFile)
     }
 
+    // Import of a VPZ pack: a folder is copied as is, a ".vpz" file (zip archive) is extracted into the pack folder
+    private fun importVPZ(path: String): Table? {
+        val source = File(path)
+        val stem = source.nameWithoutExtension
+        val name = stem.replace("_", " ")
+
+        val folderName = getUniqueFolder(name)
+        val destFolder = buildPath(folderName)
+        val destPack = "$destFolder/${source.name}"
+
+        if (!fileOps.createDirectory(destFolder)) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to create directory")
+            return null
+        }
+
+        val copied =
+            if (source.isDirectory) {
+                fileOps.copyDirectory(source.absolutePath, destPack)
+            } else {
+                fileOps.createDirectory(destPack) &&
+                    VPinballManager.vpinballJNI.VPinballZipExtract(path, destPack, null) == VPinballStatus.SUCCESS.value
+            }
+
+        if (!copied) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy pack")
+            return null
+        }
+
+        return createTable(destPack)
+    }
+
     private suspend fun importArchive(path: String, onProgress: (suspend (Int) -> Unit)? = null): List<Table> {
         val tempDir = File(context.cacheDir, "vpinball_import_${System.currentTimeMillis()}").absolutePath
 
@@ -518,15 +553,15 @@ class TableManager(private val context: Context) {
                 return emptyList()
             }
 
-            val vpxFiles = fileOps.listFiles(tempDir, ".vpx")
+            val tablePaths = fileOps.listTables(tempDir)
 
-            if (vpxFiles.isEmpty()) {
+            if (tablePaths.isEmpty()) {
                 fileOps.deleteDirectory(tempDir)
                 return emptyList()
             }
 
             val importedTables = mutableListOf<Table>()
-            for (vpxFile in vpxFiles) {
+            for (vpxFile in tablePaths) {
                 val vpxName = File(vpxFile).nameWithoutExtension
                 val sourceDir = File(vpxFile).parent ?: ""
 
@@ -563,9 +598,9 @@ class TableManager(private val context: Context) {
         }
 
         if (fileOps.exists(tableDir)) {
-            val vpxFiles = fileOps.listFiles(tableDir, ".vpx")
+            val tablePaths = fileOps.listTables(tableDir)
 
-            if (vpxFiles.size <= 1) {
+            if (tablePaths.size <= 1) {
                 if (!fileOps.deleteDirectory(tableDir, onProgress)) {
                     return false
                 }

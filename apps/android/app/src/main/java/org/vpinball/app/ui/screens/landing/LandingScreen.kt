@@ -63,6 +63,7 @@ import org.vpinball.app.Table
 import org.vpinball.app.TableManager
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.VPinballModel
+import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.ui.screens.common.AlertButton
 import org.vpinball.app.ui.screens.common.CircleIconButton
 import org.vpinball.app.ui.screens.common.ProgressOverlay
@@ -178,9 +179,9 @@ fun LandingScreen(
 
     fun importBuiltInTable(name: String) {
         try {
-            val assetFile = File(context.cacheDir, name)
-            context.assets.open("assets/$name").use { input -> FileOutputStream(assetFile).use { output -> input.copyTo(output) } }
-            importUri = assetFile.toUri()
+            // Built-in tables are deployed to internal storage on startup, which also gives access to folder packs
+            // (AssetManager can only open files, not directories)
+            importUri = File(VPinballManager.getPath(VPinballPath.ASSETS), name).toUri()
             importFilename = name
             showConfirmDialog = true
         } catch (e: Exception) {
@@ -351,8 +352,8 @@ fun LandingScreen(
             searchText = searchText,
             focusManager = focusManager,
             onFiles = { launcher.launch(arrayOf("*/*")) },
-            onBlankTable = { importBuiltInTable("blankTable.vpx") },
-            onExampleTable = { importBuiltInTable("exampleTable.vpx") },
+            onBlankTable = { importBuiltInTable("blankTable.vpz") },
+            onExampleTable = { importBuiltInTable("exampleTable.vpz") },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
 

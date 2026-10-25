@@ -1,0 +1,34 @@
+{
+  "$type": "textbox",
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": false,
+  "ui_visible": false,
+  "legacy_layer": 0,
+  "named_layer": "1",
+  "part_group": "1",
+  "alignment": 2,
+  "back_color": 460551,
+  "font_color": 26574,
+  "font": {
+    "name": "Lucida Sans Unicode",
+    "size": 180000,
+    "weight": 700,
+    "charset": 0,
+    "italic": false,
+    "underline": false,
+    "strikethrough": false
+  },
+  "dmd": false,
+  "intensity_scale": 1.5,
+  "text": "Press Key for sequence: 5 (std) or 4 (timed) or 6 (long)",
+  "transparent": false,
+  "v1": {
+    "x": 8.0,
+    "y": 8.0
+  },
+  "v2": {
+    "x": 508.0,
+    "y": 108.0
+  }
+}

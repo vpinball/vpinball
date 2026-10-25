@@ -1,0 +1,13 @@
+{
+  "$type": "partgroup",
+  "center": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": false,
+  "ui_visible": true,
+  "player_mode_visibility_mask": 65535,
+  "space_reference": 0
+}

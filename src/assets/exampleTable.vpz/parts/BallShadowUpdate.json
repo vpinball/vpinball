@@ -1,0 +1,15 @@
+{
+  "$type": "timer",
+  "center": {
+    "x": 1051.0,
+    "y": 2024.0
+  },
+  "timer_enabled": true,
+  "timer_interval": -1,
+  "ui_locked": false,
+  "ui_visible": true,
+  "legacy_layer": 7,
+  "named_layer": "Wood___Shadows",
+  "part_group": "Wood___Shadows",
+  "desktop_backdrop": false
+}

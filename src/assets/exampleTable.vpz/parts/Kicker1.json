@@ -1,0 +1,25 @@
+{
+  "$type": "kicker",
+  "center": {
+    "x": 448.67315673828125,
+    "y": 959.02001953125
+  },
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": true,
+  "ui_visible": true,
+  "legacy_layer": 2,
+  "named_layer": "Main_Layout",
+  "part_group": "Main_Layout",
+  "enabled": true,
+  "fall_through": false,
+  "hit_accuracy": 0.699999988079071,
+  "hit_height": 40.0,
+  "orientation": 0.0,
+  "scatter": 0.0,
+  "legacy_mode": true,
+  "material": "Plastic",
+  "radius": 8.0,
+  "surface": "",
+  "type": 0
+}

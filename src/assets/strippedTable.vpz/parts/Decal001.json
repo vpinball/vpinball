@@ -1,0 +1,33 @@
+{
+  "$type": "decal",
+  "center": {
+    "x": 478.5807189941406,
+    "y": 12.129860877990723
+  },
+  "ui_locked": true,
+  "ui_visible": true,
+  "legacy_layer": 4,
+  "named_layer": "2",
+  "part_group": "2",
+  "desktop_backdrop": false,
+  "color": 16777215,
+  "font": {
+    "name": "Arial Black",
+    "size": 142500,
+    "weight": 900,
+    "charset": 0,
+    "italic": false,
+    "underline": false,
+    "strikethrough": false
+  },
+  "height": 962.0,
+  "image": "",
+  "material": "Plastic with an image",
+  "rotation": 90.0,
+  "sizing_type": 2,
+  "surface": "Wall350",
+  "text": "",
+  "type": 1,
+  "vertical_text": false,
+  "width": 23.0
+}

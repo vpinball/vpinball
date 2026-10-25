@@ -85,6 +85,34 @@ enum TableFileOperations {
         return files
     }
 
+    // All tables under a folder: ".vpx" files plus ".vpz" folder packs
+    static func listTableURLs(_ url: URL) -> [URL] {
+        var tables = listFiles(url, ext: ".vpx")
+        let preferencesURL = URL(fileURLWithPath: VPinballManager.shared.getPath(.preferences))
+
+        if let enumerator = FileManager.default.enumerator(at: url,
+                                                           includingPropertiesForKeys: [.isDirectoryKey],
+                                                           options: [])
+        {
+            for case let fileURL as URL in enumerator {
+                let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey])
+
+                if resourceValues?.isDirectory == true {
+                    if fileURL.standardizedFileURL == preferencesURL.standardizedFileURL
+                        || fileURL.lastPathComponent == "Inbox"
+                    {
+                        enumerator.skipDescendants()
+                    } else if fileURL.pathExtension.lowercased() == "vpz" {
+                        tables.append(fileURL)
+                        enumerator.skipDescendants()
+                    }
+                }
+            }
+        }
+
+        return tables
+    }
+
     static func copyDirectory(from: URL, to: URL) -> Bool {
         do {
             if exists(to) {

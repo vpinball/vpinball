@@ -81,9 +81,10 @@ class TableManager {
             return false
         }
 
+        let isArchive = ext == "vpxz" || ext == "zip"
         VPinballModel.shared.updateHUD(
             progress: 60,
-            status: ext == "vpx" ? "Importing table" : "Importing archive"
+            status: isArchive ? "Importing archive" : "Importing table"
         )
 
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -92,7 +93,7 @@ class TableManager {
             await MainActor.run {
                 VPinballModel.shared.updateHUD(
                     progress: progress,
-                    status: ext == "vpx" ? "Importing table" : "Importing archive"
+                    status: isArchive ? "Importing archive" : "Importing table"
                 )
             }
         }
@@ -125,10 +126,9 @@ class TableManager {
             }
 
             if TableFileOperations.exists(tableDir) {
-                let vpxFiles = TableFileOperations.listFiles(tableDir,
-                                                             ext: ".vpx")
+                let tableURLs = TableFileOperations.listTableURLs(tableDir)
 
-                if vpxFiles.count <= 1 {
+                if tableURLs.count <= 1 {
                     if !TableFileOperations.deleteDirectory(tableDir) {
                         return false
                     }
@@ -563,10 +563,9 @@ class TableManager {
                 return false
             }
 
-            let vpxFiles = TableFileOperations.listFiles(tablesURL,
-                                                         ext: ".vpx")
+            let tableURLs = TableFileOperations.listTableURLs(tablesURL)
             var existingUUIDs = Set(loadedTables.map { $0.uuid })
-            for fileURL in vpxFiles {
+            for fileURL in tableURLs {
                 let relPath = relativePath(of: fileURL, baseURL: tablesURL)
                 if !loadedTables.contains(where: { $0.path == relPath }) {
                     let newTable = createTable(url: fileURL, existingUUIDs: &existingUUIDs)
@@ -744,6 +743,14 @@ class TableManager {
                 return newTable
             }
             return nil
+        } else if ext == "vpz" {
+            if let destFile = await importVPZ(url: url) {
+                let newTable = createTable(url: destFile)
+                tables.append(newTable)
+                saveTables()
+                return newTable
+            }
+            return nil
         }
 
         return nil
@@ -769,6 +776,33 @@ class TableManager {
         }.value
 
         return result ? destFile : nil
+    }
+
+    // Import of a VPZ pack: a folder is copied as is, a ".vpz" file (zip archive) is extracted into the pack folder
+    private func importVPZ(url: URL) async -> URL? {
+        let stem = url.deletingPathExtension().lastPathComponent
+        let name = stem.replacingOccurrences(of: "_", with: " ")
+        let folderName = getUniqueFolder(baseName: name)
+        let destFolder = tablesURL.appendingPathComponent(folderName)
+        let destPack = destFolder.appendingPathComponent(url.lastPathComponent)
+
+        var isDirectory: ObjCBool = false
+        FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
+
+        let result = await Task.detached(priority: .userInitiated) {
+            if !TableFileOperations.createDirectory(destFolder) {
+                return false
+            }
+            if isDirectory.boolValue {
+                return TableFileOperations.copyDirectory(from: url, to: destPack)
+            }
+            if !TableFileOperations.createDirectory(destPack) {
+                return false
+            }
+            return VPinballStatus(rawValue: VPinballZipExtract(url.path.cstring, destPack.path.cstring, nil)) == .success
+        }.value
+
+        return result ? destPack : nil
     }
 
     private func importArchive(url: URL, onProgress: ((Int) async -> Void)? = nil) async -> URL? {

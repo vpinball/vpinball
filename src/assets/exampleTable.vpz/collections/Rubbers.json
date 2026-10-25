@@ -1,0 +1,27 @@
+{
+  "$type": "collection",
+  "parts": [
+    "Rubber9",
+    "Rubber8",
+    "Rubber7",
+    "Rubber6",
+    "Rubber5",
+    "Rubber4",
+    "Rubber10",
+    "Rubber20",
+    "Rubber21",
+    "Rubber22",
+    "Rubber23",
+    "Rubber24",
+    "Rubber25",
+    "Rubber26",
+    "Rubber27",
+    "Rubber28",
+    "Rubber1",
+    "LSling",
+    "RSling"
+  ],
+  "fire_events": true,
+  "stop_single_events": false,
+  "group_elements": true
+}

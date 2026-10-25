@@ -1,0 +1,9 @@
+{
+  "$type": "image",
+  "import_path": "C:\\ColorGradeLUT256x16_Sepia.webp",
+  "width": 256,
+  "height": 16,
+  "alpha_test": 1.0,
+  "md5": "1e3f198c933f28b1752b4e7dbc5dfefa",
+  "opaque": true
+}

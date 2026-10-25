@@ -1,0 +1,169 @@
+{
+  "$type": "ramp",
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": true,
+  "ui_visible": true,
+  "legacy_layer": 2,
+  "named_layer": "Main_Layout",
+  "part_group": "Main_Layout",
+  "dragpoints": [
+    {
+      "center": {
+        "x": 56.23780822753906,
+        "y": 1335.957275390625
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -40.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 56.77149200439453,
+        "y": 1334.813232421875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -30.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 57.25519561767578,
+        "y": 1333.77587890625
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -20.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 57.782737731933594,
+        "y": 1332.6444091796875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -5.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 58.48625946044922,
+        "y": 1331.1357421875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 83.50715637207031,
+        "y": 1277.47900390625
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 84.21087646484375,
+        "y": 1275.9696044921875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -5.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 84.65036010742188,
+        "y": 1275.0272216796875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -20.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 85.17796325683594,
+        "y": 1273.8953857421875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -30.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 85.70635986328125,
+        "y": 1272.7626953125
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": -45.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    }
+  ],
+  "alignment": 0,
+  "collidable": true,
+  "elasticity": 0.30000001192092896,
+  "height_bottom": 30.0,
+  "hitEvent": false,
+  "height_top": 30.0,
+  "image": "",
+  "image_walls": true,
+  "physics_material": "",
+  "material": "Metal0.8",
+  "overwrite_physics": true,
+  "depth_bias": 0.0,
+  "radius": 6.0,
+  "wire_distance_x": 38.0,
+  "wire_distance_y": 88.0,
+  "reflection_enabled": true,
+  "friction": 0.30000001192092896,
+  "scatter": 0.0,
+  "visible": true,
+  "threshold": 2.0,
+  "type": 5,
+  "width_bottom": 75.0,
+  "width_top": 60.0,
+  "left_wall_height": 62.0,
+  "right_wall_height": 62.0,
+  "left_wall_height_visible": 30.0,
+  "right_wall_height_visible": 30.0
+}
