@@ -148,7 +148,7 @@ static void vpx_node_process_pcm_frames(ma_node* pNode, const float** ppFramesIn
       const float left = pVPXNode->volume * 0.5f * (1.f - pVPXNode->pan);
       const float right = pVPXNode->volume * 0.5f * (1.f + pVPXNode->pan);
       const float front = max(0.f, pVPXNode->rearFrontFade);
-      const float center = abs(pVPXNode->rearFrontFade);
+      const float center = 1.f - fabsf(pVPXNode->rearFrontFade);
       const float rear = max(0.f, -pVPXNode->rearFrontFade);
       const float fl = front * left;
       const float fr = front * right;
