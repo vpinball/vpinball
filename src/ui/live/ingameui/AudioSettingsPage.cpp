@@ -26,6 +26,8 @@ void AudioSettingsPage::BuildPage()
       m_player->m_audioPlayer->SetTableDimensions(m_player->m_ptable->m_right - m_player->m_ptable->m_left, m_player->m_ptable->m_bottom - m_player->m_ptable->m_top);
       if (m_player->IsVR())
          m_player->m_audioPlayer->SetSpatialMode(spatialBackglass, spatialPlayfield);
+      m_player->m_audioPlayer->SetMirrored(m_player->m_tblMirrorEnabled);
+      m_player->UpdateVolume();
    };
 
    m_devices.clear();
