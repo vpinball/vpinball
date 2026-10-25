@@ -3,7 +3,7 @@ New in 3.62 (Update by mfuegemann, JP, Mike Welsh, toxie)
 - Added p2k.vbs
 - Added pinheck.vbs
 - Added playbar.vbs
-- Added spike1.vbs (Stern Spike 1)
+- Added spike1.vbs
 - Added tecnoplay.vbs (X Force, Space Team)
 - Removed the hardcoded keyVPMVolume (F12) key from all system .vbs files; the VPinMAME
   volume is now adjusted through a "VPinMAME Volume" table option in the in-game UI
@@ -25,8 +25,7 @@ New in 3.62 (Update by mfuegemann, JP, Mike Welsh, toxie)
 - Fixed cvpmTimer.Update: when a timer fired while a callback queued with GetRef (AddTimer2) waited behind it,
   the queue shift copied that callback a second time without Set, which stopped the script with error 450
 - cvpmTimer.AddTimer2 accepts an object as its ID, and a fired timer no longer keeps a reference to it
-- cvpmTimer.Update removes a timer before calling it, so a callback that raises an error no longer fires on every tick
-  and blocks the timers queued behind it
+- cvpmTimer.Update removes a timer before calling it, so a callback that raises an error no longer fires on every tick and blocks the timers queued behind it
 
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)

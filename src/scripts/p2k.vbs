@@ -1,4 +1,4 @@
-'Pinball 2000 (Williams/Midway, 1999)
+'Pinball 2000
 
 'Switch numbers here are the machine's own, column*10 + row, which is what the game's tables and
 'the service menu use - so sw 13 really is column 1 row 3. Columns 1-9 are the playfield, column 10
@@ -19,7 +19,7 @@
 'Solenoid map: the power driver board has 48 outputs. 1-32 are PinMAME solenoids 1-32, the flipper
 'coils (board 33-36) come out as 45-48, and board 37-48 are published as custom solenoids 51-62 -
 'so Lock Diverter and Up/Down Ramp on RFM are 51-54, and Episode I's neon/knocker/shaker/topper are
-'55/56/57/58. See src/wpc/p2k.c in PinMAME for the full table.
+'55/56/57/58. See src/wpc/p2k.c in PinMAME for the full table
 
 Option Explicit
 LoadCore
