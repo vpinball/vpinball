@@ -157,7 +157,7 @@ STDMETHODIMP ScriptGlobalTable::EndMusic()
 STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
 {
    if (g_pplayer)
-      g_pplayer->m_audioPlayer->SetMusicVolume(volume);
+      g_pplayer->m_audioPlayer->SetMusicVolume(m_table->m_TableMusicVolume * volume);
    return S_OK;
 }
 
