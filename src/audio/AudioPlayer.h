@@ -92,9 +92,12 @@ public:
    bool IsMusicPlaying() const;
 
    // Sound, played from memory buffer to backglass or playfield device, applying 3D mode setup
-   void PlaySound(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+   // volumeScale is a per-table gain applied on top of the per-sound and script volumes (table's TableSoundVolume property)
+   void PlaySound(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart,
+      float volumeScale = 1.f);
    // Positional variant: x/y in table units, z = height above the playfield surface
-   void PlaySoundAt(Sound* sound, float x, float y, float z, float volumeOffset, const float randompitch, const int pitch, const int loopcount, const bool usesame, const bool restart);
+   void PlaySoundAt(Sound* sound, float x, float y, float z, float volumeOffset, const float randompitch, const int pitch, const int loopcount, const bool usesame, const bool restart,
+      float volumeScale = 1.f);
 
    // Spatial audio: positions sounds in 3D and binauralizes them for headphone rendering.
    // Intended for VR play (head tracked listener pose through SetListenerPose).

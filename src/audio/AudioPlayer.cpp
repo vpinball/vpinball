@@ -525,16 +525,17 @@ void AudioPlayer::SetSpatialMode(const bool backglass, const bool playfield)
 }
 
 void AudioPlayer::PlaySoundAt(
-   Sound* sound, float x, float y, float z, float volumeOffset, const float randomPitch, const int pitch, const int loopcount, const bool useSame, const bool restart)
+   Sound* sound, float x, float y, float z, float volumeOffset, const float randomPitch, const int pitch, const int loopcount, const bool useSame, const bool restart, float volumeScale)
 {
-   PlaySoundInternal(
-      sound, dequantizeSignedPercent(sound->GetVolume()) + volumeOffset, randomPitch, pitch, 0.f, 0.f, loopcount, useSame, restart, true, m_mirrored ? m_tableWidth - x : x, y, z);
+   PlaySoundInternal(sound, (dequantizeSignedPercent(sound->GetVolume()) + volumeOffset) * volumeScale, randomPitch, pitch, 0.f, 0.f, loopcount, useSame, restart, true,
+      m_mirrored ? m_tableWidth - x : x, y, z);
 }
 
-void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float randomPitch, const int pitch, float panOffset, float frontRearFadeOffset, const int loopcount, const bool useSame, const bool restart)
+void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float randomPitch, const int pitch, float panOffset, float frontRearFadeOffset, const int loopcount, const bool useSame,
+   const bool restart, float volumeScale)
 {
    float pan = dequantizeSignedPercent(sound->GetPan()) + panOffset;
-   PlaySoundInternal(sound, dequantizeSignedPercent(sound->GetVolume()) + volumeOffset, randomPitch, pitch, m_mirrored ? -pan : pan,
+   PlaySoundInternal(sound, (dequantizeSignedPercent(sound->GetVolume()) + volumeOffset) * volumeScale, randomPitch, pitch, m_mirrored ? -pan : pan,
       dequantizeSignedPercent(sound->GetFrontRearFade()) + frontRearFadeOffset, loopcount, useSame, restart, false, 0.f, 0.f, 0.f);
 }
 
