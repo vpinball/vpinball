@@ -23,8 +23,8 @@ fun ImportTableDropdownMenu(
         AppMenuGroupGap()
 
         AppMenuHeader("Built in...")
-        AppMenuItem(label = "blankTable.vpx", iconRes = R.drawable.img_sf_doc_text, onClick = onBlankTable)
+        AppMenuItem(label = "blankTable.vpz", iconRes = R.drawable.img_sf_doc_text, onClick = onBlankTable)
         AppMenuDivider()
-        AppMenuItem(label = "exampleTable.vpx", iconRes = R.drawable.img_sf_doc_text, onClick = onExampleTable)
+        AppMenuItem(label = "exampleTable.vpz", iconRes = R.drawable.img_sf_doc_text, onClick = onExampleTable)
     }
 }

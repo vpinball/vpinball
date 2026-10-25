@@ -1,0 +1,104 @@
+{
+  "$type": "ramp",
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": true,
+  "ui_visible": true,
+  "legacy_layer": 5,
+  "named_layer": "Ramps",
+  "part_group": "Ramps",
+  "dragpoints": [
+    {
+      "center": {
+        "x": 162.211669921875,
+        "y": 1499.91748046875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 158.28775024414063,
+        "y": 1547.9278564453125
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 132.7684783935547,
+        "y": 1564.5980224609375
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 107.56967163085938,
+        "y": 1547.80615234375
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 104.14907836914063,
+        "y": 1499.76611328125
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    }
+  ],
+  "alignment": 1,
+  "collidable": true,
+  "elasticity": 0.30000001192092896,
+  "height_bottom": 60.0,
+  "hitEvent": false,
+  "height_top": 60.0,
+  "image": "aluminum",
+  "image_walls": true,
+  "physics_material": "",
+  "material": "Metal",
+  "overwrite_physics": true,
+  "depth_bias": 0.0,
+  "radius": 8.0,
+  "wire_distance_x": 38.0,
+  "wire_distance_y": 88.0,
+  "reflection_enabled": true,
+  "friction": 0.02500000037252903,
+  "scatter": 0.0,
+  "visible": false,
+  "threshold": 2.0,
+  "type": 0,
+  "width_bottom": 1.0,
+  "width_top": 1.0,
+  "left_wall_height": 62.0,
+  "right_wall_height": 62.0,
+  "left_wall_height_visible": 0.0,
+  "right_wall_height_visible": 52.0
+}

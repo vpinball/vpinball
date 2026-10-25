@@ -1,0 +1,18 @@
+{
+  "$type": "collection",
+  "parts": [
+    "Primitive006",
+    "Primitive005",
+    "Primitive009",
+    "Primitive003",
+    "Primitive010",
+    "Primitive001",
+    "Primitive002",
+    "Primitive011",
+    "Primitive012",
+    "Primitive007"
+  ],
+  "fire_events": false,
+  "stop_single_events": false,
+  "group_elements": true
+}

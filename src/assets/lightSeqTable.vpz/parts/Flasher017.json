@@ -1,0 +1,92 @@
+{
+  "$type": "flasher",
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": false,
+  "ui_visible": false,
+  "legacy_layer": 3,
+  "named_layer": "Flashers_Layer",
+  "part_group": "Flashers_Layer",
+  "dragpoints": [
+    {
+      "center": {
+        "x": 289.8526611328125,
+        "y": 1067.0740966796875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 289.8526611328125,
+        "y": 1467.07421875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 689.85205078125,
+        "y": 1467.07421875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 689.85205078125,
+        "y": 1067.0740966796875
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    }
+  ],
+  "add_blend": 0,
+  "alignment": 1,
+  "desktop_backdrop": false,
+  "color": 3328050,
+  "ui_show_texture": true,
+  "alpha": 50,
+  "height": 50.0,
+  "filter_amount": 100,
+  "filter_type": 2,
+  "depth_bias": 0.0,
+  "rotation_x": 0.0,
+  "rotation_y": 0.0,
+  "rotation_z": 0.0,
+  "visible": false,
+  "glass_ambient": 0,
+  "glass_pad_bottom": 0.0,
+  "glass_pad_left": 0.0,
+  "glass_roughness": 0.0,
+  "glass_pad_right": 0.0,
+  "glass_pad_top": 0.0,
+  "image_b": "",
+  "image": "LED_fed_ON_red",
+  "image_src_link": "",
+  "lightmap": "",
+  "modulate_vs_add": 0.8999999761581421,
+  "render_mode": 0,
+  "render_style": 0,
+  "state_src_link": ""
+}

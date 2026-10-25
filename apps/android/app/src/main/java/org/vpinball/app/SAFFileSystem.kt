@@ -157,7 +157,7 @@ object SAFFileSystem {
         return docUri != null
     }
 
-    fun listFilesRecursive(extension: String): String {
+    fun listFilesRecursive(extension: String, includeDirectories: Boolean = false): String {
         val uri = getExternalStorageUri()
         if (uri == null) {
             VPinballManager.log(VPinballLogLevel.ERROR, "No external storage URI set")
@@ -193,8 +193,12 @@ object SAFFileSystem {
                             val documentId = cursor.getString(idIndex)
 
                             if (mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
-                                val childUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
-                                scanRecursive(childUri, "$currentPath$name/")
+                                if (includeDirectories && name.endsWith(extension, ignoreCase = true)) {
+                                    results.add("$currentPath$name")
+                                } else {
+                                    val childUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
+                                    scanRecursive(childUri, "$currentPath$name/")
+                                }
                             } else if (name.endsWith(extension, ignoreCase = true)) {
                                 results.add("$currentPath$name")
                             }

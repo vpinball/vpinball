@@ -1,0 +1,65 @@
+{
+  "$type": "ramp",
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": true,
+  "ui_visible": true,
+  "legacy_layer": 1,
+  "named_layer": "1",
+  "part_group": "1",
+  "dragpoints": [
+    {
+      "center": {
+        "x": 970.7437133789063,
+        "y": 2158.155517578125
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 970.7437133789063,
+        "y": -30.0
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": true,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    }
+  ],
+  "alignment": 1,
+  "collidable": false,
+  "elasticity": 0.30000001192092896,
+  "height_bottom": 115.0,
+  "hitEvent": false,
+  "height_top": 235.0,
+  "image": "",
+  "image_walls": false,
+  "physics_material": "",
+  "material": "Metal0.8",
+  "overwrite_physics": true,
+  "depth_bias": 0.0,
+  "radius": 6.0,
+  "wire_distance_x": 38.0,
+  "wire_distance_y": 88.0,
+  "reflection_enabled": true,
+  "friction": 0.0,
+  "scatter": 0.0,
+  "visible": true,
+  "threshold": 2.0,
+  "type": 0,
+  "width_bottom": 42.0,
+  "width_top": 42.0,
+  "left_wall_height": 62.0,
+  "right_wall_height": 62.0,
+  "left_wall_height_visible": 0.0,
+  "right_wall_height_visible": 0.0
+}

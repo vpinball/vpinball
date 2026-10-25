@@ -1,0 +1,20 @@
+{
+  "$type": "material",
+  "type": 1,
+  "wrap_lighting": 0.5,
+  "roughness": 0.8999999761581421,
+  "glossy_image_lerp": 0.4313725233078003,
+  "thickness": 0.0470588244497776,
+  "edge": 1.0,
+  "edge_alpha": 1.0,
+  "opacity": 0.0,
+  "base_color": 11842740,
+  "glossy_color": 0,
+  "clearcoat_color": 16777215,
+  "refraction_tint": 16777215,
+  "is_opacity_active": false,
+  "elasticity": 0.0,
+  "elasticity_falloff": 0.0,
+  "friction": 0.0,
+  "scatter_angle": 0.0
+}

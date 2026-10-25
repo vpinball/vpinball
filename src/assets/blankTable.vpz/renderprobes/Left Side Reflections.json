@@ -1,0 +1,13 @@
+{
+  "$type": "renderprobe",
+  "type": 0,
+  "roughness": 8,
+  "reflection_plane": {
+    "x": 1.0,
+    "y": 0.0,
+    "z": 0.0,
+    "w": 0.0
+  },
+  "reflection_mode": 5,
+  "disable_light_reflection": false
+}

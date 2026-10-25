@@ -1,0 +1,9 @@
+{
+  "$type": "collection",
+  "parts": [
+    "Wall37"
+  ],
+  "fire_events": true,
+  "stop_single_events": false,
+  "group_elements": true
+}

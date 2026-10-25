@@ -1,0 +1,82 @@
+{
+  "$type": "trigger",
+  "center": {
+    "x": 451.0273742675781,
+    "y": 286.36309814453125
+  },
+  "timer_enabled": false,
+  "timer_interval": 10,
+  "ui_locked": true,
+  "ui_visible": true,
+  "legacy_layer": 2,
+  "named_layer": "Main_Layout",
+  "part_group": "Main_Layout",
+  "dragpoints": [
+    {
+      "center": {
+        "x": 420.5273742675781,
+        "y": 239.8645477294922
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 420.5273742675781,
+        "y": 332.86163330078125
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 484.0273742675781,
+        "y": 332.86163330078125
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    },
+    {
+      "center": {
+        "x": 484.0273742675781,
+        "y": 239.8645477294922
+      },
+      "ui_locked": false,
+      "ui_visible": true,
+      "position_z": 0.0,
+      "smooth": false,
+      "slingshot": false,
+      "auto_texture": true,
+      "texture_coordinate": 0.0
+    }
+  ],
+  "anim_speed": 1.0,
+  "enabled": true,
+  "state_src_link": "",
+  "material": "Metal",
+  "radius": 32.0,
+  "reflection_enabled": true,
+  "rotation": 0.0,
+  "scale_x": 1.0,
+  "scale_y": 1.0,
+  "shape": 1,
+  "surface": "",
+  "hit_height": 60.0,
+  "visible": true,
+  "wire_thickness": 0.0
+}

@@ -1,0 +1,15 @@
+{
+  "$type": "timer",
+  "center": {
+    "x": 1053.0,
+    "y": 1875.5
+  },
+  "timer_enabled": true,
+  "timer_interval": 10,
+  "ui_locked": false,
+  "ui_visible": true,
+  "legacy_layer": 2,
+  "named_layer": "Main_Layout",
+  "part_group": "Main_Layout",
+  "desktop_backdrop": false
+}

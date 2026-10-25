@@ -41,6 +41,10 @@ extension UTType {
     static var vpxz: UTType {
         UTType(exportedAs: "org.vpinball.vpxz")
     }
+
+    static var vpz: UTType {
+        UTType(exportedAs: "org.vpinball.vpz")
+    }
 }
 
 extension View {

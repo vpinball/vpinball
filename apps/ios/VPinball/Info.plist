@@ -26,6 +26,16 @@
 				<string>org.vpinball.vpx</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>VPZ Document</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.vpinball.vpz</string>
+			</array>
+		</dict>
 	</array>
 	<key>GCSupportedGameControllers</key>
 	<array>
@@ -98,6 +108,25 @@
 				</array>
 				<key>public.mime-type</key>
 				<string>application/octet-stream</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>VPZ File</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.vpinball.vpz</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>vpz</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/zip</string>
 			</dict>
 		</dict>
 	</array>

@@ -2246,11 +2246,11 @@ void WinEditor::OpenNewTable(size_t tableId)
    string path;
    switch (tableId)
    {
-   case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpx"sv; break;
-   case ID_NEW_STRIPPEDTABLE: path = "strippedTable.vpx"sv; break;
-   case ID_NEW_LIGHTSEQTABLE: path = "lightSeqTable.vpx"sv; break;
+   case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpz"sv; break;
+   case ID_NEW_STRIPPEDTABLE: path = "strippedTable.vpz"sv; break;
+   case ID_NEW_LIGHTSEQTABLE: path = "lightSeqTable.vpz"sv; break;
    case ID_NEW_BLANKTABLE:
-   default: path = "blankTable.vpx"sv;
+   default: path = "blankTable.vpz"sv;
    }
    ppt->m_glassTopHeight = ppt->m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)

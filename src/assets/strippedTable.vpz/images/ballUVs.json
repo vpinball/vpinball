@@ -1,0 +1,9 @@
+{
+  "$type": "image",
+  "import_path": "C:\\Visual Pinball\\ballUVs.webp",
+  "width": 1024,
+  "height": 1024,
+  "alpha_test": 128.0,
+  "md5": "ce6144b2d262b6524c9ffbb77509cbe2",
+  "opaque": false
+}

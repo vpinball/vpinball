@@ -1,0 +1,12 @@
+{
+  "$type": "collection",
+  "parts": [
+    "gi1",
+    "gi2",
+    "gi3",
+    "gi4"
+  ],
+  "fire_events": false,
+  "stop_single_events": false,
+  "group_elements": true
+}

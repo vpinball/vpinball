@@ -1,0 +1,14 @@
+{
+  "$type": "collection",
+  "parts": [
+    "Primitive29",
+    "Primitive28",
+    "Primitive21",
+    "Primitive22",
+    "Primitive24",
+    "Primitive83"
+  ],
+  "fire_events": true,
+  "stop_single_events": false,
+  "group_elements": true
+}

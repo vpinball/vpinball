@@ -1,0 +1,26 @@
+{
+  "$type": "collection",
+  "parts": [
+    "Flasher001",
+    "Flasher002",
+    "Flasher003",
+    "Flasher004",
+    "Flasher005",
+    "Flasher006",
+    "Flasher007",
+    "Flasher008",
+    "Flasher009",
+    "Flasher010",
+    "Flasher011",
+    "Flasher012",
+    "Flasher013",
+    "Flasher014",
+    "Flasher015",
+    "Flasher016",
+    "Flasher017",
+    "Flasher018"
+  ],
+  "fire_events": false,
+  "stop_single_events": false,
+  "group_elements": true
+}

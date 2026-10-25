@@ -106,14 +106,14 @@ struct MainView: View {
 
             Section("Built in...") {
                 Button {
-                    mainViewModel.handleShowConfirmImportTable(url: Bundle.main.url(forResource: "assets/blankTable", withExtension: "vpx"))
+                    mainViewModel.handleShowConfirmImportTable(url: Bundle.main.url(forResource: "assets/blankTable", withExtension: "vpz"))
                 } label: {
-                    Label("blankTable.vpx", systemImage: "doc.text")
+                    Label("blankTable.vpz", systemImage: "doc.text")
                 }
                 Button {
-                    mainViewModel.handleShowConfirmImportTable(url: Bundle.main.url(forResource: "assets/exampleTable", withExtension: "vpx"))
+                    mainViewModel.handleShowConfirmImportTable(url: Bundle.main.url(forResource: "assets/exampleTable", withExtension: "vpz"))
                 } label: {
-                    Label("exampleTable.vpx", systemImage: "doc.text")
+                    Label("exampleTable.vpz", systemImage: "doc.text")
                 }
             }
         } label: {
@@ -182,7 +182,7 @@ private struct MainSheets: ViewModifier {
                            .ignoresSafeArea()
                    })
             .fileImporter(isPresented: $mainViewModel.showImportTable,
-                          allowedContentTypes: [.vpx, .vpxz, .zip])
+                          allowedContentTypes: [.vpx, .vpxz, .vpz, .zip])
             { result in
                 if case let .success(url) = result {
                     mainViewModel.importTableURL = url

@@ -1,0 +1,19 @@
+{
+  "$type": "lightseq",
+  "center": {
+    "x": 296.24560546875,
+    "y": 1924.0703125
+  },
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": false,
+  "ui_visible": false,
+  "legacy_layer": 2,
+  "named_layer": "Sequencers",
+  "part_group": "Sequencers",
+  "desktop_backdrop": false,
+  "collection": "Flashers",
+  "center_x": 500.0,
+  "center_y": 1000.0,
+  "update_interval": 25
+}

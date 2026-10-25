@@ -1,0 +1,27 @@
+{
+  "$type": "spinner",
+  "center": {
+    "x": 151.58663940429688,
+    "y": 882.7275390625
+  },
+  "timer_enabled": false,
+  "timer_interval": 100,
+  "ui_locked": true,
+  "ui_visible": true,
+  "legacy_layer": 2,
+  "named_layer": "Main_Layout",
+  "part_group": "Main_Layout",
+  "damping": 0.9800000190734863,
+  "height": 60.0,
+  "image": "spinner",
+  "length": 94.0,
+  "material": "Plastic",
+  "reflection_enabled": true,
+  "rotation": -36.0,
+  "elasticity": 0.30000001192092896,
+  "angle_max": 0.0,
+  "angle_min": 0.0,
+  "show_bracket": true,
+  "surface": "",
+  "visible": true
+}
