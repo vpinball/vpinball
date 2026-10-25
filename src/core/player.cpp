@@ -853,7 +853,7 @@ void Player::InitTableSession(const bool isInitial)
 
 #ifdef ENABLE_BGFX // The loading UI is only shown there (see below)
             // If rendering thread is ready, push a new frame as soon as possible
-            if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
+            if (m_renderer->m_renderDevice->m_frameRequested && !m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
             {
                m_frameMutexHeld = true;
                m_renderer->RenderUIScene();
@@ -2277,7 +2277,7 @@ bool Player::CallbackSteppedGameLoop()
    UpdateGameLogic();
 
    // If rendering thread is ready, push a new frame as soon as possible
-   if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
+   if (m_renderer->m_renderDevice->m_frameRequested && !m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
    {
       m_frameMutexHeld = true;
       FinishFrame();
