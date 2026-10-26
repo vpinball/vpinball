@@ -39,11 +39,11 @@ Const BallSize = 25  'Ball radius
 
 Sub Table1_KeyDown(ByVal keycode)
 	If keycode = PlungerKey Then
-        If EnableRetractPlunger Then
-            Plunger.PullBackandRetract
-        Else
-		    Plunger.PullBack
-        End If
+		If EnableRetractPlunger Then
+			Plunger.PullBackandRetract
+		Else
+			Plunger.PullBack
+		End If
 		PlaySound "plungerpull",0,1,AudioPan(Plunger),0.25,0,0,1,AudioFade(Plunger)
 	End If
 
@@ -185,10 +185,10 @@ End Sub
 '*********************************************************************
 
 Function AudioFade(tableobj) ' Fades between front and back of the table (for surround systems or 2x2 speakers, etc), depending on the Y position on the table. "table1" is the name of the table
-	Dim tmp
+    Dim tmp
     tmp = tableobj.y * 2 / table1.height-1
     If tmp > 0 Then
-		AudioFade = Csng(tmp ^10)
+        AudioFade = Csng(tmp ^10)
     Else
         AudioFade = Csng(-((- tmp) ^10) )
     End If
@@ -309,10 +309,10 @@ Sub BallShadowUpdate_timer()
         'Else
         '    BallShadow(b).X = ((BOT(b).X) + (Ballsize/6) + ((BOT(b).X - (Table1.Width/2))/7)) - 6
         'End If
-		BallShadow(b).X = BOT(b).X + (BOT(b).X - (Table1.Width/2)) * 1.25 / BallSize
+        BallShadow(b).X = BOT(b).X + (BOT(b).X - (Table1.Width/2)) * 1.25 / BallSize
         BallShadow(b).Y = BOT(b).Y + 12
-		BallShadow(b).Size_X = 5
-		BallShadow(b).Size_Y = 5
+        BallShadow(b).Size_X = 5 / 6.5 ' mesh has the former 6.5 x 5 part size baked in: scale back to 5 x 5
+        BallShadow(b).Size_Y = 1
         If BOT(b).Z > 20 Then
             BallShadow(b).visible = 1
         Else
@@ -389,25 +389,25 @@ Sub Spinner_Spin
 End Sub
 
 Sub Rubbers_Hit(idx)
- 	dim finalspeed
-  	finalspeed=SQR(activeball.velx * activeball.velx + activeball.vely * activeball.vely)
- 	If finalspeed > 20 then 
+	dim finalspeed
+	finalspeed=SQR(activeball.velx * activeball.velx + activeball.vely * activeball.vely)
+	If finalspeed > 20 then 
 		PlaySound "fx_rubber2", 0, Vol(ActiveBall), AudioPan(ActiveBall), 0, Pitch(ActiveBall), 1, 0, AudioFade(ActiveBall)
 	End if
 	If finalspeed >= 6 AND finalspeed <= 20 then
- 		RandomSoundRubber()
- 	End If
+		RandomSoundRubber()
+	End If
 End Sub
 
 Sub Posts_Hit(idx)
- 	dim finalspeed
-  	finalspeed=SQR(activeball.velx * activeball.velx + activeball.vely * activeball.vely)
- 	If finalspeed > 16 then 
+	dim finalspeed
+	finalspeed=SQR(activeball.velx * activeball.velx + activeball.vely * activeball.vely)
+	If finalspeed > 16 then 
 		PlaySound "fx_rubber2", 0, Vol(ActiveBall), AudioPan(ActiveBall), 0, Pitch(ActiveBall), 1, 0, AudioFade(ActiveBall)
 	End if
 	If finalspeed >= 6 AND finalspeed <= 16 then
- 		RandomSoundRubber()
- 	End If
+		RandomSoundRubber()
+	End If
 End Sub
 
 Sub RandomSoundRubber()
@@ -419,11 +419,11 @@ Sub RandomSoundRubber()
 End Sub
 
 Sub LeftFlipper_Collide(parm)
- 	RandomSoundFlipper()
+	RandomSoundFlipper()
 End Sub
 
 Sub RightFlipper_Collide(parm)
- 	RandomSoundFlipper()
+	RandomSoundFlipper()
 End Sub
 
 Sub RandomSoundFlipper()
