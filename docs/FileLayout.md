@@ -45,14 +45,14 @@ The settings system is based on 2 files:
 
 The table override file allows to tweak a few settings for playing a given table by overriding the settings defined in the global settings.
 
-All the settings can be adjusted using the in-game UI, available when playing. When clicking the save button, the user is asked wether the modifications should be saved as global preferences, or as table overrides. Settings that have been overriden for the played table can be identified by a circle & dot icon in the in-game UI.
+All the settings can be adjusted using the in-game UI, available when playing. When clicking the save button, the user is asked whether the modifications should be saved as global preferences, or as table overrides. Settings that have been overridden for the played table can be identified by a circle & dot icon in the in-game UI.
 
 For advanced uses, it is possible to specify the global and table override ini files on the command line.
 
 
 ## Table's folder organization
 
-A Visual Pinball X table may come as a single 'vpx' file, but it will usually benefit from additional companion files: table overide ini file, backglass file, pupvideo folder, DMD colorization, musics,... Therefore, it is preferred to store **each table in its own folder** along its companion files.
+A Visual Pinball X table may come as a single 'vpx' file, but it will usually benefit from additional companion files: table override ini file, backglass file, pupvideo folder, DMD colorization, musics,... Therefore, it is preferred to store **each table in its own folder** along its companion files.
 
 
 Moreover, to simplify and unify the way things are managed between the VPX application, the core plugins and third-party components, a common file search scheme is defined, based on a **folder per table** logic. Companion files are searched following these 3 steps:
