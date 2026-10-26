@@ -36,7 +36,8 @@
 'below half where the coil holds itself (Ghostbusters: 11%); this script marks each title's flipper coils,
 'and 46/48, in SolOnAboveZero, so their SolCallback stays on at any level above 0. Motors and steppers are Controller.GetMech(n).
 
-'Displays: the DMD is PinMAME display 0; Ghostbusters' LCD insert and WWE's playfield LCD are display 1
+'Displays: the DMD (Transformers/Avengers The Pin: their alphanumeric display) is PinMAME display 0
+'Ghostbusters' LCD insert and WWE's playfield LCD are display 1
 
 Option Explicit
 LoadCore
@@ -114,6 +115,11 @@ Private Sub spike1Cabinet(ByVal aGame)
 			swCoin1 = 0 : swCoin2 = 0 : swCoin3 = 0 : swCoin4 = 0
 			swStartButton = 13 : swLaunch = 15 : swTilt = 14 : swSlamTilt = 0
 			swLLFlip = 8 : swLRFlip = 10 : spike1FlipperCoils = Array(3, 4)
+		Case "tfcp", "avscp"			' Transformers The Pin, Avengers The Pin (ELG framework): free play, no coin door
+			swCoin1 = 0 : swCoin2 = 0 : swCoin3 = 0 : swCoin4 = 0
+			swStartButton = 1 : swSlamTilt = 0
+			If title = "tfcp" Then swTilt = 46 Else swTilt = 49
+			swLLFlip = 2 : swLRFlip = 3 ' flipper coils unknown (no manual): only sLLFlipper/sLRFlipper are marked
 		Case Else
 			MsgBox "spike1.vbs does not know the set """ & aGame & """."
 	End Select

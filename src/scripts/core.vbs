@@ -295,7 +295,10 @@ Class cvpmTimer
 		Dim ii, count, last
 		count = 0
 		For ii = 1 To mTimers
-			If mQue1(ii) > 0 And mQue2(ii) = aSwNo Then count = count + 1 : last = ii
+			' Nested: And does not short-circuit, and an object ID (AddTimer2) can't be compared
+			If mQue1(ii) > 0 Then
+				If mQue2(ii) = aSwNo Then count = count + 1 : last = ii
+			End If
 		Next
 		If count >= conMaxSwHit Or mTimers = conMaxTimers Then Exit Sub
 		mTimers = mTimers + 1
