@@ -843,6 +843,9 @@ void VRDevice::ReleaseSession()
    for (const auto& imageView : m_uiSwapchainInfo.imageViews)
       bgfx::destroy(imageView);
 
+   // Process BGFX resource destruction before XR resource destruction
+   bgfx::frame(BGFX_FRAME_FLUSH);
+
    // Free the Swapchain Image Data.
    if (m_colorSwapchainInfo.swapchain)
       m_backend->FreeSwapchainImageData(m_colorSwapchainInfo.swapchain);
