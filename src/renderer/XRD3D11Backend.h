@@ -40,57 +40,78 @@ public:
       XrGraphicsRequirementsD3D11KHR graphicsRequirements { XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR };
       OPENXR_CHECK(xrGetD3D11GraphicsRequirementsKHR(m_xrInstance, m_systemID, &graphicsRequirements), "Failed to get Graphics Requirements for D3D11.");
 
-      static const char* dxgiDllName = "dxgi.dll";
-      m_dxgiDll = bx::dlopen(dxgiDllName);
-      typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID _riid, void** _factory);
-      PFN_CREATE_DXGI_FACTORY CreateDXGIFactory = (PFN_CREATE_DXGI_FACTORY)bx::dlsym(m_dxgiDll, "CreateDXGIFactory1");
-
-      IDXGIFactory4* factory = nullptr;
-      D3D11_CHECK(CreateDXGIFactory(IID_PPV_ARGS(&factory)), "Failed to create DXGI factory.");
-      IDXGIAdapter* adapter = nullptr;
-      DXGI_ADAPTER_DESC adapterDesc = {};
-      for (UINT i = 0; factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i)
+      // The D3D11 device is kept in a process wide cache shared between XR sessions (one device
+      // per adapter): releasing it may crash since the OpenXR runtime and injected D3D11 hooks
+      // attach their own interfaces to it, and the last Release may run after these modules have
+      // been unloaded (observed inside xrDestroyInstance with Virtual Desktop's VDXR runtime,
+      // which unloads its OVR backend before releasing the application device). Keeping the
+      // device alive until process exit avoids this teardown entirely. The dlopened module
+      // handles are also intentionally kept to keep these DLLs mapped.
+      static struct
       {
-         adapter->GetDesc(&adapterDesc);
-         if (memcmp(&graphicsRequirements.adapterLuid, &adapterDesc.AdapterLuid, sizeof(LUID)) == 0)
-            break; // We have the matching adapter that OpenXR wants.
-         adapter = nullptr; // If we don't get a match, reset adapter to nullptr to force a throw.
-      }
-      OPENXR_CHECK(adapter != nullptr ? XR_SUCCESS : XR_ERROR_VALIDATION_FAILURE, "Failed to find matching graphics adapter from xrGetD3D11GraphicsRequirementsKHR.");
-
-      static const char* d3d11DllName = "d3d11.dll";
-      m_d3d11Dll = bx::dlopen(d3d11DllName);
-      PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)bx::dlsym(m_d3d11Dll, "D3D11CreateDevice");
-      #ifdef DEBUG
+         LUID adapterLuid = {};
+         ID3D11Device* device = nullptr;
+         ID3D11DeviceContext* immediateContext = nullptr;
+      } s_deviceCache;
+      if (s_deviceCache.device == nullptr || memcmp(&s_deviceCache.adapterLuid, &graphicsRequirements.adapterLuid, sizeof(LUID)) != 0)
       {
-         // Try to create the device with the debug layer and fallback to default DX11 if DX SDK is not installed.
-         HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, D3D11_CREATE_DEVICE_DEBUG, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext);
-         if (result == DXGI_ERROR_SDK_COMPONENT_MISSING)
-            result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext);
-         if (FAILED(result))
+         static const char* dxgiDllName = "dxgi.dll";
+         void* dxgiDll = bx::dlopen(dxgiDllName);
+         typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID _riid, void** _factory);
+         PFN_CREATE_DXGI_FACTORY CreateDXGIFactory = (PFN_CREATE_DXGI_FACTORY)bx::dlsym(dxgiDll, "CreateDXGIFactory1");
+
+         IDXGIFactory4* factory = nullptr;
+         if (CreateDXGIFactory)
+            D3D11_CHECK(CreateDXGIFactory(IID_PPV_ARGS(&factory)), "Failed to create DXGI factory.");
+         IDXGIAdapter* adapter = nullptr;
+         DXGI_ADAPTER_DESC adapterDesc = {};
+         for (UINT i = 0; factory && factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i)
          {
-            PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;
-            PLOGE << "ERROR: D3D11: Failed to create D3D11 Device.";
+            adapter->GetDesc(&adapterDesc);
+            if (memcmp(&graphicsRequirements.adapterLuid, &adapterDesc.AdapterLuid, sizeof(LUID)) == 0)
+               break; // We have the matching adapter that OpenXR wants.
+            adapter->Release();
+            adapter = nullptr; // If we don't get a match, reset adapter to nullptr to force a throw.
          }
+         OPENXR_CHECK(adapter != nullptr ? XR_SUCCESS : XR_ERROR_VALIDATION_FAILURE, "Failed to find matching graphics adapter from xrGetD3D11GraphicsRequirementsKHR.");
+
+         static const char* d3d11DllName = "d3d11.dll";
+         void* d3d11Dll = bx::dlopen(d3d11DllName);
+         PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)bx::dlsym(d3d11Dll, "D3D11CreateDevice");
+         if (D3D11CreateDevice)
+         {
+#ifdef DEBUG
+            {
+               // Try to create the device with the debug layer and fallback to default DX11 if DX SDK is not installed.
+               HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, D3D11_CREATE_DEVICE_DEBUG, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION,
+                  &s_deviceCache.device, nullptr, &s_deviceCache.immediateContext);
+               if (result == DXGI_ERROR_SDK_COMPONENT_MISSING)
+                  result = D3D11CreateDevice(
+                     adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &s_deviceCache.device, nullptr, &s_deviceCache.immediateContext);
+               if (FAILED(result))
+               {
+                  PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;
+                  PLOGE << "ERROR: D3D11: Failed to create D3D11 Device.";
+               }
+            }
+#else
+            D3D11_CHECK(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &s_deviceCache.device, nullptr,
+                           &s_deviceCache.immediateContext),
+               "Failed to create D3D11 Device.");
+#endif
+         }
+         D3D11_SAFE_RELEASE(adapter);
+         D3D11_SAFE_RELEASE(factory);
+         s_deviceCache.adapterLuid = graphicsRequirements.adapterLuid;
       }
-      #else
-         D3D11_CHECK(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext), "Failed to create D3D11 Device.");
-      #endif
-      D3D11_SAFE_RELEASE(factory);
+      m_device = s_deviceCache.device;
+      m_immediateContext = s_deviceCache.immediateContext;
 
       m_graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_D3D11_KHR };
       m_graphicsBinding.device = m_device;
    }
 
-   ~XRD3D11Backend() override
-   {
-      D3D11_SAFE_RELEASE(m_immediateContext);
-      D3D11_SAFE_RELEASE(m_device);
-      if (m_dxgiDll)
-         bx::dlclose(m_dxgiDll);
-      if (m_d3d11Dll)
-         bx::dlclose(m_d3d11Dll);
-   }
+   ~XRD3D11Backend() override = default; // The graphics device is a process wide cache (see ctor)
 
    void* GetGraphicContext() const override
    {
@@ -142,8 +163,6 @@ public:
    const std::vector<int64_t> GetSupportedDepthSwapchainFormats() override { return { DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_D16_UNORM }; }
 
 private:
-   void* m_dxgiDll = nullptr;
-   void* m_d3d11Dll = nullptr;
    ID3D11Device* m_device = nullptr;
    ID3D11DeviceContext* m_immediateContext = nullptr;
    PFN_xrGetD3D11GraphicsRequirementsKHR xrGetD3D11GraphicsRequirementsKHR = nullptr;
