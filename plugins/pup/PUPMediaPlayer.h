@@ -67,7 +67,7 @@ private:
 
    bool m_paused = false;
    double m_pauseTimestamp = 0.0;
-   bool m_firstRenderPending = false;
+   std::atomic<bool> m_firstRenderPending = false; // cleared by the render thread (first render) or the decoder thread (timeout)
    double m_lastDecodedPts = 0.0;
 
    AVFormatContext* m_pFormatContext = nullptr;

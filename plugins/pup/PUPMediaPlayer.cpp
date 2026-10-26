@@ -438,9 +438,8 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
    // video holds and resumes instead of skipping ahead
    if (!m_paused)
    {
-      if (m_firstRenderPending)
+      if (m_firstRenderPending.exchange(false))
       {
-         m_firstRenderPending = false;
          const double late = GetPlayTime();
          if (late > 0.0)
             m_startTimestamp += late;
@@ -840,7 +839,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       if (m_firstRenderPending && SDL_GetTicks() - m_playTicks > 1000)
          m_firstRenderPending = false;
       const double deficit = GetPlayTime() - selectedFrame.pts;
-      if (deficit > 0.25 && (m_lastRenderTicks == 0 ? m_firstRenderPending : SDL_GetTicks() - m_lastRenderTicks < 250))
+      if (deficit > 0.25 && (m_lastRenderTicks == 0 ? m_firstRenderPending.load() : SDL_GetTicks() - m_lastRenderTicks < 250))
          m_startTimestamp += deficit;
    }
 }
