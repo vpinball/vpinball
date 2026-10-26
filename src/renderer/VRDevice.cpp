@@ -361,8 +361,9 @@ VRDevice::~VRDevice()
       // Destroy the XrInstance.
       OPENXR_CHECK(xrDestroyInstance(m_xrInstance), "Failed to destroy Instance.");
 
-      // Only release the graphic backend once the runtime has fully released the session and instance
-      // (the runtime may still reference the graphic device/queue until the instance is destroyed)
+      // Release the graphic backend once the runtime has fully released the session and instance
+      // (the runtime may still reference it until the instance is destroyed). Note that the
+      // backend keeps the native graphics device alive for the process lifetime (see backend).
       m_backend = nullptr;
    #endif
 }
