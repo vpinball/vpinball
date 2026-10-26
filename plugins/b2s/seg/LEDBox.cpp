@@ -150,7 +150,7 @@ void LEDBox::SetLEDType(eLEDType ledType)
    if (m_ledType != ledType)
    {
       m_ledType = ledType;
-      Invalidate();
+      OnResize(); // rebuild the segment shapes for the new type (also invalidates)
    }
 }
 
