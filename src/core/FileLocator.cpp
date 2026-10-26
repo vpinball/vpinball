@@ -284,7 +284,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
    {
    // App/Pref/Data mode: table files are stored along table (to avoid mixing everything together and store files in a place with write access)
    case FileLayoutMode::AppPrefData:
-      if (table != nullptr && !table->m_filename.empty() && FileExists(table->m_filename))
+      if (table != nullptr && table->IsOnDisk())
       {
          path = withSubFolder(table->m_filename.parent_path());
          if (sub == TableSubFolder::Cache)
@@ -371,7 +371,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
          path = withSubFolder(m_appPath);
          if (!DirExists(path))
          {
-            if (table == nullptr || table->m_filename.empty() || !FileExists(table->m_filename))
+            if (table == nullptr || !table->IsOnDisk())
             {
                // No table: defaults to preference folder (even if it does not exist)
                path = withSubFolder(m_prefPath);

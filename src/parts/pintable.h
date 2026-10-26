@@ -597,6 +597,9 @@ public:
       m_settings.Load(false);
    }
 
+   // The table exists on disk, either as a table file or as a folder pack (a directory)
+   bool IsOnDisk() const { return !m_filename.empty() && std::filesystem::exists(m_filename); }
+
    // Get a companion file path for this table, searched along the table file, first with the table
    // file name, then with the name of the folder containing the table file, defaulting to the former.
    // When a non-empty profile name is given, a '<name><profile>' variant takes priority over the plain

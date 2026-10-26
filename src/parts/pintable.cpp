@@ -1070,7 +1070,7 @@ void PinTable::LoadInfo(POLE::Storage& storage, TableHash *const hash, int versi
 std::filesystem::path PinTable::GetCompanionFileName(const string &extension, const string &profile) const
 {
    // File not yet saved => No companion file available
-   if (!FileExists(m_filename))
+   if (!IsOnDisk())
       return std::filesystem::path();
 
    // Build the '<name><profile><extension>' variant of a companion file path

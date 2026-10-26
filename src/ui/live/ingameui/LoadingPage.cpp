@@ -40,7 +40,7 @@ namespace
             [this]()
             {
                m_player->m_texLoadStats.skipCompression.store(true, std::memory_order_relaxed);
-               if (FileExists(m_player->m_ptable->m_filename))
+               if (m_player->m_ptable->IsOnDisk())
                {
                   Settings& tableSettings = g_settingsService.GetActiveSettings();
                   tableSettings.Set(Settings::m_propPlayer_CompressTextures, false, true);

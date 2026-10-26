@@ -167,7 +167,7 @@ void InGameUIPage::Save()
 {
    if (!IsModified())
       return;
-   const bool canSaveTableOverrides = FileExists(m_player->m_ptable->m_filename);
+   const bool canSaveTableOverrides = m_player->m_ptable->IsOnDisk();
    switch (m_saveMode)
    {
    case SaveMode::None: break;
