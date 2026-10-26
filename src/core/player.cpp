@@ -321,6 +321,10 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // We need to initialize the perf counter before creating the UI which uses it
    wintimer_init();
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
+   // Route the texture manager memory pressure notifications to the in-game UI
+   m_renderer->m_renderDevice->m_texMan.m_notify = [this](const string& message, int lengthMs, unsigned int reuseId) -> unsigned int {
+      return m_liveUI ? m_liveUI->PushNotification(message, lengthMs, reuseId) : 0u;
+   };
 
 #ifdef PLAYBACK
    if (m_playback)
