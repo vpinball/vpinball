@@ -835,24 +835,24 @@ class TableManager {
             return nil
         }
 
-        let vpxFiles = await Task.detached(priority: .userInitiated) {
-            TableFileOperations.listFiles(tempDir, ext: ".vpx")
+        let tableURLs = await Task.detached(priority: .userInitiated) {
+            TableFileOperations.listTableURLs(tempDir)
         }.value
 
-        if vpxFiles.count != 1 {
-            MainViewModel.shared.handleShowError(message: vpxFiles.isEmpty
+        if tableURLs.count != 1 {
+            MainViewModel.shared.handleShowError(message: tableURLs.isEmpty
                 ? "No tables found in archive"
                 : "Archive contains multiple tables")
             return nil
         }
 
-        let vpxURL = vpxFiles[0]
-        let vpxName = vpxURL.deletingPathExtension().lastPathComponent
-        let sourceDir = vpxURL.deletingLastPathComponent()
+        let tableURL = tableURLs[0]
+        let tableName = tableURL.deletingPathExtension().lastPathComponent
+        let sourceDir = tableURL.deletingLastPathComponent()
 
-        let folderName = getUniqueFolder(baseName: vpxName)
+        let folderName = getUniqueFolder(baseName: tableName)
         let destFolder = tablesURL.appendingPathComponent(folderName)
-        let destVpxFile = destFolder.appendingPathComponent(vpxURL.lastPathComponent)
+        let destVpxFile = destFolder.appendingPathComponent(tableURL.lastPathComponent)
 
         let copied = await Task.detached(priority: .userInitiated) {
             if !TableFileOperations.createDirectory(destFolder) {
