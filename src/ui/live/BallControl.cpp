@@ -88,7 +88,7 @@ static ImVec2 ToRenderPos(const ImVec2& pos, const int orientation, const int wi
    switch (orientation)
    {
    case 1: return ImVec2(static_cast<float>(width) - pos.y, pos.x);
-   case 2: return ImVec2(pos.x, static_cast<float>(height) - pos.y);
+   case 2: return ImVec2(static_cast<float>(width) - pos.x, static_cast<float>(height) - pos.y);
    case 3: return ImVec2(pos.y, static_cast<float>(height) - pos.x);
    default: return pos;
    }

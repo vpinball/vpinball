@@ -78,13 +78,38 @@ DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
    ResetARLock();
 }
 
+bool DisplaySettingsPage::IsSeenRotated()
+{
+   return !m_isMainWindow && GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_EMBEDDED && (m_player->m_renderer->GetEmbeddedOutputRotation() % 180) != 0;
+}
+
+int2 DisplaySettingsPage::GetLockedAspect()
+{
+   const int2& ar = aspectRatios[m_arLock];
+   return IsSeenRotated() ? int2 { ar.y, ar.x } : ar;
+}
+
 void DisplaySettingsPage::ResetARLock()
 {
-   double ar;
+   m_arLock = 0;
+   double w, h;
    if (m_isMainWindow)
-      ar = static_cast<double>(GetWindow()->GetWidth()) / static_cast<double>(GetWindow()->GetHeight());
+   {
+      w = static_cast<double>(GetWindow()->GetWidth());
+      h = static_cast<double>(GetWindow()->GetHeight());
+   }
    else
-      ar = static_cast<double>(GetOutput(m_wndId).GetWidth()) / static_cast<double>(GetOutput(m_wndId).GetHeight());
+   {
+      if (GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_DISABLED)
+         return;
+      w = static_cast<double>(GetOutput(m_wndId).GetWidth());
+      h = static_cast<double>(GetOutput(m_wndId).GetHeight());
+      if (IsSeenRotated()) // The lock is chosen as seen by the player
+         std::swap(w, h);
+   }
+   if (w <= 0. || h <= 0.)
+      return;
+   const double ar = w / h;
    double best = 0.1; // Select up to 10% away
    for (size_t j = 1; j < std::size(aspectRatios); j++)
    {
@@ -99,21 +124,83 @@ void DisplaySettingsPage::ResetARLock()
 
 void DisplaySettingsPage::ResetToStoredValues()
 {
-   m_arLock = 0;
    InGameUIPage::ResetToStoredValues();
    ResetARLock();
 }
 
 void DisplaySettingsPage::ResetToDefaults()
 {
-   m_arLock = 0;
    InGameUIPage::ResetToDefaults();
    ResetARLock();
+}
+
+// A just enabled output that still has the default size (clamped to fill the playfield window, or its display) is fitted
+// to the area its renderer draws in (e.g. the layout the ScoreView renderer picked for the table's displays)
+void DisplaySettingsPage::StartFitToContent(bool enabled)
+{
+   m_fitToContent = false;
+   if (enabled)
+   {
+      const VPX::RenderOutput& output = GetOutput(m_wndId);
+      if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+         m_fitToContent = output.GetWidth() >= m_player->m_playfieldWnd->GetWidth() && output.GetHeight() >= m_player->m_playfieldWnd->GetHeight();
+      else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+      {
+         SDL_Rect display;
+         const Window* const wnd = output.GetWindow();
+         m_fitToContent = SDL_GetDisplayBounds(SDL_GetDisplayForWindow(wnd->GetCore()), &display) && (wnd->GetWidth() >= display.w || wnd->GetHeight() >= display.h);
+      }
+   }
+   if (m_fitToContent)
+      m_player->m_renderer->ResetAncillaryContentBounds(m_wndId); // Wait for a frame drawn with the new output
+}
+
+void DisplaySettingsPage::FitToContent()
+{
+   const vec4& bounds = m_player->m_renderer->GetAncillaryContentBounds(m_wndId);
+   if (bounds.z <= bounds.x || bounds.w <= bounds.y)
+      return; // Nothing drawn yet
+   m_fitToContent = false;
+   VPX::RenderOutput& output = GetOutput(m_wndId);
+   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      const int containerW = m_player->m_playfieldWnd->GetWidth();
+      const int containerH = m_player->m_playfieldWnd->GetHeight();
+      const int w = max(1, static_cast<int>((bounds.z - bounds.x) * static_cast<float>(output.GetWidth())));
+      const int h = max(1, static_cast<int>((bounds.w - bounds.y) * static_cast<float>(output.GetHeight())));
+      // Along the top edge as seen by the player (the playfield, and the embedded content with it, may be turned)
+      int x, y;
+      switch (m_player->m_renderer->GetEmbeddedOutputRotation() / 90)
+      {
+      case 1: x = containerW - w; y = (containerH - h) / 2; break;
+      case 2: x = (containerW - w) / 2; y = containerH - h; break;
+      case 3: x = 0; y = (containerH - h) / 2; break;
+      default: x = (containerW - w) / 2; y = 0; break;
+      }
+      output.SetWidth(w);
+      output.SetHeight(h);
+      output.SetPos(max(0, x), max(0, y));
+   }
+   else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      // Keep the window centered where it is
+      Window* const wnd = output.GetWindow();
+      const int w = max(1, static_cast<int>((bounds.z - bounds.x) * static_cast<float>(wnd->GetPixelWidth())));
+      const int h = max(1, static_cast<int>((bounds.w - bounds.y) * static_cast<float>(wnd->GetPixelHeight())));
+      SDL_Point pos;
+      wnd->GetPixelPos(pos.x, pos.y);
+      wnd->SetPixelPos(pos.x + (wnd->GetPixelWidth() - w) / 2, pos.y + (wnd->GetPixelHeight() - h) / 2);
+      wnd->SetPixelSize(w, h);
+      OnStaticRenderDirty();
+   }
+   ResetARLock();
+   RequestRebuild();
 }
 
 void DisplaySettingsPage::Close(bool isBackwardAnimation)
 {
    InGameUIPage::Close(isBackwardAnimation);
+   m_fitToContent = false;
 
    if (m_staticPrepassDisabled)
       m_player->m_renderer->DisableStaticPrePass(false);
@@ -213,7 +300,10 @@ void DisplaySettingsPage::BuildPage()
          [this](const Settings& settings) { return settings.GetWindow_Mode(m_wndId) != VPX::RenderOutput::OM_DISABLED; }, // Stored
          [this](bool v)
          {
+            const bool wasDisabled = GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_DISABLED;
             GetOutput(m_wndId).SetMode(g_settingsService.GetActiveSettings(), v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED);
+            StartFitToContent(wasDisabled && v);
+            ResetARLock();
             RequestRebuild();
          }, //
          [this](Settings& settings) { settings.ResetWindow_Mode(m_wndId); }, //
@@ -230,6 +320,7 @@ void DisplaySettingsPage::BuildPage()
                  [this](int, int v)
                  {
                     const bool windowWasCreated = GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW;
+                    const bool wasDisabled = GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_DISABLED;
                     if (windowWasCreated && v != VPX::RenderOutput::OM_WINDOW)
                        m_player->m_renderer->m_renderDevice->RemoveWindow(GetOutput(m_wndId).GetWindow());
                     GetOutput(m_wndId).SetMode(g_settingsService.GetActiveSettings(), static_cast<VPX::RenderOutput::OutputMode>(v));
@@ -238,6 +329,8 @@ void DisplaySettingsPage::BuildPage()
                        m_player->m_renderer->m_renderDevice->AddWindow(GetOutput(m_wndId).GetWindow());
                        GetOutput(m_wndId).GetWindow()->Show();
                     }
+                    StartFitToContent(wasDisabled && v != VPX::RenderOutput::OM_DISABLED);
+                    ResetARLock();
                     RequestRebuild();
                  }))
          .m_excludeFromDefault = true;
@@ -641,11 +734,12 @@ void DisplaySettingsPage::BuildEmbeddedPage()
               {
                  if (m_arLock != 0)
                  {
-                    int h = (v * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
+                    const int2 ar = GetLockedAspect();
+                    int h = (v * ar.y) / ar.x;
                     if (h > Settings::GetWindow_Height_Property(m_wndId)->m_max)
                     {
                        h = Settings::GetWindow_Height_Property(m_wndId)->m_max;
-                       v = (h * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
+                       v = (h * ar.x) / ar.y;
                     }
                     GetOutput(m_wndId).SetHeight(h);
                  }
@@ -662,11 +756,12 @@ void DisplaySettingsPage::BuildEmbeddedPage()
               {
                  if (m_arLock != 0)
                  {
-                    int w = (v * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
+                    const int2 ar = GetLockedAspect();
+                    int w = (v * ar.x) / ar.y;
                     if (w > Settings::GetWindow_Width_Property(m_wndId)->m_max)
                     {
                        w = Settings::GetWindow_Width_Property(m_wndId)->m_max;
-                       v = (w * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
+                       v = (w * ar.y) / ar.x;
                     }
                     GetOutput(m_wndId).SetWidth(w);
                  }
@@ -716,6 +811,8 @@ void DisplaySettingsPage::BuildEmbeddedPage()
 
 void DisplaySettingsPage::Render(float elapsedS)
 {
+   if (m_fitToContent)
+      FitToContent();
    InGameUIPage::Render(elapsedS);
    if (!IsWindowHovered() // Don't drag when mouse is hovering the InGameUI
       && (SDL_GetMouseFocus() == (m_isMainWindow ? GetWindow() : m_player->m_playfieldWnd)->GetCore()) // Only apply for main window (and its embedded windows)
@@ -745,7 +842,7 @@ void DisplaySettingsPage::Render(float elapsedS)
             pos.y = pos.y + (int)drag.x;
             break;
          case 2:
-            pos.x = pos.x + (int)drag.x;
+            pos.x = pos.x - (int)drag.x;
             pos.y = pos.y - (int)drag.y;
             break;
          case 3:
@@ -766,8 +863,17 @@ void DisplaySettingsPage::Render(float elapsedS)
          GetOutput(m_wndId).GetPos(pos.x, pos.y);
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
          ImGui::ResetMouseDragDelta();
-         pos.x = clamp(pos.x + static_cast<int>(drag.x), 0, max(0, m_player->m_playfieldWnd->GetWidth() - GetOutput(m_wndId).GetWidth()));
-         pos.y = clamp(pos.y + static_cast<int>(drag.y), 0, max(0, m_player->m_playfieldWnd->GetHeight() - GetOutput(m_wndId).GetHeight()));
+         // The drag is in UI space, which turns with the playfield: back to window space (as for the main window above)
+         int dx, dy;
+         switch (m_player->m_liveUI->GetUIOrientation())
+         {
+         case 1:  dx = -static_cast<int>(drag.y); dy =  static_cast<int>(drag.x); break;
+         case 2:  dx = -static_cast<int>(drag.x); dy = -static_cast<int>(drag.y); break;
+         case 3:  dx =  static_cast<int>(drag.y); dy = -static_cast<int>(drag.x); break;
+         default: dx =  static_cast<int>(drag.x); dy =  static_cast<int>(drag.y); break;
+         }
+         pos.x = clamp(pos.x + dx, 0, max(0, m_player->m_playfieldWnd->GetWidth() - GetOutput(m_wndId).GetWidth()));
+         pos.y = clamp(pos.y + dy, 0, max(0, m_player->m_playfieldWnd->GetHeight() - GetOutput(m_wndId).GetHeight()));
          GetOutput(m_wndId).SetPos(pos.x, pos.y);
       }
    }

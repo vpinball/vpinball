@@ -3699,12 +3699,22 @@ void Renderer::SwapDesktopTargets()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void Renderer::AddAncillaryContent(VPXRenderContext2D* ctx, const float srcX, const float srcY, const float srcW, const float srcH)
+{
+   vec4& bounds = static_cast<AncillaryRenderSetup*>(ctx->rendererData)->contentBounds;
+   bounds.x = min(bounds.x, srcX / ctx->srcWidth);
+   bounds.y = min(bounds.y, srcY / ctx->srcHeight);
+   bounds.z = max(bounds.z, (srcX + srcW) / ctx->srcWidth);
+   bounds.w = max(bounds.w, (srcY + srcH) / ctx->srcHeight);
+}
+
 void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const float tintR, const float tintG, const float tintB, const float alpha, const float texX, const float texY,
    const float texW, const float texH, const float pivotX, const float pivotY, const float rotation, const float srcX, const float srcY, const float srcW, const float srcH)
 {
    assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
    if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
       return;
+   AddAncillaryContent(ctx, srcX, srcY, srcW, srcH); // Image rotation ignored: only the area used by the layout is wanted
    const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
    std::shared_ptr<BaseTexture> const tex = g_pplayer->m_pluginAPI.GetTexture(texture);
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
@@ -3759,6 +3769,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW, const float srcH)
 {
    assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
+   AddAncillaryContent(ctx, srcX, srcY, srcW, srcH);
    const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
    VPXPluginAPIImpl& vxpApi = g_pplayer->m_pluginAPI;
    std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
@@ -3808,6 +3819,7 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    const float alpha, const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW, const float srcH)
 {
    assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
+   AddAncillaryContent(ctx, srcX, srcY, srcW, srcH);
 #if !defined(ENABLE_BGFX)
    return; // Segment displays are only implemented by the BGFX shaders
 #endif
@@ -3851,6 +3863,23 @@ void Renderer::SetAncillaryWindowRotation(VPXWindowId window, const int clockwis
 {
    assert(VPXWindowId::VPXWINDOW_Backglass <= window && window <= VPXWindowId::VPXWINDOW_Topper);
    m_ancillaryWndRotation[window] = 90 * clamp(clockwiseDegrees / 90, 0, 3);
+}
+
+int Renderer::GetAncillaryContentRotation(VPXWindowId window, const VPX::RenderOutput& output) const
+{
+   const int playfieldRotation = output.GetMode() == VPX::RenderOutput::OM_EMBEDDED ? GetEmbeddedOutputRotation() : 0;
+   return (GetAncillaryWindowRotation(window) + playfieldRotation) % 360;
+}
+
+int Renderer::GetEmbeddedOutputRotation() const
+{
+   // Embedded outputs are composited into the playfield window, in VR into the desktop display (also rendered with the table's view setup)
+   const VPX::Window* const wnd = g_pplayer->IsVR() ? (m_renderDevice->m_outputWnd.size() >= 2 ? m_renderDevice->m_outputWnd[1] : nullptr) : m_renderDevice->m_outputWnd[0];
+   if (wnd == nullptr)
+      return 0;
+   // As the scene (see ViewSetup::ComputeMVP); camera mode allows any angle: use the nearest quarter turn
+   const float rotation = m_table->GetViewSetup().GetRotation(wnd->GetWidth(), wnd->GetHeight());
+   return 90 * (static_cast<int>((rotation + 45.f) / 90.f) % 4);
 }
 
 RenderTarget* Renderer::SetupAncillaryRenderTarget(
@@ -3928,7 +3957,7 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
 
    Matrix3D matWorldViewProj[2];
    // Rotated around the center of that square, the same way DrawImage rotates around its pivot
-   if (const int rotation = GetAncillaryWindowRotation(window); rotation != 0)
+   if (const int rotation = GetAncillaryContentRotation(window, output); rotation != 0)
       matWorldViewProj[0] = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixRotateZ(ANGTORAD(static_cast<float>(rotation))) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.f) * matOutput;
    else
       matWorldViewProj[0] = matOutput;
@@ -4047,6 +4076,7 @@ VPXRenderContext2D& Renderer::GetAncillaryRenderContext(VPXWindowId window, floa
    m_ancillaryRenderContext.outWidth = width;
    m_ancillaryRenderContext.outHeight = height;
    m_ancillaryRenderSetup.displayTransform = displayTransform;
+   m_ancillaryRenderSetup.contentBounds = vec4(FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX);
    return m_ancillaryRenderContext;
 }
 
@@ -4084,7 +4114,8 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
 
    bool rendered = false;
    // A quarter turn swaps what the renderers should lay out for, the projection then rotates it onto the output
-   const bool swapAxes = (GetAncillaryWindowRotation(window) % 180) != 0;
+   const int rotation = GetAncillaryContentRotation(window, output);
+   const bool swapAxes = (rotation % 180) != 0;
    VPXRenderContext2D& context = GetAncillaryRenderContext(window, static_cast<float>(swapAxes ? m_outputH : m_outputW),
       static_cast<float>(swapAxes ? m_outputW : m_outputH), true, isOutputLinear, 0.f);
    for (auto& renderer : ancillaryWndRenderers)
@@ -4094,6 +4125,17 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
          break;
    }
    m_ancillaryWndRendered[window] = rendered;
+
+   // Area used by the content, turned like it onto the output (to fit the output to it)
+   if (vec4 bounds = m_ancillaryRenderSetup.contentBounds; rendered && bounds.z > bounds.x && bounds.w > bounds.y)
+   {
+      bounds = vec4(clamp(bounds.x, 0.f, 1.f), clamp(bounds.y, 0.f, 1.f), clamp(bounds.z, 0.f, 1.f), clamp(bounds.w, 0.f, 1.f));
+      for (int i = 0; i < rotation / 90; i++) // A clockwise quarter turn of the [0..1] square: (x, y) -> (1 - y, x)
+         bounds = vec4(1.f - bounds.w, bounds.x, 1.f - bounds.y, bounds.z);
+      m_ancillaryContentBounds[window] = bounds;
+   }
+   else
+      ResetAncillaryContentBounds(window);
 
    // Highlight the display selected in the in game UI with a colored frame, drawn on top of the window content.
    // This also shows the display when nothing is rendered (e.g. ScoreView without a matching display source)

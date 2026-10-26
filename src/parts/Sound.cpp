@@ -55,7 +55,7 @@ struct WaveHeader
    uint32_t dwDataSize; // Sampled data size
 };
 
-// The WAVEFORMATEX blob as serialized inside the sound stream — a persisted file
+// The WAVEFORMATEX blob as serialized inside the sound stream - a persisted file
 // layout, not an OS dependency (never passed to a Win32 API)
 #pragma pack(push, 1)
 struct WavFmt

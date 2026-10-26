@@ -90,6 +90,13 @@ public:
    // Rotation of an ancillary window content, in clockwise degrees (0, 90, 180 or 270). The playfield rotates through its view setup instead, so this is only defined for the backglass / scoreview / topper windows
    int GetAncillaryWindowRotation(VPXWindowId window) const;
    void SetAncillaryWindowRotation(VPXWindowId window, int clockwiseDegrees);
+   // Content rotation of an ancillary output: an output embedded in the playfield window also turns with the playfield
+   int GetAncillaryContentRotation(VPXWindowId window, const VPX::RenderOutput& output) const;
+   // Playfield view rotation in the window hosting embedded outputs, to the nearest quarter turn, in clockwise degrees
+   int GetEmbeddedOutputRotation() const;
+   // Area drawn by the window's renderer on the last frame, normalized to the output (left, top, right, bottom), empty (right <= left) if none
+   const vec4& GetAncillaryContentBounds(VPXWindowId window) const { return m_ancillaryContentBounds[window]; }
+   void ResetAncillaryContentBounds(VPXWindowId window) { m_ancillaryContentBounds[window] = vec4(0.f, 0.f, 0.f, 0.f); }
 
    // 'unmirror' flips the display content back in mirror mode so that it stays readable. Only for displays that are scene objects of their
    // own (e.g. flashers): ancillary renderer content is flipped as a whole (see Flasher::Render) and backdrop displays are not mirrored
@@ -273,12 +280,15 @@ private:
    bool m_ancillaryWndRendered[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether a renderer claimed the window on the last frame
    bool m_ancillaryWndAdjusted[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether the window's display settings page was open on the last frame
    int m_ancillaryWndRotation [VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Live rotation of the window content, in clockwise degrees
+   vec4 m_ancillaryContentBounds[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // See GetAncillaryContentBounds
    struct AncillaryRenderSetup
    {
       bool isOutputLinear;
       float depthbias;
       Matrix3D displayTransform;
+      vec4 contentBounds; // Union of the drawn source rectangles, normalized to the source surface (left, top, right, bottom)
    } m_ancillaryRenderSetup;
+   static void AddAncillaryContent(VPXRenderContext2D* ctx, float srcX, float srcY, float srcW, float srcH);
    VPXRenderContext2D m_ancillaryRenderContext;
 
    bool m_shaderDirty = true;

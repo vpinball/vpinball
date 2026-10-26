@@ -31,6 +31,10 @@ public:
 
 private:
    void ResetARLock();
+   bool IsSeenRotated();   // Embedded output on a quarter turned playfield: width and height are swapped as seen by the player
+   int2 GetLockedAspect(); // Locked aspect ratio in output pixels (the lock is chosen as seen by the player)
+   void StartFitToContent(bool enabled);
+   void FitToContent();
    void BuildPage() override;
    void BuildWindowPage();
    void BuildEmbeddedPage();
@@ -45,6 +49,7 @@ private:
    vector<Window::DisplayConfig> m_displays;
    vector<string> m_displayNames;
    int m_arLock = 0;
+   bool m_fitToContent = false; // Output just enabled: fit it to the content once its renderer has drawn
    unsigned int m_delayApplyNotifId = 0;
 };
 

@@ -271,7 +271,7 @@ void LiveUI::AddMousePosEvent(bool isTouch, float x, float y) const
    {
    case 0: io.AddMousePosEvent(x, y); break;
    case 1: io.AddMousePosEvent(y, io.DisplaySize.y - x); break;
-   case 2: io.AddMousePosEvent(x, io.DisplaySize.y - y); break;
+   case 2: io.AddMousePosEvent(io.DisplaySize.x - x, io.DisplaySize.y - y); break;
    case 3: io.AddMousePosEvent(io.DisplaySize.x - y, x); break;
    default: assert(false); return;
    }
