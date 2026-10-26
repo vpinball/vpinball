@@ -70,7 +70,7 @@ vec3 CrtsNuanceFilter(vec2 uv, vec2 srcSize, vec2 dstSize)
 
 	col *= vec3(0.95, 1.05, 0.95) * (1.15 * 2.8);
 
-	col *= pow(0.45 + 0.075 * sin(uvw.y * 1.5), 0.9); // scanline
+	col *= pow(0.5 + 0.025 * sin(uvw.y * 1.5), 0.9); // scanline
 
 	col *= 1.0 - 0.23 * clamp(2.0 * uvw.x - (4.0 * floor(uvw.x * 0.5) + 2.0), 0.0, 1.0); // mask pattern
 
