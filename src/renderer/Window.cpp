@@ -316,7 +316,31 @@ void Window::Show(const bool show)
    if (m_isVR)
       return;
    if (show)
+   {
+      const SDL_WindowFlags flags = SDL_GetWindowFlags(m_nwnd);
+      if (flags & SDL_WINDOW_MINIMIZED)
+      {
+#if defined(_WIN32)
+         // Restore ancillary windows without activating them: they are output only and must
+         // never steal the input focus from the playfield (which pauses the game)
+         if (m_windowId != VPXWindowId::VPXWINDOW_Playfield)
+            ::ShowWindow(GetNativeHWND(), SW_SHOWNOACTIVATE);
+         else
+#endif
+            SDL_RestoreWindow(m_nwnd);
+         return;
+      }
+      // Ancillary windows are lazily shown once content is rendered to them. They are output only,
+      // so showing them must never activate them: an activating show steals the input focus from the
+      // playfield, and the window manager can demote a window that was activated before the playfield's
+      // own show & raise (see https://github.com/vpinball/vpinball/issues/4202)
+      const bool noActivate = (m_windowId != VPXWindowId::VPXWINDOW_Playfield) && !(flags & SDL_WINDOW_NOT_FOCUSABLE);
+      if (noActivate)
+         SDL_SetWindowFocusable(m_nwnd, false); // SDL shows non focusable windows without activating them
       SDL_ShowWindow(m_nwnd);
+      if (noActivate)
+         SDL_SetWindowFocusable(m_nwnd, true);
+   }
    else
       SDL_HideWindow(m_nwnd);
 }
@@ -326,6 +350,13 @@ bool Window::IsVisible() const
    if (m_isVR)
       return true;
    return (SDL_GetWindowFlags(m_nwnd) & SDL_WINDOW_HIDDEN) == 0;
+}
+
+bool Window::IsMinimized() const
+{
+   if (m_isVR)
+      return false;
+   return (SDL_GetWindowFlags(m_nwnd) & SDL_WINDOW_MINIMIZED) != 0;
 }
 
 void Window::RaiseAndFocus()
