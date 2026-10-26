@@ -2985,7 +2985,9 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, renderedRT->GetColorSampler());
       m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
-      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      // Depth cannot be used as an early-out for VR since the hidden area mesh writes depth 0 in the render buffer
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(),
+         m_stereo3D == STEREO_VR ? 0.f : 1.f);
       m_renderDevice->m_FBShader->SetTechnique(NFAA ? ShaderTechnique::NFAA : FXAA3 ? ShaderTechnique::FXAA3 : FXAA2 ? ShaderTechnique::FXAA2 : FXAA1 ? ShaderTechnique::FXAA1 : ShaderTechnique::FAAA);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       return outputRT;
@@ -3001,7 +3003,9 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, renderedRT->GetColorSampler());
       m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
-      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      // Depth cannot be used as an early-out for VR since the hidden area mesh writes depth 0 in the render buffer
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(),
+         m_stereo3D == STEREO_VR ? 0.f : 1.f);
       m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::DLAA_edge);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
@@ -3014,7 +3018,9 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::DLAA);
-      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+      // Depth cannot be used as an early-out for VR since the hidden area mesh writes depth 0 in the render buffer
+      m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(),
+         m_stereo3D == STEREO_VR ? 0.f : 1.f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       return outputRT;
    }
@@ -3082,7 +3088,9 @@ RenderTarget* Renderer::ApplySharpening(RenderTarget* renderedRT, RenderTarget* 
    m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
    m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, renderedRT->GetColorSampler());
    m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, renderedRT->GetColorSampler());
-   m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
+   // Depth cannot be used as an early-out for VR since the hidden area mesh writes depth 0 in the render buffer
+   m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(),
+      m_stereo3D == STEREO_VR ? 0.f : 1.f);
    m_renderDevice->m_FBShader->SetTechnique((m_sharpen == 1) ? ShaderTechnique::CAS : ShaderTechnique::BilateralSharp_CAS);
    m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
    return outputRT;
