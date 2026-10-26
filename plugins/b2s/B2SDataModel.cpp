@@ -524,7 +524,7 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root) noexcept
    , m_glow(GetIntAttribute(root, ""s, "Glow"s, 0))
    , m_thickness(GetIntAttribute(root, ""s, "Thickness"s, 0))
    , m_shear(GetIntAttribute(root, ""s, "Shear"s, 0))
-   , m_digits(GetIntAttribute(root, ""s, "Digits"s, 0))
+   , m_digits(std::max(0, GetIntAttribute(root, ""s, "Digits"s, 0)))
    , m_spacing(GetIntAttribute(root, ""s, "Spacing"s, 0))
    , m_displayState(GetIntAttribute(root, ""s, "DisplayState"s, 0))
    , m_locX(GetIntAttribute(root, ""s, "LocX"s, 0))

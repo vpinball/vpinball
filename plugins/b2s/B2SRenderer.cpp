@@ -499,6 +499,10 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
       if (reel.IsHidden() || (ledDisplaysHidden && (reel.m_scoreType == B2SScoreRenderer::Dream7 || reel.m_scoreType == B2SScoreRenderer::RenderedLED)))
          continue;
 
+      // Nothing to draw, and the digit width below would divide by zero
+      if (reel.m_digits == 0)
+         continue;
+
       // Skip digits located on the grill when the grill is hidden
       if (static_cast<float>(reel.m_locY) > ctx->srcHeight)
       {
@@ -757,17 +761,18 @@ void B2SRenderer::RenderLegacyScoreDisplay(VPXRenderContext2D* ctx, B2SServer* s
    for (int i = 0; i < reel.m_digits; i++)
    {
       const int index = reel.m_resolvedStartDigit + i;
-      char c = ' ';
+      string text;
       if (reel.m_b2sPlayerNo != 0)
       {
          const auto it = playerScoreText.find(reel.m_b2sPlayerNo);
          const size_t offset = playerScoreOffset[reel.m_b2sPlayerNo] + static_cast<size_t>(i);
-         c = (it != playerScoreText.end() && offset < it->second.length()) ? it->second[offset] : ' ';
+         text = string(1, (it != playerScoreText.end() && offset < it->second.length()) ? it->second[offset] : ' ');
       }
       else
       {
-         const int digit = server->GetScoreDigit(index);
-         c = (digit >= 0 && digit <= 9) ? static_cast<char>('0' + digit) : (digit >= 10 && digit <= 15) ? static_cast<char>('A' + digit - 10) : ' ';
+         // TODO As the original B2SSetScoreDigit: decimal text, of which only the first character is drawn (10-15 show '1').
+         // TODO Unlike the original, a digit the script never set shows '0' (the original left it blank)
+         text = std::to_string(server->GetScoreDigit(index));
       }
       const int segMask = server->GetScoreDigitSegments(index);
       // Source segment layout for the mask untranslation: the PinMAME frame element's own layout
@@ -779,14 +784,14 @@ void B2SRenderer::RenderLegacyScoreDisplay(VPXRenderContext2D* ctx, B2SServer* s
          if (segMask >= 0)
             state.display->SetValue(i, B2SSegmentUntranslateBitCode(static_cast<uint32_t>(segMask), srcSegs));
          else
-            state.display->SetValue(i, string(1, c));
+            state.display->SetValue(i, text);
       }
       else if (i < static_cast<int>(state.boxes.size()))
       {
          if (segMask >= 0)
             state.boxes[static_cast<size_t>(i)]->SetValue(B2SSegmentUntranslateBitCode(static_cast<uint32_t>(segMask), srcSegs));
          else
-            state.boxes[static_cast<size_t>(i)]->SetText(string(1, c));
+            state.boxes[static_cast<size_t>(i)]->SetText(text);
       }
    }
    if (reel.m_b2sPlayerNo != 0)
