@@ -122,7 +122,8 @@ STDMETHODIMP ScriptGlobalTable::StopSound(BSTR soundName)
 // 2. the 'music' folder along the application,
 // 3. the table folder,
 // 4. the 'music' subfolder of the table folder,
-// 5. the 'music' folder of a default install ('C:\Visual Pinball' on Windows, '~/.vpinball' on the other platforms).
+// 5. the 'music' folder of a default install ('C:\Visual Pinball' on Windows, '~/.vpinball' on the other platforms),
+// 6. on Windows, the 'music' folder of the unversioned preference folder ('%APPDATA%\VPinballX'), used by later 10.8.x.
 static std::vector<std::filesystem::path> GetLegacyMusicFolders(const PinTable *table)
 {
    std::vector<std::filesystem::path> folders { g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "music"sv };
@@ -134,6 +135,11 @@ static std::vector<std::filesystem::path> GetLegacyMusicFolders(const PinTable *
    }
 #ifdef _WIN32
    folders.push_back("C:\\Visual Pinball\\music\\"s);
+   if (char *const prefPath = SDL_GetPrefPath(nullptr, "VPinballX"); prefPath != nullptr)
+   {
+      folders.push_back(PathFromUTF8(prefPath) / "music"sv);
+      SDL_free(prefPath);
+   }
 #else
    if (const char *const home = getenv("HOME"); home != nullptr)
       folders.emplace_back(std::filesystem::path(home) / ".vpinball" / "music"sv);
@@ -447,6 +453,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
    if (!DirExists(path))
    {
       // Fallback for tables still relying on the folders searched by versions up to 10.8.x (see GetLegacyMusicFolders above)
+      path.clear();
       for (const std::filesystem::path &base : GetLegacyMusicFolders(m_table))
       {
          if (const std::filesystem::path candidate = find_case_insensitive_file_path(base / subDir); !candidate.empty() && DirExists(candidate))
