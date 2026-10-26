@@ -310,11 +310,16 @@ void InGameUI::HandlePageInput()
       GetActivePage()->SelectNextItem();
    }
 
-   // Handle continuous press item adjustment
-   if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUILeftActionId()))
+   // Handle continuous press item adjustment, applying remaining adjustment on release
+   const bool leftPressed = m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUILeftActionId());
+   const bool rightPressed = m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIRightActionId());
+   if (leftPressed)
       GetActivePage()->AdjustItem(-1, false);
-   else if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIRightActionId()))
+   else if (rightPressed)
       GetActivePage()->AdjustItem(1, false);
+   else if (m_itemAdjustWasPressed)
+      GetActivePage()->ReleaseAdjustedItem();
+   m_itemAdjustWasPressed = leftPressed || rightPressed;
 }
 
 // Legacy keyboard fly camera when in ingame option

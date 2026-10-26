@@ -38,6 +38,7 @@ public:
    virtual void SelectNextItem();
    virtual void SelectPrevItem();
    virtual void AdjustItem(float direction, bool isInitialPress);
+   virtual void ReleaseAdjustedItem();
    bool IsAdjustable() const;
    virtual bool IsDefaults() const;
    virtual bool IsModified() const;

@@ -245,6 +245,37 @@ void InGameUIPage::SelectPrevItem()
    while (!m_items[m_selectedItem]->IsSelectable());
 }
 
+// Adjustment grid of a float property item: 'step' is the discrete step applied on initial press and snapped to on release,
+// 'scrollStep' is the base speed step of continuous adjustment (holding the button).
+struct FloatAdjustGrid
+{
+   float anchor;
+   float step;
+   float scrollStep;
+};
+
+static FloatAdjustGrid GetFloatAdjustGrid(const InGameUIItem& item)
+{
+   const auto prop = static_cast<const VPX::Properties::FloatPropertyDef*>(item.m_property.get());
+   if (prop->m_step != 0.f)
+      return { prop->m_min, prop->m_step, prop->m_step };
+   const float displayScale = fabsf(item.m_floatValueDisplayScale) != 0.f ? fabsf(item.m_floatValueDisplayScale) : 1.f;
+   // 'Nice' 1-2-5 step fitting 1/64th of the range, used as scroll speed base and as a fallback step
+   float rangeStep = 1.f;
+   if (const float displayRange = (prop->m_max - prop->m_min) * displayScale; displayRange > 0.f && displayRange < FLT_MAX)
+   {
+      const float s = displayRange / 64.f;
+      const float pow10 = powf(10.f, floorf(log10f(s)));
+      rangeStep = ((5.f * pow10 <= s) ? 5.f * pow10 : (2.f * pow10 <= s) ? 2.f * pow10 : pow10) / displayScale;
+   }
+   // Precision of the displayed value, e.g. 0.1 for a '%4.1f' format
+   float displayStep = 0.f;
+   if (const size_t dotPos = item.m_format.find('.');
+      dotPos != string::npos && dotPos + 1 < item.m_format.size() && item.m_format[dotPos + 1] >= '0' && item.m_format[dotPos + 1] <= '9')
+      displayStep = powf(10.f, static_cast<float>('0' - item.m_format[dotPos + 1])) / displayScale;
+   return { 0.f, displayStep != 0.f ? displayStep : rangeStep, rangeStep };
+}
+
 void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
 {
    if (m_selectedItem < 0 || m_selectedItem >= (int)m_items.size())
@@ -351,36 +382,18 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       case VPX::Properties::PropertyDef::Type::Float:
       {
          auto prop = dynamic_cast<const VPX::Properties::FloatPropertyDef*>(item->m_property.get());
-         // Adjust on a step grid: the one defined by the property if any, otherwise a 'nice' step matching the displayed range and precision
-         float step = prop->m_step;
-         float anchor = prop->m_min;
-         if (step == 0.f)
-         {
-            anchor = 0.f;
-            const float displayScale = fabsf(item->m_floatValueDisplayScale) != 0.f ? fabsf(item->m_floatValueDisplayScale) : 1.f;
-            const float displayRange = (prop->m_max - prop->m_min) * displayScale;
-            // Minimum step is the displayed precision (ex: 0.1 for a '%4.1f' format), then the largest 1-2-5 step fitting 1/64th of the range
-            float displayStep = 1.f;
-            if (const size_t dotPos = item->m_format.find('.');
-               dotPos != string::npos && dotPos + 1 < item->m_format.size() && item->m_format[dotPos + 1] >= '0' && item->m_format[dotPos + 1] <= '9')
-               displayStep = powf(10.f, static_cast<float>('0' - item->m_format[dotPos + 1]));
-            if (displayRange > 0.f && displayRange < FLT_MAX)
-            {
-               const float rangeStep = displayRange / 64.f;
-               const float pow10 = powf(10.f, floorf(log10f(rangeStep)));
-               displayStep = max(displayStep, (5.f * pow10 <= rangeStep) ? 5.f * pow10 : (2.f * pow10 <= rangeStep) ? 2.f * pow10 : pow10);
-            }
-            step = displayStep / displayScale;
-         }
+         // Adjust on a step grid: the one defined by the property if any, otherwise the displayed precision (or a 'nice' step matching the displayed range when unknown)
+         const FloatAdjustGrid grid = GetFloatAdjustGrid(*item);
          if (isInitialPress)
          {
             // Move to the next step in the pressed direction (full step when already on the grid, else closest grid position in this direction)
-            const float pos = (item->GetFloatValue() - anchor) / step;
+            const float pos = (item->GetFloatValue() - grid.anchor) / grid.step;
             const float gridPos = roundf(pos);
-            m_adjustedValue = anchor + (fabsf(pos - gridPos) < 0.001f ? gridPos + direction : (direction < 0.f ? floorf(pos) : ceilf(pos))) * step;
+            m_adjustedValue = grid.anchor + (fabsf(pos - gridPos) < 0.001f ? gridPos + direction : (direction < 0.f ? floorf(pos) : ceilf(pos))) * grid.step;
          }
-         else if (elapsedSincePress > 100)
-            m_adjustedValue += direction * speedFactor * elapsed * step;
+         else if (elapsedSincePress > 150)
+            // Continuous adjustment is not snapped to the step grid to keep the feedback smooth (it is snapped back on release)
+            m_adjustedValue += direction * speedFactor * elapsed * grid.scrollStep;
          item->SetValue(prop->GetSteppedClamped(m_adjustedValue));
          break;
       }
@@ -390,7 +403,7 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
          auto prop = dynamic_cast<const VPX::Properties::IntPropertyDef*>(item->m_property.get());
          if (isInitialPress)
             m_adjustedValue = static_cast<float>(item->GetIntValue()) + direction;
-         else if (elapsedSincePress > 100)
+         else if (elapsedSincePress > 150)
             m_adjustedValue += direction * speedFactor * elapsed * static_cast<float>(prop->m_max - prop->m_min) / 64.f;
          item->SetValue(prop->GetClamped(static_cast<int>(round(m_adjustedValue))));
          break;
@@ -404,6 +417,24 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       break;
 
    default: break;
+   }
+}
+
+void InGameUIPage::ReleaseAdjustedItem()
+{
+   if (m_pressedItemLabel.empty())
+      return;
+   const string pressedItemLabel = m_pressedItemLabel;
+   m_pressedItemLabel.clear();
+   // Continuous adjustment is not snapped to the value grid to keep the feedback smooth: snap to the closest step on release
+   for (const auto& item : m_items)
+   {
+      if (item->m_label != pressedItemLabel || item->m_type != InGameUIItem::Type::Property || item->m_property->m_type != VPX::Properties::PropertyDef::Type::Float)
+         continue;
+      const auto prop = dynamic_cast<const VPX::Properties::FloatPropertyDef*>(item->m_property.get());
+      const FloatAdjustGrid grid = GetFloatAdjustGrid(*item);
+      item->SetValue(prop->GetSteppedClamped(grid.anchor + roundf((item->GetFloatValue() - grid.anchor) / grid.step) * grid.step));
+      break;
    }
 }
 
