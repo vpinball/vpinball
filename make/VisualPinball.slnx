@@ -12,6 +12,7 @@
   <Project Path="plugin-alphadmd.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af7a7" />
   <Project Path="plugin-altsound.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af77d" />
   <Project Path="plugin-b2s.vcxproj" Id="7d58c20e-53f4-4ad6-9004-ca6148082491" />
+  <Project Path="plugin-bam.vcxproj" Id="d0f4b839-2b3d-4621-9249-5026a2a44eb5" />
   <Project Path="plugin-dmdutil.vcxproj" Id="dafbe049-4233-430b-9a04-63223c3972e3" />
   <Project Path="plugin-dof.vcxproj" Id="14feaf4c-1835-497b-ad3d-dc4cc7dcd136" />
   <Project Path="plugin-flexdmd.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af77b" />

@@ -817,6 +817,12 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
       $<$<BOOL:${ENABLE_XR}>:openxr_loader>
    )
 
+   if(PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw")
+      target_link_libraries(vpinball PUBLIC
+         BAMPlugin
+      )
+   endif()
+
    if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
       target_link_libraries(vpinball PUBLIC
          freetype
