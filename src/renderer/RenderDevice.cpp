@@ -1965,11 +1965,6 @@ RenderDevice::~RenderDevice()
       wnd->SetBackBuffer(nullptr);
    }
 
-   // Delete the desktop display window we eventually created in constructor
-   if (g_pplayer->IsVR() && m_outputWnd.size() > 1)
-      delete m_outputWnd[1];
-
-
 #if defined(ENABLE_BGFX)
    delete m_pVertexTexelDeclaration;
    delete m_pVertexNormalTexelDeclaration;
@@ -2058,6 +2053,12 @@ RenderDevice::~RenderDevice()
     */
    _fpreset();
 #endif
+
+   // Delete the desktop display window we eventually created in constructor, only now that the render
+   // thread is fully stopped (under BGFX, its swapchain rendering to this window is destroyed by
+   // bgfx::shutdown in the render thread, so the native window must outlive it)
+   if (g_pplayer->IsVR() && m_outputWnd.size() > 1)
+      delete m_outputWnd[1];
 
    assert(m_pendingSharedIndexBuffers.empty());
    assert(m_pendingSharedVertexBuffers.empty());
