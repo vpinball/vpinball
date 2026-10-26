@@ -203,9 +203,6 @@ void PluginSheetPage::BuildPage()
    RebindSheet();
    if (m_pluginRoot)
    {
-#ifdef _WIN32
-      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Warning: Plugins are a beta experimental feature, not yet considered stable"s));
-#endif
       AddPluginEnableItem();
    }
    if (m_sheet == nullptr || m_sheet->retired || m_pageId.empty())
