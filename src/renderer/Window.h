@@ -90,6 +90,7 @@ public:
    void OnResized(); // To be called when the window manager resized the window
    void Show(const bool show = true);
    bool IsVisible() const;
+   bool IsMinimized() const;
    void RaiseAndFocus();
    bool IsFocused() const;
    void SetFocusable(const bool focusable);

@@ -4171,8 +4171,12 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       }
       else
       {
-         if (!output.GetWindow()->IsVisible())
-            output.GetWindow()->Show();
+         VPX::Window* const wnd = output.GetWindow();
+         // Only show ancillary outputs once the playfield window itself is visible: an ancillary window shown
+         // (thereby activated) before the playfield's own show & raise can be demoted by the window manager
+         // (minimized or left behind it), a state that would otherwise never be repaired (issue #4202)
+         if (g_pplayer->m_playfieldWnd->IsVisible() && (!wnd->IsVisible() || wnd->IsMinimized()))
+            wnd->Show();
 
          if (isOutputLinear)
          {
