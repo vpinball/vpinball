@@ -316,6 +316,8 @@ void Spinner::RenderRelease()
    m_renderer = nullptr;
    m_bracketMeshBuffer = nullptr;
    m_plateMeshBuffer = nullptr;
+   m_bracketEdgeMeshBuffer = nullptr;
+   m_plateEdgeMeshBuffer = nullptr;
 }
 
 void Spinner::UpdateAnimation(const float diff_time_msec)
@@ -348,6 +350,12 @@ void Spinner::Render(const unsigned int renderMask)
    bracket.mesh = m_bracketMeshBuffer;
    bracket.indexCount = spinnerBracketNumFaces;
    bracket.sortCenter = pos;
+   bracket.uiEdgeMesh = &m_bracketEdgeMeshBuffer;
+   bracket.edgeMode = UIEdgeMode::Outline;
+   bracket.edgeTriIndices = spinnerBracketIndices;
+   bracket.edgeTriCount = spinnerBracketNumFaces;
+   bracket.edgeTriIndices16 = true;
+   bracket.edgeVertices = spinnerBracket;
 
    const float angle = m_phitspinner ? m_phitspinner->m_spinnerMover.m_angle : clamp(0.f, ANGTORAD(min(m_d.m_angleMin, m_d.m_angleMax)), ANGTORAD(max(m_d.m_angleMin, m_d.m_angleMax)));
    const Matrix3D vertMatrix = (Matrix3D::MatrixRotateX(-angle) * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation))) * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length)
@@ -358,6 +366,12 @@ void Spinner::Render(const unsigned int renderMask)
    plate.indexCount = spinnerPlateNumFaces;
    plate.sortCenter = pos;
    plate.transform = &vertMatrix;
+   plate.uiEdgeMesh = &m_plateEdgeMeshBuffer;
+   plate.edgeMode = UIEdgeMode::Outline;
+   plate.edgeTriIndices = spinnerPlateIndices;
+   plate.edgeTriCount = spinnerPlateNumFaces;
+   plate.edgeTriIndices16 = true;
+   plate.edgeVertices = spinnerPlate;
 
    Material bracketMat;
    VisualMaterial bracketMaterial;

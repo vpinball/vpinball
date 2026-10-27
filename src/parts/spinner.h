@@ -99,6 +99,8 @@ private:
    Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_bracketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_plateMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_bracketEdgeMeshBuffer; // Editor wireframes, built on demand
+   std::shared_ptr<MeshBuffer> m_plateEdgeMeshBuffer;
    Matrix3D m_fullMatrix;
 
    float m_posZ;

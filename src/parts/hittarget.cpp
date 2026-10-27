@@ -513,6 +513,7 @@ void HitTarget::RenderRelease()
 {
    assert(m_renderer != nullptr);
    m_meshBuffer = nullptr;
+   m_meshEdgeBuffer = nullptr;
    m_renderer = nullptr;
 }
 
@@ -632,6 +633,12 @@ void HitTarget::Render(const unsigned int renderMask)
    body.sortCenter = m_d.m_vPosition;
    body.depthBias = m_d.m_depthBias;
    body.transform = &targetMatrix;
+   body.uiEdgeMesh = &m_meshEdgeBuffer;
+   body.edgeMode = UIEdgeMode::Outline;
+   body.edgeTriIndices = m_indices;
+   body.edgeTriCount = m_numIndices;
+   body.edgeTriIndices16 = true;
+   body.edgeVertices = m_vertices;
 
    VisualMaterial material;
    if (!isUIPass)
