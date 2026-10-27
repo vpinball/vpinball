@@ -1158,6 +1158,8 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    constexpr bool stereo = false;
    #endif
    viewSetup.ComputeMVP(m_table, GetDisplayAspectRatio(), stereo, m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
+   for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+      m_isStaticPrepassDirty |= !(m_mvp.GetView(eye) == m_initialMVP.GetView(eye)) || !(m_mvp.GetProj(eye) == m_initialMVP.GetProj(eye));
    m_initialMVP = m_mvp;
 }
 
