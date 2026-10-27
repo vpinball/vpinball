@@ -332,7 +332,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       ${RUNTIME_LIBS_DIR}
    )
 
-   target_link_libraries(vpx-test
+   target_link_libraries(vpx-test PUBLIC
       bgfx64
       bimg64
       bimg_encode64
