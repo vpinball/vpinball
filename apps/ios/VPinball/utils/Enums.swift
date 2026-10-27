@@ -22,7 +22,9 @@ enum AppAppearance: Int, CaseIterable, Identifiable {
     case light = 1
     case system = 2
 
-    var id: Int { rawValue }
+    var id: Int {
+        rawValue
+    }
 
     var title: String {
         switch self {

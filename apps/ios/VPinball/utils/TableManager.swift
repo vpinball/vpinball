@@ -43,7 +43,7 @@ class TableManager {
 
         VPinballModel.shared.showHUD(
             title: fileName,
-            status: "Copying file"
+            status: "Copying"
         )
 
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -66,7 +66,7 @@ class TableManager {
 
         VPinballModel.shared.updateHUD(
             progress: 10,
-            status: "Copying file"
+            status: "Copying"
         )
 
         let copied = await coordinatedCopy(from: url,
@@ -735,16 +735,10 @@ class TableManager {
                 return newTable
             }
             return nil
-        } else if ext == "vpx" {
-            if let destVpxFile = await importVPX(url: url) {
-                let newTable = createTable(url: destVpxFile)
-                tables.append(newTable)
-                saveTables()
-                return newTable
-            }
-            return nil
-        } else if ext == "vpz" {
-            if let destFile = await importVPZ(url: url) {
+        } else if ext == "vpx" || ext == "vpz" {
+            if let destFile = await importTableFile(url: url,
+                                                    onProgress: onProgress)
+            {
                 let newTable = createTable(url: destFile)
                 tables.append(newTable)
                 saveTables()
@@ -756,53 +750,85 @@ class TableManager {
         return nil
     }
 
-    private func importVPX(url: URL) async -> URL? {
+    private func importTableFile(url: URL, onProgress: ((Int) async -> Void)? = nil) async -> URL? {
         let stem = url.deletingPathExtension().lastPathComponent
-        let name = stem.replacingOccurrences(of: "_", with: " ")
-        let folderName = getUniqueFolder(baseName: name)
+        let folderName = getUniqueFolder(baseName: stem.replacingOccurrences(of: "_", with: " "))
         let destFolder = tablesURL.appendingPathComponent(folderName)
-        let destFile = destFolder.appendingPathComponent(url.lastPathComponent)
-
-        let result = await Task.detached(priority: .userInitiated) {
-            if !TableFileOperations.createDirectory(destFolder) {
-                return false
-            }
-            if !TableFileOperations.copy(from: url,
-                                         to: destFile)
-            {
-                return false
-            }
-            return true
-        }.value
-
-        return result ? destFile : nil
-    }
-
-    // Import of a VPZ pack: a folder is copied as is, a ".vpz" file (zip archive) is extracted into the pack folder
-    private func importVPZ(url: URL) async -> URL? {
-        let stem = url.deletingPathExtension().lastPathComponent
-        let name = stem.replacingOccurrences(of: "_", with: " ")
-        let folderName = getUniqueFolder(baseName: name)
-        let destFolder = tablesURL.appendingPathComponent(folderName)
-        let destPack = destFolder.appendingPathComponent(url.lastPathComponent)
+        let dest = destFolder.appendingPathComponent(url.lastPathComponent)
+        let isPack = url.pathExtension.lowercased() == "vpz"
 
         var isDirectory: ObjCBool = false
         FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
 
-        let result = await Task.detached(priority: .userInitiated) {
+        zipProgressHandler = { current, total in
+            if total > 0 {
+                let extractProgress = 60 + (current * 35 / total)
+                Task { @MainActor in
+                    await onProgress?(extractProgress)
+                }
+            }
+        }
+
+        let copied = await Task.detached(priority: .userInitiated) {
             if !TableFileOperations.createDirectory(destFolder) {
                 return false
             }
             if isDirectory.boolValue {
-                return TableFileOperations.copyDirectory(from: url, to: destPack)
+                return TableFileOperations.copyDirectory(from: url, to: dest)
             }
-            if !TableFileOperations.createDirectory(destPack) {
-                return false
+            if isPack {
+                return TableManager.extractPack(from: url, to: dest)
             }
-            return VPinballStatus(rawValue: VPinballZipExtract(url.path.cstring, destPack.path.cstring, nil)) == .success
+            return TableFileOperations.copy(from: url, to: dest)
         }.value
+        zipProgressHandler = nil
 
-        return result ? destPack : nil
+        if !copied || (isPack && !TableFileOperations.exists(dest.appendingPathComponent("manifest.json"))) {
+            _ = TableFileOperations.deleteDirectory(destFolder)
+            MainViewModel.shared.handleShowError(message: isPack
+                ? "Not a valid VPZ pack"
+                : "Failed to import table")
+            return nil
+        }
+
+        return dest
+    }
+
+    private nonisolated static func extractPack(from url: URL, to dest: URL) -> Bool {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("vpinball_pack_\(Int(Date().timeIntervalSince1970))")
+
+        defer {
+            _ = TableFileOperations.deleteDirectory(tempDir)
+        }
+
+        if !TableFileOperations.createDirectory(tempDir) {
+            return false
+        }
+        if VPinballStatus(rawValue: VPinballZipExtract(url.path.cstring, tempDir.path.cstring, zipCallback)) != .success {
+            return false
+        }
+        return TableFileOperations.copyDirectory(from: packRoot(tempDir), to: dest)
+    }
+
+    private nonisolated static func packRoot(_ dir: URL) -> URL {
+        if TableFileOperations.exists(dir.appendingPathComponent("manifest.json")) {
+            return dir
+        }
+
+        let children = ((try? FileManager.default.contentsOfDirectory(at: dir,
+                                                                      includingPropertiesForKeys: [.isDirectoryKey])) ?? [])
+            .filter { $0.lastPathComponent != "__MACOSX" }
+
+        if children.count == 1,
+           let child = children.first,
+           (try? child.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true,
+           TableFileOperations.exists(child.appendingPathComponent("manifest.json"))
+        {
+            return child
+        }
+
+        return dir
     }
 
     private func importArchive(url: URL, onProgress: ((Int) async -> Void)? = nil) async -> URL? {

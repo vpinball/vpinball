@@ -8,6 +8,10 @@ import java.io.FileOutputStream
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballPath
 
+fun isTableFileName(name: String): Boolean = name.substringAfterLast('.', "").lowercase() in setOf("vpx", "vpz")
+
+fun isPackFolderName(name: String): Boolean = name.substringAfterLast('.', "").equals("vpz", ignoreCase = true)
+
 class TableFileOperations(private val getTablesPath: () -> String) {
     private fun toRelativePath(path: String): String {
         val tablesPath = getTablesPath()
@@ -136,48 +140,41 @@ class TableFileOperations(private val getTablesPath: () -> String) {
             }
         }
 
-    fun listFiles(path: String, ext: String, includeDirectories: Boolean = false): List<String> {
-        val files = mutableListOf<String>()
-
+    fun listTables(path: String): List<String> {
         if (SAFFileSystem.isSAFPath(path)) {
-            val result = SAFFileSystem.listFilesRecursive(ext.removePrefix("."), includeDirectories)
-            if (result.isNotEmpty()) {
-                try {
-                    val jsonArray = org.json.JSONArray(result)
-                    for (i in 0 until jsonArray.length()) {
-                        val relativePath = jsonArray.getString(i)
-                        files.add("$path$relativePath")
-                    }
-                } catch (e: Exception) {
-                    VPinballManager.log(VPinballLogLevel.ERROR, "Error parsing SAF file list: ${e.message}")
-                }
-            }
-            return files
+            val base = if (path.endsWith("/")) path else "$path/"
+            return SAFFileSystem.listTables(toRelativePath(path).trimEnd('/')).orEmpty().map { base + it }
         }
 
+        val root = File(path)
         val preferencesPath = VPinballManager.getPath(VPinballPath.PREFERENCES)
         val assetsPath = VPinballManager.getPath(VPinballPath.ASSETS)
+        val tables = mutableListOf<String>()
 
         try {
-            File(path)
+            root
                 .walkTopDown()
-                .onEnter { dir -> dir.absolutePath != preferencesPath && dir.absolutePath != assetsPath }
-                .forEach { file ->
-                    if (file.isFile || (includeDirectories && file.isDirectory)) {
-                        if (ext.isEmpty() || file.extension.lowercase() == ext.lowercase().removePrefix(".")) {
-                            files.add(file.absolutePath)
+                .onEnter { dir ->
+                    when {
+                        dir.absolutePath == preferencesPath || dir.absolutePath == assetsPath -> false
+                        dir != root && isPackFolderName(dir.name) -> {
+                            tables.add(dir.absolutePath)
+                            false
                         }
+                        else -> true
+                    }
+                }
+                .forEach { file ->
+                    if (file.isFile && isTableFileName(file.name)) {
+                        tables.add(file.absolutePath)
                     }
                 }
         } catch (e: Exception) {
-            VPinballManager.log(VPinballLogLevel.ERROR, "Error listing files in $path: ${e.message}")
+            VPinballManager.log(VPinballLogLevel.ERROR, "Error listing tables in $path: ${e.message}")
         }
 
-        return files
+        return tables
     }
-
-    // All tables under a folder: ".vpx" files plus ".vpz" folder packs
-    fun listTables(path: String): List<String> = listFiles(path, ".vpx") + listFiles(path, ".vpz", includeDirectories = true)
 
     fun copyDirectory(from: String, to: String): Boolean {
         if (!SAFFileSystem.isSAFPath(from) && SAFFileSystem.isSAFPath(to)) {

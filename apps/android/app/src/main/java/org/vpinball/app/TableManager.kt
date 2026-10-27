@@ -111,7 +111,7 @@ class TableManager(private val context: Context) {
 
                 if (newTables.isEmpty()) {
                     withContext(Dispatchers.Main) {
-                        VPinballManager.showError("Failed to import table. Check that the file is a valid VPX or VPXZ file.")
+                        VPinballManager.showError("Failed to import table. Check that the file is a valid VPX, VPZ or VPXZ file.")
                     }
                     return@withContext false
                 }
@@ -458,14 +458,8 @@ class TableManager(private val context: Context) {
         return when (ext) {
             "vpxz",
             "zip" -> importArchive(path, onProgress)
-            "vpx" -> {
-                val table = importVPX(path)
-                if (table != null) listOf(table) else emptyList()
-            }
-            "vpz" -> {
-                val table = importVPZ(path)
-                if (table != null) listOf(table) else emptyList()
-            }
+            "vpx",
+            "vpz" -> listOfNotNull(importTableFile(path, onProgress))
             else -> {
                 VPinballManager.log(VPinballLogLevel.ERROR, "Unsupported file extension: $ext")
                 emptyList()
@@ -473,38 +467,12 @@ class TableManager(private val context: Context) {
         }
     }
 
-    private fun importVPX(path: String): Table? {
-        val stem = File(path).nameWithoutExtension
-        val name = stem.replace("_", " ")
-
-        val folderName = getUniqueFolder(name)
-        val destFolder = buildPath(folderName)
-
-        if (!fileOps.createDirectory(destFolder)) {
-            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to create directory")
-            return null
-        }
-
-        val fileName = File(path).name
-        val destFile = buildPath("$folderName/$fileName")
-
-        if (!fileOps.copy(path, destFile)) {
-            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy file")
-            return null
-        }
-
-        return createTable(destFile)
-    }
-
-    // Import of a VPZ pack: a folder is copied as is, a ".vpz" file (zip archive) is extracted into the pack folder
-    private fun importVPZ(path: String): Table? {
+    private fun importTableFile(path: String, onProgress: (suspend (Int) -> Unit)? = null): Table? {
         val source = File(path)
-        val stem = source.nameWithoutExtension
-        val name = stem.replace("_", " ")
-
-        val folderName = getUniqueFolder(name)
+        val folderName = getUniqueFolder(source.nameWithoutExtension.replace("_", " "))
         val destFolder = buildPath(folderName)
-        val destPack = "$destFolder/${source.name}"
+        val dest = buildPath("$folderName/${source.name}")
+        val isPack = isPackFolderName(source.name)
 
         if (!fileOps.createDirectory(destFolder)) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Failed to create directory")
@@ -512,19 +480,52 @@ class TableManager(private val context: Context) {
         }
 
         val copied =
-            if (source.isDirectory) {
-                fileOps.copyDirectory(source.absolutePath, destPack)
-            } else {
-                fileOps.createDirectory(destPack) &&
-                    VPinballManager.vpinballJNI.VPinballZipExtract(path, destPack, null) == VPinballStatus.SUCCESS.value
+            when {
+                source.isDirectory -> fileOps.copyDirectory(source.absolutePath, dest)
+                isPack -> extractPack(path, dest, onProgress)
+                else -> fileOps.copy(source.absolutePath, dest)
             }
 
-        if (!copied) {
-            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy pack")
+        if (!copied || (isPack && !fileOps.exists("$dest/manifest.json"))) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to import ${source.name}")
+            fileOps.deleteDirectory(destFolder)
             return null
         }
 
-        return createTable(destPack)
+        return createTable(dest)
+    }
+
+    private fun extractPack(path: String, dest: String, onProgress: (suspend (Int) -> Unit)?): Boolean {
+        val tempDir = File(context.cacheDir, "vpinball_pack_${System.currentTimeMillis()}")
+
+        try {
+            if (!tempDir.mkdirs()) {
+                return false
+            }
+            val result = VPinballManager.vpinballJNI.VPinballZipExtract(path, tempDir.absolutePath, extractProgressCallback(onProgress))
+            if (result != VPinballStatus.SUCCESS.value) {
+                VPinballManager.log(VPinballLogLevel.ERROR, "Failed to extract pack")
+                return false
+            }
+            return fileOps.copyDirectory(packRoot(tempDir).absolutePath, dest)
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
+
+    private fun packRoot(dir: File): File {
+        if (File(dir, "manifest.json").exists()) {
+            return dir
+        }
+        val child = dir.listFiles().orEmpty().filter { it.name != "__MACOSX" }.singleOrNull()
+        return if (child != null && child.isDirectory && File(child, "manifest.json").exists()) child else dir
+    }
+
+    private fun extractProgressCallback(onProgress: (suspend (Int) -> Unit)?) = VPinballZipCallback { current, total, _ ->
+        if (total > 0) {
+            val extractProgress = 60 + ((current.toDouble() / total) * 35).toInt()
+            runBlocking(Dispatchers.Main) { onProgress?.invoke(extractProgress) }
+        }
     }
 
     private suspend fun importArchive(path: String, onProgress: (suspend (Int) -> Unit)? = null): List<Table> {
@@ -535,17 +536,7 @@ class TableManager(private val context: Context) {
         }
 
         try {
-            val result =
-                VPinballManager.vpinballJNI.VPinballZipExtract(
-                    path,
-                    tempDir,
-                    VPinballZipCallback { current, total, _ ->
-                        if (total > 0) {
-                            val extractProgress = 60 + ((current.toDouble() / total) * 35).toInt()
-                            runBlocking(Dispatchers.Main) { onProgress?.invoke(extractProgress) }
-                        }
-                    },
-                )
+            val result = VPinballManager.vpinballJNI.VPinballZipExtract(path, tempDir, extractProgressCallback(onProgress))
 
             if (result != VPinballStatus.SUCCESS.value) {
                 VPinballManager.log(VPinballLogLevel.ERROR, "Failed to extract archive")
@@ -605,7 +596,9 @@ class TableManager(private val context: Context) {
                     return false
                 }
             } else {
-                if (!fileOps.delete(tablePath, onProgress)) {
+                val deleted =
+                    if (isPackFolderName(tablePath)) fileOps.deleteDirectory(tablePath, onProgress) else fileOps.delete(tablePath, onProgress)
+                if (!deleted) {
                     return false
                 }
             }
