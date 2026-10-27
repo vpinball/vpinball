@@ -170,6 +170,8 @@ private:
    std::shared_ptr<MeshBuffer> m_meshBuffer;
    std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
    std::shared_ptr<MeshBuffer> m_meshEdgeRubberBuffer;
+   vector<unsigned int> m_rubberEdgeTriIndices; // flipperBaseIndices shifted by flipperBaseVertices (rubber half of the combined mesh)
+   vector<Vertex3D_NoTex2> m_rubberEdgeVertices;
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;
 

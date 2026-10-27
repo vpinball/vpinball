@@ -356,15 +356,23 @@ void Trigger::Render(const unsigned int renderMask)
    if (m_meshBuffer == nullptr)
       return;
 
-   m_renderer->UpdateBasicShaderMatrix(Matrix3D::MatrixTranslate(0.f, 0.f, m_animHeightOffset));
+   const Matrix3D translate = Matrix3D::MatrixTranslate(0.f, 0.f, m_animHeightOffset);
 
-   m_renderer->m_renderDevice->ResetRenderState();
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
-      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
-   m_renderer->m_renderDevice->DrawMesh(
-      m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_meshBuffer->m_ib->m_count);
-   m_renderer->UpdateBasicShaderMatrix();
+   RenderMeshDesc body;
+   body.mesh = m_meshBuffer;
+   body.sortCenter = m_boundingSphereCenter;
+   body.transform = &translate;
+
+   const bool isUIPass = renderMask & (Renderer::UI_EDGES | Renderer::UI_FILL);
+   VisualMaterial material;
+   if (!isUIPass)
+   {
+      m_renderer->m_renderDevice->ResetRenderState();
+      if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
+         m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      material.material = m_ptable->GetMaterial(m_d.m_szMaterial);
+   }
+   m_renderer->RenderMesh(renderMask, body, material);
 }
 
 #pragma endregion

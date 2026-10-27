@@ -625,25 +625,28 @@ void HitTarget::Render(const unsigned int renderMask)
          * Matrix3D::MatrixTranslate(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z + m_moveAnimationOffset)
       : (Matrix3D::MatrixScale(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z) * Matrix3D::MatrixRotateX(ANGTORAD(m_moveAnimationOffset)) * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)))
          * Matrix3D::MatrixTranslate(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
-   m_renderer->UpdateBasicShaderMatrix(targetMatrix);
 
-   if (isUIPass)
-   {
-      if (renderMask & Renderer::UI_FILL)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      // FIXME render wireframe
-   }
-   else
+   RenderMeshDesc body;
+   body.mesh = m_meshBuffer;
+   body.indexCount = m_numIndices;
+   body.sortCenter = m_d.m_vPosition;
+   body.depthBias = m_d.m_depthBias;
+   body.transform = &targetMatrix;
+
+   VisualMaterial material;
+   if (!isUIPass)
    {
       m_renderer->m_renderDevice->ResetRenderState();
       m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
-      const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-      m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
-      m_renderer->m_renderDevice->DrawMesh(
-         m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+      material.material = m_ptable->GetMaterial(m_d.m_szMaterial);
+      material.image = pin;
+      material.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
+      body.transparent = material.material->m_bOpacityActive;
    }
-   m_renderer->UpdateBasicShaderMatrix();
+   m_renderer->RenderMesh(renderMask, body, material);
+   if (!isUIPass)
+      m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
 }
 
 #pragma endregion

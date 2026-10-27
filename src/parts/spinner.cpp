@@ -342,38 +342,52 @@ void Spinner::Render(const unsigned int renderMask)
    || (isReflectionPass && !m_d.m_reflectionEnabled))
       return;
 
-   m_renderer->m_renderDevice->ResetRenderState();
+   const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
+
+   RenderMeshDesc bracket;
+   bracket.mesh = m_bracketMeshBuffer;
+   bracket.indexCount = spinnerBracketNumFaces;
+   bracket.sortCenter = pos;
+
+   const float angle = m_phitspinner ? m_phitspinner->m_spinnerMover.m_angle : clamp(0.f, ANGTORAD(min(m_d.m_angleMin, m_d.m_angleMax)), ANGTORAD(max(m_d.m_angleMin, m_d.m_angleMax)));
+   const Matrix3D vertMatrix = (Matrix3D::MatrixRotateX(-angle) * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation))) * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length)
+      * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
+
+   RenderMeshDesc plate;
+   plate.mesh = m_plateMeshBuffer;
+   plate.indexCount = spinnerPlateNumFaces;
+   plate.sortCenter = pos;
+   plate.transform = &vertMatrix;
+
+   Material bracketMat;
+   VisualMaterial bracketMaterial;
+   VisualMaterial plateMaterial;
+   if (!(renderMask & (Renderer::UI_EDGES | Renderer::UI_FILL)))
+   {
+      m_renderer->m_renderDevice->ResetRenderState();
+      bracketMat.m_type = Material::MaterialType::METAL;
+      bracketMat.m_cBase = 0x20202020;
+      bracketMat.m_fWrapLighting = 0.9f;
+      bracketMat.m_cGlossy = 0x60606060;
+      bracketMat.m_fRoughness = 0.4f;
+      bracketMat.m_fGlossyImageLerp = 1.0f;
+      bracketMat.m_fThickness = 0.05f;
+      bracketMat.m_cClearcoat = 0x20202020;
+      bracketMat.m_fEdge = 1.0f;
+      bracketMat.m_fEdgeAlpha = 1.0f;
+      bracketMaterial.material = &bracketMat;
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+      plateMaterial.material = m_ptable->GetMaterial(m_d.m_szMaterial);
+      plateMaterial.image = pin;
+      plateMaterial.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
+   }
 
    if (m_d.m_showBracket && !isDynamicOnly)
-   {
-      Material mat;
-      mat.m_type = Material::MaterialType::METAL;
-      mat.m_cBase = 0x20202020;
-      mat.m_fWrapLighting = 0.9f;
-      mat.m_cGlossy = 0x60606060;
-      mat.m_fRoughness = 0.4f;
-      mat.m_fGlossyImageLerp = 1.0f;
-      mat.m_fThickness = 0.05f;
-      mat.m_cClearcoat = 0x20202020;
-      mat.m_fEdge = 1.0f;
-      mat.m_fEdgeAlpha = 1.0f;
-      m_renderer->m_renderDevice->m_basicShader->SetBasic(&mat, nullptr);
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
-   }
+      m_renderer->RenderMesh(renderMask, bracket, bracketMaterial);
 
    const bool plateVisible = m_phitspinner ? m_phitspinner->m_spinnerMover.m_visible : m_d.m_visible;
    if (plateVisible && !isStaticOnly)
-   {
-      const float angle = m_phitspinner ? m_phitspinner->m_spinnerMover.m_angle : clamp(0.f, ANGTORAD(min(m_d.m_angleMin, m_d.m_angleMax)), ANGTORAD(max(m_d.m_angleMin, m_d.m_angleMax)));
-      const Matrix3D vertMatrix = (Matrix3D::MatrixRotateX(-angle) * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation))) * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length)
-         * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-      m_renderer->UpdateBasicShaderMatrix(vertMatrix);
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-      m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
-      m_renderer->UpdateBasicShaderMatrix();
-   }
+      m_renderer->RenderMesh(renderMask, plate, plateMaterial);
 }
 
 // Used by the OBJ mesh exporter only; rendering applies the same transform through the object matrix

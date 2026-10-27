@@ -591,35 +591,26 @@ void Rubber::Render(const unsigned int renderMask)
    if (m_dynamicVertexBufferRegenerate && !m_d.m_staticRendering)
       UpdateRubber(true, m_d.m_height);
 
-   if (isUIPass)
-   {
-      if (renderMask & Renderer::UI_FILL)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
-      {
-         vector<WORD> indices(8 * m_numVertices);
-         for (int i = 0; i < m_numVertices; i++)
-         {
-            indices[i * 8 + 0] = m_ringIndices[i * 6 + 0];
-            indices[i * 8 + 1] = m_ringIndices[i * 6 + 1];
-            indices[i * 8 + 2] = m_ringIndices[i * 6 + 1];
-            indices[i * 8 + 3] = m_ringIndices[i * 6 + 3];
-            indices[i * 8 + 4] = m_ringIndices[i * 6 + 3];
-            indices[i * 8 + 5] = m_ringIndices[i * 6 + 2];
-            indices[i * 8 + 6] = m_ringIndices[i * 6 + 2];
-            indices[i * 8 + 7] = m_ringIndices[i * 6 + 0];
-         }
-         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
-      }
-      if (renderMask & Renderer::UI_EDGES)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, 8 * m_numVertices);
-   }
-   else
+   RenderMeshDesc body;
+   body.mesh = m_meshBuffer;
+   body.indexCount = m_numIndices;
+   body.sortCenter = m_boundingSphereCenter;
+   body.uiEdgeMesh = &m_meshEdgeBuffer;
+   body.edgeMode = UIEdgeMode::Quads;
+   body.edgeTriIndices = m_ringIndices.data();
+   body.edgeTriCount = m_ringIndices.size();
+   body.edgeTriIndices16 = true;
+
+   VisualMaterial material;
+   if (!isUIPass)
    {
       m_renderer->m_renderDevice->ResetRenderState();
-      m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+      material.material = m_ptable->GetMaterial(m_d.m_szMaterial);
+      material.image = pin;
+      material.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
    }
+   m_renderer->RenderMesh(renderMask, body, material);
 }
 
 #pragma endregion
