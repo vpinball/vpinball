@@ -27,6 +27,7 @@ struct FieldMap
    ankerl::unordered_dense::map<string, int> nameToFid;
    std::vector<string> orderedNames; // Field names in declaration order, used to order the json output
    std::unordered_set<int> repeatable; // Fields made of a repeated list of scalar records
+   std::unordered_set<int> ignored; // Fields intentionally unmapped (legacy BIFF-only data), skipped silently
 };
 
 // Fields shared by all scene node types (ISelect persisted properties and fields with an identical meaning on every type using them)
@@ -45,7 +46,7 @@ static const std::initializer_list<FieldDef> g_sharedPartFields = {
    { FID(DPNT), "dragpoints" },
 };
 
-static FieldMap MakePartMap(std::initializer_list<FieldDef> fields, std::initializer_list<int> repeatable = {})
+static FieldMap MakePartMap(std::initializer_list<FieldDef> fields, std::initializer_list<int> repeatable = {}, std::initializer_list<int> ignored = {})
 {
    FieldMap map;
    const auto add = [&map](const FieldDef& def)
@@ -59,12 +60,13 @@ static FieldMap MakePartMap(std::initializer_list<FieldDef> fields, std::initial
    for (const FieldDef& def : fields)
       add(def);
    map.repeatable = repeatable;
+   map.ignored = ignored;
    return map;
 }
 
-static FieldMap MakeMap(std::initializer_list<FieldDef> fields, std::initializer_list<int> repeatable = {})
+static FieldMap MakeMap(std::initializer_list<FieldDef> fields, std::initializer_list<int> repeatable = {}, std::initializer_list<int> ignored = {})
 {
-   return MakePartMap(fields, repeatable); // Same thing, kept for readability of the table below
+   return MakePartMap(fields, repeatable, ignored); // Same thing, kept for readability of the table below
 }
 
 static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
@@ -354,21 +356,64 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
          { FID(ZADJ), "z_adjust" },
       });
 
-      m[eItemPrimitive] = MakePartMap({
-         { FID(ADDB), "add_blend" }, { FID(CLDR), "collidable" }, { FID(COLR), "color" }, { FID(CORF), "collision_reduction_factor" }, { FID(DILB), "disable_lighting_below" },
-         { FID(DILI), "disable_lighting_legacy" }, { FID(DILT), "disable_lighting_top" }, { FID(DIPT), "display_texture" }, { FID(DTXI), "draw_textures_inside" },
-         { FID(EBFC), "backfaces_enabled" }, { FID(EFUI), "ui_edge_factor" }, { FID(ELAS), "elasticity" }, { FID(ELFO), "elasticity_falloff" }, { FID(FALP), "alpha" },
-         { FID(HTEV), "hitEvent" }, { FID(IMAG), "image" }, { FID(ISTO), "toy" }, { FID(LMAP), "lightmap" },
-         { FID(M3DN), "mesh_file" }, // Original mesh file name (informational, the mesh is stored under meshes/)
-         { FID(MAPH), "physics_material" }, { FID(MATR), "material" }, { FID(NRMA), "normal_map" }, { FID(OSNM), "object_space_normal_map" }, { FID(OVPH), "overwrite_physics" },
-         { FID(PIDB), "depth_bias" }, { FID(REEN), "reflection_enabled" }, { FID(REFL), "reflection_probe" }, { FID(REFR), "refraction_probe" }, { FID(RFCT), "friction" },
-         { FID(RSCT), "scatter" }, { FID(RSTR), "reflection_strength" }, { FID(RTHI), "refraction_thickness" }, { FID(RTV0), "prim_rot1_x" }, { FID(RTV1), "prim_rot1_y" },
-         { FID(RTV2), "prim_rot1_z" }, { FID(RTV3), "prim_trans_x" }, { FID(RTV4), "prim_trans_y" }, { FID(RTV5), "prim_trans_z" }, { FID(RTV6), "prim_rot2_x" },
-         { FID(RTV7), "prim_rot2_y" }, { FID(RTV8), "prim_rot2_z" }, { FID(SCOL), "side_color" }, { FID(SIDS), "sides" }, { FID(SIMG), "side_image" }, { FID(SLNK), "state_src_link" }, { FID(STRE), "static_rendering" },
-         { FID(THRS), "threshold" }, { FID(TVIS), "visible" }, { FID(U3DM), "use_mesh" }, { FID(VPOS), "position" }, { FID(VSIZ), "size" }, { FID(ZMSK), "use_depth_mask" },
-         // The mesh binary fields (M3VN/M3FN/M3CX/M3CY/M3CI/M3CJ/M3DX/M3DI/M3AX/M3AY) are
-         // intentionally unmapped: the mesh is stored as a GLB file under meshes/
-      });
+      m[eItemPrimitive] = MakePartMap(
+         {
+            { FID(ADDB), "add_blend" },
+            { FID(CLDR), "collidable" },
+            { FID(COLR), "color" },
+            { FID(CORF), "collision_reduction_factor" },
+            { FID(DILB), "disable_lighting_below" },
+            { FID(DILI), "disable_lighting_legacy" },
+            { FID(DILT), "disable_lighting_top" },
+            { FID(DIPT), "display_texture" },
+            { FID(DTXI), "draw_textures_inside" },
+            { FID(EBFC), "backfaces_enabled" },
+            { FID(EFUI), "ui_edge_factor" },
+            { FID(ELAS), "elasticity" },
+            { FID(ELFO), "elasticity_falloff" },
+            { FID(FALP), "alpha" },
+            { FID(HTEV), "hitEvent" },
+            { FID(IMAG), "image" },
+            { FID(ISTO), "toy" },
+            { FID(LMAP), "lightmap" },
+            { FID(M3DN), "mesh_file" }, // Original mesh file name (informational, the mesh is stored under meshes/)
+            { FID(MAPH), "physics_material" },
+            { FID(MATR), "material" },
+            { FID(NRMA), "normal_map" },
+            { FID(OSNM), "object_space_normal_map" },
+            { FID(OVPH), "overwrite_physics" },
+            { FID(PIDB), "depth_bias" },
+            { FID(REEN), "reflection_enabled" },
+            { FID(REFL), "reflection_probe" },
+            { FID(REFR), "refraction_probe" },
+            { FID(RFCT), "friction" },
+            { FID(RSCT), "scatter" },
+            { FID(RSTR), "reflection_strength" },
+            { FID(RTHI), "refraction_thickness" },
+            { FID(RTV0), "prim_rot1_x" },
+            { FID(RTV1), "prim_rot1_y" },
+            { FID(RTV2), "prim_rot1_z" },
+            { FID(RTV3), "prim_trans_x" },
+            { FID(RTV4), "prim_trans_y" },
+            { FID(RTV5), "prim_trans_z" },
+            { FID(RTV6), "prim_rot2_x" },
+            { FID(RTV7), "prim_rot2_y" },
+            { FID(RTV8), "prim_rot2_z" },
+            { FID(SCOL), "side_color" },
+            { FID(SIDS), "sides" },
+            { FID(SIMG), "side_image" },
+            { FID(SLNK), "state_src_link" },
+            { FID(STRE), "static_rendering" },
+            { FID(THRS), "threshold" },
+            { FID(TVIS), "visible" },
+            { FID(U3DM), "use_mesh" },
+            { FID(VPOS), "position" },
+            { FID(VSIZ), "size" },
+            { FID(ZMSK), "use_depth_mask" },
+         },
+         {},
+         // The mesh binary fields are intentionally unmapped: the mesh is stored as a GLB file under meshes/
+         { FID(M3VN), FID(M3FN), FID(M3CX), FID(M3CY), FID(M3CI), FID(M3CJ), FID(M3DX), FID(M3DI), FID(M3AX), FID(M3AY) });
 
       m[eItemRamp] = MakePartMap({
          { FID(ALGN), "alignment" },
@@ -516,37 +561,125 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
          },
          { FID(ITEM) });
 
-      m[eItemTable] = MakeMap({
-         { FID(LEFT), "left" }, { FID(TOPX), "top" }, { FID(RGHT), "right" }, { FID(BOTM), "bottom" }, { FID(EFSS), "is_fullsinglescreen_view_enabled" }, { FID(VSM0), "desktop_view.mode" },
-         { FID(ROTA), "desktop_view.rotation" }, { FID(INCL), "desktop_view.inclination" }, { FID(LAYB), "desktop_view.layback" }, { FID(FOVX), "desktop_view.fov" },
-         { FID(XLTX), "desktop_view.view_x" }, { FID(XLTY), "desktop_view.view_y" }, { FID(XLTZ), "desktop_view.view_z" }, { FID(SCLX), "desktop_view.scale_x" },
-         { FID(SCLY), "desktop_view.scale_y" }, { FID(SCLZ), "desktop_view.scale_z" }, { FID(HOF0), "desktop_view.horizontal_ofs" }, { FID(VOF0), "desktop_view.vertical_ofs" },
-         { FID(WTZ0), "desktop_view.window_top_z_ofs" }, { FID(WBZ0), "desktop_view.window_bot_z_ofs" }, { FID(VSM1), "cabinet_view.mode" }, { FID(ROTF), "cabinet_view.rotation" },
-         { FID(INCF), "cabinet_view.inclination" }, { FID(LAYF), "cabinet_view.layback" }, { FID(FOVF), "cabinet_view.fov" }, { FID(XLFX), "cabinet_view.view_x" },
-         { FID(XLFY), "cabinet_view.view_y" }, { FID(XLFZ), "cabinet_view.view_z" }, { FID(SCFX), "cabinet_view.scale_x" }, { FID(SCFY), "cabinet_view.scale_y" },
-         { FID(SCFZ), "cabinet_view.scale_z" }, { FID(HOF1), "cabinet_view.horizontal_ofs" }, { FID(VOF1), "cabinet_view.vertical_ofs" }, { FID(WTZ1), "cabinet_view.window_top_z_ofs" },
-         { FID(WBZ1), "cabinet_view.window_bot_z_ofs" }, { FID(VSM2), "fullsinglescreen_view.mode" }, { FID(ROFS), "fullsinglescreen_view.rotation" },
-         { FID(INFS), "fullsinglescreen_view.inclination" }, { FID(LAFS), "fullsinglescreen_view.layback" }, { FID(FOFS), "fullsinglescreen_view.fov" },
-         { FID(XLXS), "fullsinglescreen_view.view_x" }, { FID(XLYS), "fullsinglescreen_view.view_y" }, { FID(XLZS), "fullsinglescreen_view.view_z" },
-         { FID(SCXS), "fullsinglescreen_view.scale_x" }, { FID(SCYS), "fullsinglescreen_view.scale_y" }, { FID(SCZS), "fullsinglescreen_view.scale_z" },
-         { FID(HOF2), "fullsinglescreen_view.horizontal_ofs" }, { FID(VOF2), "fullsinglescreen_view.vertical_ofs" }, { FID(WTZ2), "fullsinglescreen_view.window_top_z_ofs" },
-         { FID(WBZ2), "fullsinglescreen_view.window_bot_z_ofs" }, { FID(ORRP), "override_physics" }, { FID(ORPF), "override_physics_flipper" }, { FID(GAVT), "gravity" },
-         { FID(FRCT), "friction" }, { FID(ELAS), "elasticity" }, { FID(ELFA), "elasticity_falloff" }, { FID(PFSC), "scatter" }, { FID(SCAT), "default_scatter" }, { FID(NDGT), "nudge_time" },
-         { FID(PHML), "physics_max_loops" }, { FID(REEL), "render_EM_reels" }, { FID(DECL), "render_decals" }, { FID(OFFX), "win_editor_view_offset_x" },
-         { FID(OFFY), "win_editor_view_offset_y" }, { FID(ZOOM), "win_editor_zoom" }, { FID(SLPX), "angle_tilt_max" }, { FID(SLOP), "angle_tilt_min" }, { FID(BIMG), "backdrop_image_0" },
-         { FID(BIMF), "backdrop_image_1" }, { FID(BIMS), "backdrop_image_2" }, { FID(BIMN), "image_backdrop_night_day" }, { FID(IMCG), "image_color_grade" }, { FID(BLIM), "ball_image" },
-         { FID(BLSM), "ball_spherical_mapping" }, { FID(BLIF), "ball_image_decal" }, { FID(EIMG), "env_image" }, { FID(IMAG), "image" }, // Playfield image
-         { FID(NOTX), "notes_text" }, { FID(SSHT), "screenshot" }, { FID(FBCK), "win_editor_backdrop" }, { FID(GLAS), "glass_top_height" }, { FID(GLAB), "glass_bottom_height" },
-         { FID(PLMA), "playfield_material" }, { FID(BCLR), "color_backdrop" }, { FID(TDFT), "difficulty" }, { FID(LZAM), "light_ambient" }, { FID(LZDI), "light_emission" },
-         { FID(LZHI), "light_height" }, { FID(LZRA), "light_range" }, { FID(LIES), "light_emission_scale" }, { FID(ENES), "env_emission_scale" }, { FID(GLES), "global_emission_scale" },
-         { FID(AOSC), "AO_scale" }, { FID(SSSC), "SSR_scale" }, { FID(CLBH), "ground_to_lockbar_height" }, { FID(SVOL), "table_sound_volume" }, { FID(MVOL), "table_music_volume" },
-         { FID(PLST), "playfield_reflection_strength" }, { FID(BDMO), "ball_decal_mode" }, { FID(BPRS), "ball_playfield_reflection_strength" },
-         { FID(DBIS), "default_bulb_intensity_scale_on_ball" }, { FID(GDAC), "ui_editor_grid" }, { FID(UAOC), "enable_AO" }, { FID(USSR), "enable_SSR" }, { FID(TMAP), "tonemapper" },
-         { FID(EXPO), "exposure" }, { FID(BLST), "bloom_strength" }, { FID(MATR), "materials" }, { FID(RPRB), "renderprobes" }, { FID(NAME), "name" }, { FID(CODE), "vbs_script" },
-         { FID(CCUS), "ui_custom_colors" }, { FID(TLCK), "tablelocked" },
-         // MASI, SEDT, SSND, SIMG, SFNT, SCOL (stream pre-allocation counts), MATE and PHMA
-         // (legacy pre-10.8 material blobs) are intentionally unmapped and skipped
-      });
+      m[eItemTable] = MakeMap(
+         {
+            { FID(LEFT), "left" },
+            { FID(TOPX), "top" },
+            { FID(RGHT), "right" },
+            { FID(BOTM), "bottom" },
+            { FID(EFSS), "is_fullsinglescreen_view_enabled" },
+            { FID(VSM0), "desktop_view.mode" },
+            { FID(ROTA), "desktop_view.rotation" },
+            { FID(INCL), "desktop_view.inclination" },
+            { FID(LAYB), "desktop_view.layback" },
+            { FID(FOVX), "desktop_view.fov" },
+            { FID(XLTX), "desktop_view.view_x" },
+            { FID(XLTY), "desktop_view.view_y" },
+            { FID(XLTZ), "desktop_view.view_z" },
+            { FID(SCLX), "desktop_view.scale_x" },
+            { FID(SCLY), "desktop_view.scale_y" },
+            { FID(SCLZ), "desktop_view.scale_z" },
+            { FID(HOF0), "desktop_view.horizontal_ofs" },
+            { FID(VOF0), "desktop_view.vertical_ofs" },
+            { FID(WTZ0), "desktop_view.window_top_z_ofs" },
+            { FID(WBZ0), "desktop_view.window_bot_z_ofs" },
+            { FID(VSM1), "cabinet_view.mode" },
+            { FID(ROTF), "cabinet_view.rotation" },
+            { FID(INCF), "cabinet_view.inclination" },
+            { FID(LAYF), "cabinet_view.layback" },
+            { FID(FOVF), "cabinet_view.fov" },
+            { FID(XLFX), "cabinet_view.view_x" },
+            { FID(XLFY), "cabinet_view.view_y" },
+            { FID(XLFZ), "cabinet_view.view_z" },
+            { FID(SCFX), "cabinet_view.scale_x" },
+            { FID(SCFY), "cabinet_view.scale_y" },
+            { FID(SCFZ), "cabinet_view.scale_z" },
+            { FID(HOF1), "cabinet_view.horizontal_ofs" },
+            { FID(VOF1), "cabinet_view.vertical_ofs" },
+            { FID(WTZ1), "cabinet_view.window_top_z_ofs" },
+            { FID(WBZ1), "cabinet_view.window_bot_z_ofs" },
+            { FID(VSM2), "fullsinglescreen_view.mode" },
+            { FID(ROFS), "fullsinglescreen_view.rotation" },
+            { FID(INFS), "fullsinglescreen_view.inclination" },
+            { FID(LAFS), "fullsinglescreen_view.layback" },
+            { FID(FOFS), "fullsinglescreen_view.fov" },
+            { FID(XLXS), "fullsinglescreen_view.view_x" },
+            { FID(XLYS), "fullsinglescreen_view.view_y" },
+            { FID(XLZS), "fullsinglescreen_view.view_z" },
+            { FID(SCXS), "fullsinglescreen_view.scale_x" },
+            { FID(SCYS), "fullsinglescreen_view.scale_y" },
+            { FID(SCZS), "fullsinglescreen_view.scale_z" },
+            { FID(HOF2), "fullsinglescreen_view.horizontal_ofs" },
+            { FID(VOF2), "fullsinglescreen_view.vertical_ofs" },
+            { FID(WTZ2), "fullsinglescreen_view.window_top_z_ofs" },
+            { FID(WBZ2), "fullsinglescreen_view.window_bot_z_ofs" },
+            { FID(ORRP), "override_physics" },
+            { FID(ORPF), "override_physics_flipper" },
+            { FID(GAVT), "gravity" },
+            { FID(FRCT), "friction" },
+            { FID(ELAS), "elasticity" },
+            { FID(ELFA), "elasticity_falloff" },
+            { FID(PFSC), "scatter" },
+            { FID(SCAT), "default_scatter" },
+            { FID(NDGT), "nudge_time" },
+            { FID(PHML), "physics_max_loops" },
+            { FID(REEL), "render_EM_reels" },
+            { FID(DECL), "render_decals" },
+            { FID(OFFX), "win_editor_view_offset_x" },
+            { FID(OFFY), "win_editor_view_offset_y" },
+            { FID(ZOOM), "win_editor_zoom" },
+            { FID(SLPX), "angle_tilt_max" },
+            { FID(SLOP), "angle_tilt_min" },
+            { FID(BIMG), "backdrop_image_0" },
+            { FID(BIMF), "backdrop_image_1" },
+            { FID(BIMS), "backdrop_image_2" },
+            { FID(BIMN), "image_backdrop_night_day" },
+            { FID(IMCG), "image_color_grade" },
+            { FID(BLIM), "ball_image" },
+            { FID(BLSM), "ball_spherical_mapping" },
+            { FID(BLIF), "ball_image_decal" },
+            { FID(EIMG), "env_image" },
+            { FID(IMAG), "image" }, // Playfield image
+            { FID(NOTX), "notes_text" },
+            { FID(SSHT), "screenshot" },
+            { FID(FBCK), "win_editor_backdrop" },
+            { FID(GLAS), "glass_top_height" },
+            { FID(GLAB), "glass_bottom_height" },
+            { FID(PLMA), "playfield_material" },
+            { FID(BCLR), "color_backdrop" },
+            { FID(TDFT), "difficulty" },
+            { FID(LZAM), "light_ambient" },
+            { FID(LZDI), "light_emission" },
+            { FID(LZHI), "light_height" },
+            { FID(LZRA), "light_range" },
+            { FID(LIES), "light_emission_scale" },
+            { FID(ENES), "env_emission_scale" },
+            { FID(GLES), "global_emission_scale" },
+            { FID(AOSC), "AO_scale" },
+            { FID(SSSC), "SSR_scale" },
+            { FID(CLBH), "ground_to_lockbar_height" },
+            { FID(SVOL), "table_sound_volume" },
+            { FID(MVOL), "table_music_volume" },
+            { FID(PLST), "playfield_reflection_strength" },
+            { FID(BDMO), "ball_decal_mode" },
+            { FID(BPRS), "ball_playfield_reflection_strength" },
+            { FID(DBIS), "default_bulb_intensity_scale_on_ball" },
+            { FID(GDAC), "ui_editor_grid" },
+            { FID(UAOC), "enable_AO" },
+            { FID(USSR), "enable_SSR" },
+            { FID(TMAP), "tonemapper" },
+            { FID(EXPO), "exposure" },
+            { FID(BLST), "bloom_strength" },
+            { FID(MATR), "materials" },
+            { FID(RPRB), "renderprobes" },
+            { FID(NAME), "name" },
+            { FID(CODE), "vbs_script" },
+            { FID(CCUS), "ui_custom_colors" },
+            { FID(TLCK), "tablelocked" },
+         },
+         {},
+         // Stream pre-allocation counts and legacy pre-10.8 material blobs are intentionally unmapped
+         { FID(MASI), FID(SEDT), FID(SSND), FID(SIMG), FID(SFNT), FID(SCOL), FID(MATE), FID(PHMA) });
 
       m[JSONSerializer::kMaterialNode] = MakeMap({
          { FID(TYPE), "type" },
@@ -624,6 +757,13 @@ static const FieldMap& GetFieldMap(const int nodeKind)
 static string FidTag(const int fieldId)
 {
    return { static_cast<char>(fieldId & 0xFF), static_cast<char>((fieldId >> 8) & 0xFF), static_cast<char>((fieldId >> 16) & 0xFF), static_cast<char>((fieldId >> 24) & 0xFF) };
+}
+
+// Reports a field without JSON mapping, unless it is documented as intentionally unmapped in the field map
+static void LogSkippedField(const int nodeKind, const int fieldId, const bool isRaw = false)
+{
+   if (!GetFieldMap(nodeKind).ignored.contains(fieldId))
+      PLOGD << "JSON writer: skipped unmapped " << (isRaw ? "raw " : "") << "field " << FidTag(fieldId);
 }
 
 } // anonymous namespace
@@ -1134,7 +1274,7 @@ void JSONObjectWriter::BeginObject(const int objectId, const bool isArray, const
    {
       if (top.node)
       {
-         PLOGD << "JSON writer: skipped unmapped field " << FidTag(objectId);
+         LogSkippedField(top.nodeKind, objectId);
       }
       m_stack.push_back({ nullptr, -1 });
       return;
@@ -1163,7 +1303,7 @@ void JSONObjectWriter::WriteBool(const int fieldId, const bool value)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1174,7 +1314,7 @@ void JSONObjectWriter::WriteInt(const int fieldId, const int value)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1185,7 +1325,7 @@ void JSONObjectWriter::WriteUInt(const int fieldId, const unsigned int value)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1196,7 +1336,7 @@ void JSONObjectWriter::WriteFloat(const int fieldId, const float value)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1207,7 +1347,7 @@ void JSONObjectWriter::WriteString(const int fieldId, const string& value)
       AssignField(top.node, top.nodeKind, fieldId, name, value);
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1218,7 +1358,7 @@ void JSONObjectWriter::WriteWideString(const int fieldId, const wstring& value)
       AssignField(top.node, top.nodeKind, fieldId, name, MakeString(value));
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1233,7 +1373,7 @@ void JSONObjectWriter::WriteVector2(const int fieldId, const Vertex2D& vec)
    }
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1249,7 +1389,7 @@ void JSONObjectWriter::WriteVector3(const int fieldId, const vec3& vec)
    }
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1266,7 +1406,7 @@ void JSONObjectWriter::WriteVector4(const int fieldId, const vec4& vec)
    }
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1278,7 +1418,7 @@ void JSONObjectWriter::WriteScript(const int fieldId, const string& value)
    {
       if (top.node)
       {
-         PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+         LogSkippedField(top.nodeKind, fieldId);
       }
       return;
    }
@@ -1309,7 +1449,7 @@ void JSONObjectWriter::WriteFontDescriptor(const int fieldId, const FontDesc& va
    }
    else if (top.node)
    {
-      PLOGD << "JSON writer: skipped unmapped field " << FidTag(fieldId);
+      LogSkippedField(top.nodeKind, fieldId);
    }
 }
 
@@ -1321,7 +1461,7 @@ void JSONObjectWriter::WriteRaw(const int fieldId, const void* pvalue, const int
    {
       if (top.node)
       {
-         PLOGD << "JSON writer: skipped unmapped raw field " << FidTag(fieldId);
+         LogSkippedField(top.nodeKind, fieldId, true);
       }
       return;
    }
