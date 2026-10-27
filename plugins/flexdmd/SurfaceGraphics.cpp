@@ -3,8 +3,6 @@
 
 #include "SurfaceGraphics.h"
 
-#include <cmath>
-
 namespace Flex {
 
 SurfaceGraphics::SurfaceGraphics(SDL_Surface* pSurface)
@@ -35,9 +33,8 @@ void SurfaceGraphics::Clear()
    FillRectangle({ 0, 0, m_pSurface->w, m_pSurface->h });
 }
 
-static uint32_t BlendColors(uint32_t start, uint32_t end, float position)
+static uint32_t BlendColors(uint32_t start, uint32_t end, uint32_t pos)
 {
-   const uint32_t pos = static_cast<uint32_t>(floorf(position * 255.f + 0.5f));
    const uint32_t startA = (start >> 24) * (pos ^ 0xFFu);
    const uint32_t endA = (end >> 24) * pos;
    const uint32_t finalA = startA + endA;
@@ -59,54 +56,111 @@ void SurfaceGraphics::DrawImage(SDL_Surface* pImage, SDL_Rect* pSrcRect, SDL_Rec
       return;
    }
 
+   // FlexDMD renders to an RGB24 surface: the scaled pixels are blended directly into it, clipped like SDL_BlitSurface would
+   if (m_pSurface->format != SDL_PIXELFORMAT_RGB24)
+   {
+      assert(false);
+      SDL_BlitSurfaceScaled(pImage, pSrcRect, m_pSurface, &rect, SDL_SCALEMODE_NEAREST);
+      return;
+   }
+   SDL_Rect clip, visible;
+   SDL_GetSurfaceClipRect(m_pSurface, &clip);
+   if (!SDL_GetRectIntersection(&rect, &clip, &visible))
+      return;
+
    SDL_Surface* const pSrc = (pImage->format == SDL_PIXELFORMAT_ABGR8888) ? pImage : SDL_ConvertSurface(pImage, SDL_PIXELFORMAT_ABGR8888);
    if (pSrc == nullptr)
       return;
-   SDL_Surface* const pDst = SDL_CreateSurface(rect.w, rect.h, SDL_PIXELFORMAT_ABGR8888);
-   if (pDst == nullptr || !SDL_LockSurface(pSrc))
+   if (!SDL_LockSurface(pSrc))
    {
-      SDL_DestroySurface(pDst);
+      if (pSrc != pImage)
+         SDL_DestroySurface(pSrc);
+      return;
+   }
+   if (!SDL_LockSurface(m_pSurface))
+   {
+      SDL_UnlockSurface(pSrc);
       if (pSrc != pImage)
          SDL_DestroySurface(pSrc);
       return;
    }
 
-   const auto sample = [pSrc, &src](int x, int y) -> uint32_t
+   // Same rounding as SDL's ALPHA_BLEND_CHANNEL, so the result matches SDL_BlitSurface with SDL_BLENDMODE_BLEND
+   const auto blendChannel = [](uint32_t s, uint8_t& d, uint32_t a)
    {
-      if (x < src.x || y < src.y || x >= src.x + src.w || y >= src.y + src.h)
-         return 0;
-      return static_cast<const uint32_t*>(pSrc->pixels)[y * (pSrc->pitch / 4) + x];
+      uint16_t x = static_cast<uint16_t>(((static_cast<int>(s) - d) * static_cast<int>(a)) + ((d << 8) - d));
+      x += 1;
+      x += x >> 8;
+      d = static_cast<uint8_t>(x >> 8);
    };
-   const float scaleX = static_cast<float>(src.w) / static_cast<float>(rect.w);
-   const float scaleY = static_cast<float>(src.h) / static_cast<float>(rect.h);
-   for (int y = 0; y < rect.h; y++)
+   // One channel of the bilinear filter when the 4 samples share the same alpha: BlendColors then reduces exactly to this integer lerp
+   const auto lerpChannel = [](uint32_t tl, uint32_t tr, uint32_t bl, uint32_t br, uint32_t shift, uint32_t posX, uint32_t posY)
    {
-      uint32_t* const pDstRow = static_cast<uint32_t*>(pDst->pixels) + y * (pDst->pitch / 4);
-      const float sy = static_cast<float>(src.y) + static_cast<float>(y) * scaleY;
-      const float topF = floorf(sy);
-      const int top = static_cast<int>(topF);
-      const int bottom = static_cast<int>(ceilf(sy));
-      for (int x = 0; x < rect.w; x++)
+      const uint32_t t = (((tl >> shift) & 0xFFu) * (posX ^ 0xFFu) + ((tr >> shift) & 0xFFu) * posX) / 0xFFu;
+      const uint32_t b = (((bl >> shift) & 0xFFu) * (posX ^ 0xFFu) + ((br >> shift) & 0xFFu) * posX) / 0xFFu;
+      return (t * (posY ^ 0xFFu) + b * posY) / 0xFFu;
+   };
+   // Destination pixel x samples source position x * src.w / rect.w (GDI+ default pixel offset mode), stepped in 16.16 fixed point
+   // like SDL_stretch.c, with the fraction rounded to an 8 bit weight. Samples past the right or bottom source edge are transparent.
+   const auto blendPos = [](int64_t fp) { return static_cast<uint32_t>(((fp & 0xFFFF) * 255 + 0x8000) >> 16); };
+   const int64_t stepX = (static_cast<int64_t>(src.w) << 16) / rect.w;
+   const int64_t stepY = (static_cast<int64_t>(src.h) << 16) / rect.h;
+   const int srcStride = pSrc->pitch / 4;
+   const uint32_t* const __restrict pSrcPixels = static_cast<const uint32_t*>(pSrc->pixels) + src.y * srcStride + src.x;
+   const int xStart = visible.x - rect.x;
+   for (int y = visible.y - rect.y; y < visible.y + visible.h - rect.y; y++)
+   {
+      const int64_t fpY = y * stepY;
+      const int top = static_cast<int>(fpY >> 16);
+      const uint32_t posY = blendPos(fpY);
+      const uint32_t* const __restrict pTop = pSrcPixels + top * srcStride;
+      const uint32_t* const __restrict pBottom = (top + 1 < src.h) ? pTop + srcStride : nullptr;
+      uint8_t* __restrict pDstPixel = static_cast<uint8_t*>(m_pSurface->pixels) + (rect.y + y) * m_pSurface->pitch + visible.x * 3;
+      int64_t fpX = xStart * stepX;
+      for (int x = 0; x < visible.w; x++, pDstPixel += 3, fpX += stepX)
       {
-         const float sx = static_cast<float>(src.x) + static_cast<float>(x) * scaleX;
-         const float leftF = floorf(sx);
-         const int left = static_cast<int>(leftF);
-         const int right = static_cast<int>(ceilf(sx));
-         if (left == right && top == bottom)
-            pDstRow[x] = sample(left, top);
+         const int left = static_cast<int>(fpX >> 16);
+         const uint32_t posX = blendPos(fpX);
+         const uint32_t tl = pTop[left];
+         uint32_t color;
+         if (posX == 0 && posY == 0)
+            color = tl;
          else
          {
-            const uint32_t t = BlendColors(sample(left, top), sample(right, top), sx - leftF);
-            const uint32_t b = BlendColors(sample(left, bottom), sample(right, bottom), sx - leftF);
-            pDstRow[x] = BlendColors(t, b, sy - topF);
+            const bool hasRight = left + 1 < src.w;
+            const uint32_t tr = hasRight ? pTop[left + 1] : 0u;
+            const uint32_t bl = pBottom ? pBottom[left] : 0u;
+            const uint32_t br = (pBottom && hasRight) ? pBottom[left + 1] : 0u;
+            const uint32_t alpha = tl >> 24;
+            if (alpha == (tr >> 24) && alpha == (bl >> 24) && alpha == (br >> 24))
+            {
+               // Opaque images, inside of sprites
+               if (alpha == 0)
+                  continue;
+               color = (alpha << 24) | (lerpChannel(tl, tr, bl, br, 16, posX, posY) << 16) | (lerpChannel(tl, tr, bl, br, 8, posX, posY) << 8) | lerpChannel(tl, tr, bl, br, 0, posX, posY);
+            }
+            else
+               color = BlendColors(BlendColors(tl, tr, posX), BlendColors(bl, br, posX), posY);
          }
+         const uint32_t finalAlpha = color >> 24;
+         if (finalAlpha == 0)
+            continue;
+         // ABGR8888 source (R in the low byte), RGB24 destination (R first). An opaque pixel gives the same result as the blend.
+         if (finalAlpha == 0xFFu)
+         {
+            pDstPixel[0] = static_cast<uint8_t>(color);
+            pDstPixel[1] = static_cast<uint8_t>(color >> 8);
+            pDstPixel[2] = static_cast<uint8_t>(color >> 16);
+            continue;
+         }
+         blendChannel(color & 0xFFu, pDstPixel[0], finalAlpha);
+         blendChannel((color >> 8) & 0xFFu, pDstPixel[1], finalAlpha);
+         blendChannel((color >> 16) & 0xFFu, pDstPixel[2], finalAlpha);
       }
    }
 
+   SDL_UnlockSurface(m_pSurface);
    SDL_UnlockSurface(pSrc);
-   SDL_SetSurfaceBlendMode(pDst, SDL_BLENDMODE_BLEND);
-   SDL_BlitSurface(pDst, nullptr, m_pSurface, &rect);
-   SDL_DestroySurface(pDst);
    if (pSrc != pImage)
       SDL_DestroySurface(pSrc);
 }
