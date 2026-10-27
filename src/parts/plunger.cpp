@@ -808,10 +808,22 @@ void Plunger::Render(const unsigned int renderMask)
    const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (float)(m_cframes - 1) + 0.5f);
    const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
 
-   m_renderer->m_renderDevice->ResetRenderState();
-   m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
-      RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
+   RenderMeshDesc body;
+   body.mesh = m_meshBuffer;
+   body.startIndex = frame * m_indicesPerFrame;
+   body.indexCount = m_indicesPerFrame;
+   body.sortCenter = m_boundingSphereCenter;
+
+   VisualMaterial material;
+   if (!(renderMask & (Renderer::UI_EDGES | Renderer::UI_FILL)))
+   {
+      m_renderer->m_renderDevice->ResetRenderState();
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+      material.material = m_ptable->GetMaterial(m_d.m_szMaterial);
+      material.image = pin;
+      material.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
+   }
+   m_renderer->RenderMesh(renderMask, body, material);
 }
 
 #pragma endregion

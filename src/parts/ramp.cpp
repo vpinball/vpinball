@@ -738,116 +738,103 @@ void Ramp::Render(const unsigned int renderMask)
       if (!m_meshBuffer)
          return; // Nothing to draw on a degenerate curve
 
-      if (isUIPass)
-      {
-         if (renderMask & Renderer::UI_FILL)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-         /* if (renderMask & Renderer::UI_EDGES)
-         {
-            // FIXME create line list index buffer and reuse vertex buffer
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::LINELIST, 0, m_numIndices);
-         }*/
-         return;
-      }
+      RenderMeshDesc body;
+      body.mesh = m_meshBuffer;
+      body.indexCount = m_numIndices;
+      body.sortCenter = m_boundingSphereCenter;
+      body.depthBias = m_d.m_depthBias;
 
-      /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
-       * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
-       * since the texture coordinates always stay within [0,1] anyway. */
-      const SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SamplerAddressMode::SA_CLAMP : SamplerAddressMode::SA_REPEAT;
-      m_renderer->m_renderDevice->ResetRenderState();
-      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-      if (!pin)
+      VisualMaterial material;
+      if (!isUIPass)
       {
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, *mat);
-         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, false);
+         Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+         /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
+          * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
+          * since the texture coordinates always stay within [0,1] anyway. */
+         const SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SamplerAddressMode::SA_CLAMP : SamplerAddressMode::SA_REPEAT;
+         m_renderer->m_renderDevice->ResetRenderState();
+         m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+         material.material = mat;
+         material.image = pin;
+         material.filter = SamplerFilter::SF_TRILINEAR;
+         material.clampU = material.clampV = sam;
+         material.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
+         body.transparent = mat->m_bOpacityActive;
       }
-      else
-      {
-         m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_color, pin, false, SamplerFilter::SF_TRILINEAR, sam, sam);
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
-         m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
-      }
-      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_renderer->RenderMesh(renderMask, body, material);
    }
    else
    {
       if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
+      {
          GenerateVertexBuffer();
+         m_meshEdgeBuffer = nullptr; // Edge mesh shares the previous vertex buffer
+      }
 
       if (!m_meshBuffer)
          return; // Nothing to draw on a degenerate curve
 
-      if (isUIPass)
-      {
-         if (renderMask & Renderer::UI_FILL)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
-         if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
-         {
-            vector<unsigned int> indices(8 * m_meshIndices.size() / 6);
-            for (int i = 0; i < (int)m_meshIndices.size() / 6; i++)
-            {
-               indices[i * 8 + 0] = m_meshIndices[i * 6 + 0];
-               indices[i * 8 + 1] = m_meshIndices[i * 6 + 1];
-               indices[i * 8 + 2] = m_meshIndices[i * 6 + 1];
-               indices[i * 8 + 3] = m_meshIndices[i * 6 + 2];
-               indices[i * 8 + 4] = m_meshIndices[i * 6 + 3];
-               indices[i * 8 + 5] = m_meshIndices[i * 6 + 5];
-               indices[i * 8 + 6] = m_meshIndices[i * 6 + 5];
-               indices[i * 8 + 7] = m_meshIndices[i * 6 + 4];
-            }
-            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
-         }
-         if (renderMask & Renderer::UI_EDGES)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
-         return;
-      }
+      const uint32_t floorIndexCount = (m_rampVertex - 1) * 6;
 
-      m_renderer->m_renderDevice->ResetRenderState();
-      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // as both floor and walls are thinwalled
+      RenderMeshDesc floor;
+      floor.mesh = m_meshBuffer;
+      floor.indexCount = floorIndexCount;
+      floor.sortCenter = m_boundingSphereCenter;
+      floor.depthBias = m_d.m_depthBias;
+      floor.uiEdgeMesh = &m_meshEdgeBuffer;
+      floor.edgeMode = UIEdgeMode::Quads;
+      floor.edgeTriIndices = m_meshIndices.data();
+      floor.edgeTriCount = m_meshIndices.size();
+      floor.edgeTriIndices16 = true;
 
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-      if (pin)
+      RenderMeshDesc rightWall = floor;
+      rightWall.startIndex = floorIndexCount;
+      rightWall.uiEdgeMesh = nullptr;
+      rightWall.edgeMode = UIEdgeMode::None;
+
+      RenderMeshDesc leftWall = rightWall;
+      leftWall.startIndex = floorIndexCount * 2;
+
+      VisualMaterial material;
+      VisualMaterial wallsMaterial;
+      Texture *const pin = isUIPass ? nullptr : m_ptable->GetImage(m_d.m_szImage);
+      if (!isUIPass)
       {
          /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
           * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
           * since the texture coordinates always stay within [0,1] anyway. */
          const SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SamplerAddressMode::SA_CLAMP : SamplerAddressMode::SA_REPEAT;
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
-         m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_color, pin, false, SamplerFilter::SF_TRILINEAR, sam, sam);
-         m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
-      }
-      else
-      {
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, *mat);
-         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, false);
+         m_renderer->m_renderDevice->ResetRenderState();
+         m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // as both floor and walls are thinwalled
+         material.material = mat;
+         material.image = pin;
+         material.filter = SamplerFilter::SF_TRILINEAR;
+         material.clampU = material.clampV = sam;
+         material.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
+         wallsMaterial = material;
+         if (pin != nullptr && !m_d.m_imageWalls)
+            wallsMaterial.technique = ShaderTechnique::basic_without_texture;
+         floor.transparent = rightWall.transparent = leftWall.transparent = mat->m_bOpacityActive;
       }
 
-      if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
+      if (isUIPass || (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls)))
       {
          // both walls with image and floor
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
+         m_renderer->RenderMesh(renderMask, floor, material);
+         m_renderer->RenderMesh(renderMask, rightWall, wallsMaterial);
+         m_renderer->RenderMesh(renderMask, leftWall, wallsMaterial);
       }
       else
       {
          // only floor
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
+         m_renderer->RenderMesh(renderMask, floor, material);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
-            if (pin && !m_d.m_imageWalls)
-               m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, *mat);
-            if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6,
-                  (m_rampVertex - 1) * 6 * 2);
-            else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6,
-                  (m_rampVertex - 1) * 6);
-            else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2,
-                  (m_rampVertex - 1) * 6);
+            if (m_d.m_rightwallheightvisible != 0.f)
+               m_renderer->RenderMesh(renderMask, rightWall, wallsMaterial);
+            if (m_d.m_leftwallheightvisible != 0.f)
+               m_renderer->RenderMesh(renderMask, leftWall, wallsMaterial);
          }
       }
    }

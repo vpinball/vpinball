@@ -236,82 +236,86 @@ void Bumper::Render(const unsigned int renderMask)
    if (isReflectionPass && !m_d.m_reflectionEnabled)
       return;
 
-   // Editor wireframe of a mesh part, from an edge buffer built on first use
-   const auto drawEdges = [this](std::shared_ptr<MeshBuffer>& edgeBuffer, const std::shared_ptr<MeshBuffer>& meshBuffer, const WORD* indices, unsigned int numIndices, const Vertex3Ds& pos)
-   {
-      if (meshBuffer == nullptr)
-         return;
-      if (edgeBuffer == nullptr)
-      {
-         vector<unsigned int> edgeIndices(indices, indices + numIndices);
-         edgeBuffer = meshBuffer->CreateEdgeMeshBuffer(edgeIndices);
-      }
-      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, edgeBuffer, RenderDevice::LINELIST, 0, edgeBuffer->m_ib->m_count);
-   };
+   const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
 
    if (m_d.m_baseVisible)
    {
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-      if (isUIPass)
+      RenderMeshDesc base;
+      base.mesh = m_baseMeshBuffer;
+      base.indexCount = bumperBaseNumIndices;
+      base.sortCenter = pos;
+      base.uiEdgeMesh = &m_baseEdgeBuffer;
+      base.edgeMode = UIEdgeMode::TriWire;
+      base.edgeTriIndices = bumperBaseIndices;
+      base.edgeTriCount = bumperBaseNumIndices;
+      base.edgeTriIndices16 = true;
+
+      VisualMaterial material;
+      const Material *const mat = isUIPass ? nullptr : m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+      if (isUIPass || (!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
       {
-         if (renderMask & Renderer::UI_FILL)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
-         if (renderMask & Renderer::UI_EDGES)
-            drawEdges(m_baseEdgeBuffer, m_baseMeshBuffer, bumperBaseIndices, bumperBaseNumIndices, pos);
-      }
-      else
-      {
-         const Material *const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
-         if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+         if (!isUIPass)
          {
             m_renderer->m_renderDevice->ResetRenderState();
             if (mat->m_bOpacityActive)
                m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-            m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_baseTexture.get());
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+            material.material = mat;
+            material.image = m_baseTexture.get();
+            material.hasTextureAlpha = material.image != nullptr && !material.image->IsOpaque();
          }
+         m_renderer->RenderMesh(renderMask, base, material);
       }
    }
 
    if (m_d.m_capVisible)
    {
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-      if (isUIPass)
+      RenderMeshDesc cap;
+      cap.mesh = m_capMeshBuffer;
+      cap.indexCount = bumperCapNumIndices;
+      cap.sortCenter = pos;
+      cap.uiEdgeMesh = &m_capEdgeBuffer;
+      cap.edgeMode = UIEdgeMode::TriWire;
+      cap.edgeTriIndices = bumperCapIndices;
+      cap.edgeTriCount = bumperCapNumIndices;
+      cap.edgeTriIndices16 = true;
+
+      VisualMaterial material;
+      const Material *const mat = isUIPass ? nullptr : m_ptable->GetMaterial(m_d.m_szCapMaterial);
+      if (isUIPass || (!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
       {
-         if (renderMask & Renderer::UI_FILL)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
-         if (renderMask & Renderer::UI_EDGES)
-            drawEdges(m_capEdgeBuffer, m_capMeshBuffer, bumperCapIndices, bumperCapNumIndices, pos);
-      }
-      else
-      {
-         const Material *const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
-         if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+         if (!isUIPass)
          {
             m_renderer->m_renderDevice->ResetRenderState();
             if (mat->m_bOpacityActive)
                m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-            m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_capTexture.get());
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+            material.material = mat;
+            material.image = m_capTexture.get();
+            material.hasTextureAlpha = material.image != nullptr && !material.image->IsOpaque();
          }
+         m_renderer->RenderMesh(renderMask, cap, material);
       }
    }
 
    if (m_d.m_ringVisible && !isStaticOnly)
    {
       const float ringAnimOffset = m_pbumperhitcircle->m_bumperanim_ringAnimOffset;
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + ringAnimOffset);
-      m_renderer->UpdateBasicShaderMatrix(Matrix3D::MatrixTranslate(0.f, 0.f, ringAnimOffset));
-      if (isUIPass)
+      const Matrix3D ringMatrix = Matrix3D::MatrixTranslate(0.f, 0.f, ringAnimOffset);
+
+      RenderMeshDesc ring;
+      ring.mesh = m_ringMeshBuffer;
+      ring.indexCount = bumperRingNumIndices;
+      ring.sortCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + ringAnimOffset);
+      ring.transform = &ringMatrix;
+      ring.uiEdgeMesh = &m_ringEdgeBuffer;
+      ring.edgeMode = UIEdgeMode::TriWire;
+      ring.edgeTriIndices = bumperRingIndices;
+      ring.edgeTriCount = bumperRingNumIndices;
+      ring.edgeTriIndices16 = true;
+
+      Material ringMaterial;
+      VisualMaterial material;
+      if (!isUIPass)
       {
-         if (renderMask & Renderer::UI_FILL)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
-         if (renderMask & Renderer::UI_EDGES)
-            drawEdges(m_ringEdgeBuffer, m_ringMeshBuffer, bumperRingIndices, bumperRingNumIndices, pos);
-      }
-      else
-      {
-         Material ringMaterial;
          if (m_d.m_szRingMaterial[0] != '\0')
          {
             ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
@@ -323,10 +327,11 @@ void Bumper::Render(const unsigned int renderMask)
             ringMaterial.m_type = Material::MaterialType::METAL;
          }
          m_renderer->m_renderDevice->ResetRenderState();
-         m_renderer->m_renderDevice->m_basicShader->SetBasic(&ringMaterial, m_ringTexture.get());
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
+         material.material = &ringMaterial;
+         material.image = m_ringTexture.get();
+         material.hasTextureAlpha = material.image != nullptr && !material.image->IsOpaque();
       }
-      m_renderer->UpdateBasicShaderMatrix();
+      m_renderer->RenderMesh(renderMask, ring, material);
    }
 
    if (m_d.m_skirtVisible && !isStaticOnly)
@@ -334,25 +339,30 @@ void Bumper::Render(const unsigned int renderMask)
       // Skirt tilt from the last hit is applied through the object transform (see UpdateSkirt)
       const Matrix3D socketMatrix = ((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation)) * Matrix3D::MatrixRotateY(ANGTORAD(m_roty))) * Matrix3D::MatrixRotateX(ANGTORAD(m_rotx)))
          * Matrix3D::MatrixScale(m_d.m_radius, m_d.m_radius, m_d.m_heightScale) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
-      m_renderer->UpdateBasicShaderMatrix(socketMatrix);
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
-      if (isUIPass)
-      {
-         if (renderMask & Renderer::UI_FILL)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
-         if (renderMask & Renderer::UI_EDGES)
-            drawEdges(m_socketEdgeBuffer, m_socketMeshBuffer, bumperSocketIndices, bumperSocketNumIndices, pos);
-      }
-      else
+
+      RenderMeshDesc socket;
+      socket.mesh = m_socketMeshBuffer;
+      socket.indexCount = bumperSocketNumIndices;
+      socket.sortCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
+      socket.transform = &socketMatrix;
+      socket.uiEdgeMesh = &m_socketEdgeBuffer;
+      socket.edgeMode = UIEdgeMode::TriWire;
+      socket.edgeTriIndices = bumperSocketIndices;
+      socket.edgeTriCount = bumperSocketNumIndices;
+      socket.edgeTriIndices16 = true;
+
+      VisualMaterial material;
+      if (!isUIPass)
       {
          const Material *const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
          m_renderer->m_renderDevice->ResetRenderState();
          if (mat->m_bOpacityActive)
             m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_skirtTexture.get());
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+         material.material = mat;
+         material.image = m_skirtTexture.get();
+         material.hasTextureAlpha = material.image != nullptr && !material.image->IsOpaque();
       }
-      m_renderer->UpdateBasicShaderMatrix();
+      m_renderer->RenderMesh(renderMask, socket, material);
    }
 }
 

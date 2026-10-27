@@ -102,6 +102,7 @@ private:
    std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
    unsigned int m_numVertices = 0;
    unsigned int m_numIndices = 0;
+   const WORD *m_triIndices = nullptr;
    std::unique_ptr<Texture> m_texture;
 
    float m_baseHeight = 0.f;
