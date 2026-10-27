@@ -339,61 +339,41 @@ void Gate::Render(const unsigned int renderMask)
    const Matrix3D vertMatrix
       = (fullMatrix * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length)) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
 
-   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+   const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
 
-   if (isUIPass)
-   {
-      if (renderMask & Renderer::UI_FILL)
-      {
-         if (m_d.m_showBracket)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-         m_renderer->UpdateBasicShaderMatrix(vertMatrix);
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-         m_renderer->UpdateBasicShaderMatrix();
-      }
-      if (renderMask & Renderer::UI_EDGES)
-      {
-         if (m_wireEdgeMeshBuffer == nullptr)
-         {
-            vector<unsigned int> indices;
-            vector<Vertex3D_NoTex2> vertices;
-            for (unsigned int i = 0; i < m_numIndices; i++)
-               indices.push_back(m_indices[i]);
-            for (unsigned int i = 0; i < m_numVertices; i++)
-               vertices.push_back(m_vertices[i]);
-            m_wireEdgeMeshBuffer = m_wireMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
-         }
-         m_renderer->UpdateBasicShaderMatrix(vertMatrix);
-         m_renderer->m_renderDevice->DrawMesh(
-            m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
-         m_renderer->UpdateBasicShaderMatrix();
-         if (m_d.m_showBracket)
-         {
-            if (m_bracketEdgeMeshBuffer == nullptr)
-            {
-               vector<unsigned int> indices;
-               vector<Vertex3D_NoTex2> vertices;
-               for (unsigned int i = 0; i < gateBracketNumIndices; i++)
-                  indices.push_back(gateBracketIndices[i]);
-               for (unsigned int i = 0; i < gateBracketNumVertices; i++)
-                  vertices.push_back(gateBracket[i]);
-               m_bracketEdgeMeshBuffer = m_bracketMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
-            }
-            m_renderer->m_renderDevice->DrawMesh(
-               m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
-         }
-      }
-   }
-   else
+   RenderMeshDesc wire;
+   wire.mesh = m_wireMeshBuffer;
+   wire.indexCount = m_numIndices;
+   wire.sortCenter = pos;
+   wire.transform = &vertMatrix;
+   wire.uiEdgeMesh = &m_wireEdgeMeshBuffer;
+   wire.edgeMode = UIEdgeMode::Outline;
+   wire.edgeTriIndices = m_indices;
+   wire.edgeTriCount = m_numIndices;
+   wire.edgeTriIndices16 = true;
+   wire.edgeVertices = m_vertices;
+
+   RenderMeshDesc bracket;
+   bracket.mesh = m_bracketMeshBuffer;
+   bracket.indexCount = gateBracketNumIndices;
+   bracket.sortCenter = pos;
+   bracket.uiEdgeMesh = &m_bracketEdgeMeshBuffer;
+   bracket.edgeMode = UIEdgeMode::Outline;
+   bracket.edgeTriIndices = gateBracketIndices;
+   bracket.edgeTriCount = gateBracketNumIndices;
+   bracket.edgeTriIndices16 = true;
+   bracket.edgeVertices = gateBracket;
+
+   VisualMaterial material;
+   if (!isUIPass)
    {
       m_renderer->m_renderDevice->ResetRenderState();
-      m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
-      if (m_d.m_showBracket)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-      m_renderer->UpdateBasicShaderMatrix(vertMatrix);
-      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      m_renderer->UpdateBasicShaderMatrix();
+      material.material = m_ptable->GetMaterial(m_d.m_szMaterial);
    }
+
+   if (m_d.m_showBracket)
+      m_renderer->RenderMesh(renderMask, bracket, material);
+   m_renderer->RenderMesh(renderMask, wire, material);
 }
 
 #pragma endregion
