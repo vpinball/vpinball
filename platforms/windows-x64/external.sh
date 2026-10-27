@@ -142,7 +142,7 @@ fi
 # build bgfx
 #
 
-BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}-002"
+BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}-003"
 BGFX_FOUND_SHA="$([ -f bgfx/cache.txt ] && cat bgfx/cache.txt || echo "")"
 
 if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
@@ -173,6 +173,21 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
       -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
       -B build
    cmake --build build --config ${BUILD_TYPE}
+
+   # Build shaderc as a host tool (always Release: it only runs at build time to
+   # compile the embedded shaders, see src/shaders/bgfx/shaders.cmake)
+   cmake -G "Visual Studio 18 2026" \
+      -S. \
+      -A x64 \
+      -DBGFX_BUILD_TOOLS=ON \
+      -DBGFX_BUILD_TOOLS_SHADER=ON \
+      -DBGFX_BUILD_TOOLS_BIN2C=OFF \
+      -DBGFX_BUILD_TOOLS_GEOMETRY=OFF \
+      -DBGFX_BUILD_TOOLS_TEXTURE=OFF \
+      -DBGFX_BUILD_EXAMPLES=OFF \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
+      -B build-tools
+   cmake --build build-tools --config Release --target shaderc
    cd ..
 
    echo "$BGFX_EXPECTED_SHA" > cache.txt
@@ -588,6 +603,14 @@ cp bgfx/bgfx.cmake/build/cmake/bgfx/${BUILD_TYPE}/bgfx64.lib ../../../third-part
 cp bgfx/bgfx.cmake/build/cmake/bimg/${BUILD_TYPE}/bimg64.lib ../../../third-party/build-libs/windows-x64
 cp bgfx/bgfx.cmake/build/cmake/bimg/${BUILD_TYPE}/bimg_encode64.lib ../../../third-party/build-libs/windows-x64
 cp bgfx/bgfx.cmake/build/cmake/bx/${BUILD_TYPE}/bx64.lib ../../../third-party/build-libs/windows-x64
+
+# shaderc host tool (compiles the embedded BGFX shaders at build time). The DXC
+# dlls are loaded by shaderc at runtime for the s_6_0 (D3D12/DXIL) target.
+mkdir -p ../../../third-party/tools/windows-x64
+cp bgfx/bgfx.cmake/build-tools/cmake/bgfx/Release/shaderc.exe ../../../third-party/tools/windows-x64/
+cp bgfx/bgfx.cmake/bgfx/tools/bin/windows/dxcompiler.dll ../../../third-party/tools/windows-x64/
+cp bgfx/bgfx.cmake/bgfx/tools/bin/windows/dxil.dll ../../../third-party/tools/windows-x64/
+cp bgfx/bgfx.cmake/bgfx/tools/bin/windows/d3dcompiler_47.dll ../../../third-party/tools/windows-x64/
 
 cp pinmame/pinmame/build/${BUILD_TYPE}/pinmame64.lib ../../../third-party/build-libs/windows-x64
 cp pinmame/pinmame/build/${BUILD_TYPE}/pinmame64.dll ../../../third-party/runtime-libs/windows-x64

@@ -1,0 +1,107 @@
+# Generates the BGFX embedded shader headers (gen/shaders/bgfx_*.h) at build
+# time with src/shaders/bgfx/shaders.cmake and the shaderc tool produced by the
+# platform external.sh build (third-party/tools/). Only used for the BGFX
+# renderer; GL and DX9 builds need no generated shaders.
+
+if(NOT RENDERER STREQUAL "BGFX")
+   return()
+endif()
+
+# Locate the shaderc host tool. For cross builds (ios, android) the tools dir of
+# the *target* platform does not exist: fall back to the host platform dir where
+# external.sh placed a host-built shaderc.
+
+if(CMAKE_HOST_WIN32)
+   set(_vpx_host_tools "windows-x64")
+elseif(CMAKE_HOST_APPLE)
+   if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+      set(_vpx_host_tools "macos-arm64")
+   else()
+      set(_vpx_host_tools "macos-x64")
+   endif()
+elseif(CMAKE_HOST_UNIX)
+   if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+      set(_vpx_host_tools "linux-aarch64")
+   else()
+      set(_vpx_host_tools "linux-x64")
+   endif()
+endif()
+
+find_program(VPX_SHADERC
+   NAMES shaderc shaderc.exe
+   PATHS
+      "${CMAKE_SOURCE_DIR}/third-party/tools/${PLATFORM}-${ARCH}"
+      "${CMAKE_SOURCE_DIR}/third-party/tools/${_vpx_host_tools}"
+   NO_DEFAULT_PATH)
+if(NOT VPX_SHADERC)
+   message(FATAL_ERROR
+      "shaderc not found under third-party/tools/. "
+      "Run BUILD_TYPE=<config> ./platforms/<platform>-<arch>/external.sh first.")
+endif()
+message(STATUS "shaderc: ${VPX_SHADERC}")
+
+# Backends compiled for real (the shader binaries BGFX_EMBEDDED_SHADER looks up
+# on this platform, intersected with what the host shaderc can emit). Missing
+# backends are emitted as stubs: they are either not referenced by
+# BGFX_EMBEDDED_SHADER on this platform, or unreachable at runtime.
+if(PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw")
+   # GLES is not a runtime renderer on Windows: essl stays a stub
+   set(VPX_SHADER_BACKENDS "glsl,dxbc,dxil,spv")
+elseif(PLATFORM STREQUAL "macos")
+   set(VPX_SHADER_BACKENDS "mtl,glsl,spv")
+elseif(PLATFORM STREQUAL "linux")
+   set(VPX_SHADER_BACKENDS "essl,glsl,spv")
+elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
+   set(VPX_SHADER_BACKENDS "mtl,essl")
+elseif(PLATFORM STREQUAL "android")
+   set(VPX_SHADER_BACKENDS "essl,spv")
+endif()
+
+set(VPX_SHADER_GEN_DIR "${CMAKE_BINARY_DIR}/gen")
+set(VPX_SHADER_OUT_DIR "${VPX_SHADER_GEN_DIR}/shaders")
+set(VPX_SHADER_WORK_DIR "${VPX_SHADER_OUT_DIR}/.frag")
+
+set(_vpx_shader_groups basic ball dmd flasher light stereo postprocess antialiasing tonemap blur motionblur imgui mipmap)
+
+set(VPX_SHADER_HEADERS "")
+foreach(_g IN LISTS _vpx_shader_groups)
+   list(APPEND VPX_SHADER_HEADERS "${VPX_SHADER_OUT_DIR}/bgfx_${_g}.h")
+endforeach()
+
+# One custom command per shader group: groups build in parallel under Ninja /
+# makefile generators, and the generator script itself skips per-fragment work
+# that is already up to date.
+file(GLOB _vpx_shader_deps CONFIGURE_DEPENDS
+   "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/*.sc"
+   "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/*.sh"
+   "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/*.hlsl")
+
+foreach(_g IN LISTS _vpx_shader_groups)
+   add_custom_command(
+      OUTPUT "${VPX_SHADER_OUT_DIR}/bgfx_${_g}.h"
+      COMMAND "${CMAKE_COMMAND}"
+         "-DSHADERC=${VPX_SHADERC}"
+         "-DOUT_DIR=${VPX_SHADER_OUT_DIR}"
+         "-DWORK_DIR=${VPX_SHADER_WORK_DIR}"
+         "-DBACKENDS=${VPX_SHADER_BACKENDS}"
+         "-DGROUP=${_g}"
+         -P "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/shaders.cmake"
+      DEPENDS
+         ${_vpx_shader_deps}
+         "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/shaders.cmake"
+         "${VPX_SHADERC}"
+      COMMENT "Compiling BGFX shaders (${_g})"
+      VERBATIM)
+endforeach()
+
+add_custom_target(vpx-shaders DEPENDS ${VPX_SHADER_HEADERS})
+
+# Consumed as "shaders/bgfx_<group>.h" by src/renderer/Shader.cpp and Sampler.cpp.
+include_directories("${VPX_SHADER_GEN_DIR}")
+
+# Ordering for the two sources that include the generated headers, valid for
+# every target compiling them (app and test runner).
+set_source_files_properties(
+   src/renderer/Shader.cpp
+   src/renderer/Sampler.cpp
+   PROPERTIES OBJECT_DEPENDS "${VPX_SHADER_HEADERS}")

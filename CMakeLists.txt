@@ -179,6 +179,7 @@ endif()
 
 if(BUILD_APP)
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_sources.txt")
+   include("${CMAKE_SOURCE_DIR}/make/CMakeLists_shaders.txt")
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_app.txt")
    if(NOT (PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "android"))
       include("${CMAKE_SOURCE_DIR}/make/CMakeLists_test.txt")

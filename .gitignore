@@ -17,6 +17,12 @@ tmp
 external
 third-party/*
 
+# BGFX embedded shader headers and the shaderc tool are generated at build time
+# (see src/shaders/bgfx/shaders.cmake and make/CMakeLists_shaders.txt)
+src/shaders/bgfx_*.h
+src/shaders/bgfx/*.exe
+src/shaders/bgfx/*.dll
+
 tools/idl/parser/bin
 apps/ios/VPinball/Frameworks
 apps/android/app/src/main/assets

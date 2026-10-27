@@ -137,7 +137,7 @@ fi
 # build bgfx
 #
 
-BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}"
+BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}-001"
 BGFX_FOUND_SHA="$([ -f bgfx/cache.txt ] && cat bgfx/cache.txt || echo "")"
 
 if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
@@ -165,6 +165,19 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
+
+   # Build shaderc as a host tool (always Release: it only runs at build time to
+   # compile the embedded shaders, see src/shaders/bgfx/shaders.cmake)
+   cmake -S. \
+      -DBGFX_BUILD_TOOLS=ON \
+      -DBGFX_BUILD_TOOLS_SHADER=ON \
+      -DBGFX_BUILD_TOOLS_BIN2C=OFF \
+      -DBGFX_BUILD_TOOLS_GEOMETRY=OFF \
+      -DBGFX_BUILD_TOOLS_TEXTURE=OFF \
+      -DBGFX_BUILD_EXAMPLES=OFF \
+      -DCMAKE_BUILD_TYPE=Release \
+      -B build-tools
+   cmake --build build-tools --target shaderc -- -j${NUM_PROCS}
    cd ..
 
    echo "$BGFX_EXPECTED_SHA" > cache.txt
@@ -530,6 +543,10 @@ cp freeimage/freeimage/Source/FreeImage.h ../../../third-party/include
 
 cp -a bgfx/bgfx.cmake/build/cmake/bgfx/libbgfx.dylib ../../../third-party/runtime-libs/macos-x64
 cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg_encode.a ../../../third-party/build-libs/macos-x64
+
+# shaderc host tool (compiles the embedded BGFX shaders at build time)
+mkdir -p ../../../third-party/tools/macos-x64
+cp bgfx/bgfx.cmake/build-tools/cmake/bgfx/shaderc ../../../third-party/tools/macos-x64/
 cp -r bgfx/bgfx.cmake/bgfx/include/bgfx ../../../third-party/include/
 cp -r bgfx/bgfx.cmake/bimg/include/bimg ../../../third-party/include/
 cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
