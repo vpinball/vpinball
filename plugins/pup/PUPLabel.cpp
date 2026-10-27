@@ -1094,6 +1094,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       if (m_pendingTextureUpdate.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
       {
          m_renderState = m_pendingTextureUpdate.get();
+         m_renderState.CreateTextureFromSurface();
          m_animationFrame = -1;
          m_animationStart = SDL_GetTicks();
       }
@@ -1361,8 +1362,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
             rs.m_sourceHeight = image->h;
             if (m_filterMode > 0)
                ApplyFilter(image, m_filterMode);
-            rs.m_pTexture = CreateTexture(image);
-            SDL_DestroySurface(image);
+            rs.m_pPendingSurface = image;
          }
          else
             LOGE("Unable to load image: " + PluginStrings::PathToUTF8(szPath));
@@ -1400,9 +1400,8 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
             rs.m_sourceHeight = m_pSourceImage->h;
             rs.m_imageScaleX = static_cast<float>(tex->w) / static_cast<float>(m_pSourceImage->w);
             rs.m_imageScaleY = static_cast<float>(tex->h) / static_cast<float>(m_pSourceImage->h);
-            rs.m_pTexture = CreateTexture(tex);
-            if (work)
-               SDL_DestroySurface(work);
+            // work is already an owned copy; the cached source is duplicated so it survives
+            rs.m_pPendingSurface = work ? work : SDL_DuplicateSurface(tex);
          }
          else
             LOGE("Unable to load image: " + PluginStrings::PathToUTF8(szPath));
@@ -1423,15 +1422,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
          if (image) {
             rs.m_sourceWidth = image->w;
             rs.m_sourceHeight = image->h;
-            if (image->format == SDL_PIXELFORMAT_RGBA32)
-               rs.m_pTexture = CreateTexture(image);
-            else {
-               SDL_Surface* newImage = SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
-               if (newImage) {
-                  rs.m_pTexture = CreateTexture(newImage);
-                  SDL_DestroySurface(newImage);
-               }
-            }
+            rs.m_pPendingSurface = image->format == SDL_PIXELFORMAT_RGBA32 ? SDL_DuplicateSurface(image) : SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
          }
       }
       else
@@ -1614,13 +1605,9 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
          }
       }
 
-      rs.m_pTexture = CreateTexture(pMergedSurface);
-      if (rs.m_pTexture)
-      {
-         rs.m_width = static_cast<float>(pMergedSurface->w);
-         rs.m_height = static_cast<float>(pMergedSurface->h);
-      }
-      SDL_DestroySurface(pMergedSurface);
+      rs.m_width = static_cast<float>(pMergedSurface->w);
+      rs.m_height = static_cast<float>(pMergedSurface->h);
+      rs.m_pPendingSurface = pMergedSurface;
       return rs;
    }
 
@@ -1672,13 +1659,9 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
       }
    }
 
-   rs.m_pTexture = CreateTexture(pMergedSurface);
-   if (rs.m_pTexture)
-   {
-      rs.m_width = static_cast<float>(pMergedSurface->w);
-      rs.m_height = static_cast<float>(pMergedSurface->h);
-   }
-   SDL_DestroySurface(pMergedSurface);
+   rs.m_width = static_cast<float>(pMergedSurface->w);
+   rs.m_height = static_cast<float>(pMergedSurface->h);
+   rs.m_pPendingSurface = pMergedSurface;
    return rs;
 }
 

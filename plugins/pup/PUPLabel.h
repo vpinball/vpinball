@@ -127,10 +127,13 @@ private:
       {
          if (m_pTexture)
             DeleteTexture(m_pTexture);
+         if (m_pPendingSurface)
+            SDL_DestroySurface(m_pPendingSurface);
       }
 
       RenderState(RenderState&& other) noexcept
          : m_pTexture(other.m_pTexture)
+         , m_pPendingSurface(other.m_pPendingSurface)
          , m_prerenderedHeight(other.m_prerenderedHeight)
          , m_prerenderedColor(other.m_prerenderedColor)
          , m_sourceWidth(other.m_sourceWidth)
@@ -145,6 +148,7 @@ private:
          , m_accumulatedDelays(std::move(other.m_accumulatedDelays))
       {
          other.m_pTexture = nullptr;
+         other.m_pPendingSurface = nullptr;
       }
 
       RenderState& operator=(RenderState&& other) noexcept
@@ -153,12 +157,15 @@ private:
          {
             if (m_pTexture)
                DeleteTexture(m_pTexture);
+            if (m_pPendingSurface)
+               SDL_DestroySurface(m_pPendingSurface);
 
             m_prerenderedHeight = other.m_prerenderedHeight;
             m_prerenderedColor = other.m_prerenderedColor;
             m_sourceWidth = other.m_sourceWidth;
             m_sourceHeight = other.m_sourceHeight;
             m_pTexture = other.m_pTexture;
+            m_pPendingSurface = other.m_pPendingSurface;
             m_pAnimation = std::move(other.m_pAnimation);
             m_accumulatedDelays = std::move(other.m_accumulatedDelays);
             m_width = other.m_width;
@@ -169,11 +176,25 @@ private:
             m_imageScaleY = other.m_imageScaleY;
 
             other.m_pTexture = nullptr;
+            other.m_pPendingSurface = nullptr;
          }
          return *this;
       }
 
+      // The VPX texture API is not thread safe, so async updates rasterize to
+      // m_pPendingSurface and the texture is created once the render state is
+      // collected on the API thread (see Render).
+      void CreateTextureFromSurface()
+      {
+         if (m_pPendingSurface == nullptr)
+            return;
+         m_pTexture = CreateTexture(m_pPendingSurface);
+         SDL_DestroySurface(m_pPendingSurface);
+         m_pPendingSurface = nullptr;
+      }
+
       VPXTexture m_pTexture = nullptr;
+      SDL_Surface* m_pPendingSurface = nullptr;
       int m_prerenderedHeight = 0; // Height used to evaluate text rendering
       int m_prerenderedColor = 0; // Color used for prerendering the text
       int m_sourceWidth = 0; // Native width of the loaded image/animation
