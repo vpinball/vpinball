@@ -11,6 +11,25 @@ static bool IsExcludedPath(const string& path)
    return path.rfind("__MACOSX", 0) == 0 || path.find("/__MACOSX") != string::npos;
 }
 
+// Entry names come from the archive, so they must stay inside the destination folder: no absolute path,
+// no drive letter, no '..' component (zip slip). Both separators are checked, as archives made on Windows may use '\'
+static bool IsSafeEntryName(const string& name)
+{
+   if (name.empty() || name[0] == '/' || name[0] == '\\' || name.find(':') != string::npos)
+      return false;
+   size_t start = 0;
+   while (start <= name.size())
+   {
+      const size_t end = std::min(name.find('/', start), name.find('\\', start));
+      if (name.compare(start, (end == string::npos ? name.size() : end) - start, "..") == 0)
+         return false;
+      if (end == string::npos)
+         break;
+      start = end + 1;
+   }
+   return true;
+}
+
 static bool IsExcludedFromZip(const std::filesystem::path& relativePath)
 {
    return IsExcludedPath(relativePath.string()) || (!relativePath.empty() && *relativePath.begin() == "cache");
@@ -104,12 +123,24 @@ bool ZipUtils::Unzip(const std::filesystem::path& sourcePath, const std::filesys
 
    const zip_int64_t totalEntries = zip_get_num_entries(archive, 0);
 
-   for (zip_uint64_t i = 0; i < (zip_uint64_t)totalEntries; ++i) {
+   // Any failure fails the whole extraction, so that a partially extracted archive is never taken for a complete one.
+   // Cleaning up what was already extracted is left to the caller, which owns the destination folder
+   bool success = totalEntries >= 0;
+   for (zip_uint64_t i = 0; success && i < (zip_uint64_t)totalEntries; ++i) {
       zip_stat_t fileStat;
-      if (zip_stat_index(archive, i, ZIP_STAT_NAME, &fileStat) != 0)
-         continue;
+      if (zip_stat_index(archive, i, ZIP_STAT_NAME, &fileStat) != 0) {
+         PLOGE.printf("Unable to read zip entry %d: source=%s", (int)i, sourcePath.string().c_str());
+         success = false;
+         break;
+      }
 
       const string filename = fileStat.name;
+
+      if (!IsSafeEntryName(filename)) {
+         PLOGE.printf("Unsafe zip entry name: %s, source=%s", filename.c_str(), sourcePath.string().c_str());
+         success = false;
+         break;
+      }
 
       if (IsExcludedPath(filename))
          continue;
@@ -121,28 +152,37 @@ bool ZipUtils::Unzip(const std::filesystem::path& sourcePath, const std::filesys
          std::filesystem::create_directories(destFilePath, ec);
          if (ec) {
             PLOGE.printf("Unable to create directory: %s, error=%s", destFilePath.string().c_str(), ec.message().c_str());
-            continue;
+            success = false;
+            break;
          }
       }
       else {
          std::filesystem::create_directories(destFilePath.parent_path(), ec);
          if (ec) {
             PLOGE.printf("Unable to create directory: %s, error=%s", destFilePath.parent_path().string().c_str(), ec.message().c_str());
-            continue;
+            success = false;
+            break;
          }
 
          zip_file_t* zipFile = zip_fopen_index(archive, i, 0);
          if (!zipFile) {
             PLOGE.printf("Unable to extract file: %s", destFilePath.string().c_str());
-            continue;
+            success = false;
+            break;
          }
 
          std::ofstream ofs(destFilePath, std::ios::binary);
          char buf[4096];
-         zip_int64_t len;
-         while ((len = zip_fread(zipFile, buf, sizeof(buf))) > 0)
+         zip_int64_t len = 0;
+         while (ofs && (len = zip_fread(zipFile, buf, sizeof(buf))) > 0)
             ofs.write(buf, len);
          zip_fclose(zipFile);
+         ofs.close();
+         if (!ofs || len < 0) {
+            PLOGE.printf("Unable to extract file (read or write error): %s", destFilePath.string().c_str());
+            success = false;
+            break;
+         }
       }
 
       if (callback)
@@ -150,5 +190,5 @@ bool ZipUtils::Unzip(const std::filesystem::path& sourcePath, const std::filesys
    }
 
    zip_close(archive);
-   return true;
+   return success;
 }
