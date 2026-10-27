@@ -129,7 +129,7 @@ fun LandingScreen(
         rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri ->
             uri?.let {
                 FileUtils.filenameFromUri(context, uri)?.let { filename ->
-                    if (FileUtils.hasValidExtension(filename, arrayOf(".vpx", ".zip", ".vpxz"))) {
+                    if (FileUtils.hasValidExtension(filename, arrayOf(".vpx", ".vpz", ".zip", ".vpxz"))) {
                         importFilename = filename
                         importUri = uri
                         showConfirmDialog = true
@@ -145,7 +145,7 @@ fun LandingScreen(
         val uri = openUri ?: return@LaunchedEffect
         viewModel.clearImportUri()
         FileUtils.filenameFromUri(context, uri)?.let { filename ->
-            if (FileUtils.hasValidExtension(filename, arrayOf(".vpx", ".zip", ".vpxz"))) {
+            if (FileUtils.hasValidExtension(filename, arrayOf(".vpx", ".vpz", ".zip", ".vpxz"))) {
                 importFilename = filename
                 importUri = uri
                 showConfirmDialog = true
