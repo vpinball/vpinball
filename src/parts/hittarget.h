@@ -185,6 +185,7 @@ private:
    unsigned int     m_numVertices = 0;
    unsigned int     m_numIndices = 0;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
+   std::shared_ptr<MeshBuffer> m_meshEdgeBuffer; // Editor wireframe, built on demand
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
