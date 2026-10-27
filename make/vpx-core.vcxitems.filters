@@ -1577,6 +1577,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h">
       <Filter>renderer</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VRSeatedView.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h">
       <Filter>renderer</Filter>
     </ClInclude>

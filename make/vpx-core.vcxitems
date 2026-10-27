@@ -1848,6 +1848,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VertexBuffer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/ViewSetup.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VRSeatedView.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/XRGraphicBackend.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/XRD3D11Backend.h" />

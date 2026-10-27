@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "VRDevice.h"
+#include "VRSeatedView.h"
 
 #include "audio/AudioPlayer.h"
 #include "core/VPApp.h"
@@ -125,6 +126,11 @@ VRDevice::VRDevice(const Settings& settings)
       m_tablePos.y = settings.GetPlayerVR_TableY();
       // Offset of the playfield from the room ground is defined as an offset from the lockbar, minus bottom glass height and custom adjustment
       m_tablePos.z = settings.GetPlayerVR_TableZ();
+      m_seatedMode = settings.GetPlayerVR_SeatedMode();
+      m_seatedHeight = settings.GetPlayerVR_SeatedHeight();
+      m_seatedDistance = settings.GetPlayerVR_SeatedDistance();
+      m_seatedTilt = settings.GetPlayerVR_SeatedTilt();
+      m_seatedScale = settings.GetPlayerVR_SeatedScale();
 
    #if defined(ENABLE_XR)
       // Relative scale factor and positioning
@@ -642,6 +648,7 @@ void VRDevice::CreateSession()
    assert(m_backend != nullptr);
 
    m_visibilityMaskDirty = true;
+   m_seatedAnchorValid = false;
 
    // Evaluate scene size to be able to define a good far plane
    // Adjust near/far plane for each projected bounding box
@@ -1165,7 +1172,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          constexpr float lockbarToPlayfield = 5.f;
 
          // Continuous space positioning based on controller pose (for setup where controllers can be placed along a VR cabinet and used for XR play)
-         if (m_controllerViewCentering)
+         if (m_controllerViewCentering && !m_seatedMode)
          {
             bool leftControllerActive = false;
             XrSpaceLocation leftSpaceLocation { XR_TYPE_SPACE_LOCATION };
@@ -1207,7 +1214,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          }
 
          // Space positioning based on head pose (not continuous)
-         if (m_headsetViewCentering)
+         // Seated mode always acquires its anchor from a tracked head pose when the session starts
+         if (m_seatedMode && !m_seatedAnchorValid)
+            m_headsetViewCentering = true;
+         constexpr XrViewStateFlags validPoseFlags = XR_VIEW_STATE_ORIENTATION_VALID_BIT | XR_VIEW_STATE_POSITION_VALID_BIT;
+         if (m_headsetViewCentering && (!m_seatedMode || (viewState.viewStateFlags & validPoseFlags) == validPoseFlags))
          {
             // Compute the eye median pose in VPU coordinates
             Matrix3D medianView;
@@ -1218,21 +1229,31 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             XrPosef_ToMatrix3D(&medianView, &medianPoseInVPU);
 
             m_headsetViewCentering = false;
-            const float angle = atan2f(medianView.m[0][2], medianView.m[0][0]);
-            const float c = cosf(angle);
-            const float s = sinf(angle);
-            const float dx = -VPUTOCM(medianPoseInVPU.position.x);
-            const float dy = -VPUTOCM(medianPoseInVPU.position.z);
-            const Settings& settings = g_settingsService.GetActiveSettings();
+            if (m_seatedMode)
+            {
+               // Seated anchor is kept apart from the standing position, which is left untouched (and saved as is)
+               m_seatedYaw = RADTOANG(VPX::VRSeatedView::GetHeadYaw(Matrix3D::MatrixInverse(medianView), ANGTORAD(m_seatedYaw)));
+               m_seatedHeadPosition = Vertex3Ds(medianPoseInVPU.position.x, medianPoseInVPU.position.y, medianPoseInVPU.position.z);
+               m_seatedAnchorValid = true;
+            }
+            else
+            {
+               const float angle = atan2f(medianView.m[0][2], medianView.m[0][0]);
+               const float c = cosf(angle);
+               const float s = sinf(angle);
+               const float dx = -VPUTOCM(medianPoseInVPU.position.x);
+               const float dy = -VPUTOCM(medianPoseInVPU.position.z);
+               const Settings& settings = g_settingsService.GetActiveSettings();
 
-            // Rotate the tracking-space translation into the table's yaw frame, just as
-            // controller centering does. Player X/Y is the desired standing position
-            // relative to the lockbar, so add it after transforming the headset pose.
-            m_orientation = RADTOANG(angle);
-            m_tablePos.x = dx * c - dy * s + settings.GetPlayer_ScreenPlayerX();
-            m_tablePos.y = dx * s + dy * c + settings.GetPlayer_ScreenPlayerY();
-            m_tablePos.z = 0.f;
-            //m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
+               // Rotate the tracking-space translation into the table's yaw frame, just as
+               // controller centering does. Player X/Y is the desired standing position
+               // relative to the lockbar, so add it after transforming the headset pose.
+               m_orientation = RADTOANG(angle);
+               m_tablePos.x = dx * c - dy * s + settings.GetPlayer_ScreenPlayerX();
+               m_tablePos.y = dx * s + dy * c + settings.GetPlayer_ScreenPlayerY();
+               m_tablePos.z = 0.f;
+               //m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
+            }
             m_worldDirty = true;
          }
 
@@ -1251,8 +1272,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             m_slope = liveSlope;
 
             // Update fixed scaling, considering lockbar size to be the width of the playfield + 2"1/4
+            // Seated mode has no physical cabinet to match, so it uses its own scale (real life size by default)
             const float tableWidth = VPUTOCM(table->m_right - table->m_left) + 2.25f * 2.54f;
-            m_scale = clamp(m_lockbarWidth / tableWidth, 0.1f, 2.0f);
+            m_scale = m_seatedMode ? clamp(m_seatedScale, 0.1f, 2.0f) : clamp(m_lockbarWidth / tableWidth, 0.1f, 2.0f);
             const Matrix3D sceneScale = Matrix3D::MatrixScale(m_scale);
             const Matrix3D invSceneScale = Matrix3D::MatrixScale(1.f / m_scale);
 
@@ -1304,7 +1326,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
             // Feet are always touching the ground, scaled against the real world vs model defined playfield level
             // Note that since we are rotating the cabinet with its feet, the feet may slightly leave or enter the ground.
-            if (m_lockFeetToGround)
+            if (m_lockFeetToGround && !m_seatedMode)
             {
                constexpr float cabHeight
                   = 0.4f * INCHESTOVPU(16.25f); // Magic value where the top of the leg should approximately stand (16.25" is the front height of a modern Stern cabinet)
@@ -1338,6 +1360,17 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                    CMTOVPU(m_tablePos.z))
                * viewOrientation; // Reapply view orientation
             m_roomWorld.m_toWorld = invSceneScale * m_pfWorld.m_toWorld * pfToRoom;
+
+            if (m_seatedMode && m_seatedAnchorValid)
+            {
+               // Room is kept upright: tables which embed their room in playfield space will tilt it with the table
+               const Matrix3D seatedOrientation = Matrix3D::MatrixRotateZ(ANGTORAD(m_seatedYaw)) * rotx2;
+               const Matrix3D seatedView = VPX::VRSeatedView::GetTransform(playfieldPos * viewOrientation, seatedOrientation,
+                  m_seatedHeadPosition, m_seatedHeight, m_seatedDistance, m_seatedTilt);
+               m_pfWorld.m_toWorld = m_pfWorld.m_toWorld * seatedView;
+               m_cabWorld.m_toWorld = m_cabWorld.m_toWorld * seatedView;
+               m_feetWorld.m_toWorld = m_feetWorld.m_toWorld * seatedView;
+            }
          }
 
          // As we only have one view matrix for shading, each eye view is integrated in the projection matrix, by reverting the 'shading' view matrix then
@@ -1604,4 +1637,9 @@ void VRDevice::SaveVRSettings(Settings& settings) const
    settings.SetPlayerVR_TableZ(m_tablePos.z, false);
    settings.SetPlayer_LockbarWidth(m_lockbarWidth, false);
    settings.SetPlayer_LockbarHeight(m_lockbarHeight, false);
+   settings.SetPlayerVR_SeatedMode(m_seatedMode, false);
+   settings.SetPlayerVR_SeatedHeight(m_seatedHeight, false);
+   settings.SetPlayerVR_SeatedDistance(m_seatedDistance, false);
+   settings.SetPlayerVR_SeatedTilt(m_seatedTilt, false);
+   settings.SetPlayerVR_SeatedScale(m_seatedScale, false);
 }

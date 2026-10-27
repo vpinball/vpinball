@@ -224,6 +224,9 @@
     <ClCompile Include="../../tests/render/test-renderframe.cpp">
       <Filter>render</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/render/test-vr-seated-view.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../tests/physics/physics-harness.h">

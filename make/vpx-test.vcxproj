@@ -112,6 +112,7 @@
     <ClCompile Include="../../tests/render/test-base-render.cpp" />
     <ClCompile Include="../../tests/render/test-mirror-render.cpp" />
     <ClCompile Include="../../tests/render/test-renderframe.cpp" />
+    <ClCompile Include="../../tests/render/test-vr-seated-view.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../tests/physics/physics-harness.h" />

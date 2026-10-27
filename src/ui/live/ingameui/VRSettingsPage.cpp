@@ -24,14 +24,51 @@ void VRSettingsPage::BuildPage()
    // Positioning and physical setup are defined for the user's rig, so these items are always saved to the application settings (never as table overrides)
    const auto addGlobalOnlyItem = [this](std::unique_ptr<InGameUIItem> item) { AddItem(std::move(item)).m_globalOnly = true; };
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View Offset"s));
+   // Seated mode places the table relative to the player's head, so standing view offsets are hidden when it is enabled
+   const bool seated = m_player->m_vrDevice->IsSeatedMode();
+   const auto addStandingItem = [&](std::unique_ptr<InGameUIItem> item) { if (!seated) addGlobalOnlyItem(std::move(item)); };
 
+#ifdef ENABLE_XR
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Accessibility"s));
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_SeatedMode, //
+      [this]() { return m_player->m_vrDevice->IsSeatedMode(); }, //
+      [this](bool v)
+      {
+         m_player->m_vrDevice->SetSeatedMode(v);
+         RequestRebuild();
+      }));
+   if (seated)
+   {
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayerVR_SeatedHeight, 1.f, "%4.1f cm"s, //
+         [this]() { return m_player->m_vrDevice->GetSeatedHeight(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetSeatedHeight(v); }));
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayerVR_SeatedDistance, 1.f, "%4.1f cm"s, //
+         [this]() { return m_player->m_vrDevice->GetSeatedDistance(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetSeatedDistance(v); }));
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayerVR_SeatedTilt, 1.f, "%4.1f deg"s, //
+         [this]() { return m_player->m_vrDevice->GetSeatedTilt(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetSeatedTilt(v); }));
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayerVR_SeatedScale, 100.f, "%4.1f %%"s, //
+         [this]() { return m_player->m_vrDevice->GetSeatedScale(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetSeatedScale(v); }));
+      AddItem(std::make_unique<InGameUIItem>("Recenter Seated View"s, "Anchor the table to your current headset position."s, [this]() { m_player->m_vrDevice->RecenterTable(); }));
+   }
+#endif
+
+   if (!seated)
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View Offset"s));
+
+   addStandingItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_Orientation, 1.f, "%4.1f deg"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOrientation(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetSceneOrientation(v); }));
 
-   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+   addStandingItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_TableX, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOffset().x; }, //
       [this](float, float v)
@@ -41,7 +78,7 @@ void VRSettingsPage::BuildPage()
          m_player->m_vrDevice->SetSceneOffset(offset);
       }));
 
-   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+   addStandingItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_TableY, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOffset().y; }, //
       [this](float, float v)
@@ -51,7 +88,7 @@ void VRSettingsPage::BuildPage()
          m_player->m_vrDevice->SetSceneOffset(offset);
       }));
 
-   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+   addStandingItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_TableZ, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOffset().z; }, //
       [this](float, float v)

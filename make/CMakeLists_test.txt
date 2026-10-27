@@ -77,6 +77,7 @@ set(VPX_TEST_SOURCES
    tests/render/test-base-render.cpp
    tests/render/test-mirror-render.cpp
    tests/render/test-renderframe.cpp
+   tests/render/test-vr-seated-view.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
 )
