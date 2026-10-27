@@ -241,9 +241,11 @@ TEST_CASE("Serum colorization: 128x16")
    REQUIRE(serum != nullptr);
    CHECK(serum->SerumVersion == SERUM_V2);
 
-   // The raw 128x16 frame cannot be identified (and libserum would read past
-   // its end); the frame the colorization was authored on can be.
+   // The raw 128x16 frame cannot be identified; the frame the colorization was
+   // authored on can be. libserum always reads a full 128x32 frame, so the raw
+   // rows are passed at the top of a zeroed 128x32 buffer, not centered.
    std::vector<uint8_t> frame = rom16;
+   frame.resize(128 * 32, 0);
    CHECK(Serum_Colorize(frame.data()) == IDENTIFY_NO_FRAME);
    frame = Centered128x32(rom16);
    CHECK(Serum_Colorize(frame.data()) != IDENTIFY_NO_FRAME);
