@@ -801,7 +801,8 @@ void Surface::Render(const unsigned int renderMask)
       side.edgeTriCount = m_sideIndices.size();
       side.edgeTriIndices16 = true;
 
-      if (m_d.m_sideVisible)
+      // The side quad outlines also outline the top, so they are drawn when either is visible
+      if (m_d.m_sideVisible || (m_d.m_topBottomVisible && (renderMask & Renderer::UI_EDGES)))
          m_renderer->RenderMesh(renderMask, side, {});
       if (m_d.m_topBottomVisible)
       {
