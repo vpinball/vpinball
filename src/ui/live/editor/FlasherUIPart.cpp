@@ -195,6 +195,9 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             [](const Flasher* flasher) { return flasher->m_d.m_glassPadBottom; }, //
             [](Flasher* flasher, float v) { flasher->m_d.m_glassPadBottom = v; }, PropertyPane::Unit::Percent, 1);
       }
+      // Show in Editor (Flasher mode has it below its images)
+      if (renderMode != FlasherData::FLASHER)
+         props.MaterialVisuals(m_part, {}, nullptr, {}, nullptr, &Data::m_displayTexture);
       props.EndSection();
    }
 
