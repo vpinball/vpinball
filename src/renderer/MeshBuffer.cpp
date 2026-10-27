@@ -61,10 +61,13 @@ unsigned int MeshBuffer::GetSortKey() const
    #endif
 }
 
-std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsigned int>& indices) const
+namespace
 {
-   vector<unsigned int> edgeIndices(indices.size() * 2);
-   for (size_t i = 0; i < indices.size(); i += 3)
+
+template <typename T> vector<unsigned int> BuildAllEdgesIndices(const T* indices, const size_t numIndices)
+{
+   vector<unsigned int> edgeIndices(numIndices * 2);
+   for (size_t i = 0; i < numIndices; i += 3)
    {
       edgeIndices[i * 2 + 0] = indices[i + 0];
       edgeIndices[i * 2 + 1] = indices[i + 1];
@@ -73,10 +76,10 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
       edgeIndices[i * 2 + 4] = indices[i + 2];
       edgeIndices[i * 2 + 5] = indices[i + 0];
    }
-   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, edgeIndices), true);
+   return edgeIndices;
 }
 
-std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsigned int>& indices, const vector<Vertex3D_NoTex2>& vertices) const
+template <typename T> vector<unsigned int> BuildOutlineEdgeIndices(const T* indices, const size_t numIndices, const Vertex3D_NoTex2* vertices)
 {
    struct Edge
    {
@@ -107,7 +110,7 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
          edges[id] = { 0, normal }; // Edge: render
       }
    };
-   for (size_t i = 0; i < indices.size(); i += 3)
+   for (size_t i = 0; i < numIndices; i += 3)
    {
       Vertex3D_NoTex2 a = vertices[indices[i + 0]];
       Vertex3D_NoTex2 b = vertices[indices[i + 1]];
@@ -138,7 +141,76 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
          edgeIndices.push_back(edge & 0xFFFFFFFF);
       }
    }
-   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, edgeIndices), true);
+   return edgeIndices;
+}
+
+template <typename T> vector<unsigned int> BuildQuadOutlineEdgeIndices(const T* indices, const size_t numIndices)
+{
+   vector<unsigned int> edgeIndices;
+   edgeIndices.reserve(numIndices / 6 * 8);
+   for (size_t i = 0; i + 5 < numIndices; i += 6)
+   {
+      const unsigned int quad[6] = { static_cast<unsigned int>(indices[i + 0]), static_cast<unsigned int>(indices[i + 1]), static_cast<unsigned int>(indices[i + 2]),
+         static_cast<unsigned int>(indices[i + 3]), static_cast<unsigned int>(indices[i + 4]), static_cast<unsigned int>(indices[i + 5]) };
+      // Emit each triangle's edges, skipping the one it shares with the other triangle (the quad's diagonal)
+      for (int t = 0; t < 2; t++)
+      {
+         const unsigned int* const tri = quad + t * 3;
+         const unsigned int* const other = quad + (1 - t) * 3;
+         for (int e = 0; e < 3; e++)
+         {
+            const unsigned int v0 = tri[e], v1 = tri[(e + 1) % 3];
+            bool diagonal = false;
+            for (int oe = 0; oe < 3 && !diagonal; oe++)
+               diagonal = (v0 == other[oe] && v1 == other[(oe + 1) % 3]) || (v0 == other[(oe + 1) % 3] && v1 == other[oe]);
+            if (!diagonal)
+            {
+               edgeIndices.push_back(v0);
+               edgeIndices.push_back(v1);
+            }
+         }
+      }
+   }
+   return edgeIndices;
+}
+
+} // namespace
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsigned int>& indices) const { return CreateEdgeMeshBuffer(indices.data(), indices.size()); }
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const unsigned int* indices, const size_t numIndices) const
+{
+   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, BuildAllEdgesIndices(indices, numIndices)), true);
+}
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const WORD* indices, const size_t numIndices) const
+{
+   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, BuildAllEdgesIndices(indices, numIndices)), true);
+}
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsigned int>& indices, const vector<Vertex3D_NoTex2>& vertices) const
+{
+   return CreateEdgeMeshBuffer(indices.data(), indices.size(), vertices.data());
+}
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const unsigned int* indices, const size_t numIndices, const Vertex3D_NoTex2* vertices) const
+{
+   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, BuildOutlineEdgeIndices(indices, numIndices, vertices)), true);
+}
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const WORD* indices, const size_t numIndices, const Vertex3D_NoTex2* vertices) const
+{
+   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, BuildOutlineEdgeIndices(indices, numIndices, vertices)), true);
+}
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateQuadOutlineEdgeMeshBuffer(const unsigned int* indices, const size_t numIndices) const
+{
+   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, BuildQuadOutlineEdgeIndices(indices, numIndices)), true);
+}
+
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateQuadOutlineEdgeMeshBuffer(const WORD* indices, const size_t numIndices) const
+{
+   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, BuildQuadOutlineEdgeIndices(indices, numIndices)), true);
 }
 
 void MeshBuffer::bind()

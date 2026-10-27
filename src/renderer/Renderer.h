@@ -11,10 +11,63 @@
 #include "plugins/ControllerPlugin.h"
 #include "parts/PartGroup.h"
 #include "renderer/RenderProbe.h"
+#include "renderer/Sampler.h"
 
 class IEditable;
 class Renderable;
 class PinTable;
+class MeshBuffer;
+class Material;
+class Texture;
+enum class ShaderTechnique : unsigned int;
+
+// How the editor UI edge mesh is derived from a part's triangle index list
+enum class UIEdgeMode
+{
+   None, // No edge mesh
+   TriWire, // Every triangle edge is drawn (face diagonals included)
+   Outline, // Only silhouette and crease edges (edges shared by coplanar triangles are dropped)
+   Quads, // Each consecutive pair of triangles is a quad: draw its outline (shared diagonal dropped)
+};
+
+// Definition of how a mesh is shaded, resolved by the part on each render (materials and images can be changed during play)
+struct VisualMaterial
+{
+   static constexpr ShaderTechnique AUTO_TECHNIQUE = static_cast<ShaderTechnique>(0xFFFFFFFFu);
+
+   const Material* material = nullptr; // The base material (null only for editor UI passes which do not use it)
+   Texture* image = nullptr; // Optional base color texture
+   Texture* normalMap = nullptr; // Optional normal map
+   bool objectSpaceNormalMap = false;
+   ShaderTechnique technique = AUTO_TECHNIQUE; // AUTO_TECHNIQUE: basic_with/without_texture is derived from 'image'
+   bool doReflection = false;
+   bool doRefraction = false;
+   SamplerFilter filter = SamplerFilter::SF_UNDEFINED;
+   SamplerAddressMode clampU = SamplerAddressMode::SA_UNDEFINED;
+   SamplerAddressMode clampV = SamplerAddressMode::SA_UNDEFINED;
+   bool hasTextureAlpha = false;
+};
+
+// Definition of a (sub)mesh to render, with slots holding the editor UI variants that are lazily built by the renderer
+struct RenderMeshDesc
+{
+   std::shared_ptr<MeshBuffer> mesh; // The mesh to render
+   RenderDevice::PrimitiveTypes type = RenderDevice::TRIANGLELIST;
+   uint32_t startIndex = 0;
+   uint32_t indexCount = 0; // 0 = render the mesh's full index buffer
+   Vertex3Ds sortCenter; // Center used for transparency sorting
+   float depthBias = 0.f;
+   const Matrix3D* transform = nullptr; // Optional object transform, applied while drawing
+   bool transparent = false; // True to sort the draw with the transparent commands
+
+   std::shared_ptr<MeshBuffer>* uiFillMesh = nullptr; // Optional UI fill mesh (defaults to 'mesh')
+   std::shared_ptr<MeshBuffer>* uiEdgeMesh = nullptr; // UI edge mesh, lazily built by the renderer
+   UIEdgeMode edgeMode = UIEdgeMode::None;
+   const void* edgeTriIndices = nullptr; // Triangle index list used to build the UI edge mesh
+   size_t edgeTriCount = 0;
+   bool edgeTriIndices16 = false; // True if edgeTriIndices elements are 16 bits (else 32 bits)
+   const Vertex3D_NoTex2* edgeVertices = nullptr; // Vertices, required by UIEdgeMode::Outline
+};
 
 class Renderer final
 {
@@ -117,6 +170,7 @@ public:
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop = false);
    void DrawWireframe(IEditable* const renderable, const vec4& fillColor, const vec4& edgeColor, bool withDepthMask);
+   void RenderMesh(const unsigned int renderMask, RenderMeshDesc& draw, const VisualMaterial& mat);
 
    void ReinitRenderable(IRenderable* part) { if (part) m_renderableToInit.push_back(part); }
    void SetupRenderable(IRenderable* part) { if (part) m_renderableToSetup.push_back(part); }

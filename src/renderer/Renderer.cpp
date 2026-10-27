@@ -1975,6 +1975,74 @@ void Renderer::DrawWireframe(IEditable* const renderable, const vec4& fillColor,
    m_render_mask = prevRenderMask;
 }
 
+void Renderer::RenderMesh(const unsigned int renderMask, RenderMeshDesc& draw, const VisualMaterial& mat)
+{
+   assert(draw.mesh != nullptr);
+   if (draw.transform != nullptr)
+      UpdateBasicShaderMatrix(*draw.transform);
+
+   if (renderMask & UI_FILL)
+   {
+      const std::shared_ptr<MeshBuffer>& fill = (draw.uiFillMesh != nullptr && *draw.uiFillMesh != nullptr) ? *draw.uiFillMesh : draw.mesh;
+      m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, true, draw.sortCenter, draw.depthBias, fill, draw.type, draw.startIndex,
+         draw.indexCount != 0 ? draw.indexCount : (fill->m_ib ? fill->m_ib->m_count : 0));
+   }
+   else if (renderMask & UI_EDGES)
+   {
+      if (draw.uiEdgeMesh != nullptr && draw.edgeMode != UIEdgeMode::None && draw.edgeTriIndices != nullptr)
+      {
+         if (*draw.uiEdgeMesh == nullptr)
+         {
+            if (draw.edgeTriIndices16)
+            {
+               const WORD* const indices = static_cast<const WORD*>(draw.edgeTriIndices);
+               *draw.uiEdgeMesh = draw.edgeMode == UIEdgeMode::TriWire                   ? draw.mesh->CreateEdgeMeshBuffer(indices, draw.edgeTriCount)
+                  : draw.edgeMode == UIEdgeMode::Outline && draw.edgeVertices != nullptr ? draw.mesh->CreateEdgeMeshBuffer(indices, draw.edgeTriCount, draw.edgeVertices)
+                  : draw.edgeMode == UIEdgeMode::Quads                                   ? draw.mesh->CreateQuadOutlineEdgeMeshBuffer(indices, draw.edgeTriCount)
+                                                                                         : nullptr;
+            }
+            else
+            {
+               const unsigned int* const indices = static_cast<const unsigned int*>(draw.edgeTriIndices);
+               *draw.uiEdgeMesh = draw.edgeMode == UIEdgeMode::TriWire                   ? draw.mesh->CreateEdgeMeshBuffer(indices, draw.edgeTriCount)
+                  : draw.edgeMode == UIEdgeMode::Outline && draw.edgeVertices != nullptr ? draw.mesh->CreateEdgeMeshBuffer(indices, draw.edgeTriCount, draw.edgeVertices)
+                  : draw.edgeMode == UIEdgeMode::Quads                                   ? draw.mesh->CreateQuadOutlineEdgeMeshBuffer(indices, draw.edgeTriCount)
+                                                                                         : nullptr;
+            }
+         }
+         if (*draw.uiEdgeMesh != nullptr)
+            m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, true, draw.sortCenter, 0.f, *draw.uiEdgeMesh, RenderDevice::LINELIST, 0, (*draw.uiEdgeMesh)->m_ib->m_count);
+      }
+   }
+   else
+   {
+      if (mat.material != nullptr)
+      {
+         Shader* const shader = m_renderDevice->m_basicShader;
+         const bool alphaTest = mat.image != nullptr && mat.image->m_alphaTestValue >= 0.f && !mat.image->IsOpaque();
+         shader->SetTechniqueMaterial(
+            mat.technique != VisualMaterial::AUTO_TECHNIQUE ? mat.technique : (mat.image ? ShaderTechnique::basic_with_texture : ShaderTechnique::basic_without_texture), *mat.material,
+            alphaTest, mat.normalMap != nullptr, mat.doReflection, mat.doRefraction);
+         if (mat.image != nullptr)
+         {
+            shader->SetTexture(ShaderUniform::tex_base_color, mat.image, false, mat.filter, mat.clampU, mat.clampV);
+            shader->SetAlphaTestValue(mat.image->m_alphaTestValue);
+         }
+         if (mat.normalMap != nullptr)
+         {
+            shader->SetTexture(ShaderUniform::tex_base_normalmap, mat.normalMap, true);
+            shader->SetBool(ShaderUniform::objectSpaceNormalMap, mat.objectSpaceNormalMap);
+         }
+         shader->SetMaterial(mat.material, mat.hasTextureAlpha);
+      }
+      m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, draw.transparent, draw.sortCenter, draw.depthBias, draw.mesh, draw.type, draw.startIndex,
+         draw.indexCount != 0 ? draw.indexCount : (draw.mesh->m_ib ? draw.mesh->m_ib->m_count : 0));
+   }
+
+   if (draw.transform != nullptr)
+      UpdateBasicShaderMatrix();
+}
+
 void Renderer::SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force)
 {
    if (!force && m_mvpSpaceReference == spaceReference)
