@@ -94,6 +94,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 
 void onGameEnd(const unsigned int eventId, void* userData, void* eventData)
 {
+   tableHeight = 0.f;
    if (vpxApi == nullptr)
       return;
    if (staticPrepassDisabled)
@@ -166,6 +167,14 @@ void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
    lastPlayerPos[1] = playerPos[1];
    lastPlayerPos[2] = playerPos[2];
 
+   // Plugin enabled during a game, after the game start event
+   if (tableHeight <= 0.f)
+   {
+      VPXTableInfo tableInfo;
+      vpxApi->GetTableInfo(&tableInfo);
+      tableHeight = tableInfo.tableHeight;
+   }
+
    // Convert the player position from the screen frame to the playfield frame,
    // using the same math as ViewSetup::SetViewPosFromPlayerPosition
    const float inc = atan2f(view.windowTopZOfs - view.windowBottomZOfs, tableHeight) - view.screenInclination * (float)(3.14159265358979323846 / 180.);
@@ -205,6 +214,7 @@ MSGPI_EXPORT void MSGPIAPI BAMPluginUnload()
    msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onPrepareFrameId);
+   tableHeight = 0.f;
    vpxApi = nullptr;
    msgApi = nullptr;
 }
