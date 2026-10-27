@@ -234,11 +234,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          props.Checkbox<Primitive>(
             m_part, "Show in Editor"s, //
             [](const Primitive* primitive) { return primitive->m_ptable->m_winEditorBackdrop; }, //
-            [](Primitive* primitive, bool v)
-            {
-               primitive->m_ptable->m_winEditorBackdrop = v;
-               primitive->m_d.m_displayTexture = v;
-            });
+            [](Primitive* primitive, bool v) { primitive->m_ptable->m_winEditorBackdrop = v; });
          ImGui::EndDisabled();
          // The implicit playfield mesh does not support normal mapping
          ImGui::BeginDisabled(m_part == g_pplayer->m_implicitPlayfieldMesh);

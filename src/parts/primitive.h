@@ -271,7 +271,8 @@ public:
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
 
-   bool IsShownInEditor() const final { return m_d.m_displayTexture || (IsPlayfield() && GetPTable() && GetPTable()->m_winEditorBackdrop); }
+   // The playfield mesh follows the table setting (edited from both the table and the playfield mesh panes)
+   bool IsShownInEditor() const final { return (IsPlayfield() && GetPTable()) ? GetPTable()->m_winEditorBackdrop : m_d.m_displayTexture; }
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 

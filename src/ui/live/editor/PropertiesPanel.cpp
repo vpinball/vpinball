@@ -110,6 +110,19 @@ void PropertiesPanel::Render(float topBarHeight)
          const string nameBefore = editable->GetName();
          editor.m_undo.BeginUndo();
          editor.m_undo.MarkForUndo(editable);
+         // The playfield mesh pane edits table fields, which the primitive's undo state does not hold
+         if (editable->GetItemType() == eItemPrimitive && static_cast<const Primitive *>(editable)->IsPlayfield())
+         {
+            PinTable *const table = static_cast<const Primitive *>(editable)->m_ptable;
+            editor.m_undo.MarkForAction(
+               [table, material = table->m_playfieldMaterial, image = table->m_image, showInEditor = table->m_winEditorBackdrop, reflectionStrength = table->m_playfieldReflectionStrength]()
+               {
+                  table->m_playfieldMaterial = material;
+                  table->m_image = image;
+                  table->m_winEditorBackdrop = showInEditor;
+                  table->m_playfieldReflectionStrength = reflectionStrength;
+               });
+         }
          editor.m_selection.GetPart()->UpdatePropertyPane(props);
          // A renamed surface or ramp retargets the parts placed on it, recorded in the same undo record
          editor.m_table->UpdateSurfaceReferences(editable, nameBefore, [&editor](IEditable *part) { editor.m_undo.MarkForUndo(part); });
