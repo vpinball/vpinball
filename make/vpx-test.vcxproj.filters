@@ -200,6 +200,9 @@
     <ClCompile Include="../../tests/plugins/b2s/test-b2s-datamodel.cpp">
       <Filter>plugins</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/plugins/colorization/test-colorization.cpp">
+      <Filter>plugins</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/plugins/plugins/test-colorspace.cpp">
       <Filter>plugins</Filter>
     </ClCompile>

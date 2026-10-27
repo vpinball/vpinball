@@ -104,6 +104,7 @@
     <ClCompile Include="../../tests/physics/test-quadtree.cpp" />
     <ClCompile Include="../../tests/plugins/alphadmd/test-alphanumeric.cpp" />
     <ClCompile Include="../../tests/plugins/b2s/test-b2s-datamodel.cpp" />
+    <ClCompile Include="../../tests/plugins/colorization/test-colorization.cpp" />
     <ClCompile Include="../../tests/plugins/plugins/test-colorspace.cpp" />
     <ClCompile Include="../../tests/plugins/plugins/test-msgpluginmanager.cpp" />
     <ClCompile Include="../../tests/plugins/plugins/test-resuribuilder.cpp" />
@@ -117,7 +118,33 @@
     <ClInclude Include="../../tests/physics/physics-harness.h" />
     <ClInclude Include="../../tests/vpx-test.h" />
   </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <Link>
+      <AdditionalDependencies>serum64.lib;vni64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
+    <Link>
+      <AdditionalDependencies>serum.lib;vni.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party/runtime-libs/windows-x64/serum64.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party/runtime-libs/windows-x64/vni64.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party/runtime-libs/windows-x86/serum.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party/runtime-libs/windows-x86/vni.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
     <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/*.vpx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>

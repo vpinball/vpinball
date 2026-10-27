@@ -69,6 +69,7 @@ set(VPX_TEST_SOURCES
    tests/physics/test-quadtree.cpp
    tests/plugins/alphadmd/test-alphanumeric.cpp
    tests/plugins/b2s/test-b2s-datamodel.cpp
+   tests/plugins/colorization/test-colorization.cpp
    tests/plugins/plugins/test-colorspace.cpp
    tests/plugins/plugins/test-msgpluginmanager.cpp
    tests/plugins/plugins/test-resuribuilder.cpp
@@ -189,6 +190,16 @@ if(PLATFORM STREQUAL "windows")
       $<IF:$<STREQUAL:${ARCH},x64>,freeimage64.lib,freeimage.lib>
       $<IF:$<STREQUAL:${ARCH},x64>,SDL364.lib,SDL3.lib>
       $<IF:$<STREQUAL:${ARCH},x64>,SDL3_ttf64.lib,SDL3_ttf.lib>
+      $<IF:$<STREQUAL:${ARCH},x64>,serum64.lib,serum.lib>
+      $<IF:$<STREQUAL:${ARCH},x64>,vni64.lib,vni.lib>
+   )
+
+   # the colorization tests load the serum and vni runtime libraries
+   add_custom_command(TARGET vpx-test POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+         "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}/$<IF:$<STREQUAL:${ARCH},x64>,serum64.dll,serum.dll>"
+         "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}/$<IF:$<STREQUAL:${ARCH},x64>,vni64.dll,vni.dll>"
+         "$<TARGET_FILE_DIR:vpx-test>/"
    )
 
    if(RENDERER STREQUAL "BGFX")
@@ -570,4 +581,18 @@ elseif(PLATFORM STREQUAL "linux")
       endif()
    endif()
 
+endif()
+
+# the colorization tests call into libserum/libvni; on MSVC they are linked as
+# serum64/vni64 in the windows section above
+if(NOT MSVC)
+   target_link_directories(vpx-test PUBLIC ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH})
+   if(PLATFORM STREQUAL "windows-mingw")
+      target_link_libraries(vpx-test PUBLIC
+         $<IF:$<STREQUAL:${ARCH},x64>,serum64,serum>
+         $<IF:$<STREQUAL:${ARCH},x64>,vni64,vni>
+      )
+   else()
+      target_link_libraries(vpx-test PUBLIC serum vni)
+   endif()
 endif()

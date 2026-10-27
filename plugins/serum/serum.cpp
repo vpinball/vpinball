@@ -488,7 +488,19 @@ private:
                   return;
                lastFrameId = frame.frameId;
 
-               const uint32_t firstrot = Serum_Colorize(const_cast<uint8_t*>(static_cast<const uint8_t*>(frame.frame)));
+               const uint8_t* identifyFrame = static_cast<const uint8_t*>(frame.frame);
+               // A Serum v2 project for a 16-row ROM is authored on 32-row frames: the 16 rows are stored centered
+               // in a 128x32 frame (8 blank rows top and bottom) and every stored hash is computed over that padded
+               // frame. libserum hashes fwidth*fheight of whatever it is given, so it has to be handed the padded
+               // frame the colorization was authored on. A v1 project is stored at the ROM's native size.
+               if (m_pSerum->SerumVersion == SERUM_V2 && dmdId.width == 128 && dmdId.height == 16)
+               {
+                  memset(m_identifyFrame128x32, 0, sizeof(m_identifyFrame128x32));
+                  memcpy(m_identifyFrame128x32 + 128 * 8, frame.frame, 128 * 16);
+                  identifyFrame = m_identifyFrame128x32;
+               }
+
+               const uint32_t firstrot = Serum_Colorize(const_cast<uint8_t*>(identifyFrame));
                if (firstrot == IDENTIFY_NO_FRAME || firstrot == IDENTIFY_SAME_FRAME)
                   return;
 
@@ -707,6 +719,10 @@ private:
    PublishedFrame m_publishedV1;
    PublishedFrame m_published32;
    PublishedFrame m_published64;
+
+   // Scratch for the centered 128x32 frame a Serum v2 project for a 128x16 ROM
+   // is identified against. Written and read on the colorize thread only.
+   uint8_t m_identifyFrame128x32[128 * 32] = {};
 
    unsigned int m_advertisedV1Size = 0;
    unsigned int m_advertisedWidth32 = 0;
