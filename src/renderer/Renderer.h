@@ -28,6 +28,7 @@ enum class UIEdgeMode
    TriWire, // Every triangle edge is drawn (face diagonals included)
    Outline, // Only silhouette and crease edges (edges shared by coplanar triangles are dropped)
    Quads, // Each consecutive pair of triangles is a quad: draw its outline (shared diagonal dropped)
+   VertexRing, // A single ring through consecutive vertices (i, i+1) wrapping around
 };
 
 // Definition of how a mesh is shaded, resolved by the part on each render (materials and images can be changed during play)

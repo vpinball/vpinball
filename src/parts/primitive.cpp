@@ -961,13 +961,17 @@ void Primitive::Render(const unsigned int renderMask)
    if (isUIPass)
    {
       // FIXME use correct point for depth sorting
-      if (renderMask & Renderer::UI_FILL)
-         m_renderer->m_renderDevice->DrawMesh(
-            m_renderer->m_renderDevice->m_basicShader, true, Vertex3Ds(0.f, 0.f, 0.f), 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
-      if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
-         m_meshEdgeBuffer = m_meshBuffer->CreateEdgeMeshBuffer(m_mesh.m_indices, m_mesh.m_vertices);
-      if (renderMask & Renderer::UI_EDGES)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, Vertex3Ds(0.f, 0.f, 0.f), 10000.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+      RenderMeshDesc body;
+      body.mesh = m_meshBuffer;
+      body.indexCount = m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices();
+      body.sortCenter = Vertex3Ds(0.f, 0.f, 0.f);
+      body.depthBias = 10000.f;
+      body.uiEdgeMesh = &m_meshEdgeBuffer;
+      body.edgeMode = UIEdgeMode::Outline;
+      body.edgeTriIndices = m_mesh.m_indices.data();
+      body.edgeTriCount = m_mesh.m_indices.size();
+      body.edgeVertices = m_mesh.m_vertices.data();
+      m_renderer->RenderMesh(renderMask, body, {});
       m_renderer->UpdateBasicShaderMatrix();
       return;
    }

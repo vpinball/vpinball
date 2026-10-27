@@ -1989,11 +1989,13 @@ void Renderer::RenderMesh(const unsigned int renderMask, RenderMeshDesc& draw, c
    }
    else if (renderMask & UI_EDGES)
    {
-      if (draw.uiEdgeMesh != nullptr && draw.edgeMode != UIEdgeMode::None && draw.edgeTriIndices != nullptr)
+      if (draw.uiEdgeMesh != nullptr && (draw.edgeMode == UIEdgeMode::VertexRing || (draw.edgeMode != UIEdgeMode::None && draw.edgeTriIndices != nullptr)))
       {
          if (*draw.uiEdgeMesh == nullptr)
          {
-            if (draw.edgeTriIndices16)
+            if (draw.edgeMode == UIEdgeMode::VertexRing)
+               *draw.uiEdgeMesh = draw.mesh->CreateVertexRingEdgeMeshBuffer();
+            else if (draw.edgeTriIndices16)
             {
                const WORD* const indices = static_cast<const WORD*>(draw.edgeTriIndices);
                *draw.uiEdgeMesh = draw.edgeMode == UIEdgeMode::TriWire                   ? draw.mesh->CreateEdgeMeshBuffer(indices, draw.edgeTriCount)

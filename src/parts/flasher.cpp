@@ -1057,20 +1057,13 @@ void Flasher::Render(const unsigned int renderMask)
 
    if (isUIPass)
    {
-      if (renderMask & Renderer::UI_FILL)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
-      if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
-      {
-         vector<unsigned int> indices(m_numVertices * 2);
-         for (unsigned int i = 0; i < m_numVertices; i++)
-         {
-            indices[i * 2] = i;
-            indices[i * 2 + 1] = (i + 1) % m_numVertices;
-         }
-         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
-      }
-      if (renderMask & Renderer::UI_EDGES)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
+      RenderMeshDesc body;
+      body.mesh = m_meshBuffer;
+      body.indexCount = m_numPolys * 3;
+      body.sortCenter = pos;
+      body.uiEdgeMesh = &m_meshEdgeBuffer;
+      body.edgeMode = UIEdgeMode::VertexRing;
+      m_renderer->RenderMesh(renderMask, body, {});
       if (m_desktopBackdrop)
          m_renderer->UpdateBasicShaderMatrix();
       return;

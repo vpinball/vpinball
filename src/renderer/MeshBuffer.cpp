@@ -213,6 +213,18 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateQuadOutlineEdgeMeshBuffer(const WO
    return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, BuildQuadOutlineEdgeIndices(indices, numIndices)), true);
 }
 
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateVertexRingEdgeMeshBuffer() const
+{
+   const unsigned int numVertices = m_vb->m_count;
+   vector<unsigned int> edgeIndices(numVertices * 2);
+   for (unsigned int i = 0; i < numVertices; i++)
+   {
+      edgeIndices[i * 2] = i;
+      edgeIndices[i * 2 + 1] = (i + 1) % numVertices;
+   }
+   return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, edgeIndices), true);
+}
+
 void MeshBuffer::bind()
 {
 #if defined(ENABLE_BGFX)
