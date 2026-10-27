@@ -6,6 +6,7 @@
 #include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "math/matrix.h"
+#include "meshes/ballMesh.h"
 #include "parts/light.h"
 #include "physics/PhysicsEngine.h"
 #include "plugins/MsgPluginManager.h"
@@ -226,6 +227,7 @@ void Ball::RenderSetup(Renderer *renderer)
 void Ball::RenderRelease()
 {
    assert(m_renderer != nullptr);
+   m_meshEdgeBuffer = nullptr;
    m_renderer = nullptr;
 }
 
@@ -266,9 +268,18 @@ void Ball::Render(const unsigned int renderMask)
 
    if (isUIPass)
    {
-      if (renderMask & Renderer::UI_FILL)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_renderer->m_ballMeshBuffer->m_ib->m_count);
-      // FIXME render wireframe
+      const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
+      const Matrix3D ballTrafo = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius) * Matrix3D::MatrixTranslate(pos.x, pos.y, pos.z);
+      RenderMeshDesc ball;
+      ball.mesh = m_renderer->m_ballMeshBuffer;
+      ball.sortCenter = pos;
+      ball.transform = &ballTrafo;
+      ball.uiEdgeMesh = &m_meshEdgeBuffer;
+      ball.edgeMode = UIEdgeMode::TriWire;
+      ball.edgeTriIndices = lowDetailBall ? basicBallLoIndices : basicBallMidIndices;
+      ball.edgeTriCount = lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces;
+      ball.edgeTriIndices16 = true;
+      m_renderer->RenderMesh(renderMask, ball, {});
       return;
    }
 

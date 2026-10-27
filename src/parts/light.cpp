@@ -466,23 +466,12 @@ void Light::Render(const unsigned int renderMask)
       if (m_desktopBackdrop)
          m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
       const vec3 pos = m_desktopBackdrop ? vec3(0.f, 0.f, 0.f) : vec3(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
-      if (renderMask & Renderer::UI_FILL)
-      {
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
-      }
-      if (renderMask & Renderer::UI_EDGES && m_lightmapMeshEdgeBuffer == nullptr)
-      {
-         const unsigned int numVertices = m_lightmapMeshBuffer->m_vb->m_count;
-         vector<unsigned int> indices(numVertices * 2);
-         for (unsigned int i = 0; i < numVertices; i++)
-         {
-            indices[i * 2] = i;
-            indices[i * 2 + 1] = (i + 1) % numVertices;
-         }
-         m_lightmapMeshEdgeBuffer = std::make_shared<MeshBuffer>(m_lightmapMeshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
-      }
-      if (renderMask & Renderer::UI_EDGES)
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_lightmapMeshEdgeBuffer, RenderDevice::LINELIST, 0, m_lightmapMeshEdgeBuffer->m_ib->m_count);
+      RenderMeshDesc lightmap;
+      lightmap.mesh = m_lightmapMeshBuffer;
+      lightmap.sortCenter = Vertex3Ds(pos.x, pos.y, pos.z);
+      lightmap.uiEdgeMesh = &m_lightmapMeshEdgeBuffer;
+      lightmap.edgeMode = UIEdgeMode::VertexRing;
+      m_renderer->RenderMesh(renderMask, lightmap, {});
 
       // FIXME render bulb
 

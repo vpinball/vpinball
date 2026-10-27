@@ -743,6 +743,11 @@ void Ramp::Render(const unsigned int renderMask)
       body.indexCount = m_numIndices;
       body.sortCenter = m_boundingSphereCenter;
       body.depthBias = m_d.m_depthBias;
+      body.uiEdgeMesh = &m_meshEdgeBuffer;
+      body.edgeMode = UIEdgeMode::Quads;
+      body.edgeTriIndices = m_meshIndices.data();
+      body.edgeTriCount = m_meshIndices.size();
+      body.edgeTriIndices16 = true;
 
       VisualMaterial material;
       if (!isUIPass)
@@ -1170,7 +1175,17 @@ void Ramp::PrepareHabitrail()
       delete[] tmpBuf2;
    }
 
-   m_meshIndices.clear();
+   // Keep the final (wire duplicated) triangle list for UI edge rendering (each copy is offset by one base vertex set)
+   const unsigned int baseIndexCount = (unsigned int)m_meshIndices.size();
+   if (m_numIndices != (int)baseIndexCount)
+   {
+      const int copies = m_numIndices / (int)baseIndexCount;
+      vector<WORD> wireIndices(m_numIndices);
+      for (int c = 0; c < copies; c++)
+         for (unsigned int i = 0; i < baseIndexCount; i++)
+            wireIndices[c * baseIndexCount + i] = m_meshIndices[i] + (WORD)(c * (m_numVertices / copies));
+      m_meshIndices = std::move(wireIndices);
+   }
 }
 
 #pragma endregion

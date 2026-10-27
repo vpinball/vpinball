@@ -27,6 +27,8 @@ public:
    // Expands each consecutive pair of triangles as a quad outline (the shared diagonal is dropped, no cross-quad merging)
    std::unique_ptr<MeshBuffer> CreateQuadOutlineEdgeMeshBuffer(const unsigned int* indices, size_t numIndices) const;
    std::unique_ptr<MeshBuffer> CreateQuadOutlineEdgeMeshBuffer(const WORD* indices, size_t numIndices) const;
+   // Expands a ring through consecutive vertices (i, i+1) wrapping around, derived from the vertex buffer size
+   std::unique_ptr<MeshBuffer> CreateVertexRingEdgeMeshBuffer() const;
 
    const string m_name;
    const std::shared_ptr<VertexBuffer> m_vb;
