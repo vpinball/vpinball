@@ -57,55 +57,27 @@ enum TableFileOperations {
         }
     }
 
-    static func listFiles(_ url: URL, ext: String) -> [URL] {
-        var files: [URL] = []
-        let preferencesURL = URL(fileURLWithPath: VPinballManager.shared.getPath(.preferences))
-
-        if let enumerator = FileManager.default.enumerator(at: url,
-                                                           includingPropertiesForKeys: [.isDirectoryKey],
-                                                           options: [])
-        {
-            for case let fileURL as URL in enumerator {
-                let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey])
-
-                if resourceValues?.isDirectory == true {
-                    if fileURL.standardizedFileURL == preferencesURL.standardizedFileURL
-                        || fileURL.lastPathComponent == "Inbox"
-                    {
-                        enumerator.skipDescendants()
-                    }
-                } else {
-                    if ext.isEmpty || fileURL.pathExtension.lowercased() == ext.lowercased().replacingOccurrences(of: ".", with: "") {
-                        files.append(fileURL)
-                    }
-                }
-            }
-        }
-
-        return files
-    }
-
-    // All tables under a folder: ".vpx" files plus ".vpz" folder packs
     static func listTableURLs(_ url: URL) -> [URL] {
-        var tables = listFiles(url, ext: ".vpx")
-        let preferencesURL = URL(fileURLWithPath: VPinballManager.shared.getPath(.preferences))
+        var tables: [URL] = []
+        let preferencesURL = URL(fileURLWithPath: VPinballManager.shared.getPath(.preferences)).standardizedFileURL
 
         if let enumerator = FileManager.default.enumerator(at: url,
                                                            includingPropertiesForKeys: [.isDirectoryKey],
                                                            options: [])
         {
             for case let fileURL as URL in enumerator {
-                let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey])
+                let isDirectory = (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+                let ext = fileURL.pathExtension.lowercased()
 
-                if resourceValues?.isDirectory == true {
-                    if fileURL.standardizedFileURL == preferencesURL.standardizedFileURL
-                        || fileURL.lastPathComponent == "Inbox"
-                    {
+                if isDirectory {
+                    if fileURL.standardizedFileURL == preferencesURL || fileURL.lastPathComponent == "Inbox" {
                         enumerator.skipDescendants()
-                    } else if fileURL.pathExtension.lowercased() == "vpz" {
+                    } else if ext == "vpz" {
                         tables.append(fileURL)
                         enumerator.skipDescendants()
                     }
+                } else if ext == "vpx" || ext == "vpz" {
+                    tables.append(fileURL)
                 }
             }
         }

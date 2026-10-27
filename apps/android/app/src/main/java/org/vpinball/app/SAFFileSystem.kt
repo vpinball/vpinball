@@ -10,7 +10,6 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import org.json.JSONArray
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballSettingsSection
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
@@ -157,63 +156,57 @@ object SAFFileSystem {
         return docUri != null
     }
 
-    fun listFilesRecursive(extension: String, includeDirectories: Boolean = false): String {
-        val uri = getExternalStorageUri()
-        if (uri == null) {
+    fun listTables(relativePath: String): List<String>? {
+        val treeUri = getExternalStorageUri()
+        if (treeUri == null) {
             VPinballManager.log(VPinballLogLevel.ERROR, "No external storage URI set")
-            return "[]"
+            return null
         }
 
+        val rootUri = buildDocumentUri(treeUri, relativePath)
+        if (rootUri == null) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Source not found: $relativePath")
+            return null
+        }
+
+        val projection =
+            arrayOf(
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+            )
         val results = mutableListOf<String>()
 
-        fun scanRecursive(docUri: Uri, currentPath: String = "") {
+        fun scan(documentId: String, path: String) {
             try {
-                val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(docUri))
-
-                context.contentResolver
-                    .query(
-                        childrenUri,
-                        arrayOf(
-                            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                            DocumentsContract.Document.COLUMN_MIME_TYPE,
-                            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                        ),
-                        null,
-                        null,
-                        null,
-                    )
-                    ?.use { cursor ->
-                        val nameIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-                        val mimeIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
-                        val idIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-
-                        while (cursor.moveToNext()) {
-                            val name = cursor.getString(nameIndex)
-                            val mimeType = cursor.getString(mimeIndex)
-                            val documentId = cursor.getString(idIndex)
-
-                            if (mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
-                                if (includeDirectories && name.endsWith(extension, ignoreCase = true)) {
-                                    results.add("$currentPath$name")
-                                } else {
-                                    val childUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
-                                    scanRecursive(childUri, "$currentPath$name/")
-                                }
-                            } else if (name.endsWith(extension, ignoreCase = true)) {
-                                results.add("$currentPath$name")
+                val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, documentId)
+                context.contentResolver.query(childrenUri, projection, null, null, null)?.use { cursor ->
+                    val nameIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                    val mimeIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+                    val idIndex = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+                    while (cursor.moveToNext()) {
+                        val name = cursor.getString(nameIndex)
+                        val childPath = "$path$name"
+                        if (cursor.getString(mimeIndex) == DocumentsContract.Document.MIME_TYPE_DIR) {
+                            if (isPackFolderName(name)) {
+                                results.add(childPath)
+                            } else {
+                                scan(cursor.getString(idIndex), "$childPath/")
                             }
+                        } else if (isTableFileName(name)) {
+                            results.add(childPath)
                         }
                     }
+                }
             } catch (e: Exception) {
-                VPinballManager.log(VPinballLogLevel.ERROR, "Exception in $currentPath: ${e.message}")
+                VPinballManager.log(VPinballLogLevel.ERROR, "Exception in $path: ${e.message}")
             }
         }
 
-        val treeDocumentId = DocumentsContract.getTreeDocumentId(uri)
-        val rootDocUri = DocumentsContract.buildDocumentUriUsingTree(uri, treeDocumentId)
-        scanRecursive(rootDocUri)
+        val rootDocumentId = if (relativePath.isEmpty()) DocumentsContract.getTreeDocumentId(treeUri) else DocumentsContract.getDocumentId(rootUri)
+        scan(rootDocumentId, "")
 
-        return JSONArray(results).toString()
+        return results
     }
 
     private fun buildDocumentUri(treeUri: Uri, relativePath: String, createIfMissing: Boolean = false): Uri? {

@@ -158,7 +158,7 @@ To move a table and its files to your device in one go, put them in a folder, zi
 <img src="img/mobile/vpxz-folder.gif">
 </p>
 
-A plain `.zip` works too, and so does a bare `.vpx` file if the table needs nothing else.
+A plain `.zip` works too, and so does a bare `.vpx` file or `.vpz` pack if the table needs nothing else. A `.vpz` pack is the table saved as a folder or zip instead of a single `.vpx` file, see [VPZ File Format](VPZ%20File%20Format.md); a `.vpxz` can wrap either kind.
 
 ### Getting the file onto your device
 
@@ -187,7 +187,7 @@ The app has a built-in file manager that you open in a browser on the same Wi-Fi
 
 1. Open **Settings** (gear icon) in the app and turn on **Enabled** under *Web Server*. The address to use appears below the switch, for example `http://192.168.1.17:2112`.
 2. Type that address into a browser on your computer.
-3. Create a folder for the table, open it, and upload your `.vpx`, `.vpxz` or `.zip` file into it. Archives can be unpacked in place with **Extract**.
+3. Create a folder for the table, open it, and upload your `.vpx`, `.vpz`, `.vpxz` or `.zip` file into it. Archives can be unpacked in place with **Extract**.
 4. Click **Refresh Tables** so the new table shows up in the app.
 
 <p align="center">
