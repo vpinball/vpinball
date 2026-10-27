@@ -108,6 +108,7 @@ if(PLATFORM STREQUAL "windows")
    endif()
 
    if(RENDERER STREQUAL "BGFX")
+      add_dependencies(vpinball vpx-shaders)
       target_include_directories(vpinball PUBLIC
          ${CMAKE_CURRENT_SOURCE_DIR}
          ${CMAKE_CURRENT_BINARY_DIR}/${_vpx_intdir}
@@ -327,6 +328,8 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       src/utils/CrashHandler.h
    )
 
+   add_dependencies(vpinball vpx-shaders)
+
    target_include_directories(vpinball PUBLIC
       ${CMAKE_SOURCE_DIR}/third-party/include
       ${CMAKE_SOURCE_DIR}
@@ -439,6 +442,10 @@ elseif(PLATFORM STREQUAL "macos")
 
       apps/macos/main.mm
    )
+
+   if(RENDERER STREQUAL "BGFX")
+      add_dependencies(vpinball vpx-shaders)
+   endif()
 
    target_include_directories(vpinball PUBLIC
       ${CMAKE_SOURCE_DIR}/third-party/include
@@ -558,6 +565,10 @@ elseif(PLATFORM STREQUAL "linux")
    add_executable(vpinball
       ${VPX_STANDALONE_SOURCES}
    )
+
+   if(RENDERER STREQUAL "BGFX")
+      add_dependencies(vpinball vpx-shaders)
+   endif()
 
    target_include_directories(vpinball PUBLIC
       ${CMAKE_SOURCE_DIR}/third-party/include
@@ -717,6 +728,8 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
    endif()
 
    add_library(vpinball SHARED ${VPINBALL_SOURCES})
+
+   add_dependencies(vpinball vpx-shaders)
 
    target_include_directories(vpinball PUBLIC
       ${CMAKE_SOURCE_DIR}/third-party/include

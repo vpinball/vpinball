@@ -153,7 +153,7 @@ fi
 # build bgfx
 #
 
-BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}_002"
+BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}_003"
 BGFX_FOUND_SHA="$([ -f bgfx/cache.txt ] && cat bgfx/cache.txt || echo "")"
 
 if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
@@ -182,6 +182,20 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
+
+   # Build shaderc as a host tool (always Release: it only runs at build time to
+   # compile the embedded shaders, see src/shaders/bgfx/shaders.cmake). The main
+   # build targets Android, so the tool needs a separate host configure.
+   cmake -S. \
+      -DBGFX_BUILD_TOOLS=ON \
+      -DBGFX_BUILD_TOOLS_SHADER=ON \
+      -DBGFX_BUILD_TOOLS_BIN2C=OFF \
+      -DBGFX_BUILD_TOOLS_GEOMETRY=OFF \
+      -DBGFX_BUILD_TOOLS_TEXTURE=OFF \
+      -DBGFX_BUILD_EXAMPLES=OFF \
+      -DCMAKE_BUILD_TYPE=Release \
+      -B build-tools
+   cmake --build build-tools --target shaderc -- -j${NUM_PROCS}
    cd ..
 
    echo "$BGFX_EXPECTED_SHA" > cache.txt
@@ -644,6 +658,17 @@ cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg.a ../../../third-party/build-libs/an
 cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg_encode.a ../../../third-party/build-libs/android-arm64-v8a
 cp -r bgfx/bgfx.cmake/bimg/include/bimg ../../../third-party/include/
 cp bgfx/bgfx.cmake/build/cmake/bx/libbx.a ../../../third-party/build-libs/android-arm64-v8a
+
+# shaderc is a host tool (compiles the embedded BGFX shaders at build time):
+# place it under the host platform's tools dir so CMake can find it when cross-building.
+case "$(uname -s)-$(uname -m)" in
+   Darwin-arm64)   HOST_TOOLS=macos-arm64 ;;
+   Darwin-x86_64)  HOST_TOOLS=macos-x64 ;;
+   Linux-x86_64)   HOST_TOOLS=linux-x64 ;;
+   Linux-aarch64)  HOST_TOOLS=linux-aarch64 ;;
+esac
+mkdir -p "../../../third-party/tools/${HOST_TOOLS}"
+cp bgfx/bgfx.cmake/build-tools/cmake/bgfx/shaderc "../../../third-party/tools/${HOST_TOOLS}/"
 cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp pinmame/pinmame/build/libpinmame.so ../../../third-party/runtime-libs/android-arm64-v8a

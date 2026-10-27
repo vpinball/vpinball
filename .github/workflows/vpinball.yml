@@ -566,7 +566,7 @@ jobs:
       ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/29.0.14206865
     steps:
       - run: |
-          sudo apt install bison
+          sudo apt install bison libx11-dev libgl1-mesa-dev libglu1-mesa-dev
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'

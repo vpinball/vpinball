@@ -141,7 +141,7 @@ fi
 # build bgfx
 #
 
-BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}-005"
+BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}-006"
 BGFX_FOUND_SHA="$([ -f bgfx/cache.txt ] && cat bgfx/cache.txt || echo "")"
 
 if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
@@ -171,6 +171,21 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
+
+   # Build shaderc as a host tool (always Release: it only runs at build time to
+   # compile the embedded shaders, see src/shaders/bgfx/shaders.cmake). Static
+   # link so the exe runs outside the MSYS2 environment.
+   cmake -S. \
+      -DBGFX_BUILD_TOOLS=ON \
+      -DBGFX_BUILD_TOOLS_SHADER=ON \
+      -DBGFX_BUILD_TOOLS_BIN2C=OFF \
+      -DBGFX_BUILD_TOOLS_GEOMETRY=OFF \
+      -DBGFX_BUILD_TOOLS_TEXTURE=OFF \
+      -DBGFX_BUILD_EXAMPLES=OFF \
+      -DCMAKE_EXE_LINKER_FLAGS=-static \
+      -DCMAKE_BUILD_TYPE=Release \
+      -B build-tools
+   cmake --build build-tools --target shaderc -- -j${NUM_PROCS}
    cd ..
 
    echo "$BGFX_EXPECTED_SHA" > cache.txt
@@ -605,6 +620,14 @@ cp bgfx/bgfx.cmake/build/cmake/bgfx/libbgfx64.a ../../../third-party/build-libs/
 cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg64.a ../../../third-party/build-libs/windows-mingw-x64
 cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg_encode64.a ../../../third-party/build-libs/windows-mingw-x64
 cp bgfx/bgfx.cmake/build/cmake/bx/libbx64.a ../../../third-party/build-libs/windows-mingw-x64
+
+# shaderc host tool (compiles the embedded BGFX shaders at build time). The DXC
+# dlls are loaded by shaderc at runtime for the s_6_0 (D3D12/DXIL) target.
+mkdir -p ../../../third-party/tools/windows-mingw-x64
+cp bgfx/bgfx.cmake/build-tools/cmake/bgfx/shaderc.exe ../../../third-party/tools/windows-mingw-x64/
+cp bgfx/bgfx.cmake/bgfx/tools/bin/windows/dxcompiler.dll ../../../third-party/tools/windows-mingw-x64/
+cp bgfx/bgfx.cmake/bgfx/tools/bin/windows/dxil.dll ../../../third-party/tools/windows-mingw-x64/
+cp bgfx/bgfx.cmake/bgfx/tools/bin/windows/d3dcompiler_47.dll ../../../third-party/tools/windows-mingw-x64/
 
 cp pinmame/pinmame/build/pinmame64.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp pinmame/pinmame/build/libpinmame64.dll.a ../../../third-party/build-libs/windows-mingw-x64
