@@ -249,7 +249,13 @@ void PrimitiveVisualsProperty::UpdateProperties(const int dispid)
                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
-                  prim->m_d.m_color = m_colorDialog.GetColor();
+                  const COLORREF color = m_colorDialog.GetColor();
+                  if (color != prim->m_d.m_color)
+                  {
+                     PropertyDialog::StartUndo(prim);
+                     prim->m_d.m_color = color;
+                     PropertyDialog::EndUndo(prim);
+                  }
                   m_colorButton.SetColor(prim->m_d.m_color);
                   memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
                }

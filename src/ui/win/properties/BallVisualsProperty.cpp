@@ -101,7 +101,13 @@ void BallVisualsProperty::UpdateProperties(const int dispid)
          m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
          if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
          {
-            ball->m_d.m_color = m_colorDialog.GetColor();
+            const COLORREF color = m_colorDialog.GetColor();
+            if (color != ball->m_d.m_color)
+            {
+               PropertyDialog::StartUndo(ball);
+               ball->m_d.m_color = color;
+               PropertyDialog::EndUndo(ball);
+            }
             m_colorButton.SetColor(ball->m_d.m_color);
             memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
          }

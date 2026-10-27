@@ -92,9 +92,7 @@ void PartGroupVisualsProperty::UpdateProperties(const int dispid)
       PartGroup* const partGroup = static_cast<PartGroup*>(SelAt(i)->GetEditable());
       switch (dispid)
       {
-      case IDC_SPACE_REFERENCE:
-         partGroup->m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(m_referenceSpace.GetCurSel());
-         break;
+      case IDC_SPACE_REFERENCE: CHECK_UPDATE_ITEM(partGroup->m_d.m_spaceReference, static_cast<PartGroupData::SpaceReference>(m_referenceSpace.GetCurSel()), partGroup); break;
 
       case IDC_MASK_DESKTOP:
          UpdatePlayerModeVisibilityMask(partGroup, PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP, m_visibilityDesktop.GetCheck() == BST_CHECKED);

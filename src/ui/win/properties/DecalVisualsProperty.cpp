@@ -135,7 +135,13 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                 if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                 {
-                    decal->m_d.m_color = m_colorDialog.GetColor();
+                   const COLORREF color = m_colorDialog.GetColor();
+                   if (color != decal->m_d.m_color)
+                   {
+                      PropertyDialog::StartUndo(decal);
+                      decal->m_d.m_color = color;
+                      PropertyDialog::EndUndo(decal);
+                   }
                     m_fontColorButton.SetColor(decal->m_d.m_color);
                     memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
                 }
@@ -152,24 +158,26 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 m_fontDialog.SetColor(decal->m_d.m_color);
                 if (m_fontDialog.DoModal(GetHwnd()) == IDOK)
                 {
-                    m_font->CreateFontIndirect(m_fontDialog.GetLogFont());
-                    const LOGFONT font = m_font->GetLogFont();
+                   PropertyDialog::StartUndo(decal);
+                   m_font->CreateFontIndirect(m_fontDialog.GetLogFont());
+                   const LOGFONT font = m_font->GetLogFont();
 
-                    decal->m_d.m_font.name = font.lfFaceName;
-                    decal->m_d.m_font.weight = (uint16_t)font.lfWeight;
-                    decal->m_d.m_font.charset = (uint16_t)font.lfCharSet;
-                    
-                    const bool fItalic = font.lfItalic != 0;
-                    const bool fUnderline = font.lfUnderline != 0;
-                    const bool fStrikethrough = font.lfStrikeOut != 0;
-                    decal->m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
+                   decal->m_d.m_font.name = font.lfFaceName;
+                   decal->m_d.m_font.weight = (uint16_t)font.lfWeight;
+                   decal->m_d.m_font.charset = (uint16_t)font.lfCharSet;
 
-                    const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(GetVpxEditor()->GetDC(), LOGPIXELSY));
-                    decal->m_d.m_font.size = (uint32_t)(fontsize * 10000.0f);
+                   const bool fItalic = font.lfItalic != 0;
+                   const bool fUnderline = font.lfUnderline != 0;
+                   const bool fStrikethrough = font.lfStrikeOut != 0;
+                   decal->m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 
-                    decal->m_d.m_color = m_fontDialog.GetColor();
-                    delete m_font;
-                    m_font = new CFont(decal->m_d.m_font.ToLogFont());
+                   const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(GetVpxEditor()->GetDC(), LOGPIXELSY));
+                   decal->m_d.m_font.size = (uint32_t)(fontsize * 10000.0f);
+
+                   decal->m_d.m_color = m_fontDialog.GetColor();
+                   delete m_font;
+                   m_font = new CFont(decal->m_d.m_font.ToLogFont());
+                   PropertyDialog::EndUndo(decal);
                 }
                 break;
             }

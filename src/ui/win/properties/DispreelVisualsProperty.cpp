@@ -109,7 +109,13 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
                m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                {
-                  reel->m_d.m_backcolor = m_colorDialog.GetColor();
+                  const COLORREF color = m_colorDialog.GetColor();
+                  if (color != reel->m_d.m_backcolor)
+                  {
+                     PropertyDialog::StartUndo(reel);
+                     reel->m_d.m_backcolor = color;
+                     PropertyDialog::EndUndo(reel);
+                  }
                   m_colorButton.SetColor(reel->m_d.m_backcolor);
                   memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
                }

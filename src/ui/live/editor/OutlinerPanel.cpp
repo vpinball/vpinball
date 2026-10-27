@@ -298,7 +298,10 @@ void OutlinerPanel::Render(float topBarHeight)
                   ImGui::SameLine(eyeX);
                   ImGui::PushStyleColor(ImGuiCol_Text, group->IsUIVisible(false) ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
                   if (ImGui::SmallButton(((group->IsUIVisible(false) ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
+                  {
                      group->SetUIVisible(!group->IsUIVisible(false));
+                     editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+                  }
                   ImGui::PopStyleColor();
                }
                if (edit == revealPart && !ImGui::IsItemVisible())
@@ -355,7 +358,10 @@ void OutlinerPanel::Render(float topBarHeight)
                      ImGui::SameLine(eyeX);
                      ImGui::PushStyleColor(ImGuiCol_Text, editable->IsUIVisible(false) ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
                      if (ImGui::SmallButton(((editable->IsUIVisible(false) ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
+                     {
                         editable->SetUIVisible(!editable->IsUIVisible(false));
+                        editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+                     }
                      ImGui::PopStyleColor();
                   }
                }
