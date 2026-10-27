@@ -3295,8 +3295,9 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             const float tu1 = static_cast<float>(x) / w, tv1 = static_cast<float>(y) / h;
             const float tu2 = static_cast<float>(x + fw) / w, tv2 = static_cast<float>(y + fh) / h;
             const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, uiW, uiH, 0.f, 0.f, 1.f);
+            const Matrix3D orthoEyes[2] = { ortho, ortho }; // One per eye
             m_renderDevice->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
-            m_renderDevice->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &ortho, 2);
+            m_renderDevice->m_uiShader->SetMatrix(ShaderUniform::matWorldView, orthoEyes, m_renderDevice->m_nEyes);
             m_renderDevice->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 0.f);
             m_renderDevice->m_uiShader->SetVector(ShaderUniform::clip_plane, 0.f, 0.f, uiW, uiH);
             m_renderDevice->m_uiShader->SetTexture(ShaderUniform::tex_base_color, uiLayer->GetColorSampler());
@@ -3719,8 +3720,9 @@ void Renderer::RenderDesktopScene(RenderTarget* outputRT)
       m_renderDevice->AddRenderTargetDependency(uiLayer);
       const float uiW = static_cast<float>(uiLayer->GetWidth()), uiH = static_cast<float>(uiLayer->GetHeight());
       const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, uiW, uiH, 0.f, 0.f, 1.f);
+      const Matrix3D orthoEyes[2] = { ortho, ortho }; // One per eye
       m_renderDevice->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
-      m_renderDevice->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &ortho, 2);
+      m_renderDevice->m_uiShader->SetMatrix(ShaderUniform::matWorldView, orthoEyes, m_renderDevice->m_nEyes);
       m_renderDevice->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 0.f);
       m_renderDevice->m_uiShader->SetVector(ShaderUniform::clip_plane, 0.f, 0.f, uiW, uiH);
       m_renderDevice->m_uiShader->SetTexture(ShaderUniform::tex_base_color, uiLayer->GetColorSampler());
@@ -4246,9 +4248,19 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
          VPX::Window* const wnd = output.GetWindow();
          // Only show ancillary outputs once the playfield window itself is visible: an ancillary window shown
          // (thereby activated) before the playfield's own show & raise can be demoted by the window manager
-         // (minimized or left behind it), a state that would otherwise never be repaired (issue #4202)
-         if (g_pplayer->m_playfieldWnd->IsVisible() && (!wnd->IsVisible() || wnd->IsMinimized()))
-            wnd->Show();
+         // (minimized or left behind it), a state that would otherwise never be repaired (issue #4202).
+         // A minimized window is only restored shortly after that show: one minimized later by the user stays minimized
+         if (g_pplayer->m_playfieldWnd->IsVisible())
+         {
+            constexpr uint32_t demotionRepairDelay = 3000; // [ms]
+            if (!wnd->IsVisible())
+            {
+               wnd->Show();
+               m_ancillaryWndShowTime[window] = msec();
+            }
+            else if (wnd->IsMinimized() && (msec() - m_ancillaryWndShowTime[window]) < demotionRepairDelay)
+               wnd->Show();
+         }
 
          if (isOutputLinear)
          {
