@@ -21,6 +21,9 @@ struct TestPropIds
    PropertyRegistry::PropId floatProp;
    PropertyRegistry::PropId stringProp;
    PropertyRegistry::PropId contextualInt;
+   PropertyRegistry::PropId tableOptionBool;
+   PropertyRegistry::PropId tableOptionInt;
+   PropertyRegistry::PropId pluginBool;
 };
 
 TestPropIds RegisterTestProps(PropertyRegistry& registry)
@@ -34,6 +37,9 @@ TestPropIds RegisterTestProps(PropertyRegistry& registry)
    ids.floatProp = registry.Register(std::make_unique<FloatPropertyDef>("TestGroup"s, "FloatProp"s, "Float"s, ""s, false, 0.f, 10.f, 0.5f, 2.5f));
    ids.stringProp = registry.Register(std::make_unique<StringPropertyDef>("TestGroup"s, "StringProp"s, "String"s, ""s, false, "default"s));
    ids.contextualInt = registry.Register(std::make_unique<IntPropertyDef>("TestGroup"s, "CtxInt"s, "Ctx"s, ""s, true, 0, 100, 5));
+   ids.tableOptionBool = registry.Register(std::make_unique<BoolPropertyDef>("TableOption"s, "OptBool"s, "OptBool"s, ""s, true, false));
+   ids.tableOptionInt = registry.Register(std::make_unique<IntPropertyDef>("TableOption"s, "OptInt"s, "OptInt"s, ""s, true, 0, 100, 3));
+   ids.pluginBool = registry.Register(std::make_unique<BoolPropertyDef>("Plugin.test"s, "PlugBool"s, "PlugBool"s, ""s, true, false));
    return ids;
 }
 }
@@ -382,5 +388,81 @@ TEST_CASE("LayeredINIPropertyStore")
       REQUIRE(try_parse_float(childIni["TestGroup"s]["FloatProp"s], f));
       CHECK(f == 4.5f);
       CHECK(childIni["TestGroup"s]["CtxInt"s] == "5");
+   }
+
+   SUBCASE("root store never writes TableOption keys")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-tableopt-root.ini";
+
+      LayeredINIPropertyStore store(registry);
+      store.SetIniPath(iniPath);
+      store.Set(ids.intProp, 7); // non-TableOption change so the store saves; leave options undefined
+      store.Save();
+
+      mINI::INIStructure ini;
+      REQUIRE(mINI::INIFile(iniPath).read(ini));
+      CHECK_FALSE(ini.has("TableOption"s)); // neither empty keys nor the section itself
+      CHECK(ini["TestGroup"s].has("BoolProp"s)); // a normal undefined prop still gets its empty key
+   }
+
+   SUBCASE("root store never writes a defined TableOption value")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-tableopt-defined.ini";
+
+      LayeredINIPropertyStore store(registry);
+      store.SetIniPath(iniPath);
+      store.Set(ids.tableOptionBool, 1);
+      store.Set(ids.tableOptionInt, 9);
+      store.Save();
+
+      mINI::INIStructure ini;
+      REQUIRE(mINI::INIFile(iniPath).read(ini));
+      CHECK_FALSE(ini.has("TableOption"s));
+   }
+
+   SUBCASE("other contextual (plugin) props still persist at root")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-plugin-root.ini";
+
+      LayeredINIPropertyStore store(registry);
+      store.SetIniPath(iniPath);
+      store.Set(ids.pluginBool, 1);
+      store.Save();
+
+      mINI::INIStructure ini;
+      REQUIRE(mINI::INIFile(iniPath).read(ini));
+      REQUIRE(ini.has("Plugin.test"s)); // contextual, but not a table option: keeps saving globally
+      CHECK(ini["Plugin.test"s]["PlugBool"s] == "1");
+   }
+
+   SUBCASE("child store still persists TableOption overrides")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path parentPath = GetTestTmpDir() / "layered-tableopt-parent.ini";
+      const std::filesystem::path childPath = GetTestTmpDir() / "layered-tableopt-child.ini";
+
+      LayeredINIPropertyStore parent(registry);
+      parent.SetIniPath(parentPath);
+      LayeredINIPropertyStore child(parent);
+      child.SetIniPath(childPath);
+
+      child.Set(ids.tableOptionInt, 9); // the per-table override path must still write
+      child.Save(); // also saves the parent (root)
+
+      mINI::INIStructure childIni;
+      REQUIRE(mINI::INIFile(childPath).read(childIni));
+      CHECK(childIni["TableOption"s]["OptInt"s] == "9");
+
+      // Parent file may be absent entirely (nothing to save), or present without the section.
+      mINI::INIStructure parentIni;
+      if (mINI::INIFile(parentPath).read(parentIni))
+         CHECK_FALSE(parentIni.has("TableOption"s));
    }
 }
