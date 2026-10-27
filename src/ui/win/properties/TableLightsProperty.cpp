@@ -55,7 +55,13 @@ void TableLightsProperty::UpdateProperties(const int dispid)
       m_colorDialog.SetCustomColors(table->m_rgcolorcustom);
       if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
       {
-         table->m_lightAmbient = m_colorDialog.GetColor();
+         const COLORREF color = m_colorDialog.GetColor();
+         if (color != table->m_lightAmbient)
+         {
+            PropertyDialog::StartUndo(table);
+            table->m_lightAmbient = color;
+            PropertyDialog::EndUndo(table);
+         }
          m_colorButton1.SetColor(table->m_lightAmbient);
          memcpy(table->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(table->m_rgcolorcustom));
       }
@@ -70,7 +76,13 @@ void TableLightsProperty::UpdateProperties(const int dispid)
       m_colorDialog.SetCustomColors(table->m_rgcolorcustom);
       if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
       {
-         table->m_Light[0].emission = m_colorDialog.GetColor();
+         const COLORREF color = m_colorDialog.GetColor();
+         if (color != table->m_Light[0].emission)
+         {
+            PropertyDialog::StartUndo(table);
+            table->m_Light[0].emission = color;
+            PropertyDialog::EndUndo(table);
+         }
          m_colorButton2.SetColor(table->m_Light[0].emission);
          memcpy(table->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(table->m_rgcolorcustom));
       }

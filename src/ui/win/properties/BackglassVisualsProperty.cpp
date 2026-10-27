@@ -74,7 +74,13 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
             m_colorDialog.SetCustomColors(table->m_rgcolorcustom);
             if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
             {
-                table->m_colorbackdrop = m_colorDialog.GetColor();
+               const COLORREF color = m_colorDialog.GetColor();
+               if (color != table->m_colorbackdrop)
+               {
+                  PropertyDialog::StartUndo(table);
+                  table->m_colorbackdrop = color;
+                  PropertyDialog::EndUndo(table);
+               }
                 m_colorButton1.SetColor(table->m_colorbackdrop);
                 memcpy(table->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(table->m_rgcolorcustom));
             }

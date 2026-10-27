@@ -283,7 +283,13 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                   m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                   if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                   {
-                     light->m_d.m_color = m_colorDialog.GetColor();
+                     const COLORREF color = m_colorDialog.GetColor();
+                     if (color != light->m_d.m_color)
+                     {
+                        PropertyDialog::StartUndo(light);
+                        light->m_d.m_color = color;
+                        PropertyDialog::EndUndo(light);
+                     }
                      m_colorButton1.SetColor(light->m_d.m_color);
                      memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
                   }
@@ -291,9 +297,13 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 else
                 {
                    const Light* const firstLight = (Light *)SelAt(0)->GetEditable();
-                   light->m_d.m_color = firstLight->m_d.m_color;
+                   if (light->m_d.m_color != firstLight->m_d.m_color)
+                   {
+                      PropertyDialog::StartUndo(light);
+                      light->m_d.m_color = firstLight->m_d.m_color;
+                      PropertyDialog::EndUndo(light);
+                   }
                    m_colorButton1.SetColor(light->m_d.m_color);
-                   ptable->SetDirtyDraw();
                 }
                 break;
             }
@@ -311,7 +321,13 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                   m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                   if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                   {
-                     light->m_d.m_color2 = m_colorDialog.GetColor();
+                     const COLORREF color = m_colorDialog.GetColor();
+                     if (color != light->m_d.m_color2)
+                     {
+                        PropertyDialog::StartUndo(light);
+                        light->m_d.m_color2 = color;
+                        PropertyDialog::EndUndo(light);
+                     }
                      m_colorButton2.SetColor(light->m_d.m_color2);
                      memcpy(ptable->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(ptable->m_rgcolorcustom));
                   }
@@ -319,7 +335,12 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
                 else
                 {
                    const Light* const firstLight = (Light *)SelAt(0)->GetEditable();
-                   light->m_d.m_color2 = firstLight->m_d.m_color2;
+                   if (light->m_d.m_color2 != firstLight->m_d.m_color2)
+                   {
+                      PropertyDialog::StartUndo(light);
+                      light->m_d.m_color2 = firstLight->m_d.m_color2;
+                      PropertyDialog::EndUndo(light);
+                   }
                    m_colorButton2.SetColor(light->m_d.m_color2);
                 }
                 break;

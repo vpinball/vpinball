@@ -147,7 +147,13 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                 if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                 {
-                    text->m_d.m_backcolor = m_colorDialog.GetColor();
+                   const COLORREF color = m_colorDialog.GetColor();
+                   if (color != text->m_d.m_backcolor)
+                   {
+                      PropertyDialog::StartUndo(text);
+                      text->m_d.m_backcolor = color;
+                      PropertyDialog::EndUndo(text);
+                   }
                     m_backgroundColorButton.SetColor(text->m_d.m_backcolor);
                 }
                 break;
@@ -164,7 +170,13 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 m_colorDialog.SetCustomColors(ptable->m_rgcolorcustom);
                 if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
                 {
-                    text->m_d.m_fontcolor = m_colorDialog.GetColor();
+                   const COLORREF color = m_colorDialog.GetColor();
+                   if (color != text->m_d.m_fontcolor)
+                   {
+                      PropertyDialog::StartUndo(text);
+                      text->m_d.m_fontcolor = color;
+                      PropertyDialog::EndUndo(text);
+                   }
                     m_textColorButton.SetColor(text->m_d.m_fontcolor);
                 }
                 break;
@@ -180,24 +192,26 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 m_fontDialog.SetColor(text->m_d.m_fontcolor);
                 if (m_fontDialog.DoModal(GetHwnd()) == IDOK)
                 {
-                    m_font->CreateFontIndirect(m_fontDialog.GetLogFont());
-                    const LOGFONT font = m_font->GetLogFont();
+                   PropertyDialog::StartUndo(text);
+                   m_font->CreateFontIndirect(m_fontDialog.GetLogFont());
+                   const LOGFONT font = m_font->GetLogFont();
 
-                    text->m_d.m_font.name = font.lfFaceName;
-                    text->m_d.m_font.weight = (uint16_t)font.lfWeight;
-                    text->m_d.m_font.charset = font.lfCharSet;
-                    
-                    const bool fItalic = font.lfItalic != 0;
-                    const bool fUnderline = font.lfUnderline != 0;
-                    const bool fStrikethrough = font.lfStrikeOut != 0;
-                    text->m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
+                   text->m_d.m_font.name = font.lfFaceName;
+                   text->m_d.m_font.weight = (uint16_t)font.lfWeight;
+                   text->m_d.m_font.charset = font.lfCharSet;
 
-                    const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(GetVpxEditor()->GetDC(), LOGPIXELSY));
-                    text->m_d.m_font.size = (uint32_t)(fontsize * 10000.0f);
+                   const bool fItalic = font.lfItalic != 0;
+                   const bool fUnderline = font.lfUnderline != 0;
+                   const bool fStrikethrough = font.lfStrikeOut != 0;
+                   text->m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 
-                    text->m_d.m_fontcolor = m_fontDialog.GetColor();
-                    delete m_font;
-                    m_font = new CFont(text->m_d.m_font.ToLogFont());
+                   const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(GetVpxEditor()->GetDC(), LOGPIXELSY));
+                   text->m_d.m_font.size = (uint32_t)(fontsize * 10000.0f);
+
+                   text->m_d.m_fontcolor = m_fontDialog.GetColor();
+                   delete m_font;
+                   m_font = new CFont(text->m_d.m_font.ToLogFont());
+                   PropertyDialog::EndUndo(text);
                 }
                 break;
             }

@@ -1141,24 +1141,39 @@ void EditorUI::RenderUI()
       {
          if (m_table->m_liveBaseTable == nullptr && !io.KeyCtrl) // No UI visibility in inspection mode
          {
+            bool changed = false;
             if (io.KeyAlt)
             { // Unhide all
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == (m_camMode == ViewMode::DesktopBackdrop)))
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == (m_camMode == ViewMode::DesktopBackdrop))
+                     && !part->GetEditable()->IsUIVisible(false))
+                  {
                      part->GetEditable()->SetUIVisible(true);
+                     changed = true;
+                  }
             }
             else if (io.KeyShift)
             { // Hide unselected
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == (m_camMode == ViewMode::DesktopBackdrop)) && !IsPartSelected(part))
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == (m_camMode == ViewMode::DesktopBackdrop)) && !IsPartSelected(part)
+                     && part->GetEditable()->IsUIVisible(false))
+                  {
                      part->GetEditable()->SetUIVisible(false);
+                     changed = true;
+                  }
             }
             else
             { // Hide selected
                for (const auto &part : m_multiSel)
-                  part->GetEditable()->SetUIVisible(false);
+                  if (part->GetEditable()->IsUIVisible(false))
+                  {
+                     part->GetEditable()->SetUIVisible(false);
+                     changed = true;
+                  }
                ClearSelection();
             }
+            if (changed)
+               m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_G))

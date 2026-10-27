@@ -1339,7 +1339,6 @@ void PinTableWnd::LockElements()
 void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
 {
    BeginUndo();
-   MarkForUndo(m_table);
    bool show = false, hide = false;
    for (const IEditable *const e : m_table->GetParts())
       if (e->GetPartGroup() == group)
@@ -1350,6 +1349,7 @@ void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
    for (IWinUIPart *const uiPart : m_vmultisel)
    {
       IEditable *const pedit = uiPart->GetEditable();
+      MarkForUndo(pedit);
       pedit->SetPartGroup(group);
       if (pedit->IsUIVisible(false) && hide && !show)
          pedit->SetUIVisible(false);

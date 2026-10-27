@@ -624,9 +624,9 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             {
                SelectItem(hSelectedDrop);
                m_activeTableEditor->BeginUndo();
-               m_activeTableEditor->MarkForUndo(m_activeTable);
                for (IEditable* const editable : reparented)
                {
+                  m_activeTableEditor->MarkForUndo(editable);
                   editable->SetPartGroup(group);
                   Select(editable);
                }
