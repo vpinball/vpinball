@@ -37,7 +37,7 @@ uniform vec4 agx_params;
 
 // HDR->HDR spline based remapping
 uniform vec4 spline1;
-uniform vec2 spline2;
+uniform vec4 spline2;
 #define spline_src_pivot            (spline1.x)
 #define spline_dst_pivot            (spline1.y)
 #define spline_slope                (spline1.z)
