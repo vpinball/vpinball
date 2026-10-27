@@ -59,6 +59,20 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
       const size_t est = EstimateGpuBytes(bitmap.get());
       m_managedBytes += static_cast<int64_t>(est) - static_cast<int64_t>(entry.gpuBytes[variant]);
       entry.gpuBytes[variant] = est;
+      entry.fullBytes[variant] = 0; // Now holds the full size content
+   }
+   else if (entry.fullBytes[variant] > 0 && m_statsFrame >= entry.upgradeRetryFrame)
+   {
+      // Degraded (downsized or fallback) under memory pressure: re-upload at full size once it fits below the
+      // eviction target, not just the cap, so that it does not immediately evict other textures
+      entry.upgradeRetryFrame = m_statsFrame + kUpgradeRetryFrames;
+      if (m_gpuMemBudget > 0 && ProjectedUse(static_cast<int64_t>(entry.fullBytes[variant]) - static_cast<int64_t>(entry.gpuBytes[variant])) <= (m_gpuMemBudget * kEvictTargetPct) / 100)
+      {
+         m_managedBytes -= static_cast<int64_t>(entry.gpuBytes[variant]);
+         m_pendingFree.emplace_back(m_statsFrame, static_cast<int64_t>(entry.gpuBytes[variant]));
+         entry.gpuBytes[variant] = 0;
+         sampler = CreateSampler(entry, variant, force_linear_rgb, memtex->GetRawBitmap(false, 0));
+      }
 #endif
    }
    return sampler;
@@ -151,13 +165,25 @@ void TextureManager::UnloadAll()
 #if defined(ENABLE_BGFX)
 #pragma region GPU memory budget management (BGFX only)
 
-size_t TextureManager::EstimateGpuBytes(const BaseTexture* tex)
+size_t TextureManager::EstimateGpuBytes(const BaseTexture* tex) const
 {
    if (tex == nullptr)
       return 0;
-   if (tex->m_compressed)
+   if (tex->m_compressed && m_rd.m_compressTextures) // Same condition as Sampler's precompressed upload
       return tex->m_compressed->data.size() + tex->m_compressed->GetMipSize(0); // Mip chain plus the no-mips alias
-   return (static_cast<size_t>(tex->pitch()) * tex->height() * 4) / 3; // Base level plus ~1/3 for the mip chain
+   // Bytes per texel of the GPU format (UncompressedBgfxFormat in Sampler.cpp), not of the bitmap: SRGB and SRGB565
+   // upload as RGBA8, RGB float as RGBA float, and RGB8 is padded to 4 bytes by most drivers
+   size_t texelBytes;
+   switch (tex->m_format)
+   {
+   case BaseTexture::BW: texelBytes = 1; break;
+   case BaseTexture::RGB_FP16:
+   case BaseTexture::RGBA_FP16: texelBytes = 8; break;
+   case BaseTexture::RGB_FP32:
+   case BaseTexture::RGBA_FP32: texelBytes = 16; break;
+   default: texelBytes = 4; break; // BW_FP32, RGB, SRGB, RGBA, SRGBA, SRGB565
+   }
+   return (texelBytes * tex->width() * tex->height() * 4) / 3; // Base level plus ~1/3 for the mip chain
 }
 
 void TextureManager::RefreshBudget()
@@ -168,21 +194,22 @@ void TextureManager::RefreshBudget()
    m_statsFrame = stats->gpuFrameNum;
    m_gpuMemBudget = stats->gpuMemoryMax;
    m_gpuMemUsed = stats->gpuMemoryUsed;
-   // gpuMemoryUsed covers the whole process: the share not owned by this manager (render targets,
-   // buffers, staging, ...) acts as a baseline for projected usage between stats updates
-   m_otherBytes = std::max<int64_t>(0, m_gpuMemUsed - m_managedBytes);
    // Destroyed samplers take a few frames before their memory is actually freed by the driver
    while (!m_pendingFree.empty() && m_statsFrame - m_pendingFree.front().first >= kFreeLatencyFrames)
       m_pendingFree.pop_front();
+   int64_t pendingFree = 0;
+   for (const auto& freed : m_pendingFree)
+      pendingFree += freed.second;
+   // gpuMemoryUsed covers the whole process: the share neither owned by this manager nor about to be freed
+   // (render targets, buffers, staging, ...) acts as a baseline for projected usage between stats updates
+   m_otherBytes = std::max<int64_t>(0, m_gpuMemUsed - m_managedBytes - pendingFree);
 }
 
 int64_t TextureManager::ProjectedUse(const int64_t added) const
 {
-   int64_t pendingFree = 0;
-   for (const auto& freed : m_pendingFree)
-      pendingFree += freed.second;
-   // Best of two estimates: the reported usage, which lags a few frames, or our own bookkeeping
-   return std::max(m_gpuMemUsed, m_otherBytes + m_managedBytes + pendingFree) + added;
+   // Evicted bytes leave m_managedBytes right away, so that eviction actually makes room. They are still resident
+   // for a few frames (kFreeLatencyFrames), a transient overshoot covered by the headroom above BudgetCap()
+   return m_otherBytes + m_managedBytes + added;
 }
 
 bool TextureManager::MakeRoom(const size_t needed)
@@ -217,6 +244,7 @@ bool TextureManager::MakeRoom(const size_t needed)
             m_managedBytes -= static_cast<int64_t>(entry.gpuBytes[v]);
             m_pendingFree.emplace_back(m_statsFrame, static_cast<int64_t>(entry.gpuBytes[v]));
             entry.gpuBytes[v] = 0;
+            entry.fullBytes[v] = 0;
             entry.dirty[v] = false;
          }
       // The entry stays registered: the texture is transparently re-uploaded on next use
@@ -229,15 +257,15 @@ std::shared_ptr<Sampler> TextureManager::CreateSampler(MapEntry& entry, const Sa
 {
    bitmap = m_rd.OrFallback(std::move(bitmap));
    size_t est = EstimateGpuBytes(bitmap.get());
+   entry.fullBytes[variant] = 0;
 
    if (!MakeRoom(est))
    {
-      // Out of budget even after evicting: try a downsized decode before degrading to the fallback
-      // texture. For file backed images (Texture), the declared dimensions allow requesting half
-      // size directly instead of decoding at full size then rescaling.
-      const Texture* image = dynamic_cast<const Texture*>(entry.tex);
-      const unsigned int halfDim
-         = std::max(image != nullptr ? std::max(image->m_width.load(), image->m_height.load()) : std::max(bitmap->width(), bitmap->height()), 2 * MIN_TEXTURE_SIZE) / 2;
+      // Out of budget even after evicting: try a downsized decode before degrading to the fallback texture.
+      // Half of the loaded size, not of the declared size, which is larger when capped by the max texture dimension setting
+      entry.fullBytes[variant] = est;
+      entry.upgradeRetryFrame = m_statsFrame + kUpgradeRetryFrames;
+      const unsigned int halfDim = std::max(std::max(bitmap->width(), bitmap->height()), 2 * MIN_TEXTURE_SIZE) / 2;
       if (std::shared_ptr<const BaseTexture> downsized = entry.tex->GetRawBitmap(true, halfDim);
          downsized != nullptr && (downsized->width() < bitmap->width() || downsized->height() < bitmap->height()) && MakeRoom(EstimateGpuBytes(downsized.get())))
       {

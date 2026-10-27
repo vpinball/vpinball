@@ -54,6 +54,8 @@ private:
       std::shared_ptr<const class BaseTexture> pendingUpload;
       uint32_t lastUsedFrame = 0; // Frame index of the last use, for LRU eviction
       size_t gpuBytes[VARIANT_COUNT] = { 0, 0 }; // Estimated resident bytes of each variant
+      size_t fullBytes[VARIANT_COUNT] = { 0, 0 }; // Estimated bytes at full size of a variant uploaded downsized or as fallback, 0 if not degraded
+      uint32_t upgradeRetryFrame = 0; // Frame index before which a degraded variant is not retried at full size
    };
    RenderDevice& m_rd;
    // Guards m_map, as loader threads register and upload textures while the main thread renders the loading UI.
@@ -76,12 +78,12 @@ private:
    // On backends that do not report a budget (OpenGL, Metal, WebGPU, D3D11 on non NVIDIA GPUs),
    // gpuMemoryMax stays <= 0 and uploads remain unmanaged as before.
 
-   static size_t EstimateGpuBytes(const BaseTexture* tex);
+   size_t EstimateGpuBytes(const BaseTexture* tex) const;
    std::shared_ptr<Sampler> CreateSampler(MapEntry& entry, SamplerVariant variant, bool force_linear_rgb, std::shared_ptr<const BaseTexture> bitmap);
 
    void RefreshBudget(); // Samples bgfx::getStats(), at most once per frame
    int64_t BudgetCap() const { return (m_gpuMemBudget * kBudgetCapPct) / 100; }
-   int64_t ProjectedUse(int64_t added) const; // Best effort estimate including stats lag and deferred frees
+   int64_t ProjectedUse(int64_t added) const; // Best effort estimate of the usage once deferred frees have reached the driver
    bool MakeRoom(size_t needed); // Evicts LRU samplers until 'needed' fits the budget cap
    void NotifyPressure();
 
@@ -89,10 +91,11 @@ private:
    static constexpr int kEvictTargetPct = 70; // Hysteresis: evict down to this share of the budget
    static constexpr uint32_t kEvictGraceFrames = 3; // Do not evict samplers used this recently
    static constexpr uint32_t kFreeLatencyFrames = 4; // Frames for a bgfx::destroy to reach the driver
+   static constexpr uint32_t kUpgradeRetryFrames = 60; // Delay between attempts to restore a degraded variant to full size
 
    int64_t m_gpuMemBudget = -1; // bgfx::Stats::gpuMemoryMax, <= 0 when unmanaged
    int64_t m_gpuMemUsed = -1; // bgfx::Stats::gpuMemoryUsed (whole process, including non texture memory)
-   int64_t m_otherBytes = 0; // gpuMemUsed share not owned by this manager (render targets, buffers, staging, ...)
+   int64_t m_otherBytes = 0; // gpuMemUsed share neither owned by this manager nor pending free (render targets, buffers, staging, ...)
    int64_t m_managedBytes = 0; // Estimated bytes held by the samplers this manager uploaded
    uint32_t m_statsFrame = 0; // Frame index of the last stats sample, also used as the LRU clock
    std::deque<std::pair<uint32_t, int64_t>> m_pendingFree; // Evicted bytes not yet freed by the driver (frame, bytes)
