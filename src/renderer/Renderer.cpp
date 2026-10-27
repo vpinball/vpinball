@@ -2034,6 +2034,8 @@ void Renderer::RenderMesh(const unsigned int renderMask, RenderMeshDesc& draw, c
             shader->SetBool(ShaderUniform::objectSpaceNormalMap, mat.objectSpaceNormalMap);
          }
          shader->SetMaterial(mat.material, mat.hasTextureAlpha);
+         if (mat.forceAlphaBlend)
+            m_renderDevice->EnableAlphaBlend(false);
       }
       m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, draw.transparent, draw.sortCenter, draw.depthBias, draw.mesh, draw.type, draw.startIndex,
          draw.indexCount != 0 ? draw.indexCount : (draw.mesh->m_ib ? draw.mesh->m_ib->m_count : 0));

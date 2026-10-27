@@ -46,6 +46,7 @@ struct VisualMaterial
    SamplerAddressMode clampU = SamplerAddressMode::SA_UNDEFINED;
    SamplerAddressMode clampV = SamplerAddressMode::SA_UNDEFINED;
    bool hasTextureAlpha = false;
+   bool forceAlphaBlend = false; // Force non-additive alpha blending after material setup (e.g. kicker hole)
 };
 
 // Definition of a (sub)mesh to render, with slots holding the editor UI variants that are lazily built by the renderer

@@ -751,6 +751,8 @@ void Surface::RenderSetup(Renderer *renderer)
       IBuffer->Unlock();
 
       m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), VBuffer, IBuffer, true);
+      m_sideIndices = std::move(sideIndices);
+      m_meshEdgeBuffer = nullptr;
    }
 
    m_d.m_heightbottom = oldBottomHeight;
@@ -789,46 +791,39 @@ void Surface::Render(const unsigned int renderMask)
 
    if (isUIPass)
    {
-      if (renderMask & Renderer::UI_FILL)
+      RenderMeshDesc side;
+      side.mesh = m_meshBuffer;
+      side.indexCount = m_numVertices * 6;
+      side.sortCenter = m_boundingSphereCenter;
+      side.uiEdgeMesh = &m_meshEdgeBuffer;
+      side.edgeMode = UIEdgeMode::Quads;
+      side.edgeTriIndices = m_sideIndices.data();
+      side.edgeTriCount = m_sideIndices.size();
+      side.edgeTriIndices16 = true;
+
+      if (m_d.m_sideVisible)
+         m_renderer->RenderMesh(renderMask, side, {});
+      if (m_d.m_topBottomVisible)
       {
-         if (m_d.m_sideVisible)
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
-         if (m_d.m_topBottomVisible)
-         {
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + 0, m_numPolys * 3);
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
-         }
-      }
-      if (renderMask & Renderer::UI_EDGES && (m_d.m_sideVisible || m_d.m_topBottomVisible))
-      {
-         if (m_meshEdgeBuffer == nullptr)
-         {
-            vector<unsigned int> indices(m_numVertices * 8);
-            for (unsigned int i = 0; i < m_numVertices; i++)
-            {
-               indices[i * 8 + 0] = i * 4;
-               indices[i * 8 + 1] = i * 4 + 1;
-               indices[i * 8 + 2] = i * 4 + 1;
-               indices[i * 8 + 3] = i * 4 + 2;
-               indices[i * 8 + 4] = i * 4 + 2;
-               indices[i * 8 + 5] = i * 4 + 3;
-               indices[i * 8 + 6] = i * 4 + 3;
-               indices[i * 8 + 7] = i * 4;
-            }
-            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
-         }
-         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 8);
+         RenderMeshDesc topBottom;
+         topBottom.mesh = m_meshBuffer;
+         topBottom.startIndex = m_numVertices * 6;
+         topBottom.indexCount = m_numPolys * 3;
+         topBottom.sortCenter = m_boundingSphereCenter;
+         m_renderer->RenderMesh(renderMask, topBottom, {});
+         topBottom.startIndex = m_numVertices * 6 + m_numPolys * 3 * 2;
+         m_renderer->RenderMesh(renderMask, topBottom, {});
       }
    }
    else if (!m_isDropped || StaticRendering())
    {
-      RenderWallsAtHeight(false, isReflectionPass);
+      RenderWallsAtHeight(false, renderMask);
    }
    else if (!m_d.m_flipbook)
    {
       // if this wall is part of flipbook animation, do not render when dropped
       // Render wall dropped (smashed to a pancake at bottom height).
-      RenderWallsAtHeight(true, isReflectionPass);
+      RenderWallsAtHeight(true, renderMask);
    }
 }
 
@@ -871,12 +866,19 @@ void Surface::RenderSlingshots()
 
    m_renderer->m_renderDevice->ResetRenderState();
    m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szSlingShotMaterial), nullptr);
-   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<uint32_t>(m_vlinesling.size() * 24));
+   RenderMeshDesc sling;
+   sling.mesh = m_slingshotMeshBuffer;
+   sling.indexCount = static_cast<uint32_t>(m_vlinesling.size() * 24);
+   sling.sortCenter = m_boundingSphereCenter;
+   sling.transparent = m_isDynamic;
+   VisualMaterial material;
+   material.material = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
+   m_renderer->RenderMesh(m_renderer->m_render_mask, sling, material);
 }
 
-void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
+void Surface::RenderWallsAtHeight(const bool drop, const unsigned int renderMask)
 {
+   const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    if (isReflectionPass && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
@@ -886,31 +888,51 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
    if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
    {
       const Material *const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
+      Texture *const pin = m_ptable->GetImage(m_d.m_szSideImage);
       m_renderer->m_renderDevice->ResetRenderState();
       if ((mat->m_bOpacityActive || !m_isDynamic) || (m_d.m_topBottomVisible && m_isDynamic))
          m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szSideImage));
+      RenderMeshDesc side;
+      side.mesh = m_meshBuffer;
+      side.indexCount = m_numVertices * 6;
+      side.sortCenter = m_boundingSphereCenter;
+      side.transparent = m_isDynamic;
+      VisualMaterial material;
+      material.material = mat;
+      material.image = pin;
+      material.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
       // combine drawcalls into one (hopefully faster)
-      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
+      m_renderer->RenderMesh(renderMask, side, material);
    }
 
    // render top&bottom
    if (m_d.m_topBottomVisible && (m_numPolys > 0))
    {
       const Material *const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
       m_renderer->m_renderDevice->ResetRenderState();
       if (mat->m_bOpacityActive || !m_isDynamic)
          m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
+      RenderMeshDesc topBottom;
+      topBottom.mesh = m_meshBuffer;
+      topBottom.startIndex = m_numVertices * 6 + (drop ? m_numPolys * 3 : 0);
+      topBottom.indexCount = m_numPolys * 3;
+      topBottom.sortCenter = m_boundingSphereCenter;
+      topBottom.transparent = m_isDynamic;
+      VisualMaterial material;
+      material.material = mat;
+      material.image = pin;
+      material.hasTextureAlpha = pin != nullptr && !pin->IsOpaque();
 
       // Top
-      m_renderer->m_renderDevice->DrawMesh(
-         m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
+      m_renderer->RenderMesh(renderMask, topBottom, material);
 
       // Only render Bottom for Reflections
       if (isReflectionPass)
-         m_renderer->m_renderDevice->DrawMesh(
-            m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
+      {
+         topBottom.startIndex = m_numVertices * 6 + (m_numPolys * 3 * 2);
+         m_renderer->RenderMesh(renderMask, topBottom, material);
+      }
    }
 
    m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);

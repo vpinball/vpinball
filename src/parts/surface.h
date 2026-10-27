@@ -116,7 +116,7 @@ public:
 
 protected:
    void RenderSlingshots();
-   void RenderWallsAtHeight(const bool drop, const bool isReflectionPass);
+   void RenderWallsAtHeight(const bool drop, const unsigned int renderMask);
 
    Renderer *m_renderer = nullptr;
 
@@ -176,6 +176,7 @@ private:
    std::shared_ptr<MeshBuffer> m_slingshotMeshBuffer;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
    std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
+   vector<WORD> m_sideIndices; // Side wall triangle indices (pairs of triangles per polygon quad), used for UI edge rendering
 
    bool m_isWall = true;
    bool m_isDynamic = false;
