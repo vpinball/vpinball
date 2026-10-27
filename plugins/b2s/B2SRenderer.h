@@ -60,8 +60,8 @@ private:
    PinballPlugin::ResURIResolver m_resURIResolver;
    vector<std::unique_ptr<DMDOverlay::Renderer>> m_dmdOverlays; // One per <DMD> display of the edited document, by document index
 
-   std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick;
-   std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;
+   std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick = std::chrono::steady_clock::now();
+   std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick = std::chrono::steady_clock::now();
 
    B2SAnimation* m_lastRandomAnimation = nullptr; // Last animation started through a random trigger
 

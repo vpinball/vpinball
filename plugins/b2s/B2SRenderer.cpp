@@ -823,7 +823,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
 
    // Update animations
    auto now = std::chrono::steady_clock::now();
-   float elapsed = static_cast<float>(static_cast<double>((now - m_lastBackglassRenderTick).count()) / 1000000000.0);
+   float elapsed = std::min(1.f, static_cast<float>(static_cast<double>((now - m_lastBackglassRenderTick).count()) / 1000000000.0));
    m_lastBackglassRenderTick = now;
    const B2SDualMode dualMode = ActiveDualMode();
    DispatchScriptTriggers(server);
@@ -889,7 +889,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 
    // Update animations
    auto now = std::chrono::steady_clock::now();
-   float elapsed = static_cast<float>(static_cast<double>((now - m_lastDmdRenderTick).count()) / 1000000000.0);
+   float elapsed = std::min(1.f, static_cast<float>(static_cast<double>((now - m_lastDmdRenderTick).count()) / 1000000000.0));
    m_lastDmdRenderTick = now;
    DispatchScriptTriggers(server);
    UpdateAnimations(m_b2s->m_dmdAnimations, elapsed, server, ActiveDualMode());
