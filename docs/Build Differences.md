@@ -10,7 +10,7 @@ Beside the graphic backend flavor, VPX is provided as:
 
 ## BGFX
 This build was introduced with version 10.8.1. It uses the BGFX library to run VPX using the latest graphic backends like Vulkan, Metal, DirectX 11, latest OpenGL & OpenGL ES.
-It is the most up-to-date, feature complete and actively developped flavor. This is the flavor that should be used in almost all situations.
+It is the most up-to-date, feature complete and actively developed flavor. This is the flavor that should be used in almost all situations.
 
 The following features are offered by the BGFX version:
 - Virtual and Augmented Reality support (via OpenXR),
@@ -27,7 +27,7 @@ This flavor is available as a window player/editor application and as a standalo
 ## DirectX 9
 This is the original flavor of VPX which has been developed during the last 20+ years.
 
-It runs on all Windows builds starting from Windows 7 (building with older VC++ for XP may still be possible) and is the reference build. Nowadays, it is only used as a reference build to ensure improvments are backward compatible but it should not be used anymore as if has a limited feature set and is largely deprecated (DirectX 9 was replaced by DirectX 10 in 2006).
+It runs on all Windows builds starting from Windows 7 (building with older VC++ for XP may still be possible) and is the reference build. Nowadays, it is only used as a reference build to ensure improvements are backward compatible but it should not be used anymore as if has a limited feature set and is largely deprecated (DirectX 9 was replaced by DirectX 10 in 2006).
 
 This flavor is only available as a window player/editor application.
 

@@ -49,7 +49,7 @@ In any case, always make sure to match the conditions in VPX's [licensing model]
 
 Each pull request should contain a single, self-contained change. Avoid bundling multiple unrelated changes in the
 same PR. Also, make sure to avoid any unnecessary formatting or line-ending changes (i.e. anything that does not fall
-under the areas of source that you absoluetly need to touch).
+under the areas of source that you absolutely need to touch).
 
 As a rule of thumb: if your pull request could be split into two without breaking anything, it probably should be
 two separate pull requests.
