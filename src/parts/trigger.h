@@ -140,6 +140,7 @@ private:
    // Valid through RenderSetup/RenderRelease
    Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
+   std::shared_ptr<MeshBuffer> m_meshEdgeBuffer; // Editor wireframe, built on demand
    std::unique_ptr<std::vector<Vertex3D_NoTex2>> m_triggerVertices;
    TriggerShape m_meshShape = TriggerNone;
    Vertex3Ds m_boundingSphereCenter;

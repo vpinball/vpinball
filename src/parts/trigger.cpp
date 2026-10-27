@@ -247,6 +247,7 @@ void Trigger::RenderSetup(Renderer *renderer)
 void Trigger::UpdateMesh()
 {
    m_meshBuffer = nullptr;
+   m_meshEdgeBuffer = nullptr;
    m_triggerVertices = nullptr;
    m_meshShape = m_d.m_shape;
 
@@ -271,6 +272,7 @@ void Trigger::RenderRelease()
    assert(m_renderer != nullptr);
    m_renderer = nullptr;
    m_meshBuffer = nullptr;
+   m_meshEdgeBuffer = nullptr;
    m_triggerVertices = nullptr;
 }
 
@@ -362,6 +364,13 @@ void Trigger::Render(const unsigned int renderMask)
    body.mesh = m_meshBuffer;
    body.sortCenter = m_boundingSphereCenter;
    body.transform = &translate;
+   const StaticMeshData meshData = SetupMeshData(m_meshShape);
+   body.uiEdgeMesh = &m_meshEdgeBuffer;
+   body.edgeMode = UIEdgeMode::Outline;
+   body.edgeTriIndices = meshData.indices.data();
+   body.edgeTriCount = meshData.indices.size();
+   body.edgeTriIndices16 = true;
+   body.edgeVertices = m_triggerVertices->data();
 
    const bool isUIPass = renderMask & (Renderer::UI_EDGES | Renderer::UI_FILL);
    VisualMaterial material;
