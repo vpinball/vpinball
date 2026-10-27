@@ -15,7 +15,7 @@ namespace PinMAME {
 class Game final
 {
 public:
-   Game(Controller* pController, const PinmameGame& pinmameGame, GameSettings* pSettings)
+   Game(Controller* pController, const PinmameGame& pinmameGame, GameSettings* pSettings, Roms* pRoms)
       : m_pController(pController)
       , m_settings(pSettings)
       , m_isSupported(true)
@@ -24,11 +24,13 @@ public:
       m_settings->AddRef();
       memcpy(&m_pinmameGame, &pinmameGame, sizeof(PinmameGame));
       m_name = m_pinmameGame.name;
-      m_roms = new Roms(m_name);
+      m_roms = pRoms ? pRoms : new Roms(m_name);
+      if (pRoms)
+         m_roms->AddRef();
    }
    // Placeholder for a name PinMAME doesn't know (e.g. a custom cGameName): VPinMAME never returns Nothing
    // from Games(name), so scripts commonly write its settings before the game is resolved
-   Game(Controller* pController, const string& name, GameSettings* pSettings)
+   Game(Controller* pController, const string& name, GameSettings* pSettings, Roms* pRoms)
       : m_pController(pController)
       , m_settings(pSettings)
       , m_name(name)
@@ -38,7 +40,9 @@ public:
       memset(&m_pinmameGame, 0, sizeof(PinmameGame));
       m_pinmameGame.name = m_name.c_str();
       m_pinmameGame.clone_of = m_pinmameGame.description = m_pinmameGame.year = m_pinmameGame.manufacturer = "";
-      m_roms = new Roms(m_name);
+      m_roms = pRoms ? pRoms : new Roms(m_name);
+      if (pRoms)
+         m_roms->AddRef();
    }
    ~Game()
    {

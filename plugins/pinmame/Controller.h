@@ -13,6 +13,7 @@ namespace PinMAME {
 
 class Game;
 class GameSettings;
+class Roms;
 class Settings;
 
 class Controller final
@@ -167,6 +168,7 @@ private:
    string m_szGameName; // Requested game name (may be an alias registered through alias.txt)
    string m_szRomName; // Resolved driver name
    mutable std::unordered_map<string, GameSettings*> m_gameSettings; // shared per game so settings survive repeated Games(name) accesses
+   mutable std::unordered_map<string, Roms*> m_gameRoms; // shared per game so the ROM audit state survives repeated Games(name) accesses
    Settings* m_settings = nullptr;
    PinmameConfig m_pinmameConfig;
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;
