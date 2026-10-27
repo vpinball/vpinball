@@ -44,14 +44,7 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Type"s, vector<string> { "Flat"s, "4 Wires"s, "2 Wires"s, "3 Wires Left"s, "3 Wires Right"s, "1 Wire"s }, //
          [](const Ramp* ramp) { return static_cast<int>(ramp->m_d.m_type); }, //
          [](Ramp* ramp, int v) { ramp->m_d.m_type = static_cast<RampType>(v); });
-      props.ImageCombo<Ramp>(
-         m_part, "Image"s, //
-         [](const Ramp* ramp) { return ramp->m_d.m_szImage; }, //
-         [](Ramp* ramp, const string& v) { ramp->m_d.m_szImage = v; });
-      props.MaterialCombo<Ramp>(
-         m_part, "Material"s, //
-         [](const Ramp* ramp) { return ramp->m_d.m_szMaterial; }, //
-         [](Ramp* ramp, const string& v) { ramp->m_d.m_szMaterial = v; });
+      props.MaterialVisuals(m_part, "Material"s, &Data::m_szMaterial, "Image"s, &Data::m_szImage);
       props.Combo<Ramp>(
          m_part, "Image Mode"s, vector { "World"s, "Wrap"s }, //
          [](const Ramp* ramp) { return static_cast<int>(ramp->m_d.m_imagealignment); }, //

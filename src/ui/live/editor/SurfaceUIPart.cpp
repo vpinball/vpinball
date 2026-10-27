@@ -50,31 +50,13 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Top Visible"s, //
          [this](const Surface* surf) { return GetVisibility(surf, &Data::m_topBottomVisible); }, //
          [this](Surface* surf, bool v) { SetVisibility(surf, v, &Data::m_topBottomVisible); });
-      props.ImageCombo<Surface>(
-         m_part, "Top Image"s, //
-         [](const Surface* surf) { return surf->m_d.m_szImage; }, //
-         [](Surface* surf, const string& v) { surf->m_d.m_szImage = v; });
-      props.Checkbox<Surface>(
-         m_part, "Show in Editor"s, //
-         [](const Surface* surf) { return surf->m_d.m_displayTexture; }, //
-         [](Surface* surf, bool v) { surf->m_d.m_displayTexture = v; });
-      props.MaterialCombo<Surface>(
-         m_part, "Top Material"s, //
-         [](const Surface* surf) { return surf->m_d.m_szTopMaterial; }, //
-         [](Surface* surf, const string& v) { surf->m_d.m_szTopMaterial = v; });
+      props.MaterialVisuals(m_part, "Top Material"s, &Data::m_szTopMaterial, "Top Image"s, &Data::m_szImage, &Data::m_displayTexture);
 
       props.Checkbox<Surface>(
          m_part, "Side Visible"s, //
          [this](const Surface* surf) { return GetVisibility(surf, &Data::m_sideVisible); }, //
          [this](Surface* surf, bool v) { SetVisibility(surf, v, &Data::m_sideVisible); });
-      props.ImageCombo<Surface>(
-         m_part, "Side Image"s, //
-         [](const Surface* surf) { return surf->m_d.m_szSideImage; }, //
-         [](Surface* surf, const string& v) { surf->m_d.m_szSideImage = v; });
-      props.MaterialCombo<Surface>(
-         m_part, "Side Material"s, //
-         [](const Surface* surf) { return surf->m_d.m_szSideMaterial; }, //
-         [](Surface* surf, const string& v) { surf->m_d.m_szSideMaterial = v; });
+      props.MaterialVisuals(m_part, "Side Material"s, &Data::m_szSideMaterial, "Side Image"s, &Data::m_szSideImage);
       props.MaterialCombo<Surface>(
          m_part, "Slingshot Material"s, //
          [](const Surface* surf) { return surf->m_d.m_szSlingShotMaterial; }, //

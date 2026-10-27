@@ -45,14 +45,7 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
             "Drop Target Flat Simple"s, "Hit Fat Target Slim"s, "Hit Target Slim"s }, //
          [](const HitTarget* hitTarget) { return static_cast<int>(hitTarget->m_d.m_targetType) - 1; }, //
          [](HitTarget* hitTarget, int v) { hitTarget->m_d.m_targetType = static_cast<TargetType>(v + 1); });
-      props.ImageCombo<HitTarget>(
-         m_part, "Image"s, //
-         [](const HitTarget* hitTarget) { return hitTarget->m_d.m_szImage; }, //
-         [](HitTarget* hitTarget, const string& v) { hitTarget->m_d.m_szImage = v; });
-      props.MaterialCombo<HitTarget>(
-         m_part, "Material"s, //
-         [](const HitTarget* hitTarget) { return hitTarget->m_d.m_szMaterial; }, //
-         [](HitTarget* hitTarget, const string& v) { hitTarget->m_d.m_szMaterial = v; });
+      props.MaterialVisuals(m_part, "Material"s, &Data::m_szMaterial, "Image"s, &Data::m_szImage);
       props.InputFloat<HitTarget>(
          m_part, "Drop Speed"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_dropSpeed; }, //

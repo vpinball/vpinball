@@ -37,18 +37,8 @@ void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Visuals"s))
    {
-      props.ImageCombo<Flipper>(
-         m_part, "Image"s, //
-         [](const Flipper* flipper) { return flipper->m_d.m_szImage; }, //
-         [](Flipper* flipper, const string& v) { flipper->m_d.m_szImage = v; });
-      props.MaterialCombo<Flipper>(
-         m_part, "Material"s, //
-         [](const Flipper* flipper) { return flipper->m_d.m_szMaterial; }, //
-         [](Flipper* flipper, const string& v) { flipper->m_d.m_szMaterial = v; });
-      props.MaterialCombo<Flipper>(
-         m_part, "Rubber Material"s, //
-         [](const Flipper* flipper) { return flipper->m_d.m_szRubberMaterial; }, //
-         [](Flipper* flipper, const string& v) { flipper->m_d.m_szRubberMaterial = v; });
+      props.MaterialVisuals(m_part, "Material"s, &Data::m_szMaterial);
+      props.MaterialVisuals(m_part, "Rubber Material"s, &Data::m_szRubberMaterial, "Image"s, &Data::m_szImage);
       props.InputFloat<Flipper>(
          m_part, "Rubber Thickness"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_rubberthickness; }, //
