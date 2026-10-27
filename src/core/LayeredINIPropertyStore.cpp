@@ -138,6 +138,8 @@ void LayeredINIPropertyStore::Save()
    for (id.index = 0; id.index < m_intValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
+      if (!m_parent && prop->m_groupId == "TableOption"s)
+         continue;
       if (m_intValues[id.index].defined)
       {
          if (m_parent && !prop->m_contextualProperty && m_intValues[id.index].value == m_parent->get().GetInt(id))
@@ -157,6 +159,8 @@ void LayeredINIPropertyStore::Save()
    for (id.index = 0; id.index < m_floatValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
+      if (!m_parent && prop->m_groupId == "TableOption"s)
+         continue;
       if (m_floatValues[id.index].defined)
       {
          if (m_parent && !prop->m_contextualProperty && m_floatValues[id.index].value == m_parent->get().GetFloat(id))
@@ -176,6 +180,8 @@ void LayeredINIPropertyStore::Save()
    for (id.index = 0; id.index < m_stringValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
+      if (!m_parent && prop->m_groupId == "TableOption"s)
+         continue;
       if (m_stringValues[id.index].defined)
       {
          if (m_parent && !prop->m_contextualProperty && m_stringValues[id.index].value == m_parent->get().GetString(id))
