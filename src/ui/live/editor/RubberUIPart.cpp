@@ -33,14 +33,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Visuals"s))
    {
-      props.ImageCombo<Rubber>(
-         m_part, "Image"s, //
-         [](const Rubber* rubber) { return rubber->m_d.m_szImage; }, //
-         [](Rubber* rubber, const string& v) { rubber->m_d.m_szImage = v; });
-      props.MaterialCombo<Rubber>(
-         m_part, "Material"s, //
-         [](const Rubber* rubber) { return rubber->m_d.m_szMaterial; }, //
-         [](Rubber* rubber, const string& v) { rubber->m_d.m_szMaterial = v; });
+      props.MaterialVisuals(m_part, "Material"s, &Data::m_szMaterial, "Image"s, &Data::m_szImage);
       props.Checkbox<Rubber>(
          m_part, "Static Rendering"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_staticRendering; }, //

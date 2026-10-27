@@ -40,14 +40,7 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Visible"s, //
          [this](const Spinner* spinner) { return GetVisibility(spinner); }, //
          [this](Spinner* spinner, bool v) { SetVisibility(spinner, v); });
-      props.ImageCombo<Spinner>(
-         m_part, "Image"s, //
-         [](const Spinner* spinner) { return spinner->m_d.m_szImage; }, //
-         [](Spinner* spinner, const string& v) { spinner->m_d.m_szImage = v; });
-      props.MaterialCombo<Spinner>(
-         m_part, "Material"s, //
-         [](const Spinner* spinner) { return spinner->m_d.m_szMaterial; }, //
-         [](Spinner* spinner, const string& v) { spinner->m_d.m_szMaterial = v; });
+      props.MaterialVisuals(m_part, "Material"s, &Data::m_szMaterial, "Image"s, &Data::m_szImage);
       props.Checkbox<Spinner>(
          m_part, "Show Bracket"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_showBracket; }, //

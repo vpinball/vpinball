@@ -154,22 +154,29 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
    if (props.BeginSection("Visuals"s))
    {
       props.Separator("Playfield"s);
-      props.ImageCombo<PinTable>(
-         table, "Image"s, //
-         [](const PinTable *table) { return table->m_image; }, //
-         [](PinTable *table, const string &v) { table->m_image = v; });
       props.MaterialCombo<PinTable>(
          table, "Material"s, //
          [](const PinTable *table) { return table->m_playfieldMaterial; }, //
          [](PinTable *table, const string &v) { table->m_playfieldMaterial = v; });
+      props.ImageCombo<PinTable>(
+         table, "Image"s, //
+         [](const PinTable *table) { return table->m_image; }, //
+         [](PinTable *table, const string &v) { table->m_image = v; });
+      ImGui::BeginDisabled(table->m_image.empty());
+      props.Checkbox<PinTable>(
+         table, "Show in Editor"s, //
+         [](const PinTable *table) { return table->m_winEditorBackdrop; }, //
+         [](PinTable *table, bool v)
+         {
+            table->m_winEditorBackdrop = v;
+            if (g_pplayer->m_implicitPlayfieldMesh)
+               g_pplayer->m_implicitPlayfieldMesh->m_d.m_displayTexture = v;
+         });
+      ImGui::EndDisabled();
       props.InputInt<PinTable>(
          table, "Reflection Strength"s, //
          [](const PinTable *table) { return table->GetPlayfieldReflectionStrength(); }, //
          [](PinTable *table, int v) { table->SetPlayfieldReflectionStrength(v); });
-      props.Checkbox<PinTable>(
-         table, "Display Backdrop"s, //
-         [](const PinTable *table) { return table->m_winEditorBackdrop; }, //
-         [](PinTable *table, bool v) { table->m_winEditorBackdrop = v; });
 
       props.Separator("Ball"s);
       props.ImageCombo<PinTable>(

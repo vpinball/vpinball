@@ -14,6 +14,9 @@
 namespace VPX::EditorUI
 {
 
+// Resolves to a part's data class (the type of its m_d member); member pointers to fields declared on a data class base also convert
+template <class T> using PartData = std::remove_cv_t<std::remove_reference_t<decltype(std::declval<T&>().m_d)>>;
+
 class PropertyPane final
 {
 public:
@@ -62,6 +65,41 @@ public:
    template <class T> void Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
    template <class T> void ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   // Emits the shared material block: material combo, optional image, optional "Show in Editor" (disabled when the part has
+   // no image), optional normal map and "Object Space" toggle (disabled when the part has no normal map)
+   template <class T>
+   void MaterialVisuals(T* obj, const string& materialLabel, const std::function<string(const T*)>& materialGet, const std::function<void(T*, const string&)>& materialSet,
+      const string& imageLabel, const std::function<string(const T*)>& imageGet, const std::function<void(T*, const string&)>& imageSet, bool PartData<T>::* showInEditor = nullptr,
+      string PartData<T>::* normalMap = nullptr, bool PartData<T>::* objectSpace = nullptr)
+   {
+      if (materialGet && materialSet)
+         MaterialCombo<T>(obj, materialLabel, materialGet, materialSet);
+      if (imageGet && imageSet)
+         ImageCombo<T>(obj, imageLabel, imageGet, imageSet);
+      if (showInEditor != nullptr)
+      {
+         ImGui::BeginDisabled(imageGet && imageGet(obj).empty());
+         Checkbox<T>(obj, "Show in Editor"s, [showInEditor](const T* o) { return o->m_d.*showInEditor; }, [showInEditor](T* o, bool v) { o->m_d.*showInEditor = v; });
+         ImGui::EndDisabled();
+      }
+      if (normalMap != nullptr)
+         ImageCombo<T>(obj, "Normal Map"s, [normalMap](const T* o) { return o->m_d.*normalMap; }, [normalMap](T* o, const string& v) { o->m_d.*normalMap = v; });
+      if (objectSpace != nullptr)
+      {
+         ImGui::BeginDisabled(normalMap == nullptr || (obj->m_d.*normalMap).empty());
+         Checkbox<T>(obj, "Object Space"s, [objectSpace](const T* o) { return o->m_d.*objectSpace; }, [objectSpace](T* o, bool v) { o->m_d.*objectSpace = v; });
+         ImGui::EndDisabled();
+      }
+   }
+   template <class T>
+   void MaterialVisuals(T* obj, const string& materialLabel, string PartData<T>::* material, const string& imageLabel = {}, string PartData<T>::* image = nullptr,
+      bool PartData<T>::* showInEditor = nullptr, string PartData<T>::* normalMap = nullptr, bool PartData<T>::* objectSpace = nullptr)
+   {
+      MaterialVisuals<T>(obj, materialLabel, material != nullptr ? std::function<string(const T*)>([material](const T* o) { return o->m_d.*material; }) : nullptr,
+         material != nullptr ? std::function<void(T*, const string&)>([material](T* o, const string& v) { o->m_d.*material = v; }) : nullptr, imageLabel,
+         image != nullptr ? std::function<string(const T*)>([image](const T* o) { return o->m_d.*image; }) : nullptr,
+         image != nullptr ? std::function<void(T*, const string&)>([image](T* o, const string& v) { o->m_d.*image = v; }) : nullptr, showInEditor, normalMap, objectSpace);
+   }
    template <class T> void SurfaceCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void LightmapCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void RenderProbeCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);

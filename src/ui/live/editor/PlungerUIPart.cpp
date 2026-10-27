@@ -50,14 +50,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Type"s, vector<string> { "Modern"s, "Flat"s, "Custom"s }, //
          [](const Plunger* plunger) { return static_cast<int>(plunger->m_d.m_type) - 1; }, //
          [](Plunger* plunger, int v) { plunger->m_d.m_type = static_cast<PlungerType>(v + 1); });
-      props.MaterialCombo<Plunger>(
-         m_part, "Material"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_szMaterial; }, //
-         [](Plunger* plunger, const string& v) { plunger->m_d.m_szMaterial = v; });
-      props.ImageCombo<Plunger>(
-         m_part, "Image"s, //
-         [](const Plunger* plunger) { return plunger->m_d.m_szImage; }, //
-         [](Plunger* plunger, const string& v) { plunger->m_d.m_szImage = v; });
+      props.MaterialVisuals(m_part, "Material"s, &Data::m_szMaterial, "Image"s, &Data::m_szImage);
       props.InputFloat<Plunger>(
          m_part, "Half Width"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_width; }, //

@@ -219,26 +219,34 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Primitive* primitive, const string& v) { primitive->m_d.m_stateSrcLink = v; }, ResURIKind::State, DisplayFamily::Any, -1, false, -1);
 
       props.Separator("Material"s);
-      props.MaterialCombo<Primitive>(
-         m_part, "Material"s, //
-         [](const Primitive* primitive) { return primitive->m_d.m_szMaterial; }, //
-         [](Primitive* primitive, const string& v) { primitive->m_d.m_szMaterial = v; });
-      props.ImageCombo<Primitive>(
-         m_part, "Image"s, //
-         [](const Primitive* primitive) { return primitive->m_d.m_szImage; }, //
-         [](Primitive* primitive, const string& v) { primitive->m_d.m_szImage = v; });
-      props.Checkbox<Primitive>(
-         m_part, "Show in Editor"s, //
-         [](const Primitive* primitive) { return primitive->m_d.m_displayTexture; }, //
-         [](Primitive* primitive, bool v) { primitive->m_d.m_displayTexture = v; });
-      props.ImageCombo<Primitive>(
-         m_part, "Normal Map"s, //
-         [](const Primitive* primitive) { return primitive->m_d.m_szNormalMap; }, //
-         [](Primitive* primitive, const string& v) { primitive->m_d.m_szNormalMap = v; });
-      props.Checkbox<Primitive>(
-         m_part, "Object Space NM"s, //
-         [](const Primitive* primitive) { return primitive->m_d.m_objectSpaceNormalMap; }, //
-         [](Primitive* primitive, bool v) { primitive->m_d.m_objectSpaceNormalMap = v; });
+      if (props.GetEditedPart<Primitive>(m_part)->IsPlayfield())
+      {
+         // The playfield mesh's material and image are overridden by the table's playfield definition
+         props.MaterialCombo<Primitive>(
+            m_part, "Material"s, //
+            [](const Primitive* primitive) { return primitive->m_ptable->m_playfieldMaterial; }, //
+            [](Primitive* primitive, const string& v) { primitive->m_ptable->m_playfieldMaterial = v; });
+         props.ImageCombo<Primitive>(
+            m_part, "Image"s, //
+            [](const Primitive* primitive) { return primitive->m_ptable->m_image; }, //
+            [](Primitive* primitive, const string& v) { primitive->m_ptable->m_image = v; });
+         ImGui::BeginDisabled(m_part->m_ptable->m_image.empty());
+         props.Checkbox<Primitive>(
+            m_part, "Show in Editor"s, //
+            [](const Primitive* primitive) { return primitive->m_ptable->m_winEditorBackdrop; }, //
+            [](Primitive* primitive, bool v)
+            {
+               primitive->m_ptable->m_winEditorBackdrop = v;
+               primitive->m_d.m_displayTexture = v;
+            });
+         ImGui::EndDisabled();
+         // The implicit playfield mesh does not support normal mapping
+         ImGui::BeginDisabled(m_part == g_pplayer->m_implicitPlayfieldMesh);
+         props.MaterialVisuals(m_part, {}, nullptr, {}, nullptr, nullptr, &Data::m_szNormalMap, &Data::m_objectSpaceNormalMap);
+         ImGui::EndDisabled();
+      }
+      else
+         props.MaterialVisuals(m_part, "Material"s, &Data::m_szMaterial, "Image"s, &Data::m_szImage, &Data::m_displayTexture, &Data::m_szNormalMap, &Data::m_objectSpaceNormalMap);
       props.InputFloat<Primitive>(
          m_part, "Disable Spot Lights"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_disableLightingTop; }, //
@@ -263,8 +271,15 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szReflectionProbe = v; });
       props.InputFloat<Primitive>(
          m_part, "Reflection Strength"s, //
-         [](const Primitive* primitive) { return primitive->m_d.m_reflectionStrength; }, //
-         [](Primitive* primitive, float v) { primitive->m_d.m_reflectionStrength = v; }, PropertyPane::Unit::None, 3);
+         [](const Primitive* primitive) { return primitive->IsPlayfield() ? primitive->m_ptable->m_playfieldReflectionStrength : primitive->m_d.m_reflectionStrength; }, //
+         [](Primitive* primitive, float v)
+         {
+            if (primitive->IsPlayfield())
+               primitive->m_ptable->m_playfieldReflectionStrength = v;
+            else
+               primitive->m_d.m_reflectionStrength = v;
+         },
+         PropertyPane::Unit::None, 3);
 
       props.Separator("Refractions"s);
       props.RenderProbeCombo<Primitive>(
