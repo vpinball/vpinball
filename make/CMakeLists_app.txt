@@ -620,8 +620,8 @@ elseif(PLATFORM STREQUAL "linux")
          -Wno-shorten-64-to-32>
       $<$<CXX_COMPILER_ID:GNU>:
          -ffast-math
-         -ffp-contract=off
-         -Wno-changes-meaning>
+         -ffp-contract=off>
+      $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-changes-meaning>
       $<$<STREQUAL:${ARCH},x64>:-mssse3>
    )
 
@@ -769,8 +769,8 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
          -Wno-shorten-64-to-32>
       $<$<CXX_COMPILER_ID:GNU>:
          -ffast-math
-         -ffp-contract=off
-         -Wno-changes-meaning>
+         -ffp-contract=off>
+      $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-changes-meaning>
    )
 
    set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/${PLATFORM}-${ARCH}")
