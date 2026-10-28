@@ -1319,6 +1319,7 @@ void Flasher::Render(const unsigned int renderMask)
                break;
          break;
       }
+      }
 
 
    if (m_desktopBackdrop)
