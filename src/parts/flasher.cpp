@@ -297,6 +297,8 @@ void Flasher::Load(IObjectReader& reader)
          return true;
       });
    m_inPlayState = m_d.m_isVisible;
+   if (m_d.m_renderMode == FlasherData::EXT_RENDER)
+      m_d.m_renderStyle = clamp(m_d.m_renderStyle, (int)VPXWindowId::VPXWINDOW_Backglass, (int)VPXWindowId::VPXWINDOW_Topper);
 }
 
 STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
@@ -1263,57 +1265,58 @@ void Flasher::Render(const unsigned int renderMask)
          break;
 
       case FlasherData::EXT_RENDER:
-         if (m_d.m_renderStyle >= VPXWindowId::VPXWINDOW_Backglass && m_d.m_renderStyle <= VPXWindowId::VPXWINDOW_Topper)
+      {
+         // Render style is the window to embed (Playfield can not be embedded), which we repair as needed as it
+         // can end up out of range when the render mode is changed without touching the render style
+         const int wndId = clamp(m_d.m_renderStyle, (int)VPXWindowId::VPXWINDOW_Backglass, (int)VPXWindowId::VPXWINDOW_Topper);
+         const float width = m_curve.GetMaxBound().x - m_curve.GetMinBound().x;
+         const float height = m_curve.GetMaxBound().y - m_curve.GetMinBound().y;
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+         // Draw a solid black background using the common flasher mesh and transform
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_renderer->m_renderDevice->m_basicShader->SetTechnique(ShaderTechnique::unshaded_without_texture);
+         m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
+         m_renderer->m_renderDevice->DrawMesh(
+            m_renderer->m_renderDevice->m_basicShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+         // Vertices are emitted in (0,0) -> (1,1). We must scale & rotate around center then translate to fit flasher's position
+         Matrix3D transform;
+         VPXRenderContext2D *context;
+         if (m_desktopBackdrop)
          {
-            const float width = m_curve.GetMaxBound().x - m_curve.GetMinBound().x;
-            const float height = m_curve.GetMaxBound().y - m_curve.GetMinBound().y;
-            m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-            // Draw a solid black background using the common flasher mesh and transform
-            m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-            m_renderer->m_renderDevice->m_basicShader->SetTechnique(ShaderTechnique::unshaded_without_texture);
-            m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
-            m_renderer->m_renderDevice->DrawMesh(
-               m_renderer->m_renderDevice->m_basicShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
-            m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
-            // Vertices are emitted in (0,0) -> (1,1). We must scale & rotate around center then translate to fit flasher's position
-            Matrix3D transform;
-            VPXRenderContext2D *context;
-            if (m_desktopBackdrop)
-            {
-               const float sx = static_cast<float>(m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth()) / static_cast<float>(EDITOR_BG_WIDTH);
-               const float sy = static_cast<float>(m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight()) / static_cast<float>(EDITOR_BG_HEIGHT);
-               const float w = width * sx;
-               const float h = height * sy;
-               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(w, h, 0.f) //
-                  * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height, and a z scale at 0
-                  * Matrix3D::MatrixTranslate(m_curve.GetMinBound().x * sx + 0.5f * w, m_curve.GetMinBound().y * sy + 0.5f * h, 0.f); //
-               context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
-               context->outWidth = w;
-               context->outHeight = h;
-            }
-            else
-            {
-               const Matrix3D rotation = (Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX));
-               // Mirror mode: flip the whole layout back along its axis closest to the table x axis so that it stays readable
-               // (its displays are therefore not unmirrored on their own, see Renderer::SetupDisplayRenderer)
-               float flipX = 1.f, flipY = 1.f;
-               if (g_pplayer->m_tblMirrorEnabled)
-               {
-                  if (fabsf(rotation.MultiplyVectorNoTranslate(Vertex3Ds(1.f, 0.f, 0.f)).x) >= fabsf(rotation.MultiplyVectorNoTranslate(Vertex3Ds(0.f, 1.f, 0.f)).x))
-                     flipX = -1.f;
-                  else
-                     flipY = -1.f;
-               }
-               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(flipX * width, flipY * height, 0.f) * rotation //
-                  * Matrix3D::MatrixTranslate(m_curve.GetMinBound().x + 0.5f * width, m_curve.GetMinBound().y + 0.5f * height, m_d.m_height);
-               context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
-               context->outWidth = width;
-               context->outHeight = height;
-            }
-            for (auto &renderer : g_pplayer->m_ancillaryWndRenderers[m_d.m_renderStyle])
-               if (renderer.Render(context, renderer.context))
-                  break;
+            const float sx = static_cast<float>(m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth()) / static_cast<float>(EDITOR_BG_WIDTH);
+            const float sy = static_cast<float>(m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight()) / static_cast<float>(EDITOR_BG_HEIGHT);
+            const float w = width * sx;
+            const float h = height * sy;
+            transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(w, h, 0.f) //
+               * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height, and a z scale at 0
+               * Matrix3D::MatrixTranslate(m_curve.GetMinBound().x * sx + 0.5f * w, m_curve.GetMinBound().y * sy + 0.5f * h, 0.f); //
+            context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(wndId), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
+            context->outWidth = w;
+            context->outHeight = h;
          }
+         else
+         {
+            const Matrix3D rotation = (Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX));
+            // Mirror mode: flip the whole layout back along its axis closest to the table x axis so that it stays readable
+            // (its displays are therefore not unmirrored on their own, see Renderer::SetupDisplayRenderer)
+            float flipX = 1.f, flipY = 1.f;
+            if (g_pplayer->m_tblMirrorEnabled)
+            {
+               if (fabsf(rotation.MultiplyVectorNoTranslate(Vertex3Ds(1.f, 0.f, 0.f)).x) >= fabsf(rotation.MultiplyVectorNoTranslate(Vertex3Ds(0.f, 1.f, 0.f)).x))
+                  flipX = -1.f;
+               else
+                  flipY = -1.f;
+            }
+            transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(flipX * width, flipY * height, 0.f) * rotation //
+               * Matrix3D::MatrixTranslate(m_curve.GetMinBound().x + 0.5f * width, m_curve.GetMinBound().y + 0.5f * height, m_d.m_height);
+            context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(wndId), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
+            context->outWidth = width;
+            context->outHeight = height;
+         }
+         for (auto &renderer : g_pplayer->m_ancillaryWndRenderers[wndId])
+            if (renderer.Render(context, renderer.context))
+               break;
          break;
       }
 

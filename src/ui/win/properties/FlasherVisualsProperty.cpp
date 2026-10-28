@@ -396,6 +396,9 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       case IDC_STYLE_COMBO:
          PropertyDialog::StartUndo(flash);
          flash->m_d.m_renderMode = mode;
+         // Each render mode uses the render style differently: make sure the stored value matches what the style combo shows
+         if (mode == FlasherData::EXT_RENDER && (flash->m_d.m_renderStyle < VPXWindowId::VPXWINDOW_Backglass || flash->m_d.m_renderStyle > VPXWindowId::VPXWINDOW_Topper))
+            flash->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
          PropertyDialog::EndUndo(flash);
          UpdateVisuals(-1);
          break;
