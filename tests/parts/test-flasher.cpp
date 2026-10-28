@@ -114,6 +114,7 @@ TEST_CASE("Flasher part")
       // touching its style can be saved with the playfield (or another invalid window) as the window to embed
       Flasher* const flasher = Flasher::COMCreate();
       flasher->Init(100.f, 100.f, false);
+      flasher->SetName("ExtRenderFlasher");
       flasher->m_d.m_renderMode = FlasherData::EXT_RENDER;
       flasher->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Playfield;
       table->AddPart(flasher);
