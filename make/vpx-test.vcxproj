@@ -145,11 +145,27 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/*.vpx">
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/test000-default-table.vpx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/*.webp">
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/test000-default-table-Ref.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/test000-stereo-anaglyph-Ref.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/test000-stereo-int-Ref.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/test000-stereo-sbs-Ref.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/test000-stereo-tb-Ref.webp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>

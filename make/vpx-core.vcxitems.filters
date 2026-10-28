@@ -2805,16 +2805,16 @@
     <Image Include="$(SolutionDir)/../../src/assets/kickerT1.webp">
       <Filter>assets</Filter>
     </Image>
-    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpz">
       <Filter>assets</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpz">
       <Filter>assets</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpz">
       <Filter>assets</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpz">
       <Filter>assets</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/assets/TableSizes.csv">
@@ -3458,6 +3458,9 @@
       <Filter>shaders\bgfx</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/SMAA.sh">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/shaders.cmake">
       <Filter>shaders\bgfx</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/varying.def.sc">
