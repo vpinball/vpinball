@@ -12,6 +12,8 @@ const float4 w_h_height;
 
 const float2 AO_scale_timeblur;
 
+const float4x4 matProjInv;
+
 const float4 bloom_dither_colorgrade;
 #define do_bloom (bloom_dither_colorgrade.x == 1.)
 #define do_dither (bloom_dither_colorgrade.y == 1.)
