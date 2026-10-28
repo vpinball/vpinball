@@ -41,22 +41,36 @@
     <VpxShaderc Condition="'$(VpxShaderc)' == ''">$(SolutionDir)..\..\third-party\tools\windows-x86\shaderc.exe</VpxShaderc>
   </PropertyGroup>
   <ItemGroup>
-    <VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.sc" />
-    <VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.sh" />
-    <VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.hlsl" />
-    <VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\shaders.cmake" />
-    <VpxShaderInputs Include="$(VpxShaderc)" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="$(SolutionDir)..\..\src\shaders\bgfx\shaders.cmake">
+    <None Include="$(SolutionDir)..\..\src\shaders\bgfx\shaders.cmake">
       <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="!$(Configuration.Contains('_BGFX'))">true</ExcludedFromBuild>
-      <Message>Compiling BGFX embedded shaders</Message>
-      <Command>setlocal EnableDelayedExpansion &amp; set "VPX_CMAKE=cmake" &amp; where cmake &gt;nul 2&gt;nul || set "VPX_CMAKE=$(VsInstallRoot)Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" &amp; if not exist "$(VpxShaderGenDir)" mkdir "$(VpxShaderGenDir)" &amp; "!VPX_CMAKE!" -DSHADERC="$(VpxShaderc)" -DOUT_DIR="$(VpxShaderGenDir)" -DWORK_DIR="$(VpxShaderGenDir)\.frag" -DBACKENDS="glsl,dxbc,dxil,spv" -P "$(SolutionDir)..\..\src\shaders\bgfx\shaders.cmake"</Command>
-      <Outputs>$(VpxShaderGenDir)\bgfx_basic.h;$(VpxShaderGenDir)\bgfx_ball.h;$(VpxShaderGenDir)\bgfx_dmd.h;$(VpxShaderGenDir)\bgfx_flasher.h;$(VpxShaderGenDir)\bgfx_light.h;$(VpxShaderGenDir)\bgfx_stereo.h;$(VpxShaderGenDir)\bgfx_postprocess.h;$(VpxShaderGenDir)\bgfx_antialiasing.h;$(VpxShaderGenDir)\bgfx_tonemap.h;$(VpxShaderGenDir)\bgfx_blur.h;$(VpxShaderGenDir)\bgfx_motionblur.h;$(VpxShaderGenDir)\bgfx_imgui.h;$(VpxShaderGenDir)\bgfx_mipmap.h</Outputs>
-      <AdditionalInputs>@(VpxShaderInputs)</AdditionalInputs>
-    </CustomBuild>
+    </None>
   </ItemGroup>
+  <!-- VC projects do not support wildcards in item definitions, so the shader inputs are
+       globbed at build time inside a target (https://aka.ms/cpp/projectwildcards).
+       Up-to-date checking is done against a stamp file because the generator only
+       rewrites a header when its content changed; a missing header deletes the stamp
+       to force a regeneration. -->
+  <Target Name="VpxBGFXShaderInputs">
+    <ItemGroup>
+      <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.sc" />
+      <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.sh" />
+      <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.hlsl" />
+      <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\shaders.cmake" />
+      <_VpxShaderInputs Include="$(VpxShaderc)" />
+      <_VpxShaderInputs Include="$(MSBuildThisFileFullPath)" />
+    </ItemGroup>
+    <Delete Files="$(IntDir)vpx_bgfx_shaders.stamp"
+            Condition="Exists('$(IntDir)vpx_bgfx_shaders.stamp') and (!Exists('$(VpxShaderGenDir)\bgfx_basic.h') or !Exists('$(VpxShaderGenDir)\bgfx_ball.h') or !Exists('$(VpxShaderGenDir)\bgfx_dmd.h') or !Exists('$(VpxShaderGenDir)\bgfx_flasher.h') or !Exists('$(VpxShaderGenDir)\bgfx_light.h') or !Exists('$(VpxShaderGenDir)\bgfx_stereo.h') or !Exists('$(VpxShaderGenDir)\bgfx_postprocess.h') or !Exists('$(VpxShaderGenDir)\bgfx_antialiasing.h') or !Exists('$(VpxShaderGenDir)\bgfx_tonemap.h') or !Exists('$(VpxShaderGenDir)\bgfx_blur.h') or !Exists('$(VpxShaderGenDir)\bgfx_motionblur.h') or !Exists('$(VpxShaderGenDir)\bgfx_imgui.h') or !Exists('$(VpxShaderGenDir)\bgfx_mipmap.h'))" />
+  </Target>
+  <Target Name="VpxBGFXShaders" Condition="$(Configuration.Contains('_BGFX'))"
+          DependsOnTargets="VpxBGFXShaderInputs" BeforeTargets="Midl;ClCompile"
+          Inputs="@(_VpxShaderInputs)"
+          Outputs="$(IntDir)vpx_bgfx_shaders.stamp">
+    <Error Condition="!Exists('$(VpxShaderc)')" Text="BGFX embedded shaders: shaderc.exe was not found at '$(VpxShaderc)'. Build the platform externals to populate third-party\tools, or use a non-BGFX configuration." />
+    <Message Importance="high" Text="Compiling BGFX embedded shaders" />
+    <Exec Command="setlocal EnableDelayedExpansion&#10;set &quot;VPX_CMAKE=cmake&quot;&#10;where cmake &gt;nul 2&gt;nul || set &quot;VPX_CMAKE=$(VsInstallRoot)\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe&quot;&#10;if not &quot;!VPX_CMAKE!&quot;==&quot;cmake&quot; if not exist &quot;!VPX_CMAKE!&quot; (echo BGFX embedded shaders: cmake.exe was not found on PATH or at &quot;!VPX_CMAKE!&quot;. Install CMake or run MSBuild from a Visual Studio developer environment.&amp; exit /b 1)&#10;if not exist &quot;$(VpxShaderGenDir)&quot; mkdir &quot;$(VpxShaderGenDir)&quot;&#10;&quot;!VPX_CMAKE!&quot; -DSHADERC=&quot;$(VpxShaderc)&quot; -DOUT_DIR=&quot;$(VpxShaderGenDir)&quot; -DWORK_DIR=&quot;$(VpxShaderGenDir)\.frag&quot; -DBACKENDS=&quot;glsl,dxbc,dxil,spv&quot; -P &quot;$(SolutionDir)..\..\src\shaders\bgfx\shaders.cmake&quot;" />
+    <Touch Files="$(IntDir)vpx_bgfx_shaders.stamp" AlwaysCreate="true" />
+  </Target>
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies>spatialaudio.lib;mysofa.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -1499,16 +1513,16 @@
     <None Include="$(SolutionDir)/../../src/assets/TableSizes.csv">
       <FileType>Document</FileType>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpz">
       <FileType>Document</FileType>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpz">
       <FileType>Document</FileType>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpz">
       <FileType>Document</FileType>
     </None>
-    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpz/**">
+    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpz">
       <FileType>Document</FileType>
     </None>
     <None Include="$(SolutionDir)/../../src/ui/win/res/ball.rgs" />
@@ -2318,18 +2332,25 @@
       <FileType>Document</FileType>
     </FxCompile>
   </ItemGroup>
-  <ItemGroup>
-    <ContentWithTargetPath Include="$(SolutionDir)/../../src/assets/**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>assets\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
-  </ItemGroup>
-  <ItemGroup>
-    <ContentWithTargetPath Include="$(SolutionDir)/../../src/scripts/**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>scripts\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
-  </ItemGroup>
+  <!-- VC projects do not support wildcards in item definitions, so the runtime content
+       previously copied through ContentWithTargetPath items is enumerated and copied at
+       build time inside a target instead (https://aka.ms/cpp/projectwildcards) -->
+  <Target Name="VpxCopyContentFiles" AfterTargets="Build">
+    <ItemGroup>
+      <_VpxContentAssets Include="$(SolutionDir)/../../src/assets/**" />
+      <_VpxContentScripts Include="$(SolutionDir)/../../src/scripts/**" />
+      <_VpxContentShaders Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/*.glfx" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')" />
+      <_VpxContentShaders Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/*.fxh" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_VpxContentAssets)" DestinationFiles="@(_VpxContentAssets->'$(OutDir)assets\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_VpxContentScripts)" DestinationFiles="@(_VpxContentScripts->'$(OutDir)scripts\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_VpxContentShaders)" DestinationFiles="@(_VpxContentShaders->'$(OutDir)shaders-10.8.1\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="@(_VpxContentAssets->'$(OutDir)assets\%(RecursiveDir)%(Filename)%(Extension)')" />
+      <FileWrites Include="@(_VpxContentScripts->'$(OutDir)scripts\%(RecursiveDir)%(Filename)%(Extension)')" />
+      <FileWrites Include="@(_VpxContentShaders->'$(OutDir)shaders-10.8.1\%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x86\freeimage.dll" Condition="'$(Platform)'=='Win32'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -2380,16 +2401,6 @@
     <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x64\D3DX9_4364.dll" Condition="'$(Platform)'=='x64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
-  </ItemGroup>
-  <ItemGroup>
-    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/*.glfx" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shaders-10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
-    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/*.fxh" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>shaders-10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>

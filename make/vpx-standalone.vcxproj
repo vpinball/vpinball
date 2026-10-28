@@ -39,13 +39,6 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <!-- The Win32 editor, its resources and the registered COM type library are not part of the standalone build -->
-    <ClCompile Remove="$(SolutionDir)/../../src/ui/win/**" />
-    <ClInclude Remove="$(SolutionDir)/../../src/ui/win/**" />
-    <ResourceCompile Remove="$(SolutionDir)/../../src/ui/win/**" />
-    <None Remove="$(SolutionDir)/../../src/ui/win/**" />
-    <Image Remove="$(SolutionDir)/../../src/ui/win/**" />
-    <Midl Remove="$(SolutionDir)/../../src/core/vpinball.idl" />
     <!-- Scriptable classes dispatch through the IDispatch implementations generated from the IDL (see tools/idl) -->
     <ClCompile Include="$(SolutionDir)/../../src/core/generated/vpinball_standalone_i.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -54,6 +47,19 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/main.cpp" />
   </ItemGroup>
   <Import Project="vpx-plugins.props" />
+  <!-- The Win32 editor, its resources and the registered COM type library are not part of the
+       standalone build. VC projects do not support wildcards in item definitions, so the
+       ui/win items contributed by vpx-core.vcxitems are removed at build time instead -->
+  <Target Name="VpxStandaloneExcludeWinUi" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <ClCompile Remove="%(ClCompile.Identity)" Condition="$([System.String]::Copy('%(ClCompile.Identity)').Contains('/src/ui/win/'))" />
+      <ClInclude Remove="%(ClInclude.Identity)" Condition="$([System.String]::Copy('%(ClInclude.Identity)').Contains('/src/ui/win/'))" />
+      <ResourceCompile Remove="%(ResourceCompile.Identity)" Condition="$([System.String]::Copy('%(ResourceCompile.Identity)').Contains('/src/ui/win/'))" />
+      <None Remove="%(None.Identity)" Condition="$([System.String]::Copy('%(None.Identity)').Contains('/src/ui/win/'))" />
+      <Image Remove="%(Image.Identity)" Condition="$([System.String]::Copy('%(Image.Identity)').Contains('/src/ui/win/'))" />
+      <Midl Remove="$(SolutionDir)/../../src/core/vpinball.idl" />
+    </ItemGroup>
+  </Target>
   <Target Name="VpxStandaloneCheckConfiguration" BeforeTargets="PrepareForBuild">
     <Error Condition="!$(Configuration.EndsWith('_BGFX'))" Text="vpx-standalone only supports the BGFX configurations" />
   </Target>
