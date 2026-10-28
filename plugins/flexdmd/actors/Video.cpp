@@ -34,6 +34,10 @@ Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
    if (pSrc == nullptr)
       return nullptr;
 
+   const std::filesystem::path videoPath = find_case_insensitive_file_path(PluginStrings::PathFromUTF8(pSrc->GetPath()));
+   if (videoPath.empty())
+      return nullptr;
+
    const LibAV::LibAV& m_libAv = LibAV::LibAV::GetInstance();
    assert(m_libAv.isLoaded);
 
@@ -42,7 +46,7 @@ Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
    AVCodecContext* m_pCodecContext = nullptr;
    int m_videoStreamIndex = -1;
 
-   if (m_libAv._avformat_open_input(&m_pFormatContext, pSrc->GetPath().c_str(), nullptr, nullptr) != 0)
+   if (m_libAv._avformat_open_input(&m_pFormatContext, PluginStrings::PathToUTF8(videoPath).c_str(), nullptr, nullptr) != 0)
       return nullptr;
 
    m_libAv._avformat_find_stream_info(m_pFormatContext, nullptr);

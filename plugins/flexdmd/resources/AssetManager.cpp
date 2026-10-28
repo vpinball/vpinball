@@ -112,9 +112,11 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       pAssetSrc->SetSrcType(AssetSrcType_VPXResource);
       pAssetSrc->SetPath(parts[0].substr(4));
       ext.clear();
-      if (m_vpxFile == nullptr && std::filesystem::exists(PluginStrings::PathFromUTF8(m_szBasePath + m_szTableFile)))
+      if (m_vpxFile == nullptr)
       {
-         m_vpxFile = new VPXFile(m_szBasePath + m_szTableFile);
+         const std::filesystem::path tablePath = find_case_insensitive_file_path(PluginStrings::PathFromUTF8(m_szBasePath + m_szTableFile));
+         if (!tablePath.empty())
+            m_vpxFile = new VPXFile(PluginStrings::PathToUTF8(tablePath));
          //log.Info("Path for resolving VPX embedded resources defined to '{0}'", _vpxFile.ToString());
       }
       if (m_vpxFile != nullptr)
@@ -281,9 +283,11 @@ void* AssetManager::Open(AssetSrc* pSrc)
       break;
       case AssetSrcType_VPXResource:
       {
-         if (m_vpxFile == nullptr && std::filesystem::exists(PluginStrings::PathFromUTF8(m_szBasePath + m_szTableFile)))
+         if (m_vpxFile == nullptr)
          {
-            m_vpxFile = new VPXFile(m_szBasePath + m_szTableFile);
+            const std::filesystem::path tablePath = find_case_insensitive_file_path(PluginStrings::PathFromUTF8(m_szBasePath + m_szTableFile));
+            if (!tablePath.empty())
+               m_vpxFile = new VPXFile(PluginStrings::PathToUTF8(tablePath));
             //log.Info("Path for resolving VPX embedded resources defined to '{0}'", _vpxFile.ToString());
          }
          if (m_vpxFile != nullptr)
