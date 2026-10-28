@@ -2,6 +2,7 @@
 #include "FlasherUIPart.h"
 
 #include "math/matrix.h"
+#include "plugins/VPXPlugin.h"
 #include "utils/color.h"
 
 
@@ -69,7 +70,14 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Combo<Flasher>(
          m_part, "Render Mode"s, vector { "Flasher"s, "DMD"s, "Display"s, "Alpha.Seg."s, "Ext.Renderer."s }, //
          [](const Flasher* flasher) { return flasher->m_d.m_renderMode; }, //
-         [](Flasher* flasher, int v) { flasher->m_d.m_renderMode = static_cast<FlasherData::RenderMode>(v); });
+         [](Flasher* flasher, int v)
+         {
+            flasher->m_d.m_renderMode = static_cast<FlasherData::RenderMode>(v);
+            // Each render mode uses the render style differently: make sure the stored value matches what the style combo shows
+            if (v == FlasherData::EXT_RENDER
+               && (flasher->m_d.m_renderStyle < VPXWindowId::VPXWINDOW_Backglass || flasher->m_d.m_renderStyle > VPXWindowId::VPXWINDOW_Topper))
+               flasher->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
+         });
       if (renderMode != FlasherData::EXT_RENDER)
       {
          props.InputRGB<Flasher>(
@@ -110,8 +118,8 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
       {
          props.Combo<Flasher>(
             m_part, "Renderer"s, vector { "Backglass"s, "Score View"s, "Topper"s }, //
-            [](const Flasher* flasher) { return flasher->m_d.m_renderStyle - 1; }, //
-            [](Flasher* flasher, int v) { flasher->m_d.m_renderStyle = v + 1; });
+            [](const Flasher* flasher) { return flasher->m_d.m_renderStyle - VPXWindowId::VPXWINDOW_Backglass; }, //
+            [](Flasher* flasher, int v) { flasher->m_d.m_renderStyle = v + VPXWindowId::VPXWINDOW_Backglass; });
       }
       else
       {

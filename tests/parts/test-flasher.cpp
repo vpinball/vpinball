@@ -5,6 +5,7 @@
 
 #include "parts/pintable.h"
 #include "parts/flasher.h"
+#include "plugins/VPXPlugin.h"
 
 #include "doctest.h"
 
@@ -105,6 +106,24 @@ TEST_CASE("Flasher part")
       Flasher* const liveCopy = flasher->CopyForPlay();
       CHECK(StreamsEqual(SavePartToStream(flasher), SavePartToStream(liveCopy)));
       liveCopy->Release();
+   }
+
+   SUBCASE("load repairs an out-of-range external render style")
+   {
+      // The render mode and style are independent fields, so a flasher switched to external rendering without
+      // touching its style can be saved with the playfield (or another invalid window) as the window to embed
+      Flasher* const flasher = Flasher::COMCreate();
+      flasher->Init(100.f, 100.f, false);
+      flasher->m_d.m_renderMode = FlasherData::EXT_RENDER;
+      flasher->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Playfield;
+      table->AddPart(flasher);
+      flasher->Release();
+
+      const InMemStream saved = SavePartToStream(flasher);
+      Flasher* const copy = Flasher::COMCreate();
+      LoadPartFromStream(copy, saved);
+      CHECK(copy->m_d.m_renderStyle == VPXWindowId::VPXWINDOW_Backglass);
+      copy->Release();
    }
 
    SUBCASE("editor transforms move the curve")
