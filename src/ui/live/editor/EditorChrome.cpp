@@ -78,6 +78,12 @@ void EditorChrome::RenderMenuBar()
             editor.m_player->SetPlayState(!editor.m_player->IsPlaying());
          ImGui::EndMenu();
       }
+      else if (!editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
+      {
+         if (ImGui::MenuItem("Renderer Inspection"))
+            editor.m_inspectionModal.Show();
+         ImGui::EndMenu();
+      }
       float buttonWidth = 0.f;
       if (editor.IsInspectMode())
          buttonWidth += ImGui::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;

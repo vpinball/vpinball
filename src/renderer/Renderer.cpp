@@ -2407,6 +2407,15 @@ void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT, unsigned int jit
       /*sobol*/ radical_inverse<3>(jitterIndex) * (float)(1. / 8.0)); // jitter within (64/8)x(64/8) neighborhood of 64x64 tex, good compromise between blotches and noise
    m_renderDevice->m_FBShader->SetVector(ShaderUniform::AO_scale_timeblur, m_table->m_AOScale, 0.4f, 0.f,
       0.f); //!! 0.4f: fake global option in video pref? or time dependent? //!! commonly used is 0.1, but would require to clear history for moving stuff
+   // The AO kernel works in view space (linearized depth) so the inverse projection is needed
+   Matrix3D matProjInv[2];
+   const int nEyes = m_renderDevice->m_nEyes;
+   for (int eye = 0; eye < nEyes; eye++)
+   {
+      matProjInv[eye] = GetMVP().GetProj(eye);
+      matProjInv[eye].Invert();
+   }
+   m_renderDevice->m_FBShader->SetMatrix(ShaderUniform::matProjInv, &matProjInv[0], nEyes);
    m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::AO);
    m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
 

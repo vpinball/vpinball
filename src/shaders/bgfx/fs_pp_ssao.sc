@@ -23,6 +23,29 @@ SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
 SAMPLER2DSTEREO(tex_depth,        4); // DepthBuffer
 SAMPLER2D      (tex_ao_dither,    5); // AO Dither
 
+#ifdef STEREO
+	uniform mat4 matProjInv[2];
+	#define mProjInv matProjInv[int(round(v_eye))]
+#else
+	uniform mat4 matProjInv;
+	#define mProjInv matProjInv
+#endif
+
+#ifdef STEREO
+float depthToViewZ(const vec2 u, const float d, const float v_eye) // view space z from depth buffer value
+#else
+float depthToViewZ(const vec2 u, const float d)
+#endif
+{
+   #if TEX_V_IS_UP
+      const vec4 clip = vec4(u.x * 2.0 - 1.0, u.y * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
+   #else
+      const vec4 clip = vec4(u.x * 2.0 - 1.0, 1.0 - u.y * 2.0, d, 1.0);
+   #endif
+   const vec4 p = mul(mProjInv, clip);
+   return p.z / p.w;
+}
+
 
 #ifdef STEREO
 vec3 get_nonunit_normal(const float depth0, const vec2 u, const float v_eye) // use neighboring pixels // quite some tex access by this
@@ -56,12 +79,18 @@ void main()
 	const vec3 ushift = /*hash(uv1) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	                      texNoLod(tex_ao_dither, uv1/(64.0*w_h_height.xy) + w_h_height.zw).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	//const float base = 0.0;
-	const float area = 0.06; //!!
-	const float falloff = 0.0002; //!!
 	const int samples = 8/*9*/; //4,8,9,13,16,21,25,32 korobov,fibonacci
 	const float samples_float = float(samples);
-	const float radius = 0.001+/*frac*/(ushift.z)*0.009; // sample radius
-	const float depth_threshold_normal = 0.005;
+	// Kernel radius & occlusion thresholds are expressed in view space units, as the depth buffer
+	// is highly non linear (a fixed world gap shrinks super linearly in depth value with distance,
+	// which used to make AO vanish when zooming out)
+	const float radius = 3.0 + /*frac*/(ushift.z) * 12.0; // sample radius in view space units
+	// depth_threshold_normal must cover the tangent plane depth delta (radius * surface tilt): below it,
+	// the coplanarity term (1 - dot(n_occ,n)^2) rejects flat surface self occlusion. Above it, a real
+	// depth discontinuity counts as full occlusion.
+	const float depth_threshold_normal = 40.0;
+	const float falloff = 0.5;
+	const float area = 200.0; // fade out of occluders deeper than ~2 balls (must cover real occluder gaps in VPU)
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples_float);
 	#ifdef STEREO
 	const vec3 normal = normalize(get_nonunit_normal(depth0, u, v_eye));
@@ -69,7 +98,15 @@ void main()
 	const vec3 normal = normalize(get_nonunit_normal(depth0, u));
 	#endif
 	//const vec3 normal = texNoLod(tex_normals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
-	const float radius_depth = radius/depth0;
+	// Screen footprint of a view space hemisphere: uv radius = radius * P / (2 * z), with
+	// P = 1/matProjInv[1][1] the projection's vertical scale for a perspective matrix
+	#ifdef STEREO
+		const float z0 = depthToViewZ(u, depth0, v_eye);
+		const float radius_depth = (radius * 0.5) / (mProjInv[1][1] * z0);
+	#else
+		const float z0 = depthToViewZ(u, depth0);
+		const float radius_depth = (radius * 0.5) / (mProjInv[1][1] * z0);
+	#endif
 
 	float occlusion = 0.0;
 	UNROLL for(int i=0; i < samples; ++i) {
@@ -87,7 +124,12 @@ void main()
 		const vec3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		#endif
 		//const vec3 occ_normal = texNoLod(tex_normals, hemi_ray).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
-		const float diff_depth = depth0 - occ_depth;
+		// View space z is negative in front of the camera: a closer sample has a LARGER z
+		#ifdef STEREO
+			const float diff_depth = depthToViewZ(hemi_ray, occ_depth, v_eye) - z0;
+		#else
+			const float diff_depth = depthToViewZ(hemi_ray, occ_depth) - z0;
+		#endif
 		const float diff_norm = dot(occ_normal,normal);
 		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (diff_depth < depth_threshold_normal ? (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) : 1.0) * (1.0-smoothstep(falloff, area, diff_depth));
 	}

@@ -32,7 +32,7 @@ void RendererInspectionModal::Render()
       return;
 
    // FIXME m_editor.m_renderer->DisableStaticPrePass(false);
-   m_editor.m_camMode = ViewMode::PreviewCam;
+   // Keep the active camera mode so the view can be moved freely while inspecting
 
    ImGui::SetNextWindowSize(ImVec2(350.f * m_editor.m_liveUI.GetDPI(), 0));
    if (ImGui::Begin(ID_RENDERER_INSPECTION, &m_visible))
