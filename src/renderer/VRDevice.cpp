@@ -1531,7 +1531,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE && m_showUILayer)
          {
             constexpr float uiDistance = 0.5f; // meter in front of the player
-            const float uiHeight = static_cast<float>(m_uiSwapchainInfo.width) / static_cast<float>(m_uiSwapchainInfo.height);
+            const float uiHeight = static_cast<float>(m_uiSwapchainInfo.height) / static_cast<float>(m_uiSwapchainInfo.width);
             renderLayerInfo.layerQuad.layerFlags= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT | XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT | XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
             renderLayerInfo.layerQuad.space = m_viewSpace;
             renderLayerInfo.layerQuad.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
