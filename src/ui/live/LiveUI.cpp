@@ -320,6 +320,11 @@ void LiveUI::NewFrame()
       const float renderWidth = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetWidth()) : 1920.f;
       const float renderHeight = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetHeight()) : 1080.f;
 
+      // The VR playfield window has no SDL window: the window size and scale gathered by ImGui_ImplSDL3_NewFrame
+      // are undefined there (failed SDL calls leave their outputs untouched), so the framebuffer scale can be
+      // anything, including positive garbage or NaN (issue #4294)
+      if (m_player->m_playfieldWnd->GetCore() == nullptr)
+         io.DisplayFramebufferScale = ImVec2(1.f, 1.f);
       if (io.DisplayFramebufferScale.x <= 0.f)
          io.DisplayFramebufferScale.x = 1.f;
       if (io.DisplayFramebufferScale.y <= 0.f)
@@ -362,10 +367,11 @@ void LiveUI::NewFrame()
 
    // Late mouse position update to latest (async) global state (needed when dragging main windows)
    {
-      SDL_Point windowPos;
+      SDL_Point windowPos { 0, 0 };
       SDL_FPoint globalMouse;
       SDL_GetGlobalMouseState(&globalMouse.x, &globalMouse.y);
-      SDL_GetWindowPosition(m_player->m_playfieldWnd->GetCore(), &windowPos.x, &windowPos.y);
+      if (SDL_Window* const sdlWnd = m_player->m_playfieldWnd->GetCore())
+         SDL_GetWindowPosition(sdlWnd, &windowPos.x, &windowPos.y);
       AddMousePosEvent(false, globalMouse.x - static_cast<float>(windowPos.x), globalMouse.y - static_cast<float>(windowPos.y));
    }
 
