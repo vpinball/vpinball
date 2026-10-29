@@ -398,7 +398,9 @@ ShaderUniform Shader::getUniformByName(const string& name) const
          return (ShaderUniform)i;
    // "Point"/"Linear" are bogus entries reported by shaderc for the standalone SamplerState of the SMAA shaders (known issue): don't log them.
    if (name != "Point" && name != "Linear")
+   {
       PLOGE << '[' << m_shaderCodeName << "] getUniformByName Could not find uniform " << name << " in ShaderUniformDef::coreUniforms";
+   }
    return ShaderUniform::COUNT;
 }
 
@@ -1305,7 +1307,9 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
             // Bogus entries may be reported by shaderc, skip unknown names. "Point"/"Linear" from the
             // standalone SamplerState of SMAA.hlsl on DX are a known issue: skip them without logging.
             if (string(info.name) != "Point" && string(info.name) != "Linear")
+	    {
                PLOGW << "Ignoring unknown uniform '" << info.name << "' in shader " << (j == 0 ? vsName : fsName);
+	    }
             continue;
          }
          assert(info.num == ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformIndex)].count);

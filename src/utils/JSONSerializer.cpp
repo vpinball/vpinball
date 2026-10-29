@@ -763,7 +763,9 @@ static string FidTag(const int fieldId)
 static void LogSkippedField(const int nodeKind, const int fieldId, const bool isRaw = false)
 {
    if (!GetFieldMap(nodeKind).ignored.contains(fieldId))
+   {
       PLOGD << "JSON writer: skipped unmapped " << (isRaw ? "raw " : "") << "field " << FidTag(fieldId);
+   }
 }
 
 } // anonymous namespace
