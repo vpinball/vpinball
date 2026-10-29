@@ -31,13 +31,13 @@ void SaveSoundToFileStorage(const InMemStream& data, const std::filesystem::path
    storage.close();
 }
 
-Sound* LoadSoundFromFileStorage(const std::filesystem::path& file)
+Sound* LoadSoundFromFileStorage(const std::filesystem::path& file, const int version = CURRENT_FILE_FORMAT_VERSION)
 {
    POLE::Storage storage(file.string().c_str());
    REQUIRE(storage.open());
    POLE::Stream stream(&storage, "GameStg/Sound0");
    REQUIRE_FALSE(stream.fail());
-   Sound* const sound = Sound::CreateFromStream(stream, CURRENT_FILE_FORMAT_VERSION);
+   Sound* const sound = Sound::CreateFromStream(stream, version);
    storage.close();
    return sound;
 }
@@ -147,6 +147,25 @@ TEST_CASE("Sound")
       CHECK(loaded->GetVolume() == -50);
       CHECK(loaded->GetPan() == 25);
       CHECK(loaded->GetFrontRearFade() == -10);
+   }
+
+   SUBCASE("legacy stream defaults pan/fade to centered")
+   {
+      // Legacy sounds store a backglass bool instead of pan/fade settings
+      Sound sound("MySound", "sounds/effect.mp3", { 9, 8, 7, 6, 5, 4, 3, 2, 1 });
+      InMemStream saved;
+      sound.SaveToStream(&saved);
+      constexpr size_t newSettingsSize = sizeof(uint8_t) + 4 * sizeof(int32_t);
+      InMemStream legacy;
+      legacy.Write(saved.Data(), saved.Size() - newSettingsSize);
+      const bool toBackglassOutput = false;
+      legacy.Write(&toBackglassOutput, sizeof(toBackglassOutput));
+      const std::filesystem::path file = GetTestTmpDir() / "sound-legacy.vpx";
+      SaveSoundToFileStorage(legacy, file);
+      std::unique_ptr<Sound> loaded(LoadSoundFromFileStorage(file, NEW_SOUND_FORMAT_VERSION - 1));
+      REQUIRE(loaded != nullptr);
+      CHECK(loaded->GetPan() == 0);
+      CHECK(loaded->GetFrontRearFade() == 0);
    }
 
    SUBCASE("stream round-trip of a WAV sound rebuilds the RIFF header")

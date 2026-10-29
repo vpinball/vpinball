@@ -198,8 +198,9 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
    // this reads in the settings that are used by the Windows UI in the Sound Manager and when PlaySound() is used.
    uint8_t outputTarget = static_cast<uint8_t>(SoundOutTypes::SNDOUT_TABLE);
    int32_t volume = 100;
-   int32_t pan = 100;
-   int32_t frontRearFade = 100;
+   // Legacy sounds store no pan/fade: default to centered
+   int32_t pan = 0;
+   int32_t frontRearFade = 0;
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
       stream.read(reinterpret_cast<unsigned char*>(&outputTarget), sizeof(outputTarget));
