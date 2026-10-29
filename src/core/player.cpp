@@ -142,8 +142,9 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
          return reinterpret_cast<void *>(SDL_LoadFunction(static_cast<SDL_SharedObject *>(dynamicModule), functionName.c_str()));
       }
    };
-   m_pluginManager.ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins),
-      [](MsgPI::MsgPlugin &) { });
+   const auto loader = std::make_shared<SDLModuleLoader>();
+   for (const auto &folder : g_app->m_fileLocator.GetPluginFolders())
+      m_pluginManager.ScanPluginFolder(loader, folder, [](MsgPI::MsgPlugin &) { });
 #endif
 
    for (const auto& plugin : m_pluginManager.GetPlugins()) {
