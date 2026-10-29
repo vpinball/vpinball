@@ -164,6 +164,7 @@ TEST_CASE("Sound")
       SaveSoundToFileStorage(legacy, file);
       std::unique_ptr<Sound> loaded(LoadSoundFromFileStorage(file, NEW_SOUND_FORMAT_VERSION - 1));
       REQUIRE(loaded != nullptr);
+      CHECK(loaded->GetVolume() == 0);
       CHECK(loaded->GetPan() == 0);
       CHECK(loaded->GetFrontRearFade() == 0);
    }
@@ -237,6 +238,52 @@ TEST_CASE("Sound")
          REQUIRE(loaded != nullptr);
          CHECK(loaded->GetFileSize() == content.size());
          CHECK(memcmp(loaded->GetFileRaw(), content.data(), content.size()) == 0);
+      }
+   }
+
+   SUBCASE("a legacy sound stream loads without sound settings")
+   {
+      // Pre-NEW_SOUND_FORMAT_VERSION streams end the sample data with a single bool
+      // selecting the backglass output: volume/pan/fade must load as neutral (0)
+      const vector<uint8_t> payload = { 5, 6, 7, 8 };
+      const std::tuple<string, string, bool, VPX::SoundOutTypes> cases[] = {
+         { "LegacySound", "sounds/effect.mp3", true, VPX::SNDOUT_BACKGLASS },
+         { "bgout_Music", "sounds/music.mp3", false, VPX::SNDOUT_BACKGLASS },
+         { "Music", "* Backglass Output *", false, VPX::SNDOUT_BACKGLASS },
+         { "TableSound", "sounds/hit.mp3", false, VPX::SNDOUT_TABLE },
+      };
+      for (const auto& [name, path, toBackglass, outputTarget] : cases)
+      {
+         CAPTURE(name);
+         InMemStream stream;
+         const int32_t nameLen = static_cast<int32_t>(name.size());
+         stream.Write(&nameLen, sizeof(int32_t));
+         stream.Write(name.data(), name.size());
+         const int32_t pathLen = static_cast<int32_t>(path.size());
+         stream.Write(&pathLen, sizeof(int32_t));
+         stream.Write(path.data(), path.size());
+         const int32_t dummyLen = 1;
+         const char dummy = '\0';
+         stream.Write(&dummyLen, sizeof(int32_t));
+         stream.Write(&dummy, dummyLen);
+         const int32_t dataLen = static_cast<int32_t>(payload.size());
+         stream.Write(&dataLen, sizeof(int32_t));
+         stream.Write(payload.data(), payload.size());
+         const bool toBackglassOutput = toBackglass;
+         stream.Write(&toBackglassOutput, sizeof(bool));
+
+         const std::filesystem::path file = GetTestTmpDir() / "sound-legacy.vpx";
+         SaveSoundToFileStorage(stream, file);
+         std::unique_ptr<Sound> loaded(LoadSoundFromFileStorage(file, NEW_SOUND_FORMAT_VERSION - 1));
+         REQUIRE(loaded != nullptr);
+         CHECK(loaded->GetName() == name);
+         CHECK(loaded->GetImportPath() == std::filesystem::path(path));
+         CHECK(loaded->GetFileSize() == payload.size());
+         CHECK(memcmp(loaded->GetFileRaw(), payload.data(), payload.size()) == 0);
+         CHECK(loaded->GetOutputTarget() == outputTarget);
+         CHECK(loaded->GetVolume() == 0);
+         CHECK(loaded->GetPan() == 0);
+         CHECK(loaded->GetFrontRearFade() == 0);
       }
    }
 }
