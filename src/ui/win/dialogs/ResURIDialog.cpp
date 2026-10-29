@@ -117,7 +117,9 @@ BOOL ResURIDialog::OnInitDialog()
    // No Player exists at design time: the dialog hosts its own plugin manager and VPX endpoint.
    m_pluginManager = std::make_unique<MsgPI::MsgPluginManager>();
    m_pluginAPI = std::make_unique<VPXPluginAPIImpl>(*m_pluginManager, &m_tableSettings);
-   m_pluginManager->ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins), [](MsgPI::MsgPlugin&) { });
+   const auto loader = std::make_shared<SDLModuleLoader>();
+   for (const auto& folder : g_app->m_fileLocator.GetPluginFolders())
+      m_pluginManager->ScanPluginFolder(loader, folder, [](MsgPI::MsgPlugin&) { });
    // Mirror the play session: register the enable property and load plugins enabled in the table settings
    for (const auto& plugin : m_pluginManager->GetPlugins())
    {
