@@ -97,6 +97,18 @@ void VRSettingsPage::BuildPage()
    playerYItem.m_excludeFromDefault = true;
    playerYItem.m_globalOnly = true;
 
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Seated Play"s));
+
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_SeatedTilt, 1.f, "%4.1f deg"s, //
+      [this]() { return m_player->m_vrDevice->GetSeatedTilt(); }, //
+      [this](float, float v)
+      {
+         if (v != 0.f && m_player->m_vrDevice->IsLockFeetToGround())
+            m_notifId = m_player->m_liveUI->PushNotification("Lock Feet to Ground was disabled as it is not compatible with seated play tilt"s, 5000, m_notifId);
+         m_player->m_vrDevice->SetSeatedTilt(v);
+      }));
+
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Augmented Reality"s));
 
    AddItem(std::make_unique<InGameUIItem>( //
@@ -134,7 +146,12 @@ void VRSettingsPage::BuildPage()
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_LockFeetToGround, //
       [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
-      [this](bool v) { m_player->m_vrDevice->SetLockFeetToGround(v); }));
+      [this](bool v)
+      {
+         if (v && m_player->m_vrDevice->GetSeatedTilt() != 0.f)
+            m_notifId = m_player->m_liveUI->PushNotification("Seated play tilt was reset to 0 when enabling Lock Feet to Ground"s, 5000, m_notifId);
+         m_player->m_vrDevice->SetLockFeetToGround(v);
+      }));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_AddBackglass, //

@@ -241,6 +241,9 @@ PropFloatDyn(PlayerVR, Orientation, "View orientation"s, "VR view orientation"s,
 PropFloatDyn(PlayerVR, TableX, "View Offset X"s, "VR view X offset"s, -100.f, 100.f, 0.f);
 PropFloatDyn(PlayerVR, TableY, "View Offset Y"s, "VR view Y offset"s, -100.f, 100.f, 0.f);
 PropFloatDyn(PlayerVR, TableZ, "View Offset Z"s, "VR view Z offset"s, -100.f, 100.f, 0.f);
+PropFloat(PlayerVR, SeatedTilt, "Seated Play Tilt"s,
+   "Tilt the cabinet toward the player for seated or reclined play (only changes the view, physics are unchanged). When non zero, 'Lock Feet to Ground' is forced off"s,
+   -90.f, 90.f, 0.f);
 PropBool(
    PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by full black to allow color keyed passthrough (for example using Virtual Desktop, setting passthrough to sharp full black)"s, false);
 PropEnum(PlayerVR, DesktopDisplay, "Desktop display"s, "Select the content to show on the desktop display while playing in VR"s, int, 1, "Disabled"s,

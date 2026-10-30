@@ -130,7 +130,8 @@ VRDevice::VRDevice(const Settings& settings)
       // Relative scale factor and positioning
       m_lockbarWidth = settings.GetPlayer_LockbarWidth();
       m_lockbarHeight = settings.GetPlayer_LockbarHeight();
-      m_lockFeetToGround = settings.GetPlayerVR_LockFeetToGround();
+      m_seatedTilt = settings.GetPlayerVR_SeatedTilt();
+      m_lockFeetToGround = settings.GetPlayerVR_LockFeetToGround() && m_seatedTilt == 0.f;
 
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-defined. These may help IHVs or runtimes.
@@ -1277,8 +1278,10 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
             // Before 10.8.1, there weren't multiple space reference, so room used to be inclined to compensate the playfield inclination.
             // This may leads to slight visual artefact for old VR room (that is to say very slightly inclined room).
-            const Matrix3D playfieldSlope = Matrix3D::MatrixRotateX(ANGTORAD(liveSlope));
-            const Matrix3D playfieldSlopeInv = Matrix3D::MatrixRotateX(-ANGTORAD(liveSlope));
+            // Seated play tilt rotates the whole cabinet (feet and playfield included) around the lockbar axis to face the player, the room staying upright
+            const float viewSlope = liveSlope + m_seatedTilt;
+            const Matrix3D playfieldSlope = Matrix3D::MatrixRotateX(ANGTORAD(viewSlope));
+            const Matrix3D playfieldSlopeInv = Matrix3D::MatrixRotateX(-ANGTORAD(viewSlope));
             const Matrix3D tableCoords = Matrix3D::MatrixTranslate(
                - m_scale * (table->m_right - table->m_left) * 0.5f,
                + m_scale * (table->m_bottom - table->m_top),
@@ -1290,7 +1293,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             const Matrix3D playfieldPosInv = Matrix3D::MatrixInverse(playfieldPos);
             m_pfWorld.m_toWorld = sceneScale * coords * tableCoords * playfieldSlope * playfieldPos * viewOrientation;
 
-            const Matrix3D cabinetSlope = playfieldPosInv * Matrix3D::MatrixRotateX(ANGTORAD(liveSlope - baseSlope)) * playfieldPos;
+            const Matrix3D cabinetSlope = playfieldPosInv * Matrix3D::MatrixRotateX(ANGTORAD(viewSlope - baseSlope)) * playfieldPos;
             const Matrix3D pfToCab = viewOrientationInv // Revert view orientation
                * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
                * Matrix3D::MatrixTranslate(
