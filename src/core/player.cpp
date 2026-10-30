@@ -2234,7 +2234,14 @@ void Player::UpdateGameLogic()
       m_pininput.ProcessInput(); // Trigger key events to sync with controller
       if (IsPlaying())
       {
-         m_physics->UpdatePhysics(usec()); // Update physics (also triggering events, syncing with controller)
+         // Handle a main thread stall (static prerender at startup, shader compilation,...) like a pause: shift the game forward in time
+         // instead of catching up. Otherwise game time jumps by the stall duration, PinMAME (time fenced on game time by core.vbs) races
+         // to catch up, and the audio it produces meanwhile adds the stall duration to the audio latency for the rest of the session.
+         const uint64_t now = usec();
+         if (m_lastPhysicsUpdate != 0 && now - m_lastPhysicsUpdate > 100000)
+            m_noTimeCorrect = true;
+         m_lastPhysicsUpdate = now;
+         m_physics->UpdatePhysics(now); // Update physics (also triggering events, syncing with controller)
          m_pininput.UpdateRumble(); // Send the rumble triggered by the physics update
          // TODO These updates should also be done directly in the physics engine after collision events
          FireTimers(-2); // Trigger script sync event (to sync solenoids back)

@@ -375,6 +375,7 @@ public:
    bool m_debugBalls = false;    // Draw balls in the foreground via 'O' key
 
    bool m_noTimeCorrect = false; // Used so the frame after debugging does not do normal time correction
+   uint64_t m_lastPhysicsUpdate = 0; // usec() of the last physics update, to detect main thread stalls
 
    bool m_detectScriptHang; // Arm the script interpreter's hang watchdog (a script call that does not return is interrupted)
 
