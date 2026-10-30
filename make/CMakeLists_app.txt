@@ -214,6 +214,9 @@ if(PLATFORM STREQUAL "windows")
       hid.lib
       setupapi.lib
       dinput8.lib
+      opusfile.lib
+      opus.lib
+      ogg.lib
       spatialaudio.lib
       mysofa.lib
       zlibstatic.lib
@@ -384,6 +387,9 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       hidapi64
       openxr_loader64
       winevbs64
+      opusfile
+      opus
+      ogg
       spatialaudio
       mysofa
       z
@@ -506,6 +512,9 @@ elseif(PLATFORM STREQUAL "macos")
       freeimage
       hidapi
       winevbs
+      opusfile
+      opus
+      ogg
       spatialaudio
       mysofa
       z
@@ -644,6 +653,9 @@ elseif(PLATFORM STREQUAL "linux")
       freeimage
       hidapi-hidraw
       winevbs
+      opusfile
+      opus
+      ogg
       spatialaudio
       mysofa
       z
@@ -806,6 +818,9 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
       swscale
       winevbs
       zip
+      opusfile
+      opus
+      ogg
       spatialaudio
       mysofa
       z

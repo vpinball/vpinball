@@ -13,6 +13,46 @@
 #include "miniaudio/extras/stb_vorbis.c"
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio/miniaudio.h"
+#include "miniaudio/extras/miniaudio_libopus.h"
+#include "OpusDecoder.h"
+
+namespace VPX
+{
+
+static ma_result OpusBackendInit(void* pUserData, ma_read_proc onRead, ma_seek_proc onSeek, ma_tell_proc onTell, void* pReadSeekTellUserData,
+   const ma_decoding_backend_config* pConfig, const ma_allocation_callbacks* pAllocationCallbacks, ma_data_source** ppBackend)
+{
+   ma_libopus* const opus = static_cast<ma_libopus*>(ma_malloc(sizeof(ma_libopus), pAllocationCallbacks));
+   if (opus == nullptr)
+      return MA_OUT_OF_MEMORY;
+   const ma_result result = ma_libopus_init(onRead, onSeek, onTell, pReadSeekTellUserData, pConfig, pAllocationCallbacks, opus);
+   if (result != MA_SUCCESS)
+   {
+      ma_free(opus, pAllocationCallbacks);
+      return result;
+   }
+   *ppBackend = opus;
+   return MA_SUCCESS;
+}
+
+static void OpusBackendUninit(void* pUserData, ma_data_source* pBackend, const ma_allocation_callbacks* pAllocationCallbacks)
+{
+   ma_libopus* const opus = static_cast<ma_libopus*>(pBackend);
+   ma_libopus_uninit(opus, pAllocationCallbacks);
+   ma_free(opus, pAllocationCallbacks);
+}
+
+// Only onInit is needed: miniaudio feeds it from memory or from a file through its read/seek/tell callbacks
+static ma_decoding_backend_vtable g_opusBackend = { OpusBackendInit, nullptr, nullptr, nullptr, OpusBackendUninit };
+static ma_decoding_backend_vtable* g_customBackends[] = { &g_opusBackend };
+
+void AddOpusDecoder(ma_decoder_config& config)
+{
+   config.ppCustomBackendVTables = g_customBackends;
+   config.customBackendCount = static_cast<ma_uint32>(std::size(g_customBackends));
+}
+
+}
 
 // Simple SDL3 backend for miniaudio, derived from miniaudio's backend example
 
@@ -598,8 +638,9 @@ SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
 {
    SoundSpec specs {};
    ma_decoder decoder;
-   if (ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, 0, 0);
-      ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)
+   ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, 0, 0);
+   AddOpusDecoder(decoderConfig);
+   if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)
       return specs;
    specs.nChannels = decoder.outputChannels;
    specs.sampleFrequency = decoder.outputSampleRate;

@@ -15,6 +15,7 @@ set(VPX_SOURCES
    src/audio/AudioPlayer.h
    src/audio/AudioStreamPlayer.cpp
    src/audio/AudioStreamPlayer.h
+   src/audio/OpusDecoder.h
    src/audio/SoundPlayer.cpp
    src/audio/SoundPlayer.h
    src/audio/SpatialAudio.cpp

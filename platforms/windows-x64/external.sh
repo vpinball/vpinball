@@ -33,6 +33,9 @@ echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  LIBMYSOFA_SHA: ${LIBMYSOFA_SHA}"
+echo "  LIBOGG_SHA: ${LIBOGG_SHA}"
+echo "  LIBOPUS_SHA: ${LIBOPUS_SHA}"
+echo "  OPUSFILE_SHA: ${OPUSFILE_SHA}"
 echo "  LIBSPATIALAUDIO_SHA: ${LIBSPATIALAUDIO_SHA}"
 echo "  ZLIB_SHA: ${ZLIB_SHA}"
 echo ""
@@ -611,6 +614,78 @@ if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
 fi
 
 #
+# build libogg, libopus, opusfile (Opus sounds)
+#
+
+OPUS_EXPECTED_SHA="${LIBOGG_SHA}-${LIBOPUS_SHA}-${OPUSFILE_SHA}_001"
+OPUS_FOUND_SHA="$([ -f opus/cache.txt ] && cat opus/cache.txt || echo "")"
+
+if [ "${OPUS_EXPECTED_SHA}" != "${OPUS_FOUND_SHA}" ]; then
+   echo "Building opus. Expected: ${OPUS_EXPECTED_SHA}, Found: ${OPUS_FOUND_SHA}"
+
+   rm -rf opus
+   mkdir opus
+   cd opus
+
+   curl -sL https://github.com/xiph/ogg/archive/${LIBOGG_SHA}.tar.gz -o ogg-${LIBOGG_SHA}.tar.gz
+   tar xzf ogg-${LIBOGG_SHA}.tar.gz
+   mv ogg-${LIBOGG_SHA} ogg
+   cd ogg
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DINSTALL_DOCS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_INSTALL_PREFIX="$PWD/../install" \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cmake --install build --config ${BUILD_TYPE}
+   cd ..
+
+   curl -sL https://github.com/xiph/opus/archive/${LIBOPUS_SHA}.tar.gz -o opus-${LIBOPUS_SHA}.tar.gz
+   tar xzf opus-${LIBOPUS_SHA}.tar.gz
+   mv opus-${LIBOPUS_SHA} opus
+   cd opus
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DOPUS_BUILD_PROGRAMS=OFF \
+      -DOPUS_BUILD_TESTING=OFF \
+      -DCMAKE_INSTALL_PREFIX="$PWD/../install" \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cmake --install build --config ${BUILD_TYPE}
+   cd ..
+
+   curl -sL https://github.com/xiph/opusfile/archive/${OPUSFILE_SHA}.tar.gz -o opusfile-${OPUSFILE_SHA}.tar.gz
+   tar xzf opusfile-${OPUSFILE_SHA}.tar.gz
+   mv opusfile-${OPUSFILE_SHA} opusfile
+   cd opusfile
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DOP_DISABLE_HTTP=ON \
+      -DOP_DISABLE_DOCS=ON \
+      -DOP_DISABLE_EXAMPLES=ON \
+      -DCMAKE_PREFIX_PATH="$PWD/../install" \
+      -DCMAKE_INSTALL_PREFIX="$PWD/../install" \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cmake --install build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$OPUS_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build libmysofa
 #
 
@@ -789,6 +864,12 @@ cp zlib/zlib/build/${BUILD_TYPE}/zlibstatic.lib ../../../third-party/build-libs/
 cp libmysofa/libmysofa/build/src/${BUILD_TYPE}/mysofa.lib ../../../third-party/build-libs/windows-x64
 cp libmysofa/libmysofa/src/hrtf/mysofa.h ../../../third-party/include
 cp libmysofa/libmysofa/src/hrtf/mysofa_export.h ../../../third-party/include
+cp opus/install/lib/ogg.lib ../../../third-party/build-libs/windows-x64
+cp opus/install/lib/opus.lib ../../../third-party/build-libs/windows-x64
+cp opus/install/lib/opusfile.lib ../../../third-party/build-libs/windows-x64
+mkdir -p ../../../third-party/include/ogg
+cp opus/install/include/ogg/*.h ../../../third-party/include/ogg
+cp opus/install/include/opus/*.h ../../../third-party/include
 
 cp libspatialaudio/libspatialaudio/build/${BUILD_TYPE}/spatialaudio.lib ../../../third-party/build-libs/windows-x64
 mkdir -p ../../../third-party/include/spatialaudio

@@ -277,6 +277,7 @@ FIXES:
 
 - the BASS sound engine was replaced/unified with SDL3+miniaudio, fixing the pitch/volume adjustment of 'ogg' files.
   As a consequence 'ogg' files should now be favored over legacy 'wav'. In addition, 'flac' files now also work.
+  'opus' files (Ogg Opus, decoded by libopusfile) are supported too, as table sounds and as music.
   In general, multiple issues/regressions (e.g. too low volume) found in 10.8 were fixed due to this.
 
 - the win32 vpx/OLE container reading has been replaced for all builds with the (heavily modified and optimized) POLE library

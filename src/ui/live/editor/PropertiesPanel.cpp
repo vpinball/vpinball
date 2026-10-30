@@ -1420,7 +1420,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
       if (ImGui::Button("Import"))
       {
          m_pendingSoundImport = std::make_shared<vector<string>>();
-         const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
+         const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;opus;mp3;flac" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
          SDL_ShowOpenFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
@@ -1465,7 +1465,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
                   return;
                m_pendingSoundReimportTarget = m_editor.m_multiSelSounds.empty() ? nullptr : m_editor.m_multiSelSounds.back();
                m_pendingSoundReimport = std::make_shared<string>();
-               const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
+               const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;opus;mp3;flac" } };
                const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
                SDL_ShowOpenFileDialog(
                   [](void *userdata, const char *const *filelist, int filter)
@@ -1486,7 +1486,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
       {
          m_pendingSoundExportSel = sel;
          m_pendingSoundExport = std::make_shared<string>();
-         const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;mp3" } };
+         const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;opus;mp3;flac" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
          SDL_ShowSaveFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
