@@ -1154,6 +1154,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h">
       <Filter>audio</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/audio/OpusDecoder.h">
+      <Filter>audio</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h">
       <Filter>audio</Filter>
     </ClInclude>
