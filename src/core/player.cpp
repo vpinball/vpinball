@@ -2128,7 +2128,17 @@ private:
       // Capture is finished, process result and exit
       m_player->SetCloseState(Player::CloseState::CS_CLOSE_APP);
       if (!m_player->m_cutCaptureToLoop)
+      {
+         for (int w = 0; w < 2; w++)
+         {
+            const VPXWindowId wndId = w == 0 ? VPXWindowId::VPXWINDOW_Playfield : VPXWindowId::VPXWINDOW_Backglass;
+            if (wndId == VPXWindowId::VPXWINDOW_Backglass && ((m_captureRequestMask & 2) == 0))
+               continue;
+            for (int i = 1; i <= m_player->m_nFrameToCapture; i++)
+               std::filesystem::rename(GetFilename(wndId, i, true), GetFilename(wndId, i, false));
+         }
          return;
+      }
 
       // Evaluate the less lit frame to use it as the first of our loop since playback loop stutters are a bit less obvious on dark frames
       float minLightFrame = FLT_MAX;
