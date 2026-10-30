@@ -101,6 +101,10 @@ public:
    // Only valid while the part is alive: a UI part may outlive it (e.g. referenced by an undo selection state)
    virtual void RestorePartVisibility() { }
 
+   // Re-syncs the editor's visibility overrides from the part's data (m_d) after an external write
+   // to the part (e.g. a multi-edit change applied to the other selected parts)
+   virtual void SyncVisibilityOverrides() { }
+
    // Returns the editable drag point curve of this part, nullptr if it does not have one
    virtual DragPointCurve* GetDragPointCurve() const { return nullptr; }
 
@@ -189,6 +193,12 @@ public:
    {
       for (auto& visibilityField : m_visibilityFields)
          m_part->m_d.*visibilityField.field = visibilityField.visible;
+   }
+
+   void SyncVisibilityOverrides() override
+   {
+      for (auto& visibilityField : m_visibilityFields)
+         visibilityField.visible = m_part->m_d.*visibilityField.field;
    }
 
    void Render(const EditorRenderContext& ctx) override

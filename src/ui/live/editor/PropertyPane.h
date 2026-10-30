@@ -9,6 +9,7 @@
 #include "renderer/Texture.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
+#include "imgui/imgui_internal.h"
 #include "ResURIPicker.h"
 
 namespace VPX::EditorUI
@@ -46,6 +47,12 @@ public:
    static void ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust);
    static void ResolveUnit(Unit from, Unit& to, int& nDecimalAdjust); // Resolves display unit & decimals without converting a value
    void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
+
+   // Multi-edit support: the other parts of a uniform-type selection, co-edited with the pane's one.
+   // When set, fields show a mixed ("-") state for diverging values and edits apply to every part.
+   void SetCoEditedParts(const vector<IEditable*>& parts) { m_coEdited = parts; }
+   bool IsMultiEdit() const { return !m_coEdited.empty(); }
+   int GetEditCount() const { return static_cast<int>(m_coEdited.size()) + 1; }
 
    void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName);
    void EditableHeader(const string& typeName, IEditable* editable);
@@ -127,7 +134,19 @@ private:
       T* other;
    };
    template <class T> SyncField<T> BeginSyncField(T* obj);
-   template <class T, class Getter, class Setter, class V> void EndSyncField(const SyncField<T>& sync, const Getter& getter, const Setter& setter, const V& displayValue);
+
+   // A co-edited part of a uniform-type multi selection, resolved on both edited/startup sides
+   template <class T> struct CoTarget
+   {
+      T* display; // Counterpart on the same side as the pane's display object (never null)
+      T* other; // Counterpart on the other side (nullptr when the part has none)
+   };
+   // Resolves the co-edited parts on the same side (edited or startup) as the pane's display object
+   template <class T> vector<CoTarget<T>> GetCoTargets(const SyncField<T>& sync, T* obj) const;
+   // True when a field's value differs between the edited part and any co-edited part
+   template <class T, class Getter> bool IsMixed(const Getter& getter, const T* display, const vector<CoTarget<T>>& targets) const;
+   template <class T, class Getter, class Setter, class V>
+   void EndSyncField(const SyncField<T>& sync, const vector<CoTarget<T>>& targets, const Getter& getter, const Setter& setter, const V& displayValue);
 
    int m_modified = 0;
    int m_modifyFieldId = 1;
@@ -135,6 +154,7 @@ private:
    Unit m_lengthUnit = Unit::None;
    bool m_showStartup = false;
    PinTable* const m_table;
+   vector<IEditable*> m_coEdited; // Other parts of a uniform-type selection, co-edited with the pane's object
    bool m_inSection = false;
    bool m_sectionHasSync = false;
    float m_syncWidth = 0.f;
@@ -175,15 +195,48 @@ template <class T> PropertyPane::SyncField<T> PropertyPane::BeginSyncField(T* ob
    return m_showStartup ? SyncField<T> { startupObj, obj } : SyncField<T> { obj, startupObj };
 }
 
-template <class T, class Getter, class Setter, class V> void PropertyPane::EndSyncField(const SyncField<T>& sync, const Getter& getter, const Setter& setter, const V& displayValue)
+template <class T> vector<PropertyPane::CoTarget<T>> PropertyPane::GetCoTargets(const SyncField<T>& sync, T* obj) const
 {
-   if (sync.other == nullptr)
+   vector<CoTarget<T>> targets;
+   if (m_coEdited.empty())
+      return targets;
+   targets.reserve(m_coEdited.size());
+   const bool editedSide = (sync.display == obj);
+   for (IEditable* co : m_coEdited)
+   {
+      T* const edited = dynamic_cast<T*>(co);
+      if (edited == nullptr)
+         continue;
+      T* const startup = GetStartupObj<T>(edited);
+      T* const target = editedSide ? edited : startup;
+      if (target != nullptr)
+         targets.push_back({ target, editedSide ? startup : edited });
+   }
+   return targets;
+}
+
+template <class T, class Getter> bool PropertyPane::IsMixed(const Getter& getter, const T* display, const vector<CoTarget<T>>& targets) const
+{
+   return std::ranges::any_of(targets, [&getter, display](const CoTarget<T>& target) { return !(getter(target.display) == getter(display)); });
+}
+
+template <class T, class Getter, class Setter, class V>
+void PropertyPane::EndSyncField(const SyncField<T>& sync, const vector<CoTarget<T>>& targets, const Getter& getter, const Setter& setter, const V& displayValue)
+{
+   const bool hasOthers = (sync.other != nullptr) || std::ranges::any_of(targets, [](const CoTarget<T>& target) { return target.other != nullptr; });
+   if (!hasOthers)
       return;
    ImGui::SetCursorScreenPos(m_syncPos);
-   ImGui::BeginDisabled(displayValue == getter(sync.other));
+   const bool synced = (sync.other == nullptr || displayValue == getter(sync.other))
+      && std::ranges::all_of(targets, [&getter](const CoTarget<T>& target) { return target.other == nullptr || getter(target.other) == getter(target.display); });
+   ImGui::BeginDisabled(synced);
    if (ImGui::Button(ICON_SAVE))
    {
-      setter(sync.other, getter(sync.display));
+      if (sync.other != nullptr)
+         setter(sync.other, getter(sync.display));
+      for (const CoTarget<T>& target : targets)
+         if (target.other != nullptr)
+            setter(target.other, getter(target.display));
       m_modified = m_modifyFieldId;
    }
    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
@@ -239,14 +292,19 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
    m_modifyFieldId++;
    PropertyLabel(label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    bool value = getter(sync.display);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::Checkbox(("##" + label).c_str(), &value))
    {
       setter(sync.display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = m_modifyFieldId;
    }
-   EndSyncField(sync, getter, setter, value);
+   ImGui::PopItemFlag();
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -256,14 +314,19 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
    m_modifyFieldId++;
    PropertyLabel(label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    int value = getter(sync.display);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::InputInt(("##" + label).c_str(), &value))
    {
       setter(sync.display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = m_modifyFieldId;
    }
-   EndSyncField(sync, getter, setter, value);
+   ImGui::PopItemFlag();
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -279,18 +342,23 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
    const char* unitLabel = GetUnitLabel(displayUnit);
    PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    float value = getter(sync.display);
    float displayValue = value;
    ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::InputFloat(("##" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
    {
       value = displayValue;
       ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
       setter(sync.display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = m_modifyFieldId;
    }
-   EndSyncField(sync, getter, setter, value);
+   ImGui::PopItemFlag();
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -307,20 +375,25 @@ inline void PropertyPane::InputFloat2(
    const char* unitLabel = GetUnitLabel(displayUnit);
    PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    Vertex2D value = getter(sync.display);
    Vertex2D displayValue = value;
    ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
    ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::InputFloat2(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
    {
       value = displayValue;
       ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
       ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
       setter(sync.display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = m_modifyFieldId;
    }
-   EndSyncField(sync, getter, setter, value);
+   ImGui::PopItemFlag();
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -336,12 +409,14 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
    const char* unitLabel = GetUnitLabel(displayUnit);
    PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    vec3 value = getter(sync.display);
    vec3 displayValue = value;
    ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
    ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
    ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::InputFloat3(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
    {
       value = displayValue;
@@ -349,9 +424,12 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
       ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
       ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
       setter(sync.display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = m_modifyFieldId;
    }
-   EndSyncField(sync, getter, setter, value);
+   ImGui::PopItemFlag();
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -361,14 +439,19 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
    m_modifyFieldId++;
    PropertyLabel(label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    vec3 value = getter(sync.display);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::ColorEdit3(("##" + label).c_str(), &value.x))
    {
       setter(sync.display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = m_modifyFieldId;
    }
-   EndSyncField(sync, getter, setter, value);
+   ImGui::PopItemFlag();
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -378,14 +461,19 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
    m_modifyFieldId++;
    PropertyLabel(label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    string value = getter(sync.display);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::InputText(("##" + label).c_str(), &value))
    {
       setter(sync.display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = m_modifyFieldId;
    }
-   EndSyncField(sync, getter, setter, value);
+   ImGui::PopItemFlag();
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -397,28 +485,35 @@ inline void PropertyPane::InputResURI(T* obj, const string& label, const std::fu
    m_modifyFieldId++;
    PropertyLabel(label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    string value = getter(sync.display);
    const int fieldId = m_modifyFieldId;
    T* display = sync.display;
    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+   ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, IsMixed(getter, sync.display, targets));
    if (ImGui::InputText(("##" + label).c_str(), &value))
    {
       setter(display, value);
+      for (const CoTarget<T>& target : targets)
+         setter(target.display, value);
       m_modified = fieldId;
    }
+   ImGui::PopItemFlag();
    ImGui::SameLine();
    if (ImGui::Button("...", ImVec2(ImGui::GetFrameHeight(), 0.f)))
       ResURIPicker::Open(
          kind, value,
-         [this, display, setter, fieldId](const string& uri)
+         [this, display, targets, setter, fieldId](const string& uri)
          {
             setter(display, uri);
+            for (const CoTarget<T>& target : targets)
+               setter(target.display, uri);
             m_modified = fieldId;
          },
          displayFamily, semanticType, writableOnly, dataFormat);
    ResURIPicker::Render();
-   EndSyncField(sync, getter, setter, value);
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
@@ -429,23 +524,27 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
    m_modifyFieldId++;
    PropertyLabel(label);
    const SyncField<T> sync = BeginSyncField(obj);
+   const vector<CoTarget<T>> targets = GetCoTargets(sync, obj);
    ImGui::PushID(label.c_str());
    int value = getter(sync.display);
    const int displayIndex = values.empty() ? -1 : clamp(value, 0, static_cast<int>(values.size()) - 1);
-   if (ImGui::BeginCombo(("##" + label).c_str(), displayIndex < 0 ? "" : values[displayIndex].c_str()))
+   const bool mixed = IsMixed(getter, sync.display, targets);
+   if (ImGui::BeginCombo(("##" + label).c_str(), mixed ? "-" : (displayIndex < 0 ? "" : values[displayIndex].c_str())))
    {
       for (size_t i = 0; i < values.size(); i++)
       {
          if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
          {
             setter(sync.display, static_cast<int>(i));
+            for (const CoTarget<T>& target : targets)
+               setter(target.display, static_cast<int>(i));
             value = static_cast<int>(i);
             m_modified = m_modifyFieldId;
          }
       }
       ImGui::EndCombo();
    }
-   EndSyncField(sync, getter, setter, value);
+   EndSyncField(sync, targets, getter, setter, value);
    ImGui::PopID();
 }
 
