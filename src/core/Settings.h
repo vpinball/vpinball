@@ -21,6 +21,7 @@ public:
 
    void SetIniPath(const std::filesystem::path &path);
    const std::filesystem::path &GetIniPath() const;
+   void AddSaveExcludedGroup(const string &groupId) { m_store.AddSaveExcludedGroup(groupId); }
    void Reset();
    bool Load(const bool createDefault);
    void Load(const Settings &settings);

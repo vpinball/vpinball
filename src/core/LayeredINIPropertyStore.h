@@ -22,6 +22,8 @@ namespace VPX::Properties
 // - only property with value that are not equal to parent's value are persisted in the INI (they override the parent)
 // - resetting a property of a child store will turn it to an undefined state (returning parent's value), but does not affect the parent
 // - saving will also save the parent
+//
+// Property groups can be excluded from a store: they are discarded on load (never read into memory) and never written to its INI file
 class LayeredINIPropertyStore final : public PropertyStore
 {
 public:
@@ -31,6 +33,7 @@ public:
 
    void SetIniPath(const std::filesystem::path& path) { m_path = path; m_modified = true; }
    const std::filesystem::path& GetIniPath() const { return m_path; }
+   void AddSaveExcludedGroup(const string& groupId) { m_saveExcludedGroups.push_back(groupId); }
    void Reset();
    bool Load();
    void Load(const mINI::INIStructure& ini);
@@ -83,9 +86,11 @@ private:
    StringValue& GetStringValue(PropertyRegistry::PropId propId);
 
    // Serialized data
+   vector<string> m_saveExcludedGroups;
    std::filesystem::path m_path;
    mINI::INIStructure m_ini;
    bool LoadFromINI(PropertyRegistry::PropId id);
+   void DiscardExcludedGroups();
 };
 
 }

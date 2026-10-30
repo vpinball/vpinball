@@ -13,6 +13,8 @@
 class SettingsService final
 {
 public:
+   SettingsService();
+
    // Application wide settings (not affected by per table overrides)
    Settings &GetAppSettings() { return m_appSettings; }
    const Settings &GetAppSettings() const { return m_appSettings; }
