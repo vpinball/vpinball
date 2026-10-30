@@ -68,6 +68,9 @@ These shortcuts are handled by the editor when the keyboard is not captured by a
 | H               | Hide selected parts (Edit mode only)                                                           |
 | Shift + H       | Hide unselected parts (Edit mode only)                                                         |
 | Alt + H         | Unhide all parts (Edit mode only)                                                              |
+| Ctrl + N        | New table from the default blank template (Edit mode only)                                     |
+| Ctrl + O        | Open a table file (Edit mode only)                                                             |
+| Ctrl + Shift + O | Open a table pack folder (Edit mode only)                                                     |
 | Ctrl + S        | Save table (Edit mode only)                                                                    |
 | Ctrl + Z        | Undo (Edit mode only)                                                                          |
 | Z               | Cycle shading mode (solid, wireframe, wireframe without depth test)                            |
