@@ -1163,6 +1163,14 @@ void EditorUI::RenderUI()
          if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
             NewTable(NewTableTemplate::Blank);
       }
+      else if (ImGui::IsKeyPressed(ImGuiKey_O))
+      {
+         // Open a table file, or a table pack folder with Shift
+         if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+            LoadTable();
+         else if (io.KeyCtrl && io.KeyShift && !io.KeyAlt)
+            LoadTableFolder();
+      }
       else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       {
          // Toggle drag point edit mode on the active selected part. For parts exposing an editable
