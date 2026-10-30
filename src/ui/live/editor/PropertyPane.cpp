@@ -55,9 +55,10 @@ void PropertyPane::PropertyLabel(const string& label)
 void PropertyPane::Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName)
 {
    ImGui::NewLine();
-   LiveUI::CenteredText(typeName);
+   LiveUI::CenteredText(IsMultiEdit() ? typeName + " x" + std::to_string(GetEditCount()) : typeName);
    m_modifyFieldId++;
-   ImGui::BeginDisabled(m_table->m_liveBaseTable); // Do not edit name of live objects as it would break the script
+   // Do not edit name of live objects as it would break the script, nor of multi selections (no bulk renaming)
+   ImGui::BeginDisabled(m_table->m_liveBaseTable || IsMultiEdit());
    PropertyLabel("Name"s);
    const string current = getName();
    string name = current;

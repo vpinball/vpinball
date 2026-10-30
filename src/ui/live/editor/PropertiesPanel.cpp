@@ -46,8 +46,13 @@ void PropertiesPanel::Render(float topBarHeight)
       ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
          | ImGuiWindowFlags_NoNavFocus);
 
+   // Multi-edit only applies to uniform selections: all selected parts of the same type as the active one
+   const bool uniformPartSel = editor.m_selection.GetType() == Selection::S_EDITABLE && editor.m_multiSel.size() > 1
+      && std::ranges::all_of(editor.m_multiSel,
+         [&editor](const std::shared_ptr<EditorUIPart> &part) { return part->GetEditable()->GetItemType() == editor.m_selection.GetPart()->GetEditable()->GetItemType(); });
+
    if (editor.m_multiSel.size() > 1)
-      ImGui::TextDisabled("%d parts selected (editing the active one)", (int)editor.m_multiSel.size());
+      ImGui::TextDisabled(uniformPartSel ? "%d parts selected" : "%d parts selected (editing the active one)", (int)editor.m_multiSel.size());
    if (editor.m_multiSelImages.size() > 1)
       ImGui::TextDisabled("%d images selected (editing the active one)", (int)editor.m_multiSelImages.size());
    if (editor.m_multiSelSounds.size() > 1)
@@ -61,6 +66,14 @@ void PropertiesPanel::Render(float topBarHeight)
    case EditorUI::Units::VPX: props.SetLengthUnit(PropertyPane::Unit::VPLength); break;
    case EditorUI::Units::Metric: props.SetLengthUnit(PropertyPane::Unit::Millimeters); break;
    case EditorUI::Units::Imperial: props.SetLengthUnit(PropertyPane::Unit::Inches); break;
+   }
+   if (uniformPartSel)
+   {
+      vector<IEditable *> coParts;
+      for (const std::shared_ptr<EditorUIPart> &part : editor.m_multiSel)
+         if (part != editor.m_selection.GetPart())
+            coParts.push_back(part->GetEditable());
+      props.SetCoEditedParts(coParts);
    }
    if (editor.IsInspectMode() && editor.m_selection.GetType() != Selection::S_IMAGE
       && editor.m_selection.GetType() != Selection::S_SOUND) // Images & sounds are shared between live and startup instance, so they do not have 2 states
@@ -81,10 +94,7 @@ void PropertiesPanel::Render(float topBarHeight)
                case Selection::S_EDITABLE:
                   editor.m_selection.GetPart()->UpdatePropertyPane(props);
                   if (props.GetModifiedField() > 0)
-                  {
-                     editor.m_renderer->ReinitRenderable(editor.m_selection.GetPart()->GetEditable()->GetIRenderable());
-                     editor.m_player->m_physics->Update(editor.m_selection.GetPart()->GetEditable());
-                  }
+                     RefreshEditedParts(props);
                   break;
                case Selection::S_IMAGE: ImageProperties(props, editor.m_selection.GetImage()); break;
                case Selection::S_CAMERA: CameraProperties(props, editor.m_selection.GetCamera()); break;
@@ -109,7 +119,13 @@ void PropertiesPanel::Render(float topBarHeight)
          IEditable *const editable = editor.m_selection.GetPart()->GetEditable();
          const string nameBefore = editable->GetName();
          editor.m_undo.BeginUndo();
-         editor.m_undo.MarkForUndo(editable);
+         if (props.IsMultiEdit()) // Multi-edit applies the field changes to every selected part
+         {
+            for (const std::shared_ptr<EditorUIPart> &part : editor.m_multiSel)
+               editor.m_undo.MarkForUndo(part->GetEditable());
+         }
+         else
+            editor.m_undo.MarkForUndo(editable);
          // The playfield mesh pane edits table fields, which the primitive's undo state does not hold
          if (editable->GetItemType() == eItemPrimitive && static_cast<const Primitive *>(editable)->IsPlayfield())
          {
@@ -137,10 +153,7 @@ void PropertiesPanel::Render(float topBarHeight)
             editor.m_undo.Discard();
          }
          if (props.GetModifiedField() > 0)
-         {
-            editor.m_renderer->ReinitRenderable(editor.m_selection.GetPart()->GetEditable()->GetIRenderable());
-            editor.m_player->m_physics->Update(editor.m_selection.GetPart()->GetEditable());
-         }
+            RefreshEditedParts(props);
          break;
       }
       case Selection::S_IMAGE: ImageProperties(props, editor.m_selection.GetImage()); break;
@@ -156,6 +169,25 @@ void PropertiesPanel::Render(float topBarHeight)
 
    ImGui::End();
    ImGui::PopStyleVar(3);
+}
+
+void PropertiesPanel::RefreshEditedParts(PropertyPane &props)
+{
+   EditorUI &editor = m_editor;
+   const auto refresh = [&editor](const std::shared_ptr<EditorUIPart> &part)
+   {
+      editor.m_renderer->ReinitRenderable(part->GetEditable()->GetIRenderable());
+      editor.m_player->m_physics->Update(part->GetEditable());
+      // Multi-edit writes the co-edited parts' visibility fields directly: resync their editor overrides
+      // (the active part's overrides are updated by the pane's own setters, so it must be excluded)
+      if (part != editor.m_selection.GetPart())
+         part->SyncVisibilityOverrides();
+   };
+   if (props.IsMultiEdit())
+      for (const std::shared_ptr<EditorUIPart> &part : editor.m_multiSel)
+         refresh(part);
+   else
+      refresh(editor.m_selection.GetPart());
 }
 
 void PropertiesPanel::TableProperties(PropertyPane &props)

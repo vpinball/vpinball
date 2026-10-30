@@ -44,6 +44,10 @@ private:
    void SoundProperties(PropertyPane &props, VPX::Sound *sound);
    void CollectionProperties(PropertyPane &props, Collection *collection);
 
+   // Rebuilds renderables & physics of the parts modified through the pane: the edited one, plus all
+   // co-edited parts of a multi-edit selection (also resyncing their editor visibility overrides)
+   void RefreshEditedParts(PropertyPane &props);
+
    // Resource actions offered at the top of the image/sound/material property panes,
    // matching the actions of the corresponding Win32 manager dialogs
    void ImageActions(PropertyPane &props);
