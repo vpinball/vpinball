@@ -223,7 +223,7 @@ public:
    {
       LARGE_INTEGER stop;
       QueryPerformanceCounter(&stop);
-      return ((stop.QuadPart - m_Time_StartValue.QuadPart) * m_Time_OneMillisecond);
+      return ((double)(stop.QuadPart - m_Time_StartValue.QuadPart) * m_Time_OneMillisecond);
    }
 
    /// <summary>
