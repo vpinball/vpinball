@@ -132,6 +132,57 @@ void EditorChrome::RenderToolbar()
    {
       const float iconSize = ImGui::GetContentRegionAvail().y;
 
+      // File operations: same actions as the File menu, each button opening a sub menu
+      if (ImGui::Button(ICON_FK_FILE))
+         ImGui::OpenPopup("New table Popup");
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("New table\n[Ctrl+N]");
+      if (ImGui::BeginPopup("New table Popup"))
+      {
+         if (ImGui::MenuItem("New Table", "Ctrl+N"))
+            editor.NewTable(EditorUI::NewTableTemplate::Blank);
+         if (ImGui::MenuItem("Completely Blank Table"))
+            editor.NewTable(EditorUI::NewTableTemplate::Stripped);
+         if (ImGui::MenuItem("Full Example Table"))
+            editor.NewTable(EditorUI::NewTableTemplate::Example);
+         if (ImGui::MenuItem("Light Sequence Demo Table"))
+            editor.NewTable(EditorUI::NewTableTemplate::LightSeq);
+         ImGui::EndPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(ICON_FK_FOLDER_OPEN))
+         ImGui::OpenPopup("Open table Popup");
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Open table");
+      if (ImGui::BeginPopup("Open table Popup"))
+      {
+         if (ImGui::MenuItem("Table file..."))
+            editor.LoadTable();
+         if (ImGui::MenuItem("Table pack folder..."))
+            editor.LoadTableFolder();
+         ImGui::EndPopup();
+      }
+      ImGui::SameLine();
+      ImGui::BeginDisabled(editor.m_table->IsLocked());
+      if (ImGui::Button(ICON_FK_FLOPPY_O))
+         ImGui::OpenPopup("Save table Popup");
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Save table\n[Ctrl+S]");
+      if (ImGui::BeginPopup("Save table Popup"))
+      {
+         if (ImGui::MenuItem("Save", "Ctrl+S"))
+            editor.SaveTable();
+         if (ImGui::MenuItem("Save As File..."))
+            editor.SaveTableAs();
+         if (ImGui::MenuItem("Save As Pack Folder..."))
+            editor.SaveTableAsPackFolder();
+         ImGui::EndPopup();
+      }
+      ImGui::EndDisabled();
+      ImGui::SameLine();
+      ImGui::Separator();
+      ImGui::SameLine();
+
       // Play a shallow copy of the edited table
       ImGui::BeginDisabled(editor.m_table->IsLocked());
       if (ImGui::Button(ICON_FK_PLAY))
