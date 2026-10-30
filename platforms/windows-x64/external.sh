@@ -655,6 +655,7 @@ if [ "${OPUS_EXPECTED_SHA}" != "${OPUS_FOUND_SHA}" ]; then
       -DBUILD_SHARED_LIBS=OFF \
       -DOPUS_BUILD_PROGRAMS=OFF \
       -DOPUS_BUILD_TESTING=OFF \
+      -DOPUS_STATIC_RUNTIME=ON \
       -DCMAKE_INSTALL_PREFIX="$PWD/../install" \
       -B build
    cmake --build build --config ${BUILD_TYPE}
