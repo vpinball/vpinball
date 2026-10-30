@@ -25,6 +25,9 @@ echo "  PINMAME_MEMMAPS_SHA: ${PINMAME_MEMMAPS_SHA}"
 echo "  PINMAME_GAMEDEFS_SHA: ${PINMAME_GAMEDEFS_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
+echo "  LIBPUPDMD_SHA: ${LIBPUPDMD_SHA}"
+echo "  LIBVNI_SHA: ${LIBVNI_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
@@ -310,6 +313,43 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    tar xzf libdmdutil-${LIBDMDUTIL_SHA}.tar.gz
    mv libdmdutil-${LIBDMDUTIL_SHA} libdmdutil
    cd libdmdutil
+   ENABLE_SERUM=OFF ENABLE_VNI=OFF ENABLE_PUP=OFF ./platforms/win/x64/external.sh
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -DENABLE_SERUM=OFF \
+      -DENABLE_VNI=OFF \
+      -DENABLE_PUP=OFF \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBDMDUTIL_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libserum
+#
+
+LIBSERUM_EXPECTED_SHA="${LIBSERUM_SHA}"
+LIBSERUM_FOUND_SHA="$([ -f libserum/cache.txt ] && cat libserum/cache.txt || echo "")"
+
+if [ "${LIBSERUM_EXPECTED_SHA}" != "${LIBSERUM_FOUND_SHA}" ]; then
+   echo "Building libserum. Expected: ${LIBSERUM_EXPECTED_SHA}, Found: ${LIBSERUM_FOUND_SHA}"
+
+   rm -rf libserum
+   mkdir libserum
+   cd libserum
+
+   curl -sL https://github.com/PPUC/libserum/archive/${LIBSERUM_SHA}.tar.gz -o libserum-${LIBSERUM_SHA}.tar.gz
+   tar xzf libserum-${LIBSERUM_SHA}.tar.gz
+   mv libserum-${LIBSERUM_SHA} libserum
+   cd libserum
    ./platforms/win/x64/external.sh
    cmake \
       -G "Visual Studio 18 2026" \
@@ -321,7 +361,74 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    cmake --build build --config ${BUILD_TYPE}
    cd ..
 
-   echo "$LIBDMDUTIL_EXPECTED_SHA" > cache.txt
+   echo "$LIBSERUM_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libpupdmd
+#
+
+LIBPUPDMD_EXPECTED_SHA="${LIBPUPDMD_SHA}"
+LIBPUPDMD_FOUND_SHA="$([ -f libpupdmd/cache.txt ] && cat libpupdmd/cache.txt || echo "")"
+
+if [ "${LIBPUPDMD_EXPECTED_SHA}" != "${LIBPUPDMD_FOUND_SHA}" ]; then
+   echo "Building libpupdmd. Expected: ${LIBPUPDMD_EXPECTED_SHA}, Found: ${LIBPUPDMD_FOUND_SHA}"
+
+   rm -rf libpupdmd
+   mkdir libpupdmd
+   cd libpupdmd
+
+   curl -sL https://github.com/PPUC/libpupdmd/archive/${LIBPUPDMD_SHA}.tar.gz -o libpupdmd-${LIBPUPDMD_SHA}.tar.gz
+   tar xzf libpupdmd-${LIBPUPDMD_SHA}.tar.gz
+   mv libpupdmd-${LIBPUPDMD_SHA} libpupdmd
+   cd libpupdmd
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBPUPDMD_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libvni
+#
+
+LIBVNI_EXPECTED_SHA="${LIBVNI_SHA}"
+LIBVNI_FOUND_SHA="$([ -f libvni/cache.txt ] && cat libvni/cache.txt || echo "")"
+
+if [ "${LIBVNI_EXPECTED_SHA}" != "${LIBVNI_FOUND_SHA}" ]; then
+   echo "Building libvni. Expected: ${LIBVNI_EXPECTED_SHA}, Found: ${LIBVNI_FOUND_SHA}"
+
+   rm -rf libvni
+   mkdir libvni
+   cd libvni
+
+   curl -sL https://github.com/PPUC/libvni/archive/${LIBVNI_SHA}.tar.gz -o libvni-${LIBVNI_SHA}.tar.gz
+   tar xzf libvni-${LIBVNI_SHA}.tar.gz
+   mv libvni-${LIBVNI_SHA} libvni
+   cd libvni
+   ./platforms/win/x64/external.sh
+   cmake \
+      -G "Visual Studio 18 2026" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBVNI_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
@@ -634,22 +741,22 @@ cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/zedmd64.lib ../../../third-party/build-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/zedmd64.dll ../../../third-party/runtime-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/include/ZeDMD.h ../../../third-party/include
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/serum64.lib ../../../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/serum64.dll ../../../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/include/serum.h ../../../third-party/include
-cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../../../third-party/include
+cp libserum/libserum/build/${BUILD_TYPE}/serum64.lib ../../../third-party/build-libs/windows-x64
+cp libserum/libserum/build/${BUILD_TYPE}/serum64.dll ../../../third-party/runtime-libs/windows-x64
+cp libserum/libserum/src/serum.h ../../../third-party/include
+cp libserum/libserum/src/serum-decode.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/libserialport64.lib ../../../third-party/build-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/libserialport64-0.dll ../../../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/pupdmd64.lib ../../../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/pupdmd64.dll ../../../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
+cp libpupdmd/libpupdmd/build/${BUILD_TYPE}/pupdmd64.lib ../../../third-party/build-libs/windows-x64
+cp libpupdmd/libpupdmd/build/${BUILD_TYPE}/pupdmd64.dll ../../../third-party/runtime-libs/windows-x64
+cp libpupdmd/libpupdmd/src/pupdmd.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/sockpp64.lib ../../../third-party/build-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/sockpp64.dll ../../../third-party/runtime-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/cargs64.lib ../../../third-party/build-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/cargs64.dll ../../../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/vni64.lib ../../../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/vni64.dll ../../../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/include/vni.h ../../../third-party/include
+cp libvni/libvni/build/${BUILD_TYPE}/vni64.lib ../../../third-party/build-libs/windows-x64
+cp libvni/libvni/build/${BUILD_TYPE}/vni64.dll ../../../third-party/runtime-libs/windows-x64
+cp libvni/libvni/src/vni.h ../../../third-party/include
 
 cp libaltsound/libaltsound/build/${BUILD_TYPE}/altsound64.lib ../../../third-party/build-libs/windows-x64
 cp libaltsound/libaltsound/build/${BUILD_TYPE}/altsound64.dll ../../../third-party/runtime-libs/windows-x64

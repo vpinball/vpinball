@@ -46,6 +46,12 @@ MSGPI_INT_VAL_SETTING(zeDMDSPIHeightProp, "ZeDMDSPIHeight", "ZeDMDSPIHeight", ""
 MSGPI_BOOL_VAL_SETTING(pixelcadeProp, "Pixelcade", "Pixelcade", "", true, false);
 MSGPI_STRING_VAL_SETTING(pixelcadeDeviceProp, "PixelcadeDevice", "PixelcadeDevice", "", true, "", 1024);
 MSGPI_BOOL_VAL_SETTING(pin2dmdProp, "PIN2DMD", "PIN2DMD", "", true, false);
+MSGPI_BOOL_VAL_SETTING(pinDMD3Prop, "PinDMD3", "PinDMD3", "", true, false);
+MSGPI_STRING_VAL_SETTING(pinDMD3DeviceProp, "PinDMD3Device", "PinDMD3Device", "", true, "", 1024);
+MSGPI_BOOL_VAL_SETTING(dmdExtStreamProp, "DMDExtStream", "DMDExtStream", "", true, false);
+MSGPI_STRING_VAL_SETTING(dmdExtStreamUrlProp, "DMDExtStreamUrl", "DMDExtStreamUrl", "", true, "ws://127.0.0.1/dmd", 1024);
+MSGPI_BOOL_VAL_SETTING(dmdExtStreamRetryProp, "DMDExtStreamRetry", "DMDExtStreamRetry", "", true, false);
+MSGPI_INT_VAL_SETTING(dmdExtStreamRetryIntervalProp, "DMDExtStreamRetryInterval", "DMDExtStreamRetryInterval", "", true, 1, 3600, 5);
 MSGPI_BOOL_VAL_SETTING(dmdServerFolderProp, "DMDServer", "DMDServer", "", true, false);
 MSGPI_STRING_VAL_SETTING(dmdServerAddrFolderProp, "DMDServerAddr", "DMDServerAddr", "", true, "localhost", 1024);
 MSGPI_INT_VAL_SETTING(dmdServerPortFolderProp, "DMDServerPort", "DMDServerPort", "", true, 0, 65535, 6789);
@@ -87,6 +93,12 @@ public:
       pConfig->SetPixelcade(pixelcadeProp_Val);
       pConfig->SetPixelcadeDevice(pixelcadeDeviceProp_Get());
       pConfig->SetPIN2DMD(pin2dmdProp_Val);
+      pConfig->SetPinDMD3(pinDMD3Prop_Val);
+      pConfig->SetPinDMD3Device(pinDMD3DeviceProp_Get());
+      pConfig->SetDMDExtStream(dmdExtStreamProp_Val);
+      pConfig->SetDMDExtStreamUrl(dmdExtStreamUrlProp_Get());
+      pConfig->SetDMDExtStreamRetry(dmdExtStreamRetryProp_Val);
+      pConfig->SetDMDExtStreamRetryInterval(dmdExtStreamRetryIntervalProp_Val);
       pConfig->SetDMDServer(dmdServerFolderProp_Val);
       pConfig->SetDMDServerAddr(dmdServerAddrFolderProp_Get());
       pConfig->SetDMDServerPort(dmdServerPortFolderProp_Val);
@@ -280,6 +292,12 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
    msgApi->RegisterSetting(endpointId, &pixelcadeProp);
    msgApi->RegisterSetting(endpointId, &pixelcadeDeviceProp);
    msgApi->RegisterSetting(endpointId, &pin2dmdProp);
+   msgApi->RegisterSetting(endpointId, &pinDMD3Prop);
+   msgApi->RegisterSetting(endpointId, &pinDMD3DeviceProp);
+   msgApi->RegisterSetting(endpointId, &dmdExtStreamProp);
+   msgApi->RegisterSetting(endpointId, &dmdExtStreamUrlProp);
+   msgApi->RegisterSetting(endpointId, &dmdExtStreamRetryProp);
+   msgApi->RegisterSetting(endpointId, &dmdExtStreamRetryIntervalProp);
    msgApi->RegisterSetting(endpointId, &dmdServerFolderProp);
    msgApi->RegisterSetting(endpointId, &dmdServerAddrFolderProp);
    msgApi->RegisterSetting(endpointId, &dmdServerPortFolderProp);

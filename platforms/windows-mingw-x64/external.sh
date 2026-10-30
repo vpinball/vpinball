@@ -18,6 +18,9 @@ echo "  PINMAME_MEMMAPS_SHA: ${PINMAME_MEMMAPS_SHA}"
 echo "  PINMAME_GAMEDEFS_SHA: ${PINMAME_GAMEDEFS_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
+echo "  LIBPUPDMD_SHA: ${LIBPUPDMD_SHA}"
+echo "  LIBVNI_SHA: ${LIBVNI_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
@@ -309,18 +312,122 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    tar xzf libdmdutil-${LIBDMDUTIL_SHA}.tar.gz
    mv libdmdutil-${LIBDMDUTIL_SHA} libdmdutil
    cd libdmdutil
-   ./platforms/win-mingw/x64/external.sh
+   ENABLE_SERUM=OFF ENABLE_VNI=OFF ENABLE_PUP=OFF ./platforms/win-mingw/x64/external.sh
    cmake \
       -DPLATFORM=win-mingw \
       -DARCH=x64 \
       -DBUILD_SHARED=ON \
       -DBUILD_STATIC=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DENABLE_SERUM=OFF \
+      -DENABLE_VNI=OFF \
+      -DENABLE_PUP=OFF \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    cd ..
 
    echo "$LIBDMDUTIL_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libserum
+#
+
+LIBSERUM_EXPECTED_SHA="${LIBSERUM_SHA}"
+LIBSERUM_FOUND_SHA="$([ -f libserum/cache.txt ] && cat libserum/cache.txt || echo "")"
+
+if [ "${LIBSERUM_EXPECTED_SHA}" != "${LIBSERUM_FOUND_SHA}" ]; then
+   echo "Building libserum. Expected: ${LIBSERUM_EXPECTED_SHA}, Found: ${LIBSERUM_FOUND_SHA}"
+
+   rm -rf libserum
+   mkdir libserum
+   cd libserum
+
+   curl -sL https://github.com/PPUC/libserum/archive/${LIBSERUM_SHA}.tar.gz -o libserum-${LIBSERUM_SHA}.tar.gz
+   tar xzf libserum-${LIBSERUM_SHA}.tar.gz
+   mv libserum-${LIBSERUM_SHA} libserum
+   cd libserum
+   ./platforms/win-mingw/x64/external.sh
+   cmake \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DPLATFORM=win-mingw \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBSERUM_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libpupdmd
+#
+
+LIBPUPDMD_EXPECTED_SHA="${LIBPUPDMD_SHA}"
+LIBPUPDMD_FOUND_SHA="$([ -f libpupdmd/cache.txt ] && cat libpupdmd/cache.txt || echo "")"
+
+if [ "${LIBPUPDMD_EXPECTED_SHA}" != "${LIBPUPDMD_FOUND_SHA}" ]; then
+   echo "Building libpupdmd. Expected: ${LIBPUPDMD_EXPECTED_SHA}, Found: ${LIBPUPDMD_FOUND_SHA}"
+
+   rm -rf libpupdmd
+   mkdir libpupdmd
+   cd libpupdmd
+
+   curl -sL https://github.com/PPUC/libpupdmd/archive/${LIBPUPDMD_SHA}.tar.gz -o libpupdmd-${LIBPUPDMD_SHA}.tar.gz
+   tar xzf libpupdmd-${LIBPUPDMD_SHA}.tar.gz
+   mv libpupdmd-${LIBPUPDMD_SHA} libpupdmd
+   cd libpupdmd
+   cmake \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DPLATFORM=win-mingw \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBPUPDMD_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
+# build libvni
+#
+
+LIBVNI_EXPECTED_SHA="${LIBVNI_SHA}"
+LIBVNI_FOUND_SHA="$([ -f libvni/cache.txt ] && cat libvni/cache.txt || echo "")"
+
+if [ "${LIBVNI_EXPECTED_SHA}" != "${LIBVNI_FOUND_SHA}" ]; then
+   echo "Building libvni. Expected: ${LIBVNI_EXPECTED_SHA}, Found: ${LIBVNI_FOUND_SHA}"
+
+   rm -rf libvni
+   mkdir libvni
+   cd libvni
+
+   curl -sL https://github.com/PPUC/libvni/archive/${LIBVNI_SHA}.tar.gz -o libvni-${LIBVNI_SHA}.tar.gz
+   tar xzf libvni-${LIBVNI_SHA}.tar.gz
+   mv libvni-${LIBVNI_SHA} libvni
+   cd libvni
+   ./platforms/win-mingw/x64/external.sh
+   cmake \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -DPLATFORM=win-mingw \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBVNI_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
@@ -651,19 +758,19 @@ cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/zedmd64.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp libdmdutil/libdmdutil/third-party/build-libs/win-mingw/x64/zedmd64.dll.a ../../../third-party/build-libs/windows-mingw-x64
 cp libdmdutil/libdmdutil/third-party/include/ZeDMD.h ../../../third-party/include
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/serum64.dll ../../../third-party/runtime-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/build-libs/win-mingw/x64/serum64.dll.a ../../../third-party/build-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/include/serum.h ../../../third-party/include
-cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../../../third-party/include
+cp libserum/libserum/build/serum64.dll ../../../third-party/runtime-libs/windows-mingw-x64
+cp libserum/libserum/build/serum64.dll.a ../../../third-party/build-libs/windows-mingw-x64
+cp libserum/libserum/src/serum.h ../../../third-party/include
+cp libserum/libserum/src/serum-decode.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/libserialport64-0.dll ../../../third-party/runtime-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/pupdmd64.dll ../../../third-party/runtime-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/build-libs/win-mingw/x64/pupdmd64.dll.a ../../../third-party/build-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
+cp libpupdmd/libpupdmd/build/pupdmd64.dll ../../../third-party/runtime-libs/windows-mingw-x64
+cp libpupdmd/libpupdmd/build/pupdmd64.dll.a ../../../third-party/build-libs/windows-mingw-x64
+cp libpupdmd/libpupdmd/src/pupdmd.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/libsockpp64.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/libcargs64.dll ../../../third-party/runtime-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/vni64.dll ../../../third-party/runtime-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/build-libs/win-mingw/x64/vni64.dll.a ../../../third-party/build-libs/windows-mingw-x64
-cp libdmdutil/libdmdutil/third-party/include/vni.h ../../../third-party/include
+cp libvni/libvni/build/vni64.dll ../../../third-party/runtime-libs/windows-mingw-x64
+cp libvni/libvni/build/vni64.dll.a ../../../third-party/build-libs/windows-mingw-x64
+cp libvni/libvni/src/vni.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win-mingw/x64/libusb64-1.0.dll ../../../third-party/runtime-libs/windows-mingw-x64
 
 cp libaltsound/libaltsound/build/altsound64.dll ../../../third-party/runtime-libs/windows-mingw-x64
