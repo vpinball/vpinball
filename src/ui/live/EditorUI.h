@@ -18,8 +18,11 @@
 #include "math/matrix.h"
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
+#include "ui/VPXFileFeedback.h"
 
+#include <atomic>
 #include <optional>
+#include <thread>
 
 class LiveUI;
 class PinTable;
@@ -199,7 +202,7 @@ private:
    };
 
    // File operations (the 'Save As' and 'Load' file dialogs are asynchronous: their result is applied in RenderUI)
-   bool SaveTable(); // Returns true if the table was saved
+   void SaveTable();
    void SaveTableAs();
    void SaveTableAsPackFolder(); // Save as a VPZ folder pack
    void LoadTable();
@@ -214,6 +217,42 @@ private:
    bool m_pendingLoadFolder = false; // Pending 'Load' result is a folder pack, not a file
    std::optional<NewTableTemplate> m_pendingNewTable; // New table template awaiting the 'discard unsaved changes' confirmation
    bool m_confirmLoadTable = false; // Request the 'discard unsaved changes' confirmation popup in RenderUI
+
+   // Asynchronous file operations: table loading and saving run on a worker thread while a modal progress
+   // feedback blocks all user interaction. The result is applied on the main thread in RenderUI.
+   struct FileOpFeedback final : public VPXFileFeedback
+   {
+      std::atomic<unsigned int> progress { 0 };
+      std::atomic<unsigned int> length { 0 };
+      void SetProgress(const unsigned int value) override { progress = value; }
+      void SetLength(const unsigned int value) override { length = value; }
+   };
+   struct AsyncFileOp
+   {
+      enum class Type
+      {
+         Load,
+         NewTable,
+         Save
+      };
+      ~AsyncFileOp();
+      Type type = Type::Load;
+      std::filesystem::path filename; // File being loaded or saved
+      string displayPath; // Path displayed in the progress modal
+      FileOpFeedback feedback;
+      HRESULT result = E_FAIL; // Written by the worker thread before flagging the operation as completed
+      std::atomic<bool> completed { false };
+      std::thread worker;
+      PinTable *table = nullptr; // Loaded table (load ops only): reference adopted by the player on success, released on failure
+      // 'Save As' restore data: filename and title to restore when the save fails
+      bool restoreOnFailure = false;
+      std::filesystem::path previousFilename;
+      string previousTitle;
+   };
+   std::unique_ptr<AsyncFileOp> m_fileOp; // Running asynchronous file operation (all editor interaction is blocked while set)
+   void StartFileOp(std::unique_ptr<AsyncFileOp> op);
+   void FinishFileOp();
+   void RenderFileOpModal();
 
    // Part library (import/export of parts through partial VPZ packs, handled by the PartLibraryPanel dialog)
    void OpenPartLibrary() { m_partLibrary.Show(); }
