@@ -37,6 +37,7 @@ bool LayeredINIPropertyStore::Load()
    mINI::INIFile file(m_path);
    if (file.read(m_ini))
    {
+      DiscardExcludedGroups();
       for (PropertyRegistry::PropId id : m_registry.get().GetPropertyIds())
          LoadFromINI(id);
       SetModified(false);
@@ -55,6 +56,7 @@ void LayeredINIPropertyStore::Load(const mINI::INIStructure& ini)
    m_floatValues.clear();
    m_stringValues.clear();
    m_ini = ini;
+   DiscardExcludedGroups();
    for (PropertyRegistry::PropId id : m_registry.get().GetPropertyIds())
       LoadFromINI(id);
 }
@@ -66,11 +68,41 @@ void LayeredINIPropertyStore::Load(const LayeredINIPropertyStore& store)
    m_floatValues = store.m_floatValues;
    m_stringValues = store.m_stringValues;
    m_ini = store.m_ini;
+   DiscardExcludedGroups();
+}
+
+void LayeredINIPropertyStore::DiscardExcludedGroups()
+{
+   for (const string& group : m_saveExcludedGroups)
+      m_ini.remove(group);
+   for (PropertyRegistry::PropId id : m_registry.get().GetPropertyIds())
+   {
+      if (FindIndexOf(m_saveExcludedGroups, m_registry.get().GetProperty(id)->m_groupId) == -1)
+         continue;
+      switch (id.type)
+      {
+      case PropertyRegistry::StoreType::Int:
+         if (id.index < m_intValues.size())
+            m_intValues[id.index].defined = false;
+         break;
+      case PropertyRegistry::StoreType::Float:
+         if (id.index < m_floatValues.size())
+            m_floatValues[id.index].defined = false;
+         break;
+      case PropertyRegistry::StoreType::String:
+         if (id.index < m_stringValues.size())
+            m_stringValues[id.index].defined = false;
+         break;
+      default: break;
+      }
+   }
 }
 
 bool LayeredINIPropertyStore::LoadFromINI(PropertyRegistry::PropId id)
 {
    const PropertyDef* prop = m_registry.get().GetProperty(id);
+   if (FindIndexOf(m_saveExcludedGroups, prop->m_groupId) != -1)
+      return false;
    if (!m_ini.has(prop->m_groupId) || !m_ini[prop->m_groupId].has(prop->m_propId))
       return false;
    const string& value = m_ini[prop->m_groupId][prop->m_propId];
@@ -138,7 +170,7 @@ void LayeredINIPropertyStore::Save()
    for (id.index = 0; id.index < m_intValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
-      if (!m_parent && prop->m_groupId == "TableOption"s)
+      if (FindIndexOf(m_saveExcludedGroups, prop->m_groupId) != -1)
          continue;
       if (m_intValues[id.index].defined)
       {
@@ -159,7 +191,7 @@ void LayeredINIPropertyStore::Save()
    for (id.index = 0; id.index < m_floatValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
-      if (!m_parent && prop->m_groupId == "TableOption"s)
+      if (FindIndexOf(m_saveExcludedGroups, prop->m_groupId) != -1)
          continue;
       if (m_floatValues[id.index].defined)
       {
@@ -180,7 +212,7 @@ void LayeredINIPropertyStore::Save()
    for (id.index = 0; id.index < m_stringValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
-      if (!m_parent && prop->m_groupId == "TableOption"s)
+      if (FindIndexOf(m_saveExcludedGroups, prop->m_groupId) != -1)
          continue;
       if (m_stringValues[id.index].defined)
       {
@@ -254,7 +286,7 @@ void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path
 
    vector<string> groups;
    for (const auto propId : m_registry.get().GetPropertyIds())
-      if (const string& group = m_registry.get().GetProperty(propId)->m_groupId; FindIndexOf(groups, group) == -1)
+      if (const string& group = m_registry.get().GetProperty(propId)->m_groupId; FindIndexOf(groups, group) == -1 && FindIndexOf(m_saveExcludedGroups, group) == -1)
          groups.push_back(group);
 
    auto toHex = [](unsigned int rgba) -> string

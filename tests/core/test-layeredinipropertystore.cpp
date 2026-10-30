@@ -390,15 +390,34 @@ TEST_CASE("LayeredINIPropertyStore")
       CHECK(childIni["TestGroup"s]["CtxInt"s] == "5");
    }
 
-   SUBCASE("root store never writes TableOption keys")
+   SUBCASE("root store persists all groups when no exclusion is defined")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-noexcl.ini";
+
+      // The store has no hardcoded group exclusion: without AddSaveExcludedGroup, everything persists
+      LayeredINIPropertyStore store(registry);
+      store.SetIniPath(iniPath);
+      store.Set(ids.tableOptionBool, 1);
+      store.Save();
+
+      mINI::INIStructure ini;
+      REQUIRE(mINI::INIFile(iniPath).read(ini));
+      REQUIRE(ini.has("TableOption"s));
+      CHECK(ini["TableOption"s]["OptBool"s] == "1");
+   }
+
+   SUBCASE("excluded groups never write undefined keys")
    {
       PropertyRegistry registry;
       const auto ids = RegisterTestProps(registry);
       const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-tableopt-root.ini";
 
       LayeredINIPropertyStore store(registry);
+      store.AddSaveExcludedGroup("TableOption"s);
       store.SetIniPath(iniPath);
-      store.Set(ids.intProp, 7); // non-TableOption change so the store saves; leave options undefined
+      store.Set(ids.intProp, 7); // non-excluded change so the store saves; leave options undefined
       store.Save();
 
       mINI::INIStructure ini;
@@ -407,13 +426,14 @@ TEST_CASE("LayeredINIPropertyStore")
       CHECK(ini["TestGroup"s].has("BoolProp"s)); // a normal undefined prop still gets its empty key
    }
 
-   SUBCASE("root store never writes a defined TableOption value")
+   SUBCASE("excluded groups never write defined values")
    {
       PropertyRegistry registry;
       const auto ids = RegisterTestProps(registry);
       const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-tableopt-defined.ini";
 
       LayeredINIPropertyStore store(registry);
+      store.AddSaveExcludedGroup("TableOption"s);
       store.SetIniPath(iniPath);
       store.Set(ids.tableOptionBool, 1);
       store.Set(ids.tableOptionInt, 9);
@@ -424,6 +444,55 @@ TEST_CASE("LayeredINIPropertyStore")
       CHECK_FALSE(ini.has("TableOption"s));
    }
 
+   SUBCASE("excluded groups are discarded on load")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-excl-load.ini";
+
+      {
+         mINI::INIStructure ini;
+         ini["TableOption"s]["OptInt"s] = "9";
+         ini["TestGroup"s]["IntProp"s] = "7";
+         REQUIRE(mINI::INIFile(iniPath).write(ini));
+      }
+
+      LayeredINIPropertyStore store(registry);
+      store.AddSaveExcludedGroup("TableOption"s);
+      store.SetIniPath(iniPath);
+      REQUIRE(store.Load());
+
+      CHECK(store.GetInt(ids.tableOptionInt) == 3); // falls back to its default: never loaded
+      CHECK(store.GetInt(ids.intProp) == 7);
+   }
+
+   SUBCASE("excluded groups are dropped from the ini on save")
+   {
+      PropertyRegistry registry;
+      const auto ids = RegisterTestProps(registry);
+      const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-excl-discard.ini";
+
+      {
+         mINI::INIStructure ini;
+         ini["TableOption"s]["OptInt"s] = "9";
+         ini["TestGroup"s]["IntProp"s] = "7";
+         REQUIRE(mINI::INIFile(iniPath).write(ini));
+      }
+
+      LayeredINIPropertyStore store(registry);
+      store.AddSaveExcludedGroup("TableOption"s);
+      store.SetIniPath(iniPath);
+      REQUIRE(store.Load());
+
+      store.Set(ids.intProp, 8); // force a save
+      store.Save();
+
+      mINI::INIStructure ini;
+      REQUIRE(mINI::INIFile(iniPath).read(ini));
+      CHECK_FALSE(ini.has("TableOption"s)); // the stale section was discarded, not carried over
+      CHECK(ini["TestGroup"s]["IntProp"s] == "8");
+   }
+
    SUBCASE("other contextual (plugin) props still persist at root")
    {
       PropertyRegistry registry;
@@ -431,17 +500,18 @@ TEST_CASE("LayeredINIPropertyStore")
       const std::filesystem::path iniPath = GetTestTmpDir() / "layered-store-plugin-root.ini";
 
       LayeredINIPropertyStore store(registry);
+      store.AddSaveExcludedGroup("TableOption"s);
       store.SetIniPath(iniPath);
       store.Set(ids.pluginBool, 1);
       store.Save();
 
       mINI::INIStructure ini;
       REQUIRE(mINI::INIFile(iniPath).read(ini));
-      REQUIRE(ini.has("Plugin.test"s)); // contextual, but not a table option: keeps saving globally
+      REQUIRE(ini.has("Plugin.test"s)); // contextual, but not excluded: keeps saving globally
       CHECK(ini["Plugin.test"s]["PlugBool"s] == "1");
    }
 
-   SUBCASE("child store still persists TableOption overrides")
+   SUBCASE("child store still persists groups excluded by its parent")
    {
       PropertyRegistry registry;
       const auto ids = RegisterTestProps(registry);
@@ -449,6 +519,7 @@ TEST_CASE("LayeredINIPropertyStore")
       const std::filesystem::path childPath = GetTestTmpDir() / "layered-tableopt-child.ini";
 
       LayeredINIPropertyStore parent(registry);
+      parent.AddSaveExcludedGroup("TableOption"s);
       parent.SetIniPath(parentPath);
       LayeredINIPropertyStore child(parent);
       child.SetIniPath(childPath);
