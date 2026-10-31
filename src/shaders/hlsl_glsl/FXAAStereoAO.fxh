@@ -191,11 +191,16 @@ float3 decompress_normal(const float2 c)
 }
 #endif
 
-float depthToViewZ(const float2 u, const float d) // view space z from depth buffer value
+float3 depthToViewPos(const float2 u, const float d) // view space position from depth buffer value
 {
    const float4 clip = float4(u.x * 2.0 - 1.0, 1.0 - u.y * 2.0, d, 1.0);
    const float4 p = mul(clip, matProjInv);
-   return p.z / p.w;
+   return p.xyz / p.w;
+}
+
+float depthToViewZ(const float2 u, const float d) // view space z from depth buffer value
+{
+   return depthToViewPos(u, d).z;
 }
 
 float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
@@ -225,10 +230,14 @@ float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
 	//const float3 normal = texNoLod(tex_normals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
-	// Screen footprint of a view space hemisphere: uv radius = radius * P / (2 * z), with
-	// P = 1/matProjInv[1][1] the projection's vertical scale for a perspective matrix
-	const float z0 = depthToViewZ(u, depth0);
-	const float radius_depth = (radius * 0.5) / (matProjInv[1][1] * z0);
+	// Screen footprint of the view space sampling disc: view space units per uv unit
+	// ratio, evaluated by unprojecting the neighboring texels. This supports the rotated,
+	// scaled and sheared projections of the cabinet/legacy view setups, for which the
+	// footprint can not be reduced to a single projection matrix term.
+	const float3 vp0 = depthToViewPos(u, depth0);
+	const float2 radius_uv = radius * w_h_height.xy / float2(length(depthToViewPos(u + float2(w_h_height.x, 0.), depth0) - vp0),
+	                                                       length(depthToViewPos(u + float2(0., w_h_height.y), depth0) - vp0));
+	const float z0 = vp0.z;
 
 	float occlusion = 0.0;
 	UNROLL for(int i=0; i < samples; ++i) {
@@ -237,7 +246,7 @@ float4 ps_main_ao(const in VS_OUTPUT_2D IN) : COLOR
 		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
 		//!! maybe a bit worse distribution: const float2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
-		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
+		const float2 hemi_ray = u + (radius_uv /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = texStereoNoLod(tex_depth, hemi_ray).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		//const float3 occ_normal = texNoLod(tex_normals, hemi_ray).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
