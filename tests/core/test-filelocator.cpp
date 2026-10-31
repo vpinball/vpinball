@@ -21,6 +21,17 @@ TEST_CASE("FileLocator")
       CHECK_FALSE(locator.GetAppPath(FileLocator::AppSubFolder::Preferences).empty());
    }
 
+   SUBCASE("plugin folders, installation first")
+   {
+      const std::vector<std::filesystem::path> folders = locator.GetPluginFolders();
+      REQUIRE_FALSE(folders.empty());
+      CHECK(folders.front() == locator.GetAppPath(FileLocator::AppSubFolder::Plugins));
+      const std::filesystem::path user = locator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "plugins";
+      CHECK(folders.size() == (DirExists(user) ? 2u : 1u));
+      if (folders.size() == 2)
+         CHECK(folders.back() == user);
+   }
+
    SUBCASE("script search")
    {
       CHECK(locator.SearchScript(nullptr, "no-such-script-file-xyz.vbs").empty());

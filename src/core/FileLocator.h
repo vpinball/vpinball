@@ -36,13 +36,13 @@ public:
       GLShaders,
       // Read/write user documents
       Tables,
-      Preferences,
-      UserPlugins // plugins installed per user, outside a possibly read-only or code signed installation
+      Preferences
    };
    std::filesystem::path GetAppPath(AppSubFolder sub, const std::filesystem::path& file = std::filesystem::path()) const;
 
-   // Folders to scan for plugins, in precedence order: the installation's own plugins first, so they win
-   // over a user plugin with the same id, then the user plugin folder if it exists.
+   // Folders to scan for plugins, in precedence order: the installation's own plugins first, then
+   // 'plugins' in the preferences folder if it exists. The first plugin found for an id wins, so a
+   // user folder adds plugins but never replaces one that ships with the installation.
    std::vector<std::filesystem::path> GetPluginFolders() const;
 
    // Table folders for things like 'music', 'cache', 'user' (to save highscore),...

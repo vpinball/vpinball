@@ -307,6 +307,30 @@ TEST_CASE("MsgPluginManager message API")
       CHECK(loader->unlinkCalls == 1);
    }
 
+   SUBCASE("the first folder scanned wins for an id")
+   {
+      // Installation then user folder, as FileLocator::GetPluginFolders orders them.
+      const std::filesystem::path installed = GetTestTmpDir() / "plugins-installed";
+      const std::filesystem::path user = GetTestTmpDir() / "plugins-user";
+      for (const auto& [root, library] : { std::pair { installed, "installed.dll" }, std::pair { user, "user.dll" } })
+      {
+         std::filesystem::create_directories(root / "dup");
+         WriteFile(root / "dup" / "plugin.cfg",
+            std::string("[configuration]\nid = \"DupPlugin\"\nname = \"Dup\"\n[libraries]\n")
+            + "windows.x86 = \"" + library + "\"\nwindows.x64 = \"" + library + "\"\nlinux.x64 = \"" + library + "\"\n"
+            + "linux.aarch64 = \"" + library + "\"\nmacos.x64 = \"" + library + "\"\nmacos.arm64 = \"" + library + "\"\n"
+            + "android.x86_32 = \"" + library + "\"\nandroid.x86_64 = \"" + library + "\"\n");
+         WriteFile(root / "dup" / library, "");
+      }
+      auto loader = std::make_shared<TestModuleLoader>();
+      pm.ScanPluginFolder(loader, installed, [](MsgPlugin&) { });
+      pm.ScanPluginFolder(loader, user, [](MsgPlugin&) { });
+      CHECK(pm.GetPlugins().size() == 1);
+      auto plugin = pm.GetPlugin("DupPlugin");
+      REQUIRE(plugin != nullptr);
+      CHECK(std::filesystem::path(plugin->m_library).filename() == "installed.dll");
+   }
+
    SUBCASE("missing plugin folder is ignored")
    {
       auto loader = std::make_shared<TestModuleLoader>();
