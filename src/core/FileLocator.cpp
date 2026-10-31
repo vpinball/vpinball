@@ -208,7 +208,7 @@ void FileLocator::UpdateFileLayoutMode()
 std::vector<std::filesystem::path> FileLocator::GetPluginFolders() const
 {
    std::vector<std::filesystem::path> folders { GetAppPath(AppSubFolder::Plugins) };
-   if (const std::filesystem::path userPlugins = GetAppPath(AppSubFolder::UserPlugins); DirExists(userPlugins))
+   if (const std::filesystem::path userPlugins = m_prefPath / "plugins"sv; DirExists(userPlugins))
       folders.push_back(userPlugins);
    return folders;
 }
@@ -228,7 +228,6 @@ std::filesystem::path FileLocator::GetAppPath(AppSubFolder sub, const std::files
       path = m_appPath / "plugins"sv;
 #endif
       break;
-   case FileLocator::AppSubFolder::UserPlugins: path = m_prefPath / "plugins"sv; break;
    case FileLocator::AppSubFolder::GLShaders: path = m_appPath / ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV)); break;
    case FileLocator::AppSubFolder::Docs:
       // A bit hacky as doc files have moved over time, so we check the various locations they may be in
