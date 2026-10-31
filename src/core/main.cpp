@@ -27,7 +27,18 @@
 #include <filesystem>
 #endif
 
-#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(_WIN32) || (defined(__APPLE__) && defined(TARGET_OS_OSX) && TARGET_OS_OSX))
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+#ifdef __EMSCRIPTEN__
+extern "C" EMSCRIPTEN_KEEPALIVE const char* VPinballGetVersionStringFull()
+{
+   return VP_VERSION_STRING_FULL_LITERAL;
+}
+#endif
+
+#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(_WIN32) || defined(__EMSCRIPTEN__) || (defined(__APPLE__) && defined(TARGET_OS_OSX) && TARGET_OS_OSX))
 #include <csignal>
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -269,7 +280,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    return retval;
 }
 
-#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(_WIN32))
+#if defined(__STANDALONE__) && ((defined(__linux__) && !defined(__ANDROID__)) || defined(_WIN32) || defined(__EMSCRIPTEN__))
 extern int g_argc;
 extern const char **g_argv;
 int main(int argc, const char** argv) {

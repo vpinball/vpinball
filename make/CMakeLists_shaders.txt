@@ -55,6 +55,8 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
    set(VPX_SHADER_BACKENDS "mtl,essl")
 elseif(PLATFORM STREQUAL "android")
    set(VPX_SHADER_BACKENDS "essl,spv")
+elseif(PLATFORM STREQUAL "wasm")
+   set(VPX_SHADER_BACKENDS "essl,wgsl")
 endif()
 
 set(VPX_SHADER_GEN_DIR "${CMAKE_BINARY_DIR}/gen")

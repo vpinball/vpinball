@@ -456,7 +456,7 @@ private:
 
    Texture* m_tonemapLUT = nullptr;
 
-   #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || (defined(__ANDROID__) && defined(ENABLE_XR))
+   #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && defined(ENABLE_XR))
    std::shared_ptr<BaseTexture> m_envRadianceTexture = nullptr;
    #else
    RenderTarget* m_envRadianceTexture = nullptr;

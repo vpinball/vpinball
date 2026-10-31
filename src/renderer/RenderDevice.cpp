@@ -21,6 +21,11 @@
 #endif
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/threading.h>
+#endif
+
 #if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && defined(ENABLE_DX9)
 #include "nvapi/nvapi.h"
 #endif
@@ -337,6 +342,61 @@ colorFormat RenderDevice::BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum forma
 
 
 static const string& bgfxRendererName(const bgfx::RendererType::Enum type);
+
+#ifdef __EMSCRIPTEN__
+// A canvas can only be transferred once to a worker, so a single thread owns it for the whole application
+// lifetime and runs the render loop of each render device, idling between them to serve proxied canvas calls
+class CanvasRenderHost final
+{
+public:
+   static CanvasRenderHost& Get()
+   {
+      static CanvasRenderHost host;
+      return host;
+   }
+
+   bool IsCurrentThread() const { return std::this_thread::get_id() == m_threadId; }
+
+   void Run(std::function<void()>&& job)
+   {
+      m_job = std::move(job);
+      m_jobPending.release();
+   }
+
+   void Wait() { m_jobDone.acquire(); }
+
+private:
+   CanvasRenderHost()
+   {
+      pthread_attr_t attr;
+      pthread_attr_init(&attr);
+      emscripten_pthread_attr_settransferredcanvases(&attr, "#canvas");
+      pthread_t thread;
+      pthread_create(&thread, &attr, &Main, this);
+      pthread_attr_destroy(&attr);
+   }
+
+   static void* Main(void* arg)
+   {
+      CanvasRenderHost* host = static_cast<CanvasRenderHost*>(arg);
+      host->m_threadId = std::this_thread::get_id();
+      while (true)
+      {
+         while (!host->m_jobPending.try_acquire())
+            emscripten_sleep(10);
+         host->m_job();
+         host->m_job = nullptr;
+         host->m_jobDone.release();
+      }
+      return nullptr;
+   }
+
+   std::thread::id m_threadId;
+   std::function<void()> m_job;
+   std::binary_semaphore m_jobPending { 0 };
+   std::binary_semaphore m_jobDone { 0 };
+};
+#endif
 
 void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 {
@@ -716,6 +776,10 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
    // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
    while (m_renderDeviceAlive)
    {
+#ifdef __EMSCRIPTEN__
+      // Return to the worker event loop to let WebGPU resolve its pending operations and present the canvas
+      emscripten_sleep(0);
+#endif
       g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
 
       // wait for a frame to be prepared by the logic thread
@@ -1397,6 +1461,8 @@ RenderDevice::RenderDevice(
    #elif BX_PLATFORM_STEAMLINK
    init.swapChain.ndt = wmInfo.info.vivante.display;
    init.swapChain.nwh = wmInfo.info.vivante.window;
+   #elif BX_PLATFORM_EMSCRIPTEN
+   init.swapChain.nwh = (void*)"#canvas";
    #endif // BX_PLATFORM_
    #ifdef DEBUG
    // Disable Direct3D12 debug layer as it crashes on some NVIDIA drivers
@@ -1408,11 +1474,20 @@ RenderDevice::RenderDevice(
 
    m_frameMutex.lock();
    m_renderDeviceAlive = true;
+#ifdef __EMSCRIPTEN__
+   // The render thread owns the canvas (transferred as an OffscreenCanvas) since it is the one creating the WebGPU surface
+   CanvasRenderHost::Get().Run([this, init] { RenderThread(this, init); });
+#else
    m_renderThread = std::thread(&RenderThread, this, init);
+#endif
    while (!m_rendererInitialized.try_acquire())
    {
       g_pplayer->ProcessOSMessages(false);
+#ifdef __EMSCRIPTEN__
+      emscripten_sleep(1);
+#else
       Sleep(0);
+#endif
    }
    m_useLowPrecision = bgfx::getRendererType() == bgfx::RendererType::OpenGLES;
 
@@ -1977,10 +2052,18 @@ RenderDevice::~RenderDevice()
    while (!m_renderDeviceAlive)
    {
       g_pplayer->ProcessOSMessages(false);
+#ifdef __EMSCRIPTEN__
+      emscripten_sleep(1);
+#else
       Sleep(0);
+#endif
    }
+#ifdef __EMSCRIPTEN__
+   CanvasRenderHost::Get().Wait();
+#else
    if (m_renderThread.joinable())
       m_renderThread.join();
+#endif
 
 #elif defined(ENABLE_OPENGL)
    m_quadPNTDynMeshBuffer = nullptr;
@@ -2732,7 +2815,11 @@ void RenderDevice::SubmitRenderFrame()
    // A pending command dependency is only valid for the frame being recorded: drop it to avoid keeping a pointer on a recycled pass
    m_nextRenderCommandDependency = nullptr;
    #ifdef ENABLE_BGFX
+#ifdef __EMSCRIPTEN__
+   if (!CanvasRenderHost::Get().IsCurrentThread())
+#else
    if (std::this_thread::get_id() != m_renderThread.get_id())
+#endif
    {
       // post semaphore and wait for render thread to process frame
       assert(!m_framePending);

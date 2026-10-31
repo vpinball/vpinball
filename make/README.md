@@ -59,7 +59,7 @@ cmake -DPLATFORM=windows -DARCH=x86 -B build
 * `PLATFORM` defaults to the host (`linux`, `macos`, `windows`, ...) and should match the one you used to build the external dependencies.
 * `ARCH` defaults to the host (`x64`, `arm64`, ...).
 
-All combinations — including the iOS/Android shared-library builds — are handled by the single root `CMakeLists.txt`; an unsupported combination prints the list of supported ones. The source manifests live in `make/CMakeLists_sources.txt` and the plugins in `make/CMakeLists_plugins.txt`.
+All combinations — including the iOS/Android shared-library builds and the web build — are handled by the single root `CMakeLists.txt`; an unsupported combination prints the list of supported ones. The source manifests live in `make/CMakeLists_sources.txt` and the plugins in `make/CMakeLists_plugins.txt`.
 
 ### Building only the plugins
 
@@ -94,7 +94,7 @@ Run it from there; tests tagged `[render]` need a GPU/display, the rest are head
 ```
 
 * A relative `PLUGINS_DIR` is resolved against the build directory.
-* `PLUGINS_DIR` is ignored when the application is built, and on iOS and Android, where the plugins are static libraries linked into the application.
+* `PLUGINS_DIR` is ignored when the application is built, and on iOS, Android and the web, where the plugins are static libraries linked into the application.
 
 #### Supported Platforms
 
@@ -219,6 +219,26 @@ cmake -DPLATFORM=android -DARCH=arm64-v8a -DENABLE_XR=ON -DCMAKE_BUILD_TYPE=Rele
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
 cd apps/android
 ./gradlew assembleQuestDebug
+```
+</details>
+
+<details>
+<summary>wasm-wasm32 (Web)</summary>
+
+> Built with [Emscripten](https://emscripten.org/) 6.0.13. The output is `vpinball.html` plus its `.js`, `.wasm` and `.data` files in the build folder.
+
+```
+brew install cmake bison curl
+export PATH="$(brew --prefix bison)/bin:$PATH"
+git clone https://github.com/emscripten-core/emsdk.git
+emsdk/emsdk install 6.0.13
+emsdk/emsdk activate 6.0.13
+source emsdk/emsdk_env.sh
+platforms/wasm-wasm32/external.sh
+emcmake cmake -DPLATFORM=wasm -DARCH=wasm32 -DCMAKE_BUILD_TYPE=Release -B build/wasm-wasm32
+cmake --build build/wasm-wasm32 -- -j$(sysctl -n hw.ncpu)
+
+python3 -m http.server -d build/wasm-wasm32
 ```
 </details>
 
@@ -354,6 +374,14 @@ Use `-h` to list all options, or see [Command Line](<../docs/Command Line.md>).
 
 - iOS: build `libvpinball` as described above, then open `apps/ios/VPinball.xcodeproj` in Xcode and run on a device or simulator.
 - Android: build `libvpinball` as described above, then open `apps/android` in Android Studio and select the `mobile` or `quest` build variant.
+
+### Web
+
+Serve the build folder with any static web server and open `vpinball.html` in a WebGPU capable browser. The page registers a service worker that provides the cross-origin isolation needed for threads, so no special server headers are required:
+
+```
+python3 -m http.server -d build/wasm-wasm32
+```
 
 ### Table script patches
 

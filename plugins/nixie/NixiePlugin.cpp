@@ -97,7 +97,7 @@ static void EnsureLayouts(const int windowIndex)
       {
          // Finally defaults to base layouts provided with the plugin
          std::filesystem::path path;
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__) || defined(__EMSCRIPTEN__)
          VPXInfo vpxInfo {};
          vpxApi->GetVpxInfo(&vpxInfo);
          path = PluginStrings::PathFromNative(vpxInfo.path) / "plugins"sv / "nixie"sv;

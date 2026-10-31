@@ -680,3 +680,96 @@ jobs:
           name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-android-${{ matrix.flavor }}-${{ matrix.config }}-aab
           path: tmp-aab/*
           archive: false
+
+  build-wasm:
+    name: Build VPinballX_BGFX-wasm-${{ matrix.config }}
+    runs-on: ubuntu-24.04
+    needs: [ context, version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [ Release ]
+    steps:
+      - run: |
+          sudo apt install bison libx11-dev libgl1-mesa-dev libglu1-mesa-dev
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git ${{ runner.temp }}/emsdk
+          ${{ runner.temp }}/emsdk/emsdk install 6.0.13
+          ${{ runner.temp }}/emsdk/emsdk activate 6.0.13
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.context.outputs.checkout_ref }}
+      - name: Calculate external cache hash
+        run: |
+          echo "EXT_HASH=$(cat platforms/config.sh platforms/wasm-wasm32/external.sh | sha256sum | cut -c1-12)" >> $GITHUB_ENV
+      - name: Restore external cache
+        id: cache
+        uses: actions/cache/restore@v5
+        with:
+          path: external
+          key: wasm-wasm32-${{ matrix.config }}-external-${{ env.EXT_HASH }}
+          restore-keys: |
+            wasm-wasm32-${{ matrix.config }}-external-
+      - name: Build external cache
+        run: |
+          source ${{ runner.temp }}/emsdk/emsdk_env.sh
+          BUILD_TYPE=${{ matrix.config }} ./platforms/wasm-wasm32/external.sh
+      - if: needs.context.outputs.is_pr != 'true' && steps.cache.outputs.cache-hit != 'true'
+        name: Clean external cache
+        run: |
+          find external -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
+          find external -name "*.tar.gz" -delete 2>/dev/null || true
+          find external \( -name "*.o" -o -name "*.obj" \) -delete 2>/dev/null || true
+      - if: needs.context.outputs.is_pr != 'true' && steps.cache.outputs.cache-hit != 'true'
+        name: Save external cache
+        uses: actions/cache/save@v5
+        with:
+          path: external
+          key: wasm-wasm32-${{ matrix.config }}-external-${{ env.EXT_HASH }}
+      - name: Set version
+        run: |
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
+      - name: Build
+        run: |
+          source ${{ runner.temp }}/emsdk/emsdk_env.sh
+          emcmake cmake \
+                -DPLATFORM=wasm \
+                -DARCH=wasm32 \
+                -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+                -B build/wasm-wasm32
+          cmake --build build/wasm-wasm32 -- -j$(nproc)
+      - name: Stage artifacts
+        run: |
+          mkdir tmp
+          mkdir stage
+          cp build/wasm-wasm32/vpinball.{html,js,wasm,data} build/wasm-wasm32/{favicon,vpinball-logo}.png build/wasm-wasm32/{sw,monaco-editor}.js stage
+          cp -r build/wasm-wasm32/monaco stage
+          cd stage
+          zip -r ../tmp/VPinballX_BGFX-${{ needs.version.outputs.tag }}-wasm-${{ matrix.config }}.zip .
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-wasm-${{ matrix.config }}
+          path: tmp/*
+          archive: false
+      - if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true'
+        run: cp stage/vpinball.html stage/index.html
+      - if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: stage
+
+  deploy-wasm:
+    name: Deploy VPinballX_BGFX-wasm to GitHub Pages
+    if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true'
+    runs-on: ubuntu-24.04
+    needs: [ build-wasm ]
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

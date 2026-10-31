@@ -196,9 +196,9 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const unsigned int envTexWidth = envTexHeight * 2;
    // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented, and therefore we use the slow CPU path instead of GPU
    // OpenGL ES does not support features used in the irradiance shader, so we use the CPU path for it as well
-   // There is a bug when using the Metal shader, so we use the CPU path for it as well
+   // There is a bug when using the Metal shader, so we use the CPU path for it as well (also on the web, where WebGPU may run on Metal and the shader hangs the GPU)
    // On Android VR (Quest), the VR init path leaves m_framePending=true before SubmitRenderFrame can run, so use the CPU path there too.
-   #if defined (ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || (defined(__ANDROID__) && defined(ENABLE_XR))
+   #if defined (ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && defined(ENABLE_XR))
       m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
       m_renderDevice->m_texMan.SetDirty(m_envRadianceTexture.get());
       m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_diffuse_env, m_envRadianceTexture.get());
@@ -416,7 +416,7 @@ Renderer::~Renderer()
    delete m_desktopAO2;
    for (int window = 0; window <= VPXWindowId::VPXWINDOW_Topper; window++)
       m_ancillaryWndHdrRT[window] = nullptr;
-   #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || (defined(__ANDROID__) && defined(ENABLE_XR))
+   #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && defined(ENABLE_XR))
    m_envRadianceTexture.reset();
    #else
    delete m_envRadianceTexture;

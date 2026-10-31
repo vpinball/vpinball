@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.18)
 #         -P shaders.cmake
 #
 # BACKENDS lists the shader binary formats to compile for real (subset of
-# mtl,essl,glsl,dxbc,dxil,spv). Every other backend is emitted as a stub array so
+# mtl,essl,glsl,dxbc,dxil,spv,wgsl). Every other backend is emitted as a stub array so
 # that BGFX_EMBEDDED_SHADER() references stay valid on every build platform
 # (e.g. dxbc/dxil cannot be produced by a macOS/Linux hosted shaderc).
 #
@@ -36,13 +36,14 @@ file(MAKE_DIRECTORY "${FRAG_DIR}")
 
 string(REPLACE "," ";" BACKENDS "${BACKENDS}")
 
-set(ALL_BACKENDS mtl essl glsl dxbc dxil spv)
+set(ALL_BACKENDS mtl essl glsl dxbc dxil spv wgsl)
 set(BACKEND_mtl  --platform osx     -p metal21-11)
 set(BACKEND_essl --platform android -p 320_es)
 set(BACKEND_glsl --platform linux   -p 440)
 set(BACKEND_dxbc --platform windows -p s_5_0 -O 3)
 set(BACKEND_dxil --platform windows -p s_6_0 -O 3)
 set(BACKEND_spv  --platform linux   -p spirv)
+set(BACKEND_wgsl --platform linux   -p wgsl)
 
 # Files every shader depends on: a change recompiles all fragments.
 set(SHADER_DEPS
@@ -69,7 +70,12 @@ function(process_shader group source name type)
       "\n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n// Build of ${type} shader from ${source} to ${short} with options: ${defines_str}\n")
    message(STATUS "> ${type} shader from ${source} to ${short} with ${defines_str}")
    foreach(backend IN LISTS ALL_BACKENDS)
-      if(backend IN_LIST BACKENDS)
+      # WGSL has no layered rendering (SPV_EXT_shader_viewport_index_layer): stereo and VR variants stay stubs
+      set(compile FALSE)
+      if(backend IN_LIST BACKENDS AND NOT (backend STREQUAL "wgsl" AND ("STEREO" IN_LIST defines OR source STREQUAL "vs_vr_mask.sc")))
+         set(compile TRUE)
+      endif()
+      if(compile)
          set(frag "${FRAG_DIR}/${name}${backend}.h")
          set(define_str "TARGET_${backend}")
          if(defines)

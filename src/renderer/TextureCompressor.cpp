@@ -232,11 +232,12 @@ namespace
       if ((bgfx::getCaps()->formats[format] & needed) != needed)
          return false;
 
-      // D3D11/D3D12 cannot create block-compressed textures whose base dimensions are not multiples of the block size
+      // D3D11/D3D12/WebGPU cannot create block-compressed textures whose base dimensions are not multiples of the block size
       switch (bgfx::getRendererType())
       {
       case bgfx::RendererType::Direct3D11:
       case bgfx::RendererType::Direct3D12:
+      case bgfx::RendererType::WebGPU:
       {
          const bimg::ImageBlockInfo& block = bimg::getBlockInfo(static_cast<bimg::TextureFormat::Enum>(format));
          return width % block.blockWidth == 0 && height % block.blockHeight == 0;
@@ -710,7 +711,10 @@ std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool 
          const std::lock_guard lock(m_usedCacheFilesMutex);
          m_usedCacheFiles.insert(cacheFile.filename());
       }
-      if (std::shared_ptr<BaseTexture> cached = LoadCached(cacheFile))
+      std::shared_ptr<BaseTexture> cached = LoadCached(cacheFile);
+      if (cached && bgfx::getRendererType() == bgfx::RendererType::WebGPU && ((cached->width() | cached->height()) & 3) != 0) // Cache may come from a platform accepting unaligned block sizes
+         cached = nullptr;
+      if (cached)
       {
          cached->SetName(image->m_name);
          image->SetIsOpaque(cached->IsOpaque());

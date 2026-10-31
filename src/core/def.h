@@ -427,8 +427,11 @@ static const string platform_bits[2] = { "32"s, "64"s };
  #define GET_PLATFORM_OS_ENUM 5
  #define GET_PLATFORM_OS "macos"
 #endif
+#elif defined(__EMSCRIPTEN__)
+ #define GET_PLATFORM_OS_ENUM 6
+ #define GET_PLATFORM_OS "web"
 #endif
-static const string platform_os[6] = { "windows"s, "android"s, "linux"s, "ios"s, "tvos"s, "macos"s };
+static const string platform_os[7] = { "windows"s, "android"s, "linux"s, "ios"s, "tvos"s, "macos"s, "web"s };
 
 #if defined(ENABLE_BGFX)
  #define GET_PLATFORM_RENDERER_ENUM 2

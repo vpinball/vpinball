@@ -886,4 +886,130 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
       )
    endif()
 
+# Web (Emscripten) build
+
+elseif(PLATFORM STREQUAL "wasm")
+
+   add_executable(vpinball
+      ${VPX_STANDALONE_SOURCES}
+   )
+
+   add_dependencies(vpinball vpx-shaders)
+
+   target_include_directories(vpinball PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      ${CMAKE_SOURCE_DIR}
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
+      src
+      plugins
+   )
+
+   target_compile_definitions(vpinball PRIVATE
+      __STANDALONE__
+
+      __LIBWINEVBS__
+      __WINESRC__
+      WINE_UNICODE_NATIVE
+
+      "__forceinline=__attribute__((always_inline)) inline"
+
+      ENABLE_BGFX
+      $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
+   )
+
+   target_compile_options(vpinball PUBLIC
+      -Wno-inconsistent-missing-override
+      -Wno-missing-exception-spec
+      -fdenormal-fp-math=preserve-sign
+      -freciprocal-math
+      -fassociative-math
+      -fapprox-func
+      -fno-math-errno
+      -fno-trapping-math
+      -ffp-contract=off
+      -Wno-shorten-64-to-32
+      -msimd128
+   )
+
+   set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/${PLATFORM}-${ARCH}")
+
+   target_link_directories(vpinball PUBLIC
+      "${BUILD_LIBS_DIR}"
+   )
+
+   target_link_libraries(vpinball PUBLIC
+      bgfx
+      bimg_encode
+      bimg
+      bx
+      SDL3
+      SDL3_image
+      SDL3_ttf
+      freetype
+      harfbuzz
+      freeimage
+      winevbs
+      zip
+      spatialaudio
+      mysofa
+      pinmame
+      altsound
+      serum
+      pupdmd
+      vni
+      avcodec
+      avformat
+      avutil
+      swresample
+      swscale
+      z
+      m
+      AltSoundPlugin
+      AlphaDMDPlugin
+      B2SPlugin
+      FlexDMDPlugin
+      InspectorPlugin
+      NixiePlugin
+      PinMAMEPlugin
+      PUPPlugin
+      SerumPlugin
+      UpscaleDMDPlugin
+      VNIPlugin
+      WMPPlugin
+   )
+
+   target_link_options(vpinball PUBLIC
+      --use-port=emdawnwebgpu
+      -sJSPI
+      -sOFFSCREENCANVAS_SUPPORT
+      -sALLOW_MEMORY_GROWTH=1
+      -sMAXIMUM_MEMORY=4GB
+      -sINITIAL_MEMORY=512MB
+      -sSTACK_SIZE=8MB
+      -sDEFAULT_PTHREAD_STACK_SIZE=2MB
+      -sPTHREAD_POOL_SIZE=32
+      -lidbfs.js
+      -sEXPORTED_RUNTIME_METHODS=FS,IDBFS,callMain,UTF8ToString
+      -Wl,--allow-multiple-definition
+      "--preload-file=${CMAKE_SOURCE_DIR}/src/assets@/assets"
+      "--preload-file=${CMAKE_SOURCE_DIR}/src/scripts@/scripts"
+      "--preload-file=${CMAKE_SOURCE_DIR}/plugins/nixie/layouts@/plugins/nixie/layouts"
+      "--preload-file=${CMAKE_SOURCE_DIR}/plugins/flexdmd/assets@/plugins/flexdmd/assets"
+      "--exclude-file=*.vpz"
+      "--exclude-file=*/src/assets/web"
+      "--shell-file=${CMAKE_SOURCE_DIR}/apps/web/shell.html"
+   )
+
+   set_property(TARGET vpinball APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/apps/web/shell.html")
+
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/apps/web/favicon.png" "${CMAKE_SOURCE_DIR}/apps/web/vpinball-logo.png" "${CMAKE_SOURCE_DIR}/apps/web/sw.js" "${CMAKE_SOURCE_DIR}/src/assets/web/monaco-editor.js" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets/web/monaco" "$<TARGET_FILE_DIR:vpinball>/monaco"
+   )
+
+   set_target_properties(vpinball PROPERTIES
+      SUFFIX ".html"
+   )
+
 endif()

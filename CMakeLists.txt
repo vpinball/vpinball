@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.25)
 
 # Single build file for every target, selected by three cache variables (default to host BGFX):
 #   RENDERER  BGFX (default), GL, DX9
-#   PLATFORM  macos, linux, windows, windows-mingw, ios, ios-simulator, android
-#   ARCH      x64, x86, arm64, aarch64, arm64-v8a
+#   PLATFORM  macos, linux, windows, windows-mingw, ios, ios-simulator, android, wasm
+#   ARCH      x64, x86, arm64, aarch64, arm64-v8a, wasm32
 
 if(CMAKE_HOST_APPLE)
    set(_vpx_host_platform "macos")
@@ -47,6 +47,7 @@ set(_vpx_valid_combos
    BGFX-ios
    BGFX-ios-simulator
    BGFX-android
+   BGFX-wasm
    GL-windows
    GL-macos
    GL-linux
@@ -175,13 +176,16 @@ elseif(PLATFORM STREQUAL "linux")
    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "android")
    add_compile_options(-fPIC)
+elseif(PLATFORM STREQUAL "wasm")
+   add_compile_options(-pthread -fwasm-exceptions)
+   add_link_options(-pthread -fwasm-exceptions)
 endif()
 
 if(BUILD_APP)
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_sources.txt")
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_shaders.txt")
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_app.txt")
-   if(NOT (PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "android"))
+   if(NOT (PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "android" OR PLATFORM STREQUAL "wasm"))
       include("${CMAKE_SOURCE_DIR}/make/CMakeLists_test.txt")
    endif()
 endif()

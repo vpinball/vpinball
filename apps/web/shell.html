@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Visual Pinball X</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root {
+   --bg: #F2F2F7;
+   --surface: #FFFFFF;
+   --surface-high: #E5E5EA;
+   --text: #000000;
+   --text-secondary: #6E6E73;
+   --accent: #C8161C;
+   --on-accent: #FFFFFF;
+   --border: #C7C7CC;
+   --glow-red: transparent;
+   --glow-blue: transparent;
+   --glow-yellow: transparent;
+}
+@media (prefers-color-scheme: dark) {
+   :root {
+      --bg: #101010;
+      --surface: #1C1C1E;
+      --surface-high: #2C2C2E;
+      --text: #FFFFFF;
+      --text-secondary: #A1A1A6;
+      --accent: #FEF716;
+      --on-accent: #000000;
+      --border: #3A3A3C;
+      --glow-red: rgba(253, 37, 29, 0.10);
+      --glow-blue: rgba(58, 43, 255, 0.07);
+      --glow-yellow: rgba(254, 247, 22, 0.05);
+   }
+}
+html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+#canvas { display: block; width: 100vw; height: 100vh; outline: none; touch-action: none; }
+#picker {
+   position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; padding: 16px; box-sizing: border-box; overflow-y: auto;
+   color: var(--text);
+   background:
+      radial-gradient(circle 420px at 5% 12%, var(--glow-red), transparent),
+      radial-gradient(circle 360px at 90% 18%, var(--glow-blue), transparent),
+      radial-gradient(circle 480px at 90% 95%, var(--glow-yellow), transparent),
+      var(--bg);
+}
+#picker.shown { display: flex; }
+#panel { width: min(520px, 100%); margin-top: auto; text-align: center; }
+#logo { width: min(240px, 60%); height: auto; margin-bottom: 32px; }
+#drop { padding: 40px 36px; border: 2px dashed var(--border); border-radius: 16px; background: var(--surface); }
+#drop.over { border-color: var(--accent); }
+#drop p { margin: 0 0 28px; color: var(--text-secondary); line-height: 1.45; font-size: 15px; }
+#help { margin: 24px 0 0; padding: 0; list-style: none; text-align: left; color: var(--text-secondary); font-size: 13px; line-height: 1.45; }
+#help li + li { margin-top: 8px; }
+#help b { color: var(--text); font-weight: 600; }
+#editSettings { margin-top: 18px; background: none; color: var(--text-secondary); font-weight: 500; text-decoration: underline; }
+#drop #editSettings:disabled { text-decoration: none; }
+#editor { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); color: var(--text); z-index: 1; -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+#editor[hidden] { display: none; }
+#editorBar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+#editorBar span:first-child { font-weight: 600; }
+#editorStatus { flex: 1; color: var(--text-secondary); }
+#editorBar button { font: inherit; font-weight: 600; padding: 7px 14px; border: 0; border-radius: 10px; cursor: pointer; }
+#editorSave { background: var(--accent); color: var(--on-accent); }
+#editorClose { background: var(--surface-high); color: var(--text); }
+#editorContainer { flex: 1; min-height: 0; }
+#drop button { font: inherit; font-size: 15px; font-weight: 600; padding: 11px 20px; margin: 4px; border: 0; border-radius: 12px; cursor: pointer; }
+#pickFolder { background: var(--accent); color: var(--on-accent); }
+#pickFiles, #tables button { background: var(--surface-high); color: var(--text); }
+#drop button:disabled { opacity: 0.4; cursor: default; }
+#tables { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+#tables:empty { display: none; }
+#tables button { text-align: left; font-weight: 500; }
+#status { margin-top: 20px; color: var(--text-secondary); font-size: 14px; }
+#status:empty { display: none; }
+#progress { height: 6px; margin: 14px auto 0; width: 70%; border-radius: 3px; background: var(--surface-high); overflow: hidden; }
+#progress[hidden] { display: none; }
+#progress div { height: 100%; width: 0; background: var(--accent); transition: width 0.2s; }
+#progress.indeterminate div { width: 30%; transition: none; animation: indeterminate 1.2s ease-in-out infinite; }
+@keyframes indeterminate { from { transform: translateX(-100%); } to { transform: translateX(333%); } }
+#version { margin-top: auto; padding: 24px 0 8px; text-align: center; font-size: 12px; color: var(--text-secondary); }
+@media (max-width: 480px) {
+   #logo { margin-bottom: 20px; }
+   #drop { padding: 24px 16px; }
+   #drop p { margin-bottom: 20px; }
+}
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+<div id="picker">
+   <div id="panel">
+      <img id="logo" src="vpinball-logo.png" alt="Visual Pinball">
+      <div id="drop">
+         <p>Open a table folder or a table file, or drop one here.</p>
+         <button id="pickFolder" disabled>Open table folder</button>
+         <button id="pickFiles" disabled>Open table file</button>
+         <input id="folderInput" type="file" webkitdirectory hidden>
+         <input id="filesInput" type="file" accept=".vpx,.vpz,.vpxz,.zip" hidden>
+         <div id="tables"></div>
+         <div id="status">Loading…</div>
+         <div id="progress" hidden><div></div></div>
+         <ul id="help">
+            <li><b>Table folder</b>: the folder with your table (a .vpx, a .vpz, or an unzipped .vpz pack) and its extras, like pinmame, music or PUP videos.</li>
+            <li><b>Table file</b>: a .vpx or .vpz table on its own, without extras, or a .vpxz bundle, which is a zipped table folder with its extras.</li>
+            <li><b>Saving</b>: in Chrome and Edge, changes like high scores, NVRAM and table settings are saved back to the table folder you opened. Other browsers, and table files, keep these changes only until the page is closed. App settings are kept in every browser.</li>
+         </ul>
+         <button id="editSettings" disabled>Edit settings (VPinballX.ini)</button>
+      </div>
+   </div>
+   <div id="version"></div>
+</div>
+<div id="editor" hidden>
+   <div id="editorBar">
+      <span>VPinballX.ini</span>
+      <span id="editorStatus"></span>
+      <button id="editorSave">Save</button>
+      <button id="editorClose">Close</button>
+   </div>
+   <div id="editorContainer"></div>
+</div>
+<template id="vpinballScript">{{{ SCRIPT }}}</template>
+<script>
+const args = new URLSearchParams(location.search).getAll('arg');
+const picker = document.getElementById('picker');
+const statusEl = document.getElementById('status');
+var Module = {
+   canvas: document.getElementById('canvas'),
+   arguments: args,
+   noInitialRun: true,
+   locateFile: (path) => path,
+   print: (text) => console.log(text),
+   printErr: (text) => console.error(text),
+   setStatus: (text) => {
+      const m = text.match(/\((\d+(\.\d+)?)\/(\d+)\)/);
+      if (m)
+         updateProgress('data', Number(m[1]), Number(m[3]));
+   },
+   instantiateWasm: (imports, receiveInstance) => {
+      loadWasm(imports).then((result) => receiveInstance(result.instance, result.module)).catch((e) => {
+         console.error(e);
+         downloadFailed = true;
+         document.getElementById('progress').hidden = true;
+         setStatus('The download failed. Check your connection and reload the page.');
+      });
+      return {};
+   },
+   onRuntimeInitialized: async () => {
+      await loadPrefs();
+      if (args.length > 0) {
+         startPlayer(args);
+         return;
+      }
+      document.getElementById('pickFolder').disabled = false;
+      document.getElementById('pickFiles').disabled = false;
+      const editSettings = document.getElementById('editSettings');
+      editSettings.disabled = !Module.FS.analyzePath(settingsPath()).exists;
+      if (editSettings.disabled)
+         editSettings.textContent = 'Edit settings (available after you play a table once)';
+      document.getElementById('progress').hidden = true;
+      setStatus('');
+      document.getElementById('version').textContent = Module.UTF8ToString(Module._VPinballGetVersionStringFull());
+   },
+};
+if (args.length === 0)
+   picker.classList.add('shown');
+
+const downloads = {};
+let downloadFailed = false;
+
+function formatMB(bytes) {
+   return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function updateProgress(name, loaded, total) {
+   if (downloadFailed)
+      return;
+   downloads[name] = { loaded, total };
+   const all = Object.values(downloads);
+   const loadedAll = all.reduce((sum, d) => sum + d.loaded, 0);
+   const known = all.every(d => d.total > 0 && d.loaded <= d.total);
+   const totalAll = all.reduce((sum, d) => sum + d.total, 0);
+   const bar = document.getElementById('progress');
+   bar.hidden = false;
+   bar.classList.toggle('indeterminate', !known);
+   if (downloads.wasm && downloads.data && all.every(d => d.total > 0 && d.loaded >= d.total)) {
+      bar.classList.remove('indeterminate');
+      bar.firstElementChild.style.width = '100%';
+      setStatus('Starting…');
+      return;
+   }
+   bar.firstElementChild.style.width = known ? (100 * loadedAll / totalAll).toFixed(1) + '%' : '';
+   setStatus(known ? `Downloading ${formatMB(loadedAll)} of ${formatMB(totalAll)}` : `Downloading ${formatMB(loadedAll)}`);
+}
+
+async function loadWasm(imports) {
+   const response = await fetch('vpinball.wasm');
+   const compressed = response.headers.has('Content-Encoding');
+   const total = compressed ? 0 : Number(response.headers.get('Content-Length') || 0);
+   let loaded = 0;
+   const reader = response.body.getReader();
+   const counted = new ReadableStream({
+      async pull(controller) {
+         const { done, value } = await reader.read();
+         if (done) {
+            updateProgress('wasm', loaded, loaded);
+            controller.close();
+            return;
+         }
+         loaded += value.byteLength;
+         updateProgress('wasm', loaded, total);
+         controller.enqueue(value);
+      },
+   });
+   return WebAssembly.instantiateStreaming(new Response(counted, { headers: { 'Content-Type': 'application/wasm' } }), imports);
+}
+
+async function crossOriginIsolate() {
+   if (crossOriginIsolated) {
+      sessionStorage.removeItem('isolating');
+      return 'isolated';
+   }
+   if (navigator.serviceWorker && !sessionStorage.getItem('isolating')) {
+      sessionStorage.setItem('isolating', '1');
+      await navigator.serviceWorker.ready;
+      location.reload();
+      return 'reloading';
+   }
+   sessionStorage.removeItem('isolating');
+   return 'unsupported';
+}
+
+if (navigator.serviceWorker)
+   navigator.serviceWorker.register('sw.js');
+
+crossOriginIsolate().then(async (state) => {
+   if (state === 'reloading')
+      return;
+   if (state === 'unsupported') {
+      setStatus('This browser cannot run Visual Pinball X: cross-origin isolation is not available.');
+      return;
+   }
+   const src = document.getElementById('vpinballScript').content.querySelector('script').getAttribute('src');
+   const response = await fetch(src);
+   const script = document.createElement('script');
+   script.src = URL.createObjectURL(new Blob([await response.arrayBuffer()], { type: 'text/javascript' }));
+   document.body.appendChild(script);
+});
+
+const PREFS_DIR = '/libsdl';
+
+function syncPrefs(populate) {
+   return new Promise((resolve) => Module.FS.syncfs(populate, (err) => {
+      if (err)
+         console.error('Preferences sync failed', err);
+      resolve();
+   }));
+}
+
+async function loadPrefs() {
+   Module.FS.mkdir(PREFS_DIR);
+   Module.FS.mount(Module.IDBFS, {}, PREFS_DIR);
+   await syncPrefs(true);
+}
+
+function settingsPath() {
+   const version = Module.UTF8ToString(Module._VPinballGetVersionStringFull()).match(/(\d+)\.(\d+)/);
+   return `${PREFS_DIR}/VPinballX/${version[1]}.${version[2]}/VPinballX.ini`;
+}
+
+function loadEditorFiles() {
+   if (window.createMonacoEditor)
+      return Promise.resolve();
+   const style = document.createElement('style');
+   style.textContent = "@font-face { font-family: 'codicon'; src: url('monaco/codicon.ttf') format('truetype'); }";
+   document.head.appendChild(style);
+   const link = document.createElement('link');
+   link.rel = 'stylesheet';
+   link.href = 'monaco/style.css';
+   document.head.appendChild(link);
+   return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'monaco-editor.js';
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('Failed to load the editor'));
+      document.head.appendChild(script);
+   });
+}
+
+let settingsEditor = null;
+
+async function openSettings() {
+   document.getElementById('editor').hidden = false;
+   document.getElementById('editorStatus').textContent = '';
+   await loadEditorFiles();
+   settingsEditor = await createMonacoEditor(document.getElementById('editorContainer'), Module.FS.readFile(settingsPath(), { encoding: 'utf8' }), {
+      fileName: 'VPinballX.ini',
+      theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+   });
+   window.saveCurrentFile = saveSettings;
+   window.checkForChanges = () => document.getElementById('editorStatus').textContent = 'Modified';
+   settingsEditor.focus();
+}
+
+async function saveSettings() {
+   Module.FS.writeFile(settingsPath(), settingsEditor.editor.getValue());
+   await syncPrefs(false);
+   document.getElementById('editorStatus').textContent = 'Saved';
+}
+
+function closeSettings() {
+   if (settingsEditor)
+      settingsEditor.destroy();
+   settingsEditor = null;
+   document.getElementById('editor').hidden = true;
+}
+
+let tableFolder = null;
+let importTime = 0;
+
+function changedFiles(dir, out) {
+   for (const name of Module.FS.readdir(dir)) {
+      if (name === '.' || name === '..')
+         continue;
+      const path = dir + '/' + name;
+      const stat = Module.FS.stat(path);
+      if (Module.FS.isDir(stat.mode))
+         changedFiles(path, out);
+      else if (stat.mtime.getTime() > importTime)
+         out.push(path);
+   }
+   return out;
+}
+
+async function saveTableFolder() {
+   if (!tableFolder)
+      return;
+   const root = '/tables/' + tableFolder.name;
+   for (const path of changedFiles(root, [])) {
+      const parts = path.substring(root.length + 1).split('/');
+      let dir = tableFolder;
+      try {
+         for (const part of parts.slice(0, -1))
+            dir = await dir.getDirectoryHandle(part, { create: true });
+         const writable = await (await dir.getFileHandle(parts[parts.length - 1], { create: true })).createWritable();
+         await writable.write(Module.FS.readFile(path));
+         await writable.close();
+      } catch (e) {
+         console.error('Failed to save ' + path, e);
+      }
+   }
+}
+
+async function startPlayer(mainArgs) {
+   const timer = setInterval(() => syncPrefs(false), 10000);
+   await Module.callMain(mainArgs);
+   clearInterval(timer);
+   await syncPrefs(false);
+   await saveTableFolder();
+   location.href = location.pathname;
+}
+
+function setStatus(text) {
+   statusEl.textContent = text;
+}
+
+function mkdirs(path) {
+   let cur = '';
+   for (const part of path.split('/').filter(Boolean)) {
+      cur += '/' + part;
+      if (!Module.FS.analyzePath(cur).exists)
+         Module.FS.mkdir(cur);
+   }
+}
+
+function findTables(paths) {
+   const packs = new Set(paths.filter(p => p.endsWith('/manifest.json')).map(p => p.substring(0, p.lastIndexOf('/'))));
+   const inPack = (p) => [...packs].some(d => p.startsWith(d + '/'));
+   const files = paths.filter(p => /\.(vpx|vpz)$/i.test(p) && !inPack(p));
+   return [...packs].filter(d => !inPack(d)).concat(files).map(p => '/tables/' + p);
+}
+
+async function readZip(file) {
+   const tailSize = Math.min(file.size, 65557);
+   const tailStart = file.size - tailSize;
+   const tail = new DataView(await file.slice(tailStart).arrayBuffer());
+   let eocd = -1;
+   for (let i = tailSize - 22; i >= 0; i--)
+      if (tail.getUint32(i, true) === 0x06054b50) {
+         eocd = i;
+         break;
+      }
+   if (eocd < 0)
+      throw new Error(file.name + ' is not a zip file');
+   let count = tail.getUint16(eocd + 10, true);
+   let cdSize = tail.getUint32(eocd + 12, true);
+   let cdOffset = tail.getUint32(eocd + 16, true);
+   if (count === 0xFFFF || cdSize === 0xFFFFFFFF || cdOffset === 0xFFFFFFFF) {
+      const locator = eocd - 20;
+      const zip64Offset = Number(tail.getBigUint64(locator + 8, true));
+      const zip64 = new DataView(await file.slice(zip64Offset, zip64Offset + 56).arrayBuffer());
+      count = Number(zip64.getBigUint64(32, true));
+      cdSize = Number(zip64.getBigUint64(40, true));
+      cdOffset = Number(zip64.getBigUint64(48, true));
+   }
+   const cd = new DataView(await file.slice(cdOffset, cdOffset + cdSize).arrayBuffer());
+   const decoder = new TextDecoder();
+   const entries = [];
+   let p = 0;
+   for (let i = 0; i < count; i++) {
+      const method = cd.getUint16(p + 10, true);
+      let compressedSize = cd.getUint32(p + 20, true);
+      let size = cd.getUint32(p + 24, true);
+      const nameLength = cd.getUint16(p + 28, true);
+      const extraLength = cd.getUint16(p + 30, true);
+      const commentLength = cd.getUint16(p + 32, true);
+      let offset = cd.getUint32(p + 42, true);
+      const name = decoder.decode(new Uint8Array(cd.buffer, p + 46, nameLength)).replace(/\\/g, '/');
+      for (let e = p + 46 + nameLength; e < p + 46 + nameLength + extraLength; e += 4 + cd.getUint16(e + 2, true)) {
+         if (cd.getUint16(e, true) !== 1)
+            continue;
+         let f = e + 4;
+         if (size === 0xFFFFFFFF) { size = Number(cd.getBigUint64(f, true)); f += 8; }
+         if (compressedSize === 0xFFFFFFFF) { compressedSize = Number(cd.getBigUint64(f, true)); f += 8; }
+         if (offset === 0xFFFFFFFF) offset = Number(cd.getBigUint64(f, true));
+      }
+      p += 46 + nameLength + extraLength + commentLength;
+      if (name.endsWith('/') || name.startsWith('__MACOSX/'))
+         continue;
+      entries.push({ name, method, offset, compressedSize });
+   }
+   return entries.map(({ name, method, offset, compressedSize }) => ({
+      path: name,
+      file: {
+         arrayBuffer: async () => {
+            const header = new DataView(await file.slice(offset, offset + 30).arrayBuffer());
+            const start = offset + 30 + header.getUint16(26, true) + header.getUint16(28, true);
+            const data = file.slice(start, start + compressedSize);
+            if (method === 0)
+               return data.arrayBuffer();
+            if (method !== 8)
+               throw new Error(`${name}: unsupported zip compression method ${method}`);
+            return new Response(data.stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+         },
+      },
+   }));
+}
+
+async function importFiles(entries) {
+   let done = 0;
+   const total = entries.length;
+   for (const { path, file } of entries) {
+      const dest = '/tables/' + path;
+      mkdirs(dest.substring(0, dest.lastIndexOf('/')));
+      Module.FS.writeFile(dest, new Uint8Array(await file.arrayBuffer()));
+      done++;
+      setStatus(`Copying files ${done}/${total}`);
+   }
+   importTime = Date.now();
+   const tables = findTables(entries.map(e => e.path));
+   if (tables.length === 0) {
+      setStatus('No table found: a table is a .vpx file, a .vpz file, or a .vpz pack folder.');
+      return;
+   }
+   if (tables.length === 1) {
+      play(tables[0]);
+      return;
+   }
+   setStatus('Select the table to play');
+   const list = document.getElementById('tables');
+   list.replaceChildren(...tables.map(t => {
+      const b = document.createElement('button');
+      b.textContent = t.substring(t.lastIndexOf('/') + 1);
+      b.onclick = () => play(t);
+      return b;
+   }));
+}
+
+let started = false;
+function play(table) {
+   if (started)
+      return;
+   started = true;
+   picker.classList.remove('shown');
+   document.getElementById('canvas').focus();
+   startPlayer(['-play', table]);
+}
+
+async function importTableFiles(files) {
+   const out = [];
+   try {
+      for (const f of files) {
+         if (/\.(vpxz|zip)$/i.test(f.name)) {
+            const folder = f.name.replace(/\.(vpxz|zip)$/i, '') + '/';
+            for (const e of await readZip(f))
+               out.push({ path: folder + e.path, file: e.file });
+         } else
+            out.push({ path: 'files/' + f.name, file: f });
+      }
+   } catch (e) {
+      setStatus(e.message);
+      return;
+   }
+   importFiles(out);
+}
+
+async function readHandle(handle, prefix, out) {
+   if (handle.kind === 'file') {
+      out.push({ path: prefix + handle.name, file: await handle.getFile() });
+   } else {
+      for await (const child of handle.values())
+         await readHandle(child, prefix + handle.name + '/', out);
+   }
+}
+
+async function importFolder(handle) {
+   if (await handle.requestPermission({ mode: 'readwrite' }) === 'granted')
+      tableFolder = handle;
+   const out = [];
+   await readHandle(handle, '', out);
+   importFiles(out);
+}
+
+async function readEntry(entry, prefix, out) {
+   if (entry.isFile) {
+      out.push({ path: prefix + entry.name, file: await new Promise((res, rej) => entry.file(res, rej)) });
+   } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      let batch;
+      do {
+         batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+         for (const child of batch)
+            await readEntry(child, prefix + entry.name + '/', out);
+      } while (batch.length > 0);
+   }
+}
+
+document.getElementById('pickFolder').onclick = async () => {
+   if (!window.showDirectoryPicker) {
+      document.getElementById('folderInput').click();
+      return;
+   }
+   try {
+      importFolder(await showDirectoryPicker({ id: 'tables', mode: 'readwrite' }));
+   } catch (e) {
+      if (e.name !== 'AbortError')
+         console.error(e);
+   }
+};
+document.getElementById('editSettings').onclick = () => openSettings();
+document.getElementById('editorSave').onclick = () => saveSettings();
+document.getElementById('editorClose').onclick = () => closeSettings();
+document.getElementById('pickFiles').onclick = () => document.getElementById('filesInput').click();
+document.getElementById('folderInput').onchange = (e) => importFiles(Array.from(e.target.files).map(f => ({ path: f.webkitRelativePath, file: f })));
+document.getElementById('filesInput').onchange = (e) => importTableFiles(Array.from(e.target.files));
+
+const drop = document.getElementById('drop');
+drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = async (e) => {
+   e.preventDefault();
+   drop.classList.remove('over');
+   if (document.getElementById('pickFolder').disabled)
+      return;
+   const items = Array.from(e.dataTransfer.items);
+   const handlePromise = items.length === 1 && items[0].getAsFileSystemHandle ? items[0].getAsFileSystemHandle() : null;
+   const roots = items.map(i => i.webkitGetAsEntry()).filter(Boolean);
+   const handle = handlePromise ? await handlePromise : null;
+   if (handle && handle.kind === 'directory') {
+      importFolder(handle);
+      return;
+   }
+   if (roots.length > 0 && roots.every(r => r.isFile)) {
+      importTableFiles(await Promise.all(roots.map(r => new Promise((res, rej) => r.file(res, rej)))));
+      return;
+   }
+   const out = [];
+   for (const root of roots)
+      await readEntry(root, root.isFile ? 'files/' : '', out);
+   importFiles(out);
+};
+</script>
+</body>
+</html>

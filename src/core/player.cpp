@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 
 #include <iomanip>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include <ctime>
 #include <fstream>
 #include <sstream>
@@ -46,6 +49,33 @@
 
 #ifdef __LIBVPINBALL__
 #include "lib/src/VPinballLib.h"
+#endif
+
+#ifdef __EMSCRIPTEN__
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload();
+MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI B2SPluginUnload();
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI InspectorPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI InspectorPluginUnload();
+MSGPI_EXPORT void MSGPIAPI NixiePluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI NixiePluginUnload();
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload();
+MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI PUPPluginUnload();
+MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI SerumPluginUnload();
+MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI VNIPluginUnload();
+MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI WMPPluginUnload();
 #endif
 
 // MSVC Concurrency Viewer support
@@ -115,8 +145,29 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
 
    PLOGI << "Loading player plugins"; // For profiling
    
-#ifdef __LIBVPINBALL__
+#if defined(__LIBVPINBALL__)
    VPinballLib::VPinballLib::SetupStaticPlugins(m_pluginManager);
+#elif defined(__EMSCRIPTEN__)
+   static constexpr struct {
+      const char* id;
+      void (*load)(uint32_t, const MsgPluginAPI*);
+      void (*unload)();
+   } plugins[] = {
+      { "AlphaDMD",   &AlphaDMDPluginLoad,   &AlphaDMDPluginUnload   },
+      { "AltSound",   &AltSoundPluginLoad,   &AltSoundPluginUnload   },
+      { "B2S",        &B2SPluginLoad,        &B2SPluginUnload        },
+      { "FlexDMD",    &FlexDMDPluginLoad,    &FlexDMDPluginUnload    },
+      { "Inspector",  &InspectorPluginLoad,  &InspectorPluginUnload  },
+      { "Nixie",      &NixiePluginLoad,      &NixiePluginUnload      },
+      { "PinMAME",    &PinMAMEPluginLoad,    &PinMAMEPluginUnload    },
+      { "PUP",        &PUPPluginLoad,        &PUPPluginUnload        },
+      { "Serum",      &SerumPluginLoad,      &SerumPluginUnload      },
+      { "UpscaleDMD", &UpscaleDMDPluginLoad, &UpscaleDMDPluginUnload },
+      { "VNI",        &VNIPluginLoad,        &VNIPluginUnload        },
+      { "WMP",        &WMPPluginLoad,        &WMPPluginUnload        }
+   };
+   for (const auto& p : plugins)
+      m_pluginManager.RegisterPlugin(p.id, p.id, p.id, "", "", "", p.load, p.unload);
 #else
    class SDLModuleLoader final : public MsgPI::MsgModuleLoader
    {
@@ -2321,9 +2372,14 @@ void Player::MultithreadedGameLoop()
       if (!CallbackSteppedGameLoop())
       {
          m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
+#ifdef __EMSCRIPTEN__
+         // Return to the browser event loop to process input events and proxied calls
+         emscripten_sleep(0);
+#else
          // Sadly waiting is very imprecise (at least on Windows) and we suffer a bit from it.
          // On Windows 10/11 experiments show a minimum delay around 300-500us (half a ms) leading to an overall latency around 2ms
          uOverSleep(100000);
+#endif
          // The other option would be to use spin wait to achieve sub ms overall latency but this is too CPU intensive:
          // YieldProcessor();
          m_logicProfiler.ExitProfileSection();

@@ -243,7 +243,7 @@ VPX::Window* DisplaySettingsPage::GetWindow()
 
 void DisplaySettingsPage::BuildPage()
 {
-#ifdef ENABLE_BGFX
+#if defined(ENABLE_BGFX) && !defined(__EMSCRIPTEN__)
    constexpr bool isSingleView = g_isMobile;
 #else
    constexpr bool isSingleView = true;

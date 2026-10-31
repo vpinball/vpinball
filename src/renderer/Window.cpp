@@ -521,7 +521,7 @@ RenderOutput::OutputMode RenderOutput::GetMode() const { return m_mode; }
 
 void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
 {
-#ifdef ENABLE_BGFX
+#if defined(ENABLE_BGFX) && !defined(__EMSCRIPTEN__)
    constexpr bool isSingleView = g_isMobile;
 #else
    constexpr bool isSingleView = true;

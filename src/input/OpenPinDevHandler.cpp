@@ -10,7 +10,7 @@
 
 #include "core/stdafx.h"
 
-#ifndef __LIBVPINBALL__
+#if !defined(__LIBVPINBALL__) && !defined(__EMSCRIPTEN__)
 
 #include "input/OpenPinDevHandler.h"
 

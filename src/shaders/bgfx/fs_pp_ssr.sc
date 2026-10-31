@@ -8,6 +8,10 @@ $input v_texcoord0
 
 #include "common.sh"
 
+#if BGFX_SHADER_LANGUAGE_WGSL
+#define isnan(x) ((floatBitsToUint(x) & 0x7FFFFFFFu) > 0x7F800000u)
+#endif
+
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
 // . for bloom, w_h_height.z keeps strength

@@ -10,7 +10,9 @@
 #undef _WIN64
 #endif
 #include "bx/readerwriter.h"
+#ifndef __EMSCRIPTEN__
 #define BGFX_PLATFORM_SUPPORTS_WGSL 0
+#endif
 #include "bgfx/embedded_shader.h"
 #if defined(__STANDALONE__) && !defined(_MSC_VER)
 #pragma pop_macro("_WIN64")
