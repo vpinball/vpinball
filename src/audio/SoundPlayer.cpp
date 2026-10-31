@@ -13,6 +13,7 @@
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_CUSTOM
 #include "miniaudio/miniaudio.h"
+#include "OpusDecoder.h"
 
 // VPU (table unit) to meters, matching the scale used by the VR renderer
 static constexpr float kVPUToMeters = static_cast<float>(0.0254 * 1.0625 / 50.);
@@ -272,9 +273,34 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
          config.pInitialAttachment = m_spatialSource ? static_cast<ma_node*>(m_spatialSource->GetNode()) : m_vpxMixNode.get();
          if (ma_sound_init_ex(engine, &config, m_sound.get()))
          {
-            m_decoder = nullptr;
-            m_sound = nullptr;
-            return;
+            // Not a format the engine's resource manager decodes (Opus): play it through a decoder with the Opus backend
+            m_decoder = std::make_unique<ma_decoder>();
+            ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
+            AddOpusDecoder(decoderConfig);
+#ifdef _WIN32
+            const ma_result result = ma_decoder_init_file_w(filename.c_str(), &decoderConfig, m_decoder.get());
+#else
+            const ma_result result = ma_decoder_init_file(filename.c_str(), &decoderConfig, m_decoder.get());
+#endif
+            if (result != MA_SUCCESS)
+            {
+               m_decoder = nullptr;
+               m_sound = nullptr;
+               return;
+            }
+#ifdef _WIN32
+            config.pFilePathW = nullptr;
+#else
+            config.pFilePath = nullptr;
+#endif
+            config.pDataSource = m_decoder.get();
+            config.flags = MA_SOUND_FLAG_NO_SPATIALIZATION;
+            if (ma_sound_init_ex(engine, &config, m_sound.get()))
+            {
+               m_decoder = nullptr;
+               m_sound = nullptr;
+               return;
+            }
          }
 
          if (!IsPlaying())
@@ -342,6 +368,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
          m_decoder = std::make_unique<ma_decoder>();
          ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, m_outputTarget == SNDOUT_BACKGLASS ? 2 : 1, 0);
          decoderConfig.channelMixMode = ma_channel_mix_mode_simple;
+         AddOpusDecoder(decoderConfig);
          if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, m_decoder.get()) != MA_SUCCESS)
          {
             m_decoder = nullptr;

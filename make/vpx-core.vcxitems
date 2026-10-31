@@ -73,7 +73,7 @@
   </Target>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>spatialaudio.lib;mysofa.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opusfile.lib;opus.lib;ogg.lib;spatialaudio.lib;mysofa.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
@@ -1730,6 +1730,7 @@
     <ClInclude Include="../gen/vpinball.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/audio/OpusDecoder.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SpatialAudio.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIBuilder.h" />
