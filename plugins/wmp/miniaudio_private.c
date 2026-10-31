@@ -3,6 +3,12 @@
 #define MA_ENABLE_CUSTOM
 #define MA_ENABLE_NULL
 
+#ifdef __EMSCRIPTEN__
+#include <unistd.h>
+#define MA_SUPPORT_NULL
+#define ma_sleep(ms) usleep((ms) * 1000)
+#endif
+
 #define STB_VORBIS_HEADER_ONLY
 #include <miniaudio/extras/stb_vorbis_static.c>
 
