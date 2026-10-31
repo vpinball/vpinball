@@ -2412,7 +2412,7 @@ void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT, unsigned int jit
    const int nEyes = m_renderDevice->m_nEyes;
    for (int eye = 0; eye < nEyes; eye++)
    {
-      matProjInv[eye] = GetMVP().GetProj(eye);
+      matProjInv[eye] = GetMVP().GetFlippedProj(eye);
       matProjInv[eye].Invert();
    }
    m_renderDevice->m_FBShader->SetMatrix(ShaderUniform::matProjInv, &matProjInv[0], nEyes);
