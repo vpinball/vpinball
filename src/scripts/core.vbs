@@ -2107,7 +2107,7 @@ Private Sub vpmOptInit
 			Err.Clear
 		Else
 			Controller.Games(Controller.GameName).Settings.Value("volume") = CLng(v)
-			If Err Then Err.Clear Else vpmVolRegistered = True : vpmVolApplied = CLng(v)
+			If Err Then Err.Clear() Else vpmVolRegistered = True : vpmVolApplied = CLng(v)
 		End If
 	End If
 	' Emulated display window lock and size
@@ -2119,7 +2119,7 @@ Private Sub vpmOptInit
 	Else
 		Controller.LockDisplay = (CLng(l) <> 0)
 		Controller.DoubleSize = (CLng(s) <> 0)
-		If Err Then Err.Clear Else vpmDspRegistered = True
+		If Err Then Err.Clear() Else vpmDspRegistered = True
 	End If
 	On Error Goto 0
 End Sub
