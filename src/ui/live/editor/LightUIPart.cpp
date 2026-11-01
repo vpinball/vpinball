@@ -59,10 +59,6 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Light Settings"s))
    {
-      props.Combo<Light>(
-         m_part, "Shape"s, vector<string> { "None"s, "Linear"s, "Incandescent"s }, //
-         [](const Light* light) { return static_cast<int>(light->m_d.m_fader); }, //
-         [](Light* light, int v) { light->m_d.m_fader = static_cast<Fader>(v); });
       props.InputFloat<Light>(
          m_part, "Intensity"s, //
          [](const Light* light) { return light->m_d.m_intensity; }, //
@@ -72,6 +68,10 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
             light->m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_d.m_state;
          },
          PropertyPane::Unit::None, 1);
+      props.Combo<Light>(
+         m_part, "Fader"s, vector<string> { "None"s, "Linear"s, "Incandescent"s }, //
+         [](const Light* light) { return static_cast<int>(light->m_d.m_fader); }, //
+         [](Light* light, int v) { light->m_d.m_fader = static_cast<Fader>(v); });
       props.InputFloat<Light>(
          m_part, "Fade Up (ms)"s, //
          [](const Light* light) { return light->m_d.m_fadeSpeedUp > 0.1f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedUp : 100000.0f; }, //
@@ -81,15 +81,15 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Light* light) { return light->m_d.m_fadeSpeedDown > 0.1f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedDown : 100000.0f; }, //
          [](Light* light, float v) { light->m_d.m_fadeSpeedDown = v > 0.001f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / v : 100000.0f; }, PropertyPane::Unit::None, 1);
       props.InputRGB<Light>(
-         m_part, "Light Color"s, //
-         [](const Light* light) { return convertColor(light->m_d.m_color); }, //
-         [](Light* light, const vec3& v) { light->m_d.m_color = convertColorRGB(v); });
-      props.InputRGB<Light>(
-         m_part, "Center Burst Color"s, //
+         m_part, "Center Color"s, //
          [](const Light* light) { return convertColor(light->m_d.m_color2); }, //
          [](Light* light, const vec3& v) { light->m_d.m_color2 = convertColorRGB(v); });
+      props.InputRGB<Light>(
+         m_part, "Edge Color"s, //
+         [](const Light* light) { return convertColor(light->m_d.m_color); }, //
+         [](Light* light, const vec3& v) { light->m_d.m_color = convertColorRGB(v); });
       props.InputFloat<Light>(
-         m_part, "Falloff Range"s, //
+         m_part, "Light Range"s, //
          [](const Light* light) { return light->m_d.m_falloff; }, //
          [](Light* light, float v) { light->m_d.m_falloff = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Light>(
