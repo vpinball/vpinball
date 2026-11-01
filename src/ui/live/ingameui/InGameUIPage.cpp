@@ -196,11 +196,11 @@ void InGameUIPage::SaveGlobally()
    Settings& tableSettings = g_settingsService.GetActiveSettings();
    for (const auto& item : m_items)
       item->ResetSave(tableSettings);
-   tableSettings.Save();
-   // Then save to application settings
+   // Then save to application settings (except items which are defined as table only)
    Settings& appSettings = g_settingsService.GetAppSettings();
    for (const auto& item : m_items)
-      item->Save(appSettings, false);
+      item->Save(item->m_tableOnly ? tableSettings : appSettings, item->m_tableOnly);
+   tableSettings.Save();
    appSettings.Save();
 }
 

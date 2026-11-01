@@ -119,19 +119,21 @@ inline static void XrPosef_ToMatrix3D(Matrix3D* result, const XrPosef* pose)
 
 VRDevice::VRDevice(const Settings& settings)
 {
-      // Scene offset (vertical rotation and horizontal shift)
-      m_orientation = settings.GetPlayerVR_Orientation();
-      m_tablePos.x = settings.GetPlayerVR_TableX();
-      m_tablePos.y = settings.GetPlayerVR_TableY();
-      // Offset of the playfield from the room ground is defined as an offset from the lockbar, minus bottom glass height and custom adjustment
-      m_tablePos.z = settings.GetPlayerVR_TableZ();
+   // Scene offset (vertical rotation and horizontal shift), part of the real world player setup (global only)
+   const Settings& appSettings = g_settingsService.GetAppSettings();
+   m_orientation = appSettings.GetPlayerVR_HeadSetOrientation();
+   m_headsetPos.x = appSettings.GetPlayerVR_HeadSetX();
+   m_headsetPos.y = appSettings.GetPlayerVR_HeadSetY();
+   // Per-table adjustment of the playfield to account for table specific cabinet geometry (glass height, lockbar distance)
+   m_tableOffset.y = settings.GetPlayerVR_TableOffsetY();
+   m_tableOffset.z = settings.GetPlayerVR_TableOffsetZ();
 
    #if defined(ENABLE_XR)
       // Relative scale factor and positioning
-      m_lockbarWidth = settings.GetPlayer_LockbarWidth();
-      m_lockbarHeight = settings.GetPlayer_LockbarHeight();
-      m_seatedTilt = settings.GetPlayerVR_SeatedTilt();
-      m_lockFeetToGround = settings.GetPlayerVR_LockFeetToGround() && m_seatedTilt == 0.f;
+      m_lockbarWidth = appSettings.GetPlayer_LockbarWidth();
+      m_lockbarHeight = appSettings.GetPlayer_LockbarHeight();
+      m_seatedTilt = appSettings.GetPlayerVR_SeatedTilt();
+      m_lockFeetToGround = appSettings.GetPlayerVR_LockFeetToGround() && m_seatedTilt == 0.f;
 
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-defined. These may help IHVs or runtimes.
@@ -1188,8 +1190,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                const vec3 lockbarAxis = rightPos - leftPos;
                const float lockbarAngle = atan2f(-lockbarAxis.z, lockbarAxis.x);
                m_headsetViewCentering = false;
-               m_lockbarWidth = lockbarAxis.Length() * 100.f * table->GetSettings().GetPlayerVR_ControllerLockbarScale();
-               
+               m_lockbarWidth = lockbarAxis.Length() * 100.f * g_settingsService.GetAppSettings().GetPlayerVR_ControllerLockbarScale();
+
                // Update fixed scaling, considering lockbar size to be the width of the playfield + 2"1/4
                const float tableWidth = VPUTOCM(table->m_right - table->m_left) + 2.25f * 2.54f;
                const float scale = clamp(m_lockbarWidth / tableWidth, 0.1f, 2.0f);
@@ -1200,9 +1202,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                const float dy = centerPos.z;
                m_lockbarHeight = -centerPos.y;
                m_orientation = RADTOANG(lockbarAngle);
-               m_tablePos.x = dx * c - dy * s;
-               m_tablePos.y = dx * s + dy * c + table->GetSettings().GetPlayerVR_ControllerCabYOffset() + lockbarToPlayfield * scale;
-               m_tablePos.z = 0.f;
+               m_headsetPos.x = dx * c - dy * s;
+               m_headsetPos.y = dx * s + dy * c + g_settingsService.GetAppSettings().GetPlayerVR_ControllerCabYOffset() + lockbarToPlayfield * scale;
                m_worldDirty = true;
             }
          }
@@ -1224,16 +1225,15 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             const float s = sinf(angle);
             const float dx = -VPUTOCM(medianPoseInVPU.position.x);
             const float dy = -VPUTOCM(medianPoseInVPU.position.z);
-            const Settings& settings = g_settingsService.GetActiveSettings();
+            const Settings& settings = g_settingsService.GetAppSettings();
 
             // Rotate the tracking-space translation into the table's yaw frame, just as
             // controller centering does. Player X/Y is the desired standing position
             // relative to the lockbar, so add it after transforming the headset pose.
+            // The per-table offsets are left untouched as they adjust to the table geometry.
             m_orientation = RADTOANG(angle);
-            m_tablePos.x = dx * c - dy * s + settings.GetPlayer_ScreenPlayerX();
-            m_tablePos.y = dx * s + dy * c + settings.GetPlayer_ScreenPlayerY();
-            m_tablePos.z = 0.f;
-            //m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
+            m_headsetPos.x = dx * c - dy * s + settings.GetPlayer_ScreenPlayerX();
+            m_headsetPos.y = dx * s + dy * c + settings.GetPlayer_ScreenPlayerY();
             m_worldDirty = true;
          }
 
@@ -1266,8 +1266,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
             // The users define in their settings the real world height where they want the top of the lockbar to be.
             // The real world playfield height is then computed by removing the glass distance at the playfield bottom (typically 2 to 3").
-            // The m_tablePos allows to slightly adjust this height on a per table basis.
-            // In the end Playfield height = m_tablePos.z (User adjustement) + m_lockBatHeight (Real world lockbar height) - glass distance * scale
+            // The m_tableOffset allows to slightly adjust this height on a per table basis.
+            // In the end Playfield height = m_tableOffset.z (User adjustement) + m_lockBatHeight (Real world lockbar height) - glass distance * scale
             const float scaledGlassHeight = m_scale * VPUTOCM(table->m_glassBottomHeight);
 
             // The table defines the height of the lockbar of its cabinet model, as well as the playfield base inclination.
@@ -1287,20 +1287,16 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                + m_scale * (table->m_bottom - table->m_top),
                0.f);
             const Matrix3D playfieldPos = Matrix3D::MatrixTranslate(
-               -CMTOVPU(m_tablePos.x),
-                CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                CMTOVPU(m_tablePos.z + m_lockbarHeight - scaledGlassHeight)); 
+               -CMTOVPU(m_headsetPos.x), CMTOVPU(m_headsetPos.y + m_tableOffset.y + lockbarToPlayfield), CMTOVPU(m_tableOffset.z + m_lockbarHeight - scaledGlassHeight));
             const Matrix3D playfieldPosInv = Matrix3D::MatrixInverse(playfieldPos);
             m_pfWorld.m_toWorld = sceneScale * coords * tableCoords * playfieldSlope * playfieldPos * viewOrientation;
 
             const Matrix3D cabinetSlope = playfieldPosInv * Matrix3D::MatrixRotateX(ANGTORAD(viewSlope - baseSlope)) * playfieldPos;
             const Matrix3D pfToCab = viewOrientationInv // Revert view orientation
                * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
-               * Matrix3D::MatrixTranslate(
-                  -CMTOVPU(m_tablePos.x),
-                   CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   // Cabinet model has its z origin at the feet level, m_groundToLockbarHeight corresponding to the playfield level, so we move it down (to real world ground) then up to match user seyup (where we placed the playfield)
-                   CMTOVPU(m_tablePos.z + m_lockbarHeight - scaledGlassHeight) - groundToPlayfieldHeight)
+               * Matrix3D::MatrixTranslate(-CMTOVPU(m_headsetPos.x), CMTOVPU(m_headsetPos.y + m_tableOffset.y + lockbarToPlayfield),
+                  // Cabinet model has its z origin at the feet level, m_groundToLockbarHeight corresponding to the playfield level, so we move it down (to real world ground) then up to match user seyup (where we placed the playfield)
+                  CMTOVPU(m_tableOffset.z + m_lockbarHeight - scaledGlassHeight) - groundToPlayfieldHeight)
                * cabinetSlope // Apply cabinet slope
                * viewOrientation; // Reapply view orientation
             m_cabWorld.m_toWorld = m_pfWorld.m_toWorld * pfToCab;
@@ -1311,13 +1307,13 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             {
                constexpr float cabHeight
                   = 0.4f * INCHESTOVPU(16.25f); // Magic value where the top of the leg should approximately stand (16.25" is the front height of a modern Stern cabinet)
-               const float feetScale = (CMTOVPU(m_tablePos.z + m_lockbarHeight) / m_scale - cabHeight) / (table->m_groundToLockbarHeight - cabHeight);
-               //const float feetScale = (CMTOVPU(m_tablePos.z + m_lockbarHeight) / m_scale - table->m_glassBottomHeight) / (table->m_groundToLockbarHeight - table->m_glassBottomHeight);
-               //const float feetScale = (m_tablePos.z + m_lockbarHeight - scaledGlassHeight) / VPUTOCM(groundToPlayfieldHeight);
+               const float feetScale = (CMTOVPU(m_tableOffset.z + m_lockbarHeight) / m_scale - cabHeight) / (table->m_groundToLockbarHeight - cabHeight);
+               //const float feetScale = (CMTOVPU(m_tableOffset.z + m_lockbarHeight) / m_scale - table->m_glassBottomHeight) / (table->m_groundToLockbarHeight - table->m_glassBottomHeight);
+               //const float feetScale = (m_tableOffset.z + m_lockbarHeight - scaledGlassHeight) / VPUTOCM(groundToPlayfieldHeight);
                const Matrix3D pfToFeet = viewOrientationInv // Revert view orientation
                   * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
-                  * Matrix3D::MatrixTranslate(-CMTOVPU(m_tablePos.x), CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                     CMTOVPU(m_tablePos.z)) // Feets are always at z=0 in real world, that is to say ground
+                  * Matrix3D::MatrixTranslate(-CMTOVPU(m_headsetPos.x), CMTOVPU(m_headsetPos.y + m_tableOffset.y + lockbarToPlayfield),
+                     CMTOVPU(m_tableOffset.z)) // Feets are always at z=0 in real world, that is to say ground
                   * Matrix3D::MatrixScale(1.f, 1.f, feetScale) // Scale feets in order to match feet bottom to real world floor
                   * cabinetSlope // Apply cabinet slope
                   * viewOrientation; // Reapply view orientation
@@ -1332,13 +1328,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             const Matrix3D pfToRoom = viewOrientationInv // Revert view orientation
                * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
                * Matrix3D::MatrixTranslate( // Apply table coordinate but without table scale
-                   - (1.f - m_scale) * (table->m_right - table->m_left) * 0.5f,
-                   + (1.f - m_scale) * (table->m_bottom - table->m_top),
-                   0.f)
-               * Matrix3D::MatrixTranslate(
-                  -CMTOVPU(m_tablePos.x), // For the ease of positioning, align the room to the table view setting, except for z which must stay on ground
-                   CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   CMTOVPU(m_tablePos.z))
+                  -(1.f - m_scale) * (table->m_right - table->m_left) * 0.5f, +(1.f - m_scale) * (table->m_bottom - table->m_top),
+                  0.f)
+               * Matrix3D::MatrixTranslate(-CMTOVPU(m_headsetPos.x), // For the ease of positioning, align the room to the table view setting, except for z which must stay on ground
+                  CMTOVPU(m_headsetPos.y + m_tableOffset.y + lockbarToPlayfield),
+                  CMTOVPU(m_tableOffset.z))
                * viewOrientation; // Reapply view orientation
             m_roomWorld.m_toWorld = invSceneScale * m_pfWorld.m_toWorld * pfToRoom;
          }
@@ -1564,9 +1558,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
 void VRDevice::OffsetTable(float dx, float dy, float dz)
 {
-   m_tablePos.x = clamp(m_tablePos.x + dx, -100.0f, 100.0f);
-   m_tablePos.y = clamp(m_tablePos.y + dy, -100.0f, 100.0f);
-   m_tablePos.z = clamp(m_tablePos.z + dz, -100.0f, 100.0f);
+   m_headsetPos.x = Settings::GetPlayerVR_HeadSetX_Property()->GetClamped(m_headsetPos.x + dx);
+   m_headsetPos.y = Settings::GetPlayerVR_HeadSetY_Property()->GetClamped(m_headsetPos.y + dy);
+   m_lockbarHeight = Settings::GetPlayer_LockbarHeight_Property()->GetClamped(m_lockbarHeight + dz);
    m_worldDirty = true;
 }
 
@@ -1601,10 +1595,10 @@ void VRDevice::RecenterTable()
 
 void VRDevice::SaveVRSettings(Settings& settings) const
 {
-   settings.SetPlayerVR_Orientation(m_orientation, false);
-   settings.SetPlayerVR_TableX(m_tablePos.x, false);
-   settings.SetPlayerVR_TableY(m_tablePos.y, false);
-   settings.SetPlayerVR_TableZ(m_tablePos.z, false);
+   // View centering and cab alignment is systematically persisted between sessions
+   settings.SetPlayerVR_HeadSetOrientation(m_orientation, false);
+   settings.SetPlayerVR_HeadSetX(m_headsetPos.x, false);
+   settings.SetPlayerVR_HeadSetY(m_headsetPos.y, false);
    settings.SetPlayer_LockbarWidth(m_lockbarWidth, false);
    settings.SetPlayer_LockbarHeight(m_lockbarHeight, false);
 }

@@ -166,10 +166,24 @@ public:
 
    void OffsetTable(float dx, float dy, float dz);
    void RecenterTable();
-   float GetSceneOrientation() const { return m_orientation; }
-   const Vertex3Ds& GetSceneOffset() const { return m_tablePos; }
-   void SetSceneOrientation(float orientation) { m_orientation = orientation; m_worldDirty = true; }
-   void SetSceneOffset(const Vertex3Ds& pos) { m_tablePos = pos; m_worldDirty = true; }
+   float GetHeadsetOrientation() const { return m_orientation; }
+   const Vertex3Ds& GetHeadsetOffset() const { return m_headsetPos; }
+   const Vertex3Ds& GetTableOffset() const { return m_tableOffset; }
+   void SetHeadsetOrientation(float orientation)
+   {
+      m_orientation = orientation;
+      m_worldDirty = true;
+   }
+   void SetHeadsetOffset(const Vertex3Ds& pos)
+   {
+      m_headsetPos = pos;
+      m_worldDirty = true;
+   }
+   void SetTableOffset(const Vertex3Ds& pos)
+   {
+      m_tableOffset = pos;
+      m_worldDirty = true;
+   }
    void SaveVRSettings(Settings& settings) const;
 
    void UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelViewProj& mvp);
@@ -188,7 +202,8 @@ private:
    bool m_lockFeetToGround = true;
    float m_seatedTilt = 0.0f; // Cabinet tilt toward the player for seated/reclined play, in degrees
    float m_orientation = 0.0f;
-   Vertex3Ds m_tablePos;
+   Vertex3Ds m_headsetPos { 0.f, 0.f, 0.f }; // Player defined headset position relative to the lockbar in cm (x: lateral, y: front/back)
+   Vertex3Ds m_tableOffset { 0.f, 0.f, 0.f }; // Per-table adjustment in cm (y: playfield to lockbar end distance, z: glass height)
    float m_slope = 0.0f;
 
    float m_predictedDisplayTimestamp = 0.f;

@@ -118,6 +118,7 @@ public:
    // UI behavior
    bool m_excludeFromDefault = false; // If set this item is not reseted to its default value when user request a reset
    bool m_globalOnly = false; // If set this item is always saved to the application settings (never as a table override)
+   bool m_tableOnly = false; // If set this item is always saved as a table override (never to the application settings)
 
 private:
    string m_defMappingString;

@@ -237,10 +237,13 @@ PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 0, "Ena
 PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 2, "Enabled"s, "Autodetect"s, "Disabled"s);
 #endif
 PropEnum(PlayerVR, DisplayRefreshRate, "Headset Refresh Rate"s, "Refresh rate requested from the headset when supported. Lower rates give the renderer more time per frame and avoid reprojected frames on standalone headsets"s, int, 0, "Runtime default"s, "72 Hz"s, "80 Hz"s, "90 Hz"s, "120 Hz"s);
-PropFloatDyn(PlayerVR, Orientation, "View orientation"s, "VR view orientation"s, -180.f, 180.f, 0.f);
-PropFloatDyn(PlayerVR, TableX, "View Offset X"s, "VR view X offset"s, -100.f, 100.f, 0.f);
-PropFloatDyn(PlayerVR, TableY, "View Offset Y"s, "VR view Y offset"s, -100.f, 100.f, 0.f);
-PropFloatDyn(PlayerVR, TableZ, "View Offset Z"s, "VR view Z offset"s, -100.f, 100.f, 0.f);
+PropFloatDyn(PlayerVR, HeadSetOrientation, "View orientation"s, "VR view orientation"s, -180.f, 180.f, 0.f);
+PropFloatDyn(PlayerVR, HeadSetX, "View Offset X"s, "VR view X offset"s, -100.f, 100.f, 0.f);
+PropFloatDyn(PlayerVR, HeadSetY, "View Offset Y"s, "VR view Y offset"s, -100.f, 100.f, 0.f);
+PropFloatDyn(PlayerVR, TableOffsetY, "Table Y Offset"s,
+   "Per table VR view Y offset to account for a non standard distance between end of playfield and end of lockbar border"s, -100.f, 100.f, 0.f);
+PropFloatDyn(
+   PlayerVR, TableOffsetZ, "Table Z Offset"s, "Per table VR view Z offset to account for undefined or imprecise glass height definition"s, -100.f, 100.f, 0.f);
 PropFloat(PlayerVR, SeatedTilt, "Seated Play Tilt"s,
    "Tilt the cabinet toward the player for seated or reclined play (only changes the view, physics are unchanged). When non zero, 'Lock Feet to Ground' is forced off"s,
    -90.f, 90.f, 0.f);
