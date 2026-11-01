@@ -58,17 +58,17 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Plunger>(
          m_part, "Bottom Margin"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_height; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Plunger* plunger, float v) { plunger->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1, "Space reserved below the rest position, defining how far the plunger can be pulled");
       props.Checkbox<Plunger>(
          m_part, "Reflection Enabled"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_reflectionEnabled; }, //
-         [](Plunger* plunger, bool v) { plunger->m_d.m_reflectionEnabled = v; });
+         [](Plunger* plunger, bool v) { plunger->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
 
       if (m_part->m_d.m_type == PlungerType::PlungerTypeFlat)
          props.InputInt<Plunger>(
             m_part, "Flat Frames"s, //
             [](const Plunger* plunger) { return plunger->m_d.m_animFrames; }, //
-            [](Plunger* plunger, int v) { plunger->m_d.m_animFrames = v; });
+            [](Plunger* plunger, int v) { plunger->m_d.m_animFrames = v; }, "Number of frames of the flat plunger's image strip animation");
       else if (m_part->m_d.m_type == PlungerType::PlungerTypeCustom)
       {
          props.InputFloat<Plunger>(
@@ -78,7 +78,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
          props.InputString<Plunger>(
             m_part, "Tip Shape"s, //
             [](const Plunger* plunger) { return plunger->m_d.m_szTipShape; }, //
-            [](Plunger* plunger, const string& v) { plunger->m_d.m_szTipShape = v; });
+            [](Plunger* plunger, const string& v) { plunger->m_d.m_szTipShape = v; }, "Tip cross-section profile as 'offset diameter' pairs separated by semicolons");
          props.InputFloat<Plunger>(
             m_part, "Ring Gap"s, //
             [](const Plunger* plunger) { return plunger->m_d.m_ringGap; }, //
@@ -98,7 +98,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
          props.InputFloat<Plunger>(
             m_part, "Spring Gauge"s, //
             [](const Plunger* plunger) { return plunger->m_d.m_springGauge; }, //
-            [](Plunger* plunger, float v) { plunger->m_d.m_springGauge = v; }, PropertyPane::Unit::VPLength, 1);
+            [](Plunger* plunger, float v) { plunger->m_d.m_springGauge = v; }, PropertyPane::Unit::VPLength, 1, "Diameter of the spring's wire");
          props.InputFloat<Plunger>(
             m_part, "Spring Loops"s, //
             [](const Plunger* plunger) { return plunger->m_d.m_springLoops; }, //
@@ -126,7 +126,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.SurfaceCombo<Plunger>(
          m_part, "Surface"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_szSurface; }, //
-         [](Plunger* plunger, const string& v) { plunger->m_d.m_szSurface = v; });
+         [](Plunger* plunger, const string& v) { plunger->m_d.m_szSurface = v; }, "Surface this part rests on (defines its base height)");
       props.EndSection();
    }
 
@@ -147,27 +147,27 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Plunger>(
          m_part, "Scatter Velocity"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_scatterVelocity; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_scatterVelocity = v; }, PropertyPane::Unit::None, 2);
+         [](Plunger* plunger, float v) { plunger->m_d.m_scatterVelocity = v; }, PropertyPane::Unit::None, 2, "Random speed variation added when the ball is launched");
       props.Checkbox<Plunger>(
          m_part, "Enable Mechanical Plunger"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_mechPlunger; }, //
-         [](Plunger* plunger, bool v) { plunger->m_d.m_mechPlunger = v; });
+         [](Plunger* plunger, bool v) { plunger->m_d.m_mechPlunger = v; }, "Enable driving the plunger from a mechanical plunger input or the plunger key, beside table script");
       props.Checkbox<Plunger>(
          m_part, "Auto Plunger"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_autoPlunger; }, //
-         [](Plunger* plunger, bool v) { plunger->m_d.m_autoPlunger = v; });
+         [](Plunger* plunger, bool v) { plunger->m_d.m_autoPlunger = v; }, "Fire the plunger by a solenoid instead of a plunger spring");
       props.InputFloat<Plunger>(
-         m_part, "Mech Strength"s, //
+         m_part, "Auto Plunger Strength"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_mechStrength; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_mechStrength = v; }, PropertyPane::Unit::None, 2);
+         [](Plunger* plunger, float v) { plunger->m_d.m_mechStrength = v; }, PropertyPane::Unit::None, 2, "Force of the solenoid when the auto plunger fires the ball");
       props.InputFloat<Plunger>(
          m_part, "Momentum Xfer"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_momentumXfer; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_momentumXfer = v; }, PropertyPane::Unit::None, 2);
+         [](Plunger* plunger, float v) { plunger->m_d.m_momentumXfer = v; }, PropertyPane::Unit::None, 2, "Ratio of the plunger's momentum transferred to the ball");
       props.InputFloat<Plunger>(
          m_part, "Park Position"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_parkPosition; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_parkPosition = v; }, PropertyPane::Unit::Percent, 3);
+         [](Plunger* plunger, float v) { plunger->m_d.m_parkPosition = v; }, PropertyPane::Unit::Percent, 3, "Resting position of the plunger along its stroke");
       props.EndSection();
    }
 

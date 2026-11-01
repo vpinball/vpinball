@@ -85,7 +85,8 @@ void DecalUIPart::UpdatePropertyPane(PropertyPane& props)
          {
             decal->m_d.m_sizingtype = static_cast<SizingType>(v);
             decal->EnsureSize();
-         });
+         },
+         "Auto Size follows the text; Auto Width only fixes the width; Manual Size fixes width and height");
       props.InputFloat<Decal>(
          m_part, "Width"s, //
          [](const Decal* decal) { return decal->m_d.m_width; }, //
@@ -116,7 +117,7 @@ void DecalUIPart::UpdatePropertyPane(PropertyPane& props)
       props.SurfaceCombo<Decal>(
          m_part, "Surface"s, //
          [](const Decal* decal) { return decal->m_d.m_szSurface; }, //
-         [](Decal* decal, const string& v) { decal->m_d.m_szSurface = v; });
+         [](Decal* decal, const string& v) { decal->m_d.m_szSurface = v; }, "Surface this part rests on (defines its base height)");
       props.InputFloat<Decal>(
          m_part, "Rotation"s, //
          [](const Decal* decal) { return decal->m_d.m_rotation; }, //

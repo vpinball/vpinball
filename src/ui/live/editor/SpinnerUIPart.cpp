@@ -48,7 +48,7 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Spinner>(
          m_part, "Reflection Enabled"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_reflectionEnabled; }, //
-         [](Spinner* spinner, bool v) { spinner->m_d.m_reflectionEnabled = v; });
+         [](Spinner* spinner, bool v) { spinner->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
       props.EndSection();
    }
 
@@ -61,7 +61,7 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.SurfaceCombo<Spinner>(
          m_part, "Surface"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_szSurface; }, //
-         [](Spinner* spinner, const string& v) { spinner->m_d.m_szSurface = v; });
+         [](Spinner* spinner, const string& v) { spinner->m_d.m_szSurface = v; }, "Surface this part rests on (defines its base height)");
       props.InputFloat<Spinner>(
          m_part, "Length"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_length; }, //
@@ -94,7 +94,7 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Spinner>(
          m_part, "Damping"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_damping; }, //
-         [](Spinner* spinner, float v) { spinner->m_d.m_damping = v; }, PropertyPane::Unit::None, 2);
+         [](Spinner* spinner, float v) { spinner->m_d.m_damping = v; }, PropertyPane::Unit::None, 2, "Resistance slowing the spinner's rotation");
       props.EndSection();
    }
 

@@ -106,12 +106,12 @@ void EditorUIPart::UpdateCurveSection(PropertyPane& props)
          props.Checkbox<DragPoint>(
             point, "Auto Texture Coord."s, //
             [](const DragPoint* p) { return p->IsAutoTextureCoordinate(); }, //
-            [](DragPoint* p, bool v) { p->SetAutoTextureCoordinate(v); });
+            [](DragPoint* p, bool v) { p->SetAutoTextureCoordinate(v); }, "Automatically compute the texture coordinate along the curve");
       if (HasPointTextureCoord())
          props.InputFloat<DragPoint>(
             point, "Texture Coord."s, //
             [](const DragPoint* p) { return p->GetTextureCoordinateU(); }, //
-            [](DragPoint* p, float v) { p->SetTextureCoordinateU(v); }, PropertyPane::Unit::None, 2);
+            [](DragPoint* p, float v) { p->SetTextureCoordinateU(v); }, PropertyPane::Unit::None, 2, "Texture coordinate (U) of this point along the part's image");
       ImGui::PopID();
    }
    else if (sel.size() > 1)

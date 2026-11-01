@@ -37,7 +37,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Rubber>(
          m_part, "Static Rendering"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_staticRendering; }, //
-         [](Rubber* rubber, bool v) { rubber->m_d.m_staticRendering = v; });
+         [](Rubber* rubber, bool v) { rubber->m_d.m_staticRendering = v; }, "Bake this part into the static prerender pass (faster, but it cannot move or change at runtime)");
       props.Checkbox<Rubber>(
          m_part, "Visible"s, //
          [this](const Rubber* rubber) { return GetVisibility(rubber); }, //
@@ -45,7 +45,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Rubber>(
          m_part, "Reflection Enabled"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_reflectionEnabled; }, //
-         [](Rubber* rubber, bool v) { rubber->m_d.m_reflectionEnabled = v; });
+         [](Rubber* rubber, bool v) { rubber->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
       props.InputInt<Rubber>(
          m_part, "Thickness"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_thickness; }, //
@@ -72,7 +72,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Rubber>(
          m_part, "Show in Editor"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_showInEditor; }, //
-         [](Rubber* rubber, bool v) { rubber->m_d.m_showInEditor = v; });
+         [](Rubber* rubber, bool v) { rubber->m_d.m_showInEditor = v; }, "Draw this rubber in the editor view (does not affect gameplay)");
       props.EndSection();
    }
 
@@ -81,11 +81,11 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.MaterialCombo<Rubber>(
          m_part, "Physics Material"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_szPhysicsMaterial; }, //
-         [](Rubber* rubber, const string& v) { rubber->m_d.m_szPhysicsMaterial = v; });
+         [](Rubber* rubber, const string& v) { rubber->m_d.m_szPhysicsMaterial = v; }, "Material preset used for this part's physics values");
       props.Checkbox<Rubber>(
          m_part, "Overwrite Physics"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_overwritePhysics; }, //
-         [](Rubber* rubber, bool v) { rubber->m_d.m_overwritePhysics = v; });
+         [](Rubber* rubber, bool v) { rubber->m_d.m_overwritePhysics = v; }, "Use the fields below instead of the physics material's values");
       props.InputFloat<Rubber>(
          m_part, "Elasticy"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_elasticity; }, //
@@ -93,7 +93,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Rubber>(
          m_part, "Elasticy Falloff"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_elasticityFalloff; }, //
-         [](Rubber* rubber, float v) { rubber->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 2);
+         [](Rubber* rubber, float v) { rubber->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 2, "Reduce elasticity for slower impacts (0 = constant elasticity)");
       props.InputFloat<Rubber>(
          m_part, "Friction"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_friction; }, //
@@ -101,11 +101,11 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Rubber>(
          m_part, "Scatter Angle"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_scatter; }, //
-         [](Rubber* rubber, float v) { rubber->m_d.m_scatter = v; }, PropertyPane::Unit::None, 2);
+         [](Rubber* rubber, float v) { rubber->m_d.m_scatter = v; }, PropertyPane::Unit::None, 2, "Random angle added to the ball's bounce direction");
       props.InputFloat<Rubber>(
          m_part, "Hit Height"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_hitHeight; }, //
-         [](Rubber* rubber, float v) { rubber->m_d.m_hitHeight = v; }, PropertyPane::Unit::VPLength, 2);
+         [](Rubber* rubber, float v) { rubber->m_d.m_hitHeight = v; }, PropertyPane::Unit::VPLength, 2, "Height of the collision volume above the table surface");
       props.Checkbox<Rubber>(
          m_part, "Collidable"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_collidable; }, //
@@ -113,7 +113,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Rubber>(
          m_part, "Has Hit Event"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_hitEvent; }, //
-         [](Rubber* rubber, bool v) { rubber->m_d.m_hitEvent = v; });
+         [](Rubber* rubber, bool v) { rubber->m_d.m_hitEvent = v; }, "Fire a Hit event to the script when the ball hits this part");
       props.EndSection();
    }
 

@@ -49,23 +49,25 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<HitTarget>(
          m_part, "Drop Speed"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_dropSpeed; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_dropSpeed = v; }, PropertyPane::Unit::None, 1);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_dropSpeed = v; }, PropertyPane::Unit::None, 1, "Speed of the target's drop animation");
       props.InputInt<HitTarget>(
          m_part, "Raise Delay (ms)"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_raiseDelay; }, //
-         [](HitTarget* hitTarget, int v) { hitTarget->m_d.m_raiseDelay = v; });
+         [](HitTarget* hitTarget, int v) { hitTarget->m_d.m_raiseDelay = v; }, "Minimum time a dropped target stays down before it can be raised");
       props.InputFloat<HitTarget>(
          m_part, "Depth Bias"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_depthBias; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0,
+         "Depth offset applied at render time to fix flickering between overlapping parts");
       props.InputFloat<HitTarget>(
          m_part, "Disable Spot Lights"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_disableLightingTop; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_disableLightingTop = v; }, PropertyPane::Unit::None, 2);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_disableLightingTop = v; }, PropertyPane::Unit::None, 2,
+         "Reduce the effect of dynamic light sources on the top of this part (0 = fully lit)");
       props.InputFloat<HitTarget>(
          m_part, "Translucency"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_disableLightingBelow; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_disableLightingBelow = v; }, PropertyPane::Unit::None, 1);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_disableLightingBelow = v; }, PropertyPane::Unit::None, 1, "Let light pass through the part from below, faking translucency");
       props.Checkbox<HitTarget>(
          m_part, "Visible"s, //
          [this](const HitTarget* hitTarget) { return GetVisibility(hitTarget); }, //
@@ -73,7 +75,7 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<HitTarget>(
          m_part, "Reflection Enabled"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_reflectionEnabled; }, //
-         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_reflectionEnabled = v; });
+         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
       props.EndSection();
    }
 
@@ -99,19 +101,19 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<HitTarget>(
          m_part, "Has Hit Event"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_hitEvent; }, //
-         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_hitEvent = v; });
+         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_hitEvent = v; }, "Fire a Hit event to the script when the ball hits this part");
       props.InputFloat<HitTarget>(
          m_part, "Hit Threshold"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_threshold; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_threshold = v; }, PropertyPane::Unit::None, 2);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_threshold = v; }, PropertyPane::Unit::None, 2, "Minimum ball speed needed to trigger this part's hit event");
       props.MaterialCombo<HitTarget>(
          m_part, "Physics Material"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_szPhysicsMaterial; }, //
-         [](HitTarget* hitTarget, const string& v) { hitTarget->m_d.m_szPhysicsMaterial = v; });
+         [](HitTarget* hitTarget, const string& v) { hitTarget->m_d.m_szPhysicsMaterial = v; }, "Material preset used for this part's physics values");
       props.Checkbox<HitTarget>(
          m_part, "Overwrite Material"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_overwritePhysics; }, //
-         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_overwritePhysics = v; });
+         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_overwritePhysics = v; }, "Use the fields below instead of the physics material's values");
       props.InputFloat<HitTarget>(
          m_part, "Elasticity"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_elasticity; }, //
@@ -119,7 +121,7 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<HitTarget>(
          m_part, "Elasticity Falloff"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_elasticityFalloff; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3, "Reduce elasticity for slower impacts (0 = constant elasticity)");
       props.InputFloat<HitTarget>(
          m_part, "Friction"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_friction; }, //
@@ -127,11 +129,11 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<HitTarget>(
          m_part, "Scatter Angle"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_scatter; }, //
-         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
+         [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3, "Random angle added to the ball's bounce direction");
       props.Checkbox<HitTarget>(
          m_part, "Legacy"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_legacy; }, //
-         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_legacy = v; });
+         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_legacy = v; }, "Use the legacy collision behavior (as in older VPX versions)");
       props.Checkbox<HitTarget>(
          m_part, "Collidable"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_collidable; }, //
@@ -139,7 +141,7 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<HitTarget>(
          m_part, "Dropped"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_isDropped; }, //
-         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_isDropped = v; });
+         [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_isDropped = v; }, "Start the game with the target already dropped");
       props.EndSection();
    }
 

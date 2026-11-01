@@ -48,15 +48,15 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Combo<Ramp>(
          m_part, "Image Mode"s, vector { "World"s, "Wrap"s }, //
          [](const Ramp* ramp) { return static_cast<int>(ramp->m_d.m_imagealignment); }, //
-         [](Ramp* ramp, int v) { ramp->m_d.m_imagealignment = static_cast<RampImageAlignment>(v); });
+         [](Ramp* ramp, int v) { ramp->m_d.m_imagealignment = static_cast<RampImageAlignment>(v); }, "World maps the image in table space; Wrap stretches it along the part's shape");
       props.Checkbox<Ramp>(
          m_part, "Apply Image to Wall"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_imageWalls; }, //
-         [](Ramp* ramp, bool v) { ramp->m_d.m_imageWalls = v; });
+         [](Ramp* ramp, bool v) { ramp->m_d.m_imageWalls = v; }, "Also stretch the image over the ramp's side walls");
       props.InputFloat<Ramp>(
          m_part, "Depth Bias"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_depthBias; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0);
+         [](Ramp* ramp, float v) { ramp->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0, "Depth offset applied at render time to fix flickering between overlapping parts");
       props.Checkbox<Ramp>(
          m_part, "Visible"s, //
          [this](const Ramp* ramp) { return GetVisibility(ramp); }, //
@@ -64,7 +64,7 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Ramp>(
          m_part, "Reflection Enabled"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_reflectionEnabled; }, //
-         [](Ramp* ramp, bool v) { ramp->m_d.m_reflectionEnabled = v; });
+         [](Ramp* ramp, bool v) { ramp->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
       props.EndSection();
    }
 
@@ -91,25 +91,25 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Ramp>(
          m_part, "Left Wall"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_leftwallheightvisible; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_leftwallheightvisible = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Ramp* ramp, float v) { ramp->m_d.m_leftwallheightvisible = v; }, PropertyPane::Unit::VPLength, 1, "Height of the wall rendered on the left edge of the ramp (render only)");
       props.InputFloat<Ramp>(
          m_part, "Right Wall"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_rightwallheightvisible; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_rightwallheightvisible = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Ramp* ramp, float v) { ramp->m_d.m_rightwallheightvisible = v; }, PropertyPane::Unit::VPLength, 1, "Height of the wall rendered on the right edge of the ramp (render only)");
 
       props.Separator("Wire Ramp"s);
       props.InputFloat<Ramp>(
          m_part, "Diameter"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_wireDiameter; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_wireDiameter = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Ramp* ramp, float v) { ramp->m_d.m_wireDiameter = v; }, PropertyPane::Unit::VPLength, 1, "Thickness of the ramp's wires");
       props.InputFloat<Ramp>(
          m_part, "Distance X"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_wireDistanceX; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_wireDistanceX = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Ramp* ramp, float v) { ramp->m_d.m_wireDistanceX = v; }, PropertyPane::Unit::VPLength, 1, "Horizontal spacing between the wires");
       props.InputFloat<Ramp>(
          m_part, "Distance Y"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_wireDistanceY; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_wireDistanceY = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Ramp* ramp, float v) { ramp->m_d.m_wireDistanceY = v; }, PropertyPane::Unit::VPLength, 1, "Vertical spacing between the wires");
       props.EndSection();
    }
 
@@ -118,27 +118,27 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Ramp>(
          m_part, "Has Hit Event"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_hitEvent; }, //
-         [](Ramp* ramp, bool v) { ramp->m_d.m_hitEvent = v; });
+         [](Ramp* ramp, bool v) { ramp->m_d.m_hitEvent = v; }, "Fire a Hit event to the script when the ball hits this part");
       props.InputFloat<Ramp>(
          m_part, "Hit Threshold"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_threshold; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_threshold = v; }, PropertyPane::Unit::None, 3);
+         [](Ramp* ramp, float v) { ramp->m_d.m_threshold = v; }, PropertyPane::Unit::None, 3, "Minimum ball speed needed to trigger this part's hit event");
       props.InputFloat<Ramp>(
          m_part, "Left Wall"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_leftwallheight; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_leftwallheight = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Ramp* ramp, float v) { ramp->m_d.m_leftwallheight = v; }, PropertyPane::Unit::VPLength, 1, "Height of the physical wall on the left edge (0 = no wall)");
       props.InputFloat<Ramp>(
          m_part, "Right Wall"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_rightwallheight; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_rightwallheight = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Ramp* ramp, float v) { ramp->m_d.m_rightwallheight = v; }, PropertyPane::Unit::VPLength, 1, "Height of the physical wall on the right edge (0 = no wall)");
       props.MaterialCombo<Ramp>(
          m_part, "Physics Material"s, //
          [](const Ramp* surf) { return surf->m_d.m_szPhysicsMaterial; }, //
-         [](Ramp* surf, const string& v) { surf->m_d.m_szPhysicsMaterial = v; });
+         [](Ramp* surf, const string& v) { surf->m_d.m_szPhysicsMaterial = v; }, "Material preset used for this part's physics values");
       props.Checkbox<Ramp>(
          m_part, "Overwrite Material"s, //
          [](const Ramp* surf) { return surf->m_d.m_overwritePhysics; }, //
-         [](Ramp* surf, bool v) { surf->m_d.m_overwritePhysics = v; });
+         [](Ramp* surf, bool v) { surf->m_d.m_overwritePhysics = v; }, "Use the fields below instead of the physics material's values");
       props.InputFloat<Ramp>(
          m_part, "Elasticity"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_elasticity; }, //
@@ -150,7 +150,7 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Ramp>(
          m_part, "Scatter Angle"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_scatter; }, //
-         [](Ramp* ramp, float v) { ramp->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
+         [](Ramp* ramp, float v) { ramp->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3, "Random angle added to the ball's bounce direction");
       props.Checkbox<Ramp>(
          m_part, "Collidable"s, //
          [](const Ramp* surf) { return surf->m_d.m_collidable; }, //
@@ -166,12 +166,12 @@ void RampUIPart::UpdatePointZField(PropertyPane& props, DragPoint* point)
    props.InputFloat<DragPoint>(
       point, "Height Offset"s, //
       [](const DragPoint* p) { return p->GetZ(); }, //
-      [](DragPoint* p, float v) { p->SetZ(v); }, PropertyPane::Unit::VPLength, 1);
+      [](DragPoint* p, float v) { p->SetZ(v); }, PropertyPane::Unit::VPLength, 1, "Height of this point relative to the height interpolated between the ramp's bottom and top");
    ImGui::BeginDisabled();
    props.InputFloat<DragPoint>(
       point, "Real Height"s, //
       [](const DragPoint* p) { return p->GetCalcHeight(); }, //
-      [](DragPoint*, float) {}, PropertyPane::Unit::VPLength, 1);
+      [](DragPoint*, float) {}, PropertyPane::Unit::VPLength, 1, "Absolute height of this point after interpolation");
    ImGui::EndDisabled();
 }
 }

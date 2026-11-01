@@ -77,7 +77,8 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             if (v == FlasherData::EXT_RENDER
                && (flasher->m_d.m_renderStyle < VPXWindowId::VPXWINDOW_Backglass || flasher->m_d.m_renderStyle > VPXWindowId::VPXWINDOW_Topper))
                flasher->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
-         });
+         },
+         "What this part renders: a lit flasher, a DMD, a display, an alpha segment display, or an external renderer");
       if (renderMode != FlasherData::EXT_RENDER)
       {
          props.InputRGB<Flasher>(
@@ -88,14 +89,15 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Flasher>(
          m_part, "Depth bias"s, //
          [](const Flasher* flasher) { return flasher->m_d.m_depthBias; }, //
-         [](Flasher* flasher, float v) { flasher->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0);
+         [](Flasher* flasher, float v) { flasher->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0, "Depth offset applied at render time to fix flickering between overlapping parts");
 
       if (renderMode == FlasherData::FLASHER)
       {
          props.Combo<Flasher>(
             m_part, "Image Mode"s, vector { "World"s, "Wrap"s }, //
             [](const Flasher* flasher) { return static_cast<int>(flasher->m_d.m_imagealignment); }, //
-            [](Flasher* flasher, int v) { flasher->m_d.m_imagealignment = static_cast<RampImageAlignment>(v); });
+            [](Flasher* flasher, int v) { flasher->m_d.m_imagealignment = static_cast<RampImageAlignment>(v); },
+            "World maps the image in table space; Wrap stretches it along the part's shape");
          props.ImageCombo<Flasher>(
             m_part, "Image A"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_szImageA; }, //
@@ -103,23 +105,23 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
          props.ImageCombo<Flasher>(
             m_part, "Image B"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_szImageB; }, //
-            [](Flasher* flasher, const string& v) { flasher->m_d.m_szImageB = v; });
+            [](Flasher* flasher, const string& v) { flasher->m_d.m_szImageB = v; }, "Second image blended with Image A using the Mix settings");
          props.MaterialVisuals(m_part, {}, nullptr, {}, nullptr, &Data::m_displayTexture);
          props.Combo<Flasher>(
             m_part, "Mix"s, vector { "None"s, "Additive"s, "Overlay"s, "Multiply"s, "Screen"s }, //
             [](const Flasher* flasher) { return static_cast<int>(flasher->m_d.m_filter); }, //
-            [](Flasher* flasher, int v) { flasher->m_d.m_filter = static_cast<Filters>(v); });
+            [](Flasher* flasher, int v) { flasher->m_d.m_filter = static_cast<Filters>(v); }, "How Image B is blended over Image A");
          props.InputInt<Flasher>(
             m_part, "Mix Factor (%)"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_filterAmount; }, //
-            [](Flasher* flasher, int v) { flasher->m_d.m_filterAmount = v; });
+            [](Flasher* flasher, int v) { flasher->m_d.m_filterAmount = v; }, "Strength of the blend between Image A and Image B");
       }
       else if (renderMode == FlasherData::EXT_RENDER)
       {
          props.Combo<Flasher>(
             m_part, "Renderer"s, vector { "Backglass"s, "Score View"s, "Topper"s }, //
             [](const Flasher* flasher) { return flasher->m_d.m_renderStyle - VPXWindowId::VPXWINDOW_Backglass; }, //
-            [](Flasher* flasher, int v) { flasher->m_d.m_renderStyle = v + VPXWindowId::VPXWINDOW_Backglass; });
+            [](Flasher* flasher, int v) { flasher->m_d.m_renderStyle = v + VPXWindowId::VPXWINDOW_Backglass; }, "Window whose content is mirrored on this flasher");
       }
       else
       {
@@ -162,46 +164,47 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
                m_part, "Source"s, //
                [](const Flasher* flasher) { return flasher->m_d.m_imageSrcLink; }, //
                [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; }, //
-               ResURIKind::Display, renderMode == FlasherData::DMD ? DisplayFamily::Dmd : DisplayFamily::NonDmd);
+               ResURIKind::Display, "URI of the source feeding the content to display (plugin resource or shared state)",
+               renderMode == FlasherData::DMD ? DisplayFamily::Dmd : DisplayFamily::NonDmd);
          else if (renderMode == FlasherData::ALPHASEG)
             props.InputResURI<Flasher>(
                m_part, "Source"s, //
                [](const Flasher* flasher) { return flasher->m_d.m_imageSrcLink; }, //
                [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; }, //
-               ResURIKind::SegDisplay);
+               ResURIKind::SegDisplay, "URI of the source feeding the content to display (plugin resource or shared state)");
          else
             props.InputString<Flasher>(
                m_part, "Source"s, //
                [](const Flasher* flasher) { return flasher->m_d.m_imageSrcLink; }, //
-               [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; });
+               [](Flasher* flasher, const string& v) { flasher->m_d.m_imageSrcLink = v; }, "URI of the source feeding the content to display (plugin resource or shared state)");
          props.ImageCombo<Flasher>(
             m_part, "Glass"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_szImageA; }, //
-            [](Flasher* flasher, const string& v) { flasher->m_d.m_szImageA = v; });
+            [](Flasher* flasher, const string& v) { flasher->m_d.m_szImageA = v; }, "Image of the glass covering the display (tint & reflections)");
          props.InputFloat<Flasher>(
             m_part, "Glass Roughness"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_glassRoughness; }, //
-            [](Flasher* flasher, float v) { flasher->m_d.m_glassRoughness = v; }, PropertyPane::Unit::None, 0);
+            [](Flasher* flasher, float v) { flasher->m_d.m_glassRoughness = v; }, PropertyPane::Unit::None, 0, "Roughness of the glass' reflections (0 = mirror)");
          props.InputRGB<Flasher>(
             m_part, "Glass Ambient", //
             [](const Flasher* flasher) { return convertColor(flasher->m_d.m_glassAmbient); }, //
-            [](Flasher* flasher, const vec3& v) { flasher->m_d.m_glassAmbient = convertColorRGB(v); });
+            [](Flasher* flasher, const vec3& v) { flasher->m_d.m_glassAmbient = convertColorRGB(v); }, "Ambient color tinting the glass");
          props.InputFloat<Flasher>(
             m_part, "Glass Pad Left"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_glassPadLeft; }, //
-            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadLeft = v; }, PropertyPane::Unit::Percent, 1);
+            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadLeft = v; }, PropertyPane::Unit::Percent, 1, "Margin between the display content and the glass edge");
          props.InputFloat<Flasher>(
             m_part, "Glass Pad Right"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_glassPadRight; }, //
-            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadRight = v; }, PropertyPane::Unit::Percent, 1);
+            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadRight = v; }, PropertyPane::Unit::Percent, 1, "Margin between the display content and the glass edge");
          props.InputFloat<Flasher>(
             m_part, "Glass Pad Top"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_glassPadTop; }, //
-            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadTop = v; }, PropertyPane::Unit::Percent, 1);
+            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadTop = v; }, PropertyPane::Unit::Percent, 1, "Margin between the display content and the glass edge");
          props.InputFloat<Flasher>(
             m_part, "Glass Pad Bottom"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_glassPadBottom; }, //
-            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadBottom = v; }, PropertyPane::Unit::Percent, 1);
+            [](Flasher* flasher, float v) { flasher->m_d.m_glassPadBottom = v; }, PropertyPane::Unit::Percent, 1, "Margin between the display content and the glass edge");
       }
       // Show in Editor (Flasher mode has it below its images)
       if (renderMode != FlasherData::FLASHER)
@@ -218,11 +221,12 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
       props.LightmapCombo<Flasher>(
          m_part, "Lightmap"s, //
          [](const Flasher* flasher) { return flasher->m_d.m_szLightmap; }, //
-         [](Flasher* flasher, const string& v) { flasher->m_d.m_szLightmap = v; });
+         [](Flasher* flasher, const string& v) { flasher->m_d.m_szLightmap = v; }, "Use this light's illumination as the part's baked lighting");
       props.InputResURI<Flasher>(
          m_part, "State Link"s, //
          [](const Flasher* flasher) { return flasher->m_d.m_stateSrcLink; }, //
-         [](Flasher* flasher, const string& v) { flasher->m_d.m_stateSrcLink = v; }, ResURIKind::State, DisplayFamily::Any, -1, false, -1);
+         [](Flasher* flasher, const string& v) { flasher->m_d.m_stateSrcLink = v; }, ResURIKind::State,
+         "URI linking this part's state to a shared state source (plugin or external controller)", DisplayFamily::Any, -1, false, -1);
       // Alpha Segment (which always uses max blending) and external rendering ignore both of these, see Flasher::Render
       const Flasher *const edited = props.GetEditedPart<Flasher>(m_part);
       const FlasherData::RenderMode renderMode = edited->m_d.m_renderMode;
@@ -238,11 +242,11 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
          props.Combo<Flasher>(
             m_part, "Additive Blend"s, addBlendModes, //
             [lastMode](const Flasher* flasher) { return clamp(flasher->m_d.m_addBlend, 0, lastMode); }, //
-            [](Flasher* flasher, int v) { flasher->m_d.m_addBlend = v; });
+            [](Flasher* flasher, int v) { flasher->m_d.m_addBlend = v; }, "Blend additively: amplify brightens what is behind the flasher, absorb darkens it like a glass reflection");
          props.InputFloat<Flasher>(
             m_part, "Modulate"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_modulate_vs_add; }, //
-            [](Flasher* flasher, float v) { flasher->m_d.m_modulate_vs_add = v; }, PropertyPane::Unit::Percent, 1);
+            [](Flasher* flasher, float v) { flasher->m_d.m_modulate_vs_add = v; }, PropertyPane::Unit::Percent, 1, "Blend between adding light (0%) and modulating the surface color (100%)");
       }
       props.EndSection();
    }

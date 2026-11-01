@@ -67,11 +67,11 @@ void LightSeqUIPart::UpdatePropertyPane(PropertyPane& props)
       props.CollectionCombo<LightSeq>(
          m_part, "Collection"s, //
          [](const LightSeq* lightSeq) { return lightSeq->m_d.m_collection; }, //
-         [](LightSeq* lightSeq, const string& v) { lightSeq->m_d.m_collection = v; });
+         [](LightSeq* lightSeq, const string& v) { lightSeq->m_d.m_collection = v; }, "Collection of lights animated by this sequencer");
       props.InputFloat2<LightSeq>(
          m_part, "Animation Center"s, //
          [](const LightSeq* lightSeq) { return lightSeq->m_d.m_vCenter; }, //
-         [](LightSeq* lightSeq, const Vertex2D& v) { lightSeq->m_d.m_vCenter = v; }, PropertyPane::Unit::VPLength, 1);
+         [](LightSeq* lightSeq, const Vertex2D& v) { lightSeq->m_d.m_vCenter = v; }, PropertyPane::Unit::VPLength, 1, "Origin used by the sequence animations (rotation & sweep effects)");
       props.InputInt<LightSeq>(
          m_part, "Update Interval (ms)"s, //
          [](const LightSeq* lightSeq) { return lightSeq->m_d.m_updateinterval; }, //

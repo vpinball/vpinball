@@ -40,7 +40,7 @@ void TextBoxUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Textbox>(
          m_part, "Transparent"s, //
          [](const Textbox* textbox) { return textbox->m_d.m_transparent; }, //
-         [](Textbox* textbox, bool v) { textbox->m_d.m_transparent = v; });
+         [](Textbox* textbox, bool v) { textbox->m_d.m_transparent = v; }, "Draw the text without the background box");
       props.InputRGB<Textbox>(
          m_part, "Back Color"s, //
          [](const Textbox* textbox) { return convertColor(textbox->m_d.m_backcolor); }, //
@@ -83,11 +83,11 @@ void TextBoxUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Textbox>(
          m_part, "Use Script DMD"s, //
          [](const Textbox* textbox) { return textbox->m_d.m_isDMD; }, //
-         [](Textbox* textbox, bool v) { textbox->m_d.m_isDMD = v; });
+         [](Textbox* textbox, bool v) { textbox->m_d.m_isDMD = v; }, "Render the text as a DMD (dot matrix display) driven by the script");
       props.InputFloat<Textbox>(
          m_part, "Text Intensity"s, //
          [](const Textbox* textbox) { return textbox->m_d.m_intensity_scale; }, //
-         [](Textbox* textbox, float v) { textbox->m_d.m_intensity_scale = v; }, PropertyPane::Unit::None, 1);
+         [](Textbox* textbox, float v) { textbox->m_d.m_intensity_scale = v; }, PropertyPane::Unit::None, 1, "Brightness scale of the text");
       props.InputString<Textbox>(
          m_part, "Text"s, //
          [](const Textbox* textbox) { return textbox->m_d.m_text; }, //

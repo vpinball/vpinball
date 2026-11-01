@@ -58,7 +58,7 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Gate>(
          m_part, "Reflection Enabled"s, //
          [](const Gate* gate) { return gate->m_d.m_reflectionEnabled; }, //
-         [](Gate* gate, bool v) { gate->m_d.m_reflectionEnabled = v; });
+         [](Gate* gate, bool v) { gate->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
       props.MaterialCombo<Gate>(
          m_part, "Material"s, //
          [](const Gate* gate) { return gate->m_d.m_szMaterial; }, //
@@ -96,7 +96,7 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
       props.SurfaceCombo<Gate>(
          m_part, "Surface"s, //
          [](const Gate* gate) { return gate->m_d.m_szSurface; }, //
-         [](Gate* gate, const string& v) { gate->m_d.m_szSurface = v; });
+         [](Gate* gate, const string& v) { gate->m_d.m_szSurface = v; }, "Surface this part rests on (defines its base height)");
       props.InputFloat<Gate>(
          m_part, "Rotation"s, //
          [](const Gate* gate) { return gate->m_d.m_rotation; }, //
@@ -117,11 +117,11 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Gate>(
          m_part, "Damping"s, //
          [](const Gate* gate) { return gate->m_d.m_damping; }, //
-         [](Gate* gate, float v) { gate->m_d.m_damping = v; }, PropertyPane::Unit::None, 3);
+         [](Gate* gate, float v) { gate->m_d.m_damping = v; }, PropertyPane::Unit::None, 3, "Resistance slowing the gate's swing");
       props.InputFloat<Gate>(
          m_part, "Gravity Factor"s, //
          [](const Gate* gate) { return gate->m_d.m_gravityfactor; }, //
-         [](Gate* gate, float v) { gate->m_d.m_gravityfactor = v; }, PropertyPane::Unit::None, 3);
+         [](Gate* gate, float v) { gate->m_d.m_gravityfactor = v; }, PropertyPane::Unit::None, 3, "How strongly gravity pulls the gate back closed");
       props.Checkbox<Gate>(
          m_part, "Collidable"s, //
          [](const Gate* gate) { return gate->m_d.m_collidable; }, //
@@ -129,7 +129,7 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Gate>(
          m_part, "Two Way"s, //
          [](const Gate* gate) { return gate->m_d.m_twoWay; }, //
-         [](Gate* gate, bool v) { gate->m_d.m_twoWay = v; });
+         [](Gate* gate, bool v) { gate->m_d.m_twoWay = v; }, "Let the ball pass the gate in both directions");
       props.EndSection();
    }
 

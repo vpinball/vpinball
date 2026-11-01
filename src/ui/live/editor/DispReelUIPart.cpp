@@ -52,7 +52,7 @@ void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputInt<DispReel>(
          m_part, "Single Digit Range (0 -> n)"s, //
          [](const DispReel* dispReel) { return dispReel->GetRange(); }, //
-         [](DispReel* dispReel, int v) { dispReel->SetRange(v); });
+         [](DispReel* dispReel, int v) { dispReel->SetRange(v); }, "Number of frames each reel cycles through (10 for digits 0-9)");
       props.ImageCombo<DispReel>(
          m_part, "Image"s, //
          [](const DispReel* dispReel) { return dispReel->m_d.m_szImage; }, //
@@ -62,11 +62,11 @@ void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<DispReel>(
          m_part, "Use Image Grid"s, //
          [](const DispReel* dispReel) { return dispReel->m_d.m_useImageGrid; }, //
-         [](DispReel* dispReel, bool v) { dispReel->m_d.m_useImageGrid = v; });
+         [](DispReel* dispReel, bool v) { dispReel->m_d.m_useImageGrid = v; }, "Read the reel frames from a grid inside the image instead of a single row");
       props.InputInt<DispReel>(
          m_part, "Images Per Row"s, //
          [](const DispReel* dispReel) { return dispReel->GetImagesPerGridRow(); }, //
-         [](DispReel* dispReel, int v) { dispReel->SetImagesPerGridRow(v); });
+         [](DispReel* dispReel, int v) { dispReel->SetImagesPerGridRow(v); }, "Number of reel frames per row of the image grid");
       props.EndSection();
    }
 
@@ -105,7 +105,7 @@ void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputInt<DispReel>(
          m_part, "Motor Steps"s, //
          [](const DispReel* dispReel) { return dispReel->GetMotorSteps(); }, //
-         [](DispReel* dispReel, int v) { dispReel->SetMotorSteps(v); });
+         [](DispReel* dispReel, int v) { dispReel->SetMotorSteps(v); }, "Animation steps performed per update interval while turning a reel");
       props.InputInt<DispReel>(
          m_part, "Update Interval (ms)"s, //
          [](const DispReel* dispReel) { return dispReel->GetUpdateInterval(); }, //

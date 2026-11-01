@@ -40,7 +40,7 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Trigger>(
          m_part, "Reflection Enabled"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_reflectionEnabled; }, //
-         [](Trigger* trigger, bool v) { trigger->m_d.m_reflectionEnabled = v; });
+         [](Trigger* trigger, bool v) { trigger->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
       props.Combo<Trigger>(
          m_part, "Shape"s, vector<string> { "None"s, "Wire A"s, "Star"s, "Wire B"s, "Button"s, "Wire C"s, "Wire D"s, "Inder"s },
          [](const Trigger* trigger) { return trigger->m_d.m_shape; }, //
@@ -60,7 +60,7 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Trigger>(
          m_part, "Anim Speed"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_animSpeed; }, //
-         [](Trigger* trigger, float v) { trigger->m_d.m_animSpeed = v; }, PropertyPane::Unit::None, 1);
+         [](Trigger* trigger, float v) { trigger->m_d.m_animSpeed = v; }, PropertyPane::Unit::None, 1, "Speed of the shape animation played when the trigger fires");
       props.MaterialCombo<Trigger>(
          m_part, "Material"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_szMaterial; }, //
@@ -73,18 +73,18 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Trigger>(
          m_part, "Enabled"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_enabled; }, //
-         [](Trigger* trigger, bool v) { trigger->m_d.m_enabled = v; });
+         [](Trigger* trigger, bool v) { trigger->m_d.m_enabled = v; }, "Fire Hit/Unhit events when the ball passes over the trigger");
       ImGui::BeginDisabled(!props.GetEditedPart<Trigger>(m_part)->m_d.m_enabled);
       props.InputResURI<Trigger>(
          m_part, "State Link"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_stateSrcLink; }, //
          [](Trigger* trigger, const string& v) { trigger->m_d.m_stateSrcLink = v; }, //
-         ResURIKind::State, DisplayFamily::Any, CTLPI_STATE_TYPE_SWITCH, true, -1);
+         ResURIKind::State, "URI linking this trigger's state to a shared state source (plugin or external controller)", DisplayFamily::Any, CTLPI_STATE_TYPE_SWITCH, true, -1);
       ImGui::EndDisabled();
       props.InputFloat<Trigger>(
          m_part, "Hit Height"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_hit_height; }, //
-         [](Trigger* trigger, float v) { trigger->m_d.m_hit_height = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Trigger* trigger, float v) { trigger->m_d.m_hit_height = v; }, PropertyPane::Unit::VPLength, 1, "Height of the collision volume above the table surface");
       props.EndSection();
    }
 
@@ -97,7 +97,7 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.SurfaceCombo<Trigger>(
          m_part, "Surface"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_szSurface; }, //
-         [](Trigger* trigger, const string& v) { trigger->m_d.m_szSurface = v; });
+         [](Trigger* trigger, const string& v) { trigger->m_d.m_szSurface = v; }, "Surface this part rests on (defines its base height)");
       props.EndSection();
    }
 

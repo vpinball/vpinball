@@ -48,11 +48,11 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Bumper>(
          m_part, "Ring Speed"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_ringSpeed; }, //
-         [](Bumper* bumper, float v) { bumper->m_d.m_ringSpeed = v; }, PropertyPane::Unit::None, 1);
+         [](Bumper* bumper, float v) { bumper->m_d.m_ringSpeed = v; }, PropertyPane::Unit::None, 1, "Speed of the ring drop animation played when the bumper fires (0 = instant)");
       props.InputFloat<Bumper>(
          m_part, "Ring Drop"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_ringDropOffset; }, //
-         [](Bumper* bumper, float v) { bumper->m_d.m_ringDropOffset = v; }, PropertyPane::Unit::None, 1);
+         [](Bumper* bumper, float v) { bumper->m_d.m_ringDropOffset = v; }, PropertyPane::Unit::None, 1, "How far the ring drops when the bumper fires");
 
       props.Checkbox<Bumper>(
          m_part, "Cap Visible"s, //
@@ -93,7 +93,7 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Bumper>(
          m_part, "Reflection Enabled"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_reflectionEnabled; }, //
-         [](Bumper* bumper, bool v) { bumper->m_d.m_reflectionEnabled = v; });
+         [](Bumper* bumper, bool v) { bumper->m_d.m_reflectionEnabled = v; }, "Render this part in the table's reflections");
       props.EndSection();
    }
 
@@ -106,7 +106,7 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
       props.SurfaceCombo<Bumper>(
          m_part, "Surface"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_szSurface; }, //
-         [](Bumper* bumper, const string& v) { bumper->m_d.m_szSurface = v; });
+         [](Bumper* bumper, const string& v) { bumper->m_d.m_szSurface = v; }, "Surface this part rests on (defines its base height)");
       props.EndSection();
    }
 
@@ -115,19 +115,19 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Bumper>(
          m_part, "Has Hit Event"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_hitEvent; }, //
-         [](Bumper* bumper, bool v) { bumper->m_d.m_hitEvent = v; });
+         [](Bumper* bumper, bool v) { bumper->m_d.m_hitEvent = v; }, "Fire a Hit event to the script when the ball hits this part");
       props.InputFloat<Bumper>(
          m_part, "Force"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_force; }, //
-         [](Bumper* bumper, float v) { bumper->m_d.m_force = v; }, PropertyPane::Unit::VPLength, 3);
+         [](Bumper* bumper, float v) { bumper->m_d.m_force = v; }, PropertyPane::Unit::VPLength, 3, "Force of the kick given to the ball");
       props.InputFloat<Bumper>(
          m_part, "Hit Threshold"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_threshold; }, //
-         [](Bumper* bumper, float v) { bumper->m_d.m_threshold = v; }, PropertyPane::Unit::None, 3);
+         [](Bumper* bumper, float v) { bumper->m_d.m_threshold = v; }, PropertyPane::Unit::None, 3, "Minimum ball speed needed to trigger this part's hit event");
       props.InputFloat<Bumper>(
          m_part, "Scatter Angle"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_scatter; }, //
-         [](Bumper* bumper, float v) { bumper->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
+         [](Bumper* bumper, float v) { bumper->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3, "Random angle added to the ball's bounce direction");
       props.Checkbox<Bumper>(
          m_part, "Collidable"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_collidable; }, //

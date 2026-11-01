@@ -69,7 +69,7 @@ void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.SurfaceCombo<Kicker>(
          m_part, "Surface"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_szSurface; }, //
-         [](Kicker* kicker, const string& v) { kicker->m_d.m_szSurface = v; });
+         [](Kicker* kicker, const string& v) { kicker->m_d.m_szSurface = v; }, "Surface this part rests on (defines its base height)");
       props.EndSection();
    }
 
@@ -78,27 +78,28 @@ void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Kicker>(
          m_part, "Enabled"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_enabled; }, //
-         [](Kicker* kicker, bool v) { kicker->m_d.m_enabled = v; });
+         [](Kicker* kicker, bool v) { kicker->m_d.m_enabled = v; }, "Capture balls entering this kicker");
       props.Checkbox<Kicker>(
          m_part, "Fall Through"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_fallThrough; }, //
-         [](Kicker* kicker, bool v) { kicker->m_d.m_fallThrough = v; });
+         [](Kicker* kicker, bool v) { kicker->m_d.m_fallThrough = v; }, "Let the ball fall through the playfield instead of capturing it");
       props.Checkbox<Kicker>(
          m_part, "Legacy (approx. physics)"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_legacyMode; }, //
-         [](Kicker* kicker, bool v) { kicker->m_d.m_legacyMode = v; });
+         [](Kicker* kicker, bool v) { kicker->m_d.m_legacyMode = v; }, "Use the simplified legacy kicker physics instead of the accurate one");
       props.InputFloat<Kicker>(
          m_part, "Scatter angle"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_scatter; }, //
-         [](Kicker* kicker, float v) { kicker->m_d.m_scatter = v; }, PropertyPane::Unit::None, 2);
+         [](Kicker* kicker, float v) { kicker->m_d.m_scatter = v; }, PropertyPane::Unit::None, 2, "Random angle added to the ball's bounce direction");
       props.InputFloat<Kicker>(
          m_part, "Hit Accuracy"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_hitAccuracy; }, //
-         [](Kicker* kicker, float v) { kicker->m_d.m_hitAccuracy = v; }, PropertyPane::Unit::Percent, 2);
+         [](Kicker* kicker, float v) { kicker->m_d.m_hitAccuracy = v; }, PropertyPane::Unit::Percent, 2,
+         "Portion of the kicker's radius within which a ball is captured (a ball hitting the edge is not)");
       props.InputFloat<Kicker>(
          m_part, "Hit Height"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_hit_height; }, //
-         [](Kicker* kicker, float v) { kicker->m_d.m_hit_height = v; }, PropertyPane::Unit::VPLength, 1);
+         [](Kicker* kicker, float v) { kicker->m_d.m_hit_height = v; }, PropertyPane::Unit::VPLength, 1, "Height of the collision volume above the table surface");
       props.EndSection();
    }
 

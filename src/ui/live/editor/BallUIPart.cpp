@@ -39,17 +39,17 @@ void BallUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Ball>(
          m_part, "Reflection enabled"s, //
          [](const Ball* ball) { return ball->m_d.m_reflectionEnabled; }, //
-         [](Ball* ball, bool v) { ball->m_d.m_reflectionEnabled = v; });
+         [](Ball* ball, bool v) { ball->m_d.m_reflectionEnabled = v; }, "Draw this ball's reflection on the playfield");
       props.Checkbox<Ball>(
          m_part, "Reflection forced"s, //
          [](const Ball* ball) { return ball->m_d.m_forceReflection; }, //
-         [](Ball* ball, bool v) { ball->m_d.m_forceReflection = v; });
+         [](Ball* ball, bool v) { ball->m_d.m_forceReflection = v; }, "Draw the reflection even where the playfield does not request it");
 
       props.Separator("Rendering"s);
       props.Checkbox<Ball>(
          m_part, "Use Table Settings"s, //
          [](const Ball* ball) { return ball->m_d.m_useTableRenderSettings; }, //
-         [](Ball* ball, bool v) { ball->m_d.m_useTableRenderSettings = v; });
+         [](Ball* ball, bool v) { ball->m_d.m_useTableRenderSettings = v; }, "Use the table's ball image and reflection settings instead of per-ball overrides");
       ImGui::BeginDisabled(props.GetEditedPart<Ball>(m_part)->m_d.m_useTableRenderSettings);
       props.ImageCombo<Ball>(
          m_part, "Ball Image"s, //
@@ -58,7 +58,7 @@ void BallUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Ball>(
          m_part, "Spherical Map"s, //
          [](const Ball* ball) { return ball->m_d.m_pinballEnvSphericalMapping; }, //
-         [](Ball* ball, bool v) { ball->m_d.m_pinballEnvSphericalMapping = v; });
+         [](Ball* ball, bool v) { ball->m_d.m_pinballEnvSphericalMapping = v; }, "Wrap the image around the ball instead of projecting it flat");
       props.ImageCombo<Ball>(
          m_part, "Decal"s, //
          [](const Ball* ball) { return ball->m_d.m_imageDecal; }, //
@@ -66,7 +66,7 @@ void BallUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Checkbox<Ball>(
          m_part, "Logo mode"s, //
          [](const Ball* ball) { return ball->m_d.m_decalMode; }, //
-         [](Ball* ball, bool v) { ball->m_d.m_decalMode = v; });
+         [](Ball* ball, bool v) { ball->m_d.m_decalMode = v; }, "Draw the decal as a flat logo keeping its orientation instead of wrapping it on the ball");
       props.InputRGB<Ball>(
          m_part, "Tint"s, //
          [](const Ball* ball) { return convertColor(ball->m_d.m_color); }, //
@@ -76,11 +76,11 @@ void BallUIPart::UpdatePropertyPane(PropertyPane& props)
       props.InputFloat<Ball>(
          m_part, "Playfield Strength"s, //
          [](const Ball* ball) { return ball->m_d.m_playfieldReflectionStrength; }, //
-         [](Ball* ball, float v) { ball->m_d.m_playfieldReflectionStrength = v; }, PropertyPane::Unit::None, 2);
+         [](Ball* ball, float v) { ball->m_d.m_playfieldReflectionStrength = v; }, PropertyPane::Unit::None, 2, "Strength of this ball's reflection on the playfield");
       props.InputFloat<Ball>(
          m_part, "Bulb Intensity Scale"s, //
          [](const Ball* ball) { return ball->m_d.m_bulb_intensity_scale; }, //
-         [](Ball* ball, float v) { ball->m_d.m_bulb_intensity_scale = v; }, PropertyPane::Unit::None, 2);
+         [](Ball* ball, float v) { ball->m_d.m_bulb_intensity_scale = v; }, PropertyPane::Unit::None, 2, "How strongly light bulbs brighten this ball");
       ImGui::EndDisabled();
 
       props.EndSection();
