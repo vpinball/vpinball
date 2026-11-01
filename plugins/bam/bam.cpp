@@ -29,9 +29,9 @@
 //   the top of the screen surface and +Z toward the viewer.
 // - VPX expects the player position in centimeters, expressed in the screen
 //   frame, with its origin at the bottom center of the screen, +X to the
-//   right, +Y along the screen surface toward its top edge and +Z toward the
-//   viewer. The screen dimensions and inclination are the ones defined in the
-//   cabinet settings of the application.
+//   right, +Y along the screen surface toward its bottom edge (toward the
+//   player) and +Z toward the viewer. The screen dimensions and inclination
+//   are the ones defined in the cabinet settings of the application.
 // - The view setup 'viewX/viewY/viewZ' fields are the player position rotated
 //   into the playfield frame (origin at the bottom center of the playfield),
 //   following the same math as ViewSetup::SetViewPosFromPlayerPosition.
@@ -156,8 +156,10 @@ void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
    // Express the head position as a VPX player position: cm instead of mm and
    // origin moved from the screen center to the bottom center of the screen.
    // The player Y axis runs along the screen fitted axis which is always the
-   // longest display edge, that is to say 'ScreenWidth' (width > height).
-   const float playerPos[3] = { (float)(px * 0.1), (float)(py * 0.1 + 0.5 * view.screenWidth), (float)(z * 0.1) };
+   // longest display edge, that is to say 'ScreenWidth' (width > height), and
+   // is oriented toward the player (opposite to the BAM tracker convention
+   // where +Y points to the top of the screen).
+   const float playerPos[3] = { (float)(px * 0.1), (float)(-py * 0.1 - 0.5 * view.screenWidth), (float)(z * 0.1) };
 
    // Skip view update if the head position did not meaningfully change
    constexpr float minMove = 0.05f; // [cm]
