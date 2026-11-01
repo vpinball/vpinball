@@ -966,6 +966,9 @@ elseif(PLATFORM STREQUAL "wasm")
       freeimage
       winevbs
       zip
+      opusfile
+      opus
+      ogg
       spatialaudio
       mysofa
       pinmame
