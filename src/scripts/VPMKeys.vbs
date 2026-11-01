@@ -80,8 +80,8 @@ Option Explicit
 Const keyShowOpts	= 59                  '(F1)  Show options
 Const keyShowKeys	= 60                  '(F2)  Show Keys
 Dim keyReset: keyReset = VPXActionKey(19) '(F3)  Reset Emulation
-Const keyFrame		= 62                  '(F4)  Toggle Window Lock (no operation if not usig VPinMAME)
-Const keyDoubleSize	= 63                  '(F5)  Toggle displaysize (no operation if not usig VPinMAME)
+Const keyFrame		= 62                  '(F4)  Deprecated (conflicts with in-game UI): display window lock is now a table option of the in-game UI, only kept for backward compatibility with table scripts referencing it
+Const keyDoubleSize	= 63                  '(F5)  Deprecated (conflicts with in-game UI): display window size is now a table option of the in-game UI, only kept for backward compatibility with table scripts referencing it
 Const keyShowDips	= 64                  '(F6)  Deprecated (conflicts with in-game UI): dip switches/table options are adjusted in the in-game UI, only kept for backward compatibility with table scripts referencing it
 Const keyVPMVolume	= 88                  '(F12) Deprecated (conflicts with in-game UI): VPinMAME volume is now a table option of the in-game UI, only kept for backward compatibility with table scripts referencing it
 

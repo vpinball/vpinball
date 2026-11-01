@@ -2041,7 +2041,7 @@ Sub vpmOptionEvent(ByVal eventId)
 		' table's own options are initialized (so that they are listed last on
 		' the table options page)
 		If IsObject(vpmShowDips) Then vpmShowDips
-		vpmVolInit
+		vpmOptInit
 	End If
 	If eventId = 0 Or eventId = 1 Or eventId = 3 Then
 		For ii = 0 To vpmDipsCount-1
@@ -2065,53 +2065,95 @@ Sub vpmOptionEvent(ByVal eventId)
 		' ViewDipsExtra result (saving it into their own settings and applying
 		' it, like the VPW options UI template) stay in sync on every change
 		If IsObject(vpmShowDips) Then vpmShowDips
-		' Apply a change of the VPinMAME volume table option, if any
-		vpmVolApply
+		' Apply a change of the VPinMAME table options, if any
+		vpmOptApply
 	End If
 End Sub
 
 '--------------------
-'	VPinMAME Volume
+'	VPinMAME options
 '--------------------
-' When the VPinMAME COM controller is used (not the PinMAME plugin, which mixes
-' its sound through VPX and is therefore covered by VPX volume settings), the
-' emulated game volume is exposed as a table option, integrated in the in-game
-' UI. VPinMAME only applies this per game setting (in dB, from -32 to 0) when
-' the emulation (re)starts, so the persisted option value is pushed on game
-' start (the VPX table settings win over the registry state) and a notification
-' is shown when it is changed.
+' When the VPinMAME COM controller is used (not the PinMAME plugin), a few
+' settings are exposed as table options, integrated in the in-game UI:
+' - "VPinMAME Volume": the emulated game volume (in dB, from -32 to 0; the
+'   PinMAME plugin mixes its sound through VPX and is therefore covered by
+'   the VPX volume settings). VPinMAME only applies this per game setting
+'   when the emulation (re)starts, so the persisted option value is pushed
+'   on game start (the VPX table settings win over the registry state) and
+'   a notification is shown when it is changed.
+' - "VPinMAME Lock Display" and "VPinMAME Double Size": the emulated display
+'   window lock and size (previously toggled by the hardcoded F4/F5 keys),
+'   applied immediately (the persisted option values win over the registry
+'   state).
 Dim vpmVolNotifId : vpmVolNotifId = 0 ' In-game notification reused when the volume changes
 Private vpmVolRegistered : vpmVolRegistered = False
 Private vpmVolApplied : vpmVolApplied = 0 ' Last option value pushed to VPinMAME
+Private vpmDspRegistered : vpmDspRegistered = False
 Private Const vpmVolOption = "VPinMAME Volume"
+Private Const vpmDspLockOption = "VPinMAME Lock Display"
+Private Const vpmDspSizeOption = "VPinMAME Double Size"
 
-' Register the volume table option and apply its persisted value
-Private Sub vpmVolInit
+' Register the table options and apply their persisted values
+Private Sub vpmOptInit
 	If IsPluginPinMAME Or Not IsObject(Controller) Then Exit Sub
 	On Error Resume Next
+	' Volume of the emulated game
 	Dim cur : cur = Controller.Games(Controller.GameName).Settings.Value("volume")
-	If Err Then Err.Clear : Exit Sub ' Controller does not support the per game volume setting
-	Dim v : v = ActiveTable.Option(vpmVolOption, -32, 0, 1, cur, 0)
-	If Err Then Err.Clear : Exit Sub
-	Controller.Games(Controller.GameName).Settings.Value("volume") = CLng(v)
-	If Err Then Err.Clear : Exit Sub
-	vpmVolRegistered = True
-	vpmVolApplied = CLng(v)
+	If Err Then
+		Err.Clear ' Controller does not support the per game volume setting
+	Else
+		Dim v : v = ActiveTable.Option(vpmVolOption, -32, 0, 1, cur, 0)
+		If Err Then
+			Err.Clear
+		Else
+			Controller.Games(Controller.GameName).Settings.Value("volume") = CLng(v)
+			If Err Then Err.Clear Else vpmVolRegistered = True : vpmVolApplied = CLng(v)
+		End If
+	End If
+	' Emulated display window lock and size
+	Dim l, s
+	l = ActiveTable.Option(vpmDspLockOption, 0, 1, 1, Abs(Controller.LockDisplay), 0, Array("Off", "On"))
+	s = ActiveTable.Option(vpmDspSizeOption, 0, 1, 1, Abs(Controller.DoubleSize), 0, Array("Off", "On"))
+	If Err Then
+		Err.Clear
+	Else
+		Controller.LockDisplay = (CLng(l) <> 0)
+		Controller.DoubleSize = (CLng(s) <> 0)
+		If Err Then Err.Clear Else vpmDspRegistered = True
+	End If
 	On Error Goto 0
 End Sub
 
-' Push the table option value to VPinMAME when it changed
-Private Sub vpmVolApply
-	If Not vpmVolRegistered Then Exit Sub
+' Push the table option values to VPinMAME when they changed
+Private Sub vpmOptApply
+	If Not vpmVolRegistered And Not vpmDspRegistered Then Exit Sub
 	On Error Resume Next
-	Dim v : v = ActiveTable.Option(vpmVolOption, -32, 0, 1, vpmVolApplied, 0)
-	If Err Then Err.Clear : Exit Sub
-	If CLng(v) = vpmVolApplied Then Exit Sub
-	Controller.Games(Controller.GameName).Settings.Value("volume") = CLng(v)
-	If Err Then Err.Clear : Exit Sub
-	vpmVolApplied = CLng(v)
-	vpmVolNotifId = PushNotification("VPinMAME volume set to " & vpmVolApplied & " dB (applied on next emulation reset)", 8000, vpmVolNotifId)
-	Err.Clear
+	If vpmVolRegistered Then
+		Dim v : v = ActiveTable.Option(vpmVolOption, -32, 0, 1, vpmVolApplied, 0)
+		If Err Then
+			Err.Clear
+		ElseIf CLng(v) <> vpmVolApplied Then
+			Controller.Games(Controller.GameName).Settings.Value("volume") = CLng(v)
+			If Err Then
+				Err.Clear
+			Else
+				vpmVolApplied = CLng(v)
+				vpmVolNotifId = PushNotification("VPinMAME volume set to " & vpmVolApplied & " dB (applied on next emulation reset)", 8000, vpmVolNotifId)
+			End If
+		End If
+	End If
+	If vpmDspRegistered Then
+		Dim l, s
+		l = ActiveTable.Option(vpmDspLockOption, 0, 1, 1, Abs(Controller.LockDisplay), 0, Array("Off", "On"))
+		s = ActiveTable.Option(vpmDspSizeOption, 0, 1, 1, Abs(Controller.DoubleSize), 0, Array("Off", "On"))
+		If Err Then
+			Err.Clear
+		Else
+			Controller.LockDisplay = (CLng(l) <> 0)
+			Controller.DoubleSize = (CLng(s) <> 0)
+			If Err Then Err.Clear
+		End If
+	End If
 	On Error Goto 0
 End Sub
 
@@ -3128,9 +3170,7 @@ Private Sub vpmShowHelp
 		vbNewLine & "Visual PinMAME keys:"						   & vbNewLine &_
 		vpmKeyName(keyShowOpts)	  & vbTab & "Game options..."	   & vbNewLine &_
 		vpmKeyName(keyShowKeys)	  & vbTab & "Keyboard settings..." & vbNewLine &_
-		vpmKeyName(keyReset)	  & vbTab & "Reset emulation"	   & vbNewLine &_
-		vpmKeyName(keyFrame)	  & vbTab & "Toggle Display lock"  & vbNewLine &_
-		vpmKeyName(keyDoubleSize) & vbTab & "Toggle Display size"  & vbNewLine
+		vpmKeyName(keyReset)	  & vbTab & "Reset emulation"	   & vbNewLine
 	If IsObject(vpmTrough) Then
 		szKeyMsg = szKeyMsg & vpmKeyName(keyAddBall) & vbTab & "Add / Remove Ball From Table" & vbNewLine
 	End If

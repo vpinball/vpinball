@@ -139,8 +139,6 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyShowOpts	 .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys	 .Pause = True : vpmShowHelp : .Pause = False
 			Case keyReset		 .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
-			Case keyFrame		 .LockDisplay = Not .LockDisplay
-			Case keyDoubleSize	 .DoubleSize  = Not .DoubleSize
 			Case CollectKey		 .Switch(swCollect) = False
 			Case LeftHoldKey	 .Switch(swLeftHold) = False
 			Case MiddleHoldKey	 .Switch(swMiddleHold) = False
