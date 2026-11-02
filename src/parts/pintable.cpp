@@ -2329,6 +2329,36 @@ static string PackPathToJSON(const std::filesystem::path &path)
    return s;
 }
 
+// Compares two pack documents for content equality: numbers are compared by value across the
+// integer/unsigned/float storage types (serializing the same value may produce different types)
+static bool PackDocContentsEqual(const nlohmann::json &a, const nlohmann::json &b)
+{
+   if (a.is_object() && b.is_object())
+   {
+      if (a.size() != b.size())
+         return false;
+      for (const auto &[key, value] : a.items())
+      {
+         const auto it = b.find(key);
+         if (it == b.end() || !PackDocContentsEqual(value, it.value()))
+            return false;
+      }
+      return true;
+   }
+   if (a.is_array() && b.is_array())
+   {
+      if (a.size() != b.size())
+         return false;
+      for (size_t i = 0; i < a.size(); i++)
+         if (!PackDocContentsEqual(a[i], b[i]))
+            return false;
+      return true;
+   }
+   if (a.is_number() && b.is_number())
+      return a.get<double>() == b.get<double>();
+   return a == b;
+}
+
 // Finds the binary file a sidecar document refers to, as the sibling file sharing the sidecar's file stem
 static std::filesystem::path PackSidecarDataFile(const std::filesystem::path &sidecarPath, const vector<std::filesystem::path> &folderEntries)
 {
@@ -3441,6 +3471,9 @@ public:
          }
          m_files.emplace(file, file);
       }
+      for (const auto &[renamed, original] : m_files)
+         if (renamed != original)
+            m_oldToNew[original] = renamed;
    }
 
    bool Exists(const std::filesystem::path &path) const override { return m_files.contains(path); }
@@ -3459,15 +3492,38 @@ public:
       const auto it = m_files.find(path);
       if (it == m_files.end() || !m_inner->ReadBinaryFile(it->second, data))
          return false;
-      // Part documents reference assets by name in dedicated fields: rewrite them to the new names
-      if (it->first.parent_path() == "parts" && StrCompareNoCase(PathToUTF8(it->first.extension()), ".json"))
+      // Documents referencing the renamed assets must have their references updated to the new names:
+      // - asset reference fields in every document (part documents, but also table settings and render probes)
+      // - the "name" field of renamed asset documents (saved when the name differs from the file stem)
+      // - the asset name lists of the table document (file stems ordered by asset type)
+      if (StrCompareNoCase(PathToUTF8(it->first.extension()), ".json"))
       {
          try
          {
             nlohmann::ordered_json doc = nlohmann::ordered_json::parse(data.begin(), data.end());
+            bool rewritten = false;
             RewriteAssetRefs(doc);
-            const string content = doc.dump(2);
-            data.assign(content.begin(), content.end());
+            rewritten = true;
+            if (it->first != it->second && it->first.parent_path() != "parts" && doc.contains("name"))
+            {
+               doc["name"] = PathToUTF8(it->first.stem());
+               rewritten = true;
+            }
+            if (doc.is_object())
+               for (nlohmann::ordered_json::iterator field = doc.begin(); field != doc.end(); ++field)
+                  if (field.value().is_array())
+                     for (nlohmann::ordered_json &entry : field.value())
+                        if (entry.is_string())
+                           if (const auto renamed = m_oldToNew.find(PathFromUTF8(field.key()) / (entry.get<string>() + ".json")); renamed != m_oldToNew.end())
+                           {
+                              entry = PathToUTF8(renamed->second.stem());
+                              rewritten = true;
+                           }
+            if (rewritten)
+            {
+               const string content = doc.dump(2);
+               data.assign(content.begin(), content.end());
+            }
          }
          catch (const nlohmann::json::exception &)
          {
@@ -3507,6 +3563,7 @@ private:
    std::unique_ptr<JSONSerializer::Deserializer> m_inner;
    std::map<std::filesystem::path, std::map<string, string>> m_renames; // asset folder -> lowercased old name -> new name
    std::map<std::filesystem::path, std::filesystem::path> m_files; // renamed pack file -> original pack file
+   std::map<std::filesystem::path, std::filesystem::path> m_oldToNew; // original pack file -> renamed pack file
 };
 
 }
@@ -3643,9 +3700,10 @@ std::unique_ptr<JSONSerializer::Deserializer> PinTable::CreateImportDeserializer
       if (it == m_materials.end())
          continue;
       Material *const mat = *it;
-      const nlohmann::json packDoc = readJSON(docFile);
+      nlohmann::json packDoc = readJSON(docFile);
       const nlohmann::json tableDoc = BuildPackDoc(nullptr, JSONSerializer::kMaterialNode, "material", [mat](JSONObjectWriter &w) { mat->Save(w, false); });
-      if (!packDoc.is_object() || packDoc != nlohmann::json(tableDoc))
+      packDoc.erase("name"); // The name is the file name, not part of the compared content
+      if (!packDoc.is_object() || !PackDocContentsEqual(packDoc, tableDoc))
          addRename("materials"s, name,
             uniqueName(name, fileStems("materials"s),
                [this](const string &n) { return std::ranges::find_if(m_materials, [&n](const Material *const m) { return StrCompareNoCase(m->m_name, n); }) != m_materials.end(); }));
@@ -3658,9 +3716,10 @@ std::unique_ptr<JSONSerializer::Deserializer> PinTable::CreateImportDeserializer
       RenderProbe *const probe = GetRenderProbe(name);
       if (probe == nullptr)
          continue;
-      const nlohmann::json packDoc = readJSON(docFile);
+      nlohmann::json packDoc = readJSON(docFile);
       const nlohmann::json tableDoc = BuildPackDoc(nullptr, JSONSerializer::kRenderProbeNode, "renderprobe", [probe](JSONObjectWriter &w) { probe->Save(w, false); });
-      if (!packDoc.is_object() || packDoc != nlohmann::json(tableDoc))
+      packDoc.erase("name"); // The name is the file name, not part of the compared content
+      if (!packDoc.is_object() || !PackDocContentsEqual(packDoc, tableDoc))
          addRename("renderprobes"s, name, uniqueName(name, fileStems("renderprobes"s), [this](const string &n) { return GetRenderProbe(n) != nullptr; }));
    }
 
