@@ -18,6 +18,18 @@
 // VPU (table unit) to meters, matching the scale used by the VR renderer
 static constexpr float kVPUToMeters = static_cast<float>(0.0254 * 1.0625 / 50.);
 
+// Doppler on spatial playfield sources is disabled: estimating radial velocity
+// from script-driven position updates is too noisy to sound right (the code is
+// kept for future re-evaluation)
+static constexpr bool kDopplerEnabled = false;
+
+// Gain applied to spatial playfield sources. On desktop, a playfield sound is
+// capped at 0.5 amplitude per output channel, while in VR it would reach each
+// ear at full gain: this factor keeps playfield sources at-or-below the levels
+// tables were authored for (avoiding saturation) and preserves the balance
+// between backglass and near playfield sounds
+static constexpr float kSpatialPlayfieldGain = 0.5f;
+
 // Simple custom node (used when spatial audio is disabled in the settings):
 // - SSF processing: output according to table author supplied left/right & rear/front setup against user speaker layout setting
 // - Backglass processing: expand channels
@@ -450,7 +462,7 @@ void SoundPlayer::ApplyVolume()
       // const float linearvolume = powf(10.f, log10f(sqrt(totalvolume)) - 1.f);
       // const float linearvolume = sqrt(totalvolume) / 10.f; // we don't keep the 1/10 factor as this is better placed as part of the main volume mixer setup (this create a setup regression when updating from 10.8 to later version)
       if (m_spatialSource)
-         m_spatialSource->SetVolume(m_monoCompensation * sqrtf(totalvolume));
+         m_spatialSource->SetVolume(m_monoCompensation * sqrtf(totalvolume) * (m_outputTarget == SNDOUT_TABLE ? kSpatialPlayfieldGain : 1.f));
       else if (m_vpxMixNode)
          m_vpxMixNode->volume = m_monoCompensation * sqrtf(totalvolume);
    }
@@ -484,7 +496,8 @@ void SoundPlayer::Play(
                const float y = hasPos ? posY : (curvedFade + 1.f) * 0.5f * m_audioPlayer->GetTableHeight();
                const float z = hasPos ? posZ : 0.f;
                m_spatialSource->SetPosition(x, y, z);
-               UpdateDoppler(x, y, z);
+               if (kDopplerEnabled)
+                  UpdateDoppler(x, y, z);
             }
          }
          else
