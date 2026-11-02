@@ -175,6 +175,7 @@ void EditorUI::SetTable(PinTable *const table)
    m_partGroupUseHistory.clear();
    m_lastUndoPart = nullptr;
    m_addPartType = eItemInvalid;
+   m_partLibrary.CancelPlacement();
    m_boxSelectActive = false;
 }
 
@@ -538,6 +539,7 @@ void EditorUI::Render3D()
          continue;
       uiPart->Render(ctx);
    }
+   m_partLibrary.Render3D();
 }
 
 void EditorUI::RenderUI()
@@ -969,7 +971,12 @@ void EditorUI::RenderUI()
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
       {
          m_boxSelectStart = ImGui::GetMousePos();
-         if (m_addPartType != eItemInvalid)
+         if (m_partLibrary.IsPlacementArmed())
+         {
+            // Part library placement mode: drop the previewed part at its ghost position
+            m_partLibrary.CommitPlacement();
+         }
+         else if (m_addPartType != eItemInvalid)
          {
             // Add part mode: create the pending part at the picked point of the playfield XY plane
             const ItemTypeEnum type = m_addPartType;
@@ -1146,6 +1153,8 @@ void EditorUI::RenderUI()
             m_boxSelectActive = false; // Cancel current box selection
          else if (m_addPartType != eItemInvalid)
             m_addPartType = eItemInvalid; // Cancel add part mode
+         else if (m_partLibrary.IsPlacementArmed())
+            m_partLibrary.CancelPlacement(); // Cancel part library placement mode
          else if (m_pointEditPart)
             ExitPointEditMode(true); // Exit drag point edit mode
          else if (m_selection.GetType() != Selection::S_NONE)

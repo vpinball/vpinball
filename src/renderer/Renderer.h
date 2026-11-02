@@ -287,12 +287,14 @@ public:
 
    unsigned int GetPlayerModeVisibilityMask() const { return m_visibilityMask; }
 
+   // Renders a single part into the current pass, e.g. for editor previews of parts that are not (yet) in the table
+   void RenderItem(IEditable* const renderable, bool isNoBackdrop);
+
    VPXRenderContext2D& GetAncillaryRenderContext(
       VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias, const Matrix3D& displayTransform = Matrix3D::MatrixIdentity());
 
 private:
    void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force);
-   void RenderItem(IEditable* const renderable, bool isNoBackdrop);
    void RenderStatics(); // Render background, then static parts if IsUsingStaticPrepass
    void RenderDynamics(); // Render static parts if not IsUsingStaticPrepass, then render dynamic parts
    void DrawBackground();
