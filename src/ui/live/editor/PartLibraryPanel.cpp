@@ -185,20 +185,23 @@ void PartLibraryPanel::Render()
          for (size_t i = 0; i < m_library.size(); i++)
          {
             ImGui::PushID(static_cast<int>(i));
-            if (ImGui::SmallButton(ICON_FK_TRASH_O))
-            {
-               RemoveLibraryFolder(i);
-               ImGui::PopID();
-               break;
-            }
-            if (ImGui::IsItemHovered())
-               ImGui::SetTooltip("Remove this library folder");
-            ImGui::SameLine();
             const LibraryFolder &root = m_library[i];
             const string label = root.path.filename().empty() ? PathToUTF8(root.path) : PathToUTF8(root.path.filename());
             const bool open = ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen);
             if (ImGui::IsItemHovered())
                ImGui::SetTooltip("%s", PathToUTF8(root.path).c_str());
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - (ImGui::CalcTextSize(ICON_FK_TRASH_O).x + 2.f * ImGui::GetStyle().FramePadding.x));
+            if (ImGui::SmallButton(ICON_FK_TRASH_O))
+            {
+               RemoveLibraryFolder(i);
+               if (open)
+                  ImGui::TreePop();
+               ImGui::PopID();
+               break;
+            }
+            if (ImGui::IsItemHovered())
+               ImGui::SetTooltip("Remove this library folder");
             if (open)
             {
                RenderLibraryFolder(root, label);
