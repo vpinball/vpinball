@@ -35,6 +35,7 @@ set(VPX_TEST_SOURCES
    tests/misc/test-plugin-arrays.cpp
    tests/misc/test-sound.cpp
    tests/misc/test-table-io.cpp
+   tests/misc/test-tbn-shader.cpp
    tests/parts/test-ball.cpp
    tests/parts/test-bumper.cpp
    tests/parts/test-decal.cpp
@@ -252,6 +253,12 @@ if(PLATFORM STREQUAL "windows")
 
    add_custom_command(TARGET vpx-test POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+      # The TBN shader contract test reads the live shader sources from test-assets/shaders-src
+      COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/common.sh" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/fs_basic.sc" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.hlsl" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.glfx" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)
@@ -371,6 +378,12 @@ elseif(PLATFORM STREQUAL "windows-mingw")
 
    add_custom_command(TARGET vpx-test POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+      # The TBN shader contract test reads the live shader sources from test-assets/shaders-src
+      COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/common.sh" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/fs_basic.sc" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.hlsl" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.glfx" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)
@@ -477,6 +490,12 @@ elseif(PLATFORM STREQUAL "macos")
 
    add_custom_command(TARGET vpx-test POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+      # The TBN shader contract test reads the live shader sources from test-assets/shaders-src
+      COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/common.sh" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/fs_basic.sc" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.hlsl" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.glfx" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)
@@ -582,6 +601,12 @@ elseif(PLATFORM STREQUAL "linux")
 
    add_custom_command(TARGET vpx-test POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tests/assets" "$<TARGET_FILE_DIR:vpx-test>/test-assets"
+      # The TBN shader contract test reads the live shader sources from test-assets/shaders-src
+      COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/common.sh" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/fs_basic.sc" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.hlsl" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BasicShader.glfx" "$<TARGET_FILE_DIR:vpx-test>/test-assets/shaders-src"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

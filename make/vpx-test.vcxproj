@@ -71,6 +71,7 @@
     <ClCompile Include="../../tests/misc/test-plugin-arrays.cpp" />
     <ClCompile Include="../../tests/misc/test-sound.cpp" />
     <ClCompile Include="../../tests/misc/test-table-io.cpp" />
+    <ClCompile Include="../../tests/misc/test-tbn-shader.cpp" />
     <ClCompile Include="../../tests/parts/test-ball.cpp" />
     <ClCompile Include="../../tests/parts/test-bumper.cpp" />
     <ClCompile Include="../../tests/parts/test-decal.cpp" />
@@ -168,6 +169,22 @@
     <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/test000-stereo-tb-Ref.webp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/bgfx/common.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/shaders-src/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/bgfx/fs_basic.sc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/shaders-src/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BasicShader.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/shaders-src/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BasicShader.glfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/shaders-src/%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

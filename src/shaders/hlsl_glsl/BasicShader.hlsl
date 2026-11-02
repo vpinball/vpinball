@@ -162,7 +162,7 @@ struct VS_UNSHADED_TEX_SHADOW_OUTPUT
 
 #include "BallShadows.fxh"
 
-float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv, const float3 dpx, const float3 dpy)
+float3x3 TBN_trafo(const float3 N, const float3 pos, const float2 uv, const float3 dpx, const float3 dpy)
 {
    // derivatives: edge vectors for tri-pos and tri-uv
    const float2 duvx = ddx(uv);
@@ -178,10 +178,10 @@ float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv, const float3
    return float3x3(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
 }
 
-float3 normal_map(const float3 N, const float3 V, const float2 uv)
+float3 normal_map(const float3 N, const float3 pos, const float2 uv)
 {
-   const float3 dpx = ddx(V); //!! these 2 are declared here instead of TBN_trafo() to workaround a compiler quirk
-   const float3 dpy = ddy(V);
+   const float3 dpx = ddx(pos); //!! these 2 are declared here instead of TBN_trafo() to workaround a compiler quirk
+   const float3 dpy = ddy(pos);
 
    const float3 tn = tex2D(tex_base_normalmap, uv).xyz * (255. / 127.) - (128. / 127.);
    BRANCH if (objectSpaceNormalMap)
@@ -190,7 +190,7 @@ float3 normal_map(const float3 N, const float3 V, const float2 uv)
    }
    else
    { // Tangent space
-      return normalize(mul(tn, TBN_trafo(N, V, uv, dpx, dpy)));
+      return normalize(mul(tn, TBN_trafo(N, pos, uv, dpx, dpy)));
    }
 }
 
@@ -376,7 +376,7 @@ float4 ps_main_texture(const in VS_OUTPUT IN, float2 screenSpace : VPOS, uniform
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
    float3 N = normalize(IN.normal);
    BRANCH if (doNormalMapping)
-      N = normal_map(N, V, IN.tex0);
+      N = normal_map(N, -IN.worldPos, IN.tex0);
 
    float4 color = float4(lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
 
