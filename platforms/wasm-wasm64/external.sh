@@ -34,18 +34,18 @@ echo ""
 
 NUM_PROCS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 
-export CFLAGS="-pthread -fwasm-exceptions"
-export CXXFLAGS="-pthread -fwasm-exceptions"
-export LDFLAGS="-pthread -fwasm-exceptions"
+export CFLAGS="-pthread -fwasm-exceptions -m64 -msimd128"
+export CXXFLAGS="-pthread -fwasm-exceptions -m64 -msimd128"
+export LDFLAGS="-pthread -fwasm-exceptions -m64 -msimd128"
 
-mkdir -p "external/wasm-wasm32/${BUILD_TYPE}"
-cd "external/wasm-wasm32/${BUILD_TYPE}"
+mkdir -p "external/wasm-wasm64/${BUILD_TYPE}"
+cd "external/wasm-wasm64/${BUILD_TYPE}"
 
 #
 # build SDL3, SDL3_image, SDL3_ttf
 #
 
-SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}_001"
+SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}_002"
 SDL3_FOUND_SHA="$([ -f SDL3/cache.txt ] && cat SDL3/cache.txt || echo "")"
 
 if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
@@ -59,6 +59,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    tar xzf SDL-${SDL_SHA}.tar.gz
    mv SDL-${SDL_SHA} SDL
    cd SDL
+   patch -p1 < ../../../../../platforms/wasm-wasm64/SDL.patch
    emcmake cmake \
       -DSDL_SHARED=OFF \
       -DSDL_STATIC=ON \
@@ -132,7 +133,7 @@ if [ "${FREEIMAGE_EXPECTED_SHA}" != "${FREEIMAGE_FOUND_SHA}" ]; then
    cd freeimage
    emcmake cmake \
       -DPLATFORM=linux \
-      -DARCH=wasm32 \
+      -DARCH=wasm64 \
       -DBUILD_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
@@ -214,7 +215,7 @@ if [ "${LIBWINEVBS_EXPECTED_SHA}" != "${LIBWINEVBS_FOUND_SHA}" ]; then
    cd libwinevbs
    emcmake cmake \
       -DPLATFORM=linux \
-      -DARCH=wasm32 \
+      -DARCH=wasm64 \
       -DBUILD_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
@@ -279,8 +280,10 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    cd pinmame
    cp cmake/libpinmame/CMakeLists.txt .
    CFLAGS="${CFLAGS} -I$PWD/../../zlib/zlib" CXXFLAGS="${CXXFLAGS} -I$PWD/../../zlib/zlib" emcmake cmake \
+      -DCMAKE_C_FLAGS="${CFLAGS} -I$PWD/../../zlib/zlib" \
+      -DCMAKE_CXX_FLAGS="${CXXFLAGS} -I$PWD/../../zlib/zlib" \
       -DPLATFORM=linux \
-      -DARCH=wasm32 \
+      -DARCH=wasm64 \
       -DBUILD_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
@@ -313,7 +316,7 @@ if [ "${LIBSERUM_EXPECTED_SHA}" != "${LIBSERUM_FOUND_SHA}" ]; then
    ./platforms/linux/x64/external.sh
    emcmake cmake \
       -DPLATFORM=linux \
-      -DARCH=wasm32 \
+      -DARCH=wasm64 \
       -DBUILD_SHARED=OFF \
       -DBUILD_STATIC=ON \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -346,7 +349,7 @@ if [ "${LIBPUPDMD_EXPECTED_SHA}" != "${LIBPUPDMD_FOUND_SHA}" ]; then
    cd libpupdmd
    emcmake cmake \
       -DPLATFORM=linux \
-      -DARCH=wasm32 \
+      -DARCH=wasm64 \
       -DBUILD_SHARED=OFF \
       -DBUILD_STATIC=ON \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -380,7 +383,7 @@ if [ "${LIBVNI_EXPECTED_SHA}" != "${LIBVNI_FOUND_SHA}" ]; then
    ./platforms/linux/x64/external.sh
    emcmake cmake \
       -DPLATFORM=linux \
-      -DARCH=wasm32 \
+      -DARCH=wasm64 \
       -DBUILD_SHARED=OFF \
       -DBUILD_STATIC=ON \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -413,7 +416,7 @@ if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
    cd libaltsound
    emcmake cmake \
       -DPLATFORM=wasm \
-      -DARCH=wasm32 \
+      -DARCH=wasm64 \
       -DBUILD_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
@@ -451,7 +454,7 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --nm=emnm \
       --enable-cross-compile \
       --target-os=none \
-      --arch=x86_32 \
+      --arch=x86_64 \
       --cpu=generic \
       --disable-asm \
       --disable-stripping \
@@ -656,26 +659,26 @@ fi
 # copy libraries
 #
 
-cp SDL3/SDL/build/libSDL3.a ../../../third-party/build-libs/wasm-wasm32
+cp SDL3/SDL/build/libSDL3.a ../../../third-party/build-libs/wasm-wasm64
 cp -r SDL3/SDL/include/SDL3 ../../../third-party/include/
 
-cp SDL3/SDL_image/build/libSDL3_image.a ../../../third-party/build-libs/wasm-wasm32
+cp SDL3/SDL_image/build/libSDL3_image.a ../../../third-party/build-libs/wasm-wasm64
 cp -r SDL3/SDL_image/include/SDL3_image ../../../third-party/include/
 
-cp SDL3/SDL_ttf/build/libSDL3_ttf.a ../../../third-party/build-libs/wasm-wasm32
+cp SDL3/SDL_ttf/build/libSDL3_ttf.a ../../../third-party/build-libs/wasm-wasm64
 cp -r SDL3/SDL_ttf/include/SDL3_ttf ../../../third-party/include/
-cp SDL3/SDL_ttf/build/external/freetype/libfreetype.a ../../../third-party/build-libs/wasm-wasm32
-cp SDL3/SDL_ttf/build/external/harfbuzz/libharfbuzz.a ../../../third-party/build-libs/wasm-wasm32
+cp SDL3/SDL_ttf/build/external/freetype/libfreetype.a ../../../third-party/build-libs/wasm-wasm64
+cp SDL3/SDL_ttf/build/external/harfbuzz/libharfbuzz.a ../../../third-party/build-libs/wasm-wasm64
 
-cp freeimage/freeimage/build/libfreeimage.a ../../../third-party/build-libs/wasm-wasm32
+cp freeimage/freeimage/build/libfreeimage.a ../../../third-party/build-libs/wasm-wasm64
 cp freeimage/freeimage/Source/FreeImage.h ../../../third-party/include
 
-cp bgfx/bgfx.cmake/build/cmake/bgfx/libbgfx.a ../../../third-party/build-libs/wasm-wasm32
+cp bgfx/bgfx.cmake/build/cmake/bgfx/libbgfx.a ../../../third-party/build-libs/wasm-wasm64
 cp -r bgfx/bgfx.cmake/bgfx/include/bgfx ../../../third-party/include/
-cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg.a ../../../third-party/build-libs/wasm-wasm32
-cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg_encode.a ../../../third-party/build-libs/wasm-wasm32
+cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg.a ../../../third-party/build-libs/wasm-wasm64
+cp bgfx/bgfx.cmake/build/cmake/bimg/libbimg_encode.a ../../../third-party/build-libs/wasm-wasm64
 cp -r bgfx/bgfx.cmake/bimg/include/bimg ../../../third-party/include/
-cp bgfx/bgfx.cmake/build/cmake/bx/libbx.a ../../../third-party/build-libs/wasm-wasm32
+cp bgfx/bgfx.cmake/build/cmake/bx/libbx.a ../../../third-party/build-libs/wasm-wasm64
 cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 case "$(uname -s)-$(uname -m)" in
@@ -687,25 +690,25 @@ esac
 mkdir -p "../../../third-party/tools/${HOST_TOOLS}"
 cp bgfx/bgfx.cmake/build-tools/cmake/bgfx/shaderc "../../../third-party/tools/${HOST_TOOLS}/"
 
-cp pinmame/pinmame/build/libpinmame.a ../../../third-party/build-libs/wasm-wasm32
+cp pinmame/pinmame/build/libpinmame.a ../../../third-party/build-libs/wasm-wasm64
 mkdir -p ../../../third-party/include/pinmame
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include/pinmame
 cp pinmame/pinmame/src/libpinmame/PinMAMEPlugin.h ../../../third-party/include/pinmame
 
-cp libserum/libserum/build/libserum.a ../../../third-party/build-libs/wasm-wasm32
+cp libserum/libserum/build/libserum.a ../../../third-party/build-libs/wasm-wasm64
 cp libserum/libserum/src/serum.h ../../../third-party/include
 cp libserum/libserum/src/serum-decode.h ../../../third-party/include
 
-cp libpupdmd/libpupdmd/build/libpupdmd.a ../../../third-party/build-libs/wasm-wasm32
+cp libpupdmd/libpupdmd/build/libpupdmd.a ../../../third-party/build-libs/wasm-wasm64
 cp libpupdmd/libpupdmd/src/pupdmd.h ../../../third-party/include
 
-cp libvni/libvni/build/libvni.a ../../../third-party/build-libs/wasm-wasm32
+cp libvni/libvni/build/libvni.a ../../../third-party/build-libs/wasm-wasm64
 cp libvni/libvni/src/vni.h ../../../third-party/include
 
-cp libaltsound/libaltsound/build/libaltsound.a ../../../third-party/build-libs/wasm-wasm32
+cp libaltsound/libaltsound/build/libaltsound.a ../../../third-party/build-libs/wasm-wasm64
 cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 
-cp libwinevbs/libwinevbs/build/libwinevbs.a ../../../third-party/build-libs/wasm-wasm32
+cp libwinevbs/libwinevbs/build/libwinevbs.a ../../../third-party/build-libs/wasm-wasm64
 mkdir -p ../../../third-party/include/libwinevbs/wine/include
 mkdir -p ../../../third-party/include/libwinevbs/atl/include
 cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwinevbs/
@@ -713,28 +716,28 @@ cp -r libwinevbs/libwinevbs/wine/include/* ../../../third-party/include/libwinev
 cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevbs/atl/include/
 
 for LIB in libavcodec libavformat libavutil libswresample libswscale; do
-   cp -a ffmpeg/ffmpeg/${LIB}/${LIB}.a ../../../third-party/build-libs/wasm-wasm32
+   cp -a ffmpeg/ffmpeg/${LIB}/${LIB}.a ../../../third-party/build-libs/wasm-wasm64
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}
 done
 
-cp libzip/libzip/build/lib/libzip.a ../../../third-party/build-libs/wasm-wasm32
+cp libzip/libzip/build/lib/libzip.a ../../../third-party/build-libs/wasm-wasm64
 cp libzip/libzip/build/zipconf.h ../../../third-party/include
 cp libzip/libzip/lib/zip.h ../../../third-party/include
 
-cp zlib/zlib/build/libz.a ../../../third-party/build-libs/wasm-wasm32
+cp zlib/zlib/build/libz.a ../../../third-party/build-libs/wasm-wasm64
 
-cp libmysofa/libmysofa/build/src/libmysofa.a ../../../third-party/build-libs/wasm-wasm32
+cp libmysofa/libmysofa/build/src/libmysofa.a ../../../third-party/build-libs/wasm-wasm64
 cp libmysofa/libmysofa/src/hrtf/mysofa.h ../../../third-party/include
 cp libmysofa/libmysofa/src/hrtf/mysofa_export.h ../../../third-party/include
-cp opus/install/lib/libogg.a ../../../third-party/build-libs/wasm-wasm32
-cp opus/install/lib/libopus.a ../../../third-party/build-libs/wasm-wasm32
-cp opus/install/lib/libopusfile.a ../../../third-party/build-libs/wasm-wasm32
+cp opus/install/lib/libogg.a ../../../third-party/build-libs/wasm-wasm64
+cp opus/install/lib/libopus.a ../../../third-party/build-libs/wasm-wasm64
+cp opus/install/lib/libopusfile.a ../../../third-party/build-libs/wasm-wasm64
 mkdir -p ../../../third-party/include/ogg
 cp opus/install/include/ogg/*.h ../../../third-party/include/ogg
 cp opus/install/include/opus/*.h ../../../third-party/include
 
-cp libspatialaudio/libspatialaudio/build/libspatialaudio.a ../../../third-party/build-libs/wasm-wasm32
+cp libspatialaudio/libspatialaudio/build/libspatialaudio.a ../../../third-party/build-libs/wasm-wasm64
 mkdir -p ../../../third-party/include/spatialaudio
 cp -r libspatialaudio/libspatialaudio/include/*.h libspatialaudio/libspatialaudio/include/{adm,dsp,hrtf,kiss_fft} ../../../third-party/include/spatialaudio
 cp libspatialaudio/libspatialaudio/build/include/SpatialaudioConfig.h ../../../third-party/include/spatialaudio

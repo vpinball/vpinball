@@ -700,19 +700,19 @@ jobs:
           ref: ${{ needs.context.outputs.checkout_ref }}
       - name: Calculate external cache hash
         run: |
-          echo "EXT_HASH=$(cat platforms/config.sh platforms/wasm-wasm32/external.sh | sha256sum | cut -c1-12)" >> $GITHUB_ENV
+          echo "EXT_HASH=$(cat platforms/config.sh platforms/wasm-wasm64/external.sh | sha256sum | cut -c1-12)" >> $GITHUB_ENV
       - name: Restore external cache
         id: cache
         uses: actions/cache/restore@v5
         with:
           path: external
-          key: wasm-wasm32-${{ matrix.config }}-external-${{ env.EXT_HASH }}
+          key: wasm-wasm64-${{ matrix.config }}-external-${{ env.EXT_HASH }}
           restore-keys: |
-            wasm-wasm32-${{ matrix.config }}-external-
+            wasm-wasm64-${{ matrix.config }}-external-
       - name: Build external cache
         run: |
           source ${{ runner.temp }}/emsdk/emsdk_env.sh
-          BUILD_TYPE=${{ matrix.config }} ./platforms/wasm-wasm32/external.sh
+          BUILD_TYPE=${{ matrix.config }} ./platforms/wasm-wasm64/external.sh
       - if: needs.context.outputs.is_pr != 'true' && steps.cache.outputs.cache-hit != 'true'
         name: Clean external cache
         run: |
@@ -724,7 +724,7 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: external
-          key: wasm-wasm32-${{ matrix.config }}-external-${{ env.EXT_HASH }}
+          key: wasm-wasm64-${{ matrix.config }}-external-${{ env.EXT_HASH }}
       - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
@@ -734,16 +734,16 @@ jobs:
           source ${{ runner.temp }}/emsdk/emsdk_env.sh
           emcmake cmake \
                 -DPLATFORM=wasm \
-                -DARCH=wasm32 \
+                -DARCH=wasm64 \
                 -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
-                -B build/wasm-wasm32
-          cmake --build build/wasm-wasm32 -- -j$(nproc)
+                -B build/wasm-wasm64
+          cmake --build build/wasm-wasm64 -- -j$(nproc)
       - name: Stage artifacts
         run: |
           mkdir tmp
           mkdir stage
-          cp build/wasm-wasm32/vpinball.{html,js,wasm,data} build/wasm-wasm32/{favicon,vpinball-logo}.png build/wasm-wasm32/{sw,monaco-editor}.js stage
-          cp -r build/wasm-wasm32/monaco stage
+          cp build/wasm-wasm64/vpinball.{html,js,wasm,data} build/wasm-wasm64/{favicon,vpinball-logo}.png build/wasm-wasm64/{sw,monaco-editor}.js stage
+          cp -r build/wasm-wasm64/monaco stage
           cd stage
           zip -r ../tmp/VPinballX_BGFX-${{ needs.version.outputs.tag }}-wasm-${{ matrix.config }}.zip .
       - name: Upload artifacts
@@ -752,16 +752,16 @@ jobs:
           name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-wasm-${{ matrix.config }}
           path: tmp/*
           archive: false
-      - if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true'
+      - if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true' && github.ref_name == github.event.repository.default_branch
         run: cp stage/vpinball.html stage/index.html
-      - if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true'
+      - if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true' && github.ref_name == github.event.repository.default_branch
         uses: actions/upload-pages-artifact@v4
         with:
           path: stage
 
   deploy-wasm:
     name: Deploy VPinballX_BGFX-wasm to GitHub Pages
-    if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true'
+    if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true' && github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-24.04
     needs: [ build-wasm ]
     permissions:

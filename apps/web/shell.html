@@ -161,7 +161,7 @@ var Module = {
          editSettings.textContent = 'Edit settings (available after you play a table once)';
       document.getElementById('progress').hidden = true;
       setStatus('');
-      document.getElementById('version').textContent = Module.UTF8ToString(Module._VPinballGetVersionStringFull());
+      document.getElementById('version').textContent = Module.UTF8ToString(Number(Module._VPinballGetVersionStringFull()));
    },
 };
 if (args.length === 0)
@@ -266,7 +266,7 @@ async function loadPrefs() {
 }
 
 function settingsPath() {
-   const version = Module.UTF8ToString(Module._VPinballGetVersionStringFull()).match(/(\d+)\.(\d+)/);
+   const version = Module.UTF8ToString(Number(Module._VPinballGetVersionStringFull())).match(/(\d+)\.(\d+)/);
    return `${PREFS_DIR}/VPinballX/${version[1]}.${version[2]}/VPinballX.ini`;
 }
 
