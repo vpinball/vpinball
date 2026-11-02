@@ -17,7 +17,7 @@
 //   DAZ (MXCSR bit  6): additionally treats denormal *inputs* as zero
 // ARM has no such split: FPCR/FPSCR.FZ already covers operands as well as results.
 
-#if defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || defined(__amd64__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(__SSE2__)
+#if !defined(__EMSCRIPTEN__) && (defined(_M_X64) || defined(_M_AMD64) || defined(__x86_64__) || defined(__amd64__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(__SSE2__))
    #define DENORMALS_VIA_MXCSR 1
    #include <xmmintrin.h>
    #include <cstring>
@@ -88,6 +88,8 @@ inline void set_denormals_flush_to_zero()
    __asm__ __volatile__("vmrs %0, fpscr" : "=r"(fpscr));
    fpscr |= (1u << 24); // FPSCR.FZ, present since VFPv2, so a Pi Zero too
    __asm__ __volatile__("vmsr fpscr, %0" : : "r"(fpscr));
+
+#elif defined(__EMSCRIPTEN__)
 
 #else
    #pragma message("Warning: No CPU float ignore denorm implemented")

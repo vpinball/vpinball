@@ -223,9 +223,9 @@ cd apps/android
 </details>
 
 <details>
-<summary>wasm-wasm32 (Web)</summary>
+<summary>wasm-wasm64 (Web)</summary>
 
-> Built with [Emscripten](https://emscripten.org/) 6.0.13. The output is `vpinball.html` plus its `.js`, `.wasm` and `.data` files in the build folder.
+> Built with [Emscripten](https://emscripten.org/) 6.0.13 as 64-bit WebAssembly (Memory64), which needs Chrome 133 or Firefox 134 and later. The output is `vpinball.html` plus its `.js`, `.wasm` and `.data` files in the build folder.
 
 ```
 brew install cmake bison curl
@@ -234,11 +234,11 @@ git clone https://github.com/emscripten-core/emsdk.git
 emsdk/emsdk install 6.0.13
 emsdk/emsdk activate 6.0.13
 source emsdk/emsdk_env.sh
-platforms/wasm-wasm32/external.sh
-emcmake cmake -DPLATFORM=wasm -DARCH=wasm32 -DCMAKE_BUILD_TYPE=Release -B build/wasm-wasm32
-cmake --build build/wasm-wasm32 -- -j$(sysctl -n hw.ncpu)
+platforms/wasm-wasm64/external.sh
+emcmake cmake -DPLATFORM=wasm -DARCH=wasm64 -DCMAKE_BUILD_TYPE=Release -B build/wasm-wasm64
+cmake --build build/wasm-wasm64 -- -j$(sysctl -n hw.ncpu)
 
-python3 -m http.server -d build/wasm-wasm32
+python3 -m http.server -d build/wasm-wasm64
 ```
 </details>
 
@@ -380,7 +380,7 @@ Use `-h` to list all options, or see [Command Line](<../docs/Command Line.md>).
 Serve the build folder with any static web server and open `vpinball.html` in a WebGPU capable browser. The page registers a service worker that provides the cross-origin isolation needed for threads, so no special server headers are required:
 
 ```
-python3 -m http.server -d build/wasm-wasm32
+python3 -m http.server -d build/wasm-wasm64
 ```
 
 ### Table script patches

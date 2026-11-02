@@ -945,6 +945,9 @@ elseif(PLATFORM STREQUAL "wasm")
       -ffp-contract=off
       -Wno-shorten-64-to-32
       -msimd128
+      -msse
+      -msse2
+      -mssse3
    )
 
    set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/${PLATFORM}-${ARCH}")
@@ -1002,7 +1005,7 @@ elseif(PLATFORM STREQUAL "wasm")
       -sJSPI
       -sOFFSCREENCANVAS_SUPPORT
       -sALLOW_MEMORY_GROWTH=1
-      -sMAXIMUM_MEMORY=4GB
+      -sMAXIMUM_MEMORY=16GB
       -sINITIAL_MEMORY=512MB
       -sSTACK_SIZE=8MB
       -sDEFAULT_PTHREAD_STACK_SIZE=2MB
