@@ -101,6 +101,9 @@
     <ClCompile Include="../../tests/misc/test-table-io.cpp">
       <Filter>misc</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/misc/test-tbn-shader.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/parts/test-ball.cpp">
       <Filter>parts</Filter>
     </ClCompile>
