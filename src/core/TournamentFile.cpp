@@ -319,9 +319,11 @@ void GenerateImageFromTournamentFile(PinTable* table, const std::filesystem::pat
 
    if (cpu != GET_PLATFORM_CPU_ENUM || bits != GET_PLATFORM_BITS_ENUM || os != GET_PLATFORM_OS_ENUM || renderer != GET_PLATFORM_RENDERER_ENUM)
    {
-      ShowError("Cannot decode Tournament file\nas the setup differs:\nEncoder: " + platform_cpu[cpu] + ' ' + platform_bits[bits] + "bits " + platform_os[os] + ' '
-         + platform_renderer[renderer] + "\nDecoder: " + platform_cpu[GET_PLATFORM_CPU_ENUM] + ' ' + platform_bits[GET_PLATFORM_BITS_ENUM] + "bits " + platform_os[GET_PLATFORM_OS_ENUM] + ' '
-         + platform_renderer[GET_PLATFORM_RENDERER_ENUM]);
+      // The encoder values come from the file, which may be corrupted
+      const auto encoderName = [](const auto &names, const unsigned int index) { return index < std::size(names) ? names[index] : "unknown ("s + std::to_string(index) + ')'; };
+      ShowError("Cannot decode Tournament file\nas the setup differs:\nEncoder: " + encoderName(platform_cpu, cpu) + ' ' + encoderName(platform_bits, bits) + "bits "
+         + encoderName(platform_os, os) + ' ' + encoderName(platform_renderer, renderer) + "\nDecoder: " + platform_cpu[GET_PLATFORM_CPU_ENUM] + ' '
+         + platform_bits[GET_PLATFORM_BITS_ENUM] + "bits " + platform_os[GET_PLATFORM_OS_ENUM] + ' ' + platform_renderer[GET_PLATFORM_RENDERER_ENUM]);
       return;
    }
 
