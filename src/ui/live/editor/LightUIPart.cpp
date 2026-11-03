@@ -80,12 +80,12 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Light* light, int v) { light->m_d.m_fader = static_cast<Fader>(v); }, "How the light interpolates between states: instantly, linearly, or emulating an incandescent filament");
       props.InputFloat<Light>(
          m_part, "Fade Up (ms)"s, //
-         [](const Light* light) { return light->m_d.m_fadeSpeedUp > 0.1f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedUp : 100000.0f; }, //
+         [](const Light* light) { return light->m_d.m_fadeSpeedUp > 1e-6f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedUp : 100000.0f; }, //
          [](Light* light, float v) { light->m_d.m_fadeSpeedUp = v > 0.001f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / v : 100000.0f; }, PropertyPane::Unit::None, 1,
          "Time for the light to ramp from off to its full intensity");
       props.InputFloat<Light>(
          m_part, "Fade Down (ms)"s, //
-         [](const Light* light) { return light->m_d.m_fadeSpeedDown > 0.1f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedDown : 100000.0f; }, //
+         [](const Light* light) { return light->m_d.m_fadeSpeedDown > 1e-6f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedDown : 100000.0f; }, //
          [](Light* light, float v) { light->m_d.m_fadeSpeedDown = v > 0.001f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / v : 100000.0f; }, PropertyPane::Unit::None, 1,
          "Time for the light to fade from its full intensity to off");
       props.InputRGB<Light>(
