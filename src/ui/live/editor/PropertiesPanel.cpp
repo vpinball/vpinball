@@ -165,7 +165,17 @@ void PropertiesPanel::Render(float topBarHeight)
                m_editChainRecord = editor.m_undo.UndoCount();
             }
             else
+            {
                editor.m_undo.Discard();
+               // Esc cancelled the drag / typed value (restored): the step it had started is dropped too, if it is still the latest record
+               if (!modified && props.ConsumeEditCancel() && editor.m_lastUndoPart == editable && editor.m_undo.HasUndo() && editor.m_undo.UndoCount() == m_editChainRecord)
+               {
+                  editor.m_undo.Discard();
+                  editor.m_lastUndoPart = nullptr;
+                  editor.m_lastUndoId = 0;
+                  m_editChainRecord = 0;
+               }
+            }
             const bool ended = !modified && !ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsAnyItemActive();
             const ImGuiID activeId = ImGui::GetActiveID();
             if (editor.m_lastUndoId != 0x1000 // The gizmo's own marker is not ours to clear
