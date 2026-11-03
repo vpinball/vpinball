@@ -1560,7 +1560,8 @@ void VRDevice::OffsetTable(float dx, float dy, float dz)
 {
    m_headsetPos.x = Settings::GetPlayerVR_HeadSetX_Property()->GetClamped(m_headsetPos.x + dx);
    m_headsetPos.y = Settings::GetPlayerVR_HeadSetY_Property()->GetClamped(m_headsetPos.y + dy);
-   m_lockbarHeight = Settings::GetPlayer_LockbarHeight_Property()->GetClamped(m_lockbarHeight + dz);
+   // Z moves the table, not the real world lockbar height (a global setting persisted at exit)
+   m_tableOffset.z = Settings::GetPlayerVR_TableOffsetZ_Property()->GetClamped(m_tableOffset.z + dz);
    m_worldDirty = true;
 }
 
