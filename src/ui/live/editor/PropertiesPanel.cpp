@@ -103,6 +103,14 @@ void PropertiesPanel::Render(float topBarHeight)
                case Selection::S_SOUND: SoundProperties(props, editor.m_selection.GetSound()); break;
                case Selection::S_COLLECTION: CollectionProperties(props, editor.m_selection.GetCollection()); break;
                }
+               // Remember what was edited on the live copy: 'Save' copies it back to the startup table that is written to disk
+               if (is_live && props.GetModifiedField() > 0)
+               {
+                  if (editor.m_selection.GetType() == Selection::S_MATERIAL)
+                     editor.m_liveEditedMaterials.insert(editor.m_selection.GetMaterial());
+                  else if (editor.m_selection.GetType() == Selection::S_EDITABLE)
+                     editor.m_liveEditedParts.insert(editor.m_selection.GetPart()->GetEditable());
+               }
                ImGui::EndTabItem();
             }
          }
