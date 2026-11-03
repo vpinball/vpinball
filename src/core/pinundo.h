@@ -25,6 +25,7 @@ public:
    void Discard();
 
    bool HasUndo() const;
+   size_t UndoCount() const { return m_undoRecords.size(); }
    bool IsUndoPastCleanPoint() const;
    void SetCleanPoint(const SaveDirtyState sds);
 

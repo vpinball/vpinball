@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "audio/AudioPlayer.h"
+#include "imgui/imgui.h"
 
 class Collection;
 class Material;
@@ -59,6 +60,8 @@ private:
 
    EditorUI &m_editor;
    bool m_selectLiveTab = true;
+   ImGuiID m_prevActiveId = 0; // Item active on the previous frame (a different item taking the interaction ends the undo chain)
+   size_t m_editChainRecord = 0; // Undo count just after the current interaction's record was kept (it is still the latest record while equal)
 
    // Results of the asynchronous SDL file dialogs used by the resource actions. Since the dialogs are
    // asynchronous, the item selection at the time the action was requested is captured along the way.

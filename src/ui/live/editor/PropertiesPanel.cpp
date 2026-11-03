@@ -151,14 +151,31 @@ void PropertiesPanel::Render(float topBarHeight)
          // A renamed surface or ramp retargets the parts placed on it, recorded in the same undo record
          editor.m_table->UpdateSurfaceReferences(editable, nameBefore, [&editor](IEditable *part) { editor.m_undo.MarkForUndo(part); });
          editor.m_undo.EndUndo();
-         if (props.GetModifiedField() > 0 && (editor.m_lastUndoPart != editor.m_selection.GetPart()->GetEditable() || editor.m_lastUndoId != (0x2000 | props.GetModifiedField())))
          {
-            editor.m_lastUndoPart = editor.m_selection.GetPart()->GetEditable();
-            editor.m_lastUndoId = 0x2000 | props.GetModifiedField();
-         }
-         else
-         {
-            editor.m_undo.Discard();
+            // The edit of one field (a drag, a typed value) is one step: its first frame keeps the record, the next ones discard theirs.
+            // The chain ends when the interaction does (mouse released, no item active) or when another item takes it
+            // (Tab between components, a click on another field), so the next edit is a step of its own
+            const bool modified = props.GetModifiedField() > 0;
+            const unsigned int editId = 0x2000u | static_cast<unsigned int>(props.GetModifiedField());
+            const bool continues = modified && editor.m_lastUndoPart == editable && editor.m_lastUndoId == editId;
+            if (modified && !continues)
+            {
+               editor.m_lastUndoPart = editable;
+               editor.m_lastUndoId = editId;
+               m_editChainRecord = editor.m_undo.UndoCount();
+            }
+            else
+               editor.m_undo.Discard();
+            const bool ended = !modified && !ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsAnyItemActive();
+            const ImGuiID activeId = ImGui::GetActiveID();
+            if (editor.m_lastUndoId != 0x1000 // The gizmo's own marker is not ours to clear
+               && (ended || (m_prevActiveId != 0 && activeId != m_prevActiveId && activeId != 0)))
+            {
+               editor.m_lastUndoPart = nullptr;
+               editor.m_lastUndoId = 0;
+               m_editChainRecord = 0;
+            }
+            m_prevActiveId = activeId;
          }
          if (props.GetModifiedField() > 0)
             RefreshEditedParts(props);
