@@ -247,11 +247,16 @@ private:
       std::atomic<bool> completed { false };
       std::thread worker;
       PinTable *table = nullptr; // Loaded table (load ops only): reference adopted by the player on success, released on failure
+      PinTable *saveTable = nullptr; // Table written by a save op (the startup table when saving from an inspection session)
       // 'Save As' restore data: filename and title to restore when the save fails
       bool restoreOnFailure = false;
       std::filesystem::path previousFilename;
       string previousTitle;
    };
+   // Inspection session: live copies edited from the 'Live' tabs, copied back to the startup table by 'Save'
+   // (the startup table is the one written to disk; live values are otherwise discarded when the session ends)
+   ankerl::unordered_dense::set<Material *> m_liveEditedMaterials;
+   ankerl::unordered_dense::set<IEditable *> m_liveEditedParts;
    std::unique_ptr<AsyncFileOp> m_fileOp; // Running asynchronous file operation (all editor interaction is blocked while set)
    void StartFileOp(std::unique_ptr<AsyncFileOp> op);
    void FinishFileOp();
