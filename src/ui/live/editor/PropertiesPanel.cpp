@@ -454,7 +454,12 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
       props.InputFloat<PinTable>(
          table, "Environment Em. Scale"s, //
          [](const PinTable *table) { return table->m_envEmissionScale; }, //
-         [](PinTable *table, float v) { table->m_envEmissionScale = v; }, PropertyPane::Unit::Percent, 3, "Intensity of the environment lighting");
+         [&editor](PinTable *table, float v)
+         {
+            table->m_envEmissionScale = v;
+            editor.m_renderer->MarkShaderDirty(); // Needed to update shaders with new light settings
+         },
+         PropertyPane::Unit::Percent, 3, "Intensity of the environment lighting");
 
       props.Separator("Render Options"s);
       props.Checkbox<PinTable>(
