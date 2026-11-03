@@ -23,6 +23,8 @@ public:
    Vertex3Ds GetEditCenter() const override { return Vertex3Ds(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_surfaceHeight); }
    void SetEditCenter(const Vertex2D& pos) override { m_part->m_d.m_vCenter = pos; }
 
+   bool UIHideAffectsRender() const override { return false; } // Hiding a light in the editor must not switch its illumination off
+
    void RenderOverlay(const EditorRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
