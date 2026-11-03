@@ -1150,6 +1150,11 @@ void EditorUI::RenderUI()
    }
    if (m_boxSelectActive && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
       m_boxSelectActive = false; // Canceled: button released outside of the playfield
+   if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+   {
+      m_pointDragPending = false; // Released outside of the viewport (the drag flags would otherwise stay set until the mouse comes back)
+      m_pointDragActive = false;
+   }
    // Ctrl+S must work while a widget (e.g. a slider) has keyboard focus; only a text input being edited takes precedence
    if (m_fileOp == nullptr && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_S, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       SaveTable();
