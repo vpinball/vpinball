@@ -3232,8 +3232,6 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       // FIXME this does not work:
       // - the XR swapchain back buffer is declared without depth buffer, so the depth copy does nothing
       // - BGFX does not support blitting depth to the default back buffer
-      // - BGFX with supersampling != 1: sizes differ, so CopyTo draws with a single layer shader that ignores copyColor/copyDepth,
-      //   drawing the untonemapped scene over the left eye (and asserting on stereo targets in debug)
       if (g_pplayer->m_vrDevice->UseDepthBuffer())
       {
          // Copy depth buffer to OpenXR swapchain's current depth target

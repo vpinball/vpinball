@@ -674,8 +674,13 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    }
    else
    {
-      assert(dstLayer == 0 || (dstLayer == -1 && dest->m_nLayers == 1));
-      assert(srcLayer >= 0 || m_nLayers == 1);
+      // BGFX does not support scaled blits: emulate them with a quad draw into the destination. Layered copies
+      // are performed as instanced draws (the vertex shader writes gl_Layer = gl_InstanceID and samples source
+      // layer 'layer' + gl_InstanceID), so they require all the destination layers to be bound to the active view.
+      // When the destination is bound to a single layer (per layer rendering), only the matching layer is drawn.
+      assert(dstLayer <= 0); // Instanced drawing can only reach destination layers starting at 0
+      assert(srcLayer == -1 || srcLayer < m_nLayers);
+      assert(srcLayer != -1 || m_nLayers <= dest->m_nLayers);
       const float dx1 = 2.f * (static_cast<float>(px2) / static_cast<float>(dest->GetWidth())) - 1.f;
       const float dy1 = 2.f * (static_cast<float>(py2) / static_cast<float>(dest->GetHeight())) - 1.f;
       const float dx2 = 2.f * (static_cast<float>(px2 + pw2) / static_cast<float>(dest->GetWidth())) - 1.f;
@@ -685,20 +690,37 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
       const float qx2 = static_cast<float>(px1 + pw1) / static_cast<float>(m_width);
       const float qy2 = 1.f - static_cast<float>(py1 + ph1) / static_cast<float>(m_height);
       const Vertex3D_TexelOnly verts[4] = { { dx1, dy1, 0.0f, qx1, qy1 }, { dx2, dy1, 0.0f, qx2, qy1 }, { dx1, dy2, 0.0f, qx1, qy2 }, { dx2, dy2, 0.0f, qx2, qy2 } };
-      Shader* shader = m_rd->m_FBShader;
-      shader->SetTechnique(ShaderTechnique::fb_mirror);
-      shader->SetVector(ShaderUniform::w_h_height, 1.f, 1.f, 1.f, 0.f);
-      shader->SetInt(ShaderUniform::layer, srcLayer < 0 ? 0 : srcLayer);
-      shader->SetTexture(ShaderUniform::tex_fb_unfiltered, GetColorSampler());
-      shader->Begin();
       bgfx::TransientVertexBuffer tvb; // TODO only allocate one per frame instead of one per CopyTo
       bgfx::allocTransientVertexBuffer(&tvb, 4, *m_rd->m_pVertexTexelDeclaration);
       memcpy(tvb.data, verts, 4 * sizeof(Vertex3D_TexelOnly));
-      bgfx::setVertexBuffer(0, &tvb);
-      bgfx::setInstanceCount(1);
-      bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
-      bgfx::submit(m_rd->m_activeViewId, shader->GetCore());
-      shader->End();
+      const uint32_t nInstances = srcLayer == -1 && current_render_layer < 0 ? static_cast<uint32_t>(nLayers) : 1;
+      Shader* shader = m_rd->m_FBShader;
+      shader->SetInt(ShaderUniform::layer, srcLayer == -1 && current_render_layer >= 0 ? std::min(current_render_layer, m_nLayers - 1) : pz1);
+      if (copyColor)
+      {
+         shader->SetTechnique(ShaderTechnique::fb_mirror);
+         shader->SetVector(ShaderUniform::w_h_height, 1.f, 1.f, 1.f, 0.f);
+         shader->SetTexture(ShaderUniform::tex_fb_unfiltered, GetColorSampler(), SamplerFilter::SF_BILINEAR);
+         shader->Begin();
+         bgfx::setVertexBuffer(0, &tvb);
+         bgfx::setInstanceCount(nInstances);
+         bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_PT_TRISTRIP);
+         bgfx::submit(m_rd->m_activeViewId, shader->GetCore());
+         shader->End();
+      }
+      if (m_has_depth && dest->m_has_depth && copyDepth)
+      {
+         if (m_nMSAASamples > 1)
+            ResolveMSAADepth();
+         shader->SetTechnique(ShaderTechnique::fb_copy_depth);
+         shader->SetTexture(ShaderUniform::tex_depth, GetDepthSampler());
+         shader->Begin();
+         bgfx::setVertexBuffer(0, &tvb);
+         bgfx::setInstanceCount(nInstances);
+         bgfx::setState(BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_ALWAYS | BGFX_STATE_PT_TRISTRIP);
+         bgfx::submit(m_rd->m_activeViewId, shader->GetCore());
+         shader->End();
+      }
    }
    
 #elif defined(ENABLE_OPENGL)
