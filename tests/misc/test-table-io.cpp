@@ -1375,6 +1375,12 @@ TEST_CASE("Mesh GLB round-trip")
    // Morph target frame restores the vertex offsets
    CHECK(loaded.m_animationFrames[0].m_frameVerts[0].z == doctest::Approx(10.f));
 
+   // Resaving the loaded mesh must produce the exact same GLB: the VPU<->meters conversion
+   // uses a single double precision factor so saved values are fixed points of the round-trip
+   vector<uint8_t> glb2;
+   REQUIRE(loaded.SaveGLB(glb2));
+   CHECK(glb2 == glb);
+
    uint32_t jsonLength;
    memcpy(&jsonLength, glb.data() + 12, sizeof(jsonLength));
    const nlohmann::json gltf = nlohmann::json::parse(glb.begin() + 20, glb.begin() + 20 + jsonLength);

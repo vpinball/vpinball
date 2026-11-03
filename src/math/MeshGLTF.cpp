@@ -24,8 +24,24 @@
 namespace
 {
 
-vec3 VpxToGltf(const float x, const float y, const float z) { return vec3(VPUTOM(x), VPUTOM(z), VPUTOM(y)); }
-vec3 GltfToVpx(const float x, const float y, const float z) { return vec3(MTOVPU(x), MTOVPU(z), MTOVPU(y)); }
+// Unit conversion uses a single double precision factor so that load/save round-trips are
+// stable: multiplying by the two separately rounded float constants VPUTOM and MTOVPU does
+// not yield the identity, which used to shift positions by one float step on each save.
+// The precise float control prevents fast-math builds from contracting the conversion back
+// into a single precision multiply, which would reintroduce the same one-step drift.
+#ifdef _MSC_VER
+#pragma float_control(push)
+#pragma float_control(precise, on)
+#endif
+constexpr double VPU_PER_METER = 50. / (0.0254 * 1.0625);
+float VpuToMeters(const float v) { return static_cast<float>(static_cast<double>(v) / VPU_PER_METER); }
+float MetersToVpu(const float v) { return static_cast<float>(static_cast<double>(v) * VPU_PER_METER); }
+
+vec3 VpxToGltf(const float x, const float y, const float z) { return vec3(VpuToMeters(x), VpuToMeters(z), VpuToMeters(y)); }
+vec3 GltfToVpx(const float x, const float y, const float z) { return vec3(MetersToVpu(x), MetersToVpu(z), MetersToVpu(y)); }
+#ifdef _MSC_VER
+#pragma float_control(pop)
+#endif
 vec3 VpxToGltfDirection(const float x, const float y, const float z) { return vec3(x, z, y); }
 vec3 GltfToVpxDirection(const float x, const float y, const float z) { return vec3(x, z, y); }
 
@@ -167,7 +183,10 @@ bool Mesh::SaveGLB(vector<uint8_t>& out) const
          std::vector<float> deltaPos(numVertices * 3), deltaNrm(numVertices * 3);
          for (size_t i = 0; i < numVertices; i++)
          {
-            const vec3 dp = VpxToGltf(frame.m_frameVerts[i].x - m_vertices[i].x, frame.m_frameVerts[i].y - m_vertices[i].y, frame.m_frameVerts[i].z - m_vertices[i].z);
+            // The position delta is written as the difference of the converted positions so
+            // that a resaved file is byte-identical (converting the VPU delta would drift).
+            const vec3 fp = VpxToGltf(frame.m_frameVerts[i].x, frame.m_frameVerts[i].y, frame.m_frameVerts[i].z);
+            const vec3 dp(fp.x - positions[i * 3 + 0], fp.y - positions[i * 3 + 1], fp.z - positions[i * 3 + 2]);
             const vec3 dn = VpxToGltfDirection(frame.m_frameVerts[i].nx - m_vertices[i].nx, frame.m_frameVerts[i].ny - m_vertices[i].ny, frame.m_frameVerts[i].nz - m_vertices[i].nz);
             deltaPos[i * 3 + 0] = dp.x;
             deltaPos[i * 3 + 1] = dp.y;
