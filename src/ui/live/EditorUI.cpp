@@ -731,7 +731,8 @@ void EditorUI::RenderUI()
          //const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, -1.f);
          //float zNear, zFar;
          //m_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
-         constexpr float zNear = 5.f;
+         // Near plane follows the orbit distance (a fixed 5 left a 10000:1 range, so near-coplanar surfaces z-fought when zoomed out)
+         const float zNear = clamp(m_camDistance * 0.05f, 5.f, 250.f);
          constexpr float zFar = 50000.f;
          m_camProj = Matrix3D::MatrixPerspectiveFovRH(editorCamFovY, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
