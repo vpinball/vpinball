@@ -1150,6 +1150,9 @@ void EditorUI::RenderUI()
    }
    if (m_boxSelectActive && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
       m_boxSelectActive = false; // Canceled: button released outside of the playfield
+   // Ctrl+S must work while a widget (e.g. a slider) has keyboard focus; only a text input being edited takes precedence
+   if (m_fileOp == nullptr && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_S, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+      SaveTable();
    if (!io.WantCaptureKeyboard && m_fileOp == nullptr)
    {
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
@@ -1324,12 +1327,8 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_S))
       {
-         if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
-         {
-            // Save table
-            SaveTable();
-         }
-         else if (!io.KeyCtrl)
+         // Ctrl+S (save) is handled earlier, before the WantCaptureKeyboard check
+         if (!io.KeyCtrl)
          {
             // Scale
             if (m_camMode == ViewMode::PreviewCam)
