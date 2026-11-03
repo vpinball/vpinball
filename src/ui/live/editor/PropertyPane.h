@@ -137,6 +137,13 @@ public:
    void PropertyLabel(const string& label, const char* tooltip = nullptr);
 
    int GetModifiedField() const { return m_modified; }
+   // True once when an in-progress field edit was cancelled with Esc (consumed by the caller)
+   bool ConsumeEditCancel()
+   {
+      const bool c = m_editCancelled;
+      m_editCancelled = false;
+      return c;
+   }
 
 private:
    static constexpr const char* ICON_SAVE = ICON_FK_FLOPPY_O;
@@ -175,6 +182,7 @@ private:
    }
 
    int m_modified = 0;
+   bool m_editCancelled = false; // A field edit was cancelled with Esc (its value was restored by ImGui)
    int m_modifyFieldId = 1;
 
    Unit m_lengthUnit = Unit::None;
@@ -249,6 +257,9 @@ template <class T, class Getter> bool PropertyPane::IsMixed(const Getter& getter
 template <class T, class Getter, class Setter, class V>
 void PropertyPane::EndSyncField(const SyncField<T>& sync, const vector<CoTarget<T>>& targets, const Getter& getter, const Setter& setter, const V& displayValue)
 {
+   // Esc while a field is being edited restores its initial value: the cancel is noted for the undo bookkeeping
+   if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+      m_editCancelled = true;
    const bool hasOthers = (sync.other != nullptr) || std::ranges::any_of(targets, [](const CoTarget<T>& target) { return target.other != nullptr; });
    if (!hasOthers)
       return;
