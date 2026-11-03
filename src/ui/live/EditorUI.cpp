@@ -1188,7 +1188,9 @@ void EditorUI::RenderUI()
    {
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {
-         if (m_gizmoOperation != ImGuizmo::OPERATION(0))
+         if (m_suppressNextEscape)
+            m_suppressNextEscape = false; // Consumed by a field the Esc deactivated (e.g. the script editor)
+         else if (m_gizmoOperation != ImGuizmo::OPERATION(0))
             m_gizmoOperation = ImGuizmo::OPERATION(0); // Cancel current operation
          else if (m_boxSelectActive)
             m_boxSelectActive = false; // Cancel current box selection
