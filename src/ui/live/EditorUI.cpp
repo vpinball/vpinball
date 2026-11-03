@@ -802,25 +802,46 @@ void EditorUI::RenderUI()
             break;
          }
       }
-      ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), gizmoOperation, m_gizmoMode, (float *)(transform.m));
-      if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
+      // A gizmo drag whose selection changed under the mouse (outliner click, undo,...) is over: the new selection must not follow it without an undo record
+      const bool gizmoLost = m_gizmoDragActive && m_multiSel != m_gizmoDragSelection;
+      if (gizmoLost)
       {
-         // Mark all selected parts for undo once per drag (m_lastUndoId is reset when the gizmo is released)
-         if (m_lastUndoId != 0x1000 && m_table->m_liveBaseTable == nullptr)
+         ImGuizmo::Enable(false); // Clears ImGuizmo's using state
+         ImGuizmo::Enable(true);
+      }
+      else
+      {
+         ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), gizmoOperation, m_gizmoMode, (float *)(transform.m));
+         if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
          {
-            m_undo.BeginUndo();
-            for (const auto &part : m_multiSel)
-               m_undo.MarkForUndo(part->GetEditable());
-            m_undo.EndUndo();
-            m_lastUndoPart = nullptr;
-            m_lastUndoId = 0x1000;
+            // Mark all selected parts for undo once per drag (m_lastUndoId is reset when the gizmo is released)
+            if (!m_gizmoDragActive && m_table->m_liveBaseTable == nullptr)
+            {
+               m_gizmoDragActive = true;
+               m_gizmoDragSelection = m_multiSel;
+               m_undo.BeginUndo();
+               for (const auto &part : m_multiSel)
+                  m_undo.MarkForUndo(part->GetEditable());
+               m_undo.EndUndo();
+               m_lastUndoPart = nullptr;
+               m_lastUndoId = 0x1000;
+            }
+            SetSelectionTransform(transform);
          }
-         SetSelectionTransform(transform);
       }
    }
-   // Reset gizmo undo deduplication once the gizmo is released (each drag should create a single undo entry)
-   if (!ImGuizmo::IsUsing() && m_lastUndoId == 0x1000)
+   else if (ImGuizmo::IsUsingAny())
    {
+      // A drag interrupted with the mouse still held (invalid selection, table locked, Esc,...) is not manipulated anymore,
+      // so ImGuizmo would stay in its using state: reset it (the drag's undo record stands)
+      ImGuizmo::Enable(false);
+      ImGuizmo::Enable(true);
+   }
+   // Reset gizmo undo deduplication once the gizmo is released (each drag should create a single undo entry)
+   if (m_lastUndoId == 0x1000 && !ImGuizmo::IsUsing())
+   {
+      m_gizmoDragActive = false;
+      m_gizmoDragSelection.clear();
       m_lastUndoPart = nullptr;
       m_lastUndoId = 0;
    }
