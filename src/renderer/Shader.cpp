@@ -193,6 +193,7 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[static_cast<unsigned int>(Shad
    SHADER_TECHNIQUE(SSReflection),
 #ifdef ENABLE_BGFX
    SHADER_TECHNIQUE(fb_resolve_depth_msaa),
+   SHADER_TECHNIQUE(fb_copy_depth),
 #endif
 
    SHADER_TECHNIQUE(NFAA),
@@ -1369,142 +1370,63 @@ void Shader::Load()
    #define BGFX_EMBEDDED_SHADER_ST(a) BGFX_EMBEDDED_SHADER(a), BGFX_EMBEDDED_SHADER(a##_st)
    #define BGFX_EMBEDDED_SHADER_CLIP(a) BGFX_EMBEDDED_SHADER(a##_clip), BGFX_EMBEDDED_SHADER(a##_noclip)
    #define BGFX_EMBEDDED_SHADER_ST_CLIP(a) BGFX_EMBEDDED_SHADER_ST(a##_clip), BGFX_EMBEDDED_SHADER_ST(a##_noclip)
-   static const bgfx::EmbeddedShader embeddedShaders[] =
-   {
-      // ImGui shaders
-      BGFX_EMBEDDED_SHADER_ST(vs_imgui),
-      BGFX_EMBEDDED_SHADER(fs_imgui),
+   static const bgfx::EmbeddedShader embeddedShaders[] = { // ImGui shaders
+      BGFX_EMBEDDED_SHADER_ST(vs_imgui), BGFX_EMBEDDED_SHADER(fs_imgui),
       // Basic material shaders
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_tex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_notex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_kicker),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_classic_light_tex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_classic_light_notex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_tex_noat),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_tex_at),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_notex_noat),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_refl),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_tex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_notex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_tex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_notex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex_ballshadow),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex_ballshadow),
-      BGFX_EMBEDDED_SHADER(vs_vr_mask),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_tex), BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_notex), BGFX_EMBEDDED_SHADER_ST_CLIP(vs_kicker), BGFX_EMBEDDED_SHADER_ST_CLIP(vs_classic_light_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_classic_light_notex), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_tex_noat), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_tex_at),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_notex_noat), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_refl), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_notex), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_tex), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex_ballshadow), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex_ballshadow), BGFX_EMBEDDED_SHADER(vs_vr_mask),
       // Ball shaders
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball_trail),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_nodecal),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_decal),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_nodecal),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_decal),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_trail),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_debug),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball), BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball_trail), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_nodecal),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_decal), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_nodecal), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_decal),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_trail), BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_debug),
       // DMD, Display & Sprite shaders
-      BGFX_EMBEDDED_SHADER_ST(vs_dmd_noworld),
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_display_dmd),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_display_seg),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_display_crt),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_display_crtnuance),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
+      BGFX_EMBEDDED_SHADER_ST(vs_dmd_noworld), BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world), BGFX_EMBEDDED_SHADER_CLIP(fs_dmd), BGFX_EMBEDDED_SHADER_CLIP(fs_display_dmd),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_display_seg), BGFX_EMBEDDED_SHADER_CLIP(fs_display_crt), BGFX_EMBEDDED_SHADER_CLIP(fs_display_crtnuance), BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_notex),
       // Bulb light shaders
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_light),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_light_noshadow),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_light_ballshadow),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_light), BGFX_EMBEDDED_SHADER_CLIP(fs_light_noshadow), BGFX_EMBEDDED_SHADER_CLIP(fs_light_ballshadow),
       // Flasher shaders
-      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_flasher),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_flasher),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_flasher), BGFX_EMBEDDED_SHADER_CLIP(fs_flasher),
       // Stereo post-processes
-      BGFX_EMBEDDED_SHADER_ST(vs_postprocess),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_tb),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_sbs),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_int),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_flipped_int),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_nodesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_nodesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_dyndesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_dyndesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_deghost),
+      BGFX_EMBEDDED_SHADER_ST(vs_postprocess), BGFX_EMBEDDED_SHADER(fs_pp_stereo_tb), BGFX_EMBEDDED_SHADER(fs_pp_stereo_sbs), BGFX_EMBEDDED_SHADER(fs_pp_stereo_int),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_flipped_int), BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_nodesat), BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_nodesat),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_dyndesat), BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_dyndesat), BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_deghost),
       // Tonemappers
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_filter_rgb), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rgb), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_nofilter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_nofilter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_nofilter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_nofilter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_nofilter),
       // Screen Space post-processes
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_display),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_ssao),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_bloom),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_mirror),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_copy),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_msaa_depth),
-      BGFX_EMBEDDED_SHADER(fs_pp_passthrough),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_nofilter), BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_display), BGFX_EMBEDDED_SHADER_ST(fs_pp_ssao),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_bloom), BGFX_EMBEDDED_SHADER_ST(fs_pp_mirror), BGFX_EMBEDDED_SHADER_ST(fs_pp_copy), BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance), BGFX_EMBEDDED_SHADER_ST(fs_pp_msaa_depth), BGFX_EMBEDDED_SHADER_ST(fs_pp_copy_depth), BGFX_EMBEDDED_SHADER(fs_pp_passthrough),
       // Motion Blur as post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_motionblur),
       // Anti-Aliasing as post-processes
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_nfaa),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa_edge),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa1),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa2),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa3),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_faaa),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_cas),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_bilateral_cas),
-      BGFX_EMBEDDED_SHADER(vs_pp_smaa_edgedetection),
-      BGFX_EMBEDDED_SHADER(fs_pp_smaa_edgedetection),
-      BGFX_EMBEDDED_SHADER(vs_pp_smaa_blendweightcalculation),
-      BGFX_EMBEDDED_SHADER(fs_pp_smaa_blendweightcalculation),
-      BGFX_EMBEDDED_SHADER(vs_pp_smaa_neighborhoodblending),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_nfaa), BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa_edge), BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa), BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa1),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa2), BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa3), BGFX_EMBEDDED_SHADER_ST(fs_pp_faaa), BGFX_EMBEDDED_SHADER_ST(fs_pp_cas),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_bilateral_cas), BGFX_EMBEDDED_SHADER(vs_pp_smaa_edgedetection), BGFX_EMBEDDED_SHADER(fs_pp_smaa_edgedetection),
+      BGFX_EMBEDDED_SHADER(vs_pp_smaa_blendweightcalculation), BGFX_EMBEDDED_SHADER(fs_pp_smaa_blendweightcalculation), BGFX_EMBEDDED_SHADER(vs_pp_smaa_neighborhoodblending),
       BGFX_EMBEDDED_SHADER(fs_pp_smaa_neighborhoodblending),
       // Blur shaders
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_7_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_7_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_9_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_9_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_11_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_11_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_13_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_13_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_15_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_15_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_19_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_19_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_23_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_23_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_27_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_27_v),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_39_h),
-      BGFX_EMBEDDED_SHADER_ST(fs_blur_39_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_7_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_7_v), BGFX_EMBEDDED_SHADER_ST(fs_blur_9_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_9_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_11_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_11_v), BGFX_EMBEDDED_SHADER_ST(fs_blur_13_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_13_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_15_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_15_v), BGFX_EMBEDDED_SHADER_ST(fs_blur_19_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_19_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_23_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_23_v), BGFX_EMBEDDED_SHADER_ST(fs_blur_27_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_27_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_39_h), BGFX_EMBEDDED_SHADER_ST(fs_blur_39_v),
       //
       BGFX_EMBEDDED_SHADER_END()
    };
-   #undef BGFX_EMBEDDED_SHADER_ST
-   #define STEREO(n) m_isStereo ? n##_st.name : #n
+#undef BGFX_EMBEDDED_SHADER_ST
+#define STEREO(n) m_isStereo ? n##_st.name : #n
    switch (m_shaderId)
    {
    case UI_SHADER:
@@ -1637,6 +1559,7 @@ void Shader::Load()
       loadProgram(embeddedShaders, ShaderTechnique::SSReflection, STEREO(vs_postprocess), STEREO(fs_pp_ssr));
       loadProgram(embeddedShaders, ShaderTechnique::irradiance, STEREO(vs_postprocess), STEREO(fs_pp_irradiance));
       loadProgram(embeddedShaders, ShaderTechnique::fb_resolve_depth_msaa, STEREO(vs_postprocess), STEREO(fs_pp_msaa_depth));
+      loadProgram(embeddedShaders, ShaderTechnique::fb_copy_depth, STEREO(vs_postprocess), STEREO(fs_pp_copy_depth));
 
       // Postprocessed motion blur
       loadProgram(embeddedShaders, ShaderTechnique::fb_motionblur, STEREO(vs_postprocess), STEREO(fs_pp_motionblur));

@@ -3406,6 +3406,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_copy.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_copy_depth.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa.sc">
       <Filter>shaders\bgfx</Filter>
     </None>

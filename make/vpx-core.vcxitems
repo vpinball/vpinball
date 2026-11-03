@@ -1346,6 +1346,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_copy.sc">
       <FileType>Document</FileType>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_copy_depth.sc">
+      <FileType>Document</FileType>
+    </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa.sc">
       <FileType>Document</FileType>
     </None>
