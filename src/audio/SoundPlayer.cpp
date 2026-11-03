@@ -309,6 +309,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
             config.flags = MA_SOUND_FLAG_NO_SPATIALIZATION;
             if (ma_sound_init_ex(engine, &config, m_sound.get()))
             {
+               ma_decoder_uninit(m_decoder.get()); // Closes the file
                m_decoder = nullptr;
                m_sound = nullptr;
                return;
@@ -407,6 +408,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
 
          if (ma_sound_init_ex(engine, &config, m_sound.get()))
          {
+            ma_decoder_uninit(m_decoder.get());
             m_decoder = nullptr;
             m_sound = nullptr;
             return;
