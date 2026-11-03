@@ -2432,6 +2432,7 @@ void RenderDevice::SubmitAndFlipFrame(bool present)
       m_pendingTextureUploads.insert(m_pendingTextureUploads.end(), pendingUploads.begin(), pendingUploads.end());
    }
    const uint32_t frameIdx = bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
+   m_texMan.OnFrameStats(bgfx::getStats());
    if (present)
       m_lastPresentFrameIdx = frameIdx;
    ResetActiveView();

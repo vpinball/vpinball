@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <deque>
 #include <functional>
 #include <mutex>
@@ -34,6 +35,11 @@ public:
 
    vector<ITexManCacheable*> GetLoadedTextures() const;
    bool IsLinearRGB(ITexManCacheable* memtex) const;
+
+#if defined(ENABLE_BGFX)
+   // Called by the render thread after each bgfx::frame: bgfx::getStats may only be called from the API thread, while textures are loaded from the main thread
+   void OnFrameStats(const bgfx::Stats* stats);
+#endif
 
    // Notification sink, wired by the owner (Player routes it to LiveUI::PushNotification):
    // (message, lengthMs, reuseId) -> notification id
@@ -81,7 +87,7 @@ private:
    size_t EstimateGpuBytes(const BaseTexture* tex) const;
    std::shared_ptr<Sampler> CreateSampler(MapEntry& entry, SamplerVariant variant, bool force_linear_rgb, std::shared_ptr<const BaseTexture> bitmap);
 
-   void RefreshBudget(); // Samples bgfx::getStats(), at most once per frame
+   void RefreshBudget(); // Samples the stats published by OnFrameStats, at most once per frame
    int64_t BudgetCap() const { return (m_gpuMemBudget * kBudgetCapPct) / 100; }
    int64_t ProjectedUse(int64_t added) const; // Best effort estimate of the usage once deferred frees have reached the driver
    bool MakeRoom(size_t needed); // Evicts LRU samplers until 'needed' fits the budget cap
@@ -98,6 +104,10 @@ private:
    int64_t m_otherBytes = 0; // gpuMemUsed share neither owned by this manager nor pending free (render targets, buffers, staging, ...)
    int64_t m_managedBytes = 0; // Estimated bytes held by the samplers this manager uploaded
    uint32_t m_statsFrame = 0; // Frame index of the last stats sample, also used as the LRU clock
+   // Last bgfx::Stats values published by OnFrameStats (each consistent on its own, possibly from 2 successive frames)
+   std::atomic<uint32_t> m_statsGpuFrameNum { 0 };
+   std::atomic<int64_t> m_statsGpuMemMax { -1 };
+   std::atomic<int64_t> m_statsGpuMemUsed { -1 };
    std::deque<std::pair<uint32_t, int64_t>> m_pendingFree; // Evicted bytes not yet freed by the driver (frame, bytes)
    unsigned int m_pressureNotifId = 0;
    unsigned int m_downsizeNotifId = 0;

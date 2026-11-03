@@ -186,14 +186,24 @@ size_t TextureManager::EstimateGpuBytes(const BaseTexture* tex) const
    return (texelBytes * tex->width() * tex->height() * 4) / 3; // Base level plus ~1/3 for the mip chain
 }
 
+void TextureManager::OnFrameStats(const bgfx::Stats* stats)
+{
+   if (stats == nullptr)
+      return;
+   // Memory first: a reader seeing the new frame number gets memory figures of that frame or a later one
+   m_statsGpuMemMax.store(stats->gpuMemoryMax, std::memory_order_relaxed);
+   m_statsGpuMemUsed.store(stats->gpuMemoryUsed, std::memory_order_relaxed);
+   m_statsGpuFrameNum.store(stats->gpuFrameNum, std::memory_order_release);
+}
+
 void TextureManager::RefreshBudget()
 {
-   const bgfx::Stats* stats = bgfx::getStats();
-   if (stats == nullptr || stats->gpuFrameNum == m_statsFrame)
+   const uint32_t gpuFrameNum = m_statsGpuFrameNum.load(std::memory_order_acquire);
+   if (gpuFrameNum == m_statsFrame)
       return;
-   m_statsFrame = stats->gpuFrameNum;
-   m_gpuMemBudget = stats->gpuMemoryMax;
-   m_gpuMemUsed = stats->gpuMemoryUsed;
+   m_statsFrame = gpuFrameNum;
+   m_gpuMemBudget = m_statsGpuMemMax.load(std::memory_order_relaxed);
+   m_gpuMemUsed = m_statsGpuMemUsed.load(std::memory_order_relaxed);
    // Destroyed samplers take a few frames before their memory is actually freed by the driver
    while (!m_pendingFree.empty() && m_statsFrame - m_pendingFree.front().first >= kFreeLatencyFrames)
       m_pendingFree.pop_front();
