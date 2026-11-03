@@ -184,6 +184,8 @@ private:
    PinUndo m_undo;
    IEditable *m_lastUndoPart = nullptr;
    unsigned int m_lastUndoId = 0;
+   bool m_gizmoDragActive = false; // A gizmo drag recorded an undo step and is still in progress
+   vector<std::shared_ptr<EditorUIPart>> m_gizmoDragSelection; // Selection the drag was started on (a changed selection must not follow it)
 
    // Add/Remove parts
    void DeleteSelection();
