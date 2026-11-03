@@ -939,12 +939,11 @@ void EditorUI::RenderUI()
             vec3 camTarget = pos - dir * m_camDistance;
             if (io.KeyShift || m_camMode == ViewMode::DesktopBackdrop || m_orbitLock)
             {
-               if (!m_perspectiveCam || m_camMode == ViewMode::DesktopBackdrop)
-               {
-                  const float viewScale = 2.f * m_camDistance / io.DisplaySize.y;
-                  drag.x *= viewScale;
-                  drag.y *= viewScale;
-               }
+               // Pan so that the point under the cursor follows it (the view height at the target depends on the projection;
+               // in perspective the raw pixel drag used to be applied as VPU, ignoring the zoom)
+               const float halfH = m_perspectiveCam && m_camMode != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(editorCamFovY)) : m_camDistance;
+               drag.x *= 2.f * halfH / io.DisplaySize.y;
+               drag.y *= 2.f * halfH / io.DisplaySize.y;
                camTarget = camTarget - right * drag.x + up * drag.y;
                m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
             }
