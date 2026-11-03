@@ -458,7 +458,8 @@ void Light::Render(const unsigned int renderMask)
 
    if (isUIPass)
    {
-      if (!m_d.m_visible)
+      // No lightmap mesh when RenderSetup bailed out (empty/degenerate shape): nothing to outline
+      if (!m_d.m_visible || m_lightmapMeshBuffer == nullptr)
          return;
 
       UpdateMeshBuffer();
