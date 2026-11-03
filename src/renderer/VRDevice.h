@@ -142,11 +142,27 @@ public:
 
    unsigned int GetEyeWidth() const { return m_eyeWidth; }
    unsigned int GetEyeHeight() const { return m_eyeHeight; }
-   
+
+   bool IsScalingToLockbar() const { return m_scaleToLockbar; }
+   void SetScaleToLockbar(bool scale)
+   {
+      m_scaleToLockbar = scale;
+      m_worldDirty = true;
+   }
    float GetLockbarWidth() const { return m_lockbarWidth; }
    void SetLockbarWidth(float width) { m_lockbarWidth = width; m_worldDirty = true; }
+   bool IsMatchingLockbarHeight() const { return m_matchLockbarHeight; }
+   void SetMatchLockbarHeight(bool match)
+   {
+      m_matchLockbarHeight = match;
+      m_worldDirty = true;
+   }
    float GetLockbarHeight() const { return m_lockbarHeight; }
    void SetLockbarHeight(float height) { m_lockbarHeight = height; m_worldDirty = true; }
+   float GetControllerCabYOffset() const { return m_controllerCabYOffset; }
+   void SetControllerCabYOffset(float offset) { m_controllerCabYOffset = offset; }
+   float GetControllerLockbarScale() const { return m_controllerLockbarScale; }
+   void SetControllerLockbarScale(float scale) { m_controllerLockbarScale = scale; }
    bool IsLockFeetToGround() const { return m_lockFeetToGround; }
    void SetLockFeetToGround(bool lock)
    {
@@ -197,8 +213,12 @@ private:
    unsigned int m_eyeHeight = 1020;
 
    float m_scale = 1.0f;
+   bool m_scaleToLockbar = true; // Scale virtual cabinet so that its lockbar matches the real world lockbar width
    float m_lockbarWidth = 57.0f; // Real world width of the lockbar in cm
+   bool m_matchLockbarHeight = true; // Position virtual cabinet so that its lockbar matches the real world lockbar height
    float m_lockbarHeight = 85.0f; // Real world height (from ground) of the lockbar in cm
+   float m_controllerCabYOffset = 0.0f; // Y offset applied when using controller view centering in cm
+   float m_controllerLockbarScale = 1.0f; // Lockbar size ratio applied when using controller view centering
    bool m_lockFeetToGround = true;
    float m_seatedTilt = 0.0f; // Cabinet tilt toward the player for seated/reclined play, in degrees
    float m_orientation = 0.0f;

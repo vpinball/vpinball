@@ -260,6 +260,10 @@ PropBool(PlayerVR, SpatialAudioPlayfield, "Playfield Spatial Audio"s,
 PropFloatDyn(PlayerVR, ControllerCabYOffset, "Cabinet Y Offset"s, "Y offset to apply when using controller view centering"s, -150.f, 50.f, 0.f);
 PropFloatDyn(PlayerVR, ControllerLockbarScale, "Lockbar size ratio"s, "Lockbar size ratio to apply when using controller view centering"s, 0.5f, 2.0f, 1.f);
 PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
+PropBool(PlayerVR, ScaleToLockbar, "Scale to Real Lockbar"s,
+   "Scale the virtual cabinet so that its lockbar matches the real world lockbar width. If disabled, the cabinet is rendered at its native size."s, true);
+PropBool(PlayerVR, MatchLockbarHeight, "Match Real Lockbar Height"s,
+   "Position the virtual cabinet so that its lockbar matches the real world lockbar height. If disabled, the cabinet stands at its native height."s, true);
 PropBool(PlayerVR, LockFeetToGround, "Lock Feet to Ground"s, "Lock cabinet feet to ground. This usually feels more natural (avoid floating cabinet) but may be deactivated for example for playing mini flipper seated at a desk."s, true);
 
 // Physics override profiles
