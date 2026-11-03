@@ -118,6 +118,7 @@ void PartLibraryPanel::Render()
       for (const auto &part : m_editor.m_multiSel)
          parts.push_back(part->GetEditable());
       VPXFileFeedback feedback;
+      m_editor.RestorePartsVisibility(); // Export the authored visibility, not the editor display state
       const HRESULT hr = m_editor.m_table->SavePartsToJSONPack(file, parts, feedback);
       if (SUCCEEDED(hr))
       {

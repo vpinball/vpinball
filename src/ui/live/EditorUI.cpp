@@ -531,6 +531,12 @@ void EditorUI::SetPlayfieldCamera()
 
 void EditorUI::Render3D()
 {
+   // While a table save is running on the file operation worker thread, the table parts must not be
+   // touched: the UI part renders write the editor visibility overrides into the parts' data (m_d),
+   // racing with the serialization and saving the display state instead of the authored visibility
+   // restored by RestorePartsVisibility when the save was started
+   if (IsSaveInProgress())
+      return;
    UpdateEditableList();
    LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
    for (const auto &uiPart : m_editables)
@@ -820,10 +826,11 @@ void EditorUI::RenderUI()
 
    m_renderer->SetShadeMode(m_shadeMode);
 
-   // Selection and physic colliders overlay
+   // Selection and physic colliders overlay (suspended while a save is running: the part renders
+   // would write into the parts' data being serialized on the worker thread, see Render3D)
    {
       LiveRenderContext ctx(m_player, overlayDrawList, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
-      if (!m_multiSel.empty())
+      if (!m_multiSel.empty() && !IsSaveInProgress())
       {
          if (m_renderer->m_renderDevice->GetCurrentRenderTarget()->HasDepth())
             m_renderer->m_renderDevice->Clear(clearType::ZBUFFER, 0);
