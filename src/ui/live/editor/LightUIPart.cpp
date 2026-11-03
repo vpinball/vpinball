@@ -218,6 +218,7 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
                light->m_d.m_state = 2.f;
             else if (light->m_d.m_state == 2.f)
                light->m_d.m_state = 1.f;
+            light->setInPlayState(light->m_d.m_state == 2.f ? (float)LightStateBlinking : light->m_d.m_state); // Apply live, like State
          });
       if (const Light* light = props.GetEditedPart<Light>(m_part); light->m_d.m_state == 2.f)
       {
