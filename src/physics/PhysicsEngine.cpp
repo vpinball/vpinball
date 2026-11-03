@@ -406,6 +406,13 @@ void PhysicsEngine::StartPhysics()
 #endif
 }
 
+void PhysicsEngine::SkipTime(uint64_t durationUs)
+{
+   m_startTime_usec += durationUs;
+   m_nextPhysicsFrameTime += durationUs;
+   m_curPhysicsFrameTime += durationUs;
+}
+
 void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 {
    // Simulation can only run once it has been started (timestamps are set by StartPhysics)

@@ -43,6 +43,7 @@ public:
 
    void StartPhysics();
    void UpdatePhysics(uint64_t targetTimeUs);
+   void SkipTime(uint64_t durationUs); // Shifts the whole game forward in time, as after a pause: the duration is not simulated
 
    bool IsBallCollisionHandlingSwapped() const { return m_swap_ball_collision_handling; }
    bool RecordContact(const CollisionEvent& newColl);
