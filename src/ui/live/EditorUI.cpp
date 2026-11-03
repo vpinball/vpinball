@@ -441,6 +441,11 @@ void EditorUI::FinishFileOp()
       break;
 
    case AsyncFileOp::Type::Save:
+      // Saves must always report their result: a failed save was previously silent (and looked like a successful one)
+      if (FAILED(result))
+         m_liveUI.PushNotification("SAVE FAILED: '" + op->displayPath + "'", 15000);
+      else
+         m_liveUI.PushNotification("Saved '" + op->displayPath + "'", 5000);
       if (SUCCEEDED(result))
       {
          m_undo.SetCleanPoint(SaveDirtyState::Clean);
