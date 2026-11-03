@@ -83,16 +83,46 @@ void VRSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet Layout"s));
 
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_vrDevice->GetLockbarWidth(); }, //
-      [this](float, float v) { m_player->m_vrDevice->SetLockbarWidth(v); }));
+      Settings::m_propPlayerVR_ScaleToLockbar, //
+      [this]() { return m_player->m_vrDevice->IsScalingToLockbar(); }, //
+      [this](bool v)
+      {
+         m_player->m_vrDevice->SetScaleToLockbar(v);
+         RequestRebuild();
+      }));
 
-#ifdef ENABLE_BGFX
+   if (m_player->m_vrDevice->IsScalingToLockbar())
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
+         [this]() { return m_player->m_vrDevice->GetLockbarWidth(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetLockbarWidth(v); }));
+
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_LockbarHeight, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_vrDevice->GetLockbarHeight(); }, //
-      [this](float, float v) { m_player->m_vrDevice->SetLockbarHeight(v); }));
-#endif
+      Settings::m_propPlayerVR_MatchLockbarHeight, //
+      [this]() { return m_player->m_vrDevice->IsMatchingLockbarHeight(); }, //
+      [this](bool v)
+      {
+         m_player->m_vrDevice->SetMatchLockbarHeight(v);
+         RequestRebuild();
+      }));
+
+   if (m_player->m_vrDevice->IsMatchingLockbarHeight())
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayer_LockbarHeight, 1.f, "%4.1f cm"s, //
+         [this]() { return m_player->m_vrDevice->GetLockbarHeight(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetLockbarHeight(v); }));
+
+   // Locking feet to ground only makes sense when the cabinet is fit to the real world setup
+   if (m_player->m_vrDevice->IsScalingToLockbar() || m_player->m_vrDevice->IsMatchingLockbarHeight())
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayerVR_LockFeetToGround, //
+         [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
+         [this](bool v)
+         {
+            if (v && m_player->m_vrDevice->GetSeatedTilt() != 0.f)
+               m_notifId = m_player->m_liveUI->PushNotification("Seated play tilt was reset to 0 when enabling Lock Feet to Ground"s, 5000, m_notifId);
+            m_player->m_vrDevice->SetLockFeetToGround(v);
+         }));
 
    auto& playerXItem = AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
@@ -162,16 +192,6 @@ void VRSettingsPage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous Settings"s));
 
-   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_LockFeetToGround, //
-      [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
-      [this](bool v)
-      {
-         if (v && m_player->m_vrDevice->GetSeatedTilt() != 0.f)
-            m_notifId = m_player->m_liveUI->PushNotification("Seated play tilt was reset to 0 when enabling Lock Feet to Ground"s, 5000, m_notifId);
-         m_player->m_vrDevice->SetLockFeetToGround(v);
-      }));
-
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_AddBackglass, //
       [this]() { return m_player->m_implicitVRBackglass->m_d.m_isVisible; }, //
@@ -205,17 +225,15 @@ void VRSettingsPage::BuildPage()
 #ifdef ENABLE_XR
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet positioning using controllers"s));
 
-   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_ControllerCabYOffset, 1.f, "%4.1f cm"s, //
-      [this]() { return g_settingsService.GetActiveSettings().GetPlayerVR_ControllerCabYOffset(); }, //
-      [this](float, float v) { g_settingsService.GetActiveSettings().SetPlayerVR_ControllerCabYOffset(v, false); }));
+      [this]() { return m_player->m_vrDevice->GetControllerCabYOffset(); }, //
+      [this](float, float v) { m_player->m_vrDevice->SetControllerCabYOffset(v); }));
 
-   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_ControllerLockbarScale, 100.f, "%4.1f %%"s, //
-      [this]() { return g_settingsService.GetActiveSettings().GetPlayerVR_ControllerLockbarScale(); }, //
-      [this](float, float v) { g_settingsService.GetActiveSettings().SetPlayerVR_ControllerLockbarScale(v, false); }));
+      [this]() { return m_player->m_vrDevice->GetControllerLockbarScale(); }, //
+      [this](float, float v) { m_player->m_vrDevice->SetControllerLockbarScale(v); }));
 
    const auto& action = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetVRControllerViewCenteringActionId()];
    addGlobalOnlyItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
