@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "InputManager.h"
+#include "PlungerHandler.h" // PlungerSensor is constructed below: it must be a complete type wherever this header is included
 #include "physics/cabinet/CabinetNudgeSensor.h"
 #include "physics/cabinet/GamepadNudge.h"
 
