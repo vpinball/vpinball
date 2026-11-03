@@ -88,7 +88,8 @@ bool WMPAudioPlayer::LoadFile(const std::filesystem::path& filepath)
       return false;
    }
    m_soundInited = true;
-   wmp_ma_sound_set_volume(&m_sound, m_volume.load());
+   // Played at unity gain: m_volume is applied once, by VPX, from the volume sent with each chunk (same loudness curve as other sounds)
+   // so no wmp_ma_sound_set_volume necessary
    wmp_ma_sound_set_end_callback(&m_sound, SoundEndCallback, this);
 
    m_loadedFile = filepathUTF8;
@@ -214,8 +215,6 @@ void WMPAudioPlayer::SetPosition(double positionInSeconds)
 void WMPAudioPlayer::SetVolume(float volume)
 {
    m_volume = volume;
-   if (m_soundInited)
-      wmp_ma_sound_set_volume(&m_sound, m_volume.load());
    LOGI(std::format("Volume set to: {:.2f}", m_volume.load()));
 }
 
@@ -228,8 +227,6 @@ void WMPAudioPlayer::UpdateVolume(int volume, bool mute)
       audioVolume = 0.0f;
 
    m_volume = audioVolume;
-   if (m_soundInited)
-      wmp_ma_sound_set_volume(&m_sound, m_volume.load());
    LOGI(std::format("Volume updated: {}{} -> {:.2f}", clampedVolume, mute ? " (muted)" : "", m_volume.load()));
 }
 

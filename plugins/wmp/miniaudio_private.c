@@ -114,11 +114,6 @@ ma_result wmp_ma_sound_stop(ma_sound* pSound)
    return ma_sound_stop(pSound);
 }
 
-void wmp_ma_sound_set_volume(ma_sound* pSound, float volume)
-{
-   ma_sound_set_volume(pSound, volume);
-}
-
 ma_result wmp_ma_sound_seek_to_pcm_frame(ma_sound* pSound, ma_uint64 frameIndex)
 {
    return ma_sound_seek_to_pcm_frame(pSound, frameIndex);

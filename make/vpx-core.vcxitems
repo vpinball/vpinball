@@ -54,6 +54,7 @@
     <ItemGroup>
       <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.sc" />
       <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.sh" />
+      <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.fs" />
       <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\*.hlsl" />
       <_VpxShaderInputs Include="$(SolutionDir)..\..\src\shaders\bgfx\shaders.cmake" />
       <_VpxShaderInputs Include="$(VpxShaderc)" />

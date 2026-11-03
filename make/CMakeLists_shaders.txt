@@ -76,6 +76,7 @@ endforeach()
 file(GLOB _vpx_shader_deps CONFIGURE_DEPENDS
    "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/*.sc"
    "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/*.sh"
+   "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/*.fs"
    "${CMAKE_SOURCE_DIR}/src/shaders/bgfx/*.hlsl")
 
 foreach(_g IN LISTS _vpx_shader_groups)
