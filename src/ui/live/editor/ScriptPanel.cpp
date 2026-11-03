@@ -11,6 +11,7 @@
 
 #include <SDL3/SDL_error.h>
 
+#include "imgui/imgui_internal.h"
 #include "imgui/imgui_stdlib.h"
 
 #include <fstream>
@@ -227,6 +228,14 @@ void ScriptPanel::Render()
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
          ImGui::SetTooltip(canOpenExternal ? "Open the script in the external editor" : "Configure an external editor command to open the script in it");
 
+      // Esc must not revert the typing: ImGui restores the text the field had when it was activated (the edits are applied on
+      // every keystroke), so the field is deactivated before it sees the key. The text is kept, the focus leaves the editor,
+      // and the Esc is not an editor Esc.
+      if (ImGui::GetActiveID() == ImGui::GetID("##script") && ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+      {
+         ImGui::ClearActiveID();
+         m_editor.m_suppressNextEscape = true;
+      }
       // Basic embedded text editor, applied to the table script on every edit
       ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
       if (readOnly)

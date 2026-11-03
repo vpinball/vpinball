@@ -186,6 +186,7 @@ private:
    unsigned int m_lastUndoId = 0;
    bool m_gizmoDragActive = false; // A gizmo drag recorded an undo step and is still in progress
    vector<std::shared_ptr<EditorUIPart>> m_gizmoDragSelection; // Selection the drag was started on (a changed selection must not follow it)
+   bool m_suppressNextEscape = false; // The Esc release of an Esc that deactivated an edited field (e.g. the script editor) is not an editor Esc
 
    // Add/Remove parts
    void DeleteSelection();
