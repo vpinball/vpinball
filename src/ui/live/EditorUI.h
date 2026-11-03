@@ -253,6 +253,9 @@ private:
    void StartFileOp(std::unique_ptr<AsyncFileOp> op);
    void FinishFileOp();
    void RenderFileOpModal();
+   // Whether a save of the edited table is running on the file operation worker thread: while it is, the
+   // UI parts must not write into the parts' data which is being serialized (see EditorUI::Render3D)
+   bool IsSaveInProgress() const { return m_fileOp != nullptr && m_fileOp->type == AsyncFileOp::Type::Save; }
 
    // Part library (import/export of parts through partial VPZ packs, handled by the PartLibraryPanel dialog)
    void OpenPartLibrary() { m_partLibrary.Show(); }
