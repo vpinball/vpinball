@@ -64,6 +64,12 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Light* light) { return light->m_d.m_intensity; }, //
          [](Light* light, float v)
          {
+            // Fades are stored as speeds (intensity per ms): rescale them so the fade durations stay the same
+            if (light->m_d.m_intensity > 0.f && v > 0.f)
+            {
+               light->m_d.m_fadeSpeedUp *= v / light->m_d.m_intensity;
+               light->m_d.m_fadeSpeedDown *= v / light->m_d.m_intensity;
+            }
             light->m_d.m_intensity = v;
             light->m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_d.m_state;
          },
