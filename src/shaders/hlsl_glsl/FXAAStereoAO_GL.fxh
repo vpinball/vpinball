@@ -232,7 +232,7 @@ void main()
 	// depth discontinuity counts as full occlusion.
 	const float depth_threshold_normal = 40.0;
 	const float falloff = 0.5;
-	const float area = 200.0; // fade out of occluders deeper than ~2 balls (must cover real occluder gaps in VPU)
+	const float area = 200.0; // fade out of occluders deeper than ~4 ball diameters (must cover real occluder gaps in VPU)
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples_float);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u, eye));
 	//const float3 normal = texNoLod(tex_normals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
@@ -242,7 +242,7 @@ void main()
 	// footprint can not be reduced to a single projection matrix term.
 	const float3 vp0 = depthToViewPos(u, depth0, eye);
 	const float2 radius_uv = radius * w_h_height.xy / float2(length(depthToViewPos(u + float2(w_h_height.x, 0.), depth0, eye) - vp0),
-	                                                       length(depthToViewPos(u + float2(0., w_h_height.y), depth0, eye) - vp0));
+	                                                         length(depthToViewPos(u + float2(0., w_h_height.y), depth0, eye) - vp0));
 	const float z0 = vp0.z;
 
 	float occlusion = 0.0;

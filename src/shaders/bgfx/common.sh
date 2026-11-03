@@ -86,23 +86,17 @@ vec3 mul_w0(const vec3 v, const mat4x3 m)
 // direction (e.g. the view vector) projects the edges onto the plane perpendicular
 // to the view ray, skewing the frame at grazing angles in a way the normalization
 // below can not undo.
-// The derivatives of -pos keep the sign convention of the DX9 shader (which
-// differentiated normalize(-worldPos)): uv is used as is since file textures are
-// already v-flipped at upload time. On OpenGL targets the window y axis points up,
-// jointly negating the y derivatives of position and uv vs the D3D convention:
-// negating the uv derivatives too cancels the flip, so every backend gets the same frame.
+// The frame is the DX9 one (normal maps authored for VPX 10.8): T and B along increasing
+// u and v. pos and uv are differentiated as is on every target: on OpenGL, the window y
+// axis flips the y derivatives of both, which cancels out (all backends are checked by
+// the 'Normal mapping render' test).
 mat3 TBN_trafo(const vec3 N, const vec3 pos, const vec2 uv)
 {
    // derivatives: edge vectors for tri-pos and tri-uv
-   const vec3 dpx = dFdx(-pos);
-   const vec3 dpy = dFdy(-pos);
-   #if TEX_V_IS_UP
-      const vec2 duvx = dFdx(-uv);
-      const vec2 duvy = dFdy(-uv);
-   #else
-      const vec2 duvx = dFdx(uv);
-      const vec2 duvy = dFdy(uv);
-   #endif
+   const vec3 dpx = dFdx(pos);
+   const vec3 dpy = dFdy(pos);
+   const vec2 duvx = dFdx(uv);
+   const vec2 duvy = dFdy(uv);
 
    // solve linear system
    const vec3 dp2perp = cross(N, dpy);

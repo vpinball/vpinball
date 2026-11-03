@@ -17,12 +17,12 @@
 // - differentiating the raw view space position: the derivatives of a normalized
 //   direction (view vector) are the true edges projected onto the plane
 //   perpendicular to the view ray, skewing the frame at grazing angles,
-// - the operand sign of the DX9 shader (-worldPos), preserving the authored
-//   normal map convention,
-// - on OpenGL only, negated uv derivatives: its window-y axis points up and
-//   jointly flips position & uv y derivatives vs the D3D convention, so negating
-//   both uv axes cancels the flip (a single-axis flip like vec2(uv.x,-uv.y)
-//   mirrors the frame instead — that is the bug this guards),
+// - the frame of the DX9 shader (normal maps authored for VPX 10.8, T and B along
+//   increasing u and v): BGFX and legacy OpenGL differentiate pos and uv as is, with
+//   no per backend branch (on OpenGL, the window y axis flips the y derivatives of
+//   both, which cancels out), DX9 differentiates -worldPos for its own convention.
+//   A single sign flip (-pos, -uv, or one uv axis) inverts or mirrors the frame; the
+//   frame itself is checked by the 'Normal mapping render' test,
 // - a degenerate-uv fallback: a null frame must not normalize to NaN.
 namespace
 {
@@ -102,15 +102,19 @@ TEST_CASE("TBN shader contract")
       CHECK(defFile == "common.sh");
    }
 
-   SUBCASE("BGFX implementation differentiates -position and the authored uv convention")
+   SUBCASE("BGFX implementation differentiates position and uv without sign flips")
    {
       const std::string* src = getSrc("common.sh");
       REQUIRE(src != nullptr);
       const std::string body = FunctionBody(*src, "mat3 TBN_trafo");
       REQUIRE(!body.empty());
-      CHECK(body.find("dFdx(-pos)") != std::string::npos); // raw position toward camera (DX9 sign convention)
-      CHECK(body.find("dFdy(-pos)") != std::string::npos);
-      CHECK(body.find("dFdx(-uv)") != std::string::npos); // joint uv negation for GL window-y-up
+      CHECK(body.find("dFdx(pos)") != std::string::npos); // same frame as DX9 on every backend
+      CHECK(body.find("dFdy(pos)") != std::string::npos);
+      CHECK(body.find("dFdx(uv)") != std::string::npos);
+      CHECK(body.find("dFdy(uv)") != std::string::npos);
+      CHECK(body.find("TEX_V_IS_UP") == std::string::npos); // no per backend sign: GL window-y flip cancels out
+      CHECK(body.find("(-pos") == std::string::npos); // a lone sign flip inverts the frame
+      CHECK(body.find("(-uv") == std::string::npos);
       CHECK(body.find("mtxFromCols") != std::string::npos); // T,B,N as columns on every backend
       CHECK(body.find("uv.x, -uv.y") == std::string::npos); // a single-axis flip mirrors the frame
       CHECK(body.find("invmax < 1e-12") != std::string::npos); // degenerate-uv NaN guard
@@ -122,7 +126,7 @@ TEST_CASE("TBN shader contract")
       REQUIRE(src != nullptr);
       const std::string body = FunctionBody(*src, "mat3 TBN_trafo");
       REQUIRE(!body.empty());
-      CHECK(body.find("dFdx(pos)") != std::string::npos); // glfx's frame is already GL-side; the raw position only removes the skew
+      CHECK(body.find("dFdx(pos)") != std::string::npos); // same derivatives as BGFX
       CHECK(body.find("dFdy(pos)") != std::string::npos);
       CheckCallSites("BasicShader.glfx", *src, "TBN_trafo(N,");
    }

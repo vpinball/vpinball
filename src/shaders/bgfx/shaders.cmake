@@ -57,6 +57,9 @@ set(SHADER_DEPS
    "${SRC_DIR}/SMAA.hlsl"
    "${SHADERC}"
    "${CMAKE_CURRENT_LIST_FILE}")
+# Shader bodies included by .sc files (fs_display.sc includes the CRT shaders)
+file(GLOB _shader_includes "${SRC_DIR}/*.fs")
+list(APPEND SHADER_DEPS ${_shader_includes})
 
 set(_tmp "")
 
