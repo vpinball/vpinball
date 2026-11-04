@@ -189,11 +189,16 @@ float3 decompress_normal(const float2 c)
 }
 #endif
 
-float3 depthToViewPos(const float2 u, const float d, const float eye) // view space position from depth buffer value
+float4 depthToViewPosH(const float2 u, const float d, const float eye) // homogeneous view space position from depth buffer value (before the divide by w)
 {
    // OpenGL and OpenGL ES use -1..1 NDC mapped to 0..1 depth buffer and bottom-up texture coordinates
    const float4 clip = float4(u.x * 2.0 - 1.0, u.y * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
-   const float4 p = matProjInv[int(eye)] * clip;
+   return matProjInv[int(eye)] * clip;
+}
+
+float3 depthToViewPos(const float2 u, const float d, const float eye) // view space position from depth buffer value
+{
+   const float4 p = depthToViewPosH(u, d, eye);
    return p.xyz / p.w;
 }
 
@@ -240,9 +245,17 @@ void main()
 	// ratio, evaluated by unprojecting the neighboring texels. This supports the rotated,
 	// scaled and sheared projections of the cabinet/legacy view setups, for which the
 	// footprint can not be reduced to a single projection matrix term.
-	const float3 vp0 = depthToViewPos(u, depth0, eye);
-	const float2 radius_uv = radius * w_h_height.xy / float2(length(depthToViewPos(u + float2(w_h_height.x, 0.), depth0, eye) - vp0),
-	                                                         length(depthToViewPos(u + float2(0., w_h_height.y), depth0, eye) - vp0));
+	// Computed incrementally: the unprojection is linear before the divide by w and a one texel shift only changes one clip
+	// coordinate (by 2 w_h_height.x or 2 w_h_height.y, as clip = 2 u - 1 here), so a neighbor is p0 plus that shift times the
+	// matching matrix column (1 matrix product instead of 3), so same result as:
+	//   const float3 vp0 = depthToViewPos(u, depth0, eye);
+	//   const float2 radius_uv = radius * w_h_height.xy / float2(length(depthToViewPos(u + float2(w_h_height.x, 0.), depth0, eye) - vp0),
+	//                                                            length(depthToViewPos(u + float2(0., w_h_height.y), depth0, eye) - vp0));
+	const float4 p0 = depthToViewPosH(u, depth0, eye);
+	const float4 px = p0 + (2.0 * w_h_height.x) * matProjInv[int(eye)][0]; // = depthToViewPosH(u + float2(w_h_height.x, 0.), depth0, eye)
+	const float4 py = p0 + (2.0 * w_h_height.y) * matProjInv[int(eye)][1]; // = depthToViewPosH(u + float2(0., w_h_height.y), depth0, eye)
+	const float3 vp0 = p0.xyz / p0.w;
+	const float2 radius_uv = radius * w_h_height.xy / float2(length(px.xyz / px.w - vp0), length(py.xyz / py.w - vp0));
 	const float z0 = vp0.z;
 
 	float occlusion = 0.0;

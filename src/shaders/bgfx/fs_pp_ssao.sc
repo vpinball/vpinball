@@ -32,9 +32,9 @@ SAMPLER2D      (tex_ao_dither,    5); // AO Dither
 #endif
 
 #ifdef STEREO
-vec3 depthToViewPos(const vec2 u, const float d, const float v_eye) // view space position from depth buffer value
+vec4 depthToViewPosH(const vec2 u, const float d, const float v_eye) // homogeneous view space position from depth buffer value (before the divide by w)
 #else
-vec3 depthToViewPos(const vec2 u, const float d)
+vec4 depthToViewPosH(const vec2 u, const float d)
 #endif
 {
    #if TEX_V_IS_UP
@@ -42,7 +42,20 @@ vec3 depthToViewPos(const vec2 u, const float d)
    #else
       const vec4 clip = vec4(u.x * 2.0 - 1.0, 1.0 - u.y * 2.0, d, 1.0);
    #endif
-   const vec4 p = mul(mProjInv, clip);
+   return mul(mProjInv, clip);
+}
+
+#ifdef STEREO
+vec3 depthToViewPos(const vec2 u, const float d, const float v_eye) // view space position from depth buffer value
+#else
+vec3 depthToViewPos(const vec2 u, const float d)
+#endif
+{
+   #ifdef STEREO
+      const vec4 p = depthToViewPosH(u, d, v_eye);
+   #else
+      const vec4 p = depthToViewPosH(u, d);
+   #endif
    return p.xyz / p.w;
 }
 
@@ -115,15 +128,26 @@ void main()
 	// ratio, evaluated by unprojecting the neighboring texels. This supports the rotated,
 	// scaled and sheared projections of the cabinet/legacy view setups, for which the
 	// footprint can not be reduced to a single projection matrix term.
+	// Computed incrementally: the unprojection is linear before the divide by w and a one texel shift only changes one clip
+	// coordinate, so a neighbor is p0 plus the unprojected clip shift (1 matrix product instead of 3, as the products with 3 zero
+	// components reduce to one scaled matrix row/column), so same result as:
+	//   const vec3 vp0 = depthToViewPos(u, depth0);
+	//   const vec2 radius_uv = radius * w_h_height.xy / vec2(length(depthToViewPos(u + vec2(w_h_height.x, 0.0), depth0) - vp0),
+	//                                                        length(depthToViewPos(u + vec2(0.0, w_h_height.y), depth0) - vp0));
 	#ifdef STEREO
-		const vec3 vp0 = depthToViewPos(u, depth0, v_eye);
-		const vec2 radius_uv = radius * w_h_height.xy / vec2(length(depthToViewPos(u + vec2(w_h_height.x, 0.0), depth0, v_eye) - vp0),
-		                                                     length(depthToViewPos(u + vec2(0.0, w_h_height.y), depth0, v_eye) - vp0));
+		const vec4 p0 = depthToViewPosH(u, depth0, v_eye);
 	#else
-		const vec3 vp0 = depthToViewPos(u, depth0);
-		const vec2 radius_uv = radius * w_h_height.xy / vec2(length(depthToViewPos(u + vec2(w_h_height.x, 0.0), depth0) - vp0),
-		                                                     length(depthToViewPos(u + vec2(0.0, w_h_height.y), depth0) - vp0));
+		const vec4 p0 = depthToViewPosH(u, depth0);
 	#endif
+	#if TEX_V_IS_UP
+		const float clip_dy =  2.0 * w_h_height.y; // clip y = 2 u.y - 1
+	#else
+		const float clip_dy = -2.0 * w_h_height.y; // clip y = 1 - 2 u.y
+	#endif
+	const vec4 px = p0 + mul(mProjInv, vec4(2.0 * w_h_height.x, 0.0, 0.0, 0.0)); // = depthToViewPosH(u + vec2(w_h_height.x, 0.0), depth0)
+	const vec4 py = p0 + mul(mProjInv, vec4(0.0, clip_dy, 0.0, 0.0));            // = depthToViewPosH(u + vec2(0.0, w_h_height.y), depth0)
+	const vec3 vp0 = p0.xyz / p0.w;
+	const vec2 radius_uv = radius * w_h_height.xy / vec2(length(px.xyz / px.w - vp0), length(py.xyz / py.w - vp0));
 	const float z0 = vp0.z;
 
 	float occlusion = 0.0;
