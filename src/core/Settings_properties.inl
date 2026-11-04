@@ -1441,6 +1441,11 @@ PropFloatUnbounded(Editor, ThrowBallMass, "ThrowBallMass"s, "Mass of thrown ball
 PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, "Size of thrown ball in 'throw ball' debugging mode"s, 50);
 PropBool(Editor, RenderSolid, "RenderSolid"s, "Render solid in viewport/editor"s, true);
 
+// Live Editor (ImGui based live table editor)
+PropString(LiveEditor, Layout1, "Layout1"s, "Editor area layout for layout slot 1 (JSON)"s, ""s);
+PropString(LiveEditor, Layout2, "Layout2"s, "Editor area layout for layout slot 2 (JSON)"s, ""s);
+PropInt(LiveEditor, LayoutActive, "LayoutActive"s, "Active editor area layout slot (1-based)"s, 1, 2, 1);
+
 // Code View settings
 PropInt(CVEdit, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 255, 255));
 PropInt(CVEdit, BackGroundSelectionColor, "BackGroundSelectionColor"s, ""s, 0x000000, 0xFFFFFF, RGB(192, 192, 192));

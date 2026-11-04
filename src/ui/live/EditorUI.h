@@ -419,6 +419,11 @@ private:
    bool ConsumedAreaEscape();
    bool ShouldRaiseAreaWindows() const;
    void Report(const string &message); // Posts a transient message (status / refusal feedback)
+   void SetAreaLayoutIndex(int index); // Selects the active area layout slot (saved to and loaded from the LiveEditor settings)
+   void LoadAreaLayoutSettings(); // Applies the persisted active layout (once, on first frame)
+   void SaveAreaLayoutSettings() const; // Writes the current layout into its settings slot
+   int m_activeLayoutIndex = 0; // Selected layout slot (Layout 1 / Layout 2)
+   bool m_layoutSettingsLoaded = false; // The persisted layout has been applied (lazy, on first frame)
    AreaLayout m_layout;
    std::vector<PendingAreaOp> m_pendingAreaOps;
    mutable std::vector<LeafRect> m_leafRects;

@@ -2984,8 +2984,53 @@ bool EditorUI::ApplyAreaOp(const PendingAreaOp &op)
    return false;
 }
 
+void EditorUI::LoadAreaLayoutSettings()
+{
+   m_layoutSettingsLoaded = true;
+   Settings &settings = g_settingsService.GetAppSettings();
+   m_activeLayoutIndex = clamp(settings.GetLiveEditor_LayoutActive() - 1, 0, 1);
+   const string json = m_activeLayoutIndex == 0 ? settings.GetLiveEditor_Layout1() : settings.GetLiveEditor_Layout2();
+   const nlohmann::json parsed = nlohmann::json::parse(json, nullptr, false);
+   if (parsed.is_discarded() || !m_layout.FromJson(parsed))
+      m_layout = AreaLayout(); // Missing or invalid layout: back to the default tree
+   m_maximizedLeafId = -1;
+   m_hoverLeaf = -1;
+   CancelAreaInteraction(false);
+   SetEditViewport(nullptr);
+}
+
+void EditorUI::SaveAreaLayoutSettings() const
+{
+   Settings &settings = g_settingsService.GetAppSettings();
+   const string json = m_layout.ToJson().dump();
+   if (m_activeLayoutIndex == 0)
+      settings.SetLiveEditor_Layout1(json, false);
+   else
+      settings.SetLiveEditor_Layout2(json, false);
+}
+
+void EditorUI::SetAreaLayoutIndex(const int index)
+{
+   if (index == m_activeLayoutIndex)
+      return;
+   SaveAreaLayoutSettings(); // The current layout leaves its slot
+   m_activeLayoutIndex = index;
+   g_settingsService.GetAppSettings().SetLiveEditor_LayoutActive(index + 1, false);
+   Settings &settings = g_settingsService.GetAppSettings();
+   const string json = index == 0 ? settings.GetLiveEditor_Layout1() : settings.GetLiveEditor_Layout2();
+   const nlohmann::json parsed = nlohmann::json::parse(json, nullptr, false);
+   if (parsed.is_discarded() || !m_layout.FromJson(parsed))
+      m_layout = AreaLayout();
+   m_maximizedLeafId = -1;
+   m_hoverLeaf = -1;
+   CancelAreaInteraction(false);
+   SetEditViewport(nullptr);
+}
+
 void EditorUI::UpdateAreaLayout()
 {
+   if (!m_layoutSettingsLoaded)
+      LoadAreaLayoutSettings();
    if (m_maximizedLeafId >= 0 && m_layout.Find(m_maximizedLeafId) == nullptr)
       m_maximizedLeafId = -1;
    // Queued layout changes are applied here, before any pane is drawn: no pane disappears between two frames.
@@ -2999,9 +3044,11 @@ void EditorUI::UpdateAreaLayout()
       {
          const bool applied = ApplyAreaOp(op);
          m_raiseAreaWindows |= applied;
-         if (!applied && op.kind == PendingAreaOp::Kind::Split)
+         if (applied)
+            SaveAreaLayoutSettings(); // The layout is persisted in its settings slot on every change
+         else if (op.kind == PendingAreaOp::Kind::Split)
             Report("Cannot split this area");
-         else if (!applied && op.kind == PendingAreaOp::Kind::Join)
+         else if (op.kind == PendingAreaOp::Kind::Join)
             Report("Cannot join these areas");
       }
    }
@@ -3342,7 +3389,10 @@ void EditorUI::RenderSplitters()
    if (m_splitDragNode >= 0)
    {
       if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+      {
          m_splitDragNode = -1;
+         SaveAreaLayoutSettings(); // The dragged sizes are persisted like any other layout change
+      }
       else
          for (const SplitterRect &s : m_splitterRects)
             if (s.nodeId == m_splitDragNode)
