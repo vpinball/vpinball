@@ -1,0 +1,39 @@
+// license:GPLv3+
+
+#pragma once
+
+#include "AreaLayout.h"
+
+namespace VPX::EditorUI
+{
+
+class EditorUI;
+
+// A view hosted by one leaf of the area layout tree (Outliner, Properties, 3D View, ...).
+// One instance per leaf: created by the editor when the leaf appears, destroyed when the
+// leaf is removed or retyped. The view draws the whole pane window at the leaf's rect,
+// including its header row which starts with the shared editor-type switcher button.
+class EditorAreaView
+{
+public:
+   explicit EditorAreaView(EditorUI& editor)
+      : m_editor(editor)
+   {
+   }
+   virtual ~EditorAreaView() = default;
+
+   virtual AreaType GetType() const = 0;
+
+   // Draws the pane window at the given rect (called once per frame for visible leaves).
+   // leafId is the stable id of the hosting leaf (for ImGui ids and layout edits).
+   virtual void RenderPane(const AreaRect& rect, int leafId) = 0;
+
+   // Called once when the leaf stops hosting this view (closed, retyped or unhosted by a
+   // layout switch): the place to release GPU resources before the instance is dropped
+   virtual void OnUnhosted() { }
+
+protected:
+   EditorUI& m_editor;
+};
+
+}

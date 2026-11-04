@@ -618,6 +618,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/TriggerUIPart.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.cpp">
+      <Filter>ui\live\editor</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -1664,6 +1667,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/DispReelUIPart.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorAreaView.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorChrome.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
@@ -1740,6 +1746,9 @@
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/TriggerUIPart.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h">

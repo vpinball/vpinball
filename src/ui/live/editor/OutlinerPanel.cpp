@@ -41,23 +41,26 @@ bool OutlinerPanel::MatchesFilter(const string &name) const
    return name_lcase.find(filter_lcase) != std::string::npos;
 }
 
-void OutlinerPanel::Render(float topBarHeight)
+void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
 {
    EditorUI &editor = m_editor;
    if (editor.m_table->IsLocked())
       return;
 
-   const ImGuiViewport *const viewport = ImGui::GetMainViewport();
-   const float pane_width = PaneWidth * editor.m_liveUI.GetDPI();
-   ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + topBarHeight));
-   ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - topBarHeight));
+   char name[32];
+   snprintf(name, sizeof(name), "##Pane%d", leafId);
+   ImGui::SetNextWindowPos(ImVec2(rect.x0, rect.y0));
+   ImGui::SetNextWindowSize(ImVec2(rect.Width(), rect.Height()));
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
       | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * editor.m_liveUI.GetDPI(), 4.0f * editor.m_liveUI.GetDPI()));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-   ImGui::Begin("OUTLINER", nullptr, window_flags);
+   ImGui::Begin(name, nullptr, window_flags);
+   ImGui::PushID(leafId);
+   editor.RenderAreaTypeButton(leafId);
    {
+      ImGui::SameLine();
       const bool popStyle = m_syncToSelection;
       if (popStyle)
          ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
@@ -379,6 +382,7 @@ void OutlinerPanel::Render(float topBarHeight)
    if (dropRequested)
       editor.MoveSelectionToPartGroup(dropGroup);
 
+   ImGui::PopID();
    ImGui::End();
    ImGui::PopStyleVar(3);
 }

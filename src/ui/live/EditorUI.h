@@ -7,6 +7,8 @@
 #include "imgui/imgui.h"
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
+#include "editor/AreaLayout.h"
+#include "editor/EditorAreaView.h"
 #include "editor/EditorUIPart.h"
 #include "editor/Selection.h"
 #include "editor/EditorChrome.h"
@@ -54,6 +56,7 @@ class EditorUI final
    friend class RendererInspectionModal;
    friend class PartLibraryPanel;
    friend class ScriptPanel;
+   friend class ViewportPane;
 
 public:
    EditorUI(LiveUI &liveUI);
@@ -86,8 +89,6 @@ private:
 
    // Sub components (UI panels & modals)
    EditorChrome m_chrome;
-   OutlinerPanel m_outliner;
-   PropertiesPanel m_properties;
    RendererInspectionModal m_inspectionModal;
    PartLibraryPanel m_partLibrary;
    ScriptPanel m_scriptPanel;
@@ -332,6 +333,113 @@ private:
    bool m_fitPlayfieldCamera = false;
    Matrix3D m_camView, m_camProj;
    float m_camDistance;
+
+   // Areas: Blender-style split tree (see editor/AreaLayout.h). Outliner | Viewport | Properties by default.
+   // Each leaf hosts one view instance (several leaves may share a type): panes are kept in m_areaViews keyed
+   // by the stable leaf id, created when a leaf appears and dropped when it is removed or retyped.
+   std::unique_ptr<EditorAreaView> CreateAreaView(AreaType type);
+   std::unordered_map<int, std::unique_ptr<EditorAreaView>> m_areaViews;
+   static const char *AreaTypeName(AreaType type);
+   static bool IsAreaTypeImplemented(AreaType type); // Types a leaf may take through the editor type switcher
+   // Layout changes (type switch, split, join, close, swap, maximize) are queued and applied by UpdateAreaLayout
+   // at the start of the frame: panels must not vanish mid frame (ImGui ids, in-flight drags)
+   struct PendingAreaOp
+   {
+      enum class Kind
+      {
+         SetType,
+         Split,
+         Join,
+         Close,
+         Swap,
+         Maximize,
+         Show
+      } kind
+         = Kind::SetType;
+      int leaf = -1;
+      int leaf2 = -1; // Join: leaf to consume
+      SplitAxis axis = SplitAxis::Vertical;
+      bool newOnSecondSide = true; // Split: new leaf on the right / bottom
+      float size = 0.f; // Split: logical size of the new leaf
+      AreaType type = AreaType::Outliner; // SetType / Show
+   };
+   void QueueAreaOp(const PendingAreaOp &op) { m_pendingAreaOps.push_back(op); }
+   void SetAreaEditor(int leafId, AreaType type); // Editor type of the area (leaf id) (queued)
+   void ToggleMaximizeArea(); // Ctrl+Space (queued): maximize the area under the mouse, or restore
+   ImVec2 GetViewportContentCenter() const; // Centre of the visible viewport leaf (paste position)
+   void UpdateAreaLayout(); // Start of the UI frame: applies the pending ops, then computes the area rects
+   void ComputeAreaRects() const; // Tree rect from the bar heights, then the cached leaf / splitter rects
+   void RenderAreas(); // Hosts the pane views of the visible leaves
+   void RenderAreaTypeButton(int leafId); // Header button of an area (inside its window), opening the type popup
+   void RenderAreaTypeButton(int leafId, const AreaRect &rect); // Floating variant (windowless leaves, e.g. the Viewport)
+   bool ApplyAreaOp(const PendingAreaOp &op);
+   void WidenArea(int leafId, AreaType type); // Switching the editor of a too narrow area widens it (once)
+   bool CanUseAreaTools() const;
+   const LeafRect *FindLeafRect(int leafId) const;
+   struct AreaSplitPlan
+   {
+      bool ok = false;
+      const char *reason = "";
+      SplitAxis axis = SplitAxis::Vertical;
+      float line = 0.f;
+      float size = 0.f;
+      AreaRect leaf; // Area to split
+      AreaRect newRect; // Where the new area would be (ok only)
+      AreaType newType = AreaType::Outliner; // Type of the new leaf (the split leaf's type)
+   };
+   bool PlanAreaSplit(int leafId, SplitAxis axis, bool newOnSecondSide, const ImVec2 &cursor, AreaSplitPlan &plan) const;
+   void DrawAreaSplitPreview(const AreaSplitPlan &plan) const;
+   void DrawAreaJoinPreview(int keepId, int consumeId, bool ok) const;
+   const char *AreaJoinRefusal(int keepId, int consumeId) const;
+   struct AreaDrag
+   {
+      bool active = false;
+      int leaf = -1; // Area the drag started in
+      int corner = 0;
+      ImVec2 start {};
+      bool decided = false;
+      bool axisChosen = false;
+      SplitAxis axis = SplitAxis::Vertical;
+   };
+   enum class AreaModalKind
+   {
+      None,
+      Split, // Edge menu split: click an area to split it at the mouse
+      Join // Edge menu 'Join Areas': the area not under the mouse is consumed, click confirms
+   };
+   void RenderSplitters(); // Divider strips, corner zones, edge menu and modal join / split mode
+   void RenderAreaCorners();
+   void RenderAreaEdgeMenu();
+   void RenderAreaModal();
+   void UpdateAreaDrag();
+   void CancelAreaInteraction(bool consumeEscape);
+   bool ConsumedAreaEscape();
+   bool ShouldRaiseAreaWindows() const;
+   void Report(const string &message); // Posts a transient message (status / refusal feedback)
+   AreaLayout m_layout;
+   std::vector<PendingAreaOp> m_pendingAreaOps;
+   mutable std::vector<LeafRect> m_leafRects;
+   mutable std::vector<SplitterRect> m_splitterRects;
+   mutable bool m_areaRectsValid = false;
+   mutable AreaRect m_viewportRect; // Rect of the first visible Viewport leaf (empty when none is shown)
+   mutable bool m_viewportVisible = true;
+   int m_maximizedLeafId = -1;
+   int m_hoverLeaf = -1; // Leaf under the mouse (the maximize toggle target)
+   AreaDrag m_areaDrag;
+   AreaModalKind m_areaModal = AreaModalKind::None;
+   int m_areaModalNode = -1;
+   SplitAxis m_areaModalAxis = SplitAxis::Vertical;
+   bool m_areaModalFocus = false;
+   int m_edgeMenuNode = -1; // Split node the edge menu was opened for
+   bool m_edgeMenuRequest = false;
+   ImVec2 m_edgeMenuPos {};
+   int m_splitDragNode = -1; // Split being dragged through its strip
+   float m_splitDragPos = 0.f;
+   // The strips and corner zones must be raised above the panes: created with NoBringToFrontOnFocus they land
+   // at the bottom of the window list, below the pane windows created before them (and again below the panes
+   // created by a layout change). Held until a popup needs the top, so the strips stay grabbable.
+   bool m_raiseAreaWindows = true;
+   bool m_areaEscPending = false; // An Esc consumed by an area interaction (its release is not an editor Esc)
 };
 
 }

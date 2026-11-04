@@ -425,9 +425,11 @@ void EditorChrome::RenderStatusOverlay()
 {
    EditorUI &editor = m_editor;
    const ImGuiIO &io = ImGui::GetIO();
+   if (!editor.m_viewportVisible)
+      return; // No viewport area is shown (a panel is maximized, or none exists)
 
-   // Overlay Info Text
-   const ImVec2 overlayPos(OutlinerPanel::PaneWidth * editor.m_liveUI.GetDPI(), m_toolBarHeight + m_menuBarHeight + 5.f * editor.m_liveUI.GetDPI());
+   // Overlay Info Text, anchored to the viewport area
+   const ImVec2 overlayPos(editor.m_viewportRect.x0 + 5.f * editor.m_liveUI.GetDPI(), editor.m_viewportRect.y0 + 5.f * editor.m_liveUI.GetDPI());
 
    // Camera orbit lock toggle (drawn in its own window as the status overlay does not capture inputs)
    ImGui::SetNextWindowPos(overlayPos);
@@ -446,8 +448,7 @@ void EditorChrome::RenderStatusOverlay()
    const float lockToggleWidth = ImGui::GetItemRectSize().x;
    ImGui::End();
 
-   ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - OutlinerPanel::PaneWidth * editor.m_liveUI.GetDPI(),
-      io.DisplaySize.y - m_toolBarHeight - m_menuBarHeight - 5.f * editor.m_liveUI.GetDPI())); // Fixed outliner width (to be adjusted when moving ImGui to the docking branch)
+   ImGui::SetNextWindowSize(ImVec2(editor.m_viewportRect.x1 - overlayPos.x, editor.m_viewportRect.y1 - overlayPos.y));
    ImGui::SetNextWindowPos(overlayPos);
    ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
    const float labelAlign = ImGui::GetCursorPosX() + lockToggleWidth + ImGui::GetStyle().ItemSpacing.x;

@@ -985,6 +985,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/TextBoxUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/TimerUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/TriggerUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetRender.cpp" />
@@ -1917,6 +1918,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/BumperUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/DecalUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/DispReelUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorAreaView.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorChrome.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorUIPartRegistry.h" />
@@ -1946,6 +1948,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/TextBoxUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/TimerUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/TriggerUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetRender.h" />
