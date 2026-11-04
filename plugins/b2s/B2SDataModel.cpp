@@ -641,6 +641,146 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
       m_brightness = 1.f;
    else
       m_brightness = m_initialState ? 1.f : 0.f;
+   // B2S Pro: a registered pivot rests at its down angle (RegisterPivotTrigger), oscillating ones at 0
+   if (HasProPivot())
+      m_proRt.angle = (m_pro.pivotAutomaticOscillation || m_pro.pivotTriggerType == static_cast<int>(B2SProTriggerType::Startup)) ? 0.f : m_pro.pivotDownAngle;
+}
+
+// B2S Pro pivot animation: a swing between the down and up angles over PivotDuration with smoothstep easing.
+// Oscillating pivots keep swinging between the two angles while their trigger is on, and rest at 0.
+
+void B2SBulb::ProSetPivotTriggerState(const bool enabled)
+{
+   const bool oscillating = m_pro.pivotAutomaticOscillation || m_pro.pivotTriggerType == static_cast<int>(B2SProTriggerType::Startup);
+   if (oscillating)
+   {
+      if (enabled == m_proRt.pivotAutomaticActive)
+         return;
+      m_proRt.pivotAutomaticActive = enabled;
+      ProSetPivotRotationTarget(enabled ? m_pro.pivotUpAngle : 0.f, ProPivotMoveDurationMs());
+      return;
+   }
+   ProSetPivotRotationTarget(enabled ? m_pro.pivotUpAngle : m_pro.pivotDownAngle, ProPivotMoveDurationMs());
+}
+
+void B2SBulb::ProSetPivotRotationTarget(const float targetAngle, const int durationMs)
+{
+   const bool oscillating = m_pro.pivotAutomaticOscillation || m_pro.pivotTriggerType == static_cast<int>(B2SProTriggerType::Startup);
+   m_proRt.pivotStart = m_proRt.angle;
+   m_proRt.pivotTarget = targetAngle;
+   m_proRt.pivotDurationMs = std::clamp(durationMs, 10, oscillating ? 5000 : 1000);
+   m_proRt.pivotElapsedMs = 0.f;
+   m_proRt.pivotMoving = true;
+   m_brightness = 1.f; // The reference shows the picture when its pivot moves (Visible = True)
+}
+
+void B2SBulb::ProAdvancePivot(const float elapsedInS)
+{
+   ProRuntime& rt = m_proRt;
+   if (!rt.pivotMoving)
+      return;
+   rt.pivotElapsedMs += elapsedInS * 1000.f;
+   const float progress = std::min(1.f, rt.pivotElapsedMs / static_cast<float>(rt.pivotDurationMs));
+   const float eased = progress * progress * (3.f - 2.f * progress);
+   rt.angle = rt.pivotStart + (rt.pivotTarget - rt.pivotStart) * eased;
+   if (progress >= 1.f)
+   {
+      rt.angle = rt.pivotTarget;
+      rt.pivotMoving = false;
+      const bool oscillating = m_pro.pivotAutomaticOscillation || m_pro.pivotTriggerType == static_cast<int>(B2SProTriggerType::Startup);
+      if (oscillating && rt.pivotAutomaticActive)
+         ProSetPivotRotationTarget(std::abs(rt.pivotTarget - m_pro.pivotUpAngle) < 0.01f ? m_pro.pivotDownAngle : m_pro.pivotUpAngle, ProPivotMoveDurationMs());
+   }
+}
+
+// B2S Pro automatic rotation: one image rotated continuously, one step (360 / steps degrees) per interval,
+// started and stopped by its trigger (or running from startup when continuous) with the snippit stop behaviours.
+
+void B2SBulb::ProSetRotationState(const bool enabled)
+{
+   if (m_proRt.rotCommandedOn == enabled)
+   {
+      if (enabled && !m_proRt.rotRunning)
+         ProStartRotation();
+      return;
+   }
+   m_proRt.rotCommandedOn = enabled;
+   if (enabled)
+      ProStartRotation();
+   else
+      ProStopRotation();
+}
+
+void B2SBulb::ProStartRotation()
+{
+   ProRuntime& rt = m_proRt;
+   rt.rotCommandedOn = true;
+   // A renewed ON command cancels any stop requested while still running (reference)
+   rt.rotSlowDownSteps = 0.0;
+   rt.rotRunTillEnd = false;
+   rt.rotRunToFirstStep = false;
+   m_brightness = 1.f;
+   rt.rotRunning = true;
+}
+
+void B2SBulb::ProStopRotation()
+{
+   ProRuntime& rt = m_proRt;
+   rt.rotCommandedOn = false;
+   if (!rt.rotRunning)
+      return;
+   switch (m_pro.automaticRotationStopBehaviour)
+   {
+   case B2SSnippitRotationStopBehaviour::SpinOff: rt.rotSlowDownSteps = 1.0; break;
+   case B2SSnippitRotationStopBehaviour::RunAnimationTillEnd: rt.rotRunTillEnd = true; break;
+   case B2SSnippitRotationStopBehaviour::RunAnimationToFirstStep: rt.rotRunToFirstStep = true; break;
+   default: rt.rotRunning = false; break;
+   }
+}
+
+void B2SBulb::ProAdvanceRotation(const float elapsedInS)
+{
+   ProRuntime& rt = m_proRt;
+   if (!rt.rotRunning)
+      return;
+   const int steps = std::clamp(std::max(2, m_pro.automaticRotationSteps), 2, 360);
+   const int interval = std::clamp(std::max(10, m_pro.automaticRotationInterval), 10, 500);
+   const float stepAngle = 360.f / static_cast<float>(std::max(4, steps));
+   const double elapsedMs = static_cast<double>(elapsedInS) * 1000.0;
+   double speedFactor = 1.0;
+   int slowDownTickCount = 0;
+   if (rt.rotSlowDownSteps > 0.0)
+   {
+      // Spin off progress counted in authored intervals (reference)
+      slowDownTickCount = 25 + static_cast<int>(std::ceil(900.0 / static_cast<double>(interval)));
+      speedFactor = std::max(0.0, 1.0 - (rt.rotSlowDownSteps - 1.0) / static_cast<double>(std::max(1, slowDownTickCount)));
+   }
+   const float next = rt.rotProgress + static_cast<float>(stepAngle * elapsedMs / static_cast<double>(interval) * speedFactor);
+   const bool completedRotation = next >= 360.f;
+   rt.rotProgress = std::fmod(next, 360.f);
+   rt.angle = m_pro.automaticRotationDirection == B2SSnippitRotationDirection::AntiClockwise ? -rt.rotProgress : rt.rotProgress;
+   m_brightness = 1.f;
+   if (rt.rotSlowDownSteps > 0.0)
+   {
+      rt.rotSlowDownSteps += elapsedMs / static_cast<double>(interval);
+      if (rt.rotSlowDownSteps >= static_cast<double>(slowDownTickCount) + 1.0)
+      {
+         rt.rotRunning = false;
+         rt.rotSlowDownSteps = 0.0;
+      }
+   }
+   else if (rt.rotRunTillEnd && completedRotation)
+   {
+      rt.rotRunTillEnd = false;
+      rt.rotRunning = false;
+   }
+   else if (rt.rotRunToFirstStep && completedRotation)
+   {
+      rt.rotRunToFirstStep = false;
+      rt.angle = 0.f;
+      rt.rotProgress = 0.f;
+      rt.rotRunning = false;
+   }
 }
 
 B2SBulb::~B2SBulb()

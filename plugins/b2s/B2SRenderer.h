@@ -46,6 +46,7 @@ private:
    B2SDualMode ActiveDualMode() const;
    void OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start);
    void DispatchScriptTriggers(B2SServer* server);
+   void UpdateProTrigger(B2SBulb& bulb, B2SServer* server, B2SProTriggerType type, int id, bool inverted, float elapsed);
 
    std::shared_ptr<B2STable> m_b2s;
 

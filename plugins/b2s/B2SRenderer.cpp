@@ -138,6 +138,8 @@ int B2SRenderer::FillSettingsItems(PagedUIItemDef* items)
    return 3;
 }
 
+static B2SRomIDType ProTriggerRomIdType(B2SProTriggerType type);
+
 void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
 {
    if (m_b2s->m_backglassOnImage.m_image)
@@ -164,6 +166,18 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
          case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechProbe, bulb->m_romIdType, bulb->m_romId); break;
          case B2SSnippitType::SelfRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_romOn, bulb->m_romIdType, bulb->m_romId, bulb->m_romInverted, romValue); break;
          }
+         // B2S Pro triggers of pivots and automatic rotations (solenoid / lamp / switch from the bus; B2S ids
+         // and startup are handled when polling). An automatic rotation replaces the bulb's own ROM binding
+         // by its trigger in the reference (the picture stays visible, the trigger only spins it)
+         bulb->m_proRt.triggerUpdater = []() { };
+         if (bulb->HasProRotation())
+         {
+            bulb->m_romUpdater = []() { };
+            if (!bulb->m_pro.automaticRotationContinuous && bulb->m_pro.automaticRotationTriggerId > 0)
+               bulb->m_proRt.triggerUpdater = ResolveRomPropUpdater(items, &bulb->m_proRt.triggerProbe, ProTriggerRomIdType(bulb->m_pro.automaticRotationTriggerType), bulb->m_pro.automaticRotationTriggerId);
+         }
+         else if (bulb->HasProPivot())
+            bulb->m_proRt.triggerUpdater = ResolveRomPropUpdater(items, &bulb->m_proRt.triggerProbe, ProTriggerRomIdType(static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType)), bulb->m_pro.pivotTriggerId);
       }
 
    // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
@@ -179,6 +193,85 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
       animation.BindRomTriggers(resolver);
 }
 
+// B2S Pro trigger kind to the state group it is polled from (B2S ids and startup have no bus source)
+static B2SRomIDType ProTriggerRomIdType(const B2SProTriggerType type)
+{
+   switch (type)
+   {
+   case B2SProTriggerType::Solenoid: return B2SRomIDType::Solenoid;
+   case B2SProTriggerType::Lamp: return B2SRomIDType::Lamp;
+   case B2SProTriggerType::Switch: return B2SRomIDType::Switch;
+   default: return B2SRomIDType::NotDefined;
+   }
+}
+
+// Polls a B2S Pro trigger (pivot or automatic rotation) and applies its edges: the bus probe and, for lamp
+// and B2S id triggers, script writes on that lamp channel, the most recent one winning (as bulbs do)
+void B2SRenderer::UpdateProTrigger(B2SBulb& bulb, B2SServer* server, const B2SProTriggerType type, const int id, const bool inverted, const float elapsed)
+{
+   B2SBulb::ProRuntime& rt = bulb.m_proRt;
+   const bool pivot = bulb.HasProPivot();
+   if (type == B2SProTriggerType::Startup)
+   {
+      if (!rt.startupDone)
+      {
+         rt.startupDone = true;
+         if (pivot)
+            bulb.ProSetPivotTriggerState(true);
+      }
+   }
+   else if (bulb.HasProRotation() && bulb.m_pro.automaticRotationContinuous)
+   {
+      if (!rt.startupDone)
+      {
+         rt.startupDone = true;
+         bulb.ProStartRotation();
+      }
+   }
+   else if (id > 0)
+   {
+      bool known = false;
+      float value = 0.f;
+      const float prevProbe = rt.triggerProbe;
+      rt.triggerUpdater();
+      if (rt.triggerProbe >= 0.f)
+      {
+         known = true;
+         value = rt.triggerProbe;
+         if (server != nullptr && prevProbe >= 0.f && rt.triggerProbe != prevProbe)
+            rt.triggerStamp = server->NextStamp();
+      }
+      if (server != nullptr && (type == B2SProTriggerType::Lamp || type == B2SProTriggerType::B2SID))
+      {
+         float scripted;
+         uint64_t stamp = 0;
+         if (server->GetScriptedLampState(id, scripted, &stamp) && stamp > rt.triggerStamp)
+         {
+            known = true;
+            value = scripted;
+            if (rt.triggerProbe < 0.f || stamp > rt.triggerStamp)
+               rt.triggerStamp = stamp;
+         }
+      }
+      if (known)
+      {
+         const bool on = (value != 0.f) != inverted;
+         if (on != rt.triggerPrev)
+         {
+            rt.triggerPrev = on;
+            if (pivot)
+               bulb.ProSetPivotTriggerState(on);
+            else
+               bulb.ProSetRotationState(on);
+         }
+      }
+   }
+   if (pivot)
+      bulb.ProAdvancePivot(elapsed);
+   else
+      bulb.ProAdvanceRotation(elapsed);
+}
+
 std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<StateSrcId>& items, float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted, const int romValue) const
 {
    int groupId;
@@ -188,6 +281,7 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<State
    case B2SRomIDType::GIString: groupId = PMPI_GROUP_GI; break;
    case B2SRomIDType::Lamp: groupId = PMPI_GROUP_LAMP; break;
    case B2SRomIDType::Mech: groupId = PMPI_GROUP_MECH; break;
+   case B2SRomIDType::Switch: groupId = PMPI_GROUP_SWITCH; break;
    default: return []() { /* No ROM source */ };
    }
    for (const StateSrcId& src : items)
@@ -383,12 +477,26 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          // The probe only takes over once a ROM change was actually observed: the first observation
          // is the initial state read, not a write, so InitialState survives until the first event
          bulb->m_brightness = bulb->m_romProbe;
+
+      // B2S Pro: pivot animation or automatic rotation of a standard image, around the authored pivot point
+      float pivotX = 0.5f, pivotY = 0.5f;
+      if (bulb->m_snippitType == B2SSnippitType::StandardImage && (bulb->HasProPivot() || bulb->HasProRotation()))
+      {
+         if (bulb->HasProRotation())
+            UpdateProTrigger(*bulb, const_cast<B2SServer*>(server), bulb->m_pro.automaticRotationTriggerType, bulb->m_pro.automaticRotationTriggerId, bulb->m_romInverted, elapsed);
+         else
+            UpdateProTrigger(*bulb, const_cast<B2SServer*>(server), static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType), bulb->m_pro.pivotTriggerId, false, elapsed);
+         rotation = bulb->m_proRt.angle;
+         pivotX = bulb->m_pro.pivotX;
+         pivotY = bulb->m_pro.pivotY;
+      }
+
       if (bulb->m_offImage && bulb->m_brightness < 1.f)
       {
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_offImage);
          ctx->DrawImage(ctx, bulb->m_offImage, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, 1.f,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
-            static_cast<float>(bulbTex->width) * 0.5f, static_cast<float>(bulbTex->height) * 0.5f, rotation,
+            static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
             static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
       }
       if (bulb->m_image)
@@ -396,7 +504,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_image);
          ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
-            static_cast<float>(bulbTex->width) * 0.5f, static_cast<float>(bulbTex->height) * 0.5f, rotation,
+            static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
             static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
       }
    }

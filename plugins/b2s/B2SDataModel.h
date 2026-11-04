@@ -16,7 +16,8 @@ enum class B2SRomIDType
    Lamp = 1,
    Solenoid = 2,
    GIString = 3,
-   Mech = 4
+   Mech = 4,
+   Switch = 5 // B2S Pro only (trigger kind of its rotations, pivots and launchers), never a file RomIDType
 };
 
 
@@ -463,6 +464,48 @@ public:
    float m_romOn = -1.f;        // ROM on/off state for self-rotating images (drives rotation start/stop)
    bool m_spinDriverOn = false; // Last driving state applied to self-rotation (render thread only)
    bool m_bakedIntoBackground = false; // Bulb shares the BackglassOnImage ROM channel: it is drawn as part of the background, not as a separate bulb
+
+public:
+   // B2S Pro runtime of the pivot animation and the automatic (one image) rotation, render thread only.
+   // Follows the B2S Pro server's B2SPictureBox (SetPivotTriggerState / SetPivotRotationTarget /
+   // PivotRotationTimer_Tick and StartNativeRotation / StopNativeRotation / NativeRotationTimer_Tick).
+   struct ProRuntime
+   {
+      float angle = 0.f; // RotationAngle: current rotation in degrees, drawn around the pivot point
+      // Trigger (the Pro trigger of the pivot or of the rotation): bus probe, script write stamp and last edge
+      float triggerProbe = -1.f; // -1 until observed
+      uint64_t triggerStamp = 0;
+      bool triggerPrev = false; // The reference's trigger arrays start at 0: a trigger already set fires on the first poll
+      std::function<void()> triggerUpdater = []() { };
+      bool startupDone = false;
+      // Pivot
+      bool pivotMoving = false;
+      bool pivotAutomaticActive = false;
+      float pivotStart = 0.f;
+      float pivotTarget = 0.f;
+      float pivotElapsedMs = 0.f;
+      int pivotDurationMs = 80;
+      // Automatic rotation
+      bool rotCommandedOn = false;
+      bool rotRunning = false;
+      float rotProgress = 0.f; // 0..360, direction applied when written to angle
+      double rotSlowDownSteps = 0.0; // > 0 while spinning off
+      bool rotRunTillEnd = false;
+      bool rotRunToFirstStep = false;
+   };
+   ProRuntime m_proRt;
+
+   // Pivot animation registered with a Pro trigger (PivotAnimation with a trigger kind and id, or a startup trigger)
+   bool HasProPivot() const { return m_pro.pivotAnimation && m_pro.pivotTriggerType != 0 && (m_pro.pivotTriggerType == static_cast<int>(B2SProTriggerType::Startup) || m_pro.pivotTriggerId > 0); }
+   bool HasProRotation() const { return m_pro.automaticRotation; }
+   int ProPivotMoveDurationMs() const { return std::clamp(m_pro.pivotDuration, 10, 5000); }
+   void ProSetPivotTriggerState(bool enabled);
+   void ProSetPivotRotationTarget(float targetAngle, int durationMs);
+   void ProAdvancePivot(float elapsedInS);
+   void ProSetRotationState(bool enabled);
+   void ProStartRotation();
+   void ProStopRotation();
+   void ProAdvanceRotation(float elapsedInS);
 
 private:
    std::atomic<int> m_rotRequest { 0 }; // 1 = start, 2 = stop
