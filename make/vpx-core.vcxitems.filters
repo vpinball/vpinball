@@ -2441,12 +2441,6 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/serial.h">
       <Filter>third-party\serial</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h">
-      <Filter>third-party\imgui\bgfx</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
-      <Filter>third-party\imgui\bgfx</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h">
       <Filter>third-party\imgui\implot</Filter>
     </ClInclude>

@@ -104,11 +104,13 @@ using std::wstring;
       #define _aligned_free free
    #endif
 
-   #define _ASSERTE(expr) ((void)0)
+   #ifndef _ASSERTE
+      #define _ASSERTE(expr) ((void)0)
+   #endif
 
-#ifndef VPX_HAS_WIN32_SDK // Otherwise from wincrypt.h
-typedef ULONG_PTR HCRYPTKEY;
-#endif
+   #ifndef VPX_HAS_WIN32_SDK // Otherwise from wincrypt.h
+      typedef ULONG_PTR HCRYPTKEY;
+   #endif
 
 #include <atldef.h>
 #include <atlcom.h>
