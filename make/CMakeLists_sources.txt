@@ -304,6 +304,8 @@ set(VPX_SOURCES
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
    
+   src/ui/live/editor/AreaLayout.h
+   src/ui/live/editor/AreaLayout.cpp
    src/ui/live/editor/BallUIPart.h
    src/ui/live/editor/BallUIPart.cpp
    src/ui/live/editor/BumperUIPart.h
