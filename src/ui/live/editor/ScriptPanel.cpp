@@ -26,7 +26,26 @@ ScriptPanel::ScriptPanel(EditorUI &editor)
 
 ScriptPanel::~ScriptPanel() { StopExternalSession(); }
 
-void ScriptPanel::Close() { m_visible = false; }
+void ScriptPanel::Show()
+{
+   m_focus = true;
+   if (!IsVisible())
+      m_editor.ShowAreaEditor(AreaType::Script);
+}
+
+void ScriptPanel::Close()
+{
+   const int leaf = m_editor.m_layout.FindLeaf(AreaType::Script);
+   if (leaf >= 0)
+   {
+      EditorUI::PendingAreaOp op {};
+      op.kind = EditorUI::PendingAreaOp::Kind::Close;
+      op.leaf = leaf;
+      m_editor.m_pendingAreaOps.push_back(op);
+   }
+}
+
+bool ScriptPanel::IsVisible() const { return m_editor.m_layout.IsHosted(AreaType::Script); }
 
 // Split a command line into arguments, honoring double quotes (e.g. "C:\My Editor\editor.exe" --wait)
 static vector<string> SplitCommandLine(const string &cmd)
@@ -155,9 +174,9 @@ void ScriptPanel::StopExternalSession()
    m_extFile.clear();
 }
 
-void ScriptPanel::Render()
+void ScriptPanel::Update()
 {
-   // External editing session housekeeping (kept running while the window is closed):
+   // External editing session housekeeping (kept running while the pane is closed):
    // the session is bound to the edited (base) table, dropped when the table is replaced
    PinTable *const baseTable = m_editor.m_table->m_liveBaseTable ? m_editor.m_table->m_liveBaseTable : m_editor.m_table;
    if (m_extTable != nullptr && m_extTable != baseTable)
@@ -182,13 +201,28 @@ void ScriptPanel::Render()
          SyncExternalScript();
       }
    }
+}
 
-   if (!m_visible)
-      return;
+void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
+{
+   char name[40];
+   snprintf(name, sizeof(name), "##Pane%d", leafId);
+   ImGui::SetNextWindowPos(ImVec2(rect.x0, rect.y0));
+   ImGui::SetNextWindowSize(ImVec2(rect.Width(), rect.Height()));
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+   ImGui::Begin(name, nullptr,
+      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
+         | ImGuiWindowFlags_NoNavFocus);
+   ImGui::PushID(leafId);
+   m_editor.RenderAreaTypeButton(leafId);
+   ImGui::SameLine();
+   ImGui::TextUnformatted("Script");
+
    if (m_focus)
    {
       m_focus = false;
-      ImGui::SetNextWindowFocus();
+      ImGui::SetWindowFocus();
    }
    if (!m_extCmdLoaded)
    {
@@ -196,9 +230,6 @@ void ScriptPanel::Render()
       m_extEditorCmd = g_settingsService.GetAppSettings().GetEditor_ExternalScriptEditor();
    }
 
-   const float dpi = m_editor.m_liveUI.GetDPI();
-   ImGui::SetNextWindowSize(ImVec2(640.f * dpi, 480.f * dpi), ImGuiCond_FirstUseEver);
-   if (ImGui::Begin("Table Script", &m_visible))
    {
       const bool readOnly = m_editor.IsInspectMode() || m_editor.m_table->IsLocked();
       if (m_editor.IsInspectMode())
@@ -243,7 +274,12 @@ void ScriptPanel::Render()
       if (ImGui::InputTextMultiline("##script", &m_editor.m_table->m_script_text, ImVec2(-FLT_MIN, -FLT_MIN), flags))
          m_editor.m_table->SetDirtyScript(SaveDirtyState::Dirty);
    }
+   ImGui::PopID();
    ImGui::End();
+   ImGui::PopStyleVar(2);
 }
 
+void ScriptPane::RenderPane(const AreaRect &rect, const int leafId) { m_editor.m_scriptPanel.RenderPane(rect, leafId); }
+
+void ScriptPane::OnUnhosted() { }
 }
