@@ -208,9 +208,11 @@ double QuadDifference(const QuadCapture& a, const QuadCapture& b)
 {
    REQUIRE(a.image->width() == b.image->width());
    REQUIRE(a.image->height() == b.image->height());
-   REQUIRE(a.image->m_format == b.image->m_format);
-   const unsigned int bpp = a.image->pitch() / a.image->width();
-   REQUIRE(bpp >= 3);
+   // Captures may come with or without alpha (a translucent overlay icon in a corner, drawn depending on timing): only RGB is compared
+   const auto isSRGB8 = [](const BaseTexture::Format f) { return f == BaseTexture::SRGB || f == BaseTexture::SRGBA; };
+   REQUIRE(isSRGB8(a.image->m_format));
+   REQUIRE(isSRGB8(b.image->m_format));
+   const unsigned int bppA = a.image->pitch() / a.image->width(), bppB = b.image->pitch() / b.image->width();
    const uint8_t* const da = static_cast<const uint8_t*>(a.image->datac());
    const uint8_t* const db = static_cast<const uint8_t*>(b.image->datac());
    double sum = 0.;
@@ -219,8 +221,7 @@ double QuadDifference(const QuadCapture& a, const QuadCapture& b)
       for (int x = a.x0; x < a.x1; x++)
          for (int c = 0; c < 3; c++)
          {
-            const size_t ofs = y * a.image->pitch() + x * bpp + c;
-            sum += abs((int)da[ofs] - (int)db[ofs]);
+            sum += abs((int)da[y * a.image->pitch() + x * bppA + c] - (int)db[y * b.image->pitch() + x * bppB + c]);
             n++;
          }
    return sum / (double)n;
