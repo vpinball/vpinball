@@ -1289,16 +1289,23 @@ bool B2SServer::GetB2SIsAnimationRunning(const string& animationName) const
 
 void B2SServer::PulseSwitch(int switchId)
 {
-   if (m_setSwitchIndex < 0 || !HasController())
+   if (!m_switchHandler && (m_setSwitchIndex < 0 || !HasController()))
       return;
    // Pulse the switch on the message API thread: set on, then released after 200ms (as the reference implementation)
    const auto thunk = [](void* userData)
    {
       const auto ctx = static_cast<std::pair<B2SServer*, int>*>(userData);
-      ScriptVariant args[2];
-      args[0].vInt = ctx->second < 0 ? -ctx->second : ctx->second;
-      args[1].vBool = ctx->second >= 0 ? 1 : 0;
-      ctx->first->m_controllerProxy.ForwardCall(ctx->first, ctx->first->m_setSwitchIndex, args, nullptr);
+      const int id = ctx->second < 0 ? -ctx->second : ctx->second;
+      const bool pressed = ctx->second >= 0;
+      if (ctx->first->m_switchHandler)
+         ctx->first->m_switchHandler(id, pressed);
+      else
+      {
+         ScriptVariant args[2];
+         args[0].vInt = id;
+         args[1].vBool = pressed ? 1 : 0;
+         ctx->first->m_controllerProxy.ForwardCall(ctx->first, ctx->first->m_setSwitchIndex, args, nullptr);
+      }
       delete ctx;
    };
    m_msgApi->RunOnMainThread(m_endpointId, 0., thunk, new std::pair<B2SServer*, int> { this, switchId });

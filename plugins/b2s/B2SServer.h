@@ -167,6 +167,9 @@ public:
    // Animation engine glue: the renderer drives the animations and applies their effects through this interface
    B2SAnimationEffects GetAnimationEffects();
    void PulseSwitch(int switchId);
+   // Host override for switch pulses: when set, PulseSwitch calls it (switch id, pressed) instead of forwarding
+   // to the proxied controller script class, for hosts that embed the server without a script bridge
+   void SetSwitchHandler(std::function<void(int, bool)> handler) { m_switchHandler = std::move(handler); }
    bool IsIlluminationLocked(const string& group) const;
    bool AreScoreDisplaysHidden() const { return m_scoreDisplaysHidden; }
 
@@ -225,6 +228,7 @@ private:
    void RegisterOverlaySheet();
    void ApplyScoreDigit(int digit, int value, bool roll);
    std::function<void(B2SServer*)> m_onDestroyHandler;
+   std::function<void(int, bool)> m_switchHandler;
 
    // Renderer
    std::unique_ptr<B2SRenderer> m_renderer = nullptr;
