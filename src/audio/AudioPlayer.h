@@ -74,7 +74,7 @@ public:
    void SetMainVolume(float backglassVolume, float playfieldVolume); // Overall gain, directly applied to all sounds, including the ones being played
    void SetMirrored(bool mirrored) { m_mirrored = mirrored; } // Whether the table is mirrored, affects sound panning
 
-   // Audio stream, directly forwarded to audio device, respecting channel assignment, applying backglass global volume
+   // Audio stream, rendered through the backglass engine (spatially positioned in VR), applying backglass global volume
    using AudioStreamID = std::shared_ptr<class AudioStreamPlayer>; // opaque pointer as objects are always owned by AudioPlayer without any public API
    AudioStreamID OpenAudioStream(const string& name, int frequency, int channels, bool isFloat);
    bool IsOpened(const AudioStreamID& stream) const;
@@ -151,7 +151,6 @@ private:
 
    vector<AudioStreamID> m_audioStreams;
    vector<AudioStreamID> m_pendingDeleteAudioStreams;
-   SDL_AudioDeviceID m_backglassSDLDevice = 0;
 
    std::unique_ptr<class SoundPlayer> m_music;
 

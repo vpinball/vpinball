@@ -390,11 +390,11 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
 AudioPlayer::~AudioPlayer()
 {
    m_soundPlayers.clear();
-   m_playfieldSpatial = nullptr;
-   m_backglassSpatial = nullptr;
    m_audioStreams.clear();
    m_pendingDeleteAudioStreams.clear();
    m_music = nullptr;
+   m_playfieldSpatial = nullptr;
+   m_backglassSpatial = nullptr;
    if (m_backglassEngine)
       ma_engine_uninit(m_backglassEngine.get());
    if (m_playfieldEngine)
@@ -405,8 +405,6 @@ AudioPlayer::~AudioPlayer()
       ma_device_uninit(&m_backglassDevice->device);
    if (m_maContext)
       ma_context_uninit(m_maContext.get());
-   if (m_backglassSDLDevice != 0)
-      SDL_CloseAudioDevice(m_backglassSDLDevice);
    SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -425,13 +423,8 @@ void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
 
 AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int frequency, int channels, bool isFloat)
 {
-   if (m_backglassSDLDevice == 0)
-   {
-      SDL_AudioSpec deviceSpec;
-      const bool hasDeviceSpec = SDL_GetAudioDeviceFormat(m_backglassAudioDevice, &deviceSpec, nullptr);
-      m_backglassSDLDevice = SDL_OpenAudioDevice(m_backglassAudioDevice, hasDeviceSpec ? & deviceSpec : nullptr);
-   }
-   std::unique_ptr<AudioStreamPlayer> audioStream = AudioStreamPlayer::Create(m_backglassSDLDevice, frequency, channels, isFloat);
+   std::unique_ptr<AudioStreamPlayer> audioStream
+      = AudioStreamPlayer::Create(m_backglassEngine.get(), GetSpatialMixer(SoundOutTypes::SNDOUT_BACKGLASS), frequency, channels, isFloat);
    if (audioStream == nullptr)
       return nullptr;
    AudioStreamID stream = std::move(audioStream);

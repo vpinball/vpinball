@@ -2,79 +2,177 @@
 
 #include "core/stdafx.h"
 #include "AudioStreamPlayer.h"
-#include "utils/denormals.h"
+#include "SpatialAudio.h"
+
+#define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
+#define MA_ENABLE_CUSTOM
+#include "miniaudio/miniaudio.h"
 
 namespace VPX
 {
 
-std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(SDL_AudioDeviceID sdlDevice, int frequency, int channels, bool isFloat)
+// Custom data source exposing the stream's queued frames to a miniaudio sound.
+// Underrun outputs silence: a live audio stream has no end.
+struct vpx_stream_data_source
 {
-   SDL_AudioSpec streamSpec;
-   streamSpec.freq = frequency;
-   streamSpec.format = isFloat ? SDL_AUDIO_F32 : SDL_AUDIO_S16;
-   streamSpec.channels = channels;
-   SDL_AudioSpec deviceSpec;
-   SDL_GetAudioDeviceFormat(sdlDevice, &deviceSpec, nullptr);
-   SDL_AudioStream* stream = SDL_CreateAudioStream(&streamSpec, &deviceSpec);
-   if (stream)
+   ma_data_source_base base;
+   AudioStreamPlayer* player;
+
+   static ma_result Read(ma_data_source* pDataSource, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead)
    {
-      SDL_BindAudioStream(sdlDevice, stream);
-      SDL_ResumeAudioStreamDevice(stream);
-      return std::make_unique<AudioStreamPlayer>(stream);
+      auto* ds = static_cast<vpx_stream_data_source*>(pDataSource);
+      *pFramesRead = ds->player->ReadFrames(static_cast<float*>(pFramesOut), frameCount);
+      return MA_SUCCESS;
    }
-   else
+
+   static ma_result Seek(ma_data_source* pDataSource, ma_uint64 frameIndex)
    {
-      PLOGE << "Failed to create stream: " << SDL_GetError();
+      return MA_NOT_IMPLEMENTED;
+   }
+
+   static ma_result GetDataFormat(ma_data_source* pDataSource, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap,
+      size_t channelMapCap)
+   {
+      auto* ds = static_cast<vpx_stream_data_source*>(pDataSource);
+      *pFormat = ma_format_f32;
+      *pChannels = ds->player->m_channels;
+      *pSampleRate = ds->player->m_frequency;
+      return MA_SUCCESS;
+   }
+
+   static ma_result GetCursor(ma_data_source* pDataSource, ma_uint64* pCursor)
+   {
+      auto* ds = static_cast<vpx_stream_data_source*>(pDataSource);
+      std::lock_guard lock(ds->player->m_mutex);
+      *pCursor = ds->player->m_readIdx;
+      return MA_SUCCESS;
+   }
+
+   static ma_result GetLength(ma_data_source* pDataSource, ma_uint64* pLength)
+   {
+      return MA_NOT_IMPLEMENTED;
+   }
+
+   static ma_result SetLooping(ma_data_source* pDataSource, ma_bool32 isLooping)
+   {
+      return MA_NOT_IMPLEMENTED;
+   }
+};
+
+static ma_data_source_vtable vpx_stream_ds_vtable = { vpx_stream_data_source::Read, vpx_stream_data_source::Seek, vpx_stream_data_source::GetDataFormat,
+   vpx_stream_data_source::GetCursor, vpx_stream_data_source::GetLength, vpx_stream_data_source::SetLooping, 0 };
+
+std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, SpatialAudioMixer* mixer, int frequency, int channels, bool isFloat)
+{
+   if (engine == nullptr || frequency <= 0 || (channels != 1 && channels != 2))
+      return nullptr;
+
+   std::unique_ptr<AudioStreamPlayer> player(new AudioStreamPlayer());
+   player->m_frequency = static_cast<uint32_t>(frequency);
+   player->m_channels = static_cast<uint32_t>(channels);
+   player->m_isFloat = isFloat;
+   player->m_capFrames = static_cast<size_t>(frequency); // Never lag by more than one second of audio
+   player->m_buffer.assign(player->m_capFrames * player->m_channels, 0.f);
+
+   player->m_dataSource = std::make_unique<vpx_stream_data_source>();
+   player->m_dataSource->player = player.get();
+   ma_data_source_config dsConfig = ma_data_source_config_init();
+   dsConfig.vtable = &vpx_stream_ds_vtable;
+   if (ma_data_source_init(&dsConfig, &player->m_dataSource->base) != MA_SUCCESS)
+      return nullptr;
+
+   // Attach to the backglass spatial source when spatial audio is enabled, like the other backglass sounds
+   if (mixer != nullptr && mixer->GetMixBus() != nullptr)
+   {
+      player->m_spatialSource = std::make_unique<SpatialAudioSource>(engine, mixer, static_cast<unsigned int>(channels));
+      if (player->m_spatialSource->GetNode() == nullptr)
+         player->m_spatialSource = nullptr;
+      else
+      {
+         player->m_spatialSource->SetPositionPolar(0.f, 15.f, 1.f);
+         player->m_spatialSource->SetReferenceDistance(1.f);
+      }
+   }
+
+   player->m_sound = std::make_unique<ma_sound>();
+   ma_sound_config config = ma_sound_config_init_2(engine);
+   config.pDataSource = &player->m_dataSource->base;
+   config.flags = MA_SOUND_FLAG_NO_SPATIALIZATION;
+   config.pInitialAttachment
+      = player->m_spatialSource ? static_cast<ma_node*>(player->m_spatialSource->GetNode()) : ma_engine_get_endpoint(engine);
+   if (ma_sound_init_ex(engine, &config, player->m_sound.get()) != MA_SUCCESS)
+   {
+      player->m_sound = nullptr;
       return nullptr;
    }
-}
 
-AudioStreamPlayer::AudioStreamPlayer(SDL_AudioStream* stream)
-   : m_stream(stream)
-   #ifdef ENABLE_DX9
-   , m_startTimestamp(msec())
-   #else
-   , m_startTimestamp(SDL_GetTicks())
-   #endif
-{
-   assert(stream != nullptr);
-   SDL_GetAudioStreamFormat(m_stream, &m_audioSpec, nullptr);
-   SDL_SetAudioStreamGetCallback(m_stream, &AudioStreamCallback, this);
+   ma_sound_start(player->m_sound.get());
+   return player;
 }
 
 AudioStreamPlayer::~AudioStreamPlayer()
 {
-   SDL_DestroyAudioStream(m_stream);
+   if (m_sound)
+      ma_sound_uninit(m_sound.get());
+   m_spatialSource = nullptr;
+   if (m_dataSource)
+      ma_data_source_uninit(&m_dataSource->base);
 }
 
 void AudioStreamPlayer::Enqueue(const uint8_t* buffer, int length)
 {
-   // If we are really late and decided to resync, do it when pushing new data (limit silence time, handle situation where no more data are coming)
-   if (m_resync)
+   const int bytesPerSample = m_isFloat ? (int)sizeof(float) : (int)sizeof(int16_t);
+   const size_t nFrames = static_cast<size_t>(length) / (m_channels * bytesPerSample);
+   std::lock_guard lock(m_mutex);
+   for (size_t i = 0; i < nFrames; ++i)
    {
-      SDL_ClearAudioStream(m_stream);
-      #ifdef ENABLE_DX9
-      m_startTimestamp = msec();
-      #else
-      m_startTimestamp = SDL_GetTicks();
-      #endif
-      m_streamedTotal = 0;
-      m_resync = false;
-      PLOGI << "Audio stream sync was lost and reseted";
+      if (m_writeIdx - m_readIdx >= m_capFrames)
+         ++m_readIdx; // Drop the oldest frame instead of letting latency grow without bound
+      float* dst = &m_buffer[(m_writeIdx % m_capFrames) * m_channels];
+      if (m_isFloat)
+         memcpy(dst, buffer + i * m_channels * sizeof(float), m_channels * sizeof(float));
+      else
+         for (uint32_t ch = 0; ch < m_channels; ++ch)
+            dst[ch] = reinterpret_cast<const int16_t*>(buffer)[i * m_channels + ch] / 32768.f;
+      ++m_writeIdx;
    }
-   // Just enqueue, syncing and compensation is done on a regular basis when data is requested for playing
-   SDL_PutAudioStreamData(m_stream, buffer, length);
-   m_streamedTotal += length;
+}
+
+uint64_t AudioStreamPlayer::ReadFrames(float* out, uint64_t frameCount)
+{
+   std::lock_guard lock(m_mutex);
+   const uint64_t avail = m_writeIdx - m_readIdx;
+   uint64_t n = avail < frameCount ? avail : frameCount;
+   for (uint64_t i = 0; i < n; ++i)
+      memcpy(&out[i * m_channels], &m_buffer[((m_readIdx + i) % m_capFrames) * m_channels], m_channels * sizeof(float));
+   m_readIdx += n;
+   if (n < frameCount && !m_eof.load(std::memory_order_relaxed))
+   {
+      // Underrun on a live stream: play silence and keep the sound alive
+      memset(&out[n * m_channels], 0, static_cast<size_t>(frameCount - n) * m_channels * sizeof(float));
+      n = frameCount;
+   }
+   return n;
 }
 
 void AudioStreamPlayer::FlushStream()
 {
-   SDL_FlushAudioStream(m_stream);
+   m_eof = true;
 }
 
 int AudioStreamPlayer::GetQueuedSize() const
 {
-   return SDL_GetAudioStreamQueued(m_stream);
+   std::lock_guard lock(m_mutex);
+   return static_cast<int>((m_writeIdx - m_readIdx) * m_channels * sizeof(float));
+}
+
+void AudioStreamPlayer::ApplyVolume()
+{
+   const float gain = sqrtf(m_streamVolume * m_mainVolume);
+   if (m_spatialSource)
+      m_spatialSource->SetVolume(gain);
+   else if (m_sound)
+      ma_sound_set_volume(m_sound.get(), gain);
 }
 
 void AudioStreamPlayer::SetStreamVolume(const float volume)
@@ -84,7 +182,7 @@ void AudioStreamPlayer::SetStreamVolume(const float volume)
       m_streamVolume = volume;
       // sqrt loudness curve, matching SoundPlayer::ApplyVolume so the shared
       // backglass volume setting produces the same perceived level
-      SDL_SetAudioStreamGain(m_stream, sqrtf(m_streamVolume * m_mainVolume));
+      ApplyVolume();
    }
 }
 
@@ -93,51 +191,7 @@ void AudioStreamPlayer::SetMainVolume(const float volume)
    if (m_mainVolume != volume)
    {
       m_mainVolume = volume;
-      SDL_SetAudioStreamGain(m_stream, sqrtf(m_streamVolume * m_mainVolume));
-   }
-}
-
-void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
-{
-   set_denormals_flush_to_zero_once(); // SDL resamples and mixes on this thread, which is created by SDL
-
-   const auto me = static_cast<AudioStreamPlayer*>(userdata);
-   const unsigned int nQueueSize = max(0, SDL_GetAudioStreamQueued(stream) - total_amount);
-   const uint64_t nBytePerSec = me->m_audioSpec.freq * (uint64_t)SDL_AUDIO_FRAMESIZE(me->m_audioSpec);
-   const uint64_t sourceTS = (1000 * me->m_streamedTotal) / nBytePerSec; // Total amount of music streamed (ms)
-   const uint64_t playedTS = (1000 * (me->m_streamedTotal - nQueueSize)) / nBytePerSec; // Playing position (ms)
-   #ifdef ENABLE_DX9
-   const uint64_t nowTS = msec() - me->m_startTimestamp; // Where we should be in the music (ms)
-   #else
-   const uint64_t nowTS = SDL_GetTicks() - me->m_startTimestamp; // Where we should be in the music (ms)
-   #endif
-   float throttle = 1.f;
-   //PLOGI << "Get stream data for " << me->m_name << " enqueued: " << ((float)SDL_GetAudioStreamQueued(stream) / SDL_AUDIO_FRAMESIZE(me->m_audioSpec)) << " samples enqueued";
-   if (playedTS > nowTS)
-   {
-      // We have played ahead of the source: either the source is paused or it is having issues => just resync silently
-      me->m_startTimestamp += playedTS - nowTS;
-   }
-   else if (nowTS > playedTS)
-   {
-      const uint64_t deltaTS = nowTS - playedTS;
-      if (nQueueSize > nBytePerSec && deltaTS > 1000)
-      {
-         // We are really late, just resync on next stream update (don't change throttling to avoid adding some glitches to the already glitched stream)
-         throttle = me->m_throttling;
-         me->m_resync = true;
-      }
-      /* else if (nQueueSize > 200 * nBytePerSec && deltaTS > ((me->m_throttling == 1.f) ? 100 : 50))
-      {
-         // We are a bit late, try to catch up by slightly increasing the pitch
-         throttle = 1.0f + static_cast<float>(min(deltaTS - 20, 500ull)) / 500.f;
-      }*/
-   }
-   if (me->m_throttling != throttle)
-   {
-      me->m_throttling = throttle;
-      SDL_SetAudioStreamFrequencyRatio(me->m_stream, throttle);
-      PLOGI << "PlayedTS: " << playedTS << "ms / NowTS: " << nowTS << "ms / Delta: " << (nowTS - playedTS) << "ms / Buffer: " << (sourceTS - playedTS) << "ms / Frequency ratio : " << throttle;
+      ApplyVolume();
    }
 }
 

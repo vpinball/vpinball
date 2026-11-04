@@ -2,38 +2,62 @@
 
 #pragma once
 
-#include <SDL3/SDL_audio.h>
+#include <atomic>
+#include <cstdint>
+#include <mutex>
+
+struct ma_engine;
+struct ma_sound;
 
 namespace VPX
 {
 
-// Stream provided raw buffer audio to the given SDL audio device.
+class SpatialAudioMixer;
+class SpatialAudioSource;
+struct vpx_stream_data_source;
+
+// Plugin audio stream (PinMAME, PUP, AltSound, ...) rendered through the backglass
+// miniaudio engine: the enqueued buffers are exposed as a custom data source
+// feeding a sound, so the stream goes through the same mixing path as the other
+// backglass sounds, including spatial (binaural) rendering in VR.
 class AudioStreamPlayer
 {
 public:
-   static std::unique_ptr<AudioStreamPlayer> Create(SDL_AudioDeviceID sdlDevice, int frequency, int channels, bool isFloat);
-   explicit AudioStreamPlayer(SDL_AudioStream* stream);
+   static std::unique_ptr<AudioStreamPlayer> Create(ma_engine* engine, SpatialAudioMixer* mixer, int frequency, int channels, bool isFloat);
    ~AudioStreamPlayer();
 
    void Enqueue(const uint8_t* buffer, int length);
-   void FlushStream();
+   void FlushStream(); // Mark the stream as ended: queued data still plays out, then the sound stops
    int GetQueuedSize() const;
    void SetName(string name) { m_name = std::move(name); }
    void SetStreamVolume(const float volume);
    void SetMainVolume(const float volume);
 
 private:
-   static void AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
+   friend struct vpx_stream_data_source;
+   AudioStreamPlayer() = default;
+   uint64_t ReadFrames(float* out, uint64_t frameCount); // Called by the embedded data source on the audio thread
+   void ApplyVolume();
 
-   SDL_AudioStream* const m_stream = nullptr;
-   SDL_AudioSpec m_audioSpec;
+   std::unique_ptr<vpx_stream_data_source> m_dataSource;
+   std::unique_ptr<ma_sound> m_sound;
+   std::unique_ptr<SpatialAudioSource> m_spatialSource;
+
+   // Ring buffer of interleaved float frames, written by Enqueue (game/plugin
+   // thread) and read by the audio thread through the data source
+   mutable std::mutex m_mutex;
+   std::vector<float> m_buffer;
+   uint64_t m_writeIdx = 0;
+   uint64_t m_readIdx = 0;
+   size_t m_capFrames = 0;
+
+   uint32_t m_frequency = 0;
+   uint32_t m_channels = 0;
+   bool m_isFloat = false;
+   std::atomic<bool> m_eof { false };
    float m_mainVolume = 1.f;
    float m_streamVolume = 1.f;
-   float m_throttling = 1.f;
-   uint64_t m_streamedTotal = 0;
-   uint64_t m_startTimestamp = 0;
    string m_name;
-   bool m_resync = false;
 };
 
 }
