@@ -930,6 +930,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderProbe.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderState.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderTarget.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderView.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Renderer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Sampler.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Shader.cpp" />
@@ -1881,6 +1882,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderProbe.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderState.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderTarget.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderView.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Renderer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Sampler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/SearchTex.h" />

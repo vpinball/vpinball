@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include "utils/fileio.h"
 
 class RenderTarget;
 class RenderPass;
 class RenderDevice;
 class RenderDeviceState;
+class RenderView;
 
 // A render probe is a render of the scene to an offscreen render target which is later used for shading scene parts, for example for reflections
 class RenderProbe final
@@ -59,12 +62,12 @@ public:
 
    // Rendering
    void RenderSetup(class Renderer* renderer);
-   void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
+   void MarkDirty(RenderView* view); // Mark this probe as dirty for the given view, should be called when starting a new frame
+   void MarkDirty(); // Mark this probe as dirty for all views
    bool IsRendering() const { return m_rendering; }
-   bool IsStaticAccumulationPending() const; // True while this probe still has samples to accumulate for its static parts prerender
-   void MarkDirtyStatics(); // Mark the prerendered static parts as dirty, they are lazily accumulated again over the next frames
-   void SwapDesktopTargets();
-   void ReleaseRenderTargets(); // Release the render targets sized after the main render (on resize), recreated on next use
+   bool IsStaticAccumulationPending() const; // True while this probe still has samples to accumulate for its static parts prerender (for the active view)
+   void MarkDirtyStatics(RenderView* view); // Mark the view's prerendered static parts as dirty, they are lazily accumulated again over the next frames
+   void ReleaseRenderTargets(RenderView* view); // Release the render targets sized after the given view's render (on resize), recreated on next use
    RenderTarget* Render(const unsigned int renderMask); // Lazily update render probe and returns it
    void RenderRelease();
 
@@ -85,25 +88,31 @@ private:
 
    // Properties for reflection probe
    vec4 m_reflection_plane = vec4(0.f, 0.f, 1.f, 0.f); // Plane equation: xyz is the normal, w is the projected distance
-   vec4 m_reflection_clip_bounds;
    ReflectionMode m_reflection_mode = REFL_DYNAMIC;
    bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having reflections of playfield lightmaps onto the playfield itself
 
    // Properties used for rendering (not saved)
    Renderer* m_renderer = nullptr;
    RenderDeviceState* m_rdState = nullptr;
-   bool m_dirty = true;
-   bool m_isSplitRendering = false;
    bool m_rendering = false;
-   RenderTarget* m_blurRT = nullptr;
+
+   // Render state is kept per view: each RenderView holds its own probe renders since they
+   // are view dependent (different camera, different render target sizes and formats)
+   struct ViewState
+   {
+      bool dirty = true;
+      bool isSplitRendering = false;
+      RenderTarget* blurRT = nullptr;
+      RenderTarget* dynamicRT = nullptr;
+      RenderTarget* prerenderRT = nullptr; // Prerendered static parts, accumulated over successive frames
+      int staticAccumCount = 0; // Number of samples accumulated so far in the static parts prerender
+      RenderPass* copyPass = nullptr; // Pass that performs the screen space copy
+      vector<RenderPass*> probePasses; // Passes recorded by this probe's renders since the last ApplyAreaOfInterest (which applies the area of interest to them only)
+      vec4 reflection_clip_bounds = vec4(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+   };
+   std::unordered_map<const RenderView*, ViewState> m_viewState;
+   ViewState& State(const RenderView* view);
+   ViewState& State(); // State of the currently active view
+
    RenderTarget* GetRenderTarget(bool isStaticRT);
-   RenderTarget* m_dynamicRT = nullptr;
-   RenderTarget* m_prerenderRT = nullptr; // Prerendered static parts, accumulated over successive frames
-   int m_staticAccumCount = 0; // Number of samples accumulated so far in the static parts prerender
-   RenderTarget* m_desktopDynamicRT = nullptr;
-   RenderTarget* m_desktopPrerenderRT = nullptr;
-   RenderTarget* m_desktopBlurRT = nullptr;
-   int m_desktopStaticAccumCount = 0;
-   RenderPass* m_copyPass = nullptr; // Pass that performs the screen space copy
-   vector<RenderPass*> m_probePasses; // Passes recorded by this probe's renders since the last ApplyAreaOfInterest (which applies the area of interest to them only)
 };
