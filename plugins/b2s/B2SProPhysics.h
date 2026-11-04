@@ -37,7 +37,7 @@ public:
    // wherever it travels (hides it behind the hoop, the net, ...). Returns the masked, rolled frame of the
    // ball as an axis aligned texture with its placement, or nullptr when the ball has no mask (then the
    // artwork is drawn directly). Must be called on the API thread (texture access)
-   bool HasMask() const { return !m_ball.m_pro.physicsSelectionMaskImage.empty(); }
+   bool HasMask() const { return m_ball.m_pro.physicsSelectionMask != nullptr; }
    VPXTexture MaskedFrame(float& x, float& y, float& w, float& h);
    ~B2SProPhysicsBall();
 
@@ -45,7 +45,8 @@ public:
 
 private:
    void LoadMask();
-   vector<uint8_t> m_maskAlpha; // One byte per backglass pixel, 255 = ball visible
+   const uint8_t* m_maskPixels = nullptr; // The decoded mask texture's pixels (owned by the bulb's texture), alpha at byte 3
+   int m_maskBpp = 0;
    int m_maskWidth = 0;
    int m_maskHeight = 0;
    bool m_maskLoaded = false;

@@ -524,9 +524,9 @@ static B2SProBulb ParseProBulb(const tinyxml2::XMLNode& root, const bool isImage
    }
    if (pro.physicsBoundaries.empty() && floorPoints.size() >= 2)
       pro.physicsBoundaries.push_back(floorPoints);
-   if (pro.physicsBall)
-      if (const char* mask = a.Raw("PhysicsSelectionMaskData"))
-         pro.physicsSelectionMaskImage = base64_decode(mask, strlen(mask));
+   // Decoded here, on the loader thread: decoding a backglass sized PNG inside a frame cost 180 ms on the first shot
+   if (pro.physicsBall && a.Has("PhysicsSelectionMaskData"))
+      pro.physicsSelectionMask = GetTextureAttribute(root, ""s, "PhysicsSelectionMaskData"s);
 
    // Motion path (image snippits only, except the switch ids which the reference reads for every bulb)
    if (isImageSnippit)
@@ -1180,6 +1180,7 @@ B2SBulb::~B2SBulb()
    DeleteTexture(m_image);
    DeleteTexture(m_offImage);
    DeleteTexture(m_pro.dynamicFrontLightField);
+   DeleteTexture(m_pro.physicsSelectionMask);
 }
 
 void B2SBulb::UpdateRotation(float elapsedInS)

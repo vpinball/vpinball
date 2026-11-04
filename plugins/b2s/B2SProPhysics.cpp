@@ -92,39 +92,27 @@ void B2SProPhysicsBall::Start()
 
 void B2SProPhysicsBall::LoadMask()
 {
+   // The mask was decoded with the other images on the loader thread; only its pixels are looked up here
    m_maskLoaded = true;
-   const vector<uint8_t>& png = m_ball.m_pro.physicsSelectionMaskImage;
-   if (png.empty())
+   if (m_ball.m_pro.physicsSelectionMask == nullptr)
       return;
-   // Decoded through the host, as any other image, then only the alpha channel is kept
-   VPXTexture tex = CreateTexture(const_cast<uint8_t*>(png.data()), static_cast<int>(png.size()));
-   if (tex == nullptr)
-   {
-      LOGE("B2S Pro: failed to decode the physics selection mask of '" + m_ball.m_name + "'");
+   const VPXTextureInfo* const info = GetTextureInfo(m_ball.m_pro.physicsSelectionMask);
+   if (info == nullptr || info->data == nullptr || info->width == 0 || info->height == 0)
       return;
-   }
-   const VPXTextureInfo* const info = GetTextureInfo(tex);
-   if (info != nullptr && info->data != nullptr && info->width > 0 && info->height > 0)
-   {
-      m_maskWidth = static_cast<int>(info->width);
-      m_maskHeight = static_cast<int>(info->height);
-      m_maskAlpha.assign(static_cast<size_t>(m_maskWidth) * m_maskHeight, 255);
-      if (info->format == VPXTEXFMT_sRGBA8)
-      {
-         const uint8_t* const src = static_cast<const uint8_t*>(info->data);
-         for (size_t i = 0; i < m_maskAlpha.size(); i++)
-            m_maskAlpha[i] = src[i * 4 + 3];
-      }
-      // Other formats carry no alpha: the mask hides nothing
-   }
-   DeleteTexture(tex);
+   // Only an RGBA mask carries alpha; other formats hide nothing
+   if (info->format != VPXTEXFMT_sRGBA8)
+      return;
+   m_maskPixels = static_cast<const uint8_t*>(info->data);
+   m_maskBpp = 4;
+   m_maskWidth = static_cast<int>(info->width);
+   m_maskHeight = static_cast<int>(info->height);
 }
 
 VPXTexture B2SProPhysicsBall::MaskedFrame(float& x, float& y, float& w, float& h)
 {
    if (!m_maskLoaded)
       LoadMask();
-   if (m_maskAlpha.empty() || m_ball.m_image == nullptr || !m_ball.m_proRt.posValid)
+   if (m_maskPixels == nullptr || m_ball.m_image == nullptr || !m_ball.m_proRt.posValid)
       return nullptr;
    const B2SBulb::ProRuntime& rt = m_ball.m_proRt;
    if (!m_frameValid || rt.posX != m_framePosX || rt.posY != m_framePosY || rt.rollAngle != m_frameAngle)
@@ -159,7 +147,7 @@ VPXTexture B2SProPhysicsBall::MaskedFrame(float& x, float& y, float& w, float& h
          for (int px = 0; px < m_frameW; px++)
          {
             const int maskX = left + px;
-            const int mask = (maskX >= 0 && maskY >= 0 && maskX < m_maskWidth && maskY < m_maskHeight) ? m_maskAlpha[static_cast<size_t>(maskY) * m_maskWidth + maskX] : 0;
+            const int mask = (maskX >= 0 && maskY >= 0 && maskX < m_maskWidth && maskY < m_maskHeight) ? m_maskPixels[(static_cast<size_t>(maskY) * m_maskWidth + maskX) * m_maskBpp + 3] : 0;
             if (mask == 0)
                continue;
             // Inverse rotation of the pixel centre into the unrotated ball rectangle, then into source pixels

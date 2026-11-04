@@ -402,7 +402,7 @@ struct B2SProBulb
    vector<float> physicsObstacleBounces; // Per obstacle restitution (-1 = default)
    vector<SwitchZone> physicsSwitchZones;
    Launcher physicsLauncher;
-   vector<uint8_t> physicsSelectionMaskImage; // Encoded (PNG) alpha mask of the ball artwork, decoded when the simulation needs it
+   VPXTexture physicsSelectionMask = nullptr; // Backglass sized alpha mask of where the ball shows, decoded with the other images (owned by the bulb, never drawn)
 };
 
 
