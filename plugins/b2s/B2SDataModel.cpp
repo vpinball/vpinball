@@ -406,6 +406,8 @@ static B2SProBulb ParseProBulb(const tinyxml2::XMLNode& root, const bool isImage
 {
    ProAttributes a(root);
    B2SProBulb pro;
+   if (const tinyxml2::XMLElement* const node = root.ToElement())
+      pro.bulbId = node->IntAttribute("ID", 0);
 
    // Flasher pulse and layers
    pro.flasherPulseDuration = a.Int("FlasherPulseDuration", 0);

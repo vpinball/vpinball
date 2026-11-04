@@ -280,6 +280,7 @@ enum class B2SDualMode2
 struct B2SProBulb
 {
    bool any = false; // At least one Pro attribute was present
+   int bulbId = 0; // The Bulb's ID attribute (the reference names picture boxes "PictureBox<ID>", DynamicFrontTargetSnippetID refers to it)
 
    // Layers: items drawn behind the canvas show through its transparent openings
    bool artworkPixelLighting = false;
@@ -492,6 +493,10 @@ public:
       double rotSlowDownSteps = 0.0; // > 0 while spinning off
       bool rotRunTillEnd = false;
       bool rotRunToFirstStep = false;
+      // Flasher pulse (FlasherPulseDuration): the artwork shows for the authored duration after each off to on edge
+      bool pulseActive = false;
+      bool pulsePrevOn = false;
+      float pulseRemainingS = 0.f;
       // Physics
       bool physicsDriven = false; // Pivot used as the flipper of a physics ball: advanced by the physics clock, not per frame
       class B2SProPhysicsBall* physicsBall = nullptr; // The simulation of a physics ball bulb (owned by the renderer)

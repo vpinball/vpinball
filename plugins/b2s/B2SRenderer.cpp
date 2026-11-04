@@ -93,6 +93,134 @@ B2SRenderer::~B2SRenderer()
    m_stateSources.Unsubscribe();
    m_pinmameControllers.Unsubscribe();
    DeleteTexture(m_whiteTexture);
+   for (auto& [key, texture] : m_reel3DCache)
+      DeleteTexture(texture);
+   for (auto& [reel, entry] : m_reel3DOverlays)
+      DeleteTexture(entry.texture);
+   for (auto& [pair, overlay] : m_proLightOverlays)
+      DeleteTexture(overlay.texture);
+}
+
+// Reference DrawDynamicFrontLight: for every visible image snippit drawn below the light (lower ZOrder, or
+// the one DynamicFrontTargetSnippetID names), the overlap of the light and the snippit is lit: the snippit's
+// current artwork is cropped there, the light field is scaled from the light's rectangle onto it, and the
+// kernel's result is drawn over the artwork
+void B2SRenderer::RenderProDynamicLight(VPXRenderContext2D* ctx, const B2SBulb& light, const vector<std::unique_ptr<B2SBulb>>& bulbs, const B2SDualMode dualMode)
+{
+   const VPXTextureInfo* const fieldInfo = GetTextureInfo(light.m_pro.dynamicFrontLightField);
+   if (fieldInfo == nullptr || fieldInfo->data == nullptr || fieldInfo->width == 0 || fieldInfo->height == 0 || light.m_width <= 0 || light.m_height <= 0)
+      return;
+   const int fieldBpp = fieldInfo->format == VPXTEXFMT_sRGBA8 ? 4 : (fieldInfo->format == VPXTEXFMT_sRGB8 ? 3 : 0);
+   if (fieldBpp == 0)
+      return;
+   const float lx = static_cast<float>(light.m_locationX), ly = static_cast<float>(light.m_locationY);
+   const float lw = static_cast<float>(light.m_width), lh = static_cast<float>(light.m_height);
+   for (const auto& snippitPtr : bulbs)
+   {
+      const B2SBulb& snippit = *snippitPtr;
+      if (&snippit == &light || !snippit.m_isImageSnippit || snippit.m_brightness <= 0.f || snippit.m_image == nullptr || snippit.m_zOrder >= light.m_zOrder)
+         continue;
+      if (light.m_pro.dynamicFrontTargetSnippetId > 0 && snippit.m_pro.bulbId != light.m_pro.dynamicFrontTargetSnippetId)
+         continue;
+      if (m_b2s->m_dualBackglass && snippit.m_dualMode != B2SDualMode::Both && dualMode != B2SDualMode::Both && snippit.m_dualMode != dualMode)
+         continue;
+      const float sw = static_cast<float>(snippit.m_width), sh = static_cast<float>(snippit.m_height);
+      if (sw <= 0.f || sh <= 0.f)
+         continue;
+      const float sx = snippit.m_proRt.posValid ? snippit.m_proRt.posX - sw * 0.5f : static_cast<float>(snippit.m_locationX);
+      const float sy = snippit.m_proRt.posValid ? snippit.m_proRt.posY - sh * 0.5f : static_cast<float>(snippit.m_locationY);
+      const int ox = static_cast<int>(std::lround(std::max(lx, sx))), oy = static_cast<int>(std::lround(std::max(ly, sy)));
+      const int ox2 = static_cast<int>(std::lround(std::min(lx + lw, sx + sw))), oy2 = static_cast<int>(std::lround(std::min(ly + lh, sy + sh)));
+      const int ow = ox2 - ox, oh = oy2 - oy;
+      if (ow <= 0 || oh <= 0)
+         continue;
+      ProLightOverlay& overlay = m_proLightOverlays[{ &light, &snippit }];
+      if (!overlay.valid || overlay.snippitX != sx || overlay.snippitY != sy || overlay.width != ow || overlay.height != oh)
+      {
+         overlay.valid = false;
+         const VPXTextureInfo* const art = GetTextureInfo(snippit.m_image);
+         if (art == nullptr || art->data == nullptr || art->width == 0 || art->height == 0 || (art->format != VPXTEXFMT_sRGBA8 && art->format != VPXTEXFMT_sRGB8))
+            continue;
+         const int artBpp = art->format == VPXTEXFMT_sRGBA8 ? 4 : 3;
+         const uint8_t* const artPixels = static_cast<const uint8_t*>(art->data);
+         const uint8_t* const fieldPixels = static_cast<const uint8_t*>(fieldInfo->data);
+         // Crop of the snippit artwork (nearest sample of the artwork scaled into its rectangle) and of the
+         // field (scaled from the light rectangle), both at the overlap, in backglass pixels
+         vector<uint8_t> source(static_cast<size_t>(ow) * oh * 4), field(static_cast<size_t>(ow) * oh);
+         for (int y = 0; y < oh; y++)
+            for (int x = 0; x < ow; x++)
+            {
+               const float cx = static_cast<float>(ox + x) + 0.5f, cy = static_cast<float>(oy + y) + 0.5f;
+               const int ax = std::clamp(static_cast<int>((cx - sx) / sw * static_cast<float>(art->width)), 0, static_cast<int>(art->width) - 1);
+               const int ay = std::clamp(static_cast<int>((cy - sy) / sh * static_cast<float>(art->height)), 0, static_cast<int>(art->height) - 1);
+               const uint8_t* const p = artPixels + (static_cast<size_t>(ay) * art->width + ax) * artBpp;
+               uint8_t* const d = source.data() + (static_cast<size_t>(y) * ow + x) * 4;
+               d[0] = p[0];
+               d[1] = p[1];
+               d[2] = p[2];
+               d[3] = artBpp == 4 ? p[3] : 255;
+               const int fx = std::clamp(static_cast<int>((cx - lx) / lw * static_cast<float>(fieldInfo->width)), 0, static_cast<int>(fieldInfo->width) - 1);
+               const int fy = std::clamp(static_cast<int>((cy - ly) / lh * static_cast<float>(fieldInfo->height)), 0, static_cast<int>(fieldInfo->height) - 1);
+               field[static_cast<size_t>(y) * ow + x] = fieldBpp == 4 ? fieldPixels[(static_cast<size_t>(fy) * fieldInfo->width + fx) * 4 + 3] : 255;
+            }
+         ProEffects::DynamicLightParams params;
+         params.exposure = light.m_pro.dynamicLightExposure;
+         params.colorR = light.m_pro.dynamicLightColor.x;
+         params.colorG = light.m_pro.dynamicLightColor.y;
+         params.colorB = light.m_pro.dynamicLightColor.z;
+         params.flasherStyle = light.m_pro.dynamicFlasherStyle;
+         params.saturation = light.m_pro.dynamicSaturation;
+         params.highlightProtection = light.m_pro.dynamicHighlightProtection;
+         params.darkAreaLift = light.m_pro.dynamicDarkAreaLift;
+         params.transmissionContrast = light.m_pro.dynamicTransmissionContrast;
+         params.temperature = light.m_pro.dynamicLightTemperature;
+         const vector<uint8_t> lit = ProEffects::RenderDynamicLight(source.data(), 4, field.data(), ow, oh, params);
+         if (lit.empty())
+            continue;
+         UpdateTexture(&overlay.texture, ow, oh, VPXTEXFMT_sRGBA8, lit.data());
+         overlay.x = static_cast<float>(ox);
+         overlay.y = static_cast<float>(oy);
+         overlay.width = ow;
+         overlay.height = oh;
+         overlay.snippitX = sx;
+         overlay.snippitY = sy;
+         overlay.valid = overlay.texture != nullptr;
+      }
+      if (overlay.valid)
+         ctx->DrawImage(ctx, overlay.texture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(ow), static_cast<float>(oh), 0.f, 0.f, 0.f, overlay.x, overlay.y, static_cast<float>(ow), static_cast<float>(oh));
+   }
+}
+
+VPXTexture B2SRenderer::Reel3DTexture(const VPXTexture image, const int width, const int height, const int brightness, const int temperature, const int depth)
+{
+   const Reel3DKey key { image, width, height, brightness, temperature, depth };
+   if (const auto it = m_reel3DCache.find(key); it != m_reel3DCache.end())
+      return it->second;
+   VPXTexture texture = nullptr;
+   const VPXTextureInfo* const info = GetTextureInfo(image);
+   if (info != nullptr && info->data != nullptr && info->width > 0 && info->height > 0 && (info->format == VPXTEXFMT_sRGBA8 || info->format == VPXTEXFMT_sRGB8) && width > 0 && height > 0)
+   {
+      const std::vector<uint8_t> pixels = ProEffects::RenderReel(static_cast<const uint8_t*>(info->data), static_cast<int>(info->width), static_cast<int>(info->height),
+         info->format == VPXTEXFMT_sRGBA8 ? 4 : 3, width, height, brightness, temperature, depth);
+      if (!pixels.empty())
+         UpdateTexture(&texture, width, height, VPXTEXFMT_sRGBA8, pixels.data());
+   }
+   m_reel3DCache[key] = texture; // A failed render is cached as nullptr: the plain image is drawn
+   return texture;
+}
+
+VPXTexture B2SRenderer::Reel3DOverlay(const B2SScore& reel, const int width, const int height)
+{
+   Reel3DOverlayEntry& entry = m_reel3DOverlays[&reel];
+   if (entry.texture == nullptr || entry.width != width || entry.height != height || entry.depth != reel.m_pro.reel3DDepth || entry.glass != reel.m_pro.reel3DGlass)
+   {
+      DeleteTexture(entry.texture);
+      entry = { width, height, reel.m_pro.reel3DDepth, reel.m_pro.reel3DGlass, nullptr };
+      const std::vector<uint8_t> pixels = ProEffects::ReelWindowOverlay(width, height, reel.m_pro.reel3DDepth, reel.m_pro.reel3DGlass);
+      if (!pixels.empty())
+         UpdateTexture(&entry.texture, width, height, VPXTEXFMT_sRGBA8, pixels.data());
+   }
+   return entry.texture;
 }
 
 void B2SRenderer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
@@ -500,15 +628,30 @@ void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2S
    }
 }
 
-void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed, B2SDualMode dualMode)
+void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed, B2SDualMode dualMode, const int pass)
 {
-   UpdateProRuntime(bulbs, const_cast<B2SServer*>(server), elapsed);
+   if (pass != 1)
+      UpdateProRuntime(bulbs, const_cast<B2SServer*>(server), elapsed);
+   // B2S Pro: a visible dynamic front light whose base is not on a separate layer sits on the backglass below
+   // every snippit: its artwork is drawn first (its lit overlay is drawn at its own place in the order)
+   if (pass != 0)
+      for (const auto& bulb : bulbs)
+         if (IsProDynamicLight(*bulb) && bulb->m_pro.dynamicFrontShowLight && !bulb->m_pro.separateLightLayer && bulb->m_brightness > 0.f && bulb->m_image != nullptr
+            && !(dualMode != B2SDualMode::Both && bulb->m_dualMode != B2SDualMode::Both && bulb->m_dualMode != dualMode))
+         {
+            const VPXTextureInfo* const tex = GetTextureInfo(bulb->m_image);
+            ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness, 0.f, 0.f, static_cast<float>(tex->width), static_cast<float>(tex->height),
+               0.f, 0.f, 0.f, static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+         }
    for (const auto& bulb : bulbs)
    {
       if (dualMode != B2SDualMode::Both && bulb->m_dualMode != B2SDualMode::Both && bulb->m_dualMode != dualMode)
          continue; // Dual backglass: only render bulbs matching the active mode
       if (bulb->m_bakedIntoBackground)
          continue; // Drawn as part of the lit background image
+      // B2S Pro: snippits behind the canvas are drawn before it so its alpha masks them (pass 0), the rest after (pass 1)
+      if (pass != 2 && bulb->m_pro.snippitBehindCanvas != (pass == 0))
+         continue;
       const bool locked = server && !bulb->m_name.empty() && server->IsIlluminationLocked(bulb->m_name);
       // ROM polling: a ROM state change counts as a write into the same channel as script writes
       // (the reference routes both through the same shared state, the most recent one wins), so the
@@ -581,8 +724,45 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
       // and physics balls drawn where the simulation put them, turned by their rolling angle
       float pivotX = 0.5f, pivotY = 0.5f;
       float drawX = static_cast<float>(bulb->m_locationX), drawY = static_cast<float>(bulb->m_locationY);
+      float drawBrightness = bulb->m_brightness;
+      // B2S Pro flasher pulse: each off to on edge shows the artwork for the authored duration, whatever the
+      // state does meanwhile (a momentary pulse returns off at once, a held flasher still ends after it)
+      if (bulb->m_pro.flasherPulseDuration > 0 && bulb->m_snippitType == B2SSnippitType::StandardImage)
+      {
+         B2SBulb::ProRuntime& rt = bulb->m_proRt;
+         const bool on = bulb->m_brightness > 0.f;
+         if (on && !rt.pulsePrevOn)
+         {
+            rt.pulseActive = true;
+            rt.pulseRemainingS = static_cast<float>(bulb->m_pro.flasherPulseDuration) / 1000.f;
+         }
+         rt.pulsePrevOn = on;
+         if (rt.pulseActive)
+         {
+            rt.pulseRemainingS -= elapsed;
+            if (rt.pulseRemainingS <= 0.f)
+               rt.pulseActive = false;
+         }
+         drawBrightness = rt.pulseActive ? 1.f : 0.f;
+      }
       if (bulb->m_snippitType == B2SSnippitType::StandardImage)
       {
+         // B2S Pro dynamic front light: never drawn as a plain image. A separate light layer draws its artwork
+         // here (above the snippits), then the lit overlays of the snippits below it
+         if (IsProDynamicLight(*bulb))
+         {
+            if (drawBrightness > 0.f)
+            {
+               if (bulb->m_pro.separateLightLayer && bulb->m_image != nullptr)
+               {
+                  const VPXTextureInfo* const tex = GetTextureInfo(bulb->m_image);
+                  ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness, 0.f, 0.f, static_cast<float>(tex->width),
+                     static_cast<float>(tex->height), 0.f, 0.f, 0.f, drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+               }
+               RenderProDynamicLight(ctx, *bulb, bulbs, dualMode);
+            }
+            continue;
+         }
          if (bulb->HasProPivot() || bulb->HasProRotation())
          {
             rotation = bulb->m_proRt.angle;
@@ -600,15 +780,15 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
                float fx, fy, fw, fh;
                if (const VPXTexture frame = bulb->m_proRt.physicsBall->MaskedFrame(fx, fy, fw, fh); frame != nullptr)
                {
-                  if (bulb->m_brightness > 0.f)
-                     ctx->DrawImage(ctx, frame, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness, 0.f, 0.f, fw, fh, fw * 0.5f, fh * 0.5f, 0.f, fx, fy, fw, fh);
+                  if (drawBrightness > 0.f)
+                     ctx->DrawImage(ctx, frame, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness, 0.f, 0.f, fw, fh, fw * 0.5f, fh * 0.5f, 0.f, fx, fy, fw, fh);
                   continue;
                }
             }
          }
       }
 
-      if (bulb->m_offImage && bulb->m_brightness < 1.f)
+      if (bulb->m_offImage && drawBrightness < 1.f)
       {
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_offImage);
          ctx->DrawImage(ctx, bulb->m_offImage, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, 1.f,
@@ -619,7 +799,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
       if (bulb->m_image)
       {
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_image);
-         ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness,
+         ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
             static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
             drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
@@ -627,18 +807,22 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
    }
 }
 
-void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores, float elapsed)
+void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores, float elapsed, const int pass)
 {
    if (server == nullptr)
       return;
    // B2SHideScoreDisplays/animations only hide LED score displays, reel displays keep rendering
    const bool ledDisplaysHidden = server->AreScoreDisplaysHidden();
+   // Two pass drawing for B2S Pro displays behind the canvas: pass 0 (before the canvas) updates the
+   // states and draws those, pass 1 draws the others from the states already advanced; pass 2 does both
+   const bool update = pass != 1;
+   const auto drawsNow = [pass](const B2SScore& reel) { return pass == 2 || reel.m_pro.behindCanvas == (pass == 0); };
 
    vector<SegElementType> segTypes;
    vector<float> luminances;
    vector<VPXSegDisplayRenderStyle> styles;
    vector<VPXSegDisplayHint> hints;
-   m_segSources.With([&segTypes, &styles, &hints, &luminances, server](const std::vector<SegSrcId>& segDisplays){
+   m_segSources.With([&segTypes, &styles, &hints, &luminances, server, update](const std::vector<SegSrcId>& segDisplays){
       int digitIndex = 1;
       for (const auto& display : segDisplays)
       {
@@ -693,11 +877,14 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
             // Default is empty
             default: ret = -1; break;
             }
-            server->B2SSetScoreDigit(digitIndex, ret);
-            // Keep the raw segment mask: script digits decode to value-only, but frame-fed displays
-            // need the full mask (alphanumeric glyphs do not decode to a digit). Must be applied
-            // after B2SSetScoreDigit which clears the mask.
-            server->ApplyScoreSegments(digitIndex, bitState);
+            if (update)
+            {
+               server->B2SSetScoreDigit(digitIndex, ret);
+               // Keep the raw segment mask: script digits decode to value-only, but frame-fed displays
+               // need the full mask (alphanumeric glyphs do not decode to a digit). Must be applied
+               // after B2SSetScoreDigit which clears the mask.
+               server->ApplyScoreSegments(digitIndex, bitState);
+            }
             digitIndex++;
          }
       }
@@ -741,11 +928,18 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
       // B2S server — one Dream7Display per LED display, or one simple LED box per digit
       if (!upgradedSegRenderingProp_Get() && (reel.m_scoreType == B2SScoreRenderer::Dream7 || reel.m_scoreType == B2SScoreRenderer::RenderedLED))
       {
+         if (!drawsNow(reel))
+         {
+            if (reel.m_b2sPlayerNo != 0)
+               playerScoreOffset[reel.m_b2sPlayerNo] += static_cast<size_t>(reel.m_digits);
+            continue;
+         }
          const int usedLEDType = server->GetUsedLEDType();
          const bool dream7 = (usedLEDType == 2) || (usedLEDType != 1 && reel.m_scoreType == B2SScoreRenderer::Dream7);
          RenderLegacyScoreDisplay(ctx, server, reel, dream7, segTypes, playerScoreText, playerScoreOffset);
          continue;
       }
+      const bool draw = drawsNow(reel);
 
       const float width = (static_cast<float>(reel.m_width) - 0.5f * static_cast<float>((reel.m_digits - 1) * reel.m_spacing)) / static_cast<float>(reel.m_digits);
 
@@ -809,18 +1003,21 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
                B2SReelDigit& st = m_reelDigits[index];
                const B2SReelImage* cur = m_b2s->m_reels.GetImage(reel.m_reelType, st.Current(), illuminated, reel.m_reelIlluImageSet);
                const int intermediates = cur ? cur->m_countOfIntermediate : 0;
-               st.SetIlluminated(illuminated, intermediates);
-               // Player displays are updated from decoded pinmame frames so they always roll;
-               // script driven displays roll when B2SSetScore/B2SSetReel raised the roll flag.
-               // LED image displays never roll (B2SReelBox::isLED).
-               st.SetTarget(digit, reel.m_scoreType == B2SScoreRenderer::Reel && (reel.m_b2sPlayerNo != 0 || server->ConsumeScoreDigitRoll(index)));
-               if (!hold[static_cast<size_t>(i)] && st.Update(elapsed, scores.m_reelRollingInterval, intermediates, rollUp))
+               if (update)
                {
-                  // Reel roll sound: per-digit Sound1..N attribute, or the display wide Sound attribute
-                  const string& soundName
-                     = (i < static_cast<int>(reel.m_soundNames.size()) && !reel.m_soundNames[static_cast<size_t>(i)].empty()) ? reel.m_soundNames[static_cast<size_t>(i)] : reel.m_soundName;
-                  if (!soundName.empty() && soundName != "stille"sv)
-                     server->B2SPlaySound(soundName);
+                  st.SetIlluminated(illuminated, intermediates);
+                  // Player displays are updated from decoded pinmame frames so they always roll;
+                  // script driven displays roll when B2SSetScore/B2SSetReel raised the roll flag.
+                  // LED image displays never roll (B2SReelBox::isLED).
+                  st.SetTarget(digit, reel.m_scoreType == B2SScoreRenderer::Reel && (reel.m_b2sPlayerNo != 0 || server->ConsumeScoreDigitRoll(index)));
+                  if (!hold[static_cast<size_t>(i)] && st.Update(elapsed, scores.m_reelRollingInterval, intermediates, rollUp))
+                  {
+                     // Reel roll sound: per-digit Sound1..N attribute, or the display wide Sound attribute
+                     const string& soundName
+                        = (i < static_cast<int>(reel.m_soundNames.size()) && !reel.m_soundNames[static_cast<size_t>(i)].empty()) ? reel.m_soundNames[static_cast<size_t>(i)] : reel.m_soundName;
+                     if (!soundName.empty() && soundName != "stille"sv)
+                        server->B2SPlaySound(soundName);
+                  }
                }
                shownDigit = st.Current();
                intermediate = st.Intermediate();
@@ -828,14 +1025,41 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
                const VPXTexture texture = (reelImage && intermediate > 0 && intermediate <= static_cast<int>(reelImage->m_intermediates.size()))
                   ? reelImage->m_intermediates[static_cast<size_t>(intermediate - 1)]
                   : nullptr;
-               if (reelImage && (texture != nullptr || reelImage->m_image != nullptr))
+               if (draw && reelImage && (texture != nullptr || reelImage->m_image != nullptr))
                {
-                  const VPXTexture img = texture != nullptr ? texture : reelImage->m_image;
+                  VPXTexture img = texture != nullptr ? texture : reelImage->m_image;
                   const VPXTextureInfo* texInfo = GetTextureInfo(img);
+                  // B2S Pro: digit box of the artwork. KeepDigitAspect fits the image (or stretches it to
+                  // ReelDigitWidth) inside the digit, centred, instead of filling it
+                  float dx = x, dy = static_cast<float>(reel.m_locY), dw = width, dh = static_cast<float>(reel.m_height);
+                  if (reel.m_pro.keepDigitAspect && texInfo != nullptr && texInfo->width > 0 && texInfo->height > 0)
+                  {
+                     const float aspect = static_cast<float>(texInfo->width) / static_cast<float>(texInfo->height);
+                     if (reel.m_pro.reelDigitWidth > 0)
+                        dw = std::min(width, static_cast<float>(reel.m_pro.reelDigitWidth));
+                     else
+                        dw = std::min(width, dh * aspect);
+                     dh = std::min(static_cast<float>(reel.m_height), dw / aspect);
+                     dw = dh * aspect;
+                     dx = x + (width - dw) * 0.5f;
+                     dy = static_cast<float>(reel.m_locY) + (static_cast<float>(reel.m_height) - dh) * 0.5f;
+                  }
+                  // B2S Pro 3D reel: the backlight follows the reel illumination lamp when there is one
+                  if (reel.m_pro.reel3DEnabled)
+                  {
+                     const bool backlightOn = reel.m_reelIlluB2SID <= 0 || illuminated;
+                     if (const VPXTexture drum = Reel3DTexture(img, std::max(1, static_cast<int>(std::lround(dw))), std::max(1, static_cast<int>(std::lround(dh))),
+                            backlightOn ? reel.m_pro.reel3DBrightness : 0, backlightOn ? reel.m_pro.reel3DTemperature : 4000, reel.m_pro.reel3DDepth);
+                        drum != nullptr)
+                     {
+                        img = drum;
+                        texInfo = GetTextureInfo(img);
+                     }
+                  }
                   ctx->DrawImage(ctx, img, 1.f, 1.f, 1.f, 1.f, //
                      0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), //
                      0.f, 0.f, 0.f, // No rotation
-                     x, static_cast<float>(reel.m_locY), width, static_cast<float>(reel.m_height));
+                     dx, dy, dw, dh);
                }
             }
             break;
@@ -884,6 +1108,8 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
             const vec4 litColor = (style == VPXSegDisplayRenderStyle::VPXSegStyle_GenPlasma || style == VPXSegDisplayRenderStyle::VPXSegStyle_GenLED)
                ? vec4(InvsRGB(reel.m_reelLitColor.x), InvsRGB(reel.m_reelLitColor.y), InvsRGB(reel.m_reelLitColor.z), 1.f)
                : vec4(1.f, 1.f, 1.f, 1.f);
+            if (!draw)
+               break;
             ctx->DrawSegDisplay(ctx, style, hint,
                // First layer: neutral glass, there is no glass texture
                nullptr, 1.f, 1.f, 1.f, 0.15f, // Glass texture, tint and roughness
@@ -899,6 +1125,12 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
             break;
          }
       }
+
+      // B2S Pro 3D reel: one glass window overlay (inset shadow and reflection) across the whole display
+      if (draw && reel.m_pro.reel3DEnabled && reel.m_scoreType == B2SScoreRenderer::Reel && reel.m_width > 2 && reel.m_height > 2)
+         if (const VPXTexture overlay = Reel3DOverlay(reel, reel.m_width, reel.m_height); overlay != nullptr)
+            ctx->DrawImage(ctx, overlay, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(reel.m_width), static_cast<float>(reel.m_height), 0.f, 0.f, 0.f,
+               static_cast<float>(reel.m_locX), static_cast<float>(reel.m_locY), static_cast<float>(reel.m_width), static_cast<float>(reel.m_height));
    }
 }
 
@@ -1086,6 +1318,9 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
             0.f, // No rotation
             0.f, 0.f, m_b2sWidth, m_b2sHeight);
    }
+   // B2S Pro: snippits and score displays behind the canvas, which then masks them through its transparent openings
+   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed, dualMode, 0);
+   RenderScores(ctx, server, m_b2s->m_backglassScores, elapsed, 0);
 
    if (onImage.m_image == nullptr || onImage.m_brightness < 1.f)
    {
@@ -1108,8 +1343,8 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
    }
 
    // Draw illuminations, scores and DMD overlays
-   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed, dualMode);
-   RenderScores(ctx, server, m_b2s->m_backglassScores, elapsed);
+   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations, elapsed, dualMode, 1);
+   RenderScores(ctx, server, m_b2s->m_backglassScores, elapsed, 1);
    const VPXTexture backImage = m_b2s->m_backglassImage.m_image ? m_b2s->m_backglassImage.m_image
       : m_b2s->m_backglassOffImage.m_image                      ? m_b2s->m_backglassOffImage.m_image
                                                                 : m_b2s->m_backglassOnImage.m_image;
@@ -1141,8 +1376,8 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
          0.f, 0.f, m_dmdWidth, m_dmdHeight);
 
    // Draw illuminations, scores and DMD overlays
-   RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations, elapsed, B2SDualMode::Both); // Reference does not dual-filter score view bulbs
-   RenderScores(ctx, server, m_b2s->m_dmdScores, elapsed);
+   RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations, elapsed, B2SDualMode::Both, 2); // Reference does not dual-filter score view bulbs
+   RenderScores(ctx, server, m_b2s->m_dmdScores, elapsed, 2);
    RenderDisplays(ctx, server, 1, m_b2s->m_dmdImage.m_image);
 
    return true;
