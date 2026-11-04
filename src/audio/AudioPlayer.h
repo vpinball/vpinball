@@ -102,7 +102,7 @@ public:
    // Spatial audio: positions sounds in 3D and binauralizes them for headphone rendering.
    // Intended for VR play (head tracked listener pose through SetListenerPose).
    void SetTableDimensions(float width, float height); // in table units, used for the default listener pose and legacy pan/fade to position mapping
-   void SetListenerPose(float x, float y, float z, float yaw, float pitch, float roll);
+   void SetListenerPose(float x, float y, float z, float yaw, float pitch, float roll); // head tracked pose (VR), drives both spatialization and distance attenuation
    void SetSpatialMode(bool backglass, bool playfield); // enable/disable spatial rendering per output
    bool IsSpatialAudioEnabled(SoundOutTypes out) const { return GetSpatialMixer(out) != nullptr; }
    SpatialAudioMixer* GetSpatialMixer(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldSpatial.get() : m_backglassSpatial.get(); }
@@ -129,6 +129,7 @@ public:
 private:
    void PlaySoundInternal(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart,
       bool hasPos, float posX, float posY, float posZ);
+   void SetReferencePose(float x, float y, float z, float yaw, float pitch, float roll); // canonical listener pose used as the distance attenuation reference
 
    float m_playfieldVolume = 1.f;
    float m_backglassVolume = 1.f;
@@ -138,6 +139,7 @@ private:
    float m_tableWidth = 950.f;
    float m_tableHeight = 2100.f;
    float m_listenerPose[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+   float m_referencePose[6] = { 475.f, 2450.f, 1000.f, 0.f, 0.f, 0.f }; // canonical pose matching the default table dimensions
    std::unique_ptr<SpatialAudioMixer> m_backglassSpatial;
    std::unique_ptr<SpatialAudioMixer> m_playfieldSpatial;
 

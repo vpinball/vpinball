@@ -64,6 +64,9 @@ public:
    // Returns a ma_node* (declared as void* to avoid including miniaudio.h here)
    void* GetMixBus() const;
    SpatialAudioListener* GetListener() { return &m_listener; }
+   // Canonical listener pose (the fixed fake pose the tables' loudness is
+   // authored for), used as the reference for distance attenuation
+   SpatialAudioListener* GetReferenceListener() { return &m_referenceListener; }
 
    // Switch between loudspeaker decoding and binaural rendering (headphones, VR).
    void SetBinauralEnabled(bool enabled);
@@ -80,6 +83,7 @@ public:
 
 private:
    SpatialAudioListener m_listener;
+   SpatialAudioListener m_referenceListener;
    std::unique_ptr<Impl> m_impl;
 };
 

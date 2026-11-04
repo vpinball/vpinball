@@ -414,6 +414,7 @@ struct SpatialAudioSource::Impl
 {
    vpx_spatial_src_node node;
    SpatialAudioListener* listener = nullptr;
+   SpatialAudioListener* referenceListener = nullptr;
    unsigned int inChannels = 0;
    spaudio::AmbisonicEncoder encoderL;
    spaudio::AmbisonicEncoder encoderR;
@@ -438,12 +439,13 @@ struct SpatialAudioSource::Impl
 
    void UpdatePosition()
    {
-      float azimuth, elevation, distance; // angles in radians
+      float azimuth, elevation, distance, refDistance; // angles in radians, distances in meters
       if (polarMode.load(std::memory_order_relaxed))
       {
          azimuth = spaudio::DegreesToRadians(polAzimuth.load(std::memory_order_relaxed));
          elevation = spaudio::DegreesToRadians(polElevation.load(std::memory_order_relaxed));
          distance = polDistance.load(std::memory_order_relaxed);
+         refDistance = std::max(0.01f, referenceDistance.load(std::memory_order_relaxed));
       }
       else
       {
@@ -453,17 +455,29 @@ struct SpatialAudioSource::Impl
          // not applied here: sources are encoded in table space (listener
          // looking toward the backglass, i.e. -y) and the mixer rotates the
          // whole soundfield to the actual head orientation.
-         const float dx = (posX.load(std::memory_order_relaxed) - lx) * kVPUToMeters; // right
-         const float dy = (posY.load(std::memory_order_relaxed) - ly) * kVPUToMeters; // toward the lockbar/player
-         const float dz = (posZ.load(std::memory_order_relaxed) - lz) * kVPUToMeters; // up
+         const float srcX = posX.load(std::memory_order_relaxed);
+         const float srcY = posY.load(std::memory_order_relaxed);
+         const float srcZ = posZ.load(std::memory_order_relaxed);
+         const float dx = (srcX - lx) * kVPUToMeters; // right
+         const float dy = (srcY - ly) * kVPUToMeters; // toward the lockbar/player
+         const float dz = (srcZ - lz) * kVPUToMeters; // up
          const float forward = -dy;
          const float flat = sqrtf(dx * dx + forward * forward);
          azimuth = atan2f(-dx, forward); // positive azimuth = left
          elevation = atan2f(dz, flat);
          distance = sqrtf(flat * flat + dz * dz);
+         // Reference distance is the distance from the canonical listener pose
+         // (the fake pose the tables' loudness is authored for) to the source:
+         // the tracked pose only modulates loudness relative to the authored
+         // balance instead of applying a global attenuation
+         float rlx, rly, rlz, ryaw, rpitch, rroll;
+         referenceListener->GetPose(rlx, rly, rlz, ryaw, rpitch, rroll);
+         const float rdx = (srcX - rlx) * kVPUToMeters;
+         const float rdy = (srcY - rly) * kVPUToMeters;
+         const float rdz = (srcZ - rlz) * kVPUToMeters;
+         refDistance = std::max(0.01f, sqrtf(rdx * rdx + rdy * rdy + rdz * rdz));
       }
       // Distance attenuation around the reference distance (closer = louder, farther = quieter)
-      const float refDistance = std::max(0.01f, referenceDistance.load(std::memory_order_relaxed));
       const float distGain = clamp(refDistance / std::max(refDistance, distance), 0.f, 3.f);
       const float vol = volume.load(std::memory_order_relaxed);
       const float balance = clamp(channelBalance.load(std::memory_order_relaxed), -1.f, 1.f);
@@ -547,6 +561,7 @@ SpatialAudioSource::SpatialAudioSource(ma_engine* engine, SpatialAudioMixer* mix
 {
    m_impl->inChannels = inChannels;
    m_impl->listener = mixer->GetListener();
+   m_impl->referenceListener = mixer->GetReferenceListener();
    const unsigned int sampleRate = ma_engine_get_sample_rate(engine);
    m_impl->encoderL.Configure(kAmbiOrder, true, sampleRate, kPositionFadeMs);
    m_impl->encoderR.Configure(kAmbiOrder, true, sampleRate, kPositionFadeMs);
