@@ -65,7 +65,7 @@ namespace
       fprintf(f, "System: ");
       if (major == 10)
       {
-         fprintf(f, "Windows 10 (%lu.%lu %lu%s)\n", major, minor, build, VER_NT_WORKSTATION ? "" : " Server");
+         fprintf(f, "Windows %u (%lu.%lu %lu%s)\n", build >= 22000 ? 11 : 10, major, minor, build, VER_NT_WORKSTATION ? "" : " Server");
       }
       else if (major == 6 && minor == 2)
       {
