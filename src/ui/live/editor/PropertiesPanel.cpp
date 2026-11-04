@@ -24,28 +24,31 @@ namespace VPX::EditorUI
 {
 
 PropertiesPanel::PropertiesPanel(EditorUI &editor)
-   : m_editor(editor)
+   : EditorAreaView(editor)
 {
 }
 
 PropertiesPanel::~PropertiesPanel() = default;
 
-void PropertiesPanel::Render(float topBarHeight)
+void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
 {
    EditorUI &editor = m_editor;
    if (editor.m_table->IsLocked())
       return;
 
-   const ImGuiViewport *const viewport = ImGui::GetMainViewport();
-   const float pane_width = PaneWidth * editor.m_liveUI.GetDPI();
-   ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x - pane_width, viewport->Pos.y + topBarHeight));
-   ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - topBarHeight));
+   char name[32];
+   snprintf(name, sizeof(name), "##Pane%d", leafId);
+   ImGui::SetNextWindowPos(ImVec2(rect.x0, rect.y0));
+   ImGui::SetNextWindowSize(ImVec2(rect.Width(), rect.Height()));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * editor.m_liveUI.GetDPI(), 4.0f * editor.m_liveUI.GetDPI()));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-   ImGui::Begin("PROPERTIES", nullptr,
+   ImGui::Begin(name, nullptr,
       ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
          | ImGuiWindowFlags_NoNavFocus);
+   ImGui::PushID(leafId);
+   editor.RenderAreaTypeButton(leafId);
+   ImGui::SameLine();
 
    // Multi-edit only applies to uniform selections: all selected parts of the same type as the active one
    const bool uniformPartSel = editor.m_selection.GetType() == Selection::S_EDITABLE && editor.m_multiSel.size() > 1
@@ -205,6 +208,7 @@ void PropertiesPanel::Render(float topBarHeight)
 
    RenderPopups();
 
+   ImGui::PopID();
    ImGui::End();
    ImGui::PopStyleVar(3);
 }

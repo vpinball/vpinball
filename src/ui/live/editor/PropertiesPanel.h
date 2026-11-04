@@ -6,6 +6,7 @@
 
 #include "audio/AudioPlayer.h"
 #include "imgui/imgui.h"
+#include "EditorAreaView.h"
 
 class Collection;
 class Material;
@@ -23,17 +24,19 @@ namespace VPX::EditorUI
 class EditorUI;
 class PropertyPane;
 
-// Right side panel displaying the properties of the current selection (table,
-// camera view setup, image, material, render probe, sound or editable part).
-class PropertiesPanel
+// Panel displaying the properties of the current selection (table, camera view
+// setup, image, material, render probe, sound or editable part). Hosted by a
+// leaf of the area layout (several instances may coexist).
+class PropertiesPanel : public EditorAreaView
 {
 public:
    explicit PropertiesPanel(EditorUI &editor);
    ~PropertiesPanel();
 
-   void Render(float topBarHeight);
+   AreaType GetType() const override { return AreaType::Properties; }
+   void RenderPane(const AreaRect &rect, int leafId) override;
 
-   // Width of the panel in logical pixels (scaled by the UI DPI)
+   // Default width of a newly hosted panel in logical pixels (scaled by the UI DPI)
    static constexpr float PaneWidth = 280.f;
 
 private:
@@ -57,8 +60,6 @@ private:
    void RequestConfirm(const string &message, const std::function<void()> &action);
    void UsersSection(PropertyPane &props, const vector<WhereUsedInfo> &whereUsed);
    void RenderPopups();
-
-   EditorUI &m_editor;
    bool m_selectLiveTab = true;
    ImGuiID m_prevActiveId = 0; // Item active on the previous frame (a different item taking the interaction ends the undo chain)
    size_t m_editChainRecord = 0; // Undo count just after the current interaction's record was kept (it is still the latest record while equal)

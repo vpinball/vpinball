@@ -314,6 +314,7 @@ set(VPX_SOURCES
    src/ui/live/editor/DecalUIPart.cpp
    src/ui/live/editor/DispReelUIPart.h
    src/ui/live/editor/DispReelUIPart.cpp
+   src/ui/live/editor/EditorAreaView.h
    src/ui/live/editor/EditorChrome.h
    src/ui/live/editor/EditorChrome.cpp
    src/ui/live/editor/EditorUIPart.h
@@ -371,6 +372,8 @@ set(VPX_SOURCES
    src/ui/live/editor/TimerUIPart.cpp
    src/ui/live/editor/TriggerUIPart.h
    src/ui/live/editor/TriggerUIPart.cpp
+   src/ui/live/editor/ViewportPane.h
+   src/ui/live/editor/ViewportPane.cpp
    
    src/ui/live/ingameui/InGameUI.cpp
    src/ui/live/ingameui/InGameUI.h
