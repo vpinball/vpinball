@@ -377,6 +377,10 @@ public:
    std::shared_ptr<MeshBuffer> m_quadPNTDynMeshBuffer; // internal vb for rendering dynamic quads (position/normal/texture)
    std::shared_ptr<MeshBuffer> m_quadPTDynMeshBuffer; // internal vb for rendering dynamic quads (position/texture)
 
+   // Basic shader matrix block for screen space rendering (desktop backdrop, ancillary outputs). World and view are identity so that shaders see the
+   // vertex position as table position (e.g. classic light halos), like on DX9. Layout depends on the shader eye count (see BasicShader.glfx)
+   void SetBasicShaderScreenSpaceMatrices(const Matrix3D& matWorldViewProj);
+
 private:
    GLfloat m_maxaniso;
    int m_GLversion;

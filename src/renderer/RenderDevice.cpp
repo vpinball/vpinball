@@ -1190,6 +1190,7 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
    }
 }
 #endif
+
 void RenderDevice::CaptureGLScreenshot()
 {
    assert(m_screenshotFilename.size() == 1);
@@ -1210,6 +1211,48 @@ void RenderDevice::CaptureGLScreenshot()
       success = tex->Save(screenshotFilename);
    }
    m_screenshotCallback(success);
+}
+
+void RenderDevice::SetBasicShaderScreenSpaceMatrices(const Matrix3D& matWorldViewProj)
+{
+   const Matrix3D identity = Matrix3D::MatrixIdentity();
+   if (m_nEyes == 2)
+   {
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView[2];
+         Matrix3D matWorldView[2];
+         Matrix3D matWorldViewInverseTranspose[2];
+         Matrix3D matWorldViewProj[2];
+      } matrices;
+      matrices.matWorld = identity;
+      for (int eye = 0; eye < 2; eye++)
+      {
+         matrices.matView[eye] = identity;
+         matrices.matWorldView[eye] = identity;
+         matrices.matWorldViewInverseTranspose[eye] = identity;
+         matrices.matWorldViewProj[eye] = matWorldViewProj;
+      }
+      m_basicShader->SetUniformBlock(ShaderUniform::basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   }
+   else
+   {
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView;
+         Matrix3D matWorldView;
+         Matrix3D matWorldViewInverseTranspose;
+         Matrix3D matWorldViewProj;
+      } matrices;
+      matrices.matWorld = identity;
+      matrices.matView = identity;
+      matrices.matWorldView = identity;
+      matrices.matWorldViewInverseTranspose = identity;
+      matrices.matWorldViewProj = matWorldViewProj;
+      m_basicShader->SetUniformBlock(ShaderUniform::basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   }
 }
 
 #elif defined(ENABLE_DX9)

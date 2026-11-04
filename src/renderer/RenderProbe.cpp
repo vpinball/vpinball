@@ -14,7 +14,7 @@ const string RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Ref
 
 RenderProbe::~RenderProbe()
 {
-   assert(m_prerenderRT == nullptr && m_dynamicRT == nullptr); // RenderRelease must be call before destructor
+   assert(m_viewState.empty()); // RenderRelease must be called before destructor
 }
 
 void RenderProbe::Save(IObjectWriter& writer, const bool saveForUndo)
@@ -49,10 +49,11 @@ void RenderProbe::Load(IObjectReader& reader)
       true);
 }
 
-void RenderProbe::SetName(const string& name)
-{
-   m_name = name;
-}
+void RenderProbe::SetName(const string& name) { m_name = name; }
+
+RenderProbe::ViewState& RenderProbe::State(const RenderView* view) { return m_viewState[view]; }
+
+RenderProbe::ViewState& RenderProbe::State() { return m_viewState[m_renderer->GetActiveView()]; }
 
 void RenderProbe::RenderSetup(Renderer* renderer)
 {
@@ -68,69 +69,73 @@ void RenderProbe::RenderRelease()
    m_renderer = nullptr;
    delete m_rdState;
    m_rdState = nullptr;
-   delete m_prerenderRT;
-   m_prerenderRT = nullptr;
-   delete m_dynamicRT;
-   m_dynamicRT = nullptr;
-   delete m_blurRT;
-   m_blurRT = nullptr;
-   delete m_desktopPrerenderRT;
-   m_desktopPrerenderRT = nullptr;
-   delete m_desktopDynamicRT;
-   m_desktopDynamicRT = nullptr;
-   delete m_desktopBlurRT;
-   m_desktopBlurRT = nullptr;
-   m_desktopStaticAccumCount = 0;
-   // Passes belong to the render frame of the released renderer
-   m_probePasses.clear();
-   m_copyPass = nullptr;
+   for (auto& [view, vs] : m_viewState)
+   {
+      delete vs.prerenderRT;
+      delete vs.dynamicRT;
+      delete vs.blurRT;
+   }
+   m_viewState.clear(); // Passes belong to the render frame of the released renderer
 }
 
-void RenderProbe::SwapDesktopTargets()
+
+void RenderProbe::MarkDirty(RenderView* view)
 {
-   std::swap(m_dynamicRT, m_desktopDynamicRT);
-   std::swap(m_prerenderRT, m_desktopPrerenderRT);
-   std::swap(m_blurRT, m_desktopBlurRT);
-   std::swap(m_staticAccumCount, m_desktopStaticAccumCount);
+   ViewState& vs = State(view);
+   vs.dirty = true;
+   vs.reflection_clip_bounds.x = vs.reflection_clip_bounds.y = vs.reflection_clip_bounds.z = vs.reflection_clip_bounds.w = FLT_MAX;
 }
 
 void RenderProbe::MarkDirty()
-{ 
-   m_dirty = true;
-   m_reflection_clip_bounds.x = m_reflection_clip_bounds.y = m_reflection_clip_bounds.z = m_reflection_clip_bounds.w = FLT_MAX;
+{
+   // Views without an entry are already dirty by default: only re-mark the ones that have rendered
+   for (auto& [view, vs] : m_viewState)
+   {
+      vs.dirty = true;
+      vs.reflection_clip_bounds.x = vs.reflection_clip_bounds.y = vs.reflection_clip_bounds.z = vs.reflection_clip_bounds.w = FLT_MAX;
+   }
 }
 
 bool RenderProbe::IsStaticAccumulationPending() const
 {
    // A probe accumulates its static parts over successive frames only when it is a dynamic reflection
    // rendered while the main renderer performs split static/dynamic rendering
+   const auto it = m_viewState.find(m_renderer != nullptr ? m_renderer->GetActiveView() : nullptr);
    return m_renderer != nullptr && m_type == PLANE_REFLECTION && min(m_reflection_mode, m_renderer->GetMaxReflectionMode()) == REFL_DYNAMIC && m_renderer->IsUsingStaticPrepass()
-      && m_staticAccumCount < STATIC_PRERENDER_ITERATIONS;
+      && (it == m_viewState.end() || it->second.staticAccumCount < STATIC_PRERENDER_ITERATIONS);
 }
 
-void RenderProbe::MarkDirtyStatics()
+void RenderProbe::MarkDirtyStatics(RenderView* view)
 {
+   ViewState& vs = State(view);
    // Discard the accumulated static render. Defer deletion to the render thread end-of-frame as already submitted frames may still hold copy commands sourcing this render target.
    // FIXME why don't we simply reuse it ?
-   if (m_prerenderRT)
-      m_renderer->m_renderDevice->AddEndOfFrameCmd([rt = m_prerenderRT]() { delete rt; });
-   m_prerenderRT = nullptr;
-   m_staticAccumCount = 0;
+   if (vs.prerenderRT)
+      m_renderer->m_renderDevice->AddEndOfFrameCmd([rt = vs.prerenderRT]() { delete rt; });
+   vs.prerenderRT = nullptr;
+   vs.staticAccumCount = 0;
 }
 
-void RenderProbe::ReleaseRenderTargets()
+void RenderProbe::ReleaseRenderTargets(RenderView* view)
 {
    if (m_renderer == nullptr)
       return;
+   const auto it = m_viewState.find(view);
+   if (it == m_viewState.end())
+      return;
+   ViewState& vs = it->second;
    // Deferred to end of frame, as already submitted frames may still use them
-   vector<RenderTarget*> released { m_prerenderRT, m_dynamicRT, m_blurRT };
+   vector<RenderTarget*> released { vs.prerenderRT, vs.dynamicRT, vs.blurRT };
    std::erase(released, nullptr);
    if (!released.empty())
-      m_renderer->m_renderDevice->AddEndOfFrameCmd([released]() { for (RenderTarget* rt : released) delete rt; });
-   m_prerenderRT = nullptr;
-   m_dynamicRT = nullptr;
-   m_blurRT = nullptr;
-   m_staticAccumCount = 0;
+      m_renderer->m_renderDevice->AddEndOfFrameCmd(
+         [released]()
+         {
+            for (RenderTarget* rt : released)
+               delete rt;
+         });
+   // Drop the whole entry: the released renders must be rebuilt anyway on next use
+   m_viewState.erase(it);
 }
 
 RenderTarget* RenderProbe::Render(const unsigned int renderMask)
@@ -146,32 +151,30 @@ RenderTarget* RenderProbe::Render(const unsigned int renderMask)
 
    switch (m_type)
    {
-   case PLANE_REFLECTION:
-      return RenderReflectionProbe(renderMask);
-      
-   case SCREEN_SPACE_TRANSPARENCY:
-      RenderScreenSpaceTransparency();
-      return m_dynamicRT;
-      
+   case PLANE_REFLECTION: return RenderReflectionProbe(renderMask);
+
+   case SCREEN_SPACE_TRANSPARENCY: RenderScreenSpaceTransparency(); return State().dynamicRT;
+
    default: assert(false); return nullptr;
    }
 }
 
 void RenderProbe::ExtendAreaOfInterest(const float xMin, const float xMax, const float yMin, const float yMax)
 {
-   if (m_reflection_clip_bounds.x == FLT_MAX)
+   ViewState& vs = State();
+   if (vs.reflection_clip_bounds.x == FLT_MAX)
    {
-      m_reflection_clip_bounds.x = xMin;
-      m_reflection_clip_bounds.y = yMin;
-      m_reflection_clip_bounds.z = xMax;
-      m_reflection_clip_bounds.w = yMax;
+      vs.reflection_clip_bounds.x = xMin;
+      vs.reflection_clip_bounds.y = yMin;
+      vs.reflection_clip_bounds.z = xMax;
+      vs.reflection_clip_bounds.w = yMax;
    }
    else
    {
-      m_reflection_clip_bounds.x = min(m_reflection_clip_bounds.x, xMin);
-      m_reflection_clip_bounds.y = min(m_reflection_clip_bounds.y, yMin);
-      m_reflection_clip_bounds.z = max(m_reflection_clip_bounds.z, xMax);
-      m_reflection_clip_bounds.w = max(m_reflection_clip_bounds.w, yMax);
+      vs.reflection_clip_bounds.x = min(vs.reflection_clip_bounds.x, xMin);
+      vs.reflection_clip_bounds.y = min(vs.reflection_clip_bounds.y, yMin);
+      vs.reflection_clip_bounds.z = max(vs.reflection_clip_bounds.z, xMax);
+      vs.reflection_clip_bounds.w = max(vs.reflection_clip_bounds.w, yMax);
    }
 }
 
@@ -181,30 +184,31 @@ void RenderProbe::ApplyAreaOfInterest()
    // may reach passes of another scene render using the same render target (e.g. the VR scene render and
    // the additional desktop scene render when VR desktop display is not an eye mirror) which must not be
    // clipped with this render's view dependent bounds.
-   for (RenderPass* pass : m_probePasses)
+   ViewState& vs = State();
+   for (RenderPass* pass : vs.probePasses)
    {
       if (m_type == SCREEN_SPACE_TRANSPARENCY)
       {
          // Since we don't know where the sampling will occur, we only apply AOI to the blur passes,
          // with a small arbitrary margin to account for IOR shift
-         if (pass == m_copyPass)
+         if (pass == vs.copyPass)
             continue;
          constexpr float margin = 0.05f;
-         pass->m_areaOfInterest.x = m_reflection_clip_bounds.x - margin;
-         pass->m_areaOfInterest.y = m_reflection_clip_bounds.y - margin;
-         pass->m_areaOfInterest.z = m_reflection_clip_bounds.z + margin;
-         pass->m_areaOfInterest.w = m_reflection_clip_bounds.w + margin;
+         pass->m_areaOfInterest.x = vs.reflection_clip_bounds.x - margin;
+         pass->m_areaOfInterest.y = vs.reflection_clip_bounds.y - margin;
+         pass->m_areaOfInterest.z = vs.reflection_clip_bounds.z + margin;
+         pass->m_areaOfInterest.w = vs.reflection_clip_bounds.w + margin;
       }
       else
       {
          // TODO we should enlarge the AOI to account for the blur kernel size
          // We do not apply to pass with just a clear command to avoid sampling artefacts
          if (!(pass->m_commands.size() == 1 && pass->m_commands[0]->IsFullClear(false)))
-            pass->m_areaOfInterest = m_reflection_clip_bounds;
+            pass->m_areaOfInterest = vs.reflection_clip_bounds;
       }
    }
    // Consume the pass list so that a following scene render (e.g. VR desktop scene) only applies its own bounds to its own passes
-   m_probePasses.clear();
+   vs.probePasses.clear();
 }
 
 
@@ -221,10 +225,11 @@ int RenderProbe::GetRoughnessDownscale(const int roughness) const
 void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 {
    assert(0 <= roughness && roughness <= 12);
+   ViewState& vs = State();
    if (roughness > 0)
    {
-      if (m_blurRT == nullptr)
-         m_blurRT = probe->Duplicate(probe->m_name+".Blur", true);
+      if (vs.blurRT == nullptr)
+         vs.blurRT = probe->Duplicate(probe->m_name + ".Blur", true);
       // The kernel sizes were chosen by reverse engineering the blur shader. So there's a part of guess here.
       // The blur shader seems to mix binomial & gaussian distributions, with a kernel size which does not directly match the pascal triangle size.
       // Ideally this should be a gaussian distribution's sigma, scaled by the render height against a reference height.
@@ -232,12 +237,12 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
       {
          // FIXME adjust the kernels to have as many as there are roughness levels
          static constexpr float kernel[] = { 0.f, 7.f, 9.f, 11.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f, 39.f, 39.f, 39.f };
-         m_renderer->m_renderDevice->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
+         m_renderer->m_renderDevice->DrawGaussianBlur(probe, vs.blurRT, probe, kernel[roughness]);
       }
       else
       {
          static constexpr float kernel[] = { 0.f, 7.f, 9.f, 13.f, 15.f, 19.f, 23.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f };
-         m_renderer->m_renderDevice->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
+         m_renderer->m_renderDevice->DrawGaussianBlur(probe, vs.blurRT, probe, kernel[roughness]);
       }
    }
 }
@@ -248,26 +253,27 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
 
 void RenderProbe::RenderScreenSpaceTransparency()
 {
-   if (!m_dirty)
+   ViewState& vs = State();
+   if (!vs.dirty)
       return;
-   
-   m_dirty = false;
+
+   vs.dirty = false;
    RenderPass* const renderedPass = m_renderer->m_renderDevice->GetCurrentPass();
    const size_t firstPass = m_renderer->m_renderDevice->GetRenderFramePasses().size();
-   if (m_dynamicRT == nullptr)
+   if (vs.dynamicRT == nullptr)
    {
       const int downscale = GetRoughnessDownscale(m_roughness);
       const int w = renderedPass->m_rt->GetWidth() / downscale, h = renderedPass->m_rt->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(
+      vs.dynamicRT = new RenderTarget(
          m_renderer->m_renderDevice, renderedPass->m_rt->m_type, m_name, w, h, renderedPass->m_rt->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
    }
    m_renderer->m_renderDevice->m_basicShader->SetTextureNull(ShaderUniform::tex_refraction);
-   m_renderer->m_renderDevice->SetRenderTarget(m_name, m_dynamicRT, false);
-   m_renderer->m_renderDevice->BlitRenderTarget(renderedPass->m_rt, m_dynamicRT, true, true);
-   m_copyPass = m_renderer->m_renderDevice->GetCurrentPass();
-   ApplyRoughness(m_dynamicRT, m_roughness);
+   m_renderer->m_renderDevice->SetRenderTarget(m_name, vs.dynamicRT, false);
+   m_renderer->m_renderDevice->BlitRenderTarget(renderedPass->m_rt, vs.dynamicRT, true, true);
+   vs.copyPass = m_renderer->m_renderDevice->GetCurrentPass();
+   ApplyRoughness(vs.dynamicRT, m_roughness);
    const vector<RenderPass*>& framePasses = m_renderer->m_renderDevice->GetRenderFramePasses();
-   m_probePasses.insert(m_probePasses.end(), framePasses.begin() + firstPass, framePasses.end());
+   vs.probePasses.insert(vs.probePasses.end(), framePasses.begin() + firstPass, framePasses.end());
    m_renderer->m_renderDevice->SetRenderTarget(renderedPass->m_name, renderedPass->m_rt, false);
    m_renderer->m_renderDevice->GetCurrentPass()->AddPrecursor(renderedPass);
    renderedPass->MarkInterrupted();
@@ -285,9 +291,7 @@ void RenderProbe::GetReflectionPlane(vec4& plane) const
    plane.w = m_reflection_plane.w;
 }
 
-void RenderProbe::SetReflectionPlane(const vec4& plane) {
-   m_reflection_plane = plane;
-}
+void RenderProbe::SetReflectionPlane(const vec4& plane) { m_reflection_plane = plane; }
 
 vec3 RenderProbe::GetReflectionPlaneNormal() const { return vec3(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z); }
 
@@ -302,23 +306,23 @@ void RenderProbe::SetReflectionPlaneNormal(const vec3& normal)
 
 void RenderProbe::SetReflectionPlaneDistance(float distance) { m_reflection_plane.w = distance; }
 
-void RenderProbe::SetReflectionMode(ReflectionMode mode) 
+void RenderProbe::SetReflectionMode(ReflectionMode mode)
 {
-   assert(m_reflection_mode == mode || m_dynamicRT == nullptr); // Reflection mode may not be changed between RenderSetup/RenderRelease
+   assert(m_reflection_mode == mode || m_viewState.empty()); // Reflection mode may not be changed between RenderSetup/RenderRelease
    m_reflection_mode = mode;
 }
 
 RenderTarget* RenderProbe::GetRenderTarget(bool isStaticRT)
 {
-   RenderTarget*& rt = isStaticRT ? m_prerenderRT : m_dynamicRT;
+   ViewState& vs = State();
+   RenderTarget*& rt = isStaticRT ? vs.prerenderRT : vs.dynamicRT;
    if (rt == nullptr)
    {
       int w, h;
       m_renderer->GetRenderSizeAA(w, h);
       const int downscale = GetRoughnessDownscale(m_roughness);
-      rt = new RenderTarget(m_renderer->m_renderDevice, m_renderer->IsStereo() ? SurfaceType::RT_STEREO : SurfaceType::RT_DEFAULT,
-         m_name + (isStaticRT ? ".Stat" : ".Dyn"), w / downscale, h / downscale, m_renderer->GetRenderFormat(), true, 1,
-         "Failed to create plane reflection render target", nullptr);
+      rt = new RenderTarget(m_renderer->m_renderDevice, m_renderer->IsStereo() ? SurfaceType::RT_STEREO : SurfaceType::RT_DEFAULT, m_name + (isStaticRT ? ".Stat" : ".Dyn"), w / downscale,
+         h / downscale, m_renderer->GetRenderFormat(), true, 1, "Failed to create plane reflection render target", nullptr);
    }
    return rt;
 }
@@ -333,25 +337,24 @@ RenderTarget* RenderProbe::GetRenderTarget(bool isStaticRT)
 RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 {
    assert(m_renderer != nullptr);
+   ViewState& vs = State();
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    assert((renderMask & Renderer::REFLECTION_PASS) == 0);
    const ReflectionMode mode = min(m_reflection_mode, m_renderer->GetMaxReflectionMode());
 
-   if (mode == REFL_NONE
-      || (isStaticOnly && (mode == REFL_BALLS || mode == REFL_DYNAMIC))
-      || (isDynamicOnly && (mode == REFL_STATIC)))
+   if (mode == REFL_NONE || (isStaticOnly && (mode == REFL_BALLS || mode == REFL_DYNAMIC)) || (isDynamicOnly && (mode == REFL_STATIC)))
       return nullptr;
-      
-   if (!m_dirty)
+
+   if (!vs.dirty)
    {
       // The renderer must not switch from split (static then dynamic) rendering to global mid frame
-      assert(m_isSplitRendering == (isStaticOnly || isDynamicOnly));
-      return m_dynamicRT;
+      assert(vs.isSplitRendering == (isStaticOnly || isDynamicOnly));
+      return vs.dynamicRT;
    }
-   
-   m_dirty = false;
-   m_isSplitRendering = isStaticOnly || isDynamicOnly;
+
+   vs.dirty = false;
+   vs.isSplitRendering = isStaticOnly || isDynamicOnly;
 
    m_rendering = true;
    RenderPass* const previousRT = m_renderer->m_renderDevice->GetCurrentPass();
@@ -379,7 +382,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    // Flip camera
    m_renderer->SetReflection(Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w));
 
-   // The final render is always done on m_dynamicRT
+   // The final render is always done on vs.dynamicRT
    RenderTarget* dynamicRT = GetRenderTarget(false);
 
    if (isStaticOnly)
@@ -398,13 +401,13 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
          RenderTarget* accumulateRT = GetRenderTarget(true);
 
          // 1. Accumulate
-         if (m_staticAccumCount < STATIC_PRERENDER_ITERATIONS)
+         if (vs.staticAccumCount < STATIC_PRERENDER_ITERATIONS)
          {
             // Setup the view matrices with a jitter depending on the accumulation step.
             // The first accumulated sample always uses a centered offset so that the acquired depth buffer is the unjittered one.
-            const bool isFirstSample = m_staticAccumCount == 0;
-            float u1 = xyLDBNbnot[m_staticAccumCount * 2];
-            float u2 = xyLDBNbnot[m_staticAccumCount * 2 + 1];
+            const bool isFirstSample = vs.staticAccumCount == 0;
+            float u1 = xyLDBNbnot[vs.staticAccumCount * 2];
+            float u2 = xyLDBNbnot[vs.staticAccumCount * 2 + 1];
             if (!isFirstSample)
             {
                // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
@@ -413,7 +416,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
                assert(u1 > -1.5f && u1 < 1.5f);
                assert(u2 > -1.5f && u2 < 1.5f);
                // First accumulated sample MUST set a sample offset of 0,0 so that the depth buffer features 'correctly' centered pixel sample
-               assert(m_staticAccumCount != 0 || (u1 == 0.f && u2 == 0.f));
+               assert(vs.staticAccumCount != 0 || (u1 == 0.f && u2 == 0.f));
                // Apply the jitter to the reflected MVP (the offset is applied to the projection, preserving the reflected view)
                m_renderer->ApplyViewJitter(u1, u2);
             }
@@ -429,11 +432,11 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
             m_renderer->m_render_mask = (m_renderer->m_render_mask & ~Renderer::STATIC_ONLY) | Renderer::DYNAMIC_ONLY;
 
             // Accumulate the new sample into the static render target, weighted by 1/STATIC_PRERENDER_ITERATIONS
-            m_staticAccumCount++;
+            vs.staticAccumCount++;
             m_renderer->m_renderDevice->SetRenderTarget("PreRender Accumulate Reflection"s, accumulateRT);
-            m_renderer->m_renderDevice->AddRenderTargetDependency(m_dynamicRT);
+            m_renderer->m_renderDevice->AddRenderTargetDependency(vs.dynamicRT);
             if (isFirstSample) // Copy unjittered depth buffer rendered on first sample
-               m_renderer->m_renderDevice->BlitRenderTarget(m_dynamicRT, accumulateRT, false, true);
+               m_renderer->m_renderDevice->BlitRenderTarget(vs.dynamicRT, accumulateRT, false, true);
             m_renderer->m_renderDevice->ResetRenderState();
             m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, isFirstSample ? RenderState::RS_FALSE : RenderState::RS_TRUE);
             m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
@@ -443,10 +446,9 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
             m_renderer->m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_mirror);
-            m_renderer->m_renderDevice->m_FBShader->SetVector(
-               ShaderUniform::w_h_height, (float)(1.0 / (double)accumulateRT->GetWidth()), (float)(1.0 / (double)accumulateRT->GetHeight()),
+            m_renderer->m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)accumulateRT->GetWidth()), (float)(1.0 / (double)accumulateRT->GetHeight()),
                (float)(double)STATIC_PRERENDER_ITERATIONS, 0.0f);
-            m_renderer->m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, m_dynamicRT->GetColorSampler());
+            m_renderer->m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, vs.dynamicRT->GetColorSampler());
             m_renderer->m_renderDevice->DrawFullscreenTexturedQuad(m_renderer->m_renderDevice->m_FBShader);
             m_renderer->m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_fb_unfiltered);
          }
@@ -454,7 +456,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
          // 2. Render dynamic starting from scaled accumulate
          m_renderer->m_renderDevice->SetRenderTarget(m_name, dynamicRT);
          m_renderer->m_renderDevice->AddRenderTargetDependency(accumulateRT);
-         if (m_staticAccumCount >= STATIC_PRERENDER_ITERATIONS)
+         if (vs.staticAccumCount >= STATIC_PRERENDER_ITERATIONS)
          {
             // Accumulation is complete: the static render target holds the final rendering
             m_renderer->m_renderDevice->BlitRenderTarget(accumulateRT, dynamicRT, true, true);
@@ -469,9 +471,9 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
             m_renderer->m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_mirror);
-            m_renderer->m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)m_prerenderRT->GetWidth()), (float)(1.0 / (double)m_prerenderRT->GetHeight()),
-               (float)(std::max(1, m_staticAccumCount) / (double)STATIC_PRERENDER_ITERATIONS), 0.0f);
-            m_renderer->m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, m_prerenderRT->GetColorSampler());
+            m_renderer->m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)vs.prerenderRT->GetWidth()),
+               (float)(1.0 / (double)vs.prerenderRT->GetHeight()), (float)(std::max(1, vs.staticAccumCount) / (double)STATIC_PRERENDER_ITERATIONS), 0.0f);
+            m_renderer->m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, vs.prerenderRT->GetColorSampler());
             m_renderer->m_renderDevice->DrawFullscreenTexturedQuad(m_renderer->m_renderDevice->m_FBShader);
             m_renderer->m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_fb_unfiltered);
          }
@@ -505,10 +507,10 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    m_renderer->m_renderDevice->SetDefaultRenderState();
 
    const vector<RenderPass*>& framePasses = m_renderer->m_renderDevice->GetRenderFramePasses();
-   m_probePasses.insert(m_probePasses.end(), framePasses.begin() + firstPass, framePasses.end());
+   vs.probePasses.insert(vs.probePasses.end(), framePasses.begin() + firstPass, framePasses.end());
    m_renderer->m_renderDevice->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
    previousRT->MarkInterrupted();
    m_rendering = false;
 
-   return m_dynamicRT;
+   return vs.dynamicRT;
 }
