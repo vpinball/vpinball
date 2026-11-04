@@ -168,8 +168,8 @@ void RenderView::ResizeRenderTargets()
       newRenderWidth = outWidth;
       newRenderHeight = outHeight;
    }
-   if (wndWidth == m_renderSourceWidth && wndHeight == m_renderSourceHeight && newRenderWidth == m_renderWidth && newRenderHeight == m_renderHeight)
-      return;
+   if (m_deferResize || (wndWidth == m_renderSourceWidth && wndHeight == m_renderSourceHeight && newRenderWidth == m_renderWidth && newRenderHeight == m_renderHeight))
+      return; // While deferred (interactive resize), the render keeps its current targets and is stretched to the new output area
    m_renderSourceWidth = wndWidth;
    m_renderSourceHeight = wndHeight;
    const float AAfactor = static_cast<float>(GetBackBufferTexture()->GetWidth()) / static_cast<float>(m_renderWidth);
@@ -222,7 +222,13 @@ void RenderView::ResizeRenderTargets()
    rd->m_ballShader->SetVector(
       ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
    r->DisableBallLighting(r->m_table->GetSettings().GetPlayer_DisableLightingForBalls());
+   // Views with an externally driven camera (editor panes push it through SetViewProj) keep it across the layout
+   // reset which would otherwise restore the default view setup camera
+   const Matrix3D customView = m_initialMVP.GetView(0);
+   const Matrix3D customProj = m_initialMVP.GetProj(0);
    InitLayout();
+   if (m_customViewProj)
+      SetViewProj(customView, customProj);
 }
 
 void RenderView::SwapBackBufferRenderTargets()
@@ -313,12 +319,24 @@ void RenderView::SwapAORenderTargets()
    m_pAORenderTarget2 = tmpAO;
 }
 
-int RenderView::GetDisplayWidth() const { return m_renderer->m_stereo3D == STEREO_SBS ? (GetBackBufferTexture()->GetWidth() * 2) : GetBackBufferTexture()->GetWidth(); }
+int RenderView::GetDisplayWidth() const
+{
+   // Views may not have their render chain yet (created lazily in Render): use their output area size then
+   if (GetBackBufferTexture() != nullptr)
+      return m_renderer->m_stereo3D == STEREO_SBS ? (GetBackBufferTexture()->GetWidth() * 2) : GetBackBufferTexture()->GetWidth();
+   int w, h;
+   GetOutputAreaSize(w, h);
+   return m_renderer->m_stereo3D == STEREO_SBS ? (w * 2) : w;
+}
 
 int RenderView::GetDisplayHeight() const
 {
-   return (m_renderer->m_stereo3D == STEREO_TB || m_renderer->m_stereo3D == STEREO_INT || m_renderer->m_stereo3D == STEREO_FLIPPED_INT) ? (GetBackBufferTexture()->GetHeight() * 2)
-                                                                                                                                        : GetBackBufferTexture()->GetHeight();
+   if (GetBackBufferTexture() != nullptr)
+      return (m_renderer->m_stereo3D == STEREO_TB || m_renderer->m_stereo3D == STEREO_INT || m_renderer->m_stereo3D == STEREO_FLIPPED_INT) ? (GetBackBufferTexture()->GetHeight() * 2)
+                                                                                                                                           : GetBackBufferTexture()->GetHeight();
+   int w, h;
+   GetOutputAreaSize(w, h);
+   return (m_renderer->m_stereo3D == STEREO_TB || m_renderer->m_stereo3D == STEREO_INT || m_renderer->m_stereo3D == STEREO_FLIPPED_INT) ? (h * 2) : h;
 }
 
 float RenderView::GetDisplayAspectRatio() const { return (float)((double)GetDisplayWidth() / (double)GetDisplayHeight()); }
@@ -371,6 +389,7 @@ void RenderView::SetReflection(const Matrix3D& reflectionMatrix)
 void RenderView::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
 {
    assert(m_renderer->m_stereo3D != STEREO_VR);
+   m_customViewProj = true;
    m_initialMVP.SetView(0, view);
    m_initialMVP.SetView(1, view);
    m_initialMVP.SetProj(0, proj);
@@ -400,7 +419,7 @@ Vertex3Ds RenderView::Get3DPointFrom2D(const int width, const int height, const 
 
 Vertex2D RenderView::BackdropToClip(const Vertex2D& pos) const
 {
-   if (g_pplayer->m_liveUI->IsEditorBackdropViewMode())
+   if (m_editorBackdropEdit)
    {
       // The live editor setup its own backdrop ortho MVP to allow pan & zoom
       return (m_mvp.GetView(0) * m_mvp.GetProj(0) * Vertex3Ds(pos.x, pos.y, 0.f)).xy();
@@ -554,7 +573,7 @@ void RenderView::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool 
    RenderDevice* const rd = m_renderer->m_renderDevice;
    Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
    matWorldViewProj[0].SetIdentity();
-   if (g_pplayer->m_liveUI->IsEditorBackdropViewMode())
+   if (m_editorBackdropEdit)
    {
       // The live editor setup its own backdrop ortho MVP, but we need to adapt it to the render target scale
       matWorldViewProj[0]
@@ -673,7 +692,7 @@ void RenderView::SetScreenOffset(const float x, const float y)
 bool RenderView::IsUsingStaticPrepass() const
 {
    // LiveUI may not exist yet during player startup (e.g. VR setup calls DisableStaticPrePass from the Player constructor)
-   return (g_pplayer->m_liveUI == nullptr || !g_pplayer->m_liveUI->IsEditorViewMode()) // Editor mode disables prerendering (FIXME why ?)
+   return !m_editorView // Editor views do not use the static prepass (FIXME why was it disabled ?)
       && !g_pplayer->IsVR() // VR disable prerender accumulation to avoid the perf impact as the view constantly moves
       && g_pplayer->GetInfoMode()
       != IF_DYNAMIC_ONLY // Dynamic inspection hides static parts (TODO remove embedded inspection as RenderDoc superseed this function and only DX9 still uses it)
@@ -905,7 +924,7 @@ void RenderView::RenderDynamics()
    UpdateBallShaderMatrix();
 
    // In the live editor's desktop backdrop mode, only render backdrop parts (and skip the playfield bulb light buffer)
-   const bool isBackdropEdit = g_pplayer->m_liveUI->IsEditorBackdropViewMode();
+   const bool isBackdropEdit = m_editorBackdropEdit;
 
    r->m_render_mask = IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
    if (!isBackdropEdit)
@@ -927,10 +946,10 @@ void RenderView::DrawBackground()
 {
    Renderer* const r = m_renderer;
    RenderDevice* const rd = r->m_renderDevice;
-   if (g_pplayer->m_liveUI->IsEditorViewMode())
+   if (m_editorView)
    {
       rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x000D0D0D);
-      if (!g_pplayer->m_liveUI->IsEditorBackdropViewMode())
+      if (!m_editorBackdropEdit)
          return;
    }
    else if (g_pplayer->IsVR() && !IsMirror())
@@ -961,7 +980,7 @@ void RenderView::DrawBackground()
    }
 
    const PinTable* const ptable = g_pplayer->m_ptable;
-   const ViewSetupID bgSet = g_pplayer->m_liveUI->IsEditorBackdropViewMode() ? BG_DESKTOP : ptable->GetViewMode();
+   const ViewSetupID bgSet = m_editorBackdropEdit ? BG_DESKTOP : ptable->GetViewMode();
    Texture* const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[bgSet]) : nullptr;
    rd->ResetRenderState();
    rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_CCW);
@@ -1876,13 +1895,36 @@ void RenderView::Render()
    if (IsMirror() && !r->NeedsDesktopSceneRender())
       return;
 
+   if (!m_renderScene)
+   {
+      // Views may skip recording their scene (hidden editor pane, or the primary view while the editor
+      // areas own the frame). Only the primary view keeps working then: it clears the shared output the
+      // other views draw their areas to, and still ticks the game logic once per frame. Its LiveUI pass is
+      // deferred to the end of the frame record (Renderer::Render3DScene), compositing the UI over the views
+      if (m_runGameLogic)
+      {
+         rd->SetRenderTarget("Sceneless"s, GetOutput(), false, true);
+         rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+         g_pplayer->UpdateGameLogic();
+      }
+      return;
+   }
+
    // Lazily create this view's render target chain on first use (VR desktop mirror, offscreen views)
    if (m_pOffscreenBackBufferTexture1 == nullptr)
    {
       RenderView* const primary = r->GetPrimaryView();
       GetOutputAreaSize(m_renderWidth, m_renderHeight);
-      m_renderSourceWidth = m_renderWidth;
-      m_renderSourceHeight = m_renderHeight;
+      if (m_outputWnd != nullptr)
+      {
+         m_renderSourceWidth = m_outputWnd->GetPixelWidth();
+         m_renderSourceHeight = m_outputWnd->GetPixelHeight();
+      }
+      else
+      {
+         m_renderSourceWidth = m_renderWidth;
+         m_renderSourceHeight = m_renderHeight;
+      }
       SetupTargets(
          m_renderWidth, m_renderHeight, primary->GetBackBufferTexture()->m_type, primary->GetBackBufferTexture()->GetColorFormat(), primary->GetMSAABackBufferTexture()->GetMSAASamples());
       if (!IsMirror())
@@ -1926,15 +1968,15 @@ void RenderView::Render()
    // For the time being, the Render3DScene only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
    if (IsMirror())
    {
-      m_noBackdrop = !g_pplayer->m_liveUI->IsEditorBackdropViewMode() && (r->m_table->GetViewMode() == BG_FULLSCREEN || g_pplayer->m_liveUI->IsEditorViewMode());
+      m_noBackdrop = !m_editorBackdropEdit && (r->m_table->GetViewMode() == BG_FULLSCREEN || m_editorView);
       m_visibilityMask = r->m_table->GetViewMode() == BG_FULLSCREEN ? PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET
          : r->m_table->GetViewMode() == BG_FSS                      ? PartGroupData::PlayerModeVisibilityMask::PMVM_FSS
                                                                     : PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
    }
    else
    {
-      m_noBackdrop = !g_pplayer->m_liveUI->IsEditorBackdropViewMode() // Force backdrop rendering if its being edited
-         && ((g_pplayer->m_vrDevice != nullptr) || (r->m_table->GetViewMode() == BG_FULLSCREEN) || g_pplayer->m_liveUI->IsEditorViewMode());
+      m_noBackdrop = !m_editorBackdropEdit // Force backdrop rendering if its being edited
+         && ((g_pplayer->m_vrDevice != nullptr) || (r->m_table->GetViewMode() == BG_FULLSCREEN) || m_editorView);
       if (g_pplayer->m_vrDevice)
          m_visibilityMask = r->m_vrApplyColorKey ? PartGroupData::PlayerModeVisibilityMask::PMVM_MIXED_REALITY : PartGroupData::PlayerModeVisibilityMask::PMVM_VIRTUAL_REALITY;
       else if (r->m_table->GetViewMode() == BG_FULLSCREEN)

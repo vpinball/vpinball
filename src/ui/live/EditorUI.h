@@ -45,6 +45,9 @@ class Sound;
 namespace VPX::EditorUI
 {
 
+class LiveRenderContext;
+class ViewportPane;
+
 class EditorUI final
    : private DragPointEditContext
 {
@@ -440,6 +443,17 @@ private:
    // created by a layout change). Held until a popup needs the top, so the strips stay grabbable.
    bool m_raiseAreaWindows = true;
    bool m_areaEscPending = false; // An Esc consumed by an area interaction (its release is not an editor Esc)
+
+   // Viewport panes: the "edit" viewport owns the editor camera fields (bound by SetEditViewport) and the
+   // mouse / keyboard interactions that apply to the 3D scene. While a drag is in progress the pane it
+   // started in is captured. The editor camera fields (m_camView,...) hold the state of m_editVp.
+   ViewportPane *m_editVp = nullptr;
+   ViewportPane *m_hoverVp = nullptr; // Viewport pane whose image is hovered this frame
+   ViewportPane *m_captureVp = nullptr; // Viewport pane holding an in-progress mouse interaction
+   void SetEditViewport(ViewportPane *pane);
+   ViewportPane *HoveredViewportPane() const;
+   ImVec2 ToPickPos(const ImVec2 &displayPos) const; // Display px -> pick space of the edit viewport (pane render px, or window px fullscreen)
+   void SetupPaneProjection(LiveRenderContext *ctx) const; // Binds the context's projection to the edit viewport image rect
 };
 
 }

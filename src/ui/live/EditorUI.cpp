@@ -154,6 +154,7 @@ void EditorUI::Close()
    m_scriptPanel.Close();
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
+   m_renderer->GetPrimaryView()->m_renderScene = true; // The primary view renders the scene again once the editor areas are gone
 }
 
 void EditorUI::SetTable(PinTable *const table)
@@ -552,7 +553,8 @@ void EditorUI::SetBackdropCamera()
 {
    // Setup the editor camera to frame the desktop backdrop (a flat rectangle in EDITOR_BG_WIDTH x EDITOR_BG_HEIGHT coordinates, Y axis going down)
    const ImGuiIO &io = ImGui::GetIO();
-   m_camDistance = 0.5f * max((float)EDITOR_BG_HEIGHT, (float)EDITOR_BG_WIDTH * io.DisplaySize.y / io.DisplaySize.x);
+   const float aspect = m_editVp != nullptr && m_editVp->m_imageRect.Height() > 0.f ? m_editVp->m_imageRect.Width() / m_editVp->m_imageRect.Height() : io.DisplaySize.x / io.DisplaySize.y;
+   m_camDistance = 0.5f * max((float)EDITOR_BG_HEIGHT, (float)EDITOR_BG_WIDTH / aspect);
    const vec3 eye((float)EDITOR_BG_WIDTH * 0.5f, (float)EDITOR_BG_HEIGHT * 0.5f, -m_camDistance);
    const vec3 at((float)EDITOR_BG_WIDTH * 0.5f, (float)EDITOR_BG_HEIGHT * 0.5f, 0.f);
    constexpr vec3 up { 0.f, -1.f, 0.f };
@@ -563,6 +565,9 @@ Vertex2D EditorUI::GetUIVisibleFraction() const
 {
    // When the editor UI is not displayed (fly mode, inspection modal), nothing is drawn over the render
    if (m_flyMode || m_inspectionModal.IsVisible())
+      return Vertex2D(1.f, 1.f);
+   // A viewport pane fits its content in its own rect: no chrome margin applies
+   if (m_editVp != nullptr)
       return Vertex2D(1.f, 1.f);
    // Otherwise, the top chrome (and the side panes, unless the table is locked) are drawn over the render:
    // evaluate the remaining visible fraction, applied as a symmetric margin so that fitted content stays centered
@@ -577,7 +582,7 @@ void EditorUI::SetPlayfieldCamera()
    // Setup the editor camera to frame the playfield bounds from a top view (table XY plane, Y axis going down)
    const ImGuiIO &io = ImGui::GetIO();
    const Vertex2D visible = GetUIVisibleFraction();
-   const float aspect = io.DisplaySize.x / io.DisplaySize.y;
+   const float aspect = m_editVp != nullptr && m_editVp->m_imageRect.Height() > 0.f ? m_editVp->m_imageRect.Width() / m_editVp->m_imageRect.Height() : io.DisplaySize.x / io.DisplaySize.y;
    m_camDistance = 0.5f * max(m_table->m_bottom / visible.y, m_table->m_right / (aspect * visible.x));
    const vec3 eye(m_table->m_right * 0.5f, m_table->m_bottom * 0.5f, -m_camDistance);
    const vec3 at(m_table->m_right * 0.5f, m_table->m_bottom * 0.5f, 0.f);
@@ -594,10 +599,21 @@ void EditorUI::Render3D()
    if (IsSaveInProgress())
       return;
    UpdateEditableList();
-   LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
+   // The view being recorded may belong to a viewport pane: its own camMode and shading apply
+   // to the 3D overlays (each pane draws them with its own camera and render setup)
+   ViewMode camMode = m_camMode;
+   Renderer::ShadeMode shadeMode = m_shadeMode;
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->GetView() == m_renderer->GetActiveView())
+      {
+         camMode = vp == m_editVp ? m_camMode : vp->m_camMode;
+         shadeMode = vp == m_editVp ? m_shadeMode : vp->m_shadeMode;
+         break;
+      }
+   LiveRenderContext ctx(m_player, nullptr, camMode, shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
    for (const auto &uiPart : m_editables)
    {
-      if ((m_camMode == ViewMode::DesktopBackdrop && !uiPart->GetEditable()->m_desktopBackdrop) || (m_camMode != ViewMode::DesktopBackdrop && uiPart->GetEditable()->m_desktopBackdrop))
+      if ((camMode == ViewMode::DesktopBackdrop && !uiPart->GetEditable()->m_desktopBackdrop) || (camMode != ViewMode::DesktopBackdrop && uiPart->GetEditable()->m_desktopBackdrop))
          continue;
       uiPart->Render(ctx);
    }
@@ -609,7 +625,8 @@ void EditorUI::RenderUI()
    const ImGuiIO &io = ImGui::GetIO();
    ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
    ImGuizmo::BeginFrame();
-   ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+   const AreaRect gizmoRect = m_editVp != nullptr ? m_editVp->m_imageRect : AreaRect { 0.f, 0.f, io.DisplaySize.x, io.DisplaySize.y };
+   ImGuizmo::SetRect(gizmoRect.x0, gizmoRect.y0, gizmoRect.Width(), gizmoRect.Height());
 
    // In desktop backdrop mode, only backdrop parts can be selected and edited, and conversely
    {
@@ -682,6 +699,7 @@ void EditorUI::RenderUI()
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
 
    const bool showFullUI = !m_inspectionModal.IsVisible() && !m_flyMode;
+   m_renderer->GetPrimaryView()->m_renderScene = !showFullUI; // While areas are drawn, the scene lives in the viewport panes
    UpdateAreaLayout(); // Area rects are computed before the chrome draws the status overlay into the viewport area
    m_chrome.Render(showFullUI);
    if (showFullUI)
@@ -689,6 +707,13 @@ void EditorUI::RenderUI()
       // Area panes, then their splitters and corner zones (above the pane windows)
       RenderAreas();
       RenderSplitters();
+   }
+   else
+   {
+      // The areas are hidden: the viewport panes must not draw their scene over the primary view's one
+      for (const auto &[id, view] : m_areaViews)
+         if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+            vp->SetRendering(false);
    }
    m_inspectionModal.Render();
    m_partLibrary.Render();
@@ -762,24 +787,19 @@ void EditorUI::RenderUI()
    ImGui::PopStyleVar();
    ImGui::PopStyleColor(2);
 
-   // Update editor camera
+   // Update editor camera (the state of the active viewport pane, or the fullscreen camera when no pane is bound)
+   RenderView *const camOut = m_editVp != nullptr && m_editVp->GetView() != nullptr ? m_editVp->GetView() : m_renderer->GetPrimaryView();
+   const float camAspect = m_editVp != nullptr && m_editVp->m_imageRect.Height() > 0.f ? m_editVp->m_imageRect.Width() / m_editVp->m_imageRect.Height() : io.DisplaySize.x / io.DisplaySize.y;
    const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
    const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
    if (m_camMode == ViewMode::PreviewCam)
    {
-      m_renderer->InitLayout();
-      m_camView = RH2LH * m_renderer->GetMVP().GetView(0) * YAxis;
-      m_camProj = YAxis * m_renderer->GetMVP().GetProj(0);
+      camOut->InitLayout();
+      m_camView = RH2LH * camOut->GetMVP().GetView(0) * YAxis;
+      m_camProj = YAxis * camOut->GetMVP().GetProj(0);
    }
    else
    {
-      // Apply editor camera to renderer (move view/projection from right handed to left handed)
-      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
-      // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
-      const Matrix3D view = RH2LH * m_camView * YAxis;
-      const Matrix3D proj = YAxis * m_camProj;
-      m_renderer->SetViewProj(view, proj);
-
       if (m_perspectiveCam && m_camMode != ViewMode::DesktopBackdrop) // The desktop backdrop is a 2D view, always edited with an orthographic camera
       {
          // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
@@ -791,16 +811,23 @@ void EditorUI::RenderUI()
          // Near plane follows the orbit distance (a fixed 5 left a 10000:1 range, so near-coplanar surfaces z-fought when zoomed out)
          const float zNear = clamp(m_camDistance * 0.05f, 5.f, 250.f);
          constexpr float zFar = 50000.f;
-         m_camProj = Matrix3D::MatrixPerspectiveFovRH(editorCamFovY, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
+         m_camProj = Matrix3D::MatrixPerspectiveFovRH(editorCamFovY, camAspect, zNear, zFar);
       }
       else
       {
          constexpr float zNear = 0.5f;
          constexpr float zFar = 50000.f;
          const float viewHeight = m_camDistance;
-         const float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
+         const float viewWidth = viewHeight * camAspect;
          m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
       }
+
+      // Apply editor camera to renderer (move view/projection from right handed to left handed)
+      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
+      // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
+      const Matrix3D view = RH2LH * m_camView * YAxis;
+      const Matrix3D proj = YAxis * m_camProj;
+      camOut->SetViewProj(view, proj);
    }
 
    // Selection manipulator
@@ -909,6 +936,10 @@ void EditorUI::RenderUI()
    // would write into the parts' data being serialized on the worker thread, see Render3D)
    {
       LiveRenderContext ctx(m_player, overlayDrawList, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
+      SetupPaneProjection(&ctx); // Selection overlays project through the edit viewport's camera, clipped to its rect
+      const bool clipToPane = m_editVp != nullptr;
+      if (clipToPane)
+         overlayDrawList->PushClipRect(ImVec2(m_editVp->m_imageRect.x0, m_editVp->m_imageRect.y0), ImVec2(m_editVp->m_imageRect.x1, m_editVp->m_imageRect.y1), true);
       if (!m_multiSel.empty() && !IsSaveInProgress())
       {
          if (m_renderer->m_renderDevice->GetCurrentRenderTarget()->HasDepth())
@@ -982,10 +1013,14 @@ void EditorUI::RenderUI()
                pho->DrawUI(project, overlayDrawList, true);
          ImGui::PopStyleColor(2);
       }
+      if (clipToPane)
+         overlayDrawList->PopClipRect();
    }
 
-   // Handle uncaught mouse & keyboard shortcuts
-   if (!io.WantCaptureMouse && m_fileOp == nullptr)
+   // Handle uncaught mouse & keyboard shortcuts: while a viewport pane is bound, scene interactions
+   // (camera, picking, box select) only apply inside its image; fullscreen input otherwise
+   const bool viewportInput = m_editVp != nullptr ? (m_editVp->m_hovered || m_editVp->m_active) : !io.WantCaptureMouse;
+   if (viewportInput && m_fileOp == nullptr)
    {
       // Zoom in/out with mouse wheel
       if (io.MouseWheel != 0)
@@ -1020,8 +1055,9 @@ void EditorUI::RenderUI()
                // Pan so that the point under the cursor follows it (the view height at the target depends on the projection;
                // in perspective the raw pixel drag used to be applied as VPU, ignoring the zoom)
                const float halfH = m_perspectiveCam && m_camMode != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(editorCamFovY)) : m_camDistance;
-               drag.x *= 2.f * halfH / io.DisplaySize.y;
-               drag.y *= 2.f * halfH / io.DisplaySize.y;
+               const float viewH = m_editVp != nullptr && m_editVp->m_imageRect.Height() > 0.f ? m_editVp->m_imageRect.Height() : io.DisplaySize.y;
+               drag.x *= 2.f * halfH / viewH;
+               drag.y *= 2.f * halfH / viewH;
                camTarget = camTarget - right * drag.x + up * drag.y;
                m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
             }
@@ -1835,17 +1871,22 @@ void EditorUI::MoveSelectionToPartGroup(PartGroup *group)
 
 void EditorUI::RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const
 {
-   // Compute mouse position in clip space
-   const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
-   const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-   const float xcoord = (mousePos.x - rClipWidth) / rClipWidth;
-   const float ycoord = (rClipHeight - mousePos.y) / rClipHeight;
+   // Compute mouse position in clip space (the edit viewport's render space for a pane, the window for fullscreen)
+   const RenderView *const view = m_editVp != nullptr ? m_editVp->GetView() : nullptr;
+   int areaW = 0, areaH = 0;
+   if (view != nullptr)
+      view->GetOutputAreaSize(areaW, areaH);
+   const ImVec2 pos = ToPickPos(mousePos);
+   const float rClipWidth = areaW > 0 ? (float)areaW * 0.5f : (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+   const float rClipHeight = areaH > 0 ? (float)areaH * 0.5f : (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
+   const float xcoord = (pos.x - rClipWidth) / rClipWidth;
+   const float ycoord = (rClipHeight - pos.y) / rClipHeight;
 
    // Use the inverse of our 3D transform to determine where in 3D space the
    // screen pixel the user clicked on is at.  Get the point at the near
    // clipping plane (z=0) and the far clipping plane (z=1) to get the whole
    // range we need to hit test
-   Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
+   Matrix3D invMVP = (view != nullptr ? view->GetMVP() : m_renderer->GetMVP()).GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds v3d = invMVP * Vertex3Ds { xcoord, ycoord, 0.f };
    const Vertex3Ds v3d2 = invMVP * Vertex3Ds { xcoord, ycoord, 1.f };
@@ -1916,7 +1957,8 @@ void EditorUI::BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool
       m_multiSel.clear();
       m_selection = Selection();
    }
-   const LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   SetupPaneProjection(&ctx);
    const ImVec2 boxMin(std::min(cornerA.x, cornerB.x), std::min(cornerA.y, cornerB.y));
    const ImVec2 boxMax(std::max(cornerA.x, cornerB.x), std::max(cornerA.y, cornerB.y));
    for (const auto &uiPart : m_editables)
@@ -2649,11 +2691,17 @@ void EditorUI::AddPointOnNearestSegment()
 Vertex2D EditorUI::UnprojectToPlane(const ImVec2 &mousePos, float z) const
 {
    // Compute the mouse ray and intersect it with the table plane at the given Z coordinate
-   const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
-   const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-   const float xcoord = (mousePos.x - rClipWidth) / rClipWidth;
-   const float ycoord = (rClipHeight - mousePos.y) / rClipHeight;
-   Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
+   // (through the edit viewport's MVP and render space for a pane)
+   const RenderView *const view = m_editVp != nullptr ? m_editVp->GetView() : nullptr;
+   int areaW = 0, areaH = 0;
+   if (view != nullptr)
+      view->GetOutputAreaSize(areaW, areaH);
+   const ImVec2 pos = ToPickPos(mousePos);
+   const float rClipWidth = areaW > 0 ? (float)areaW * 0.5f : (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+   const float rClipHeight = areaH > 0 ? (float)areaH * 0.5f : (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
+   const float xcoord = (pos.x - rClipWidth) / rClipWidth;
+   const float ycoord = (rClipHeight - pos.y) / rClipHeight;
+   Matrix3D invMVP = (view != nullptr ? view->GetMVP() : m_renderer->GetMVP()).GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds v3d = invMVP * Vertex3Ds { xcoord, ycoord, 0.f };
    const Vertex3Ds v3d2 = invMVP * Vertex3Ds { xcoord, ycoord, 1.f };
@@ -2664,7 +2712,8 @@ Vertex2D EditorUI::UnprojectToPlane(const ImVec2 &mousePos, float z) const
 
 DragPoint *EditorUI::HitTestDragPoint(const ImVec2 &mousePos) const
 {
-   const LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   SetupPaneProjection(&ctx);
    const float maxDist = 10.f * m_liveUI.GetDPI();
    DragPoint *best = nullptr;
    float bestDist = maxDist;
@@ -2687,7 +2736,8 @@ DragPoint *EditorUI::HitTestDragPoint(const ImVec2 &mousePos) const
 
 bool EditorUI::HitTestEditCenter(const ImVec2 &mousePos) const
 {
-   const LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   SetupPaneProjection(&ctx);
    const ImVec2 pos = ctx.Project(m_pointEditPart->GetEditCenter());
    if (pos.x == FLT_MAX)
       return false;
@@ -2702,7 +2752,8 @@ void EditorUI::BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, boo
    // Select all the drag points of the edited curve projecting inside the given screen box
    if (!add)
       m_pointSel.clear();
-   const LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, false);
+   SetupPaneProjection(&ctx);
    if (m_pointEditCenter)
    {
       // In center edit mode, select the part's center point if it projects inside the box
@@ -3158,6 +3209,19 @@ void EditorUI::RenderAreas()
       else
          ++it;
    }
+   // Update the viewport pane states: the hovered one (for input routing), and pause
+   // rendering of the panes whose leaf is not shown (hidden or behind a maximized area)
+   std::unordered_map<int, bool> shown;
+   for (const LeafRect &leaf : m_leafRects)
+      shown[leaf.id] = leaf.visible;
+   m_hoverVp = nullptr;
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+      {
+         vp->SetRendering(shown[id]);
+         if (vp->m_hovered)
+            m_hoverVp = vp;
+      }
    for (const LeafRect &leaf : m_leafRects)
    {
       if (!leaf.visible)
@@ -3168,6 +3232,21 @@ void EditorUI::RenderAreas()
       if (it->second != nullptr)
          it->second->RenderPane(leaf.rect, leaf.id);
    }
+   // Route the interactions to the viewport pane under the mouse; an ongoing drag keeps its pane
+   m_captureVp
+      = (ImGui::IsMouseDown(ImGuiMouseButton_Left) || ImGui::IsMouseDown(ImGuiMouseButton_Middle) || ImGui::IsMouseDown(ImGuiMouseButton_Right)) && m_editVp != nullptr && m_editVp->m_active
+      ? m_editVp
+      : nullptr;
+   ViewportPane *const wanted = m_captureVp != nullptr ? m_captureVp : m_hoverVp;
+   if (wanted != nullptr && wanted != m_editVp)
+      SetEditViewport(wanted);
+   if (m_editVp == nullptr) // Bind a pane right away: its camera is ready before the first hover
+      for (const auto &[id, view] : m_areaViews)
+         if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+         {
+            SetEditViewport(vp);
+            break;
+         }
 }
 
 void EditorUI::RenderAreaTypeButton(const int leafId)
@@ -3647,5 +3726,50 @@ void EditorUI::RenderAreaModal()
    }
    if (done)
       CancelAreaInteraction(false);
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Viewport panes
+
+void EditorUI::SetEditViewport(ViewportPane *pane)
+{
+   if (pane == m_editVp)
+      return;
+   if (m_editVp != nullptr)
+      m_editVp->CaptureCamera(); // Store the editor's camera fields back into the pane being left
+   m_editVp = pane;
+   if (m_editVp != nullptr)
+   {
+      if (m_editVp->m_cameraValid)
+         m_editVp->ReleaseCamera(); // Restore the pane's own camera into the editor fields
+      else
+         m_editVp->CaptureCamera(); // A never bound pane adopts the current camera (split panes clone it)
+   }
+}
+
+ViewportPane *EditorUI::HoveredViewportPane() const { return m_hoverVp; }
+
+ImVec2 EditorUI::ToPickPos(const ImVec2 &displayPos) const
+{
+   // The picking helpers work in the viewport's render space: for a pane, display px are
+   // mapped into its output area in the shared backbuffer (fullscreen: display and render spaces coincide)
+   const RenderView *const view = m_editVp != nullptr ? m_editVp->GetView() : nullptr;
+   if (view == nullptr || m_editVp->m_imageRect.Width() <= 0.f || m_editVp->m_imageRect.Height() <= 0.f)
+      return displayPos;
+   int w = 0, h = 0;
+   view->GetOutputAreaSize(w, h);
+   const AreaRect &r = m_editVp->m_imageRect;
+   return ImVec2 { (displayPos.x - r.x0) * (float)w / r.Width(), (displayPos.y - r.y0) * (float)h / r.Height() };
+}
+
+void EditorUI::SetupPaneProjection(LiveRenderContext *const ctx) const
+{
+   const RenderView *const view = m_editVp != nullptr ? m_editVp->GetView() : nullptr;
+   const AreaRect r = m_editVp != nullptr ? m_editVp->m_imageRect : AreaRect {};
+   if (view == nullptr || r.Width() <= 0.f || r.Height() <= 0.f)
+      return;
+   int w = 0, h = 0;
+   view->GetOutputAreaSize(w, h);
+   ctx->SetPaneProjection(view->GetMVP(), ImVec2(r.x0, r.y0), ImVec2(r.Width() / (float)w, r.Height() / (float)h), (float)w * 0.5f, (float)h * 0.5f);
 }
 }

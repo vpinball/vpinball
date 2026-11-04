@@ -26,6 +26,9 @@ public:
    ImDrawList *GetDrawList() const override { return m_drawlist; }
 
    ImVec2 Project(const Vertex3Ds &v) const override;
+   // Makes Project use the given MVP and map the result into a display-space rect (viewport pane rendering):
+   // origin is the rect's top left in display px, scale converts render px to display px, halfW/H is the render target half size
+   void SetPaneProjection(const ModelViewProj &mvp, const ImVec2 &origin, const ImVec2 &scale, float halfW, float halfH);
    void DrawLine(const Vertex3Ds &a, const Vertex3Ds &b, ImU32 color) const override;
    void DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, const Vertex3Ds &y, float radius, ImU32 color) const override;
    void DrawHitObjects(IEditable *editable) const override;
@@ -40,6 +43,10 @@ private:
    const ViewMode m_viewMode;
    const Renderer::ShadeMode m_shadeMode;
    const bool m_needsLiveTableSync;
+   const ModelViewProj *m_mvp = nullptr; // Pane projection override (see SetPaneProjection), nullptr = active view
+   ImVec2 m_projOrigin { 0.f, 0.f };
+   ImVec2 m_projScale { 1.f, 1.f };
+   float m_projHalfW = 0.f, m_projHalfH = 0.f;
 };
 
 }
