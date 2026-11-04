@@ -610,6 +610,20 @@ int B2SServer::OnRender(VPXRenderContext2D* ctx, void* userData)
    return me->m_loadedB2S.valid();
 }
 
+std::shared_ptr<B2STable> B2SServer::GetB2STable(bool waitForLoad)
+{
+   if (waitForLoad)
+   {
+      std::unique_lock lock(m_b2sMutex);
+      if (!m_b2s && m_loadedB2S.valid())
+      {
+         lock.unlock();
+         m_loadedB2S.wait();
+      }
+   }
+   return AcquireB2STable();
+}
+
 std::shared_ptr<B2STable> B2SServer::AcquireB2STable()
 {
    std::lock_guard lock(m_b2sMutex);

@@ -184,6 +184,10 @@ public:
    int GetUsedLEDType() const;
 
    // Live DMD overlay configuration, authored through the document editing UI
+   // The loaded document: null until the asynchronous load completed (waitForLoad blocks for it), or when no
+   // backglass file was found or it failed to load. For hosts that need the artwork before the first render
+   std::shared_ptr<B2STable> GetB2STable(bool waitForLoad = false);
+
    B2SOverlayDoc& GetOverlayDoc() { return m_overlayDoc; }
    const B2SOverlayDoc& GetOverlayDoc() const { return m_overlayDoc; }
 
