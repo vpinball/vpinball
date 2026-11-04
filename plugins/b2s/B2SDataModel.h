@@ -492,6 +492,12 @@ public:
       double rotSlowDownSteps = 0.0; // > 0 while spinning off
       bool rotRunTillEnd = false;
       bool rotRunToFirstStep = false;
+      // Physics
+      bool physicsDriven = false; // Pivot used as the flipper of a physics ball: advanced by the physics clock, not per frame
+      bool posValid = false; // Physics ball: drawn centred on (posX, posY) with the rolling angle instead of at its authored place
+      float posX = 0.f;
+      float posY = 0.f;
+      float rollAngle = 0.f;
    };
    ProRuntime m_proRt;
 

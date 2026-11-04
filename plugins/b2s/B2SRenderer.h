@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "B2SDataModel.h"
+#include "B2SProPhysics.h"
 #include "DMDOverlay/DMDOverlay.h"
 #include "seg/Dream7Display.h"
 #include "seg/LEDBox.h"
@@ -46,7 +47,21 @@ private:
    B2SDualMode ActiveDualMode() const;
    void OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2SRomIDType romIdType, int romId, bool start);
    void DispatchScriptTriggers(B2SServer* server);
-   void UpdateProTrigger(B2SBulb& bulb, B2SServer* server, B2SProTriggerType type, int id, bool inverted, float elapsed);
+   // B2S Pro runtime, once per frame before the bulbs are drawn: trigger polling, pivot / rotation advance and the
+   // physics clock (fixed 1 ms steps advancing the flipper pivots and the balls together)
+   void UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server, float elapsed);
+   // Returns the trigger value of a Pro trigger when known (bus probe or script lamp write, most recent wins)
+   bool PollProTrigger(B2SBulb::ProRuntime& rt, B2SServer* server, B2SProTriggerType type, int id, float& value);
+   void UpdateProTrigger(B2SBulb& bulb, B2SServer* server, B2SProTriggerType type, int id, bool inverted, float elapsed, bool advance);
+
+   struct ProPhysicsWorld
+   {
+      vector<std::unique_ptr<B2SProPhysicsBall>> balls;
+      vector<B2SBulb*> pivots; // Physics driven pivots (flippers)
+      double pendingSeconds = 0.0;
+   };
+   std::map<const vector<std::unique_ptr<B2SBulb>>*, ProPhysicsWorld> m_proPhysics; // One world per illumination list
+   void BuildProPhysics(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server);
 
    std::shared_ptr<B2STable> m_b2s;
 

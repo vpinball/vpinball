@@ -178,6 +178,8 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
          }
          else if (bulb->HasProPivot())
             bulb->m_proRt.triggerUpdater = ResolveRomPropUpdater(items, &bulb->m_proRt.triggerProbe, ProTriggerRomIdType(static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType)), bulb->m_pro.pivotTriggerId);
+         else if (bulb->m_pro.physicsBall && bulb->m_pro.physicsLauncher.enabled)
+            bulb->m_proRt.triggerUpdater = ResolveRomPropUpdater(items, &bulb->m_proRt.triggerProbe, ProTriggerRomIdType(static_cast<B2SProTriggerType>(bulb->m_pro.physicsLauncher.triggerType)), bulb->m_pro.physicsLauncher.triggerId);
       }
 
    // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
@@ -205,9 +207,39 @@ static B2SRomIDType ProTriggerRomIdType(const B2SProTriggerType type)
    }
 }
 
-// Polls a B2S Pro trigger (pivot or automatic rotation) and applies its edges: the bus probe and, for lamp
-// and B2S id triggers, script writes on that lamp channel, the most recent one winning (as bulbs do)
-void B2SRenderer::UpdateProTrigger(B2SBulb& bulb, B2SServer* server, const B2SProTriggerType type, const int id, const bool inverted, const float elapsed)
+// Reads a B2S Pro trigger: the bus probe and, for lamp and B2S id triggers, script writes on that lamp
+// channel, the most recent one winning (as bulbs do). Returns false while nothing was observed yet
+bool B2SRenderer::PollProTrigger(B2SBulb::ProRuntime& rt, B2SServer* server, const B2SProTriggerType type, const int id, float& value)
+{
+   if (id <= 0)
+      return false;
+   bool known = false;
+   const float prevProbe = rt.triggerProbe;
+   rt.triggerUpdater();
+   if (rt.triggerProbe >= 0.f)
+   {
+      known = true;
+      value = rt.triggerProbe;
+      if (server != nullptr && prevProbe >= 0.f && rt.triggerProbe != prevProbe)
+         rt.triggerStamp = server->NextStamp();
+   }
+   if (server != nullptr && (type == B2SProTriggerType::Lamp || type == B2SProTriggerType::B2SID))
+   {
+      float scripted;
+      uint64_t stamp = 0;
+      if (server->GetScriptedLampState(id, scripted, &stamp) && stamp > rt.triggerStamp)
+      {
+         known = true;
+         value = scripted;
+         rt.triggerStamp = stamp;
+      }
+   }
+   return known;
+}
+
+// Polls the trigger of a pivot or automatic rotation and applies its edges, then advances the animation
+// (unless the pivot is advanced by the physics clock)
+void B2SRenderer::UpdateProTrigger(B2SBulb& bulb, B2SServer* server, const B2SProTriggerType type, const int id, const bool inverted, const float elapsed, const bool advance)
 {
    B2SBulb::ProRuntime& rt = bulb.m_proRt;
    const bool pivot = bulb.HasProPivot();
@@ -228,48 +260,113 @@ void B2SRenderer::UpdateProTrigger(B2SBulb& bulb, B2SServer* server, const B2SPr
          bulb.ProStartRotation();
       }
    }
-   else if (id > 0)
+   else if (float value = 0.f; PollProTrigger(rt, server, type, id, value))
    {
-      bool known = false;
-      float value = 0.f;
-      const float prevProbe = rt.triggerProbe;
-      rt.triggerUpdater();
-      if (rt.triggerProbe >= 0.f)
+      const bool on = (value != 0.f) != inverted;
+      if (on != rt.triggerPrev)
       {
-         known = true;
-         value = rt.triggerProbe;
-         if (server != nullptr && prevProbe >= 0.f && rt.triggerProbe != prevProbe)
-            rt.triggerStamp = server->NextStamp();
-      }
-      if (server != nullptr && (type == B2SProTriggerType::Lamp || type == B2SProTriggerType::B2SID))
-      {
-         float scripted;
-         uint64_t stamp = 0;
-         if (server->GetScriptedLampState(id, scripted, &stamp) && stamp > rt.triggerStamp)
-         {
-            known = true;
-            value = scripted;
-            if (rt.triggerProbe < 0.f || stamp > rt.triggerStamp)
-               rt.triggerStamp = stamp;
-         }
-      }
-      if (known)
-      {
-         const bool on = (value != 0.f) != inverted;
-         if (on != rt.triggerPrev)
-         {
-            rt.triggerPrev = on;
-            if (pivot)
-               bulb.ProSetPivotTriggerState(on);
-            else
-               bulb.ProSetRotationState(on);
-         }
+         rt.triggerPrev = on;
+         if (pivot)
+            bulb.ProSetPivotTriggerState(on);
+         else
+            bulb.ProSetRotationState(on);
       }
    }
+   if (!advance)
+      return;
    if (pivot)
       bulb.ProAdvancePivot(elapsed);
    else
       bulb.ProAdvanceRotation(elapsed);
+}
+
+// Physics balls of an illumination list, with their flipper pivots (RegisterPhysicsBall / FindPivotPicture)
+void B2SRenderer::BuildProPhysics(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server)
+{
+   ProPhysicsWorld& world = m_proPhysics[&bulbs];
+   for (const auto& bulb : bulbs)
+   {
+      if (!bulb->m_pro.physicsBall || bulb->m_pro.physicsBounds.IsEmpty() || bulb->m_snippitType != B2SSnippitType::StandardImage)
+         continue;
+      B2SBulb* flipper = nullptr;
+      if (!bulb->m_pro.physicsFlipperName.empty())
+         for (const auto& candidate : bulbs)
+            if (candidate->HasProPivot() && candidate->m_name == bulb->m_pro.physicsFlipperName)
+            {
+               flipper = candidate.get();
+               break;
+            }
+      auto ball = std::make_unique<B2SProPhysicsBall>(*bulb, flipper);
+      if (ball->Flipper() != nullptr && !ball->Flipper()->m_proRt.physicsDriven)
+      {
+         ball->Flipper()->m_proRt.physicsDriven = true;
+         world.pivots.push_back(ball->Flipper());
+      }
+      ball->pulseSwitch = [server](int switchId)
+      {
+         if (server != nullptr)
+            server->PulseSwitch(switchId);
+      };
+      // Gravity trough balls wait for their motion path (not implemented yet): they stay at their authored place
+      if (!bulb->m_pro.motionPathGravityDrop)
+         ball->Start();
+      world.balls.push_back(std::move(ball));
+   }
+}
+
+void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server, const float elapsed)
+{
+   if (m_proPhysics.find(&bulbs) == m_proPhysics.end())
+      BuildProPhysics(bulbs, server);
+   ProPhysicsWorld& world = m_proPhysics[&bulbs];
+
+   // Triggers, and the per frame animations
+   for (const auto& bulb : bulbs)
+   {
+      if (bulb->m_snippitType != B2SSnippitType::StandardImage)
+         continue;
+      if (bulb->HasProRotation())
+         UpdateProTrigger(*bulb, server, bulb->m_pro.automaticRotationTriggerType, bulb->m_pro.automaticRotationTriggerId, bulb->m_romInverted, elapsed, true);
+      else if (bulb->HasProPivot())
+         UpdateProTrigger(*bulb, server, static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType), bulb->m_pro.pivotTriggerId, false, elapsed, !bulb->m_proRt.physicsDriven);
+   }
+
+   // Launcher triggers (FirePhysicsLaunchers: any change to a non zero value launches)
+   for (auto& ball : world.balls)
+   {
+      if (!ball->HasLauncher())
+         continue;
+      B2SBulb::ProRuntime& rt = ball->Ball().m_proRt;
+      float value = 0.f;
+      if (PollProTrigger(rt, server, static_cast<B2SProTriggerType>(ball->Ball().m_pro.physicsLauncher.triggerType), ball->Ball().m_pro.physicsLauncher.triggerId, value))
+      {
+         const bool on = value != 0.f;
+         if (on != rt.triggerPrev)
+         {
+            rt.triggerPrev = on;
+            if (on)
+               ball->Launch();
+         }
+      }
+   }
+
+   // Physics clock: fixed 1 ms steps, flipper pivots and balls advanced together, work capped per frame
+   if (!world.balls.empty())
+   {
+      constexpr double stepSeconds = 0.001;
+      world.pendingSeconds += static_cast<double>(elapsed);
+      const int steps = static_cast<int>(std::min(250.0, std::floor((world.pendingSeconds + 0.000000001) / stepSeconds)));
+      for (int step = 0; step < steps; step++)
+      {
+         for (B2SBulb* pivot : world.pivots)
+            pivot->ProAdvancePivot(static_cast<float>(stepSeconds));
+         for (auto& ball : world.balls)
+            ball->Step(static_cast<float>(stepSeconds));
+      }
+      world.pendingSeconds = std::max(0.0, world.pendingSeconds - steps * stepSeconds);
+      for (auto& ball : world.balls)
+         ball->Present();
+   }
 }
 
 std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<StateSrcId>& items, float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted, const int romValue) const
@@ -404,6 +501,7 @@ void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2S
 
 void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed, B2SDualMode dualMode)
 {
+   UpdateProRuntime(bulbs, const_cast<B2SServer*>(server), elapsed);
    for (const auto& bulb : bulbs)
    {
       if (dualMode != B2SDualMode::Both && bulb->m_dualMode != B2SDualMode::Both && bulb->m_dualMode != dualMode)
@@ -478,17 +576,24 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          // is the initial state read, not a write, so InitialState survives until the first event
          bulb->m_brightness = bulb->m_romProbe;
 
-      // B2S Pro: pivot animation or automatic rotation of a standard image, around the authored pivot point
+      // B2S Pro: pivot animation or automatic rotation of a standard image around the authored pivot point,
+      // and physics balls drawn where the simulation put them, turned by their rolling angle
       float pivotX = 0.5f, pivotY = 0.5f;
-      if (bulb->m_snippitType == B2SSnippitType::StandardImage && (bulb->HasProPivot() || bulb->HasProRotation()))
+      float drawX = static_cast<float>(bulb->m_locationX), drawY = static_cast<float>(bulb->m_locationY);
+      if (bulb->m_snippitType == B2SSnippitType::StandardImage)
       {
-         if (bulb->HasProRotation())
-            UpdateProTrigger(*bulb, const_cast<B2SServer*>(server), bulb->m_pro.automaticRotationTriggerType, bulb->m_pro.automaticRotationTriggerId, bulb->m_romInverted, elapsed);
-         else
-            UpdateProTrigger(*bulb, const_cast<B2SServer*>(server), static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType), bulb->m_pro.pivotTriggerId, false, elapsed);
-         rotation = bulb->m_proRt.angle;
-         pivotX = bulb->m_pro.pivotX;
-         pivotY = bulb->m_pro.pivotY;
+         if (bulb->HasProPivot() || bulb->HasProRotation())
+         {
+            rotation = bulb->m_proRt.angle;
+            pivotX = bulb->m_pro.pivotX;
+            pivotY = bulb->m_pro.pivotY;
+         }
+         else if (bulb->m_proRt.posValid)
+         {
+            rotation = bulb->m_proRt.rollAngle;
+            drawX = bulb->m_proRt.posX - static_cast<float>(bulb->m_width) * 0.5f;
+            drawY = bulb->m_proRt.posY - static_cast<float>(bulb->m_height) * 0.5f;
+         }
       }
 
       if (bulb->m_offImage && bulb->m_brightness < 1.f)
@@ -497,7 +602,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          ctx->DrawImage(ctx, bulb->m_offImage, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, 1.f,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
             static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
-            static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+            drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
       }
       if (bulb->m_image)
       {
@@ -505,7 +610,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
             static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
-            static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+            drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
       }
    }
 }
