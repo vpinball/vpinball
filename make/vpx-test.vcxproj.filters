@@ -25,6 +25,9 @@
     <Filter Include="render">
       <UniqueIdentifier>{07AAEE0E-5F1F-4D1F-885D-15C36E60C7A8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{8F2B5C1D-4E7A-4F3B-9C2E-6D1A5B8E4F7C}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../gen/vpinball_i.c" />
@@ -235,6 +238,9 @@
     </ClCompile>
     <ClCompile Include="../../tests/render/test-renderframe.cpp">
       <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/ui/test-arealayout.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
