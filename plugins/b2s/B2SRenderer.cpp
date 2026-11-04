@@ -310,6 +310,7 @@ void B2SRenderer::BuildProPhysics(const vector<std::unique_ptr<B2SBulb>>& bulbs,
       // Gravity trough balls wait for their motion path (not implemented yet): they stay at their authored place
       if (!bulb->m_pro.motionPathGravityDrop)
          ball->Start();
+      bulb->m_proRt.physicsBall = ball.get();
       world.balls.push_back(std::move(ball));
    }
 }
@@ -593,6 +594,17 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
             rotation = bulb->m_proRt.rollAngle;
             drawX = bulb->m_proRt.posX - static_cast<float>(bulb->m_width) * 0.5f;
             drawY = bulb->m_proRt.posY - static_cast<float>(bulb->m_height) * 0.5f;
+            // A masked ball is drawn from its composed frame (artwork rolled and cut by the selection mask)
+            if (bulb->m_proRt.physicsBall != nullptr && bulb->m_proRt.physicsBall->HasMask())
+            {
+               float fx, fy, fw, fh;
+               if (const VPXTexture frame = bulb->m_proRt.physicsBall->MaskedFrame(fx, fy, fw, fh); frame != nullptr)
+               {
+                  if (bulb->m_brightness > 0.f)
+                     ctx->DrawImage(ctx, frame, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness, 0.f, 0.f, fw, fh, fw * 0.5f, fh * 0.5f, 0.f, fx, fy, fw, fh);
+                  continue;
+               }
+            }
          }
       }
 

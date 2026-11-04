@@ -79,10 +79,130 @@ B2SProPhysicsBall::B2SProPhysicsBall(B2SBulb& ball, B2SBulb* flipper)
    m_presented = m_center;
 }
 
+B2SProPhysicsBall::~B2SProPhysicsBall()
+{
+   DeleteTexture(m_frameTexture);
+}
+
 void B2SProPhysicsBall::Start()
 {
    m_active = true;
    m_ball.m_brightness = 1.f;
+}
+
+void B2SProPhysicsBall::LoadMask()
+{
+   m_maskLoaded = true;
+   const vector<uint8_t>& png = m_ball.m_pro.physicsSelectionMaskImage;
+   if (png.empty())
+      return;
+   // Decoded through the host, as any other image, then only the alpha channel is kept
+   VPXTexture tex = CreateTexture(const_cast<uint8_t*>(png.data()), static_cast<int>(png.size()));
+   if (tex == nullptr)
+   {
+      LOGE("B2S Pro: failed to decode the physics selection mask of '" + m_ball.m_name + "'");
+      return;
+   }
+   const VPXTextureInfo* const info = GetTextureInfo(tex);
+   if (info != nullptr && info->data != nullptr && info->width > 0 && info->height > 0)
+   {
+      m_maskWidth = static_cast<int>(info->width);
+      m_maskHeight = static_cast<int>(info->height);
+      m_maskAlpha.assign(static_cast<size_t>(m_maskWidth) * m_maskHeight, 255);
+      if (info->format == VPXTEXFMT_sRGBA8)
+      {
+         const uint8_t* const src = static_cast<const uint8_t*>(info->data);
+         for (size_t i = 0; i < m_maskAlpha.size(); i++)
+            m_maskAlpha[i] = src[i * 4 + 3];
+      }
+      // Other formats carry no alpha: the mask hides nothing
+   }
+   DeleteTexture(tex);
+}
+
+VPXTexture B2SProPhysicsBall::MaskedFrame(float& x, float& y, float& w, float& h)
+{
+   if (!m_maskLoaded)
+      LoadMask();
+   if (m_maskAlpha.empty() || m_ball.m_image == nullptr || !m_ball.m_proRt.posValid)
+      return nullptr;
+   const B2SBulb::ProRuntime& rt = m_ball.m_proRt;
+   if (!m_frameValid || rt.posX != m_framePosX || rt.posY != m_framePosY || rt.rollAngle != m_frameAngle)
+   {
+      const VPXTextureInfo* const src = GetTextureInfo(m_ball.m_image);
+      if (src == nullptr || src->data == nullptr || src->width == 0 || src->height == 0 || (src->format != VPXTEXFMT_sRGBA8 && src->format != VPXTEXFMT_sRGB8))
+         return nullptr;
+      const int bpp = src->format == VPXTEXFMT_sRGBA8 ? 4 : 3;
+      const uint8_t* const pixels = static_cast<const uint8_t*>(src->data);
+      // Axis aligned bounds of the ball rectangle turned by the rolling angle around its centre
+      const double radians = static_cast<double>(rt.rollAngle) * Pi / 180.0;
+      const double cosine = std::cos(radians), sine = std::sin(radians);
+      const double halfW = m_ballWidth * 0.5, halfH = m_ballHeight * 0.5;
+      const double extentX = std::abs(halfW * cosine) + std::abs(halfH * sine);
+      const double extentY = std::abs(halfW * sine) + std::abs(halfH * cosine);
+      const int left = static_cast<int>(std::floor(rt.posX - extentX));
+      const int top = static_cast<int>(std::floor(rt.posY - extentY));
+      const int right = static_cast<int>(std::ceil(rt.posX + extentX));
+      const int bottom = static_cast<int>(std::ceil(rt.posY + extentY));
+      m_frameW = std::max(1, right - left);
+      m_frameH = std::max(1, bottom - top);
+      m_frameX = static_cast<float>(left);
+      m_frameY = static_cast<float>(top);
+      m_frameBuffer.assign(static_cast<size_t>(m_frameW) * m_frameH * 4, 0);
+      // Source pixels per authored unit (the artwork may be a higher resolution than its rectangle)
+      const double scaleU = static_cast<double>(src->width) / m_ballWidth;
+      const double scaleV = static_cast<double>(src->height) / m_ballHeight;
+      const int sw = static_cast<int>(src->width), sh = static_cast<int>(src->height);
+      for (int py = 0; py < m_frameH; py++)
+      {
+         const int maskY = top + py;
+         for (int px = 0; px < m_frameW; px++)
+         {
+            const int maskX = left + px;
+            const int mask = (maskX >= 0 && maskY >= 0 && maskX < m_maskWidth && maskY < m_maskHeight) ? m_maskAlpha[static_cast<size_t>(maskY) * m_maskWidth + maskX] : 0;
+            if (mask == 0)
+               continue;
+            // Inverse rotation of the pixel centre into the unrotated ball rectangle, then into source pixels
+            const double dx = (maskX + 0.5) - rt.posX, dy = (maskY + 0.5) - rt.posY;
+            const double ux = dx * cosine + dy * sine + halfW;
+            const double uy = -dx * sine + dy * cosine + halfH;
+            if (ux < 0.0 || uy < 0.0 || ux >= m_ballWidth || uy >= m_ballHeight)
+               continue;
+            const double sx = ux * scaleU - 0.5, sy = uy * scaleV - 0.5;
+            const int x0 = static_cast<int>(std::floor(sx)), y0 = static_cast<int>(std::floor(sy));
+            const double fx = sx - x0, fy = sy - y0;
+            double acc[4] = { 0.0, 0.0, 0.0, 0.0 };
+            for (int j = 0; j < 2; j++)
+               for (int i = 0; i < 2; i++)
+               {
+                  const int sxi = std::clamp(x0 + i, 0, sw - 1), syi = std::clamp(y0 + j, 0, sh - 1);
+                  const double weight = (i == 0 ? 1.0 - fx : fx) * (j == 0 ? 1.0 - fy : fy);
+                  const uint8_t* const p = pixels + (static_cast<size_t>(syi) * sw + sxi) * bpp;
+                  acc[0] += weight * p[0];
+                  acc[1] += weight * p[1];
+                  acc[2] += weight * p[2];
+                  acc[3] += weight * (bpp == 4 ? p[3] : 255);
+               }
+            uint8_t* const dst = m_frameBuffer.data() + (static_cast<size_t>(py) * m_frameW + px) * 4;
+            dst[0] = static_cast<uint8_t>(std::clamp(acc[0] + 0.5, 0.0, 255.0));
+            dst[1] = static_cast<uint8_t>(std::clamp(acc[1] + 0.5, 0.0, 255.0));
+            dst[2] = static_cast<uint8_t>(std::clamp(acc[2] + 0.5, 0.0, 255.0));
+            dst[3] = static_cast<uint8_t>((static_cast<int>(std::clamp(acc[3] + 0.5, 0.0, 255.0)) * mask + 127) / 255);
+         }
+      }
+      UpdateTexture(&m_frameTexture, m_frameW, m_frameH, VPXTEXFMT_sRGBA8, m_frameBuffer.data());
+      m_framePosX = rt.posX;
+      m_framePosY = rt.posY;
+      m_frameAngle = rt.rollAngle;
+      m_frameValid = m_frameTexture != nullptr;
+   }
+   if (!m_frameValid)
+      return nullptr;
+   x = m_frameX;
+   y = m_frameY;
+   w = static_cast<float>(m_frameW);
+   h = static_cast<float>(m_frameH);
+   return m_frameTexture;
 }
 
 void B2SProPhysicsBall::Launch()

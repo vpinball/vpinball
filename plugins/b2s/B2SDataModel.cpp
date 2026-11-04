@@ -577,6 +577,16 @@ static B2SProBulb ParseProBulb(const tinyxml2::XMLNode& root, const bool isImage
    return pro;
 }
 
+// The reference draws RuntimeSnippitImage instead of Image for plain image snippits that are not automatically rotated
+static bool UsesProRuntimeSnippitImage(const tinyxml2::XMLNode& root, const bool isImageSnippit, const B2SSnippitType snippitType) noexcept
+{
+   const tinyxml2::XMLElement* const node = root.ToElement();
+   if (node == nullptr || !isImageSnippit || snippitType != B2SSnippitType::StandardImage || node->Attribute("RuntimeSnippitImage") == nullptr)
+      return false;
+   const char* const automatic = node->Attribute("AutomaticRotationEnabled");
+   return automatic == nullptr || strcmp(automatic, "1") != 0;
+}
+
 // Images/B2SProTransparentCanvasBacking="r.g.b": the colour behind transparent canvas pixels (legacy files show black)
 static bool ParseCanvasBacking(const tinyxml2::XMLNode& root, vec4& color) noexcept
 {
@@ -627,7 +637,9 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    , m_snippitRotatingInterval(GetIntAttribute(root, ""s, "SnippitRotatingInterval"s, 0))
    , m_snippitRotatingDirection(static_cast<B2SSnippitRotationDirection>(GetIntAttribute(root, ""s, "eSnippitRotationDirection"s, 0)))
    , m_snippitRotatingStopBehaviour(static_cast<B2SSnippitRotationStopBehaviour>(GetIntAttribute(root, ""s, "SnippitRotatingStopBehaviour"s, 0)))
-   , m_image(GetTextureAttribute(root, ""s, "Image"s))
+   // B2S Pro keeps the full resolution artwork of plain image snippits in RuntimeSnippitImage and draws it in
+   // place of the (cropped) Image: same rectangle, more pixels
+   , m_image(GetTextureAttribute(root, ""s, UsesProRuntimeSnippitImage(root, m_isImageSnippit, m_snippitType) ? "RuntimeSnippitImage"s : "Image"s))
    , m_offImage(GetTextureAttribute(root, ""s, "OffImage"s))
    , m_text(GetStringAttribute(root, ""s, "Text"s, ""s))
    , m_textAlignment(GetIntAttribute(root, ""s, "TextAlignment"s, 0))

@@ -494,6 +494,7 @@ public:
       bool rotRunToFirstStep = false;
       // Physics
       bool physicsDriven = false; // Pivot used as the flipper of a physics ball: advanced by the physics clock, not per frame
+      class B2SProPhysicsBall* physicsBall = nullptr; // The simulation of a physics ball bulb (owned by the renderer)
       bool posValid = false; // Physics ball: drawn centred on (posX, posY) with the rolling angle instead of at its authored place
       float posX = 0.f;
       float posY = 0.f;

@@ -33,9 +33,28 @@ public:
    B2SBulb& Ball() const { return m_ball; }
    B2SBulb* Flipper() const { return m_flipper; }
 
+   // Physics selection mask: an alpha image in backglass coordinates multiplied into the ball artwork
+   // wherever it travels (hides it behind the hoop, the net, ...). Returns the masked, rolled frame of the
+   // ball as an axis aligned texture with its placement, or nullptr when the ball has no mask (then the
+   // artwork is drawn directly). Must be called on the API thread (texture access)
+   bool HasMask() const { return !m_ball.m_pro.physicsSelectionMaskImage.empty(); }
+   VPXTexture MaskedFrame(float& x, float& y, float& w, float& h);
+   ~B2SProPhysicsBall();
+
    std::function<void(int)> pulseSwitch = [](int) { };
 
 private:
+   void LoadMask();
+   vector<uint8_t> m_maskAlpha; // One byte per backglass pixel, 255 = ball visible
+   int m_maskWidth = 0;
+   int m_maskHeight = 0;
+   bool m_maskLoaded = false;
+   VPXTexture m_frameTexture = nullptr;
+   vector<uint8_t> m_frameBuffer;
+   float m_frameX = 0.f, m_frameY = 0.f;
+   int m_frameW = 0, m_frameH = 0;
+   float m_framePosX = 0.f, m_framePosY = 0.f, m_frameAngle = 0.f;
+   bool m_frameValid = false;
    void StepPhysics(float dt, float flipperAngularVelocity);
    void GetLauncherPose(B2SProPoint& origin, float& angle) const;
    void CheckLauncherCapture(B2SProPoint& center);
