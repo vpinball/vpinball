@@ -193,6 +193,31 @@ VPXTexture B2SProPhysicsBall::MaskedFrame(float& x, float& y, float& w, float& h
    return m_frameTexture;
 }
 
+void B2SProPhysicsBall::ActivateAtCurrentPosition()
+{
+   const B2SProPoint center = m_ball.ProMotionCenter();
+   m_center = center;
+   m_presented = center;
+   m_velocity = {};
+   m_launcherHolding = false;
+   m_launcherArmed = false;
+   m_hasLastFlipperAngle = false;
+   m_active = true;
+   m_ball.m_brightness = 1.f;
+   m_ball.m_proRt.posX = center.x;
+   m_ball.m_proRt.posY = center.y;
+   m_ball.m_proRt.posValid = true;
+}
+
+void B2SProPhysicsBall::DeactivateForMotionPath()
+{
+   m_active = false;
+   m_velocity = {};
+   m_hasLastFlipperAngle = false;
+   m_launcherHolding = false;
+   m_launcherArmed = false;
+}
+
 void B2SProPhysicsBall::Launch()
 {
    if (!m_hasLauncher || !m_launcherArmed)

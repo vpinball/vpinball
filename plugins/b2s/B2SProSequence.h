@@ -3,6 +3,7 @@
 #pragma once
 
 #include <deque>
+#include <random>
 #include <set>
 
 #include "common.h"
@@ -13,8 +14,9 @@ namespace B2S {
 // B2S Pro motion path sequence group (a trough): image snippits sharing a MotionPathSequenceGroup, ordered by
 // MotionPathSequenceOrder, fill their slots one entry at a time from a feeder shown at the path start by the
 // first member, and leave along their exit points one at a time (survivors shifting down a slot) or all
-// together (drain all). Port of B2S Pro's MotionPathSequenceState, driven per frame: the members' travel
-// completions are polled instead of raised as events. Gravity drop (hand-over to the physics) is not ported.
+// together (drain all), or, for gravity troughs, are released into the physics where they sit and come back
+// from wherever they settled on the next entry. Port of B2S Pro's MotionPathSequenceState, driven per frame:
+// the members' travel completions are polled instead of raised as events.
 class B2SProSequenceGroup final
 {
 public:
@@ -36,8 +38,13 @@ public:
 private:
    bool QueueEnabled() const;
    bool DrainAllEnabled() const;
+   bool GravityDropEnabled() const;
    void QueueOperation(bool remove);
    bool StartEntry();
+   bool StartGravityDrop();
+   void AssignNextOpenEntrySlot(B2SBulb* capturedMember);
+   static bool ActivateGravityDrop(B2SBulb* member);
+   static void DeactivateGravityDrop(B2SBulb* member);
    bool StartRemoval();
    bool StartAllRemovals();
    void BeginEntry(B2SBulb* member, bool fromCurrentPosition);
@@ -64,6 +71,9 @@ private:
    B2SBulb* m_launchingMember = nullptr;
    B2SBulb* m_sourceAnchor = nullptr;
    bool m_sourceReady = true;
+   std::set<B2SBulb*> m_availableGravityMembers; // Released into the physics, waiting to be called back
+   bool m_gravityReuseEnabled = false;
+   std::mt19937 m_random { std::random_device {}() };
 };
 
 }

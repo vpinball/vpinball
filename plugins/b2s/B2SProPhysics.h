@@ -23,6 +23,10 @@ public:
 
    void Start();
    void Launch();
+   // Gravity trough balls: released into the simulation from where they sit (velocity 0, no launcher) and
+   // taken back out of it when their motion path returns them to a slot
+   void ActivateAtCurrentPosition();
+   void DeactivateForMotionPath();
    // One fixed substep (dt in seconds, 0.001 in the reference). The flipper angle is read from the pivot runtime
    void Step(float dt);
    // Publish the simulated centre for drawing and advance the rolling angle (PresentServerFrame)

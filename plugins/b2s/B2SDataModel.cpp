@@ -659,6 +659,8 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    if (HasProPivot())
       m_proRt.angle = (m_pro.pivotAutomaticOscillation || m_pro.pivotTriggerType == static_cast<int>(B2SProTriggerType::Startup)) ? 0.f : m_pro.pivotDownAngle;
    // B2S Pro: motion path triggers (the reference routes each id kind to start / stop / resume / remove lists)
+   m_proRt.entryRoute = m_pro.motionPathPoints;
+   m_proRt.sequenceOrder = m_pro.motionPathSequenceOrder;
    if (m_isImageSnippit)
    {
       using A = ProRuntime::MotionAction;
@@ -708,7 +710,7 @@ B2SProPoint B2SBulb::ProMotionCenter() const
 void B2SBulb::ProStartMotionPath(const bool exitRoute, const bool fromCurrentPosition)
 {
    ProRuntime& rt = m_proRt;
-   const vector<B2SProPoint>& points = exitRoute ? m_pro.motionPathExitPoints : m_pro.motionPathPoints;
+   const vector<B2SProPoint>& points = exitRoute ? m_pro.motionPathExitPoints : rt.entryRoute;
    if (points.size() < 2)
       return;
    if (!exitRoute && m_pro.motionPathQueueTriggers && (rt.motionRunning || rt.motionPaused))

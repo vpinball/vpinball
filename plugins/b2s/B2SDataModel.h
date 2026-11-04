@@ -516,6 +516,8 @@ public:
          std::function<void()> updater = []() { };
       };
       vector<Trigger> motionTriggers;
+      vector<B2SProPoint> entryRoute; // Authored entry points (a gravity returning ball may inherit another slot's route)
+      int sequenceOrder = 0; // Slot order within a sequence group (swapped on gravity returns)
       vector<B2SProPoint> motionRoute; // Route being travelled (entry, exit, shift or from the current position)
       bool motionRunning = false;
       bool motionPaused = false;

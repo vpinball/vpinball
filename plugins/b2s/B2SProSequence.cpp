@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "B2SProSequence.h"
+#include "B2SProPhysics.h"
 
 namespace B2S {
 
@@ -39,8 +40,8 @@ void B2SProSequenceGroup::Register(B2SBulb* member)
    std::sort(m_members.begin(), m_members.end(),
       [](const B2SBulb* a, const B2SBulb* b)
       {
-         if (a->m_pro.motionPathSequenceOrder != b->m_pro.motionPathSequenceOrder)
-            return a->m_pro.motionPathSequenceOrder < b->m_pro.motionPathSequenceOrder;
+         if (a->m_proRt.sequenceOrder != b->m_proRt.sequenceOrder)
+            return a->m_proRt.sequenceOrder < b->m_proRt.sequenceOrder;
          return string_to_lower(a->m_name) < string_to_lower(b->m_name);
       });
    // The first ordered member supplies the artwork and rectangle of the feeder shown at the path start
@@ -63,6 +64,75 @@ bool B2SProSequenceGroup::QueueEnabled() const
 bool B2SProSequenceGroup::DrainAllEnabled() const
 {
    return std::any_of(m_members.begin(), m_members.end(), [](const B2SBulb* m) { return m->m_pro.motionPathDrainAll; });
+}
+
+bool B2SProSequenceGroup::GravityDropEnabled() const
+{
+   return std::any_of(m_members.begin(), m_members.end(), [](const B2SBulb* m) { return m->m_pro.motionPathGravityDrop; });
+}
+
+bool B2SProSequenceGroup::ActivateGravityDrop(B2SBulb* member)
+{
+   if (member == nullptr || member->m_proRt.physicsBall == nullptr)
+      return false;
+   member->m_proRt.physicsBall->ActivateAtCurrentPosition();
+   return true;
+}
+
+void B2SProSequenceGroup::DeactivateGravityDrop(B2SBulb* member)
+{
+   if (member != nullptr && member->m_proRt.physicsBall != nullptr)
+      member->m_proRt.physicsBall->DeactivateForMotionPath();
+}
+
+// Gravity trough: the balls in the trough are released into the physics from where they sit; they stay live
+// wherever they settle and are returned through the entry route from there
+bool B2SProSequenceGroup::StartGravityDrop()
+{
+   if (m_activeRemoval != nullptr || !m_activeDrainAllRemovals.empty() || !m_activeEntries.empty())
+      return false;
+   vector<B2SBulb*> released;
+   m_gravityReuseEnabled = true;
+   for (B2SBulb* member : m_members)
+      if (m_occupied.count(member) != 0 && ActivateGravityDrop(member))
+      {
+         released.push_back(member);
+         m_availableGravityMembers.insert(member);
+      }
+   if (released.empty())
+   {
+      if (m_availableGravityMembers.empty())
+      {
+         m_gravityReuseEnabled = false;
+         return false;
+      }
+      m_compactionTargets.clear();
+      UpdateSourceAppearance();
+      ProcessPendingOperations();
+      return true;
+   }
+   for (B2SBulb* member : released)
+      m_occupied.erase(member);
+   m_compactionTargets.clear();
+   UpdateSourceAppearance();
+   ProcessPendingOperations();
+   return true;
+}
+
+// A returning gravity ball takes the lowest open slot: it swaps its authored entry route and slot order
+// with that slot's member, so that it travels to the right place
+void B2SProSequenceGroup::AssignNextOpenEntrySlot(B2SBulb* capturedMember)
+{
+   if (capturedMember == nullptr)
+      return;
+   B2SBulb* slotOwner = nullptr;
+   for (B2SBulb* member : m_members)
+      if (m_occupied.count(member) == 0 && m_activeEntries.count(member) == 0 && (slotOwner == nullptr || member->m_proRt.sequenceOrder < slotOwner->m_proRt.sequenceOrder))
+         slotOwner = member;
+   if (slotOwner == nullptr || slotOwner == capturedMember)
+      return;
+   std::swap(capturedMember->m_proRt.entryRoute, slotOwner->m_proRt.entryRoute);
+   std::swap(capturedMember->m_proRt.sequenceOrder, slotOwner->m_proRt.sequenceOrder);
 }
 
 void B2SProSequenceGroup::QueueOperation(const bool remove)
@@ -92,7 +162,8 @@ void B2SProSequenceGroup::RequestStart()
          BeginEntry(m_launchingMember, false);
       return;
    }
-   StartEntry();
+   if (!StartEntry() && GravityDropEnabled() && m_gravityReuseEnabled && !m_availableGravityMembers.empty() && QueueEnabled())
+      QueueOperation(false);
 }
 
 void B2SProSequenceGroup::RequestRemove()
@@ -117,7 +188,9 @@ void B2SProSequenceGroup::RequestRemove()
          m_activeRemoval->ProStartMotionPath(true, false);
       return;
    }
-   if (DrainAllEnabled())
+   if (GravityDropEnabled())
+      StartGravityDrop();
+   else if (DrainAllEnabled())
       StartAllRemovals();
    else
       StartRemoval();
@@ -128,13 +201,31 @@ bool B2SProSequenceGroup::StartEntry()
    if (!m_sourceReady || m_activeRemoval != nullptr || !m_activeDrainAllRemovals.empty())
       return false;
    B2SBulb* memberToStart = nullptr;
-   for (B2SBulb* member : m_members)
-      if ((memberToStart == nullptr || member->m_pro.motionPathSequenceOrder < memberToStart->m_pro.motionPathSequenceOrder) && m_occupied.count(member) == 0 && m_activeEntries.count(member) == 0)
-         memberToStart = member;
+   bool startFromCurrentPosition = false;
+   if (GravityDropEnabled() && m_gravityReuseEnabled)
+   {
+      // A released ball comes back from wherever it settled, picked at random
+      vector<B2SBulb*> available;
+      for (B2SBulb* member : m_availableGravityMembers)
+         if (m_occupied.count(member) == 0 && m_activeEntries.count(member) == 0)
+            available.push_back(member);
+      if (!available.empty())
+      {
+         memberToStart = available[std::uniform_int_distribution<size_t>(0, available.size() - 1)(m_random)];
+         startFromCurrentPosition = true;
+         m_availableGravityMembers.erase(memberToStart);
+         AssignNextOpenEntrySlot(memberToStart);
+      }
+   }
+   if (memberToStart == nullptr)
+      for (B2SBulb* member : m_members)
+         if ((memberToStart == nullptr || member->m_proRt.sequenceOrder < memberToStart->m_proRt.sequenceOrder) && m_occupied.count(member) == 0 && m_activeEntries.count(member) == 0)
+            memberToStart = member;
    if (memberToStart == nullptr)
       return false;
+   DeactivateGravityDrop(memberToStart);
    m_activeEntries.insert(memberToStart);
-   BeginEntry(memberToStart, false);
+   BeginEntry(memberToStart, startFromCurrentPosition);
    return true;
 }
 
@@ -165,7 +256,7 @@ bool B2SProSequenceGroup::StartAllRemovals()
          removals.push_back(member);
    if (removals.empty())
       return false;
-   std::sort(removals.begin(), removals.end(), [](const B2SBulb* a, const B2SBulb* b) { return a->m_pro.motionPathSequenceOrder < b->m_pro.motionPathSequenceOrder; });
+   std::sort(removals.begin(), removals.end(), [](const B2SBulb* a, const B2SBulb* b) { return a->m_proRt.sequenceOrder < b->m_proRt.sequenceOrder; });
    for (B2SBulb* member : removals)
       m_activeDrainAllRemovals.insert(member);
    B2SBulb* const lead = removals[0];
@@ -237,7 +328,7 @@ void B2SProSequenceGroup::ProcessPendingOperations()
          if (m_activeRemoval != nullptr || !m_activeDrainAllRemovals.empty() || !m_activeEntries.empty())
             return;
          m_pendingOperations.pop_front();
-         if (DrainAllEnabled() ? StartAllRemovals() : StartRemoval())
+         if (GravityDropEnabled() ? StartGravityDrop() : (DrainAllEnabled() ? StartAllRemovals() : StartRemoval()))
             return;
       }
       else
@@ -347,7 +438,7 @@ void B2SProSequenceGroup::ApplyEntryCollision(B2SBulb* incomingMember)
    for (B2SBulb* member : m_members)
       if (m_occupied.count(member) != 0)
          impacted.push_back(member);
-   std::sort(impacted.begin(), impacted.end(), [](const B2SBulb* a, const B2SBulb* b) { return b->m_pro.motionPathSequenceOrder < a->m_pro.motionPathSequenceOrder; });
+   std::sort(impacted.begin(), impacted.end(), [](const B2SBulb* a, const B2SBulb* b) { return b->m_proRt.sequenceOrder < a->m_proRt.sequenceOrder; });
    if (impacted.empty())
       return;
    const B2SProPoint incomingCenter = incomingMember->ProMotionCenter();

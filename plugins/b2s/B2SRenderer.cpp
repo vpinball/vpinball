@@ -555,7 +555,7 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
       // Motion path triggers: every action fires on a change to a non zero value (the reference's lamp / solenoid /
       // B2S id / switch routes). Not for physics balls: their travel is the simulation's. Sequence group members
       // route their start and remove to the group (once per group and frame), stop and resume stay per snippit
-      if (!bulb->m_proRt.motionTriggers.empty() && bulb->m_proRt.physicsBall == nullptr)
+      if (!bulb->m_proRt.motionTriggers.empty() && (bulb->m_proRt.physicsBall == nullptr || bulb->m_pro.motionPathGravityDrop))
       {
          const auto groupIt = world.sequenceOf.find(bulb.get());
          B2SProSequenceGroup* const group = groupIt != world.sequenceOf.end() ? groupIt->second : nullptr;
@@ -590,7 +590,7 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
             }
          }
       }
-      if (bulb->m_proRt.physicsBall == nullptr)
+      if (bulb->m_proRt.physicsBall == nullptr || bulb->m_pro.motionPathGravityDrop)
       {
          bulb->ProAdvanceMotionPath(elapsed);
          bulb->ProAdvanceTroughImpulse(elapsed);
