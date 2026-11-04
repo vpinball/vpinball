@@ -1370,8 +1370,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             m_sceneProj[eye] = sceneScale * m_roomProj[eye];
          }
 
-         // Feed the head tracked pose to the spatial audio listener (in table space, VPU)
-         if (g_pplayer->m_audioPlayer)
+         // Feed the head tracked pose to the spatial audio listener (in table space, VPU),
+         // only when the located views carry a valid pose (tracking loss would feed garbage)
+         const bool headPoseValid = (viewState.viewStateFlags & (XR_VIEW_STATE_POSITION_VALID_BIT | XR_VIEW_STATE_ORIENTATION_VALID_BIT))
+            == (XR_VIEW_STATE_POSITION_VALID_BIT | XR_VIEW_STATE_ORIENTATION_VALID_BIT);
+         if (headPoseValid && g_pplayer->m_audioPlayer)
          {
             // m_view maps table space to view space: its inverse maps the camera pose to table space
             const Matrix3D headPose = Matrix3D::MatrixInverse(m_pfWorld.m_view[0]);
