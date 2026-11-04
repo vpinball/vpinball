@@ -72,6 +72,12 @@ static constexpr float kRotationFadeMs = 20.f;
 // rotator is not retargeted: filters tracker jitter that would otherwise
 // restart the rotation fade on every audio block in VR
 static constexpr float kOrientationEpsilon = 0.004f;
+// Makeup gain for the binaural (headphones/VR) path: libspatialaudio's
+// binauralizer normalizes its HRTF filters so that the worst case peak tap is
+// 0.35 (~-9dB of headroom), rendering everything noticeably quieter than the
+// direct stereo/loudspeaker paths. +6dB restores most of the loss while
+// keeping headroom for the up-to-3x close distance attenuation boost
+static constexpr float kBinauralGain = 2.f;
 
 // Playfield speaker positions, in spherical coordinates relative to the default
 // listener (standing at the lockbar, facing the backglass): azimuth in degrees
@@ -275,8 +281,8 @@ struct SpatialAudioMixer::Impl
       {
          for (unsigned int i = 0; i < count; i++)
          {
-            out[i * outChannels] = speakerPtrs[0][i];
-            out[i * outChannels + 1] = speakerPtrs[1][i];
+            out[i * outChannels] = speakerPtrs[0][i] * kBinauralGain;
+            out[i * outChannels + 1] = speakerPtrs[1][i] * kBinauralGain;
             for (unsigned int ch = 2; ch < outChannels; ch++)
                out[i * outChannels + ch] = 0.f;
          }
