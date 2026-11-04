@@ -716,7 +716,7 @@ void EditorUI::RenderUI()
             vp->SetRendering(false);
    }
    m_inspectionModal.Render();
-   m_partLibrary.Render();
+   m_partLibrary.Update();
    m_scriptPanel.Render();
 
 #endif
@@ -2812,7 +2812,7 @@ const char *EditorUI::AreaTypeName(const AreaType type) { return type == AreaTyp
 bool EditorUI::IsAreaTypeImplemented(const AreaType type)
 {
    // The area types a leaf may take through the editor type switcher (the others are added with their views)
-   return type == AreaType::Outliner || type == AreaType::Properties || type == AreaType::Viewport;
+   return type == AreaType::Outliner || type == AreaType::Properties || type == AreaType::Viewport || type == AreaType::PartLibrary;
 }
 
 std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
@@ -2822,7 +2822,8 @@ std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
    case AreaType::Outliner: return std::make_unique<OutlinerPanel>(*this);
    case AreaType::Properties: return std::make_unique<PropertiesPanel>(*this);
    case AreaType::Viewport: return std::make_unique<ViewportPane>(*this);
-   default: return nullptr; // Script and PartLibrary are added with their views
+   case AreaType::PartLibrary: return std::make_unique<PartLibraryPane>(*this);
+   default: return nullptr; // Script is added with its view
    }
 }
 
@@ -2920,6 +2921,8 @@ bool EditorUI::ApplyAreaOp(const PendingAreaOp &op)
       if (!m_layout.SetType(op.leaf, op.type))
          return false;
       WidenArea(op.leaf, op.type);
+      if (op.type == AreaType::PartLibrary)
+         m_partLibrary.m_rescanLibrary = true;
       return true;
    }
    case PendingAreaOp::Kind::Close:
@@ -3776,6 +3779,14 @@ void EditorUI::RenderAreaModal()
    }
    if (done)
       CancelAreaInteraction(false);
+}
+
+void EditorUI::ShowAreaEditor(const AreaType type)
+{
+   PendingAreaOp op {};
+   op.kind = PendingAreaOp::Kind::Show;
+   op.type = type;
+   m_pendingAreaOps.push_back(op);
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

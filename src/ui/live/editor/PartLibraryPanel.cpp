@@ -18,7 +18,7 @@
 #include "utils/JSONSerializer.h"
 
 // Title (used as Id) of the modal dialog
-#define ID_PART_LIBRARY "Part Library"
+#define ID_PART_LIBRARY "##Pane"
 
 namespace
 {
@@ -72,12 +72,28 @@ PartLibraryPanel::PartLibraryPanel(EditorUI &editor)
 
 PartLibraryPanel::~PartLibraryPanel() { ClearPreview(); }
 
+void PartLibraryPanel::Show()
+{
+   m_rescanLibrary = true;
+   if (!IsVisible())
+      m_editor.ShowAreaEditor(AreaType::PartLibrary);
+}
+
 void PartLibraryPanel::Close()
 {
-   m_visible = false;
    m_placementPack.clear();
    ClearPreview();
+   const int leaf = m_editor.m_layout.FindLeaf(AreaType::PartLibrary);
+   if (leaf >= 0)
+   {
+      EditorUI::PendingAreaOp op {};
+      op.kind = EditorUI::PendingAreaOp::Kind::Close;
+      op.leaf = leaf;
+      m_editor.m_pendingAreaOps.push_back(op);
+   }
 }
+
+bool PartLibraryPanel::IsVisible() const { return m_editor.m_layout.IsHosted(AreaType::PartLibrary); }
 
 bool PartLibraryPanel::CanExportSelection() const
 {
@@ -106,7 +122,7 @@ void PartLibraryPanel::ExportSelection()
       m_editor.m_player->m_playfieldWnd->GetCore(), filters, 1, location.empty() ? nullptr : location.c_str());
 }
 
-void PartLibraryPanel::Render()
+void PartLibraryPanel::Update()
 {
    // Apply the file picked by the asynchronous 'Export' save dialog (deferred to the main thread)
    if (m_pendingExportPath && !m_pendingExportPath->empty())
@@ -153,7 +169,7 @@ void PartLibraryPanel::Render()
       m_pendingFolderPath = nullptr;
    }
 
-   if (!m_visible)
+   if (!IsVisible())
    {
       m_placementPack.clear();
       ClearPreview();
@@ -174,10 +190,23 @@ void PartLibraryPanel::Render()
       m_rescanLibrary = false;
       RescanLibrary();
    }
+}
 
-   const float dpi = m_editor.m_liveUI.GetDPI();
-   ImGui::SetNextWindowSize(ImVec2(560.f * dpi, 420.f * dpi), ImGuiCond_FirstUseEver);
-   if (ImGui::Begin(ID_PART_LIBRARY, &m_visible))
+void PartLibraryPanel::RenderPane(const AreaRect &rect, const int leafId)
+{
+   char name[40];
+   snprintf(name, sizeof(name), "%s%d", ID_PART_LIBRARY, leafId);
+   ImGui::SetNextWindowPos(ImVec2(rect.x0, rect.y0));
+   ImGui::SetNextWindowSize(ImVec2(rect.Width(), rect.Height()));
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+   ImGui::Begin(name, nullptr,
+      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
+         | ImGuiWindowFlags_NoNavFocus);
+   ImGui::PushID(leafId);
+   m_editor.RenderAreaTypeButton(leafId);
+   ImGui::SameLine();
+   ImGui::TextUnformatted("Part Library");
    {
       // Destination of the import, same as for newly added parts: the group of the current selection
       const PartGroup *const target = m_editor.GetPartGroupForNewPart();
@@ -302,7 +331,9 @@ void PartLibraryPanel::Render()
          ImGui::EndDisabled();
       }
    }
+   ImGui::PopID();
    ImGui::End();
+   ImGui::PopStyleVar(2);
 }
 
 void PartLibraryPanel::RenderLibraryFolder(const LibraryFolder &folder, const string &label)
@@ -750,4 +781,8 @@ void PartLibraryPanel::Render3D()
          if (part->GetIRenderable() != nullptr)
             m_editor.m_renderer->RenderItem(part, false);
 }
+
+void PartLibraryPane::RenderPane(const AreaRect &rect, const int leafId) { m_editor.m_partLibrary.RenderPane(rect, leafId); }
+
+void PartLibraryPane::OnUnhosted() { m_editor.m_partLibrary.ClearPreview(); }
 }
