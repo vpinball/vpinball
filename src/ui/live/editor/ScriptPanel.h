@@ -6,6 +6,8 @@
 
 #include <filesystem>
 
+#include "EditorAreaView.h"
+
 class PinTable;
 
 namespace VPX::EditorUI
@@ -13,25 +15,21 @@ namespace VPX::EditorUI
 
 class EditorUI;
 
-// Floating window holding the table script editor: a basic embedded text editor by
-// default. Alternatively, when an external editor command is configured, the script
-// can be written to a temporary file opened in that editor, and synchronized back to
-// the table whenever the file changes on disk.
+// Table script editor pane: a basic embedded text editor by default. Alternatively, when an
+// external editor command is configured, the script can be written to a temporary file opened
+// in that editor, and synchronized back to the table whenever the file changes on disk.
 class ScriptPanel
 {
 public:
    explicit ScriptPanel(EditorUI &editor);
    ~ScriptPanel();
 
-   void Show()
-   {
-      m_visible = true;
-      m_focus = true;
-   }
-   void Close();
-   bool IsVisible() const { return m_visible; }
+   void Show(); // Hosts the panel in an area leaf (splitting the focused one)
+   void Close(); // Closes the leaf hosting the panel
+   bool IsVisible() const;
 
-   void Render();
+   void Update(); // Per frame housekeeping (external editor session)
+   void RenderPane(const AreaRect &rect, int leafId); // Renders the script editor inside an area leaf
 
 private:
    void OpenInExternalEditor();
@@ -39,8 +37,7 @@ private:
    void StopExternalSession();
 
    EditorUI &m_editor;
-   bool m_visible = false;
-   bool m_focus = false; // Focus the window on next render (Show was called while already open)
+   bool m_focus = false; // Focus the pane on next render (Show was called while already open)
 
    string m_extEditorCmd; // External editor command, mirrored to the Editor.ExternalScriptEditor app setting
    bool m_extCmdLoaded = false;
@@ -53,4 +50,16 @@ private:
    SDL_Process *m_extProcess = nullptr;
 };
 
+// Area view hosting the script editor in a resizable leaf (the panel keeps the shared state)
+class ScriptPane final : public EditorAreaView
+{
+public:
+   explicit ScriptPane(EditorUI &editor)
+      : EditorAreaView(editor)
+   {
+   }
+   AreaType GetType() const override { return AreaType::Script; }
+   void RenderPane(const AreaRect &rect, int leafId) override;
+   void OnUnhosted() override;
+};
 }

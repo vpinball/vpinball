@@ -717,7 +717,7 @@ void EditorUI::RenderUI()
    }
    m_inspectionModal.Render();
    m_partLibrary.Update();
-   m_scriptPanel.Render();
+   m_scriptPanel.Update();
 
 #endif
 
@@ -2812,7 +2812,7 @@ const char *EditorUI::AreaTypeName(const AreaType type) { return type == AreaTyp
 bool EditorUI::IsAreaTypeImplemented(const AreaType type)
 {
    // The area types a leaf may take through the editor type switcher (the others are added with their views)
-   return type == AreaType::Outliner || type == AreaType::Properties || type == AreaType::Viewport || type == AreaType::PartLibrary;
+   return type == AreaType::Outliner || type == AreaType::Properties || type == AreaType::Viewport || type == AreaType::PartLibrary || type == AreaType::Script;
 }
 
 std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
@@ -2823,7 +2823,8 @@ std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
    case AreaType::Properties: return std::make_unique<PropertiesPanel>(*this);
    case AreaType::Viewport: return std::make_unique<ViewportPane>(*this);
    case AreaType::PartLibrary: return std::make_unique<PartLibraryPane>(*this);
-   default: return nullptr; // Script is added with its view
+   case AreaType::Script: return std::make_unique<ScriptPane>(*this);
+   default: return nullptr;
    }
 }
 
@@ -3000,6 +3001,8 @@ void EditorUI::LoadAreaLayoutSettings()
    m_hoverLeaf = -1;
    CancelAreaInteraction(false);
    SetEditViewport(nullptr);
+   if (settings.GetEditor_AlwaysViewScript() && !m_layout.IsHosted(AreaType::Script))
+      ShowAreaEditor(AreaType::Script); // The editor option keeps a script area open
 }
 
 void EditorUI::SaveAreaLayoutSettings() const

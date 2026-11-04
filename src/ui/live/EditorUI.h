@@ -60,6 +60,7 @@ class EditorUI final
    friend class PartLibraryPanel;
    friend class PartLibraryPane;
    friend class ScriptPanel;
+   friend class ScriptPane;
    friend class ViewportPane;
 
 public:
