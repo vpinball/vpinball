@@ -436,7 +436,11 @@ std::shared_ptr<B2STable> B2SServer::LoadB2SFile(const std::filesystem::path& pa
          return b2s;
       }
       if (b2sTree.FirstChildElement("DirectB2SData"))
+      {
          b2s = std::make_shared<B2STable>(*b2sTree.FirstChildElement("DirectB2SData"));
+         if (b2s->IsB2SPro())
+            LOGI("B2S Pro file " + PluginStrings::PathToUTF8(path.filename()) + ": " + b2s->GetB2SProSummary());
+      }
       else
          LOGE("Invalid B2S file: " + PluginStrings::PathToUTF8(path));
    }
@@ -448,13 +452,22 @@ std::shared_ptr<B2STable> B2SServer::LoadB2SFile(const std::filesystem::path& pa
 }
 
 // Backglass file lookup: exact match on the table name, then 'foldername.directb2s' for file layouts
-// where the table shares a folder with its companion files (b2s, pup, flex, music, ...)
+// where the table shares a folder with its companion files (b2s, pup, flex, music, ...).
+// A B2S Pro file (.B2SPro, same document with extensions) is preferred over the legacy .directb2s
+// of the same name, as the B2S Pro server does.
 std::filesystem::path B2SServer::FindB2SFile() const
 {
    const std::filesystem::path dir = m_workingDir.empty() ? m_tableDir : m_workingDir;
    if (dir.empty() || m_tableName.empty())
       return {};
-   const auto tryFile = [&dir](const string& name) { return name.empty() ? std::filesystem::path() : find_case_insensitive_file_path(dir / (name + ".directb2s"s)); };
+   const auto tryFile = [&dir](const string& name)
+   {
+      if (name.empty())
+         return std::filesystem::path();
+      if (auto file = find_case_insensitive_file_path(dir / (name + ".B2SPro"s)); !file.empty())
+         return file;
+      return find_case_insensitive_file_path(dir / (name + ".directb2s"s));
+   };
 
    if (auto file = tryFile(m_tableName); !file.empty())
       return file;

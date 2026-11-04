@@ -92,6 +92,7 @@ B2SRenderer::~B2SRenderer()
    m_segSources.Unsubscribe();
    m_stateSources.Unsubscribe();
    m_pinmameControllers.Unsubscribe();
+   DeleteTexture(m_whiteTexture);
 }
 
 void B2SRenderer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
@@ -846,6 +847,20 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
       onImage.m_brightness = (onLampState != 0.f) ? 1.f : 0.f;
    else if (onImage.m_romProbe >= 0.f)
       onImage.m_brightness = onImage.m_romProbe;
+
+   // B2S Pro: the canvas backing shows through transparent canvas pixels (legacy files show the black clear colour)
+   if (m_b2s->m_hasCanvasBacking)
+   {
+      if (m_whiteTexture == nullptr)
+      {
+         const uint8_t white[4] = { 255, 255, 255, 255 };
+         UpdateTexture(&m_whiteTexture, 1, 1, VPXTEXFMT_sRGBA8, white);
+      }
+      if (m_whiteTexture != nullptr)
+         ctx->DrawImage(ctx, m_whiteTexture, m_b2s->m_canvasBacking.x, m_b2s->m_canvasBacking.y, m_b2s->m_canvasBacking.z, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f,
+            0.f, // No rotation
+            0.f, 0.f, m_b2sWidth, m_b2sHeight);
+   }
 
    if (onImage.m_image == nullptr || onImage.m_brightness < 1.f)
    {

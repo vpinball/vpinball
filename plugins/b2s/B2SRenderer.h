@@ -78,6 +78,8 @@ private:
    };
    std::map<const B2SScore*, LegacySegDisplay> m_legacySegDisplays;
 
+   VPXTexture m_whiteTexture = nullptr; // 1x1 white, tinted to draw flat colour areas (B2S Pro canvas backing)
+
    bool m_showGrill = false;
    float m_b2sWidth = 0.f;
    float m_b2sHeight = 0.f;

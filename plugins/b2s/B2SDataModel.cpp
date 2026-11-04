@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <charconv>
 #include <cctype>
+#include <cmath>
 #include <format>
 
 #include "common.h"
@@ -195,6 +196,401 @@ static bool StartsWithCaseInsensitive(const std::string_view& str, const std::st
    return std::equal(prefix.begin(), prefix.end(), str.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// B2S Pro extensions
+//
+// Attribute reading follows the B2S Pro server (formBackglass.vb LoadBackglass): same defaults,
+// same clamps, same gating on the snippit kind. Values are locale independent (invariant culture
+// in the reference, std::from_chars here); malformed values keep the default like Integer/Single.TryParse.
+
+static bool ProParseFloat(std::string_view text, float& value) noexcept
+{
+   while (!text.empty() && (text.front() == ' ' || text.front() == '\t'))
+      text.remove_prefix(1);
+   while (!text.empty() && (text.back() == ' ' || text.back() == '\t' || text.back() == '\r' || text.back() == '\n'))
+      text.remove_suffix(1);
+   if (text.empty())
+      return false;
+   float parsed;
+   const auto [ptr, ec] = std::from_chars(text.data(), text.data() + text.size(), parsed);
+   if (ec != std::errc() || ptr != text.data() + text.size() || std::isnan(parsed) || std::isinf(parsed))
+      return false;
+   value = parsed;
+   return true;
+}
+
+static bool ProParseInt(std::string_view text, int& value) noexcept
+{
+   while (!text.empty() && (text.front() == ' ' || text.front() == '\t'))
+      text.remove_prefix(1);
+   while (!text.empty() && (text.back() == ' ' || text.back() == '\t' || text.back() == '\r' || text.back() == '\n'))
+      text.remove_suffix(1);
+   if (text.empty())
+      return false;
+   int parsed;
+   const auto [ptr, ec] = std::from_chars(text.data(), text.data() + text.size(), parsed);
+   if (ec != std::errc() || ptr != text.data() + text.size())
+      return false;
+   value = parsed;
+   return true;
+}
+
+// "x,y;x,y;..." (ParseMotionPathPoints)
+static vector<B2SProPoint> ProParsePoints(const string& value) noexcept
+{
+   vector<B2SProPoint> points;
+   for (const string& pair : GetStringList(value, ';'))
+   {
+      const vector<string> parts = GetStringList(pair, ',');
+      B2SProPoint p;
+      if (parts.size() == 2 && ProParseFloat(parts[0], p.x) && ProParseFloat(parts[1], p.y))
+         points.push_back(p);
+   }
+   return points;
+}
+
+// "path|path|..." of point lists, paths with less than 2 points dropped (ParsePhysicsBoundaries)
+static vector<vector<B2SProPoint>> ProParsePaths(const string& value) noexcept
+{
+   vector<vector<B2SProPoint>> paths;
+   for (const string& encoded : GetStringList(value, '|'))
+   {
+      vector<B2SProPoint> path = ProParsePoints(encoded);
+      if (path.size() >= 2)
+         paths.push_back(std::move(path));
+   }
+   return paths;
+}
+
+// "v,v,..." restitution list, invalid or negative entries become -1 (default), clamped to max (ParsePhysicsObstacleBounces)
+static vector<float> ProParseBounces(const string& value, float min, float max) noexcept
+{
+   vector<float> result;
+   for (const string& encoded : GetStringList(value, ','))
+   {
+      float parsed;
+      if (ProParseFloat(encoded, parsed) && parsed >= min)
+         result.push_back(std::min(max, parsed));
+      else
+         result.push_back(-1.f);
+   }
+   return result;
+}
+
+// "x,y,w,h|x,y,w,h|..." (ParsePhysicsObstacles)
+static vector<B2SProRect> ProParseRects(const string& value) noexcept
+{
+   vector<B2SProRect> result;
+   for (const string& encoded : GetStringList(value, '|'))
+   {
+      const vector<string> parts = GetStringList(encoded, ',');
+      B2SProRect r;
+      if (parts.size() == 4 && ProParseFloat(parts[0], r.x) && ProParseFloat(parts[1], r.y) && ProParseFloat(parts[2], r.w) && ProParseFloat(parts[3], r.h) && r.w > 0.f && r.h > 0.f)
+         result.push_back(r);
+   }
+   return result;
+}
+
+// "x,y,w,h,switch|..." with the matching "angle|angle|..." (ParsePhysicsSwitchZones / ApplyPhysicsSwitchAngles)
+static vector<B2SProBulb::SwitchZone> ProParseSwitchZones(const string& value, const string& angles) noexcept
+{
+   vector<B2SProBulb::SwitchZone> result;
+   for (const string& encoded : GetStringList(value, '|'))
+   {
+      const vector<string> parts = GetStringList(encoded, ',');
+      B2SProBulb::SwitchZone zone;
+      if (parts.size() == 5 && ProParseFloat(parts[0], zone.bounds.x) && ProParseFloat(parts[1], zone.bounds.y) && ProParseFloat(parts[2], zone.bounds.w) && ProParseFloat(parts[3], zone.bounds.h)
+         && ProParseInt(parts[4], zone.switchId) && zone.bounds.w > 0.f && zone.bounds.h > 0.f && zone.switchId > 0)
+      {
+         zone.switchId = std::min(255, zone.switchId);
+         result.push_back(zone);
+      }
+   }
+   const vector<string> encodedAngles = GetStringList(angles, '|');
+   for (size_t i = 0; i < std::min(encodedAngles.size(), result.size()); i++)
+   {
+      float angle;
+      if (ProParseFloat(encodedAngles[i], angle))
+      {
+         angle = std::fmod(angle, 360.f);
+         if (angle > 180.f)
+            angle -= 360.f;
+         if (angle <= -180.f)
+            angle += 360.f;
+         result[i].angle = angle;
+      }
+   }
+   return result;
+}
+
+// "left,top,right,bottom" (ParsePhysicsBounds), empty when degenerate
+static B2SProRect ProParseBounds(const string& value) noexcept
+{
+   const vector<string> parts = GetStringList(value, ',');
+   float l, t, r, b;
+   if (parts.size() != 4 || !ProParseFloat(parts[0], l) || !ProParseFloat(parts[1], t) || !ProParseFloat(parts[2], r) || !ProParseFloat(parts[3], b) || r <= l || b <= t)
+      return {};
+   return { l, t, r - l, b - t };
+}
+
+// Attribute reader that remembers whether any of the attributes it was asked for exists
+class ProAttributes final
+{
+public:
+   explicit ProAttributes(const tinyxml2::XMLNode& root) noexcept : m_node(root.ToElement()) { }
+
+   bool Has(const char* name) noexcept
+   {
+      const bool present = m_node != nullptr && m_node->Attribute(name) != nullptr;
+      m_any |= present;
+      return present;
+   }
+   const char* Raw(const char* name) noexcept { return Has(name) ? m_node->Attribute(name) : nullptr; }
+   string Str(const char* name, const string& def = ""s) noexcept
+   {
+      const char* v = Raw(name);
+      if (v == nullptr)
+         return def;
+      string s(v);
+      // Trim like the reference (String.Trim)
+      while (!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\r' || s.back() == '\n'))
+         s.pop_back();
+      size_t start = 0;
+      while (start < s.length() && (s[start] == ' ' || s[start] == '\t'))
+         start++;
+      return s.substr(start);
+   }
+   bool Bool(const char* name) noexcept // "1" is true, anything else false
+   {
+      const char* v = Raw(name);
+      return v != nullptr && strcmp(v, "1") == 0;
+   }
+   int Int(const char* name, int def) noexcept
+   {
+      const char* v = Raw(name);
+      int parsed;
+      return (v != nullptr && ProParseInt(v, parsed)) ? parsed : def;
+   }
+   int Int(const char* name, int def, int min, int max) noexcept { return std::clamp(Int(name, def), min, max); }
+   float Float(const char* name, float def) noexcept
+   {
+      const char* v = Raw(name);
+      float parsed;
+      return (v != nullptr && ProParseFloat(v, parsed)) ? parsed : def;
+   }
+   bool Any() const { return m_any; }
+
+private:
+   const tinyxml2::XMLElement* const m_node;
+   bool m_any = false;
+};
+
+static B2SProScore ParseProScore(const tinyxml2::XMLNode& root) noexcept
+{
+   ProAttributes a(root);
+   B2SProScore pro;
+   pro.keepDigitAspect = a.Bool("KeepDigitAspect");
+   pro.reelDigitWidth = std::max(0, a.Int("ReelDigitWidth", 0));
+   pro.behindCanvas = a.Bool("BehindCanvas");
+   pro.reel3DEnabled = a.Bool("Reel3DEnabled");
+   pro.reel3DBrightness = a.Int("Reel3DBrightness", 100, 0, 400);
+   pro.reel3DTemperature = a.Int("Reel3DTemperature", 4000, 2000, 6500);
+   pro.reel3DDepth = a.Int("Reel3DDepth", 100, 0, 200);
+   pro.reel3DGlass = a.Int("Reel3DGlass", 55, 0, 200);
+   pro.any = a.Any();
+   return pro;
+}
+
+static B2SProBulb ParseProBulb(const tinyxml2::XMLNode& root, const bool isImageSnippit, const B2SSnippitType snippitType) noexcept
+{
+   ProAttributes a(root);
+   B2SProBulb pro;
+
+   // Flasher pulse and layers
+   pro.flasherPulseDuration = a.Int("FlasherPulseDuration", 0);
+   if (pro.flasherPulseDuration > 0)
+      pro.flasherPulseDuration = std::clamp(pro.flasherPulseDuration, 50, 5000);
+   pro.artworkPixelLighting = a.Bool("ArtworkPixelLighting");
+   pro.separateLightLayer = a.Bool("SeparateLightLayer");
+   pro.lightBehindCanvas = a.Bool("LightBehindCanvas");
+   pro.snippitBehindCanvas = a.Bool("SnippitBehindCanvas");
+
+   // Dynamic artwork lighting
+   pro.dynamicFrontLighting = a.Bool("DynamicFrontLighting");
+   pro.dynamicFrontShowLight = a.Bool("DynamicFrontShowLight");
+   pro.dynamicFrontTargetSnippetId = std::max(0, a.Int("DynamicFrontTargetSnippetID", 0));
+   pro.dynamicLightExposure = a.Int("DynamicLightExposure", 100, 0, 1600);
+   if (a.Has("DynamicLightColor"))
+      pro.dynamicLightColor = GetColorAttribute(root, ""s, "DynamicLightColor"s, vec4(1.f, 1.f, 1.f, 1.f));
+   pro.dynamicFlasherStyle = a.Int("DynamicFlasherStyle", 1);
+   pro.dynamicSaturation = a.Int("DynamicSaturation", 100, 0, 200);
+   pro.dynamicHighlightProtection = a.Int("DynamicHighlightProtection", 0, 0, 100);
+   pro.dynamicDarkAreaLift = a.Int("DynamicDarkAreaLift", 0, 0, 100);
+   pro.dynamicTransmissionContrast = a.Int("DynamicTransmissionContrast", 140, 0, 300);
+   pro.dynamicLightTemperature = a.Int("DynamicLightTemperature", 4000, 2000, 6500);
+   if (pro.dynamicFrontLighting && a.Has("DynamicFrontLightField"))
+      pro.dynamicFrontLightField = GetTextureAttribute(root, ""s, "DynamicFrontLightField"s);
+
+   // Automatic rotation (standard images only; the reference rebinds the bulb's ROM trigger to it, which is
+   // applied when the rotation runtime consumes these fields, the legacy binding is kept until then)
+   if (snippitType == B2SSnippitType::StandardImage)
+      pro.automaticRotation = a.Bool("AutomaticRotationEnabled");
+   if (pro.automaticRotation)
+   {
+      pro.automaticRotationContinuous = a.Bool("AutomaticRotationContinuous");
+      pro.automaticRotationTriggerId = std::max(0, a.Int("AutomaticRotationTriggerID", 0));
+      const int triggerType = a.Int("AutomaticRotationTriggerType", static_cast<int>(B2SProTriggerType::Lamp));
+      pro.automaticRotationTriggerType = triggerType == static_cast<int>(B2SProTriggerType::Solenoid) ? B2SProTriggerType::Solenoid
+         : triggerType == static_cast<int>(B2SProTriggerType::Switch)                                 ? B2SProTriggerType::Switch
+                                                                                                      : B2SProTriggerType::Lamp;
+      if (pro.automaticRotationContinuous)
+         pro.automaticRotationTriggerId = 0;
+      if (a.Has("AutomaticRotationSteps"))
+         pro.automaticRotationSteps = a.Int("AutomaticRotationSteps", 0, 4, 360);
+      if (a.Has("AutomaticRotationInterval"))
+         pro.automaticRotationInterval = a.Int("AutomaticRotationInterval", 0, 10, 500);
+      pro.automaticRotationDirection = static_cast<B2SSnippitRotationDirection>(a.Int("AutomaticRotationDirection", 0));
+      pro.automaticRotationStopBehaviour = static_cast<B2SSnippitRotationStopBehaviour>(a.Int("AutomaticRotationStopBehaviour", 0));
+   }
+
+   // External grid / pivot group, then the pivot animation (PivotX/Y and PivotDuration override the external ones)
+   pro.externalGridName = a.Str("ExternalGridName");
+   pro.externalGridRepresentative = a.Bool("ExternalGridRepresentative");
+   pro.externalGridDuration = a.Int("ExternalGridDuration", 45);
+   pro.externalPivotGroup = a.Str("ExternalPivotGroup");
+   pro.externalPivotRepresentative = a.Bool("ExternalPivotRepresentative");
+   pro.externalPivotAngle = a.Float("ExternalPivotAngle", 0.f);
+   pro.pivotDuration = a.Int("ExternalPivotDuration", 80);
+   pro.pivotX = a.Float("ExternalPivotX", 0.5f);
+   pro.pivotY = a.Float("ExternalPivotY", 0.5f);
+   pro.pivotAnimation = a.Bool("PivotAnimation");
+   pro.pivotAutomaticOscillation = a.Bool("PivotAutomaticOscillation");
+   pro.pivotX = a.Float("PivotX", pro.pivotX);
+   pro.pivotY = a.Float("PivotY", pro.pivotY);
+   pro.pivotTipX = std::clamp(a.Float("PivotTipX", 0.9f), 0.f, 1.f);
+   pro.pivotTipY = std::clamp(a.Float("PivotTipY", 0.5f), 0.f, 1.f);
+   pro.pivotDownAngle = a.Float("PivotDownAngle", 0.f);
+   pro.pivotUpAngle = a.Float("PivotUpAngle", -30.f);
+   pro.pivotDuration = a.Int("PivotDuration", pro.pivotDuration);
+   pro.pivotDownTrigger = a.Str("PivotDownTrigger");
+   pro.pivotUpTrigger = a.Str("PivotUpTrigger");
+   pro.pivotTriggerType = a.Int("PivotTriggerType", 1);
+   pro.pivotTriggerId = a.Int("PivotTriggerID", 0);
+   pro.pivotRandomStrength = std::clamp(a.Float("PivotRandomStrength", 0.f), 0.f, 100.f);
+   if (!pro.pivotAnimation)
+   {
+      // Plain rotation pivots are relative to the image, pivot animations may point outside of it
+      pro.pivotX = std::clamp(pro.pivotX, 0.f, 1.f);
+      pro.pivotY = std::clamp(pro.pivotY, 0.f, 1.f);
+   }
+
+   // Physics
+   pro.physicsBall = a.Bool("PhysicsBall");
+   pro.physicsFlipperName = a.Str("PhysicsFlipperName");
+   if (a.Has("PhysicsBounds"))
+      pro.physicsBounds = ProParseBounds(a.Str("PhysicsBounds"));
+   pro.physicsGravity = a.Float("PhysicsGravity", 650.f);
+   pro.physicsFlipperStrength = a.Float("PhysicsFlipperStrength", 1.f);
+   pro.physicsBoundaryBounce = a.Float("PhysicsBoundaryBounce", 0.12f);
+   const vector<B2SProPoint> floorPoints = a.Has("PhysicsFloorPoints") ? ProParsePoints(a.Str("PhysicsFloorPoints")) : vector<B2SProPoint>();
+   if (a.Has("PhysicsBoundaries"))
+      pro.physicsBoundaries = ProParsePaths(a.Str("PhysicsBoundaries"));
+   if (a.Has("PhysicsBoundarySegmentBounces"))
+      for (const string& path : GetStringList(a.Str("PhysicsBoundarySegmentBounces"), '|'))
+         pro.physicsBoundarySegmentBounces.push_back(ProParseBounces(path, -1.f, 3.f));
+   if (a.Has("PhysicsObstacles"))
+      pro.physicsObstacles = ProParseRects(a.Str("PhysicsObstacles"));
+   if (a.Has("PhysicsObstacleBounces"))
+      pro.physicsObstacleBounces = ProParseBounces(a.Str("PhysicsObstacleBounces"), 0.f, 3.f);
+   if (a.Has("PhysicsSwitchZones"))
+      pro.physicsSwitchZones = ProParseSwitchZones(a.Str("PhysicsSwitchZones"), a.Str("PhysicsSwitchAngles"));
+   if (a.Bool("PhysicsLauncherEnabled"))
+   {
+      B2SProBulb::Launcher& l = pro.physicsLauncher;
+      l.enabled = true;
+      l.followPivot = a.Bool("PhysicsLauncherFollowPivot");
+      l.triggerType = a.Int("PhysicsLauncherTriggerType", 1);
+      l.triggerId = a.Int("PhysicsLauncherTriggerID", 0);
+      l.origin.x = a.Float("PhysicsLauncherX", 0.f);
+      l.origin.y = a.Float("PhysicsLauncherY", 0.f);
+      l.angle = a.Float("PhysicsLauncherAngle", -90.f);
+      l.strength = a.Float("PhysicsLauncherStrength", 900.f);
+      l.randomAngle = a.Float("PhysicsLauncherRandomAngle", 0.f);
+      l.randomStrength = a.Float("PhysicsLauncherRandomStrength", 0.f);
+      l.captureRadius = a.Float("PhysicsLauncherCaptureRadius", 45.f);
+   }
+   if (pro.physicsBoundaries.empty() && floorPoints.size() >= 2)
+      pro.physicsBoundaries.push_back(floorPoints);
+   if (pro.physicsBall)
+      if (const char* mask = a.Raw("PhysicsSelectionMaskData"))
+         pro.physicsSelectionMaskImage = base64_decode(mask, strlen(mask));
+
+   // Motion path (image snippits only, except the switch ids which the reference reads for every bulb)
+   if (isImageSnippit)
+   {
+      if (a.Has("MotionPathDuration"))
+         pro.motionPathDuration = a.Int("MotionPathDuration", 3000, 250, 30000);
+      if (a.Has("MotionPathPoints"))
+         pro.motionPathPoints = ProParsePoints(a.Str("MotionPathPoints"));
+      pro.motionPathLoop = a.Bool("MotionPathLoop");
+      pro.motionPathSolenoidId = a.Int("MotionPathSolenoidID", 0);
+      pro.motionPathLampId = a.Int("MotionPathLampID", 0);
+      pro.motionPathB2SId = a.Int("MotionPathB2SID", 0);
+      pro.motionPathStopB2SId = a.Int("MotionPathStopB2SID", 0);
+      pro.motionPathResumeB2SId = a.Int("MotionPathResumeB2SID", 0);
+      pro.motionPathQueueTriggers = a.Bool("MotionPathQueueTriggers");
+      pro.motionPathRollEnabled = a.Bool("MotionPathRollEnabled");
+      pro.motionPathSequenceGroup = a.Str("MotionPathSequenceGroup");
+      pro.motionPathSequenceOrder = a.Int("MotionPathSequenceOrder", 0);
+      pro.motionPathDrainAll = a.Bool("MotionPathDrainAll");
+      pro.motionPathGravityDrop = a.Bool("MotionPathGravityDrop");
+      pro.motionPathRespawnEnabled = a.Bool("MotionPathRespawnEnabled");
+      if (pro.motionPathRespawnEnabled)
+      {
+         pro.motionPathRespawnPoint.x = a.Float("MotionPathRespawnX", 0.f);
+         pro.motionPathRespawnPoint.y = a.Float("MotionPathRespawnY", 0.f);
+         pro.motionPathRespawnDuration = a.Int("MotionPathRespawnDuration", 350, 50, 5000);
+      }
+      if (a.Has("MotionPathExitDuration"))
+         pro.motionPathExitDuration = a.Int("MotionPathExitDuration", 3000, 250, 30000);
+      pro.motionPathRemoveSolenoidId = a.Int("MotionPathRemoveSolenoidID", 0);
+      pro.motionPathRemoveLampId = a.Int("MotionPathRemoveLampID", 0);
+      pro.motionPathRemoveB2SId = a.Int("MotionPathRemoveB2SID", 0);
+      if (a.Has("MotionPathExitPoints"))
+         pro.motionPathExitPoints = ProParsePoints(a.Str("MotionPathExitPoints"));
+   }
+   pro.motionPathSwitchId = a.Int("MotionPathSwitchID", 0, 0, 255);
+   pro.motionPathStopSwitchId = a.Int("MotionPathStopSwitchID", 0, 0, 255);
+   pro.motionPathStopLampId = a.Int("MotionPathStopLampID", 0, 0, 255);
+   pro.motionPathStopSolenoidId = a.Int("MotionPathStopSolenoidID", 0, 0, 255);
+   pro.motionPathResumeSwitchId = a.Int("MotionPathResumeSwitchID", 0, 0, 255);
+   pro.motionPathResumeLampId = a.Int("MotionPathResumeLampID", 0, 0, 255);
+   pro.motionPathResumeSolenoidId = a.Int("MotionPathResumeSolenoidID", 0, 0, 255);
+   pro.motionPathRemoveSwitchId = a.Int("MotionPathRemoveSwitchID", 0, 0, 255);
+
+   // Full resolution snippit artwork (used instead of the cropped Image by the reference for plain image
+   // snippits): only noted here, the renderer keeps drawing the legacy Image until the Pro layers are implemented
+   pro.hasRuntimeSnippitImage = isImageSnippit && !pro.automaticRotation && snippitType == B2SSnippitType::StandardImage && a.Has("RuntimeSnippitImage");
+
+   pro.any = a.Any();
+   return pro;
+}
+
+// Images/B2SProTransparentCanvasBacking="r.g.b": the colour behind transparent canvas pixels (legacy files show black)
+static bool ParseCanvasBacking(const tinyxml2::XMLNode& root, vec4& color) noexcept
+{
+   const tinyxml2::XMLElement* images = GetNode(root, "Images"s);
+   if (images == nullptr || images->Attribute("B2SProTransparentCanvasBacking") == nullptr)
+      return false;
+   const vector<string> parts = GetStringList(images->Attribute("B2SProTransparentCanvasBacking"), '.');
+   int r, g, b;
+   if (parts.size() != 3 || !ProParseInt(parts[0], r) || !ProParseInt(parts[1], g) || !ProParseInt(parts[2], b))
+      return false;
+   color = vec4(static_cast<float>(std::clamp(r, 0, 255)) / 255.f, static_cast<float>(std::clamp(g, 0, 255)) / 255.f, static_cast<float>(std::clamp(b, 0, 255)) / 255.f, 1.f);
+   return true;
+}
+
 B2SSound::B2SSound(const tinyxml2::XMLNode& root) noexcept
    : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
    , m_wav(GetSoundAttribute(root, ""s))
@@ -238,6 +634,7 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    , m_fontName(GetStringAttribute(root, ""s, "FontName"s, ""s))
    , m_fontSize(GetIntAttribute(root, ""s, "FontSize"s, 0))
    , m_fontStyle(GetIntAttribute(root, ""s, "FontStyle"s, 0))
+   , m_pro(ParseProBulb(root, m_isImageSnippit, m_snippitType))
 {
    // Rotating images are always shown at startup; lamp writes only toggle their rotation (reference behavior)
    if (m_snippitType == B2SSnippitType::MechRotatingImage || m_snippitType == B2SSnippitType::SelfRotatingImage)
@@ -250,6 +647,7 @@ B2SBulb::~B2SBulb()
 {
    DeleteTexture(m_image);
    DeleteTexture(m_offImage);
+   DeleteTexture(m_pro.dynamicFrontLightField);
 }
 
 void B2SBulb::UpdateRotation(float elapsedInS)
@@ -561,6 +959,7 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root) noexcept
            : StartsWithCaseInsensitive(m_reelType, "LED"s)         ? B2SScoreRenderer::LED
            : StartsWithCaseInsensitive(m_reelType, "ImportedLED"s) ? B2SScoreRenderer::ImportedLED
                                                                    : B2SScoreRenderer::Reel)
+   , m_pro(ParseProScore(root))
 {
 }
 
@@ -951,6 +1350,8 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
    , m_backglassAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, false))
    , m_dmdIlluminations(GetFilteredPtrList<B2SBulb>(root, "Illumination"s, "Bulb"s, true))
    , m_dmdAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, true))
+   , m_hasCanvasBacking(ParseCanvasBacking(root, const_cast<vec4&>(m_canvasBacking)))
+   , m_hasProDesignerData(GetNode(root, "B2SProDesignerData"s) != nullptr)
 {
    // Optional plugin-authored <Displays> element (ignored by other B2S tools): its <DMD> children
    // declare DMD overlays; other display kinds (CRT/LCD) may be added as children later
@@ -1067,6 +1468,40 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
             m_backglassOnImage.m_brightness = 1.f;
       }
    }
+
+   // B2S Pro: any extension marks the document as a Pro file
+   m_isB2SPro = m_hasCanvasBacking || m_hasProDesignerData;
+   for (const auto* bulbs : { &m_backglassIlluminations, &m_dmdIlluminations })
+      for (const auto& bulb : *bulbs)
+         m_isB2SPro |= bulb->m_pro.any;
+   for (const auto* scores : { &m_backglassScores.m_scores, &m_dmdScores.m_scores })
+      for (const B2SScore& score : *scores)
+         m_isB2SPro |= score.m_pro.any;
+}
+
+string B2STable::GetB2SProSummary() const
+{
+   int proBulbs = 0, lighting = 0, rotation = 0, pivots = 0, motionPaths = 0, physicsBalls = 0, launchers = 0, behindCanvas = 0, reels3D = 0;
+   for (const auto* bulbs : { &m_backglassIlluminations, &m_dmdIlluminations })
+   {
+      for (const auto& bulb : *bulbs)
+      {
+         const B2SProBulb& pro = bulb->m_pro;
+         proBulbs += pro.any ? 1 : 0;
+         lighting += (pro.artworkPixelLighting || pro.dynamicFrontLighting) ? 1 : 0;
+         rotation += pro.automaticRotation ? 1 : 0;
+         pivots += pro.pivotAnimation ? 1 : 0;
+         motionPaths += pro.motionPathPoints.size() >= 2 ? 1 : 0;
+         physicsBalls += pro.physicsBall ? 1 : 0;
+         launchers += pro.physicsLauncher.enabled ? 1 : 0;
+         behindCanvas += (pro.lightBehindCanvas || pro.snippitBehindCanvas) ? 1 : 0;
+      }
+   }
+   for (const auto* scores : { &m_backglassScores.m_scores, &m_dmdScores.m_scores })
+      for (const B2SScore& score : *scores)
+         reels3D += score.m_pro.reel3DEnabled ? 1 : 0;
+   return std::format("{} bulbs with Pro attributes ({} dynamic lighting, {} automatic rotation, {} pivot, {} motion path, {} physics ball, {} launcher, {} behind canvas), {} 3D reel displays, canvas backing: {}, designer data: {}",
+      proBulbs, lighting, rotation, pivots, motionPaths, physicsBalls, launchers, behindCanvas, reels3D, m_hasCanvasBacking ? "yes" : "no", m_hasProDesignerData ? "yes" : "no");
 }
 
 const B2SScore* B2STable::FindScoreDisplay(int displayId) const

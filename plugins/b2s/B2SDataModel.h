@@ -109,6 +109,51 @@ enum class B2SScoreRenderer
 };
 
 
+// B2S Pro (https://github.com/KWildman69/B2S-Pro) extensions. A .B2SPro file is a regular
+// DirectB2SData document carrying additional optional attributes (and a designer-only
+// B2SProDesignerData element, which is preserved untouched). Everything below defaults to the
+// legacy behaviour when the attributes are absent, so .directb2s files are not affected.
+
+struct B2SProPoint
+{
+   float x = 0.f;
+   float y = 0.f;
+};
+
+struct B2SProRect
+{
+   float x = 0.f;
+   float y = 0.f;
+   float w = 0.f;
+   float h = 0.f;
+   bool IsEmpty() const { return w <= 0.f || h <= 0.f; }
+};
+
+// Trigger kinds shared by the Pro rotation, pivot and launcher triggers
+enum class B2SProTriggerType
+{
+   Solenoid = 1,
+   Lamp = 2,
+   B2SID = 3,
+   Startup = 4,
+   Switch = 5
+};
+
+// Score display extensions: realistic 3D reels and digit sizing
+struct B2SProScore
+{
+   bool any = false; // At least one Pro attribute was present
+   bool behindCanvas = false; // Composited behind the backglass canvas (transparent score windows)
+   bool keepDigitAspect = false;
+   int reelDigitWidth = 0; // 0 = fit
+   bool reel3DEnabled = false;
+   int reel3DBrightness = 100; // Backlight 0..400 (%)
+   int reel3DTemperature = 4000; // 2000..6500 K
+   int reel3DDepth = 100; // Drum depth 0..200
+   int reel3DGlass = 55; // Glass reflection 0..200
+};
+
+
 enum class B2SScoreType
 {
    NotUsed = 0,
@@ -160,6 +205,7 @@ public:
    const int m_ledSegments; // Segment count from the ReelType suffix (Dream7LEDx/RenderedLEDx): 7, 10 or 14, else 0
 
    const B2SScoreRenderer m_scoreType;
+   const B2SProScore m_pro; // B2S Pro extensions (defaults when absent)
 
    float m_reelIllu = -1.f; // ROM value of the ReelIlluB2SID lamp, polled each frame; -1 until observed (render thread)
    mutable uint64_t m_reelIlluStamp = 0; // Write counter of the last observed ROM change (script/ROM: most recent wins)
@@ -227,6 +273,137 @@ enum class B2SDualMode2
 };
 
 
+// Bulb (illumination / snippit) extensions of B2S Pro, grouped by feature. Values are parsed and
+// clamped like the B2S Pro server does; the behaviours themselves are implemented feature by feature
+// (see the Pro comments in the renderer), unimplemented ones are carried in the model only.
+struct B2SProBulb
+{
+   bool any = false; // At least one Pro attribute was present
+
+   // Layers: items drawn behind the canvas show through its transparent openings
+   bool artworkPixelLighting = false;
+   bool separateLightLayer = false;
+   bool lightBehindCanvas = false;
+   bool snippitBehindCanvas = false;
+   bool hasRuntimeSnippitImage = false; // A full resolution snippit image is available (RuntimeSnippitImage, not decoded yet)
+
+   // Dynamic artwork lighting: an authored alpha light field applied to the snippit artwork
+   bool dynamicFrontLighting = false;
+   bool dynamicFrontShowLight = false;
+   int dynamicFrontTargetSnippetId = 0;
+   VPXTexture dynamicFrontLightField = nullptr; // Alpha field image, same size as the snippit (owned by the bulb)
+   int dynamicLightExposure = 100; // 0..1600
+   vec4 dynamicLightColor = vec4(1.f, 1.f, 1.f, 1.f);
+   int dynamicFlasherStyle = 1;
+   int dynamicSaturation = 100; // 0..200
+   int dynamicHighlightProtection = 0; // 0..100
+   int dynamicDarkAreaLift = 0; // 0..100
+   int dynamicTransmissionContrast = 140; // 0..300
+   int dynamicLightTemperature = 4000; // 2000..6500
+   int flasherPulseDuration = 0; // ms, 0 = not a pulsed flasher, else 50..5000
+
+   // Automatic rotation of a single image (standard image snippits only)
+   bool automaticRotation = false;
+   bool automaticRotationContinuous = false; // Rotates from startup, no trigger
+   B2SProTriggerType automaticRotationTriggerType = B2SProTriggerType::Lamp; // Solenoid, Switch, else Lamp
+   int automaticRotationTriggerId = 0;
+   int automaticRotationSteps = 0; // 4..360, 0 = not set
+   int automaticRotationInterval = 0; // ms, 10..500, 0 = not set
+   B2SSnippitRotationDirection automaticRotationDirection = B2SSnippitRotationDirection::Clockwise;
+   B2SSnippitRotationStopBehaviour automaticRotationStopBehaviour = B2SSnippitRotationStopBehaviour::SpinOff;
+
+   // Pivot animation: swing between two angles around a pivot point (relative 0..1 coordinates)
+   bool pivotAnimation = false;
+   bool pivotAutomaticOscillation = false;
+   float pivotX = 0.5f; // ExternalPivotX / PivotX
+   float pivotY = 0.5f;
+   float pivotTipX = 0.9f;
+   float pivotTipY = 0.5f;
+   float pivotDownAngle = 0.f;
+   float pivotUpAngle = -30.f;
+   int pivotDuration = 80; // ms, ExternalPivotDuration / PivotDuration
+   float pivotRandomStrength = 0.f; // 0..100
+   int pivotTriggerType = 1; // B2SProTriggerType code
+   int pivotTriggerId = 0;
+   string pivotDownTrigger;
+   string pivotUpTrigger;
+
+   // External position grid / pivot group membership
+   string externalGridName;
+   bool externalGridRepresentative = false;
+   int externalGridDuration = 45;
+   string externalPivotGroup;
+   bool externalPivotRepresentative = false;
+   float externalPivotAngle = 0.f;
+
+   // Motion path: travel along a polyline (image snippits only)
+   vector<B2SProPoint> motionPathPoints;
+   vector<B2SProPoint> motionPathExitPoints;
+   int motionPathDuration = 3000; // ms, 250..30000
+   int motionPathExitDuration = 3000; // ms, 250..30000
+   bool motionPathLoop = false;
+   bool motionPathQueueTriggers = false;
+   bool motionPathRollEnabled = false;
+   bool motionPathDrainAll = false;
+   bool motionPathGravityDrop = false;
+   bool motionPathRespawnEnabled = false;
+   B2SProPoint motionPathRespawnPoint;
+   int motionPathRespawnDuration = 350; // ms, 50..5000
+   string motionPathSequenceGroup;
+   int motionPathSequenceOrder = 0;
+   int motionPathSolenoidId = 0; // Start triggers
+   int motionPathLampId = 0;
+   int motionPathB2SId = 0;
+   int motionPathSwitchId = 0;
+   int motionPathStopSolenoidId = 0; // Stop triggers
+   int motionPathStopLampId = 0;
+   int motionPathStopB2SId = 0;
+   int motionPathStopSwitchId = 0;
+   int motionPathResumeSolenoidId = 0; // Resume triggers
+   int motionPathResumeLampId = 0;
+   int motionPathResumeB2SId = 0;
+   int motionPathResumeSwitchId = 0;
+   int motionPathRemoveSolenoidId = 0; // Remove (exit path) triggers
+   int motionPathRemoveLampId = 0;
+   int motionPathRemoveB2SId = 0;
+   int motionPathRemoveSwitchId = 0;
+
+   // Physics: a ball simulated against boundaries, obstacles, flippers and a launcher
+   struct SwitchZone
+   {
+      B2SProRect bounds;
+      int switchId = 0;
+      float angle = 0.f; // -180..180
+   };
+   struct Launcher
+   {
+      bool enabled = false;
+      bool followPivot = false;
+      int triggerType = 1; // B2SProTriggerType code
+      int triggerId = 0;
+      B2SProPoint origin;
+      float angle = -90.f;
+      float strength = 900.f;
+      float randomAngle = 0.f;
+      float randomStrength = 0.f;
+      float captureRadius = 45.f;
+   };
+   bool physicsBall = false;
+   string physicsFlipperName;
+   B2SProRect physicsBounds;
+   float physicsGravity = 650.f;
+   float physicsFlipperStrength = 1.f;
+   float physicsBoundaryBounce = 0.12f;
+   vector<vector<B2SProPoint>> physicsBoundaries; // Polylines (PhysicsFloorPoints when PhysicsBoundaries is absent)
+   vector<vector<float>> physicsBoundarySegmentBounces; // Per polyline, per segment restitution (-1 = default)
+   vector<B2SProRect> physicsObstacles;
+   vector<float> physicsObstacleBounces; // Per obstacle restitution (-1 = default)
+   vector<SwitchZone> physicsSwitchZones;
+   Launcher physicsLauncher;
+   vector<uint8_t> physicsSelectionMaskImage; // Encoded (PNG) alpha mask of the ball artwork, decoded when the simulation needs it
+};
+
+
 class B2SBulb final
 {
 public:
@@ -266,6 +443,7 @@ public:
    const string m_fontName;
    const int m_fontSize;
    const int m_fontStyle;
+   const B2SProBulb m_pro; // B2S Pro extensions (defaults when absent)
 
 public:
    // Self-rotating image runtime. Start/Stop are thread safe requests consumed by UpdateRotation (render thread)
@@ -480,6 +658,10 @@ public:
    // Find the score display owning the given resolved digit index (1-based, both backglass and DMD displays)
    const B2SScore* FindScoreDigitDisplay(int digit) const;
 
+   // B2S Pro: true when the document carries any Pro extension; the summary lists them (for the log)
+   bool IsB2SPro() const { return m_isB2SPro; }
+   string GetB2SProSummary() const;
+
 public:
    const string m_version;
    const string m_name;
@@ -516,6 +698,14 @@ public:
    vector<std::unique_ptr<B2SBulb>> m_dmdIlluminations;
    vector<B2SAnimation> m_dmdAnimations;
    // Missing Scores
+
+   // B2S Pro: colour painted behind the backglass canvas, where legacy files show black (Images/B2SProTransparentCanvasBacking)
+   const bool m_hasCanvasBacking;
+   const vec4 m_canvasBacking;
+   const bool m_hasProDesignerData; // The file holds the designer's project (B2SProDesignerData element)
+
+private:
+   bool m_isB2SPro = false;
 };
 
 
