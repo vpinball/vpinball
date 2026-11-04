@@ -308,6 +308,8 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
             bulb->m_proRt.triggerUpdater = ResolveRomPropUpdater(items, &bulb->m_proRt.triggerProbe, ProTriggerRomIdType(static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType)), bulb->m_pro.pivotTriggerId);
          else if (bulb->m_pro.physicsBall && bulb->m_pro.physicsLauncher.enabled)
             bulb->m_proRt.triggerUpdater = ResolveRomPropUpdater(items, &bulb->m_proRt.triggerProbe, ProTriggerRomIdType(static_cast<B2SProTriggerType>(bulb->m_pro.physicsLauncher.triggerType)), bulb->m_pro.physicsLauncher.triggerId);
+         for (B2SBulb::ProRuntime::Trigger& trigger : bulb->m_proRt.motionTriggers)
+            trigger.updater = ResolveRomPropUpdater(items, &trigger.probe, ProTriggerRomIdType(trigger.type), trigger.id);
       }
 
    // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
@@ -337,32 +339,37 @@ static B2SRomIDType ProTriggerRomIdType(const B2SProTriggerType type)
 
 // Reads a B2S Pro trigger: the bus probe and, for lamp and B2S id triggers, script writes on that lamp
 // channel, the most recent one winning (as bulbs do). Returns false while nothing was observed yet
-bool B2SRenderer::PollProTrigger(B2SBulb::ProRuntime& rt, B2SServer* server, const B2SProTriggerType type, const int id, float& value)
+static bool PollProTriggerState(float& probe, uint64_t& stampRef, const std::function<void()>& updater, B2SServer* server, const B2SProTriggerType type, const int id, float& value)
 {
    if (id <= 0)
       return false;
    bool known = false;
-   const float prevProbe = rt.triggerProbe;
-   rt.triggerUpdater();
-   if (rt.triggerProbe >= 0.f)
+   const float prevProbe = probe;
+   updater();
+   if (probe >= 0.f)
    {
       known = true;
-      value = rt.triggerProbe;
-      if (server != nullptr && prevProbe >= 0.f && rt.triggerProbe != prevProbe)
-         rt.triggerStamp = server->NextStamp();
+      value = probe;
+      if (server != nullptr && prevProbe >= 0.f && probe != prevProbe)
+         stampRef = server->NextStamp();
    }
    if (server != nullptr && (type == B2SProTriggerType::Lamp || type == B2SProTriggerType::B2SID))
    {
       float scripted;
       uint64_t stamp = 0;
-      if (server->GetScriptedLampState(id, scripted, &stamp) && stamp > rt.triggerStamp)
+      if (server->GetScriptedLampState(id, scripted, &stamp) && stamp > stampRef)
       {
          known = true;
          value = scripted;
-         rt.triggerStamp = stamp;
+         stampRef = stamp;
       }
    }
    return known;
+}
+
+bool B2SRenderer::PollProTrigger(B2SBulb::ProRuntime& rt, B2SServer* server, const B2SProTriggerType type, const int id, float& value)
+{
+   return PollProTriggerState(rt.triggerProbe, rt.triggerStamp, rt.triggerUpdater, server, type, id, value);
 }
 
 // Polls the trigger of a pivot or automatic rotation and applies its edges, then advances the animation
@@ -458,6 +465,34 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
          UpdateProTrigger(*bulb, server, bulb->m_pro.automaticRotationTriggerType, bulb->m_pro.automaticRotationTriggerId, bulb->m_romInverted, elapsed, true);
       else if (bulb->HasProPivot())
          UpdateProTrigger(*bulb, server, static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType), bulb->m_pro.pivotTriggerId, false, elapsed, !bulb->m_proRt.physicsDriven);
+      // Motion path triggers: every action fires on a change to a non zero value (the reference's lamp / solenoid /
+      // B2S id / switch routes). Not for physics balls: their travel is the simulation's
+      if (!bulb->m_proRt.motionTriggers.empty() && bulb->m_proRt.physicsBall == nullptr)
+      {
+         for (B2SBulb::ProRuntime::Trigger& trigger : bulb->m_proRt.motionTriggers)
+         {
+            float value = 0.f;
+            if (!PollProTriggerState(trigger.probe, trigger.stamp, trigger.updater, server, trigger.type, trigger.id, value))
+               continue;
+            const bool on = value != 0.f;
+            if (on == trigger.prevOn)
+               continue;
+            trigger.prevOn = on;
+            if (!on)
+               continue;
+            switch (trigger.action)
+            {
+            case B2SBulb::ProRuntime::MotionAction::Start: bulb->ProStartMotionPath(false, false); break;
+            case B2SBulb::ProRuntime::MotionAction::Stop: bulb->ProStopMotionPath(); break;
+            case B2SBulb::ProRuntime::MotionAction::Resume: bulb->ProResumeMotionPath(); break;
+            case B2SBulb::ProRuntime::MotionAction::Remove:
+               if (bulb->HasProExitPath())
+                  bulb->ProStartMotionPath(true, false);
+               break;
+            }
+         }
+         bulb->ProAdvanceMotionPath(elapsed);
+      }
    }
 
    // Launcher triggers (FirePhysicsLaunchers: any change to a non zero value launches)

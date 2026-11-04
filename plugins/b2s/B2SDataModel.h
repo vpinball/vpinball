@@ -497,6 +497,33 @@ public:
       bool pulseActive = false;
       bool pulsePrevOn = false;
       float pulseRemainingS = 0.f;
+      // Motion path (image snippits): travel along the authored polyline
+      enum class MotionAction
+      {
+         Start,
+         Stop,
+         Resume,
+         Remove
+      };
+      struct Trigger
+      {
+         MotionAction action;
+         B2SProTriggerType type;
+         int id;
+         float probe = -1.f;
+         uint64_t stamp = 0;
+         bool prevOn = false;
+         std::function<void()> updater = []() { };
+      };
+      vector<Trigger> motionTriggers;
+      vector<B2SProPoint> motionRoute; // Route being travelled (entry, exit or from the current position)
+      bool motionRunning = false;
+      bool motionPaused = false;
+      bool motionLoop = false;
+      bool motionExit = false;
+      float motionElapsedMs = 0.f;
+      float motionDurationMs = 3000.f;
+      int motionQueued = 0;
       // Physics
       bool physicsDriven = false; // Pivot used as the flipper of a physics ball: advanced by the physics clock, not per frame
       class B2SProPhysicsBall* physicsBall = nullptr; // The simulation of a physics ball bulb (owned by the renderer)
@@ -518,6 +545,14 @@ public:
    void ProStartRotation();
    void ProStopRotation();
    void ProAdvanceRotation(float elapsedInS);
+   // Motion path of an image snippit (plain pictures; sequence groups are not implemented)
+   bool HasProMotionPath() const { return m_isImageSnippit && m_pro.motionPathPoints.size() >= 2; }
+   bool HasProExitPath() const { return m_isImageSnippit && m_pro.motionPathExitPoints.size() >= 2; }
+   void ProStartMotionPath(bool exitRoute, bool fromCurrentPosition);
+   void ProStopMotionPath();
+   void ProResumeMotionPath();
+   void ProAdvanceMotionPath(float elapsedInS);
+   B2SProPoint ProMotionCenter() const; // Current centre (authored place until the first move)
 
 private:
    std::atomic<int> m_rotRequest { 0 }; // 1 = start, 2 = stop

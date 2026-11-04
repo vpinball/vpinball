@@ -658,6 +658,185 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    // B2S Pro: a registered pivot rests at its down angle (RegisterPivotTrigger), oscillating ones at 0
    if (HasProPivot())
       m_proRt.angle = (m_pro.pivotAutomaticOscillation || m_pro.pivotTriggerType == static_cast<int>(B2SProTriggerType::Startup)) ? 0.f : m_pro.pivotDownAngle;
+   // B2S Pro: motion path triggers (the reference routes each id kind to start / stop / resume / remove lists)
+   if (m_isImageSnippit)
+   {
+      using A = ProRuntime::MotionAction;
+      using T = B2SProTriggerType;
+      const auto add = [this](A action, T type, int id)
+      {
+         if (id > 0)
+            m_proRt.motionTriggers.push_back({ action, type, id });
+      };
+      if (HasProMotionPath())
+      {
+         add(A::Start, T::Solenoid, m_pro.motionPathSolenoidId);
+         add(A::Start, T::Lamp, m_pro.motionPathLampId);
+         add(A::Start, T::B2SID, m_pro.motionPathB2SId);
+         add(A::Start, T::Switch, m_pro.motionPathSwitchId);
+         add(A::Stop, T::Solenoid, m_pro.motionPathStopSolenoidId);
+         add(A::Stop, T::Lamp, m_pro.motionPathStopLampId);
+         add(A::Stop, T::B2SID, m_pro.motionPathStopB2SId);
+         add(A::Stop, T::Switch, m_pro.motionPathStopSwitchId);
+         add(A::Resume, T::Solenoid, m_pro.motionPathResumeSolenoidId);
+         add(A::Resume, T::Lamp, m_pro.motionPathResumeLampId);
+         add(A::Resume, T::B2SID, m_pro.motionPathResumeB2SId);
+         add(A::Resume, T::Switch, m_pro.motionPathResumeSwitchId);
+      }
+      if (HasProExitPath() || m_pro.motionPathGravityDrop)
+      {
+         add(A::Remove, T::Solenoid, m_pro.motionPathRemoveSolenoidId);
+         add(A::Remove, T::Lamp, m_pro.motionPathRemoveLampId);
+         add(A::Remove, T::B2SID, m_pro.motionPathRemoveB2SId);
+         add(A::Remove, T::Switch, m_pro.motionPathRemoveSwitchId);
+      }
+   }
+}
+
+// B2S Pro motion path: the snippit's centre travels the authored polyline (entry points, or the exit points
+// when removed) over the authored duration, optionally looping back to the first point, rolling its artwork.
+// Stop pauses the travel where it is, resume continues it. With queued triggers, starts received while
+// travelling are replayed one after the other.
+
+B2SProPoint B2SBulb::ProMotionCenter() const
+{
+   if (m_proRt.posValid)
+      return { m_proRt.posX, m_proRt.posY };
+   return { static_cast<float>(m_locationX) + static_cast<float>(m_width) * 0.5f, static_cast<float>(m_locationY) + static_cast<float>(m_height) * 0.5f };
+}
+
+void B2SBulb::ProStartMotionPath(const bool exitRoute, const bool fromCurrentPosition)
+{
+   ProRuntime& rt = m_proRt;
+   const vector<B2SProPoint>& points = exitRoute ? m_pro.motionPathExitPoints : m_pro.motionPathPoints;
+   if (points.size() < 2)
+      return;
+   if (!exitRoute && m_pro.motionPathQueueTriggers && (rt.motionRunning || rt.motionPaused))
+   {
+      rt.motionQueued = std::min(32, rt.motionQueued + 1);
+      return;
+   }
+   rt.motionDurationMs = static_cast<float>(std::clamp(exitRoute ? m_pro.motionPathExitDuration : m_pro.motionPathDuration, 250, 30000));
+   rt.motionLoop = !exitRoute && m_pro.motionPathLoop;
+   rt.motionExit = exitRoute;
+   if (exitRoute)
+   {
+      // The exit route starts where the snippit is, keeping the authored shape of the exit path
+      const B2SProPoint start = ProMotionCenter();
+      rt.motionRoute.clear();
+      rt.motionRoute.push_back(start);
+      for (size_t i = 1; i < points.size(); i++)
+         rt.motionRoute.push_back({ start.x + (points[i].x - points[0].x), start.y + (points[i].y - points[0].y) });
+   }
+   else if (fromCurrentPosition)
+   {
+      rt.motionRoute.clear();
+      rt.motionRoute.push_back(ProMotionCenter());
+      for (const B2SProPoint& p : points)
+      {
+         const B2SProPoint& prev = rt.motionRoute.back();
+         if ((p.x - prev.x) * (p.x - prev.x) + (p.y - prev.y) * (p.y - prev.y) > 0.0001f)
+            rt.motionRoute.push_back(p);
+      }
+   }
+   else
+      rt.motionRoute = points;
+   rt.motionElapsedMs = 0.f;
+   rt.motionPaused = false;
+   rt.motionRunning = true;
+   rt.posX = rt.motionRoute[0].x;
+   rt.posY = rt.motionRoute[0].y;
+   rt.posValid = true;
+   m_brightness = 1.f;
+}
+
+void B2SBulb::ProStopMotionPath()
+{
+   if (m_proRt.motionRunning)
+   {
+      m_proRt.motionRunning = false;
+      m_proRt.motionPaused = true;
+   }
+}
+
+void B2SBulb::ProResumeMotionPath()
+{
+   if (m_proRt.motionPaused && m_proRt.motionRoute.size() >= 2)
+   {
+      m_proRt.motionPaused = false;
+      m_proRt.motionRunning = true;
+   }
+}
+
+void B2SBulb::ProAdvanceMotionPath(const float elapsedInS)
+{
+   ProRuntime& rt = m_proRt;
+   if (!rt.motionRunning || rt.motionRoute.size() < 2)
+      return;
+   rt.motionElapsedMs += elapsedInS * 1000.f;
+   const float progress = std::min(1.f, rt.motionElapsedMs / std::max(1.f, rt.motionDurationMs));
+   // Point along the route at a distance fraction (a looping route closes back on its first point)
+   const size_t segments = rt.motionRoute.size() - 1 + (rt.motionLoop ? 1 : 0);
+   double total = 0.0;
+   vector<double> lengths(segments);
+   for (size_t i = 0; i < segments; i++)
+   {
+      const B2SProPoint& a = rt.motionRoute[i % rt.motionRoute.size()];
+      const B2SProPoint& b = rt.motionRoute[(i + 1) % rt.motionRoute.size()];
+      lengths[i] = std::sqrt(static_cast<double>(b.x - a.x) * (b.x - a.x) + static_cast<double>(b.y - a.y) * (b.y - a.y));
+      total += lengths[i];
+   }
+   B2SProPoint center = rt.motionRoute[0];
+   if (total > 0.0)
+   {
+      double target = static_cast<double>(progress) * total;
+      center = rt.motionRoute.back();
+      for (size_t i = 0; i < segments; i++)
+      {
+         if (target <= lengths[i] || i == segments - 1)
+         {
+            const float part = lengths[i] <= 0.0 ? 0.f : static_cast<float>(target / lengths[i]);
+            const B2SProPoint& a = rt.motionRoute[i % rt.motionRoute.size()];
+            const B2SProPoint& b = rt.motionRoute[(i + 1) % rt.motionRoute.size()];
+            center = { a.x + (b.x - a.x) * part, a.y + (b.y - a.y) * part };
+            break;
+         }
+         target -= lengths[i];
+      }
+   }
+   // Rolling: the artwork turns by the travelled distance over its radius (AdvanceMotionPathRoll)
+   if (m_pro.motionPathRollEnabled && rt.posValid)
+   {
+      const float dx = center.x - rt.posX, dy = center.y - rt.posY;
+      const double distance = std::sqrt(static_cast<double>(dx) * dx + static_cast<double>(dy) * dy);
+      if (distance > 0.0001)
+      {
+         const float direction = std::abs(dx) >= std::abs(dy) ? (dx > 0.f ? 1.f : (dx < 0.f ? -1.f : 0.f)) : (dy > 0.f ? 1.f : (dy < 0.f ? -1.f : 0.f));
+         if (direction != 0.f)
+         {
+            const float radius = std::max(1.f, static_cast<float>(std::min(m_width, m_height)) * 0.5f);
+            rt.rollAngle = static_cast<float>(std::fmod(static_cast<double>(rt.rollAngle) + direction * distance / radius * 180.0 / 3.14159265358979323846, 360.0));
+         }
+      }
+   }
+   rt.posX = center.x;
+   rt.posY = center.y;
+   rt.posValid = true;
+   if (progress >= 1.f)
+   {
+      if (rt.motionLoop)
+         rt.motionElapsedMs = 0.f;
+      else
+      {
+         rt.motionRunning = false;
+         rt.motionPaused = false;
+         if (m_pro.motionPathQueueTriggers && rt.motionQueued > 0)
+         {
+            rt.motionQueued--;
+            ProStartMotionPath(false, false);
+         }
+      }
+   }
 }
 
 // B2S Pro pivot animation: a swing between the down and up angles over PivotDuration with smoothstep easing.
