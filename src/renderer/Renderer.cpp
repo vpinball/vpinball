@@ -393,6 +393,7 @@ Renderer::~Renderer()
    m_vrMirrorView = nullptr;
    m_primaryView = nullptr;
    m_extraViews.clear();
+   m_deadViews.clear();
    m_renderViews.clear();
    m_activeView = nullptr;
    delete m_renderDevice;
@@ -1225,7 +1226,7 @@ void Renderer::DrawDynamics(bool onlyBalls)
    const unsigned int mask = m_render_mask;
    const bool isNoBackdrop = m_activeView->m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
    m_render_mask |= Renderer::DYNAMIC_ONLY;
-   const bool isBackdropEdit = g_pplayer->m_liveUI->IsEditorBackdropViewMode();
+   const bool isBackdropEdit = m_activeView->m_editorBackdropEdit;
    if (!onlyBalls)
    {
       if (!isBackdropEdit)
@@ -1526,17 +1527,60 @@ void Renderer::Render3DScene()
       }
    }
 
+   // Views released during the previous frame's record (the editor UI registers/unregisters its panes
+   // while it is being recorded) are destroyed now, outside of the record loop
+   m_deadViews.clear();
+
    // Record every view into the frame: the primary view (playfield window or VR headset), then the
-   // optional VR desktop mirror and any additional views
-   for (RenderView* view : m_renderViews)
+   // optional VR desktop mirror and any additional views (editor viewport panes)
+   for (size_t i = 0; i < m_renderViews.size(); i++)
    {
+      RenderView* const view = m_renderViews[i];
       m_activeView = view;
+      // The primary view follows the global editor state; the other views own theirs (per view editor flags)
+      if (view == m_primaryView.get())
+      {
+         view->m_editorView = g_pplayer->m_liveUI->IsEditorViewMode();
+         view->m_editorBackdropEdit = g_pplayer->m_liveUI->IsEditorBackdropViewMode();
+      }
       view->Render();
    }
    m_activeView = m_primaryView.get();
 
+   // While the primary view is sceneless (the editor areas own the frame, the viewport panes drawing the
+   // scene to their areas of the shared output), its LiveUI pass is recorded now, at the end of the frame
+   // record: the pass is then sorted after the views' outputs, compositing the UI above the 3D panes
+   if (!m_primaryView->m_renderScene && m_primaryView->m_renderLiveUI && m_primaryView->GetOutput() != nullptr)
+   {
+      m_renderDevice->SetRenderTarget("LiveUI"s, m_primaryView->GetOutput(), true, true);
+      g_pplayer->m_liveUI->RenderUI();
+   }
+
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)
       m_gpu_profiler.Timestamp(GTS_PostProcess);
+}
+
+RenderView* Renderer::CreateEditorView()
+{
+   // Registered views are recorded with the other views, before the deferred LiveUI pass of a sceneless primary view
+   m_extraViews.push_back(std::make_unique<RenderView>(this, RenderView::Kind::Editor));
+   RenderView* const view = m_extraViews.back().get();
+   m_renderViews.push_back(view);
+   return view;
+}
+
+void Renderer::ReleaseEditorView(RenderView* const view)
+{
+   std::erase(m_renderViews, view);
+   // The view object and its GPU targets are kept until the next frame: release happens while the
+   // frame is being recorded, so they may still be referenced by the current record
+   for (size_t i = 0; i < m_extraViews.size(); i++)
+      if (m_extraViews[i].get() == view)
+      {
+         m_deadViews.push_back(std::move(m_extraViews[i]));
+         m_extraViews.erase(m_extraViews.begin() + i);
+         return;
+      }
 }
 
 

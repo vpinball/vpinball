@@ -88,6 +88,8 @@ public:
    RenderView* GetPrimaryView() const { return m_primaryView.get(); }
    RenderView* GetVRMirrorView() const { return m_vrMirrorView.get(); }
    const vector<RenderView*>& GetViews() const { return m_renderViews; }
+   RenderView* CreateEditorView(); // Registers a Kind::Editor view (an editor viewport drawing to its area of a shared output)
+   void ReleaseEditorView(RenderView* view); // Unregisters a view made by CreateEditorView (destroyed at the next frame's record start)
 
    // Additional views recorded each frame after the primary one (e.g. editor viewports). Their output is
    // defined by the caller: a window backbuffer, a shared render target (each view drawing to its own
@@ -439,6 +441,7 @@ private:
    std::unique_ptr<RenderView> m_vrMirrorView;
    std::vector<std::unique_ptr<RenderView>> m_extraViews;
    std::vector<RenderView*> m_renderViews;
+   std::vector<std::unique_ptr<RenderView>> m_deadViews; // Released views kept alive until the next frame's record starts
    RenderView* m_activeView = nullptr;
 
    PinTable* m_table;

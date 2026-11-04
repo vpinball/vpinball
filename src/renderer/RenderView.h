@@ -53,6 +53,7 @@ public:
    std::unique_ptr<RenderTarget> m_ownedOutputRT;
    vec4 m_outputArea = vec4(0.f, 0.f, 1.f, 1.f); // Normalized [left, top, right, bottom] area of the output this view draws to
    void SetOutputArea(const vec4& area) { m_outputArea = area; }
+   bool m_deferResize = false; // Keep the current render targets when the output area resizes (e.g. splitter drag): the render is stretched to the new area until the resize is applied
    RenderTarget* GetOutput() const;
    bool IsFullOutputArea() const { return m_outputArea.x <= 0.f && m_outputArea.y <= 0.f && m_outputArea.z >= 1.f && m_outputArea.w >= 1.f; }
    vec4 GetOutputAreaClip() const; // Output area in clip space (left, bottom, right, top), matching RenderPass::m_areaOfInterest convention
@@ -82,11 +83,18 @@ public:
    bool m_runGameLogic = false; // Call Player::UpdateGameLogic mid-record to keep latency low
    bool m_applyPostFX = true; // Run the post process tail (AA / sharpen / upscale / stereo) after tonemapping
    int m_outputLayer = -1; // If >= 0, only render to this layer of the (stereo) render targets
+   bool m_renderScene = true; // Record the scene passes (false: nothing is recorded for the view, except that the primary view still
+   // clears the output and ticks the game logic while the editor areas own the frame, see RenderView::Render)
+
+   // Per view editor state, replacing the global LiveUI mode queries (several editor views may coexist with different setups)
+   bool m_editorView = false; // Rendered for the live editor: disables the static prepass and applies the editor backdrop rules
+   bool m_editorBackdropEdit = false; // The view shows the desktop backdrop edit mode
 
    // Camera state
    ModelViewProj m_mvp; // Active Model / View / Projection (includes visual nudge)
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
    ModelViewProj m_initialMVP; // Base playfield MVP in desktop mode (unused in VR)
+   bool m_customViewProj = false; // The camera is driven through SetViewProj (editor panes): InitLayout keeps it instead of the default view setup
    Matrix3D m_playfieldView[2]; // Base playfield view matrices of m_initialMVP from which all views are derived in desktop mode, or the cabinet view for the VR desktop display scene render
    Vertex2D m_screenOffset = Vertex2D(0.f, 0.f); // Screen shake effect during nudge
    const ModelViewProj& GetMVP() const { return m_mvp; }
