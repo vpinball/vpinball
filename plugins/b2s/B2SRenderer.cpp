@@ -552,7 +552,11 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<State
       for (unsigned int i = 0; i < src.nStates; i++)
       {
          const auto& def = src.stateDefs[i];
-         if (def.mappingId == romId && def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState)
+         if (def.mappingId != romId || def.GetState == nullptr)
+            continue;
+         // Lamps, solenoids and GI are published as floats; PinMAME publishes switches as bytes and mechs as
+         // 32 bit integers (B2SPluginEventStream reads them the same way), read into the float probe
+         if (def.dataFormat == CTLPI_STATE_FORMAT_FLOAT)
          {
             return [this, value, def, romInverted, romValue]()
             {
@@ -561,6 +565,34 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<State
                   *value = (static_cast<int>(*value) == romValue) ? 1.f : 0.f;
                else if (romInverted)
                   *value = 1.f - *value;
+            };
+         }
+         if (def.dataFormat == CTLPI_STATE_FORMAT_UINT8 || def.dataFormat == CTLPI_STATE_FORMAT_INT32)
+         {
+            const bool isSwitch = groupId == PMPI_GROUP_SWITCH;
+            const bool isByte = def.dataFormat == CTLPI_STATE_FORMAT_UINT8;
+            return [this, value, def, romInverted, romValue, isSwitch, isByte]()
+            {
+               m_stateSources.With(
+                  [this, value, &def, isSwitch, isByte](const std::vector<StateSrcId>&)
+                  {
+                     if (isByte)
+                     {
+                        uint8_t byteState = 0;
+                        def.GetState(def.callContext, &byteState);
+                        *value = isSwitch ? (byteState != 0 ? 1.f : 0.f) : static_cast<float>(byteState);
+                     }
+                     else
+                     {
+                        int32_t intState = 0;
+                        def.GetState(def.callContext, &intState);
+                        *value = static_cast<float>(intState);
+                     }
+                  });
+               if (romValue > 0)
+                  *value = (static_cast<int>(*value) == romValue) ? 1.f : 0.f;
+               else if (romInverted)
+                  *value = (*value != 0.f) ? 0.f : 1.f;
             };
          }
       }
