@@ -102,9 +102,9 @@ public:
    void B2SSetCredits(int value)
    {
       m_defaultStateNameMask |= 1ull << 29;
-      ApplyScoreDigit(29, value, false);
+      ApplyPerDigitSetter(29, value);
    }
-   void B2SSetCredits(int id, int value) { ApplyScoreDigit(id, value, false); }
+   void B2SSetCredits(int id, int value) { ApplyPerDigitSetter(id, value); }
 
    // Illumination and animation states (generate 'E' plugin events)
    // Used to be binary on/off as 1/0 but not validated so script could use any integer value
@@ -231,6 +231,8 @@ private:
    bool m_overlaySheetRegistered = false;
    void RegisterOverlaySheet();
    void ApplyScoreDigit(int digit, int value, bool roll);
+   // B2SSetScoreDigit / B2SSetCredits: a 7-segment bit code on an LED display, a digit value on a reel
+   void ApplyPerDigitSetter(int digit, int value);
    std::function<void(B2SServer*)> m_onDestroyHandler;
    std::function<void(int, bool)> m_switchHandler;
 

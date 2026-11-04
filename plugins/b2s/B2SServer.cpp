@@ -954,7 +954,22 @@ void B2SServer::B2SSetScore(int display, int value)
       ApplyScoreDigit(scoreDisplay->m_resolvedStartDigit + static_cast<int>(i), digits[i], true);
 }
 
-void B2SServer::B2SSetScoreDigit(int digit, int value) { ApplyScoreDigit(digit, value, false); }
+// The per-digit setters (B2SSetScoreDigit, B2SSetCredits) pass a segment bit code, not a digit: that is what the
+// default EXE-mode backglass does with them (formBackglass.GetThruAllLEDs applies CInt(value) as a bit code), and
+// tables are written against it (Zone Fury drives its credit and ball displays with SegValueB2S masks: 63 for 0,
+// 6 for 1). Only B2SSetReel passes a digit. A display without segments (a reel) takes the value.
+void B2SServer::ApplyPerDigitSetter(int digit, int value)
+{
+   if (const std::shared_ptr<B2STable> b2s = AcquireB2STable())
+      if (const B2SScore* display = b2s->FindScoreDigitDisplay(digit); display != nullptr && display->m_ledSegments != 0)
+      {
+         ApplyScoreSegments(digit, B2SSegmentTranslateBitCode(static_cast<uint32_t>(value), display->m_ledSegments));
+         return;
+      }
+   ApplyScoreDigit(digit, value, false);
+}
+
+void B2SServer::B2SSetScoreDigit(int digit, int value) { ApplyPerDigitSetter(digit, value); }
 
 void B2SServer::B2SSetReel(int digit, int value) { ApplyScoreDigit(digit, value, true); }
 
