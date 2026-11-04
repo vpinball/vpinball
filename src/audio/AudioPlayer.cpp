@@ -522,6 +522,8 @@ void AudioPlayer::SetTableDimensions(float width, float height)
    m_tableHeight = height;
    // Default listener pose: standing at the lockbar, facing the backglass (overridden by the head tracked pose in VR)
    SetListenerPose(width * 0.5f, height + 350.f, 1000.f, 0.f, 0.f, 0.f);
+   // The same pose is kept as the canonical loudness reference for spatial distance attenuation
+   SetReferencePose(width * 0.5f, height + 350.f, 1000.f, 0.f, 0.f, 0.f);
 }
 
 void AudioPlayer::SetListenerPose(float x, float y, float z, float yaw, float pitch, float roll)
@@ -538,6 +540,20 @@ void AudioPlayer::SetListenerPose(float x, float y, float z, float yaw, float pi
       m_playfieldSpatial->GetListener()->SetPose(x, y, z, yaw, pitch, roll);
 }
 
+void AudioPlayer::SetReferencePose(float x, float y, float z, float yaw, float pitch, float roll)
+{
+   m_referencePose[0] = x;
+   m_referencePose[1] = y;
+   m_referencePose[2] = z;
+   m_referencePose[3] = yaw;
+   m_referencePose[4] = pitch;
+   m_referencePose[5] = roll;
+   if (m_backglassSpatial)
+      m_backglassSpatial->GetReferenceListener()->SetPose(x, y, z, yaw, pitch, roll);
+   if (m_playfieldSpatial)
+      m_playfieldSpatial->GetReferenceListener()->SetPose(x, y, z, yaw, pitch, roll);
+}
+
 void AudioPlayer::SetSpatialMode(const bool backglass, const bool playfield)
 {
    // Spatial rendering is only used for VR play, always rendered through the binaural path (stereo to the headset)
@@ -545,6 +561,7 @@ void AudioPlayer::SetSpatialMode(const bool backglass, const bool playfield)
    {
       m_backglassSpatial = std::make_unique<SpatialAudioMixer>(m_backglassEngine.get(), SpatialAudioMixer::GetBackglassSpeakerLayout(ma_engine_get_channels(m_backglassEngine.get())));
       m_backglassSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
+      m_backglassSpatial->GetReferenceListener()->SetPose(m_referencePose[0], m_referencePose[1], m_referencePose[2], m_referencePose[3], m_referencePose[4], m_referencePose[5]);
       m_backglassSpatial->SetBinauralEnabled(true);
    }
    else if (!backglass)
@@ -556,6 +573,7 @@ void AudioPlayer::SetSpatialMode(const bool backglass, const bool playfield)
       m_playfieldSpatial
          = std::make_unique<SpatialAudioMixer>(m_playfieldEngine.get(), SpatialAudioMixer::GetPlayfieldSpeakerLayout(m_soundMode3D, ma_engine_get_channels(m_playfieldEngine.get())));
       m_playfieldSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
+      m_playfieldSpatial->GetReferenceListener()->SetPose(m_referencePose[0], m_referencePose[1], m_referencePose[2], m_referencePose[3], m_referencePose[4], m_referencePose[5]);
       m_playfieldSpatial->SetBinauralEnabled(true);
    }
    else if (!playfield)
