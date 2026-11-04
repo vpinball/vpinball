@@ -287,7 +287,8 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
          {
             // Not a format the engine's resource manager decodes (Opus): play it through a decoder with the Opus backend
             m_decoder = std::make_unique<ma_decoder>();
-            ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
+            // Decoded at the engine rate like the resource manager does: the decoder's resampler low-pass filters, the engine's (pitch) one does not
+            ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, ma_engine_get_sample_rate(engine));
             AddOpusDecoder(decoderConfig);
 #ifdef _WIN32
             const ma_result result = ma_decoder_init_file_w(filename.c_str(), &decoderConfig, m_decoder.get());
@@ -300,6 +301,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
                m_sound = nullptr;
                return;
             }
+            m_sourceSampleRate = m_decoder->converter.sampleRateIn;
 #ifdef _WIN32
             config.pFilePathW = nullptr;
 #else
@@ -378,8 +380,9 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
          // . decode and convert playfield sounds to a mono channel
          // . decode and convert backglass sound to their native encoding with zeroed out additional channels
          // TODO we should convert mono backglass stream to stereo streams with zeroed out additional channels
+         // . resample to the engine rate while decoding: the decoder's resampler low-pass filters, the engine's (pitch) one does not
          m_decoder = std::make_unique<ma_decoder>();
-         ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, m_outputTarget == SNDOUT_BACKGLASS ? 2 : 1, 0);
+         ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, m_outputTarget == SNDOUT_BACKGLASS ? 2 : 1, ma_engine_get_sample_rate(engine));
          decoderConfig.channelMixMode = ma_channel_mix_mode_simple;
          AddOpusDecoder(decoderConfig);
          if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, m_decoder.get()) != MA_SUCCESS)
@@ -387,6 +390,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
             m_decoder = nullptr;
             return;
          }
+         m_sourceSampleRate = m_decoder->converter.sampleRateIn;
          // When converting to mono, miniaudio averages the source channels instead of
          // summing them, so a stereo source loses half its energy. Multiply back by the
          // source channel count to keep a stereo-source playfield sound as loud as a mono
@@ -551,7 +555,8 @@ void SoundPlayer::Play(
          ma_uint32 channels;
          ma_uint32 sampleRate;
          ma_sound_get_data_format(m_sound.get(), &format, &channels, &sampleRate, nullptr, 0);
-         const float sampleFreq = static_cast<float>(sampleRate);
+         // The pitch is an offset to the file's own sample rate, not to the rate it is decoded at
+         const float sampleFreq = static_cast<float>(m_sourceSampleRate != 0 ? m_sourceSampleRate : sampleRate);
          float newFreq = sampleFreq + (float)pitch;
          if (randompitch > 0.f)
          {

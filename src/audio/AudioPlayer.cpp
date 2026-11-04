@@ -152,7 +152,18 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    if (pConfig->playback.pDeviceID)
       requestedDeviceId = pConfig->playback.pDeviceID->custom.i;
 
+#if defined(__ANDROID__) || (defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS)
+   // For these backends SDL reports no device format, so SDL would open at its 44.1 kHz fallback, resampled by the OS to the nowadays common 48 kHz
+   // hardware rate: request 48 kHz (the rate actually opened is read below). iOS takes it as a preference, and keeps the route's rate
+   // if needed, while AAudio resamples to honor it: to follow a potential/rare 44.1 kHz native rate there, request the rate returned by
+   // AudioManager.getProperty(PROPERTY_OUTPUT_SAMPLE_RATE) through JNI instead
+   SDL_AudioSpec requestedSpec;
+   const bool hasRequestedSpec = SDL_GetAudioDeviceFormat(requestedDeviceId, &requestedSpec, nullptr);
+   requestedSpec.freq = 48000;
+   pDeviceEx->stream = SDL_OpenAudioDeviceStream(requestedDeviceId, hasRequestedSpec ? &requestedSpec : nullptr, ma_audio_callback_playback__sdl, pDeviceEx);
+#else
    pDeviceEx->stream = SDL_OpenAudioDeviceStream(requestedDeviceId, nullptr, ma_audio_callback_playback__sdl, pDeviceEx);
+#endif
    if (pDeviceEx->stream == nullptr)
    {
       PLOGE << "Failed to open SDL audio device (Error: " << SDL_GetError() << ')';
@@ -162,7 +173,16 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    int periodSizeInFrames;
    SDL_AudioSpec specs;
    SDL_GetAudioDeviceFormat(pDeviceEx->deviceID, &specs, &periodSizeInFrames);
-   
+#if defined(__ANDROID__) || (defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS)
+   // miniaudio renders in the format actually opened, which may differ from the request (e.g. a 44.1 kHz iOS route)
+   if (hasRequestedSpec && !SDL_SetAudioStreamFormat(pDeviceEx->stream, &specs, nullptr))
+   {
+      PLOGE << "Failed to set audio stream format (Error: " << SDL_GetError() << ')';
+      SDL_DestroyAudioStream(pDeviceEx->stream);
+      return MA_FAILED_TO_OPEN_BACKEND_DEVICE;
+   }
+#endif
+
    // Convert SDL format to miniaudio format
    ma_format deviceFormat;
    switch (specs.format)
@@ -419,6 +439,13 @@ void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
          player->SetMainVolume(backglassVolume, playfieldVolume);
    for (const auto& player : m_audioStreams)
       player->SetMainVolume(backglassVolume);
+}
+
+unsigned int AudioPlayer::GetStreamOutputSampleRate() const
+{
+   // The streams' device is opened with this device's own format (see OpenAudioStream)
+   SDL_AudioSpec deviceSpec;
+   return SDL_GetAudioDeviceFormat(m_backglassAudioDevice, &deviceSpec, nullptr) && deviceSpec.freq > 0 ? static_cast<unsigned int>(deviceSpec.freq) : 0;
 }
 
 AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int frequency, int channels, bool isFloat)

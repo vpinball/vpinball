@@ -61,6 +61,7 @@ private:
    void UpdateDoppler(float x, float y, float z);
 
    std::unique_ptr<ma_decoder> m_decoder;
+   uint32_t m_sourceSampleRate = 0; // Sample rate of the file decoded by m_decoder (which outputs the engine rate), 0 without m_decoder
    std::unique_ptr<ma_sound> m_sound;
    std::unique_ptr<SpatialAudioSource> m_spatialSource;
    std::unique_ptr<vpx_node> m_vpxMixNode; // Legacy channel mixing node, used when spatial audio is disabled

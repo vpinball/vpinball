@@ -77,6 +77,8 @@ public:
    // Audio stream, rendered through the backglass engine (spatially positioned in VR), applying backglass global volume
    using AudioStreamID = std::shared_ptr<class AudioStreamPlayer>; // opaque pointer as objects are always owned by AudioPlayer without any public API
    AudioStreamID OpenAudioStream(const string& name, int frequency, int channels, bool isFloat);
+   // Sample rate of the device the audio streams are played on (0 if unknown): a stream at this rate is not resampled (Thread safe)
+   unsigned int GetStreamOutputSampleRate() const;
    bool IsOpened(const AudioStreamID& stream) const;
    void EnqueueStream(const AudioStreamID& stream, uint8_t* buffer, int length) const;
    void SetStreamVolume(const AudioStreamID& stream, const float volume) const;
