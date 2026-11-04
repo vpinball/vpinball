@@ -525,6 +525,10 @@ public:
       float motionDurationMs = 3000.f;
       float motionStartDelayMs = 0.f;
       int motionQueued = 0;
+      // External position grid shift: a Hermite move between two markers with velocity continuity
+      bool motionExternal = false;
+      B2SProPoint motionExternalStartVelocity, motionExternalEndVelocity, motionExternalLastVelocity; // Units per ms
+      bool externalPivot = false; // Representative of an external pivot group: drawn turned by angle around the pivot point
       bool motionCompleted = false; // Travel finished since last consumed (sequence groups)
       bool motionLaunchReported = true; // First route segment completed since last consumed
       float motionLaunchProgress = 1.f;
@@ -571,6 +575,7 @@ public:
    void ProStartMotionPath(bool exitRoute, bool fromCurrentPosition);
    void ProStartMotionPathShift(const B2SProPoint& target, int durationMs, int delayMs); // Straight move to a slot (compaction)
    void ProStartMotionPathDrainAll(const vector<B2SProPoint>& route, int durationMs); // Train route of a drain all
+   void ProStartExternalGridShift(const B2SProPoint& target, int durationMs, const B2SProPoint& lookAhead); // Position grid move
    void ProSetMotionPathPosition(const B2SProPoint& center); // Stops any travel, places the snippit
    void ProStopMotionPath();
    void ProResumeMotionPath();

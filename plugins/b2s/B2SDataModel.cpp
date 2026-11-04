@@ -721,6 +721,7 @@ void B2SBulb::ProStartMotionPath(const bool exitRoute, const bool fromCurrentPos
    rt.motionStartDelayMs = 0.f;
    rt.motionLoop = !exitRoute && m_pro.motionPathLoop;
    rt.motionExit = exitRoute;
+   rt.motionExternal = false;
    if (exitRoute)
       rt.motionRoute = ProExitRuntimeRoute();
    else if (fromCurrentPosition)
@@ -794,6 +795,7 @@ void B2SBulb::ProStartMotionPathShift(const B2SProPoint& target, const int durat
    rt.motionStartDelayMs = static_cast<float>(std::max(0, delayMs));
    rt.motionLoop = false;
    rt.motionExit = false;
+   rt.motionExternal = false;
    rt.motionLaunchReported = true;
    rt.motionElapsedMs = 0.f;
    rt.motionPaused = false;
@@ -814,6 +816,7 @@ void B2SBulb::ProStartMotionPathDrainAll(const vector<B2SProPoint>& route, const
    rt.motionStartDelayMs = 0.f;
    rt.motionLoop = false;
    rt.motionExit = true;
+   rt.motionExternal = false;
    rt.motionLaunchReported = true;
    rt.motionElapsedMs = 0.f;
    rt.motionPaused = false;
@@ -825,6 +828,70 @@ void B2SBulb::ProStartMotionPathDrainAll(const vector<B2SProPoint>& route, const
    m_brightness = 1.f;
 }
 
+// External position grid: Hermite move from the current point (and velocity, when a move is in progress) to
+// the target, arriving with a velocity aimed at the look ahead marker so chained moves stay smooth
+static B2SProPoint ExternalGridPoint(const vector<B2SProPoint>& route, float duration, const B2SProPoint& v0, const B2SProPoint& v1, float progress)
+{
+   const B2SProPoint& p0 = route[0];
+   const B2SProPoint& p1 = route[1];
+   const float t = std::clamp(progress, 0.f, 1.f), t2 = t * t, t3 = t2 * t;
+   const float h00 = 2.f * t3 - 3.f * t2 + 1.f, h10 = t3 - 2.f * t2 + t, h01 = -2.f * t3 + 3.f * t2, h11 = t3 - t2;
+   return { h00 * p0.x + h10 * duration * v0.x + h01 * p1.x + h11 * duration * v1.x, h00 * p0.y + h10 * duration * v0.y + h01 * p1.y + h11 * duration * v1.y };
+}
+
+static B2SProPoint ExternalGridVelocity(const vector<B2SProPoint>& route, float duration, const B2SProPoint& v0, const B2SProPoint& v1, float progress)
+{
+   const B2SProPoint& p0 = route[0];
+   const B2SProPoint& p1 = route[1];
+   const float t = std::clamp(progress, 0.f, 1.f), t2 = t * t;
+   const float dh00 = 6.f * t2 - 6.f * t, dh10 = 3.f * t2 - 4.f * t + 1.f, dh01 = -6.f * t2 + 6.f * t, dh11 = 3.f * t2 - 2.f * t;
+   return { (dh00 * p0.x + dh10 * duration * v0.x + dh01 * p1.x + dh11 * duration * v1.x) / duration, (dh00 * p0.y + dh10 * duration * v0.y + dh01 * p1.y + dh11 * duration * v1.y) / duration };
+}
+
+void B2SBulb::ProStartExternalGridShift(const B2SProPoint& target, const int durationMs, const B2SProPoint& lookAhead)
+{
+   ProRuntime& rt = m_proRt;
+   B2SProPoint startCenter = ProMotionCenter();
+   B2SProPoint startVelocity = rt.motionExternalLastVelocity;
+   if (rt.motionExternal && rt.motionRunning && rt.motionRoute.size() >= 2)
+   {
+      const float oldProgress = std::min(1.f, rt.motionElapsedMs / std::max(1.f, rt.motionDurationMs));
+      startCenter = ExternalGridPoint(rt.motionRoute, std::max(1.f, rt.motionDurationMs), rt.motionExternalStartVelocity, rt.motionExternalEndVelocity, oldProgress);
+      startVelocity = ExternalGridVelocity(rt.motionRoute, std::max(1.f, rt.motionDurationMs), rt.motionExternalStartVelocity, rt.motionExternalEndVelocity, oldProgress);
+      rt.posX = startCenter.x;
+      rt.posY = startCenter.y;
+      rt.posValid = true;
+   }
+   rt.motionRoute = { startCenter, target };
+   rt.motionDurationMs = static_cast<float>(std::clamp(durationMs, 10, 1000));
+   rt.motionStartDelayMs = 0.f;
+   rt.motionLoop = false;
+   rt.motionExit = false;
+   rt.motionLaunchReported = true;
+   rt.motionExternal = true;
+   // Limit the start velocity so an outgoing curve cannot overshoot: at most twice the straight speed
+   {
+      const double dx = target.x - startCenter.x, dy = target.y - startCenter.y;
+      const double distance = std::sqrt(dx * dx + dy * dy);
+      const double speed = std::sqrt(static_cast<double>(startVelocity.x) * startVelocity.x + static_cast<double>(startVelocity.y) * startVelocity.y);
+      const double maximum = std::max(0.01, distance * 2.0 / std::max(1.f, rt.motionDurationMs));
+      if (speed > maximum && speed > 0.0)
+      {
+         const float scale = static_cast<float>(maximum / speed);
+         startVelocity = { startVelocity.x * scale, startVelocity.y * scale };
+      }
+   }
+   rt.motionExternalStartVelocity = startVelocity;
+   rt.motionExternalEndVelocity = { (lookAhead.x - target.x) / rt.motionDurationMs, (lookAhead.y - target.y) / rt.motionDurationMs };
+   rt.motionExternalLastVelocity = startVelocity;
+   rt.motionElapsedMs = 0.f;
+   rt.motionPaused = false;
+   rt.motionRunning = true;
+   rt.motionCompleted = false;
+   rt.posValid = true;
+   m_brightness = 1.f;
+}
+
 void B2SBulb::ProSetMotionPathPosition(const B2SProPoint& center)
 {
    ProRuntime& rt = m_proRt;
@@ -832,6 +899,7 @@ void B2SBulb::ProSetMotionPathPosition(const B2SProPoint& center)
    rt.motionRunning = false;
    rt.motionPaused = false;
    rt.motionLoop = false;
+   rt.motionExternal = false;
    rt.motionStartDelayMs = 0.f;
    rt.motionLaunchReported = true;
    rt.posX = center.x;
@@ -973,6 +1041,21 @@ void B2SBulb::ProAdvanceMotionPath(const float elapsedInS)
    const float progress = std::min(1.f, (rt.motionElapsedMs - rt.motionStartDelayMs) / std::max(1.f, rt.motionDurationMs));
    if (!rt.motionLaunchReported && progress >= rt.motionLaunchProgress)
       rt.motionLaunchReported = true; // Consumed by the sequence group as the launch segment completion
+   if (rt.motionExternal)
+   {
+      const B2SProPoint center = ExternalGridPoint(rt.motionRoute, std::max(1.f, rt.motionDurationMs), rt.motionExternalStartVelocity, rt.motionExternalEndVelocity, progress);
+      rt.motionExternalLastVelocity = ExternalGridVelocity(rt.motionRoute, std::max(1.f, rt.motionDurationMs), rt.motionExternalStartVelocity, rt.motionExternalEndVelocity, progress);
+      rt.posX = center.x;
+      rt.posY = center.y;
+      rt.posValid = true;
+      if (progress >= 1.f)
+      {
+         rt.motionRunning = false;
+         rt.motionExternal = false;
+         rt.motionCompleted = true;
+      }
+      return;
+   }
    // Point along the route at a distance fraction (a looping route closes back on its first point)
    const size_t segments = rt.motionRoute.size() - 1 + (rt.motionLoop ? 1 : 0);
    double total = 0.0;

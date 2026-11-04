@@ -155,6 +155,7 @@ public:
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetLampState(int b2sId) const;
    bool GetScriptedLampState(int b2sId, float& state, uint64_t* stamp = nullptr) const; // True when the script wrote this lamp id through B2SSetData
+   bool GetScriptedGroupState(const string& group, float& state, uint64_t* stamp = nullptr) const; // Same for an illumination group (bulb name) written as "name=value"
    bool GetBulbState(const B2SBulb& bulb, float& state, bool* fromLampChannel = nullptr) const;
    uint64_t NextStamp() const { return ++m_lampStamp; }
    int GetScoreDigit(int digit) const;

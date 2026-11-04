@@ -7,6 +7,7 @@
 #include "B2SProPhysics.h"
 #include "B2SProEffects.h"
 #include "B2SProSequence.h"
+#include "B2SProExternal.h"
 #include "DMDOverlay/DMDOverlay.h"
 #include "seg/Dream7Display.h"
 #include "seg/LEDBox.h"
@@ -67,6 +68,8 @@ private:
       double pendingSeconds = 0.0;
       vector<std::unique_ptr<B2SProSequenceGroup>> sequences; // Motion path sequence groups (troughs)
       std::map<const B2SBulb*, B2SProSequenceGroup*> sequenceOf;
+      std::map<string, std::unique_ptr<B2SProExternalPivotGroup>> pivotGroups; // External pivot groups and single image pivots, by group name
+      std::map<string, std::unique_ptr<B2SProPositionGrid>> positionGrids; // External position grids, by grid name
    };
    std::map<const vector<std::unique_ptr<B2SBulb>>*, ProPhysicsWorld> m_proPhysics; // One world per illumination list
    void BuildProPhysics(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server);

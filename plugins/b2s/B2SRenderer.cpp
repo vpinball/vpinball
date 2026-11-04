@@ -506,6 +506,32 @@ void B2SRenderer::BuildProPhysics(const vector<std::unique_ptr<B2SBulb>>& bulbs,
       group->Register(bulb.get());
       world.sequenceOf[bulb.get()] = group;
    }
+   // External position grids, external pivot groups and single image pivots (reference registration order)
+   for (const auto& bulb : bulbs)
+   {
+      const B2SProBulb& pro = bulb->m_pro;
+      if (!pro.externalGridName.empty())
+      {
+         auto& grid = world.positionGrids[string_to_lower(pro.externalGridName)];
+         if (!grid)
+            grid = std::make_unique<B2SProPositionGrid>();
+         grid->Register(bulb.get(), bulb->m_name, pro.externalGridRepresentative, pro.externalGridDuration);
+      }
+      if (!pro.externalPivotGroup.empty())
+      {
+         auto& group = world.pivotGroups[string_to_lower(pro.externalPivotGroup)];
+         if (!group)
+            group = std::make_unique<B2SProExternalPivotGroup>();
+         group->Register(bulb.get(), bulb->m_name, pro.externalPivotRepresentative, pro.externalPivotAngle, pro.pivotDuration);
+      }
+      if (pro.pivotAnimation && pro.pivotTriggerType == 0 && !pro.pivotDownTrigger.empty() && !pro.pivotUpTrigger.empty())
+      {
+         auto group = std::make_unique<B2SProExternalPivotGroup>();
+         group->Register(bulb.get(), pro.pivotDownTrigger, true, pro.pivotDownAngle, pro.pivotDuration);
+         group->Register(bulb.get(), pro.pivotUpTrigger, false, pro.pivotUpAngle, pro.pivotDuration);
+         world.pivotGroups["pivot:"s + string_to_lower(bulb->m_name)] = std::move(group);
+      }
+   }
 }
 
 void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server, const float elapsed)
@@ -524,6 +550,8 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
          UpdateProTrigger(*bulb, server, bulb->m_pro.automaticRotationTriggerType, bulb->m_pro.automaticRotationTriggerId, bulb->m_romInverted, elapsed, true);
       else if (bulb->HasProPivot())
          UpdateProTrigger(*bulb, server, static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType), bulb->m_pro.pivotTriggerId, false, elapsed, !bulb->m_proRt.physicsDriven);
+      else if (bulb->m_proRt.externalPivot && !bulb->m_proRt.physicsDriven)
+         bulb->ProAdvancePivot(elapsed);
       // Motion path triggers: every action fires on a change to a non zero value (the reference's lamp / solenoid /
       // B2S id / switch routes). Not for physics balls: their travel is the simulation's. Sequence group members
       // route their start and remove to the group (once per group and frame), stop and resume stay per snippit
@@ -575,6 +603,10 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
       group->RequestRemove();
    for (auto& group : world.sequences)
       group->Update();
+   for (auto& [name, group] : world.pivotGroups)
+      group->Update(server);
+   for (auto& [name, grid] : world.positionGrids)
+      grid->Update(server, elapsed);
 
    // Launcher triggers (FirePhysicsLaunchers: any change to a non zero value launches)
    for (auto& ball : world.balls)
@@ -911,11 +943,16 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
             }
             continue;
          }
-         if (bulb->HasProPivot() || bulb->HasProRotation())
+         if (bulb->HasProPivot() || bulb->HasProRotation() || bulb->m_proRt.externalPivot)
          {
             rotation = bulb->m_proRt.angle;
             pivotX = bulb->m_pro.pivotX;
             pivotY = bulb->m_pro.pivotY;
+            if (bulb->m_proRt.posValid) // A grid representative that also pivots
+            {
+               drawX = bulb->m_proRt.posX - static_cast<float>(bulb->m_width) * 0.5f;
+               drawY = bulb->m_proRt.posY - static_cast<float>(bulb->m_height) * 0.5f;
+            }
          }
          else if (bulb->m_proRt.posValid)
          {

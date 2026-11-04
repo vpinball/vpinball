@@ -1065,6 +1065,17 @@ float B2SServer::GetLampState(int b2sId) const
    return it == m_lampStates.end() ? 0.f : it->second.value.load();
 }
 
+bool B2SServer::GetScriptedGroupState(const string& group, float& state, uint64_t* stamp) const
+{
+   const auto it = m_groupStates.find(group);
+   if (it == m_groupStates.end())
+      return false;
+   state = it->second.value.load();
+   if (stamp != nullptr)
+      *stamp = it->second.stamp.load();
+   return true;
+}
+
 bool B2SServer::GetScriptedLampState(int b2sId, float& state, uint64_t* stamp) const
 {
    const auto it = m_lampStates.find(b2sId);
