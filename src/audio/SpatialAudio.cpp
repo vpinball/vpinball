@@ -244,20 +244,19 @@ struct SpatialAudioMixer::Impl
       {
          float lx, ly, lz, yaw, pitch, roll;
          listener->GetPose(lx, ly, lz, yaw, pitch, roll);
-         // Conventions: our yaw is positive when looking left while a positive
-         // rotator yaw moves a front source to the left (equivalent to turning
-         // the head to the right), hence the sign change. Pitch (positive =
-         // looking up) and roll (positive = tilting the head to the right)
-         // already match the rotator conventions.
-         const float rotYaw = -yaw;
+         // Conventions: our yaw is positive when looking left, matching the
+         // rotator convention (a positive rotator yaw is equivalent to the
+         // listener turning to the left). Pitch (positive = looking up) and
+         // roll (positive = tilting the head to the right) already match the
+         // rotator conventions.
          // Skip non finite poses: they would poison the rotation matrix, and the
          // epsilon gate would then never recover (fabsf(NaN) > eps is false)
-         if (std::isfinite(rotYaw + pitch + roll)
-            && (!orientationApplied || fabsf(rotYaw - appliedYaw) > kOrientationEpsilon || fabsf(pitch - appliedPitch) > kOrientationEpsilon
+         if (std::isfinite(yaw + pitch + roll)
+            && (!orientationApplied || fabsf(yaw - appliedYaw) > kOrientationEpsilon || fabsf(pitch - appliedPitch) > kOrientationEpsilon
                || fabsf(roll - appliedRoll) > kOrientationEpsilon))
          {
-            rotator.SetOrientation({ rotYaw, pitch, roll });
-            appliedYaw = rotYaw;
+            rotator.SetOrientation({ yaw, pitch, roll });
+            appliedYaw = yaw;
             appliedPitch = pitch;
             appliedRoll = roll;
             orientationApplied = true;
