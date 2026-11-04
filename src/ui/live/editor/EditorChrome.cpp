@@ -84,6 +84,14 @@ void EditorChrome::RenderMenuBar()
             editor.m_inspectionModal.Show();
          ImGui::EndMenu();
       }
+      if (!editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Layout"))
+      {
+         if (ImGui::MenuItem("Layout 1", nullptr, editor.m_activeLayoutIndex == 0))
+            editor.SetAreaLayoutIndex(0);
+         if (ImGui::MenuItem("Layout 2", nullptr, editor.m_activeLayoutIndex == 1))
+            editor.SetAreaLayoutIndex(1);
+         ImGui::EndMenu();
+      }
       float buttonWidth = 0.f;
       if (editor.IsInspectMode())
          buttonWidth += ImGui::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
