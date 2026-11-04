@@ -216,6 +216,17 @@ static unsigned int getVpxApiMsgId = 0;
 
 static uint32_t endpointId;
 
+// Sample rate PinMAME renders at: the host output rate, so that the host does not resample it again, if within the range of
+// PinMAME's 'samplerate' option, else VPinMAME's 48000 default (also used if the host does not tell)
+static int GetSampleRate()
+{
+   GetAudioOutputMsg output { .target = CTLPI_AUDIO_TARGET_BACKGLASS, .sampleRate = 0 };
+   const unsigned int getAudioOutputMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_OUTPUT_MSG);
+   msgApi->BroadcastMsg(endpointId, getAudioOutputMsgId, &output);
+   msgApi->ReleaseMsgID(getAudioOutputMsgId);
+   return (output.sampleRate >= 8000 && output.sampleRate <= 96000) ? static_cast<int>(output.sampleRate) : 48000;
+}
+
 static Controller* controller = nullptr;
 static Controller* runCmdController = nullptr; // Controller created by a run command, owned by the plugin until stopped
 
@@ -420,7 +431,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
       PinmameConfig config = {
          PINMAME_AUDIO_FORMAT_INT16,
-         44100,
+         GetSampleRate(),
          "",
          NULL, // State update => prefer update on request
          NULL, // Display available => prefer state block

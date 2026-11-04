@@ -392,6 +392,8 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
    OnAudioSrcChanged(m_onAudioSrcChangedMsgId, this, nullptr);
+   m_getAudioOutputMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_OUTPUT_MSG);
+   msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_getAudioOutputMsgId, OnGetAudioOutput, this);
 
    m_getAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
    m_onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
@@ -1458,6 +1460,8 @@ Player::~Player()
    msgApi->UnsubscribeMsg(m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
    msgApi->ReleaseMsgID(m_onAudioSrcChangedMsgId);
    msgApi->ReleaseMsgID(m_getAudioSrcMsgId);
+   msgApi->UnsubscribeMsg(m_getAudioOutputMsgId, OnGetAudioOutput, this);
+   msgApi->ReleaseMsgID(m_getAudioOutputMsgId);
    msgApi->ReleaseMsgID(m_onPrepareFrameMsgId);
    msgApi->UnsubscribeMsg(m_onAuxRendererChgId, OnAuxRendererChanged, this);
    msgApi->ReleaseMsgID(m_getAuxRendererId);
@@ -2838,6 +2842,15 @@ void Player::OnAudioSrcChanged(const unsigned int msgId, void *userData, void *m
       if (source.source.overrideId.id != 0)
          if (auto laneIt = me->m_audioLanes.find(source.source.overrideId.id); laneIt != me->m_audioLanes.end())
             laneIt->second.overriden = true;
+}
+
+void Player::OnGetAudioOutput(const unsigned int msgId, void *userData, void *msgData)
+{
+   // May be called from any thread (e.g. a controller starting its audio)
+   const Player *const me = static_cast<Player *>(userData);
+   GetAudioOutputMsg &msg = *static_cast<GetAudioOutputMsg *>(msgData);
+   if (msg.target == CTLPI_AUDIO_TARGET_BACKGLASS) // All plugin audio streams are played on the backglass output (see OnAudioUpdated)
+      msg.sampleRate = me->m_audioPlayer->GetStreamOutputSampleRate();
 }
 
 void Player::OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData)

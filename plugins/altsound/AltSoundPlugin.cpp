@@ -162,7 +162,14 @@ static void SetupAltSound()
 
    LOGI(std::format("Initializing AltSound for game: {}, basePath: {}", gameId, PluginStrings::PathToUTF8(basePath)));
 
-   if (!AltSoundInit(PluginStrings::PathToNative(basePath), romName, 44100, 2, BUFFER_SIZE_FRAMES))
+   // Mix at the host output rate so that the host does not resample the stream again
+   GetAudioOutputMsg output { .target = CTLPI_AUDIO_TARGET_BACKGLASS, .sampleRate = 0 };
+   const unsigned int getAudioOutputMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_OUTPUT_MSG);
+   msgApi->BroadcastMsg(endpointId, getAudioOutputMsgId, &output);
+   msgApi->ReleaseMsgID(getAudioOutputMsgId);
+   const unsigned int sampleRate = (output.sampleRate >= 8000 && output.sampleRate <= 96000) ? output.sampleRate : 48000;
+
+   if (!AltSoundInit(PluginStrings::PathToNative(basePath), romName, sampleRate, 2, BUFFER_SIZE_FRAMES))
    {
       LOGE("Failed to initialize AltSound for game: " + gameId);
       return;

@@ -334,9 +334,11 @@ private:
 
    static void OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData);
    static void OnAudioSrcChanged(const unsigned int msgId, void *userData, void *msgData);
+   static void OnGetAudioOutput(const unsigned int msgId, void *userData, void *msgData);
    unsigned int m_onAudioUpdatedMsgId;
    unsigned int m_onAudioSrcChangedMsgId;
    unsigned int m_getAudioSrcMsgId;
+   unsigned int m_getAudioOutputMsgId;
    mutable std::mutex m_audioSourceMutex;
    struct AudioLane
    {

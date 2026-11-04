@@ -347,6 +347,10 @@ typedef struct GetSegSrcMsg
 // Broadcasted when an audio stream is updated with new samples
 #define CTLPI_AUDIO_ON_UPDATE_MSG  "AudioUpdate:1"
 
+// Request the output format of an audio target, message data is a pointer to a GetAudioOutputMsg structure.
+// A stream produced at the returned sample rate is not resampled by the host. If no host answers, the response stays 0
+#define CTLPI_AUDIO_GET_OUTPUT_MSG "GetAudioOutput:1"
+
 #define CTLPI_AUDIO_TARGET_BACKGLASS         0
 
 #define CTLPI_AUDIO_FORMAT_CHANNEL_MONO      0
@@ -372,6 +376,14 @@ typedef struct GetAudioSrcMsg
    unsigned int count;           // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
    AudioSrcId* entries;          // Pointer to an array of maxEntryCount entries to be filled
 } GetAudioSrcMsg;
+
+typedef struct GetAudioOutputMsg
+{
+   // Request
+   unsigned int target;          // Audio output target (see CTLPI_AUDIO_TARGET_xxx)
+   // Response
+   unsigned int sampleRate;      // Sample rate of the output, 0 if unknown
+} GetAudioOutputMsg;
 
 // This message can be sent for 3 use cases:
 // - New audio stream: all fields must be defined/not null
