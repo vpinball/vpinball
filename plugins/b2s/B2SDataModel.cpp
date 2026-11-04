@@ -716,18 +716,13 @@ void B2SBulb::ProStartMotionPath(const bool exitRoute, const bool fromCurrentPos
       rt.motionQueued = std::min(32, rt.motionQueued + 1);
       return;
    }
+   ProStartTroughImpulse(0.f, 0.f, 0.f, 0.f); // Cancels a running impulse
    rt.motionDurationMs = static_cast<float>(std::clamp(exitRoute ? m_pro.motionPathExitDuration : m_pro.motionPathDuration, 250, 30000));
+   rt.motionStartDelayMs = 0.f;
    rt.motionLoop = !exitRoute && m_pro.motionPathLoop;
    rt.motionExit = exitRoute;
    if (exitRoute)
-   {
-      // The exit route starts where the snippit is, keeping the authored shape of the exit path
-      const B2SProPoint start = ProMotionCenter();
-      rt.motionRoute.clear();
-      rt.motionRoute.push_back(start);
-      for (size_t i = 1; i < points.size(); i++)
-         rt.motionRoute.push_back({ start.x + (points[i].x - points[0].x), start.y + (points[i].y - points[0].y) });
-   }
+      rt.motionRoute = ProExitRuntimeRoute();
    else if (fromCurrentPosition)
    {
       rt.motionRoute.clear();
@@ -741,13 +736,212 @@ void B2SBulb::ProStartMotionPath(const bool exitRoute, const bool fromCurrentPos
    }
    else
       rt.motionRoute = points;
+   if (!exitRoute)
+   {
+      double length = 0.0;
+      for (size_t i = 0; i + 1 < rt.motionRoute.size(); i++)
+         length += std::sqrt(static_cast<double>(rt.motionRoute[i + 1].x - rt.motionRoute[i].x) * (rt.motionRoute[i + 1].x - rt.motionRoute[i].x)
+            + static_cast<double>(rt.motionRoute[i + 1].y - rt.motionRoute[i].y) * (rt.motionRoute[i + 1].y - rt.motionRoute[i].y));
+      rt.motionArrivalSpeed = static_cast<float>(length / std::max(1.f, rt.motionDurationMs));
+   }
+   // Launch segment: the fraction of the route at the end of its first distinct segment (the feeder respawns there)
+   rt.motionLaunchReported = exitRoute;
+   rt.motionLaunchProgress = 1.f;
+   if (!exitRoute)
+   {
+      double total = 0.0, firstDistinctEnd = -1.0;
+      for (size_t i = 0; i + 1 < rt.motionRoute.size(); i++)
+      {
+         const double dx = rt.motionRoute[i + 1].x - rt.motionRoute[i].x, dy = rt.motionRoute[i + 1].y - rt.motionRoute[i].y;
+         const double length = std::sqrt(dx * dx + dy * dy);
+         total += length;
+         if (firstDistinctEnd < 0.0 && length > 0.001)
+            firstDistinctEnd = total;
+      }
+      if (total > 0.001 && firstDistinctEnd >= 0.0)
+         rt.motionLaunchProgress = static_cast<float>(std::clamp(firstDistinctEnd / total, 0.0, 1.0));
+   }
    rt.motionElapsedMs = 0.f;
    rt.motionPaused = false;
    rt.motionRunning = true;
+   rt.motionCompleted = false;
    rt.posX = rt.motionRoute[0].x;
    rt.posY = rt.motionRoute[0].y;
    rt.posValid = true;
    m_brightness = 1.f;
+}
+
+vector<B2SProPoint> B2SBulb::ProExitRuntimeRoute() const
+{
+   // The exit route starts where the snippit is, keeping the authored shape of the exit path
+   vector<B2SProPoint> route;
+   const vector<B2SProPoint>& points = m_pro.motionPathExitPoints;
+   if (points.size() < 2)
+      return route;
+   const B2SProPoint start = ProMotionCenter();
+   route.push_back(start);
+   for (size_t i = 1; i < points.size(); i++)
+      route.push_back({ start.x + (points[i].x - points[0].x), start.y + (points[i].y - points[0].y) });
+   return route;
+}
+
+void B2SBulb::ProStartMotionPathShift(const B2SProPoint& target, const int durationMs, const int delayMs)
+{
+   ProRuntime& rt = m_proRt;
+   ProStartTroughImpulse(0.f, 0.f, 0.f, 0.f);
+   rt.motionRoute = { ProMotionCenter(), target };
+   rt.motionDurationMs = static_cast<float>(std::clamp(durationMs, 250, 30000));
+   rt.motionStartDelayMs = static_cast<float>(std::max(0, delayMs));
+   rt.motionLoop = false;
+   rt.motionExit = false;
+   rt.motionLaunchReported = true;
+   rt.motionElapsedMs = 0.f;
+   rt.motionPaused = false;
+   rt.motionRunning = true;
+   rt.motionCompleted = false;
+   rt.posValid = true;
+   m_brightness = 1.f;
+}
+
+void B2SBulb::ProStartMotionPathDrainAll(const vector<B2SProPoint>& route, const int durationMs)
+{
+   if (route.size() < 2)
+      return;
+   ProRuntime& rt = m_proRt;
+   ProStartTroughImpulse(0.f, 0.f, 0.f, 0.f);
+   rt.motionRoute = route;
+   rt.motionDurationMs = static_cast<float>(std::clamp(durationMs, 250, 30000));
+   rt.motionStartDelayMs = 0.f;
+   rt.motionLoop = false;
+   rt.motionExit = true;
+   rt.motionLaunchReported = true;
+   rt.motionElapsedMs = 0.f;
+   rt.motionPaused = false;
+   rt.motionRunning = true;
+   rt.motionCompleted = false;
+   rt.posX = route[0].x;
+   rt.posY = route[0].y;
+   rt.posValid = true;
+   m_brightness = 1.f;
+}
+
+void B2SBulb::ProSetMotionPathPosition(const B2SProPoint& center)
+{
+   ProRuntime& rt = m_proRt;
+   ProStartTroughImpulse(0.f, 0.f, 0.f, 0.f);
+   rt.motionRunning = false;
+   rt.motionPaused = false;
+   rt.motionLoop = false;
+   rt.motionStartDelayMs = 0.f;
+   rt.motionLaunchReported = true;
+   rt.posX = center.x;
+   rt.posY = center.y;
+   rt.posValid = true;
+}
+
+// Trough collision: a nudge along a direction, sin(pi p) exp(-1.2 p) over 180 ms after a delay, then back in place
+void B2SBulb::ProStartTroughImpulse(const float dirX, const float dirY, const float amplitude, const float delayMs)
+{
+   ProRuntime& rt = m_proRt;
+   rt.impulseActive = false;
+   rt.impulseOffX = 0.f;
+   rt.impulseOffY = 0.f;
+   const float length = std::sqrt(dirX * dirX + dirY * dirY);
+   if (length <= 0.001f || amplitude <= 0.f)
+      return;
+   rt.impulseDirX = dirX / length;
+   rt.impulseDirY = dirY / length;
+   rt.impulseAmplitude = amplitude;
+   rt.impulseDelayMs = std::max(0.f, delayMs);
+   rt.impulseElapsedMs = 0.f;
+   rt.impulseActive = true;
+}
+
+void B2SBulb::ProAdvanceTroughImpulse(const float elapsedInS)
+{
+   ProRuntime& rt = m_proRt;
+   if (!rt.impulseActive)
+      return;
+   rt.impulseElapsedMs += elapsedInS * 1000.f;
+   if (rt.impulseElapsedMs < rt.impulseDelayMs)
+      return;
+   const float progress = (rt.impulseElapsedMs - rt.impulseDelayMs) / 180.f;
+   if (progress >= 1.f)
+   {
+      ProStartTroughImpulse(0.f, 0.f, 0.f, 0.f);
+      return;
+   }
+   const float offset = static_cast<float>(rt.impulseAmplitude * std::sin(3.14159265358979323846 * progress) * std::exp(-1.2 * progress));
+   rt.impulseOffX = rt.impulseDirX * offset;
+   rt.impulseOffY = rt.impulseDirY * offset;
+}
+
+// Sequence source feeder: the first member shows the next artwork at the path start, and slides it in
+// from the respawn point after each launch (ease out cubic over MotionPathRespawnDuration)
+void B2SBulb::ProSetSequenceSourceAnchor(const bool enabled)
+{
+   ProRuntime& rt = m_proRt;
+   if (rt.seqSourceAnchor == enabled)
+      return;
+   rt.seqSourceAnchor = enabled;
+   rt.seqSourceVisible = enabled;
+   rt.seqRespawnActive = false;
+   if (enabled)
+      rt.seqSourceBounds = { static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height) };
+   else
+   {
+      rt.seqSourceBounds = {};
+      rt.seqSourceImage = nullptr;
+   }
+}
+
+bool B2SBulb::ProStartSequenceSourceRespawn()
+{
+   ProRuntime& rt = m_proRt;
+   if (!rt.seqSourceAnchor || !m_pro.motionPathRespawnEnabled || rt.seqSourceBounds.IsEmpty())
+      return false;
+   const B2SProRect start { m_pro.motionPathRespawnPoint.x - rt.seqSourceBounds.w * 0.5f, m_pro.motionPathRespawnPoint.y - rt.seqSourceBounds.h * 0.5f, rt.seqSourceBounds.w, rt.seqSourceBounds.h };
+   if (std::abs(start.x - rt.seqSourceBounds.x) < 0.5f && std::abs(start.y - rt.seqSourceBounds.y) < 0.5f)
+      return false;
+   rt.seqRespawnStart = start;
+   rt.seqRespawnEnd = rt.seqSourceBounds;
+   rt.seqRespawnBounds = start;
+   rt.seqRespawnElapsedMs = 0.f;
+   rt.seqRespawnActive = true;
+   rt.seqSourceVisible = true;
+   return true;
+}
+
+void B2SBulb::ProAdvanceSequenceSource(const float elapsedInS)
+{
+   ProRuntime& rt = m_proRt;
+   if (!rt.seqRespawnActive)
+      return;
+   rt.seqRespawnElapsedMs += elapsedInS * 1000.f;
+   const float duration = static_cast<float>(std::clamp(m_pro.motionPathRespawnDuration, 50, 5000));
+   const float progress = std::min(1.f, rt.seqRespawnElapsedMs / duration);
+   const float eased = 1.f - std::pow(1.f - progress, 3.f);
+   const B2SProRect next { rt.seqRespawnStart.x + (rt.seqRespawnEnd.x - rt.seqRespawnStart.x) * eased, rt.seqRespawnStart.y + (rt.seqRespawnEnd.y - rt.seqRespawnStart.y) * eased,
+      rt.seqRespawnEnd.w, rt.seqRespawnEnd.h };
+   if (m_pro.motionPathRollEnabled)
+   {
+      const float dx = next.x - rt.seqRespawnBounds.x, dy = next.y - rt.seqRespawnBounds.y;
+      const double distance = std::sqrt(static_cast<double>(dx) * dx + static_cast<double>(dy) * dy);
+      if (distance > 0.0001)
+      {
+         const float direction = std::abs(dx) >= std::abs(dy) ? (dx > 0.f ? 1.f : (dx < 0.f ? -1.f : 0.f)) : (dy > 0.f ? 1.f : (dy < 0.f ? -1.f : 0.f));
+         const float radius = std::max(1.f, std::min(next.w, next.h) * 0.5f);
+         if (direction != 0.f)
+            rt.seqSourceRollAngle = static_cast<float>(std::fmod(static_cast<double>(rt.seqSourceRollAngle) + direction * distance / radius * 180.0 / 3.14159265358979323846, 360.0));
+      }
+   }
+   rt.seqRespawnBounds = next;
+   if (progress >= 1.f)
+   {
+      rt.seqRespawnBounds = rt.seqRespawnEnd;
+      rt.seqRespawnActive = false;
+      rt.seqRespawnJustCompleted = true;
+   }
 }
 
 void B2SBulb::ProStopMotionPath()
@@ -774,7 +968,11 @@ void B2SBulb::ProAdvanceMotionPath(const float elapsedInS)
    if (!rt.motionRunning || rt.motionRoute.size() < 2)
       return;
    rt.motionElapsedMs += elapsedInS * 1000.f;
-   const float progress = std::min(1.f, rt.motionElapsedMs / std::max(1.f, rt.motionDurationMs));
+   if (rt.motionElapsedMs < rt.motionStartDelayMs)
+      return;
+   const float progress = std::min(1.f, (rt.motionElapsedMs - rt.motionStartDelayMs) / std::max(1.f, rt.motionDurationMs));
+   if (!rt.motionLaunchReported && progress >= rt.motionLaunchProgress)
+      rt.motionLaunchReported = true; // Consumed by the sequence group as the launch segment completion
    // Point along the route at a distance fraction (a looping route closes back on its first point)
    const size_t segments = rt.motionRoute.size() - 1 + (rt.motionLoop ? 1 : 0);
    double total = 0.0;
@@ -825,12 +1023,13 @@ void B2SBulb::ProAdvanceMotionPath(const float elapsedInS)
    if (progress >= 1.f)
    {
       if (rt.motionLoop)
-         rt.motionElapsedMs = 0.f;
+         rt.motionElapsedMs = rt.motionStartDelayMs;
       else
       {
          rt.motionRunning = false;
          rt.motionPaused = false;
-         if (m_pro.motionPathQueueTriggers && rt.motionQueued > 0)
+         rt.motionCompleted = true;
+         if (m_pro.motionPathQueueTriggers && rt.motionQueued > 0 && m_pro.motionPathSequenceGroup.empty())
          {
             rt.motionQueued--;
             ProStartMotionPath(false, false);

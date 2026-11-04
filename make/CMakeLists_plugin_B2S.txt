@@ -17,6 +17,8 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/B2SProPhysics.cpp
    plugins/b2s/B2SProEffects.h
    plugins/b2s/B2SProEffects.cpp
+   plugins/b2s/B2SProSequence.h
+   plugins/b2s/B2SProSequence.cpp
    plugins/b2s/B2SRenderer.h
    plugins/b2s/B2SRenderer.cpp
    plugins/b2s/B2SServer.h

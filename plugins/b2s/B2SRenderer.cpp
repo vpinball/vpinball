@@ -448,6 +448,27 @@ void B2SRenderer::BuildProPhysics(const vector<std::unique_ptr<B2SBulb>>& bulbs,
       bulb->m_proRt.physicsBall = ball.get();
       world.balls.push_back(std::move(ball));
    }
+   // Motion path sequence groups (RegisterMotionPathSequence): members named by group with a positive order
+   for (const auto& bulb : bulbs)
+   {
+      if (!bulb->m_isImageSnippit || bulb->m_pro.motionPathSequenceGroup.empty() || bulb->m_pro.motionPathSequenceOrder <= 0)
+         continue;
+      const string groupName = string_to_lower(bulb->m_pro.motionPathSequenceGroup);
+      B2SProSequenceGroup* group = nullptr;
+      for (auto& candidate : world.sequences)
+         if (candidate->Name() == groupName)
+         {
+            group = candidate.get();
+            break;
+         }
+      if (group == nullptr)
+      {
+         world.sequences.push_back(std::make_unique<B2SProSequenceGroup>(groupName));
+         group = world.sequences.back().get();
+      }
+      group->Register(bulb.get());
+      world.sequenceOf[bulb.get()] = group;
+   }
 }
 
 void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server, const float elapsed)
@@ -455,6 +476,7 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
    if (m_proPhysics.find(&bulbs) == m_proPhysics.end())
       BuildProPhysics(bulbs, server);
    ProPhysicsWorld& world = m_proPhysics[&bulbs];
+   std::set<B2SProSequenceGroup*> groupStarts, groupRemoves;
 
    // Triggers, and the per frame animations
    for (const auto& bulb : bulbs)
@@ -466,9 +488,12 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
       else if (bulb->HasProPivot())
          UpdateProTrigger(*bulb, server, static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType), bulb->m_pro.pivotTriggerId, false, elapsed, !bulb->m_proRt.physicsDriven);
       // Motion path triggers: every action fires on a change to a non zero value (the reference's lamp / solenoid /
-      // B2S id / switch routes). Not for physics balls: their travel is the simulation's
+      // B2S id / switch routes). Not for physics balls: their travel is the simulation's. Sequence group members
+      // route their start and remove to the group (once per group and frame), stop and resume stay per snippit
       if (!bulb->m_proRt.motionTriggers.empty() && bulb->m_proRt.physicsBall == nullptr)
       {
+         const auto groupIt = world.sequenceOf.find(bulb.get());
+         B2SProSequenceGroup* const group = groupIt != world.sequenceOf.end() ? groupIt->second : nullptr;
          for (B2SBulb::ProRuntime::Trigger& trigger : bulb->m_proRt.motionTriggers)
          {
             float value = 0.f;
@@ -482,18 +507,36 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
                continue;
             switch (trigger.action)
             {
-            case B2SBulb::ProRuntime::MotionAction::Start: bulb->ProStartMotionPath(false, false); break;
+            case B2SBulb::ProRuntime::MotionAction::Start:
+               if (group != nullptr)
+                  groupStarts.insert(group);
+               else
+                  bulb->ProStartMotionPath(false, false);
+               break;
             case B2SBulb::ProRuntime::MotionAction::Stop: bulb->ProStopMotionPath(); break;
             case B2SBulb::ProRuntime::MotionAction::Resume: bulb->ProResumeMotionPath(); break;
             case B2SBulb::ProRuntime::MotionAction::Remove:
-               if (bulb->HasProExitPath())
+               if (group != nullptr)
+                  groupRemoves.insert(group);
+               else if (bulb->HasProExitPath())
                   bulb->ProStartMotionPath(true, false);
                break;
             }
          }
+      }
+      if (bulb->m_proRt.physicsBall == nullptr)
+      {
          bulb->ProAdvanceMotionPath(elapsed);
+         bulb->ProAdvanceTroughImpulse(elapsed);
+         bulb->ProAdvanceSequenceSource(elapsed);
       }
    }
+   for (B2SProSequenceGroup* group : groupStarts)
+      group->RequestStart();
+   for (B2SProSequenceGroup* group : groupRemoves)
+      group->RequestRemove();
+   for (auto& group : world.sequences)
+      group->Update();
 
    // Launcher triggers (FirePhysicsLaunchers: any change to a non zero value launches)
    for (auto& ball : world.balls)
@@ -839,8 +882,8 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          else if (bulb->m_proRt.posValid)
          {
             rotation = bulb->m_proRt.rollAngle;
-            drawX = bulb->m_proRt.posX - static_cast<float>(bulb->m_width) * 0.5f;
-            drawY = bulb->m_proRt.posY - static_cast<float>(bulb->m_height) * 0.5f;
+            drawX = bulb->m_proRt.posX + bulb->m_proRt.impulseOffX - static_cast<float>(bulb->m_width) * 0.5f;
+            drawY = bulb->m_proRt.posY + bulb->m_proRt.impulseOffY - static_cast<float>(bulb->m_height) * 0.5f;
             // A masked ball is drawn from its composed frame (artwork rolled and cut by the selection mask)
             if (bulb->m_proRt.physicsBall != nullptr && bulb->m_proRt.physicsBall->HasMask())
             {
@@ -855,6 +898,19 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          }
       }
 
+      // B2S Pro sequence feeder: the first member of a trough shows the next artwork at the path start
+      if (bulb->m_proRt.seqSourceAnchor && bulb->m_proRt.seqSourceVisible && bulb->m_proRt.seqSourceImage != nullptr)
+      {
+         const B2SProRect src = bulb->ProSequenceSourceRect();
+         if (!src.IsEmpty())
+         {
+            const VPXTextureInfo* const srcTex = GetTextureInfo(bulb->m_proRt.seqSourceImage);
+            ctx->DrawImage(ctx, bulb->m_proRt.seqSourceImage, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, 1.f, 0.f, 0.f, static_cast<float>(srcTex->width),
+               static_cast<float>(srcTex->height), static_cast<float>(srcTex->width) * 0.5f, static_cast<float>(srcTex->height) * 0.5f,
+               bulb->m_pro.motionPathRollEnabled ? bulb->m_proRt.seqSourceRollAngle : 0.f, src.x, src.y, src.w, src.h);
+         }
+      }
+
       if (bulb->m_offImage && drawBrightness < 1.f)
       {
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_offImage);
@@ -863,10 +919,11 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
             static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
             drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
       }
-      if (bulb->m_image)
+      const VPXTexture artwork = bulb->m_proRt.displayImage != nullptr ? bulb->m_proRt.displayImage : bulb->m_image;
+      if (artwork)
       {
-         const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_image);
-         ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness,
+         const VPXTextureInfo* const bulbTex = GetTextureInfo(artwork);
+         ctx->DrawImage(ctx, artwork, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
             static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
             drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));

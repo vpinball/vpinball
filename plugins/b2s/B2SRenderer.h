@@ -6,6 +6,7 @@
 #include "B2SDataModel.h"
 #include "B2SProPhysics.h"
 #include "B2SProEffects.h"
+#include "B2SProSequence.h"
 #include "DMDOverlay/DMDOverlay.h"
 #include "seg/Dream7Display.h"
 #include "seg/LEDBox.h"
@@ -64,6 +65,8 @@ private:
       vector<std::unique_ptr<B2SProPhysicsBall>> balls;
       vector<B2SBulb*> pivots; // Physics driven pivots (flippers)
       double pendingSeconds = 0.0;
+      vector<std::unique_ptr<B2SProSequenceGroup>> sequences; // Motion path sequence groups (troughs)
+      std::map<const B2SBulb*, B2SProSequenceGroup*> sequenceOf;
    };
    std::map<const vector<std::unique_ptr<B2SBulb>>*, ProPhysicsWorld> m_proPhysics; // One world per illumination list
    void BuildProPhysics(const vector<std::unique_ptr<B2SBulb>>& bulbs, B2SServer* server);

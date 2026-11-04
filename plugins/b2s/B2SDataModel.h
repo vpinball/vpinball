@@ -516,14 +516,34 @@ public:
          std::function<void()> updater = []() { };
       };
       vector<Trigger> motionTriggers;
-      vector<B2SProPoint> motionRoute; // Route being travelled (entry, exit or from the current position)
+      vector<B2SProPoint> motionRoute; // Route being travelled (entry, exit, shift or from the current position)
       bool motionRunning = false;
       bool motionPaused = false;
       bool motionLoop = false;
       bool motionExit = false;
       float motionElapsedMs = 0.f;
       float motionDurationMs = 3000.f;
+      float motionStartDelayMs = 0.f;
       int motionQueued = 0;
+      bool motionCompleted = false; // Travel finished since last consumed (sequence groups)
+      bool motionLaunchReported = true; // First route segment completed since last consumed
+      float motionLaunchProgress = 1.f;
+      float motionArrivalSpeed = 0.f; // Route length over duration of the last entry
+      VPXTexture displayImage = nullptr; // Artwork drawn in place of m_image (sequence slot normalization swaps artwork), not owned
+      // Trough collision impulse: a decaying nudge of the artwork from its resting centre
+      bool impulseActive = false;
+      float impulseDirX = 0.f, impulseDirY = 0.f, impulseAmplitude = 0.f, impulseDelayMs = 0.f, impulseElapsedMs = 0.f;
+      float impulseOffX = 0.f, impulseOffY = 0.f;
+      // Sequence source (feeder): the first member of a group shows the next artwork at the path start
+      bool seqSourceAnchor = false;
+      bool seqSourceVisible = false;
+      VPXTexture seqSourceImage = nullptr; // Not owned
+      B2SProRect seqSourceBounds;
+      float seqSourceRollAngle = 0.f;
+      bool seqRespawnActive = false;
+      bool seqRespawnJustCompleted = false;
+      B2SProRect seqRespawnStart, seqRespawnEnd, seqRespawnBounds;
+      float seqRespawnElapsedMs = 0.f;
       // Physics
       bool physicsDriven = false; // Pivot used as the flipper of a physics ball: advanced by the physics clock, not per frame
       class B2SProPhysicsBall* physicsBall = nullptr; // The simulation of a physics ball bulb (owned by the renderer)
@@ -549,10 +569,22 @@ public:
    bool HasProMotionPath() const { return m_isImageSnippit && m_pro.motionPathPoints.size() >= 2; }
    bool HasProExitPath() const { return m_isImageSnippit && m_pro.motionPathExitPoints.size() >= 2; }
    void ProStartMotionPath(bool exitRoute, bool fromCurrentPosition);
+   void ProStartMotionPathShift(const B2SProPoint& target, int durationMs, int delayMs); // Straight move to a slot (compaction)
+   void ProStartMotionPathDrainAll(const vector<B2SProPoint>& route, int durationMs); // Train route of a drain all
+   void ProSetMotionPathPosition(const B2SProPoint& center); // Stops any travel, places the snippit
    void ProStopMotionPath();
    void ProResumeMotionPath();
    void ProAdvanceMotionPath(float elapsedInS);
-   B2SProPoint ProMotionCenter() const; // Current centre (authored place until the first move)
+   bool ProIsMotionPathActive() const { return m_proRt.motionRunning || m_proRt.motionPaused; }
+   B2SProPoint ProMotionCenter() const; // Current centre (authored place until the first move), without the impulse offset
+   vector<B2SProPoint> ProExitRuntimeRoute() const; // Exit points shifted to start where the snippit is
+   void ProStartTroughImpulse(float dirX, float dirY, float amplitude, float delayMs);
+   void ProAdvanceTroughImpulse(float elapsedInS);
+   // Sequence source feeder
+   void ProSetSequenceSourceAnchor(bool enabled);
+   bool ProStartSequenceSourceRespawn();
+   void ProAdvanceSequenceSource(float elapsedInS);
+   B2SProRect ProSequenceSourceRect() const { return m_proRt.seqRespawnActive ? m_proRt.seqRespawnBounds : m_proRt.seqSourceBounds; }
 
 private:
    std::atomic<int> m_rotRequest { 0 }; // 1 = start, 2 = stop
