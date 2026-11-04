@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "EditorAreaView.h"
 #include "parts/pintable.h"
 
 #include <filesystem>
@@ -28,17 +29,15 @@ class EditorUIPart;
 // unselecting or closing the dialog discards it.
 class PartLibraryPanel
 {
+   friend class EditorUI;
+
 public:
    explicit PartLibraryPanel(EditorUI &editor);
    ~PartLibraryPanel();
 
-   void Show()
-   {
-      m_visible = true;
-      m_rescanLibrary = true;
-   }
-   void Close();
-   bool IsVisible() const { return m_visible; }
+   void Show(); // Hosts the panel in an area leaf (splitting the focused one)
+   void Close(); // Closes the leaf hosting the panel
+   bool IsVisible() const;
 
    // Export of the current selection to a VPZ pack file, disabled when there is no exportable selection
    bool CanExportSelection() const;
@@ -49,7 +48,8 @@ public:
    void CancelPlacement();
    void CommitPlacement();
 
-   void Render();
+   void Update(); // Per frame housekeeping (file dialog results, placement tracking, library rescan)
+   void RenderPane(const AreaRect &rect, int leafId); // Renders the panel content inside an area leaf
    void Render3D(); // Renders the ghost preview parts into the 3D scene (called by EditorUI::Render3D)
 
    // Drops the preview parts, e.g. when the edited table is switched or the editor is closed
@@ -94,9 +94,8 @@ private:
    void SetupPlayerSide(IEditable *part, bool initRenderable);
 
    EditorUI &m_editor;
-   bool m_visible = false;
 
-   // Results of the asynchronous SDL file dialogs, applied on the main thread in Render
+   // Results of the asynchronous SDL file dialogs, applied on the main thread in Update
    std::shared_ptr<string> m_pendingExportPath;
    std::shared_ptr<string> m_pendingImportPath;
    std::shared_ptr<string> m_pendingFolderPath;
@@ -121,4 +120,17 @@ private:
    float m_previewZ = 0.f;
 };
 
+// Area view hosting the part library in a resizable leaf (the panel keeps the shared state
+// so that several leaves could show the same library)
+class PartLibraryPane final : public EditorAreaView
+{
+public:
+   explicit PartLibraryPane(EditorUI &editor)
+      : EditorAreaView(editor)
+   {
+   }
+   AreaType GetType() const override { return AreaType::PartLibrary; }
+   void RenderPane(const AreaRect &rect, int leafId) override;
+   void OnUnhosted() override;
+};
 }
