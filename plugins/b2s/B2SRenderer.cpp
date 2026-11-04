@@ -312,6 +312,43 @@ void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
             trigger.updater = ResolveRomPropUpdater(items, &trigger.probe, ProTriggerRomIdType(trigger.type), trigger.id);
       }
 
+   // B2S Pro: say which trigger sources were found, authors need to know why a trigger stays silent
+   if (!items.empty() && m_b2s->IsB2SPro())
+   {
+      const auto describe = [&items](const B2SRomIDType type, const int id) -> string
+      {
+         int groupId;
+         switch (type)
+         {
+         case B2SRomIDType::Solenoid: groupId = PMPI_GROUP_SOLENOID; break;
+         case B2SRomIDType::Lamp: groupId = PMPI_GROUP_LAMP; break;
+         case B2SRomIDType::Switch: groupId = PMPI_GROUP_SWITCH; break;
+         default: return "script"s;
+         }
+         int groupStates = 0;
+         for (const StateSrcId& src : items)
+         {
+            if (src.id.resId != groupId)
+               continue;
+            groupStates += static_cast<int>(src.nStates);
+            for (unsigned int i = 0; i < src.nStates; i++)
+               if (src.stateDefs[i].mappingId == id)
+                  return std::format("bound (format {})", static_cast<int>(src.stateDefs[i].dataFormat));
+         }
+         return std::format("NOT FOUND ({} states in the group)", groupStates);
+      };
+      for (const auto* bulbs : { &m_b2s->m_backglassIlluminations, &m_b2s->m_dmdIlluminations })
+         for (const auto& bulb : *bulbs)
+         {
+            if (bulb->HasProPivot() && bulb->m_pro.pivotTriggerType != static_cast<int>(B2SProTriggerType::Startup))
+               LOGI(std::format("B2S Pro pivot trigger of '{}': type {} id {}: {}", bulb->m_name, bulb->m_pro.pivotTriggerType, bulb->m_pro.pivotTriggerId,
+                  describe(ProTriggerRomIdType(static_cast<B2SProTriggerType>(bulb->m_pro.pivotTriggerType)), bulb->m_pro.pivotTriggerId)));
+            for (const B2SBulb::ProRuntime::Trigger& trigger : bulb->m_proRt.motionTriggers)
+               LOGI(std::format("B2S Pro motion trigger of '{}': action {} type {} id {}: {}", bulb->m_name, static_cast<int>(trigger.action), static_cast<int>(trigger.type), trigger.id,
+                  describe(ProTriggerRomIdType(trigger.type), trigger.id)));
+         }
+   }
+
    // Reel illumination lamps (ReelIlluB2SID is always a lamp in the reference implementation)
    for (auto* scores : { &m_b2s->m_backglassScores, &m_b2s->m_dmdScores })
       for (auto& score : scores->m_scores)
@@ -505,6 +542,7 @@ void B2SRenderer::UpdateProRuntime(const vector<std::unique_ptr<B2SBulb>>& bulbs
             trigger.prevOn = on;
             if (!on)
                continue;
+            LOGI(std::format("B2S Pro motion trigger of '{}' fired: action {} type {} id {}", bulb->m_name, static_cast<int>(trigger.action), static_cast<int>(trigger.type), trigger.id));
             switch (trigger.action)
             {
             case B2SBulb::ProRuntime::MotionAction::Start:
