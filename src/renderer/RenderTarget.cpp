@@ -547,6 +547,12 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 RenderTarget::~RenderTarget()
 {
 #if defined(ENABLE_BGFX)
+   if (m_color_sampler)
+      m_color_sampler->ReleaseCoreTexture();
+   if (m_depth_sampler && !m_shared_depth)
+      m_depth_sampler->ReleaseCoreTexture();
+   if (m_msaa_depth_sampler)
+      m_msaa_depth_sampler->ReleaseCoreTexture();
    if (bgfx::isValid(m_framebuffer))
       bgfx::destroy(m_framebuffer);
    for (uint16_t i = 0; i < static_cast<uint16_t>(m_nLayers); i++)
