@@ -2107,7 +2107,7 @@ string B2STable::GetB2SProSummary() const
       {
          const B2SProBulb& pro = bulb->m_pro;
          proBulbs += pro.any ? 1 : 0;
-         lighting += (pro.artworkPixelLighting || pro.dynamicFrontLighting) ? 1 : 0;
+         lighting += pro.dynamicFrontLighting ? 1 : 0; // ArtworkPixelLighting is a designer flag the server never reads
          rotation += pro.automaticRotation ? 1 : 0;
          pivots += pro.pivotAnimation ? 1 : 0;
          motionPaths += pro.motionPathPoints.size() >= 2 ? 1 : 0;
