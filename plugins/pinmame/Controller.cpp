@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "Settings.h"
 #include "pinmame/PinMAMEPlugin.h"
-#include "../altsound/AltSoundPlugin.h"
+#include "altsound/AltSoundPlugin.h"
 
 #include "nlohmann/json.hpp"
 

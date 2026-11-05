@@ -73,7 +73,7 @@
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins;$(SolutionDir)../../plugins/pinmame;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins;$(SolutionDir)../../plugins;$(SolutionDir)../../plugins/pinmame;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)../../third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
