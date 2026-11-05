@@ -1029,6 +1029,13 @@ elseif(PLATFORM STREQUAL "wasm")
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets/web/monaco" "$<TARGET_FILE_DIR:vpinball>/monaco"
    )
 
+   foreach(TEMPLATE blankTable strippedTable exampleTable lightSeqTable)
+      add_custom_command(TARGET vpinball POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E tar cf "$<TARGET_FILE_DIR:vpinball>/${TEMPLATE}.zip" --format=zip ${TEMPLATE}.vpz
+         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/assets"
+      )
+   endforeach()
+
    set_target_properties(vpinball PROPERTIES
       SUFFIX ".html"
    )

@@ -742,7 +742,7 @@ jobs:
         run: |
           mkdir tmp
           mkdir stage
-          cp build/wasm-wasm64/vpinball.{html,js,wasm,data} build/wasm-wasm64/{favicon,vpinball-logo}.png build/wasm-wasm64/{sw,monaco-editor}.js stage
+          cp build/wasm-wasm64/vpinball.{html,js,wasm,data} build/wasm-wasm64/{favicon,vpinball-logo}.png build/wasm-wasm64/{sw,monaco-editor}.js build/wasm-wasm64/{blankTable,strippedTable,exampleTable,lightSeqTable}.zip stage
           cp -r build/wasm-wasm64/monaco stage
           cd stage
           zip -r ../tmp/VPinballX_BGFX-${{ needs.version.outputs.tag }}-wasm-${{ matrix.config }}.zip .
