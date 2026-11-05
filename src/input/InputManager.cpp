@@ -552,6 +552,9 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
    if (deviceId == m_keyboardDeviceId && ImGui::GetIO().WantCaptureKeyboard)
       return;
 
+   if (isPressed && (deviceId == m_keyboardDeviceId || deviceId == m_mouseDeviceId) && m_player->m_liveUI->IsEditorUIOpened() && m_player->m_ptable->m_liveBaseTable == nullptr)
+      return;
+
    uint32_t id = deviceId << 16 | buttonId;
    if (auto it = m_buttonMappings.find(id); it != m_buttonMappings.end())
       for (ButtonMapping* mapping : it->second)
