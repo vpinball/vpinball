@@ -65,7 +65,10 @@ namespace
       fprintf(f, "System: ");
       if (major == 10)
       {
-         fprintf(f, "Windows %u (%lu.%lu %lu%s)\n", build >= 22000 ? 11 : 10, major, minor, build, VER_NT_WORKSTATION ? "" : " Server");
+         if (product != VER_NT_WORKSTATION) // Server 2016 to 2025 all report 10.0, so tell apart by build
+            fprintf(f, "Windows Server %s (%lu.%lu %lu)\n", build >= 26100 ? "2025" : build >= 20348 ? "2022" : build >= 17763 ? "2019" : "2016", major, minor, build);
+         else
+            fprintf(f, "Windows %u (%lu.%lu %lu)\n", build >= 22000 ? 11u : 10u, major, minor, build);
       }
       else if (major == 6 && minor == 2)
       {
