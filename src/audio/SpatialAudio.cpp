@@ -215,10 +215,10 @@ struct SpatialAudioSource::Impl
    std::vector<float> scratchR;
    std::vector<float> channelScratch[kAmbiChannels];
    // Emitter positions in table units requested by the control thread, read on
-   // the audio thread. Mono sources emit from the (posX, posY, posZ) point.
-   // Stereo sources emit each channel at its explicit position when
-   // channelPositions is set (e.g. the 2 backglass speakers), spread around
-   // the (posX, posY, posZ) center azimuth otherwise.
+   // the audio thread. All emitters are mono: mono sources emit from the
+   // (posX, posY, posZ) point, stereo sources emit each channel at its
+   // explicit position when channelPositions is set (e.g. the 2 backglass
+   // speakers), both at the (posX, posY, posZ) point otherwise.
    std::atomic<float> posX { 0.f };
    std::atomic<float> posY { 0.f };
    std::atomic<float> posZ { 0.f };
@@ -231,7 +231,6 @@ struct SpatialAudioSource::Impl
    std::atomic<bool> channelPositions { false };
    std::atomic<float> volume { 1.f };
    std::atomic<float> channelBalance { 0.f };
-   float stereoSpread = 25.f; // degrees around the center azimuth for centered stereo sources
    float gainL = 1.f; // computed by UpdatePosition on the audio thread
    float gainR = 1.f;
 
@@ -256,9 +255,8 @@ struct SpatialAudioSource::Impl
       const float cr = cosf(roll), sr = sinf(roll);
       // Emitter position (table units) to ambisonic direction relative to the
       // listener pose: azimuth/elevation in radians (positive azimuth = left),
-      // distance in meters. azOffset rotates the direction around the up axis
-      // first, used to spread the 2 channels of a centered stereo source.
-      auto toPolar = [&](float x, float y, float z, float azOffset, float& azimuth, float& elevation, float& distance)
+      // distance in meters.
+      auto toPolar = [&](float x, float y, float z, float& azimuth, float& elevation, float& distance)
       {
          const float dx = (x - lx) * kVPUToMeters; // right
          const float dy = (y - ly) * kVPUToMeters; // toward the lockbar/player
@@ -267,13 +265,6 @@ struct SpatialAudioSource::Impl
          // Direction as (front, left, up), front being toward the backglass (-y)
          const float inv = 1.f / std::max(0.001f, distance);
          float fx = -dy * inv, fy = -dx * inv, fz = dz * inv, t;
-         if (azOffset != 0.f)
-         {
-            const float co = cosf(azOffset), so = sinf(azOffset);
-            t = co * fx - so * fy;
-            fy = so * fx + co * fy;
-            fx = t;
-         }
          t = cy * fx + sy * fy;
          fy = -sy * fx + cy * fy;
          fx = t; // yaw
@@ -312,8 +303,8 @@ struct SpatialAudioSource::Impl
          const float xR = posRX.load(std::memory_order_relaxed);
          const float yR = posRY.load(std::memory_order_relaxed);
          const float zR = posRZ.load(std::memory_order_relaxed);
-         toPolar(xL, yL, zL, 0.f, azimuthL, elevationL, distanceL);
-         toPolar(xR, yR, zR, 0.f, azimuthR, elevationR, distanceR);
+         toPolar(xL, yL, zL, azimuthL, elevationL, distanceL);
+         toPolar(xR, yR, zR, azimuthR, elevationR, distanceR);
          distGainL = distanceGain(xL, yL, zL, distanceL);
          distGainR = distanceGain(xR, yR, zR, distanceR);
       }
@@ -322,12 +313,10 @@ struct SpatialAudioSource::Impl
          const float x = posX.load(std::memory_order_relaxed);
          const float y = posY.load(std::memory_order_relaxed);
          const float z = posZ.load(std::memory_order_relaxed);
-         // Centered stereo source: the 2 channels are spread around the center
-         // azimuth (in table space, before applying the head orientation)
-         const float spread = inChannels == 2 ? spaudio::DegreesToRadians(stereoSpread) : 0.f;
-         toPolar(x, y, z, spread, azimuthL, elevationL, distanceL);
-         if (inChannels == 2)
-            toPolar(x, y, z, -spread, azimuthR, elevationR, distanceR);
+         toPolar(x, y, z, azimuthL, elevationL, distanceL);
+         azimuthR = azimuthL;
+         elevationR = elevationL;
+         distanceR = distanceL;
          distGainL = distGainR = distanceGain(x, y, z, distanceL);
       }
       const float vol = volume.load(std::memory_order_relaxed);
