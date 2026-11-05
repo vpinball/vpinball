@@ -285,7 +285,11 @@ int VPApp::GetLogicalNumberOfProcessors() const
       return 1;
    }
 
+#ifdef __EMSCRIPTEN__
+   return std::min(m_logicalNumberOfProcessors, 4);
+#else
    return m_logicalNumberOfProcessors;
+#endif
 }
 
 void VPApp::InitInstance(bool isPlay)
