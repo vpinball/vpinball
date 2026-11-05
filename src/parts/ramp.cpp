@@ -780,6 +780,7 @@ void Ramp::Render(const unsigned int renderMask)
          return; // Nothing to draw on a degenerate curve
 
       const uint32_t floorIndexCount = (m_rampVertex - 1) * 6;
+      const bool hasWalls = m_d.m_leftwallheightvisible != 0.f || m_d.m_rightwallheightvisible != 0.f;
 
       RenderMeshDesc floor;
       floor.mesh = m_meshBuffer;
@@ -789,7 +790,7 @@ void Ramp::Render(const unsigned int renderMask)
       floor.uiEdgeMesh = &m_meshEdgeBuffer;
       floor.edgeMode = UIEdgeMode::Quads;
       floor.edgeTriIndices = m_meshIndices.data();
-      floor.edgeTriCount = m_meshIndices.size();
+      floor.edgeTriCount = hasWalls ? m_meshIndices.size() : floorIndexCount;
       floor.edgeTriIndices16 = true;
 
       RenderMeshDesc rightWall = floor;
@@ -822,7 +823,7 @@ void Ramp::Render(const unsigned int renderMask)
          floor.transparent = rightWall.transparent = leftWall.transparent = mat->m_bOpacityActive;
       }
 
-      if (isUIPass || (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls)))
+      if ((isUIPass && hasWalls) || (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls)))
       {
          // both walls with image and floor
          m_renderer->RenderMesh(renderMask, floor, material);
