@@ -1293,7 +1293,6 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    // variants (clip planes included). coreUniforms still provides the metadata bgfx does
    // not expose (logical type, texture stage, default sampler state).
    auto& techniqueUniforms = m_uniforms[static_cast<unsigned int>(technique)];
-   techniqueUniforms.clear();
    for (int j = 0; j < 2; j++)
    {
       bgfx::UniformHandle uniforms[static_cast<unsigned int>(ShaderUniform::COUNT)];
@@ -1308,9 +1307,9 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
             // Bogus entries may be reported by shaderc, skip unknown names. "Point"/"Linear" from the
             // standalone SamplerState of SMAA.hlsl on DX are a known issue: skip them without logging.
             if (string(info.name) != "Point" && string(info.name) != "Linear")
-	    {
+            {
                PLOGW << "Ignoring unknown uniform '" << info.name << "' in shader " << (j == 0 ? vsName : fsName);
-	    }
+            }
             continue;
          }
          assert(info.num == ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformIndex)].count);
