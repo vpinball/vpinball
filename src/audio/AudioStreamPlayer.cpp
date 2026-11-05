@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "AudioStreamPlayer.h"
+#include "AudioPlayer.h"
 #include "MixNode.h"
 #include "SpatialAudio.h"
 
@@ -63,8 +64,9 @@ struct vpx_stream_data_source
 static ma_data_source_vtable vpx_stream_ds_vtable = { vpx_stream_data_source::Read, vpx_stream_data_source::Seek, vpx_stream_data_source::GetDataFormat,
    vpx_stream_data_source::GetCursor, vpx_stream_data_source::GetLength, vpx_stream_data_source::SetLooping, 0 };
 
-std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, SpatialAudioMixer* mixer, SoundMixMode mixMode, int frequency, int channels, bool isFloat)
+std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(const AudioPlayer* audioPlayer, int frequency, int channels, bool isFloat)
 {
+   ma_engine* engine = audioPlayer->GetEngine(SoundOutTypes::SNDOUT_BACKGLASS);
    if (engine == nullptr || frequency <= 0 || (channels != 1 && channels != 2))
       return nullptr;
 
@@ -82,20 +84,18 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, 
    if (ma_data_source_init(&dsConfig, &player->m_dataSource->base) != MA_SUCCESS)
       return nullptr;
 
-   // Attach to the backglass spatial source when spatial audio is enabled, like the other backglass sounds
+   // Attach to the backglass spatial source when spatial audio is enabled, positioned on the backglass speakers
+   SpatialAudioMixer* mixer = audioPlayer->GetSpatialMixer(SoundOutTypes::SNDOUT_BACKGLASS);
    if (mixer != nullptr && mixer->GetMixBus() != nullptr)
    {
       player->m_spatialSource = std::make_unique<SpatialAudioSource>(engine, mixer, static_cast<unsigned int>(channels));
       if (player->m_spatialSource->GetNode() == nullptr)
          player->m_spatialSource = nullptr;
       else
-      {
-         player->m_spatialSource->SetPositionPolar(0.f, 15.f, 1.f);
-         player->m_spatialSource->SetReferenceDistance(1.f);
-      }
+         audioPlayer->PositionBackglassSource(*player->m_spatialSource);
    }
 
-   if (player->m_spatialSource == nullptr && mixMode == SoundMixMode::BackglassFrontLeft)
+   if (player->m_spatialSource == nullptr && audioPlayer->GetBackglassMode() == SNDCFG_BGFRONTLEFT)
    {
       // Route through the channel mixing node to downmix to the front left channel (the endpoint's
       // default channel mapping already covers the 2 front channel mode)
@@ -107,7 +107,7 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, 
          player->m_vpxMixNode = nullptr;
          return nullptr;
       }
-      player->m_vpxMixNode->mode = mixMode;
+      player->m_vpxMixNode->mode = SoundMixMode::BackglassFrontLeft;
       player->m_vpxMixNode->volume = 1.f; // Volume is applied on the sound, not on the mixing node
       ma_node_attach_output_bus(player->m_vpxMixNode.get(), 0, ma_engine_get_endpoint(engine), 0);
    }

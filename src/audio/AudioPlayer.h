@@ -127,6 +127,9 @@ public:
    void SetSpatialMode(bool backglass, bool playfield); // enable/disable spatial rendering per output
    bool IsSpatialAudioEnabled(SoundOutTypes out) const { return GetSpatialMixer(out) != nullptr; }
    SpatialAudioMixer* GetSpatialMixer(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldSpatial.get() : m_backglassSpatial.get(); }
+   // Positions a backglass spatial source on the 2 backglass speakers: at the
+   // corners of the table opposite the player, ~40cm above the playfield
+   void PositionBackglassSource(SpatialAudioSource& source) const;
    float GetTableWidth() const { return m_tableWidth; }
    float GetTableHeight() const { return m_tableHeight; }
    void StopSound(Sound* sound);

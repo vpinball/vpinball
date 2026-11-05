@@ -13,10 +13,9 @@ struct vpx_node;
 namespace VPX
 {
 
-class SpatialAudioMixer;
+class AudioPlayer;
 class SpatialAudioSource;
 struct vpx_stream_data_source;
-enum class SoundMixMode;
 
 // Plugin audio stream (PinMAME, PUP, AltSound, ...) rendered through the backglass
 // miniaudio engine: the enqueued buffers are exposed as a custom data source
@@ -25,7 +24,7 @@ enum class SoundMixMode;
 class AudioStreamPlayer
 {
 public:
-   static std::unique_ptr<AudioStreamPlayer> Create(ma_engine* engine, SpatialAudioMixer* mixer, SoundMixMode mixMode, int frequency, int channels, bool isFloat);
+   static std::unique_ptr<AudioStreamPlayer> Create(const AudioPlayer* audioPlayer, int frequency, int channels, bool isFloat);
    ~AudioStreamPlayer();
 
    void Enqueue(const uint8_t* buffer, int length);
