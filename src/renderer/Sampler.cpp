@@ -202,6 +202,13 @@ Sampler::~Sampler()
 
 #include "shaders/bgfx_mipmap.h"
 
+void Sampler::ReleaseCoreTexture()
+{
+   assert(!m_ownTexture);
+   m_nomipsTexture = BGFX_INVALID_HANDLE;
+   m_mipsTexture = BGFX_INVALID_HANDLE;
+}
+
 bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
 {
    // If this sampler is the resolved view of a MSAA render target, then resolve it before use
