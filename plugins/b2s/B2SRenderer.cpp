@@ -808,6 +808,24 @@ void B2SRenderer::OnRandomAnimationTrigger(vector<B2SAnimation>& animations, B2S
    }
 }
 
+// B2S Pro ball artwork keeps its aspect when the backglass is stretched differently in X and Y (the reference's
+// VisualArtworkBounds: PreservePhysicsArtworkAspect for physics balls scales by the smaller of the two axis
+// scales, a gravity trough ball by the area preserving geometric mean), about the authored centre. Rolling
+// motion path balls (a trough's balls) get the same treatment here where the reference stretches them with the
+// canvas: a round ball stays round on a 16:9 panel showing 5:4 art. The rectangle is in source units.
+static void PreserveBallAspect(const VPXRenderContext2D* ctx, const bool areaRule, float& x, float& y, float& w, float& h)
+{
+   const float sx = ctx->outWidth / ctx->srcWidth, sy = ctx->outHeight / ctx->srcHeight;
+   if (sx <= 0.f || sy <= 0.f || std::abs(sx - sy) <= 1e-4f * std::max(sx, sy))
+      return;
+   const float k = areaRule ? std::sqrt(sx * sy) : std::min(sx, sy);
+   const float nw = w * k / sx, nh = h * k / sy;
+   x += (w - nw) * 0.5f;
+   y += (h - nh) * 0.5f;
+   w = nw;
+   h = nh;
+}
+
 void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs, float elapsed, B2SDualMode dualMode, const int pass)
 {
    if (pass != 1)
@@ -904,6 +922,8 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
       // and physics balls drawn where the simulation put them, turned by their rolling angle
       float pivotX = 0.5f, pivotY = 0.5f;
       float drawX = static_cast<float>(bulb->m_locationX), drawY = static_cast<float>(bulb->m_locationY);
+      float drawW = static_cast<float>(bulb->m_width), drawH = static_cast<float>(bulb->m_height);
+      const bool keepBallAspect = bulb->m_pro.physicsBall || bulb->m_pro.motionPathRollEnabled;
       float drawBrightness = bulb->m_brightness;
       // B2S Pro flasher pulse: each off to on edge shows the artwork for the authored duration, whatever the
       // state does meanwhile (a momentary pulse returns off at once, a held flasher still ends after it)
@@ -965,20 +985,26 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
                float fx, fy, fw, fh;
                if (const VPXTexture frame = bulb->m_proRt.physicsBall->MaskedFrame(fx, fy, fw, fh); frame != nullptr)
                {
+                  float dx = fx, dy = fy, dw = fw, dh = fh;
+                  PreserveBallAspect(ctx, bulb->m_pro.motionPathGravityDrop, dx, dy, dw, dh);
                   if (drawBrightness > 0.f)
-                     ctx->DrawImage(ctx, frame, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness, 0.f, 0.f, fw, fh, fw * 0.5f, fh * 0.5f, 0.f, fx, fy, fw, fh);
+                     ctx->DrawImage(ctx, frame, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness, 0.f, 0.f, fw, fh, fw * 0.5f, fh * 0.5f, 0.f, dx, dy, dw, dh);
                   continue;
                }
             }
+            if (keepBallAspect)
+               PreserveBallAspect(ctx, bulb->m_pro.motionPathGravityDrop, drawX, drawY, drawW, drawH);
          }
       }
 
       // B2S Pro sequence feeder: the first member of a trough shows the next artwork at the path start
       if (bulb->m_proRt.seqSourceAnchor && bulb->m_proRt.seqSourceVisible && bulb->m_proRt.seqSourceImage != nullptr)
       {
-         const B2SProRect src = bulb->ProSequenceSourceRect();
+         B2SProRect src = bulb->ProSequenceSourceRect();
          if (!src.IsEmpty())
          {
+            if (keepBallAspect)
+               PreserveBallAspect(ctx, bulb->m_pro.motionPathGravityDrop, src.x, src.y, src.w, src.h);
             const VPXTextureInfo* const srcTex = GetTextureInfo(bulb->m_proRt.seqSourceImage);
             ctx->DrawImage(ctx, bulb->m_proRt.seqSourceImage, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, 1.f, 0.f, 0.f, static_cast<float>(srcTex->width),
                static_cast<float>(srcTex->height), static_cast<float>(srcTex->width) * 0.5f, static_cast<float>(srcTex->height) * 0.5f,
@@ -992,7 +1018,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          ctx->DrawImage(ctx, bulb->m_offImage, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, 1.f,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
             static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
-            drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+            drawX, drawY, drawW, drawH);
       }
       const VPXTexture artwork = bulb->m_proRt.displayImage != nullptr ? bulb->m_proRt.displayImage : bulb->m_image;
       if (artwork)
@@ -1001,7 +1027,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
          ctx->DrawImage(ctx, artwork, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, drawBrightness,
             0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
             static_cast<float>(bulbTex->width) * pivotX, static_cast<float>(bulbTex->height) * pivotY, rotation,
-            drawX, drawY, static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+            drawX, drawY, drawW, drawH);
       }
    }
 }
