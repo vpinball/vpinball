@@ -66,7 +66,8 @@ static int DPIValue(int value)
 BOOL SoundDialog::OnInitDialog()
 {
    m_audioPlayer = std::make_unique<VPX::AudioPlayer>(g_settingsService.GetAppSettings().GetPlayer_SoundDeviceBG(), g_settingsService.GetAppSettings().GetPlayer_SoundDevice(),
-      static_cast<VPX::SoundConfigTypes>(g_settingsService.GetAppSettings().GetPlayer_Sound3D()));
+      static_cast<VPX::SoundConfigTypes>(g_settingsService.GetAppSettings().GetPlayer_Sound3D()),
+      static_cast<VPX::BackglassConfigTypes>(g_settingsService.GetAppSettings().GetPlayer_Sound3DBackglass()));
 
    const HWND toolTipHwnd = CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr,
       GetApp()->GetInstanceHandle(), nullptr);

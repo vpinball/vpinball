@@ -8,6 +8,7 @@
 
 struct ma_engine;
 struct ma_sound;
+struct vpx_node;
 
 namespace VPX
 {
@@ -15,6 +16,7 @@ namespace VPX
 class SpatialAudioMixer;
 class SpatialAudioSource;
 struct vpx_stream_data_source;
+enum class SoundMixMode;
 
 // Plugin audio stream (PinMAME, PUP, AltSound, ...) rendered through the backglass
 // miniaudio engine: the enqueued buffers are exposed as a custom data source
@@ -23,11 +25,15 @@ struct vpx_stream_data_source;
 class AudioStreamPlayer
 {
 public:
-   static std::unique_ptr<AudioStreamPlayer> Create(ma_engine* engine, SpatialAudioMixer* mixer, int frequency, int channels, bool isFloat);
+   static std::unique_ptr<AudioStreamPlayer> Create(ma_engine* engine, SpatialAudioMixer* mixer, SoundMixMode mixMode, int frequency, int channels, bool isFloat);
    ~AudioStreamPlayer();
 
    void Enqueue(const uint8_t* buffer, int length);
    void FlushStream(); // Mark the stream as ended: queued data still plays out, then the sound stops
+   // Detaches the stream's nodes from its engine while the engine is still alive. Must be called before
+   // the engine is uninitialized, as external holders may keep this object alive past its engine's death.
+   // The object stays valid afterwards but is silent and reports IsFinished().
+   void DetachFromEngine();
    bool IsFinished() const; // Whether a flushed stream has played out (a live stream never ends, underruns play silence)
    int GetQueuedSize() const;
    void SetName(string name) { m_name = std::move(name); }
@@ -43,6 +49,7 @@ private:
    std::unique_ptr<vpx_stream_data_source> m_dataSource;
    std::unique_ptr<ma_sound> m_sound;
    std::unique_ptr<SpatialAudioSource> m_spatialSource;
+   std::unique_ptr<vpx_node> m_vpxMixNode; // Channel mixing node honoring the backglass output mode, used when spatial audio is disabled
 
    // Ring buffer of interleaved float frames, written by Enqueue (game/plugin
    // thread) and read by the audio thread through the data source

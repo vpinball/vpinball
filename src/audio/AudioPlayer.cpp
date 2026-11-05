@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "AudioPlayer.h"
 #include "AudioStreamPlayer.h"
+#include "MixNode.h"
 #include "SoundPlayer.h"
 #include "utils/denormals.h"
 #include <SDL3/SDL.h>
@@ -266,8 +267,9 @@ static ma_result ma_context_init__sdl(ma_context* pContext, const ma_context_con
 namespace VPX
 {
 
-AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode)
-   : m_soundMode3D(playfieldSoundMode < SNDCFG_SND3D2CH || playfieldSoundMode > SNDCFG_SND3DSSF ? SNDCFG_SND3D2CH : playfieldSoundMode)
+AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, BackglassConfigTypes backglassSoundMode)
+   : m_soundMode3D(playfieldSoundMode < SNDCFG_SND3D2CH || playfieldSoundMode > SNDCFG_SND3DFRONTRIGHT ? SNDCFG_SND3D2CH : playfieldSoundMode)
+   , m_backglassMode(backglassSoundMode < SNDCFG_BG2CH || backglassSoundMode > SNDCFG_BGFRONTLEFT ? SNDCFG_BG2CH : backglassSoundMode)
 {
    if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
       return;
@@ -410,6 +412,12 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
 AudioPlayer::~AudioPlayer()
 {
    m_soundPlayers.clear();
+   // Streams are shared with external holders (plugin audio lanes) which may release them after this
+   // player is destroyed: detach them from the engines before these are uninitialized
+   for (const auto& stream : m_audioStreams)
+      stream->DetachFromEngine();
+   for (const auto& stream : m_pendingDeleteAudioStreams)
+      stream->DetachFromEngine();
    m_audioStreams.clear();
    m_pendingDeleteAudioStreams.clear();
    m_music = nullptr;
@@ -457,8 +465,8 @@ void AudioPlayer::ReleaseFinishedStreams()
 AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int frequency, int channels, bool isFloat)
 {
    ReleaseFinishedStreams();
-   std::unique_ptr<AudioStreamPlayer> audioStream
-      = AudioStreamPlayer::Create(m_backglassEngine.get(), GetSpatialMixer(SoundOutTypes::SNDOUT_BACKGLASS), frequency, channels, isFloat);
+   std::unique_ptr<AudioStreamPlayer> audioStream = AudioStreamPlayer::Create(m_backglassEngine.get(), GetSpatialMixer(SoundOutTypes::SNDOUT_BACKGLASS),
+      m_backglassMode == SNDCFG_BGFRONTLEFT ? SoundMixMode::BackglassFrontLeft : SoundMixMode::Backglass, frequency, channels, isFloat);
    if (audioStream == nullptr)
       return nullptr;
    AudioStreamID stream = std::move(audioStream);
@@ -587,7 +595,8 @@ void AudioPlayer::SetSpatialMode(const bool backglass, const bool playfield)
    // Spatial rendering is only used for VR play, always rendered through the binaural path (stereo to the headset)
    if (backglass && m_backglassEngine && !m_backglassSpatial)
    {
-      m_backglassSpatial = std::make_unique<SpatialAudioMixer>(m_backglassEngine.get(), SpatialAudioMixer::GetBackglassSpeakerLayout(ma_engine_get_channels(m_backglassEngine.get())));
+      m_backglassSpatial
+         = std::make_unique<SpatialAudioMixer>(m_backglassEngine.get(), SpatialAudioMixer::GetBackglassSpeakerLayout(m_backglassMode, ma_engine_get_channels(m_backglassEngine.get())));
       m_backglassSpatial->GetListener()->SetPose(m_listenerPose[0], m_listenerPose[1], m_listenerPose[2], m_listenerPose[3], m_listenerPose[4], m_listenerPose[5]);
       m_backglassSpatial->GetReferenceListener()->SetPose(m_referencePose[0], m_referencePose[1], m_referencePose[2], m_referencePose[3], m_referencePose[4], m_referencePose[5]);
       m_backglassSpatial->SetBinauralEnabled(true);

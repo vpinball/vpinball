@@ -75,8 +75,9 @@ public:
    // SNDCFG_* mode and the device channel count (SDL channel order).
    static std::vector<SpatialSpeakerPosition> GetPlayfieldSpeakerLayout(int soundConfigMode, unsigned int nChannels);
 
-   // Loudspeaker layout for the backglass output (speakers located in the backbox).
-   static std::vector<SpatialSpeakerPosition> GetBackglassSpeakerLayout(unsigned int nChannels);
+   // Loudspeaker layout for the backglass output (speakers located in the backbox),
+   // according to the selected SNDCFG_BG* mode and the device channel count (SDL channel order).
+   static std::vector<SpatialSpeakerPosition> GetBackglassSpeakerLayout(int backglassConfigMode, unsigned int nChannels);
 
    // Opaque implementation, defined in the .cpp (publicly visible for the node struct helpers)
    struct Impl;

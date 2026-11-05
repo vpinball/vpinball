@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "AudioStreamPlayer.h"
+#include "MixNode.h"
 #include "SpatialAudio.h"
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
@@ -62,7 +63,7 @@ struct vpx_stream_data_source
 static ma_data_source_vtable vpx_stream_ds_vtable = { vpx_stream_data_source::Read, vpx_stream_data_source::Seek, vpx_stream_data_source::GetDataFormat,
    vpx_stream_data_source::GetCursor, vpx_stream_data_source::GetLength, vpx_stream_data_source::SetLooping, 0 };
 
-std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, SpatialAudioMixer* mixer, int frequency, int channels, bool isFloat)
+std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, SpatialAudioMixer* mixer, SoundMixMode mixMode, int frequency, int channels, bool isFloat)
 {
    if (engine == nullptr || frequency <= 0 || (channels != 1 && channels != 2))
       return nullptr;
@@ -94,6 +95,23 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, 
       }
    }
 
+   if (player->m_spatialSource == nullptr && mixMode == SoundMixMode::BackglassFrontLeft)
+   {
+      // Route through the channel mixing node to downmix to the front left channel (the endpoint's
+      // default channel mapping already covers the 2 front channel mode)
+      player->m_vpxMixNode = std::make_unique<vpx_node>();
+      const ma_result result = vpx_node_init(ma_engine_get_node_graph(engine), static_cast<unsigned int>(channels), ma_engine_get_channels(engine), nullptr, player->m_vpxMixNode.get());
+      if (result != MA_SUCCESS)
+      {
+         PLOGE << "Failed to initialize custom mixer.";
+         player->m_vpxMixNode = nullptr;
+         return nullptr;
+      }
+      player->m_vpxMixNode->mode = mixMode;
+      player->m_vpxMixNode->volume = 1.f; // Volume is applied on the sound, not on the mixing node
+      ma_node_attach_output_bus(player->m_vpxMixNode.get(), 0, ma_engine_get_endpoint(engine), 0);
+   }
+
    // TODO a stream not at the engine rate goes through the sound's pitch resampler, which miniaudio runs without low-pass filter
    // (lpfOrder = 0, for biquad stability): more aliasing than the former SDL3 converter (e.g. 44.1 kHz PUP videos on a 48 kHz
    // device, while PinMAME/AltSound render at the engine rate). Revisit with the next big miniaudio update, or resample to the
@@ -102,8 +120,12 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, 
    ma_sound_config config = ma_sound_config_init_2(engine);
    config.pDataSource = &player->m_dataSource->base;
    config.flags = MA_SOUND_FLAG_NO_SPATIALIZATION;
-   config.pInitialAttachment
-      = player->m_spatialSource ? static_cast<ma_node*>(player->m_spatialSource->GetNode()) : ma_engine_get_endpoint(engine);
+   // Node attachments require matching channel counts: the endpoint expects the engine channel
+   // count (0 = default) while the mixing node declares the stream channel count
+   config.channelsOut = player->m_vpxMixNode ? static_cast<ma_uint32>(channels) : 0;
+   config.pInitialAttachment = player->m_spatialSource ? static_cast<ma_node*>(player->m_spatialSource->GetNode())
+      : player->m_vpxMixNode                           ? static_cast<ma_node*>(player->m_vpxMixNode.get())
+                                                       : ma_engine_get_endpoint(engine);
    if (ma_sound_init_ex(engine, &config, player->m_sound.get()) != MA_SUCCESS)
    {
       player->m_sound = nullptr;
@@ -116,11 +138,24 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(ma_engine* engine, 
 
 AudioStreamPlayer::~AudioStreamPlayer()
 {
-   if (m_sound)
-      ma_sound_uninit(m_sound.get());
-   m_spatialSource = nullptr;
+   DetachFromEngine();
    if (m_dataSource)
       ma_data_source_uninit(&m_dataSource->base);
+}
+
+void AudioStreamPlayer::DetachFromEngine()
+{
+   if (m_sound)
+   {
+      ma_sound_uninit(m_sound.get());
+      m_sound = nullptr;
+   }
+   m_spatialSource = nullptr;
+   if (m_vpxMixNode)
+   {
+      vpx_node_uninit(m_vpxMixNode.get(), nullptr);
+      m_vpxMixNode = nullptr;
+   }
 }
 
 void AudioStreamPlayer::Enqueue(const uint8_t* buffer, int length)
