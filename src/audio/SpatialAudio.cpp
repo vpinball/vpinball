@@ -493,7 +493,7 @@ struct SpatialAudioSource::Impl
          refDistance = std::max(0.01f, sqrtf(rdx * rdx + rdy * rdy + rdz * rdz));
       }
       // Distance attenuation around the reference distance (closer = louder, farther = quieter)
-      const float distGain = clamp(refDistance / std::max(refDistance, distance), 0.f, 3.f);
+      const float distGain = clamp(refDistance / std::max(0.01f, distance), 0.f, 3.f);
       const float vol = volume.load(std::memory_order_relaxed);
       const float balance = clamp(channelBalance.load(std::memory_order_relaxed), -1.f, 1.f);
       const float newGainL = vol * distGain * (balance < 0.f ? 1.f : 1.f - balance);
