@@ -444,7 +444,7 @@ void EditorUI::StartFileOp(std::unique_ptr<AsyncFileOp> op)
                for (int i = 0; i < 16; i++)
                   table->m_rgcolorcustom[i] = RGB(0, 0, 0);
             }
-            const HRESULT hr = table->LoadGameFromFilename(fileOp->filename, fileOp->feedback);
+            const HRESULT hr = (fileOp->type == AsyncFileOp::Type::NewTable && !g_app->m_fileLocator.FetchAppFile(fileOp->filename, fileOp->feedback)) ? E_FAIL : table->LoadGameFromFilename(fileOp->filename, fileOp->feedback);
             // Same as the Win32 editor: hash/corrupt content errors still keep the loaded table
             if (SUCCEEDED(hr) || (hr == APPX_E_BLOCK_HASH_INVALID) || (hr == APPX_E_CORRUPT_CONTENT))
             {

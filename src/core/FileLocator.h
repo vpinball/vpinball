@@ -2,6 +2,7 @@
 
 #pragma once
 
+class VPXFileFeedback;
 
 class FileLocator
 {
@@ -39,6 +40,7 @@ public:
       Preferences
    };
    std::filesystem::path GetAppPath(AppSubFolder sub, const std::filesystem::path& file = std::filesystem::path()) const;
+   bool FetchAppFile(const std::filesystem::path& path, VPXFileFeedback& feedback) const;
 
    // Folders to scan for plugins, in precedence order: the installation's own plugins first, then
    // 'plugins' in the preferences folder if it exists. The first plugin found for an id wins, so a

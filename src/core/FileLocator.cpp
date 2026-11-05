@@ -7,6 +7,12 @@
 #include "FileLocator.h"
 
 #include "parts/pintable.h"
+#include "ui/VPXFileFeedback.h"
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/threading.h>
+#endif
 
 FileLocator::FileLocator()
    : m_appPath(EvaluateAppPath())
@@ -439,3 +445,55 @@ std::filesystem::path FileLocator::SearchScript(const PinTable* table, const std
 
    return std::filesystem::path();
 }
+
+#ifdef __EMSCRIPTEN__
+
+namespace
+{
+std::atomic<int> s_fetchResult { -1 };
+std::atomic<unsigned int> s_fetchProgress { 0 };
+std::atomic<unsigned int> s_fetchLength { 0 };
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE void VPXAppFileFetched(const int ok) { s_fetchResult = ok; }
+
+extern "C" EMSCRIPTEN_KEEPALIVE void VPXAppFileFetchProgress(const unsigned int progress, const unsigned int length)
+{
+   s_fetchProgress = progress;
+   s_fetchLength = length;
+}
+
+bool FileLocator::FetchAppFile(const std::filesystem::path& path, VPXFileFeedback& feedback) const
+{
+   if (std::filesystem::exists(path) && (!std::filesystem::is_directory(path) || !std::filesystem::is_empty(path)))
+      return true;
+   s_fetchResult = -1;
+   s_fetchProgress = 0;
+   s_fetchLength = 0;
+   const string zip = PathToUTF8(path.stem()) + ".zip";
+   const string dest = PathToUTF8(path.parent_path());
+   MAIN_THREAD_ASYNC_EM_ASM(
+      {
+         Module.vpxFetchAppFile(UTF8ToString($0), UTF8ToString($1)).then(() => _VPXAppFileFetched(1), (e) => {
+            console.error(e);
+            _VPXAppFileFetched(0);
+         });
+      },
+      zip.c_str(), dest.c_str());
+   while (s_fetchResult < 0)
+   {
+      feedback.SetLength(s_fetchLength);
+      feedback.SetProgress(s_fetchProgress);
+      if (emscripten_is_main_runtime_thread())
+         emscripten_sleep(50);
+      else
+         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+   }
+   return s_fetchResult == 1;
+}
+
+#else
+
+bool FileLocator::FetchAppFile(const std::filesystem::path&, VPXFileFeedback&) const { return true; }
+
+#endif

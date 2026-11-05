@@ -170,6 +170,31 @@ var Module = {
       for (const file of files)
          download(file);
    },
+   vpxFetchAppFile: async (zip, dest) => {
+      const response = await fetch(zip);
+      if (!response.ok)
+         throw new Error('Failed to download ' + zip);
+      const length = Number(response.headers.get('Content-Length')) || 0;
+      const chunks = [];
+      let received = 0;
+      const reader = response.body.getReader();
+      for (;;) {
+         const { done, value } = await reader.read();
+         if (done)
+            break;
+         chunks.push(value);
+         received += value.length;
+         Module._VPXAppFileFetchProgress(received, Math.max(length, received));
+      }
+      const entries = await readZip(new File(chunks, zip));
+      let count = 0;
+      for (const { path, file } of entries) {
+         const target = dest + '/' + path;
+         mkdirs(target.substring(0, target.lastIndexOf('/')));
+         Module.FS.writeFile(target, new Uint8Array(await file.arrayBuffer()));
+         Module._VPXAppFileFetchProgress(++count, entries.length);
+      }
+   },
    onRuntimeInitialized: async () => {
       await loadPrefs();
       if (args.length > 0) {
