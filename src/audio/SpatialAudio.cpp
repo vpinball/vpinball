@@ -10,7 +10,6 @@
 
 #include "spatialaudio/AmbisonicBinauralizer.h"
 #include "spatialaudio/AmbisonicEncoder.h"
-#include "spatialaudio/AmbisonicRotator.h"
 #include "spatialaudio/SpatialaudioConfig.h"
 
 
@@ -63,14 +62,9 @@ static constexpr unsigned int kAmbiChannels = (kAmbiOrder + 1) * (kAmbiOrder + 1
 // underruns and eventual device failure). 512 frames gives a 1024 points FFT
 // (~10x cheaper) while staying efficient vs the ~256 tap HRTFs.
 static constexpr unsigned int kMaxAmbiBlock = 512;
-// Fade times (ms) used by libspatialaudio to smooth source position and head
-// orientation changes (avoids clicks when scripts move sources or in VR)
+// Fade time (ms) used by libspatialaudio to smooth source position changes
+// (avoids clicks when scripts move sources or when the head moves in VR)
 static constexpr float kPositionFadeMs = 10.f;
-static constexpr float kRotationFadeMs = 20.f;
-// Head orientation change (radians, ~0.2 deg) below which the soundfield
-// rotator is not retargeted: filters tracker jitter that would otherwise
-// restart the rotation fade on every audio block in VR
-static constexpr float kOrientationEpsilon = 0.004f;
 // Makeup gain for the binaural (VR headset) path: libspatialaudio's
 // binauralizer normalizes its HRTF filters so that the worst case peak tap is
 // 0.35 (~-9dB of headroom), rendering everything noticeably quieter than the
@@ -88,24 +82,19 @@ struct vpx_spatial_mix_node
 struct SpatialAudioMixer::Impl
 {
    vpx_spatial_mix_node node;
-   SpatialAudioListener* listener = nullptr;
    unsigned int outChannels = 0;
-   spaudio::AmbisonicRotator rotator;
    spaudio::AmbisonicBinauralizer binauralizer;
    spaudio::BFormat bFormat;
    std::vector<std::vector<float>> outBuffers;
    std::vector<float*> outPtrs;
    std::vector<float> channelScratch[kAmbiChannels];
    bool binauralConfigured = false;
-   // Last orientation sent to the rotator (audio thread only, no atomics needed)
-   float appliedYaw = 0.f, appliedPitch = 0.f, appliedRoll = 0.f;
-   bool orientationApplied = false;
 
    void Process(const float* in, unsigned int count, float* out)
    {
       // Deinterleave the B-format input bus into per channel buffers, dropping
       // non finite samples so a bad source cannot permanently poison the
-      // rotator, shelf filters and convolution overlap state downstream
+      // binauralizer's filter and convolution overlap state downstream
       for (unsigned int ch = 0; ch < kAmbiChannels; ch++)
       {
          float* scratch = channelScratch[ch].data();
@@ -115,32 +104,6 @@ struct SpatialAudioMixer::Impl
             scratch[i] = std::isfinite(v) ? v : 0.f;
          }
          bFormat.InsertStream(scratch, ch, count);
-      }
-      // Rotate the whole soundfield to the listener head orientation (VR head
-      // tracking). Sources are encoded in table space, so only the orientation
-      // is applied here (translation is handled per source).
-      {
-         float lx, ly, lz, yaw, pitch, roll;
-         listener->GetPose(lx, ly, lz, yaw, pitch, roll);
-         // Conventions: our yaw is positive when looking left, matching the
-         // rotator convention (a positive rotator yaw is equivalent to the
-         // listener turning to the left). Our pitch is positive when looking
-         // up while a positive rotator pitch is equivalent to the listener
-         // tilting down, hence the sign change. Roll (positive = tilting the
-         // head to the right) already matches the rotator convention.
-         // Skip non finite poses: they would poison the rotation matrix, and the
-         // epsilon gate would then never recover (fabsf(NaN) > eps is false)
-         if (std::isfinite(yaw + pitch + roll)
-            && (!orientationApplied || fabsf(yaw - appliedYaw) > kOrientationEpsilon || fabsf(pitch - appliedPitch) > kOrientationEpsilon
-               || fabsf(roll - appliedRoll) > kOrientationEpsilon))
-         {
-            rotator.SetOrientation({ yaw, -pitch, roll });
-            appliedYaw = yaw;
-            appliedPitch = pitch;
-            appliedRoll = roll;
-            orientationApplied = true;
-         }
-         rotator.Process(&bFormat, count);
       }
       // Binauralize on the 2 first output channels (VR headset). Stays silent
       // when the binauralizer failed to configure (the buffers are zeroed).
@@ -173,11 +136,9 @@ static ma_node_vtable vpx_spatial_mix_vtable = { vpx_spatial_mix_process, nullpt
 SpatialAudioMixer::SpatialAudioMixer(ma_engine* engine)
    : m_impl(std::make_unique<Impl>())
 {
-   m_impl->listener = &m_listener;
    m_impl->outChannels = ma_engine_get_channels(engine);
    const unsigned int sampleRate = ma_engine_get_sample_rate(engine);
    m_impl->bFormat.Configure(kAmbiOrder, true, kMaxAmbiBlock);
-   m_impl->rotator.Configure(kAmbiOrder, true, kMaxAmbiBlock, sampleRate, kRotationFadeMs);
 
    // Configure the binauralizer (VR headset rendering on the 2 first output channels)
    unsigned int tailLength = 0;
@@ -280,20 +241,50 @@ struct SpatialAudioSource::Impl
       listener->GetPose(lx, ly, lz, yaw, pitch, roll);
       float rlx, rly, rlz, ryaw, rpitch, rroll;
       referenceListener->GetPose(rlx, rly, rlz, ryaw, rpitch, rroll);
-      // Emitter position relative to the listener, in meters. Orientation is
-      // not applied here: sources are encoded in table space (listener looking
-      // toward the backglass, i.e. -y) and the mixer rotates the whole
-      // soundfield to the actual head orientation.
-      auto toPolar = [lx, ly, lz](float x, float y, float z, float& azimuth, float& elevation, float& distance)
+      // Rotation applied to the emitter directions to express them in the
+      // listener head frame (VR head tracking): our yaw is positive when
+      // looking left, our pitch is negated as the ambisonic convention takes
+      // positive pitch for tilting down, and our roll is positive when tilting
+      // right, applied in yaw-pitch-roll order. This is done per source rather
+      // than on the mixed soundfield: libspatialaudio's AmbisonicRotator fades
+      // its SH matrix coefficients but drops the ones crossing zero (cos terms
+      // at +-90deg yaw, sin2 terms at the same spot, ...), producing clicks on
+      // every orientation retarget, while the encoders' coefficient
+      // interpolation handles the crossings smoothly.
+      const float cy = cosf(yaw), sy = sinf(yaw);
+      const float cp = cosf(-pitch), sp = sinf(-pitch);
+      const float cr = cosf(roll), sr = sinf(roll);
+      // Emitter position (table units) to ambisonic direction relative to the
+      // listener pose: azimuth/elevation in radians (positive azimuth = left),
+      // distance in meters. azOffset rotates the direction around the up axis
+      // first, used to spread the 2 channels of a centered stereo source.
+      auto toPolar = [&](float x, float y, float z, float azOffset, float& azimuth, float& elevation, float& distance)
       {
          const float dx = (x - lx) * kVPUToMeters; // right
          const float dy = (y - ly) * kVPUToMeters; // toward the lockbar/player
          const float dz = (z - lz) * kVPUToMeters; // up
-         const float forward = -dy;
-         const float flat = sqrtf(dx * dx + forward * forward);
-         azimuth = atan2f(-dx, forward); // positive azimuth = left
-         elevation = atan2f(dz, flat);
-         distance = sqrtf(flat * flat + dz * dz);
+         distance = sqrtf(dx * dx + dy * dy + dz * dz);
+         // Direction as (front, left, up), front being toward the backglass (-y)
+         const float inv = 1.f / std::max(0.001f, distance);
+         float fx = -dy * inv, fy = -dx * inv, fz = dz * inv, t;
+         if (azOffset != 0.f)
+         {
+            const float co = cosf(azOffset), so = sinf(azOffset);
+            t = co * fx - so * fy;
+            fy = so * fx + co * fy;
+            fx = t;
+         }
+         t = cy * fx + sy * fy;
+         fy = -sy * fx + cy * fy;
+         fx = t; // yaw
+         t = cp * fz + sp * fx;
+         fx = -sp * fz + cp * fx;
+         fz = t; // pitch
+         t = cr * fy + sr * fz;
+         fz = -sr * fy + cr * fz;
+         fy = t; // roll
+         azimuth = atan2f(fy, fx);
+         elevation = atan2f(fz, sqrtf(fx * fx + fy * fy));
       };
       // Distance attenuation relative to the emitter's distance to the
       // canonical listener pose (the fake pose the tables' loudness is
@@ -321,8 +312,8 @@ struct SpatialAudioSource::Impl
          const float xR = posRX.load(std::memory_order_relaxed);
          const float yR = posRY.load(std::memory_order_relaxed);
          const float zR = posRZ.load(std::memory_order_relaxed);
-         toPolar(xL, yL, zL, azimuthL, elevationL, distanceL);
-         toPolar(xR, yR, zR, azimuthR, elevationR, distanceR);
+         toPolar(xL, yL, zL, 0.f, azimuthL, elevationL, distanceL);
+         toPolar(xR, yR, zR, 0.f, azimuthR, elevationR, distanceR);
          distGainL = distanceGain(xL, yL, zL, distanceL);
          distGainR = distanceGain(xR, yR, zR, distanceR);
       }
@@ -331,17 +322,13 @@ struct SpatialAudioSource::Impl
          const float x = posX.load(std::memory_order_relaxed);
          const float y = posY.load(std::memory_order_relaxed);
          const float z = posZ.load(std::memory_order_relaxed);
-         toPolar(x, y, z, azimuthL, elevationL, distanceL);
-         distGainL = distGainR = distanceGain(x, y, z, distanceL);
+         // Centered stereo source: the 2 channels are spread around the center
+         // azimuth (in table space, before applying the head orientation)
+         const float spread = inChannels == 2 ? spaudio::DegreesToRadians(stereoSpread) : 0.f;
+         toPolar(x, y, z, spread, azimuthL, elevationL, distanceL);
          if (inChannels == 2)
-         {
-            // Centered stereo source: spread the 2 channels around the center azimuth
-            const float spread = spaudio::DegreesToRadians(stereoSpread);
-            azimuthR = azimuthL - spread;
-            elevationR = elevationL;
-            distanceR = distanceL;
-            azimuthL += spread;
-         }
+            toPolar(x, y, z, -spread, azimuthR, elevationR, distanceR);
+         distGainL = distGainR = distanceGain(x, y, z, distanceL);
       }
       const float vol = volume.load(std::memory_order_relaxed);
       const float balance = clamp(channelBalance.load(std::memory_order_relaxed), -1.f, 1.f);
