@@ -427,38 +427,6 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    m_loadProgress->SetProgress("Starting..."s, 100);
    m_loadProgress = &m_defaultLoadProgress; // The caller's reporter only lives during construction, later session reloads (table switches) log
 
-#if defined(__linux__) && !defined(__ANDROID__) && defined(ENABLE_BGFX)
-   // Priming frame for Wayland: a toplevel is only mapped when its first buffer is
-   // committed (the first present, not SDL_ShowWindow), and the compositor gives
-   // keyboard focus to the last mapped toplevel of the active application
-   // (SDL_WINDOW_NOT_FOCUSABLE cannot be honored by the protocol). Ancillary windows
-   // otherwise present their first frame after the playfield, when their content
-   // shows up, which steals the playfield focus and pauses the table.
-   // So present a black frame on every ancillary window now, before the playfield's
-   // first present: they get mapped first and the playfield, committed last through
-   // the same ordered client socket, ends up with the keyboard focus.
-   if (const char* driver = SDL_GetCurrentVideoDriver(); driver != nullptr && strcmp(driver, "wayland") == 0)
-   {
-      bool primed = false;
-      for (VPX::RenderOutput* out : { &m_backglassOutput, &m_scoreViewOutput, &m_topperOutput })
-      {
-         if (out->GetMode() == VPX::RenderOutput::OM_WINDOW && out->GetWindow() != nullptr)
-         {
-            out->GetWindow()->Show();
-            m_renderer->m_renderDevice->SetRenderTarget("Prime Ancillary"s, out->GetWindow()->GetBackBuffer(), false, true);
-            m_renderer->m_renderDevice->Clear(clearType::TARGET, 0x00000000);
-            primed = true;
-         }
-      }
-      if (primed)
-      {
-         SubmitFrame();
-         FinishFrame();
-         LockRenderThread();
-      }
-   }
-#endif
-
    // Perform a quick render to avoid displaying a blank screen while starting
    m_renderer->DisableStaticPrePass(true);
    PrepareFrame();
