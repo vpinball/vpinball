@@ -68,7 +68,7 @@ html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-f
 #editorContainer { flex: 1; min-height: 0; }
 #drop button { font: inherit; font-size: 15px; font-weight: 600; padding: 11px 20px; margin: 4px; border: 0; border-radius: 12px; cursor: pointer; }
 #pickFolder { background: var(--accent); color: var(--on-accent); }
-#pickFiles, #tables button { background: var(--surface-high); color: var(--text); }
+#pickFiles, #openEditor, #tables button { background: var(--surface-high); color: var(--text); }
 #drop button:disabled { opacity: 0.4; cursor: default; }
 #tables { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
 #tables:empty { display: none; }
@@ -97,6 +97,7 @@ html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-f
          <p>Open a table folder or a table file, or drop one here.</p>
          <button id="pickFolder" disabled>Open table folder</button>
          <button id="pickFiles" disabled>Open table file</button>
+         <button id="openEditor" disabled>Open live editor</button>
          <input id="folderInput" type="file" webkitdirectory hidden>
          <input id="filesInput" type="file" accept=".vpx,.vpz,.vpxz,.zip" hidden>
          <div id="tables"></div>
@@ -147,6 +148,28 @@ var Module = {
       });
       return {};
    },
+   onFileSaved: async (path) => {
+      const handle = Module.vpxSaveHandles && Module.vpxSaveHandles[path];
+      if (handle) {
+         try {
+            const writable = await handle.createWritable();
+            await writable.write(Module.FS.readFile(path));
+            await writable.close();
+         } catch (e) {
+            console.error('Failed to save ' + path, e);
+            download(path);
+         }
+         return;
+      }
+      const files = Module.FS.isDir(Module.FS.stat(path).mode) ? changedFiles(path, []) : [path];
+      if (tableFolder && path.startsWith('/tables/' + tableFolder.name + '/')) {
+         for (const file of files)
+            await writeBack(file);
+         return;
+      }
+      for (const file of files)
+         download(file);
+   },
    onRuntimeInitialized: async () => {
       await loadPrefs();
       if (args.length > 0) {
@@ -155,6 +178,7 @@ var Module = {
       }
       document.getElementById('pickFolder').disabled = false;
       document.getElementById('pickFiles').disabled = false;
+      document.getElementById('openEditor').disabled = false;
       const editSettings = document.getElementById('editSettings');
       editSettings.disabled = !Module.FS.analyzePath(settingsPath()).exists;
       if (editSettings.disabled)
@@ -334,23 +358,34 @@ function changedFiles(dir, out) {
    return out;
 }
 
+async function writeBack(path) {
+   const root = '/tables/' + tableFolder.name;
+   const parts = path.substring(root.length + 1).split('/');
+   let dir = tableFolder;
+   try {
+      for (const part of parts.slice(0, -1))
+         dir = await dir.getDirectoryHandle(part, { create: true });
+      const writable = await (await dir.getFileHandle(parts[parts.length - 1], { create: true })).createWritable();
+      await writable.write(Module.FS.readFile(path));
+      await writable.close();
+   } catch (e) {
+      console.error('Failed to save ' + path, e);
+   }
+}
+
 async function saveTableFolder() {
    if (!tableFolder)
       return;
-   const root = '/tables/' + tableFolder.name;
-   for (const path of changedFiles(root, [])) {
-      const parts = path.substring(root.length + 1).split('/');
-      let dir = tableFolder;
-      try {
-         for (const part of parts.slice(0, -1))
-            dir = await dir.getDirectoryHandle(part, { create: true });
-         const writable = await (await dir.getFileHandle(parts[parts.length - 1], { create: true })).createWritable();
-         await writable.write(Module.FS.readFile(path));
-         await writable.close();
-      } catch (e) {
-         console.error('Failed to save ' + path, e);
-      }
-   }
+   for (const path of changedFiles('/tables/' + tableFolder.name, []))
+      await writeBack(path);
+}
+
+function download(path) {
+   const a = document.createElement('a');
+   a.href = URL.createObjectURL(new Blob([Module.FS.readFile(path)]));
+   a.download = path.substring(path.lastIndexOf('/') + 1);
+   a.click();
+   setTimeout(() => URL.revokeObjectURL(a.href), 60000);
 }
 
 async function startPlayer(mainArgs) {
@@ -479,13 +514,17 @@ async function importFiles(entries) {
 }
 
 let started = false;
-function play(table) {
+function launch(mainArgs) {
    if (started)
       return;
    started = true;
    picker.classList.remove('shown');
    document.getElementById('canvas').focus();
-   startPlayer(['-play', table]);
+   startPlayer(mainArgs);
+}
+
+function play(table) {
+   launch(['-play', table]);
 }
 
 async function importTableFiles(files) {
@@ -553,6 +592,7 @@ document.getElementById('editSettings').onclick = () => openSettings();
 document.getElementById('editorSave').onclick = () => saveSettings();
 document.getElementById('editorClose').onclick = () => closeSettings();
 document.getElementById('pickFiles').onclick = () => document.getElementById('filesInput').click();
+document.getElementById('openEditor').onclick = () => launch(['-LiveEdit']);
 document.getElementById('folderInput').onchange = (e) => importFiles(Array.from(e.target.files).map(f => ({ path: f.webkitRelativePath, file: f })));
 document.getElementById('filesInput').onchange = (e) => importTableFiles(Array.from(e.target.files));
 

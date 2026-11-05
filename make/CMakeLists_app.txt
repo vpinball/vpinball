@@ -1011,7 +1011,7 @@ elseif(PLATFORM STREQUAL "wasm")
       -sDEFAULT_PTHREAD_STACK_SIZE=2MB
       -sPTHREAD_POOL_SIZE=32
       -lidbfs.js
-      -sEXPORTED_RUNTIME_METHODS=FS,IDBFS,callMain,UTF8ToString
+      -sEXPORTED_RUNTIME_METHODS=FS,IDBFS,callMain,UTF8ToString,stringToUTF8,lengthBytesUTF8
       -Wl,--allow-multiple-definition
       "--preload-file=${CMAKE_SOURCE_DIR}/src/assets@/assets"
       "--preload-file=${CMAKE_SOURCE_DIR}/src/scripts@/scripts"

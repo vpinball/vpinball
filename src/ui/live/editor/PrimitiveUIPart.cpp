@@ -3,6 +3,7 @@
 
 #include "core/extern.h"
 #include "core/player.h"
+#include "ui/live/FileDialog.h"
 #include "math/matrix.h"
 #include "utils/color.h"
 
@@ -413,7 +414,7 @@ void PrimitiveUIPart::ImportMesh()
       return;
    m_pendingMeshImport = std::make_shared<string>();
    const SDL_DialogFileFilter filters[] = { { "Wavefront obj file", "obj" } };
-   SDL_ShowOpenFileDialog(
+   ShowOpenFileDialog(
       [](void* userdata, const char* const* filelist, int filter)
       {
          auto* res = static_cast<std::shared_ptr<string>*>(userdata);
@@ -431,7 +432,7 @@ void PrimitiveUIPart::ExportMesh()
       return;
    m_pendingMeshExport = std::make_shared<string>();
    const SDL_DialogFileFilter filters[] = { { "Wavefront obj file", "obj" } };
-   SDL_ShowSaveFileDialog(
+   ShowSaveFileDialog(
       [](void* userdata, const char* const* filelist, int filter)
       {
          auto* res = static_cast<std::shared_ptr<string>*>(userdata);

@@ -14,6 +14,7 @@
 #include "physics/PhysicsEngine.h"
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/FileDialog.h"
 #include "ui/live/LiveUI.h"
 #include "utils/color.h"
 
@@ -1264,7 +1265,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
          m_pendingImageImport = std::make_shared<vector<string>>();
          const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_ImageDir())); // SDL expects UTF-8
-         SDL_ShowOpenFileDialog(
+         ShowOpenFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
                auto *res = static_cast<std::shared_ptr<vector<string>> *>(userdata);
@@ -1286,7 +1287,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
          m_pendingImageExport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_ImageDir())); // SDL expects UTF-8
-         SDL_ShowSaveFileDialog(
+         ShowSaveFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
                auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -1355,7 +1356,7 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
                m_pendingImageReimport = std::make_shared<string>();
                const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
                const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_ImageDir())); // SDL expects UTF-8
-               SDL_ShowOpenFileDialog(
+               ShowOpenFileDialog(
                   [](void *userdata, const char *const *filelist, int filter)
                   {
                      auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -1464,7 +1465,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
          m_pendingSoundImport = std::make_shared<vector<string>>();
          const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;opus;mp3;flac" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
-         SDL_ShowOpenFileDialog(
+         ShowOpenFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
                auto *res = static_cast<std::shared_ptr<vector<string>> *>(userdata);
@@ -1509,7 +1510,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
                m_pendingSoundReimport = std::make_shared<string>();
                const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;opus;mp3;flac" } };
                const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
-               SDL_ShowOpenFileDialog(
+               ShowOpenFileDialog(
                   [](void *userdata, const char *const *filelist, int filter)
                   {
                      auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -1530,7 +1531,7 @@ void PropertiesPanel::SoundActions(PropertyPane &props)
          m_pendingSoundExport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Sound Files", "wav;ogg;opus;mp3;flac" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_SoundDir())); // SDL expects UTF-8
-         SDL_ShowSaveFileDialog(
+         ShowSaveFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
                auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -1695,7 +1696,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
          m_pendingMaterialImport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Material Files", "mat" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_MaterialDir())); // SDL expects UTF-8
-         SDL_ShowOpenFileDialog(
+         ShowOpenFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
                auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -1716,7 +1717,7 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
          m_pendingMaterialExport = std::make_shared<string>();
          const SDL_DialogFileFilter filters[] = { { "Material Files", "mat" } };
          const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_MaterialDir())); // SDL expects UTF-8
-         SDL_ShowSaveFileDialog(
+         ShowSaveFileDialog(
             [](void *userdata, const char *const *filelist, int filter)
             {
                auto *res = static_cast<std::shared_ptr<string> *>(userdata);

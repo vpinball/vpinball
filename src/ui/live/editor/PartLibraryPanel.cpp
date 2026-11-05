@@ -11,6 +11,7 @@
 #include "parts/pintable.h"
 #include "physics/PhysicsEngine.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/FileDialog.h"
 #include "ui/live/editor/EditorUIPartRegistry.h"
 #include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"
@@ -93,7 +94,7 @@ void PartLibraryPanel::ExportSelection()
       = m_editor.m_table->m_filename.empty() ? PathFromString(m_editor.m_table->GetSettings().GetRecentDir_LoadDir()) : m_editor.m_table->m_filename.parent_path();
    const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
    const SDL_DialogFileFilter filters[] = { { "Visual Pinball Packs", "vpz" } };
-   SDL_ShowSaveFileDialog(
+   ShowSaveFileDialog(
       [](void *userdata, const char *const *filelist, int filter)
       {
          auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -207,7 +208,7 @@ void PartLibraryPanel::Render()
             const std::filesystem::path defaultLocation = PathFromString(m_editor.m_table->GetSettings().GetRecentDir_LoadDir());
             const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
             const SDL_DialogFileFilter filters[] = { { "Visual Pinball Packs", "vpz" } };
-            SDL_ShowOpenFileDialog(
+            ShowOpenFileDialog(
                [](void *userdata, const char *const *filelist, int filter)
                {
                   auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -228,7 +229,7 @@ void PartLibraryPanel::Render()
             m_pendingFolderPath = std::make_shared<string>();
             const std::filesystem::path defaultLocation = PathFromString(m_editor.m_table->GetSettings().GetRecentDir_LoadDir());
             const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
-            SDL_ShowOpenFolderDialog(
+            ShowOpenFolderDialog(
                [](void *userdata, const char *const *filelist, int filter)
                {
                   auto *res = static_cast<std::shared_ptr<string> *>(userdata);
