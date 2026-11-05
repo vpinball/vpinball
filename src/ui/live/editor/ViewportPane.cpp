@@ -87,8 +87,8 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    // NoBackground: the scene is drawn by this pane's view straight into the window backbuffer
    // (the UI is composited over it by the deferred LiveUI pass), so no window background may cover it
    ImGui::Begin(name, nullptr,
-      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
-         | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
+         | ImGuiWindowFlags_NoNavFocus);
    ImGui::PushID(leafId);
    editor.RenderAreaTypeButton(leafId);
    ImGui::SameLine();
@@ -131,7 +131,9 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    if (ImGui::IsItemHovered())
       ImGui::SetTooltip("Shading of this area");
    ImGui::SameLine();
-   ImGui::TextUnformatted("3D View");
+   ImGui::AlignTextToFramePadding();
+   ImGui::TextDisabled("3D View");
+   ImGui::Separator();
 
    // The view renders its scene into this pane's normalized area of the shared output
    const ImVec2 avail = ImGui::GetContentRegionAvail();

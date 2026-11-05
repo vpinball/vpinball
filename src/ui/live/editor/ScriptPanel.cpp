@@ -212,12 +212,13 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
    ImGui::Begin(name, nullptr,
-      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
-         | ImGuiWindowFlags_NoNavFocus);
+      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
    ImGui::PushID(leafId);
    m_editor.RenderAreaTypeButton(leafId);
    ImGui::SameLine();
-   ImGui::TextUnformatted("Script");
+   ImGui::AlignTextToFramePadding();
+   ImGui::TextDisabled("Table Script");
+   ImGui::Separator();
 
    if (m_focus)
    {

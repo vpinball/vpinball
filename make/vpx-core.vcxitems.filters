@@ -1673,6 +1673,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorChrome.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/EditorTheme.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/FlasherUIPart.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
@@ -1685,6 +1688,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/HitTargetUIPart.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/IconsLucide.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/KickerUIPart.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
@@ -1692,6 +1698,9 @@
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/LightSeqUIPart.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/LucideFont.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/LiveRenderContext.h">
