@@ -77,7 +77,7 @@ public:
    // Audio stream, rendered through the backglass engine (spatially positioned in VR), applying backglass global volume
    using AudioStreamID = std::shared_ptr<class AudioStreamPlayer>; // opaque pointer as objects are always owned by AudioPlayer without any public API
    AudioStreamID OpenAudioStream(const string& name, int frequency, int channels, bool isFloat);
-   // Sample rate of the device the audio streams are played on (0 if unknown): a stream at this rate is not resampled (Thread safe)
+   // Sample rate of the engine the audio streams are played on (0 if unknown): a stream at this rate is not resampled (Thread safe)
    unsigned int GetStreamOutputSampleRate() const;
    bool IsOpened(const AudioStreamID& stream) const;
    void EnqueueStream(const AudioStreamID& stream, uint8_t* buffer, int length) const;
@@ -132,6 +132,7 @@ private:
    void PlaySoundInternal(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart,
       bool hasPos, float posX, float posY, float posZ);
    void SetReferencePose(float x, float y, float z, float yaw, float pitch, float roll); // canonical listener pose used as the distance attenuation reference
+   void ReleaseFinishedStreams();
 
    float m_playfieldVolume = 1.f;
    float m_backglassVolume = 1.f;

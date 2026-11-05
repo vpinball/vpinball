@@ -443,13 +443,20 @@ void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
 
 unsigned int AudioPlayer::GetStreamOutputSampleRate() const
 {
-   // The streams' device is opened with this device's own format (see OpenAudioStream)
-   SDL_AudioSpec deviceSpec;
-   return SDL_GetAudioDeviceFormat(m_backglassAudioDevice, &deviceSpec, nullptr) && deviceSpec.freq > 0 ? static_cast<unsigned int>(deviceSpec.freq) : 0;
+   // Streams are played by the backglass engine (see OpenAudioStream), whose rate is fixed at creation
+   return m_backglassEngine ? ma_engine_get_sample_rate(m_backglassEngine.get()) : 0;
+}
+
+void AudioPlayer::ReleaseFinishedStreams()
+{
+   // Streams closed after their end of stream are kept until played out.
+   // Nothing updates the streams regularly, so this is done whenever a stream is opened or closed
+   std::erase_if(m_pendingDeleteAudioStreams, [](const AudioStreamID& player) { return player->IsFinished(); });
 }
 
 AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int frequency, int channels, bool isFloat)
 {
+   ReleaseFinishedStreams();
    std::unique_ptr<AudioStreamPlayer> audioStream
       = AudioStreamPlayer::Create(m_backglassEngine.get(), GetSpatialMixer(SoundOutTypes::SNDOUT_BACKGLASS), frequency, channels, isFloat);
    if (audioStream == nullptr)
@@ -477,6 +484,7 @@ void AudioPlayer::SetStreamVolume(const AudioStreamID& stream, const float volum
 
 void AudioPlayer::CloseAudioStream(const AudioStreamID& stream, bool afterEndOfStream)
 {
+   ReleaseFinishedStreams();
    auto item = std::ranges::find_if(m_audioStreams, [stream](const std::shared_ptr<AudioStreamPlayer>& player) { return player == stream; });
    if (item != m_audioStreams.end())
    {

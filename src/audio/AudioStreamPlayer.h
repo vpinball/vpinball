@@ -28,6 +28,7 @@ public:
 
    void Enqueue(const uint8_t* buffer, int length);
    void FlushStream(); // Mark the stream as ended: queued data still plays out, then the sound stops
+   bool IsFinished() const; // Whether a flushed stream has played out (a live stream never ends, underruns play silence)
    int GetQueuedSize() const;
    void SetName(string name) { m_name = std::move(name); }
    void SetStreamVolume(const float volume);
