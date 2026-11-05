@@ -296,6 +296,9 @@ void LiveUI::UpdatePlayfieldWindowFrame()
    VPX::Window* const wnd = m_player->m_playfieldWnd;
    if (wnd == nullptr || wnd->GetWindowMode() != VPX::Window::Windowed || m_player->IsVR() || g_isMobile)
       return;
+   #ifdef __EMSCRIPTEN__
+      return;
+   #endif
    const bool framed = m_editorUI.IsOpened() || m_player->m_ptable->m_liveBaseTable != nullptr;
    if (framed == m_playfieldWindowFramed)
       return;

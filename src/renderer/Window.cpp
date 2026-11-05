@@ -8,6 +8,9 @@
 #include "renderer/Renderer.h"
 
 #include <SDL3/SDL_video.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #ifdef _MSC_VER
 #include <dxgi1_2.h>
@@ -193,6 +196,10 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    else
    {
       uint32_t wnd_flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+      #ifdef __EMSCRIPTEN__
+         if (m_windowId == VPXWindowId::VPXWINDOW_Playfield && m_windowMode == WindowMode::Windowed)
+            wnd_flags |= SDL_WINDOW_RESIZABLE;
+      #endif
 
       #if defined(ENABLE_OPENGL)
          wnd_flags |= SDL_WINDOW_OPENGL; // Leads to read OpenGL context hint (swapchain backbuffer format, ...)
@@ -309,6 +316,13 @@ Window::~Window()
 {
    if (!m_isVR && !(g_isMobile && g_isIOS))
       SDL_RunOnMainThread([](void* userdata) { SDL_DestroyWindow(static_cast<SDL_Window*>(userdata)); }, m_nwnd, true);
+#ifdef __EMSCRIPTEN__
+   if (m_windowId == VPXWindowId::VPXWINDOW_Playfield)
+      MAIN_THREAD_EM_ASM({
+         Module.canvas.style.removeProperty('width');
+         Module.canvas.style.removeProperty('height');
+      });
+#endif
 }
 
 void Window::Show(const bool show)
