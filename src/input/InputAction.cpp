@@ -140,12 +140,17 @@ bool InputAction::IsSameMapping(const vector<ButtonMapping>& mappingA, const vec
       return false;
 
    for (const ButtonMapping& a : mappingA)
+   {
+      bool hasIt = false;
       for (const ButtonMapping& b : mappingB)
-         if (a.GetDeviceId() != b.GetDeviceId()
-            || a.GetAxisOrButtonId() != b.GetAxisOrButtonId()
-            || a.GetAxisThreshold() != b.GetAxisThreshold()
-            || a.IsAxisReversed() != b.IsAxisReversed())
-            return false;
+         if (a.GetDeviceId() == b.GetDeviceId() && a.GetAxisOrButtonId() == b.GetAxisOrButtonId() && a.GetAxisThreshold() == b.GetAxisThreshold() && a.IsAxisReversed() == b.IsAxisReversed())
+         {
+            hasIt = true;
+            break;
+         }
+      if (!hasIt)
+         return false;
+   }
 
    return true;
 }

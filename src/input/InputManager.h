@@ -63,6 +63,15 @@ public:
    unsigned int GetVRViewCenterActionId() const { return m_vrViewCenterActionId; }
    unsigned int GetVRViewUpActionId() const { return m_vrViewUpActionId; }
    unsigned int GetVRViewDownActionId() const { return m_vrViewDownActionId; }
+   unsigned int GetVRViewLeftActionId() const { return m_vrViewLeftActionId; }
+   unsigned int GetVRViewRightActionId() const { return m_vrViewRightActionId; }
+   unsigned int GetVRViewFrontActionId() const { return m_vrViewFrontActionId; }
+   unsigned int GetVRViewBackActionId() const { return m_vrViewBackActionId; }
+   unsigned int GetPauseActionId() const { return m_pauseActionId; }
+   unsigned int GetPerfOverlayActionId() const { return m_perfOverlayActionId; }
+   unsigned int GetRulesActionId() const { return m_rulesActionId; }
+   unsigned int GetMouseLeftActionId() const { return m_mouseLeftActionId; }
+   unsigned int GetMouseRightActionId() const { return m_mouseRightActionId; }
    bool IsUINavigationActionId(unsigned int id) const;
    bool IsPressed(int actionId) const;
    int GetWindowVirtualKeyForAction(unsigned int actionId) const;
@@ -83,6 +92,7 @@ public:
    class MappingSetupHandler
    {
    public:
+      virtual bool IsTestingMapping() const = 0;
       virtual void MapAction(const vector<ButtonMapping>& input, unsigned int action) = 0;
       virtual void MapPlunger(std::unique_ptr<PlungerSensor> sensor) = 0;
       virtual void MapNudge(std::unique_ptr<VPX::Physics::NudgeSensor> sensor) = 0;
@@ -92,6 +102,8 @@ public:
    void RegisterElementName(uint16_t deviceId, bool isAxis, uint16_t buttonOrAxisId, const string& name);
    void UnregisterDevice(uint16_t deviceId);
    void ClearDeviceMappings(uint16_t deviceId);
+   bool HasDeviceDefaultMapping(uint16_t deviceId) const;
+   void ApplyDefaultDeviceMapping(uint16_t deviceId);
    uint16_t GetDeviceId(const string& settingsId);
    const string& GetDeviceSettingId(uint16_t deviceId) const;
    const string& GetDeviceName(uint16_t deviceId) const;
@@ -234,7 +246,16 @@ private:
    unsigned int m_vrViewCenterActionId;
    unsigned int m_vrViewUpActionId;
    unsigned int m_vrViewDownActionId;
+   unsigned int m_vrViewLeftActionId;
+   unsigned int m_vrViewRightActionId;
+   unsigned int m_vrViewFrontActionId;
+   unsigned int m_vrViewBackActionId;
    unsigned int m_vrControllerViewCenteringActionId;
+   unsigned int m_pauseActionId;
+   unsigned int m_perfOverlayActionId;
+   unsigned int m_rulesActionId;
+   unsigned int m_mouseLeftActionId;
+   unsigned int m_mouseRightActionId;
    ankerl::unordered_dense::map<uint32_t, vector<ButtonMapping*>> m_buttonMappings;
    vector<InputAction*> m_onUpdateActions;
    const unsigned int m_onActionEventMsgId;
@@ -272,7 +293,6 @@ private:
    bool m_hasPendingLayoutApply = false;
    void LoadDevicesFromSettings();
    void SaveDevicesToSettings() const;
-   void ApplyDefaultDeviceMapping(uint16_t deviceId);
 
    int m_buttonCaptureState = 0;
    vector<ButtonMapping> m_buttonCapture;

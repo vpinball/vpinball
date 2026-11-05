@@ -20,11 +20,22 @@ InputDevicePage::InputDevicePage(uint16_t deviceId)
 void InputDevicePage::BuildPage()
 {
    const auto noAutoLayoutId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Device.{}.NoAutoLayout", m_deviceSettingId));
-   if (noAutoLayoutId.has_value())
-      AddItem(std::make_unique<InGameUIItem>( //
-         noAutoLayoutId.value(), //
-         [noAutoLayoutId]() { return g_settingsService.GetAppSettings().GetBool(noAutoLayoutId.value()); }, //
-         [noAutoLayoutId](bool v) { g_settingsService.GetAppSettings().Set(noAutoLayoutId.value(), v, false); }));
+   if (m_player->m_pininput.HasDeviceDefaultMapping(m_deviceId))
+   {
+      if (noAutoLayoutId.has_value())
+         AddItem(std::make_unique<InGameUIItem>( //
+            noAutoLayoutId.value(), //
+            [noAutoLayoutId]() { return g_settingsService.GetAppSettings().GetBool(noAutoLayoutId.value()); }, //
+            [noAutoLayoutId](bool v) { g_settingsService.GetAppSettings().Set(noAutoLayoutId.value(), v, false); }));
+
+      AddItem(std::make_unique<InGameUIItem>("Apply default layout"s, "Reset the input layout of this device to its default."s,
+         [this]()
+         {
+            m_player->m_pininput.ApplyDefaultDeviceMapping(m_deviceId);
+            m_player->m_liveUI->m_inGameUI.NavigateBack();
+            RequestRebuild();
+         }));
+   }
 
    AddItem(std::make_unique<InGameUIItem>("Erase this device"s, "Clean all mappings using this device."s,
       [this, noAutoLayoutId]()
