@@ -198,6 +198,8 @@ void PropertiesPanel::Render(float topBarHeight)
       case Selection::S_SOUND: SoundProperties(props, editor.m_selection.GetSound()); break;
       case Selection::S_COLLECTION: CollectionProperties(props, editor.m_selection.GetCollection()); break;
       }
+      if (editor.m_selection.GetType() != Selection::S_EDITABLE && props.GetModifiedField() > 0)
+         editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
    }
 
    RenderPopups();
