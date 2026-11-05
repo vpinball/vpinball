@@ -84,6 +84,7 @@ static constexpr float kBinauralGain = 2.f;
 // (positive = left), elevation in degrees (positive = up), distance in meters.
 static constexpr SpatialSpeakerPosition kSpkCabFrontL { 45.f, -40.f, 0.40f, true }; // Under the lockbar, left
 static constexpr SpatialSpeakerPosition kSpkCabFrontR { -45.f, -40.f, 0.40f, true }; // Under the lockbar, right
+static constexpr SpatialSpeakerPosition kSpkCabFrontC { 0.f, -40.f, 0.40f, true }; // Under the lockbar, center
 static constexpr SpatialSpeakerPosition kSpkMidL { 38.f, -22.f, 0.62f, true }; // Middle of the playfield, left
 static constexpr SpatialSpeakerPosition kSpkMidR { -38.f, -22.f, 0.62f, true }; // Middle of the playfield, right
 static constexpr SpatialSpeakerPosition kSpkCabBackL { 22.f, -12.f, 1.05f, true }; // Back of the cabinet, left
@@ -93,6 +94,7 @@ static constexpr SpatialSpeakerPosition kSpkInactive { 0.f, 0.f, 1.f, false };
 // Backglass speaker positions (in the backbox, behind the far end of the playfield)
 static constexpr SpatialSpeakerPosition kSpkBackglassL { 25.f, 15.f, 1.0f, true };
 static constexpr SpatialSpeakerPosition kSpkBackglassR { -25.f, 15.f, 1.0f, true };
+static constexpr SpatialSpeakerPosition kSpkBackglassC { 0.f, 15.f, 1.0f, true };
 
 // SDL audio channel layout:
 // 1 channel (mono) layout: FRONT
@@ -175,6 +177,9 @@ std::vector<SpatialSpeakerPosition> SpatialAudioMixer::GetPlayfieldSpeakerLayout
       place(map.fl, kSpkCabBackL);
       place(map.fr, kSpkCabBackR);
       break;
+   case 6: // SNDCFG_SND3DFRONTRIGHT: all playfield sounds on the front right channel
+      place(map.fr >= 0 ? map.fr : 0, kSpkCabFrontC);
+      break;
    default: // SNDCFG_SND3D6CH & SNDCFG_SND3DSSF: side & rear channels, front kept free for backglass audio
       place(map.bl, kSpkCabFrontL);
       place(map.br, kSpkCabFrontR);
@@ -185,13 +190,17 @@ std::vector<SpatialSpeakerPosition> SpatialAudioMixer::GetPlayfieldSpeakerLayout
    return layout;
 }
 
-std::vector<SpatialSpeakerPosition> SpatialAudioMixer::GetBackglassSpeakerLayout(unsigned int nChannels)
+std::vector<SpatialSpeakerPosition> SpatialAudioMixer::GetBackglassSpeakerLayout(int backglassConfigMode, unsigned int nChannels)
 {
    std::vector<SpatialSpeakerPosition> layout(nChannels < 8 ? nChannels : 8, kSpkInactive);
    if (nChannels == 0)
       return layout;
    const ChannelMap map = GetChannelMap(nChannels);
-   if (nChannels == 1)
+   if (backglassConfigMode == 1) // SNDCFG_BGFRONTLEFT: all backglass sounds on the front left channel
+   {
+      layout[map.fl >= 0 ? map.fl : 0] = kSpkBackglassC;
+   }
+   else if (nChannels == 1)
       layout[0] = kSpkBackglassL;
    else
    {

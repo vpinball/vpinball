@@ -19,7 +19,9 @@ PropStringDyn(Player, SoundDeviceBG, "Backglass Sound Device"s, "Select backglas
 PropStringDyn(Player, SoundDevice, "Playfield Sound Device"s, "Select playfield sound device"s, ""s);
 PropEnum(Player, Sound3D, "Playfield Output Mode"s, "Select how playfield sound is output to a speaker configuration"s, int /* VPX::SoundConfigTypes*/,
    0 /* VPX::SoundConfigTypes::SNDCFG_SND3D2CH */, "2 Front channels"s, "2 Rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s,
-   "6ch Side & Rear at lockbar. Legacy mixing"s, "6ch Side & Rear at lockbar. New mixing"s);
+   "6ch Side & Rear at lockbar. Legacy mixing"s, "6ch Side & Rear at lockbar. New mixing"s, "Front right channel only"s);
+PropEnum(Player, Sound3DBackglass, "Backglass Output Mode"s, "Select how backglass sound is output to a speaker configuration"s, int /* VPX::BackglassConfigTypes*/,
+   0 /* VPX::BackglassConfigTypes::SNDCFG_BG2CH */, "2 Front channels"s, "Front left channel only"s);
 
 // Output (windows) settings
 // Main window (a.k.a. playfield)

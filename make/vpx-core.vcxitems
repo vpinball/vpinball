@@ -836,6 +836,7 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/audio/AudioPlayer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/audio/MixNode.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/audio/SoundPlayer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/audio/SpatialAudio.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/stdafx.cpp">
@@ -1734,6 +1735,7 @@
     <ClInclude Include="../gen/vpinball.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/audio/MixNode.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/OpusDecoder.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SpatialAudio.h" />

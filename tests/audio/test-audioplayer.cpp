@@ -5,6 +5,7 @@
 
 #include "audio/AudioPlayer.h"
 #include "audio/AudioStreamPlayer.h"
+#include "audio/MixNode.h"
 #include "parts/Sound.h"
 
 #include "doctest.h"
@@ -122,8 +123,9 @@ TEST_CASE("Audio player")
 
    SUBCASE("player construction and stream lifecycle")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
       CHECK(player.GetSoundMode3D() == SNDCFG_SND3D2CH);
+      CHECK(player.GetBackglassMode() == SNDCFG_BG2CH);
       CHECK(player.GetBackglassDeviceName() != "Error"s);
       CHECK(player.GetPlayfieldDeviceName() != "Error"s);
 
@@ -141,9 +143,50 @@ TEST_CASE("Audio player")
       CHECK(!player.IsOpened(stream));
    }
 
+   SUBCASE("mono and stereo streams open in backglass front left mode")
+   {
+      // The mixing node declares the stream channel count: the sound must output the same
+      // number of channels for the node attachment to succeed (node attachments are strict)
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BGFRONTLEFT);
+      CHECK(player.GetBackglassMode() == SNDCFG_BGFRONTLEFT);
+
+      AudioPlayer::AudioStreamID monoStream = player.OpenAudioStream("mono-stream", 44100, 1, true);
+      CHECK(monoStream != nullptr);
+      player.CloseAudioStream(monoStream, false);
+
+      AudioPlayer::AudioStreamID stereoStream = player.OpenAudioStream("stereo-stream", 44100, 2, true);
+      CHECK(stereoStream != nullptr);
+      player.CloseAudioStream(stereoStream, false);
+   }
+
+   SUBCASE("streams outliving the audio player are safely detached")
+   {
+      // Plugin audio lanes keep streams alive through shared_ptr: recreating the audio player
+      // (e.g. after an output mode change) must not leave them bound to a dead engine
+      AudioPlayer::AudioStreamID stream;
+      {
+         AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+         stream = player.OpenAudioStream("kept-stream", 44100, 2, true);
+         REQUIRE(stream != nullptr);
+      } // player destroyed: the stream is detached from its engine
+      CHECK(stream->IsFinished());
+   }
+
+   SUBCASE("streams in front left mode outliving the audio player are safely detached")
+   {
+      // Same scenario through the mixing node path
+      AudioPlayer::AudioStreamID stream;
+      {
+         AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BGFRONTLEFT);
+         stream = player.OpenAudioStream("kept-stream", 44100, 1, true);
+         REQUIRE(stream != nullptr);
+      }
+      CHECK(stream->IsFinished());
+   }
+
    SUBCASE("closing an unknown stream keeps the opened streams")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
       AudioPlayer::AudioStreamID stream = player.OpenAudioStream("test-stream", 44100, 2, true);
       AudioPlayer::AudioStreamID unknown;
       player.CloseAudioStream(unknown, false); // logs an error, must not remove the valid stream
@@ -152,7 +195,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("sound information decoding")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
       VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.1f));
 
       const SoundSpec spec = player.GetSoundInformations(&sound);
@@ -163,7 +206,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("opus sound information decoding")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
       VPX::Sound sound("TestSound", "test.opus", opusSine);
       const SoundSpec spec = player.GetSoundInformations(&sound);
       CHECK(spec.nChannels == 2);
@@ -173,7 +216,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("play and stop an opus sound")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
       VPX::Sound sound("TestSound", "test.opus", opusSine);
       player.SetMainVolume(0.5f, 0.5f);
       player.PlaySound(&sound, 0.f, 0.f, 0, 0.f, 0.f, 1, false, true);
@@ -182,7 +225,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("play and stop a sound")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
       VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.5f));
 
       player.SetMainVolume(0.5f, 0.5f);
@@ -192,7 +235,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("music playback commands")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
 
       const std::filesystem::path musicFile = GetTestTmpDir() / "test-music.wav";
       write_file(musicFile, MakeSineWav(0.5f), true);
@@ -211,7 +254,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("opus music playback")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
 
       const std::filesystem::path musicFile = GetTestTmpDir() / "test-music.opus";
       write_file(musicFile, opusSine, true);
@@ -228,5 +271,126 @@ TEST_CASE("Audio player")
 
       std::error_code ec;
       std::filesystem::remove(musicFile, ec);
+   }
+}
+
+TEST_CASE("Channel mixing")
+{
+   // Direct validation of the legacy (non spatial) channel mixing applied by the vpx_node custom node
+   constexpr unsigned int nFrames = 4;
+   const float monoIn[nFrames] = { 0.25f, -0.5f, 0.75f, -1.f };
+   const float stereoIn[nFrames * 2] = { 0.4f, 0.2f, -0.6f, 0.8f, 1.f, -1.f, 0.f, 0.5f };
+
+   SUBCASE("backglass stereo to 2 front channels")
+   {
+      float out[nFrames * 2];
+      MixToDeviceChannels(SoundMixMode::Backglass, 0.5f, 0.f, 0.f, stereoIn, 2, out, 2, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(out[i * 2] == doctest::Approx(0.5f * stereoIn[i * 2]));
+         CHECK(out[i * 2 + 1] == doctest::Approx(0.5f * stereoIn[i * 2 + 1]));
+      }
+   }
+
+   SUBCASE("backglass stereo balanced pan")
+   {
+      // Pan attenuates the opposite channel but never boosts nor blends
+      float out[nFrames * 2];
+      MixToDeviceChannels(SoundMixMode::Backglass, 1.f, 0.5f, 0.f, stereoIn, 2, out, 2, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(out[i * 2] == doctest::Approx(0.5f * stereoIn[i * 2]));
+         CHECK(out[i * 2 + 1] == doctest::Approx(stereoIn[i * 2 + 1]));
+      }
+   }
+
+   SUBCASE("backglass front left only downmixes to a single channel")
+   {
+      float out[nFrames * 8];
+      MixToDeviceChannels(SoundMixMode::BackglassFrontLeft, 0.5f, 0.f, 0.f, stereoIn, 2, out, 8, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(out[i * 8] == doctest::Approx(0.5f * 0.5f * (stereoIn[i * 2] + stereoIn[i * 2 + 1])));
+         for (unsigned int ch = 1; ch < 8; ++ch)
+            CHECK(out[i * 8 + ch] == 0.f);
+      }
+   }
+
+   SUBCASE("backglass front left only on a stereo device keeps the right channel silent")
+   {
+      float out[nFrames * 2];
+      MixToDeviceChannels(SoundMixMode::BackglassFrontLeft, 1.f, 0.f, 0.f, stereoIn, 2, out, 2, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(out[i * 2] == doctest::Approx(0.5f * (stereoIn[i * 2] + stereoIn[i * 2 + 1])));
+         CHECK(out[i * 2 + 1] == 0.f);
+      }
+   }
+
+   SUBCASE("backglass front left only passes a mono source through")
+   {
+      // Mono input happens for plugin audio streams
+      float out[nFrames * 2];
+      MixToDeviceChannels(SoundMixMode::BackglassFrontLeft, 0.5f, 0.f, 0.f, monoIn, 1, out, 2, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(out[i * 2] == doctest::Approx(0.5f * monoIn[i]));
+         CHECK(out[i * 2 + 1] == 0.f);
+      }
+   }
+
+   SUBCASE("backglass stereo downmix to a mono device")
+   {
+      float out[nFrames];
+      MixToDeviceChannels(SoundMixMode::Backglass, 0.5f, 0.f, 0.f, stereoIn, 2, out, 1, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+         CHECK(out[i] == doctest::Approx(0.5f * 0.5f * (stereoIn[i * 2] + stereoIn[i * 2 + 1])));
+   }
+
+   SUBCASE("playfield stereo pan to 2 front channels")
+   {
+      float out[nFrames * 2];
+      MixToDeviceChannels(SoundMixMode::Playfield, 1.f, 0.f, 0.f, monoIn, 1, out, 2, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(out[i * 2] == doctest::Approx(0.5f * monoIn[i]));
+         CHECK(out[i * 2 + 1] == doctest::Approx(0.5f * monoIn[i]));
+      }
+   }
+
+   SUBCASE("playfield front right only on a stereo device")
+   {
+      float out[nFrames * 2];
+      MixToDeviceChannels(SoundMixMode::PlayfieldFrontRight, 1.f, 0.f, 0.f, monoIn, 1, out, 2, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(out[i * 2] == 0.f);
+         CHECK(out[i * 2 + 1] == doctest::Approx(monoIn[i]));
+      }
+   }
+
+   SUBCASE("playfield front right only on a multichannel device")
+   {
+      float out[nFrames * 8];
+      MixToDeviceChannels(SoundMixMode::PlayfieldFrontRight, 0.5f, 0.f, 0.f, monoIn, 1, out, 8, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+         for (unsigned int ch = 0; ch < 8; ++ch)
+            CHECK(out[i * 8 + ch] == doctest::Approx(ch == 1 ? 0.5f * monoIn[i] : 0.f));
+   }
+
+   SUBCASE("backglass on front left and playfield on front right share a stereo device")
+   {
+      // The combined setup the two output modes are designed for: a single stereo
+      // device with the backglass on its left channel and the playfield on its right one
+      float bgOut[nFrames * 2], pfOut[nFrames * 2];
+      MixToDeviceChannels(SoundMixMode::BackglassFrontLeft, 1.f, 0.f, 0.f, stereoIn, 2, bgOut, 2, nFrames);
+      MixToDeviceChannels(SoundMixMode::PlayfieldFrontRight, 1.f, 0.f, 0.f, monoIn, 1, pfOut, 2, nFrames);
+      for (unsigned int i = 0; i < nFrames; ++i)
+      {
+         CHECK(bgOut[i * 2] == doctest::Approx(0.5f * (stereoIn[i * 2] + stereoIn[i * 2 + 1])));
+         CHECK(bgOut[i * 2 + 1] == 0.f);
+         CHECK(pfOut[i * 2] == 0.f);
+         CHECK(pfOut[i * 2 + 1] == doctest::Approx(monoIn[i]));
+      }
    }
 }
