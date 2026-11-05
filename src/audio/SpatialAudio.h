@@ -16,8 +16,8 @@ namespace VPX
 //   all sources and mixers of a play session (atomics as it is updated from the
 //   render/VR thread and read from the audio thread).
 // - SpatialAudioMixer is a per audio engine node mixing all spatial sources in
-//   a second order B-format bus, then decoding to the device loudspeaker layout
-//   or binauralizing (headphones / VR).
+//   a second order B-format bus, then binauralizing them to the 2 first output
+//   channels (VR headset).
 // - SpatialAudioSource is a per sound encoder node, converting a mono or stereo
 //   source to B-format according to its position relative to the listener.
 //
@@ -40,24 +40,13 @@ private:
    std::atomic<float> m_roll { 0.f }; // positive = tilting head to the right
 };
 
-// Loudspeaker position for the decoder layout, in spherical coordinates
-// relative to the listener (degrees for angles, meters for the distance).
-struct SpatialSpeakerPosition
-{
-   float azimuth; // positive = left
-   float elevation; // positive = up
-   float distance;
-   bool active; // inactive channels are kept silent (e.g. front pair in 6CH/SSF mode, LFE)
-};
-
 class SpatialAudioMixer
 {
 public:
-   // Builds a mixer node attached to the engine endpoint. speakerLayout gives
-   // the polar position of each output channel of the audio device (in SDL
-   // channel order). May return a mixer even on failure, the node then simply
-   // stays silent.
-   SpatialAudioMixer(ma_engine* engine, const std::vector<SpatialSpeakerPosition>& speakerLayout);
+   // Builds a mixer node attached to the engine endpoint, binauralizing all its
+   // sources to the 2 first output channels. May return a mixer even on
+   // failure, the node then simply stays silent.
+   SpatialAudioMixer(ma_engine* engine);
    ~SpatialAudioMixer();
 
    // Node to attach SpatialAudioSource outputs to (B-format input bus).
@@ -67,17 +56,6 @@ public:
    // Canonical listener pose (the fixed fake pose the tables' loudness is
    // authored for), used as the reference for distance attenuation
    SpatialAudioListener* GetReferenceListener() { return &m_referenceListener; }
-
-   // Switch between loudspeaker decoding and binaural rendering (headphones, VR).
-   void SetBinauralEnabled(bool enabled);
-
-   // Loudspeaker layouts for the playfield output, according to the selected
-   // SNDCFG_* mode and the device channel count (SDL channel order).
-   static std::vector<SpatialSpeakerPosition> GetPlayfieldSpeakerLayout(int soundConfigMode, unsigned int nChannels);
-
-   // Loudspeaker layout for the backglass output (speakers located in the backbox),
-   // according to the selected SNDCFG_BG* mode and the device channel count (SDL channel order).
-   static std::vector<SpatialSpeakerPosition> GetBackglassSpeakerLayout(int backglassConfigMode, unsigned int nChannels);
 
    // Opaque implementation, defined in the .cpp (publicly visible for the node struct helpers)
    struct Impl;
@@ -98,15 +76,15 @@ public:
    // Returns a ma_node* (declared as void* to avoid including miniaudio.h here)
    void* GetNode() const { return m_node; }
 
-   // Source position in table units (playfield sounds).
+   // Source position in table units: the emitter point for mono sources, the
+   // center point around which the 2 channels are spread for stereo sources.
    void SetPosition(float x, float y, float z);
-   // Source position in listener relative spherical coordinates (backglass sounds), degrees and meters.
-   void SetPositionPolar(float azimuth, float elevation, float distance);
+   // Explicit emitter position of each channel in table units (stereo sources
+   // only, e.g. the 2 backglass speakers). Overrides SetPosition.
+   void SetChannelPositions(float xLeft, float yLeft, float zLeft, float xRight, float yRight, float zRight);
    void SetVolume(float volume);
    // Balance between left and right channels for stereo sources, -1..1 (legacy backglass pan).
    void SetChannelBalance(float balance);
-   // Distance at which no attenuation is applied (closer = louder, farther = quieter).
-   void SetReferenceDistance(float distance);
 
    // Opaque implementation, defined in the .cpp (publicly visible for the node struct helpers)
    struct Impl;

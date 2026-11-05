@@ -67,10 +67,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
             if (m_spatialSource->GetNode() == nullptr)
                m_spatialSource = nullptr;
             else
-            {
-               m_spatialSource->SetPositionPolar(0.f, 15.f, 1.f);
-               m_spatialSource->SetReferenceDistance(1.f);
-            }
+               m_audioPlayer->PositionBackglassSource(*m_spatialSource);
          }
          if (m_spatialSource == nullptr)
          {
@@ -165,10 +162,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
             if (m_spatialSource->GetNode() == nullptr)
                m_spatialSource = nullptr;
             else if (m_outputTarget == SNDOUT_BACKGLASS)
-            {
-               m_spatialSource->SetPositionPolar(0.f, 15.f, 1.f);
-               m_spatialSource->SetReferenceDistance(1.f);
-            }
+               m_audioPlayer->PositionBackglassSource(*m_spatialSource);
             else
                m_spatialSource->SetPosition(m_audioPlayer->GetTableWidth() * 0.5f, m_audioPlayer->GetTableHeight() * 0.5f, 0.f);
          }
