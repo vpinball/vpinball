@@ -634,8 +634,9 @@ public class IDLParserToCpp {
 		}
 
 		if (type != null) {
+			// hrConv gates the method call, see generateMethod()
 			if (!param.getType().equals("VARIANT")) {
-				buffer.append("VariantChangeType(&var" + index + ", ");
+				buffer.append("if (SUCCEEDED(hrConv)) hrConv = VariantChangeType(&var" + index + ", ");
 
 				if (param.hasDefaultValue() || param.isOptional()) {
 					buffer.append("(index > 0) ? &pDispParams->rgvarg[--index] : &var" + index);
@@ -647,7 +648,7 @@ public class IDLParserToCpp {
 				buffer.append(", 0, " + type + ");\n");
 			}
 			else {
-				buffer.append("VariantCopyInd(&var" + index + ", ");
+				buffer.append("if (SUCCEEDED(hrConv)) hrConv = VariantCopyInd(&var" + index + ", ");
 
 				if (param.hasDefaultValue() || param.isOptional()) {
 					buffer.append("(index > 0) ? &pDispParams->rgvarg[--index] : &var" + index);
@@ -660,7 +661,7 @@ public class IDLParserToCpp {
 			}
 		}
 		else {
-			buffer.append("VariantCopyInd(&var" + index + ", &pDispParams->rgvarg[--index]);\n");
+			buffer.append("if (SUCCEEDED(hrConv)) hrConv = VariantCopyInd(&var" + index + ", &pDispParams->rgvarg[--index]);\n");
 		}
 
 		return buffer.toString();
@@ -799,6 +800,8 @@ public class IDLParserToCpp {
 			else if (param.getParamType() == ParamType.OUT) {
 				if ("VARIANT*".equals(param.getType())) {
 					header.append("VARIANT* var" + index + " = &pDispParams->rgvarg[--index];\n");
+					// The method writes through the reference, so the script must pass a variable
+					header.append("if (SUCCEEDED(hrConv) && V_VT(var" + index + ") != (VT_BYREF | VT_VARIANT)) hrConv = DISP_E_TYPEMISMATCH;\n");
 					buffer.append("V_VARIANTREF(var" + index + ")");
 				}
 				else {
@@ -913,6 +916,12 @@ public class IDLParserToCpp {
 			buffer.append("}\n");
 		}
 
+		// Closes the else block inserted below
+		final boolean hasArgs = header.length() > 0;
+		if (hasArgs) {
+			buffer.append("}\n");
+		}
+
 		index = 0;
 
 		for (Param param : method.getParamList()) {
@@ -923,7 +932,12 @@ public class IDLParserToCpp {
 			index++;
 		}
 
-		buffer.insert(0, header.toString());
+		// A failed conversion leaves its VARIANT empty (e.g. V_BSTR() is then garbage), so skip the call and return
+		// the error to the script like DispInvoke does. index then designates the failed argument in rgvarg
+		if (hasArgs) {
+			buffer.insert(0, "HRESULT hrConv = S_OK;\n" + header.toString()
+					+ "if (FAILED(hrConv)) {\nhres = hrConv;\nif (puArgErr) *puArgErr = (UINT)index;\n}\nelse {\n");
+		}
 
 		if (method.getMinRequiredArgs() > 0) {
 			buffer.insert(0, "if (pDispParams->cArgs < " + method.getMinRequiredArgs() + ") {\nhres = DISP_E_BADPARAMCOUNT;\nbreak;\n}\n");
