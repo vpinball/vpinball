@@ -5,6 +5,8 @@
 
 #include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "editor/IconsLucide.h"
+#include "editor/LucideFont.h"
 #include "fonts/DroidSans.h"
 #include "fonts/DroidSansBold.h"
 #include "fonts/IconsForkAwesome.h"
@@ -62,6 +64,15 @@ LiveUI::LiveUI(RenderDevice *const rd)
    icons_config.GlyphMinAdvanceX = 13.0f * m_uiScale;
    static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
    io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_uiScale, &icons_config, icons_ranges);
+   // Lucide line icons for the live editor (24 px grid glyphs, drawn a bit larger than the text and centered on it)
+   ImFontConfig lucide_config;
+   lucide_config.MergeMode = true;
+   lucide_config.PixelSnapH = true;
+   lucide_config.FontDataOwnedByAtlas = false;
+   lucide_config.GlyphMinAdvanceX = 15.0f * m_uiScale;
+   lucide_config.GlyphOffset = ImVec2(0.f, 1.5f * m_uiScale);
+   static constexpr ImWchar lucide_ranges[] = { ICON_MIN_LC, ICON_MAX_LC, 0 };
+   io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char *>(lucide_subset_ttf), static_cast<int>(sizeof(lucide_subset_ttf)), 15.0f * m_uiScale, &lucide_config, lucide_ranges);
 
    const float overlaySize = 13.0f * m_uiScale;
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);

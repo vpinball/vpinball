@@ -201,12 +201,13 @@ void PartLibraryPanel::RenderPane(const AreaRect &rect, const int leafId)
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
    ImGui::Begin(name, nullptr,
-      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
-         | ImGuiWindowFlags_NoNavFocus);
+      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
    ImGui::PushID(leafId);
    m_editor.RenderAreaTypeButton(leafId);
    ImGui::SameLine();
-   ImGui::TextUnformatted("Part Library");
+   ImGui::AlignTextToFramePadding();
+   ImGui::TextDisabled("Part Library");
+   ImGui::Separator();
    {
       // Destination of the import, same as for newly added parts: the group of the current selection
       const PartGroup *const target = m_editor.GetPartGroupForNewPart();

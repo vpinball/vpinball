@@ -16,8 +16,10 @@
 #include <emscripten.h>
 #endif
 
+#include "editor/EditorTheme.h"
 #include "editor/EditorUIPart.h"
 #include "editor/EditorUIPartRegistry.h"
+#include "editor/IconsLucide.h"
 #include "editor/LiveRenderContext.h"
 #include "editor/ViewportPane.h"
 
@@ -2799,15 +2801,21 @@ void EditorUI::DeleteSelectedPoints()
 // ---------------------------------------------------------------------------------------------------------------------
 // Areas (Blender-style split tree, see editor/AreaLayout.h)
 
-namespace
-{
-   // Accent orange of the area chrome (split previews, highlighted splitters)
-   constexpr ImU32 kAreaAccent = IM_COL32(237, 145, 62, 255);
-   constexpr ImU32 kAreaText = IM_COL32(230, 230, 230, 255);
-   constexpr ImU32 kAreaTextDim = IM_COL32(160, 160, 160, 255);
-}
-
 const char *EditorUI::AreaTypeName(const AreaType type) { return type == AreaType::Viewport ? "3D View" : AreaTypeJsonName(type); }
+
+const char *EditorUI::AreaTypeIcon(const AreaType type)
+{
+   switch (type)
+   {
+   case AreaType::Outliner: return ICON_LC_LIST;
+   case AreaType::Properties: return ICON_LC_SLIDERS_HORIZONTAL;
+   case AreaType::Script: return ICON_LC_CODE_XML;
+   case AreaType::PartLibrary: return ICON_LC_BOX;
+   case AreaType::Viewport: return ICON_LC_MOVE_3D;
+   case AreaType::Count: break;
+   }
+   return "";
+}
 
 bool EditorUI::IsAreaTypeImplemented(const AreaType type)
 {
@@ -3201,13 +3209,13 @@ void EditorUI::DrawAreaSplitPreview(const AreaSplitPlan &plan) const
    {
       // The new area is tinted and named, the divider is where the split will be
       drawList->AddRectFilled(ImVec2(plan.newRect.x0, plan.newRect.y0), ImVec2(plan.newRect.x1, plan.newRect.y1), IM_COL32(237, 145, 62, 38));
-      centeredText(plan.newRect, AreaTypeName(plan.newType), kAreaText);
-      drawList->AddLine(a, b, kAreaAccent, 2.f);
+      centeredText(plan.newRect, AreaTypeName(plan.newType), EditorTheme::Text);
+      drawList->AddLine(a, b, EditorTheme::Accent, 2.f);
    }
    else
    {
       drawList->AddLine(a, b, IM_COL32(150, 150, 150, 220), 2.f);
-      centeredText(plan.leaf, plan.reason, kAreaText);
+      centeredText(plan.leaf, plan.reason, EditorTheme::Text);
       ImGui::SetMouseCursor(ImGuiMouseCursor_NotAllowed);
    }
 }
@@ -3229,7 +3237,7 @@ void EditorUI::DrawAreaJoinPreview(const int keepId, const int consumeId, const 
    }
    // The consumed area is darkened and an arrow points into it from the kept one, which gets an outline
    drawList->AddRectFilled(cmin, cmax, IM_COL32(0, 0, 0, 115));
-   drawList->AddRect(ImVec2(keep->rect.x0 + dpi, keep->rect.y0 + dpi), ImVec2(keep->rect.x1 - dpi, keep->rect.y1 - dpi), kAreaAccent, 0.f, 0, 2.f * dpi);
+   drawList->AddRect(ImVec2(keep->rect.x0 + dpi, keep->rect.y0 + dpi), ImVec2(keep->rect.x1 - dpi, keep->rect.y1 - dpi), EditorTheme::Accent, 0.f, 0, 2.f * dpi);
    const ImVec2 from(0.5f * (keep->rect.x0 + keep->rect.x1), 0.5f * (keep->rect.y0 + keep->rect.y1));
    const ImVec2 centre(0.5f * (cmin.x + cmax.x), 0.5f * (cmin.y + cmax.y));
    ImVec2 dir(centre.x - from.x, centre.y - from.y);
@@ -3244,8 +3252,8 @@ void EditorUI::DrawAreaJoinPreview(const int keepId, const int consumeId, const 
    const ImVec2 tail(centre.x - dir.x * 0.5f * length, centre.y - dir.y * 0.5f * length);
    const ImVec2 tip(centre.x + dir.x * 0.5f * length, centre.y + dir.y * 0.5f * length);
    const ImVec2 base(tip.x - dir.x * head, tip.y - dir.y * head);
-   drawList->AddLine(tail, base, kAreaAccent, max(3.f * dpi, 0.12f * length));
-   drawList->AddTriangleFilled(tip, ImVec2(base.x + perp.x * halfHead, base.y + perp.y * halfHead), ImVec2(base.x - perp.x * halfHead, base.y - perp.y * halfHead), kAreaAccent);
+   drawList->AddLine(tail, base, EditorTheme::Accent, max(3.f * dpi, 0.12f * length));
+   drawList->AddTriangleFilled(tip, ImVec2(base.x + perp.x * halfHead, base.y + perp.y * halfHead), ImVec2(base.x - perp.x * halfHead, base.y - perp.y * halfHead), EditorTheme::Accent);
 }
 
 void EditorUI::RenderAreas()
@@ -3304,21 +3312,41 @@ void EditorUI::RenderAreas()
 
 void EditorUI::RenderAreaTypeButton(const int leafId)
 {
-   // The area's own editor type button, drawn inside its window header (Blender's top left icon)
+   // The area's own editor type button, drawn inside its window header (Blender's top left icon and chevron)
    const AreaNode *const node = m_layout.Find(leafId);
    if (node == nullptr || node->isSplit)
       return;
+   const ImGuiStyle &style = ImGui::GetStyle();
+   const char *const icon = AreaTypeIcon(node->type);
+   const ImVec2 iconSize = ImGui::CalcTextSize(icon);
+   const float chevronWidth = ImGui::GetFontSize() * 0.4f; // Small, drawn in TextDim
+   const ImVec2 buttonSize(style.FramePadding.x * 2.f + iconSize.x + style.ItemInnerSpacing.x + chevronWidth, ImGui::GetFrameHeight());
    char popup[40];
    snprintf(popup, sizeof(popup), "##EditorType%d", leafId); // Keyed by the leaf id: several areas may share a type
-   char label[40];
-   snprintf(label, sizeof(label), "%s##EditorType", AreaTypeName(node->type));
-   if (ImGui::Button(label))
+
+   const bool clicked = ImGui::Button("##AreaTypeButton", buttonSize);
+   const ImVec2 itemMin = ImGui::GetItemRectMin();
+   const ImVec2 itemMax = ImGui::GetItemRectMax();
+   {
+      ImDrawList *const drawList = ImGui::GetWindowDrawList();
+      const float centerY = (itemMin.y + itemMax.y) * 0.5f;
+      drawList->AddText(ImVec2(itemMin.x + style.FramePadding.x, centerY - iconSize.y * 0.5f), EditorTheme::Text, icon);
+      const float half = chevronWidth * 0.5f;
+      const float centerX = itemMax.x - style.FramePadding.x - half;
+      drawList->AddTriangleFilled(ImVec2(centerX - half, centerY - half * 0.5f), ImVec2(centerX + half, centerY - half * 0.5f), ImVec2(centerX, centerY + half * 0.5f), EditorTheme::TextDim);
+   }
+   ImGui::SetItemTooltip("Editor type");
+   if (clicked)
       ImGui::OpenPopup(popup);
-   if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("Editor type");
+   ImGui::SetNextWindowPos(ImVec2(itemMin.x, itemMax.y), ImGuiCond_Always);
    if (ImGui::BeginPopup(popup))
    {
-      ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+      if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+      {
+         ImGui::CloseCurrentPopup();
+         m_areaEscPending = true;
+      }
+      ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextDim));
       ImGui::TextUnformatted("Editor Type");
       ImGui::PopStyleColor();
       ImGui::Separator();
@@ -3327,8 +3355,20 @@ void EditorUI::RenderAreaTypeButton(const int leafId)
          const AreaType type = static_cast<AreaType>(t);
          if (!IsAreaTypeImplemented(type))
             continue;
-         if (ImGui::MenuItem(AreaTypeName(type), nullptr, node->type == type))
+         const string label = string(AreaTypeIcon(type)) + "  " + AreaTypeName(type);
+         if (ImGui::Selectable(label.c_str(), type == node->type))
             SetAreaEditor(leafId, type);
+      }
+      if (m_layout.CanClose(leafId))
+      {
+         ImGui::Separator();
+         if (ImGui::Selectable(ICON_LC_X "  Close Area"))
+         {
+            PendingAreaOp op;
+            op.kind = PendingAreaOp::Kind::Close;
+            op.leaf = leafId;
+            QueueAreaOp(op);
+         }
       }
       ImGui::EndPopup();
    }
@@ -3357,6 +3397,14 @@ void EditorUI::RenderSplitters()
    const float dpi = m_liveUI.GetDPI();
    const bool interactive = CanUseAreaTools() && m_areaModal == AreaModalKind::None && !m_areaDrag.active;
    const bool raiseNow = ShouldRaiseAreaWindows();
+   // A seam line is drawn only between areas that are not the 3D view: the panes have no border of their own, while the
+   // render fills the viewport area
+   const auto &nodes = m_layout.Nodes();
+   const auto hasViewport = [&nodes](const auto &self, const int index) -> bool
+   {
+      const AreaNode &node = nodes[index];
+      return node.isSplit ? (self(self, node.child[0]) || self(self, node.child[1])) : node.type == AreaType::Viewport;
+   };
    for (const SplitterRect &s : m_splitterRects)
    {
       char name[40];
@@ -3377,7 +3425,11 @@ void EditorUI::RenderSplitters()
       ImDrawList *const dl = ImGui::GetWindowDrawList();
       const ImVec2 a = s.axis == SplitAxis::Vertical ? ImVec2(s.pos, s.bounds.y0) : ImVec2(s.bounds.x0, s.pos);
       const ImVec2 b = s.axis == SplitAxis::Vertical ? ImVec2(s.pos, s.bounds.y1) : ImVec2(s.bounds.x1, s.pos);
-      dl->AddLine(a, b, hovered ? kAreaAccent : ImGui::GetColorU32(ImGuiCol_Border), 1.f);
+      const AreaNode *const splitNode = m_layout.Find(s.nodeId);
+      if (splitNode != nullptr && !hasViewport(hasViewport, static_cast<int>(splitNode - nodes.data())))
+         dl->AddLine(a, b, EditorTheme::Border, 1.f);
+      if (hovered)
+         dl->AddLine(a, b, EditorTheme::Accent, 2.f);
       if (ImGui::IsItemActivated())
       {
          m_splitDragNode = s.nodeId;
@@ -3500,12 +3552,13 @@ void EditorUI::RenderAreaCorners()
          if (hot)
          {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
-            dl->AddTriangleFilled(origin, ImVec2(origin.x + sx * side, origin.y), ImVec2(origin.x, origin.y + sy * side), (kAreaAccent & ~IM_COL32_A_MASK) | (70u << IM_COL32_A_SHIFT));
+            dl->AddTriangleFilled(
+               origin, ImVec2(origin.x + sx * side, origin.y), ImVec2(origin.x, origin.y + sy * side), (EditorTheme::Accent & ~IM_COL32_A_MASK) | (70u << IM_COL32_A_SHIFT));
          }
          if (!m_areaDrag.active)
          {
             // Permanent hatch (two diagonal strokes), brighter while hovered
-            const ImU32 hatch = hot ? kAreaText : ((kAreaTextDim & ~IM_COL32_A_MASK) | (90u << IM_COL32_A_SHIFT));
+            const ImU32 hatch = hot ? EditorTheme::Text : ((EditorTheme::TextDim & ~IM_COL32_A_MASK) | (90u << IM_COL32_A_SHIFT));
             for (const float f : { 0.85f, 0.45f })
                dl->AddLine(ImVec2(origin.x + sx * side * f, origin.y), ImVec2(origin.x, origin.y + sy * side * f), hatch, hot ? 1.5f : 1.f);
          }

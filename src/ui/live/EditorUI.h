@@ -345,6 +345,7 @@ private:
    std::unique_ptr<EditorAreaView> CreateAreaView(AreaType type);
    std::unordered_map<int, std::unique_ptr<EditorAreaView>> m_areaViews;
    static const char *AreaTypeName(AreaType type);
+   static const char *AreaTypeIcon(AreaType type); // Lucide icon of the editor type switcher
    static bool IsAreaTypeImplemented(AreaType type); // Types a leaf may take through the editor type switcher
    // Layout changes (type switch, split, join, close, swap, maximize) are queued and applied by UpdateAreaLayout
    // at the start of the frame: panels must not vanish mid frame (ImGui ids, in-flight drags)

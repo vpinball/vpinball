@@ -317,6 +317,7 @@ set(VPX_SOURCES
    src/ui/live/editor/EditorAreaView.h
    src/ui/live/editor/EditorChrome.h
    src/ui/live/editor/EditorChrome.cpp
+   src/ui/live/editor/EditorTheme.h
    src/ui/live/editor/EditorUIPart.h
    src/ui/live/editor/EditorUIPart.cpp
    src/ui/live/editor/EditorUIPartRegistry.h
@@ -329,12 +330,14 @@ set(VPX_SOURCES
    src/ui/live/editor/GateUIPart.cpp
    src/ui/live/editor/HitTargetUIPart.h
    src/ui/live/editor/HitTargetUIPart.cpp
+   src/ui/live/editor/IconsLucide.h
    src/ui/live/editor/KickerUIPart.h
    src/ui/live/editor/KickerUIPart.cpp
    src/ui/live/editor/LightUIPart.h
    src/ui/live/editor/LightUIPart.cpp
    src/ui/live/editor/LightSeqUIPart.h
    src/ui/live/editor/LightSeqUIPart.cpp
+   src/ui/live/editor/LucideFont.h
    src/ui/live/editor/LiveRenderContext.h
    src/ui/live/editor/LiveRenderContext.cpp
    src/ui/live/editor/OutlinerPanel.h
