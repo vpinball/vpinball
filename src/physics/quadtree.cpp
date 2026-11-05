@@ -410,7 +410,9 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
                if (!dropped)
                   continue;
             }
+#ifndef __EMSCRIPTEN__
             shouldDispatch = true;
+#endif
          }
          child->CreateNextLevel(quadTree, childBounds, level + 1, level_empty);
       }
