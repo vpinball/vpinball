@@ -10,6 +10,11 @@
 #include "core/FileLocator.h"
 #include "core/VPApp.h"
 #include "core/vpversion.h"
+#include "ui/live/FileDialog.h"
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #include "editor/EditorUIPart.h"
 #include "editor/EditorUIPartRegistry.h"
@@ -266,7 +271,7 @@ void EditorUI::SaveTableAs()
          defaultLocation.replace_extension(".vpx");
    }
    const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
-   SDL_ShowSaveFileDialog(
+   ShowSaveFileDialog(
       [](void *userdata, const char *const *filelist, int filter)
       {
          auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -286,7 +291,7 @@ void EditorUI::SaveTableAsPackFolder()
    m_pendingSaveAsFolder = true;
    const std::filesystem::path defaultLocation = m_table->m_filename.empty() ? PathFromString(m_table->GetSettings().GetRecentDir_LoadDir()) : m_table->m_filename.parent_path();
    const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
-   SDL_ShowOpenFolderDialog(
+   ShowOpenFolderDialog(
       [](void *userdata, const char *const *filelist, int filter)
       {
          auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -343,7 +348,7 @@ void EditorUI::ShowLoadTableDialog(const bool folder)
    const string location = PathToUTF8(defaultLocation); // SDL expects UTF-8
    if (folder)
    {
-      SDL_ShowOpenFolderDialog(
+      ShowOpenFolderDialog(
          [](void *userdata, const char *const *filelist, int filter)
          {
             auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -356,7 +361,7 @@ void EditorUI::ShowLoadTableDialog(const bool folder)
       return;
    }
    const SDL_DialogFileFilter filters[] = { { "Visual Pinball Tables", "vpx;vpt;vpz" } };
-   SDL_ShowOpenFileDialog(
+   ShowOpenFileDialog(
       [](void *userdata, const char *const *filelist, int filter)
       {
          auto *res = static_cast<std::shared_ptr<string> *>(userdata);
@@ -496,6 +501,9 @@ void EditorUI::FinishFileOp()
          m_lastUndoId = 0;
          if (op->restoreOnFailure)
             g_settingsService.GetAppSettings().SetRecentDir_LoadDir(PathToString(m_table->m_filename.parent_path()), false);
+#ifdef __EMSCRIPTEN__
+         MAIN_THREAD_EM_ASM({ if (Module.onFileSaved) Module.onFileSaved(UTF8ToString($0)); }, op->displayPath.c_str());
+#endif
       }
       else if (op->restoreOnFailure)
       {

@@ -6,6 +6,7 @@
 #include "core/VPApp.h"
 #include "fonts/IconsForkAwesome.h"
 #include "ui/live/LiveUI.h"
+#include "ui/live/FileDialog.h"
 #include "ui/live/ingameui/SensorSetupPage.h"
 
 #include "imgui/imgui_internal.h"
@@ -1109,13 +1110,13 @@ void InGameUIPage::BrowseForPath(const InGameUIItem& item)
       // For file dialogs, the default location must be a folder
       const string location = PathToUTF8(PathFromString(item.GetStringValue()).parent_path()); // SDL expects UTF-8
       const SDL_DialogFileFilter filters[] = { { prop->m_label.c_str(), prop->m_fileFilter.c_str() } };
-      SDL_ShowOpenFileDialog(callback, result, m_player->m_playfieldWnd->GetCore(), prop->m_fileFilter.empty() ? nullptr : filters, prop->m_fileFilter.empty() ? 0 : 1,
+      ShowOpenFileDialog(callback, result, m_player->m_playfieldWnd->GetCore(), prop->m_fileFilter.empty() ? nullptr : filters, prop->m_fileFilter.empty() ? 0 : 1,
          location.empty() ? nullptr : location.c_str(), false);
    }
    else
    {
       const string location = PathToUTF8(PathFromString(item.GetStringValue())); // SDL expects UTF-8
-      SDL_ShowOpenFolderDialog(callback, result, m_player->m_playfieldWnd->GetCore(), location.empty() ? nullptr : location.c_str(), false);
+      ShowOpenFolderDialog(callback, result, m_player->m_playfieldWnd->GetCore(), location.empty() ? nullptr : location.c_str(), false);
    }
 }
 
