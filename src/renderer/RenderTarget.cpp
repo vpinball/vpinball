@@ -559,9 +559,16 @@ RenderTarget::~RenderTarget()
       if (bgfx::isValid(m_framebuffer_layers[i]))
          bgfx::destroy(m_framebuffer_layers[i]);
    if (bgfx::isValid(m_color_tex))
+   {
+      // The color sampler does not own the texture: keep its handle in sync for released render targets
+      m_color_sampler->Invalidate();
       bgfx::destroy(m_color_tex);
+   }
    if (!m_shared_depth && bgfx::isValid(m_depth_tex))
+   {
+      m_depth_sampler->Invalidate();
       bgfx::destroy(m_depth_tex);
+   }
 
    if (bgfx::isValid(m_msaaDepthResolveFramebuffer))
       bgfx::destroy(m_msaaDepthResolveFramebuffer);
