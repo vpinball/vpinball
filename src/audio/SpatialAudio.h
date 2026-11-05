@@ -76,8 +76,8 @@ public:
    // Returns a ma_node* (declared as void* to avoid including miniaudio.h here)
    void* GetNode() const { return m_node; }
 
-   // Source position in table units: the emitter point for mono sources, the
-   // center point around which the 2 channels are spread for stereo sources.
+   // Source position in table units: the emitter point for mono sources; for
+   // stereo sources both channels emit from that point.
    void SetPosition(float x, float y, float z);
    // Explicit emitter position of each channel in table units (stereo sources
    // only, e.g. the 2 backglass speakers). Overrides SetPosition.
