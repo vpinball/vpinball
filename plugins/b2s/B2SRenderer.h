@@ -96,6 +96,7 @@ private:
       float x = 0.f, y = 0.f;
       int width = 0, height = 0;
       float snippitX = -1.f, snippitY = -1.f;
+      float angle = 0.f; // Visual rotation the crop was composed at (roll or pivot angle)
       bool valid = false;
    };
    std::map<std::pair<const B2SBulb*, const B2SBulb*>, ProLightOverlay> m_proLightOverlays;

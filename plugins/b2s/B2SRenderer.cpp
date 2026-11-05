@@ -129,13 +129,18 @@ void B2SRenderer::RenderProDynamicLight(VPXRenderContext2D* ctx, const B2SBulb& 
          continue;
       const float sx = snippit.m_proRt.posValid ? snippit.m_proRt.posX - sw * 0.5f : static_cast<float>(snippit.m_locationX);
       const float sy = snippit.m_proRt.posValid ? snippit.m_proRt.posY - sh * 0.5f : static_cast<float>(snippit.m_locationY);
+      // The lit crop is of the snippit as currently shown (the reference's CreateCurrentSnippetFrame): a rolling
+      // ball turned by its roll angle about its centre, a pivoting or rotating image by its angle about its pivot
+      const bool nativeRotation = snippit.HasProPivot() || snippit.HasProRotation() || snippit.m_proRt.externalPivot;
+      const float angle = nativeRotation ? snippit.m_proRt.angle : (snippit.m_proRt.posValid ? snippit.m_proRt.rollAngle : 0.f);
+      const float pivotPx = sx + sw * (nativeRotation ? snippit.m_pro.pivotX : 0.5f), pivotPy = sy + sh * (nativeRotation ? snippit.m_pro.pivotY : 0.5f);
       const int ox = static_cast<int>(std::lround(std::max(lx, sx))), oy = static_cast<int>(std::lround(std::max(ly, sy)));
       const int ox2 = static_cast<int>(std::lround(std::min(lx + lw, sx + sw))), oy2 = static_cast<int>(std::lround(std::min(ly + lh, sy + sh)));
       const int ow = ox2 - ox, oh = oy2 - oy;
       if (ow <= 0 || oh <= 0)
          continue;
       ProLightOverlay& overlay = m_proLightOverlays[{ &light, &snippit }];
-      if (!overlay.valid || overlay.snippitX != sx || overlay.snippitY != sy || overlay.width != ow || overlay.height != oh)
+      if (!overlay.valid || overlay.snippitX != sx || overlay.snippitY != sy || overlay.width != ow || overlay.height != oh || overlay.angle != angle)
       {
          overlay.valid = false;
          const VPXTextureInfo* const art = GetTextureInfo(snippit.m_image);
@@ -147,18 +152,38 @@ void B2SRenderer::RenderProDynamicLight(VPXRenderContext2D* ctx, const B2SBulb& 
          // Crop of the snippit artwork (nearest sample of the artwork scaled into its rectangle) and of the
          // field (scaled from the light rectangle), both at the overlap, in backglass pixels
          vector<uint8_t> source(static_cast<size_t>(ow) * oh * 4), field(static_cast<size_t>(ow) * oh);
+         // Rotation as DrawImage applies it (a positive angle turns clockwise on screen): a crop pixel maps back to
+         // the unrotated artwork by the inverse turn about the pivot, and lands transparent outside it
+         const float rad = angle * static_cast<float>(M_PI / 180.0), cosA = std::cos(rad), sinA = std::sin(rad);
          for (int y = 0; y < oh; y++)
             for (int x = 0; x < ow; x++)
             {
-               const float cx = static_cast<float>(ox + x) + 0.5f, cy = static_cast<float>(oy + y) + 0.5f;
+               float cx = static_cast<float>(ox + x) + 0.5f, cy = static_cast<float>(oy + y) + 0.5f;
+               uint8_t* const d = source.data() + (static_cast<size_t>(y) * ow + x) * 4;
+               if (angle != 0.f)
+               {
+                  const float dx = cx - pivotPx, dy = cy - pivotPy;
+                  const float ux = dx * cosA + dy * sinA, uy = -dx * sinA + dy * cosA;
+                  cx = pivotPx + ux;
+                  cy = pivotPy + uy;
+                  if (cx < sx || cy < sy || cx >= sx + sw || cy >= sy + sh)
+                  {
+                     d[0] = d[1] = d[2] = d[3] = 0;
+                     const int fx0 = std::clamp(static_cast<int>((static_cast<float>(ox + x) + 0.5f - lx) / lw * static_cast<float>(fieldInfo->width)), 0, static_cast<int>(fieldInfo->width) - 1);
+                     const int fy0 = std::clamp(static_cast<int>((static_cast<float>(oy + y) + 0.5f - ly) / lh * static_cast<float>(fieldInfo->height)), 0, static_cast<int>(fieldInfo->height) - 1);
+                     field[static_cast<size_t>(y) * ow + x] = fieldBpp == 4 ? fieldPixels[(static_cast<size_t>(fy0) * fieldInfo->width + fx0) * 4 + 3] : 255;
+                     continue;
+                  }
+               }
                const int ax = std::clamp(static_cast<int>((cx - sx) / sw * static_cast<float>(art->width)), 0, static_cast<int>(art->width) - 1);
                const int ay = std::clamp(static_cast<int>((cy - sy) / sh * static_cast<float>(art->height)), 0, static_cast<int>(art->height) - 1);
                const uint8_t* const p = artPixels + (static_cast<size_t>(ay) * art->width + ax) * artBpp;
-               uint8_t* const d = source.data() + (static_cast<size_t>(y) * ow + x) * 4;
                d[0] = p[0];
                d[1] = p[1];
                d[2] = p[2];
                d[3] = artBpp == 4 ? p[3] : 255;
+               cx = static_cast<float>(ox + x) + 0.5f; // The field is sampled at the crop pixel itself
+               cy = static_cast<float>(oy + y) + 0.5f;
                const int fx = std::clamp(static_cast<int>((cx - lx) / lw * static_cast<float>(fieldInfo->width)), 0, static_cast<int>(fieldInfo->width) - 1);
                const int fy = std::clamp(static_cast<int>((cy - ly) / lh * static_cast<float>(fieldInfo->height)), 0, static_cast<int>(fieldInfo->height) - 1);
                field[static_cast<size_t>(y) * ow + x] = fieldBpp == 4 ? fieldPixels[(static_cast<size_t>(fy) * fieldInfo->width + fx) * 4 + 3] : 255;
@@ -184,6 +209,7 @@ void B2SRenderer::RenderProDynamicLight(VPXRenderContext2D* ctx, const B2SBulb& 
          overlay.height = oh;
          overlay.snippitX = sx;
          overlay.snippitY = sy;
+         overlay.angle = angle;
          overlay.valid = overlay.texture != nullptr;
       }
       if (overlay.valid)
