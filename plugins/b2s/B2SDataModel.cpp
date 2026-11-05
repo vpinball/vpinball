@@ -637,7 +637,8 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
            ? GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, 0)
            : (GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0) != 0 ? (360 / GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 1)) : 0))
    , m_snippitRotatingInterval(GetIntAttribute(root, ""s, "SnippitRotatingInterval"s, 0))
-   , m_snippitRotatingDirection(static_cast<B2SSnippitRotationDirection>(GetIntAttribute(root, ""s, "eSnippitRotationDirection"s, 0)))
+   // The designer writes SnippitRotatingDirection (0 clockwise, 1 anti clockwise); the old name is kept as a fallback
+   , m_snippitRotatingDirection(static_cast<B2SSnippitRotationDirection>(GetIntAttribute(root, ""s, "SnippitRotatingDirection"s, GetIntAttribute(root, ""s, "eSnippitRotationDirection"s, 0))))
    , m_snippitRotatingStopBehaviour(static_cast<B2SSnippitRotationStopBehaviour>(GetIntAttribute(root, ""s, "SnippitRotatingStopBehaviour"s, 0)))
    // B2S Pro keeps the full resolution artwork of plain image snippits in RuntimeSnippitImage and draws it in
    // place of the (cropped) Image: same rectangle, more pixels
