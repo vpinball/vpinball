@@ -46,6 +46,9 @@ public:
    Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, bgfx::TextureFormat::Enum bgfxFormat, unsigned int width, unsigned int height, bool ownTexture);
    bgfx::TextureHandle GetCoreTexture(bool withMipmaps);
    void ReleaseCoreTexture();
+   // The wrapped texture was destroyed by its owner (e.g. a released render target): keep the handle in sync so
+   // binding the sampler falls back to the null texture instead of a stale handle
+   void Invalidate() { m_nomipsTexture = m_mipsTexture = BGFX_INVALID_HANDLE; }
    bool IsUploadPending() const { return (m_textureUpdate != nullptr) || m_pendingMipMapGen || m_compressedUploadPending; }
    class RenderTarget* m_msaaDepthResolve = nullptr;
 
