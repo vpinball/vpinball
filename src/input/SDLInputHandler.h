@@ -284,27 +284,15 @@ private:
       } identified;
       const int nAxis = SDL_GetNumJoystickAxes(joystick);
       string joyName; // Sadly, we do not have a way to easily give a user friendly name when there are multiple devices of the same class, so we use serial number
-      constexpr SDL_GUID arcade2TVGUIDs[] = { 
-         { { 0x03, 0x00, 0xfa, 0x66, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Dongle Arcade mode P1 (green) & Pinball mode (purple)
-         { { 0x03, 0x00, 0xba, 0x67, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Dongle Arcade mode P2 (green)
-         { { 0x03, 0x00, 0xfa, 0x67, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x40, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Wired Arcade mode P1 (green) & Pinball mode (purple)
-         { { 0x03, 0x00, 0xba, 0x66, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x40, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Wired Arcade mode P2 (green) & Pinball mode (purple)
-      };
       if (sdlJoyName.starts_with("mjrnet Pinscape Controller"s) && nAxis >= 6)
       { // Pinscape & Pinscape Pico
          identified = PINSCAPE;
          joyName = std::format("{} #{}", sdlJoyName, nameIndex);
       }
-      else if ((SDL_memcmp(&guid, &arcade2TVGUIDs[0], sizeof(guid)) == 0) || (SDL_memcmp(&guid, &arcade2TVGUIDs[2], sizeof(guid)) == 0))
-      { // Arcade2TV-XR Pinball mode (purple) reported as vid: 0x045e, pid: 0x028e, that is to say 'Xbox 360 Controller (wired, standard)'
-         // Sadly, Arcade mode's left stick (green) is reported with the same USB VID/PID. We just assume that the player will use the Pinball mode for pinball play
+      else if (sdlJoyName.starts_with("Arcade VPX Wired Ctrl-KMD"s) && nAxis >= 6)
+      { // Arcade2TV-XR
          identified = ARCADE2TV_XR_PINBALL;
          joyName = std::format("Arcade2TV-XR #{}", idIndex);
-      }
-      else if ((SDL_memcmp(&guid, &arcade2TVGUIDs[1], sizeof(guid)) == 0) || (SDL_memcmp(&guid, &arcade2TVGUIDs[3], sizeof(guid)) == 0))
-      { // Arcade2TV-XR right stick in Arcade mode (green) but also reported (but inactive) in wired Pinball mode (purple). Just skip proposing a gamepad layout for it
-         identified = SKIP;
-         joyName = std::format("Arcade2TV-XR Right #{}", idIndex);
       }
       else
       {
@@ -391,64 +379,102 @@ private:
          break;
 
       case ARCADE2TV_XR_PINBALL:
-         // Pinball or arcade mode => propose the default Pinball layout
-         // The mapping is quite a mess with mapping overlays. Try to make it somewhat readable (buttons are labeled in this order: 1,2,3 / 4,5,6 / 7,8
+         // Propose a default Pinball layout corresponding to newer firmware (post 2023-06-01) of Arcade2TV-XR Pinball controller (see https://arcade2tv.com/arcade2tv-xr-pinball/)
          m_pininput.RegisterElementName(deviceId, true, 0x0200, "Left Stick X / Nudge X");
          m_pininput.RegisterElementName(deviceId, true, 0x0201, "Left Stick Y / Nudge Y");
-         m_pininput.RegisterElementName(deviceId, true, 0x0202, "Left But. 7 / Left But. 8");
          m_pininput.RegisterElementName(deviceId, true, 0x0203, "Right Stick X");
-         m_pininput.RegisterElementName(deviceId, true, 0x0204, "Right Stick Y / Plunger");
-         m_pininput.RegisterElementName(deviceId, true, 0x0205, "No idea...");
+         m_pininput.RegisterElementName(deviceId, true, 0x0204, "Right Stick Y");
+         m_pininput.RegisterElementName(deviceId, true, 0x0205, "Plunger");
+         m_pininput.RegisterElementName(deviceId, false, 0x0007, "Player 1");
+         m_pininput.RegisterElementName(deviceId, false, 0x0011, "Player 2");
          m_pininput.RegisterElementName(deviceId, false, 0x0002, "Left But. 1");
          m_pininput.RegisterElementName(deviceId, false, 0x0003, "Left But. 2");
-         m_pininput.RegisterElementName(deviceId, false, 0x0004, "Left Flipper / Left But. 3");
-         m_pininput.RegisterElementName(deviceId, false, 0x0000, "Left & Right But. 4");
+         m_pininput.RegisterElementName(deviceId, false, 0x0005, "Left But. 3");
+         m_pininput.RegisterElementName(deviceId, false, 0x0000, "Left But. 4");
          m_pininput.RegisterElementName(deviceId, false, 0x0001, "Left But. 5");
-         m_pininput.RegisterElementName(deviceId, false, 0x0005, "Right Flipper / Left But. 6");
-         m_pininput.RegisterElementName(deviceId, false, 0x0006, "Right But. 1");
-         m_pininput.RegisterElementName(deviceId, false, 0x0102, "Right But. 2"); // Hat Up
-         m_pininput.RegisterElementName(deviceId, false, 0x0008, "Right But. 3");
-         m_pininput.RegisterElementName(deviceId, false, 0x0103, "Right But. 5"); // Hat Down
-         m_pininput.RegisterElementName(deviceId, false, 0x0009, "Right But. 6");
-         m_pininput.RegisterElementName(deviceId, false, 0x0100, "Right But. 7"); // Hat Left
-         m_pininput.RegisterElementName(deviceId, false, 0x0101, "Right But. 8"); // Hat Right
+         m_pininput.RegisterElementName(deviceId, false, 0x0008, "Left But. 6");
+         m_pininput.RegisterElementName(deviceId, false, 0x0004, "Left But. 7");
+         m_pininput.RegisterElementName(deviceId, false, 0x0009, "Left But. 8");
+         m_pininput.RegisterElementName(deviceId, false, 0x0006, "Left Flipper");
+         m_pininput.RegisterElementName(deviceId, false, 0x000C, "Right But. 1");
+         m_pininput.RegisterElementName(deviceId, false, 0x000D, "Right But. 2");
+         m_pininput.RegisterElementName(deviceId, false, 0x000F, "Right But. 3");
+         m_pininput.RegisterElementName(deviceId, false, 0x000A, "Right But. 4");
+         m_pininput.RegisterElementName(deviceId, false, 0x000B, "Right But. 5");
+         m_pininput.RegisterElementName(deviceId, false, 0x0012, "Right But. 6");
+         m_pininput.RegisterElementName(deviceId, false, 0x000E, "Right But. 7");
+         m_pininput.RegisterElementName(deviceId, false, 0x0013, "Right But. 8");
+         m_pininput.RegisterElementName(deviceId, false, 0x0010, "Right Flipper");
          m_pininput.SetDeviceDefaultMapping(deviceId,
             [this, deviceId](InputManager::MappingSetupHandler& map)
             {
                bool success = true;
-               map.MapAction(ButtonMapping::Create(deviceId, 4), m_pininput.GetLeftFlipperActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 4), m_pininput.GetStagedLeftFlipperActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 5), m_pininput.GetRightFlipperActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 5), m_pininput.GetStagedRightFlipperActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 2), m_pininput.GetLeftMagnaActionId()); // Left Top row (can't use right most button due to overlay...)
-               map.MapAction(ButtonMapping::Create(deviceId, 3), m_pininput.GetAddCreditActionId(0));
-               map.MapAction(ButtonMapping::Create(deviceId, 1), m_pininput.GetVRViewUpActionId()); // Left Middle row (can't use left most & right most buttons due to overlays...)
-               map.MapAction(ButtonMapping::Create(deviceId, 0x202, -0.9f, true), m_pininput.GetVRViewCenterActionId()); // Left Bottom row
-               map.MapAction(ButtonMapping::Create(deviceId, 0x202, 0.9f), m_pininput.GetVRViewDownActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 10), m_pininput.GetStartActionId()); // 1 player button
-               map.MapAction(ButtonMapping::Create(deviceId, 7), m_pininput.GetExitGameActionId()); // 2 player button
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0102), m_pininput.GetVolumeUpActionId()); // Right Top row
-               map.MapAction(ButtonMapping::Create(deviceId, 8), m_pininput.GetRightMagnaActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0103), m_pininput.GetVolumeDownActionId()); // Right Middle row
-               map.MapAction(ButtonMapping::Create(deviceId, 9), m_pininput.GetLaunchBallActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0101), m_pininput.GetOpenInGameUIActionId()); // Right Bottom row
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0201, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0201, 0.9f), m_pininput.GetUIUpActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0203, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0006), m_pininput.GetLeftFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0006), m_pininput.GetStagedLeftFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0010), m_pininput.GetRightFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0010), m_pininput.GetStagedRightFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0007), m_pininput.GetStartActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0007), m_pininput.GetResetActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0011), m_pininput.GetAddCreditActionId(0));
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0011), m_pininput.GetAddCreditActionId(1));
+               // Left buttons
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0002), m_pininput.GetPauseActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0003), m_pininput.GetVolumeUpActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0005), m_pininput.GetExtraBallActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0005), m_pininput.GetPerfOverlayActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0001), m_pininput.GetVolumeDownActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0008), m_pininput.GetOpenInGameUIActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0005), m_pininput.GetRulesActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0004), m_pininput.GetLeftMagnaActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0009), m_pininput.GetMouseLeftActionId());
+               // Right Stick => UI & VR View (alt)
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0204, -0.9f, true), m_pininput.GetUIUpActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0204, 0.9f), m_pininput.GetUIDownActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0203, -0.9f, true), m_pininput.GetUILeftActionId());
                map.MapAction(ButtonMapping::Create(deviceId, 0x0203, 0.9f), m_pininput.GetUIRightActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0204, -0.9f, true), m_pininput.GetVRViewFrontActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0204, 0.9f), m_pininput.GetVRViewBackActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0203, -0.9f, true), m_pininput.GetVRViewLeftActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0203, 0.9f), m_pininput.GetVRViewRightActionId());
+               // Right buttons
+               map.MapAction(ButtonMapping::Create(deviceId, 0x000C), m_pininput.GetVRViewCenterActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x000C), m_pininput.GetCoinDoorActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x000D), m_pininput.GetVRViewUpActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x000D), m_pininput.GetServiceActionId(2)); // Up
+               map.MapAction(ButtonMapping::Create(deviceId, 0x000F), m_pininput.GetRightMagnaActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x000F), m_pininput.GetServiceActionId(3)); // Ok
+               map.MapAction(ButtonMapping::Create(deviceId, 0x000A), m_pininput.GetExitGameActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x000B), m_pininput.GetVRViewDownActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x000B), m_pininput.GetServiceActionId(1)); // Down
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0012), m_pininput.GetLaunchBallActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0012), m_pininput.GetServiceActionId(0)); // Cancel
+               map.MapAction(ButtonMapping::Create(deviceId, 0x000E), m_pininput.GetMouseRightActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0013), m_pininput.GetTiltActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0013), m_pininput.GetSlamTiltActionId());
                std::unique_ptr<PlungerSensor> plunger = std::make_unique<PlungerSensor>(&m_pininput);
-               plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, 0x0204, SensorMapping::Type::Position));
+               plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, 0x0205, SensorMapping::Type::Position));
                map.MapPlunger(std::move(plunger));
                std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_pininput);
                nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration));
-               nudge->GetXSensor().GetMapping().SetScale(0.2f);
+               nudge->GetXSensor().GetMapping().SetScale(1.0f);
                nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
-               nudge->GetYSensor().GetMapping().SetScale(0.2f);
+               nudge->GetYSensor().GetMapping().SetScale(1.0f);
                map.MapNudge(std::move(nudge));
-               // The automatic setup also needs for controller view alignment
-               // - ControllerCabYOffset = -22.5
-               // - ControllerLockbarScale = 1.66
-               // and nudge needs the filter to be enabled (8 bit accelerometer without automatic calibration)
+               if (!map.IsTestingMapping())
+               {
+                  Settings& appSettings = g_settingsService.GetAppSettings();
+                  appSettings.SetPlayerVR_ControllerCabYOffset(-22.5f, false);
+                  appSettings.SetPlayerVR_ControllerLockbarScale(1.66f, false);
+                  if (g_pplayer && g_pplayer->m_vrDevice)
+                  {
+                     g_pplayer->m_vrDevice->SetControllerCabYOffset(-22.5f);
+                     g_pplayer->m_vrDevice->SetControllerLockbarScale(1.66f);
+                  }
+                  if (g_pplayer && g_pplayer->m_liveUI)
+                  {
+                     g_pplayer->m_liveUI->PushNotification("View centering with VR controllers was adjusted to Arcade2TV-XR dimensions.", 5000);
+                  }
+               }
             });
          break;
 
