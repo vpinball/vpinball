@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "EditorUIPart.h"
+#include "parts/EditorUIPart.h"
 #include "renderer/Renderer.h"
 
 class Player;

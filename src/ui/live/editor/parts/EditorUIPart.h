@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PropertyPane.h"
+#include "../PropertyPane.h"
 #include "core/ieditable.h"
 #include "math/dragpoint.h"
 #include "math/matrix.h"

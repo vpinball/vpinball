@@ -17,8 +17,8 @@
 #endif
 
 #include "editor/EditorTheme.h"
-#include "editor/EditorUIPart.h"
-#include "editor/EditorUIPartRegistry.h"
+#include "editor/parts/EditorUIPart.h"
+#include "editor/parts/EditorUIPartRegistry.h"
 #include "editor/IconsLucide.h"
 #include "editor/LiveRenderContext.h"
 #include "editor/ViewportPane.h"

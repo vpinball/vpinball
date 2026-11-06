@@ -9,7 +9,7 @@
 #include "imgui_markdown/imgui_markdown.h"
 #include "editor/AreaLayout.h"
 #include "editor/EditorAreaView.h"
-#include "editor/EditorUIPart.h"
+#include "editor/parts/EditorUIPart.h"
 #include "editor/Selection.h"
 #include "editor/EditorChrome.h"
 #include "editor/OutlinerPanel.h"
