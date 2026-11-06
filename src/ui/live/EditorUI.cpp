@@ -2358,7 +2358,6 @@ void EditorUI::DrawAreaJoinPreview(const int keepId, const int consumeId, const 
    const ImVec2 tip(centre.x + dir.x * 0.5f * length, centre.y + dir.y * 0.5f * length);
    const ImVec2 base(tip.x - dir.x * head, tip.y - dir.y * head);
    drawList->AddLine(tail, base, EditorTheme::Accent, max(3.f * dpi, 0.12f * length));
-   drawList->AddTriangleFilled(tip, ImVec2(base.x + perp.x * halfHead, base.y + perp.y * halfHead), ImVec2(base.x - perp.x * halfHead, base.y - perp.y * halfHead), EditorTheme::Accent);
 }
 
 void EditorUI::RenderAreas()
@@ -2402,7 +2401,16 @@ void EditorUI::RenderAreas()
                vp->LoadSetup(node->data);
       }
       if (it->second != nullptr)
-         it->second->RenderPane(leaf.rect, leaf.id);
+      {
+         // Blender look: a thin black gap between the panes
+         AreaRect paneRect = leaf.rect;
+         const float gap = 2.f * m_liveUI.GetDPI();
+         paneRect.x0 += gap;
+         paneRect.y0 += gap;
+         paneRect.x1 -= gap;
+         paneRect.y1 -= gap;
+         it->second->RenderPane(paneRect, leaf.id);
+      }
    }
    // Route the interactions to the viewport pane under the mouse; an ongoing drag keeps its pane
    if (m_hoverVp != nullptr && m_hoverVp->m_active)
@@ -2584,14 +2592,21 @@ void EditorUI::RenderAreaCorners()
    {
       if (!leaf.visible)
          continue;
-      const float fullSide = min(14.f * dpi, 0.4f * min(leaf.rect.Width(), leaf.rect.Height()));
+      // The pane sits inside a thin gap (see RenderAreas): the corner zones follow the pane edge
+      AreaRect paneRect = leaf.rect;
+      const float gap = 2.f * dpi;
+      paneRect.x0 += gap;
+      paneRect.y0 += gap;
+      paneRect.x1 -= gap;
+      paneRect.y1 -= gap;
+      const float fullSide = min(14.f * dpi, 0.4f * min(paneRect.Width(), paneRect.Height()));
       if (fullSide < 6.f)
          continue;
       for (int corner = 0; corner < 4; ++corner)
       {
          const float side = fullSide;
-         const float x = (corner & 1) ? leaf.rect.x1 - side : leaf.rect.x0;
-         const float y = (corner & 2) ? leaf.rect.y1 - side : leaf.rect.y0;
+         const float x = (corner & 1) ? paneRect.x1 - side : paneRect.x0;
+         const float y = (corner & 2) ? paneRect.y1 - side : paneRect.y0;
          // Triangular hit zone: the half of the square touching the area's corner (Blender). Outside it the window takes no input, so the header
          // buttons and scrollbars next to the corner keep their clicks
          const ImVec2 mouse = ImGui::GetIO().MousePos;
@@ -2603,9 +2618,13 @@ void EditorUI::RenderAreaCorners()
          // the corner's own button while the zone is the one hovered
          ImGuiWindow *const cornerWindow = ImGui::FindWindowByName(name);
          const ImGuiID hoveredId = ImGui::GetHoveredID();
-         bool overWidget = hoveredId != 0 && (cornerWindow == nullptr || hoveredId != cornerWindow->GetID("##corner"));
          ImGuiWindow *const hw = ImGui::GetCurrentContext()->HoveredWindow;
          const char *const hwName = hw != nullptr ? hw->RootWindow->Name : "";
+         // The viewport's scene item is the pane's background, not a widget: it must not block the corner
+         const auto viewIt = m_areaViews.find(leaf.id);
+         const auto *const viewPane = viewIt != m_areaViews.end() ? dynamic_cast<const ViewportPane *>(viewIt->second.get()) : nullptr;
+         const bool overViewItem = viewPane != nullptr && hoveredId == viewPane->m_viewItemId;
+         bool overWidget = hoveredId != 0 && !overViewItem && (cornerWindow == nullptr || hoveredId != cornerWindow->GetID("##corner"));
          const bool overStrip = strncmp(hwName, "##Split", 7) == 0;
          const bool overArea = hw == nullptr || strncmp(hwName, "##Pane", 6) == 0 || strcmp(hwName, "text overlay") == 0;
          // A floating window (popup, tooltip, overlay) keeps all its clicks: no corner acts through it
@@ -2634,11 +2653,7 @@ void EditorUI::RenderAreaCorners()
          const bool hot = ImGui::IsItemHovered() && inTriangle && !m_areaDrag.active;
          ImDrawList *const dl = ImGui::GetWindowDrawList(); // Under tooltips and floating windows
          if (hot)
-         {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
-            dl->AddTriangleFilled(
-               origin, ImVec2(origin.x + sx * side, origin.y), ImVec2(origin.x, origin.y + sy * side), (EditorTheme::Accent & ~IM_COL32_A_MASK) | (70u << IM_COL32_A_SHIFT));
-         }
          if (!m_areaDrag.active)
          {
             // Permanent hatch (two diagonal strokes), brighter while hovered
