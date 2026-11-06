@@ -2,6 +2,7 @@
 
 #include "DispReelUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
 #include "utils/color.h"
 
@@ -29,6 +30,63 @@ void DispReelUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3
 void DispReelUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawHitObjects(m_part); // Draw the UI picking quad (reels have no wireframe to display)
+}
+
+void DispReelUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetFillColor(m_part->m_d.m_backcolor);
+      ctx.SetObject(this);
+
+      // draw background box
+      ctx.Rectangle(m_part->m_d.m_v1.x, m_part->m_d.m_v1.y, m_part->m_d.m_v2.x, m_part->m_d.m_v2.y);
+
+      // draw n reels in the box (in blue)
+      ctx.SetFillColor(RGB(0, 0, 255));
+      for (int i = 0; i < m_part->m_d.m_reelcount; ++i)
+      {
+         // set up top corner point
+         const float fi = (float)i;
+         const float x = m_part->m_d.m_v1.x + fi * (m_part->m_d.m_width + m_part->m_d.m_reelspacing) + m_part->m_d.m_reelspacing;
+         const float y = m_part->m_d.m_v1.y + m_part->m_d.m_reelspacing;
+         const float x2 = x + m_part->m_d.m_width;
+         const float y2 = y + m_part->m_d.m_height;
+
+         // set up points (clockwise)
+         const Vertex2D rgv[4] = { Vertex2D(x, y), Vertex2D(x2, y), Vertex2D(x2, y2), Vertex2D(x, y2) };
+         ctx.Polygon(rgv, 4);
+      }
+   }
+   else
+   {
+      if (!m_part->GetPTable()->GetEMReelsEnabled())
+         return;
+
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetFillColor(-1);
+      ctx.SetObject(this);
+      ctx.SetObject(nullptr);
+
+      // draw background box
+      ctx.Rectangle(m_part->m_d.m_v1.x, m_part->m_d.m_v1.y, m_part->m_d.m_v2.x, m_part->m_d.m_v2.y);
+
+      // draw n reels in the box
+      for (int i = 0; i < m_part->m_d.m_reelcount; ++i)
+      {
+         // set up top corner point
+         const float fi = (float)i;
+         const float x = m_part->m_d.m_v1.x + fi * (m_part->m_d.m_width + m_part->m_d.m_reelspacing) + m_part->m_d.m_reelspacing;
+         const float y = m_part->m_d.m_v1.y + m_part->m_d.m_reelspacing;
+         const float x2 = x + m_part->m_d.m_width;
+         const float y2 = y + m_part->m_d.m_height;
+
+         // set up points (clockwise)
+         const Vertex2D rgv[4] = { Vertex2D(x, y), Vertex2D(x2, y), Vertex2D(x2, y2), Vertex2D(x, y2) };
+         ctx.Polygon(rgv, 4);
+      }
+   }
 }
 
 void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)

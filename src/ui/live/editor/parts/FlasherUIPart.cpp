@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 #include "FlasherUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
 #include "plugins/VPXPlugin.h"
 #include "utils/color.h"
@@ -52,6 +53,121 @@ void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 void FlasherUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
+}
+
+void FlasherUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      if (m_part->m_curve.GetPoints().empty())
+         return;
+
+      ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? g_settingsService.GetAppSettings().GetEditor_FillColor() : -1);
+      ctx.SetObject(this);
+      // Don't want border color to be over-ridden when selected - that will be drawn later
+      ctx.SetBorderColor(-1, false, 0);
+
+      vector<RenderVertex> vvertex;
+      m_part->m_curve.GetRgVertex(vvertex);
+      if (!m_part->GetPTable()->RenderSolid() || !m_part->m_d.m_displayTexture)
+      {
+         ctx.Polygon(vvertex);
+      }
+      else if (Texture* const ppi = m_part->m_ptable->GetImage(m_part->m_d.m_szImageA))
+      {
+         if (m_part->m_d.m_imagealignment == ImageModeWrap)
+         {
+            float _minx = FLT_MAX;
+            float _miny = FLT_MAX;
+            float _maxx = -FLT_MAX;
+            float _maxy = -FLT_MAX;
+            for (const auto& v : vvertex)
+            {
+               if (v.x < _minx)
+                  _minx = v.x;
+               if (v.x > _maxx)
+                  _maxx = v.x;
+               if (v.y < _miny)
+                  _miny = v.y;
+               if (v.y > _maxy)
+                  _maxy = v.y;
+            }
+
+            ctx.PolygonImage(vvertex, ppi, _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny));
+         }
+         else
+         {
+            ctx.PolygonImage(vvertex, ppi, m_part->m_ptable->m_left, m_part->m_ptable->m_top, m_part->m_ptable->m_right, m_part->m_ptable->m_bottom);
+         }
+      }
+      else
+      {
+         ctx.Polygon(vvertex);
+      }
+   }
+   else
+   {
+      ctx.SetFillColor(-1);
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetObject(this); // For selected formatting
+      ctx.SetObject(nullptr);
+
+      vector<RenderVertex> vvertex; //!! check/reuse from Fill pass
+      m_part->m_curve.GetRgVertex(vvertex);
+      ctx.Polygon(vvertex);
+
+      // Except for flasher mode, shape is simplified before rendering into its bounding rectangle
+      if (m_part->m_d.m_renderMode != FlasherData::RenderMode::FLASHER)
+      {
+         float _minx = FLT_MAX;
+         float _miny = FLT_MAX;
+         float _maxx = -FLT_MAX;
+         float _maxy = -FLT_MAX;
+         for (const auto& v : vvertex)
+         {
+            if (v.x < _minx)
+               _minx = v.x;
+            if (v.x > _maxx)
+               _maxx = v.x;
+            if (v.y < _miny)
+               _miny = v.y;
+            if (v.y > _maxy)
+               _maxy = v.y;
+         }
+         ctx.Rectangle(_minx, _miny, _maxx, _maxy);
+      }
+
+      // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+      bool drawDragpoints = (ctx.m_partSelected || (this == ctx.m_pointEditPart) || g_settingsService.GetAppSettings().GetEditor_ShowDragPoints());
+      if (!drawDragpoints)
+      {
+         // if any of the dragpoints of this object are selected then draw all the dragpoints
+         for (const auto& pdp : m_part->m_curve.GetPoints())
+         {
+            if (ctx.IsPointSelected(pdp.get()))
+            {
+               drawDragpoints = true;
+               break;
+            }
+         }
+      }
+
+      if (drawDragpoints)
+      {
+         ctx.SetFillColor(-1);
+         for (const auto& pdp : m_part->m_curve.GetPoints())
+         {
+            ctx.SetBorderColor((ctx.m_hotPoint == pdp.get()) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+            ctx.SetObject(this, pdp.get());
+            ctx.Ellipse2(pdp->GetX(), pdp->GetY(), 8);
+         }
+      }
+
+      // Little cross at the object center
+      const Vertex2D center = m_part->GetCenter();
+      ctx.Line(center.x - 10.0f, center.y, center.x + 10.0f, center.y);
+      ctx.Line(center.x, center.y - 10.0f, center.x, center.y + 10.0f);
+   }
 }
 
 void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)

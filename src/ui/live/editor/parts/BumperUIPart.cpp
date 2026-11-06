@@ -2,7 +2,9 @@
 
 #include "BumperUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -26,6 +28,70 @@ void BumperUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& 
 }
 
 void BumperUIPart::RenderOverlay(const EditorRenderContext& ctx) { ctx.DrawWireframe(m_part); }
+
+void BumperUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetBorderColor(-1, false, 0);
+
+      ctx.SetObject(this);
+      const float radangle = ANGTORAD(m_part->m_d.m_orientation);
+      const float sn = sinf(radangle);
+      const float cs = cosf(radangle);
+
+      const float x1 = m_part->m_d.m_vCenter.x - cs * (m_part->m_d.m_radius + 10.f);
+      const float y1 = m_part->m_d.m_vCenter.y - sn * (m_part->m_d.m_radius + 10.f);
+      const float x2 = m_part->m_d.m_vCenter.x + cs * (m_part->m_d.m_radius + 10.f);
+      const float y2 = m_part->m_d.m_vCenter.y + sn * (m_part->m_d.m_radius + 10.f);
+      ctx.Ellipse(x1, y1, 10.0f);
+      ctx.Ellipse(x2, y2, 10.0f);
+
+      if (m_part->m_ptable->m_renderSolid)
+      {
+         const Material* const mat = m_part->m_ptable->GetMaterial(m_part->m_d.m_szCapMaterial);
+         ctx.SetFillColor(mat->m_cBase);
+      }
+      else
+         ctx.SetFillColor(-1);
+
+      ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius * 1.5f);
+      if (m_part->m_ptable->m_renderSolid)
+      {
+         const Material* const mat = m_part->m_ptable->GetMaterial(m_part->m_d.m_szBaseMaterial);
+         ctx.SetFillColor(mat->m_cBase);
+      }
+      else
+         ctx.SetFillColor(-1);
+
+      ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius);
+   }
+   else
+   {
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetFillColor(-1);
+      ctx.SetObject(this);
+      ctx.SetObject(nullptr);
+      const float radangle = ANGTORAD(m_part->m_d.m_orientation - 90.f);
+      const float sn = sinf(radangle);
+      const float cs = cosf(radangle);
+
+      const float x1 = m_part->m_d.m_vCenter.x - cs * (m_part->m_d.m_radius + 10.f);
+      const float y1 = m_part->m_d.m_vCenter.y - sn * (m_part->m_d.m_radius + 10.f);
+      const float x2 = m_part->m_d.m_vCenter.x + cs * (m_part->m_d.m_radius + 10.f);
+      const float y2 = m_part->m_d.m_vCenter.y + sn * (m_part->m_d.m_radius + 10.f);
+      ctx.Ellipse(x1, y1, 10.0f);
+      ctx.Ellipse(x2, y2, 10.0f);
+      ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius * 1.5f);
+      ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius);
+
+      if (g_settingsService.GetAppSettings().GetEditor_DrawLightCenters())
+      {
+         ctx.Line(m_part->m_d.m_vCenter.x - 10.0f, m_part->m_d.m_vCenter.y, m_part->m_d.m_vCenter.x + 10.0f, m_part->m_d.m_vCenter.y);
+         ctx.Line(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y - 10.0f, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y + 10.0f);
+      }
+   }
+}
 
 void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
 {

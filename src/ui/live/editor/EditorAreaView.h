@@ -32,6 +32,11 @@ public:
    // layout switch): the place to release GPU resources before the instance is dropped
    virtual void OnUnhosted() { }
 
+   // The view's persisted setup, saved into / restored from the hosting leaf's opaque data
+   // payload (e.g. camera for the 3D panes, zoom & offset for the blueprint pane)
+   virtual nlohmann::json SaveSetup() const { return nlohmann::json::object(); }
+   virtual void LoadSetup(const nlohmann::json& j) { }
+
 protected:
    EditorUI& m_editor;
 };

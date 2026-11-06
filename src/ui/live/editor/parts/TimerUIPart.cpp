@@ -2,7 +2,9 @@
 
 #include "TimerUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -37,6 +39,31 @@ void TimerUIPart::Render(const EditorRenderContext& ctx)
       //angle = ((PI*2)/24) * 3;
       ctx.DrawLine(Vertex3Ds(m_part->m_d.m_v.x, m_part->m_d.m_v.y, 0.f), Vertex3Ds(m_part->m_d.m_v.x + 10.5f, m_part->m_d.m_v.y - 7.5f, 0.f), color);
    }
+}
+
+void TimerUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   ctx.SetFillColor(-1);
+   ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+   ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+
+   ctx.SetObject(this);
+
+   ctx.Ellipse(m_part->m_d.m_v.x, m_part->m_d.m_v.y, 18);
+   ctx.Ellipse(m_part->m_d.m_v.x, m_part->m_d.m_v.y, 15);
+
+   for (int i = 0; i < 12; i++)
+   {
+      const float angle = (float)(M_PI * 2.0 / 12.0) * (float)i;
+      const float sn = sinf(angle);
+      const float cs = cosf(angle);
+      ctx.Line(m_part->m_d.m_v.x + sn * 9.0f, m_part->m_d.m_v.y - cs * 9.0f, m_part->m_d.m_v.x + sn * 15.0f, m_part->m_d.m_v.y - cs * 15.0f);
+   }
+
+   ctx.Line(m_part->m_d.m_v.x, m_part->m_d.m_v.y, m_part->m_d.m_v.x + 10.5f, m_part->m_d.m_v.y - 7.5f);
 }
 
 void TimerUIPart::UpdatePropertyPane(PropertyPane& props)

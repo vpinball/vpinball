@@ -18,6 +18,7 @@ public:
    DragPointCurve* GetDragPointCurve() const override { return &m_part->m_curve; }
 
    void RenderOverlay(const EditorRenderContext& ctx) override;
+   void RenderBlueprint(const BlueprintRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
 

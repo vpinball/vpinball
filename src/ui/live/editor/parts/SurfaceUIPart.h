@@ -19,6 +19,7 @@ public:
    float GetDragPointZ(const DragPoint* point) const override { return point->GetZ() + 0.5f * (m_part->m_d.m_heightbottom + m_part->m_d.m_heighttop); }
 
    void RenderOverlay(const EditorRenderContext& ctx) override;
+   void RenderBlueprint(const BlueprintRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
 

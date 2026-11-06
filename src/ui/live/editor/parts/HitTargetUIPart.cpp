@@ -2,7 +2,9 @@
 
 #include "HitTargetUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -31,6 +33,58 @@ void HitTargetUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec
 void HitTargetUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
+}
+
+void HitTargetUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   ctx.SetLineColor(RGB(0, 0, 0), false, 1);
+   ctx.SetObject(this);
+
+   vector<Vertex2D> edges;
+   m_part->GetEditorWireframe(edges);
+   if (!edges.empty())
+      ctx.Lines(edges.data(), (int)(edges.size() / 2));
+
+   if (!ctx.m_partSelected)
+      return;
+
+   const float radangle = ANGTORAD(m_part->m_d.m_rotZ - 180.0f);
+   constexpr float halflength = 50.0f;
+   constexpr float len1 = halflength * 0.5f;
+   constexpr float len2 = len1 * 0.5f;
+   {
+      Vertex2D tmp;
+
+      // Draw Arrow
+      ctx.SetLineColor(RGB(255, 0, 0), false, 1);
+
+      {
+         const float sn = sinf(radangle);
+         const float cs = cosf(radangle);
+
+         tmp.x = m_part->m_d.m_vPosition.x + sn * len1;
+         tmp.y = m_part->m_d.m_vPosition.y - cs * len1;
+      }
+
+      ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vPosition.x, m_part->m_d.m_vPosition.y);
+      {
+         const float arrowang = radangle + 0.6f;
+         const float sn = sinf(arrowang);
+         const float cs = cosf(arrowang);
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vPosition.x + sn * len2, m_part->m_d.m_vPosition.y - cs * len2);
+      }
+      {
+         const float arrowang = ANGTORAD(m_part->m_d.m_rotZ - 180.0f) - 0.6f;
+         const float sn = sinf(arrowang);
+         const float cs = cosf(arrowang);
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vPosition.x + sn * len2, m_part->m_d.m_vPosition.y - cs * len2);
+      }
+   }
 }
 
 void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)

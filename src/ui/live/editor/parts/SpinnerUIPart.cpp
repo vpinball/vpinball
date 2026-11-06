@@ -2,7 +2,9 @@
 
 #include "SpinnerUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -28,6 +30,36 @@ void SpinnerUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 void SpinnerUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
+}
+
+void SpinnerUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+   ctx.SetLineColor(RGB(0, 0, 0), false, 3);
+   ctx.SetObject(this);
+
+   const float halflength = m_part->m_d.m_length * 0.5f;
+
+   const float radangle = ANGTORAD(m_part->m_d.m_rotation);
+   float sn = sinf(radangle);
+   float cs = cosf(radangle);
+
+   ctx.Line(m_part->m_d.m_vCenter.x + cs * halflength, m_part->m_d.m_vCenter.y + sn * halflength, m_part->m_d.m_vCenter.x - cs * halflength, m_part->m_d.m_vCenter.y - sn * halflength);
+
+   ctx.SetLineColor(RGB(0, 0, 0), false, 1);
+   ctx.SetObject(this);
+
+   ctx.Line(m_part->m_d.m_vCenter.x + cs * halflength, m_part->m_d.m_vCenter.y + sn * halflength, m_part->m_d.m_vCenter.x - cs * halflength, m_part->m_d.m_vCenter.y - sn * halflength);
+
+   if (sn == 0.0f)
+      sn = 1.0f;
+   if (cs == 0.0f)
+      cs = 1.0f;
+   ctx.Rectangle(m_part->m_d.m_vCenter.x - cs * halflength * 0.65f, m_part->m_d.m_vCenter.y - sn * halflength * 0.65f, m_part->m_d.m_vCenter.x + cs * halflength * 0.65f,
+      m_part->m_d.m_vCenter.y + sn * halflength * 0.65f);
 }
 
 void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)

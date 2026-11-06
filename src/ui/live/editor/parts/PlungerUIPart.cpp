@@ -2,7 +2,9 @@
 
 #include "PlungerUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -34,6 +36,31 @@ void PlungerUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawHitObjects(m_part);
    // FIXME ctx.DrawWireframe(m_part);
+}
+
+void PlungerUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+   ctx.SetFillColor(-1);
+
+   // draw the park position, if appropriate
+   if (m_part->m_d.m_parkPosition > 0.0f && m_part->m_d.m_parkPosition < 1.0f)
+   {
+      const float park = m_part->m_d.m_parkPosition * m_part->m_d.m_stroke;
+      ctx.SetLineColor(RGB(0, 180, 0), false, //
+         ctx.m_partActive        ? 4 //
+            : ctx.m_partSelected ? 3 //
+            : ctx.m_partLocked   ? 1 //
+                                 : 2);
+      ctx.Line(
+         m_part->m_d.m_v.x - m_part->m_d.m_width, m_part->m_d.m_v.y - m_part->m_d.m_stroke + park, m_part->m_d.m_v.x + m_part->m_d.m_width, m_part->m_d.m_v.y - m_part->m_d.m_stroke + park);
+   }
+
+   ctx.SetObject(this);
+   ctx.Rectangle(m_part->m_d.m_v.x - m_part->m_d.m_width, m_part->m_d.m_v.y - m_part->m_d.m_stroke, m_part->m_d.m_v.x + m_part->m_d.m_width, m_part->m_d.m_v.y + m_part->m_d.m_height);
 }
 
 void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)

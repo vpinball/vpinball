@@ -47,6 +47,7 @@ class Sound;
 namespace VPX::EditorUI
 {
 
+class BlueprintPane;
 class LiveRenderContext;
 class ViewportPane;
 
@@ -66,6 +67,7 @@ class EditorUI final
    friend class PartLibraryPane;
    friend class ScriptPanel;
    friend class ScriptPane;
+   friend class BlueprintPane;
    friend class ViewportPane;
 
 public:
@@ -468,6 +470,14 @@ private:
    ViewportPane *m_captureVp = nullptr; // Viewport pane holding an in-progress mouse interaction
    ViewportPane *HoveredViewportPane() const;
    ViewportPane *GetTargetViewport() const; // Pane owning viewport actions: flying > dragged > hovered > first
+
+   // Blueprint panes process their own 2D canvas interactions the same way (see
+   // BlueprintPane::RenderUI): the pane under the mouse, or the one capturing a drag
+   BlueprintPane *m_hoverBp = nullptr; // Blueprint pane whose canvas is hovered this frame
+   BlueprintPane *m_captureBp = nullptr; // Blueprint pane holding an in-progress mouse interaction
+   BlueprintPane *GetTargetBlueprint() const { return m_captureBp != nullptr ? m_captureBp : m_hoverBp; }
+
+   Vertex2D TablePosAt(const ImVec2 &pos) const; // Display px -> table XY through the view pane under pos
 };
 
 }

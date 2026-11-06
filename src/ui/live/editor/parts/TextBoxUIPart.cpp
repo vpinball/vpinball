@@ -2,6 +2,7 @@
 
 #include "TextBoxUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
 #include "utils/color.h"
 
@@ -29,6 +30,27 @@ void TextBoxUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 void TextBoxUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawHitObjects(m_part); // Draw the UI picking quad (textboxes have no wireframe to display)
+}
+
+void TextBoxUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetFillColor(m_part->m_d.m_backcolor);
+      ctx.SetObject(this);
+
+      ctx.Rectangle(m_part->m_d.m_v1.x, m_part->m_d.m_v1.y, m_part->m_d.m_v2.x, m_part->m_d.m_v2.y);
+   }
+   else
+   {
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetFillColor(-1);
+      ctx.SetObject(this);
+      ctx.SetObject(nullptr);
+
+      ctx.Rectangle(m_part->m_d.m_v1.x, m_part->m_d.m_v1.y, m_part->m_d.m_v2.x, m_part->m_d.m_v2.y);
+   }
 }
 
 void TextBoxUIPart::UpdatePropertyPane(PropertyPane& props)

@@ -2,7 +2,9 @@
 
 #include "TriggerUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -23,6 +25,97 @@ void TriggerUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 void TriggerUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawHitObjects(m_part);
+}
+
+void TriggerUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetObject(this);
+
+      if (m_part->m_d.m_shape != TriggerStar && m_part->m_d.m_shape != TriggerButton)
+      {
+         ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? RGB(200, 220, 200) : -1);
+
+         vector<RenderVertex> vvertex;
+         m_part->m_curve.GetRgVertex(vvertex);
+
+         ctx.Polygon(vvertex);
+      }
+      else
+      {
+         ctx.SetFillColor(-1);
+         ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius);
+      }
+   }
+   else
+   {
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+      ctx.SetObject(this);
+      ctx.SetFillColor(-1);
+
+      if (m_part->m_d.m_shape != TriggerStar && m_part->m_d.m_shape != TriggerButton)
+      {
+         vector<RenderVertex> vvertex;
+         m_part->m_curve.GetRgVertex(vvertex);
+
+         ctx.SetObject(nullptr);
+         ctx.SetBorderColor(RGB(0, 180, 0), false, 1);
+
+         ctx.Polygon(vvertex);
+
+         bool drawDragpoints = (ctx.m_partSelected || (this == ctx.m_pointEditPart) || g_settingsService.GetAppSettings().GetEditor_ShowDragPoints());
+         // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+         if (!drawDragpoints)
+         {
+            // if any of the dragpoints of this object are selected then draw all the dragpoints
+            for (const auto& pdp : m_part->m_curve.GetPoints())
+            {
+               if (ctx.IsPointSelected(pdp.get()))
+               {
+                  drawDragpoints = true;
+                  break;
+               }
+            }
+         }
+
+         if (drawDragpoints)
+         {
+            for (const auto& pdp : m_part->m_curve.GetPoints())
+            {
+               ctx.SetFillColor(-1);
+               ctx.SetBorderColor((ctx.m_hotPoint == pdp.get()) ? RGB(0, 255, 0) : RGB(0, 180, 0), false, 0);
+               ctx.SetObject(this, pdp.get());
+
+               ctx.Ellipse2(pdp->GetX(), pdp->GetY(), 8);
+            }
+         }
+      }
+      else
+      {
+         ctx.SetObject(nullptr);
+         ctx.SetBorderColor(RGB(0, 180, 0), false, 1);
+
+         ctx.Line(m_part->m_d.m_vCenter.x - m_part->m_d.m_radius, m_part->m_d.m_vCenter.y, m_part->m_d.m_vCenter.x + m_part->m_d.m_radius, m_part->m_d.m_vCenter.y);
+         ctx.Line(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y - m_part->m_d.m_radius, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y + m_part->m_d.m_radius);
+
+         static const float sp4 = (float)sin(M_PI / 4.0);
+         const float r2 = m_part->m_d.m_radius * sp4;
+
+         ctx.Line(m_part->m_d.m_vCenter.x - r2, m_part->m_d.m_vCenter.y - r2, m_part->m_d.m_vCenter.x + r2, m_part->m_d.m_vCenter.y + r2);
+         ctx.Line(m_part->m_d.m_vCenter.x - r2, m_part->m_d.m_vCenter.y + r2, m_part->m_d.m_vCenter.x + r2, m_part->m_d.m_vCenter.y - r2);
+      }
+
+      if (m_part->m_d.m_shape == TriggerWireA || m_part->m_d.m_shape == TriggerWireB || m_part->m_d.m_shape == TriggerWireC || m_part->m_d.m_shape == TriggerWireD
+         || m_part->m_d.m_shape == TriggerInder)
+      {
+         vector<Vertex2D> outline;
+         m_part->GetWireOutline(outline);
+         if (!outline.empty())
+            ctx.Polyline(outline.data(), (int)outline.size());
+      }
+   }
 }
 
 void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)

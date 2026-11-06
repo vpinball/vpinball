@@ -24,6 +24,7 @@ public:
    void SetEditCenter(const Vertex2D& pos) override { m_part->m_d.m_vCenter = pos; }
 
    void RenderOverlay(const EditorRenderContext& ctx) override;
+   void RenderBlueprint(const BlueprintRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
 

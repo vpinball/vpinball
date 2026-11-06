@@ -15,6 +15,8 @@ class DragPointCurve;
 namespace VPX::EditorUI
 {
 
+class BlueprintRenderContext;
+
 enum class ViewMode
 {
    PreviewCam,
@@ -95,6 +97,12 @@ public:
    virtual void SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) = 0;
 
    virtual void Render(const EditorRenderContext& ctx) = 0;
+
+   // Win32-style 2D top-down 'blueprint' view drawing. Called once per blueprint render pass
+   // (fills below the grid, then outlines above it): check ctx.GetPass() to branch between
+   // the fill pass (the win32 UIRenderPass1 equivalent) and the outline pass (UIRenderPass2).
+   // The pane filters visibility before calling; the default implementation draws nothing.
+   virtual void RenderBlueprint(const BlueprintRenderContext& ctx) { }
 
    // Restores the part's authored visibility values in its m_d fields, reverting the visibility overrides
    // applied for editor display (before the part is saved, copied, removed from the table or left by the editor).

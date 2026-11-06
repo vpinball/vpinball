@@ -17,7 +17,7 @@ std::atomic<uint32_t> g_nextNodeId { 1 };
 
 uint32_t NewNodeId() { return g_nextNodeId.fetch_add(1, std::memory_order_relaxed); }
 
-constexpr const char* kTypeNames[] = { "Outliner", "Properties", "Script", "PartLibrary", "Viewport", "ViewportBackdrop", "ViewportPreview" };
+constexpr const char* kTypeNames[] = { "Outliner", "Properties", "Script", "PartLibrary", "Viewport", "ViewportBackdrop", "ViewportPreview", "Blueprint" };
 static_assert(std::size(kTypeNames) == static_cast<size_t>(AreaType::Count));
 
 AreaRect Empty(const AreaRect& r) { return { r.x0, r.y0, r.x0, r.y0 }; }
@@ -388,7 +388,7 @@ void AreaLayout::MinSize(const int idx, const float dpi, const bool ignoreHidden
       return;
    if (!n.isSplit)
    {
-      if (n.type == AreaType::Viewport)
+      if (n.type == AreaType::Viewport || n.type == AreaType::Blueprint)
       {
          w = kViewportMinW * dpi;
          h = kViewportMinH * dpi;
