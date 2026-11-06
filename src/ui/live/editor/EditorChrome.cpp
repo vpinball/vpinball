@@ -162,7 +162,7 @@ void EditorChrome::RenderMenuBar()
       ImGui::Separator();
 
       // Layout selection as buttons after the menus (Blender workspaces)
-      ImGui::BeginDisabled(editor.IsInspectMode() || editor.m_table->IsLocked());
+      ImGui::BeginDisabled(editor.m_table->IsLocked());
       static const char *const layoutNames[] = { "Layout", "Library", "Scripting", "Backdrop" };
       for (int i = 0; i < 4; ++i)
       {
