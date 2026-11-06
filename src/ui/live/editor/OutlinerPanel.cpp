@@ -11,6 +11,7 @@
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
+#include "ViewportPane.h"
 
 #include "imgui/imgui_stdlib.h"
 
@@ -95,29 +96,36 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
 
    if (ImGui::TreeNodeEx("View Setups"))
    {
+      // Selecting a camera setup only marks the selection: the preview panes adopt the mode (the
+      // primary view is never switched)
+      const auto setPreviewMode = [&editor](const ViewSetupID mode)
+      {
+         for (const auto &[id, view] : editor.m_areaViews)
+            if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_viewType == ViewMode::PreviewCam)
+               vp->m_viewMode = mode;
+      };
       if (ImGui::Selectable("Editor Camera"))
       {
          editor.ClearSelection();
-         editor.m_table->SetViewSetupOverride(BG_DESKTOP);
-         editor.m_table->SetViewSetupOverride(BG_INVALID);
+         setPreviewMode(BG_INVALID); // Editor camera: preview panes follow the table's mode
       }
       const Selection cam0 = Selection::Camera(0);
-      if (ImGui::Selectable("Preview: Desktop", editor.m_selection == cam0))
+      if (ImGui::Selectable("Desktop", editor.m_selection == cam0))
       {
          editor.SetSelection(cam0);
-         editor.m_table->SetViewSetupOverride(BG_DESKTOP);
+         setPreviewMode(BG_DESKTOP);
       }
       const Selection cam1 = Selection::Camera(1);
-      if (ImGui::Selectable("Preview: Cabinet", editor.m_selection == cam1))
+      if (ImGui::Selectable("Cabinet", editor.m_selection == cam1))
       {
          editor.SetSelection(cam1);
-         editor.m_table->SetViewSetupOverride(BG_FULLSCREEN);
+         setPreviewMode(BG_FULLSCREEN);
       }
       const Selection cam2 = Selection::Camera(2);
-      if (ImGui::Selectable("Preview: Full Single Screen", editor.m_selection == cam2))
+      if (ImGui::Selectable("Full Single Screen", editor.m_selection == cam2))
       {
          editor.SetSelection(cam2);
-         editor.m_table->SetViewSetupOverride(BG_FSS);
+         setPreviewMode(BG_FSS);
       }
       ImGui::TreePop();
    }
