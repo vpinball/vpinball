@@ -98,7 +98,8 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(const AudioPlayer* 
    if (player->m_spatialSource == nullptr && audioPlayer->GetBackglassMode() == SNDCFG_BGFRONTLEFT)
    {
       // Route through the channel mixing node to downmix to the front left channel (the endpoint's
-      // default channel mapping already covers the 2 front channel mode)
+      // channel mapping covers the 2 front channel mode, mono being expanded to the front pair
+      // only by the sound's monoExpansionMode below)
       player->m_vpxMixNode = std::make_unique<vpx_node>();
       const ma_result result = vpx_node_init(ma_engine_get_node_graph(engine), static_cast<unsigned int>(channels), ma_engine_get_channels(engine), nullptr, player->m_vpxMixNode.get());
       if (result != MA_SUCCESS)
@@ -120,9 +121,12 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(const AudioPlayer* 
    ma_sound_config config = ma_sound_config_init_2(engine);
    config.pDataSource = &player->m_dataSource->base;
    config.flags = MA_SOUND_FLAG_NO_SPATIALIZATION;
+   // Mono expands to the front stereo pair only: the default duplicate mode would leak the
+   // stream on all the device channels (rears, LFE) when routing straight to the endpoint
+   config.monoExpansionMode = ma_mono_expansion_mode_stereo_only;
    // Node attachments require matching channel counts: the endpoint expects the engine channel
-   // count (0 = default) while the mixing node declares the stream channel count
-   config.channelsOut = player->m_vpxMixNode ? static_cast<ma_uint32>(channels) : 0;
+   // count (0 = default) while the spatial source and mixing nodes declare the stream channel count
+   config.channelsOut = (player->m_spatialSource || player->m_vpxMixNode) ? static_cast<ma_uint32>(channels) : 0;
    config.pInitialAttachment = player->m_spatialSource ? static_cast<ma_node*>(player->m_spatialSource->GetNode())
       : player->m_vpxMixNode                           ? static_cast<ma_node*>(player->m_vpxMixNode.get())
                                                        : ma_engine_get_endpoint(engine);
