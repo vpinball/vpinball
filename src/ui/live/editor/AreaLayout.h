@@ -108,7 +108,8 @@ public:
    static constexpr float kDefaultOutlinerWidth = 200.f; // first-run default; saved layouts keep their stored width
    static constexpr float kDefaultPropertiesWidth = 280.f; // == PropertiesPanel::PaneWidth
 
-   AreaLayout(); // default: Outliner 200 | Viewport | Properties 280
+   AreaLayout(); // default: the 'Layout' preset (index 0)
+   static AreaLayout Default(int index); // The preset layouts: 0 Layout, 1 Library, 2 Scripting, 3 Desktop Backdrop
 
    // Parses a serialized layout. On failure returns false, logs PLOGW once, sets LastError() and leaves
    // *this unchanged.
