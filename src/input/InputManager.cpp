@@ -900,7 +900,7 @@ void InputManager::CreateInputActions()
             action.SetRepeatPeriod(-1);
          else
          {
-            m_player->m_vrDevice->RecenterTable();
+            m_player->m_vrDevice->RecenterRoom();
             action.SetRepeatPeriod(wasPressed ? 5 : 250); // Single recenter then continuous if kept pressed
          }
       }));
@@ -914,7 +914,7 @@ void InputManager::CreateInputActions()
             else
             {
                const float scale = wasPressed ? 0.1f : 1.f;
-               m_player->m_vrDevice->OffsetTable(scale * direction.x, scale * direction.y, scale * direction.z);
+               m_player->m_vrDevice->OffsetRoom(scale * direction.x, scale * direction.y, scale * direction.z);
                action.SetRepeatPeriod(wasPressed ? 5 : 250); // Single step then continuous slow move if kept pressed
             }
          }));
@@ -938,7 +938,7 @@ void InputManager::CreateInputActions()
       [this](InputAction& action, bool wasPressed, bool isPressed)
       {
          if (isPressed && m_player->IsVR())
-            m_player->m_vrDevice->EnableControllerViewCentering(!m_player->m_vrDevice->IsControllerViewCenteringEnabled());
+            m_player->m_vrDevice->EnableControllerRecenter(!m_player->m_vrDevice->IsControllerRecenterEnabled());
       }));
    m_vrControllerViewCenteringActionId = vrControllerCalibration->GetActionId();
    #endif

@@ -941,6 +941,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/VertexBuffer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/ViewSetup.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/VRSpaces.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/EditorClipboard.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/LoadProgress.cpp" />
@@ -1897,6 +1898,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VertexBuffer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/ViewSetup.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VRSpaces.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/XRGraphicBackend.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/XRD3D11Backend.h" />

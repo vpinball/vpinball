@@ -15,6 +15,7 @@
    11. [Open Pinball Device setup](<Open Pinball Device User Guide.md>)
    12. [Latency](Latency.md)
    13. [Mobile (iOS, Android, Meta Quest)](Mobile.md)
+   13. [Virtual & augmented reality](VR.md)
 2. Scripting
    1. [API Reference](<Script API Reference.md>)
 3. Upgrading to new version

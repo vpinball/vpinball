@@ -239,9 +239,10 @@ PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 0, "Ena
 PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 2, "Enabled"s, "Autodetect"s, "Disabled"s);
 #endif
 PropEnum(PlayerVR, DisplayRefreshRate, "Headset Refresh Rate"s, "Refresh rate requested from the headset when supported. Lower rates give the renderer more time per frame and avoid reprojected frames on standalone headsets"s, int, 0, "Runtime default"s, "72 Hz"s, "80 Hz"s, "90 Hz"s, "120 Hz"s);
-PropFloatDyn(PlayerVR, HeadSetOrientation, "View orientation"s, "VR view orientation"s, -180.f, 180.f, 0.f);
-PropFloatDyn(PlayerVR, HeadSetX, "View Offset X"s, "VR view X offset"s, -100.f, 100.f, 0.f);
-PropFloatDyn(PlayerVR, HeadSetY, "View Offset Y"s, "VR view Y offset"s, -100.f, 100.f, 0.f);
+PropFloatDyn(PlayerVR, RoomYaw, "Room Yaw"s, "VR room orientation around the vertical axis (headset tracking calibration)"s, -180.f, 180.f, 0.f);
+PropFloatDyn(PlayerVR, RoomOffsetX, "Room Offset X"s, "VR room X offset to correct imprecise headset room positioning"s, -1000.f, 1000.f, 0.f);
+PropFloatDyn(PlayerVR, RoomOffsetY, "Room Offset Y"s, "VR room Y offset to correct imprecise headset room positioning"s, -1000.f, 1000.f, 0.f);
+PropFloatDyn(PlayerVR, RoomOffsetZ, "Room Offset Z"s, "VR room Z offset to correct imprecise headset room positioning (e.g. miscalibrated floor height)"s, -1000.f, 1000.f, 0.f);
 PropFloatDyn(PlayerVR, TableOffsetY, "Table Y Offset"s,
    "Per table VR view Y offset to account for a non standard distance between end of playfield and end of lockbar border"s, -100.f, 100.f, 0.f);
 PropFloatDyn(
@@ -260,12 +261,12 @@ PropBool(PlayerVR, SpatialAudioBackglass, "Backglass Spatial Audio"s,
 PropBool(PlayerVR, SpatialAudioPlayfield, "Playfield Spatial Audio"s,
    "Render playfield sounds as spatially positioned sources, binauralized for the VR headset, instead of the legacy static pan/fade channel mixing"s, true);
 PropFloatDyn(PlayerVR, ControllerCabYOffset, "Cabinet Y Offset"s, "Y offset to apply when using controller view centering"s, -150.f, 50.f, 0.f);
-PropFloatDyn(PlayerVR, ControllerLockbarScale, "Lockbar size ratio"s, "Lockbar size ratio to apply when using controller view centering"s, 0.5f, 2.0f, 1.f);
+PropFloatDyn(PlayerVR, ControllerCabZOffset, "Cabinet Z Offset"s, "Z offset to apply when using controller view centering"s, -50.f, 50.f, 0.f);
 PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
-PropBool(PlayerVR, ScaleToLockbar, "Scale to Real Lockbar"s,
-   "Scale the virtual cabinet so that its lockbar matches the real world lockbar width. If disabled, the cabinet is rendered at its native size."s, true);
-PropBool(PlayerVR, MatchLockbarHeight, "Match Real Lockbar Height"s,
-   "Position the virtual cabinet so that its lockbar matches the real world lockbar height. If disabled, the cabinet stands at its native height."s, true);
+PropBool(PlayerVR, OverrideLockbarWidth, "Custom Lockbar Width"s,
+   "Scale the virtual cabinet so that its lockbar matches the user defined lockbar width. If disabled, the cabinet is rendered at its native (table defined) size."s, true);
+PropBool(PlayerVR, OverrideLockbarHeight, "Custom Lockbar Height"s,
+   "Position the virtual cabinet so that its lockbar matches the user defined lockbar height. If disabled, the cabinet stands at its native (table defined) height."s, true);
 PropBool(PlayerVR, LockFeetToGround, "Lock Feet to Ground"s, "Lock cabinet feet to ground. This usually feels more natural (avoid floating cabinet) but may be deactivated for example for playing mini flipper seated at a desk."s, true);
 
 // Physics override profiles
