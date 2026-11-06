@@ -633,7 +633,7 @@ void PartLibraryPanel::UpdatePlacement(const ImVec2 &mousePos)
    const ImGuiIO &io = ImGui::GetIO();
    ViewportPane *const vp = m_editor.GetTargetViewport();
    const bool hovering
-      = (vp != nullptr) && !io.WantCaptureMouse && (vp->m_camMode != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr && m_editor.m_player->m_playfieldWnd != nullptr;
+      = (vp != nullptr) && !io.WantCaptureMouse && (vp->m_viewType != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr && m_editor.m_player->m_playfieldWnd != nullptr;
    if (!hovering)
    {
       // Re-hide the ghost parts when the mouse leaves the 3D view (or the view is not 3D)

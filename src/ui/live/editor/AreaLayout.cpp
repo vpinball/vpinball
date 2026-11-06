@@ -17,7 +17,7 @@ std::atomic<uint32_t> g_nextNodeId { 1 };
 
 uint32_t NewNodeId() { return g_nextNodeId.fetch_add(1, std::memory_order_relaxed); }
 
-constexpr const char* kTypeNames[] = { "Outliner", "Properties", "Script", "PartLibrary", "Viewport" };
+constexpr const char* kTypeNames[] = { "Outliner", "Properties", "Script", "PartLibrary", "Viewport", "ViewportBackdrop", "ViewportPreview" };
 static_assert(std::size(kTypeNames) == static_cast<size_t>(AreaType::Count));
 
 AreaRect Empty(const AreaRect& r) { return { r.x0, r.y0, r.x0, r.y0 }; }
