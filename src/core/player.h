@@ -112,6 +112,7 @@ public:
       Stack    // Suspend the current table session and switch to the new table (restored when the new session ends, same base table / live copy pair only)
    };
    void SetTable(PinTable *table, TableTransition transition);
+   bool HasPendingTableTransition() const { return m_pendingTable; }
    bool HasStackedTableSession() const { return !m_tableStack.empty(); }
 
    // To be called by the host after the game loop has ended: if the session was ended by a SetTable
