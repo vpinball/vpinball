@@ -444,7 +444,7 @@ private:
    void ShowAreaEditor(AreaType type); // Hosts the given editor type in an area leaf (splitting the focused one)
    void SetAreaLayoutIndex(int index); // Selects the active area layout slot (saved to and loaded from the LiveEditor settings)
    void LoadAreaLayoutSettings(); // Applies the persisted active layout (once, on first frame)
-   void SaveAreaLayoutSettings() const; // Writes the current layout into its settings slot
+   void SaveAreaLayoutSettings(); // Writes the current layout (and the viewport panes' setups) into its settings slot
    int m_activeLayoutIndex = 0; // Selected layout slot (Layout 1 / Layout 2)
    bool m_layoutSettingsLoaded = false; // The persisted layout has been applied (lazy, on first frame)
    AreaLayout m_layout;

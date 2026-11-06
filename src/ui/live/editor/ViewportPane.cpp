@@ -66,6 +66,76 @@ void ViewportPane::ReleaseCamera()
    m_editor.m_camDistance = m_camDistance;
 }
 
+nlohmann::json ViewportPane::SaveSetup() const
+{
+   nlohmann::json j = nlohmann::json::object();
+   j["camMode"] = static_cast<int>(m_camMode);
+   j["persp"] = m_perspectiveCam;
+   j["shade"] = static_cast<int>(m_shadeMode);
+   j["predef"] = m_predefinedView;
+   j["orbitLock"] = m_orbitLock;
+   j["camDist"] = m_camDistance;
+   j["camAspect"] = m_camAspect;
+   j["camValid"] = m_cameraValid;
+   j["camView"] = nlohmann::json::array();
+   j["camProj"] = nlohmann::json::array();
+   for (int r = 0; r < 4; ++r)
+      for (int c = 0; c < 4; ++c)
+      {
+         j["camView"].push_back(m_camView.m[r][c]);
+         j["camProj"].push_back(m_camProj.m[r][c]);
+      }
+   return j;
+}
+
+void ViewportPane::LoadSetup(const nlohmann::json& j)
+{
+   if (!j.is_object())
+      return;
+   const auto mat = [&j](const char* const key, Matrix3D& out)
+   {
+      if (!j.contains(key) || !j[key].is_array() || j[key].size() != 16)
+         return false;
+      float v[16];
+      for (int i = 0; i < 16; ++i)
+      {
+         if (!j[key][i].is_number())
+            return false;
+         v[i] = j[key][i].get<float>();
+         if (!std::isfinite(v[i]))
+            return false;
+      }
+      for (int r = 0; r < 4; ++r)
+         for (int c = 0; c < 4; ++c)
+            out.m[r][c] = v[r * 4 + c];
+      return true;
+   };
+   const int camMode = j.value("camMode", -1);
+   const int shade = j.value("shade", -1);
+   const int predef = j.value("predef", -1);
+   if (camMode < 0 || camMode > static_cast<int>(ViewMode::DesktopBackdrop) //
+      || shade < 0 || shade > static_cast<int>(Renderer::ShadeMode::NoDepthWireframe) //
+      || predef < 0 || predef > static_cast<int>(EditorUI::PredefinedView::Bottom))
+      return;
+   const float dist = j.value("camDist", 0.f);
+   const float aspect = j.value("camAspect", 0.f);
+   if (!std::isfinite(dist) || dist <= 0.f || !std::isfinite(aspect) || aspect <= 0.f)
+      return;
+   Matrix3D view, proj;
+   if (!mat("camView", view) || !mat("camProj", proj))
+      return;
+   m_camMode = static_cast<ViewMode>(camMode);
+   m_shadeMode = static_cast<Renderer::ShadeMode>(shade);
+   m_predefinedView = predef;
+   m_camDistance = dist;
+   m_camAspect = aspect;
+   m_camView = view;
+   m_camProj = proj;
+   m_perspectiveCam = j.value("persp", true);
+   m_orbitLock = j.value("orbitLock", false);
+   m_cameraValid = j.value("camValid", true);
+}
+
 void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
 {
    EditorUI& editor = m_editor;

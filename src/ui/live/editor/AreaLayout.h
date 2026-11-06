@@ -59,6 +59,9 @@ struct AreaNode
    // leaf
    AreaType type = AreaType::Viewport;
    bool hidden = false;
+   // Opaque per-leaf payload, persisted with the layout ("data" key) and cloned on split
+   // (e.g. a viewport leaf carries its 3D view setup: camera pose, shading, ...)
+   nlohmann::json data;
 };
 
 // Result of AreaLayout::Compute for one leaf. Hidden leaves, leaves of an invisible subtree and leaves not
@@ -154,6 +157,8 @@ public:
    // Any leaf may take any type (duplicates allowed: each leaf hosts its own view instance)
    bool SetType(int leaf, AreaType type);
    bool SetHidden(int leaf, bool hidden);
+   // Mutable access to a leaf's opaque persisted payload; nullptr if the id is absent or a split
+   nlohmann::json* LeafData(int id);
    // Stored size (logical px) of child[fixed] of a split, clamped to a positive finite value
    bool SetSplitSize(int split, float logicalPx);
 

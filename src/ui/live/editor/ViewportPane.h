@@ -40,6 +40,11 @@ public:
    void CaptureCamera(); // Editor camera fields -> this pane's stored state (on unbind / unhost)
    void ReleaseCamera(); // This pane's stored state -> editor camera fields (on bind)
 
+   // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
+   // hosting leaf's persisted payload so it is restored with the layout on the next session
+   nlohmann::json SaveSetup() const;
+   void LoadSetup(const nlohmann::json& j); // No-op on missing or invalid data (keeps the defaults)
+
    int m_leafId = -1; // Leaf hosting this pane, set in RenderPane
 
    // Image interaction state, set in RenderPane and read by the editor for input routing
