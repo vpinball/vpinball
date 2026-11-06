@@ -117,7 +117,7 @@ void EditorUI::Open()
 
    if (IsInspectMode())
    {
-      // Inspecting a live copy (play testing): keep the game playing, use the normal player camera view with default shading
+      // Inspecting a live copy (play testing): use the normal player camera view with default shading
       m_camSetupPending = CamSetup { ViewMode::PreviewCam, true, Renderer::ShadeMode::Default, ViewportPane::PredefinedView::None };
    }
    else
@@ -136,7 +136,10 @@ void EditorUI::Close()
    m_isOpened = false;
    for (const auto &[id, view] : m_areaViews)
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+      {
          vp->m_flyMode = false;
+         vp->OnUnhosted(); // Release the pane's render view: it must not draw over the game once the editor is closed
+      }
    ExitPointEditMode(false);
    RestorePartsVisibility();
    m_inspectionModal.Close();
@@ -146,6 +149,8 @@ void EditorUI::Close()
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
    m_renderer->GetPrimaryView()->m_renderScene = true; // The primary view renders the scene again once the editor areas are gone
+   if (!m_player->IsPlaying(false))
+      m_player->SetPlayState(true); // Resume the play session suspended while editing
 }
 
 void EditorUI::SetTable(PinTable *const table)
@@ -645,6 +650,8 @@ void EditorUI::RenderUI()
    m_renderer->GetPrimaryView()->m_renderScene = !showFullUI; // While areas are drawn, the scene lives in the viewport panes
    UpdateAreaLayout(); // Area rects are computed before the chrome draws the status overlay into the viewport area
    m_chrome.Render(showFullUI);
+   if (!m_isOpened)
+      return; // The editor was closed while rendering the chrome (e.g. the back-to-player button): its area views were released, stop here
    showFullUI &= !(m_player->IsEditorMode() && m_player->HasPendingTableTransition()); // The user may decide to play test the table
    if (showFullUI)
    {
