@@ -550,9 +550,12 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    m_view->m_deferResize = editor.m_splitDragNode >= 0 || editor.m_areaDrag.active;
    m_view->SetOutputArea(vec4(m_imageRect.x0 / disp.x, m_imageRect.y0 / disp.y, m_imageRect.x1 / disp.x, m_imageRect.y1 / disp.y));
    ImGui::InvisibleButton("##view", avail);
+   m_viewItemId = ImGui::GetItemID(); // The pane's scene item: its ID must not count as a widget (see RenderAreaCorners)
    m_hovered = ImGui::IsItemHovered();
    m_active = ImGui::IsItemActive();
    RenderStatusOverlay();
+   // Thin rounded border around the pane (Blender pane look)
+   ImGui::GetWindowDrawList()->AddRect(m_window->Pos, m_window->Pos + m_window->Size, EditorTheme::Border, 3.f * dpi);
    ImGui::PopID();
    ImGui::End();
    ImGui::PopStyleVar(3);
