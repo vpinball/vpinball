@@ -418,6 +418,7 @@ private:
    ModelViewProj m_mvp; // Active Model / View / Projection (includes visual nudge)
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
    ModelViewProj m_initialMVP; // Base playfield MVP in desktop mode (unused in VR)
+   bool m_customViewProj = false;
    Matrix3D m_playfieldView[2]; // Base playfield view matrices of m_initialMVP from which all views are derived in desktop mode, or the cabinet view for the VR desktop display scene render
 
    bool m_isStaticPrepassDirty = true;

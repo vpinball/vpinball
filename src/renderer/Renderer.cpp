@@ -574,7 +574,8 @@ void Renderer::ResizeRenderTargets()
    m_renderDevice->m_basicShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    m_renderDevice->m_ballShader->SetVector(ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
    DisableBallLighting(m_table->GetSettings().GetPlayer_DisableLightingForBalls());
-   InitLayout();
+   if (!m_customViewProj)
+      InitLayout();
 }
 
 void Renderer::SwapBackBufferRenderTargets()
@@ -1161,6 +1162,7 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
       m_isStaticPrepassDirty |= !(m_mvp.GetView(eye) == m_initialMVP.GetView(eye)) || !(m_mvp.GetProj(eye) == m_initialMVP.GetProj(eye));
    m_initialMVP = m_mvp;
+   m_customViewProj = false;
 }
 
 void Renderer::ApplyViewJitter(const float xpixoff, const float ypixoff)
@@ -1194,6 +1196,7 @@ void Renderer::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
    m_initialMVP.SetView(1, view);
    m_initialMVP.SetProj(0, proj);
    m_initialMVP.SetProj(1, proj);
+   m_customViewProj = true;
 }
 
 Vertex3Ds Renderer::Unproject(const int width, const int height, const Vertex3Ds& point) const
