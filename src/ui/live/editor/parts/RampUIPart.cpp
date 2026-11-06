@@ -2,7 +2,9 @@
 
 #include "RampUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -25,6 +27,90 @@ void RampUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& ro
 void RampUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
+}
+
+void RampUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      // make 1-wire ramps look unique in editor - uses ramp color
+      ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? g_settingsService.GetAppSettings().GetEditor_FillColor() : -1);
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetObject(this);
+
+      int cvertex;
+      const Vertex2D* const rgvLocal = m_part->GetRampVertex(cvertex, nullptr, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, false);
+      ctx.Polygon(rgvLocal, cvertex * 2);
+
+      delete[] rgvLocal;
+   }
+   else
+   {
+      ctx.SetFillColor(-1);
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+      ctx.SetObject(this);
+      ctx.SetObject(nullptr); // nullptr so this won't be hit-tested
+
+      bool* pfCross;
+      Vertex2D* middlePoints;
+      int cvertex;
+      const Vertex2D* const rgvLocal = m_part->GetRampVertex(cvertex, nullptr, &pfCross, nullptr, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
+      ctx.Polygon(rgvLocal, cvertex * 2);
+
+      if (m_part->IsHabitrail())
+      {
+         ctx.Polyline(middlePoints, cvertex);
+         if (m_part->m_d.m_type == RampType4Wire || m_part->m_d.m_type == RampType3WireRight)
+         {
+            ctx.SetLineColor(RGB(0, 0, 0), false, 3);
+            ctx.Polyline(rgvLocal, cvertex);
+         }
+         if (m_part->m_d.m_type == RampType4Wire || m_part->m_d.m_type == RampType3WireLeft)
+         {
+            ctx.SetLineColor(RGB(0, 0, 0), false, 3);
+            ctx.Polyline(&rgvLocal[cvertex], cvertex);
+         }
+      }
+      else
+      {
+         for (int i = 0; i < cvertex; i++)
+            if (pfCross[i])
+               ctx.Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
+      }
+
+      delete[] rgvLocal;
+      delete[] pfCross;
+      delete[] middlePoints;
+
+      bool drawDragpoints = (ctx.m_partSelected || (this == ctx.m_pointEditPart) || g_settingsService.GetAppSettings().GetEditor_ShowDragPoints());
+      // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+      if (!drawDragpoints)
+      {
+         // if any of the drag points of this object are selected then draw all the dragpoints
+         for (const auto& pdp : m_part->m_curve.GetPoints())
+         {
+            if (ctx.IsPointSelected(pdp.get()))
+            {
+               drawDragpoints = true;
+               break;
+            }
+         }
+      }
+
+      if (drawDragpoints)
+      {
+         for (size_t i = 0; i < m_part->m_curve.GetPoints().size(); i++)
+         {
+            const auto& pdp = m_part->m_curve.GetPoints()[i];
+            ctx.SetFillColor(-1);
+            ctx.SetBorderColor((ctx.m_hotPoint == pdp.get()) ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
+            ctx.SetObject(this, pdp.get());
+
+            ctx.Ellipse2(pdp->GetX(), pdp->GetY(), 8);
+         }
+      }
+   }
 }
 
 void RampUIPart::InsertPointOnCurve(const Vertex2D& pos)

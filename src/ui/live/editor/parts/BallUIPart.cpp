@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 #include "BallUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
 #include "utils/color.h"
 
@@ -25,6 +26,17 @@ void BallUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& ro
 }
 
 void BallUIPart::RenderOverlay(const EditorRenderContext& ctx) { ctx.DrawWireframe(m_part); }
+
+void BallUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+   ctx.SetFillColor(-1);
+   ctx.SetObject(this);
+   ctx.Ellipse(m_part->m_hitBall.m_d.m_pos.x, m_part->m_hitBall.m_d.m_pos.y, m_part->m_hitBall.m_d.m_radius);
+}
 
 void BallUIPart::UpdatePropertyPane(PropertyPane& props)
 {

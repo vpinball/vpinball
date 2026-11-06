@@ -2,7 +2,9 @@
 
 #include "GateUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -35,6 +37,88 @@ void GateUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
    ctx.DrawHitObjects(m_part);
+}
+
+void GateUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+   ctx.SetLineColor(RGB(0, 0, 0), false, 2);
+   ctx.SetObject(this);
+
+   const float halflength = m_part->m_d.m_length * 0.5f;
+   const float len1 = halflength * 0.5f;
+   const float len2 = len1 * 0.5f;
+   Vertex2D tmp;
+
+   ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, halflength);
+
+   {
+      const float radangle = ANGTORAD(m_part->m_d.m_rotation);
+      {
+         const float sn = sinf(radangle);
+         const float cs = cosf(radangle);
+
+         ctx.Line(m_part->m_d.m_vCenter.x + cs * halflength, m_part->m_d.m_vCenter.y + sn * halflength, m_part->m_d.m_vCenter.x - cs * halflength, m_part->m_d.m_vCenter.y - sn * halflength);
+
+         // Draw Arrow
+         ctx.SetLineColor(RGB(0, 0, 0), false, 1);
+
+         tmp.x = m_part->m_d.m_vCenter.x + sn * len1;
+         tmp.y = m_part->m_d.m_vCenter.y - cs * len1;
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y);
+      }
+
+      {
+         const float arrowang = radangle + 0.6f;
+         const float sn = sinf(arrowang);
+         const float cs = cosf(arrowang);
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x + sn * len2, m_part->m_d.m_vCenter.y - cs * len2);
+      }
+   }
+
+   {
+      const float arrowang = ANGTORAD(m_part->m_d.m_rotation) - 0.6f;
+      const float sn = sinf(arrowang);
+      const float cs = cosf(arrowang);
+
+      ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x + sn * len2, m_part->m_d.m_vCenter.y - cs * len2);
+   }
+
+   if (m_part->m_d.m_twoWay)
+   {
+      const float radangle = ANGTORAD(m_part->m_d.m_rotation - 180.f);
+      {
+         const float sn = sinf(radangle);
+         const float cs = cosf(radangle);
+
+         // Draw Arrow
+         ctx.SetLineColor(RGB(0, 0, 0), false, 1);
+
+         tmp.x = m_part->m_d.m_vCenter.x + sn * len1;
+         tmp.y = m_part->m_d.m_vCenter.y - cs * len1;
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y);
+      }
+
+      {
+         const float arrowang = radangle + 0.6f;
+         const float sn = sinf(arrowang);
+         const float cs = cosf(arrowang);
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x + sn * len2, m_part->m_d.m_vCenter.y - cs * len2);
+      }
+
+      const float arrowang = radangle - 0.6f;
+      const float sn = sinf(arrowang);
+      const float cs = cosf(arrowang);
+
+      ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x + sn * len2, m_part->m_d.m_vCenter.y - cs * len2);
+   }
 }
 
 void GateUIPart::UpdatePropertyPane(PropertyPane& props)

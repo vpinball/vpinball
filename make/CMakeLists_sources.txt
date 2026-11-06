@@ -308,6 +308,10 @@ set(VPX_SOURCES
    
    src/ui/live/editor/AreaLayout.h
    src/ui/live/editor/AreaLayout.cpp
+   src/ui/live/editor/BlueprintPane.h
+   src/ui/live/editor/BlueprintPane.cpp
+   src/ui/live/editor/BlueprintRenderContext.h
+   src/ui/live/editor/BlueprintRenderContext.cpp
    src/ui/live/editor/parts/BallUIPart.h
    src/ui/live/editor/parts/BallUIPart.cpp
    src/ui/live/editor/parts/BumperUIPart.h

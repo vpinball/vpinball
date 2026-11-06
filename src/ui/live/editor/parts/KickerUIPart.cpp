@@ -2,7 +2,9 @@
 
 #include "KickerUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -33,6 +35,56 @@ void KickerUIPart::RenderOverlay(const EditorRenderContext& ctx)
       ctx.DrawHitObjects(m_part);
    else
       ctx.DrawWireframe(m_part);
+}
+
+void KickerUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+   ctx.SetFillColor(-1);
+   ctx.SetObject(this);
+
+   // Draw Arrow to display (default) orientation
+   {
+      const float radangle = ANGTORAD(m_part->m_d.m_orientation);
+      constexpr float halflength = 50.0f;
+
+      ctx.SetLineColor(RGB(255, 0, 0), false, 1);
+
+      Vertex2D tmp;
+      {
+         const float sn = sinf(radangle);
+         const float cs = cosf(radangle);
+
+         constexpr float len1 = halflength * 0.5f;
+         tmp.x = m_part->m_d.m_vCenter.x + sn * len1;
+         tmp.y = m_part->m_d.m_vCenter.y - cs * len1;
+      }
+
+      ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y);
+      constexpr float len2 = halflength * 0.25f;
+      {
+         const float arrowang = radangle + 0.6f;
+         const float sn = sinf(arrowang);
+         const float cs = cosf(arrowang);
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x + sn * len2, m_part->m_d.m_vCenter.y - cs * len2);
+      }
+      {
+         const float arrowang = radangle - 0.6f;
+         const float sn = sinf(arrowang);
+         const float cs = cosf(arrowang);
+
+         ctx.Line(tmp.x, tmp.y, m_part->m_d.m_vCenter.x + sn * len2, m_part->m_d.m_vCenter.y - cs * len2);
+      }
+   }
+
+   ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius);
+   ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius * 0.75f);
+   ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius * 0.5f);
+   ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_radius * 0.25f);
 }
 
 void KickerUIPart::UpdatePropertyPane(PropertyPane& props)

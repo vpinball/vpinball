@@ -1347,7 +1347,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    }
 
    // Viewport keyboard actions: camera views & options, gizmo ops, drag point edit, mode cancels
-   if (m_editor.GetTargetViewport() == this && !io.WantCaptureKeyboard && m_editor.m_fileOp == nullptr)
+   // (a hovered blueprint pane owns the keyboard while the mouse is over its canvas)
+   if (m_editor.GetTargetViewport() == this && m_editor.m_hoverBp == nullptr && !io.WantCaptureKeyboard && m_editor.m_fileOp == nullptr)
    {
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {

@@ -2,6 +2,7 @@
 
 #include "DecalUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
 #include "utils/color.h"
 
@@ -30,6 +31,34 @@ void DecalUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& r
 void DecalUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawHitObjects(m_part); // Draw the UI picking quad (decals have no wireframe to display)
+}
+
+void DecalUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (m_part->m_desktopBackdrop && !m_part->GetPTable()->GetDecalsEnabled())
+      return;
+
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? RGB(0, 0, 255) : -1);
+      ctx.SetObject(this);
+
+      Vertex2D rgv[4];
+      m_part->GetEditorQuad(rgv);
+      ctx.Polygon(rgv, 4);
+   }
+   else
+   {
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetFillColor(-1);
+      ctx.SetObject(this);
+      ctx.SetObject(nullptr);
+
+      Vertex2D rgv[4];
+      m_part->GetEditorQuad(rgv);
+      ctx.Polygon(rgv, 4);
+   }
 }
 
 void DecalUIPart::UpdatePropertyPane(PropertyPane& props)

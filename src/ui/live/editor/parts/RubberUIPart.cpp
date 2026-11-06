@@ -2,7 +2,9 @@
 
 #include "RubberUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -23,6 +25,94 @@ void RubberUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& 
 void RubberUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
+}
+
+void RubberUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+      if (m_part->GetPTable()->RenderSolid())
+         ctx.SetFillColor(RGB(192, 192, 192));
+      else
+         ctx.SetFillColor(-1);
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetObject(this);
+
+      if (!m_part->m_d.m_showInEditor)
+      {
+         vector<Vertex2D> outline;
+         m_part->GetEditorOutline(outline, nullptr, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
+         if (!outline.empty())
+            ctx.Polygon(outline.data(), (int)outline.size());
+      }
+      else
+      {
+         vector<Vertex2D> edges;
+         m_part->GetEditorWireframe(edges);
+         if (!edges.empty())
+            ctx.Lines(edges.data(), (int)(edges.size() / 2));
+      }
+   }
+   else
+   {
+      ctx.SetFillColor(-1);
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+      ctx.SetObject(this);
+      ctx.SetObject(nullptr); // nullptr so this won't be hit-tested
+
+      if (!m_part->m_d.m_showInEditor)
+      {
+         vector<Vertex2D> outline;
+         vector<bool> crossFlags;
+         m_part->GetEditorOutline(outline, &crossFlags, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
+
+         if (!outline.empty())
+            ctx.Polygon(outline.data(), (int)outline.size());
+         for (size_t i = 0; i < crossFlags.size(); i++)
+            if (crossFlags[i])
+               ctx.Line(outline[i].x, outline[i].y, outline[outline.size() - i - 1].x, outline[outline.size() - i - 1].y);
+      }
+      else
+      {
+         vector<Vertex2D> edges;
+         m_part->GetEditorWireframe(edges);
+         if (!edges.empty())
+            ctx.Lines(edges.data(), (int)(edges.size() / 2));
+
+         // if rotation is used don't show dragpoints
+         return;
+      }
+
+      bool drawDragpoints = (ctx.m_partSelected || (this == ctx.m_pointEditPart) || g_settingsService.GetAppSettings().GetEditor_ShowDragPoints());
+
+      // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+      if (!drawDragpoints)
+      {
+         // if any of the dragpoints of this object are selected then draw all the dragpoints
+         for (const auto& pdp : m_part->m_curve.GetPoints())
+         {
+            if (ctx.IsPointSelected(pdp.get()))
+            {
+               drawDragpoints = true;
+               break;
+            }
+         }
+      }
+
+      if (drawDragpoints)
+      {
+         for (const auto& pdp : m_part->m_curve.GetPoints())
+         {
+            ctx.SetFillColor(-1);
+            ctx.SetBorderColor((ctx.m_hotPoint == pdp.get()) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+            ctx.SetObject(this, pdp.get());
+
+            ctx.Ellipse2(pdp->GetX(), pdp->GetY(), 8);
+         }
+      }
+   }
 }
 
 void RubberUIPart::UpdatePropertyPane(PropertyPane& props)

@@ -2,7 +2,9 @@
 
 #include "FlipperUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -29,6 +31,180 @@ void FlipperUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
    //ctx.DrawHitObjects(m_part);
+}
+
+void FlipperUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      const float rubBaseRadius = m_part->m_d.m_BaseRadius - m_part->m_d.m_rubberthickness;
+      const float rubEndRadius = m_part->m_d.m_EndRadius - m_part->m_d.m_rubberthickness;
+      const float anglerad = ANGTORAD(m_part->m_d.m_StartAngle);
+
+      m_part->m_d.m_FlipperRadius = m_part->m_d.m_FlipperRadiusMax;
+
+      ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? g_settingsService.GetAppSettings().GetEditor_FillColor() : -1);
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+
+      Vertex2D vendcenter;
+      Vertex2D rgv[4];
+      m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad, m_part->m_d.m_BaseRadius, m_part->m_d.m_EndRadius, vendcenter, rgv);
+
+      ctx.SetObject(this);
+
+      ctx.Polygon(rgv, 4);
+      ctx.Ellipse(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_BaseRadius);
+      ctx.Ellipse(vendcenter.x, vendcenter.y, m_part->m_d.m_EndRadius);
+
+      // rubber
+      m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad, rubBaseRadius, rubEndRadius, vendcenter, rgv);
+
+      ctx.SetObject(this);
+      ctx.SetLineColor(RGB(128, 0, 0), false, 0);
+
+      ctx.Polygon(rgv, 4);
+      ctx.Ellipse(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, rubBaseRadius);
+      ctx.Ellipse(vendcenter.x, vendcenter.y, rubEndRadius);
+   }
+   else
+   {
+      const float anglerad = ANGTORAD(m_part->m_d.m_StartAngle);
+      const float anglerad2 = ANGTORAD(m_part->m_d.m_EndAngle);
+      const float rubBaseRadius = m_part->m_d.m_BaseRadius - m_part->m_d.m_rubberthickness;
+      const float rubEndRadius = m_part->m_d.m_EndRadius - m_part->m_d.m_rubberthickness;
+
+      Vertex2D vendcenter;
+      Vertex2D rgv[4];
+      m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad, m_part->m_d.m_BaseRadius, m_part->m_d.m_EndRadius, vendcenter, rgv);
+
+      ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? g_settingsService.GetAppSettings().GetEditor_FillColor() : -1);
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+
+      ctx.SetObject(this);
+
+      ctx.Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+      ctx.Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+      ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_BaseRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[3].x, rgv[3].y));
+      ctx.Arc(vendcenter.x, vendcenter.y, m_part->m_d.m_EndRadius, Vertex2D(rgv[2].x, rgv[2].y), Vertex2D(rgv[1].x, rgv[1].y));
+
+      // rubber
+      m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad, rubBaseRadius, rubEndRadius, vendcenter, rgv);
+
+      ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? g_settingsService.GetAppSettings().GetEditor_FillColor() : -1);
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+
+      ctx.SetObject(this);
+
+      ctx.Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+      ctx.Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+      ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, rubBaseRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[3].x, rgv[3].y));
+      ctx.Arc(vendcenter.x, vendcenter.y, rubEndRadius, Vertex2D(rgv[2].x, rgv[2].y), Vertex2D(rgv[1].x, rgv[1].y));
+
+      // draw the flipper up position
+      m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad2, m_part->m_d.m_BaseRadius, m_part->m_d.m_EndRadius, vendcenter, rgv);
+
+      ctx.SetLineColor(RGB(128, 128, 128), true, 0);
+
+      ctx.Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+      ctx.Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+      ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_BaseRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[3].x, rgv[3].y));
+      ctx.Arc(vendcenter.x, vendcenter.y, m_part->m_d.m_EndRadius, Vertex2D(rgv[2].x, rgv[2].y), Vertex2D(rgv[1].x, rgv[1].y));
+
+      rgv[0].x = m_part->m_d.m_Center.x + sinf(anglerad) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+      rgv[0].y = m_part->m_d.m_Center.y - cosf(anglerad) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+
+      rgv[1].x = m_part->m_d.m_Center.x + sinf(anglerad2) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+      rgv[1].y = m_part->m_d.m_Center.y - cosf(anglerad2) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+
+      if (m_part->m_d.m_EndAngle < m_part->m_d.m_StartAngle)
+         ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[1].x, rgv[1].y));
+      else
+         ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius, Vertex2D(rgv[1].x, rgv[1].y), Vertex2D(rgv[0].x, rgv[0].y));
+
+      if (m_part->m_d.m_FlipperRadiusMin > 0.f && m_part->m_d.m_FlipperRadiusMax > m_part->m_d.m_FlipperRadiusMin)
+      {
+         m_part->m_d.m_FlipperRadius = (m_part->m_ptable->m_globalDifficulty > 0.f) ? m_part->m_d.m_FlipperRadiusMin : m_part->m_d.m_FlipperRadiusMax;
+         m_part->m_d.m_FlipperRadius = max(m_part->m_d.m_FlipperRadius, m_part->m_d.m_BaseRadius - m_part->m_d.m_EndRadius + 0.05f);
+      }
+      else
+         return;
+
+      if (m_part->m_d.m_FlipperRadius != m_part->m_d.m_FlipperRadiusMax)
+      {
+         m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad, m_part->m_d.m_BaseRadius, m_part->m_d.m_EndRadius, vendcenter, rgv);
+
+         ctx.SetObject(this);
+
+         ctx.Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+         ctx.Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+         ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_BaseRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[3].x, rgv[3].y));
+         ctx.Arc(vendcenter.x, vendcenter.y, m_part->m_d.m_EndRadius, Vertex2D(rgv[2].x, rgv[2].y), Vertex2D(rgv[1].x, rgv[1].y));
+
+         m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad2, m_part->m_d.m_BaseRadius, m_part->m_d.m_EndRadius, vendcenter, rgv);
+
+         ctx.SetLineColor(RGB(128, 128, 128), true, 0);
+
+         ctx.Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+         ctx.Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+         ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_BaseRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[3].x, rgv[3].y));
+         ctx.Arc(vendcenter.x, vendcenter.y, m_part->m_d.m_EndRadius, Vertex2D(rgv[2].x, rgv[2].y), Vertex2D(rgv[1].x, rgv[1].y));
+
+         rgv[0].x = m_part->m_d.m_Center.x + sinf(anglerad) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+         rgv[0].y = m_part->m_d.m_Center.y - cosf(anglerad) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+
+         rgv[1].x = m_part->m_d.m_Center.x + sinf(anglerad2) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+         rgv[1].y = m_part->m_d.m_Center.y - cosf(anglerad2) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+
+         if (m_part->m_d.m_EndAngle < m_part->m_d.m_StartAngle)
+            ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[1].x, rgv[1].y));
+         else
+            ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius, Vertex2D(rgv[1].x, rgv[1].y), Vertex2D(rgv[0].x, rgv[0].y));
+
+         m_part->m_d.m_FlipperRadius = m_part->m_d.m_FlipperRadiusMax - (m_part->m_d.m_FlipperRadiusMax - m_part->m_d.m_FlipperRadiusMin) * m_part->m_ptable->m_globalDifficulty;
+         m_part->m_d.m_FlipperRadius = max(m_part->m_d.m_FlipperRadius, m_part->m_d.m_BaseRadius - m_part->m_d.m_EndRadius + 0.05f);
+
+         m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad, m_part->m_d.m_BaseRadius, m_part->m_d.m_EndRadius, vendcenter, rgv);
+
+         ctx.SetObject(this);
+
+         ctx.Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+         ctx.Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+         ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_BaseRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[3].x, rgv[3].y));
+         ctx.Arc(vendcenter.x, vendcenter.y, m_part->m_d.m_EndRadius, Vertex2D(rgv[2].x, rgv[2].y), Vertex2D(rgv[1].x, rgv[1].y));
+
+         m_part->GetVertices(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, anglerad2, m_part->m_d.m_BaseRadius, m_part->m_d.m_EndRadius, vendcenter, rgv);
+
+         ctx.SetLineColor(RGB(128, 128, 128), true, 0);
+
+         ctx.Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+         ctx.Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
+
+         ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_BaseRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[3].x, rgv[3].y));
+         ctx.Arc(vendcenter.x, vendcenter.y, m_part->m_d.m_EndRadius, Vertex2D(rgv[2].x, rgv[2].y), Vertex2D(rgv[1].x, rgv[1].y));
+
+         rgv[0].x = m_part->m_d.m_Center.x + sinf(anglerad) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+         rgv[0].y = m_part->m_d.m_Center.y - cosf(anglerad) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+
+         rgv[1].x = m_part->m_d.m_Center.x + sinf(anglerad2) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+         rgv[1].y = m_part->m_d.m_Center.y - cosf(anglerad2) * (m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius);
+
+         if (m_part->m_d.m_EndAngle < m_part->m_d.m_StartAngle)
+            ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius, Vertex2D(rgv[0].x, rgv[0].y), Vertex2D(rgv[1].x, rgv[1].y));
+         else
+            ctx.Arc(m_part->m_d.m_Center.x, m_part->m_d.m_Center.y, m_part->m_d.m_FlipperRadius + m_part->m_d.m_EndRadius, Vertex2D(rgv[1].x, rgv[1].y), Vertex2D(rgv[0].x, rgv[0].y));
+      }
+
+      m_part->m_d.m_FlipperRadius = m_part->m_d.m_FlipperRadiusMax;
+   }
 }
 
 void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)

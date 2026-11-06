@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 #include "LightUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
 #include "utils/color.h"
 
@@ -48,6 +49,101 @@ void LightUIPart::RenderOverlay(const EditorRenderContext& ctx)
    ctx.DrawLine(Vertex3Ds(c.x, c.y - 10.f, z), Vertex3Ds(c.x, c.y + 10.f, z), color);
    if (m_part->m_d.m_showBulbMesh)
       ctx.DrawCircle(Vertex3Ds(c.x, c.y, z), xAxis, yAxis, m_part->m_d.m_meshRadius * 0.5f, color);
+}
+
+void LightUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetBorderColor(-1, false, 0);
+      ctx.SetFillColor(m_part->GetPTable()->RenderSolid() ? (((m_part->m_d.m_color & 0xFEFEFE) + (m_part->m_d.m_color2 & 0xFEFEFE)) / 2) : -1);
+      ctx.SetObject(this);
+
+      switch (m_part->m_d.m_shape)
+      {
+      default:
+      case ShapeCustom:
+         vector<RenderVertex> vvertex;
+         m_part->m_curve.GetRgVertex(vvertex);
+
+         // Check if we should display the image in the editor.
+         ctx.Polygon(vvertex);
+
+         break;
+      }
+   }
+   else
+   {
+      bool drawDragpoints = (ctx.m_partSelected || (this == ctx.m_pointEditPart) || g_settingsService.GetAppSettings().GetEditor_ShowDragPoints());
+
+      // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+      if (!drawDragpoints)
+      {
+         // if any of the dragpoints of this object are selected then draw all the dragpoints
+         for (const auto& pdp : m_part->m_curve.GetPoints())
+         {
+            if (ctx.IsPointSelected(pdp.get()))
+            {
+               drawDragpoints = true;
+               break;
+            }
+         }
+      }
+
+      // Port of the win32 RenderOutline helper
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetLineColor(RGB(0, 0, 0), false, 0);
+      ctx.SetFillColor(-1);
+      ctx.SetObject(this);
+      ctx.SetObject(nullptr);
+
+      switch (m_part->m_d.m_shape)
+      {
+      case ShapeCircle:
+      default:
+      {
+         ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_falloff);
+         break;
+      }
+
+      case ShapeCustom:
+      {
+         vector<RenderVertex> vvertex;
+         m_part->m_curve.GetRgVertex(vvertex);
+         ctx.SetBorderColor(RGB(255, 0, 0), false, 0);
+         ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_falloff);
+         ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+         ctx.Polygon(vvertex);
+
+         ctx.SetObject(this); // The bulb center is editable as the part's edit center (win32 m_centerPart)
+         break;
+      }
+      }
+
+      if (m_part->m_d.m_shape == ShapeCustom || g_settingsService.GetAppSettings().GetEditor_DrawLightCenters())
+      {
+         ctx.Line(m_part->m_d.m_vCenter.x - 10.0f, m_part->m_d.m_vCenter.y, m_part->m_d.m_vCenter.x + 10.0f, m_part->m_d.m_vCenter.y);
+         ctx.Line(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y - 10.0f, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y + 10.0f);
+      }
+
+      if (m_part->m_d.m_showBulbMesh)
+      {
+         ctx.SetBorderColor(RGB(0, 127, 255), false, 0);
+         ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y, m_part->m_d.m_meshRadius * 0.5f);
+      }
+
+      if ((m_part->m_d.m_shape == ShapeCustom) && drawDragpoints)
+      {
+         for (const auto& pdp : m_part->m_curve.GetPoints())
+         {
+            ctx.SetFillColor(-1);
+            ctx.SetBorderColor((ctx.m_hotPoint == pdp.get()) ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
+            ctx.SetObject(this, pdp.get());
+
+            ctx.Ellipse2(pdp->GetX(), pdp->GetY(), 8);
+         }
+      }
+   }
 }
 
 void LightUIPart::UpdatePropertyPane(PropertyPane& props)

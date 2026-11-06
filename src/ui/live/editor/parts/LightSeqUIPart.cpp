@@ -2,7 +2,9 @@
 
 #include "LightSeqUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/color.h"
 
 namespace VPX::EditorUI
 {
@@ -54,6 +56,65 @@ void LightSeqUIPart::RenderOverlay(const EditorRenderContext& ctx)
       ctx.DrawCircle(Vertex3Ds(c.x + sn * 7.0f, c.y - cs * 7.0f, 0.f), xAxis, yAxis, 2.f, color);
    }
    ctx.DrawCircle(Vertex3Ds(c.x, c.y - 2.5f, 0.f), xAxis, yAxis, 2.f, color);
+}
+
+void LightSeqUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+   {
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetObject(this);
+
+      for (int i = 0; i < 8; ++i)
+      {
+         ctx.SetFillColor((i % 2 == 0) ? RGB(255, 0, 0) : RGB(128, 0, 0));
+         const float angle = (float)((M_PI * 2.0) / 8.0) * (float)i;
+         const float sn = sinf(angle);
+         const float cs = cosf(angle);
+         ctx.Ellipse(m_part->m_d.m_v.x + sn * 12.0f, m_part->m_d.m_v.y - cs * 12.0f, 4.0f);
+      }
+
+      ctx.SetFillColor(RGB(255, 0, 0));
+      ctx.Ellipse(m_part->m_d.m_v.x, m_part->m_d.m_v.y - 3.0f, 4.0f);
+   }
+   else
+   {
+      ctx.SetFillColor(-1);
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+
+      ctx.SetObject(this);
+
+      ctx.Ellipse(m_part->m_d.m_v.x, m_part->m_d.m_v.y, 18.0f);
+
+      for (int i = 0; i < 8; ++i)
+      {
+         const float angle = (float)((M_PI * 2.0) / 8.0) * (float)i;
+         const float sn = sinf(angle);
+         const float cs = cosf(angle);
+         ctx.Ellipse(m_part->m_d.m_v.x + sn * 12.0f, m_part->m_d.m_v.y - cs * 12.0f, 4.0f);
+      }
+
+      ctx.Ellipse(m_part->m_d.m_v.x, m_part->m_d.m_v.y - 3.0f, 4.0f);
+
+      // Port of the win32 RenderOutline helper (animation center marker)
+      ctx.SetBorderColor(RGB(0, 0, 0), false, 0);
+      ctx.SetObject(this);
+
+      ctx.Line(m_part->m_d.m_vCenter.x - 10.0f, m_part->m_d.m_vCenter.y, m_part->m_d.m_vCenter.x + 10.0f, m_part->m_d.m_vCenter.y);
+      ctx.Line(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y - 10.0f, m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y + 10.0f);
+
+      for (int i = 0; i < 8; ++i)
+      {
+         ctx.SetFillColor((i % 2 == 0) ? RGB(255, 0, 0) : RGB(128, 0, 0));
+         const float angle = (float)((M_PI * 2.0) / 8.0) * (float)i;
+         const float sn = sinf(angle);
+         const float cs = cosf(angle);
+         ctx.Ellipse(m_part->m_d.m_vCenter.x + sn * 7.0f, m_part->m_d.m_vCenter.y - cs * 7.0f, 2.0f);
+      }
+
+      ctx.SetFillColor(RGB(255, 0, 0));
+      ctx.Ellipse(m_part->m_d.m_vCenter.x, m_part->m_d.m_vCenter.y - 2.5f, 2.0f);
+   }
 }
 
 void LightSeqUIPart::UpdatePropertyPane(PropertyPane& props)

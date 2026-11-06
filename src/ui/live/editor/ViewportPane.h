@@ -75,8 +75,8 @@ public:
 
    // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
    // hosting leaf's persisted payload so it is restored with the layout on the next session
-   nlohmann::json SaveSetup() const;
-   void LoadSetup(const nlohmann::json& j); // No-op on missing or invalid data (keeps the defaults)
+   nlohmann::json SaveSetup() const override;
+   void LoadSetup(const nlohmann::json& j) override; // No-op on missing or invalid data (keeps the defaults)
 
    // Screen <-> table-space mapping of this pane, in display pixels over m_imageRect, from the
    // camera matrices the pane renders with, so picking, the 2D overlays and the gizmo always

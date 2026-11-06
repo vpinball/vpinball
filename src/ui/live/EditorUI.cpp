@@ -16,6 +16,7 @@
 #include <emscripten.h>
 #endif
 
+#include "editor/BlueprintPane.h"
 #include "editor/EditorTheme.h"
 #include "editor/parts/EditorUIPart.h"
 #include "editor/parts/EditorUIPartRegistry.h"
@@ -742,6 +743,8 @@ void EditorUI::RenderUI()
    for (const auto &[id, view] : m_areaViews)
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
          vp->RenderUI(overlayDrawList);
+      else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()))
+         bp->RenderUI(overlayDrawList);
 
    // Ctrl+S must work while a widget (e.g. a slider) has keyboard focus; only a text input being edited takes precedence
    if (m_fileOp == nullptr && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_S, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
@@ -1133,7 +1136,7 @@ void EditorUI::RequestAddPartPopup(const ImVec2 &pos)
    // in the same window scope as the matching BeginPopup): defer it to the pane under the position,
    int leaf = AreaLayout::LeafAt(m_leafRects, pos.x, pos.y);
    const AreaNode *const node = leaf >= 0 ? m_layout.Find(leaf) : nullptr;
-   if (node == nullptr || node->isSplit || !IsViewportType(node->type))
+   if (node == nullptr || node->isSplit || (!IsViewportType(node->type) && node->type != AreaType::Blueprint))
       leaf = -1;
    m_addPartPopupLeaf = leaf;
    m_addPartPopupPos = pos;
@@ -1372,9 +1375,7 @@ void EditorUI::PasteSelection(const ImVec2 &pos)
       return;
    }
    // Move the pasted parts so that their combined center lands at the given position (in the table XY plane, keeping their Z)
-   Vertex2D target(0.f, 0.f);
-   if (ViewportPane *const vp = GetTargetViewport(); vp != nullptr)
-      target = vp->UnprojectToPlane(pos, 0.f);
+   Vertex2D target = TablePosAt(pos);
    const Vertex2D offset(target.x - 0.5f * (pasteMin.x + pasteMax.x), target.y - 0.5f * (pasteMin.y + pasteMax.y));
    for (IEditable *const editable : pasted)
    {
@@ -1908,6 +1909,7 @@ const char *EditorUI::AreaTypeName(const AreaType type)
    return type == AreaType::Viewport       ? "3D Viewport"
       : type == AreaType::ViewportBackdrop ? "Desktop Backdrop"
       : type == AreaType::ViewportPreview  ? "Render Preview"
+      : type == AreaType::Blueprint        ? "Blueprint"
                                            : AreaTypeJsonName(type);
 }
 
@@ -1922,6 +1924,7 @@ const char *EditorUI::AreaTypeIcon(const AreaType type)
    case AreaType::Viewport: return ICON_LC_MOVE_3D;
    case AreaType::ViewportBackdrop: return ICON_LC_IMAGE;
    case AreaType::ViewportPreview: return ICON_LC_PLAY;
+   case AreaType::Blueprint: return ICON_LC_RULER;
    case AreaType::Count: break;
    }
    return "";
@@ -1930,7 +1933,7 @@ const char *EditorUI::AreaTypeIcon(const AreaType type)
 bool EditorUI::IsAreaTypeImplemented(const AreaType type)
 {
    // The area types a leaf may take through the editor type switcher (the others are added with their views)
-   return type == AreaType::Outliner || type == AreaType::Properties || IsViewportType(type) || type == AreaType::PartLibrary || type == AreaType::Script;
+   return type == AreaType::Outliner || type == AreaType::Properties || IsViewportType(type) || type == AreaType::PartLibrary || type == AreaType::Script || type == AreaType::Blueprint;
 }
 
 std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
@@ -1942,6 +1945,7 @@ std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
    case AreaType::Viewport: return std::make_unique<ViewportPane>(*this, ViewMode::EditorCam);
    case AreaType::ViewportBackdrop: return std::make_unique<ViewportPane>(*this, ViewMode::DesktopBackdrop);
    case AreaType::ViewportPreview: return std::make_unique<ViewportPane>(*this, ViewMode::PreviewCam);
+   case AreaType::Blueprint: return std::make_unique<BlueprintPane>(*this);
    case AreaType::PartLibrary: return std::make_unique<PartLibraryPane>(*this);
    case AreaType::Script: return std::make_unique<ScriptPane>(*this);
    default: return nullptr;
@@ -2131,11 +2135,10 @@ void EditorUI::LoadAreaLayoutSettings()
 
 void EditorUI::SaveAreaLayoutSettings()
 {
-   // Persist the 3D view setup of each viewport pane (camera, shading, ...) in its leaf's payload
+   // Persist each pane's view setup (3D camera, blueprint zoom/offset, ...) in its leaf's payload
    for (const auto &[id, view] : m_areaViews)
-      if (const ViewportPane *const vp = dynamic_cast<const ViewportPane *>(view.get()); vp != nullptr)
-         if (nlohmann::json *const data = m_layout.LeafData(id); data != nullptr)
-            *data = vp->SaveSetup();
+      if (nlohmann::json *const data = m_layout.LeafData(id); data != nullptr)
+         *data = view->SaveSetup();
    Settings &settings = g_settingsService.GetAppSettings();
    const string json = m_layout.ToJson().dump();
    switch (m_activeLayoutIndex)
@@ -2397,6 +2400,7 @@ void EditorUI::RenderAreas()
    for (const LeafRect &leaf : m_leafRects)
       shown[leaf.id] = leaf.visible;
    m_hoverVp = nullptr;
+   m_hoverBp = nullptr;
    for (const auto &[id, view] : m_areaViews)
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
       {
@@ -2404,6 +2408,8 @@ void EditorUI::RenderAreas()
          if (vp->m_hovered)
             m_hoverVp = vp;
       }
+      else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()); bp != nullptr && bp->m_hovered)
+         m_hoverBp = bp;
    for (const LeafRect &leaf : m_leafRects)
    {
       if (!leaf.visible)
@@ -2413,9 +2419,8 @@ void EditorUI::RenderAreas()
       {
          it->second = CreateAreaView(leaf.type);
          // A leaf restored from the persisted layout may carry its view's setup (the 3D view's camera, shading, ...)
-         if (auto *const vp = dynamic_cast<ViewportPane *>(it->second.get()); vp != nullptr)
-            if (const AreaNode *const node = m_layout.Find(leaf.id); node != nullptr)
-               vp->LoadSetup(node->data);
+         if (const AreaNode *const node = m_layout.Find(leaf.id); node != nullptr)
+            it->second->LoadSetup(node->data);
       }
       if (it->second != nullptr)
       {
@@ -2434,6 +2439,11 @@ void EditorUI::RenderAreas()
       m_captureVp = m_hoverVp;
    else if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsMouseDown(ImGuiMouseButton_Middle) && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
       m_captureVp = nullptr;
+   // Same routing for the blueprint panes (2D canvas interactions)
+   if (m_hoverBp != nullptr && m_hoverBp->m_active)
+      m_captureBp = m_hoverBp;
+   else if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsMouseDown(ImGuiMouseButton_Middle) && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      m_captureBp = nullptr;
 }
 
 void EditorUI::RenderAreaTypeButton(const int leafId)
@@ -2965,6 +2975,24 @@ void EditorUI::ShowAreaEditor(const AreaType type)
 // Viewport panes
 
 ViewportPane *EditorUI::HoveredViewportPane() const { return m_hoverVp; }
+
+Vertex2D EditorUI::TablePosAt(const ImVec2 &pos) const
+{
+   // Display-space position to table XY through the view pane under it (0,0 when none)
+   const int leaf = AreaLayout::LeafAt(m_leafRects, pos.x, pos.y);
+   if (leaf >= 0)
+   {
+      const auto it = m_areaViews.find(leaf);
+      if (it != m_areaViews.end() && it->second != nullptr)
+      {
+         if (const auto *const bp = dynamic_cast<BlueprintPane *>(it->second.get()); bp != nullptr)
+            return bp->Unproject(pos);
+         if (const auto *const vp = dynamic_cast<ViewportPane *>(it->second.get()); vp != nullptr)
+            return vp->UnprojectToPlane(pos, 0.f);
+      }
+   }
+   return Vertex2D(0.f, 0.f);
+}
 
 ViewportPane *EditorUI::GetTargetViewport() const
 {

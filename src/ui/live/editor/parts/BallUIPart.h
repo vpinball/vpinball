@@ -16,6 +16,7 @@ public:
    void SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) override;
 
    void RenderOverlay(const EditorRenderContext& ctx) override;
+   void RenderBlueprint(const BlueprintRenderContext& ctx) override;
 
    void UpdatePropertyPane(PropertyPane& props) override;
 };

@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 #include "PrimitiveUIPart.h"
 
+#include "../BlueprintRenderContext.h"
 #include "core/extern.h"
 #include "core/player.h"
 #include "ui/live/FileDialog.h"
@@ -39,6 +40,52 @@ void PrimitiveUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec
 void PrimitiveUIPart::RenderOverlay(const EditorRenderContext& ctx)
 {
    ctx.DrawWireframe(m_part);
+}
+
+void PrimitiveUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
+{
+   if (ctx.GetPass() == BlueprintRenderContext::Pass::Fill)
+      return;
+
+   m_part->RecalculateMatrices();
+   m_part->TransformVertices();
+
+   ctx.SetLineColor(RGB(0, 0, 0), false, 1);
+   ctx.SetObject(this);
+   if (!m_part->m_d.m_displayTexture)
+   {
+      vector<Vertex2D> edges, polyline;
+      m_part->GetEditorWireframe(edges, polyline);
+      if (!edges.empty())
+         ctx.Lines(edges.data(), (int)(edges.size() / 2));
+      if (!polyline.empty())
+         ctx.Polyline(polyline.data(), (int)polyline.size());
+   }
+
+   // draw center marker
+   ctx.SetLineColor(RGB(128, 128, 128), false, 1);
+   ctx.Line(m_part->m_d.m_vPosition.x - 10.0f, m_part->m_d.m_vPosition.y, m_part->m_d.m_vPosition.x + 10.0f, m_part->m_d.m_vPosition.y);
+   ctx.Line(m_part->m_d.m_vPosition.x, m_part->m_d.m_vPosition.y - 10.0f, m_part->m_d.m_vPosition.x, m_part->m_d.m_vPosition.y + 10.0f);
+
+   if (m_part->m_d.m_displayTexture)
+   {
+      Texture* const ppi = m_part->m_ptable->GetImage(m_part->m_d.m_szImage);
+      if (ppi)
+      {
+         vector<Vertex2D> triangles;
+         m_part->GetEditorTriangles(triangles);
+         vector<RenderVertex> vvertex;
+         vvertex.reserve(triangles.size());
+         for (const Vertex2D& v : triangles)
+         {
+            RenderVertex rv;
+            rv.x = v.x;
+            rv.y = v.y;
+            vvertex.push_back(rv);
+         }
+         ctx.PolygonImage(vvertex, ppi, m_part->m_ptable->m_left, m_part->m_ptable->m_top, m_part->m_ptable->m_right, m_part->m_ptable->m_bottom);
+      }
+   }
 }
 
 void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
