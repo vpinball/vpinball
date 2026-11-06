@@ -584,7 +584,7 @@ fi
 # build libogg, libopus, opusfile (Opus sounds)
 #
 
-OPUS_EXPECTED_SHA="${LIBOGG_SHA}-${LIBOPUS_SHA}-${OPUSFILE_SHA}_001"
+OPUS_EXPECTED_SHA="${LIBOGG_SHA}-${LIBOPUS_SHA}-${OPUSFILE_SHA}_002"
 OPUS_FOUND_SHA="$([ -f opus/cache.txt ] && cat opus/cache.txt || echo "")"
 
 if [ "${OPUS_EXPECTED_SHA}" != "${OPUS_FOUND_SHA}" ]; then
@@ -605,6 +605,7 @@ if [ "${OPUS_EXPECTED_SHA}" != "${OPUS_FOUND_SHA}" ]; then
       -DINSTALL_DOCS=OFF \
       -DBUILD_TESTING=OFF \
       -DCMAKE_INSTALL_PREFIX="$PWD/../install" \
+      -DCMAKE_INSTALL_LIBDIR=lib \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    cmake --install build
@@ -621,6 +622,7 @@ if [ "${OPUS_EXPECTED_SHA}" != "${OPUS_FOUND_SHA}" ]; then
       -DOPUS_BUILD_PROGRAMS=OFF \
       -DOPUS_BUILD_TESTING=OFF \
       -DCMAKE_INSTALL_PREFIX="$PWD/../install" \
+      -DCMAKE_INSTALL_LIBDIR=lib \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    cmake --install build
@@ -639,6 +641,7 @@ if [ "${OPUS_EXPECTED_SHA}" != "${OPUS_FOUND_SHA}" ]; then
       -DOP_DISABLE_EXAMPLES=ON \
       -DCMAKE_PREFIX_PATH="$PWD/../install" \
       -DCMAKE_INSTALL_PREFIX="$PWD/../install" \
+      -DCMAKE_INSTALL_LIBDIR=lib \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    cmake --install build
