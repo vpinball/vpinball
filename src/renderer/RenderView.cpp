@@ -349,14 +349,19 @@ void RenderView::InitLayout(const float xpixoff, const float ypixoff)
    if (r->m_stereo3D == STEREO_VR)
       return;
    TRACE_FUNCTION();
-   const ViewSetup& viewSetup = r->m_table->GetViewSetup();
+   // The layout follows the view's own mode when one is forced (editor preview panes), else the table's mode
+   const ViewSetupID mode = m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode();
+   const ViewSetup& viewSetup = r->m_table->mViewSetups[mode];
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    const bool stereo = r->m_stereo3Denabled && (r->m_stereo3D != STEREO_OFF) && (r->m_stereo3D != STEREO_VR);
 #elif defined(ENABLE_DX9)
    constexpr bool stereo = false;
 #endif
-   viewSetup.ComputeMVP(
-      r->m_table, GetDisplayAspectRatio(), stereo, m_mvp, vec3(r->m_cam.x, r->m_cam.y, r->m_cam.z), r->m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
+   // A view outputting to a sub-rect of its target (editor panes) is framed on its own aspect, not the display's
+   int outW = 0, outH = 0;
+   GetOutputAreaSize(outW, outH);
+   const float aspect = outW > 0 && outH > 0 ? static_cast<float>(outW) / static_cast<float>(outH) : GetDisplayAspectRatio();
+   viewSetup.ComputeMVP(r->m_table, aspect, stereo, m_mvp, vec3(r->m_cam.x, r->m_cam.y, r->m_cam.z), r->m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
    for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
       m_isStaticPrepassDirty |= !(m_mvp.GetView(eye) == m_initialMVP.GetView(eye)) || !(m_mvp.GetProj(eye) == m_initialMVP.GetProj(eye));
    m_initialMVP = m_mvp;

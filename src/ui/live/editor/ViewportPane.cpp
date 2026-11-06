@@ -370,6 +370,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
             ImGui::PopStyleColor();
          ImGui::SameLine();
       }
+      ImGui::NewLine();
    }
    else // A render preview has no toolbar (no selection, shading, camera edits, ...)
    {
@@ -453,64 +454,64 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          ImGui::SameLine();
       }
 
-   // Right side of the header: viewport overlays, selection filter and camera orbit lock
-   const ImGuiStyle& style = ImGui::GetStyle();
-   const float rightW = //
-      ImGui::CalcTextSize(ICON_FK_STICKY_NOTE, nullptr, true).x + style.FramePadding.x * 2.0f //
-      + ImGui::CalcTextSize(ICON_FK_FILTER, nullptr, true).x + style.FramePadding.x * 2.0f //
-      + ImGui::CalcTextSize(ICON_FK_LOCK, nullptr, true).x + style.FramePadding.x * 2.0f //
-      + style.ItemSpacing.x * 2.0f;
-   const float rightX = rect.Width() - pad - rightW;
-   ImGui::SameLine();
-   if (rightX > ImGui::GetCursorPosX())
-      ImGui::SetCursorPosX(rightX);
-   if (ImGui::Button(ICON_FK_STICKY_NOTE)) // Overlay options popover
-      ImGui::OpenPopup("Overlay Popup");
-   if (ImGui::BeginPopup("Overlay Popup"))
-   {
-      ImGui::TextUnformatted("Overlays:");
-      ImGui::Separator();
-      ImGui::Checkbox("Overlay selection", &editor.m_selectionOverlay);
-      ImGui::Separator();
-      ImGui::TextUnformatted("Physic Overlay:");
-      if (ImGui::RadioButton("None", editor.m_physOverlay == EditorUI::PhysicOverlay::None))
-         editor.m_physOverlay = EditorUI::PhysicOverlay::None;
-      if (ImGui::RadioButton("Selected", editor.m_physOverlay == EditorUI::PhysicOverlay::Selected))
-         editor.m_physOverlay = EditorUI::PhysicOverlay::Selected;
-      if (ImGui::RadioButton("All", editor.m_physOverlay == EditorUI::PhysicOverlay::All))
-         editor.m_physOverlay = EditorUI::PhysicOverlay::All;
-      ImGui::EndPopup();
-   }
-   ImGui::SameLine();
-   if (ImGui::Button(ICON_FK_FILTER)) // Selection filter popover
-      ImGui::OpenPopup("Selection filter Popup");
-   if (ImGui::BeginPopup("Selection filter Popup"))
-   {
-      bool pf = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Playfield);
-      bool prims = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Primitives);
-      bool lights = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Lights);
-      bool flashers = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Flashers);
-      ImGui::TextUnformatted("Selection filters:");
-      ImGui::Separator();
-      if (ImGui::Checkbox("Playfield", &pf))
-         editor.m_selectionFilter = pf ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Playfield) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Playfield);
-      if (ImGui::Checkbox("Primitives", &prims))
-         editor.m_selectionFilter = prims ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Primitives) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Primitives);
-      if (ImGui::Checkbox("Lights", &lights))
-         editor.m_selectionFilter = lights ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Lights) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Lights);
-      if (ImGui::Checkbox("Flashers", &flashers))
-         editor.m_selectionFilter = flashers ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Flashers) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Flashers);
-      ImGui::EndPopup();
-   }
-   ImGui::SameLine();
-   if (orbitLock)
-      ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-   if (ImGui::Button(orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK))
-      orbitLock = !orbitLock;
-   if (orbitLock)
-      ImGui::PopStyleColor();
-   if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("Lock camera orbit\n[Numpad /]");
+      // Right side of the header: viewport overlays, selection filter and camera orbit lock
+      const ImGuiStyle& style = ImGui::GetStyle();
+      const float rightW = //
+         ImGui::CalcTextSize(ICON_FK_STICKY_NOTE, nullptr, true).x + style.FramePadding.x * 2.0f //
+         + ImGui::CalcTextSize(ICON_FK_FILTER, nullptr, true).x + style.FramePadding.x * 2.0f //
+         + ImGui::CalcTextSize(ICON_FK_LOCK, nullptr, true).x + style.FramePadding.x * 2.0f //
+         + style.ItemSpacing.x * 2.0f;
+      const float rightX = rect.Width() - pad - rightW;
+      ImGui::SameLine();
+      if (rightX > ImGui::GetCursorPosX())
+         ImGui::SetCursorPosX(rightX);
+      if (ImGui::Button(ICON_FK_STICKY_NOTE)) // Overlay options popover
+         ImGui::OpenPopup("Overlay Popup");
+      if (ImGui::BeginPopup("Overlay Popup"))
+      {
+         ImGui::TextUnformatted("Overlays:");
+         ImGui::Separator();
+         ImGui::Checkbox("Overlay selection", &editor.m_selectionOverlay);
+         ImGui::Separator();
+         ImGui::TextUnformatted("Physic Overlay:");
+         if (ImGui::RadioButton("None", editor.m_physOverlay == EditorUI::PhysicOverlay::None))
+            editor.m_physOverlay = EditorUI::PhysicOverlay::None;
+         if (ImGui::RadioButton("Selected", editor.m_physOverlay == EditorUI::PhysicOverlay::Selected))
+            editor.m_physOverlay = EditorUI::PhysicOverlay::Selected;
+         if (ImGui::RadioButton("All", editor.m_physOverlay == EditorUI::PhysicOverlay::All))
+            editor.m_physOverlay = EditorUI::PhysicOverlay::All;
+         ImGui::EndPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(ICON_FK_FILTER)) // Selection filter popover
+         ImGui::OpenPopup("Selection filter Popup");
+      if (ImGui::BeginPopup("Selection filter Popup"))
+      {
+         bool pf = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Playfield);
+         bool prims = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Primitives);
+         bool lights = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Lights);
+         bool flashers = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Flashers);
+         ImGui::TextUnformatted("Selection filters:");
+         ImGui::Separator();
+         if (ImGui::Checkbox("Playfield", &pf))
+            editor.m_selectionFilter = pf ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Playfield) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Playfield);
+         if (ImGui::Checkbox("Primitives", &prims))
+            editor.m_selectionFilter = prims ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Primitives) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Primitives);
+         if (ImGui::Checkbox("Lights", &lights))
+            editor.m_selectionFilter = lights ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Lights) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Lights);
+         if (ImGui::Checkbox("Flashers", &flashers))
+            editor.m_selectionFilter = flashers ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Flashers) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Flashers);
+         ImGui::EndPopup();
+      }
+      ImGui::SameLine();
+      if (orbitLock)
+         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+      if (ImGui::Button(orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK))
+         orbitLock = !orbitLock;
+      if (orbitLock)
+         ImGui::PopStyleColor();
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip("Lock camera orbit\n[Numpad /]");
    }
 
    const float headerBottom = ImGui::GetItemRectMax().y + pad;
@@ -559,8 +560,12 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    // Defer the render target chain rebuild while an area op is resizing the pane: recreating all the view and
    // probe targets on every mouse move breaks the accumulated renders (darkened view) and stalls the frame
    m_view->m_deferResize = editor.m_splitDragNode >= 0 || editor.m_areaDrag.active;
-   m_view->SetOutputArea(vec4(m_imageRect.x0 / disp.x, m_imageRect.y0 / disp.y, m_imageRect.x1 / disp.x, m_imageRect.y1 / disp.y));
-   ImGui::InvisibleButton("##view", avail);
+   const bool validArea = avail.x > 0.f && avail.y > 0.f; // A degenerate area (collapsed pane) must not drive the view's output rect
+   if (validArea)
+      m_view->SetOutputArea(vec4(m_imageRect.x0 / disp.x, m_imageRect.y0 / disp.y, m_imageRect.x1 / disp.x, m_imageRect.y1 / disp.y));
+   else
+      m_view->m_renderScene = false;
+   ImGui::InvisibleButton("##view", ImVec2(max(1.f, avail.x), max(1.f, avail.y)));
    m_viewItemId = ImGui::GetItemID(); // The pane's scene item: its ID must not count as a widget (see RenderAreaCorners)
    m_hovered = ImGui::IsItemHovered();
    m_active = ImGui::IsItemActive();
@@ -576,7 +581,10 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    // RenderUI, the other panes restore their stored camera state
    m_view->m_editorView = camMode != ViewMode::PreviewCam; // A render preview displays the game view, not an editor view
    m_view->m_editorBackdropEdit = camMode == ViewMode::DesktopBackdrop;
-   m_view->m_viewModeOverride = camMode == ViewMode::PreviewCam ? m_viewMode : BG_INVALID;
+   const ViewSetupID modeOverride = camMode == ViewMode::PreviewCam ? m_viewMode : BG_INVALID;
+   if (m_view->m_viewModeOverride != modeOverride)
+      m_view->m_isStaticPrepassDirty = true; // A mode change alters the backdrop/visibility: the accumulated scene is stale
+   m_view->m_viewModeOverride = modeOverride;
    m_view->m_shadeMode = m_shadeMode;
 }
 
@@ -1088,7 +1096,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
 
    // Handle uncaught mouse interaction: scene interactions (camera, picking, box select) only
    // apply inside this pane's image (its ImGui item state says if it is hovered or held)
-   const bool viewportInput = m_hovered || m_active;
+   // The pane owns scene input while hovered/active, or the whole window while flying over it
+   const bool viewportInput = m_flyMode || m_hovered || m_active;
    if (viewportInput && m_editor.m_fileOp == nullptr)
    {
       // Zoom in/out with mouse wheel
