@@ -26,9 +26,10 @@ bool LiveRenderContext::IsShowInvisible() const
    return (m_player->m_ptable->m_liveBaseTable == nullptr) && (GetViewMode() != ViewMode::PreviewCam);
 }
 
-void LiveRenderContext::SetPaneProjection(const ModelViewProj &mvp, const ImVec2 &origin, const ImVec2 &scale, const float halfW, const float halfH)
+void LiveRenderContext::SetPaneProjection(const Matrix3D &mvp, const ImVec2 &origin, const ImVec2 &scale, const float halfW, const float halfH)
 {
-   m_mvp = &mvp;
+   m_paneMvp = mvp;
+   m_hasPaneMvp = true;
    m_projOrigin = origin;
    m_projScale = scale;
    m_projHalfW = halfW;
@@ -37,9 +38,9 @@ void LiveRenderContext::SetPaneProjection(const ModelViewProj &mvp, const ImVec2
 
 ImVec2 LiveRenderContext::Project(const Vertex3Ds &v) const
 {
-   const float rClipWidth = m_mvp != nullptr ? m_projHalfW : (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
-   const float rClipHeight = m_mvp != nullptr ? m_projHalfH : (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-   const Matrix3D mvp = (m_mvp != nullptr ? *m_mvp : m_player->m_renderer->GetMVP()).GetModelViewProj(0);
+   const float rClipWidth = m_hasPaneMvp ? m_projHalfW : (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+   const float rClipHeight = m_hasPaneMvp ? m_projHalfH : (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
+   const Matrix3D mvp = m_hasPaneMvp ? m_paneMvp : m_player->m_renderer->GetMVP().GetModelViewProj(0);
    const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
    const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
    //const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;

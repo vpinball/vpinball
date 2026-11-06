@@ -24,7 +24,6 @@ void EditorChrome::Render(bool showFullUI)
       return;
 
    RenderMenuBar();
-   RenderStatusOverlay();
 }
 
 void EditorChrome::RenderMenuBar()
@@ -102,35 +101,36 @@ void EditorChrome::RenderMenuBar()
       }
       if (ImGui::BeginMenu("View"))
       {
-         // View actions apply to the edit viewport (the pane under the mouse): its camera state is bound to the editor fields
-         const auto viewItem = [&editor](const char *label, const char *keys, const EditorUI::PredefinedView view)
+         // View actions apply to the edit viewport's camera (the bound pane's own camera definition)
+         ViewportPane *const vp = editor.m_editVp;
+         const auto viewItem = [vp](const char *label, const char *keys, const ViewportPane::PredefinedView view)
          {
-            if (ImGui::MenuItem(label, keys, editor.m_camMode == ViewMode::EditorCam && editor.m_predefinedView == view))
-               editor.SetView(view);
+            if (ImGui::MenuItem(label, keys, vp != nullptr && vp->m_camMode == ViewMode::EditorCam && vp->m_predefinedView == view, vp != nullptr))
+               vp->SetView(view);
          };
-         viewItem("Top", "Numpad 7", EditorUI::PredefinedView::Top);
-         viewItem("Bottom", "Ctrl+Numpad 7", EditorUI::PredefinedView::Bottom);
-         viewItem("Front", "Numpad 1", EditorUI::PredefinedView::Front);
-         viewItem("Back", "Ctrl+Numpad 1", EditorUI::PredefinedView::Back);
-         viewItem("Left", "Numpad 3", EditorUI::PredefinedView::Left);
-         viewItem("Right", "Ctrl+Numpad 3", EditorUI::PredefinedView::Right);
+         viewItem("Top", "Numpad 7", ViewportPane::PredefinedView::Top);
+         viewItem("Bottom", "Ctrl+Numpad 7", ViewportPane::PredefinedView::Bottom);
+         viewItem("Front", "Numpad 1", ViewportPane::PredefinedView::Front);
+         viewItem("Back", "Ctrl+Numpad 1", ViewportPane::PredefinedView::Back);
+         viewItem("Left", "Numpad 3", ViewportPane::PredefinedView::Left);
+         viewItem("Right", "Ctrl+Numpad 3", ViewportPane::PredefinedView::Right);
          ImGui::Separator();
-         if (ImGui::MenuItem("Perspective / Orthographic", "Numpad 5"))
+         if (ImGui::MenuItem("Perspective / Orthographic", "Numpad 5", false, vp != nullptr))
          {
-            editor.m_camMode = ViewMode::EditorCam;
-            editor.m_perspectiveCam = !editor.m_perspectiveCam;
+            vp->m_camMode = ViewMode::EditorCam;
+            vp->m_perspectiveCam = !vp->m_perspectiveCam;
          }
-         if (ImGui::MenuItem("Cycle Camera (Preview / Editor / Backdrop)", "Numpad 0"))
-            editor.CycleCamera();
-         if (ImGui::MenuItem("Lock Orbit", "Numpad /", editor.m_orbitLock))
-            editor.m_orbitLock = !editor.m_orbitLock;
+         if (ImGui::MenuItem("Cycle Camera (Preview / Editor / Backdrop)", "Numpad 0", false, vp != nullptr))
+            vp->CycleCamera();
+         if (ImGui::MenuItem("Lock Orbit", "Numpad /", vp != nullptr && vp->m_orbitLock, vp != nullptr))
+            vp->m_orbitLock = !vp->m_orbitLock;
          ImGui::Separator();
          if (ImGui::BeginMenu("Shading"))
          {
-            const auto shadeItem = [&editor](const char *label, const Renderer::ShadeMode mode)
+            const auto shadeItem = [vp](const char *label, const Renderer::ShadeMode mode)
             {
-               if (ImGui::MenuItem(label, nullptr, editor.m_shadeMode == mode))
-                  editor.m_shadeMode = mode;
+               if (ImGui::MenuItem(label, nullptr, vp != nullptr && vp->m_shadeMode == mode) && vp != nullptr)
+                  vp->m_shadeMode = mode;
             };
             shadeItem("Solid", Renderer::ShadeMode::Default);
             shadeItem("Wireframe", Renderer::ShadeMode::Wireframe);
@@ -138,8 +138,8 @@ void EditorChrome::RenderMenuBar()
             ImGui::EndMenu();
          }
          ImGui::Separator();
-         if (ImGui::MenuItem("Frame Selected", "Numpad .", false, editor.CanFrameSelection()))
-            editor.FrameSelection();
+         if (ImGui::MenuItem("Frame Selected", "Numpad .", false, vp != nullptr && editor.CanFrameSelection()))
+            vp->FrameSelection();
          if (ImGui::MenuItem("Toggle Maximize Area", "Ctrl+Space"))
             editor.ToggleMaximizeArea();
          ImGui::Separator();
@@ -193,78 +193,6 @@ void EditorChrome::RenderMenuBar()
       m_menuBarHeight = ImGui::GetWindowSize().y;
       ImGui::EndMainMenuBar();
    }
-}
-
-void EditorChrome::RenderStatusOverlay()
-{
-   EditorUI &editor = m_editor;
-   if (!editor.m_viewportVisible)
-      return; // No viewport area is shown (a panel is maximized, or none exists)
-
-   // Overlay Info Text: top left of the edit viewport's render area, below its header bar
-   // (the pane's image rect of the last frame; the leaf rect is the fallback until it is set)
-   const float dpi = editor.m_liveUI.GetDPI();
-   const AreaRect rect = editor.m_editVp != nullptr && editor.m_editVp->m_imageRect.y1 > editor.m_editVp->m_imageRect.y0 ? editor.m_editVp->m_imageRect : editor.m_viewportRect;
-   const ImVec2 overlayPos(rect.x0 + 5.f * dpi, rect.y0 + 5.f * dpi);
-
-   ImGui::SetNextWindowSize(ImVec2(max(1.f, rect.x1 - overlayPos.x), max(1.f, rect.y1 - overlayPos.y)));
-   ImGui::SetNextWindowPos(overlayPos);
-   ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
-   const float labelAlign = ImGui::GetCursorPosX() + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.x;
-   ImGui::SetCursorPos(ImVec2(labelAlign, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
-   switch (editor.m_camMode)
-   {
-   case ViewMode::PreviewCam: ImGui::TextUnformatted("Preview Camera"); break;
-   case ViewMode::EditorCam:
-   {
-      string text;
-      switch (editor.m_predefinedView)
-      {
-      case EditorUI::PredefinedView::None: text = "User"sv; break;
-      case EditorUI::PredefinedView::Left: text = "Left"sv; break;
-      case EditorUI::PredefinedView::Right: text = "Right"sv; break;
-      case EditorUI::PredefinedView::Top: text = "Top"sv; break;
-      case EditorUI::PredefinedView::Bottom: text = "Bottom"sv; break;
-      case EditorUI::PredefinedView::Front: text = "Front"sv; break;
-      case EditorUI::PredefinedView::Back: text = "Back"sv; break;
-      }
-      ImGui::TextUnformatted((text + (editor.m_perspectiveCam ? " Perspective" : " Orthographic")).c_str());
-      break;
-   }
-   case ViewMode::DesktopBackdrop: ImGui::TextUnformatted("Desktop Backdrop"); break;
-   }
-   ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + ImGui::GetStyle().FramePadding.x, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
-   const char *gizmoIcon = nullptr;
-   const char *gizmoLabel = nullptr;
-   if (editor.m_gizmoOperation == ImGuizmo::OPERATION(0))
-   {
-      gizmoIcon = ICON_FK_MOUSE_POINTER;
-      gizmoLabel = "Select";
-   }
-   else if (editor.m_gizmoOperation == ImGuizmo::TRANSLATE)
-   {
-      gizmoIcon = ICON_FK_ARROWS;
-      gizmoLabel = "Grab";
-   }
-   else if (editor.m_gizmoOperation == ImGuizmo::SCALE)
-   {
-      gizmoIcon = ICON_FK_EXPAND;
-      gizmoLabel = "Scale";
-   }
-   else if (editor.m_gizmoOperation == ImGuizmo::ROTATE)
-   {
-      gizmoIcon = ICON_FK_REPEAT;
-      gizmoLabel = "Rotate";
-   }
-   if (gizmoIcon)
-   {
-      ImGui::TextUnformatted(gizmoIcon);
-      ImGui::SameLine(labelAlign);
-      ImGui::TextUnformatted(gizmoLabel);
-   }
-   if (editor.m_pointEditPart)
-      ImGui::TextUnformatted(editor.m_pointEditCenter ? "Center Edit (Tab to exit)" : "Drag Point Edit (Tab to exit)");
-   ImGui::End();
 }
 
 }

@@ -178,7 +178,7 @@ void PartLibraryPanel::Update()
 
    // Placement mode housekeeping: it is only available while the table is editable and the
    // playfield view is interactive (not in drag point edit mode, not hidden by the fly mode)
-   if (IsPlacementArmed() && (m_editor.IsInspectMode() || m_editor.m_table->IsLocked() || m_editor.m_pointEditPart != nullptr || m_editor.m_flyMode))
+   if (IsPlacementArmed() && (m_editor.IsInspectMode() || m_editor.m_table->IsLocked() || m_editor.m_pointEditPart != nullptr || m_editor.IsFlyMode()))
       CancelPlacement();
    if (IsPlacementArmed())
       UpdatePlacement(ImGui::GetIO().MousePos);
@@ -631,7 +631,8 @@ void PartLibraryPanel::CancelPlacement()
 void PartLibraryPanel::UpdatePlacement(const ImVec2 &mousePos)
 {
    const ImGuiIO &io = ImGui::GetIO();
-   const bool hovering = !io.WantCaptureMouse && m_editor.m_camMode != ViewMode::DesktopBackdrop && m_editor.m_fileOp == nullptr && m_editor.m_player->m_playfieldWnd != nullptr;
+   const bool hovering = !io.WantCaptureMouse && (m_editor.m_editVp == nullptr || m_editor.m_editVp->m_camMode != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr
+      && m_editor.m_player->m_playfieldWnd != nullptr;
    if (!hovering)
    {
       // Re-hide the ghost parts when the mouse leaves the 3D view (or the view is not 3D)

@@ -17,6 +17,10 @@
 namespace VPX::EditorUI
 {
 
+std::shared_ptr<EditorUIPart> OutlinerPanel::m_anchor;
+std::shared_ptr<EditorUIPart> OutlinerPanel::m_savedAnchor;
+
+
 template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T> &list, const std::function<string(T)> &map)
 {
    std::vector<T> sorted(list.begin(), list.end());
@@ -96,27 +100,31 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          editor.ClearSelection();
          editor.m_table->SetViewSetupOverride(BG_DESKTOP);
          editor.m_table->SetViewSetupOverride(BG_INVALID);
-         editor.m_camMode = ViewMode::EditorCam;
+         if (editor.m_editVp != nullptr)
+            editor.m_editVp->m_camMode = ViewMode::EditorCam;
       }
       const Selection cam0 = Selection::Camera(0);
       if (ImGui::Selectable("Preview: Desktop", editor.m_selection == cam0))
       {
          editor.SetSelection(cam0);
-         editor.m_camMode = ViewMode::PreviewCam;
+         if (editor.m_editVp != nullptr)
+            editor.m_editVp->m_camMode = ViewMode::PreviewCam;
          editor.m_table->SetViewSetupOverride(BG_DESKTOP);
       }
       const Selection cam1 = Selection::Camera(1);
       if (ImGui::Selectable("Preview: Cabinet", editor.m_selection == cam1))
       {
          editor.SetSelection(cam1);
-         editor.m_camMode = ViewMode::PreviewCam;
+         if (editor.m_editVp != nullptr)
+            editor.m_editVp->m_camMode = ViewMode::PreviewCam;
          editor.m_table->SetViewSetupOverride(BG_FULLSCREEN);
       }
       const Selection cam2 = Selection::Camera(2);
       if (ImGui::Selectable("Preview: Full Single Screen", editor.m_selection == cam2))
       {
          editor.SetSelection(cam2);
-         editor.m_camMode = ViewMode::PreviewCam;
+         if (editor.m_editVp != nullptr)
+            editor.m_editVp->m_camMode = ViewMode::PreviewCam;
          editor.m_table->SetViewSetupOverride(BG_FSS);
       }
       ImGui::TreePop();
@@ -257,7 +265,8 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          if (edit->GetEditable()->GetItemType() == eItemPartGroup && !m_filter.empty() && !visibleGroups.contains(static_cast<PartGroup *>(edit->GetEditable())))
             continue;
          // In desktop backdrop mode, only display backdrop parts, and conversely in the other view modes
-         if (edit->GetEditable()->GetItemType() != eItemPartGroup && (edit->GetEditable()->m_desktopBackdrop != (editor.m_camMode == ViewMode::DesktopBackdrop)))
+         if (edit->GetEditable()->GetItemType() != eItemPartGroup
+            && (edit->GetEditable()->m_desktopBackdrop != (editor.m_editVp != nullptr && editor.m_editVp->m_camMode == ViewMode::DesktopBackdrop)))
             continue;
          ImGui::AlignTextToFramePadding();
          if (edit->GetEditable()->GetItemType() == eItemPartGroup)
@@ -341,14 +350,14 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                      if (selIO.KeyCtrl)
                      {
                         editor.TogglePartSelection(edit);
-                        editor.m_outlinerAnchor = edit;
+                        m_anchor = edit;
                      }
                      else if (selIO.KeyShift)
-                        editor.SelectOutlinerRange(edit);
+                        SelectOutlinerRange(edit);
                      else
                      {
                         editor.SetSelection(sel);
-                        editor.m_outlinerAnchor = edit;
+                        m_anchor = edit;
                      }
                   }
                   partDragSource(edit);
@@ -458,5 +467,43 @@ template <class T> void OutlinerPanel::RenderResourceList(const char *label, vec
       }
    }
    ImGui::TreePop();
+}
+void OutlinerPanel::SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part)
+{
+   // Range selection between the anchor part (last clicked one) and the given part
+   if (m_anchor == nullptr)
+   {
+      m_editor.SetSelection(Selection(part));
+      return;
+   }
+   int anchorPos = -1, partPos = -1, pos = 0;
+   for (const auto &edit : m_editor.m_editables)
+   {
+      if (edit->GetEditable()->GetItemType() == eItemPartGroup)
+         continue;
+      if (edit == m_anchor)
+         anchorPos = pos;
+      if (edit == part)
+         partPos = pos;
+      pos++;
+   }
+   if (anchorPos < 0 || partPos < 0)
+   {
+      m_editor.SetSelection(Selection(part));
+      return;
+   }
+   if (partPos < anchorPos)
+      std::swap(anchorPos, partPos);
+   m_editor.m_multiSel.clear();
+   pos = 0;
+   for (const auto &edit : m_editor.m_editables)
+   {
+      if (edit->GetEditable()->GetItemType() == eItemPartGroup)
+         continue;
+      if (pos >= anchorPos && pos <= partPos)
+         m_editor.m_multiSel.push_back(edit);
+      pos++;
+   }
+   m_editor.m_selection = Selection(part);
 }
 }

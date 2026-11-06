@@ -27,7 +27,13 @@ public:
    // Default width of a newly hosted panel in logical pixels (scaled by the UI DPI)
    static constexpr float PaneWidth = 200.f;
 
+   // Anchor part for shift+click range selection (the last part clicked, here or in the 3D view):
+   // shared by all outliner instances since the selection it ranges over is shared
+   static std::shared_ptr<EditorUIPart> m_anchor;
+   static std::shared_ptr<EditorUIPart> m_savedAnchor; // Anchor saved across live-table switches
+
 private:
+   void SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part); // Select the parts between the anchor and the given part
    bool MatchesFilter(const string &name) const;
 
    // Render a resource list section (images, sounds, materials) with ctrl/shift multi selection.

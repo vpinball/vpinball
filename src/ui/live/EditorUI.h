@@ -17,6 +17,7 @@
 #include "editor/PropertiesPanel.h"
 #include "editor/RendererInspectionModal.h"
 #include "editor/ScriptPanel.h"
+#include "editor/ViewportPane.h"
 #include "math/matrix.h"
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
@@ -49,6 +50,9 @@ namespace VPX::EditorUI
 class LiveRenderContext;
 class ViewportPane;
 
+// Vertical field of view (in degrees) of the perspective editor camera
+constexpr float editorCamFovY = 39.6f;
+
 class EditorUI final
    : private DragPointEditContext
 {
@@ -80,10 +84,11 @@ public:
    // Start playing a shallow copy of the edited table (edition is suspended, restored when the play session ends)
    void PlayTest();
 
-   bool IsPreview() const { return m_camMode == ViewMode::PreviewCam; }
-   bool IsBackdropEditMode() const { return m_camMode == ViewMode::DesktopBackdrop; }
+   bool IsPreview() const { return m_editVp != nullptr && m_editVp->m_camMode == ViewMode::PreviewCam; }
+   bool IsBackdropEditMode() const { return m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop; }
 
    bool IsInspectMode() const { return m_table->m_liveBaseTable != nullptr; }
+   bool IsFlyMode() const { return m_editVp != nullptr && m_editVp->m_flyMode; } // The bound viewport pane is in fly mode
 
 private:
    // UI Context
@@ -105,7 +110,6 @@ private:
    // active one (property pane target and gizmo pivot). Empty unless m_selection.GetType() == S_EDITABLE.
    vector<std::shared_ptr<EditorUIPart>> m_multiSel;
    vector<IEditable *> m_dynamicParts; // Parts made dynamic in the UI quadtree because they are selected
-   std::shared_ptr<EditorUIPart> m_outlinerAnchor; // Anchor part for shift+click range selection in the outliner
    // Multi selection of shared resources (images, sounds, materials): all selected items, with
    // m_selection's payload being the active one. Empty unless m_selection has the matching type.
    vector<Texture *> m_multiSelImages;
@@ -114,19 +118,14 @@ private:
    Texture *m_outlinerImageAnchor = nullptr; // Anchors for shift+click range selection in the outliner
    VPX::Sound *m_outlinerSoundAnchor = nullptr;
    Material *m_outlinerMaterialAnchor = nullptr;
-   bool m_boxSelectActive = false;
-   ImVec2 m_boxSelectStart;
    bool IsPartSelected(const std::shared_ptr<EditorUIPart> &part) const;
    bool IsEditableSelected(const IEditable *editable) const;
    void ClearSelection();
    void SetSelection(const Selection &selection);
    void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
-   void SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &part);
    void SelectPartsInGroup(const PartGroup *group);
    void MoveSelectionToPartGroup(PartGroup *group); // Move all selected parts/groups to the given group (nullptr = root, part groups only)
-   void RayCastParts(const ImVec2 &mousePos, vector<HitTestResult> &vhoHit) const;
    bool IsEditablePickable(const IEditable *editable) const;
-   void BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
    void SelectAllParts();
 
    // Selection snapshot stored in undo records and restored on undo
@@ -152,7 +151,6 @@ private:
    vector<DragPoint *> m_pointSel; // Selected drag points of the edited part's curve
    Selection m_savedSelection; // Selection state saved on mode entry, restored on exit
    vector<std::shared_ptr<EditorUIPart>> m_savedMultiSel;
-   std::shared_ptr<EditorUIPart> m_savedOutlinerAnchor;
    bool m_pointDragPending = false; // Left button is down on a selected point (drag not started yet)
    bool m_pointDragActive = false; // Left button drag is moving the selected points
    float m_pointDragZ = 0.f; // Table Z coordinate of the plane in which points are dragged
@@ -163,7 +161,6 @@ private:
    void TogglePointSelection(DragPoint *point);
    DragPoint *HitTestDragPoint(const ImVec2 &mousePos) const;
    bool HitTestEditCenter(const ImVec2 &mousePos) const;
-   void BoxSelectPoints(const ImVec2 &cornerA, const ImVec2 &cornerB, bool add);
    Vertex2D UnprojectToPlane(const ImVec2 &mousePos, float z) const;
    void AddPointOnNearestSegment();
    void DeleteSelectedPoints();
@@ -180,19 +177,11 @@ private:
    void UpdateEditableList();
    void RestorePartsVisibility() const; // Revert the editor visibility overrides of the table parts (reapplied on next render)
 
-   // Enter/Exit edit mode (manage table backup, dynamic mode,...)
-   void ResetCameraFromPlayer();
-   void SetBackdropCamera();
-   void SetPlayfieldCamera();
-   Vertex2D GetUIVisibleFraction() const;
-
    // Undo support
    void PushUndo(IEditable *part, unsigned int editId);
    PinUndo m_undo;
    IEditable *m_lastUndoPart = nullptr;
    unsigned int m_lastUndoId = 0;
-   bool m_gizmoDragActive = false; // A gizmo drag recorded an undo step and is still in progress
-   vector<std::shared_ptr<EditorUIPart>> m_gizmoDragSelection; // Selection the drag was started on (a changed selection must not follow it)
    bool m_suppressNextEscape = false; // The Esc release of an Esc that deactivated an edited field (e.g. the script editor) is not an editor Esc
 
    // Add/Remove parts
@@ -326,37 +315,28 @@ private:
 
    // UI state
    bool m_isOpened = false;
-   bool m_flyMode = false;
    enum class Units
    {
       VPX, Metric, Imperial
    } m_units = Units::VPX;
 
    // 3D editor
-   ImGuizmo::OPERATION m_gizmoOperation = (ImGuizmo::OPERATION)0;
-   ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
-   void SetGizmoOperation(ImGuizmo::OPERATION operation); // Edit mode actions of the Esc (select), G (grab), S (scale) and R (rotate) shortcuts
    bool GetSelectionTransform(Matrix3D &transform) const;
    bool GetSelectionBounds(FRect3D &bounds) const;
    void SetSelectionTransform(const Matrix3D &transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
 
-   // Editor camera
-   ViewMode m_camMode = ViewMode::PreviewCam;
-   bool m_perspectiveCam = true;
-   Renderer::ShadeMode m_shadeMode = Renderer::ShadeMode::Default;
-   enum class PredefinedView
-   {
-      None, Front, Back, Right, Left, Top, Bottom
-   } m_predefinedView = PredefinedView::None;
-   bool m_orbitLock = false; // When locked, camera drags pan instead of orbiting
+   // The editor camera definition (mode, pose, shading) belongs to the bound viewport pane
+   // (m_editVp): it is processed by ViewportPane (camera actions, gizmo, picking, shortcuts)
    bool m_fitPlayfieldCamera = false;
-   Matrix3D m_camView, m_camProj;
-   float m_camDistance;
+   struct CamSetup
+   { // Camera setup requested at Open(), applied to the first bound pane with no camera of its own
+      ViewMode mode;
+      bool persp;
+      Renderer::ShadeMode shade;
+      ViewportPane::PredefinedView predef;
+   };
+   std::optional<CamSetup> m_camSetupPending;
 
-   // View actions shared by the View menu and the numpad shortcuts, acting on the edit viewport's camera (bound to the fields above)
-   void SetView(PredefinedView view); // Axis aligned view of the editor camera, keeping the orbit target and distance
-   void CycleCamera(); // Preview -> Editor -> Backdrop camera cycle
-   void FrameSelection(); // Editor camera centered on the selection, zoomed to fill the view
    bool CanFrameSelection() const;
 
    // Areas: Blender-style split tree (see editor/AreaLayout.h). Outliner | Viewport | Properties by default.
@@ -472,16 +452,15 @@ private:
    bool m_raiseAreaWindows = true;
    bool m_areaEscPending = false; // An Esc consumed by an area interaction (its release is not an editor Esc)
 
-   // Viewport panes: the "edit" viewport owns the editor camera fields (bound by SetEditViewport) and the
-   // mouse / keyboard interactions that apply to the 3D scene. While a drag is in progress the pane it
-   // started in is captured. The editor camera fields (m_camView,...) hold the state of m_editVp.
+   // Viewport panes: the "edit" viewport (bound by SetEditViewport) processes the 3D scene
+   // interactions — camera, gizmo, picking, viewport shortcuts — on its own camera definition
+   // (see ViewportPane::UpdateEditViewport). While a drag is in progress the pane it started in
+   // is captured.
    ViewportPane *m_editVp = nullptr;
    ViewportPane *m_hoverVp = nullptr; // Viewport pane whose image is hovered this frame
    ViewportPane *m_captureVp = nullptr; // Viewport pane holding an in-progress mouse interaction
    void SetEditViewport(ViewportPane *pane);
    ViewportPane *HoveredViewportPane() const;
-   ImVec2 ToPickPos(const ImVec2 &displayPos) const; // Display px -> pick space of the edit viewport (pane render px, or window px fullscreen)
-   void SetupPaneProjection(LiveRenderContext *ctx) const; // Binds the context's projection to the edit viewport image rect
 };
 
 }

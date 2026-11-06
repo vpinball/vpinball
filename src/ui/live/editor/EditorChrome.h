@@ -7,8 +7,8 @@ namespace VPX::EditorUI
 
 class EditorUI;
 
-// Top chrome of the editor: the main menubar and the status overlay text drawn over the
-// edit viewport. Per-view controls live in the header of each area (Blender), not here.
+// Top chrome of the editor: the main menubar. Per-view controls and status overlays live
+// in each area (Blender): camera & gizmo status is drawn by ViewportPane::RenderStatusOverlay.
 class EditorChrome
 {
 public:
@@ -22,7 +22,6 @@ public:
 
 private:
    void RenderMenuBar();
-   void RenderStatusOverlay();
 
    EditorUI &m_editor;
    float m_menuBarHeight = 0.0f;
