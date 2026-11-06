@@ -40,6 +40,7 @@
 #include "renderer/Anaglyph.h"
 #include "renderer/Renderer.h"
 #include "renderer/Sampler.h"
+#include "renderer/Texture.h"
 #include "renderer/Shader.h"
 #include "renderer/VRDevice.h"
 
@@ -561,6 +562,93 @@ void EditorUI::SetBackdropCamera()
    const vec3 at((float)EDITOR_BG_WIDTH * 0.5f, (float)EDITOR_BG_HEIGHT * 0.5f, 0.f);
    constexpr vec3 up { 0.f, -1.f, 0.f };
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
+}
+
+void EditorUI::CycleCamera()
+{
+   m_predefinedView = PredefinedView::None;
+   switch (m_camMode)
+   {
+   case ViewMode::PreviewCam:
+      m_camMode = ViewMode::EditorCam;
+      ResetCameraFromPlayer();
+      break;
+   case ViewMode::EditorCam:
+      m_camMode = ViewMode::DesktopBackdrop;
+      SetBackdropCamera();
+      break;
+   case ViewMode::DesktopBackdrop: m_camMode = ViewMode::PreviewCam; break;
+   }
+}
+
+void EditorUI::SetView(const PredefinedView view)
+{
+   // Editor Camera to an axis aligned view, keeping the orbit target and distance
+   m_predefinedView = view;
+   m_camMode = ViewMode::EditorCam;
+   Matrix3D inv(m_camView);
+   inv.Invert();
+   const vec3 camTarget = inv.GetOrthoNormalPos() - inv.GetOrthoNormalDir() * m_camDistance;
+   vec3 newUp { 0.f, 0.f, -1.f }, newDir;
+   switch (view)
+   {
+   case PredefinedView::Top:
+      newUp = vec3(0.f, -1.f, 0.f);
+      newDir = vec3(0.f, 0.f, -1.f);
+      break;
+   case PredefinedView::Bottom:
+      newUp = vec3(0.f, -1.f, 0.f);
+      newDir = vec3(0.f, 0.f, 1.f);
+      break;
+   case PredefinedView::Front: newDir = vec3(0.f, 1.f, 0.f); break;
+   case PredefinedView::Back: newDir = vec3(0.f, -1.f, 0.f); break;
+   case PredefinedView::Left: newDir = vec3(-1.f, 0.f, 0.f); break;
+   case PredefinedView::Right: newDir = vec3(1.f, 0.f, 0.f); break;
+   default: return;
+   }
+   m_camView = Matrix3D::MatrixLookAtRH(camTarget + newDir * m_camDistance, camTarget, newUp);
+}
+
+void EditorUI::FrameSelection()
+{
+   // Editor Camera center on the whole selection, adjusting the zoom so that it fills the view
+   const ImGuiIO &io = ImGui::GetIO();
+   FRect3D bounds;
+   if (GetSelectionBounds(bounds))
+   {
+      m_camMode = ViewMode::EditorCam;
+      Matrix3D view(m_camView);
+      view.Invert();
+      const vec3 up = view.GetOrthoNormalUp();
+      const vec3 dir = view.GetOrthoNormalDir();
+      const vec3 right = view.GetOrthoNormalRight();
+      const vec3 newTarget(0.5f * (bounds.left + bounds.right), 0.5f * (bounds.top + bounds.bottom), -0.5f * (bounds.zlow + bounds.zhigh));
+
+      // Evaluate the distance needed for all the bounds corners to be inside the view, keeping the camera orientation
+      // and fitting inside the area left visible by the UI (a symmetric margin accounts for the UI drawn over the render)
+      const float aspect = io.DisplaySize.x / io.DisplaySize.y;
+      const Vertex2D visible = GetUIVisibleFraction();
+      const float tanHalfFovY = tanf(0.5f * ANGTORAD(editorCamFovY));
+      float distance = 0.f;
+      for (int i = 0; i < 8; i++)
+      {
+         const vec3 toCorner = vec3((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? -bounds.zlow : -bounds.zhigh) - newTarget;
+         const float dx = fabsf(right.Dot(toCorner));
+         const float dy = fabsf(up.Dot(toCorner));
+         distance = max(
+            distance, m_perspectiveCam ? dir.Dot(toCorner) + max(dy / (tanHalfFovY * visible.y), dx / (tanHalfFovY * aspect * visible.x)) : max(dy / visible.y, dx / (aspect * visible.x)));
+      }
+      if (distance > 0.f) // Keep the current distance for degenerate (point) selections
+         m_camDistance = distance * 1.1f; // Small margin so that the selection does not exactly touch the view borders
+      const vec3 newEye = newTarget + dir * m_camDistance;
+      m_camView = Matrix3D::MatrixLookAtRH(newEye, newTarget, up);
+   }
+}
+
+bool EditorUI::CanFrameSelection() const
+{
+   FRect3D bounds;
+   return GetSelectionBounds(bounds);
 }
 
 Vertex2D EditorUI::GetUIVisibleFraction() const
@@ -1355,10 +1443,9 @@ void EditorUI::RenderUI()
                AddPointOnNearestSegment();
             else if (!m_pointEditPart && !IsInspectMode() && !m_table->IsLocked())
             {
-               // Request the part type picker popup at the mouse position (it is opened from the
-               // toolbar window scope below, as OpenPopup must be called in the same window scope
-               // as the matching BeginPopup)
-               m_chrome.RequestAddPartPopup(ImGui::GetMousePos());
+               // Request the part type picker popup at the mouse position (it is opened in the window
+               // scope of the viewport pane under the mouse, where the matching BeginPopup is called)
+               RequestAddPartPopup(ImGui::GetMousePos());
             }
          }
          else if (!io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
@@ -1512,19 +1599,7 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad0))
       {
-         m_predefinedView = PredefinedView::None;
-         switch (m_camMode)
-         {
-         case ViewMode::PreviewCam:
-            m_camMode = ViewMode::EditorCam;
-            ResetCameraFromPlayer();
-            break;
-         case ViewMode::EditorCam:
-            m_camMode = ViewMode::DesktopBackdrop;
-            SetBackdropCamera();
-            break;
-         case ViewMode::DesktopBackdrop: m_camMode = ViewMode::PreviewCam; break;
-         }
+         CycleCamera();
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad5))
       {
@@ -1533,37 +1608,7 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))
       {
-         // Editor Camera center on the whole selection, adjusting the zoom so that it fills the view
-         FRect3D bounds;
-         if (GetSelectionBounds(bounds))
-         {
-            m_camMode = ViewMode::EditorCam;
-            Matrix3D view(m_camView);
-            view.Invert();
-            const vec3 up = view.GetOrthoNormalUp();
-            const vec3 dir = view.GetOrthoNormalDir();
-            const vec3 right = view.GetOrthoNormalRight();
-            const vec3 newTarget(0.5f * (bounds.left + bounds.right), 0.5f * (bounds.top + bounds.bottom), -0.5f * (bounds.zlow + bounds.zhigh));
-
-            // Evaluate the distance needed for all the bounds corners to be inside the view, keeping the camera orientation
-            // and fitting inside the area left visible by the UI (a symmetric margin accounts for the UI drawn over the render)
-            const float aspect = io.DisplaySize.x / io.DisplaySize.y;
-            const Vertex2D visible = GetUIVisibleFraction();
-            const float tanHalfFovY = tanf(0.5f * ANGTORAD(editorCamFovY));
-            float distance = 0.f;
-            for (int i = 0; i < 8; i++)
-            {
-               const vec3 toCorner = vec3((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? -bounds.zlow : -bounds.zhigh) - newTarget;
-               const float dx = fabsf(right.Dot(toCorner));
-               const float dy = fabsf(up.Dot(toCorner));
-               distance = max(distance,
-                  m_perspectiveCam ? dir.Dot(toCorner) + max(dy / (tanHalfFovY * visible.y), dx / (tanHalfFovY * aspect * visible.x)) : max(dy / visible.y, dx / (aspect * visible.x)));
-            }
-            if (distance > 0.f) // Keep the current distance for degenerate (point) selections
-               m_camDistance = distance * 1.1f; // Small margin so that the selection does not exactly touch the view borders
-            const vec3 newEye = newTarget + dir * m_camDistance;
-            m_camView = Matrix3D::MatrixLookAtRH(newEye, newTarget, up);
-         }
+         FrameSelection();
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_KeypadDivide))
       {
@@ -1571,45 +1616,15 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
       {
-         // Editor Camera to Top / Bottom
-         m_predefinedView = ImGui::GetIO().KeyCtrl ? PredefinedView::Bottom : PredefinedView::Top;
-         m_camMode = ViewMode::EditorCam;
-         Matrix3D view(m_camView);
-         view.Invert();
-         const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-         const vec3 camTarget = pos - dir * m_camDistance;
-         constexpr vec3 newUp { 0.f, -1.f, 0.f };
-         const vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
-         const vec3 newEye = camTarget + newDir * m_camDistance;
-         m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
+         SetView(ImGui::GetIO().KeyCtrl ? PredefinedView::Bottom : PredefinedView::Top);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
       {
-         // Editor Camera to Front / Back
-         m_predefinedView = ImGui::GetIO().KeyCtrl ? PredefinedView::Back : PredefinedView::Front;
-         m_camMode = ViewMode::EditorCam;
-         Matrix3D view(m_camView);
-         view.Invert();
-         const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-         const vec3 camTarget = pos - dir * m_camDistance;
-         constexpr vec3 newUp { 0.f, 0.f, -1.f };
-         const vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
-         const vec3 newEye = camTarget + newDir * m_camDistance;
-         m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
+         SetView(ImGui::GetIO().KeyCtrl ? PredefinedView::Back : PredefinedView::Front);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
       {
-         // Editor Camera to Right / Left
-         m_predefinedView = ImGui::GetIO().KeyCtrl ? PredefinedView::Right : PredefinedView::Left;
-         m_camMode = ViewMode::EditorCam;
-         Matrix3D view(m_camView);
-         view.Invert();
-         const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-         const vec3 camTarget = pos - dir * m_camDistance;
-         constexpr vec3 newUp { 0.f, 0.f, -1.f };
-         const vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
-         const vec3 newEye = camTarget + newDir * m_camDistance;
-         m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
+         SetView(ImGui::GetIO().KeyCtrl ? PredefinedView::Left : PredefinedView::Right);
       }
    }
 
@@ -1977,6 +1992,58 @@ void EditorUI::BoxSelectParts(const ImVec2 &cornerA, const ImVec2 &cornerB, bool
    }
    if (!m_multiSel.empty() && (m_selection.GetType() != Selection::S_EDITABLE || !IsPartSelected(m_selection.GetPart())))
       m_selection = Selection(m_multiSel.back());
+}
+
+void EditorUI::RequestAddPartPopup(const ImVec2 &pos)
+{
+   // The picker popup must be opened in the window scope of a viewport pane (OpenPopup must be called
+   // in the same window scope as the matching BeginPopup): defer it to the pane under the position,
+   // or to the edit viewport when the position is not on a viewport area
+   int leaf = AreaLayout::LeafAt(m_leafRects, pos.x, pos.y);
+   const AreaNode *const node = leaf >= 0 ? m_layout.Find(leaf) : nullptr;
+   if (node == nullptr || node->isSplit || node->type != AreaType::Viewport)
+      leaf = m_editVp != nullptr ? m_editVp->m_leafId : -1;
+   m_addPartPopupLeaf = leaf;
+   m_addPartPopupPos = pos;
+}
+
+void EditorUI::EnsureAddPartButtons()
+{
+   // Add part buttons (same parts and icons as the WinUI toolbar), shared by the viewport pane pickers
+   if (!m_addPartButtons.empty())
+      return;
+   static const struct
+   {
+      ItemTypeEnum type;
+      const char *name;
+      const char *file;
+   } addParts[] = {
+      { eItemSurface, "Surface", "editor/wall.png" }, //
+      { eItemGate, "Gate", "editor/gate.png" }, //
+      { eItemRamp, "Ramp", "editor/ramp.png" }, //
+      { eItemFlipper, "Flipper", "editor/flipper.png" }, //
+      { eItemPlunger, "Plunger", "editor/plunger.png" }, //
+      { eItemBall, "Ball", "editor/ball.png" }, //
+      { eItemBumper, "Bumper", "editor/bumper.png" }, //
+      { eItemSpinner, "Spinner", "editor/spinner.png" }, //
+      { eItemTimer, "Timer", "editor/timer.png" }, //
+      { eItemTrigger, "Trigger", "editor/trigger.png" }, //
+      { eItemLight, "Light", "editor/light.png" }, //
+      { eItemKicker, "Kicker", "editor/kicker.png" }, //
+      { eItemHitTarget, "Target", "editor/target.png" }, //
+      { eItemDecal, "Decal", "editor/decal.png" }, //
+      { eItemTextbox, "Textbox", "editor/textbox.png" }, //
+      { eItemDispReel, "Display Reel", "editor/reel.png" }, //
+      { eItemLightSeq, "Light Seq", "editor/lightseq.png" }, //
+      { eItemPrimitive, "Primitive", "editor/primitive.png" }, //
+      { eItemFlasher, "Flasher", "editor/flasher.png" }, //
+      { eItemRubber, "Rubber", "editor/rubber.png" }, //
+   };
+   for (const auto &def : addParts)
+   {
+      std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, def.file));
+      m_addPartButtons.push_back({ def.type, def.name, tex ? std::make_shared<Sampler>(m_renderer->m_renderDevice, def.name, tex, false) : nullptr });
+   }
 }
 
 void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
@@ -3083,8 +3150,9 @@ void EditorUI::ComputeAreaRects() const
 {
    const ImGuiViewport *const viewport = ImGui::GetMainViewport();
    const float dpi = m_liveUI.GetDPI();
-   // The tree fills the window below the top bar
-   const float top = viewport->Pos.y + m_chrome.GetTopBarHeight();
+   // The tree fills the window below the main menu bar (WorkPos excludes it: unlike the measured
+   // m_menuBarHeight it has no one frame lag and is never 0 while the chrome toggles)
+   const float top = viewport->WorkPos.y;
    const AreaRect tree { viewport->Pos.x, top, viewport->Pos.x + viewport->Size.x, max(top, viewport->Pos.y + viewport->Size.y) };
    const bool areasShown = !m_table->IsLocked() && !m_flyMode && !m_inspectionModal.IsVisible();
    m_layout.Compute(tree, dpi, m_leafRects, m_splitterRects, areasShown ? m_maximizedLeafId : -1);
@@ -3096,15 +3164,20 @@ void EditorUI::ComputeAreaRects() const
    if (areasShown)
    {
       m_viewportVisible = false;
+      m_viewportRect = AreaRect(); // A panel is maximized: nothing of the viewport is shown
       for (const LeafRect &leaf : m_leafRects)
          if (leaf.type == AreaType::Viewport && leaf.visible)
          {
-            m_viewportRect = leaf.rect;
             m_viewportVisible = true;
-            break;
+            const auto it = m_areaViews.find(leaf.id);
+            if (it != m_areaViews.end() && it->second.get() == m_editVp)
+            {
+               m_viewportRect = leaf.rect; // The edit viewport's area is the reference for the overlay and the camera fit
+               break;
+            }
+            if (m_viewportRect.x1 <= m_viewportRect.x0)
+               m_viewportRect = leaf.rect; // Fall back to the first shown viewport area
          }
-      if (!m_viewportVisible)
-         m_viewportRect = AreaRect(); // A panel is maximized: nothing of the viewport is shown
    }
    m_areaRectsValid = true;
 }
@@ -3374,22 +3447,6 @@ void EditorUI::RenderAreaTypeButton(const int leafId)
    }
 }
 
-void EditorUI::RenderAreaTypeButton(const int leafId, const AreaRect &rect)
-{
-   // Floating variant for the windowless leaves: a small button at the top left corner of the area
-   const float dpi = m_liveUI.GetDPI();
-   char name[40];
-   snprintf(name, sizeof(name), "##AreaTypeBtn%d", leafId);
-   ImGui::SetNextWindowPos(ImVec2(rect.x0 + 4.f * dpi, rect.y0 + 4.f * dpi));
-   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.f * dpi, 2.f * dpi));
-   ImGui::Begin(name, nullptr,
-      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-         | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNav);
-   RenderAreaTypeButton(leafId);
-   ImGui::End();
-   ImGui::PopStyleVar();
-}
-
 void EditorUI::RenderSplitters()
 {
    // Divider strips between the areas (Blender: drag to resize, right click for the area options). They are
@@ -3522,8 +3579,7 @@ void EditorUI::RenderAreaCorners()
          ImGuiWindow *const hw = ImGui::GetCurrentContext()->HoveredWindow;
          const char *const hwName = hw != nullptr ? hw->RootWindow->Name : "";
          const bool overStrip = strncmp(hwName, "##Split", 7) == 0;
-         const bool overArea = hw == nullptr || strncmp(hwName, "##Pane", 6) == 0 || strncmp(hwName, "##AreaTypeBtn", 13) == 0
-            || strcmp(hwName, "orbit lock toggle") == 0; // The status overlay belongs to the viewport area
+         const bool overArea = hw == nullptr || strncmp(hwName, "##Pane", 6) == 0 || strcmp(hwName, "text overlay") == 0;
          // A floating window (popup, tooltip, overlay) keeps all its clicks: no corner acts through it
          const bool overFloating = !overArea && !overStrip && strncmp(hwName, "##Corner", 8) != 0;
          if (overStrip)

@@ -40,6 +40,8 @@ public:
    void CaptureCamera(); // Editor camera fields -> this pane's stored state (on unbind / unhost)
    void ReleaseCamera(); // This pane's stored state -> editor camera fields (on bind)
 
+   int m_leafId = -1; // Leaf hosting this pane, set in RenderPane
+
    // Image interaction state, set in RenderPane and read by the editor for input routing
    bool m_hovered = false;
    bool m_active = false;
@@ -58,7 +60,6 @@ public:
 
 private:
    RenderView* m_view = nullptr; // Owned through the renderer's extra views while set
-   int m_leafId = -1;
 };
 
 }

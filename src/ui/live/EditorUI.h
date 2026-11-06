@@ -29,6 +29,7 @@
 class LiveUI;
 class PinTable;
 class Player;
+class Sampler;
 class InputManager;
 class Renderer;
 class DragPoint;
@@ -197,6 +198,19 @@ private:
    // Add/Remove parts
    void DeleteSelection();
    ItemTypeEnum m_addPartType = eItemInvalid; // Part type pending placement (eItemInvalid when not in add part mode)
+   // Part type picker popup: it must be opened in the window scope of the target viewport pane, so
+   // requests (header button, Shift+A, Edit menu) are deferred to its RenderPane
+   void RequestAddPartPopup(const ImVec2 &pos);
+   int m_addPartPopupLeaf = -1; // Leaf hosting the pending picker (-1: none)
+   ImVec2 m_addPartPopupPos {}; // Screen position at which the picker popup appears
+   struct AddPartButton
+   {
+      ItemTypeEnum type;
+      const char *name;
+      std::shared_ptr<Sampler> icon;
+   };
+   vector<AddPartButton> m_addPartButtons; // Lazily initialized part type picker buttons (shared by the viewport panes)
+   void EnsureAddPartButtons();
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
    void CreateCollection(bool fromSelection); // Create a collection, optionally populated with the selected parts
    PartGroup *GetPartGroupForNewPart();
@@ -339,6 +353,12 @@ private:
    Matrix3D m_camView, m_camProj;
    float m_camDistance;
 
+   // View actions shared by the View menu and the numpad shortcuts, acting on the edit viewport's camera (bound to the fields above)
+   void SetView(PredefinedView view); // Axis aligned view of the editor camera, keeping the orbit target and distance
+   void CycleCamera(); // Preview -> Editor -> Backdrop camera cycle
+   void FrameSelection(); // Editor camera centered on the selection, zoomed to fill the view
+   bool CanFrameSelection() const;
+
    // Areas: Blender-style split tree (see editor/AreaLayout.h). Outliner | Viewport | Properties by default.
    // Each leaf hosts one view instance (several leaves may share a type): panes are kept in m_areaViews keyed
    // by the stable leaf id, created when a leaf appears and dropped when it is removed or retyped.
@@ -377,7 +397,6 @@ private:
    void ComputeAreaRects() const; // Tree rect from the bar heights, then the cached leaf / splitter rects
    void RenderAreas(); // Hosts the pane views of the visible leaves
    void RenderAreaTypeButton(int leafId); // Header button of an area (inside its window), opening the type popup
-   void RenderAreaTypeButton(int leafId, const AreaRect &rect); // Floating variant (windowless leaves, e.g. the Viewport)
    bool ApplyAreaOp(const PendingAreaOp &op);
    void WidenArea(int leafId, AreaType type); // Switching the editor of a too narrow area widens it (once)
    bool CanUseAreaTools() const;

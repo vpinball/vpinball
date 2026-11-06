@@ -2,11 +2,9 @@
 
 #include "core/stdafx.h"
 #include "EditorChrome.h"
+#include "ViewportPane.h" // m_editVp->m_imageRect (status overlay anchor)
 
-#include "core/FileLocator.h"
-#include "core/VPApp.h"
-#include "renderer/Sampler.h"
-#include "renderer/Texture.h"
+#include "core/player.h"
 #include "ui/EditorClipboard.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
@@ -21,13 +19,11 @@ void EditorChrome::Render(bool showFullUI)
    //SetupImGuiStyle(m_editor.m_selection.GetType() == Selection::S_CAMERA ? 0.3f : 1.0f);
 
    m_menuBarHeight = 0.0f;
-   m_toolBarHeight = showFullUI ? 20.f * m_editor.m_liveUI.GetDPI() : 0.f;
 
    if (!showFullUI)
       return;
 
    RenderMenuBar();
-   RenderToolbar();
    RenderStatusOverlay();
 }
 
@@ -68,6 +64,96 @@ void EditorChrome::RenderMenuBar()
             editor.RequestClose(Player::CS_CLOSE_APP);
          ImGui::EndMenu();
       }
+      if (!editor.IsInspectMode() && ImGui::BeginMenu("Edit"))
+      {
+         // Selection actions of the Esc, Ctrl+C / Ctrl+V and Del shortcuts (the add part picker itself opens in the viewport pane)
+         ImGui::BeginDisabled(editor.m_table->IsLocked());
+         const bool canCopy
+            = editor.m_pointEditPart ? (editor.m_pointEditCenter ? editor.m_centerSelected : editor.m_pointSel.size() == 1) : (editor.m_selection.GetType() == Selection::S_EDITABLE);
+         if (ImGui::MenuItem("Copy", "Ctrl+C", false, canCopy))
+            editor.CopySelection();
+         const bool canPaste = editor.m_pointEditPart
+            ? (editor.m_pointEditCenter ? editor.m_centerSelected && VPX::EditorClipboard::HasPoint() : editor.m_pointSel.size() == 1 && VPX::EditorClipboard::HasPoint())
+            : VPX::EditorClipboard::HasParts();
+         if (ImGui::MenuItem("Paste", "Ctrl+V", false, canPaste))
+            editor.PasteSelection(editor.GetViewportContentCenter());
+         if (ImGui::MenuItem("Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
+            editor.DeleteSelection();
+         if (ImGui::MenuItem("Add Part...", "Shift+A", false, editor.m_pointEditPart == nullptr))
+            editor.RequestAddPartPopup(editor.GetViewportContentCenter());
+         ImGui::EndDisabled();
+         ImGui::Separator();
+         if (ImGui::MenuItem("Import Parts (part library)...", nullptr, false, !editor.m_table->IsLocked()))
+            editor.OpenPartLibrary();
+         if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
+            editor.ExportPartSelection();
+         ImGui::Separator();
+         if (ImGui::BeginMenu("Units"))
+         {
+            if (ImGui::RadioButton("VP Units", editor.m_units == EditorUI::Units::VPX))
+               editor.m_units = EditorUI::Units::VPX;
+            if (ImGui::RadioButton("Metric", editor.m_units == EditorUI::Units::Metric))
+               editor.m_units = EditorUI::Units::Metric;
+            if (ImGui::RadioButton("Imperial", editor.m_units == EditorUI::Units::Imperial))
+               editor.m_units = EditorUI::Units::Imperial;
+            ImGui::EndMenu();
+         }
+         ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("View"))
+      {
+         // View actions apply to the edit viewport (the pane under the mouse): its camera state is bound to the editor fields
+         const auto viewItem = [&editor](const char *label, const char *keys, const EditorUI::PredefinedView view)
+         {
+            if (ImGui::MenuItem(label, keys, editor.m_camMode == ViewMode::EditorCam && editor.m_predefinedView == view))
+               editor.SetView(view);
+         };
+         viewItem("Top", "Numpad 7", EditorUI::PredefinedView::Top);
+         viewItem("Bottom", "Ctrl+Numpad 7", EditorUI::PredefinedView::Bottom);
+         viewItem("Front", "Numpad 1", EditorUI::PredefinedView::Front);
+         viewItem("Back", "Ctrl+Numpad 1", EditorUI::PredefinedView::Back);
+         viewItem("Left", "Numpad 3", EditorUI::PredefinedView::Left);
+         viewItem("Right", "Ctrl+Numpad 3", EditorUI::PredefinedView::Right);
+         ImGui::Separator();
+         if (ImGui::MenuItem("Perspective / Orthographic", "Numpad 5"))
+         {
+            editor.m_camMode = ViewMode::EditorCam;
+            editor.m_perspectiveCam = !editor.m_perspectiveCam;
+         }
+         if (ImGui::MenuItem("Cycle Camera (Preview / Editor / Backdrop)", "Numpad 0"))
+            editor.CycleCamera();
+         if (ImGui::MenuItem("Lock Orbit", "Numpad /", editor.m_orbitLock))
+            editor.m_orbitLock = !editor.m_orbitLock;
+         ImGui::Separator();
+         if (ImGui::BeginMenu("Shading"))
+         {
+            const auto shadeItem = [&editor](const char *label, const Renderer::ShadeMode mode)
+            {
+               if (ImGui::MenuItem(label, nullptr, editor.m_shadeMode == mode))
+                  editor.m_shadeMode = mode;
+            };
+            shadeItem("Solid", Renderer::ShadeMode::Default);
+            shadeItem("Wireframe", Renderer::ShadeMode::Wireframe);
+            shadeItem("Wireframe (no depth)", Renderer::ShadeMode::NoDepthWireframe);
+            ImGui::EndMenu();
+         }
+         ImGui::Separator();
+         if (ImGui::MenuItem("Frame Selected", "Numpad .", false, editor.CanFrameSelection()))
+            editor.FrameSelection();
+         if (ImGui::MenuItem("Toggle Maximize Area", "Ctrl+Space"))
+            editor.ToggleMaximizeArea();
+         ImGui::Separator();
+         if (ImGui::MenuItem("Table Script", nullptr, editor.m_scriptPanel.IsVisible(), !editor.m_table->IsLocked()))
+            editor.m_scriptPanel.Show();
+         ImGui::Separator();
+         ImGui::BeginDisabled(editor.IsInspectMode() || editor.m_table->IsLocked());
+         if (ImGui::MenuItem("Layout 1", nullptr, editor.m_activeLayoutIndex == 0))
+            editor.SetAreaLayoutIndex(0);
+         if (ImGui::MenuItem("Layout 2", nullptr, editor.m_activeLayoutIndex == 1))
+            editor.SetAreaLayoutIndex(1);
+         ImGui::EndDisabled();
+         ImGui::EndMenu();
+      }
       if (editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
       {
          if (ImGui::MenuItem("Open debugger"))
@@ -76,20 +162,14 @@ void EditorChrome::RenderMenuBar()
             editor.m_inspectionModal.Show();
          if (ImGui::MenuItem(editor.m_player->IsPlaying() ? "Pause" : "Play"))
             editor.m_player->SetPlayState(!editor.m_player->IsPlaying());
+         if (ImGui::MenuItem("Step", nullptr, false, !editor.m_player->IsPlaying()))
+            editor.m_player->m_step = true;
          ImGui::EndMenu();
       }
       else if (!editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
       {
          if (ImGui::MenuItem("Renderer Inspection"))
             editor.m_inspectionModal.Show();
-         ImGui::EndMenu();
-      }
-      if (!editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Layout"))
-      {
-         if (ImGui::MenuItem("Layout 1", nullptr, editor.m_activeLayoutIndex == 0))
-            editor.SetAreaLayoutIndex(0);
-         if (ImGui::MenuItem("Layout 2", nullptr, editor.m_activeLayoutIndex == 1))
-            editor.SetAreaLayoutIndex(1);
          ImGui::EndMenu();
       }
       float buttonWidth = 0.f;
@@ -115,351 +195,22 @@ void EditorChrome::RenderMenuBar()
    }
 }
 
-void EditorChrome::RenderToolbar()
-{
-   EditorUI &editor = m_editor;
-   const ImGuiViewport *const viewport = ImGui::GetMainViewport();
-   ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menuBarHeight));
-   ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, m_toolBarHeight));
-   constexpr ImGuiWindowFlags window_flags
-      = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-   ImGui::Begin("TOOLBAR", nullptr, window_flags);
-   ImGui::PopStyleVar();
-   if (editor.IsInspectMode())
-   {
-      if (ImGui::Button(editor.m_player->IsPlaying() ? ICON_FK_PAUSE : ICON_FK_PLAY))
-         editor.m_player->SetPlayState(!editor.m_player->IsPlaying());
-      ImGui::SameLine();
-      ImGui::BeginDisabled(editor.m_player->IsPlaying());
-      if (ImGui::Button(ICON_FK_STEP_FORWARD))
-         editor.m_player->m_step = true;
-      ImGui::EndDisabled();
-   }
-   else
-   {
-      const float iconSize = ImGui::GetContentRegionAvail().y;
-
-      // File operations: same actions as the File menu, each button opening a sub menu
-      if (ImGui::Button(ICON_FK_FILE))
-         ImGui::OpenPopup("New table Popup");
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("New table\n[Ctrl+N]");
-      if (ImGui::BeginPopup("New table Popup"))
-      {
-         if (ImGui::MenuItem("New Table", "Ctrl+N"))
-            editor.NewTable(EditorUI::NewTableTemplate::Blank);
-         if (ImGui::MenuItem("Completely Blank Table"))
-            editor.NewTable(EditorUI::NewTableTemplate::Stripped);
-         if (ImGui::MenuItem("Full Example Table"))
-            editor.NewTable(EditorUI::NewTableTemplate::Example);
-         if (ImGui::MenuItem("Light Sequence Demo Table"))
-            editor.NewTable(EditorUI::NewTableTemplate::LightSeq);
-         ImGui::EndPopup();
-      }
-      ImGui::SameLine();
-      if (ImGui::Button(ICON_FK_FOLDER_OPEN))
-         ImGui::OpenPopup("Open table Popup");
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Open table");
-      if (ImGui::BeginPopup("Open table Popup"))
-      {
-         if (ImGui::MenuItem("Table file..."))
-            editor.LoadTable();
-         if (ImGui::MenuItem("Table pack folder..."))
-            editor.LoadTableFolder();
-         ImGui::EndPopup();
-      }
-      ImGui::SameLine();
-      ImGui::BeginDisabled(editor.m_table->IsLocked());
-      if (ImGui::Button(ICON_FK_FLOPPY_O))
-         ImGui::OpenPopup("Save table Popup");
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Save table\n[Ctrl+S]");
-      if (ImGui::BeginPopup("Save table Popup"))
-      {
-         if (ImGui::MenuItem("Save", "Ctrl+S"))
-            editor.SaveTable();
-         if (ImGui::MenuItem("Save As File..."))
-            editor.SaveTableAs();
-         if (ImGui::MenuItem("Save As Pack Folder..."))
-            editor.SaveTableAsPackFolder();
-         ImGui::EndPopup();
-      }
-      ImGui::EndDisabled();
-      ImGui::SameLine();
-      ImGui::Separator();
-      ImGui::SameLine();
-
-      // Play a shallow copy of the edited table
-      ImGui::BeginDisabled(editor.m_table->IsLocked());
-      if (ImGui::Button(ICON_FK_PLAY))
-         editor.PlayTest();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Play table\n[F5]");
-      ImGui::EndDisabled();
-      ImGui::SameLine();
-      ImGui::Separator();
-      ImGui::SameLine();
-
-      // Edit mode selection (same actions as the Esc, G, S and R keyboard shortcuts)
-      static const struct
-      {
-         ImGuizmo::OPERATION operation;
-         const char *icon;
-         const char *tooltip;
-      } editModes[] = {
-         { (ImGuizmo::OPERATION)0, ICON_FK_MOUSE_POINTER, "Select\n[Esc]" }, //
-         { ImGuizmo::TRANSLATE, ICON_FK_ARROWS, "Grab\n[G]" }, //
-         { ImGuizmo::SCALE, ICON_FK_EXPAND, "Scale\n[S]" }, //
-         { ImGuizmo::ROTATE, ICON_FK_REPEAT, "Rotate\n[R]" }, //
-      };
-      for (const auto &mode : editModes)
-      {
-         const bool active = (editor.m_gizmoOperation == mode.operation);
-         if (active)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-         if (ImGui::Button(mode.icon))
-            editor.SetGizmoOperation(mode.operation);
-         if (active)
-            ImGui::PopStyleColor();
-         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", mode.tooltip);
-         ImGui::SameLine();
-      }
-      ImGui::Separator();
-      ImGui::SameLine();
-
-      // Add part buttons (same parts and icons as the WinUI toolbar)
-      if (m_addPartButtons.empty())
-      {
-         static const struct
-         {
-            ItemTypeEnum type;
-            const char *name;
-            const char *file;
-         } addParts[] = {
-            { eItemSurface, "Surface", "editor/wall.png" }, //
-            { eItemGate, "Gate", "editor/gate.png" }, //
-            { eItemRamp, "Ramp", "editor/ramp.png" }, //
-            { eItemFlipper, "Flipper", "editor/flipper.png" }, //
-            { eItemPlunger, "Plunger", "editor/plunger.png" }, //
-            { eItemBall, "Ball", "editor/ball.png" }, //
-            { eItemBumper, "Bumper", "editor/bumper.png" }, //
-            { eItemSpinner, "Spinner", "editor/spinner.png" }, //
-            { eItemTimer, "Timer", "editor/timer.png" }, //
-            { eItemTrigger, "Trigger", "editor/trigger.png" }, //
-            { eItemLight, "Light", "editor/light.png" }, //
-            { eItemKicker, "Kicker", "editor/kicker.png" }, //
-            { eItemHitTarget, "Target", "editor/target.png" }, //
-            { eItemDecal, "Decal", "editor/decal.png" }, //
-            { eItemTextbox, "Textbox", "editor/textbox.png" }, //
-            { eItemDispReel, "Display Reel", "editor/reel.png" }, //
-            { eItemLightSeq, "Light Seq", "editor/lightseq.png" }, //
-            { eItemPrimitive, "Primitive", "editor/primitive.png" }, //
-            { eItemFlasher, "Flasher", "editor/flasher.png" }, //
-            { eItemRubber, "Rubber", "editor/rubber.png" }, //
-         };
-         for (const auto &def : addParts)
-         {
-            std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, def.file));
-            m_addPartButtons.push_back({ def.type, def.name, tex ? std::make_shared<Sampler>(editor.m_renderer->m_renderDevice, def.name, tex, false) : nullptr });
-         }
-      }
-      // Add part button, opening the part type picker popup (same as the Shift+A shortcut)
-      ImGui::BeginDisabled(editor.m_pointEditPart != nullptr || editor.m_table->IsLocked());
-      const bool addPartActive = (editor.m_addPartType != eItemInvalid);
-      if (addPartActive)
-         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-      if (ImGui::Button(ICON_FK_PLUS))
-         RequestAddPartPopup(ImGui::GetMousePos());
-      if (addPartActive)
-         ImGui::PopStyleColor();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Add part\n[Shift+A]");
-      ImGui::EndDisabled();
-
-      // Copy/Paste buttons (same actions as the Ctrl+C and Ctrl+V keyboard shortcuts)
-      ImGui::SameLine();
-      const bool canCopy
-         = editor.m_pointEditPart ? (editor.m_pointEditCenter ? editor.m_centerSelected : editor.m_pointSel.size() == 1) : (editor.m_selection.GetType() == Selection::S_EDITABLE);
-      ImGui::BeginDisabled(!canCopy || editor.m_table->IsLocked());
-      if (ImGui::Button(ICON_FK_FILES_O))
-         editor.CopySelection();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Copy selection\n[Ctrl+C]");
-      ImGui::EndDisabled();
-      ImGui::SameLine();
-      const bool canPaste = editor.m_pointEditPart
-         ? (editor.m_pointEditCenter ? editor.m_centerSelected && VPX::EditorClipboard::HasPoint() : editor.m_pointSel.size() == 1 && VPX::EditorClipboard::HasPoint())
-         : VPX::EditorClipboard::HasParts();
-      ImGui::BeginDisabled(!canPaste || editor.m_table->IsLocked());
-      if (ImGui::Button(ICON_FK_CLIPBOARD))
-         editor.PasteSelection(ImVec2(viewport->GetCenter().x, viewport->GetCenter().y));
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Paste\n[Ctrl+V]");
-      ImGui::EndDisabled();
-
-      // Delete selection button, always visible but only enabled when there are selected parts
-      ImGui::SameLine();
-      ImGui::BeginDisabled(editor.m_selection.GetType() != Selection::S_EDITABLE || editor.m_table->IsLocked());
-      if (ImGui::Button(ICON_FK_TRASH_O))
-         editor.DeleteSelection();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Delete selection\n[Delete]");
-      ImGui::EndDisabled();
-
-      // Part library import/export buttons
-      ImGui::SameLine();
-      ImGui::BeginDisabled(editor.m_table->IsLocked());
-      if (ImGui::Button(ICON_FK_DOWNLOAD))
-         editor.OpenPartLibrary();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Import parts (part library)");
-      ImGui::EndDisabled();
-      ImGui::SameLine();
-      ImGui::BeginDisabled(!editor.CanExportPartSelection());
-      if (ImGui::Button(ICON_FK_UPLOAD))
-         editor.ExportPartSelection();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Export selection to a VPZ pack");
-      ImGui::EndDisabled();
-
-      // Script editor button
-      ImGui::SameLine();
-      ImGui::Separator();
-      ImGui::SameLine();
-      const bool scriptActive = editor.m_scriptPanel.IsVisible();
-      if (scriptActive)
-         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-      if (ImGui::Button(ICON_FK_CODE))
-         editor.m_scriptPanel.Show();
-      if (scriptActive)
-         ImGui::PopStyleColor();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Edit table script");
-
-      // Part type picker popup (Shift+A in standard mode): picking a type arms add part mode,
-      // clicking outside of the popup dismisses it without arming add part mode
-      if (m_openAddPartPopup)
-      {
-         m_openAddPartPopup = false;
-         ImGui::OpenPopup("Add Part");
-      }
-      ImGui::SetNextWindowPos(m_addPartPopupPos, ImGuiCond_Appearing);
-      if (ImGui::BeginPopup("Add Part"))
-      {
-         int column = 0;
-         for (const auto &button : m_addPartButtons)
-         {
-            if (button.icon == nullptr)
-               continue;
-            if (column > 0)
-               ImGui::SameLine();
-            if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
-            {
-               editor.m_addPartType = button.type;
-               ImGui::CloseCurrentPopup();
-            }
-            if (ImGui::IsItemHovered())
-               ImGui::SetTooltip("Add %s", button.name);
-            column = (column + 1) % 5;
-         }
-         ImGui::EndPopup();
-      }
-   }
-   const float buttonWidth = //
-      ImGui::CalcTextSize(ICON_FK_EXCHANGE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f //
-      + ImGui::CalcTextSize(ICON_FK_STICKY_NOTE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f //
-      + ImGui::CalcTextSize(ICON_FK_FILTER, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
-   ImGui::SameLine(ImGui::GetContentRegionAvail().x - buttonWidth);
-   if (ImGui::Button(ICON_FK_EXCHANGE)) // Unit selection menu
-      ImGui::OpenPopup("Unit Popup");
-   if (ImGui::BeginPopup("Unit Popup"))
-   {
-      ImGui::TextUnformatted("Units:");
-      ImGui::Separator();
-      if (ImGui::RadioButton("VP Units", editor.m_units == EditorUI::Units::VPX))
-         editor.m_units = EditorUI::Units::VPX;
-      if (ImGui::RadioButton("Metric", editor.m_units == EditorUI::Units::Metric))
-         editor.m_units = EditorUI::Units::Metric;
-      if (ImGui::RadioButton("Imperial", editor.m_units == EditorUI::Units::Imperial))
-         editor.m_units = EditorUI::Units::Imperial;
-      ImGui::EndPopup();
-   }
-   ImGui::SameLine();
-   if (ImGui::Button(ICON_FK_STICKY_NOTE)) // Overlay option menu
-      ImGui::OpenPopup("Overlay Popup");
-   if (ImGui::BeginPopup("Overlay Popup"))
-   {
-      ImGui::TextUnformatted("Overlays:");
-      ImGui::Separator();
-      ImGui::Checkbox("Overlay selection", &editor.m_selectionOverlay);
-      ImGui::Separator();
-      ImGui::TextUnformatted("Physic Overlay:");
-      if (ImGui::RadioButton("None", editor.m_physOverlay == EditorUI::PhysicOverlay::None))
-         editor.m_physOverlay = EditorUI::PhysicOverlay::None;
-      if (ImGui::RadioButton("Selected", editor.m_physOverlay == EditorUI::PhysicOverlay::Selected))
-         editor.m_physOverlay = EditorUI::PhysicOverlay::Selected;
-      if (ImGui::RadioButton("All", editor.m_physOverlay == EditorUI::PhysicOverlay::All))
-         editor.m_physOverlay = EditorUI::PhysicOverlay::All;
-      ImGui::EndPopup();
-   }
-   ImGui::SameLine();
-   if (ImGui::Button(ICON_FK_FILTER)) // Selection filter
-      ImGui::OpenPopup("Selection filter Popup");
-   if (ImGui::BeginPopup("Selection filter Popup"))
-   {
-      bool pf = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Playfield);
-      bool prims = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Primitives);
-      bool lights = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Lights);
-      bool flashers = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Flashers);
-      ImGui::TextUnformatted("Selection filters:");
-      ImGui::Separator();
-      if (ImGui::Checkbox("Playfield", &pf))
-         editor.m_selectionFilter = pf ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Playfield) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Playfield);
-      if (ImGui::Checkbox("Primitives", &prims))
-         editor.m_selectionFilter = prims ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Primitives) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Primitives);
-      if (ImGui::Checkbox("Lights", &lights))
-         editor.m_selectionFilter = lights ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Lights) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Lights);
-      if (ImGui::Checkbox("Flashers", &flashers))
-         editor.m_selectionFilter = flashers ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Flashers) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Flashers);
-      ImGui::EndPopup();
-   }
-   ImGui::End();
-}
-
 void EditorChrome::RenderStatusOverlay()
 {
    EditorUI &editor = m_editor;
-   const ImGuiIO &io = ImGui::GetIO();
    if (!editor.m_viewportVisible)
       return; // No viewport area is shown (a panel is maximized, or none exists)
 
-   // Overlay Info Text, anchored to the viewport area
-   const ImVec2 overlayPos(editor.m_viewportRect.x0 + 5.f * editor.m_liveUI.GetDPI(), editor.m_viewportRect.y0 + 5.f * editor.m_liveUI.GetDPI());
+   // Overlay Info Text: top left of the edit viewport's render area, below its header bar
+   // (the pane's image rect of the last frame; the leaf rect is the fallback until it is set)
+   const float dpi = editor.m_liveUI.GetDPI();
+   const AreaRect rect = editor.m_editVp != nullptr && editor.m_editVp->m_imageRect.y1 > editor.m_editVp->m_imageRect.y0 ? editor.m_editVp->m_imageRect : editor.m_viewportRect;
+   const ImVec2 overlayPos(rect.x0 + 5.f * dpi, rect.y0 + 5.f * dpi);
 
-   // Camera orbit lock toggle (drawn in its own window as the status overlay does not capture inputs)
-   ImGui::SetNextWindowPos(overlayPos);
-   ImGui::Begin("orbit lock toggle", nullptr,
-      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-         | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoNav);
-   const bool stylePushed = editor.m_orbitLock;
-   if (stylePushed)
-      ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-   if (ImGui::Button(editor.m_orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK))
-      editor.m_orbitLock = !editor.m_orbitLock;
-   if (stylePushed)
-      ImGui::PopStyleColor();
-   if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("Lock camera orbit\n[Keypad /]");
-   const float lockToggleWidth = ImGui::GetItemRectSize().x;
-   ImGui::End();
-
-   ImGui::SetNextWindowSize(ImVec2(editor.m_viewportRect.x1 - overlayPos.x, editor.m_viewportRect.y1 - overlayPos.y));
+   ImGui::SetNextWindowSize(ImVec2(max(1.f, rect.x1 - overlayPos.x), max(1.f, rect.y1 - overlayPos.y)));
    ImGui::SetNextWindowPos(overlayPos);
    ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
-   const float labelAlign = ImGui::GetCursorPosX() + lockToggleWidth + ImGui::GetStyle().ItemSpacing.x;
+   const float labelAlign = ImGui::GetCursorPosX() + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.x;
    ImGui::SetCursorPos(ImVec2(labelAlign, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
    switch (editor.m_camMode)
    {
