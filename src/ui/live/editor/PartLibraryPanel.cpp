@@ -12,7 +12,7 @@
 #include "physics/PhysicsEngine.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/FileDialog.h"
-#include "ui/live/editor/EditorUIPartRegistry.h"
+#include "ui/live/editor/parts/EditorUIPartRegistry.h"
 #include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"
 #include "utils/JSONSerializer.h"

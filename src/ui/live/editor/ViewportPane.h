@@ -3,7 +3,7 @@
 #pragma once
 
 #include "EditorAreaView.h"
-#include "EditorUIPart.h" // ViewMode
+#include "parts/EditorUIPart.h" // ViewMode
 #include "imguizmo/ImGuizmo.h"
 #include "math/matrix.h"
 #include "renderer/Renderer.h" // Renderer::ShadeMode

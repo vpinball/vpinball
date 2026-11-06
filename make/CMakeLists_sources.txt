@@ -306,37 +306,37 @@ set(VPX_SOURCES
    
    src/ui/live/editor/AreaLayout.h
    src/ui/live/editor/AreaLayout.cpp
-   src/ui/live/editor/BallUIPart.h
-   src/ui/live/editor/BallUIPart.cpp
-   src/ui/live/editor/BumperUIPart.h
-   src/ui/live/editor/BumperUIPart.cpp
-   src/ui/live/editor/DecalUIPart.h
-   src/ui/live/editor/DecalUIPart.cpp
-   src/ui/live/editor/DispReelUIPart.h
-   src/ui/live/editor/DispReelUIPart.cpp
+   src/ui/live/editor/parts/BallUIPart.h
+   src/ui/live/editor/parts/BallUIPart.cpp
+   src/ui/live/editor/parts/BumperUIPart.h
+   src/ui/live/editor/parts/BumperUIPart.cpp
+   src/ui/live/editor/parts/DecalUIPart.h
+   src/ui/live/editor/parts/DecalUIPart.cpp
+   src/ui/live/editor/parts/DispReelUIPart.h
+   src/ui/live/editor/parts/DispReelUIPart.cpp
    src/ui/live/editor/EditorAreaView.h
    src/ui/live/editor/EditorChrome.h
    src/ui/live/editor/EditorChrome.cpp
    src/ui/live/editor/EditorTheme.h
-   src/ui/live/editor/EditorUIPart.h
-   src/ui/live/editor/EditorUIPart.cpp
-   src/ui/live/editor/EditorUIPartRegistry.h
-   src/ui/live/editor/EditorUIPartRegistry.cpp
-   src/ui/live/editor/FlasherUIPart.h
-   src/ui/live/editor/FlasherUIPart.cpp
-   src/ui/live/editor/FlipperUIPart.h
-   src/ui/live/editor/FlipperUIPart.cpp
-   src/ui/live/editor/GateUIPart.h
-   src/ui/live/editor/GateUIPart.cpp
-   src/ui/live/editor/HitTargetUIPart.h
-   src/ui/live/editor/HitTargetUIPart.cpp
+   src/ui/live/editor/parts/EditorUIPart.h
+   src/ui/live/editor/parts/EditorUIPart.cpp
+   src/ui/live/editor/parts/EditorUIPartRegistry.h
+   src/ui/live/editor/parts/EditorUIPartRegistry.cpp
+   src/ui/live/editor/parts/FlasherUIPart.h
+   src/ui/live/editor/parts/FlasherUIPart.cpp
+   src/ui/live/editor/parts/FlipperUIPart.h
+   src/ui/live/editor/parts/FlipperUIPart.cpp
+   src/ui/live/editor/parts/GateUIPart.h
+   src/ui/live/editor/parts/GateUIPart.cpp
+   src/ui/live/editor/parts/HitTargetUIPart.h
+   src/ui/live/editor/parts/HitTargetUIPart.cpp
    src/ui/live/editor/IconsLucide.h
-   src/ui/live/editor/KickerUIPart.h
-   src/ui/live/editor/KickerUIPart.cpp
-   src/ui/live/editor/LightUIPart.h
-   src/ui/live/editor/LightUIPart.cpp
-   src/ui/live/editor/LightSeqUIPart.h
-   src/ui/live/editor/LightSeqUIPart.cpp
+   src/ui/live/editor/parts/KickerUIPart.h
+   src/ui/live/editor/parts/KickerUIPart.cpp
+   src/ui/live/editor/parts/LightUIPart.h
+   src/ui/live/editor/parts/LightUIPart.cpp
+   src/ui/live/editor/parts/LightSeqUIPart.h
+   src/ui/live/editor/parts/LightSeqUIPart.cpp
    src/ui/live/editor/LucideFont.h
    src/ui/live/editor/LiveRenderContext.h
    src/ui/live/editor/LiveRenderContext.cpp
@@ -344,37 +344,37 @@ set(VPX_SOURCES
    src/ui/live/editor/OutlinerPanel.cpp
    src/ui/live/editor/PartLibraryPanel.h
    src/ui/live/editor/PartLibraryPanel.cpp
-   src/ui/live/editor/PartGroupUIPart.h
-   src/ui/live/editor/PartGroupUIPart.cpp
-   src/ui/live/editor/PlungerUIPart.h
-   src/ui/live/editor/PlungerUIPart.cpp
-   src/ui/live/editor/PrimitiveUIPart.h
-   src/ui/live/editor/PrimitiveUIPart.cpp
+   src/ui/live/editor/parts/PartGroupUIPart.h
+   src/ui/live/editor/parts/PartGroupUIPart.cpp
+   src/ui/live/editor/parts/PlungerUIPart.h
+   src/ui/live/editor/parts/PlungerUIPart.cpp
+   src/ui/live/editor/parts/PrimitiveUIPart.h
+   src/ui/live/editor/parts/PrimitiveUIPart.cpp
    src/ui/live/editor/PropertiesPanel.h
    src/ui/live/editor/PropertiesPanel.cpp
    src/ui/live/editor/PropertyPane.h
    src/ui/live/editor/PropertyPane.cpp
-   src/ui/live/editor/RampUIPart.h
-   src/ui/live/editor/RampUIPart.cpp
+   src/ui/live/editor/parts/RampUIPart.h
+   src/ui/live/editor/parts/RampUIPart.cpp
    src/ui/live/editor/RendererInspectionModal.h
    src/ui/live/editor/RendererInspectionModal.cpp
    src/ui/live/editor/ResURIPicker.h
    src/ui/live/editor/ResURIPicker.cpp
-   src/ui/live/editor/RubberUIPart.h
-   src/ui/live/editor/RubberUIPart.cpp
+   src/ui/live/editor/parts/RubberUIPart.h
+   src/ui/live/editor/parts/RubberUIPart.cpp
    src/ui/live/editor/ScriptPanel.h
    src/ui/live/editor/ScriptPanel.cpp
    src/ui/live/editor/Selection.h
-   src/ui/live/editor/SpinnerUIPart.h
-   src/ui/live/editor/SpinnerUIPart.cpp
-   src/ui/live/editor/SurfaceUIPart.h
-   src/ui/live/editor/SurfaceUIPart.cpp
-   src/ui/live/editor/TextBoxUIPart.h
-   src/ui/live/editor/TextBoxUIPart.cpp
-   src/ui/live/editor/TimerUIPart.h
-   src/ui/live/editor/TimerUIPart.cpp
-   src/ui/live/editor/TriggerUIPart.h
-   src/ui/live/editor/TriggerUIPart.cpp
+   src/ui/live/editor/parts/SpinnerUIPart.h
+   src/ui/live/editor/parts/SpinnerUIPart.cpp
+   src/ui/live/editor/parts/SurfaceUIPart.h
+   src/ui/live/editor/parts/SurfaceUIPart.cpp
+   src/ui/live/editor/parts/TextBoxUIPart.h
+   src/ui/live/editor/parts/TextBoxUIPart.cpp
+   src/ui/live/editor/parts/TimerUIPart.h
+   src/ui/live/editor/parts/TimerUIPart.cpp
+   src/ui/live/editor/parts/TriggerUIPart.h
+   src/ui/live/editor/parts/TriggerUIPart.cpp
    src/ui/live/editor/ViewportPane.h
    src/ui/live/editor/ViewportPane.cpp
    
