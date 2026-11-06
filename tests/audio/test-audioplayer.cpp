@@ -159,6 +159,23 @@ TEST_CASE("Audio player")
       player.CloseAudioStream(stereoStream, false);
    }
 
+   SUBCASE("mono and stereo streams open in spatial backglass mode")
+   {
+      // The spatial source node declares the stream channel count: the sound must output the
+      // same number of channels for the node attachment to succeed (node attachments are strict)
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      player.SetSpatialMode(true, false);
+      CHECK(player.IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS));
+
+      AudioPlayer::AudioStreamID monoStream = player.OpenAudioStream("mono-stream", 44100, 1, true);
+      CHECK(monoStream != nullptr);
+      player.CloseAudioStream(monoStream, false);
+
+      AudioPlayer::AudioStreamID stereoStream = player.OpenAudioStream("stereo-stream", 44100, 2, true);
+      CHECK(stereoStream != nullptr);
+      player.CloseAudioStream(stereoStream, false);
+   }
+
    SUBCASE("streams outliving the audio player are safely detached")
    {
       // Plugin audio lanes keep streams alive through shared_ptr: recreating the audio player
