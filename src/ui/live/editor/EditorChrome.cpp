@@ -105,7 +105,7 @@ void EditorChrome::RenderMenuBar()
          ViewportPane *const vp = editor.GetTargetViewport();
          const auto viewItem = [vp](const char *label, const char *keys, const ViewportPane::PredefinedView view)
          {
-            if (ImGui::MenuItem(label, keys, vp != nullptr && vp->m_camMode == ViewMode::EditorCam && vp->m_predefinedView == view, vp != nullptr))
+            if (ImGui::MenuItem(label, keys, vp != nullptr && vp->m_viewType == ViewMode::EditorCam && vp->m_predefinedView == view, vp != nullptr))
                vp->SetView(view);
          };
          viewItem("Top", "Numpad 7", ViewportPane::PredefinedView::Top);
@@ -117,11 +117,8 @@ void EditorChrome::RenderMenuBar()
          ImGui::Separator();
          if (ImGui::MenuItem("Perspective / Orthographic", "Numpad 5", false, vp != nullptr))
          {
-            vp->m_camMode = ViewMode::EditorCam;
             vp->m_perspectiveCam = !vp->m_perspectiveCam;
          }
-         if (ImGui::MenuItem("Cycle Camera (Preview / Editor / Backdrop)", "Numpad 0", false, vp != nullptr))
-            vp->CycleCamera();
          if (ImGui::MenuItem("Lock Orbit", "Numpad /", vp != nullptr && vp->m_orbitLock, vp != nullptr))
             vp->m_orbitLock = !vp->m_orbitLock;
          ImGui::Separator();

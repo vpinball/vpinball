@@ -1121,7 +1121,7 @@ void EditorUI::RequestAddPartPopup(const ImVec2 &pos)
    // in the same window scope as the matching BeginPopup): defer it to the pane under the position,
    int leaf = AreaLayout::LeafAt(m_leafRects, pos.x, pos.y);
    const AreaNode *const node = leaf >= 0 ? m_layout.Find(leaf) : nullptr;
-   if (node == nullptr || node->isSplit || node->type != AreaType::Viewport)
+   if (node == nullptr || node->isSplit || !IsViewportType(node->type))
       leaf = -1;
    m_addPartPopupLeaf = leaf;
    m_addPartPopupPos = pos;
@@ -1891,7 +1891,13 @@ void EditorUI::DeleteSelectedPoints()
 // ---------------------------------------------------------------------------------------------------------------------
 // Areas (Blender-style split tree, see editor/AreaLayout.h)
 
-const char *EditorUI::AreaTypeName(const AreaType type) { return type == AreaType::Viewport ? "3D View" : AreaTypeJsonName(type); }
+const char *EditorUI::AreaTypeName(const AreaType type)
+{
+   return type == AreaType::Viewport       ? "3D Viewport"
+      : type == AreaType::ViewportBackdrop ? "Desktop Backdrop"
+      : type == AreaType::ViewportPreview  ? "Render Preview"
+                                           : AreaTypeJsonName(type);
+}
 
 const char *EditorUI::AreaTypeIcon(const AreaType type)
 {
@@ -1902,6 +1908,8 @@ const char *EditorUI::AreaTypeIcon(const AreaType type)
    case AreaType::Script: return ICON_LC_CODE_XML;
    case AreaType::PartLibrary: return ICON_LC_BOX;
    case AreaType::Viewport: return ICON_LC_MOVE_3D;
+   case AreaType::ViewportBackdrop: return ICON_LC_IMAGE;
+   case AreaType::ViewportPreview: return ICON_LC_PLAY;
    case AreaType::Count: break;
    }
    return "";
@@ -1910,7 +1918,7 @@ const char *EditorUI::AreaTypeIcon(const AreaType type)
 bool EditorUI::IsAreaTypeImplemented(const AreaType type)
 {
    // The area types a leaf may take through the editor type switcher (the others are added with their views)
-   return type == AreaType::Outliner || type == AreaType::Properties || type == AreaType::Viewport || type == AreaType::PartLibrary || type == AreaType::Script;
+   return type == AreaType::Outliner || type == AreaType::Properties || IsViewportType(type) || type == AreaType::PartLibrary || type == AreaType::Script;
 }
 
 std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
@@ -1919,7 +1927,9 @@ std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
    {
    case AreaType::Outliner: return std::make_unique<OutlinerPanel>(*this);
    case AreaType::Properties: return std::make_unique<PropertiesPanel>(*this);
-   case AreaType::Viewport: return std::make_unique<ViewportPane>(*this);
+   case AreaType::Viewport: return std::make_unique<ViewportPane>(*this, ViewMode::EditorCam);
+   case AreaType::ViewportBackdrop: return std::make_unique<ViewportPane>(*this, ViewMode::DesktopBackdrop);
+   case AreaType::ViewportPreview: return std::make_unique<ViewportPane>(*this, ViewMode::PreviewCam);
    case AreaType::PartLibrary: return std::make_unique<PartLibraryPane>(*this);
    case AreaType::Script: return std::make_unique<ScriptPane>(*this);
    default: return nullptr;
@@ -1997,7 +2007,7 @@ void EditorUI::WidenArea(const int leafId, const AreaType type)
       }
    std::map<float, float> columns; // Left edge -> width of the other visible panel areas (stacked areas count once)
    for (const LeafRect &leaf : m_leafRects)
-      if (leaf.visible && leaf.id != leafId && leaf.type != AreaType::Viewport && (mineX1 <= mineX0 || leaf.rect.x0 >= mineX1 || leaf.rect.x1 <= mineX0))
+      if (leaf.visible && leaf.id != leafId && !IsViewportType(leaf.type) && (mineX1 <= mineX0 || leaf.rect.x0 >= mineX1 || leaf.rect.x1 <= mineX0))
          columns[leaf.rect.x0] = max(columns[leaf.rect.x0], leaf.rect.Width() / dpi);
    float taken = 0.f;
    for (const auto &column : columns)
@@ -2196,7 +2206,7 @@ void EditorUI::ComputeAreaRects() const
       m_viewportVisible = false;
       m_viewportRect = AreaRect(); // A panel is maximized: nothing of the viewport is shown
       for (const LeafRect &leaf : m_leafRects)
-         if (leaf.type == AreaType::Viewport && leaf.visible)
+         if (IsViewportType(leaf.type) && leaf.visible)
          {
             m_viewportVisible = true;
             const auto it = m_areaViews.find(leaf.id);
@@ -2260,7 +2270,7 @@ bool EditorUI::PlanAreaSplit(const int leafId, const SplitAxis axis, const bool 
    const float newMin = (vertical ? AreaLayout::kPanelMinW : AreaLayout::kPanelMinH) * dpi;
    // Same minimum as the layout solver (AreaLayout::Compute)
    const float keepMin
-      = (leaf->type == AreaType::Viewport ? (vertical ? AreaLayout::kViewportMinW : AreaLayout::kViewportMinH) : (vertical ? AreaLayout::kPanelMinW : AreaLayout::kPanelMinH)) * dpi;
+      = (IsViewportType(leaf->type) ? (vertical ? AreaLayout::kViewportMinW : AreaLayout::kViewportMinH) : (vertical ? AreaLayout::kPanelMinW : AreaLayout::kPanelMinH)) * dpi;
    if (hi - lo < newMin + keepMin)
    {
       plan.reason = "Area too small to split";
@@ -2494,7 +2504,7 @@ void EditorUI::RenderSplitters()
    const auto hasViewport = [&nodes](const auto &self, const int index) -> bool
    {
       const AreaNode &node = nodes[index];
-      return node.isSplit ? (self(self, node.child[0]) || self(self, node.child[1])) : node.type == AreaType::Viewport;
+      return node.isSplit ? (self(self, node.child[0]) || self(self, node.child[1])) : IsViewportType(node.type);
    };
    for (const SplitterRect &s : m_splitterRects)
    {
@@ -2950,16 +2960,17 @@ ViewportPane *EditorUI::HoveredViewportPane() const { return m_hoverVp; }
 ViewportPane *EditorUI::GetTargetViewport() const
 {
    // The pane that owns viewport actions: the flying pane (its view covers the window), else the
-   // one captured by an in-progress mouse drag, else the one under the mouse, else the first one
+   // one captured by an in-progress mouse drag, else the one under the mouse, else the first one.
+   // A Render Preview pane is display-only: it is never the target.
    for (const auto &[id, view] : m_areaViews)
-      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_flyMode)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_viewType != ViewMode::PreviewCam && vp->m_flyMode)
          return vp;
-   if (m_captureVp != nullptr)
+   if (m_captureVp != nullptr && m_captureVp->m_viewType != ViewMode::PreviewCam)
       return m_captureVp;
-   if (m_hoverVp != nullptr)
+   if (m_hoverVp != nullptr && m_hoverVp->m_viewType != ViewMode::PreviewCam)
       return m_hoverVp;
    for (const auto &[id, view] : m_areaViews)
-      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_viewType != ViewMode::PreviewCam)
          return vp;
    return nullptr;
 }

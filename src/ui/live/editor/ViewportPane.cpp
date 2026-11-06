@@ -20,8 +20,9 @@
 namespace VPX::EditorUI
 {
 
-ViewportPane::ViewportPane(EditorUI& editor)
+ViewportPane::ViewportPane(EditorUI& editor, const ViewMode viewType)
    : EditorAreaView(editor)
+   , m_viewType(viewType)
 {
 }
 
@@ -42,10 +43,15 @@ void ViewportPane::OnUnhosted()
 
 void ViewportPane::AdoptCameraFrom(const ViewportPane* const src)
 {
-   if (src != nullptr && src->m_cameraValid)
+   if (m_viewType == ViewMode::PreviewCam)
    {
-      // A newly bound pane clones the camera of the pane it replaces (split panes, like Blender)
-      m_camMode = src->m_camMode;
+      // A render preview shows the game camera: no editor camera to adopt
+   }
+   else if (m_viewType == ViewMode::DesktopBackdrop)
+      SetBackdropCamera(); // A backdrop pane starts on the backdrop area framing
+   else if (src != nullptr && src->m_cameraValid && src->m_viewType == m_viewType)
+   {
+      // A newly created pane clones the camera of the same-type target pane (split panes, like Blender)
       m_perspectiveCam = src->m_perspectiveCam;
       m_shadeMode = src->m_shadeMode;
       m_predefinedView = src->m_predefinedView;
@@ -76,8 +82,6 @@ void ViewportPane::SetGizmoOperation(ImGuizmo::OPERATION operation)
       m_gizmoOperation = operation;
       return;
    }
-   if (m_camMode == ViewMode::PreviewCam)
-      m_camMode = ViewMode::EditorCam;
    // Repeating the same operation toggles between world and local coordinates, switching to another one resets to world
    m_gizmoMode = m_gizmoOperation == operation ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
    m_gizmoOperation = operation;
@@ -101,28 +105,10 @@ void ViewportPane::SetBackdropCamera()
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
 }
 
-void ViewportPane::CycleCamera()
-{
-   m_predefinedView = PredefinedView::None;
-   switch (m_camMode)
-   {
-   case ViewMode::PreviewCam:
-      m_camMode = ViewMode::EditorCam;
-      ResetCameraFromPlayer();
-      break;
-   case ViewMode::EditorCam:
-      m_camMode = ViewMode::DesktopBackdrop;
-      SetBackdropCamera();
-      break;
-   case ViewMode::DesktopBackdrop: m_camMode = ViewMode::PreviewCam; break;
-   }
-}
-
 void ViewportPane::SetView(const PredefinedView view)
 {
    // Editor Camera to an axis aligned view, keeping the orbit target and distance
    m_predefinedView = view;
-   m_camMode = ViewMode::EditorCam;
    Matrix3D inv(m_camView);
    inv.Invert();
    const vec3 camTarget = inv.GetOrthoNormalPos() - inv.GetOrthoNormalDir() * m_camDistance;
@@ -152,7 +138,6 @@ void ViewportPane::FrameSelection()
    FRect3D bounds;
    if (m_editor.GetSelectionBounds(bounds))
    {
-      m_camMode = ViewMode::EditorCam;
       Matrix3D view(m_camView);
       view.Invert();
       const vec3 up = view.GetOrthoNormalUp();
@@ -196,7 +181,7 @@ void ViewportPane::SetPlayfieldCamera()
 nlohmann::json ViewportPane::SaveSetup() const
 {
    nlohmann::json j = nlohmann::json::object();
-   j["camMode"] = static_cast<int>(m_camMode);
+   j["camMode"] = static_cast<int>(m_viewType);
    j["persp"] = m_perspectiveCam;
    j["shade"] = static_cast<int>(m_shadeMode);
    j["predef"] = static_cast<int>(m_predefinedView);
@@ -244,6 +229,8 @@ void ViewportPane::LoadSetup(const nlohmann::json& j)
       || shade < 0 || shade > static_cast<int>(Renderer::ShadeMode::NoDepthWireframe) //
       || predef < 0 || predef > static_cast<int>(PredefinedView::Bottom))
       return;
+   if (static_cast<ViewMode>(camMode) != m_viewType)
+      return; // A type switch reuses the leaf's setup: a camera stored for another mode does not apply
    const float dist = j.value("camDist", 0.f);
    const float aspect = j.value("camAspect", 0.f);
    if (!std::isfinite(dist) || dist <= 0.f || !std::isfinite(aspect) || aspect <= 0.f)
@@ -251,7 +238,6 @@ void ViewportPane::LoadSetup(const nlohmann::json& j)
    Matrix3D view, proj;
    if (!mat("camView", view) || !mat("camProj", proj))
       return;
-   m_camMode = static_cast<ViewMode>(camMode);
    m_shadeMode = static_cast<Renderer::ShadeMode>(shade);
    m_predefinedView = static_cast<PredefinedView>(predef);
    m_camDistance = dist;
@@ -344,7 +330,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    const float dpi = editor.m_liveUI.GetDPI();
 
    // Camera state of this pane
-   ViewMode& camMode = m_camMode;
+   const ViewMode camMode = m_viewType;
    bool& perspective = m_perspectiveCam;
    Renderer::ShadeMode& shade = m_shadeMode;
    bool& orbitLock = m_orbitLock;
@@ -360,88 +346,112 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    ImGui::SetCursorPos(ImVec2(pad, pad));
 
    editor.RenderAreaTypeButton(leafId);
-   ImGui::SameLine();
-   const char* modeName = camMode == ViewMode::PreviewCam ? "Preview" : camMode == ViewMode::DesktopBackdrop ? "Backdrop" : "Camera";
-   if (ImGui::BeginCombo("##CamMode", modeName, ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_HeightSmall))
+   if (m_viewType == ViewMode::PreviewCam)
    {
-      if (ImGui::MenuItem("Camera", nullptr, camMode == ViewMode::EditorCam))
-         camMode = ViewMode::EditorCam;
-      if (ImGui::MenuItem("Backdrop", nullptr, camMode == ViewMode::DesktopBackdrop))
-         camMode = ViewMode::DesktopBackdrop;
-      if (ImGui::MenuItem("Preview", nullptr, camMode == ViewMode::PreviewCam))
-         camMode = ViewMode::PreviewCam;
-      ImGui::EndCombo();
-   }
-   if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("View mode of this area");
-   ImGui::SameLine();
-   if (ImGui::Button(perspective ? "P##Persp" : "O##Persp"))
-      perspective = !perspective;
-   if (ImGui::IsItemHovered())
-      ImGui::SetTooltip(perspective ? "Perspective camera" : "Orthographic camera");
-   ImGui::SameLine();
-   const char* shadeName = shade == Renderer::ShadeMode::Wireframe ? "Wire" : shade == Renderer::ShadeMode::NoDepthWireframe ? "WireN" : "Solid";
-   if (ImGui::BeginCombo("##Shade", shadeName, ImGuiComboFlags_NoArrowButton))
-   {
-      if (ImGui::MenuItem("Solid", nullptr, shade == Renderer::ShadeMode::Default))
-         shade = Renderer::ShadeMode::Default;
-      if (ImGui::MenuItem("Wireframe", nullptr, shade == Renderer::ShadeMode::Wireframe))
-         shade = Renderer::ShadeMode::Wireframe;
-      if (ImGui::MenuItem("Wireframe (no depth)", nullptr, shade == Renderer::ShadeMode::NoDepthWireframe))
-         shade = Renderer::ShadeMode::NoDepthWireframe;
-      ImGui::EndCombo();
-   }
-   if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("Shading of this area");
-
-   if (!editor.IsInspectMode())
-   {
+      // View mode selection (desktop / FSS / cabinet)
       ImGui::SameLine();
-      ImGui::Separator();
-      ImGui::SameLine();
-
-      // Edit mode selection (same actions as the Esc, G, S and R keyboard shortcuts)
       static const struct
       {
-         ImGuizmo::OPERATION operation;
+         ViewSetupID mode;
+         const char* label;
+      } viewModes[] = {
+         { BG_DESKTOP, "Desktop" },
+         { BG_FSS, "FSS" },
+         { BG_FULLSCREEN, "Cabinet" },
+      };
+      for (const auto& mode : viewModes)
+      {
+         const bool active = (m_viewMode == mode.mode);
+         if (active)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+         if (ImGui::Button(mode.label))
+            m_viewMode = mode.mode;
+         if (active)
+            ImGui::PopStyleColor();
+         ImGui::SameLine();
+      }
+   }
+   else // A render preview has no toolbar (no selection, shading, camera edits, ...)
+   {
+      ImGui::SameLine();
+      if (ImGui::Button(perspective ? ICON_FK_VIDEO_CAMERA "##Persp" : ICON_FK_TH "##Persp"))
+         perspective = !perspective;
+      if (ImGui::IsItemHovered())
+         ImGui::SetTooltip(perspective ? "Perspective camera" : "Orthographic camera");
+      ImGui::SameLine();
+      // Shading mode radio buttons (icon group, same style as the edit modes)
+      static const struct
+      {
+         Renderer::ShadeMode mode;
          const char* icon;
          const char* tooltip;
-      } editModes[] = {
-         { (ImGuizmo::OPERATION)0, ICON_FK_MOUSE_POINTER, "Select\n[Esc]" }, //
-         { ImGuizmo::TRANSLATE, ICON_FK_ARROWS, "Grab\n[G]" }, //
-         { ImGuizmo::SCALE, ICON_FK_EXPAND, "Scale\n[S]" }, //
-         { ImGuizmo::ROTATE, ICON_FK_REPEAT, "Rotate\n[R]" }, //
+      } shadeModes[] = {
+         { Renderer::ShadeMode::Default, ICON_FK_CUBE, "Solid" },
+         { Renderer::ShadeMode::Wireframe, ICON_FK_WIRE, "Wireframe" },
+         { Renderer::ShadeMode::NoDepthWireframe, ICON_FK_DASHCUBE, "Wireframe (no depth)" },
       };
-      for (const auto& mode : editModes)
+      for (const auto& mode : shadeModes)
       {
-         const bool active = (m_gizmoOperation == mode.operation);
+         const bool active = (shade == mode.mode);
          if (active)
             ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
          if (ImGui::Button(mode.icon))
-            SetGizmoOperation(mode.operation);
+            shade = mode.mode;
          if (active)
             ImGui::PopStyleColor();
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("%s", mode.tooltip);
          ImGui::SameLine();
       }
-      ImGui::Separator();
-      ImGui::SameLine();
 
-      // Add part button, opening the part type picker popup (same as the Shift+A shortcut)
-      ImGui::BeginDisabled(editor.m_pointEditPart != nullptr || editor.m_table->IsLocked());
-      const bool addPartActive = (editor.m_addPartType != eItemInvalid);
-      if (addPartActive)
-         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-      if (ImGui::Button(ICON_FK_PLUS))
-         editor.RequestAddPartPopup(ImGui::GetMousePos());
-      if (addPartActive)
-         ImGui::PopStyleColor();
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Add part\n[Shift+A]");
-      ImGui::EndDisabled();
-      ImGui::SameLine();
-   }
+      if (!editor.IsInspectMode() && m_viewType != ViewMode::PreviewCam)
+      {
+         ImGui::SameLine();
+         ImGui::Separator();
+         ImGui::SameLine();
+
+         // Edit mode selection (same actions as the Esc, G, S and R keyboard shortcuts)
+         static const struct
+         {
+            ImGuizmo::OPERATION operation;
+            const char* icon;
+            const char* tooltip;
+         } editModes[] = {
+            { (ImGuizmo::OPERATION)0, ICON_FK_MOUSE_POINTER, "Select\n[Esc]" }, //
+            { ImGuizmo::TRANSLATE, ICON_FK_ARROWS, "Grab\n[G]" }, //
+            { ImGuizmo::SCALE, ICON_FK_EXPAND, "Scale\n[S]" }, //
+            { ImGuizmo::ROTATE, ICON_FK_REPEAT, "Rotate\n[R]" }, //
+         };
+         for (const auto& mode : editModes)
+         {
+            const bool active = (m_gizmoOperation == mode.operation);
+            if (active)
+               ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+            if (ImGui::Button(mode.icon))
+               SetGizmoOperation(mode.operation);
+            if (active)
+               ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+               ImGui::SetTooltip("%s", mode.tooltip);
+            ImGui::SameLine();
+         }
+         ImGui::Separator();
+         ImGui::SameLine();
+
+         // Add part button, opening the part type picker popup (same as the Shift+A shortcut)
+         ImGui::BeginDisabled(editor.m_pointEditPart != nullptr || editor.m_table->IsLocked());
+         const bool addPartActive = (editor.m_addPartType != eItemInvalid);
+         if (addPartActive)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+         if (ImGui::Button(ICON_FK_PLUS))
+            editor.RequestAddPartPopup(ImGui::GetMousePos());
+         if (addPartActive)
+            ImGui::PopStyleColor();
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Add part\n[Shift+A]");
+         ImGui::EndDisabled();
+         ImGui::SameLine();
+      }
 
    // Right side of the header: viewport overlays, selection filter and camera orbit lock
    const ImGuiStyle& style = ImGui::GetStyle();
@@ -501,6 +511,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::PopStyleColor();
    if (ImGui::IsItemHovered())
       ImGui::SetTooltip("Lock camera orbit\n[Numpad /]");
+   }
 
    const float headerBottom = ImGui::GetItemRectMax().y + pad;
    drawList->ChannelsSetCurrent(0);
@@ -553,7 +564,8 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    m_viewItemId = ImGui::GetItemID(); // The pane's scene item: its ID must not count as a widget (see RenderAreaCorners)
    m_hovered = ImGui::IsItemHovered();
    m_active = ImGui::IsItemActive();
-   RenderStatusOverlay();
+   if (m_viewType != ViewMode::PreviewCam) // No status text over a render preview
+      RenderStatusOverlay();
    // Thin rounded border around the pane (Blender pane look)
    ImGui::GetWindowDrawList()->AddRect(m_window->Pos, m_window->Pos + m_window->Size, EditorTheme::Border, 3.f * dpi);
    ImGui::PopID();
@@ -562,8 +574,9 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
 
    // Per frame view setup: editor flags and shading; the camera of the edit viewport is pushed by
    // RenderUI, the other panes restore their stored camera state
-   m_view->m_editorView = true;
+   m_view->m_editorView = camMode != ViewMode::PreviewCam; // A render preview displays the game view, not an editor view
    m_view->m_editorBackdropEdit = camMode == ViewMode::DesktopBackdrop;
+   m_view->m_viewModeOverride = camMode == ViewMode::PreviewCam ? m_viewMode : BG_INVALID;
    m_view->m_shadeMode = m_shadeMode;
 }
 
@@ -575,7 +588,7 @@ void ViewportPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB, 
       m_editor.m_multiSel.clear();
       m_editor.m_selection = Selection();
    }
-   LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_shadeMode, false);
    SetupOverlay(&ctx, nullptr);
    const ImVec2 boxMin(std::min(cornerA.x, cornerB.x), std::min(cornerA.y, cornerB.y));
    const ImVec2 boxMax(std::max(cornerA.x, cornerB.x), std::max(cornerA.y, cornerB.y));
@@ -600,7 +613,7 @@ void ViewportPane::BoxSelectPoints(const ImVec2& cornerA, const ImVec2& cornerB,
    // Select all the drag points of the edited curve projecting inside the given screen box
    if (!add)
       m_editor.m_pointSel.clear();
-   LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_shadeMode, false);
    SetupOverlay(&ctx, nullptr);
    const ImVec2 boxMin(std::min(cornerA.x, cornerB.x), std::min(cornerA.y, cornerB.y));
    const ImVec2 boxMax(std::max(cornerA.x, cornerB.x), std::max(cornerA.y, cornerB.y));
@@ -635,7 +648,7 @@ void ViewportPane::RenderStatusOverlay()
    ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
    const float labelAlign = ImGui::GetCursorPosX() + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.x;
    ImGui::SetCursorPos(ImVec2(labelAlign, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
-   switch (m_camMode)
+   switch (m_viewType)
    {
    case ViewMode::PreviewCam: ImGui::TextUnformatted("Preview Camera"); break;
    case ViewMode::EditorCam:
@@ -696,7 +709,7 @@ void ViewportPane::Render3D()
       return;
    // Setup the MVP of the view being recorded with this pane's camera: the default table layout
    // for the preview camera, else the pane's stored camera converted to the renderer's left handed space
-   if (m_camMode == ViewMode::PreviewCam || !m_cameraValid)
+   if (m_viewType == ViewMode::PreviewCam || !m_cameraValid)
       m_view->InitLayout();
    else
    {
@@ -706,8 +719,9 @@ void ViewportPane::Render3D()
    }
 
    // Render the scene parts into the view being recorded, filtered by this pane's camera mode and shading
-   LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
-   const bool backdrop = m_camMode == ViewMode::DesktopBackdrop;
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_viewType == ViewMode::PreviewCam ? Renderer::ShadeMode::Default : m_shadeMode,
+      (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
+   const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
    for (const auto& uiPart : m_editor.m_editables)
    {
       if (uiPart->GetEditable()->m_desktopBackdrop != backdrop)
@@ -717,13 +731,15 @@ void ViewportPane::Render3D()
    // Selection overlay: the parts' 3D-rendered selection wireframes must be recorded into this
    // pane's view (drawn with its MVP), suspended while a save is running (the part renders would
    // write into the parts' data being serialized on the worker thread)
-   if (!m_editor.m_multiSel.empty() && !m_editor.IsSaveInProgress())
+   if (m_viewType != ViewMode::PreviewCam && !m_editor.m_multiSel.empty() && !m_editor.IsSaveInProgress())
    {
       if (m_editor.m_renderer->m_renderDevice->GetCurrentRenderTarget()->HasDepth())
          m_editor.m_renderer->m_renderDevice->Clear(clearType::ZBUFFER, 0);
       ctx.m_isSelected = true;
       for (const auto& part : m_editor.m_multiSel)
       {
+         if (part->GetEditable()->m_desktopBackdrop != backdrop)
+            continue; // Only the parts of this pane's mode are overlaid here
          ctx.m_isActive = part == m_editor.m_selection.GetPart();
          part->Render(ctx);
       }
@@ -770,7 +786,7 @@ Vertex2D ViewportPane::UnprojectToPlane(const ImVec2& mousePos, float z) const
 
 bool ViewportPane::HitTestEditCenter(const ImVec2& mousePos) const
 {
-   LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_shadeMode, false);
    SetupOverlay(&ctx, nullptr);
    const ImVec2 pos = ctx.Project(m_editor.m_pointEditPart->GetEditCenter());
    if (pos.x == FLT_MAX)
@@ -783,7 +799,7 @@ bool ViewportPane::HitTestEditCenter(const ImVec2& mousePos) const
 
 DragPoint* ViewportPane::HitTestDragPoint(const ImVec2& mousePos) const
 {
-   LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, false);
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_shadeMode, false);
    SetupOverlay(&ctx, nullptr);
    const float maxDist = 10.f * m_editor.m_liveUI.GetDPI();
    DragPoint* best = nullptr;
@@ -814,9 +830,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       // editor opening if one is pending (it only goes to a pane without a restored camera)
       ViewportPane* const other = m_editor.GetTargetViewport();
       AdoptCameraFrom(other != this ? other : nullptr);
-      if (m_editor.m_camSetupPending)
+      if (m_editor.m_camSetupPending && m_editor.GetTargetViewport() == this && m_viewType == m_editor.m_camSetupPending->mode)
       {
-         m_camMode = m_editor.m_camSetupPending->mode;
          m_perspectiveCam = m_editor.m_camSetupPending->persp;
          m_shadeMode = m_editor.m_camSetupPending->shade;
          m_predefinedView = m_editor.m_camSetupPending->predef;
@@ -841,7 +856,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    // image rect (the one under the mouse, or capturing a drag, handles input and keyboard)
 
    // The selection gizmo operates on the viewport's image rect
-   ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
+   ImGuizmo::SetOrthographic(m_viewType == ViewMode::DesktopBackdrop || (m_viewType == ViewMode::EditorCam && !m_perspectiveCam));
    const AreaRect gizmoRect = m_imageRect;
    ImGuizmo::SetRect(gizmoRect.x0, gizmoRect.y0, gizmoRect.Width(), gizmoRect.Height());
    // The gizmo only accepts hover over its drawlist window or the registered alternative: the
@@ -853,7 +868,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    const float camAspect = m_imageRect.Height() > 0.f ? m_imageRect.Width() / m_imageRect.Height() : io.DisplaySize.x / io.DisplaySize.y;
    const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
    const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
-   if (m_camMode == ViewMode::PreviewCam)
+   if (m_viewType == ViewMode::PreviewCam)
    {
       camOut->InitLayout();
       m_camView = RH2LH * camOut->GetMVP().GetView(0) * YAxis;
@@ -861,7 +876,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    }
    else
    {
-      if (m_perspectiveCam && m_camMode != ViewMode::DesktopBackdrop) // The desktop backdrop is a 2D view, always edited with an orthographic camera
+      if (m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop) // The desktop backdrop is a 2D view, always edited with an orthographic camera
       {
          // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
          // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
@@ -888,6 +903,10 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
 
    // Selection manipulator
    Matrix3D transform;
+   // A Render Preview pane shows the game view only: no gizmo, no overlays, no scene interaction
+   if (m_viewType == ViewMode::PreviewCam)
+      return;
+
    const bool isSelectionTransformValid = m_editor.GetSelectionTransform(transform);
    if (isSelectionTransformValid && !m_editor.m_table->IsLocked())
    {
@@ -905,7 +924,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       memcpy(camViewLH, &gizmoView.m[0][0], sizeof(float) * 4 * 4);
       const Matrix3D prevTransform(transform);
       ImGuizmo::OPERATION gizmoOperation = m_gizmoOperation;
-      if (m_editor.m_pointEditPart || m_camMode == ViewMode::DesktopBackdrop)
+      if (m_editor.m_pointEditPart || m_viewType == ViewMode::DesktopBackdrop)
       {
          // Drag point curves are 2D in the table XY plane, and backdrop parts are 2D in the backdrop XY plane: restrict gizmo operations to this plane
          if (gizmoOperation == ImGuizmo::TRANSLATE)
@@ -915,7 +934,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          else if (gizmoOperation == ImGuizmo::SCALE)
             gizmoOperation = static_cast<ImGuizmo::OPERATION>(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Y);
       }
-      else if (m_camMode == ViewMode::EditorCam)
+      else if (m_viewType == ViewMode::EditorCam)
       {
          // Predefined views are axis aligned 2D views: restrict gizmo operations to the view plane
          switch (m_predefinedView)
@@ -999,7 +1018,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    // 2D overlays projected through the pane's camera (the parts' 3D selection wireframes are
    // recorded by Render3D into the pane's view)
    {
-      LiveRenderContext ctx(m_editor.m_player, overlayDrawList, m_camMode, m_shadeMode, (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
+      LiveRenderContext ctx(m_editor.m_player, overlayDrawList, m_viewType, m_shadeMode, (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
       const bool clipToPane = SetupOverlay(&ctx, overlayDrawList);
 
       if (isSelectionTransformValid)
@@ -1009,7 +1028,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
 
       // In desktop backdrop mode, draw the bounds of the backdrop area
-      if (m_camMode == ViewMode::DesktopBackdrop)
+      if (m_viewType == ViewMode::DesktopBackdrop)
       {
          const Vertex3Ds bounds[4] = { Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds((float)EDITOR_BG_WIDTH, 0.f, 0.f), Vertex3Ds((float)EDITOR_BG_WIDTH, (float)EDITOR_BG_HEIGHT, 0.f),
             Vertex3Ds(0.f, (float)EDITOR_BG_HEIGHT, 0.f) };
@@ -1075,8 +1094,6 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       // Zoom in/out with mouse wheel
       if (io.MouseWheel != 0)
       {
-         if (m_camMode == ViewMode::PreviewCam)
-            m_camMode = ViewMode::EditorCam;
          Matrix3D view(m_camView);
          view.Invert();
          const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
@@ -1091,7 +1108,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       {
          ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
-         if (m_camMode != ViewMode::PreviewCam && (drag.x != 0.f || drag.y != 0.f))
+         if (m_viewType != ViewMode::PreviewCam && (drag.x != 0.f || drag.y != 0.f))
          {
             Matrix3D viewInverse(m_camView);
             viewInverse.Invert();
@@ -1100,11 +1117,11 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
             const vec3 pos = viewInverse.GetOrthoNormalPos();
             const vec3 right = viewInverse.GetOrthoNormalRight();
             vec3 camTarget = pos - dir * m_camDistance;
-            if (io.KeyShift || m_camMode == ViewMode::DesktopBackdrop || m_orbitLock)
+            if (io.KeyShift || m_viewType == ViewMode::DesktopBackdrop || m_orbitLock)
             {
                // Pan so that the point under the cursor follows it (the view height at the target depends on the projection;
                // in perspective the raw pixel drag used to be applied as VPU, ignoring the zoom)
-               const float halfH = m_perspectiveCam && m_camMode != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(editorCamFovY)) : m_camDistance;
+               const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(editorCamFovY)) : m_camDistance;
                const float viewH = m_imageRect.Height() > 0.f ? m_imageRect.Height() : io.DisplaySize.y;
                drag.x *= 2.f * halfH / viewH;
                drag.y *= 2.f * halfH / viewH;
@@ -1384,8 +1401,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       else if (ImGui::IsKeyPressed(ImGuiKey_G))
       {
          // Grab (translate)
-         if (m_camMode == ViewMode::PreviewCam)
-            m_camMode = ViewMode::EditorCam;
+
          if (io.KeyAlt && !m_editor.m_pointEditPart)
          {
             Matrix3D tmp;
@@ -1400,8 +1416,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          // Ctrl+S (save) is handled by the editor before this; Scale otherwise
          if (!io.KeyCtrl)
          {
-            if (m_camMode == ViewMode::PreviewCam)
-               m_camMode = ViewMode::EditorCam;
+
             if (io.KeyAlt && !m_editor.m_pointEditPart)
             {
                Matrix3D tmp;
@@ -1415,8 +1430,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       else if (ImGui::IsKeyPressed(ImGuiKey_R))
       {
          // Rotate
-         if (m_camMode == ViewMode::PreviewCam)
-            m_camMode = ViewMode::EditorCam;
+
          if (io.KeyAlt && !m_editor.m_pointEditPart)
          {
             Matrix3D tmp;
@@ -1436,15 +1450,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          case Renderer::ShadeMode::NoDepthWireframe: m_shadeMode = Renderer::ShadeMode::Default; break;
          }
       }
-      else if (ImGui::IsKeyPressed(ImGuiKey_Keypad0))
-      {
-         CycleCamera();
-      }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad5))
-      {
-         m_camMode = ViewMode::EditorCam;
          m_perspectiveCam = !m_perspectiveCam;
-      }
       else if (ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))
       {
          FrameSelection();

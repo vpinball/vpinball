@@ -87,12 +87,12 @@ public:
    bool IsPreview() const
    {
       const ViewportPane *const vp = GetTargetViewport();
-      return vp != nullptr && vp->m_camMode == ViewMode::PreviewCam;
+      return vp != nullptr && vp->m_viewType == ViewMode::PreviewCam;
    }
    bool IsBackdropEditMode() const
    {
       const ViewportPane *const vp = GetTargetViewport();
-      return vp != nullptr && vp->m_camMode == ViewMode::DesktopBackdrop;
+      return vp != nullptr && vp->m_viewType == ViewMode::DesktopBackdrop;
    }
 
    bool IsInspectMode() const { return m_table->m_liveBaseTable != nullptr; }

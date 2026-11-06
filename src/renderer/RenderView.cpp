@@ -980,7 +980,7 @@ void RenderView::DrawBackground()
    }
 
    const PinTable* const ptable = g_pplayer->m_ptable;
-   const ViewSetupID bgSet = m_editorBackdropEdit ? BG_DESKTOP : ptable->GetViewMode();
+   const ViewSetupID bgSet = m_editorBackdropEdit ? BG_DESKTOP : (m_viewModeOverride != BG_INVALID ? m_viewModeOverride : ptable->GetViewMode());
    Texture* const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[bgSet]) : nullptr;
    rd->ResetRenderState();
    rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_CCW);
@@ -1968,22 +1968,22 @@ void RenderView::Render()
    // For the time being, the Render3DScene only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
    if (IsMirror())
    {
-      m_noBackdrop = !m_editorBackdropEdit && (r->m_table->GetViewMode() == BG_FULLSCREEN || m_editorView);
-      m_visibilityMask = r->m_table->GetViewMode() == BG_FULLSCREEN ? PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET
-         : r->m_table->GetViewMode() == BG_FSS                      ? PartGroupData::PlayerModeVisibilityMask::PMVM_FSS
-                                                                    : PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
+      m_noBackdrop = !m_editorBackdropEdit && ((m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode()) == BG_FULLSCREEN || m_editorView);
+      m_visibilityMask = (m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode()) == BG_FULLSCREEN ? PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET
+         : (m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode()) == BG_FSS                      ? PartGroupData::PlayerModeVisibilityMask::PMVM_FSS
+                                                                                                                              : PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
    }
    else
    {
       m_noBackdrop = !m_editorBackdropEdit // Force backdrop rendering if its being edited
-         && ((g_pplayer->m_vrDevice != nullptr) || (r->m_table->GetViewMode() == BG_FULLSCREEN) || m_editorView);
+         && ((g_pplayer->m_vrDevice != nullptr) || ((m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode()) == BG_FULLSCREEN) || m_editorView);
       if (g_pplayer->m_vrDevice)
          m_visibilityMask = r->m_vrApplyColorKey ? PartGroupData::PlayerModeVisibilityMask::PMVM_MIXED_REALITY : PartGroupData::PlayerModeVisibilityMask::PMVM_VIRTUAL_REALITY;
-      else if (r->m_table->GetViewMode() == BG_FULLSCREEN)
+      else if ((m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode()) == BG_FULLSCREEN)
          m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET;
-      else if (r->m_table->GetViewMode() == BG_FSS)
+      else if ((m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode()) == BG_FSS)
          m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_FSS;
-      else if (r->m_table->GetViewMode() == BG_DESKTOP)
+      else if ((m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode()) == BG_DESKTOP)
          m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
    }
 

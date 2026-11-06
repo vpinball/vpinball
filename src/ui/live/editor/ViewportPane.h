@@ -30,10 +30,14 @@ class LiveRenderContext;
 class ViewportPane final : public EditorAreaView
 {
 public:
-   explicit ViewportPane(EditorUI& editor);
+   explicit ViewportPane(EditorUI& editor, ViewMode viewType = ViewMode::EditorCam);
    ~ViewportPane() override;
 
-   AreaType GetType() const override { return AreaType::Viewport; }
+   // The area type matching the pane's fixed view mode (a type switch must recreate the pane)
+   AreaType GetType() const override
+   {
+      return m_viewType == ViewMode::DesktopBackdrop ? AreaType::ViewportBackdrop : m_viewType == ViewMode::PreviewCam ? AreaType::ViewportPreview : AreaType::Viewport;
+   }
    void RenderPane(const AreaRect& rect, int leafId) override;
    void OnUnhosted() override;
 
@@ -66,7 +70,7 @@ public:
    void SetBackdropCamera();
    void SetPlayfieldCamera();
    void SetView(PredefinedView view); // Axis aligned view, keeping the orbit target and distance
-   void CycleCamera(); // Preview -> Editor -> Backdrop camera cycle
+   // The pane's view mode is fixed by its area type: there is no camera mode cycle anymore
    void FrameSelection(); // Camera centered on the selection, zoomed to fill the view
 
    // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
@@ -99,10 +103,11 @@ public:
    bool m_flyMode = false; // Fly mode: the pane's 3D view takes the whole window, hiding the editor UI (F shortcut)
    ImGuiWindow* m_window = nullptr; // This pane's ImGui window (registered to ImGuizmo so it accepts its hover)
    ImGuiID m_viewItemId = 0; // ID of the pane's scene item (the corner zones ignore it as a widget)
+   ViewSetupID m_viewMode = BG_DESKTOP; // Backdrop mode of a render preview (desktop / FSS / cabinet)
    AreaRect m_imageRect {}; // Display-space rect of the rendered image, matching the view's output area
 
    // The pane's camera definition, also used by the editor while this pane is bound to it
-   ViewMode m_camMode = ViewMode::EditorCam;
+   // (m_camMode removed: m_viewType is the mode, fixed at creation)
    bool m_perspectiveCam = true;
    Renderer::ShadeMode m_shadeMode = Renderer::ShadeMode::Default;
    float m_camAspect = 1.f; // Aspect ratio the stored projection was authored for, re-fitted on pane resize
@@ -110,6 +115,7 @@ public:
    bool m_orbitLock = false;
    Matrix3D m_camView, m_camProj;
    float m_camDistance = 1000.f;
+   const ViewMode m_viewType; // The pane's area type: 3D Viewport (EditorCam), Desktop Backdrop or Render Preview — fixed at creation
    bool m_cameraValid = false;
 
    // Selection gizmo state: the armed edit operation (0 = select), its coordinate mode, and the

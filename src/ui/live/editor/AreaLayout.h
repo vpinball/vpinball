@@ -25,8 +25,13 @@ enum class AreaType : uint8_t
    Script = 2,
    PartLibrary = 3,
    Viewport = 4,
+   ViewportBackdrop = 5,
+   ViewportPreview = 6,
    Count
 };
+
+// The 3D area family: one ViewportPane class, a fixed camera mode per type
+inline bool IsViewportType(const AreaType type) { return type == AreaType::Viewport || type == AreaType::ViewportBackdrop || type == AreaType::ViewportPreview; }
 
 // Names used in the layout JSON ("Outliner", "Properties", "Script", "PartLibrary", "Viewport")
 const char* AreaTypeJsonName(AreaType type);

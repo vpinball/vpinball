@@ -88,6 +88,7 @@ public:
 
    // Per view editor state, replacing the global LiveUI mode queries (several editor views may coexist with different setups)
    bool m_editorView = false; // Rendered for the live editor: disables the static prepass and applies the editor backdrop rules
+   ViewSetupID m_viewModeOverride = BG_INVALID; // Per-view backdrop mode override (editor preview panes), BG_INVALID = table's mode
    bool m_editorBackdropEdit = false; // The view shows the desktop backdrop edit mode
 
    // Camera state
