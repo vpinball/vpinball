@@ -326,10 +326,6 @@ void PartLibraryPanel::RenderPane(const AreaRect &rect, const int leafId)
          else
             ImGui::Text("Content: %d part(s), %d collection(s), %d material(s), %d image(s), %d sound(s), %d font(s)%s", m_selectedPackInfo.parts, m_selectedPackInfo.collections,
                m_selectedPackInfo.materials, m_selectedPackInfo.images, m_selectedPackInfo.sounds, m_selectedPackInfo.fonts, m_selectedPackInfo.hasTable ? " + table" : "");
-         ImGui::BeginDisabled(m_editor.m_table->IsLocked() || !m_selectedPackInfo.valid);
-         if (ImGui::Button(ICON_FK_DOWNLOAD " Import"))
-            ImportPack(m_selectedPack);
-         ImGui::EndDisabled();
       }
    }
    ImGui::PopID();
@@ -633,7 +629,7 @@ void PartLibraryPanel::UpdatePlacement(const ImVec2 &mousePos)
    const ImGuiIO &io = ImGui::GetIO();
    ViewportPane *const vp = m_editor.GetTargetViewport();
    const bool hovering
-      = (vp != nullptr) && !io.WantCaptureMouse && (vp->m_viewType != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr && m_editor.m_player->m_playfieldWnd != nullptr;
+      = (vp != nullptr) && (m_editor.m_hoverVp == vp) && (vp->m_viewType != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr && m_editor.m_player->m_playfieldWnd != nullptr;
    if (!hovering)
    {
       // Re-hide the ghost parts when the mouse leaves the 3D view (or the view is not 3D)
