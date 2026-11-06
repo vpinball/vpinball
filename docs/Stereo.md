@@ -1,7 +1,7 @@
 # Stereo Rendering
 
 Visual Pinball X supports rendering to a stereo output which can be one of:
-- a VR Headset
+- a VR Headset (see [Virtual Reality](<VR.md>))
 - a 3D TV using passive/active glasses,
 - a traditional screen, using anaglyph glasses.
 

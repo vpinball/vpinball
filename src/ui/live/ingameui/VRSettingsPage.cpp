@@ -31,34 +31,7 @@ void VRSettingsPage::BuildPage()
       added.m_excludeFromDefault = true;
    };
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View Setup"s));
-
-   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_HeadSetOrientation, 1.f, "%4.1f deg"s, //
-      [this]() { return m_player->m_vrDevice->GetHeadsetOrientation(); }, //
-      [this](float, float v) { m_player->m_vrDevice->SetHeadsetOrientation(v); }));
-
-   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_HeadSetX, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_vrDevice->GetHeadsetOffset().x; }, //
-      [this](float, float v)
-      {
-         Vertex3Ds offset = m_player->m_vrDevice->GetHeadsetOffset();
-         offset.x = v;
-         m_player->m_vrDevice->SetHeadsetOffset(offset);
-      }));
-
-   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_HeadSetY, 1.f, "%4.1f cm"s, //
-      [this]() { return m_player->m_vrDevice->GetHeadsetOffset().y; }, //
-      [this](float, float v)
-      {
-         Vertex3Ds offset = m_player->m_vrDevice->GetHeadsetOffset();
-         offset.y = v;
-         m_player->m_vrDevice->SetHeadsetOffset(offset);
-      }));
-
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Table Offsets"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Table Geometry (adjust table-specific dimensions)"s));
 
    addTableOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_TableOffsetY, 1.f, "%4.1f cm"s, //
@@ -80,40 +53,77 @@ void VRSettingsPage::BuildPage()
          m_player->m_vrDevice->SetTableOffset(offset);
       }));
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet Layout"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Room Positioning (adjust headset imprecision)"s));
 
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_ScaleToLockbar, //
-      [this]() { return m_player->m_vrDevice->IsScalingToLockbar(); }, //
+      Settings::m_propPlayerVR_RoomYaw, 1.f, "%4.1f deg"s, //
+      [this]() { return m_player->m_vrDevice->GetRoomYaw(); }, //
+      [this](float, float v) { m_player->m_vrDevice->SetRoomYaw(v); }));
+
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_RoomOffsetX, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_vrDevice->GetRoomOffset().x; }, //
+      [this](float, float v)
+      {
+         Vertex3Ds offset = m_player->m_vrDevice->GetRoomOffset();
+         offset.x = v;
+         m_player->m_vrDevice->SetRoomOffset(offset);
+      }));
+
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_RoomOffsetY, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_vrDevice->GetRoomOffset().y; }, //
+      [this](float, float v)
+      {
+         Vertex3Ds offset = m_player->m_vrDevice->GetRoomOffset();
+         offset.y = v;
+         m_player->m_vrDevice->SetRoomOffset(offset);
+      }));
+
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_RoomOffsetZ, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_vrDevice->GetRoomOffset().z; }, //
+      [this](float, float v)
+      {
+         Vertex3Ds offset = m_player->m_vrDevice->GetRoomOffset();
+         offset.z = v;
+         m_player->m_vrDevice->SetRoomOffset(offset);
+      }));
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet Layout (fit real world cabinet)"s));
+
+   addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_OverrideLockbarWidth, //
+      [this]() { return m_player->m_vrDevice->IsOverridingLockbarWidth(); }, //
       [this](bool v)
       {
-         m_player->m_vrDevice->SetScaleToLockbar(v);
+         m_player->m_vrDevice->SetOverrideLockbarWidth(v);
          RequestRebuild();
       }));
 
-   if (m_player->m_vrDevice->IsScalingToLockbar())
+   if (m_player->m_vrDevice->IsOverridingLockbarWidth())
       addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
          Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
-         [this]() { return m_player->m_vrDevice->GetLockbarWidth(); }, //
-         [this](float, float v) { m_player->m_vrDevice->SetLockbarWidth(v); }));
+         [this]() { return m_player->m_vrDevice->GetCustomLockbarWidth(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetCustomLockbarWidth(v); }));
 
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_MatchLockbarHeight, //
-      [this]() { return m_player->m_vrDevice->IsMatchingLockbarHeight(); }, //
+      Settings::m_propPlayerVR_OverrideLockbarHeight, //
+      [this]() { return m_player->m_vrDevice->IsOverridingLockbarHeight(); }, //
       [this](bool v)
       {
-         m_player->m_vrDevice->SetMatchLockbarHeight(v);
+         m_player->m_vrDevice->SetOverrideLockbarHeight(v);
          RequestRebuild();
       }));
 
-   if (m_player->m_vrDevice->IsMatchingLockbarHeight())
+   if (m_player->m_vrDevice->IsOverridingLockbarHeight())
       addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
          Settings::m_propPlayer_LockbarHeight, 1.f, "%4.1f cm"s, //
-         [this]() { return m_player->m_vrDevice->GetLockbarHeight(); }, //
-         [this](float, float v) { m_player->m_vrDevice->SetLockbarHeight(v); }));
+         [this]() { return m_player->m_vrDevice->GetCustomLockbarHeight(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetCustomLockbarHeight(v); }));
 
    // Locking feet to ground only makes sense when the cabinet is fit to the real world setup
-   if (m_player->m_vrDevice->IsScalingToLockbar() || m_player->m_vrDevice->IsMatchingLockbarHeight())
+   if (m_player->m_vrDevice->IsOverridingLockbarWidth() || m_player->m_vrDevice->IsOverridingLockbarHeight())
       addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
          Settings::m_propPlayerVR_LockFeetToGround, //
          [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
@@ -232,9 +242,9 @@ void VRSettingsPage::BuildPage()
       [this](float, float v) { m_player->m_vrDevice->SetControllerCabYOffset(v); }));
 
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_ControllerLockbarScale, 100.f, "%4.1f %%"s, //
-      [this]() { return m_player->m_vrDevice->GetControllerLockbarScale(); }, //
-      [this](float, float v) { m_player->m_vrDevice->SetControllerLockbarScale(v); }));
+      Settings::m_propPlayerVR_ControllerCabZOffset, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_vrDevice->GetControllerCabZOffset(); }, //
+      [this](float, float v) { m_player->m_vrDevice->SetControllerCabZOffset(v); }));
 
    const auto& action = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetVRControllerViewCenteringActionId()];
    addGlobalOnlyItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
@@ -245,12 +255,13 @@ void VRSettingsPage::ResetToDefaults()
 {
 #ifdef ENABLE_XR
    // Recentering the table is asynchronous so define defaults as the last acquired values (not perfect but fine enough for user feedback)
-   Settings::SetPlayerVR_HeadSetOrientation_Default(m_player->m_vrDevice->GetHeadsetOrientation());
-   Settings::SetPlayerVR_HeadSetX_Default(m_player->m_vrDevice->GetHeadsetOffset().x);
-   Settings::SetPlayerVR_HeadSetY_Default(m_player->m_vrDevice->GetHeadsetOffset().y);
+   Settings::SetPlayerVR_RoomYaw_Default(m_player->m_vrDevice->GetRoomYaw());
+   Settings::SetPlayerVR_RoomOffsetX_Default(m_player->m_vrDevice->GetRoomOffset().x);
+   Settings::SetPlayerVR_RoomOffsetY_Default(m_player->m_vrDevice->GetRoomOffset().y);
+   Settings::SetPlayerVR_RoomOffsetZ_Default(m_player->m_vrDevice->GetRoomOffset().z);
 #endif
    InGameUIPage::ResetToDefaults();
-   m_player->m_vrDevice->RecenterTable();
+   m_player->m_vrDevice->RecenterRoom();
 }
 
 }

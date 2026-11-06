@@ -489,6 +489,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/VRSpaces.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
@@ -1599,6 +1602,9 @@
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VRSpaces.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h">

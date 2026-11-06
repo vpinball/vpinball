@@ -274,6 +274,8 @@ set(VPX_SOURCES
    src/renderer/ViewSetup.h
    src/renderer/VRDevice.cpp
    src/renderer/VRDevice.h
+   src/renderer/VRSpaces.cpp
+   src/renderer/VRSpaces.h
    src/renderer/Window.cpp
    src/renderer/Window.h
    src/renderer/XRD3D11Backend.h

@@ -143,26 +143,34 @@ public:
    unsigned int GetEyeWidth() const { return m_eyeWidth; }
    unsigned int GetEyeHeight() const { return m_eyeHeight; }
 
-   bool IsScalingToLockbar() const { return m_scaleToLockbar; }
-   void SetScaleToLockbar(bool scale)
+   bool IsOverridingLockbarWidth() const { return m_overrideLockbarWidth; }
+   void SetOverrideLockbarWidth(bool overrideWidth)
    {
-      m_scaleToLockbar = scale;
+      m_overrideLockbarWidth = overrideWidth;
       m_worldDirty = true;
    }
-   float GetLockbarWidth() const { return m_lockbarWidth; }
-   void SetLockbarWidth(float width) { m_lockbarWidth = width; m_worldDirty = true; }
-   bool IsMatchingLockbarHeight() const { return m_matchLockbarHeight; }
-   void SetMatchLockbarHeight(bool match)
+   float GetCustomLockbarWidth() const { return m_customLockbarWidth; }
+   void SetCustomLockbarWidth(float width)
    {
-      m_matchLockbarHeight = match;
+      m_customLockbarWidth = width;
       m_worldDirty = true;
    }
-   float GetLockbarHeight() const { return m_lockbarHeight; }
-   void SetLockbarHeight(float height) { m_lockbarHeight = height; m_worldDirty = true; }
+   bool IsOverridingLockbarHeight() const { return m_overrideLockbarHeight; }
+   void SetOverrideLockbarHeight(bool overrideHeight)
+   {
+      m_overrideLockbarHeight = overrideHeight;
+      m_worldDirty = true;
+   }
+   float GetCustomLockbarHeight() const { return m_customLockbarHeight; }
+   void SetCustomLockbarHeight(float height)
+   {
+      m_customLockbarHeight = height;
+      m_worldDirty = true;
+   }
    float GetControllerCabYOffset() const { return m_controllerCabYOffset; }
    void SetControllerCabYOffset(float offset) { m_controllerCabYOffset = offset; }
-   float GetControllerLockbarScale() const { return m_controllerLockbarScale; }
-   void SetControllerLockbarScale(float scale) { m_controllerLockbarScale = scale; }
+   float GetControllerCabZOffset() const { return m_controllerCabZOffset; }
+   void SetControllerCabZOffset(float offset) { m_controllerCabZOffset = offset; }
    bool IsLockFeetToGround() const { return m_lockFeetToGround; }
    void SetLockFeetToGround(bool lock)
    {
@@ -180,19 +188,19 @@ public:
       m_worldDirty = true;
    }
 
-   void OffsetTable(float dx, float dy, float dz);
-   void RecenterTable();
-   float GetHeadsetOrientation() const { return m_orientation; }
-   const Vertex3Ds& GetHeadsetOffset() const { return m_headsetPos; }
+   void OffsetRoom(float dx, float dy, float dz);
+   void RecenterRoom();
+   float GetRoomYaw() const { return m_roomYaw; }
+   const Vertex3Ds& GetRoomOffset() const { return m_roomOffset; }
    const Vertex3Ds& GetTableOffset() const { return m_tableOffset; }
-   void SetHeadsetOrientation(float orientation)
+   void SetRoomYaw(float yaw)
    {
-      m_orientation = orientation;
+      m_roomYaw = yaw;
       m_worldDirty = true;
    }
-   void SetHeadsetOffset(const Vertex3Ds& pos)
+   void SetRoomOffset(const Vertex3Ds& pos)
    {
-      m_headsetPos = pos;
+      m_roomOffset = pos;
       m_worldDirty = true;
    }
    void SetTableOffset(const Vertex3Ds& pos)
@@ -212,17 +220,17 @@ private:
    unsigned int m_eyeWidth = 1080;
    unsigned int m_eyeHeight = 1020;
 
-   float m_scale = 1.0f;
-   bool m_scaleToLockbar = true; // Scale virtual cabinet so that its lockbar matches the real world lockbar width
-   float m_lockbarWidth = 57.0f; // Real world width of the lockbar in cm
-   bool m_matchLockbarHeight = true; // Position virtual cabinet so that its lockbar matches the real world lockbar height
-   float m_lockbarHeight = 85.0f; // Real world height (from ground) of the lockbar in cm
+   float m_cabinetScale = 1.0f;
+   bool m_overrideLockbarWidth = true; // Scale virtual cabinet so that its lockbar matches the user defined lockbar width
+   float m_customLockbarWidth = 57.0f; // User defined width of the (real world cabinet) lockbar in cm
+   bool m_overrideLockbarHeight = true; // Position virtual cabinet so that its lockbar matches the user defined lockbar height
+   float m_customLockbarHeight = 85.0f; // User defined height (from ground) of the (real world cabinet) lockbar in cm
    float m_controllerCabYOffset = 0.0f; // Y offset applied when using controller view centering in cm
-   float m_controllerLockbarScale = 1.0f; // Lockbar size ratio applied when using controller view centering
+   float m_controllerCabZOffset = 0.0f; // Z offset applied when using controller view centering in cm
    bool m_lockFeetToGround = true;
    float m_seatedTilt = 0.0f; // Cabinet tilt toward the player for seated/reclined play, in degrees
-   float m_orientation = 0.0f;
-   Vertex3Ds m_headsetPos { 0.f, 0.f, 0.f }; // Player defined headset position relative to the lockbar in cm (x: lateral, y: front/back)
+   float m_roomYaw = 0.0f;
+   Vertex3Ds m_roomOffset { 0.f, 0.f, 0.f }; // Room positioning correction in cm, to account for imprecise headset tracking calibration
    Vertex3Ds m_tableOffset { 0.f, 0.f, 0.f }; // Per-table adjustment in cm (y: playfield to lockbar end distance, z: glass height)
    float m_slope = 0.0f;
 
@@ -234,10 +242,7 @@ private:
       Matrix3D m_toWorld; // Matrix to transform from this viewpoint to world coordinates
       Matrix3D m_view[2];
    };
-   Viewpoint m_pfWorld;
-   Viewpoint m_cabWorld;
-   Viewpoint m_feetWorld;
-   Viewpoint m_roomWorld;
+   Viewpoint m_spaces[4]; // Indexed by PartGroupData::SpaceReference (SR_PLAYFIELD..SR_ROOM)
    Matrix3D m_roomProj[2];
    Matrix3D m_sceneProj[2];
 
@@ -267,8 +272,8 @@ public:
 
    Matrix3D* GetVisibilityMaskProjs() { return &m_nextProj[0]; }
 
-   void EnableControllerViewCentering(bool enable) { m_controllerViewCentering = enable; }
-   bool IsControllerViewCenteringEnabled() const { return m_controllerViewCentering; }
+   void EnableControllerRecenter(bool enable) { m_controllerRecenterEnabled = enable; }
+   bool IsControllerRecenterEnabled() const { return m_controllerRecenterEnabled; }
 
    enum class SwapchainType : uint8_t
    {
@@ -321,8 +326,8 @@ private:
    XrSpace m_referenceSpace = XR_NULL_HANDLE;
    XrSpace m_viewSpace = XR_NULL_HANDLE; // Head-locked space for the UI quad layer
 
-   bool m_headsetViewCentering = false;
-   bool m_controllerViewCentering = false;
+   bool m_headsetRecenterPending = false;
+   bool m_controllerRecenterEnabled = false;
    XrSpace m_leftControllerSpace = XR_NULL_HANDLE;
    XrSpace m_rightControllerSpace = XR_NULL_HANDLE;
 
