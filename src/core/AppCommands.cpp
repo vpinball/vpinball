@@ -678,7 +678,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             const std::filesystem::path tableFileName = GetPathFromArg(szArglist[i + 1]);
             // Take the next argument as the table filename unless it is another option. A missing or
             // invalid file is still passed along so the command can report the load failure.
-            if (FileExists(tableFileName) || ((szArglist[i + 1][0] != '-') && (szArglist[i + 1][0] != '/')))
+            if (FileExists(tableFileName) || DirExists(tableFileName) || ((szArglist[i + 1][0] != '-') && (szArglist[i + 1][0] != '/')))
             {
                commands.push_back(std::make_unique<LiveEditCommand>(tableFileName));
                i++;
