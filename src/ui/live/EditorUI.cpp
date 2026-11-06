@@ -186,6 +186,10 @@ void EditorUI::PlayTest()
    RestorePartsVisibility();
    PinTable *const liveTable = m_table->CopyForPlay();
    m_player->SetTable(liveTable, Player::TableTransition::Stack);
+   // The pane views must not draw over the play session (RenderPane re-arms them when the editor comes back)
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr)
+         vp->GetView()->m_renderScene = false; // The leaf is hidden while a playtest table is stacked
 }
 
 void EditorUI::SaveTable()
@@ -637,10 +641,11 @@ void EditorUI::RenderUI()
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
 
-   const bool showFullUI = !m_inspectionModal.IsVisible() && !IsFlyMode();
+   bool showFullUI = !m_inspectionModal.IsVisible() && !IsFlyMode();
    m_renderer->GetPrimaryView()->m_renderScene = !showFullUI; // While areas are drawn, the scene lives in the viewport panes
    UpdateAreaLayout(); // Area rects are computed before the chrome draws the status overlay into the viewport area
    m_chrome.Render(showFullUI);
+   showFullUI &= !(m_player->IsEditorMode() && m_player->HasPendingTableTransition()); // The user may decide to play test the table
    if (showFullUI)
    {
       // Area panes, then their splitters and corner zones (above the pane windows)
