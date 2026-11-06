@@ -660,12 +660,10 @@ void EditorUI::RenderUI()
 
 #endif
 
-   // Deferred playfield fit on editor opening (display size and chrome height are valid once the UI has been rendered)
-   if (m_fitPlayfieldCamera && GetTargetViewport() != nullptr && io.DisplaySize.x > 0.f && io.DisplaySize.y > 0.f)
-   {
+   // Deferred playfield fit on editor opening, owned by the panes (it only applies when a pane has
+   // no restored camera): just drop it when there is no viewport to fit
+   if (m_fitPlayfieldCamera && GetTargetViewport() == nullptr)
       m_fitPlayfieldCamera = false;
-      GetTargetViewport()->SetPlayfieldCamera();
-   }
 
    // Invisible full frame window for overlays
    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);

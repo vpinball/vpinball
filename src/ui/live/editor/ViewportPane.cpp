@@ -811,7 +811,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    {
       // First use: clone the camera of the current target pane (split panes share the setup, like
       // Blender), else start from a default playfield pose; then apply the setup requested at
-      // editor opening if one is pending
+      // editor opening if one is pending (it only goes to a pane without a restored camera)
       ViewportPane* const other = m_editor.GetTargetViewport();
       AdoptCameraFrom(other != this ? other : nullptr);
       if (m_editor.m_camSetupPending)
@@ -821,7 +821,19 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          m_shadeMode = m_editor.m_camSetupPending->shade;
          m_predefinedView = m_editor.m_camSetupPending->predef;
          m_editor.m_camSetupPending.reset();
+         if (m_editor.m_fitPlayfieldCamera && m_imageRect.Height() > 0.f)
+         {
+            m_editor.m_fitPlayfieldCamera = false;
+            SetPlayfieldCamera();
+         }
       }
+   }
+   // A restored (or adopted) camera wins over the session entry setup: discard it so a later pane
+   // does not get an unexpected entry view
+   else if (m_editor.GetTargetViewport() == this && m_editor.m_camSetupPending)
+   {
+      m_editor.m_camSetupPending.reset();
+      m_editor.m_fitPlayfieldCamera = false;
    }
 
    const ImGuiIO& io = ImGui::GetIO();
