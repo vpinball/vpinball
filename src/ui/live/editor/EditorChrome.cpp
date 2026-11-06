@@ -143,12 +143,6 @@ void EditorChrome::RenderMenuBar()
          if (ImGui::MenuItem("Table Script", nullptr, editor.m_scriptPanel.IsVisible(), !editor.m_table->IsLocked()))
             editor.m_scriptPanel.Show();
          ImGui::Separator();
-         ImGui::BeginDisabled(editor.IsInspectMode() || editor.m_table->IsLocked());
-         if (ImGui::MenuItem("Layout 1", nullptr, editor.m_activeLayoutIndex == 0))
-            editor.SetAreaLayoutIndex(0);
-         if (ImGui::MenuItem("Layout 2", nullptr, editor.m_activeLayoutIndex == 1))
-            editor.SetAreaLayoutIndex(1);
-         ImGui::EndDisabled();
          ImGui::EndMenu();
       }
       if (editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
@@ -169,10 +163,40 @@ void EditorChrome::RenderMenuBar()
             editor.m_inspectionModal.Show();
          ImGui::EndMenu();
       }
+      // Layout selection as buttons after the menus (Blender workspaces)
+      ImGui::BeginDisabled(editor.IsInspectMode() || editor.m_table->IsLocked());
+      for (int i = 0; i < 2; ++i)
+      {
+         char label[16];
+         snprintf(label, sizeof(label), "Layout %d", i + 1);
+         const bool active = (editor.m_activeLayoutIndex == i);
+         if (active)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+         if (ImGui::SmallButton(label))
+            editor.SetAreaLayoutIndex(i);
+         if (active)
+            ImGui::PopStyleColor();
+         ImGui::SameLine();
+      }
+      ImGui::EndDisabled();
       float buttonWidth = 0.f;
       if (editor.IsInspectMode())
          buttonWidth += ImGui::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
       buttonWidth += ImGui::CalcTextSize(ICON_FK_WINDOW_CLOSE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+      // Play button, centered in the free space left between the layout buttons and the close buttons
+      const float playWidth = ImGui::CalcTextSize(ICON_FK_PLAY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+      const float freeWidth = ImGui::GetContentRegionAvail().x - buttonWidth;
+      if (freeWidth > playWidth)
+      {
+         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (freeWidth - playWidth) * 0.5f);
+         ImGui::BeginDisabled(editor.m_table->IsLocked());
+         if (ImGui::Button(ICON_FK_PLAY))
+            editor.PlayTest();
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Play test (F5)");
+         ImGui::EndDisabled();
+         ImGui::SameLine();
+      }
       ImVec2 padding = ImGui::GetCursorScreenPos();
       padding.x += ImGui::GetContentRegionAvail().x - buttonWidth;
       ImGui::SetCursorScreenPos(padding);
