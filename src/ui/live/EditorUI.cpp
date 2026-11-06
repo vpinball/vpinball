@@ -103,6 +103,7 @@ EditorUI::~EditorUI()
    // The table outlives the editor (Player deletes the UI first)
    m_fileOp.reset(); // Wait for a file operation in progress, its result being discarded with the session
    RestorePartsVisibility();
+   SaveAreaLayoutSettings(); // Persist the layout and the view setups for the next session
 }
 
 EditorUI::AsyncFileOp::~AsyncFileOp()
@@ -155,6 +156,7 @@ void EditorUI::Close()
    m_inspectionModal.Close();
    m_partLibrary.Close();
    m_scriptPanel.Close();
+   SaveAreaLayoutSettings(); // The layout and the view setups survive the session end
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
    m_renderer->GetPrimaryView()->m_renderScene = true; // The primary view renders the scene again once the editor areas are gone
@@ -3080,8 +3082,16 @@ void EditorUI::LoadAreaLayoutSettings()
       ShowAreaEditor(AreaType::Script); // The editor option keeps a script area open
 }
 
-void EditorUI::SaveAreaLayoutSettings() const
+void EditorUI::SaveAreaLayoutSettings()
 {
+   // Persist the 3D view setup of each viewport pane (camera, shading, ...) in its leaf's payload:
+   // the bound pane's setup lives in the editor fields, so it is written back first
+   if (m_editVp != nullptr)
+      m_editVp->CaptureCamera();
+   for (const auto &[id, view] : m_areaViews)
+      if (const ViewportPane *const vp = dynamic_cast<const ViewportPane *>(view.get()); vp != nullptr)
+         if (nlohmann::json *const data = m_layout.LeafData(id); data != nullptr)
+            *data = vp->SaveSetup();
    Settings &settings = g_settingsService.GetAppSettings();
    const string json = m_layout.ToJson().dump();
    if (m_activeLayoutIndex == 0)
@@ -3362,7 +3372,13 @@ void EditorUI::RenderAreas()
          continue;
       auto [it, inserted] = m_areaViews.try_emplace(leaf.id, nullptr);
       if (it->second == nullptr)
+      {
          it->second = CreateAreaView(leaf.type);
+         // A leaf restored from the persisted layout may carry its view's setup (the 3D view's camera, shading, ...)
+         if (auto *const vp = dynamic_cast<ViewportPane *>(it->second.get()); vp != nullptr)
+            if (const AreaNode *const node = m_layout.Find(leaf.id); node != nullptr)
+               vp->LoadSetup(node->data);
+      }
       if (it->second != nullptr)
          it->second->RenderPane(leaf.rect, leaf.id);
    }

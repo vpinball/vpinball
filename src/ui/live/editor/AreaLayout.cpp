@@ -101,6 +101,8 @@ nlohmann::json NodeToJson(const std::vector<AreaNode>& nodes, const int idx)
       j["editor"] = AreaTypeJsonName(n.type);
       if (n.hidden)
          j["hidden"] = true;
+      if (n.data.is_object())
+         j["data"] = n.data;
    }
    return j;
 }
@@ -178,6 +180,8 @@ bool AreaLayout::FromJson(const nlohmann::json& j)
          }
          tmp.m_nodes[idx].type = type;
          tmp.m_nodes[idx].hidden = n.value("hidden", false);
+         if (n.contains("data") && n["data"].is_object())
+            tmp.m_nodes[idx].data = n["data"];
       }
       return idx;
    };
@@ -599,6 +603,7 @@ bool AreaLayout::Split(const int leaf, const SplitAxis axis, const bool newOnSec
    n.id = NewNodeId();
    n.parent = si;
    n.type = m_nodes[li].type; // Blender duplicates the area: the new leaf takes the split leaf's type
+   n.data = m_nodes[li].data; // and its view setup (a split 3D view clones the camera)
    m_nodes[li].parent = si;
    if (parent >= 0)
    {
@@ -685,6 +690,7 @@ bool AreaLayout::SetType(const int leaf, const AreaType type)
    if (i < 0 || m_nodes[i].isSplit || type >= AreaType::Count)
       return false;
    m_nodes[i].type = type;
+   m_nodes[i].data = nlohmann::json(); // A retyped leaf does not keep the previous view's state
    return true;
 }
 
@@ -695,6 +701,12 @@ bool AreaLayout::SetHidden(const int leaf, const bool hidden)
       return false;
    m_nodes[i].hidden = hidden;
    return true;
+}
+
+nlohmann::json* AreaLayout::LeafData(const int id)
+{
+   const int i = IndexOf(id);
+   return i >= 0 && !m_nodes[i].isSplit ? &m_nodes[i].data : nullptr;
 }
 
 bool AreaLayout::SetSplitSize(const int split, const float logicalPx)
