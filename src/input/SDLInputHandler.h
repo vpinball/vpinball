@@ -434,8 +434,8 @@ private:
                map.MapAction(ButtonMapping::Create(deviceId, 0x0203, 0.9f), m_pininput.GetUIRightActionId());
                map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0204, -0.9f, true), m_pininput.GetVRViewFrontActionId());
                map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0204, 0.9f), m_pininput.GetVRViewBackActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0203, -0.9f, true), m_pininput.GetVRViewLeftActionId());
-               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0203, 0.9f), m_pininput.GetVRViewRightActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0203, -0.9f, true), m_pininput.GetVRViewRightActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x0203, 0.9f), m_pininput.GetVRViewLeftActionId());
                // Right buttons
                map.MapAction(ButtonMapping::Create(deviceId, 0x000C), m_pininput.GetVRViewCenterActionId());
                map.MapAction(ButtonMapping::Create(deviceId, 0x0000, deviceId, 0x000C), m_pininput.GetCoinDoorActionId());
