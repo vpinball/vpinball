@@ -291,6 +291,10 @@ crossOriginIsolate().then(async (state) => {
       setStatus('This browser cannot run Visual Pinball X: cross-origin isolation is not available.');
       return;
    }
+   if (!navigator.gpu || !(await navigator.gpu.requestAdapter().catch(() => null))) {
+      setStatus('ERROR: This browser cannot run Visual Pinball X: WebGPU is not available.');
+      return;
+   }
    const src = document.getElementById('vpinballScript').content.querySelector('script').getAttribute('src');
    const response = await fetch(src);
    const script = document.createElement('script');
