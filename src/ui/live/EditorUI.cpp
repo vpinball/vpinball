@@ -2100,11 +2100,14 @@ void EditorUI::LoadAreaLayoutSettings()
 {
    m_layoutSettingsLoaded = true;
    Settings &settings = g_settingsService.GetAppSettings();
-   m_activeLayoutIndex = clamp(settings.GetLiveEditor_LayoutActive() - 1, 0, 1);
-   const string json = m_activeLayoutIndex == 0 ? settings.GetLiveEditor_Layout1() : settings.GetLiveEditor_Layout2();
+   m_activeLayoutIndex = clamp(settings.GetLiveEditor_LayoutActive() - 1, 0, 3);
+   const string json = m_activeLayoutIndex == 0 ? settings.GetLiveEditor_Layout1()
+      : m_activeLayoutIndex == 1                ? settings.GetLiveEditor_Layout2()
+      : m_activeLayoutIndex == 2                ? settings.GetLiveEditor_Layout3()
+                                                : settings.GetLiveEditor_Layout4();
    const nlohmann::json parsed = nlohmann::json::parse(json, nullptr, false);
    if (parsed.is_discarded() || !m_layout.FromJson(parsed))
-      m_layout = AreaLayout(); // Missing or invalid layout: back to the default tree
+      m_layout = AreaLayout::Default(m_activeLayoutIndex); // Missing or invalid layout: back to the slot's preset
    m_maximizedLeafId = -1;
    m_hoverLeaf = -1;
    CancelAreaInteraction(false);
@@ -2123,10 +2126,13 @@ void EditorUI::SaveAreaLayoutSettings()
             *data = vp->SaveSetup();
    Settings &settings = g_settingsService.GetAppSettings();
    const string json = m_layout.ToJson().dump();
-   if (m_activeLayoutIndex == 0)
-      settings.SetLiveEditor_Layout1(json, false);
-   else
-      settings.SetLiveEditor_Layout2(json, false);
+   switch (m_activeLayoutIndex)
+   {
+   case 0: settings.SetLiveEditor_Layout1(json, false); break;
+   case 1: settings.SetLiveEditor_Layout2(json, false); break;
+   case 2: settings.SetLiveEditor_Layout3(json, false); break;
+   default: settings.SetLiveEditor_Layout4(json, false); break;
+   }
 }
 
 void EditorUI::SetAreaLayoutIndex(const int index)
@@ -2136,16 +2142,7 @@ void EditorUI::SetAreaLayoutIndex(const int index)
    SaveAreaLayoutSettings(); // The current layout leaves its slot
    m_activeLayoutIndex = index;
    g_settingsService.GetAppSettings().SetLiveEditor_LayoutActive(index + 1, false);
-   Settings &settings = g_settingsService.GetAppSettings();
-   const string json = index == 0 ? settings.GetLiveEditor_Layout1() : settings.GetLiveEditor_Layout2();
-   const nlohmann::json parsed = nlohmann::json::parse(json, nullptr, false);
-   if (parsed.is_discarded() || !m_layout.FromJson(parsed))
-      m_layout = AreaLayout();
-   m_maximizedLeafId = -1;
-   m_hoverLeaf = -1;
-   CancelAreaInteraction(false);
-   m_hoverVp = nullptr;
-   m_captureVp = nullptr;
+   LoadAreaLayoutSettings(); // Loads the slot's saved layout, or its preset when empty/invalid
 }
 
 void EditorUI::UpdateAreaLayout()

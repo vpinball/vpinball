@@ -717,3 +717,54 @@ bool AreaLayout::SetSplitSize(const int split, const float logicalPx)
    m_nodes[i].size = std::max(1.f, logicalPx);
    return true;
 }
+
+// The preset area layouts
+AreaLayout AreaLayout::Default(const int index)
+{
+   AreaLayout layout(nullptr);
+   layout.m_nodes.clear();
+   const auto leaf = [&layout](const int parent, const AreaType type)
+   {
+      layout.m_nodes.emplace_back();
+      AreaNode& node = layout.m_nodes.back();
+      node.parent = parent;
+      node.type = type;
+   };
+   const auto split = [&layout](const int parent, const SplitAxis axis, const int c0, const int c1, const int fixed, const float size)
+   {
+      layout.m_nodes.emplace_back();
+      AreaNode& node = layout.m_nodes.back();
+      node.parent = parent;
+      node.isSplit = true;
+      node.axis = axis;
+      node.child[0] = c0;
+      node.child[1] = c1;
+      node.fixed = fixed;
+      node.size = size;
+   };
+   const bool withPreview = index != 2; // Scripting has no bottom preview
+   if (withPreview)
+   {
+      // Root: left column | rest; left column: Outliner over Preview; rest: center | right
+      split(-1, SplitAxis::Vertical, 1, 2, 0, kDefaultOutlinerWidth); // 0
+      split(0, SplitAxis::Horizontal, 3, 4, 1, kDefaultOutlinerWidth); // 1 (bottom = preview)
+      split(0, SplitAxis::Vertical, 5, 6, 1, kDefaultPropertiesWidth); // 2 (right = panel)
+      leaf(1, AreaType::Outliner); // 3
+      leaf(1, AreaType::ViewportPreview); // 4
+      leaf(2, index == 3 ? AreaType::ViewportBackdrop : AreaType::Viewport); // 5 center
+      leaf(2, index == 1 ? AreaType::PartLibrary : AreaType::Properties); // 6 right
+   }
+   else
+   {
+      // Scripting: Outliner | Script | Properties (no preview)
+      split(-1, SplitAxis::Vertical, 1, 2, 0, kDefaultOutlinerWidth);
+      leaf(0, AreaType::Outliner);
+      split(0, SplitAxis::Vertical, 3, 4, 1, kDefaultPropertiesWidth);
+      leaf(2, AreaType::Script);
+      leaf(2, AreaType::Properties);
+   }
+   for (AreaNode& node : layout.m_nodes)
+      node.id = NewNodeId();
+   layout.m_root = 0;
+   return layout;
+}

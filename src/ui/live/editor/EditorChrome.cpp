@@ -163,12 +163,15 @@ void EditorChrome::RenderMenuBar()
             editor.m_inspectionModal.Show();
          ImGui::EndMenu();
       }
+
+      ImGui::Separator();
+
       // Layout selection as buttons after the menus (Blender workspaces)
       ImGui::BeginDisabled(editor.IsInspectMode() || editor.m_table->IsLocked());
-      for (int i = 0; i < 2; ++i)
+      static const char *const layoutNames[] = { "Layout", "Library", "Scripting", "Backdrop" };
+      for (int i = 0; i < 4; ++i)
       {
-         char label[16];
-         snprintf(label, sizeof(label), "Layout %d", i + 1);
+         const char *const label = layoutNames[i];
          const bool active = (editor.m_activeLayoutIndex == i);
          if (active)
             ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
