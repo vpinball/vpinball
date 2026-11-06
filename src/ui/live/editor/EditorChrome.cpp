@@ -82,8 +82,6 @@ void EditorChrome::RenderMenuBar()
             editor.RequestAddPartPopup(editor.GetViewportContentCenter());
          ImGui::EndDisabled();
          ImGui::Separator();
-         if (ImGui::MenuItem("Import Parts (part library)...", nullptr, false, !editor.m_table->IsLocked()))
-            editor.OpenPartLibrary();
          if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
             editor.ExportPartSelection();
          ImGui::Separator();
@@ -139,9 +137,6 @@ void EditorChrome::RenderMenuBar()
             vp->FrameSelection();
          if (ImGui::MenuItem("Toggle Maximize Area", "Ctrl+Space"))
             editor.ToggleMaximizeArea();
-         ImGui::Separator();
-         if (ImGui::MenuItem("Table Script", nullptr, editor.m_scriptPanel.IsVisible(), !editor.m_table->IsLocked()))
-            editor.m_scriptPanel.Show();
          ImGui::Separator();
          ImGui::EndMenu();
       }
