@@ -84,11 +84,23 @@ public:
    // Start playing a shallow copy of the edited table (edition is suspended, restored when the play session ends)
    void PlayTest();
 
-   bool IsPreview() const { return m_editVp != nullptr && m_editVp->m_camMode == ViewMode::PreviewCam; }
-   bool IsBackdropEditMode() const { return m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop; }
+   bool IsPreview() const
+   {
+      const ViewportPane *const vp = GetTargetViewport();
+      return vp != nullptr && vp->m_camMode == ViewMode::PreviewCam;
+   }
+   bool IsBackdropEditMode() const
+   {
+      const ViewportPane *const vp = GetTargetViewport();
+      return vp != nullptr && vp->m_camMode == ViewMode::DesktopBackdrop;
+   }
 
    bool IsInspectMode() const { return m_table->m_liveBaseTable != nullptr; }
-   bool IsFlyMode() const { return m_editVp != nullptr && m_editVp->m_flyMode; } // The bound viewport pane is in fly mode
+   bool IsFlyMode() const
+   {
+      const ViewportPane *const vp = GetTargetViewport();
+      return vp != nullptr && vp->m_flyMode;
+   }
 
 private:
    // UI Context
@@ -159,9 +171,6 @@ private:
    void ExitPointEditMode(bool restoreSelection);
    bool IsPointSelected(const DragPoint *point) const;
    void TogglePointSelection(DragPoint *point);
-   DragPoint *HitTestDragPoint(const ImVec2 &mousePos) const;
-   bool HitTestEditCenter(const ImVec2 &mousePos) const;
-   Vertex2D UnprojectToPlane(const ImVec2 &mousePos, float z) const;
    void AddPointOnNearestSegment();
    void DeleteSelectedPoints();
 
@@ -325,8 +334,8 @@ private:
    bool GetSelectionBounds(FRect3D &bounds) const;
    void SetSelectionTransform(const Matrix3D &transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
 
-   // The editor camera definition (mode, pose, shading) belongs to the bound viewport pane
-   // (m_editVp): it is processed by ViewportPane (camera actions, gizmo, picking, shortcuts)
+   // The editor camera definition (mode, pose, shading) belongs to each viewport pane: it is
+   // processed by ViewportPane (camera actions, gizmo, picking, shortcuts)
    bool m_fitPlayfieldCamera = false;
    struct CamSetup
    { // Camera setup requested at Open(), applied to the first bound pane with no camera of its own
@@ -452,15 +461,13 @@ private:
    bool m_raiseAreaWindows = true;
    bool m_areaEscPending = false; // An Esc consumed by an area interaction (its release is not an editor Esc)
 
-   // Viewport panes: the "edit" viewport (bound by SetEditViewport) processes the 3D scene
-   // interactions — camera, gizmo, picking, viewport shortcuts — on its own camera definition
-   // (see ViewportPane::UpdateEditViewport). While a drag is in progress the pane it started in
-   // is captured.
-   ViewportPane *m_editVp = nullptr;
+   // Viewport panes each process their own 3D scene interactions — camera, gizmo, picking,
+   // viewport shortcuts — on their own camera definition (see ViewportPane::RenderUI):
+   // the pane under the mouse, or the one holding an in-progress drag (captured pane)
    ViewportPane *m_hoverVp = nullptr; // Viewport pane whose image is hovered this frame
    ViewportPane *m_captureVp = nullptr; // Viewport pane holding an in-progress mouse interaction
-   void SetEditViewport(ViewportPane *pane);
    ViewportPane *HoveredViewportPane() const;
+   ViewportPane *GetTargetViewport() const; // Pane owning viewport actions: flying > dragged > hovered > first
 };
 
 }

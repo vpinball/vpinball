@@ -2,7 +2,7 @@
 
 #include "core/stdafx.h"
 #include "EditorChrome.h"
-#include "ViewportPane.h" // m_editVp->m_imageRect (status overlay anchor)
+#include "ViewportPane.h" // GetTargetViewport()->m_imageRect (status overlay anchor)
 
 #include "core/player.h"
 #include "ui/EditorClipboard.h"
@@ -102,7 +102,7 @@ void EditorChrome::RenderMenuBar()
       if (ImGui::BeginMenu("View"))
       {
          // View actions apply to the edit viewport's camera (the bound pane's own camera definition)
-         ViewportPane *const vp = editor.m_editVp;
+         ViewportPane *const vp = editor.GetTargetViewport();
          const auto viewItem = [vp](const char *label, const char *keys, const ViewportPane::PredefinedView view)
          {
             if (ImGui::MenuItem(label, keys, vp != nullptr && vp->m_camMode == ViewMode::EditorCam && vp->m_predefinedView == view, vp != nullptr))

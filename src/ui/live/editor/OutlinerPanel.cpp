@@ -100,31 +100,31 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          editor.ClearSelection();
          editor.m_table->SetViewSetupOverride(BG_DESKTOP);
          editor.m_table->SetViewSetupOverride(BG_INVALID);
-         if (editor.m_editVp != nullptr)
-            editor.m_editVp->m_camMode = ViewMode::EditorCam;
+         if (editor.GetTargetViewport() != nullptr)
+            editor.GetTargetViewport()->m_camMode = ViewMode::EditorCam;
       }
       const Selection cam0 = Selection::Camera(0);
       if (ImGui::Selectable("Preview: Desktop", editor.m_selection == cam0))
       {
          editor.SetSelection(cam0);
-         if (editor.m_editVp != nullptr)
-            editor.m_editVp->m_camMode = ViewMode::PreviewCam;
+         if (editor.GetTargetViewport() != nullptr)
+            editor.GetTargetViewport()->m_camMode = ViewMode::PreviewCam;
          editor.m_table->SetViewSetupOverride(BG_DESKTOP);
       }
       const Selection cam1 = Selection::Camera(1);
       if (ImGui::Selectable("Preview: Cabinet", editor.m_selection == cam1))
       {
          editor.SetSelection(cam1);
-         if (editor.m_editVp != nullptr)
-            editor.m_editVp->m_camMode = ViewMode::PreviewCam;
+         if (editor.GetTargetViewport() != nullptr)
+            editor.GetTargetViewport()->m_camMode = ViewMode::PreviewCam;
          editor.m_table->SetViewSetupOverride(BG_FULLSCREEN);
       }
       const Selection cam2 = Selection::Camera(2);
       if (ImGui::Selectable("Preview: Full Single Screen", editor.m_selection == cam2))
       {
          editor.SetSelection(cam2);
-         if (editor.m_editVp != nullptr)
-            editor.m_editVp->m_camMode = ViewMode::PreviewCam;
+         if (editor.GetTargetViewport() != nullptr)
+            editor.GetTargetViewport()->m_camMode = ViewMode::PreviewCam;
          editor.m_table->SetViewSetupOverride(BG_FSS);
       }
       ImGui::TreePop();
@@ -265,8 +265,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          if (edit->GetEditable()->GetItemType() == eItemPartGroup && !m_filter.empty() && !visibleGroups.contains(static_cast<PartGroup *>(edit->GetEditable())))
             continue;
          // In desktop backdrop mode, only display backdrop parts, and conversely in the other view modes
-         if (edit->GetEditable()->GetItemType() != eItemPartGroup
-            && (edit->GetEditable()->m_desktopBackdrop != (editor.m_editVp != nullptr && editor.m_editVp->m_camMode == ViewMode::DesktopBackdrop)))
+         if (edit->GetEditable()->GetItemType() != eItemPartGroup && (edit->GetEditable()->m_desktopBackdrop != editor.IsBackdropEditMode()))
             continue;
          ImGui::AlignTextToFramePadding();
          if (edit->GetEditable()->GetItemType() == eItemPartGroup)

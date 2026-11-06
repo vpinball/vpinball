@@ -8,6 +8,7 @@
 #include "math/matrix.h"
 #include "renderer/Renderer.h" // Renderer::ShadeMode
 
+class DragPoint;
 class RenderView;
 struct HitTestResult;
 struct ImDrawList;
@@ -21,9 +22,9 @@ class LiveRenderContext;
 // camera and rendering setup through a dedicated RenderView registered to the renderer
 // while the leaf is shown, drawing straight to the pane's area of the shared backbuffer.
 //
-// The pane bound to the editor (EditorUI::m_editVp) also processes the 3D scene
+// The pane owning the current interaction (hovered or captured) processes the 3D scene
 // interactions: camera moves, picking, box & point drags, the selection gizmo and the
-// viewport shortcuts are all handled by UpdateEditViewport through this pane's camera.
+// viewport shortcuts are all handled by RenderUI through this pane's camera.
 // A pane bound for the first time adopts the camera of the pane it replaced (split
 // panes clone the active camera, like Blender) or a default playfield view.
 class ViewportPane final : public EditorAreaView
@@ -80,12 +81,15 @@ public:
    ImVec2 Project(const Vertex3Ds& v) const; // Table-space point -> display px (FLT_MAX when behind the camera)
    bool PickRay(const ImVec2& pos, Vertex3Ds& nearPt, Vertex3Ds& farPt) const; // Display px -> world ray
    void RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& vhoHit); // Pick the colliders under the mouse (filtered by pickability)
+   Vertex2D UnprojectToPlane(const ImVec2& mousePos, float z) const; // Display px -> table plane point at the given Z
+   DragPoint* HitTestDragPoint(const ImVec2& mousePos) const; // Drag point of the edited curve under the mouse
+   bool HitTestEditCenter(const ImVec2& mousePos) const; // Is the mouse on the edited part's center point
    bool SetupOverlay(LiveRenderContext* ctx, ImDrawList* drawList) const; // Pane projection + image clip rect, false when it cannot project
 
    // Per-frame processing of the "edit viewport" (called by the editor on the bound pane):
    // camera update, viewport keyboard shortcuts, selection gizmo & overlays and scene mouse
    // interaction, all through the pane projection (see SetupOverlay / PickRay)
-   void UpdateEditViewport(ImDrawList* overlayDrawList);
+   void RenderUI(ImDrawList* overlayDrawList);
 
    int m_leafId = -1; // Leaf hosting this pane, set in RenderPane
 
