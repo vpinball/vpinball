@@ -1782,11 +1782,14 @@ namespace IMGUIZMO_NAMESPACE
 
    static bool CanActivate()
    {
-      if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemActive())
-      {
-         return true;
-      }
-      return false;
+      // The gizmo's handles are hit-tested geometrically, not with ImGui items: activation is
+      // blocked only when another window's item is hovered or active (the items of the window
+      // registered with SetAlternativeWindow - the viewport pane hosting the gizmo - are
+      // expected to be under the mouse)
+      ImGuiContext& g = *ImGui::GetCurrentContext();
+      const ImGuiWindow* const host = gContext.mAlternativeWindow;
+      const bool free = (g.HoveredId == 0 || g.HoveredWindow == host) && (g.ActiveId == 0 || g.ActiveIdWindow == host);
+      return ImGui::IsMouseClicked(0) && free;
    }
 
    static bool HandleAndDrawLocalBounds(const float* bounds, matrix_t* matrix, const float* snapValues, OPERATION operation)

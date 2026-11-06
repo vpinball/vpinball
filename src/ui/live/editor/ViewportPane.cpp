@@ -340,6 +340,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
          | ImGuiWindowFlags_NoNavFocus);
    ImGui::PushID(leafId);
+   m_window = ImGui::GetCurrentWindow();
    const float dpi = editor.m_liveUI.GetDPI();
 
    // Camera state of this pane
@@ -828,6 +829,9 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
    const AreaRect gizmoRect = m_imageRect;
    ImGuizmo::SetRect(gizmoRect.x0, gizmoRect.y0, gizmoRect.Width(), gizmoRect.Height());
+   // The gizmo only accepts hover over its drawlist window or the registered alternative: the
+   // mouse over this pane's window must be a valid gizmo hover (see ImGuizmo::IsHoveringWindow)
+   ImGuizmo::SetAlternativeWindow(m_window);
 
    // Update this pane's camera and push it to its render view
    RenderView* const camOut = m_view;

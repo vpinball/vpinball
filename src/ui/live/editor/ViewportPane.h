@@ -97,6 +97,7 @@ public:
    bool m_hovered = false;
    bool m_active = false;
    bool m_flyMode = false; // Fly mode: the pane's 3D view takes the whole window, hiding the editor UI (F shortcut)
+   ImGuiWindow* m_window = nullptr; // This pane's ImGui window (registered to ImGuizmo so it accepts its hover)
    AreaRect m_imageRect {}; // Display-space rect of the rendered image, matching the view's output area
 
    // The pane's camera definition, also used by the editor while this pane is bound to it
