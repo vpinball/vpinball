@@ -29,11 +29,8 @@ ViewportPane::~ViewportPane() { OnUnhosted(); }
 
 void ViewportPane::OnUnhosted()
 {
-   if (m_editor.m_editVp == this)
-   {
-      m_editor.m_editVp = nullptr;
+   if (m_editor.m_captureVp == this)
       m_editor.m_captureVp = nullptr;
-   }
    if (m_editor.m_hoverVp == this)
       m_editor.m_hoverVp = nullptr;
    if (m_view != nullptr)
@@ -268,23 +265,11 @@ void ViewportPane::LoadSetup(const nlohmann::json& j)
 
 bool ViewportPane::GetViewProjLH(Matrix3D& viewLH, Matrix3D& projLH) const
 {
-   const bool bound = m_editor.m_editVp == this;
-   const bool custom = m_camMode != ViewMode::PreviewCam && (bound || m_cameraValid);
-   if (custom)
-   {
-      // Same matrices this pane pushes to its render view (see RenderPane): when bound, the stored
-      // projection is authored for the pane's current aspect, so it needs no re-fit
-      const float aspect = m_imageRect.Height() > 0.f ? m_imageRect.Width() / m_imageRect.Height() : m_camAspect;
-      const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
-      const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
-      const float refAspect = bound ? aspect : m_camAspect;
-      viewLH = RH2LH * m_camView * YAxis;
-      projLH = YAxis * m_camProj * Matrix3D::MatrixScale(refAspect / aspect, 1.f, 1.f);
-      return true;
-   }
+   // The render view's MVP is the single transform shared by the scene rendering (Render3D pushes
+   // this pane's camera into it) and the overlays/picking done from RenderUI: both always agree
    if (m_view == nullptr)
       return false;
-   viewLH = m_view->GetMVP().GetView(0); // Player camera (PreviewCam or an invalid stored camera)
+   viewLH = m_view->GetMVP().GetView(0);
    projLH = m_view->GetMVP().GetProj(0);
    return true;
 }
@@ -358,7 +343,6 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    const float dpi = editor.m_liveUI.GetDPI();
 
    // Camera state of this pane
-   const bool bound = editor.m_editVp == this;
    ViewMode& camMode = m_camMode;
    bool& perspective = m_perspectiveCam;
    Renderer::ShadeMode& shade = m_shadeMode;
@@ -573,23 +557,10 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    ImGui::PopStyleVar(3);
 
    // Per frame view setup: editor flags and shading; the camera of the edit viewport is pushed by
-   // UpdateEditViewport, the other panes restore their stored camera state
+   // RenderUI, the other panes restore their stored camera state
    m_view->m_editorView = true;
    m_view->m_editorBackdropEdit = camMode == ViewMode::DesktopBackdrop;
    m_view->m_shadeMode = m_shadeMode;
-   if (!bound)
-   {
-      if (camMode == ViewMode::PreviewCam || !m_cameraValid)
-         m_view->InitLayout();
-      else
-      {
-         // Re-fit the stored projection to the pane's current aspect ratio (a splitter drag may have resized it)
-         const float aspect = m_imageRect.Height() > 0.f ? m_imageRect.Width() / m_imageRect.Height() : m_camAspect;
-         const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
-         const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
-         m_view->SetViewProj(RH2LH * m_camView * YAxis, YAxis * m_camProj * Matrix3D::MatrixScale(m_camAspect / aspect, 1.f, 1.f));
-      }
-   }
 }
 
 void ViewportPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB, bool add)
@@ -710,15 +681,27 @@ void ViewportPane::RenderStatusOverlay()
       ImGui::SameLine(labelAlign);
       ImGui::TextUnformatted(gizmoLabel);
    }
-   if (m_editor.m_editVp == this && m_editor.m_pointEditPart)
+   if (m_editor.GetTargetViewport() == this && m_editor.m_pointEditPart)
       ImGui::TextUnformatted(m_editor.m_pointEditCenter ? "Center Edit (Tab to exit)" : "Drag Point Edit (Tab to exit)");
    ImGui::End();
 }
 
 void ViewportPane::Render3D()
 {
-   // Render the scene parts into the view being recorded (this pane's, or the primary view when
-   // the bound pane has none of its own): filtered by this pane's camera mode and shading
+   if (m_view == nullptr)
+      return;
+   // Setup the MVP of the view being recorded with this pane's camera: the default table layout
+   // for the preview camera, else the pane's stored camera converted to the renderer's left handed space
+   if (m_camMode == ViewMode::PreviewCam || !m_cameraValid)
+      m_view->InitLayout();
+   else
+   {
+      const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
+      const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+      m_view->SetViewProj(RH2LH * m_camView * YAxis, YAxis * m_camProj);
+   }
+
+   // Render the scene parts into the view being recorded, filtered by this pane's camera mode and shading
    LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
    const bool backdrop = m_camMode == ViewMode::DesktopBackdrop;
    for (const auto& uiPart : m_editor.m_editables)
@@ -726,6 +709,22 @@ void ViewportPane::Render3D()
       if (uiPart->GetEditable()->m_desktopBackdrop != backdrop)
          continue;
       uiPart->Render(ctx);
+   }
+   // Selection overlay: the parts' 3D-rendered selection wireframes must be recorded into this
+   // pane's view (drawn with its MVP), suspended while a save is running (the part renders would
+   // write into the parts' data being serialized on the worker thread)
+   if (!m_editor.m_multiSel.empty() && !m_editor.IsSaveInProgress())
+   {
+      if (m_editor.m_renderer->m_renderDevice->GetCurrentRenderTarget()->HasDepth())
+         m_editor.m_renderer->m_renderDevice->Clear(clearType::ZBUFFER, 0);
+      ctx.m_isSelected = true;
+      for (const auto& part : m_editor.m_multiSel)
+      {
+         ctx.m_isActive = part == m_editor.m_selection.GetPart();
+         part->Render(ctx);
+      }
+      ctx.m_isActive = false;
+      ctx.m_isSelected = false;
    }
 }
 
@@ -754,11 +753,76 @@ void ViewportPane::RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& v
    }
 }
 
-void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
+Vertex2D ViewportPane::UnprojectToPlane(const ImVec2& mousePos, float z) const
 {
+   // Compute this pane's mouse ray and intersect it with the table plane at the given Z coordinate
+   Vertex3Ds v3d, v3d2;
+   if (!PickRay(mousePos, v3d, v3d2))
+      return Vertex2D(0.f, 0.f);
+   const float dz = v3d2.z - v3d.z;
+   const float t = (fabsf(dz) > 1e-10f) ? (z - v3d.z) / dz : 0.f;
+   return Vertex2D(v3d.x + t * (v3d2.x - v3d.x), v3d.y + t * (v3d2.y - v3d.y));
+}
+
+bool ViewportPane::HitTestEditCenter(const ImVec2& mousePos) const
+{
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, false);
+   SetupOverlay(&ctx, nullptr);
+   const ImVec2 pos = ctx.Project(m_editor.m_pointEditPart->GetEditCenter());
+   if (pos.x == FLT_MAX)
+      return false;
+   const float maxDist = 10.f * m_editor.m_liveUI.GetDPI();
+   const float dx = pos.x - mousePos.x;
+   const float dy = pos.y - mousePos.y;
+   return dx * dx + dy * dy < maxDist * maxDist;
+}
+
+DragPoint* ViewportPane::HitTestDragPoint(const ImVec2& mousePos) const
+{
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_camMode, m_shadeMode, false);
+   SetupOverlay(&ctx, nullptr);
+   const float maxDist = 10.f * m_editor.m_liveUI.GetDPI();
+   DragPoint* best = nullptr;
+   float bestDist = maxDist;
+   for (const auto& point : m_editor.m_pointEditPart->GetDragPointCurve()->GetPoints())
+   {
+      const ImVec2 pos = ctx.Project(Vertex3Ds(point->GetX(), point->GetY(), m_editor.m_pointEditPart->GetDragPointZ(point.get())));
+      if (pos.x == FLT_MAX)
+         continue;
+      const float dx = pos.x - mousePos.x;
+      const float dy = pos.y - mousePos.y;
+      const float dist = sqrtf(dx * dx + dy * dy);
+      if (dist < bestDist)
+      {
+         bestDist = dist;
+         best = point.get();
+      }
+   }
+   return best;
+}
+
+void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
+{
+   if (!m_cameraValid)
+   {
+      // First use: clone the camera of the current target pane (split panes share the setup, like
+      // Blender), else start from a default playfield pose; then apply the setup requested at
+      // editor opening if one is pending
+      ViewportPane* const other = m_editor.GetTargetViewport();
+      AdoptCameraFrom(other != this ? other : nullptr);
+      if (m_editor.m_camSetupPending)
+      {
+         m_camMode = m_editor.m_camSetupPending->mode;
+         m_perspectiveCam = m_editor.m_camSetupPending->persp;
+         m_shadeMode = m_editor.m_camSetupPending->shade;
+         m_predefinedView = m_editor.m_camSetupPending->predef;
+         m_editor.m_camSetupPending.reset();
+      }
+   }
+
    const ImGuiIO& io = ImGui::GetIO();
-   // Called on the pane bound to the editor (the "edit viewport"): the processing below works on
-   // this pane's own camera definition and its image rect
+   // Called on every pane: the processing below works on this pane's own camera definition and its
+   // image rect (the one under the mouse, or capturing a drag, handles input and keyboard)
 
    // The selection gizmo operates on the viewport's image rect
    ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
@@ -800,12 +864,7 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
          m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
       }
 
-      // Apply editor camera to renderer (move view/projection from right handed to left handed)
-      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
-      // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
-      const Matrix3D view = RH2LH * m_camView * YAxis;
-      const Matrix3D proj = YAxis * m_camProj;
-      camOut->SetViewProj(view, proj);
+      // The pane's camera is pushed to the render view by Render3D (during the render pass)
    }
 
    // Selection manipulator
@@ -813,10 +872,18 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
    const bool isSelectionTransformValid = m_editor.GetSelectionTransform(transform);
    if (isSelectionTransformValid && !m_editor.m_table->IsLocked())
    {
+      // The gizmo shares the render view's MVP (the same transform as the scene render), converted
+      // back to its right handed convention
+      Matrix3D viewLH, projLH;
+      if (!GetViewProjLH(viewLH, projLH))
+      {
+         viewLH = RH2LH * m_camView * YAxis;
+         projLH = YAxis * m_camProj;
+      }
+      const Matrix3D gizmoView = viewLH * YAxis;
+      const Matrix3D gizmoProj = YAxis * projLH;
       float camViewLH[16];
-      memcpy(camViewLH, &m_camView.m[0][0], sizeof(float) * 4 * 4);
-      for (int i = 8; i < 12; i++)
-         camViewLH[i] = -camViewLH[i];
+      memcpy(camViewLH, &gizmoView.m[0][0], sizeof(float) * 4 * 4);
       const Matrix3D prevTransform(transform);
       ImGuizmo::OPERATION gizmoOperation = m_gizmoOperation;
       if (m_editor.m_pointEditPart || m_camMode == ViewMode::DesktopBackdrop)
@@ -873,7 +940,7 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
       }
       else
       {
-         ImGuizmo::Manipulate(camViewLH, (float*)(m_camProj.m), gizmoOperation, m_gizmoMode, (float*)(transform.m));
+         ImGuizmo::Manipulate(camViewLH, (float*)(gizmoProj.m), gizmoOperation, m_gizmoMode, (float*)(transform.m));
          if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
          {
             // Mark all selected parts for undo once per drag (m_editor.m_lastUndoId is reset when the gizmo is released)
@@ -910,25 +977,11 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
 
    m_editor.m_renderer->SetShadeMode(m_shadeMode);
 
-   // Selection and physic colliders overlay (suspended while a save is running: the part renders
-   // would write into the parts' data being serialized on the worker thread, see Render3D)
+   // 2D overlays projected through the pane's camera (the parts' 3D selection wireframes are
+   // recorded by Render3D into the pane's view)
    {
       LiveRenderContext ctx(m_editor.m_player, overlayDrawList, m_camMode, m_shadeMode, (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
-      // Selection overlays project through the edit viewport's camera, clipped to its image rect
       const bool clipToPane = SetupOverlay(&ctx, overlayDrawList);
-      if (!m_editor.m_multiSel.empty() && !m_editor.IsSaveInProgress())
-      {
-         if (m_editor.m_renderer->m_renderDevice->GetCurrentRenderTarget()->HasDepth())
-            m_editor.m_renderer->m_renderDevice->Clear(clearType::ZBUFFER, 0);
-         ctx.m_isSelected = true;
-         for (const auto& part : m_editor.m_multiSel)
-         {
-            ctx.m_isActive = part == m_editor.m_selection.GetPart();
-            part->Render(ctx);
-         }
-         ctx.m_isActive = false;
-         ctx.m_isSelected = false;
-      }
 
       if (isSelectionTransformValid)
       {
@@ -1080,12 +1133,12 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
             // Add part mode: create the pending part at the picked point of the playfield XY plane
             const ItemTypeEnum type = m_editor.m_addPartType;
             m_editor.m_addPartType = eItemInvalid;
-            m_editor.CreatePart(type, m_editor.UnprojectToPlane(m_boxSelectStart, 0.f));
+            m_editor.CreatePart(type, UnprojectToPlane(m_boxSelectStart, 0.f));
          }
          else if (m_editor.m_pointEditPart != nullptr && m_editor.m_pointEditCenter)
          {
             // Center point edit mode: clicking on the center selects it and starts a pending drag
-            if (m_editor.HitTestEditCenter(m_boxSelectStart))
+            if (HitTestEditCenter(m_boxSelectStart))
             {
                if (io.KeyShift)
                   m_editor.m_centerSelected = !m_editor.m_centerSelected;
@@ -1093,14 +1146,14 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
                   m_editor.m_centerSelected = true;
                m_editor.m_pointDragPending = m_editor.m_centerSelected;
                m_editor.m_pointDragZ = m_editor.m_pointEditPart->GetEditCenter().z;
-               m_editor.m_pointDragPos = m_editor.UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
+               m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
             }
             else
                m_boxSelectActive = true;
          }
          else
          {
-            DragPoint* const hitPoint = (m_editor.m_pointEditPart != nullptr) ? m_editor.HitTestDragPoint(m_boxSelectStart) : nullptr;
+            DragPoint* const hitPoint = (m_editor.m_pointEditPart != nullptr) ? HitTestDragPoint(m_boxSelectStart) : nullptr;
             if (hitPoint != nullptr)
             {
                if (io.KeyShift)
@@ -1112,7 +1165,7 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
                }
                m_editor.m_pointDragPending = m_editor.IsPointSelected(hitPoint) && !hitPoint->m_uiLocked;
                m_editor.m_pointDragZ = m_editor.m_pointEditPart->GetDragPointZ(hitPoint);
-               m_editor.m_pointDragPos = m_editor.UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
+               m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
             }
             else
                m_boxSelectActive = true;
@@ -1196,7 +1249,7 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
       {
          if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
          {
-            const Vertex2D pos = m_editor.UnprojectToPlane(ImGui::GetMousePos(), m_editor.m_pointDragZ);
+            const Vertex2D pos = UnprojectToPlane(ImGui::GetMousePos(), m_editor.m_pointDragZ);
             const Vertex2D delta(pos.x - m_editor.m_pointDragPos.x, pos.y - m_editor.m_pointDragPos.y);
             if (m_editor.m_pointDragPending)
             {
@@ -1249,7 +1302,7 @@ void ViewportPane::UpdateEditViewport(ImDrawList* const overlayDrawList)
    }
 
    // Viewport keyboard actions: camera views & options, gizmo ops, drag point edit, mode cancels
-   if (!io.WantCaptureKeyboard && m_editor.m_fileOp == nullptr)
+   if (m_editor.GetTargetViewport() == this && !io.WantCaptureKeyboard && m_editor.m_fileOp == nullptr)
    {
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {

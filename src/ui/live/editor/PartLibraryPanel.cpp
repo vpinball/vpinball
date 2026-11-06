@@ -631,8 +631,9 @@ void PartLibraryPanel::CancelPlacement()
 void PartLibraryPanel::UpdatePlacement(const ImVec2 &mousePos)
 {
    const ImGuiIO &io = ImGui::GetIO();
-   const bool hovering = !io.WantCaptureMouse && (m_editor.m_editVp == nullptr || m_editor.m_editVp->m_camMode != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr
-      && m_editor.m_player->m_playfieldWnd != nullptr;
+   ViewportPane *const vp = m_editor.GetTargetViewport();
+   const bool hovering
+      = (vp != nullptr) && !io.WantCaptureMouse && (vp->m_camMode != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr && m_editor.m_player->m_playfieldWnd != nullptr;
    if (!hovering)
    {
       // Re-hide the ghost parts when the mouse leaves the 3D view (or the view is not 3D)
@@ -642,7 +643,7 @@ void PartLibraryPanel::UpdatePlacement(const ImVec2 &mousePos)
 
    // Project the pointed point on the playfield XY plane, then drop a vertical ray on it: the parts
    // rest on the topmost surface it hits (the UI quadtree holds all parts, collidable or not)
-   const Vertex2D pos = m_editor.UnprojectToPlane(mousePos, 0.f);
+   const Vertex2D pos = vp->UnprojectToPlane(mousePos, 0.f);
    const float zTop = m_editor.m_table->m_glassTopHeight + 500.f;
    const float zBottom = -500.f;
    vector<HitTestResult> hits;

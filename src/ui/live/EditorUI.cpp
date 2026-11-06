@@ -134,8 +134,9 @@ void EditorUI::Close()
    if (!m_isOpened)
       return;
    m_isOpened = false;
-   if (m_editVp != nullptr)
-      m_editVp->m_flyMode = false;
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+         vp->m_flyMode = false;
    ExitPointEditMode(false);
    RestorePartsVisibility();
    m_inspectionModal.Close();
@@ -568,7 +569,7 @@ void EditorUI::RenderUI()
 
    // In desktop backdrop mode, only backdrop parts can be selected and edited, and conversely
    {
-      const bool backdropMode = m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop;
+      const bool backdropMode = IsBackdropEditMode();
       std::erase_if(m_multiSel, [backdropMode](const std::shared_ptr<EditorUIPart> &part) { return part->GetEditable()->m_desktopBackdrop != backdropMode; });
       if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
          m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
@@ -660,10 +661,10 @@ void EditorUI::RenderUI()
 #endif
 
    // Deferred playfield fit on editor opening (display size and chrome height are valid once the UI has been rendered)
-   if (m_fitPlayfieldCamera && m_editVp != nullptr && io.DisplaySize.x > 0.f && io.DisplaySize.y > 0.f)
+   if (m_fitPlayfieldCamera && GetTargetViewport() != nullptr && io.DisplaySize.x > 0.f && io.DisplaySize.y > 0.f)
    {
       m_fitPlayfieldCamera = false;
-      m_editVp->SetPlayfieldCamera();
+      GetTargetViewport()->SetPlayfieldCamera();
    }
 
    // Invisible full frame window for overlays
@@ -728,8 +729,9 @@ void EditorUI::RenderUI()
    // 3D viewport interaction (camera moves, picking, box & point drags) and overlays (selection,
    // drag points, physic colliders): processed by the bound viewport pane through its camera
    // projection (no 3D viewport pane, no 3D interaction)
-   if (m_editVp != nullptr)
-      m_editVp->UpdateEditViewport(overlayDrawList);
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+         vp->RenderUI(overlayDrawList);
 
    // Ctrl+S must work while a widget (e.g. a slider) has keyboard focus; only a text input being edited takes precedence
    if (m_fileOp == nullptr && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_S, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
@@ -811,8 +813,7 @@ void EditorUI::RenderUI()
             if (io.KeyAlt)
             { // Unhide all
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup
-                     && (part->GetEditable()->m_desktopBackdrop == (m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop)) && !part->GetEditable()->IsUIVisible(false))
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == IsBackdropEditMode()) && !part->GetEditable()->IsUIVisible(false))
                   {
                      part->GetEditable()->SetUIVisible(true);
                      changed = true;
@@ -821,8 +822,7 @@ void EditorUI::RenderUI()
             else if (io.KeyShift)
             { // Hide unselected
                for (auto &part : m_editables)
-                  if (part->GetEditable()->GetItemType() != eItemPartGroup
-                     && (part->GetEditable()->m_desktopBackdrop == (m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop)) && !IsPartSelected(part)
+                  if (part->GetEditable()->GetItemType() != eItemPartGroup && (part->GetEditable()->m_desktopBackdrop == IsBackdropEditMode()) && !IsPartSelected(part)
                      && part->GetEditable()->IsUIVisible(false))
                   {
                      part->GetEditable()->SetUIVisible(false);
@@ -1079,7 +1079,7 @@ void EditorUI::MoveSelectionToPartGroup(PartGroup *group)
 bool EditorUI::IsEditablePickable(const IEditable *editable) const
 {
    // In desktop backdrop mode, only backdrop parts can be picked, and conversely in the other view modes
-   if (editable->m_desktopBackdrop != (m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop))
+   if (editable->m_desktopBackdrop != IsBackdropEditMode())
       return false;
    const PartGroup *parent = editable->GetPartGroup();
    bool visible = editable->IsUIVisible(false);
@@ -1177,7 +1177,7 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
    // Same initialization sequence as the WinUI editor
    if (auto *const scriptable = pie->GetIScriptable(); scriptable)
       m_table->GetUniqueName(type, scriptable->m_name);
-   pie->m_desktopBackdrop = (m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop);
+   pie->m_desktopBackdrop = IsBackdropEditMode();
    m_table->AddPart(pie);
    pie->SetPartGroup(GetPartGroupForNewPart());
 
@@ -1319,7 +1319,7 @@ void EditorUI::PasteSelection(const ImVec2 &pos)
    const vector<vector<uint8_t>> parts = VPX::EditorClipboard::GetParts();
    if (parts.empty())
       return;
-   const bool backdrop = (m_editVp != nullptr && m_editVp->m_camMode == ViewMode::DesktopBackdrop);
+   const bool backdrop = IsBackdropEditMode();
    PartGroup *const partGroup = GetPartGroupForNewPart();
    vector<IEditable *> pasted;
    Vertex2D pasteMin(FLT_MAX, FLT_MAX), pasteMax(-FLT_MAX, -FLT_MAX);
@@ -1362,7 +1362,9 @@ void EditorUI::PasteSelection(const ImVec2 &pos)
       return;
    }
    // Move the pasted parts so that their combined center lands at the given position (in the table XY plane, keeping their Z)
-   const Vertex2D target = UnprojectToPlane(pos, 0.f);
+   Vertex2D target(0.f, 0.f);
+   if (ViewportPane *const vp = GetTargetViewport(); vp != nullptr)
+      target = vp->UnprojectToPlane(pos, 0.f);
    const Vertex2D offset(target.x - 0.5f * (pasteMin.x + pasteMax.x), target.y - 0.5f * (pasteMin.y + pasteMax.y));
    for (IEditable *const editable : pasted)
    {
@@ -1848,7 +1850,10 @@ void EditorUI::AddPointOnNearestSegment()
       return;
    // Unproject the mouse position on the drag plane of the edited curve
    const float z = m_pointEditPart->GetDragPointZ(m_pointSel.empty() ? points.front().get() : m_pointSel.front());
-   const Vertex2D pos = UnprojectToPlane(ImGui::GetMousePos(), z);
+   ViewportPane *const vp = GetTargetViewport();
+   if (vp == nullptr)
+      return;
+   const Vertex2D pos = vp->UnprojectToPlane(ImGui::GetMousePos(), z);
    m_undo.BeginUndo();
    m_undo.MarkForUndo(m_pointEditPart->GetEditable());
    m_undo.EndUndo();
@@ -1863,73 +1868,6 @@ void EditorUI::AddPointOnNearestSegment()
    m_pointSel.push_back(point);
    m_renderer->ReinitRenderable(m_pointEditPart->GetEditable()->GetIRenderable());
    m_player->m_physics->Update(m_pointEditPart->GetEditable());
-}
-
-Vertex2D EditorUI::UnprojectToPlane(const ImVec2 &mousePos, float z) const
-{
-   // Compute the mouse ray (the edit viewport's camera for a pane, the window one for fullscreen)
-   // and intersect it with the table plane at the given Z coordinate
-   Vertex3Ds v3d, v3d2;
-   if (m_editVp != nullptr)
-   {
-      if (!m_editVp->PickRay(mousePos, v3d, v3d2))
-         return Vertex2D(0.f, 0.f);
-   }
-   else
-   {
-      const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
-      const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-      const float xcoord = (mousePos.x - rClipWidth) / rClipWidth;
-      const float ycoord = (rClipHeight - mousePos.y) / rClipHeight;
-      Matrix3D invMVP = m_renderer->GetMVP().GetModelViewProj(0);
-      invMVP.Invert();
-      v3d = invMVP * Vertex3Ds { xcoord, ycoord, 0.f };
-      v3d2 = invMVP * Vertex3Ds { xcoord, ycoord, 1.f };
-   }
-   const float dz = v3d2.z - v3d.z;
-   const float t = (fabsf(dz) > 1e-10f) ? (z - v3d.z) / dz : 0.f;
-   return Vertex2D(v3d.x + t * (v3d2.x - v3d.x), v3d.y + t * (v3d2.y - v3d.y));
-}
-
-DragPoint *EditorUI::HitTestDragPoint(const ImVec2 &mousePos) const
-{
-   LiveRenderContext ctx(
-      m_player, nullptr, m_editVp != nullptr ? m_editVp->m_camMode : ViewMode::PreviewCam, m_editVp != nullptr ? m_editVp->m_shadeMode : Renderer::ShadeMode::Default, false);
-   if (m_editVp != nullptr)
-      m_editVp->SetupOverlay(&ctx, nullptr);
-   const float maxDist = 10.f * m_liveUI.GetDPI();
-   DragPoint *best = nullptr;
-   float bestDist = maxDist;
-   for (const auto &point : m_pointEditPart->GetDragPointCurve()->GetPoints())
-   {
-      const ImVec2 pos = ctx.Project(Vertex3Ds(point->GetX(), point->GetY(), m_pointEditPart->GetDragPointZ(point.get())));
-      if (pos.x == FLT_MAX)
-         continue;
-      const float dx = pos.x - mousePos.x;
-      const float dy = pos.y - mousePos.y;
-      const float dist = sqrtf(dx * dx + dy * dy);
-      if (dist < bestDist)
-      {
-         bestDist = dist;
-         best = point.get();
-      }
-   }
-   return best;
-}
-
-bool EditorUI::HitTestEditCenter(const ImVec2 &mousePos) const
-{
-   LiveRenderContext ctx(
-      m_player, nullptr, m_editVp != nullptr ? m_editVp->m_camMode : ViewMode::PreviewCam, m_editVp != nullptr ? m_editVp->m_shadeMode : Renderer::ShadeMode::Default, false);
-   if (m_editVp != nullptr)
-      m_editVp->SetupOverlay(&ctx, nullptr);
-   const ImVec2 pos = ctx.Project(m_pointEditPart->GetEditCenter());
-   if (pos.x == FLT_MAX)
-      return false;
-   const float maxDist = 10.f * m_liveUI.GetDPI();
-   const float dx = pos.x - mousePos.x;
-   const float dy = pos.y - mousePos.y;
-   return dx * dx + dy * dy < maxDist * maxDist;
 }
 
 void EditorUI::DeleteSelectedPoints()
@@ -2162,7 +2100,8 @@ void EditorUI::LoadAreaLayoutSettings()
    m_maximizedLeafId = -1;
    m_hoverLeaf = -1;
    CancelAreaInteraction(false);
-   SetEditViewport(nullptr);
+   m_hoverVp = nullptr;
+   m_captureVp = nullptr;
    if (settings.GetEditor_AlwaysViewScript() && !m_layout.IsHosted(AreaType::Script))
       ShowAreaEditor(AreaType::Script); // The editor option keeps a script area open
 }
@@ -2197,7 +2136,8 @@ void EditorUI::SetAreaLayoutIndex(const int index)
    m_maximizedLeafId = -1;
    m_hoverLeaf = -1;
    CancelAreaInteraction(false);
-   SetEditViewport(nullptr);
+   m_hoverVp = nullptr;
+   m_captureVp = nullptr;
 }
 
 void EditorUI::UpdateAreaLayout()
@@ -2262,7 +2202,7 @@ void EditorUI::ComputeAreaRects() const
          {
             m_viewportVisible = true;
             const auto it = m_areaViews.find(leaf.id);
-            if (it != m_areaViews.end() && it->second.get() == m_editVp)
+            if (it != m_areaViews.end() && it->second.get() == GetTargetViewport())
             {
                m_viewportRect = leaf.rect; // The edit viewport's area is the reference for the overlay and the camera fit
                break;
@@ -2465,20 +2405,10 @@ void EditorUI::RenderAreas()
          it->second->RenderPane(leaf.rect, leaf.id);
    }
    // Route the interactions to the viewport pane under the mouse; an ongoing drag keeps its pane
-   m_captureVp
-      = (ImGui::IsMouseDown(ImGuiMouseButton_Left) || ImGui::IsMouseDown(ImGuiMouseButton_Middle) || ImGui::IsMouseDown(ImGuiMouseButton_Right)) && m_editVp != nullptr && m_editVp->m_active
-      ? m_editVp
-      : nullptr;
-   ViewportPane *const wanted = m_captureVp != nullptr ? m_captureVp : m_hoverVp;
-   if (wanted != nullptr && wanted != m_editVp)
-      SetEditViewport(wanted);
-   if (m_editVp == nullptr) // Bind a pane right away: its camera is ready before the first hover
-      for (const auto &[id, view] : m_areaViews)
-         if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
-         {
-            SetEditViewport(vp);
-            break;
-         }
+   if (m_hoverVp != nullptr && m_hoverVp->m_active)
+      m_captureVp = m_hoverVp;
+   else if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsMouseDown(ImGuiMouseButton_Middle) && !ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      m_captureVp = nullptr;
 }
 
 void EditorUI::RenderAreaTypeButton(const int leafId)
@@ -3002,26 +2932,22 @@ void EditorUI::ShowAreaEditor(const AreaType type)
 // ---------------------------------------------------------------------------------------------------------------------
 // Viewport panes
 
-void EditorUI::SetEditViewport(ViewportPane *pane)
-{
-   if (pane == m_editVp)
-      return;
-   ViewportPane *const previous = m_editVp;
-   m_editVp = pane;
-   if (m_editVp != nullptr && !m_editVp->m_cameraValid)
-   {
-      m_editVp->AdoptCameraFrom(previous); // A never bound pane clones the previous camera (split panes)
-      if (m_camSetupPending)
-      {
-         // Camera setup requested when the editor was opened (no pane existed yet)
-         m_editVp->m_camMode = m_camSetupPending->mode;
-         m_editVp->m_perspectiveCam = m_camSetupPending->persp;
-         m_editVp->m_shadeMode = m_camSetupPending->shade;
-         m_editVp->m_predefinedView = m_camSetupPending->predef;
-         m_camSetupPending.reset();
-      }
-   }
-}
-
 ViewportPane *EditorUI::HoveredViewportPane() const { return m_hoverVp; }
+
+ViewportPane *EditorUI::GetTargetViewport() const
+{
+   // The pane that owns viewport actions: the flying pane (its view covers the window), else the
+   // one captured by an in-progress mouse drag, else the one under the mouse, else the first one
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_flyMode)
+         return vp;
+   if (m_captureVp != nullptr)
+      return m_captureVp;
+   if (m_hoverVp != nullptr)
+      return m_hoverVp;
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
+         return vp;
+   return nullptr;
+}
 }
