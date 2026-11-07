@@ -1447,7 +1447,8 @@ PropString(LiveEditor, Layout1, "Layout1"s, "Editor area layout for layout slot 
 PropString(LiveEditor, Layout2, "Layout2"s, "Editor area layout for layout slot 2 (JSON)"s, ""s);
 PropString(LiveEditor, Layout3, "Layout3"s, "Editor area layout for layout slot 3 (JSON)"s, ""s);
 PropString(LiveEditor, Layout4, "Layout4"s, "Editor area layout for layout slot 4 (JSON)"s, ""s);
-PropInt(LiveEditor, LayoutActive, "LayoutActive"s, "Active editor area layout slot (1-based)"s, 1, 4, 1);
+PropString(LiveEditor, Layout5, "Layout5"s, "Editor area layout for layout slot 5 (JSON)"s, ""s);
+PropInt(LiveEditor, LayoutActive, "LayoutActive"s, "Active editor area layout slot (1-based)"s, 1, 5, 1);
 
 // Code View settings
 PropInt(CVEdit, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 255, 255));

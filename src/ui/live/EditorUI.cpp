@@ -2348,11 +2348,12 @@ void EditorUI::LoadAreaLayoutSettings()
 {
    m_layoutSettingsLoaded = true;
    Settings &settings = g_settingsService.GetAppSettings();
-   m_activeLayoutIndex = clamp(settings.GetLiveEditor_LayoutActive() - 1, 0, 3);
+   m_activeLayoutIndex = clamp(settings.GetLiveEditor_LayoutActive() - 1, 0, 4);
    const string json = m_activeLayoutIndex == 0 ? settings.GetLiveEditor_Layout1()
       : m_activeLayoutIndex == 1                ? settings.GetLiveEditor_Layout2()
       : m_activeLayoutIndex == 2                ? settings.GetLiveEditor_Layout3()
-                                                : settings.GetLiveEditor_Layout4();
+      : m_activeLayoutIndex == 3                ? settings.GetLiveEditor_Layout4()
+                                                : settings.GetLiveEditor_Layout5();
    const nlohmann::json parsed = nlohmann::json::parse(json, nullptr, false);
    if (parsed.is_discarded() || !m_layout.FromJson(parsed))
       m_layout = AreaLayout::Default(m_activeLayoutIndex); // Missing or invalid layout: back to the slot's preset
@@ -2378,7 +2379,8 @@ void EditorUI::SaveAreaLayoutSettings()
    case 0: settings.SetLiveEditor_Layout1(json, false); break;
    case 1: settings.SetLiveEditor_Layout2(json, false); break;
    case 2: settings.SetLiveEditor_Layout3(json, false); break;
-   default: settings.SetLiveEditor_Layout4(json, false); break;
+   case 3: settings.SetLiveEditor_Layout4(json, false); break;
+   default: settings.SetLiveEditor_Layout5(json, false); break;
    }
 }
 
