@@ -594,6 +594,18 @@ void ViewportPane::FrameSelection()
    // Camera centered on the whole selection, adjusting the zoom so that it fills the view
    FRect3D bounds;
    if (m_editor.GetSelectionBounds(bounds))
+      FrameBounds(bounds);
+}
+
+void ViewportPane::FrameAll()
+{
+   // Camera framing the whole table (Blender's View All, Home)
+   const PinTable* const table = m_editor.m_table;
+   FrameBounds(FRect3D(0.f, table->m_right, 0.f, table->m_bottom, 0.f, table->m_glassTopHeight));
+}
+
+void ViewportPane::FrameBounds(const FRect3D& bounds)
+{
    {
       Matrix3D view(m_camView);
       view.Invert();
@@ -2136,6 +2148,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          // Fly mode: the pane's view takes the whole window, hiding the editor UI
          m_flyMode = !m_flyMode;
       }
+      else if (ImGui::IsKeyPressed(ImGuiKey_Home) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+         FrameAll(); // Frame the whole table (Blender's View All)
       else if (ImGui::IsKeyPressed(ImGuiKey_G))
       {
          // Grab: Alt+G resets the position (Blender), G arms a modal translate op

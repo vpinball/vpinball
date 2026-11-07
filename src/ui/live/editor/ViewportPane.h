@@ -73,6 +73,8 @@ public:
    void AnimateViewTo(PredefinedView view); // Same snap as SetView, animated (gizmo click, numpad 1/3/7, View menu)
    // The pane's view mode is fixed by its area type: there is no camera mode cycle anymore
    void FrameSelection(); // Camera centered on the selection, zoomed to fill the view
+   void FrameAll(); // Camera framing the whole table (Home)
+   void FrameBounds(const FRect3D& bounds); // Shared bounds fit of FrameSelection and FrameAll
 
    // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
    // hosting leaf's persisted payload so it is restored with the layout on the next session

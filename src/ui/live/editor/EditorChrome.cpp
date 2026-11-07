@@ -182,6 +182,8 @@ void EditorChrome::RenderMenuBar()
          ImGui::Separator();
          if (ImGui::MenuItem("Frame Selected", "Numpad .", false, vp != nullptr && editor.CanFrameSelection()))
             vp->FrameSelection();
+         if (ImGui::MenuItem("Frame All", "Home", false, vp != nullptr))
+            vp->FrameAll();
          if (ImGui::MenuItem("Toggle Maximize Area", "Ctrl+Space"))
             editor.ToggleMaximizeArea();
          ImGui::Separator();
