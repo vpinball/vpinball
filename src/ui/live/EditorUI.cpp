@@ -519,8 +519,17 @@ void EditorUI::FinishFileOp()
 
 void EditorUI::RenderFileOpModal()
 {
+   // Once the operation is completed, the modal must still be closed explicitly: an open modal keeps capturing the inputs
    if (m_fileOp == nullptr)
+   {
+      if (ImGui::IsPopupOpen("###FileOp"))
+         if (ImGui::BeginPopupModal("###FileOp", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+         {
+            ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+         }
       return;
+   }
    const char *action;
    switch (m_fileOp->type)
    {
