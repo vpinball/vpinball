@@ -2157,6 +2157,25 @@ VPXRenderContext2D& Renderer::GetAncillaryRenderContext(VPXWindowId window, floa
 
 void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers)
 {
+   const bool isAdjusted = g_pplayer->m_liveUI->m_inGameUI.IsOpened(s_displaySettingsPages[window]);
+   const bool wasAdjusted = m_ancillaryWndAdjusted[window];
+
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW && !m_activeView->IsMirror())
+   {
+      // Dedicated ancillary outputs are presented without VSync synchronization, so they are throttled
+      // to the refresh rate of their own display: rendering them at the playfield rate would only spend
+      // CPU and GPU on frames the display can never show. Skipping before binding the swapchain also
+      // skips its present for this frame. A swapped backbuffer forces an immediate render.
+      VPX::Window* const wnd = output.GetWindow();
+      RenderTarget* const backBuffer = wnd != nullptr ? wnd->GetBackBuffer() : nullptr;
+      const uint64_t frameInterval = wnd != nullptr ? static_cast<uint64_t>(950000. / static_cast<double>(wnd->GetRefreshRate())) : 0;
+      const uint64_t now = usec();
+      if (!isAdjusted && !wasAdjusted && backBuffer != nullptr && backBuffer == m_ancillaryWndLastRT[window] && (now - m_ancillaryWndLastRenderTime[window]) < frameInterval)
+         return;
+      m_ancillaryWndLastRenderTime[window] = now;
+      m_ancillaryWndLastRT[window] = backBuffer;
+   }
+
    bool isOutputLinear;
    int m_outputX, m_outputY, m_outputW, m_outputH;
    RenderDevice* const rd = m_renderDevice;
@@ -2212,8 +2231,6 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
 
    // Highlight the display selected in the in game UI with a colored frame, drawn on top of the window content.
    // This also shows the display when nothing is rendered (e.g. ScoreView without a matching display source)
-   const bool isAdjusted = g_pplayer->m_liveUI->m_inGameUI.IsOpened(s_displaySettingsPages[window]);
-   const bool wasAdjusted = m_ancillaryWndAdjusted[window];
    m_ancillaryWndAdjusted[window] = isAdjusted;
    if (isAdjusted)
    {
