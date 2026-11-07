@@ -25,6 +25,7 @@ set(VPX_TEST_SOURCES
    tests/core/test-settings.cpp
    tests/core/test-tabledb.cpp
    tests/input/test-buttonmapping.cpp
+   tests/input/test-inputaction.cpp
    tests/input/test-plunger-kalman.cpp
    tests/input/test-scancodes.cpp
    tests/input/test-sensormapping.cpp
