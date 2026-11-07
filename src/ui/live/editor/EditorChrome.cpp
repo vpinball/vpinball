@@ -94,6 +94,12 @@ void EditorChrome::RenderMenuBar()
             editor.RedoSteps(1);
          if (ImGui::MenuItem("Undo History...", nullptr, false, editor.m_table->m_liveBaseTable == nullptr && (editor.m_undo.HasUndo() || editor.m_undo.HasRedo())))
             OpenUndoHistory();
+         if (ImGui::MenuItem("Adjust Last Operation...", "F9", false, editor.m_lastOp.type != EditorUI::LastOperation::Type::None))
+         {
+            editor.m_adjustPopupOpen = true;
+            editor.m_adjustPopupJustOpened = true;
+            editor.m_adjustPopupPos = ImGui::GetMousePos();
+         }
          ImGui::Separator();
          // Selection actions of the Esc, Ctrl+C / Ctrl+V and Del shortcuts (the add part picker itself opens in the viewport pane)
          ImGui::BeginDisabled(editor.m_table->IsLocked());
