@@ -14,6 +14,7 @@
 #include "ui/live/LiveUI.h"
 
 #include "imgui/imgui_internal.h" // ImTextCharFromUtf8 (status hint key chips ink bounds)
+#include "parts/light.h" // Light States submenu (light state update)
 
 namespace VPX::EditorUI
 {
@@ -176,6 +177,49 @@ void EditorChrome::RenderMenuBar()
                SetOrigin::Apply(editor, SetOrigin::Mode::Geometry);
             if (ImGui::MenuItem("Origin to Geometry Bottom", nullptr, false, canSetOrigin))
                SetOrigin::Apply(editor, SetOrigin::Mode::GeometryBottom);
+            ImGui::EndMenu();
+         }
+         ImGui::EndMenu();
+      }
+      if (!editor.IsInspectMode() && ImGui::BeginMenu("Tools"))
+      {
+         if (ImGui::BeginMenu("Light States"))
+         {
+            // The editor does not run the table script (which usually sets the lamp states): set the light state of the table or of a collection here
+            // (same update as the State property: persisted value + emitted intensity + live play state)
+            const auto setStates = [](const vector<IEditable *> &parts, const float state)
+            {
+               for (IEditable *const part : parts)
+                  if (part->GetItemType() == eItemLight)
+                  {
+                     Light *const light = static_cast<Light *>(part);
+                     light->m_d.m_state = state;
+                     light->m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_d.m_state;
+                     light->setInPlayState(state > 1.f ? (float)LightStateBlinking : state);
+                  }
+            };
+            const float states[] = { 0.f, 0.706f, 1.f };
+            const char *stateNames[] = { "Off", "0.706 (lamp top)", "On" };
+            if (ImGui::BeginMenu("All Lights"))
+            {
+               for (int i = 0; i < 3; i++)
+                  if (ImGui::MenuItem(stateNames[i]))
+                     setStates(editor.m_table->GetParts(), states[i]);
+               ImGui::EndMenu();
+            }
+            for (auto *const collection : editor.m_table->GetCollections())
+            {
+               bool hasLight = false;
+               for (const IEditable *const part : collection->GetParts())
+                  hasLight |= part->GetItemType() == eItemLight;
+               if (hasLight && ImGui::BeginMenu(collection->m_name.c_str()))
+               {
+                  for (int i = 0; i < 3; i++)
+                     if (ImGui::MenuItem(stateNames[i]))
+                        setStates(collection->GetParts(), states[i]);
+                  ImGui::EndMenu();
+               }
+            }
             ImGui::EndMenu();
          }
          ImGui::EndMenu();
