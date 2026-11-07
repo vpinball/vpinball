@@ -130,16 +130,6 @@ void EditorChrome::RenderMenuBar()
          if (ImGui::MenuItem("Invert Selection", "Ctrl+I", false, canSelect))
             editor.InvertSelection();
          ImGui::Separator();
-         if (ImGui::BeginMenu("Set Origin"))
-         {
-            const bool canSetOrigin = SetOrigin::CanApply(editor);
-            if (ImGui::MenuItem("Origin to Geometry", nullptr, false, canSetOrigin))
-               SetOrigin::Apply(editor, SetOrigin::Mode::Geometry);
-            if (ImGui::MenuItem("Origin to Geometry Bottom", nullptr, false, canSetOrigin))
-               SetOrigin::Apply(editor, SetOrigin::Mode::GeometryBottom);
-            ImGui::EndMenu();
-         }
-         ImGui::Separator();
          if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
             editor.ExportPartSelection();
          ImGui::Separator();
@@ -151,6 +141,41 @@ void EditorChrome::RenderMenuBar()
                editor.m_units = EditorUI::Units::Metric;
             if (ImGui::RadioButton("Imperial", editor.m_units == EditorUI::Units::Imperial))
                editor.m_units = EditorUI::Units::Imperial;
+            ImGui::EndMenu();
+         }
+         ImGui::EndMenu();
+      }
+      if (!editor.IsInspectMode() && ImGui::BeginMenu("Object"))
+      {
+         // Object menu: actions on the selection (the G/R/S items arm the transform op of the pane under the mouse, like their keys)
+         ViewportPane *const vp = editor.GetTargetViewport();
+         const bool canTransform = vp != nullptr && editor.m_selection.GetType() == Selection::S_EDITABLE;
+         if (ImGui::MenuItem("Duplicate", "Shift+D", false, editor.CanDuplicate()))
+            editor.DuplicateSelection();
+         if (ImGui::MenuItem("Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
+            editor.DeleteSelection();
+         if (ImGui::MenuItem("Add Part...", "Shift+A", false, !editor.m_table->IsLocked() && editor.m_pointEditPart == nullptr))
+            editor.RequestAddPartPopup(editor.GetViewportContentCenter());
+         ImGui::Separator();
+         if (ImGui::MenuItem("Move", "G", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::TRANSLATE, canTransform))
+            vp->BeginTransformOp(ImGuizmo::TRANSLATE);
+         if (ImGui::MenuItem("Rotate", "R", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::ROTATE, canTransform))
+            vp->BeginTransformOp(ImGuizmo::ROTATE);
+         if (ImGui::MenuItem("Scale", "S", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::SCALE, canTransform))
+            vp->BeginTransformOp(ImGuizmo::SCALE);
+         ImGui::Separator();
+         if (ImGui::MenuItem("New Collection from Selection", nullptr, false, editor.m_selection.GetType() == Selection::S_EDITABLE))
+            editor.CreateCollection(true);
+         if (ImGui::MenuItem("Edit Points", "Tab", false, editor.CanEnterPointEdit()))
+            editor.EnterPointEditMode();
+         ImGui::Separator();
+         if (ImGui::BeginMenu("Set Origin"))
+         {
+            const bool canSetOrigin = SetOrigin::CanApply(editor);
+            if (ImGui::MenuItem("Origin to Geometry", nullptr, false, canSetOrigin))
+               SetOrigin::Apply(editor, SetOrigin::Mode::Geometry);
+            if (ImGui::MenuItem("Origin to Geometry Bottom", nullptr, false, canSetOrigin))
+               SetOrigin::Apply(editor, SetOrigin::Mode::GeometryBottom);
             ImGui::EndMenu();
          }
          ImGui::EndMenu();
