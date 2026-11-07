@@ -24,6 +24,8 @@
 
 -ExtractVBS [filename]  Load, export table script and close
 
+-Convert [source path] [target path]  Convert a table between the .vpx and VPZ pack formats and close (a folder target selects folder pack mode)
+
 -Ini [filename]         Use a custom settings file instead of loading it from the default location
 -TableIni [filename]    Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,...
 

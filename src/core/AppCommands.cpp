@@ -365,6 +365,66 @@ void ValidateTournamentCommand::Execute()
 }
 
 
+ConvertTableCommand::ConvertTableCommand(const std::filesystem::path& tableFilename, const std::filesystem::path& targetFilename)
+   : TableBasedCommand(tableFilename)
+   , m_targetFilename(targetFilename)
+{
+}
+
+// The format a -Convert path selects: a ".vpx" table file, or a VPZ pack (an existing
+// folder selects folder pack mode, a ".vpz" path selects the zip archive file mode)
+enum class ConvertPathKind
+{
+   Invalid,
+   Vpx,
+   Vpz
+};
+static ConvertPathKind ClassifyConvertPath(const std::filesystem::path& path)
+{
+   std::error_code ec;
+   if (std::filesystem::is_directory(path, ec))
+      return ConvertPathKind::Vpz;
+   const string extension = lowerCase(PathToUTF8(path.extension()));
+   if (extension == ".vpx"s)
+      return ConvertPathKind::Vpx;
+   if (extension == ".vpz"s)
+      return ConvertPathKind::Vpz;
+   return ConvertPathKind::Invalid;
+}
+
+void ConvertTableCommand::Execute()
+{
+   CComObject<PinTable>* table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   VPXFileFeedback feedback;
+   // Same as the Win32 editor: hash/corrupt content errors still keep the loaded table
+   const HRESULT hr = table->LoadGameFromFilename(m_tableFilename, feedback);
+   if (FAILED(hr) && (hr != APPX_E_BLOCK_HASH_INVALID) && (hr != APPX_E_CORRUPT_CONTENT))
+   {
+      ShowMessage(MsgSeverity::Error, "Failed to load table '"s + PathToUTF8(m_tableFilename) + "'", "Table Conversion Error"s);
+      table->Release();
+      m_exitCode = 1;
+      return;
+   }
+   if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName))
+      table->SetSettingsFileName(m_tableIniFileName);
+
+   // The save format derives from the target path: a folder or a ".vpz" path saves a VPZ
+   // pack (an existing folder selects folder pack mode), a ".vpx" path the VPX format
+   table->m_filename = m_targetFilename;
+   table->m_title = TitleFromFilename(m_targetFilename);
+   const HRESULT saveResult = table->Save(feedback);
+   table->Release();
+   if (FAILED(saveResult))
+   {
+      ShowMessage(MsgSeverity::Error, "Failed to save table to '"s + PathToUTF8(m_targetFilename) + "'", "Table Conversion Error"s);
+      m_exitCode = 1;
+      return;
+   }
+   std::cout << "Table converted to '" << PathToUTF8(m_targetFilename) << "'\n";
+}
+
 
 #ifdef __STANDALONE__
 int g_argc;
@@ -396,6 +456,7 @@ enum option_names
    OPTION_VERSION,
    OPTION_FRONTEND_EXIT,
    OPTION_AUDIT,
+   OPTION_CONVERT,
    OPTION_CAPTURE_ATTRACT,
    OPTION_CUSTOM1,
    OPTION_CUSTOM2,
@@ -426,24 +487,27 @@ static const CommandLineOption options[] = {
    { OPTION_QMARK, "?"s, string() },
 #ifdef VPX_HAS_REGISTERED_TYPELIB
    { OPTION_UNREGSERVER, "UnregServer"s, "Unregister VP functions"s },
-   { OPTION_REGSERVER, "RegServer"s,"Register VP functions"s },
+   { OPTION_REGSERVER, "RegServer"s, "Register VP functions"s },
 #endif
 #ifdef VPX_ENABLE_WIN32_EDITOR
    { OPTION_MINIMIZED, "Minimized"s, "Start the windows editor in the 'invisible' minimized window mode"s },
    { OPTION_EXTMINIMIZED, "ExtMinimized"s, "Start the windows editor in the 'invisible' minimized window mode, but with enabled Pause Menu"s },
    { OPTION_EDIT, "Edit"s, "[filename]  Load file into VP"s },
 #endif
-   { OPTION_LIVE_EDIT, "LiveEdit"s, "[opt filename]  Start in live editor mode. if a filename is provided, loads it as the table to edit. WARNING Unstable feature only provided for early testing"s },
+   { OPTION_LIVE_EDIT, "LiveEdit"s,
+      "[opt filename]  Start in live editor mode. if a filename is provided, loads it as the table to edit. WARNING Unstable feature only provided for early testing"s },
    { OPTION_PLAY, "Play"s, "[filename]  Load and play file"s },
    { OPTION_POVEDIT, "PovEdit"s, "[filename]  Load and run file in live editing mode, then export new pov on exit"s },
    { OPTION_POV, "Pov"s, "[filename]  Load, export pov and close"s },
    { OPTION_EXTRACTVBS, "ExtractVBS"s, "[filename]  Load, export table script and close"s },
    { OPTION_INI, "Ini"s, "[filename]  Use a custom settings file instead of loading it from the default location"s },
-   { OPTION_TABLE_INI, "TableIni"s, "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s },
+   { OPTION_TABLE_INI, "TableIni"s,
+      "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s },
    { OPTION_TOURNAMENT, "TournamentFile"s, "[table filename] [tournament filename]  Load a table and tournament file and convert to .png"s },
    { OPTION_VERSION, "v"s, "Displays the version"s },
    { OPTION_FRONTEND_EXIT, "exit"s, ""s }, // (ab)used by frontend, not handled by us
    { OPTION_AUDIT, "Audit"s, "[table filename] Audit the table"s },
+   { OPTION_CONVERT, "Convert"s, "[source path] [target path]  Convert a table between the .vpx and VPZ pack formats (a folder path selects folder pack mode)"s },
    { OPTION_CAPTURE_ATTRACT, "CaptureAttract"s, "Capture an attract mode video"s },
    { OPTION_CUSTOM1, "c1"s, "Custom value 1"s },
    { OPTION_CUSTOM2, "c2"s, "Custom value 2"s },
@@ -813,6 +877,38 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             exit(1);
          }
          commands.push_back(std::make_unique<ValidateTournamentCommand>(tableFileName, tournamentFileName));
+         break;
+      }
+
+      case OPTION_CONVERT:
+      {
+         if (i + 2 >= nArgs)
+         {
+            OnCommandLineError(
+               "Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by the source and target table paths: one .vpx file and one VPZ pack (.vpz file or folder)");
+            exit(1);
+         }
+         const std::filesystem::path sourceFileName = GetPathFromArg(szArglist[i + 1]);
+         const std::filesystem::path targetFileName = GetPathFromArg(szArglist[i + 2]);
+         i += 2;
+         const ConvertPathKind sourceKind = ClassifyConvertPath(sourceFileName);
+         const ConvertPathKind targetKind = ClassifyConvertPath(targetFileName);
+         if (sourceKind == ConvertPathKind::Invalid || targetKind == ConvertPathKind::Invalid || sourceKind == targetKind)
+         {
+            OnCommandLineError("Command Line Error"s, "Option '"s + options[OPTION_CONVERT].arg + "' expects a .vpx path and a VPZ pack path (.vpz file or folder)");
+            exit(1);
+         }
+         if (!std::filesystem::exists(sourceFileName))
+         {
+            OnCommandLineError("Command Line Error"s, "Table file '" + PathToUTF8(sourceFileName) + "' was not found");
+            exit(1);
+         }
+         if (!IsTableFile(sourceFileName))
+         {
+            OnCommandLineError("Command Line Error"s, '\'' + PathToUTF8(sourceFileName) + "' is not a Visual Pinball table (.vpx/.vpz)");
+            exit(1);
+         }
+         commands.push_back(std::make_unique<ConvertTableCommand>(sourceFileName, targetFileName));
          break;
       }
 

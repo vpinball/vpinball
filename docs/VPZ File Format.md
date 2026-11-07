@@ -8,6 +8,8 @@ A pack comes in 2 forms, which are strictly equivalent:
 - a **directory** (which may or may not be named with a `.vpz` extension)
 - a **`.vpz` file**, which is the same content stored as a zip archive
 
+A pack is written by the editor when saving to a `.vpz` file or an existing folder, or from the command line with `-Convert`, which converts a table between `.vpx` and pack in either direction (see [Command Line](Command%20Line.md)).
+
 All text files of a pack (JSON documents, VBS script) are **UTF-8** encoded.
 
 

@@ -128,6 +128,19 @@ public:
    const std::filesystem::path m_tournamentFilename;
 };
 
+class ConvertTableCommand : public TableBasedCommand
+{
+public:
+   ConvertTableCommand(const std::filesystem::path& tableFilename, const std::filesystem::path& targetFilename);
+   ~ConvertTableCommand() override = default;
+   void Execute() override;
+   int GetExitCode() const override { return m_exitCode; }
+
+private:
+   const std::filesystem::path m_targetFilename;
+   int m_exitCode = 0;
+};
+
 
 class CommandLineProcessor
 {
