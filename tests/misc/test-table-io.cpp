@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "../vpx-test.h"
 
+#include "core/AppCommands.h"
 #include "core/VPApp.h"
 #include "math/Mesh.h"
 #include "math/MeshUtils.h"
@@ -904,6 +905,102 @@ TEST_CASE("VPZ pack save/load round-trip")
    }
 
    table->Release();
+}
+
+
+TEST_CASE("Table file convert command")
+{
+   std::error_code ec;
+   const std::filesystem::path source = GetAssetPath() / "test000-default-table.vpx";
+   const std::filesystem::path zipPath = GetTmpDir() / "convert-target.vpz";
+   const std::filesystem::path folderPath = GetTmpDir() / "convert-pack";
+   const std::filesystem::path backPath = GetTmpDir() / "convert-back.vpx";
+   std::filesystem::remove(zipPath, ec);
+   std::filesystem::remove_all(folderPath, ec);
+   std::filesystem::remove(backPath, ec);
+
+   CComObject<PinTable> *original;
+   CComObject<PinTable>::CreateInstance(&original);
+   original->AddRef();
+   TestFileFeedback feedback;
+   REQUIRE(SUCCEEDED(original->LoadGameFromFilename(source, feedback)));
+
+   SUBCASE("vpx to vpz file and back")
+   {
+      {
+         ConvertTableCommand command(source, zipPath);
+         command.Execute();
+         REQUIRE(command.GetExitCode() == 0);
+      }
+      // A .vpz file is a zip archive
+      {
+         std::ifstream in(zipPath, std::ios::binary);
+         char header[2] = { 0, 0 };
+         in.read(header, 2);
+         CHECK(header[0] == 'P');
+         CHECK(header[1] == 'K');
+      }
+      {
+         ConvertTableCommand command(zipPath, backPath);
+         command.Execute();
+         REQUIRE(command.GetExitCode() == 0);
+      }
+      // A .vpx file is an OLE container
+      {
+         std::ifstream in(backPath, std::ios::binary);
+         char header[2] = { 0, 0 };
+         in.read(header, 2);
+         CHECK(header[0] == char(0xD0));
+         CHECK(header[1] == char(0xCF));
+      }
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(backPath, loadFeedback)));
+      CheckSameTableContent(original, reloaded);
+      reloaded->Release();
+      std::filesystem::remove(zipPath, ec);
+      std::filesystem::remove(backPath, ec);
+   }
+
+   SUBCASE("vpx to vpz folder pack and back")
+   {
+      // Folder pack mode is selected by the target being an existing folder
+      REQUIRE(std::filesystem::create_directories(folderPath, ec));
+      {
+         ConvertTableCommand command(source, folderPath);
+         command.Execute();
+         REQUIRE(command.GetExitCode() == 0);
+      }
+      CHECK(std::filesystem::exists(folderPath / "manifest.json"));
+      CHECK(std::filesystem::exists(folderPath / "table.json"));
+      {
+         ConvertTableCommand command(folderPath, backPath);
+         command.Execute();
+         REQUIRE(command.GetExitCode() == 0);
+      }
+      CComObject<PinTable> *reloaded;
+      CComObject<PinTable>::CreateInstance(&reloaded);
+      reloaded->AddRef();
+      TestFileFeedback loadFeedback;
+      REQUIRE(SUCCEEDED(reloaded->LoadGameFromFilename(backPath, loadFeedback)));
+      CheckSameTableContent(original, reloaded);
+      reloaded->Release();
+      std::filesystem::remove_all(folderPath, ec);
+      std::filesystem::remove(backPath, ec);
+   }
+
+   SUBCASE("a missing source fails without producing a target")
+   {
+      const std::filesystem::path missing = GetTmpDir() / "no-such-table.vpx";
+      ConvertTableCommand command(missing, zipPath);
+      command.Execute();
+      CHECK(command.GetExitCode() != 0);
+      CHECK(!std::filesystem::exists(zipPath));
+   }
+
+   original->Release();
 }
 
 
