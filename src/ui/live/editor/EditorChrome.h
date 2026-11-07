@@ -4,6 +4,8 @@
 
 #include "imgui/imgui.h"
 
+struct AreaRect; // AreaLayout.h
+
 namespace VPX::EditorUI
 {
 
@@ -34,10 +36,18 @@ public:
       m_undoHistoryJustOpened = true;
       m_undoHistoryPos = ImGui::GetMousePos();
    }
+   // Tool shelf: the T overlay of the viewport (edit modes, add part, gizmo orientation)
+   void RenderToolShelf(const AreaRect &viewportContent);
+   bool IsToolShelfShown() const { return m_showToolShelf; }
+   void ToggleToolShelf() { m_showToolShelf = !m_showToolShelf; }
+   float GetToolShelfWidth() const { return m_toolShelfWidth; } // Drawn shelf width last frame (0 when hidden)
+   // Tooltip with a title, an optional shortcut chip and an optional dim description (works on disabled items)
+   static void Tip(const char *title, const char *shortcut = nullptr, const char *description = nullptr);
 
 private:
    void RenderMenuBar();
    void RenderUndoHistory();
+   bool ToolShelfVisible() const; // Shelf enabled and allowed in the current state (it may still not fit, see m_toolShelfDrawn)
 
    EditorUI &m_editor;
    float m_menuBarHeight = 0.0f;
@@ -45,6 +55,9 @@ private:
    bool m_undoHistoryOpen = false;
    bool m_undoHistoryJustOpened = false;
    ImVec2 m_undoHistoryPos {};
+   bool m_toolShelfDrawn = false; // The shelf was drawn last frame
+   float m_toolShelfWidth = 0.f; // Drawn shelf width last frame, used to keep the viewport info text next to it (0 when hidden)
+   bool m_showToolShelf = true; // View > Tool Shelf
 };
 
 }
