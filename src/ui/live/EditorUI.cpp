@@ -659,6 +659,7 @@ void EditorUI::RenderUI()
       // Area panes, then their splitters and corner zones (above the pane windows)
       RenderAreas();
       RenderSplitters();
+      m_chrome.RenderStatusBar(showFullUI); // Above the areas (the overlay-window popups are created later and stay on top)
    }
    else
    {
@@ -2188,7 +2189,15 @@ std::unique_ptr<EditorAreaView> EditorUI::CreateAreaView(const AreaType type)
    }
 }
 
-void EditorUI::Report(const string &message) { m_liveUI.PushNotification(message, 3000); }
+void EditorUI::Report(const string &message)
+{
+   // Transient report shown on the right of the status bar (fading out); a toast keeps the
+   // feedback visible while the bar itself is hidden (fly mode, inspection modal)
+   m_report = message;
+   m_reportTime = ImGui::GetTime();
+   if (m_chrome.GetStatusBarHeight() <= 0.f)
+      m_liveUI.PushNotification(message, 3000);
+}
 
 bool EditorUI::ConsumedAreaEscape()
 {
@@ -2443,7 +2452,7 @@ void EditorUI::ComputeAreaRects() const
    // The tree fills the window below the main menu bar (WorkPos excludes it: unlike the measured
    // m_menuBarHeight it has no one frame lag and is never 0 while the chrome toggles)
    const float top = viewport->WorkPos.y;
-   const AreaRect tree { viewport->Pos.x, top, viewport->Pos.x + viewport->Size.x, max(top, viewport->Pos.y + viewport->Size.y) };
+   const AreaRect tree { viewport->Pos.x, top, viewport->Pos.x + viewport->Size.x, max(top, viewport->Pos.y + viewport->Size.y - m_chrome.GetStatusBarHeight()) };
    const bool areasShown = !m_table->IsLocked() && !IsFlyMode() && !m_inspectionModal.IsVisible();
    m_layout.Compute(tree, dpi, m_leafRects, m_splitterRects, areasShown ? m_maximizedLeafId : -1);
 

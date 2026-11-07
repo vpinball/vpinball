@@ -45,6 +45,9 @@ public:
    // pan/zoom, selection, part & point drags, gizmo, part placement, pane shortcuts
    void RenderUI(ImDrawList* overlayDrawList);
 
+   // Helper messages of the status bar while this pane is the context view (drag in progress or hovered)
+   void AppendStatusHints(vector<StatusHint>& hints) const override;
+
    int m_leafId = -1;
    bool m_hovered = false;
    bool m_active = false;

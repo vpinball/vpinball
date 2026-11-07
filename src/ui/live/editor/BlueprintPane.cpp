@@ -1101,4 +1101,43 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
    }
 }
 
+void BlueprintPane::AppendStatusHints(vector<StatusHint>& hints) const
+{
+   if (m_moveDragActive)
+      hints = { { "Drag", "Move" }, { "Release LMB", "Confirm" } };
+   else if (m_pointDragActive)
+      hints = { { "Drag", "Move Point" }, { "Release LMB", "Confirm" } };
+   else if (m_gizmoDragActive)
+      hints = { { "Drag", "Transform" }, { "Release LMB", "Confirm" } };
+   else if (m_boxSelectActive)
+      hints = { { "Release LMB", "Select" }, { "Shift", "Add to Selection" }, { "Esc", "Cancel" } };
+   else if (m_menuArmed)
+      hints = { { "Release RMB", "Context Menu" } };
+   else if (m_editor.m_addPartType != eItemInvalid || m_editor.m_partLibrary.IsPlacementArmed())
+      hints = { { "LMB", "Place Part" }, { "Esc", "Cancel" } };
+   else if (m_editor.m_pointEditPart)
+   {
+      if (m_editor.m_pointEditCenter)
+         hints = { { "LMB", "Select Center" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
+      else
+         hints = { { "LMB", "Select Point" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
+   }
+   else
+   {
+      hints = { { "LMB", "Select" }, { "Drag LMB", "Move" }, { "RMB", "Menu" }, { "MMB", "Pan" }, { "Wheel", "Zoom" }, { "Arrows", "Nudge" } };
+      if (!m_editor.m_table->IsLocked())
+      {
+         hints.push_back({ "G/S/R", "Gizmo Op" });
+         if (!m_editor.IsInspectMode())
+         {
+            hints.push_back({ "Shift+A", "Add Part" });
+            const std::shared_ptr<EditorUIPart>& part = m_editor.m_selection.GetPart();
+            if (m_editor.m_selection.GetType() == Selection::S_EDITABLE && part != nullptr && (part->GetDragPointCurve() != nullptr || part->HasEditCenter()))
+               hints.push_back({ "Tab", "Edit Points" });
+         }
+      }
+      hints.push_back({ "Numpad .", "Frame" });
+      hints.push_back({ "Home", "Fit" });
+   }
+}
 }

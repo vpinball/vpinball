@@ -505,4 +505,13 @@ void OutlinerPanel::SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &par
    }
    m_editor.m_selection = Selection(part);
 }
+
+void OutlinerPanel::AppendStatusHints(vector<StatusHint> &hints) const
+{
+   const string mod = StatusModKey;
+   if (ImGui::GetDragDropPayload() != nullptr)
+      hints = { { "Drop", "Move to Group" } };
+   else
+      hints = { { "LMB", "Select" }, { mod + "+LMB", "Toggle" }, { "Shift+LMB", "Range" }, { "RMB", "Menu" }, { "Drag", "Move to Group" } };
+}
 }

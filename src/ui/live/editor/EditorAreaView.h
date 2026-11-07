@@ -9,6 +9,19 @@ namespace VPX::EditorUI
 
 class EditorUI;
 
+// One status bar helper message of the bottom bar: a [key chip] followed by its action label (e.g. {"LMB", "Select"})
+struct StatusHint
+{
+   string key, label;
+};
+
+// Name of the platform modifier key used in status hint chips (ImGui maps Cmd to Ctrl on macOS)
+#ifdef __APPLE__
+inline constexpr const char* StatusModKey = "Cmd";
+#else
+inline constexpr const char* StatusModKey = "Ctrl";
+#endif
+
 // A view hosted by one leaf of the area layout tree (Outliner, Properties, 3D View, ...).
 // One instance per leaf: created by the editor when the leaf appears, destroyed when the
 // leaf is removed or retyped. The view draws the whole pane window at the leaf's rect,
@@ -36,6 +49,10 @@ public:
    // payload (e.g. camera for the 3D panes, zoom & offset for the blueprint pane)
    virtual nlohmann::json SaveSetup() const { return nlohmann::json::object(); }
    virtual void LoadSetup(const nlohmann::json& j) { }
+
+   // Helper messages of the bottom status bar while this pane's context is active or its
+   // rect is hovered (Blender status bar): appends [key chip] label pairs, most relevant first
+   virtual void AppendStatusHints(vector<StatusHint>& hints) const { }
 
 protected:
    EditorUI& m_editor;
