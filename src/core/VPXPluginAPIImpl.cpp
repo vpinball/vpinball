@@ -220,6 +220,9 @@ double MSGPIAPI VPXPluginAPIImpl::GetGameTime()
 struct VPXTextureBlock
 {
    std::shared_ptr<BaseTexture> tex;
+   // Secondary texture holding the previous content: it absorbs an update while 'tex' is still
+   // referenced by a pending GPU upload, then takes over the pending role (see UpdateTexture)
+   std::shared_ptr<BaseTexture> spare;
    VPXTextureInfo info;
 };
 
@@ -252,6 +255,29 @@ void MSGPIAPI VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, in
    VPXTextureBlock** tex = reinterpret_cast<VPXTextureBlock**>(texture);
    if (*tex == nullptr)
       *tex = new VPXTextureBlock();
+   // A texture shared_ptr use count above 1 means it is still referenced, that is to say by a pending GPU
+   // upload (the only other holder besides this block on the API thread). Its content must not be written
+   // while the upload reads it, so the update is redirected to the spare texture and the two are swapped:
+   // the pending reference keeps the replaced texture alive until it is consumed, at which point it may
+   // become the spare again. A fresh texture is only allocated when no usable spare is available.
+   if ((*tex)->tex != nullptr && (*tex)->tex.use_count() > 1)
+   {
+      if ((*tex)->spare == nullptr)
+      {
+         (*tex)->spare = (*tex)->tex;
+         (*tex)->tex = nullptr;
+      }
+      else if ((*tex)->spare.use_count() == 1)
+      {
+         std::swap((*tex)->tex, (*tex)->spare);
+      }
+      else
+      {
+         if (g_pplayer)
+            g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture((*tex)->tex.get());
+         (*tex)->tex = nullptr;
+      }
+   }
    switch (format)
    {
    case VPXTextureFormat::VPXTEXFMT_BW32F: BaseTexture::Update((*tex)->tex, width, height, BaseTexture::BW_FP32, image); break;
@@ -294,8 +320,13 @@ void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
          VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(context);
          if (tex)
          {
-            if (tex->tex && g_pplayer && g_pplayer->GetCloseState() != Player::CS_CLOSED)
-               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->tex.get());
+            if (g_pplayer && g_pplayer->GetCloseState() != Player::CS_CLOSED)
+            {
+               if (tex->tex)
+                  g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->tex.get());
+               if (tex->spare)
+                  g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->spare.get());
+            }
             tex->tex = nullptr;
             delete tex;
          }

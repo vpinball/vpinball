@@ -399,11 +399,6 @@ void PUPMediaPlayer::RenderLastFrame(VPXRenderContext2D* const ctx, const SDL_Re
    if (!frame.uploaded)
    {
       frame.uploaded = true;
-      if (frame.texture != nullptr)
-      {
-         DeleteTexture(frame.texture);
-         frame.texture = nullptr;
-      }
       UpdateTexture(&frame.texture, frame.frame->width, frame.frame->height, VPXTextureFormat::VPXTEXFMT_sRGBA8, frame.frame->data[0]);
    }
    if (frame.texture == nullptr)
@@ -473,15 +468,9 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
 
    if (!selectedFrame.uploaded)
    {
-      // Hand a fresh texture over for each new frame: the previous texture may still be referenced
-      // by a pending GPU upload, so it is released (kept alive by the pending reference until
-      // consumed) instead of being updated in place
+      // UpdateTexture updates the texture in place, or transparently substitutes it by a fresh one
+      // when it is still referenced by a pending GPU upload
       selectedFrame.uploaded = true;
-      if (selectedFrame.texture != nullptr)
-      {
-         DeleteTexture(selectedFrame.texture);
-         selectedFrame.texture = nullptr;
-      }
       UpdateTexture(&selectedFrame.texture, selectedFrame.frame->width, selectedFrame.frame->height, VPXTextureFormat::VPXTEXFMT_sRGBA8, selectedFrame.frame->data[0]);
    }
    if (selectedFrame.texture == nullptr)
