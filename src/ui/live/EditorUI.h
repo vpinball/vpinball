@@ -515,6 +515,22 @@ private:
    float m_navOrbitSensitivity = 1.f;
    bool m_navBlenderTransform = true; // Navigation preference: G / R / S start a modal transform instead of the gizmo
    bool m_navEmulateNumpad = true; // Navigation preference: top row digits act as the numpad view keys
+   enum class SnapKind
+   {
+      Move,
+      Rotate,
+      Scale
+   };
+   bool IsSnapActive(SnapKind kind) const; // Snapping applies right now (Ctrl inverts it while transforming, Blender)
+   void ToggleSnapping(); // Shift+Tab
+   bool m_snapEnabled = false; // Snapping preference (persisted in the Editor section of the settings)
+   int m_snapTarget = 0; // 0 = increment (grid), 1 = points (drag points and centers of other parts, G only)
+   float m_snapMove = 10.f; // Move snapping increment, in VP units
+   float m_snapRotate = 15.f; // Rotation snapping increment, in degrees
+   float m_snapScale = 0.1f; // Scale snapping increment (scale factor)
+   bool m_snapAffectMove = true;
+   bool m_snapAffectRotate = true;
+   bool m_snapAffectScale = true;
    mutable AreaRect m_viewportRect; // Rect of the first visible Viewport leaf (empty when none is shown)
    mutable bool m_viewportVisible = true;
    int m_maximizedLeafId = -1;

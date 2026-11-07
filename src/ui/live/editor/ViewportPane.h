@@ -165,6 +165,8 @@ public:
       bool changed = false; // The op actually moved the selection (a no-op confirm discards the undo record)
       bool duplicate = false; // The op follows a Duplicate (Shift+D): its record is folded into the paste's on confirm
       Vertex3Ds duplicateOrigin { 0.f, 0.f, 0.f }; // Position of the selection before the duplicate's grab
+      bool snapPointsBuilt = false; // m_snapPoints holds the point-snap candidates (built on first snapped move)
+      vector<Vertex2D> snapPoints; // Point snapping: drag points and centers of the unselected parts
       // Numeric delta entry (Blender: digits edit the delta fields, Tab cycles the allowed ones)
       bool numUsed = false; // Any delta field was typed into: parsed values replace the mouse delta
       int numField = 0; // Field currently edited (grab & scale: allowed axes; rotate: field 0)
