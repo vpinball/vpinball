@@ -66,7 +66,6 @@ void main()
         vec3 wpos_rel_kick = tpos_kick.xyz - cCameraPosWorld;
         gl_Position.z = mul(mRotViewProj, vec4(wpos_rel_kick, 1.0)).z;
     #endif
-    #ifdef TEX
-        v_texcoord0 = a_texcoord0;
-    #endif
+    // Always forward the UVs as the fragment shader may need them for the normal map even without a base color texture
+    v_texcoord0 = a_texcoord0;
 }

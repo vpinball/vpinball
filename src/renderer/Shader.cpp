@@ -90,12 +90,20 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[static_cast<unsigned int>(Shad
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
    SHADER_TECHNIQUE(basic_without_texture),
    SHADER_TECHNIQUE(basic_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_normal),
+   SHADER_TECHNIQUE(basic_without_texture_normal_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refl),
    SHADER_TECHNIQUE(basic_without_texture_refl_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refl_normal),
+   SHADER_TECHNIQUE(basic_without_texture_refl_normal_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refr),
    SHADER_TECHNIQUE(basic_without_texture_refr_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_normal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_normal_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl_normal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl_normal_isMetal),
 
    // Unshaded
    SHADER_TECHNIQUE(unshaded_without_texture),
@@ -874,17 +882,25 @@ void Shader::SetTechniqueMaterial(ShaderTechnique technique, const Material& mat
    }
    case ShaderTechnique::basic_without_texture:
    {
-      static ShaderTechnique tech_without_texture[8] = {
+      static ShaderTechnique tech_without_texture[16] = {
          ShaderTechnique::basic_without_texture,
          ShaderTechnique::basic_without_texture_isMetal,
+         ShaderTechnique::basic_without_texture_normal,
+         ShaderTechnique::basic_without_texture_normal_isMetal,
          ShaderTechnique::basic_without_texture_refl,
          ShaderTechnique::basic_without_texture_refl_isMetal,
+         ShaderTechnique::basic_without_texture_refl_normal,
+         ShaderTechnique::basic_without_texture_refl_normal_isMetal,
          ShaderTechnique::basic_without_texture_refr,
          ShaderTechnique::basic_without_texture_refr_isMetal,
+         ShaderTechnique::basic_without_texture_refr_normal,
+         ShaderTechnique::basic_without_texture_refr_normal_isMetal,
          ShaderTechnique::basic_without_texture_refr_refl,
          ShaderTechnique::basic_without_texture_refr_refl_isMetal,
+         ShaderTechnique::basic_without_texture_refr_refl_normal,
+         ShaderTechnique::basic_without_texture_refr_refl_normal_isMetal,
       };
-      int idx = (isMetal ? 1 : 0) + (doReflections ? 2 : 0) + (doRefractions ? 4 : 0);
+      int idx = (isMetal ? 1 : 0) + (doNormalMapping ? 2 : 0) + (doReflections ? 4 : 0) + (doRefractions ? 8 : 0);
       tech = tech_without_texture[idx];
       break;
    }

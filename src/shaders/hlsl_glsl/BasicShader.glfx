@@ -215,6 +215,8 @@ layout(location=2) in vec2 tc;
 VS_OUT(vec3, tablePos);
 VS_OUT(vec3, worldPos);
 VS_OUT(vec3, normal);
+// UVs are also needed by the notex variant as it may apply a normal map
+VS_OUT(vec2, tex01);
 
 void main()
 {
@@ -224,6 +226,7 @@ void main()
    VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
+   VS_VARYING(tex01, tc);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
@@ -343,6 +346,9 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
+in vec2 tex01_gs[];
+out vec2 tex01;
+
 flat out float eye;
 
 void main()
@@ -354,6 +360,7 @@ void main()
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
+      tex01 = tex01_gs[i];
       eye = eye_gs[i];
       EmitVertex();
    }
@@ -371,6 +378,9 @@ out vec3 normal;
 in vec3 tablePos_gs[];
 out float3 tablePos;
 
+in vec2 tex01_gs[];
+out vec2 tex01;
+
 flat out float eye;
 
 void main()
@@ -385,6 +395,7 @@ void main()
       tablePos = tablePos_gs[i];
       worldPos = worldPos_gs[i];
       normal = normal_gs[i];
+      tex01 = tex01_gs[i];
       eye = eye_gs[i];
       EmitVertex();
    }
@@ -468,6 +479,7 @@ void main()
 
 ////ps_main_notex
 
+in vec2 tex01;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
@@ -482,7 +494,9 @@ void main()
    const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-   const float3 N = normalize(normal);
+   float3 N = normalize(normal);
+   BRANCH if (doNormalMapping)
+      N = normal_map(N, worldPos, tex01, eye);
 
    color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal, eye), cBase_Alpha.a);
 
@@ -739,6 +753,8 @@ in vec2 tc;
 VS_OUT(float3, tablePos);
 VS_OUT(vec3, worldPos);
 VS_OUT(vec3, normal);
+// UVs are also needed by the notex variant as it may apply a normal map
+VS_OUT(vec2, tex01);
 
 void main()
 {
@@ -753,6 +769,7 @@ void main()
    gl_Position.z = (matWorldViewProj[eye_vs] * float4(pos.x, pos.y, pos.z - 30.0, 1.0)).z;
    #endif
    VS_VARYING(tablePos, table_pos);
+   VS_VARYING(tex01, tc);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
