@@ -283,4 +283,6 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
 void ScriptPane::RenderPane(const AreaRect &rect, const int leafId) { m_editor.m_scriptPanel.RenderPane(rect, leafId); }
 
 void ScriptPane::OnUnhosted() { }
+
+void ScriptPane::AppendStatusHints(vector<StatusHint> &hints) const { hints = { { "Esc", "Leave Editor Field" }, { StatusModKey + "+S"s, "Save Table" } }; }
 }

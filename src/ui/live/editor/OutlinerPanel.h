@@ -23,6 +23,7 @@ public:
 
    AreaType GetType() const override { return AreaType::Outliner; }
    void RenderPane(const AreaRect &rect, int leafId) override;
+   void AppendStatusHints(vector<StatusHint> &hints) const override;
 
    // Default width of a newly hosted panel in logical pixels (scaled by the UI DPI)
    static constexpr float PaneWidth = 200.f;

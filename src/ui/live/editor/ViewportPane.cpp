@@ -2073,4 +2073,50 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
    }
 }
+
+void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
+{
+   if (m_op.op != ImGuizmo::OPERATION(0))
+   {
+      // Modal transform op: confirm / cancel, axis & plane constraints, numeric entry (Blender)
+      hints = { { "LMB / Enter", "Confirm" }, { "RMB / Esc", "Cancel" }, { "X Y Z", "Axis" }, { "Shift+X Y Z", "Plane" }, { "MMB Drag", "Constrain Axis" }, { "0-9", "Exact Value" },
+         { "Ctrl", "Snap" }, { "Shift", "Precision" } };
+   }
+   else if (m_gizmoDragActive)
+      hints = { { "Drag", "Transform" }, { "Release LMB", "Confirm" } };
+   else if (m_boxSelectActive)
+      hints = { { "Release LMB", "Select" }, { "Shift", "Add to Selection" }, { "Esc", "Cancel" } };
+   else if (m_editor.m_pointDragPending || m_editor.m_pointDragActive)
+      hints = { { "Drag", "Move Point" }, { "Release LMB", "Confirm" } };
+   else if (m_editor.m_addPartType != eItemInvalid || m_editor.m_partLibrary.IsPlacementArmed())
+      hints = { { "LMB", "Place Part" }, { "Esc", "Cancel" } };
+   else if (m_editor.m_pointEditPart)
+   {
+      if (m_editor.m_pointEditCenter)
+         hints = { { "LMB", "Select Center" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
+      else
+         hints = { { "LMB", "Select Point" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
+   }
+   else if (m_viewType == ViewMode::PreviewCam)
+      hints = { { "LMB", "Select" }, { "Wheel", "Zoom" }, { "MMB", "Orbit" }, { "Shift+MMB", "Pan" } };
+   else
+   {
+      // Navigation hints of the edit viewports (EditorCam, Desktop Backdrop)
+      hints = { { "LMB", "Select" }, { "Drag", "Box Select" }, { "MMB", "Orbit" }, { "Shift+MMB", "Pan" }, { "Wheel", "Zoom" } };
+      if (!m_editor.m_table->IsLocked())
+      {
+         hints.push_back({ "G", "Move" });
+         hints.push_back({ "R", "Rotate" });
+         hints.push_back({ "S", "Scale" });
+         if (!m_editor.IsInspectMode())
+         {
+            hints.push_back({ "Shift+A", "Add Part" });
+            const std::shared_ptr<EditorUIPart>& part = m_editor.m_selection.GetPart();
+            if (m_editor.m_selection.GetType() == Selection::S_EDITABLE && part != nullptr && (part->GetDragPointCurve() != nullptr || part->HasEditCenter()))
+               hints.push_back({ "Tab", "Edit Points" });
+         }
+      }
+      hints.push_back({ "F", "Fly Mode" });
+   }
+}
 }

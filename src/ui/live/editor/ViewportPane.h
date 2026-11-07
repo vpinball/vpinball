@@ -95,6 +95,9 @@ public:
    // interaction, all through the pane projection (see SetupOverlay / PickRay)
    void RenderUI(ImDrawList* overlayDrawList);
 
+   // Helper messages of the status bar while this pane is the context view (active op/drag or hovered)
+   void AppendStatusHints(vector<StatusHint>& hints) const override;
+
    int m_leafId = -1; // Leaf hosting this pane, set in RenderPane
 
    // Image interaction state, set in RenderPane and read by the editor for input routing

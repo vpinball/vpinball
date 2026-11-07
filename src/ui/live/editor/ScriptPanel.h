@@ -61,5 +61,6 @@ public:
    AreaType GetType() const override { return AreaType::Script; }
    void RenderPane(const AreaRect &rect, int leafId) override;
    void OnUnhosted() override;
+   void AppendStatusHints(vector<StatusHint> &hints) const override;
 };
 }

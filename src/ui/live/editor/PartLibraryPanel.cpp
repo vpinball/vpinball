@@ -787,4 +787,12 @@ void PartLibraryPanel::Render3D()
 void PartLibraryPane::RenderPane(const AreaRect &rect, const int leafId) { m_editor.m_partLibrary.RenderPane(rect, leafId); }
 
 void PartLibraryPane::OnUnhosted() { m_editor.m_partLibrary.ClearPreview(); }
+
+void PartLibraryPane::AppendStatusHints(vector<StatusHint> &hints) const
+{
+   if (m_editor.m_partLibrary.IsPlacementArmed())
+      hints = { { "LMB over a view", "Place Pack" }, { "Esc", "Cancel" } };
+   else
+      hints = { { "LMB", "Select Pack" }, { "Wheel", "Scroll" } };
+}
 }

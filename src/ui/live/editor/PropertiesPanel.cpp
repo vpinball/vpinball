@@ -1756,4 +1756,6 @@ void PropertiesPanel::MaterialActions(PropertyPane &props)
       props.EndSection();
    }
 }
+
+void PropertiesPanel::AppendStatusHints(vector<StatusHint> &hints) const { hints = { { "Wheel", "Scroll" } }; }
 }

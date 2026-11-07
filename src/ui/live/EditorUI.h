@@ -442,7 +442,9 @@ private:
    void CancelAreaInteraction(bool consumeEscape);
    bool ConsumedAreaEscape();
    bool ShouldRaiseAreaWindows() const;
-   void Report(const string &message); // Posts a transient message (status / refusal feedback)
+   void Report(const string &message); // Posts a transient message (status bar report; toast while the bar is hidden)
+   string m_report; // Last operation report of the status bar (fades out a few seconds after m_reportTime)
+   double m_reportTime = -1000.0;
    void ShowAreaEditor(AreaType type); // Hosts the given editor type in an area leaf (splitting the focused one)
    void SetAreaLayoutIndex(int index); // Selects the active area layout slot (saved to and loaded from the LiveEditor settings)
    void LoadAreaLayoutSettings(); // Applies the persisted active layout (once, on first frame)
