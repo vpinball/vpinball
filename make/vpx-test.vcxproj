@@ -118,6 +118,7 @@
     <ClCompile Include="../../tests/render/test-normalmap-render.cpp" />
     <ClCompile Include="../../tests/render/test-renderframe.cpp" />
     <ClCompile Include="../../tests/render/test-vr-spaces.cpp" />
+    <ClCompile Include="../../tests/render/test-window.cpp" />
     <ClCompile Include="../../tests/ui/test-arealayout.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -83,6 +83,7 @@ set(VPX_TEST_SOURCES
    tests/render/test-normalmap-render.cpp
    tests/render/test-renderframe.cpp
    tests/render/test-vr-spaces.cpp
+   tests/render/test-window.cpp
    tests/ui/test-arealayout.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
