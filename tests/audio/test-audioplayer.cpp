@@ -364,6 +364,20 @@ TEST_CASE("Channel mixing")
          CHECK(out[i] == doctest::Approx(0.5f * 0.5f * (stereoIn[i * 2] + stereoIn[i * 2 + 1])));
    }
 
+   SUBCASE("backglass stereo to a multichannel device only drives the front pair")
+   {
+      // Plugin audio streams rely on this: attached straight to the endpoint, miniaudio's channel
+      // conversion would also map stereo FL/FR onto SL/SR, leaking on the playfield channels
+      for (const unsigned int nOut : { 6u, 8u })
+      {
+         float out[nFrames * 8];
+         MixToDeviceChannels(SoundMixMode::Backglass, 1.f, 0.f, 0.f, stereoIn, 2, out, nOut, nFrames);
+         for (unsigned int i = 0; i < nFrames; ++i)
+            for (unsigned int ch = 0; ch < nOut; ++ch)
+               CHECK(out[i * nOut + ch] == doctest::Approx(ch < 2 ? stereoIn[i * 2 + ch] : 0.f));
+      }
+   }
+
    SUBCASE("playfield stereo pan to 2 front channels")
    {
       float out[nFrames * 2];

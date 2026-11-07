@@ -97,7 +97,7 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(const AudioPlayer* 
 
    // Without spatial audio, a multichannel device needs the mixing node too: miniaudio's channel conversion
    // (simple mode, default channel maps) also maps stereo FL/FR onto SL/SR, leaking backglass audio into the
-   // rear (playfield) channels of 6ch/8ch setups. The Backglass mix mode only drives the front pair.
+   // side (playfield) channels of 6ch/8ch setups. The Backglass mix mode only drives the front pair.
    const bool frontLeft = audioPlayer->GetBackglassMode() == SNDCFG_BGFRONTLEFT;
    if (player->m_spatialSource == nullptr && (frontLeft || ma_engine_get_channels(engine) > 2))
    {
