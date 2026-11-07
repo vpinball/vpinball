@@ -5,8 +5,61 @@ virtual world is fitted to your real world space, and which settings adjust it. 
 how to use VPX for augmented reality play.
 
 ## Table of Contents
-1. [Space references](#Space-references)
-2. [Augmented Reality](#Augmented-Reality)
+1. [Getting started](#Getting-started)
+2. [Space references](#Space-references)
+3. [Augmented Reality](#Augmented-Reality)
+
+
+## Getting started
+
+VPX works with any OpenXR runtime. Pick the section for your computer and follow its steps. Always
+connect the headset before starting a table.
+
+### Windows
+
+Use the runtime that comes with your headset: Meta Quest Link, Virtual Desktop or SteamVR. Make sure
+it is set as the active OpenXR runtime (for Quest Link: Meta Horizon Link app > Settings > General >
+OpenXR Runtime). Then, in VPX, set **VR > Enable VR** to *Enabled* (`PlayerVR.AskToTurnOn = 0`) and
+start a table.
+
+### Linux
+
+Use [WiVRn](https://github.com/WiVRn/WiVRn) to stream to a Meta Quest (or Pico) headset.
+
+1. Install the WiVRn server, from your distribution's packages or from Flathub
+   (`io.github.wivrn.wivrn`), and start it.
+2. Install the WiVRn app on the headset from the Meta Store. It must be the same version as the server.
+3. In the headset, open WiVRn and connect to your computer. While a headset is connected, WiVRn is
+   the active OpenXR runtime, so VPX finds it automatically.
+4. In VPX, set **VR > Enable VR** to *Enabled* (`PlayerVR.AskToTurnOn = 0`) and start a table.
+
+WiVRn streams over WiFi. For a wired connection over USB, see the WiVRn documentation.
+
+### macOS
+
+Use [OXRSys](https://github.com/demonixis/oxrsys) to stream to a Meta Quest headset over USB. You
+need macOS 14 or later and a USB-C cable.
+
+1. Download the `OXRSys-Home+Runtime` zip and the `oxrsys-metaquest` APK from the
+   [OXRSys releases](https://github.com/demonixis/oxrsys/releases).
+2. On the Mac, unzip OXRSys and open **OXRSys Home**. Accept **Enable OpenXR Registration**.
+3. On the headset, enable developer mode (Meta Horizon phone app), install the APK (SideQuest, or
+   `adb install`), plug the headset into the Mac and accept **Allow USB debugging**.
+4. In OXRSys Home, select **USB** as the transport (see below).
+5. In the headset, launch OXRSys from **Library > Unknown Sources**.
+6. In VPX, set **VR > Enable VR** to *Enabled* (`PlayerVR.AskToTurnOn = 0`) and start a table.
+
+#### Making sure OXRSys uses USB
+
+OXRSys can also stream over WiFi, where the game stutters several times per second. To make sure it
+uses the cable:
+- Select **USB** in OXRSys Home's transport selector. OXRSys then never falls back to WiFi.
+- Each time the cable is unplugged or the Mac restarts, select **USB** again in OXRSys Home so it
+  reconnects the headset over the cable.
+- When it works, OXRSys Home shows **Streaming (USB)**.
+
+For the smoothest result, also set the refresh rate to 90 Hz and turn adaptive bitrate off with a
+20 Mbps bitrate in OXRSys Home.
 
 
 ## Space references
