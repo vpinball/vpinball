@@ -6154,7 +6154,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::Invoke(DISPID dispIdMember, REFI
 				HRESULT hrConv = S_OK;
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
-				if (SUCCEEDED(hrConv)) hrConv = VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
+				if (SUCCEEDED(hrConv)) hrConv = VariantCopyInd(&var0, (index > 0) ? &pDispParams->rgvarg[--index] : &var0);
 				if (FAILED(hrConv)) {
 					hres = hrConv;
 					if (puArgErr) *puArgErr = (UINT)index;

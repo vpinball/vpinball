@@ -666,7 +666,14 @@ public class IDLParserToCpp {
 			}
 		}
 		else {
-			buffer.append("if (SUCCEEDED(hrConv)) hrConv = VariantCopyInd(&var" + index + ", &pDispParams->rgvarg[--index]);\n");
+			// An omitted optional argument (e.g. VPDebug.Print without argument) keeps var as is: only the
+			// required arguments are covered by the DISP_E_BADPARAMCOUNT check, see generateMethod()
+			buffer.append("if (SUCCEEDED(hrConv)) hrConv = VariantCopyInd(&var" + index + ", ");
+			if (param.hasDefaultValue() || param.isOptional())
+				buffer.append("(index > 0) ? &pDispParams->rgvarg[--index] : &var" + index);
+			else
+				buffer.append("&pDispParams->rgvarg[--index]");
+			buffer.append(");\n");
 		}
 
 		return buffer.toString();
