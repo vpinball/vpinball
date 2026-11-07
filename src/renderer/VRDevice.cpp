@@ -114,6 +114,10 @@ inline static void XrPosef_ToMatrix3D(Matrix3D* result, const XrPosef* pose)
 #include "XRVulkanBackend.h"
 #endif
 
+#ifdef XR_USE_GRAPHICS_API_METAL
+#include "XRMetalBackend.h"
+#endif
+
 #endif
 
 
@@ -217,6 +221,8 @@ VRDevice::VRDevice(const Settings& settings)
             m_rendererType = bgfx::RendererType::Enum::Direct3D11; // Default to Direct3D 11
       #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
          m_rendererType = bgfx::RendererType::Enum::Vulkan;
+      #elif BX_PLATFORM_OSX
+         m_rendererType = bgfx::RendererType::Enum::Metal;
       #else
          #error "Unsupported platform for OpenXR"
       #endif
@@ -235,6 +241,9 @@ VRDevice::VRDevice(const Settings& settings)
       #ifdef XR_USE_GRAPHICS_API_D3D12
          case bgfx::RendererType::Enum::Direct3D12: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D12_ENABLE_EXTENSION_NAME); break;
       #endif
+      #ifdef XR_USE_GRAPHICS_API_METAL
+         case bgfx::RendererType::Enum::Metal: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_METAL_ENABLE_EXTENSION_NAME); break;
+      #endif
       }
       assert(hasGraphicBackend);
       if (!hasGraphicBackend)
@@ -245,7 +254,7 @@ VRDevice::VRDevice(const Settings& settings)
       m_visibilityMaskExtensionSupported = EnableExtensionIfSupported(XR_KHR_VISIBILITY_MASK_EXTENSION_NAME);
       #if BX_PLATFORM_WINDOWS
          m_win32PerfCounterExtensionSupported = EnableExtensionIfSupported(XR_KHR_WIN32_CONVERT_PERFORMANCE_COUNTER_TIME_EXTENSION_NAME);
-      #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
+      #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX || BX_PLATFORM_OSX
          m_convertTimespecTimeExtensionSupported = EnableExtensionIfSupported(XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME);
       #endif
       m_passthroughExtensionSupported = EnableExtensionIfSupported(XR_FB_PASSTHROUGH_EXTENSION_NAME);
@@ -276,7 +285,7 @@ VRDevice::VRDevice(const Settings& settings)
          OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrConvertTimeToWin32PerformanceCounterKHR", (PFN_xrVoidFunction*)&m_xrConvertTimeToWin32PerformanceCounterKHR),
             "Failed to get xrConvertTimeToWin32PerformanceCounterKHR.");
       }
-      #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
+      #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX || BX_PLATFORM_OSX
       if (m_convertTimespecTimeExtensionSupported)
       {
          OPENXR_CHECK(
@@ -603,6 +612,13 @@ void VRDevice::SetupHMD()
       m_backend = std::make_unique<XRVulkanBackend>(m_xrInstance, m_systemID);
    }
    #endif
+   #if BX_PLATFORM_OSX
+   if (m_rendererType == bgfx::RendererType::Metal)
+   {
+      PLOGI << "Creating Metal backend for OpenXR (before BGFX initialization)";
+      m_backend = std::make_unique<XRMetalBackend>(m_xrInstance, m_systemID);
+   }
+   #endif
    #if BX_PLATFORM_WINDOWS
    if (m_rendererType == bgfx::RendererType::Direct3D11)
    {
@@ -767,6 +783,9 @@ void VRDevice::CreateSession()
       swapchainCreateInfo.createFlags = 0;
       swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT
          | (i == 0 ? (XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT) : (XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT));
+      #if BX_PLATFORM_OSX
+      swapchainCreateInfo.usageFlags &= ~XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT;
+      #endif
       OPENXR_CHECK(xrCreateSwapchain(m_session, &swapchainCreateInfo, &swapchain.swapchain), "Failed to create Swapchain");
 
       uint32_t swapchainImageCount;
@@ -1116,7 +1135,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
       QueryPerformanceFrequency(&TimerFreq);
       m_predictedDisplayTimestamp += static_cast<float>(displayTime.QuadPart - now.QuadPart) / static_cast<float>(TimerFreq.QuadPart);
    }
-   #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
+   #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX || BX_PLATFORM_OSX
    if (m_xrConvertTimeToTimespecTimeKHR)
    {
       timespec displayTime;

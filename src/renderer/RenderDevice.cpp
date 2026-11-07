@@ -465,7 +465,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       assert((init.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
       init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
       init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
-      if (init.type == bgfx::RendererType::Vulkan && !g_isAndroid)
+      if ((init.type == bgfx::RendererType::Vulkan && !g_isAndroid) || init.type == bgfx::RendererType::Metal)
          init.platformData.queue = g_pplayer->m_vrDevice->GetGraphicPlatformQueue();
       assert(init.platformData.context != nullptr);
       // For the time being, we do not support having a desktop swapchain along the headset swapchain under Vulkan, so we run BGFX in headless mode
