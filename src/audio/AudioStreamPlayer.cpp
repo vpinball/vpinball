@@ -95,11 +95,15 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(const AudioPlayer* 
          audioPlayer->PositionBackglassSource(*player->m_spatialSource);
    }
 
-   if (player->m_spatialSource == nullptr && audioPlayer->GetBackglassMode() == SNDCFG_BGFRONTLEFT)
+   // Without spatial audio, a multichannel device needs the mixing node too: miniaudio's channel conversion
+   // (simple mode, default channel maps) also maps stereo FL/FR onto SL/SR, leaking backglass audio into the
+   // rear (playfield) channels of 6ch/8ch setups. The Backglass mix mode only drives the front pair.
+   const bool frontLeft = audioPlayer->GetBackglassMode() == SNDCFG_BGFRONTLEFT;
+   if (player->m_spatialSource == nullptr && (frontLeft || ma_engine_get_channels(engine) > 2))
    {
-      // Route through the channel mixing node to downmix to the front left channel (the endpoint's
-      // channel mapping covers the 2 front channel mode, mono being expanded to the front pair
-      // only by the sound's monoExpansionMode below)
+      // Route through the channel mixing node to downmix to the front left channel, or to keep the
+      // stream on the front pair of a multichannel device (on mono and stereo devices, the 2 front
+      // channel mode goes straight to the endpoint, which handles the channel mapping)
       player->m_vpxMixNode = std::make_unique<vpx_node>();
       const ma_result result = vpx_node_init(ma_engine_get_node_graph(engine), static_cast<unsigned int>(channels), ma_engine_get_channels(engine), nullptr, player->m_vpxMixNode.get());
       if (result != MA_SUCCESS)
@@ -108,7 +112,7 @@ std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(const AudioPlayer* 
          player->m_vpxMixNode = nullptr;
          return nullptr;
       }
-      player->m_vpxMixNode->mode = SoundMixMode::BackglassFrontLeft;
+      player->m_vpxMixNode->mode = frontLeft ? SoundMixMode::BackglassFrontLeft : SoundMixMode::Backglass;
       player->m_vpxMixNode->volume = 1.f; // Volume is applied on the sound, not on the mixing node
       ma_node_attach_output_bus(player->m_vpxMixNode.get(), 0, ma_engine_get_endpoint(engine), 0);
    }
