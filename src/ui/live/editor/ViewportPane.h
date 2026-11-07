@@ -137,11 +137,11 @@ public:
    bool m_gizmoDragActive = false;
    vector<std::shared_ptr<EditorUIPart>> m_gizmoDragSelection;
    Matrix3D m_gizmoStartTransform; // Selection transform at gizmo drag start (Adjust Last Operation)
-   void SetGizmoOperation(ImGuizmo::OPERATION operation); // Edit mode actions of the header tool buttons (and of Esc to get back to select)
+   void SetGizmoOperation(ImGuizmo::OPERATION operation); // Edit mode actions of the tool shelf buttons (and of Esc to get back to select)
 
    // Blender-style modal transform op (keyboard G/S/R): the selection follows the mouse until
    // LMB/Enter confirms or RMB/Esc cancels and restores the start state. Distinct from the
-   // persistent gizmo tool armed by the header buttons: while active the op owns the pane's
+   // persistent gizmo tool armed by the tool shelf buttons: while active the op owns the pane's
    // input (and the editor's target viewport routing) and the gizmo is not drawn.
    struct TransformOp
    {

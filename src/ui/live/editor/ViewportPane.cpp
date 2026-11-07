@@ -922,7 +922,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    ImDrawList* const drawList = ImGui::GetWindowDrawList();
    drawList->ChannelsSplit(2);
    drawList->ChannelsSetCurrent(1);
-   ImGui::SetCursorPos(ImVec2(pad, pad));
+   ImGui::SetCursorPos(ImVec2(pad, 3.f * pad)); // Slightly taller top padding so the buttons do not overlap the pane border
 
    editor.RenderAreaTypeButton(leafId);
    if (m_viewType == ViewMode::PreviewCam)
@@ -981,55 +981,6 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
             ImGui::PopStyleColor();
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("%s", mode.tooltip);
-         ImGui::SameLine();
-      }
-
-      if (!editor.IsInspectMode() && m_viewType != ViewMode::PreviewCam)
-      {
-         ImGui::SameLine();
-         ImGui::Separator();
-         ImGui::SameLine();
-
-         // Edit mode selection (same actions as the Esc, G, S and R keyboard shortcuts)
-         static const struct
-         {
-            ImGuizmo::OPERATION operation;
-            const char* icon;
-            const char* tooltip;
-         } editModes[] = {
-            { (ImGuizmo::OPERATION)0, ICON_FK_MOUSE_POINTER, "Select\n[Esc]" }, //
-            { ImGuizmo::TRANSLATE, ICON_FK_ARROWS, "Grab\n[G]" }, //
-            { ImGuizmo::SCALE, ICON_FK_EXPAND, "Scale\n[S]" }, //
-            { ImGuizmo::ROTATE, ICON_FK_REPEAT, "Rotate\n[R]" }, //
-         };
-         for (const auto& mode : editModes)
-         {
-            const bool active = (m_gizmoOperation == mode.operation);
-            if (active)
-               ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-            if (ImGui::Button(mode.icon))
-               SetGizmoOperation(mode.operation);
-            if (active)
-               ImGui::PopStyleColor();
-            if (ImGui::IsItemHovered())
-               ImGui::SetTooltip("%s", mode.tooltip);
-            ImGui::SameLine();
-         }
-         ImGui::Separator();
-         ImGui::SameLine();
-
-         // Add part button, opening the part type picker popup (same as the Shift+A shortcut)
-         ImGui::BeginDisabled(editor.m_pointEditPart != nullptr || editor.m_table->IsLocked());
-         const bool addPartActive = (editor.m_addPartType != eItemInvalid);
-         if (addPartActive)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-         if (ImGui::Button(ICON_FK_PLUS))
-            editor.RequestAddPartPopup(ImGui::GetMousePos());
-         if (addPartActive)
-            ImGui::PopStyleColor();
-         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Add part\n[Shift+A]");
-         ImGui::EndDisabled();
          ImGui::SameLine();
       }
 
@@ -1100,7 +1051,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    drawList->ChannelsMerge();
    ImGui::SetCursorPosY(headerBottom - winPos.y);
 
-   // Part type picker popup (header button and Shift+A shortcut): picking a type arms add part mode,
+   // Part type picker popup (tool shelf button and Shift+A shortcut): picking a type arms add part mode,
    // clicking outside of the popup dismisses it without arming add part mode
    if (editor.m_addPartPopupLeaf == leafId)
    {
@@ -1228,35 +1179,16 @@ void ViewportPane::RenderStatusOverlay()
    if (m_imageRect.Width() <= 0.f || m_imageRect.Height() <= 0.f)
       return;
    const float dpi = m_editor.m_liveUI.GetDPI();
-   const ImVec2 overlayPos(m_imageRect.x0 + 5.f * dpi, m_imageRect.y0 + 5.f * dpi);
+   ImVec2 overlayPos(m_imageRect.x0 + 5.f * dpi, m_imageRect.y0 + 5.f * dpi);
+   const float shelfWidth = m_editor.m_chrome.GetToolShelfWidth();
+   if (shelfWidth > 0.f)
+      overlayPos.x += shelfWidth + 4.f * dpi; // The tool shelf sits at the left of the image: the info text goes right of it
 
    ImGui::SetNextWindowSize(ImVec2(max(1.f, m_imageRect.x1 - overlayPos.x), max(1.f, m_imageRect.y1 - overlayPos.y)));
    ImGui::SetNextWindowPos(overlayPos);
    ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
-   const float labelAlign = ImGui::GetCursorPosX() + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.x;
-   ImGui::SetCursorPos(ImVec2(labelAlign, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
-   switch (m_viewType)
-   {
-   case ViewMode::PreviewCam: ImGui::TextUnformatted("Preview Camera"); break;
-   case ViewMode::EditorCam:
-   {
-      string text;
-      switch (m_predefinedView)
-      {
-      case PredefinedView::None: text = "User"sv; break;
-      case PredefinedView::Left: text = "Left"sv; break;
-      case PredefinedView::Right: text = "Right"sv; break;
-      case PredefinedView::Top: text = "Top"sv; break;
-      case PredefinedView::Bottom: text = "Bottom"sv; break;
-      case PredefinedView::Front: text = "Front"sv; break;
-      case PredefinedView::Back: text = "Back"sv; break;
-      }
-      ImGui::TextUnformatted((text + (m_perspectiveCam ? " Perspective" : " Orthographic")).c_str());
-      break;
-   }
-   case ViewMode::DesktopBackdrop: ImGui::TextUnformatted("Desktop Backdrop"); break;
-   }
-   ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + ImGui::GetStyle().FramePadding.x, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
+   const float lineStart = ImGui::GetCursorPosX(); // Left column: mode icon, then view type info aligned on it
+   ImGui::SetCursorPos(ImVec2(lineStart, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
    const char* gizmoIcon = nullptr;
    const char* gizmoLabel = nullptr;
    if (m_gizmoOperation == ImGuizmo::OPERATION(0))
@@ -1279,11 +1211,33 @@ void ViewportPane::RenderStatusOverlay()
       gizmoIcon = ICON_FK_REPEAT;
       gizmoLabel = "Rotate";
    }
-   if (gizmoIcon)
+   if (gizmoIcon != nullptr && shelfWidth <= 0.f) // The tool shelf already displays the active mode
    {
       ImGui::TextUnformatted(gizmoIcon);
-      ImGui::SameLine(labelAlign);
+      ImGui::SameLine();
       ImGui::TextUnformatted(gizmoLabel);
+      ImGui::SetCursorPos(ImVec2(lineStart, ImGui::GetCursorPosY() + ImGui::GetStyle().FramePadding.y));
+   }
+   switch (m_viewType)
+   {
+   case ViewMode::PreviewCam: ImGui::TextUnformatted("Preview Camera"); break;
+   case ViewMode::EditorCam:
+   {
+      string text;
+      switch (m_predefinedView)
+      {
+      case PredefinedView::None: text = "User"sv; break;
+      case PredefinedView::Left: text = "Left"sv; break;
+      case PredefinedView::Right: text = "Right"sv; break;
+      case PredefinedView::Top: text = "Top"sv; break;
+      case PredefinedView::Bottom: text = "Bottom"sv; break;
+      case PredefinedView::Front: text = "Front"sv; break;
+      case PredefinedView::Back: text = "Back"sv; break;
+      }
+      ImGui::TextUnformatted((text + (m_perspectiveCam ? " Perspective" : " Orthographic")).c_str());
+      break;
+   }
+   case ViewMode::DesktopBackdrop: ImGui::TextUnformatted("Desktop Backdrop"); break;
    }
    if (m_op.op != ImGuizmo::OPERATION(0))
    {
@@ -2356,6 +2310,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          // Fly mode: the pane's view takes the whole window, hiding the editor UI
          m_flyMode = !m_flyMode;
       }
+      else if (ImGui::IsKeyPressed(ImGuiKey_T) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+         m_editor.m_chrome.ToggleToolShelf(); // T toggles the tool shelf (Blender)
       else if (ImGui::IsKeyPressed(ImGuiKey_D) && io.KeyShift && !io.KeyCtrl && !io.KeyAlt)
          m_editor.DuplicateSelection(); // Duplicate the selected parts in place and grab them (Blender's Shift+D)
       else if (ImGui::IsKeyPressed(ImGuiKey_Home) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)

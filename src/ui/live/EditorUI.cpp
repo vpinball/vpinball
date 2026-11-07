@@ -713,6 +713,7 @@ void EditorUI::RenderUI()
       RenderAreas();
       RenderSplitters();
       RenderAdjustPanel(); // Floating panel of the viewport area, and the F9 popup
+      m_chrome.RenderToolShelf(m_viewportRect); // Tool shelf (T) overlay of the viewport
       m_chrome.RenderStatusBar(showFullUI); // Above the areas (the overlay-window popups are created later and stay on top)
    }
    else
