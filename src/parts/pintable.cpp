@@ -5422,8 +5422,9 @@ string PinTable::AuditTable(bool log) const
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
+   // Only used to query sound informations: no need for the optional haptic output
    auto audioPlayer = std::make_unique<VPX::AudioPlayer>(m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(),
-      static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()), static_cast<VPX::BackglassConfigTypes>(m_settings.GetPlayer_Sound3DBackglass()));
+      static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()), static_cast<VPX::BackglassConfigTypes>(m_settings.GetPlayer_Sound3DBackglass()), ""s, VPX::SNDCFG_SND3D2CH);
    for (const auto sound : m_vsound)
    {
       auto specs = audioPlayer->GetSoundInformations(sound);

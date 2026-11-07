@@ -87,10 +87,11 @@ struct SoundSpec
 class AudioPlayer
 {
 public:
-   explicit AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, BackglassConfigTypes backglassSoundMode);
+   explicit AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, BackglassConfigTypes backglassSoundMode,
+      const string& hapticDevice, SoundConfigTypes hapticSoundMode);
    ~AudioPlayer();
 
-   void SetMainVolume(float backglassVolume, float playfieldVolume); // Overall gain, directly applied to all sounds, including the ones being played
+   void SetMainVolume(float backglassVolume, float playfieldVolume, float hapticVolume); // Overall gain, directly applied to all sounds, including the ones being played
    void SetMirrored(bool mirrored) { m_mirrored = mirrored; } // Whether the table is mirrored, affects sound panning
 
    // Audio stream, rendered through the backglass engine (spatially positioned in VR), applying backglass global volume
@@ -126,7 +127,10 @@ public:
    void SetListenerPose(float x, float y, float z, float yaw, float pitch, float roll); // head tracked pose (VR), drives both spatialization and distance attenuation
    void SetSpatialMode(bool backglass, bool playfield); // enable/disable spatial rendering per output
    bool IsSpatialAudioEnabled(SoundOutTypes out) const { return GetSpatialMixer(out) != nullptr; }
-   SpatialAudioMixer* GetSpatialMixer(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldSpatial.get() : m_backglassSpatial.get(); }
+   SpatialAudioMixer* GetSpatialMixer(SoundOutTypes out) const
+   {
+      return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldSpatial.get() : out == SoundOutTypes::SNDOUT_BACKGLASS ? m_backglassSpatial.get() : nullptr;
+   }
    // Positions a backglass spatial source on the 2 backglass speakers: at the
    // corners of the table opposite the player, ~40cm above the playfield
    void PositionBackglassSource(SpatialAudioSource& source) const;
@@ -138,7 +142,17 @@ public:
 
    string GetBackglassDeviceName() const { const char * name = SDL_GetAudioDeviceName(m_backglassAudioDevice); return name ? string(name) : "Error"s; }
    string GetPlayfieldDeviceName() const { const char * name = SDL_GetAudioDeviceName(m_playfieldAudioDevice); return name ? string(name) : "Error"s; }
+   string GetHapticDeviceName() const
+   {
+      if (m_hapticEngine == nullptr)
+         return ""s;
+      const char* name = SDL_GetAudioDeviceName(m_hapticAudioDevice);
+      return name ? string(name) : ""s;
+   }
+   bool IsHapticEnabled() const { return m_hapticEngine != nullptr; }
    SoundConfigTypes GetSoundMode3D() const { return m_soundMode3D; }
+   SoundConfigTypes GetSoundMode3D(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_HAPTIC ? m_hapticMode : m_soundMode3D; }
+   SoundConfigTypes GetHapticMode() const { return m_hapticMode; }
    BackglassConfigTypes GetBackglassMode() const { return m_backglassMode; }
 
    struct AudioDevice
@@ -149,7 +163,10 @@ public:
    // initializes the SDL audio subsystem and retrieves a list of available audio playback devices.
    static vector<AudioDevice> EnumerateAudioDevices();
 
-   ma_engine* GetEngine(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldEngine.get() : m_backglassEngine.get(); }
+   ma_engine* GetEngine(SoundOutTypes out) const
+   {
+      return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldEngine.get() : out == SoundOutTypes::SNDOUT_HAPTIC ? m_hapticEngine.get() : m_backglassEngine.get();
+   }
 
 private:
    void PlaySoundInternal(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart,
@@ -159,6 +176,7 @@ private:
 
    float m_playfieldVolume = 1.f;
    float m_backglassVolume = 1.f;
+   float m_hapticVolume = 1.f;
    float m_musicVolume = 1.f;
    bool m_mirrored = false;
 
@@ -171,8 +189,10 @@ private:
 
    int m_playfieldAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
    int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+   int m_hapticAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
    const SoundConfigTypes m_soundMode3D;
    const BackglassConfigTypes m_backglassMode;
+   const SoundConfigTypes m_hapticMode;
 
    mutable ankerl::unordered_dense::map<Sound*, vector<std::unique_ptr<class SoundPlayer>>> m_soundPlayers;
 
@@ -186,6 +206,8 @@ private:
    std::unique_ptr<ma_engine> m_backglassEngine;
    std::unique_ptr<ma_device_ex> m_playfieldDevice;
    std::unique_ptr<ma_engine> m_playfieldEngine;
+   std::unique_ptr<ma_device_ex> m_hapticDevice;
+   std::unique_ptr<ma_engine> m_hapticEngine;
 };
 
 }

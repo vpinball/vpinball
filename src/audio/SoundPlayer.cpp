@@ -31,10 +31,10 @@ static constexpr float kSpatialPlayfieldGain = 0.5f;
 namespace VPX
 {
 
-SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, Sound* sound)
+SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target)
 {
    // Decode and resample the sound on the ancillary thread as this is fairly heavy
-   return new SoundPlayer(audioPlayer, sound);
+   return new SoundPlayer(audioPlayer, sound, target);
 }
 
 SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const std::filesystem::path& filename)
@@ -138,9 +138,9 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
       });
 }
 
-SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
+SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target)
    : m_audioPlayer(audioPlayer)
-   , m_outputTarget(sound->GetOutputTarget())
+   , m_outputTarget(target)
    , m_commandQueue(1)
    , m_callbackId(sound->GetName())
 {
@@ -179,10 +179,10 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
             }
             m_vpxMixNode->mode = m_outputTarget == SNDOUT_BACKGLASS
                ? (m_audioPlayer->GetBackglassMode() == SNDCFG_BGFRONTLEFT ? SoundMixMode::BackglassFrontLeft : SoundMixMode::Backglass) // Backglass output mode
-               : (m_audioPlayer->GetSoundMode3D() == SNDCFG_SND3D6CH || m_audioPlayer->GetSoundMode3D() == SNDCFG_SND3DSSF)
+               : (m_audioPlayer->GetSoundMode3D(m_outputTarget) == SNDCFG_SND3D6CH || m_audioPlayer->GetSoundMode3D(m_outputTarget) == SNDCFG_SND3DSSF)
                ? SoundMixMode::PlayfieldNoFront // Output to multi channel, keeping front empty
-               : m_audioPlayer->GetSoundMode3D() == SNDCFG_SND3DFRONTRIGHT ? SoundMixMode::PlayfieldFrontRight // Output to front right channel only
-                                                                           : SoundMixMode::Playfield; // Output to multi channel
+               : m_audioPlayer->GetSoundMode3D(m_outputTarget) == SNDCFG_SND3DFRONTRIGHT ? SoundMixMode::PlayfieldFrontRight // Output to front right channel only
+                                                                                         : SoundMixMode::Playfield; // Output to multi channel
             ma_node_attach_output_bus(m_vpxMixNode.get(), 0, ma_engine_get_endpoint(engine), 0);
          }
 
@@ -254,9 +254,9 @@ SoundPlayer::~SoundPlayer()
       vpx_node_uninit(m_vpxMixNode.get(), nullptr);
 }
 
-void SoundPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
+void SoundPlayer::SetMainVolume(float backglassVolume, float playfieldVolume, float hapticVolume)
 {
-   m_mainVolume = m_outputTarget == SNDOUT_BACKGLASS ? backglassVolume : playfieldVolume;
+   m_mainVolume = m_outputTarget == SNDOUT_BACKGLASS ? backglassVolume : m_outputTarget == SNDOUT_HAPTIC ? hapticVolume : playfieldVolume;
    m_commandQueue.enqueue([this]() { ApplyVolume(); });
 }
 
@@ -331,12 +331,12 @@ void SoundPlayer::Play(
             // This is designed to support existing tables which appends to apply x^10 to pan and front/rear fade, so we have to undo it
             m_vpxMixNode->pan = clamp(localPan, -1.f, 1.f);
             m_vpxMixNode->pan = (m_vpxMixNode->pan < 0.0f) ? -powf(-m_vpxMixNode->pan, 0.1f) : powf(m_vpxMixNode->pan, 0.1f);
-            if (m_outputTarget == SNDOUT_TABLE)
+            if (m_outputTarget != SNDOUT_BACKGLASS)
             {
                // Diffuse the (mono) playfield sound to 2 or 4 speakers spread on the playfield
                m_vpxMixNode->rearFrontFade = clamp(localFade, -1.f, 1.f);
                m_vpxMixNode->rearFrontFade = (m_vpxMixNode->rearFrontFade < 0.0f) ? -powf(-m_vpxMixNode->rearFrontFade, 0.1f) : powf(m_vpxMixNode->rearFrontFade, 0.1f);
-               switch (m_audioPlayer->GetSoundMode3D())
+               switch (m_audioPlayer->GetSoundMode3D(m_outputTarget))
                {
                case SNDCFG_SND3D2CH: m_vpxMixNode->rearFrontFade = 0.f; break; // Stereo output to front channels
                case SNDCFG_SND3DALLREAR: m_vpxMixNode->rearFrontFade = 1.f; break; // Stereo output to rear channels
@@ -443,7 +443,8 @@ void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
    SoundPlayer* me = static_cast<SoundPlayer*>(pUserData);
    if (me->m_loopCount == 0)
    {
-      if (g_pplayer)
+      // The haptic mirror does not emit script events: the playfield player already does
+      if (me->m_outputTarget != SoundOutTypes::SNDOUT_HAPTIC && g_pplayer)
          g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(
             g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0,
             [](void* callbackInfo)

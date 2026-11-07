@@ -16,7 +16,12 @@ enum SoundOutTypes : char
    SNDOUT_TABLE = 0,
 
    // Backglass audio, rendered to the front channels of the backglass audio device
-   SNDOUT_BACKGLASS = 1
+   SNDOUT_BACKGLASS = 1,
+
+   // Runtime only: mirror of playfield sounds to the optional haptic audio device.
+   // Never assigned through SetOutputTarget (and so never serialized): the haptic
+   // mirror is created internally by the audio player for SNDOUT_TABLE sounds.
+   SNDOUT_HAPTIC = 2
 };
 
 class Sound final

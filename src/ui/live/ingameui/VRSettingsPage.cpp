@@ -183,7 +183,9 @@ void VRSettingsPage::BuildPage()
       m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>(m_player->m_audioPlayer->GetBackglassDeviceName(), //
          m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
          m_player->m_audioPlayer->GetSoundMode3D(), //
-         m_player->m_audioPlayer->GetBackglassMode());
+         m_player->m_audioPlayer->GetBackglassMode(), //
+         m_player->m_audioPlayer->GetHapticDeviceName(), //
+         m_player->m_audioPlayer->GetHapticMode());
       m_player->m_audioPlayer->SetTableDimensions(m_player->m_ptable->m_right - m_player->m_ptable->m_left, m_player->m_ptable->m_bottom - m_player->m_ptable->m_top);
       if (m_player->IsVR())
          m_player->m_audioPlayer->SetSpatialMode(spatialBackglass, spatialPlayfield);

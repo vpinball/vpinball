@@ -325,6 +325,7 @@ public:
 
    float m_backglassVolume;
    float m_playfieldVolume;
+   float m_hapticVolume;
 
    float GetAudioLaneMixerVolume(uint64_t laneId) const;
    void SetAudioLaneMixerVolume(uint64_t laneId, float volume);

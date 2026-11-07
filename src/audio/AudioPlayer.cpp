@@ -267,9 +267,11 @@ static ma_result ma_context_init__sdl(ma_context* pContext, const ma_context_con
 namespace VPX
 {
 
-AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, BackglassConfigTypes backglassSoundMode)
+AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode, BackglassConfigTypes backglassSoundMode,
+   const string& hapticDevice, SoundConfigTypes hapticSoundMode)
    : m_soundMode3D(playfieldSoundMode < SNDCFG_SND3D2CH || playfieldSoundMode > SNDCFG_SND3DFRONTRIGHT ? SNDCFG_SND3D2CH : playfieldSoundMode)
    , m_backglassMode(backglassSoundMode < SNDCFG_BG2CH || backglassSoundMode > SNDCFG_BGFRONTLEFT ? SNDCFG_BG2CH : backglassSoundMode)
+   , m_hapticMode(hapticSoundMode < SNDCFG_SND3D2CH || hapticSoundMode > SNDCFG_SND3DFRONTRIGHT ? SNDCFG_SND3D2CH : hapticSoundMode)
 {
    if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
       return;
@@ -284,6 +286,8 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
             m_playfieldAudioDevice = pAudioList[i];
          if (!backglassDevice.empty() && name == backglassDevice)
             m_backglassAudioDevice = pAudioList[i];
+         if (!hapticDevice.empty() && name == hapticDevice)
+            m_hapticAudioDevice = pAudioList[i];
       }
       SDL_free(pAudioList);
       if (m_playfieldAudioDevice == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
@@ -294,9 +298,13 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
       {
          PLOGI << "Backglass sound device was not found (" << backglassDevice << "), using default: " << GetBackglassDeviceName();
       }
+      if (!hapticDevice.empty() && m_hapticAudioDevice == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
+      {
+         // The haptic output is strictly opt-in: a missing configured device disables it (no fallback to the default device)
+         PLOGI << "Haptic sound device was not found (" << hapticDevice << "), haptic output is disabled";
+      }
    }
 
-   ma_result result;
    ma_context_config contextConfig;
    contextConfig = ma_context_config_init();
    contextConfig.custom.onContextInit = ma_context_init__sdl;
@@ -320,93 +328,55 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
       return (ma_bool32)MA_TRUE;
    };
 
+   const auto initOutput = [this, selectDevice](int sdlDeviceId, const char* outputName, std::unique_ptr<ma_device_ex>& device, std::unique_ptr<ma_engine>& engine)
    {
-      SDLDeviceInfo deviceInfo { m_backglassAudioDevice, {} };
+      SDLDeviceInfo deviceInfo { sdlDeviceId, {} };
       ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
       ma_context_enumerate_devices(m_maContext.get(), selectDevice, &deviceInfo);
 
-      m_backglassDevice = std::make_unique<ma_device_ex>();
+      device = std::make_unique<ma_device_ex>();
       ma_device_config deviceConfig;
       deviceConfig = ma_device_config_init(ma_device_type_playback);
       deviceConfig.playback.pDeviceID = &deviceInfo.dev.id;
       deviceConfig.playback.format = ma_format_f32;
       deviceConfig.noPreSilencedOutputBuffer = MA_TRUE; // We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer.
       deviceConfig.noClip = MA_TRUE; // The engine will do clipping itself.
-      result = ma_device_init(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(m_backglassDevice.get()));
+      ma_result result = ma_device_init(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(device.get()));
 
       if (result == MA_SUCCESS)
       {
          ma_engine_config engineConfig;
          engineConfig = ma_engine_config_init();
          engineConfig.pContext = m_maContext.get();
-         engineConfig.pDevice = &m_backglassDevice->device;
+         engineConfig.pDevice = &device->device;
          engineConfig.noAutoStart = MA_TRUE;
-         m_backglassEngine = std::make_unique<ma_engine>();
-         result = ma_engine_init(&engineConfig, m_backglassEngine.get());
+         engine = std::make_unique<ma_engine>();
+         result = ma_engine_init(&engineConfig, engine.get());
          if (result == MA_SUCCESS)
          {
-            m_backglassDevice->device.onData = ma_engine_data_callback_internal;
-            m_backglassDevice->device.pUserData = m_backglassEngine.get();
-            ma_engine_start(m_backglassEngine.get());
+            device->device.onData = ma_engine_data_callback_internal;
+            device->device.pUserData = engine.get();
+            ma_engine_start(engine.get());
          }
          else
          {
-            PLOGE << "Failed to initialize miniaudio engine for backglass sounds";
-            m_backglassEngine = nullptr;
-            ma_device_uninit(&m_backglassDevice->device);
-            m_backglassDevice = nullptr;
+            PLOGE << "Failed to initialize miniaudio engine for " << outputName << " sounds";
+            engine = nullptr;
+            ma_device_uninit(&device->device);
+            device = nullptr;
          }
       }
       else
       {
-         PLOGE << "Failed to initialize miniaudio for backglass sounds";
-         m_backglassDevice = nullptr;
+         PLOGE << "Failed to initialize miniaudio for " << outputName << " sounds";
+         device = nullptr;
       }
-   }
+   };
 
-   {
-      SDLDeviceInfo deviceInfo { m_playfieldAudioDevice, {} };
-      ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
-      ma_context_enumerate_devices(m_maContext.get(), selectDevice, &deviceInfo);
-
-      m_playfieldDevice = std::make_unique<ma_device_ex>();
-      ma_device_config deviceConfig;
-      deviceConfig = ma_device_config_init(ma_device_type_playback);
-      deviceConfig.playback.pDeviceID = &deviceInfo.dev.id;
-      deviceConfig.playback.format = ma_format_f32;
-      deviceConfig.noPreSilencedOutputBuffer = MA_TRUE; // We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer.
-      deviceConfig.noClip = MA_TRUE; // The engine will do clipping itself.
-      result = ma_device_init(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(m_playfieldDevice.get()));
-
-      if (result == MA_SUCCESS)
-      {
-         ma_engine_config engineConfig;
-         engineConfig = ma_engine_config_init();
-         engineConfig.pContext = m_maContext.get();
-         engineConfig.pDevice = &m_playfieldDevice->device;
-         engineConfig.noAutoStart = MA_TRUE;
-         m_playfieldEngine = std::make_unique<ma_engine>();
-         result = ma_engine_init(&engineConfig, m_playfieldEngine.get());
-         if (result == MA_SUCCESS)
-         {
-            m_playfieldDevice->device.onData = ma_engine_data_callback_internal;
-            m_playfieldDevice->device.pUserData = m_playfieldEngine.get();
-            ma_engine_start(m_playfieldEngine.get());
-         }
-         else
-         {
-            PLOGE << "Failed to initialize miniaudio engine for playfield sounds";
-            m_playfieldEngine = nullptr;
-            ma_device_uninit(&m_playfieldDevice->device);
-            m_playfieldDevice = nullptr;
-         }
-      }
-      else
-      {
-         PLOGE << "Failed to initialize miniaudio for playfield sounds";
-         m_playfieldDevice = nullptr;
-      }
-   }
+   initOutput(m_backglassAudioDevice, "backglass", m_backglassDevice, m_backglassEngine);
+   initOutput(m_playfieldAudioDevice, "playfield", m_playfieldDevice, m_playfieldEngine);
+   if (!hapticDevice.empty() && m_hapticAudioDevice != SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
+      initOutput(m_hapticAudioDevice, "haptic", m_hapticDevice, m_hapticEngine);
 }
 
 AudioPlayer::~AudioPlayer()
@@ -427,24 +397,29 @@ AudioPlayer::~AudioPlayer()
       ma_engine_uninit(m_backglassEngine.get());
    if (m_playfieldEngine)
       ma_engine_uninit(m_playfieldEngine.get());
+   if (m_hapticEngine)
+      ma_engine_uninit(m_hapticEngine.get());
    if (m_playfieldDevice)
       ma_device_uninit(&m_playfieldDevice->device);
    if (m_backglassDevice)
       ma_device_uninit(&m_backglassDevice->device);
+   if (m_hapticDevice)
+      ma_device_uninit(&m_hapticDevice->device);
    if (m_maContext)
       ma_context_uninit(m_maContext.get());
    SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
+void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume, float hapticVolume)
 {
    m_backglassVolume = backglassVolume;
    m_playfieldVolume = playfieldVolume;
+   m_hapticVolume = hapticVolume;
    if (m_music)
-      m_music->SetMainVolume(backglassVolume, playfieldVolume);
+      m_music->SetMainVolume(backglassVolume, playfieldVolume, hapticVolume);
    for (const auto& [sound, players] : m_soundPlayers)
       for (auto& player : players)
-         player->SetMainVolume(backglassVolume, playfieldVolume);
+         player->SetMainVolume(backglassVolume, playfieldVolume, hapticVolume);
    for (const auto& player : m_audioStreams)
       player->SetMainVolume(backglassVolume);
 }
@@ -515,7 +490,7 @@ bool AudioPlayer::PlayMusic(const std::filesystem::path& filename)
    if (m_music)
    {
       m_music->SetVolume(m_musicVolume);
-      m_music->SetMainVolume(m_backglassVolume, m_playfieldVolume);
+      m_music->SetMainVolume(m_backglassVolume, m_playfieldVolume, m_hapticVolume);
    }
    return m_music != nullptr;
 }
@@ -641,10 +616,16 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
 void AudioPlayer::PlaySoundInternal(Sound* sound, float volume, const float randomPitch, const int pitch, float pan, float frontRearFade, const int loopcount, const bool useSame,
    const bool restart, bool hasPos, float posX, float posY, float posZ)
 {
-   SoundPlayer* player = nullptr;
    vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
+   const SoundOutTypes target = sound->GetOutputTarget();
 
-   std::erase_if(players, [sound](const auto& soundPlayer) { return soundPlayer->GetOutputTarget() != sound->GetOutputTarget(); });
+   // Drop players created for a former output target (changed in the sound editor), keeping the haptic mirror of playfield sounds
+   std::erase_if(players,
+      [target](const auto& soundPlayer)
+      {
+         const SoundOutTypes playerTarget = soundPlayer->GetOutputTarget();
+         return playerTarget != target && !(target == SoundOutTypes::SNDOUT_TABLE && playerTarget == SoundOutTypes::SNDOUT_HAPTIC);
+      });
 
    // Until 10.8, implementation would:
    // - for some reason, 'usesame' would only be processed for wav file:
@@ -652,30 +633,31 @@ void AudioPlayer::PlaySoundInternal(Sound* sound, float volume, const float rand
    //   - if 'usesame' is false, always create a new player for the given sound
    // - if restart is false and selected sound player was already playing, settings would be applied without restarting the sound
    // - if restart is true, all playing sounds would be stopped and a new one would be started
-   
+
    if (restart)
       for (const auto& soundPlayer : players)
          soundPlayer->Stop();
-   
-   for (const auto& soundPlayer : players)
-   {
-      if (useSame || restart || !soundPlayer->IsPlaying())
-      {
-         player = soundPlayer.get();
-         break;
-      }
-   }
 
-   if (player == nullptr)
+   const auto acquirePlayer = [&](const SoundOutTypes playerTarget) -> SoundPlayer*
    {
-      player = SoundPlayer::Create(this, sound);
+      for (const auto& soundPlayer : players)
+         if (soundPlayer->GetOutputTarget() == playerTarget && (useSame || restart || !soundPlayer->IsPlaying()))
+            return soundPlayer.get();
+      SoundPlayer* player = SoundPlayer::Create(this, sound, playerTarget);
       if (player == nullptr)
-         return;
-      player->SetMainVolume(m_backglassVolume, m_playfieldVolume);
+         return nullptr;
+      player->SetMainVolume(m_backglassVolume, m_playfieldVolume, m_hapticVolume);
       players.push_back(std::unique_ptr<SoundPlayer>(player));
-   }
+      return player;
+   };
 
-   player->Play(volume, randomPitch, pitch, pan, frontRearFade, loopcount, hasPos, posX, posY, posZ);
+   if (SoundPlayer* const player = acquirePlayer(target))
+      player->Play(volume, randomPitch, pitch, pan, frontRearFade, loopcount, hasPos, posX, posY, posZ);
+
+   // Mirror playfield sounds to the optional haptic audio output
+   if (target == SoundOutTypes::SNDOUT_TABLE && m_hapticEngine)
+      if (SoundPlayer* const player = acquirePlayer(SoundOutTypes::SNDOUT_HAPTIC))
+         player->Play(volume, randomPitch, pitch, pan, frontRearFade, loopcount, hasPos, posX, posY, posZ);
 }
 
 void AudioPlayer::StopSound(Sound* sound)
