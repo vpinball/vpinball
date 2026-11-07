@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "imgui/imgui.h"
+
 namespace VPX::EditorUI
 {
 
@@ -25,13 +27,24 @@ public:
    float GetStatusBarHeight() const { return m_statusBarHeight; }
    // Draws the status bar (context key hints, last operation report). Called after the areas so it stays on top of them
    void RenderStatusBar(bool showFullUI);
+   // Opens the Edit > Undo History window at the mouse position
+   void OpenUndoHistory()
+   {
+      m_undoHistoryOpen = true;
+      m_undoHistoryJustOpened = true;
+      m_undoHistoryPos = ImGui::GetMousePos();
+   }
 
 private:
    void RenderMenuBar();
+   void RenderUndoHistory();
 
    EditorUI &m_editor;
    float m_menuBarHeight = 0.0f;
    float m_statusBarHeight = 0.0f;
+   bool m_undoHistoryOpen = false;
+   bool m_undoHistoryJustOpened = false;
+   ImVec2 m_undoHistoryPos {};
 };
 
 }

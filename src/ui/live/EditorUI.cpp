@@ -873,8 +873,17 @@ void EditorUI::RenderUI()
                m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
          }
       }
-      else if (ImGui::IsKeyPressed(ImGuiKey_Z) && io.KeyCtrl)
-         Undo();
+#ifndef __APPLE__
+      else if (ImGui::IsKeyPressed(ImGuiKey_Y) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+         RedoSteps(1); // Ctrl+Y (on macOS ImGui maps Cmd to Ctrl and Cmd+Shift+Z is the redo)
+#endif
+      else if (ImGui::IsKeyPressed(ImGuiKey_Z) && io.KeyCtrl && !io.KeyAlt)
+      { // Undo (Ctrl+Z), Redo (Ctrl+Shift+Z)
+         if (io.KeyShift)
+            RedoSteps(1);
+         else
+            UndoSteps(1);
+      }
    }
 
    // Selected parts are kept dynamic in the UI quadtree so that they can be edited interactively. The selection also changes outside
@@ -897,7 +906,7 @@ void EditorUI::RenderUI()
    }
 }
 
-void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
+void EditorUI::PushUndo(IEditable *part, unsigned int undoId, const string &label)
 {
    // No undo support in inspection mode (not implemented as it needs to handle both version of the table)
    if (m_table->m_liveBaseTable)
@@ -911,6 +920,8 @@ void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
    m_lastUndoId = undoId;
    m_undo.BeginUndo();
    m_undo.MarkForUndo(part);
+   if (!label.empty())
+      m_undo.SetFieldLabel(label);
    m_undo.EndUndo();
 }
 
@@ -1137,17 +1148,72 @@ void EditorUI::SelectAllParts()
    m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
 }
 
-void EditorUI::Undo()
+// Undo and redo are off while a drag is in progress (its record is the top one: undoing it would leave the drag going unrecorded)
+bool EditorUI::IsDragInProgress() const
 {
+   const ViewportPane *const vp = GetTargetViewport();
+   return (vp != nullptr && (vp->m_op.op != ImGuizmo::OPERATION(0) || vp->m_gizmoDragActive)) || ImGuizmo::IsUsingAny() || m_pointDragActive || m_pointDragPending;
+}
+
+bool EditorUI::CanUndo() const { return m_table->m_liveBaseTable == nullptr && m_undo.HasUndo() && !IsDragInProgress() && m_fileOp == nullptr; }
+
+bool EditorUI::CanRedo() const { return m_table->m_liveBaseTable == nullptr && m_undo.HasRedo() && !IsDragInProgress() && m_fileOp == nullptr; }
+
+void EditorUI::RestoreUndoState(const std::any &state)
+{
+   if (state.has_value())
+      RestoreUndoSelection(std::any_cast<const UndoSelectionState &>(state));
+}
+
+string EditorUI::CountLabel(const char *verb, const size_t count, const string &name)
+{
+   return count == 1 ? string(verb) + ": " + name : string(verb) + ": " + std::to_string(count) + " parts";
+}
+
+void EditorUI::UndoSteps(const size_t count)
+{
+   if (!CanUndo() || count == 0)
+      return;
    m_lastUndoPart = nullptr;
    m_lastUndoId = 0;
-   if (m_table->m_liveBaseTable == nullptr)
+   string label;
+   std::any state;
+   size_t done = 0;
+   bool stoppedEarly = false;
+   // TODO handle IsUndoPastCleanPoint
+   for (; done < count && m_undo.HasUndo(); ++done)
    {
-      // TODO handle IsUndoPastCleanPoint
-      const std::any state = m_undo.Undo();
-      if (state.has_value())
-         RestoreUndoSelection(std::any_cast<const UndoSelectionState &>(state));
+      // A record that can not be redone would wipe the redo steps built so far: a multi-step undo stops before it (a single undo may clear redo)
+      if (done > 0 && m_undo.NextUndoClearsRedo())
+      {
+         stoppedEarly = true;
+         break;
+      }
+      label = m_undo.UndoLabel(0); // The label reported is the one of the last step actually undone
+      if (std::any step = m_undo.Undo(); step.has_value())
+         state = std::move(step);
    }
+   RestoreUndoState(state);
+   Report((done == 1 ? "Undo: " + label : "Undo: " + std::to_string(done) + " steps (" + label + ")") + (stoppedEarly ? ", stopped before a step that can not be redone" : ""));
+}
+
+void EditorUI::RedoSteps(const size_t count)
+{
+   if (!CanRedo() || count == 0)
+      return;
+   m_lastUndoPart = nullptr;
+   m_lastUndoId = 0;
+   string label;
+   std::any state;
+   size_t done = 0;
+   for (; done < count && m_undo.HasRedo(); ++done)
+   {
+      label = m_undo.RedoLabel(0);
+      if (std::any step = m_undo.Redo(); step.has_value())
+         state = std::move(step);
+   }
+   RestoreUndoState(state);
+   Report(done == 1 ? "Redo: " + label : "Redo: " + std::to_string(done) + " steps (" + label + ")");
 }
 
 Vertex2D EditorUI::GetMultiSelCenter() const

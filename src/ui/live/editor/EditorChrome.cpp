@@ -35,6 +35,7 @@ void EditorChrome::Render(bool showFullUI)
       return;
 
    RenderMenuBar();
+   RenderUndoHistory();
 }
 
 void EditorChrome::RenderMenuBar()
@@ -76,6 +77,24 @@ void EditorChrome::RenderMenuBar()
       }
       if (!editor.IsInspectMode() && ImGui::BeginMenu("Edit"))
       {
+         // Blender style: the menu names the step ("Undo Move: Part1"), cut at 40 characters
+         const auto stepTitle = [](const char *verb, const string &step)
+         {
+            size_t n = 37; // Cut on a code point boundary
+            if (step.size() > 40)
+               while (n > 0 && (static_cast<unsigned char>(step[n]) & 0xC0) == 0x80)
+                  --n;
+            return step.empty() ? string(verb) : string(verb) + ' ' + (step.size() > 40 ? step.substr(0, n) + "..." : step);
+         };
+         if (ImGui::MenuItem(
+                (stepTitle("Undo", editor.CanUndo() && editor.m_undo.UndoCount() > 0 ? editor.m_undo.UndoLabel(0) : string()) + "###EditUndo").c_str(), "Ctrl+Z", false, editor.CanUndo()))
+            editor.UndoSteps(1);
+         if (ImGui::MenuItem((stepTitle("Redo", editor.CanRedo() && editor.m_undo.RedoCount() > 0 ? editor.m_undo.RedoLabel(0) : string()) + "###EditRedo").c_str(), "Ctrl+Shift+Z", false,
+                editor.CanRedo()))
+            editor.RedoSteps(1);
+         if (ImGui::MenuItem("Undo History...", nullptr, false, editor.m_table->m_liveBaseTable == nullptr && (editor.m_undo.HasUndo() || editor.m_undo.HasRedo())))
+            OpenUndoHistory();
+         ImGui::Separator();
          // Selection actions of the Esc, Ctrl+C / Ctrl+V and Del shortcuts (the add part picker itself opens in the viewport pane)
          ImGui::BeginDisabled(editor.m_table->IsLocked());
          const bool canCopy
@@ -226,6 +245,78 @@ void EditorChrome::RenderMenuBar()
       m_menuBarHeight = ImGui::GetWindowSize().y;
       ImGui::EndMainMenuBar();
    }
+}
+
+void EditorChrome::RenderUndoHistory()
+{
+   if (!m_undoHistoryOpen)
+      return;
+   EditorUI &editor = m_editor;
+   const float dpi = editor.m_liveUI.GetDPI();
+   // The history can not change under the window: it is closed with the editor state it lists
+   const ViewportPane *const targetVp = editor.GetTargetViewport();
+   if (editor.m_table->m_liveBaseTable != nullptr || (targetVp != nullptr && targetVp->m_op.op != ImGuizmo::OPERATION(0)))
+   {
+      m_undoHistoryOpen = false;
+      return;
+   }
+   ImGui::SetNextWindowPos(m_undoHistoryPos, ImGuiCond_Appearing);
+   ImGui::SetNextWindowSizeConstraints(ImVec2(260.f * dpi, 0.f), ImVec2(420.f * dpi, 420.f * dpi));
+   bool open = true;
+   int undoSteps = 0, redoSteps = 0; // Requested move in the history, applied once the window is done
+   if (ImGui::Begin("Undo History", &open, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
+   {
+      const size_t undoCount = editor.m_undo.UndoCount();
+      const size_t redoCount = editor.m_undo.RedoCount();
+      if (undoCount == 0 && redoCount == 0)
+         ImGui::TextDisabled("No history");
+      // Steps that can be redone, dimmed, the furthest first (so that the list reads newest first)
+      for (size_t i = redoCount; i-- > 0;)
+      {
+         ImGui::PushID(static_cast<int>(i) + 1000);
+         ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextFaint));
+         if (ImGui::Selectable(editor.m_undo.RedoLabel(i).c_str()))
+            redoSteps = static_cast<int>(i) + 1;
+         ImGui::PopStyleColor();
+         ImGui::PopID();
+      }
+      // Done steps, the newest first: the first one is the current state, picking an older one undoes down to the state it left
+      for (size_t i = 0; i < undoCount; i++)
+      {
+         ImGui::PushID(static_cast<int>(i));
+         if (ImGui::Selectable(editor.m_undo.UndoLabel(i).c_str(), i == 0))
+            undoSteps = static_cast<int>(i);
+         ImGui::PopID();
+      }
+      if (undoCount > 0 || redoCount > 0)
+      {
+         ImGui::PushID("original");
+         ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextDim));
+         if (ImGui::Selectable("Original", undoCount == 0))
+            undoSteps = static_cast<int>(undoCount);
+         ImGui::PopStyleColor();
+         ImGui::PopID();
+      }
+      // Clicking outside of the window dismisses it (not on the frame it opened, as the click that opened it may be still pending)
+      // (a press on a row makes it the active item, which would read as not hovered and close the window before the row is released)
+      if (!m_undoHistoryJustOpened && ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+         && !ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+         open = false;
+   }
+   ImGui::End();
+   m_undoHistoryJustOpened = false;
+   if (redoSteps > 0)
+   {
+      editor.RedoSteps(static_cast<size_t>(redoSteps));
+      open = false;
+   }
+   else if (undoSteps > 0)
+   {
+      editor.UndoSteps(static_cast<size_t>(undoSteps));
+      open = false;
+   }
+   if (!open)
+      m_undoHistoryOpen = false;
 }
 
 void EditorChrome::RenderStatusBar(const bool showFullUI)

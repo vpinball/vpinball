@@ -344,14 +344,14 @@ void BlueprintPane::RenderDialogs()
       if (ImGui::Button("Undo"))
       {
          m_dialogApplyCount--;
-         editor.Undo();
+         editor.UndoSteps(1);
       }
       ImGui::EndDisabled();
       ImGui::SameLine();
       if (ImGui::Button("Cancel"))
       {
          while (m_dialogApplyCount-- > 0)
-            editor.Undo();
+            editor.UndoSteps(1);
          m_dialog = DialogKind::None;
          ImGui::CloseCurrentPopup();
       }

@@ -199,11 +199,18 @@ private:
    void RestorePartsVisibility() const; // Revert the editor visibility overrides of the table parts (reapplied on next render)
 
    // Undo support
-   void Undo();
-   void PushUndo(IEditable *part, unsigned int editId);
+   void PushUndo(IEditable *part, unsigned int editId, const string &label = {});
    PinUndo m_undo;
    IEditable *m_lastUndoPart = nullptr;
    unsigned int m_lastUndoId = 0;
+   // Undo and redo are off while a drag is in progress (its record is the top one: undoing it would leave the drag going unrecorded)
+   bool IsDragInProgress() const;
+   bool CanUndo() const;
+   bool CanRedo() const;
+   void UndoSteps(size_t count); // Edit > Undo (Ctrl+Z), count > 1 for the undo history
+   void RedoSteps(size_t count); // Edit > Redo (Ctrl+Shift+Z / Ctrl+Y)
+   void RestoreUndoState(const std::any &state);
+   static string CountLabel(const char *verb, size_t count, const string &name);
    bool m_suppressNextEscape = false; // The Esc release of an Esc that deactivated an edited field (e.g. the script editor) is not an editor Esc
 
    // Add/Remove parts
