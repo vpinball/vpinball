@@ -268,7 +268,18 @@ void ViewportPane::EndTransformOp(const bool confirm)
    else if (!m_op.changed && oursOnTop)
       m_editor.m_undo.Discard(); // A no-op confirm leaves no undo record behind
    else if (m_op.changed)
-      m_editor.NoteTransformOp(m_op); // The confirmed operation can be adjusted (Adjust Last Operation)
+   {
+      Matrix3D current;
+      if (m_op.duplicate && oursOnTop && m_editor.m_undo.MergeLastIntoPrevious() && m_editor.GetSelectionTransform(current))
+      {
+         // One undo step for the duplicate and its grab (Adjust Last Operation: Duplicate with its offset)
+         m_editor.SetLastOperation(EditorUI::LastOperation::Type::Duplicate, current);
+         m_editor.m_lastOp.base = m_op.duplicateOrigin;
+         m_editor.m_lastOp.offset = Vertex3Ds(current._41 - m_op.duplicateOrigin.x, current._42 - m_op.duplicateOrigin.y, current._43 - m_op.duplicateOrigin.z);
+      }
+      else
+         m_editor.NoteTransformOp(m_op); // The confirmed operation can be adjusted (Adjust Last Operation)
+   }
    m_op = TransformOp();
 }
 
@@ -2148,6 +2159,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          // Fly mode: the pane's view takes the whole window, hiding the editor UI
          m_flyMode = !m_flyMode;
       }
+      else if (ImGui::IsKeyPressed(ImGuiKey_D) && io.KeyShift && !io.KeyCtrl && !io.KeyAlt)
+         m_editor.DuplicateSelection(); // Duplicate the selected parts in place and grab them (Blender's Shift+D)
       else if (ImGui::IsKeyPressed(ImGuiKey_Home) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
          FrameAll(); // Frame the whole table (Blender's View All)
       else if (ImGui::IsKeyPressed(ImGuiKey_G))

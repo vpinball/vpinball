@@ -181,6 +181,7 @@ private:
    bool m_pointDragActive = false; // Left button drag is moving the selected points
    float m_pointDragZ = 0.f; // Table Z coordinate of the plane in which points are dragged
    Vertex2D m_pointDragPos; // Last drag position in table coordinates
+   bool CanEnterPointEdit() const;
    void EnterPointEditMode();
    void ExitPointEditMode(bool restoreSelection);
    bool IsPointSelected(const DragPoint *point) const;
@@ -256,6 +257,8 @@ private:
 
    // Add/Remove parts
    void DeleteSelection();
+   bool CanDuplicate() const;
+   void DuplicateSelection(); // Duplicate the selected parts at their position and grab them (Shift+D)
    ItemTypeEnum m_addPartType = eItemInvalid; // Part type pending placement (eItemInvalid when not in add part mode)
    // Part type picker popup: it must be opened in the window scope of the target viewport pane, so
    // requests (header button, Shift+A, Edit menu) are deferred to its RenderPane

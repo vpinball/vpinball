@@ -2088,6 +2088,38 @@ void EditorUI::PasteSelection(const ImVec2 *const pos)
    }
 }
 
+bool EditorUI::CanDuplicate() const { return m_pointEditPart == nullptr && !IsInspectMode() && !m_table->IsLocked() && !m_multiSel.empty(); }
+
+void EditorUI::DuplicateSelection()
+{
+   // Duplicate the selected parts (through the editor clipboard) and grab them (Blender's Shift+D)
+   if (!CanDuplicate())
+      return;
+   const size_t count = m_multiSel.size();
+   Matrix3D origin;
+   const bool hasOrigin = GetSelectionTransform(origin);
+   CopySelection();
+   const uint64_t topBefore = m_undo.TopRecordId();
+   PasteSelection(nullptr); // In place: the grab moves them
+   if (m_undo.TopRecordId() == topBefore) // Nothing was pasted: the grab would fold into an unrelated step
+   {
+      Report("Nothing to duplicate");
+      return;
+   }
+   const string name = m_multiSel.empty() ? string() : m_multiSel.front()->GetEditable()->GetName();
+   m_undo.SetLabel(CountLabel("Duplicate", m_multiSel.size(), name)); // Not "Paste" (kept by the merge with the grab)
+   Report(CountLabel("Duplicated", count, name));
+   if (ViewportPane *const vp = GetTargetViewport())
+   {
+      vp->BeginTransformOp(ImGuizmo::TRANSLATE);
+      if (vp->m_op.op != ImGuizmo::OPERATION(0) && hasOrigin)
+      {
+         vp->m_op.duplicate = true;
+         vp->m_op.duplicateOrigin = Vertex3Ds(origin._41, origin._42, origin._43);
+      }
+   }
+}
+
 void EditorUI::DeleteSelection()
 {
    if (m_table->IsLocked() || IsInspectMode())
@@ -2469,12 +2501,15 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
 // Entered/exited with Tab (or Escape). The selection is saved on entry and restored on exit.
 //
 
+bool EditorUI::CanEnterPointEdit() const
+{
+   return m_pointEditPart == nullptr && !IsInspectMode() && !m_table->IsLocked() && m_selection.GetType() == Selection::S_EDITABLE && m_selection.GetPart() != nullptr
+      && (m_selection.GetPart()->GetDragPointCurve() != nullptr || m_selection.GetPart()->HasEditCenter());
+}
+
 void EditorUI::EnterPointEditMode()
 {
-   if (m_pointEditPart || IsInspectMode() || m_table->IsLocked())
-      return;
-   if (m_selection.GetType() != Selection::S_EDITABLE || m_selection.GetPart() == nullptr
-      || (m_selection.GetPart()->GetDragPointCurve() == nullptr && !m_selection.GetPart()->HasEditCenter()))
+   if (!CanEnterPointEdit())
       return;
    m_savedSelection = m_selection;
    m_savedMultiSel = m_multiSel;
