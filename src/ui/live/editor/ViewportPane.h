@@ -124,10 +124,54 @@ public:
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
    bool m_gizmoDragActive = false;
    vector<std::shared_ptr<EditorUIPart>> m_gizmoDragSelection;
-   void SetGizmoOperation(ImGuizmo::OPERATION operation); // Edit mode actions of the Esc (select), G (grab), S (scale) and R (rotate) shortcuts
+   void SetGizmoOperation(ImGuizmo::OPERATION operation); // Edit mode actions of the header tool buttons (and of Esc to get back to select)
+
+   // Blender-style modal transform op (keyboard G/S/R): the selection follows the mouse until
+   // LMB/Enter confirms or RMB/Esc cancels and restores the start state. Distinct from the
+   // persistent gizmo tool armed by the header buttons: while active the op owns the pane's
+   // input (and the editor's target viewport routing) and the gizmo is not drawn.
+   struct TransformOp
+   {
+      ImGuizmo::OPERATION op = (ImGuizmo::OPERATION)0; // Active operation: TRANSLATE, ROTATE or SCALE (0 = none)
+      ImGuizmo::MODE space = ImGuizmo::WORLD; // Constraint space: world (table) axes, or the start transform's basis (local)
+      unsigned axisMask = 0x7; // Axes the op currently applies to (bit 0/1/2 = X/Y/Z); restricted to the context axes
+      bool constrained = false; // Whether an axis (or plane, with two bits set) constraint is active
+      Matrix3D startTransform; // Selection transform snapshot at op start (its position is the pivot)
+      Vertex3Ds pivot; // Table-space pivot point
+      ImVec2 startMouse; // Display px of the mouse at activation
+      Vertex3Ds grabStartPoint; // Mouse ray / pivot view-plane intersection at activation (free grab)
+      Vertex3Ds viewDir; // Table-space camera forward at activation (free grab plane and free rotate axis)
+      Vertex3Ds constraintPoint; // Delta reference point, re-seeded on constraint changes (axis/plane grab, rotation plane)
+      bool constraintPointValid = false;
+      float angleOffset = 0.f; // Rotation accumulated across constraint changes (rotate)
+      vector<std::shared_ptr<EditorUIPart>> selection; // Part selection snapshot (the op aborts if it changes)
+      vector<DragPoint*> pointSelection; // Drag point selection snapshot (drag point edit mode)
+      bool centerSelected = false; // Center point selection snapshot (center edit mode)
+      bool undoMarked = false; // An undo record was marked at op start (not in inspect sessions)
+      size_t undoTop = 0; // Undo record count right after marking (our record is on top while it matches)
+      bool changed = false; // The op actually moved the selection (a no-op confirm discards the undo record)
+      // Numeric delta entry (Blender: digits edit the delta fields, Tab cycles the allowed ones)
+      bool numUsed = false; // Any delta field was typed into: parsed values replace the mouse delta
+      int numField = 0; // Field currently edited (grab & scale: allowed axes; rotate: field 0)
+      string numText[3]; // Per-field text being typed (grab & scale; rotate uses field 0)
+      float delta[3] = { 0.f, 0.f, 0.f }; // Last applied delta for the status readout (grab: offset; scale: factors; rotate: field 0 = degrees)
+   };
+   TransformOp m_op; // Active while m_op.op != 0
+   void BeginTransformOp(ImGuizmo::OPERATION operation); // Arm a modal op on the current selection (no-op when it has no transform)
+   void EndTransformOp(bool confirm); // Apply (keep the undo record) or cancel (restore the snapshot, discard the record)
+   void UpdateTransformOp(); // Per-frame modal update: evaluate the constraint keys & mouse/numeric delta, apply it
 
 private:
    RenderView* m_view = nullptr; // Owned through the renderer's extra views while set
+
+   // Modal transform helpers
+   unsigned ContextAxisMask() const; // Axes the modal ops may use in this pane's context (point edit, backdrop, predefined view)
+   int AxisIndex(unsigned mask) const; // First set axis index of a single-axis mask (-1 when not exactly one axis)
+   Vertex3Ds OpAxisDir(int axis) const; // Constraint axis direction in table space (world axis or start transform's basis column)
+   bool RayPlaneHit(const ImVec2& pos, const Vertex3Ds& planePt, const Vertex3Ds& normal, Vertex3Ds& hit) const; // Mouse ray / plane intersection
+   Vertex3Ds ClosestPointOnAxis(const ImVec2& pos, const Vertex3Ds& axisDir) const; // Point of the pivot axis line closest to the mouse ray
+   void ReseedOpConstraint(); // Re-seed the delta reference after a constraint change (grab axis/plane, rotation plane)
+   void ApplyTransformOpDelta(); // Compute the op delta from the mouse or the typed values, apply it, update the readout
 
    // Overlay info text drawn at the top left of the pane's image (camera & gizmo status)
    void RenderStatusOverlay();

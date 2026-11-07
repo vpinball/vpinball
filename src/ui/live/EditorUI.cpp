@@ -746,13 +746,17 @@ void EditorUI::RenderUI()
       else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()))
          bp->RenderUI(overlayDrawList);
 
+   // While a viewport pane runs a modal transform op (Blender G/S/R), it owns the keyboard:
+   // editor-level shortcuts must not fire (and the op's undo record stays the last one)
+   const ViewportPane *const modalVp = GetTargetViewport();
+   const bool transformModal = modalVp != nullptr && modalVp->m_op.op != 0;
    // Ctrl+S must work while a widget (e.g. a slider) has keyboard focus; only a text input being edited takes precedence
-   if (m_fileOp == nullptr && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_S, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+   if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_S, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       SaveTable();
    // Ctrl+Space maximizes / restores the area under the mouse (Blender)
-   if (m_fileOp == nullptr && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_Space, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+   if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_Space, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       ToggleMaximizeArea();
-   if (!io.WantCaptureKeyboard && m_fileOp == nullptr)
+   if (!io.WantCaptureKeyboard && m_fileOp == nullptr && !transformModal)
    {
       if (ImGui::IsKeyPressed(ImGuiKey_F5) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       {
@@ -3235,6 +3239,10 @@ ViewportPane *EditorUI::GetTargetViewport() const
    // A Render Preview pane is display-only: it is never the target.
    for (const auto &[id, view] : m_areaViews)
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_viewType != ViewMode::PreviewCam && vp->m_flyMode)
+         return vp;
+   // A pane running a modal transform op owns the viewport actions wherever the mouse is
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_viewType != ViewMode::PreviewCam && vp->m_op.op != 0)
          return vp;
    if (m_captureVp != nullptr && m_captureVp->m_viewType != ViewMode::PreviewCam)
       return m_captureVp;

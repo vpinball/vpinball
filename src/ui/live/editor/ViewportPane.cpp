@@ -6,6 +6,7 @@
 #include "OutlinerPanel.h"
 
 #include "core/player.h"
+#include "core/Settings.h"
 #include "EditorTheme.h"
 #include "LiveRenderContext.h"
 #include "fonts/IconsForkAwesome.h"
@@ -30,6 +31,8 @@ ViewportPane::~ViewportPane() { OnUnhosted(); }
 
 void ViewportPane::OnUnhosted()
 {
+   if (m_op.op != ImGuizmo::OPERATION(0))
+      EndTransformOp(false); // An unhosted pane abandons its modal transform op
    if (m_editor.m_captureVp == this)
       m_editor.m_captureVp = nullptr;
    if (m_editor.m_hoverVp == this)
@@ -85,6 +88,338 @@ void ViewportPane::SetGizmoOperation(ImGuizmo::OPERATION operation)
    // Repeating the same operation toggles between world and local coordinates, switching to another one resets to world
    m_gizmoMode = m_gizmoOperation == operation ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
    m_gizmoOperation = operation;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Modal transform ops (Blender G/S/R): the selection follows the mouse until LMB/Enter confirms
+// or RMB/Esc cancels. All the math is done in table space through the pane's LH view/proj.
+//
+
+unsigned ViewportPane::ContextAxisMask() const
+{
+   // Modal ops are restricted like the gizmo: point edit & desktop backdrop are 2D in their XY
+   // plane, predefined views are 2D in the view plane
+   if (m_editor.m_pointEditPart || m_viewType == ViewMode::DesktopBackdrop)
+      return 0x3; // XY
+   if (m_viewType == ViewMode::EditorCam)
+   {
+      switch (m_predefinedView)
+      {
+      case PredefinedView::Left:
+      case PredefinedView::Right: return 0x6; // YZ
+      case PredefinedView::Top:
+      case PredefinedView::Bottom: return 0x3; // XY
+      case PredefinedView::Front:
+      case PredefinedView::Back: return 0x5; // XZ
+      default: break;
+      }
+   }
+   return 0x7; // XYZ
+}
+
+int ViewportPane::AxisIndex(const unsigned mask) const { return mask == 0x1 ? 0 : mask == 0x2 ? 1 : mask == 0x4 ? 2 : -1; }
+
+Vertex3Ds ViewportPane::OpAxisDir(const int axis) const
+{
+   Vertex3Ds dir(0.f, 0.f, 0.f);
+   if (m_op.space == ImGuizmo::LOCAL)
+   {
+      // Local axes are the normalized basis vectors of the op start transform
+      dir = m_op.startTransform.MultiplyVectorNoTranslate(Vertex3Ds(axis == 0 ? 1.f : 0.f, axis == 1 ? 1.f : 0.f, axis == 2 ? 1.f : 0.f));
+   }
+   if (m_op.space != ImGuizmo::LOCAL || dir.LengthSquared() < 1e-12f)
+      dir = Vertex3Ds(axis == 0 ? 1.f : 0.f, axis == 1 ? 1.f : 0.f, axis == 2 ? 1.f : 0.f);
+   dir.Normalize();
+   return dir;
+}
+
+bool ViewportPane::RayPlaneHit(const ImVec2& pos, const Vertex3Ds& planePt, const Vertex3Ds& normal, Vertex3Ds& hit) const
+{
+   Vertex3Ds a, b;
+   if (!PickRay(pos, a, b))
+      return false;
+   const Vertex3Ds dir = b - a;
+   const float denom = normal.Dot(dir);
+   if (fabsf(denom) < 1e-10f)
+      return false;
+   hit = a + dir * (normal.Dot(planePt - a) / denom);
+   return true;
+}
+
+Vertex3Ds ViewportPane::ClosestPointOnAxis(const ImVec2& pos, const Vertex3Ds& axisDir) const
+{
+   // Point of the constraint axis line (through the pivot) closest to the mouse ray
+   Vertex3Ds a, b;
+   if (!PickRay(pos, a, b))
+      return m_op.pivot;
+   const Vertex3Ds rayDir = b - a;
+   const Vertex3Ds w0 = m_op.pivot - a;
+   const float uu = axisDir.Dot(axisDir);
+   const float uv = axisDir.Dot(rayDir);
+   const float vv = rayDir.Dot(rayDir);
+   const float denom = uu * vv - uv * uv;
+   const float t = (fabsf(denom) > 1e-10f) ? (uv * rayDir.Dot(w0) - vv * axisDir.Dot(w0)) / denom : 0.f;
+   return m_op.pivot + axisDir * t;
+}
+
+void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
+{
+   Matrix3D transform;
+   if (!m_editor.GetSelectionTransform(transform) || m_editor.m_table->IsLocked())
+      return;
+   if (m_op.op != ImGuizmo::OPERATION(0))
+   {
+      // Re-armed mid op (Blender switches operator): keep the start snapshot and the undo mark
+      m_op.op = operation;
+      m_op.constrained = false;
+      m_op.axisMask = ContextAxisMask();
+      m_op.space = ImGuizmo::WORLD;
+      m_op.constraintPointValid = false;
+      m_op.angleOffset = 0.f;
+      m_op.numUsed = false;
+      m_op.numField = (m_op.axisMask & 0x1) ? 0 : (m_op.axisMask & 0x2) ? 1 : 2;
+      for (string& text : m_op.numText)
+         text.clear();
+      m_op.delta[0] = m_op.delta[1] = m_op.delta[2] = 0.f;
+      ReseedOpConstraint();
+      return;
+   }
+   m_op.op = operation;
+   m_op.space = ImGuizmo::WORLD;
+   m_op.axisMask = ContextAxisMask();
+   m_op.constrained = false;
+   m_op.constraintPointValid = false;
+   m_op.angleOffset = 0.f;
+   m_op.startTransform = transform;
+   m_op.pivot = transform.GetOrthoNormalPos();
+   m_op.startMouse = ImGui::GetMousePos();
+   // Table-space camera forward: a free grab moves in the pivot plane parallel to the view, a
+   // free rotate spins around it. In restricted (2D) contexts both lock to the context's missing
+   // axis instead (like the gizmo's automatic plane restriction)
+   Matrix3D view, proj;
+   if (GetViewProjLH(view, proj))
+   {
+      view.Invert();
+      m_op.viewDir = view.GetOrthoNormalDir();
+   }
+   else
+      m_op.viewDir = Vertex3Ds(0.f, 0.f, 1.f);
+   const int missingAxis = AxisIndex(0x7 & ~m_op.axisMask);
+   if (missingAxis >= 0)
+      m_op.viewDir = OpAxisDir(missingAxis);
+   m_op.grabStartPoint = m_op.pivot;
+   RayPlaneHit(m_op.startMouse, m_op.pivot, m_op.viewDir, m_op.grabStartPoint);
+   m_op.selection = m_editor.m_multiSel;
+   m_op.pointSelection = m_editor.m_pointSel;
+   m_op.centerSelected = m_editor.m_centerSelected;
+   m_op.changed = false;
+   m_op.undoMarked = false;
+   m_op.numUsed = false;
+   m_op.numField = (m_op.axisMask & 0x1) ? 0 : (m_op.axisMask & 0x2) ? 1 : 2; // First editable field is the first context axis
+   for (string& text : m_op.numText)
+      text.clear();
+   m_op.delta[0] = m_op.delta[1] = m_op.delta[2] = 0.f;
+   // One undo record for the whole op: mark the parts before the first mutation (a gizmo drag
+   // does the same on its first change); a cancel discards it, a no-op confirm too
+   if (m_editor.m_table->m_liveBaseTable == nullptr)
+   {
+      m_op.undoMarked = true;
+      m_editor.m_undo.BeginUndo();
+      if (m_editor.m_pointEditPart)
+         m_editor.m_undo.MarkForUndo(m_editor.m_pointEditPart->GetEditable());
+      else
+         for (const auto& part : m_editor.m_multiSel)
+            m_editor.m_undo.MarkForUndo(part->GetEditable());
+      m_editor.m_undo.EndUndo();
+      m_op.undoTop = m_editor.m_undo.UndoCount();
+   }
+   // Drop any in-flight scene drag and release a gizmo drag if the op was armed over one
+   m_boxSelectActive = false;
+   m_editor.m_pointDragPending = false;
+   m_editor.m_pointDragActive = false;
+   if (ImGuizmo::IsUsingAny())
+   {
+      ImGuizmo::Enable(false);
+      ImGuizmo::Enable(true);
+   }
+   ReseedOpConstraint(); // Seed the rotate reference point (grab's free reference is set above)
+}
+
+void ViewportPane::EndTransformOp(const bool confirm)
+{
+   if (m_op.op == ImGuizmo::OPERATION(0))
+      return;
+   // Our undo record is only safe to pop while it is still on top of the stack (a mark made after
+   // the op started, e.g. a script edit, makes it unsafe to discard or undo out of order)
+   const bool oursOnTop = m_op.undoMarked && m_editor.m_undo.UndoCount() == m_op.undoTop;
+   if (!confirm)
+   {
+      if (oursOnTop && m_op.changed)
+         m_editor.m_undo.Undo(); // Restore the pre-op part states (the only restore that survives a selection changed mid-op)
+      else if (oursOnTop)
+         m_editor.m_undo.Discard(); // Nothing was applied: drop the no-op record
+      else if (m_op.changed)
+         m_editor.SetSelectionTransform(m_op.startTransform); // Best effort (inspect session, or newer records over ours)
+   }
+   else if (!m_op.changed && oursOnTop)
+      m_editor.m_undo.Discard(); // A no-op confirm leaves no undo record behind
+   m_op = TransformOp();
+}
+
+void ViewportPane::UpdateTransformOp() { ApplyTransformOpDelta(); }
+
+void ViewportPane::ReseedOpConstraint()
+{
+   // Re-seed the delta reference point for the current constraint: grab measures the delta from it,
+   // rotate folds the angle applied so far into the offset then re-seeds the rotation plane point
+   const ImVec2 mouse = ImGui::GetMousePos();
+   const int axis = AxisIndex(m_op.axisMask);
+   m_op.constraintPointValid = false;
+   if (m_op.op == ImGuizmo::TRANSLATE && m_op.constrained)
+   {
+      if (axis >= 0)
+      {
+         m_op.constraintPoint = ClosestPointOnAxis(mouse, OpAxisDir(axis));
+         m_op.constraintPointValid = true;
+      }
+      else
+         m_op.constraintPointValid = RayPlaneHit(mouse, m_op.pivot, OpAxisDir(AxisIndex(ContextAxisMask() & ~m_op.axisMask)), m_op.constraintPoint);
+   }
+   else if (m_op.op == ImGuizmo::ROTATE)
+   {
+      m_op.angleOffset = ANGTORAD(m_op.delta[0]); // The angle applied so far becomes the new base
+      m_op.constraintPointValid = RayPlaneHit(mouse, m_op.pivot, axis >= 0 ? OpAxisDir(axis) : m_op.viewDir, m_op.constraintPoint);
+   }
+}
+
+void ViewportPane::ApplyTransformOpDelta()
+{
+   const ImGuiIO& io = ImGui::GetIO();
+   const ImVec2 mouse = ImGui::GetMousePos();
+   const int axis = AxisIndex(m_op.axisMask);
+   const float precision = io.KeyShift ? 0.1f : 1.f; // Shift held: finer mouse movement (Blender)
+   Matrix3D newTransform(m_op.startTransform);
+
+   if (m_op.op == ImGuizmo::TRANSLATE)
+   {
+      Vertex3Ds delta(0.f, 0.f, 0.f);
+      m_op.delta[0] = m_op.delta[1] = m_op.delta[2] = 0.f;
+      if (m_op.numUsed)
+      {
+         // Typed components replace the mouse delta, applied along the masked axes of the op space
+         for (int i = 0; i < 3; ++i)
+            if (m_op.axisMask & (1u << i))
+               delta += OpAxisDir(i) * (m_op.numText[i].empty() ? 0.f : strtof(m_op.numText[i].c_str(), nullptr));
+         for (int i = 0; i < 3; ++i)
+            m_op.delta[i] = m_op.numText[i].empty() ? 0.f : strtof(m_op.numText[i].c_str(), nullptr);
+      }
+      else if (m_op.constrained && axis >= 0 && m_op.constraintPointValid)
+      {
+         // Axis constraint: closest point of the mouse ray on the axis line, measured from the
+         // reference point picked when the constraint was set
+         const Vertex3Ds dir = OpAxisDir(axis);
+         delta = dir * ((ClosestPointOnAxis(mouse, dir) - m_op.constraintPoint).Dot(dir) * precision);
+         m_op.delta[axis] = delta.Dot(dir);
+      }
+      else if (m_op.constrained && axis < 0)
+      {
+         // Plane constraint: move in the plane through the pivot perpendicular to the excluded axis
+         const Vertex3Ds normal = OpAxisDir(AxisIndex(ContextAxisMask() & ~m_op.axisMask));
+         Vertex3Ds hit;
+         if (RayPlaneHit(mouse, m_op.pivot, normal, hit) && m_op.constraintPointValid)
+            delta = (hit - m_op.constraintPoint) * precision;
+         for (int i = 0; i < 3; ++i)
+            m_op.delta[i] = delta.Dot(OpAxisDir(i));
+      }
+      else
+      {
+         // Free grab: the pivot plane parallel to the view follows the mouse
+         Vertex3Ds hit;
+         if (RayPlaneHit(mouse, m_op.pivot, m_op.viewDir, hit))
+            delta = (hit - m_op.grabStartPoint) * precision;
+         for (int i = 0; i < 3; ++i)
+            m_op.delta[i] = delta.Dot(OpAxisDir(i));
+      }
+      if (io.KeyCtrl)
+      {
+         // Snap the translation to the editor grid (1 VPU when no grid is set)
+         const float grid = max(1.f, (float)g_settingsService.GetAppSettings().GetEditor_GridSize());
+         for (int i = 0; i < 3; ++i)
+            m_op.delta[i] = roundf(m_op.delta[i] / grid) * grid;
+         delta = OpAxisDir(0) * m_op.delta[0] + OpAxisDir(1) * m_op.delta[1] + OpAxisDir(2) * m_op.delta[2];
+      }
+      newTransform = Matrix3D::MatrixTranslate(delta.x, delta.y, delta.z) * m_op.startTransform;
+      m_op.changed |= delta.LengthSquared() > 1e-12f;
+   }
+   else if (m_op.op == ImGuizmo::ROTATE)
+   {
+      // Rotate in the plane perpendicular to the axis through the pivot; the reference point is
+      // re-seeded on constraint changes and the accumulated angle kept in m_op.angleOffset
+      const Vertex3Ds axisDir = axis >= 0 ? OpAxisDir(axis) : m_op.viewDir;
+      Vertex3Ds q;
+      float angle = m_op.angleOffset;
+      if (m_op.constraintPointValid && RayPlaneHit(mouse, m_op.pivot, axisDir, q))
+      {
+         const Vertex3Ds a = m_op.constraintPoint - m_op.pivot;
+         const Vertex3Ds b = q - m_op.pivot;
+         if (a.LengthSquared() > 1e-12f && b.LengthSquared() > 1e-12f)
+            angle += atan2f(CrossProduct(a, b).Dot(axisDir), a.Dot(b)) * precision;
+      }
+      if (m_op.numUsed)
+         angle = ANGTORAD(m_op.numText[0].empty() ? 0.f : strtof(m_op.numText[0].c_str(), nullptr));
+      else if (io.KeyCtrl)
+         angle = ANGTORAD(roundf(RADTOANG(angle) / 15.f) * 15.f);
+      newTransform = Matrix3D::MatrixTranslate(m_op.pivot) * Matrix3D::MatrixRotate(angle, axisDir) * Matrix3D::MatrixTranslate(-m_op.pivot) * m_op.startTransform;
+      m_op.delta[0] = RADTOANG(angle);
+      m_op.changed |= fabsf(angle) > 1e-8f;
+   }
+   else if (m_op.op == ImGuizmo::SCALE)
+   {
+      float factor[3] = { 1.f, 1.f, 1.f };
+      if (m_op.numUsed)
+      {
+         // A single typed value applies uniformly to the masked axes (Blender scale entry)
+         const float v = m_op.numText[0].empty() ? 1.f : strtof(m_op.numText[0].c_str(), nullptr);
+         for (int i = 0; i < 3; ++i)
+            if (m_op.axisMask & (1u << i))
+               factor[i] = v;
+      }
+      else
+      {
+         const ImVec2 pivotPx = Project(m_op.pivot);
+         const float d0 = max(1.f, sqrtf((mouse.x - pivotPx.x) * (mouse.x - pivotPx.x) + (mouse.y - pivotPx.y) * (mouse.y - pivotPx.y)));
+         const float d1 = max(1.f, sqrtf((m_op.startMouse.x - pivotPx.x) * (m_op.startMouse.x - pivotPx.x) + (m_op.startMouse.y - pivotPx.y) * (m_op.startMouse.y - pivotPx.y)));
+         float s = 1.f + (d0 / d1 - 1.f) * precision;
+         if (io.KeyCtrl)
+            s = roundf(s / 0.1f) * 0.1f;
+         for (int i = 0; i < 3; ++i)
+            if (m_op.axisMask & (1u << i))
+               factor[i] = s;
+      }
+      for (int i = 0; i < 3; ++i)
+         m_op.delta[i] = factor[i];
+      // The scale is applied along the op space axes: identity in world mode, the start transform's
+      // normalized basis in local mode
+      Matrix3D basis;
+      for (int i = 0; i < 3; ++i)
+      {
+         const Vertex3Ds dir = OpAxisDir(i);
+         basis.m[i][0] = dir.x;
+         basis.m[i][1] = dir.y;
+         basis.m[i][2] = dir.z;
+         basis.m[i][3] = 0.f;
+      }
+      basis.m[3][0] = basis.m[3][1] = basis.m[3][2] = 0.f;
+      basis.m[3][3] = 1.f;
+      Matrix3D invBasis(basis);
+      invBasis.Invert();
+      const Matrix3D scale = invBasis * Matrix3D::MatrixScale(factor[0], factor[1], factor[2]) * basis;
+      newTransform = Matrix3D::MatrixTranslate(m_op.pivot) * scale * Matrix3D::MatrixTranslate(-m_op.pivot) * m_op.startTransform;
+      for (int i = 0; i < 3; ++i)
+         m_op.changed |= fabsf(factor[i] - 1.f) > 1e-8f;
+   }
+   m_editor.SetSelectionTransform(newTransform);
 }
 
 void ViewportPane::ResetCameraFromPlayer()
@@ -706,6 +1041,69 @@ void ViewportPane::RenderStatusOverlay()
       ImGui::SameLine(labelAlign);
       ImGui::TextUnformatted(gizmoLabel);
    }
+   if (m_op.op != ImGuizmo::OPERATION(0))
+   {
+      // Modal transform op line: name, constraint axes (and local space) and the live delta
+      // (the typed fields while entering values, with a caret on the active one)
+      string text = m_op.op == ImGuizmo::TRANSLATE ? "Grab "s : m_op.op == ImGuizmo::SCALE ? "Scale "s : "Rotate "s;
+      if (m_op.constrained)
+      {
+         if (m_op.axisMask & 0x1)
+            text += 'X';
+         if (m_op.axisMask & 0x2)
+            text += 'Y';
+         if (m_op.axisMask & 0x4)
+            text += 'Z';
+         if (m_op.space == ImGuizmo::LOCAL)
+            text += " (local)";
+         text += ' ';
+      }
+      static const char* axisFields[3] = { "X:", "Y:", "Z:" };
+      const auto appendDelta = [&text](const int axis, const float value, const char* fmt)
+      {
+         char buf[40];
+         snprintf(buf, sizeof(buf), "%s", axisFields[axis]);
+         snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), fmt, value);
+         text += buf;
+         text += ' ';
+      };
+      if (m_op.numUsed)
+      {
+         if (m_op.op == ImGuizmo::TRANSLATE)
+         {
+            for (int i = 0; i < 3; ++i)
+               if (m_op.axisMask & (1u << i))
+                  text += axisFields[i] + (m_op.numText[i].empty() ? "0"s : m_op.numText[i]) + (i == m_op.numField ? "| " : " ");
+         }
+         else
+            text += (m_op.numText[0].empty() ? "0"s : m_op.numText[0]) + '|';
+      }
+      else if (m_op.op == ImGuizmo::TRANSLATE)
+      {
+         for (int i = 0; i < 3; ++i)
+            if (m_op.axisMask & (1u << i))
+               appendDelta(i, m_op.delta[i], "%.2f");
+      }
+      else if (m_op.op == ImGuizmo::ROTATE)
+      {
+         char buf[24];
+         snprintf(buf, sizeof(buf), "%.2f\xc2\xb0", (double)m_op.delta[0]);
+         text += buf;
+      }
+      else
+      {
+         const int axis = AxisIndex(m_op.axisMask);
+         if (axis >= 0)
+            appendDelta(axis, m_op.delta[axis], "%.3f");
+         else
+         {
+            char buf[24];
+            snprintf(buf, sizeof(buf), "%.3f", (double)m_op.delta[0]);
+            text += buf;
+         }
+      }
+      ImGui::TextUnformatted(text.c_str());
+   }
    if (m_editor.GetTargetViewport() == this && m_editor.m_pointEditPart)
       ImGui::TextUnformatted(m_editor.m_pointEditCenter ? "Center Edit (Tab to exit)" : "Drag Point Edit (Tab to exit)");
    ImGui::End();
@@ -916,7 +1314,22 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       return;
 
    const bool isSelectionTransformValid = m_editor.GetSelectionTransform(transform);
-   if (isSelectionTransformValid && !m_editor.m_table->IsLocked())
+   if (m_op.op != ImGuizmo::OPERATION(0))
+   {
+      // A modal transform op owns the transform path (the gizmo is not drawn): it ends when the
+      // selection can no longer be transformed or was changed under it (outliner click, undo, ...)
+      if (!isSelectionTransformValid || m_editor.m_table->IsLocked() || m_editor.m_multiSel != m_op.selection || m_editor.m_pointSel != m_op.pointSelection
+         || m_editor.m_centerSelected != m_op.centerSelected)
+         EndTransformOp(false);
+      else
+         UpdateTransformOp();
+      if (ImGuizmo::IsUsingAny())
+      {
+         ImGuizmo::Enable(false);
+         ImGuizmo::Enable(true);
+      }
+   }
+   else if (isSelectionTransformValid && !m_editor.m_table->IsLocked())
    {
       // The gizmo shares the render view's MVP (the same transform as the scene render), converted
       // back to its right handed convention
@@ -1035,6 +1448,25 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          overlayDrawList->AddCircleFilled(pos, 3.f * m_editor.m_liveUI.GetDPI(), IM_COL32(255, 255, 255, 255), 16);
       }
 
+      // Modal transform op: rubber band from the pivot to the mouse, plus the constrained axes
+      if (m_op.op != ImGuizmo::OPERATION(0))
+      {
+         const ImVec2 pivotPx = ctx.Project(m_op.pivot);
+         if (pivotPx.x != FLT_MAX)
+         {
+            static const ImU32 axisColors[3] = { IM_COL32(255, 90, 90, 220), IM_COL32(90, 220, 90, 220), IM_COL32(100, 140, 255, 220) };
+            const float axisLen = m_camDistance * 4.f;
+            for (int i = 0; i < 3; ++i)
+            {
+               if (!(m_op.axisMask & (1u << i)) || !m_op.constrained)
+                  continue;
+               const Vertex3Ds dir = OpAxisDir(i);
+               overlayDrawList->AddLine(ctx.Project(m_op.pivot - dir * axisLen), ctx.Project(m_op.pivot + dir * axisLen), axisColors[i], 1.5f * m_editor.m_liveUI.GetDPI());
+            }
+            overlayDrawList->AddLine(pivotPx, ImGui::GetMousePos(), IM_COL32(255, 255, 255, 160), 1.5f * m_editor.m_liveUI.GetDPI());
+         }
+      }
+
       // In desktop backdrop mode, draw the bounds of the backdrop area
       if (m_viewType == ViewMode::DesktopBackdrop)
       {
@@ -1097,7 +1529,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    // Handle uncaught mouse interaction: scene interactions (camera, picking, box select) only
    // apply inside this pane's image (its ImGui item state says if it is hovered or held)
    // The pane owns scene input while hovered/active, or the whole window while flying over it
-   const bool viewportInput = m_flyMode || m_hovered || m_active;
+   const bool viewportInput = m_flyMode || m_op.op != ImGuizmo::OPERATION(0) || m_hovered || m_active;
    if (viewportInput && m_editor.m_fileOp == nullptr)
    {
       // Zoom in/out with mouse wheel
@@ -1112,8 +1544,67 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, up);
       }
 
+      // Modal transform op mouse input: while active it owns the pane's scene input (LMB confirms,
+      // RMB cancels, MMB drag picks the dominant constraint axis, MMB click releases it); the wheel
+      // zoom above stays available like in Blender
+      const bool modalMouse = m_op.op != ImGuizmo::OPERATION(0);
+      if (modalMouse)
+      {
+         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            EndTransformOp(true);
+         else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+            EndTransformOp(false);
+         else if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+         {
+            const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+            const float dragLen = sqrtf(drag.x * drag.x + drag.y * drag.y);
+            const ImVec2 pivotPx = Project(m_op.pivot);
+            if (dragLen > 4.f && pivotPx.x != FLT_MAX)
+            {
+               // Dominant constraint axis: the context axis whose screen direction best matches the drag
+               const unsigned ctxMask = ContextAxisMask();
+               int bestAxis = -1;
+               float bestScore = 0.f;
+               for (int i = 0; i < 3; ++i)
+               {
+                  if (!(ctxMask & (1u << i)))
+                     continue;
+                  const ImVec2 axisPx = Project(m_op.pivot + OpAxisDir(i));
+                  const ImVec2 axisDir(axisPx.x - pivotPx.x, axisPx.y - pivotPx.y);
+                  const float len = sqrtf(axisDir.x * axisDir.x + axisDir.y * axisDir.y);
+                  if (len < 1e-3f)
+                     continue;
+                  const float score = fabsf(axisDir.x * drag.x + axisDir.y * drag.y) / (len * dragLen);
+                  if (score > bestScore)
+                  {
+                     bestScore = score;
+                     bestAxis = i;
+                  }
+               }
+               if (bestAxis >= 0)
+               {
+                  m_op.axisMask = 1u << bestAxis;
+                  m_op.constrained = true;
+                  ReseedOpConstraint();
+               }
+               ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
+            }
+         }
+         else if (ImGui::IsMouseReleased(ImGuiMouseButton_Middle))
+         {
+            const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+            if (fabsf(drag.x) <= 4.f && fabsf(drag.y) <= 4.f)
+            {
+               // MMB click without a drag releases the axis constraint (Blender)
+               m_op.constrained = false;
+               m_op.axisMask = ContextAxisMask();
+               ReseedOpConstraint();
+            }
+         }
+      }
+
       // Mouse pan
-      if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+      if (!modalMouse && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {
          ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
@@ -1165,7 +1656,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       // shift+click toggles a part in the multi selection, drag box selects parts (shift+drag adds to the selection)
       // In drag point edit mode, click selects a drag point of the edited curve (shift toggles), dragging a
       // selected point moves the selected points in the table XY plane, drag box selects points
-      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
+      if (!modalMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
       {
          m_boxSelectStart = ImGui::GetMousePos();
          if (m_editor.m_partLibrary.IsPlacementArmed())
@@ -1216,7 +1707,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                m_boxSelectActive = true;
          }
       }
-      if (m_boxSelectActive)
+      if (!modalMouse && m_boxSelectActive)
       {
          if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
          {
@@ -1290,7 +1781,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
 
       // Drag the selected drag points in the table XY plane
-      if (m_editor.m_pointEditPart && (m_editor.m_pointDragPending || m_editor.m_pointDragActive))
+      if (!modalMouse && m_editor.m_pointEditPart && (m_editor.m_pointDragPending || m_editor.m_pointDragActive))
       {
          if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
          {
@@ -1348,7 +1839,108 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
 
    // Viewport keyboard actions: camera views & options, gizmo ops, drag point edit, mode cancels
    // (a hovered blueprint pane owns the keyboard while the mouse is over its canvas)
-   if (m_editor.GetTargetViewport() == this && m_editor.m_hoverBp == nullptr && !io.WantCaptureKeyboard && m_editor.m_fileOp == nullptr)
+   if (m_op.op != ImGuizmo::OPERATION(0) && !io.WantCaptureKeyboard && m_editor.m_fileOp == nullptr)
+   {
+      // Modal transform op keys (Blender): it owns the keyboard wherever the mouse is
+      if (ImGui::IsKeyReleased(ImGuiKey_Escape))
+      {
+         if (m_editor.m_suppressNextEscape)
+            m_editor.m_suppressNextEscape = false;
+         else
+            EndTransformOp(false);
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_Enter, false) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter, false))
+         EndTransformOp(true);
+      else if (ImGui::IsKeyPressed(ImGuiKey_G, false) || ImGui::IsKeyPressed(ImGuiKey_S, false) || ImGui::IsKeyPressed(ImGuiKey_R, false))
+      {
+         if (io.KeyAlt)
+         {
+            // Alt+G/R/S resets the op delta to identity (Blender clear transform)
+            m_op.angleOffset = 0.f;
+            m_op.numUsed = false;
+            for (string& text : m_op.numText)
+               text.clear();
+            m_op.delta[0] = m_op.delta[1] = m_op.delta[2] = m_op.op == ImGuizmo::SCALE ? 1.f : 0.f;
+            m_editor.SetSelectionTransform(m_op.startTransform);
+            m_op.changed = false;
+         }
+         else if (ImGui::IsKeyPressed(ImGuiKey_G, false))
+            BeginTransformOp(ImGuizmo::TRANSLATE);
+         else if (ImGui::IsKeyPressed(ImGuiKey_S, false) && !io.KeyCtrl)
+            BeginTransformOp(ImGuizmo::SCALE);
+         else if (ImGui::IsKeyPressed(ImGuiKey_R, false) && !io.KeyCtrl)
+            BeginTransformOp(ImGuizmo::ROTATE);
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_X, false) || ImGui::IsKeyPressed(ImGuiKey_Y, false) || ImGui::IsKeyPressed(ImGuiKey_Z, false))
+      {
+         // Axis constraint: X/Y/Z picks an axis, Shift+X/Y/Z the plane excluding it (grab & scale),
+         // pressing the active axis key again toggles between world and local space
+         const int pressedAxis = ImGui::IsKeyPressed(ImGuiKey_X, false) ? 0 : ImGui::IsKeyPressed(ImGuiKey_Y, false) ? 1 : 2;
+         const unsigned bit = 1u << pressedAxis;
+         const unsigned ctxMask = ContextAxisMask();
+         if (ctxMask & bit)
+         {
+            if (io.KeyShift && m_op.op != ImGuizmo::ROTATE)
+            {
+               const unsigned plane = ctxMask & ~bit;
+               if (plane != ctxMask)
+               {
+                  m_op.axisMask = plane;
+                  m_op.constrained = true;
+                  ReseedOpConstraint();
+               }
+            }
+            else if (!io.KeyShift && m_op.constrained && m_op.axisMask == bit)
+               m_op.space = m_op.space == ImGuizmo::WORLD ? ImGuizmo::LOCAL : ImGuizmo::WORLD;
+            else if (!io.KeyShift)
+            {
+               m_op.axisMask = bit;
+               m_op.constrained = true;
+               ReseedOpConstraint();
+            }
+         }
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false))
+      {
+         // Cycle the editable delta fields over the allowed axes (grab only: rotate & scale use field 0)
+         if (m_op.op == ImGuizmo::TRANSLATE)
+            for (int i = 1; i <= 3; ++i)
+            {
+               const int field = (m_op.numField + i) % 3;
+               if (m_op.axisMask & (1u << field))
+               {
+                  m_op.numField = field;
+                  break;
+               }
+            }
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_Backspace))
+      {
+         const int field = m_op.op == ImGuizmo::TRANSLATE ? m_op.numField : 0;
+         if (!m_op.numText[field].empty())
+            m_op.numText[field].pop_back();
+      }
+      else
+      {
+         // Numeric delta entry: digits, sign and decimal point edit the current field
+         const int field = m_op.op == ImGuizmo::TRANSLATE ? m_op.numField : 0;
+         if (m_op.op != ImGuizmo::TRANSLATE || (m_op.axisMask & (1u << field)))
+         {
+            string& text = m_op.numText[field];
+            for (int i = 0; i < 10; ++i)
+               if (ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_0 + i)) || ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_Keypad0 + i)))
+                  text += (char)('0' + i);
+            if (ImGui::IsKeyPressed(ImGuiKey_Minus) || ImGui::IsKeyPressed(ImGuiKey_KeypadSubtract))
+               text = text.starts_with('-') ? text.substr(1) : "-" + text;
+            if ((ImGui::IsKeyPressed(ImGuiKey_Period) || ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal)) && text.find('.') == string::npos)
+               text += '.';
+         }
+      }
+      // Any non-empty delta field switches the op to numeric entry; all cleared returns to the mouse
+      if (m_op.op != ImGuizmo::OPERATION(0))
+         m_op.numUsed = !m_op.numText[0].empty() || !m_op.numText[1].empty() || !m_op.numText[2].empty();
+   }
+   else if (m_editor.GetTargetViewport() == this && m_editor.m_hoverBp == nullptr && !io.WantCaptureKeyboard && m_editor.m_fileOp == nullptr)
    {
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {
@@ -1410,8 +2002,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_G))
       {
-         // Grab (translate)
-
+         // Grab: Alt+G resets the position (Blender), G arms a modal translate op
          if (io.KeyAlt && !m_editor.m_pointEditPart)
          {
             Matrix3D tmp;
@@ -1419,14 +2010,13 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                m_editor.SetSelectionTransform(tmp, true, false, false);
          }
          else if (!io.KeyCtrl)
-            SetGizmoOperation(ImGuizmo::TRANSLATE);
+            BeginTransformOp(ImGuizmo::TRANSLATE);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_S))
       {
-         // Ctrl+S (save) is handled by the editor before this; Scale otherwise
+         // Ctrl+S (save) is handled by the editor before this; Alt+S resets the scale, S arms a modal scale op
          if (!io.KeyCtrl)
          {
-
             if (io.KeyAlt && !m_editor.m_pointEditPart)
             {
                Matrix3D tmp;
@@ -1434,13 +2024,12 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                   m_editor.SetSelectionTransform(tmp, false, true, false);
             }
             else
-               SetGizmoOperation(ImGuizmo::SCALE);
+               BeginTransformOp(ImGuizmo::SCALE);
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_R))
       {
-         // Rotate
-
+         // Rotate: Alt+R resets the rotation (Blender), R arms a modal rotate op
          if (io.KeyAlt && !m_editor.m_pointEditPart)
          {
             Matrix3D tmp;
@@ -1448,7 +2037,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                m_editor.SetSelectionTransform(tmp, false, false, true);
          }
          else if (!io.KeyCtrl)
-            SetGizmoOperation(ImGuizmo::ROTATE);
+            BeginTransformOp(ImGuizmo::ROTATE);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Z) && !io.KeyCtrl && !io.KeyShift && !io.KeyAlt)
       {
