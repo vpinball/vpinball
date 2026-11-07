@@ -286,6 +286,7 @@ public:
    void ExportMesh(ObjLoader &loader) final;
 
    const Matrix3D &RecalculateMatrices();
+   void OnMeshVerticesChanged(); // Mesh vertices were edited in place: refresh the cached bounds
    void TransformVertices();
 
    // Fills 'triangles' with 3 consecutive 2D vertices per mesh triangle, in reversed winding order

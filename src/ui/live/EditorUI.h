@@ -69,6 +69,7 @@ class EditorUI final
    friend class ScriptPane;
    friend class BlueprintPane;
    friend class ViewportPane;
+   friend class SetOrigin;
 
 public:
    EditorUI(LiveUI &liveUI);
