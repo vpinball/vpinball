@@ -9,7 +9,7 @@ namespace VPX::EditorUI
 
 class EditorUI;
 
-// One status bar helper message of the bottom bar: a [key chip] followed by its action label (e.g. {"LMB", "Select"})
+// One status bar helper message of the bottom bar: a [key chip] followed by its action label (e.g. {ICON_LC_MOUSE_LEFT, "Select"})
 struct StatusHint
 {
    string key, label;

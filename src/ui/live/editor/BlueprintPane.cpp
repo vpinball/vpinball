@@ -10,6 +10,7 @@
 #include "physics/PhysicsEngine.h"
 #include "ui/live/LiveUI.h"
 #include "EditorTheme.h"
+#include "IconsLucide.h"
 #include "fonts/IconsForkAwesome.h"
 #include "OutlinerPanel.h"
 #include "Selection.h"
@@ -1104,27 +1105,28 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
 void BlueprintPane::AppendStatusHints(vector<StatusHint>& hints) const
 {
    if (m_moveDragActive)
-      hints = { { "Drag", "Move" }, { "Release LMB", "Confirm" } };
+      hints = { { "Drag", "Move" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
    else if (m_pointDragActive)
-      hints = { { "Drag", "Move Point" }, { "Release LMB", "Confirm" } };
+      hints = { { "Drag", "Move Point" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
    else if (m_gizmoDragActive)
-      hints = { { "Drag", "Transform" }, { "Release LMB", "Confirm" } };
+      hints = { { "Drag", "Transform" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
    else if (m_boxSelectActive)
-      hints = { { "Release LMB", "Select" }, { "Shift", "Add to Selection" }, { "Esc", "Cancel" } };
+      hints = { { "Release " ICON_LC_MOUSE_LEFT, "Select" }, { "Shift", "Add to Selection" }, { "Esc", "Cancel" } };
    else if (m_menuArmed)
-      hints = { { "Release RMB", "Context Menu" } };
+      hints = { { "Release " ICON_LC_MOUSE_RIGHT, "Context Menu" } };
    else if (m_editor.m_addPartType != eItemInvalid || m_editor.m_partLibrary.IsPlacementArmed())
-      hints = { { "LMB", "Place Part" }, { "Esc", "Cancel" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Place Part" }, { "Esc", "Cancel" } };
    else if (m_editor.m_pointEditPart)
    {
       if (m_editor.m_pointEditCenter)
-         hints = { { "LMB", "Select Center" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
+         hints = { { ICON_LC_MOUSE_LEFT, "Select Center" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
       else
-         hints = { { "LMB", "Select Point" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
+         hints = { { ICON_LC_MOUSE_LEFT, "Select Point" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
    }
    else
    {
-      hints = { { "LMB", "Select" }, { "Drag LMB", "Move" }, { "RMB", "Menu" }, { "MMB", "Pan" }, { "Wheel", "Zoom" }, { "Arrows", "Nudge" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { "Drag " ICON_LC_MOUSE_LEFT, "Move" }, { ICON_LC_MOUSE_RIGHT, "Menu" }, { ICON_LC_MOUSE, "Pan" }, { "Wheel", "Zoom" },
+         { "Arrows", "Nudge" } };
       if (!m_editor.m_table->IsLocked())
       {
          hints.push_back({ "G/S/R", "Gizmo Op" });

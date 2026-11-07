@@ -14,6 +14,7 @@
 #include "ui/live/FileDialog.h"
 #include "BlueprintPane.h"
 #include "ui/live/editor/parts/EditorUIPartRegistry.h"
+#include "IconsLucide.h"
 #include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"
 #include "utils/JSONSerializer.h"
@@ -791,8 +792,8 @@ void PartLibraryPane::OnUnhosted() { m_editor.m_partLibrary.ClearPreview(); }
 void PartLibraryPane::AppendStatusHints(vector<StatusHint> &hints) const
 {
    if (m_editor.m_partLibrary.IsPlacementArmed())
-      hints = { { "LMB over a view", "Place Pack" }, { "Esc", "Cancel" } };
+      hints = { { ICON_LC_MOUSE_LEFT " over a view", "Place Pack" }, { "Esc", "Cancel" } };
    else
-      hints = { { "LMB", "Select Pack" }, { "Wheel", "Scroll" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Select Pack" }, { "Wheel", "Scroll" } };
 }
 }
