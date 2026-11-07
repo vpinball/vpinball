@@ -98,12 +98,20 @@ enum class ShaderTechnique : unsigned int
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
    SHADER_TECHNIQUE(basic_without_texture),
    SHADER_TECHNIQUE(basic_without_texture_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_normal),
+   SHADER_TECHNIQUE(basic_without_texture_normal_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refl),
    SHADER_TECHNIQUE(basic_without_texture_refl_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refl_normal),
+   SHADER_TECHNIQUE(basic_without_texture_refl_normal_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refr),
    SHADER_TECHNIQUE(basic_without_texture_refr_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_normal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_normal_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl),
    SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl_normal),
+   SHADER_TECHNIQUE(basic_without_texture_refr_refl_normal_isMetal),
 
    // Unshaded
    SHADER_TECHNIQUE(unshaded_without_texture),

@@ -94,7 +94,7 @@ struct QuadCapture
 };
 
 // Renders the default table with the normal mapped quad, and returns the screenshot with the screen area inside the quad
-QuadCapture CaptureQuad(const string& screenshot, const NormalMap type, const FrameSigns signs = { 1.f, 1.f })
+QuadCapture CaptureQuad(const string& screenshot, const NormalMap type, const FrameSigns signs = { 1.f, 1.f }, const bool useBaseImage = true)
 {
    ResetVPX();
 #ifdef ENABLE_BGFX
@@ -132,8 +132,11 @@ QuadCapture CaptureQuad(const string& screenshot, const NormalMap type, const Fr
    }
    quad->m_mesh.m_indices = { 0, 1, 2, 2, 1, 3 };
    quad->m_mesh.m_validBounds = false;
-   REQUIRE(table->ImportImage(WriteBaseColor(), "NormalMapTestBase"s) != nullptr);
-   quad->m_d.m_szImage = "NormalMapTestBase"s;
+   if (useBaseImage)
+   {
+      REQUIRE(table->ImportImage(WriteBaseColor(), "NormalMapTestBase"s) != nullptr);
+      quad->m_d.m_szImage = "NormalMapTestBase"s;
+   }
    if (type != NormalMap::None)
    {
       REQUIRE(table->ImportImage(WriteNormalMap(type, signs), "NormalMapTest"s) != nullptr);
@@ -247,20 +250,38 @@ void CheckNormalMapping(const string& prefix)
    CHECK(diffs[0] < 0.25 * effect); // and matches the tangent space render
 }
 
+// A normal map without any base color image must also have a visible effect (material color only)
+void CheckNormalMapOnly(const string& prefix)
+{
+   const QuadCapture flat = CaptureQuad(prefix + "-flat-Test.webp", NormalMap::None, { 1.f, 1.f }, false);
+   const QuadCapture tangent = CaptureQuad(prefix + "-tangent-Test.webp", NormalMap::TangentSpace, { 1.f, 1.f }, false);
+   const double effect = QuadDifference(tangent, flat);
+   MESSAGE(prefix, ": normal map only effect ", effect);
+   CHECK(effect > 2.0);
+}
 }
 
 TEST_CASE("Normal mapping render [render]")
 {
 #if defined(ENABLE_DX9)
-   SUBCASE("Direct3D9") { CheckNormalMapping("test000-normalmap-DX9"s); }
+   SUBCASE("Direct3D9")
+   {
+      CheckNormalMapping("test000-normalmap-DX9"s);
+      CheckNormalMapOnly("test000-normalmap-only-DX9"s);
+   }
 #elif defined(ENABLE_OPENGL)
-   SUBCASE("OpenGL") { CheckNormalMapping("test000-normalmap-GL"s); }
+   SUBCASE("OpenGL")
+   {
+      CheckNormalMapping("test000-normalmap-GL"s);
+      CheckNormalMapOnly("test000-normalmap-only-GL"s);
+   }
 #elif defined(ENABLE_BGFX)
    const auto runBGFX = [](const string& backend, const bgfx::RendererType::Enum type, const string& prefix)
    {
       s_backend = backend;
       s_lastRenderer = bgfx::RendererType::Count;
       CheckNormalMapping(prefix);
+      CheckNormalMapOnly(prefix + "-only"s);
       s_backend.clear();
       CHECK(s_lastRenderer == type);
    };

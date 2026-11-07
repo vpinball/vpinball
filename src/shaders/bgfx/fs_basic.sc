@@ -218,14 +218,12 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 
       const vec3 V = -normalize(v_worldPos);
       vec3 N = normalize(v_normal);
-      #ifdef TEX
-         BRANCH if (doNormalMapping)
-            #ifdef STEREO
-               N = normal_map(N, v_worldPos, v_texcoord0, v_eye);
-            #else
-               N = normal_map(N, v_worldPos, v_texcoord0);
-            #endif
-      #endif
+      BRANCH if (doNormalMapping)
+         #ifdef STEREO
+            N = normal_map(N, v_worldPos, v_texcoord0, v_eye);
+         #else
+            N = normal_map(N, v_worldPos, v_texcoord0);
+         #endif
 
       //color = vec4((N+1.0)*0.5,1.0); return; // visualize normals
 

@@ -1000,14 +1000,7 @@ void Primitive::Render(const unsigned int renderMask)
    m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pinAlphaTest);
 
    // accommodate models with UV coords outside of [0,1] by using Repeat address mode
-   if (img && nMap)
-   {
-      m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_color, img, false, pinf, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT);
-      m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_normalmap, nMap, true);
-      m_renderer->m_renderDevice->m_basicShader->SetBool(ShaderUniform::objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !img->IsOpaque() || alpha != 100.f);
-   }
-   else if (img)
+   if (img)
    {
       m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_color, img, false, pinf, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT);
       m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !img->IsOpaque() || alpha != 100.f);
@@ -1015,6 +1008,11 @@ void Primitive::Render(const unsigned int renderMask)
    else
    {
       m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, alpha != 100.f);
+   }
+   if (nMap)
+   {
+      m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_normalmap, nMap, true);
+      m_renderer->m_renderDevice->m_basicShader->SetBool(ShaderUniform::objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
    }
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
