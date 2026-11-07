@@ -19,9 +19,7 @@ class NudgeHandler;
 };
 
 
-class InputManager final
-   : public ButtonMapping::ButtonInputEventManager
-   , public SensorMapping::AxisInputEventManager
+class InputManager final : public InputAction::EventManager, public SensorMapping::AxisInputEventManager
 {
 public:
    InputManager(class Player* player, Settings& appSettings);
@@ -72,7 +70,7 @@ public:
    unsigned int GetRulesActionId() const { return m_rulesActionId; }
    unsigned int GetMouseLeftActionId() const { return m_mouseLeftActionId; }
    unsigned int GetMouseRightActionId() const { return m_mouseRightActionId; }
-   bool IsUINavigationActionId(unsigned int id) const;
+   bool IsUINavigationActionId(unsigned int id) const override;
    bool IsPressed(int actionId) const;
    int GetWindowVirtualKeyForAction(unsigned int actionId) const;
 
@@ -104,8 +102,8 @@ public:
    void ClearDeviceMappings(uint16_t deviceId);
    bool HasDeviceDefaultMapping(uint16_t deviceId) const;
    void ApplyDefaultDeviceMapping(uint16_t deviceId);
-   uint16_t GetDeviceId(const string& settingsId);
-   const string& GetDeviceSettingId(uint16_t deviceId) const;
+   uint16_t GetDeviceId(const string& settingsId) override;
+   const string& GetDeviceSettingId(uint16_t deviceId) const override;
    const string& GetDeviceName(uint16_t deviceId) const;
    bool IsDeviceConnected(uint16_t deviceId) const;
    bool IsDeviceMapped(uint16_t deviceId) const;
@@ -128,8 +126,8 @@ public:
    void AddAxisListener(std::function<void()> listener) { m_axisListeners.push_back(std::move(listener)); }
    void ClearAxisListeners() { m_axisListeners.clear(); }
 
-   void RegisterOnUpdate(InputAction* action);
-   void UnregisterOnUpdate(InputAction* action);
+   void RegisterOnUpdate(InputAction* action) override;
+   void UnregisterOnUpdate(InputAction* action) override;
 
    struct TouchRegionDef
    {
@@ -142,7 +140,7 @@ public:
 
    void StartButtonCapture();
    const vector<ButtonMapping>& GetButtonCapture() const { return m_buttonCapture; }
-   string GetMappingLabel(const vector<ButtonMapping>& mappings) const;
+   string GetMappingLabel(const vector<ButtonMapping>& mappings) const override;
    bool IsButtonCaptureDone() const { return m_buttonCaptureState == 2; }
 
    // ButtonInputEventManager
@@ -162,7 +160,7 @@ public:
    };
 
    // Used by actions to report state changes and query if local processing should be performed
-   bool OnInputActionStateChanged(InputAction* action);
+   bool OnInputActionStateChanged(InputAction* action) override;
 
    // Speed: 0..1. Pulses are mixed, not replaced: the device plays the strongest active pulse per motor, and
    // falls back to the next one when that runs out. The devices are driven by UpdateRumble.

@@ -61,6 +61,7 @@
     <ClCompile Include="../../tests/core/test-settings.cpp" />
     <ClCompile Include="../../tests/core/test-tabledb.cpp" />
     <ClCompile Include="../../tests/input/test-buttonmapping.cpp" />
+    <ClCompile Include="../../tests/input/test-inputaction.cpp" />
     <ClCompile Include="../../tests/input/test-plunger-kalman.cpp" />
     <ClCompile Include="../../tests/input/test-scancodes.cpp" />
     <ClCompile Include="../../tests/input/test-sensormapping.cpp" />

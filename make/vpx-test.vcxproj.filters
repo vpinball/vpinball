@@ -74,6 +74,9 @@
     <ClCompile Include="../../tests/input/test-buttonmapping.cpp">
       <Filter>input</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/input/test-inputaction.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/input/test-plunger-kalman.cpp">
       <Filter>input</Filter>
     </ClCompile>

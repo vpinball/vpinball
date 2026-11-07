@@ -108,13 +108,9 @@ public:
       return ButtonMapping(eventManager, mappingHandler, m_deviceId, m_axisOrButtonId, m_axisThreshold, m_isAxisReversed);
    }
 
-   void SetAxisPosition(float position)
-   {
-      if (m_isAxisReversed)
-         SetPressed(position <= m_axisThreshold);
-      else
-         SetPressed(position >= m_axisThreshold);
-   }
+   bool ComputeAxisPressed(float position) const { return m_isAxisReversed ? position <= m_axisThreshold : position >= m_axisThreshold; }
+
+   void SetAxisPosition(float position) { SetPressed(ComputeAxisPressed(position)); }
 
    void SetPressed(bool pressed)
    {

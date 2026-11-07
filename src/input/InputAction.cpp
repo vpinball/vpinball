@@ -6,10 +6,7 @@
 #include <sstream>
 
 
-void InputAction::ClearMapping()
-{
-   m_inputMappings.clear();
-}
+void InputAction::ClearMapping() { m_inputBindings.clear(); }
 
 void InputAction::LoadMapping(const Settings& settings)
 {
@@ -86,19 +83,19 @@ void InputAction::AddMapping(const vector<ButtonMapping>& mapping)
       return;
 
    // Recreate the mapping, tied to this InputAction and registered in the event manager
-   vector<ButtonMapping> newMapping;
-   newMapping.reserve(mapping.size());
+   Binding newBinding;
+   newBinding.buttons.reserve(mapping.size());
    for (const ButtonMapping& map : mapping)
-      newMapping.push_back(map.With(m_eventManager, this));
-   m_inputMappings.push_back(std::move(newMapping));
+      newBinding.buttons.push_back(map.With(m_eventManager, this));
+   m_inputBindings.push_back(std::move(newBinding));
 }
 
 void InputAction::UnmapDevice(uint16_t deviceId)
 {
-   for (auto it = m_inputMappings.begin(); it < m_inputMappings.end();)
+   for (auto it = m_inputBindings.begin(); it < m_inputBindings.end();)
    {
       bool unmap = false;
-      for (const ButtonMapping& exMapping : *it)
+      for (const ButtonMapping& exMapping : it->buttons)
       {
          if (exMapping.GetDeviceId() == deviceId)
          {
@@ -107,7 +104,7 @@ void InputAction::UnmapDevice(uint16_t deviceId)
          }
       }
       if (unmap)
-         it = m_inputMappings.erase(it);
+         it = m_inputBindings.erase(it);
       else
          ++it;
    }
@@ -115,8 +112,8 @@ void InputAction::UnmapDevice(uint16_t deviceId)
 
 bool InputAction::IsMappedToDevice(uint16_t deviceId) const
 {
-   for (const auto& mappings : m_inputMappings)
-      for (const ButtonMapping& mapping : mappings)
+   for (const auto& binding : m_inputBindings)
+      for (const ButtonMapping& mapping : binding.buttons)
          if (mapping.GetDeviceId() == deviceId)
             return true;
    return false;
@@ -127,8 +124,8 @@ bool InputAction::HasMapping(const vector<ButtonMapping>& mapping) const
    if (mapping.empty())
       return false;
 
-   for (const vector<ButtonMapping>& exMapping : m_inputMappings)
-      if (IsSameMapping(mapping, exMapping))
+   for (const Binding& exBinding : m_inputBindings)
+      if (IsSameMapping(mapping, exBinding.buttons))
          return true;
 
    return false;
@@ -159,13 +156,13 @@ string InputAction::GetMappingString() const
 {
    std::stringstream result;
    bool firstOr = true;
-   for (const auto& mappings : m_inputMappings)
+   for (const auto& binding : m_inputBindings)
    {
       if (!firstOr)
          result << " | ";
       firstOr = false;
       bool firstAnd = true;
-      for (const ButtonMapping& mapping : mappings)
+      for (const ButtonMapping& mapping : binding.buttons)
       {
          if (!firstAnd)
             result << " & ";
@@ -182,19 +179,19 @@ string InputAction::GetMappingString() const
 
 string InputAction::GetMappingLabel() const
 {
-   if (m_inputMappings.empty())
+   if (m_inputBindings.empty())
       return "Not Defined"s;
    std::stringstream result;
    bool firstOr = true;
-   bool withParenthesis = m_inputMappings.size() > 1;
-   for (const auto& mappings : m_inputMappings)
+   bool withParenthesis = m_inputBindings.size() > 1;
+   for (const auto& binding : m_inputBindings)
    {
       if (!firstOr)
          result << " or ";
-      if (withParenthesis && mappings.size() > 1)
+      if (withParenthesis && binding.buttons.size() > 1)
          result << '[';
-      result << m_eventManager->GetMappingLabel(mappings);
-      if (withParenthesis && mappings.size() > 1)
+      result << m_eventManager->GetMappingLabel(binding.buttons);
+      if (withParenthesis && binding.buttons.size() > 1)
          result << ']';
       firstOr = false;
    }
@@ -223,30 +220,66 @@ void InputAction::SetDirectState(int slot, bool state)
    }
 }
 
+// A binding is completed by a press on 'deviceAndButtonId' if all of its members are pressed once
+// this event is applied (memberNewState gives the post-event state of members on that input) and at
+// least one of them transitions to pressed, meaning the chord was not already complete before.
+bool InputAction::IsCompletedByPress(const Binding& binding, uint32_t deviceAndButtonId, const std::function<bool(const ButtonMapping&)>& memberNewState)
+{
+   bool triggered = false;
+   for (const ButtonMapping& member : binding.buttons)
+   {
+      if ((member.GetDeviceId() << 16 | member.GetAxisOrButtonId()) == deviceAndButtonId)
+      {
+         if (!memberNewState(member))
+            return false;
+         triggered |= !member.IsPressed();
+      }
+      else if (!member.IsPressed())
+         return false;
+   }
+   return triggered;
+}
+
+size_t InputAction::GetCompletedBindingSize(uint32_t deviceAndButtonId, const std::function<bool(const ButtonMapping&)>& memberNewState) const
+{
+   size_t longest = 0;
+   for (const Binding& binding : m_inputBindings)
+      if (IsCompletedByPress(binding, deviceAndButtonId, memberNewState))
+         longest = std::max(longest, binding.buttons.size());
+   return longest;
+}
+
+void InputAction::SuppressCompletedBindings(uint32_t deviceAndButtonId, const std::function<bool(const ButtonMapping&)>& memberNewState, size_t minSize)
+{
+   for (Binding& binding : m_inputBindings)
+      if (binding.buttons.size() < minSize && IsCompletedByPress(binding, deviceAndButtonId, memberNewState))
+         binding.suppressed = true;
+}
+
 void InputAction::OnInputChanged(ButtonMapping*)
 {
    const bool wasPressed = m_isPressed;
    m_isPressed = false;
-   
+
    // Evaluate direct state
    for (bool state : m_directStates)
       m_isPressed |= state;
-   
-   // Evaluate input mappings
-   if (!m_isPressed)
+
+   // Evaluate input bindings. Always evaluated (not only when no direct state is active) so that
+   // a suppressed chord's veto is reliably cleared once its buttons are no longer held together.
+   for (Binding& binding : m_inputBindings)
    {
-      for (const auto& mappings : m_inputMappings)
+      bool satisfied = true;
+      for (const ButtonMapping& mapping : binding.buttons)
       {
-         m_isPressed = true;
-         for (const auto& mapping : mappings)
-         {
-            m_isPressed &= mapping.IsPressed();
-            if (!m_isPressed)
-               break;
-         }
-         if (m_isPressed)
+         satisfied &= mapping.IsPressed();
+         if (!satisfied)
             break;
       }
+      if (satisfied)
+         m_isPressed |= !binding.suppressed;
+      else
+         binding.suppressed = false;
    }
 
    if (m_isPressed != wasPressed)
