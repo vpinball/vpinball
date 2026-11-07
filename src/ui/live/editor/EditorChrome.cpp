@@ -118,7 +118,7 @@ void EditorChrome::RenderMenuBar()
          const auto viewItem = [vp](const char *label, const char *keys, const ViewportPane::PredefinedView view)
          {
             if (ImGui::MenuItem(label, keys, vp != nullptr && vp->m_viewType == ViewMode::EditorCam && vp->m_predefinedView == view, vp != nullptr))
-               vp->SetView(view);
+               vp->AnimateViewTo(view);
          };
          viewItem("Top", "Numpad 7", ViewportPane::PredefinedView::Top);
          viewItem("Bottom", "Ctrl+Numpad 7", ViewportPane::PredefinedView::Bottom);

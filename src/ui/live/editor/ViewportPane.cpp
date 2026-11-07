@@ -16,6 +16,7 @@
 #include "renderer/Renderer.h"
 #include "renderer/RenderView.h"
 #include "renderer/Window.h"
+#include "imgui/imgui_internal.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
 
@@ -47,6 +48,7 @@ void ViewportPane::OnUnhosted()
 
 void ViewportPane::AdoptCameraFrom(const ViewportPane* const src)
 {
+   m_viewAnimFrames = 0;
    if (m_viewType == ViewMode::PreviewCam)
    {
       // A render preview shows the game camera: no editor camera to adopt
@@ -427,6 +429,7 @@ void ViewportPane::ResetCameraFromPlayer()
 {
    // Try to setup editor camera to match the used one, but only mostly since the EditorUI does not have some view setup features like off-center, ...
    m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_editor.m_renderer->GetMVP().GetView(0) * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+   m_viewAnimFrames = 0;
 }
 
 void ViewportPane::SetBackdropCamera()
@@ -439,33 +442,91 @@ void ViewportPane::SetBackdropCamera()
    const vec3 at((float)EDITOR_BG_WIDTH * 0.5f, (float)EDITOR_BG_HEIGHT * 0.5f, 0.f);
    constexpr vec3 up { 0.f, -1.f, 0.f };
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
+   m_viewAnimFrames = 0;
+}
+
+void ViewportPane::GetViewOrientation(const PredefinedView view, vec3& dir, vec3& up)
+{
+   // Orbit orientation of an axis aligned view: the camera sits at target + dir * distance (a zero
+   // dir is returned for views without an orientation, so callers can bail out)
+   up = vec3(0.f, 0.f, -1.f);
+   switch (view)
+   {
+   case PredefinedView::Top:
+      up = vec3(0.f, -1.f, 0.f);
+      dir = vec3(0.f, 0.f, -1.f);
+      break;
+   case PredefinedView::Bottom:
+      up = vec3(0.f, -1.f, 0.f);
+      dir = vec3(0.f, 0.f, 1.f);
+      break;
+   case PredefinedView::Front: dir = vec3(0.f, 1.f, 0.f); break;
+   case PredefinedView::Back: dir = vec3(0.f, -1.f, 0.f); break;
+   case PredefinedView::Left: dir = vec3(-1.f, 0.f, 0.f); break;
+   case PredefinedView::Right: dir = vec3(1.f, 0.f, 0.f); break;
+   default: dir = vec3(0.f, 0.f, 0.f); break;
+   }
 }
 
 void ViewportPane::SetView(const PredefinedView view)
 {
    // Editor Camera to an axis aligned view, keeping the orbit target and distance
    m_predefinedView = view;
+   m_viewAnimFrames = 0;
+   vec3 newUp, newDir;
+   GetViewOrientation(view, newDir, newUp);
+   if (newDir.LengthSquared() < 1e-10f)
+      return;
    Matrix3D inv(m_camView);
    inv.Invert();
    const vec3 camTarget = inv.GetOrthoNormalPos() - inv.GetOrthoNormalDir() * m_camDistance;
-   vec3 newUp { 0.f, 0.f, -1.f }, newDir;
-   switch (view)
-   {
-   case PredefinedView::Top:
-      newUp = vec3(0.f, -1.f, 0.f);
-      newDir = vec3(0.f, 0.f, -1.f);
-      break;
-   case PredefinedView::Bottom:
-      newUp = vec3(0.f, -1.f, 0.f);
-      newDir = vec3(0.f, 0.f, 1.f);
-      break;
-   case PredefinedView::Front: newDir = vec3(0.f, 1.f, 0.f); break;
-   case PredefinedView::Back: newDir = vec3(0.f, -1.f, 0.f); break;
-   case PredefinedView::Left: newDir = vec3(-1.f, 0.f, 0.f); break;
-   case PredefinedView::Right: newDir = vec3(1.f, 0.f, 0.f); break;
-   default: return;
-   }
    m_camView = Matrix3D::MatrixLookAtRH(camTarget + newDir * m_camDistance, camTarget, newUp);
+}
+
+void ViewportPane::AnimateViewTo(const PredefinedView view)
+{
+   // Start the animated snap to an axis aligned view: the camera lerps toward the orientation in
+   // RenderUI (any other camera edit cancels it by clearing the frame count)
+   vec3 dir, up;
+   GetViewOrientation(view, dir, up);
+   if (dir.LengthSquared() < 1e-10f)
+      return;
+   m_viewAnimTarget = view;
+   m_viewAnimDir = dir;
+   m_viewAnimUp = up;
+   m_predefinedView = view; // The status overlay shows the target right away
+   m_viewAnimFrames = 22;
+}
+
+void ViewportPane::OrbitCamera(const float dx, const float dy)
+{
+   // Orbit the camera around its target, keeping the orbit distance (MMB drag & view gizmo drag)
+   Matrix3D viewInverse(m_camView);
+   viewInverse.Invert();
+   vec3 dir = viewInverse.GetOrthoNormalDir();
+   const vec3 up = viewInverse.GetOrthoNormalUp();
+   const vec3 pos = viewInverse.GetOrthoNormalPos();
+   const vec3 right = viewInverse.GetOrthoNormalRight();
+   const vec3 camTarget = pos - dir * m_camDistance;
+   m_predefinedView = PredefinedView::None;
+   m_viewAnimFrames = 0;
+   const Matrix3D rx = Matrix3D::MatrixRotate(dx * 0.01f, up);
+   const Matrix3D ry = Matrix3D::MatrixRotate(dy * 0.01f, right);
+   const Matrix3D roll = rx * ry;
+   dir = roll.MultiplyVectorNoPerspective(dir);
+   dir.Normalize();
+
+   // clamp
+   vec3 planDir = CrossProduct(right, up);
+   planDir.y = 0.f;
+   planDir.Normalize();
+   if (const float dt = planDir.Dot(dir); dt < 0.0f)
+   {
+      dir += planDir * dt;
+      dir.Normalize();
+   }
+
+   m_camView = Matrix3D::MatrixLookAtRH(camTarget + dir * m_camDistance, camTarget, up);
 }
 
 void ViewportPane::FrameSelection()
@@ -499,6 +560,7 @@ void ViewportPane::FrameSelection()
       const vec3 newEye = newTarget + dir * m_camDistance;
       m_camView = Matrix3D::MatrixLookAtRH(newEye, newTarget, up);
    }
+   m_viewAnimFrames = 0;
 }
 
 void ViewportPane::SetPlayfieldCamera()
@@ -512,6 +574,7 @@ void ViewportPane::SetPlayfieldCamera()
    const vec3 at(m_editor.m_table->m_right * 0.5f, m_editor.m_table->m_bottom * 0.5f, 0.f);
    constexpr vec3 up { 0.f, -1.f, 0.f };
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
+   m_viewAnimFrames = 0;
 }
 
 nlohmann::json ViewportPane::SaveSetup() const
@@ -583,6 +646,7 @@ void ViewportPane::LoadSetup(const nlohmann::json& j)
    m_perspectiveCam = j.value("persp", true);
    m_orbitLock = j.value("orbitLock", false);
    m_cameraValid = j.value("camValid", true);
+   m_viewAnimFrames = 0;
 }
 
 bool ViewportPane::GetViewProjLH(Matrix3D& viewLH, Matrix3D& projLH) const
@@ -1258,6 +1322,31 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       m_editor.m_fitPlayfieldCamera = false;
    }
 
+   // View gizmo snap animation: the camera orientation is lerped toward the clicked axis end's
+   // predefined view (any other camera edit cancels it by clearing the frame count)
+   if (m_viewAnimFrames > 0 && m_viewType == ViewMode::EditorCam)
+   {
+      Matrix3D viewInverse(m_camView);
+      viewInverse.Invert();
+      const vec3 dir = viewInverse.GetOrthoNormalDir();
+      const vec3 up = viewInverse.GetOrthoNormalUp();
+      const vec3 camTarget = viewInverse.GetOrthoNormalPos() - dir * m_camDistance;
+      if (--m_viewAnimFrames == 0)
+      {
+         m_camView = Matrix3D::MatrixLookAtRH(camTarget + m_viewAnimDir * m_camDistance, camTarget, m_viewAnimUp);
+         m_predefinedView = m_viewAnimTarget;
+         m_viewAnimTarget = PredefinedView::None;
+      }
+      else
+      {
+         vec3 newDir = dir + (m_viewAnimDir - dir) * 0.25f;
+         vec3 newUp = up + (m_viewAnimUp - up) * 0.3f;
+         newDir.Normalize();
+         newUp.Normalize();
+         m_camView = Matrix3D::MatrixLookAtRH(camTarget + newDir * m_camDistance, camTarget, newUp);
+      }
+   }
+
    const ImGuiIO& io = ImGui::GetIO();
    // Called on every pane: the processing below works on this pane's own camera definition and its
    // image rect (the one under the mouse, or capturing a drag, handles input and keyboard)
@@ -1527,10 +1616,14 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          overlayDrawList->PopClipRect();
    }
 
+   // View orientation gizmo (EditorCam only): XYZ tripod at the top right of the image. It draws
+   // itself and handles its LMB orbit/snap input here since its hover gates the scene clicks below
+   RenderViewGizmo(overlayDrawList);
+
    // Handle uncaught mouse interaction: scene interactions (camera, picking, box select) only
    // apply inside this pane's image (its ImGui item state says if it is hovered or held)
    // The pane owns scene input while hovered/active, or the whole window while flying over it
-   const bool viewportInput = m_flyMode || m_op.op != ImGuizmo::OPERATION(0) || m_hovered || m_active;
+   const bool viewportInput = m_flyMode || m_op.op != ImGuizmo::OPERATION(0) || m_hovered || m_active || m_viewGizmoDragging;
    if (viewportInput && m_editor.m_fileOp == nullptr)
    {
       // Zoom in/out with mouse wheel
@@ -1543,6 +1636,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          m_camDistance *= powf(1.1f, -ImGui::GetIO().MouseWheel);
          const vec3 newEye = camTarget + dir * m_camDistance;
          m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, up);
+         m_viewAnimFrames = 0;
       }
 
       // Modal transform op mouse input: while active it owns the pane's scene input (LMB confirms,
@@ -1628,28 +1722,10 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                drag.y *= 2.f * halfH / viewH;
                camTarget = camTarget - right * drag.x + up * drag.y;
                m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
+               m_viewAnimFrames = 0;
             }
             else
-            {
-               m_predefinedView = PredefinedView::None;
-               const Matrix3D rx = Matrix3D::MatrixRotate(drag.x * 0.01f, up);
-               const Matrix3D ry = Matrix3D::MatrixRotate(drag.y * 0.01f, right);
-               const Matrix3D roll = rx * ry;
-               dir = roll.MultiplyVectorNoPerspective(dir);
-               dir.Normalize();
-
-               // clamp
-               vec3 planDir = CrossProduct(right, up);
-               planDir.y = 0.f;
-               planDir.Normalize();
-               if (float dt = planDir.Dot(dir); dt < 0.0f)
-               {
-                  dir += planDir * dt;
-                  dir.Normalize();
-               }
-
-               m_camView = Matrix3D::MatrixLookAtRH(camTarget + dir * m_camDistance, camTarget, up);
-            }
+               OrbitCamera(drag.x, drag.y);
          }
       }
 
@@ -1657,7 +1733,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       // shift+click toggles a part in the multi selection, drag box selects parts (shift+drag adds to the selection)
       // In drag point edit mode, click selects a drag point of the edited curve (shift toggles), dragging a
       // selected point moves the selected points in the table XY plane, drag box selects points
-      if (!modalMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
+      if (!modalMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !m_viewGizmoHover)
       {
          m_boxSelectStart = ImGui::GetMousePos();
          if (m_editor.m_partLibrary.IsPlacementArmed())
@@ -2062,15 +2138,167 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad7))
       {
-         SetView(io.KeyCtrl ? PredefinedView::Bottom : PredefinedView::Top);
+         AnimateViewTo(io.KeyCtrl ? PredefinedView::Bottom : PredefinedView::Top);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad1))
       {
-         SetView(io.KeyCtrl ? PredefinedView::Back : PredefinedView::Front);
+         AnimateViewTo(io.KeyCtrl ? PredefinedView::Back : PredefinedView::Front);
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad3))
       {
-         SetView(io.KeyCtrl ? PredefinedView::Left : PredefinedView::Right);
+         AnimateViewTo(io.KeyCtrl ? PredefinedView::Left : PredefinedView::Right);
+      }
+   }
+}
+
+void ViewportPane::RenderViewGizmo(ImDrawList* const drawList)
+{
+   // Blender-style orientation gizmo: an XYZ tripod at the top right of the pane's image. A LMB
+   // drag orbits the camera (the orbit lock only remaps MMB, it does not apply here), a click on
+   // an axis end animates the camera to that axis aligned view
+   m_viewGizmoHover = false;
+   m_viewGizmoHoverEnd = -1;
+   const bool enabled = m_viewType == ViewMode::EditorCam && m_cameraValid && m_op.op == ImGuizmo::OPERATION(0) && m_editor.m_fileOp == nullptr;
+   if (!enabled)
+   {
+      m_viewGizmoDragging = false;
+      m_viewGizmoPressEnd = -1;
+   }
+   const bool presenting = m_flyMode || (m_view != nullptr && m_view->m_renderScene);
+   if (m_viewType != ViewMode::EditorCam || !m_cameraValid || !presenting)
+      return;
+
+   const ImGuiIO& io = ImGui::GetIO();
+   const float dpi = m_editor.m_liveUI.GetDPI();
+   const AreaRect& rect = m_flyMode ? m_editor.m_viewportRect : m_imageRect;
+   const float axisLen = 36.f * dpi;
+   const float endR = 8.5f * dpi;
+   const float backR = axisLen + endR + 4.f * dpi;
+   if (rect.Width() < 2.f * backR || rect.Height() < 2.f * backR)
+      return;
+   const ImVec2 center(rect.x1 - backR - 10.f * dpi, rect.y0 + backR + 10.f * dpi);
+
+   // Screen direction of each table axis, rotated by the pane camera only: a table axis a is
+   // (x, y, -z) in the camera's right-handed space, its view coordinates are the dot products with
+   // the camera basis (view x goes right, view y goes up, view z points to the viewer)
+   Matrix3D viewInverse(m_camView);
+   viewInverse.Invert();
+   const vec3 right = viewInverse.GetOrthoNormalRight();
+   const vec3 up = viewInverse.GetOrthoNormalUp();
+   const vec3 camDir = viewInverse.GetOrthoNormalDir();
+   static const vec3 axisDir[3] = { vec3(1.f, 0.f, 0.f), vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, -1.f) };
+   ImVec2 endPos[6];
+   float endDepth[6];
+   for (int e = 0; e < 6; ++e)
+   {
+      const vec3& a = axisDir[e / 2];
+      const float s = (e & 1) ? -1.f : 1.f;
+      endPos[e] = ImVec2(center.x + s * a.Dot(right) * axisLen, center.y - s * a.Dot(up) * axisLen);
+      endDepth[e] = s * a.Dot(camDir);
+   }
+
+   // Ends sorted back to front (the cap facing away is drawn first, slightly transparent): the
+   // order doubles as a hit priority, the front cap wins when ends coincide on screen
+   int order[6] = { 0, 1, 2, 3, 4, 5 };
+   std::ranges::sort(order, [&endDepth](const int a, const int b) { return endDepth[a] < endDepth[b]; });
+
+   // Hover: the gizmo owns the mouse while inside its backing disc over this pane's image (or over
+   // the fly viewport). The corner zone and the other windows still win through the item hover
+   const ImVec2 mouse = io.MousePos;
+   const float mdx = mouse.x - center.x, mdy = mouse.y - center.y;
+   bool paneHover = m_viewGizmoDragging;
+   if (m_flyMode)
+   {
+      const ImGuiWindow* const hw = ImGui::GetCurrentContext()->HoveredWindow;
+      const char* const hwName = hw != nullptr ? hw->RootWindow->Name : "";
+      paneHover
+         |= mouse.x >= rect.x0 && mouse.x <= rect.x1 && mouse.y >= rect.y0 && mouse.y <= rect.y1 && (hw == nullptr || strcmp(hwName, "overlays") == 0 || strcmp(hwName, "text overlay") == 0);
+   }
+   else
+      paneHover |= m_hovered;
+   if (enabled && paneHover && mdx * mdx + mdy * mdy <= backR * backR)
+   {
+      m_viewGizmoHover = true;
+      float bestDist = (endR + 2.f * dpi) * (endR + 2.f * dpi);
+      for (const int e : order) // Front to back: a coinciding front cap wins over a back one
+      {
+         const float ex = mouse.x - endPos[e].x, ey = mouse.y - endPos[e].y;
+         if (ex * ex + ey * ey <= bestDist)
+         {
+            bestDist = ex * ex + ey * ey;
+            m_viewGizmoHoverEnd = e;
+         }
+      }
+   }
+
+   // LMB press inside the disc starts a drag that orbits the camera; a click (no drag) released on
+   // the pressed axis end snaps to that axis aligned view (animated, see RenderUI)
+   if (m_viewGizmoDragging)
+   {
+      if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+         OrbitCamera(io.MouseDelta.x, io.MouseDelta.y);
+      else
+      {
+         const float pdx = mouse.x - m_viewGizmoPress.x, pdy = mouse.y - m_viewGizmoPress.y;
+         if (enabled && m_viewGizmoPressEnd >= 0 && m_viewGizmoHoverEnd == m_viewGizmoPressEnd && pdx * pdx + pdy * pdy <= 16.f * dpi * dpi)
+         {
+            static const PredefinedView endView[6]
+               = { PredefinedView::Right, PredefinedView::Left, PredefinedView::Front, PredefinedView::Back, PredefinedView::Top, PredefinedView::Bottom };
+            // Already aligned on the clicked axis (the end pointing at the viewer, whatever the way
+            // this view was reached): the click flips to the opposite view, like Blender's toggling
+            const bool aligned = ((m_viewGizmoPressEnd & 1) ? -1.f : 1.f) * axisDir[m_viewGizmoPressEnd / 2].Dot(camDir) > 0.999f || endView[m_viewGizmoPressEnd] == m_predefinedView;
+            AnimateViewTo(endView[m_viewGizmoPressEnd ^ (aligned ? 1 : 0)]);
+         }
+         m_viewGizmoDragging = false;
+         m_viewGizmoPressEnd = -1;
+      }
+   }
+   else if (enabled && m_viewGizmoHover && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+   {
+      m_viewGizmoDragging = true;
+      m_viewGizmoPress = mouse;
+      m_viewGizmoPressEnd = m_viewGizmoHoverEnd;
+      if (ImGuizmo::IsUsingAny())
+      {
+         ImGuizmo::Enable(false); // A selection gizmo handle under the corner must not drag along
+         ImGuizmo::Enable(true);
+      }
+   }
+
+   // Transparent grey backing disc while hovered or dragged
+   if (m_viewGizmoHover || m_viewGizmoDragging)
+      drawList->AddCircleFilled(center, backR, IM_COL32(128, 128, 128, 64));
+
+   // A colored line from the origin toward each positive direction, then the axis end caps sorted
+   // back to front (the cap facing away is drawn first, slightly transparent)
+   static const ImU32 axisColor[3] = { IM_COL32(255, 90, 90, 255), IM_COL32(90, 220, 90, 255), IM_COL32(100, 140, 255, 255) };
+   static const char* const axisLabel[2][3] = { { "X", "Y", "Z" }, { "-X", "-Y", "-Z" } };
+   for (int i = 0; i < 3; ++i)
+   {
+      const unsigned alpha = endDepth[i * 2] < 0.f ? 130u : 230u;
+      drawList->AddLine(center, endPos[i * 2], (axisColor[i] & ~IM_COL32_A_MASK) | (alpha << IM_COL32_A_SHIFT), 1.5f * dpi);
+   }
+   for (const int e : order)
+   {
+      const bool pos = (e & 1) == 0;
+      const bool away = endDepth[e] < 0.f;
+      const bool hovered = e == m_viewGizmoHoverEnd;
+      const unsigned alpha = away ? 130u : 230u;
+      const ImU32 color = (axisColor[e / 2] & ~IM_COL32_A_MASK) | (alpha << IM_COL32_A_SHIFT);
+      if (pos)
+         drawList->AddCircleFilled(endPos[e], endR, color, 16);
+      else
+      {
+         drawList->AddCircleFilled(endPos[e], endR, IM_COL32(60, 60, 60, away ? 60 : 120), 16);
+         drawList->AddCircle(endPos[e], endR, color, 16, 1.5f * dpi);
+      }
+      if (hovered)
+         drawList->AddCircle(endPos[e], endR + 1.5f * dpi, IM_COL32(255, 255, 255, 220), 16, dpi);
+      if (pos || hovered)
+      {
+         const char* const label = axisLabel[pos ? 0 : 1][e / 2];
+         const ImVec2 ts = ImGui::CalcTextSize(label);
+         drawList->AddText(ImVec2(endPos[e].x - ts.x * 0.5f, endPos[e].y - ts.y * 0.5f), pos ? IM_COL32(0, 0, 0, alpha) : IM_COL32(255, 255, 255, 255), label);
       }
    }
 }

@@ -70,6 +70,7 @@ public:
    void SetBackdropCamera();
    void SetPlayfieldCamera();
    void SetView(PredefinedView view); // Axis aligned view, keeping the orbit target and distance
+   void AnimateViewTo(PredefinedView view); // Same snap as SetView, animated (gizmo click, numpad 1/3/7, View menu)
    // The pane's view mode is fixed by its area type: there is no camera mode cycle anymore
    void FrameSelection(); // Camera centered on the selection, zoomed to fill the view
 
@@ -178,6 +179,22 @@ private:
 
    // Overlay info text drawn at the top left of the pane's image (camera & gizmo status)
    void RenderStatusOverlay();
+
+   // View orientation gizmo (Blender navball): an XYZ tripod at the top right of the pane's image.
+   // A LMB drag orbits the camera (independently of the orbit lock, which only remaps MMB), a click
+   // on an axis end animates the camera to that axis aligned predefined view. EditorCam panes only.
+   bool m_viewGizmoDragging = false; // LMB drag in progress (orbiting)
+   ImVec2 m_viewGizmoPress; // Mouse position at drag start (click/drag disambiguation)
+   int m_viewGizmoPressEnd = -1; // Axis end under the press (0..5 = +X,-X,+Y,-Y,+Z,-Z; -1 = none)
+   bool m_viewGizmoHover = false; // Mouse inside the gizmo's backing circle this frame
+   int m_viewGizmoHoverEnd = -1; // Axis end currently hovered (for its -X label and highlight)
+   // View snap animation: the camera dir/up is lerped toward the clicked end's orientation
+   int m_viewAnimFrames = 0;
+   vec3 m_viewAnimDir, m_viewAnimUp;
+   PredefinedView m_viewAnimTarget = PredefinedView::None;
+   void RenderViewGizmo(ImDrawList* drawList); // Draw and input, called from RenderUI (EditorCam only)
+   void OrbitCamera(float dx, float dy); // Orbit the pane camera around its target (MMB & view gizmo)
+   static void GetViewOrientation(PredefinedView view, vec3& dir, vec3& up); // Orbit dir/up of a predefined view
 
    // Box selection drag state (a left button drag that hit no part nor drag point)
    bool m_boxSelectActive = false;
