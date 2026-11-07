@@ -372,6 +372,8 @@ set(VPX_SOURCES
    src/ui/live/editor/ScriptPanel.h
    src/ui/live/editor/ScriptPanel.cpp
    src/ui/live/editor/Selection.h
+   src/ui/live/editor/SetOrigin.h
+   src/ui/live/editor/SetOrigin.cpp
    src/ui/live/editor/parts/SpinnerUIPart.h
    src/ui/live/editor/parts/SpinnerUIPart.cpp
    src/ui/live/editor/parts/SurfaceUIPart.h

@@ -4,6 +4,7 @@
 #include "EditorChrome.h"
 #include "BlueprintPane.h"
 #include "EditorTheme.h"
+#include "SetOrigin.h"
 #include "IconsLucide.h"
 #include "ViewportPane.h" // GetTargetViewport()->m_imageRect (status overlay anchor)
 
@@ -128,6 +129,16 @@ void EditorChrome::RenderMenuBar()
             editor.ClearSelection();
          if (ImGui::MenuItem("Invert Selection", "Ctrl+I", false, canSelect))
             editor.InvertSelection();
+         ImGui::Separator();
+         if (ImGui::BeginMenu("Set Origin"))
+         {
+            const bool canSetOrigin = SetOrigin::CanApply(editor);
+            if (ImGui::MenuItem("Origin to Geometry", nullptr, false, canSetOrigin))
+               SetOrigin::Apply(editor, SetOrigin::Mode::Geometry);
+            if (ImGui::MenuItem("Origin to Geometry Bottom", nullptr, false, canSetOrigin))
+               SetOrigin::Apply(editor, SetOrigin::Mode::GeometryBottom);
+            ImGui::EndMenu();
+         }
          ImGui::Separator();
          if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
             editor.ExportPartSelection();
