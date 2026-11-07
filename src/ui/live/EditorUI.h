@@ -51,9 +51,6 @@ class BlueprintPane;
 class LiveRenderContext;
 class ViewportPane;
 
-// Vertical field of view (in degrees) of the perspective editor camera
-constexpr float editorCamFovY = 39.6f;
-
 class EditorUI final
    : private DragPointEditContext
 {
@@ -507,6 +504,17 @@ private:
    mutable std::vector<LeafRect> m_leafRects;
    mutable std::vector<SplitterRect> m_splitterRects;
    mutable bool m_areaRectsValid = false;
+   bool m_navOrbitSelection = true; // Navigation preference: orbit and zoom around the selection
+   bool m_navZoomToMouse = true; // Navigation preference: wheel zoom goes toward the cursor
+   int m_navSelectionDisplay = 0; // 0 = edges only, 1 = edges and tint, 2 = hidden
+   bool m_navAutoDepth = true; // Navigation preference: with no selection, orbit around the 3D point under the cursor
+   float m_navFovY = 39.6f; // Editor perspective camera vertical field of view in degrees (50 mm lens equivalent)
+   bool m_navInvertZoom = false; // Navigation preferences (stored in the Editor section of the settings)
+   bool m_navAltMiddleButton = true;
+   bool m_navTrackpad = true;
+   float m_navOrbitSensitivity = 1.f;
+   bool m_navBlenderTransform = true; // Navigation preference: G / R / S start a modal transform instead of the gizmo
+   bool m_navEmulateNumpad = true; // Navigation preference: top row digits act as the numpad view keys
    mutable AreaRect m_viewportRect; // Rect of the first visible Viewport leaf (empty when none is shown)
    mutable bool m_viewportVisible = true;
    int m_maximizedLeafId = -1;

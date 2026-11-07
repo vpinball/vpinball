@@ -104,8 +104,12 @@ void LiveRenderContext::DrawWireframe(IEditable *editable) const
 {
    if (IsSelected())
    {
-      // Selection overlay
-      g_pplayer->m_renderer->DrawWireframe(editable, convertColor(GetColor(true), 32.f / 255.f), convertColor(GetColor(true), 1.f), false);
+      // Selection overlay: like Blender's object mode, only the edges are drawn by default (the active part lighter), leaving the surface shading visible;
+      // the tint mode adds a faint fill over the whole surface
+      if (m_selectionDisplay == 2)
+         return;
+      const ImU32 color = m_selectionDisplay == 0 ? (m_isActive ? IM_COL32(255, 176, 64, 255) : IM_COL32(230, 110, 0, 255)) : GetColor(true);
+      g_pplayer->m_renderer->DrawWireframe(editable, convertColor(color, m_selectionDisplay == 1 ? 32.f / 255.f : 0.f), convertColor(color, 1.f), false);
    }
    else
    {
