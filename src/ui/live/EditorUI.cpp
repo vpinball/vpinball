@@ -813,6 +813,8 @@ void EditorUI::RenderUI()
                SelectAllParts();
          }
       }
+      else if (ImGui::IsKeyPressed(ImGuiKey_I, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+         InvertSelection(); // Blender's Select > Invert (Ctrl+I)
       else if (ImGui::IsKeyPressed(ImGuiKey_C))
       {
          // Copy the selected parts (or the coordinates of the selected drag point in point edit mode)
@@ -945,6 +947,30 @@ bool EditorUI::IsEditableSelected(const IEditable *editable) const
       if (part->GetEditable() == editable)
          return true;
    return false;
+}
+
+void EditorUI::InvertSelection()
+{
+   if (m_pointEditPart)
+   {
+      if (m_pointEditCenter)
+         m_centerSelected = !m_centerSelected;
+      else
+      {
+         vector<DragPoint *> inverted;
+         for (const auto &point : m_pointEditPart->GetDragPointCurve()->GetPoints())
+            if (!IsPointSelected(point.get()))
+               inverted.push_back(point.get());
+         m_pointSel = std::move(inverted);
+      }
+      return;
+   }
+   // Same set as the select all: the pickable parts that are not selected
+   const vector<std::shared_ptr<EditorUIPart>> previous = m_multiSel;
+   SelectAllParts();
+   std::erase_if(m_multiSel, [&previous](const auto &part) { return std::ranges::find(previous, part) != previous.end(); });
+   m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+   OutlinerPanel::m_anchor.reset();
 }
 
 void EditorUI::ClearSelection()

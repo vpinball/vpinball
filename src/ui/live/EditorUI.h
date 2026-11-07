@@ -136,6 +136,7 @@ private:
    bool IsEditableSelected(const IEditable *editable) const;
    void ClearSelection();
    void SetSelection(const Selection &selection);
+   void InvertSelection(); // Edit > Invert Selection (Ctrl+I)
    void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
    void SelectPartsInGroup(const PartGroup *group);
    void MoveSelectionToPartGroup(PartGroup *group); // Move all selected parts/groups to the given group (nullptr = root, part groups only)
