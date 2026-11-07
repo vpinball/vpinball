@@ -20,9 +20,9 @@ void AudioSettingsPage::BuildPage()
    // Recreate the audio player after an audio setup change (device, output mode, spatial mode),
    // preserving the live listener setup and per-output spatial rendering (VR only)
    const auto recreateAudioPlayer = [this](const string& backglassDevice, const string& playfieldDevice, const VPX::SoundConfigTypes mode, const VPX::BackglassConfigTypes backglassMode,
-                                       const bool spatialBackglass, const bool spatialPlayfield)
+                                       const string& hapticDevice, const VPX::SoundConfigTypes hapticMode, const bool spatialBackglass, const bool spatialPlayfield)
    {
-      m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>(backglassDevice, playfieldDevice, mode, backglassMode);
+      m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>(backglassDevice, playfieldDevice, mode, backglassMode, hapticDevice, hapticMode);
       m_player->m_audioPlayer->SetTableDimensions(m_player->m_ptable->m_right - m_player->m_ptable->m_left, m_player->m_ptable->m_bottom - m_player->m_ptable->m_top);
       if (m_player->IsVR())
          m_player->m_audioPlayer->SetSpatialMode(spatialBackglass, spatialPlayfield);
@@ -33,11 +33,13 @@ void AudioSettingsPage::BuildPage()
    m_devices.clear();
    for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
       m_devices.push_back(device.name);
+   m_hapticDevices = { "Disabled"s };
+   m_hapticDevices.insert(m_hapticDevices.end(), m_devices.begin(), m_devices.end());
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Global Sound Levels"s));
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield main volume simultaneaously"s, false, true), //
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass, playfield and haptic main volumes simultaneaously"s, false, true), //
       [this]() { return m_lockVolume; }, //
       [this](const Settings&) { return m_lockVolume; }, //
       [this](bool v) { m_lockVolume = v; }, //
@@ -51,7 +53,10 @@ void AudioSettingsPage::BuildPage()
       {
          m_player->m_backglassVolume = dequantizeSignedPercent(v);
          if (m_lockVolume)
+         {
             m_player->m_playfieldVolume = clamp(m_player->m_playfieldVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
+            m_player->m_hapticVolume = clamp(m_player->m_hapticVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
+         }
          m_player->UpdateVolume();
       }));
 
@@ -62,7 +67,24 @@ void AudioSettingsPage::BuildPage()
       {
          m_player->m_playfieldVolume = dequantizeSignedPercent(v);
          if (m_lockVolume)
+         {
             m_player->m_backglassVolume = clamp(m_player->m_backglassVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
+            m_player->m_hapticVolume = clamp(m_player->m_hapticVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
+         }
+         m_player->UpdateVolume();
+      }));
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_HapticVolume, "%3d %%"s, //
+      [this]() { return quantizeSignedPercent(m_player->m_hapticVolume); },
+      [this](int prev, int v)
+      {
+         m_player->m_hapticVolume = dequantizeSignedPercent(v);
+         if (m_lockVolume)
+         {
+            m_player->m_backglassVolume = clamp(m_player->m_backglassVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
+            m_player->m_playfieldVolume = clamp(m_player->m_playfieldVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
+         }
          m_player->UpdateVolume();
       }));
 
@@ -109,6 +131,8 @@ void AudioSettingsPage::BuildPage()
                     m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
                     m_player->m_audioPlayer->GetSoundMode3D(), //
                     m_player->m_audioPlayer->GetBackglassMode(), //
+                    m_player->m_audioPlayer->GetHapticDeviceName(), //
+                    m_player->m_audioPlayer->GetHapticMode(), //
                     m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS), //
                     m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_TABLE));
               }, //
@@ -128,6 +152,8 @@ void AudioSettingsPage::BuildPage()
                m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
                m_player->m_audioPlayer->GetSoundMode3D(), //
                m_player->m_audioPlayer->GetBackglassMode(), //
+               m_player->m_audioPlayer->GetHapticDeviceName(), //
+               m_player->m_audioPlayer->GetHapticMode(), //
                v, //
                m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_TABLE));
             RequestRebuild(); // The backglass output mode setting is only relevant when spatial audio is disabled
@@ -143,6 +169,8 @@ void AudioSettingsPage::BuildPage()
                m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
                m_player->m_audioPlayer->GetSoundMode3D(), //
                static_cast<VPX::BackglassConfigTypes>(v), //
+               m_player->m_audioPlayer->GetHapticDeviceName(), //
+               m_player->m_audioPlayer->GetHapticMode(), //
                m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS), //
                m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_TABLE));
          }));
@@ -165,6 +193,8 @@ void AudioSettingsPage::BuildPage()
                     m_devices[v], //
                     m_player->m_audioPlayer->GetSoundMode3D(), //
                     m_player->m_audioPlayer->GetBackglassMode(), //
+                    m_player->m_audioPlayer->GetHapticDeviceName(), //
+                    m_player->m_audioPlayer->GetHapticMode(), //
                     m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS), //
                     m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_TABLE));
               }, //
@@ -183,6 +213,8 @@ void AudioSettingsPage::BuildPage()
                m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
                m_player->m_audioPlayer->GetSoundMode3D(), //
                m_player->m_audioPlayer->GetBackglassMode(), //
+               m_player->m_audioPlayer->GetHapticDeviceName(), //
+               m_player->m_audioPlayer->GetHapticMode(), //
                m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS), //
                v);
             RequestRebuild(); // The playfield output mode setting is only relevant when spatial audio is disabled
@@ -198,6 +230,54 @@ void AudioSettingsPage::BuildPage()
                m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
                static_cast<VPX::SoundConfigTypes>(v), //
                m_player->m_audioPlayer->GetBackglassMode(), //
+               m_player->m_audioPlayer->GetHapticDeviceName(), //
+               m_player->m_audioPlayer->GetHapticMode(), //
+               m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS), //
+               m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_TABLE));
+         }));
+
+   // Optional haptic output: a clone of the playfield output for driving tactile transducers, disabled when no device is selected
+   AddItem(std::make_unique<InGameUIItem>(
+              VPX::Properties::EnumPropertyDef(""s, ""s, "Haptic Sound Device"s, "Select haptic feedback sound device"s, false, 0, 0, m_hapticDevices), //
+              [this]()
+              {
+                 auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetHapticDeviceName());
+                 return it == m_devices.end() ? 0 : 1 + (int)std::distance(m_devices.begin(), it);
+              }, // Live
+              [this](const Settings& settings)
+              {
+                 auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDeviceHaptic());
+                 return it == m_devices.end() ? 0 : 1 + (int)std::distance(m_devices.begin(), it);
+              }, // Stored
+              [this, recreateAudioPlayer](int, int v)
+              {
+                 recreateAudioPlayer(m_player->m_audioPlayer->GetBackglassDeviceName(), //
+                    m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
+                    m_player->m_audioPlayer->GetSoundMode3D(), //
+                    m_player->m_audioPlayer->GetBackglassMode(), //
+                    v == 0 ? ""s : m_devices[v - 1], //
+                    m_player->m_audioPlayer->GetHapticMode(), //
+                    m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS), //
+                    m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_TABLE));
+                 RequestRebuild(); // The haptic output mode setting is only relevant when a haptic device is selected
+              }, //
+              [](Settings& settings) { settings.ResetPlayer_SoundDeviceHaptic(); }, //
+              [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDeviceHaptic(v == 0 ? ""s : m_devices[v - 1], isTableOverride); }))
+      .m_excludeFromDefault
+      = true;
+
+   if (m_player->m_audioPlayer->IsHapticEnabled())
+      AddItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayer_Sound3DHaptic, //
+         [this]() { return m_player->m_audioPlayer->GetHapticMode(); }, //
+         [this, recreateAudioPlayer](int, int v)
+         {
+            recreateAudioPlayer(m_player->m_audioPlayer->GetBackglassDeviceName(), //
+               m_player->m_audioPlayer->GetPlayfieldDeviceName(), //
+               m_player->m_audioPlayer->GetSoundMode3D(), //
+               m_player->m_audioPlayer->GetBackglassMode(), //
+               m_player->m_audioPlayer->GetHapticDeviceName(), //
+               static_cast<VPX::SoundConfigTypes>(v), //
                m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS), //
                m_player->m_audioPlayer->IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_TABLE));
          }));

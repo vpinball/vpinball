@@ -123,7 +123,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("player construction and stream lifecycle")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
       CHECK(player.GetSoundMode3D() == SNDCFG_SND3D2CH);
       CHECK(player.GetBackglassMode() == SNDCFG_BG2CH);
       CHECK(player.GetBackglassDeviceName() != "Error"s);
@@ -147,7 +147,7 @@ TEST_CASE("Audio player")
    {
       // The mixing node declares the stream channel count: the sound must output the same
       // number of channels for the node attachment to succeed (node attachments are strict)
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BGFRONTLEFT);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BGFRONTLEFT, ""s, SNDCFG_SND3D2CH);
       CHECK(player.GetBackglassMode() == SNDCFG_BGFRONTLEFT);
 
       AudioPlayer::AudioStreamID monoStream = player.OpenAudioStream("mono-stream", 44100, 1, true);
@@ -163,7 +163,7 @@ TEST_CASE("Audio player")
    {
       // The spatial source node declares the stream channel count: the sound must output the
       // same number of channels for the node attachment to succeed (node attachments are strict)
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
       player.SetSpatialMode(true, false);
       CHECK(player.IsSpatialAudioEnabled(SoundOutTypes::SNDOUT_BACKGLASS));
 
@@ -182,7 +182,7 @@ TEST_CASE("Audio player")
       // (e.g. after an output mode change) must not leave them bound to a dead engine
       AudioPlayer::AudioStreamID stream;
       {
-         AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+         AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
          stream = player.OpenAudioStream("kept-stream", 44100, 2, true);
          REQUIRE(stream != nullptr);
       } // player destroyed: the stream is detached from its engine
@@ -194,7 +194,7 @@ TEST_CASE("Audio player")
       // Same scenario through the mixing node path
       AudioPlayer::AudioStreamID stream;
       {
-         AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BGFRONTLEFT);
+         AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BGFRONTLEFT, ""s, SNDCFG_SND3D2CH);
          stream = player.OpenAudioStream("kept-stream", 44100, 1, true);
          REQUIRE(stream != nullptr);
       }
@@ -203,7 +203,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("closing an unknown stream keeps the opened streams")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
       AudioPlayer::AudioStreamID stream = player.OpenAudioStream("test-stream", 44100, 2, true);
       AudioPlayer::AudioStreamID unknown;
       player.CloseAudioStream(unknown, false); // logs an error, must not remove the valid stream
@@ -212,7 +212,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("sound information decoding")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
       VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.1f));
 
       const SoundSpec spec = player.GetSoundInformations(&sound);
@@ -223,7 +223,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("opus sound information decoding")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
       VPX::Sound sound("TestSound", "test.opus", opusSine);
       const SoundSpec spec = player.GetSoundInformations(&sound);
       CHECK(spec.nChannels == 2);
@@ -233,26 +233,62 @@ TEST_CASE("Audio player")
 
    SUBCASE("play and stop an opus sound")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
       VPX::Sound sound("TestSound", "test.opus", opusSine);
-      player.SetMainVolume(0.5f, 0.5f);
+      player.SetMainVolume(0.5f, 0.5f, 0.5f);
       player.PlaySound(&sound, 0.f, 0.f, 0, 0.f, 0.f, 1, false, true);
       player.StopSound(&sound);
    }
 
    SUBCASE("play and stop a sound")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
       VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.5f));
 
-      player.SetMainVolume(0.5f, 0.5f);
+      player.SetMainVolume(0.5f, 0.5f, 0.5f);
       player.PlaySound(&sound, 0.f, 0.f, 0, 0.f, 0.f, 1, false, true);
       player.StopSound(&sound);
    }
 
+   SUBCASE("haptic output requires a configured device")
+   {
+      // No device configured: the haptic output is disabled (no default device fallback)
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
+      CHECK(!player.IsHapticEnabled());
+      CHECK(player.GetHapticDeviceName().empty());
+
+      VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.5f));
+      player.PlaySound(&sound, 0.f, 0.f, 0, 0.f, 0.f, 1, false, true);
+      player.StopSound(&sound);
+   }
+
+   SUBCASE("haptic output mirrors playfield sounds to its device")
+   {
+      const vector<AudioPlayer::AudioDevice> devices = AudioPlayer::EnumerateAudioDevices();
+      REQUIRE(!devices.empty());
+
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, devices.front().name, SNDCFG_SND3DFRONTISREAR);
+      CHECK(player.IsHapticEnabled());
+      CHECK(player.GetHapticDeviceName() == devices.front().name);
+      CHECK(player.GetHapticMode() == SNDCFG_SND3DFRONTISREAR);
+
+      // Mirroring is exercised on the playfield sound path (both engines run on the dummy driver)
+      VPX::Sound sound("TestSound", "test.wav", MakeSineWav(0.5f));
+      player.SetMainVolume(0.5f, 0.5f, 0.5f);
+      player.PlaySound(&sound, 0.f, 0.f, 0, 0.f, 0.f, 1, false, true);
+      player.StopSound(&sound);
+   }
+
+   SUBCASE("haptic output is disabled when its device is missing")
+   {
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, "No such audio device"s, SNDCFG_SND3D2CH);
+      CHECK(!player.IsHapticEnabled());
+      CHECK(player.GetHapticDeviceName().empty());
+   }
+
    SUBCASE("music playback commands")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
 
       const std::filesystem::path musicFile = GetTestTmpDir() / "test-music.wav";
       write_file(musicFile, MakeSineWav(0.5f), true);
@@ -271,7 +307,7 @@ TEST_CASE("Audio player")
 
    SUBCASE("opus music playback")
    {
-      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH);
+      AudioPlayer player(""s, ""s, SNDCFG_SND3D2CH, SNDCFG_BG2CH, ""s, SNDCFG_SND3D2CH);
 
       const std::filesystem::path musicFile = GetTestTmpDir() / "test-music.opus";
       write_file(musicFile, opusSine, true);

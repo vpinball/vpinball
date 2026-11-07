@@ -113,7 +113,8 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
    , m_pininput(this, g_settingsService.GetAppSettings())
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(table->GetSettings().GetPlayer_SoundDeviceBG(), table->GetSettings().GetPlayer_SoundDevice(),
-        static_cast<VPX::SoundConfigTypes>(table->GetSettings().GetPlayer_Sound3D()), static_cast<VPX::BackglassConfigTypes>(table->GetSettings().GetPlayer_Sound3DBackglass())))
+        static_cast<VPX::SoundConfigTypes>(table->GetSettings().GetPlayer_Sound3D()), static_cast<VPX::BackglassConfigTypes>(table->GetSettings().GetPlayer_Sound3DBackglass()),
+        table->GetSettings().GetPlayer_SoundDeviceHaptic(), static_cast<VPX::SoundConfigTypes>(table->GetSettings().GetPlayer_Sound3DHaptic())))
    , m_resURIResolver(m_pluginManager.GetMsgAPI(), m_pluginAPI.GetVPXEndPointId(), true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
@@ -535,6 +536,7 @@ void Player::InitTableSession(const bool isInitial)
 
    m_backglassVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_MusicVolume());
    m_playfieldVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_SoundVolume());
+   m_hapticVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_HapticVolume());
    UpdateVolume();
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
@@ -2942,7 +2944,7 @@ void Player::SetAudioLaneMixerVolume(uint64_t laneId, float volume)
       it->second.mixerVolume = volume;
 }
 
-void Player::UpdateVolume() { m_audioPlayer->SetMainVolume(m_backglassVolume, m_playfieldVolume); }
+void Player::UpdateVolume() { m_audioPlayer->SetMainVolume(m_backglassVolume, m_playfieldVolume, m_hapticVolume); }
 
 void Player::PauseMusic()
 {

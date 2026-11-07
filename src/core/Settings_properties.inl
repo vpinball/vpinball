@@ -15,13 +15,18 @@ PropBool(Editor, DisableHash, "Disable File Validation"s, "Disable file integrit
 // Audio settings
 PropInt(Player, MusicVolume, "Backglass Volume"s, "Main volume for music and sound played from the backglass speakers"s, 0, 100, 100);
 PropInt(Player, SoundVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
+PropInt(Player, HapticVolume, "Haptic Volume"s, "Main volume for haptic feedback output"s, 0, 100, 100);
 PropStringDyn(Player, SoundDeviceBG, "Backglass Sound Device"s, "Select backglass sound device"s, ""s);
 PropStringDyn(Player, SoundDevice, "Playfield Sound Device"s, "Select playfield sound device"s, ""s);
+PropStringDyn(Player, SoundDeviceHaptic, "Haptic Sound Device"s, "Select haptic feedback sound device (output disabled when unset or the device is missing)"s, ""s);
 PropEnum(Player, Sound3D, "Playfield Output Mode"s, "Select how playfield sound is output to a speaker configuration"s, int /* VPX::SoundConfigTypes*/,
    0 /* VPX::SoundConfigTypes::SNDCFG_SND3D2CH */, "2 Front channels"s, "2 Rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s,
    "6ch Side & Rear at lockbar. Legacy mixing"s, "6ch Side & Rear at lockbar. New mixing"s, "Front right channel only"s);
 PropEnum(Player, Sound3DBackglass, "Backglass Output Mode"s, "Select how backglass sound is output to a speaker configuration"s, int /* VPX::BackglassConfigTypes*/,
    0 /* VPX::BackglassConfigTypes::SNDCFG_BG2CH */, "2 Front channels"s, "Front left channel only"s);
+PropEnum(Player, Sound3DHaptic, "Haptic Output Mode"s, "Select how haptic sound is output to a speaker configuration"s, int /* VPX::SoundConfigTypes*/,
+   0 /* VPX::SoundConfigTypes::SNDCFG_SND3D2CH */, "2 Front channels"s, "2 Rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s,
+   "6ch Side & Rear at lockbar. Legacy mixing"s, "6ch Side & Rear at lockbar. New mixing"s, "Front right channel only"s);
 
 // Output (windows) settings
 // Main window (a.k.a. playfield)

@@ -242,6 +242,8 @@ FIXES:
 - export of a sound from the sound manager will now export the sound file as-is (without adding a wave header in front of non-WAV files)
 - fix wrong/too-loud volume for the test play in the sound manager
 - improve looping sounds
+- add an optional haptic audio output that clones the playfield sound engine to a dedicated device (for driving tactile transducers),
+  with its own device selection, output mode and volume (disabled by default: no device is mapped to it)
 
 - respect the decimal point locale in more UI editboxes (e.g. video/vr/physics preferences, sound/dimension manager, element search, VPP im-/exports, etc) for consistency,
   and be more robust against wrong inputs (including the .ini/.vpp files)

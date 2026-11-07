@@ -17,6 +17,7 @@ private:
 
    bool m_lockVolume = true;
    vector<string> m_devices;
+   vector<string> m_hapticDevices;
 };
 
 }

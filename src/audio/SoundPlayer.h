@@ -24,7 +24,7 @@ namespace VPX
 class SoundPlayer
 {
 public:
-   static SoundPlayer* Create(const AudioPlayer* audioPlayer, Sound* sound);
+   static SoundPlayer* Create(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target);
    static SoundPlayer* Create(const AudioPlayer* audioPlayer, const std::filesystem::path& filename);
    ~SoundPlayer();
 
@@ -40,13 +40,13 @@ public:
 
    bool IsPlaying() const;
 
-   void SetMainVolume(float backglassVolume, float playfieldVolume);
+   void SetMainVolume(float backglassVolume, float playfieldVolume, float hapticVolume);
    void SetVolume(float volume);
 
    SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
 
 private:
-   SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound);
+   SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target);
    SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::path& filename);
 
    const class AudioPlayer* const m_audioPlayer;
