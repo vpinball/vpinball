@@ -28,6 +28,9 @@
    #elif BX_PLATFORM_LINUX
       #define XR_USE_TIMESPEC
       #define XR_USE_GRAPHICS_API_VULKAN
+   #elif BX_PLATFORM_OSX
+      #define XR_USE_TIMESPEC
+      #define XR_USE_GRAPHICS_API_METAL
    #endif
 
 
@@ -347,7 +350,7 @@ private:
    #if BX_PLATFORM_WINDOWS
    bool m_win32PerfCounterExtensionSupported = false;
    PFN_xrConvertTimeToWin32PerformanceCounterKHR m_xrConvertTimeToWin32PerformanceCounterKHR = nullptr;
-   #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
+   #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX || BX_PLATFORM_OSX
    bool m_convertTimespecTimeExtensionSupported = false;
    PFN_xrConvertTimeToTimespecTimeKHR m_xrConvertTimeToTimespecTimeKHR = nullptr;
    #endif

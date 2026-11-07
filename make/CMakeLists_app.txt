@@ -475,6 +475,7 @@ elseif(PLATFORM STREQUAL "macos")
    if(RENDERER STREQUAL "BGFX")
       target_compile_definitions(vpinball PRIVATE
          ENABLE_BGFX
+         $<$<BOOL:${ENABLE_XR}>:ENABLE_XR>
 
          $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
       )
@@ -522,6 +523,10 @@ elseif(PLATFORM STREQUAL "macos")
    )
 
    target_link_libraries(vpinball PUBLIC "$<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx;bimg_encode,glad>")
+
+   if(ENABLE_XR AND RENDERER STREQUAL "BGFX")
+      target_link_libraries(vpinball PUBLIC openxr_loader)
+   endif()
 
    set(RUNTIME_OUTPUT_NAME "$<IF:$<STREQUAL:${RENDERER},BGFX>,VPinballX_BGFX,VPinballX_GL>")
 
