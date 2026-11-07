@@ -86,6 +86,19 @@ EditorUI::EditorUI(LiveUI &liveUI)
 
    ClearSelection();
    ImGuizmo::AllowAxisFlip(false);
+
+   const Settings &settings = g_settingsService.GetAppSettings();
+   m_navOrbitSelection = settings.GetEditor_NavOrbitSelection();
+   m_navZoomToMouse = settings.GetEditor_NavZoomToMouse();
+   m_navInvertZoom = settings.GetEditor_NavInvertZoom();
+   m_navOrbitSensitivity = settings.GetEditor_NavOrbitSensitivity();
+   m_navFovY = settings.GetEditor_NavFovY();
+   m_navAutoDepth = settings.GetEditor_NavAutoDepth();
+   m_navSelectionDisplay = settings.GetEditor_NavSelectionDisplay();
+   m_navAltMiddleButton = settings.GetEditor_NavAltMiddleButton();
+   m_navTrackpad = settings.GetEditor_NavTrackpad();
+   m_navEmulateNumpad = settings.GetEditor_NavEmulateNumpad();
+   m_navBlenderTransform = settings.GetEditor_NavBlenderTransform();
 }
 
 EditorUI::~EditorUI()
@@ -2111,12 +2124,17 @@ void EditorUI::DuplicateSelection()
    Report(CountLabel("Duplicated", count, name));
    if (ViewportPane *const vp = GetTargetViewport())
    {
-      vp->BeginTransformOp(ImGuizmo::TRANSLATE);
-      if (vp->m_op.op != ImGuizmo::OPERATION(0) && hasOrigin)
+      if (m_navBlenderTransform)
       {
-         vp->m_op.duplicate = true;
-         vp->m_op.duplicateOrigin = Vertex3Ds(origin._41, origin._42, origin._43);
+         vp->BeginTransformOp(ImGuizmo::TRANSLATE);
+         if (vp->m_op.op != ImGuizmo::OPERATION(0) && hasOrigin)
+         {
+            vp->m_op.duplicate = true;
+            vp->m_op.duplicateOrigin = Vertex3Ds(origin._41, origin._42, origin._43);
+         }
       }
+      else
+         vp->m_gizmoOperation = ImGuizmo::TRANSLATE;
    }
 }
 

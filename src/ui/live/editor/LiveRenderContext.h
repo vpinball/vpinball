@@ -37,6 +37,7 @@ public:
 
    bool m_isSelected = false;
    bool m_isActive = false;
+   int m_selectionDisplay = 0; // 0 = edges only, 1 = edges and tint, 2 = hidden (Editor/NavSelectionDisplay)
 
 private:
    Player *m_player;

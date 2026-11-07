@@ -75,6 +75,9 @@ public:
    void FrameSelection(); // Camera centered on the selection, zoomed to fill the view
    void FrameAll(); // Camera framing the whole table (Home)
    void FrameBounds(const FRect3D& bounds); // Shared bounds fit of FrameSelection and FrameAll
+   bool GetNavPivot(vec3& target) const; // Selection center when 'orbit around selection' is on and something is selected
+   bool PickDepthPoint(const ImVec2& mousePos, vec3& point); // 3D point under the cursor (front-most hit, else the playfield plane)
+   void SetFov(float fovY); // Change the vertical FOV keeping the framing (Editor_NavFovY is updated)
 
    // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
    // hosting leaf's persisted payload so it is restored with the layout on the next session
@@ -119,6 +122,9 @@ public:
    float m_camAspect = 1.f; // Aspect ratio the stored projection was authored for, re-fitted on pane resize
    PredefinedView m_predefinedView = PredefinedView::None;
    bool m_orbitLock = false;
+   bool m_orbitDragging = false; // A nav-button drag is orbiting the camera
+   bool m_orbitPivotValid = false; // m_orbitPivot is set for the current drag
+   vec3 m_orbitPivot { 0.f, 0.f, 0.f }; // Orbit pivot of the current drag (selection center or picked depth point, else the view target)
    Matrix3D m_camView, m_camProj;
    float m_camDistance = 1000.f;
    const ViewMode m_viewType; // The pane's area type: 3D Viewport (EditorCam), Desktop Backdrop or Render Preview — fixed at creation
