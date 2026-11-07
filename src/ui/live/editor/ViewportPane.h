@@ -128,6 +128,7 @@ public:
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
    bool m_gizmoDragActive = false;
    vector<std::shared_ptr<EditorUIPart>> m_gizmoDragSelection;
+   Matrix3D m_gizmoStartTransform; // Selection transform at gizmo drag start (Adjust Last Operation)
    void SetGizmoOperation(ImGuizmo::OPERATION operation); // Edit mode actions of the header tool buttons (and of Esc to get back to select)
 
    // Blender-style modal transform op (keyboard G/S/R): the selection follows the mouse until

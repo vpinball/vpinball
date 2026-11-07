@@ -267,6 +267,8 @@ void ViewportPane::EndTransformOp(const bool confirm)
    }
    else if (!m_op.changed && oursOnTop)
       m_editor.m_undo.Discard(); // A no-op confirm leaves no undo record behind
+   else if (m_op.changed)
+      m_editor.NoteTransformOp(m_op); // The confirmed operation can be adjusted (Adjust Last Operation)
    m_op = TransformOp();
 }
 
@@ -1555,6 +1557,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
             {
                m_gizmoDragActive = true;
                m_gizmoDragSelection = m_editor.m_multiSel;
+               m_gizmoStartTransform = prevTransform;
                m_editor.m_undo.BeginUndo();
                for (const auto& part : m_editor.m_multiSel)
                   m_editor.m_undo.MarkForUndo(part->GetEditable());
@@ -1576,6 +1579,15 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    // Reset gizmo undo deduplication once the gizmo is released (each drag should create a single undo entry)
    if (m_editor.m_lastUndoId == 0x1000 && !ImGuizmo::IsUsing())
    {
+      if (m_gizmoDragActive && (m_gizmoOperation & ImGuizmo::TRANSLATE) != 0 && !m_editor.m_multiSel.empty())
+      {
+         Matrix3D released;
+         if (m_editor.GetSelectionTransform(released))
+         {
+            m_editor.SetLastOperation(EditorUI::LastOperation::Type::Move, m_gizmoStartTransform);
+            m_editor.m_lastOp.offset = Vertex3Ds(released._41 - m_gizmoStartTransform._41, released._42 - m_gizmoStartTransform._42, released._43 - m_gizmoStartTransform._43);
+         }
+      }
       m_gizmoDragActive = false;
       m_gizmoDragSelection.clear();
       m_editor.m_lastUndoPart = nullptr;

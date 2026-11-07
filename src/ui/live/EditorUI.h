@@ -211,6 +211,45 @@ private:
    void RedoSteps(size_t count); // Edit > Redo (Ctrl+Shift+Z / Ctrl+Y)
    void RestoreUndoState(const std::any &state);
    static string CountLabel(const char *verb, size_t count, const string &name);
+
+   // Adjust Last Operation (Blender's redo panel, F9): the parameters of the last move / rotate / scale / duplicate / paste / add part,
+   // editable as long as nothing else happened (no new undo step, same selection). Adjusting re-evaluates the operation from the state it
+   // started from, the undo record (which holds the state before the operation) is unchanged: one Ctrl+Z still reverts all.
+   struct LastOperation
+   {
+      enum class Type
+      {
+         None,
+         Add,
+         Paste,
+         Duplicate,
+         Move,
+         Rotate,
+         Scale
+      };
+      Type type = Type::None;
+      uint64_t undoId = 0; // PinUndo::TopRecordId() after the operation
+      vector<std::shared_ptr<EditorUIPart>> selection;
+      Matrix3D initial; // Transform of the selection before (move, rotate, scale) or after (placements) the operation
+      Vertex3Ds base { 0.f, 0.f, 0.f }; // Placements: position the offset is relative to (table coordinates)
+      Vertex3Ds offset { 0.f, 0.f, 0.f }; // Move: delta, placements: offset from the base (table coordinates)
+      Vertex3Ds axisView { 0.f, 0.f, 1.f }; // Rotate: the op's axis in table space when axis < 0
+      int axis = -1; // Rotate / scale: -1 view axis (rotate) or all axes (scale), 0..2 for X / Y / Z
+      bool plane = false; // Scale: the axes perpendicular to the axis
+      bool localSpace = false; // Scale: the op's axes were the start transform's basis
+      float angle = 0.f; // Degrees
+      float factor = 1.f;
+      bool expanded = true;
+   } m_lastOp;
+   bool m_adjustPopupOpen = false; // F9
+   bool m_adjustPopupJustOpened = false;
+   ImVec2 m_adjustPopupPos {};
+   void SetLastOperation(LastOperation::Type type, const Matrix3D &initial);
+   void NoteTransformOp(const ViewportPane::TransformOp &op); // Records a confirmed modal transform op as the last operation
+   void ApplyLastOperation();
+   bool RenderAdjustParameters(); // Widgets of the parameters, true if one changed
+   void RenderAdjustPanel(); // Panel at the bottom left of the viewport, and the F9 popup
+   static const char *LastOperationName(LastOperation::Type type);
    bool m_suppressNextEscape = false; // The Esc release of an Esc that deactivated an edited field (e.g. the script editor) is not an editor Esc
 
    // Add/Remove parts
