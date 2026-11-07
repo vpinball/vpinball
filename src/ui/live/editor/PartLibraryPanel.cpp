@@ -12,6 +12,7 @@
 #include "physics/PhysicsEngine.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/FileDialog.h"
+#include "BlueprintPane.h"
 #include "ui/live/editor/parts/EditorUIPartRegistry.h"
 #include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"
@@ -628,18 +629,20 @@ void PartLibraryPanel::UpdatePlacement(const ImVec2 &mousePos)
 {
    const ImGuiIO &io = ImGui::GetIO();
    ViewportPane *const vp = m_editor.GetTargetViewport();
-   const bool hovering
-      = (vp != nullptr) && (m_editor.m_hoverVp == vp) && (vp->m_viewType != ViewMode::DesktopBackdrop) && m_editor.m_fileOp == nullptr && m_editor.m_player->m_playfieldWnd != nullptr;
+   BlueprintPane *const bp = m_editor.m_hoverBp;
+   const bool hovering = ((bp != nullptr) || ((vp != nullptr) && (m_editor.m_hoverVp == vp) && (vp->m_viewType != ViewMode::DesktopBackdrop))) && m_editor.m_fileOp == nullptr
+      && m_editor.m_player->m_playfieldWnd != nullptr;
    if (!hovering)
    {
-      // Re-hide the ghost parts when the mouse leaves the 3D view (or the view is not 3D)
+      // Re-hide the ghost parts when the mouse leaves the view panes
       m_previewVisible = false;
       return;
    }
 
-   // Project the pointed point on the playfield XY plane, then drop a vertical ray on it: the parts
-   // rest on the topmost surface it hits (the UI quadtree holds all parts, collidable or not)
-   const Vertex2D pos = vp->UnprojectToPlane(mousePos, 0.f);
+   // Project the pointed point on the playfield XY plane (the blueprint maps it directly, the 3D view
+   // projects on the playfield plane), then drop a vertical ray on it: the parts rest on the topmost
+   // surface it hits (the UI quadtree holds all parts, collidable or not)
+   const Vertex2D pos = (bp != nullptr) ? bp->Unproject(mousePos) : vp->UnprojectToPlane(mousePos, 0.f);
    const float zTop = m_editor.m_table->m_glassTopHeight + 500.f;
    const float zBottom = -500.f;
    vector<HitTestResult> hits;

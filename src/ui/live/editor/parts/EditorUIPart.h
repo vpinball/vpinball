@@ -132,6 +132,9 @@ public:
    // Adds a drag point on the curve segment nearest to pos (in table XY coordinates), returning it (nullptr on failure)
    DragPoint* AddPointOnCurve(const Vertex2D& pos);
 
+   // Whether the curve points can be flagged as slingshot segments (exposed for the blueprint context menu)
+   bool SupportsSlingshotSegments() const { return HasSlingshotSegments(); }
+
    virtual void UpdatePropertyPane(PropertyPane& props) = 0;
 
 protected:

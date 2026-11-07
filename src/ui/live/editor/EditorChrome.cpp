@@ -75,7 +75,10 @@ void EditorChrome::RenderMenuBar()
             ? (editor.m_pointEditCenter ? editor.m_centerSelected && VPX::EditorClipboard::HasPoint() : editor.m_pointSel.size() == 1 && VPX::EditorClipboard::HasPoint())
             : VPX::EditorClipboard::HasParts();
          if (ImGui::MenuItem("Paste", "Ctrl+V", false, canPaste))
-            editor.PasteSelection(editor.GetViewportContentCenter());
+         {
+            const ImVec2 center = editor.GetViewportContentCenter();
+            editor.PasteSelection(&center);
+         }
          if (ImGui::MenuItem("Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
             editor.DeleteSelection();
          if (ImGui::MenuItem("Add Part...", "Shift+A", false, editor.m_pointEditPart == nullptr))

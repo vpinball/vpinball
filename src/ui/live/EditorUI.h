@@ -141,6 +141,16 @@ private:
    void MoveSelectionToPartGroup(PartGroup *group); // Move all selected parts/groups to the given group (nullptr = root, part groups only)
    bool IsEditablePickable(const IEditable *editable) const;
    void SelectAllParts();
+   Vertex2D GetMultiSelCenter() const; // Center of the current selection (bounding box center of the part centers, or of the selected points in drag point edit mode)
+   // Selection wide transforms (the win32 context menu Flip/Rotate/Scale/Translate commands): they apply
+   // to the multi selection of parts, or to the selected points in drag point edit mode
+   void FlipSelection(bool flipX); // Mirror the selection around the multi selection center
+   void RotateMultiSel(float ang, const Vertex2D &center, bool useElementCenter);
+   void ScaleMultiSel(float scalex, float scaley, const Vertex2D &center, bool useElementCenter);
+   void TranslateMultiSel(const Vertex2D &offset);
+   void LockElements(); // Toggle the UI lock of the selected parts (unlock all if any is locked, lock all otherwise)
+   void MoveSelectionInDrawOrder(bool toFront); // Draw In Front / Draw In Back (PinTable z-order)
+   void ToggleCollectionMembership(int collectionIndex); // Toggle the selected parts' membership of a collection
 
    // Selection snapshot stored in undo records and restored on undo
    struct UndoSelectionState
@@ -189,6 +199,7 @@ private:
    void RestorePartsVisibility() const; // Revert the editor visibility overrides of the table parts (reapplied on next render)
 
    // Undo support
+   void Undo();
    void PushUndo(IEditable *part, unsigned int editId);
    PinUndo m_undo;
    IEditable *m_lastUndoPart = nullptr;
@@ -298,7 +309,7 @@ private:
 
    // Clipboard (copy/paste of parts through the OS clipboard, and of drag point coordinates in point edit mode)
    void CopySelection();
-   void PasteSelection(const ImVec2 &pos);
+   void PasteSelection(const ImVec2 *pos); // Paste the clipboard at the given screen position (original coordinates when nullptr)
 
    // Rendering
    enum class PhysicOverlay

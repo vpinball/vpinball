@@ -806,7 +806,10 @@ void EditorUI::RenderUI()
       {
          // Paste at the mouse position (or to the selected drag point in point edit mode)
          if (io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
-            PasteSelection(ImGui::GetMousePos());
+         {
+            const ImVec2 mousePos = ImGui::GetMousePos();
+            PasteSelection(&mousePos);
+         }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
       {
@@ -857,17 +860,7 @@ void EditorUI::RenderUI()
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Z) && io.KeyCtrl)
-      { // Undo
-         m_lastUndoPart = nullptr;
-         m_lastUndoId = 0;
-         if (m_table->m_liveBaseTable == nullptr)
-         {
-            // TODO handle IsUndoPastCleanPoint
-            const std::any state = m_undo.Undo();
-            if (state.has_value())
-               RestoreUndoSelection(std::any_cast<const UndoSelectionState &>(state));
-         }
-      }
+         Undo();
    }
 
    // Selected parts are kept dynamic in the UI quadtree so that they can be edited interactively. The selection also changes outside
@@ -1130,6 +1123,233 @@ void EditorUI::SelectAllParts()
    m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
 }
 
+void EditorUI::Undo()
+{
+   m_lastUndoPart = nullptr;
+   m_lastUndoId = 0;
+   if (m_table->m_liveBaseTable == nullptr)
+   {
+      // TODO handle IsUndoPastCleanPoint
+      const std::any state = m_undo.Undo();
+      if (state.has_value())
+         RestoreUndoSelection(std::any_cast<const UndoSelectionState &>(state));
+   }
+}
+
+Vertex2D EditorUI::GetMultiSelCenter() const
+{
+   // Bounding box center of the part centers (win32 GetMultiSelCenter); in drag point edit mode, the
+   // bounding box center of the selected points (or the edit center point alone in center edit mode)
+   float minx = FLT_MAX, maxx = -FLT_MAX, miny = FLT_MAX, maxy = -FLT_MAX;
+   if (m_pointEditPart)
+   {
+      if (m_pointEditCenter)
+      {
+         const Vertex3Ds center = m_pointEditPart->GetEditCenter();
+         return Vertex2D(center.x, center.y);
+      }
+      for (const DragPoint *point : m_pointSel)
+      {
+         minx = min(minx, point->GetX());
+         maxx = max(maxx, point->GetX());
+         miny = min(miny, point->GetY());
+         maxy = max(maxy, point->GetY());
+      }
+   }
+   else
+   {
+      for (const auto &part : m_multiSel)
+      {
+         const Vertex2D center = part->GetEditable()->GetCenter();
+         minx = min(minx, center.x);
+         maxx = max(maxx, center.x);
+         miny = min(miny, center.y);
+         maxy = max(maxy, center.y);
+      }
+   }
+   return (minx > maxx) ? Vertex2D(0.f, 0.f) : Vertex2D((minx + maxx) * 0.5f, (miny + maxy) * 0.5f);
+}
+
+void EditorUI::FlipSelection(const bool flipX)
+{
+   const Vertex2D center = GetMultiSelCenter();
+   if (m_pointEditPart)
+   {
+      BeginPointEdit();
+      if (m_pointEditCenter)
+      {
+         const Vertex3Ds c = m_pointEditPart->GetEditCenter();
+         m_pointEditPart->SetEditCenter(flipX ? Vertex2D(2.f * center.x - c.x, c.y) : Vertex2D(c.x, 2.f * center.y - c.y));
+      }
+      else
+         for (DragPoint *point : m_pointSel)
+         {
+            if (flipX)
+               point->SetX(2.f * center.x - point->GetX());
+            else
+               point->SetY(2.f * center.y - point->GetY());
+         }
+      EndPointEdit();
+      return;
+   }
+   m_undo.BeginUndo();
+   for (const auto &part : m_multiSel)
+   {
+      IEditable *const editable = part->GetEditable();
+      m_undo.MarkForUndo(editable);
+      if (flipX)
+         editable->FlipX(center);
+      else
+         editable->FlipY(center);
+      m_renderer->ReinitRenderable(editable->GetIRenderable());
+      m_player->m_physics->Update(editable);
+   }
+   m_undo.EndUndo();
+}
+
+void EditorUI::RotateMultiSel(const float ang, const Vertex2D &center, const bool useElementCenter)
+{
+   if (m_pointEditPart)
+   {
+      const float sn = sinf(ANGTORAD(ang)), cs = cosf(ANGTORAD(ang));
+      BeginPointEdit();
+      const auto rotatePoint = [&center, sn, cs](Vertex2D &v)
+      {
+         const float dx = v.x - center.x, dy = v.y - center.y;
+         v.x = center.x + cs * dx - sn * dy;
+         v.y = center.y + cs * dy + sn * dx;
+      };
+      if (m_pointEditCenter)
+      {
+         Vertex2D pos(m_pointEditPart->GetEditCenter().x, m_pointEditPart->GetEditCenter().y);
+         rotatePoint(pos);
+         m_pointEditPart->SetEditCenter(pos);
+      }
+      else
+         for (DragPoint *point : m_pointSel)
+         {
+            Vertex2D pos(point->GetX(), point->GetY());
+            rotatePoint(pos);
+            point->SetX(pos.x);
+            point->SetY(pos.y);
+         }
+      EndPointEdit();
+      return;
+   }
+   m_undo.BeginUndo();
+   for (const auto &part : m_multiSel)
+   {
+      IEditable *const editable = part->GetEditable();
+      m_undo.MarkForUndo(editable);
+      editable->Rotate(ang, center, useElementCenter);
+      m_renderer->ReinitRenderable(editable->GetIRenderable());
+      m_player->m_physics->Update(editable);
+   }
+   m_undo.EndUndo();
+}
+
+void EditorUI::ScaleMultiSel(const float scalex, const float scaley, const Vertex2D &center, const bool useElementCenter)
+{
+   if (m_pointEditPart)
+   {
+      BeginPointEdit();
+      if (m_pointEditCenter)
+      {
+         const Vertex3Ds c = m_pointEditPart->GetEditCenter();
+         m_pointEditPart->SetEditCenter(Vertex2D(center.x + (c.x - center.x) * scalex, center.y + (c.y - center.y) * scaley));
+      }
+      else
+         for (DragPoint *point : m_pointSel)
+         {
+            point->SetX(center.x + (point->GetX() - center.x) * scalex);
+            point->SetY(center.y + (point->GetY() - center.y) * scaley);
+         }
+      EndPointEdit();
+      return;
+   }
+   m_undo.BeginUndo();
+   for (const auto &part : m_multiSel)
+   {
+      IEditable *const editable = part->GetEditable();
+      m_undo.MarkForUndo(editable);
+      editable->Scale(scalex, scaley, center, useElementCenter);
+      m_renderer->ReinitRenderable(editable->GetIRenderable());
+      m_player->m_physics->Update(editable);
+   }
+   m_undo.EndUndo();
+}
+
+void EditorUI::TranslateMultiSel(const Vertex2D &offset)
+{
+   if (m_pointEditPart)
+   {
+      BeginPointEdit();
+      if (m_pointEditCenter)
+      {
+         const Vertex3Ds c = m_pointEditPart->GetEditCenter();
+         m_pointEditPart->SetEditCenter(Vertex2D(c.x + offset.x, c.y + offset.y));
+      }
+      else
+         for (DragPoint *point : m_pointSel)
+            point->Translate(offset);
+      EndPointEdit();
+      return;
+   }
+   m_undo.BeginUndo();
+   for (const auto &part : m_multiSel)
+   {
+      IEditable *const editable = part->GetEditable();
+      if (editable->IsUILocked())
+         continue; // UI locked parts are not moved by the nudge commands (win32 arrow keys)
+      m_undo.MarkForUndo(editable);
+      editable->Translate(offset);
+      m_renderer->ReinitRenderable(editable->GetIRenderable());
+      m_player->m_physics->Update(editable);
+   }
+   m_undo.EndUndo();
+}
+
+void EditorUI::LockElements()
+{
+   // Same semantics as the win32 editor (PinTableWnd::LockElements): if any selected part is locked, unlock
+   // them all, otherwise lock them all
+   bool anyLocked = false;
+   for (const auto &part : m_multiSel)
+      anyLocked |= part->GetEditable()->IsUILocked();
+   m_undo.BeginUndo();
+   for (const auto &part : m_multiSel)
+   {
+      IEditable *const editable = part->GetEditable();
+      m_undo.MarkForUndo(editable);
+      editable->SetUILock(!anyLocked);
+   }
+   m_undo.EndUndo();
+}
+
+void EditorUI::MoveSelectionInDrawOrder(const bool toFront)
+{
+   // Draw In Front / Draw In Back of the win32 context menu (non undoable, like the win32 command)
+   for (const auto &part : m_multiSel)
+   {
+      IEditable *const editable = part->GetEditable();
+      if (editable->GetItemType() == eItemPartGroup)
+         continue;
+      if (toFront)
+         m_table->MovePartToFront(editable);
+      else
+         m_table->MovePartToBack(editable);
+   }
+}
+
+void EditorUI::ToggleCollectionMembership(const int collectionIndex)
+{
+   vector<IEditable *> selection;
+   selection.reserve(m_multiSel.size());
+   for (const auto &part : m_multiSel)
+      selection.push_back(part->GetEditable());
+   m_table->ToggleCollectionMembership(collectionIndex, selection);
+}
+
 void EditorUI::RequestAddPartPopup(const ImVec2 &pos)
 {
    // The picker popup must be opened in the window scope of a viewport pane (OpenPopup must be called
@@ -1302,7 +1522,7 @@ void EditorUI::CopySelection()
    VPX::EditorClipboard::CopyParts(parts);
 }
 
-void EditorUI::PasteSelection(const ImVec2 &pos)
+void EditorUI::PasteSelection(const ImVec2 *const pos)
 {
    if (m_table->IsLocked() || IsInspectMode())
       return;
@@ -1374,9 +1594,14 @@ void EditorUI::PasteSelection(const ImVec2 &pos)
       m_undo.Discard();
       return;
    }
-   // Move the pasted parts so that their combined center lands at the given position (in the table XY plane, keeping their Z)
-   Vertex2D target = TablePosAt(pos);
-   const Vertex2D offset(target.x - 0.5f * (pasteMin.x + pasteMax.x), target.y - 0.5f * (pasteMin.y + pasteMax.y));
+   // Move the pasted parts so that their combined center lands at the given position (in the table XY
+   // plane, keeping their Z). No position = 'Paste' at the original coordinates (win32 Ctrl+V vs Paste At)
+   Vertex2D offset(0.f, 0.f);
+   if (pos != nullptr)
+   {
+      const Vertex2D target = TablePosAt(*pos);
+      offset = Vertex2D(target.x - 0.5f * (pasteMin.x + pasteMax.x), target.y - 0.5f * (pasteMin.y + pasteMax.y));
+   }
    for (IEditable *const editable : pasted)
    {
       editable->Translate(offset);
@@ -1859,12 +2084,19 @@ void EditorUI::AddPointOnNearestSegment()
    const auto &points = curve->GetPoints();
    if (points.empty())
       return;
-   // Unproject the mouse position on the drag plane of the edited curve
-   const float z = m_pointEditPart->GetDragPointZ(m_pointSel.empty() ? points.front().get() : m_pointSel.front());
-   ViewportPane *const vp = GetTargetViewport();
-   if (vp == nullptr)
-      return;
-   const Vertex2D pos = vp->UnprojectToPlane(ImGui::GetMousePos(), z);
+   // Unproject the mouse position on the drag plane of the edited curve (a blueprint pane maps
+   // directly to the table XY plane, a viewport pane projects at the curve's display height)
+   Vertex2D pos(0.f, 0.f);
+   if (m_hoverBp != nullptr)
+      pos = m_hoverBp->Unproject(ImGui::GetMousePos());
+   else
+   {
+      const float z = m_pointEditPart->GetDragPointZ(m_pointSel.empty() ? points.front().get() : m_pointSel.front());
+      ViewportPane *const vp = GetTargetViewport();
+      if (vp == nullptr)
+         return;
+      pos = vp->UnprojectToPlane(ImGui::GetMousePos(), z);
+   }
    m_undo.BeginUndo();
    m_undo.MarkForUndo(m_pointEditPart->GetEditable());
    m_undo.EndUndo();

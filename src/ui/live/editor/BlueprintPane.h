@@ -62,12 +62,47 @@ public:
 private:
    void RenderScene(ImDrawList* drawList); // The blueprint pass: background/backdrop/fills/grid/outlines
    void RenderPart(BlueprintRenderContext& ctx, const std::shared_ptr<EditorUIPart>& part) const;
+   void RenderGhostParts(BlueprintRenderContext& ctx) const; // Part library placement ghost preview
    void HitTestParts(const ImVec2& pos, vector<BlueprintHitContext::Hit>& hits) const;
    void BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB, bool add);
    void BoxSelectPoints(const ImVec2& cornerA, const ImVec2& cornerB, bool add);
    std::shared_ptr<EditorUIPart> Resolve(const EditorUIPart* part) const;
    void ZoomAt(const ImVec2& pos, float factor);
    void UpdateDraggedPoint(const ImVec2& pos, bool start);
+
+   // Right mouse context menu (win32 parity): RenderUI records the menu target on right-down and
+   // arms the popup on right-up, RenderPane opens it (the popup must be in the pane's window scope)
+   void RenderContextMenu();
+   void RenderDialogs();
+   vector<std::shared_ptr<EditorUIPart>> MenuHitParts() const; // Dedup'd parts under the menu position, front to back
+   void ApplyTransformDialog();
+
+   bool m_contextMenuPending = false;
+   bool m_menuArmed = false; // Right button went down on the canvas (menu opens on release)
+   ImVec2 m_menuPos {}; // Screen position the menu was opened at
+   vector<BlueprintHitContext::Hit> m_menuHits;
+   const EditorUIPart* m_menuPointPart = nullptr; // Owner of the hit drag point handle (drag point menu)
+   const DragPoint* m_menuPoint = nullptr;
+
+   // Numeric transform / drawing order popups (win32 context menu commands)
+   enum class DialogKind
+   {
+      None,
+      Rotate,
+      Scale,
+      Translate,
+      OrderHit,
+      OrderSelect
+   };
+   DialogKind m_dialog = DialogKind::None;
+   bool m_dialogRequest = false; // Deferred OpenPopup in RenderPane (one frame after the menu command)
+   int m_dialogApplyCount = 0; // Apply count of the open transform dialog (win32 Apply/Undo/Cancel semantics)
+   bool m_dialogInit = false;
+   float m_dlgAngle = 0.f, m_dlgSX = 1.f, m_dlgSY = 1.f, m_dlgTX = 0.f, m_dlgTY = 0.f;
+   Vertex2D m_dlgPivot {};
+   bool m_dlgUseCenter = true, m_dlgSquare = true;
+   vector<IEditable*> m_orderList; // Working list of the drawing order dialog (front to back)
+   int m_orderIndex = -1;
 
    float m_zoom = 2.f; // Display px per table unit
    Vertex2D m_offset {}; // Table coordinate at the image center

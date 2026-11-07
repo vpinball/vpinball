@@ -48,6 +48,10 @@ public:
    void CancelPlacement();
    void CommitPlacement();
 
+   // Ghost preview of the armed placement (updated while the mouse hovers a view pane)
+   bool IsPreviewVisible() const { return m_previewVisible; }
+   const vector<std::shared_ptr<EditorUIPart>> &GetPreviewParts() const { return m_previewUIParts; }
+
    void Update(); // Per frame housekeeping (file dialog results, placement tracking, library rescan)
    void RenderPane(const AreaRect &rect, int leafId); // Renders the panel content inside an area leaf
    void Render3D(); // Renders the ghost preview parts into the 3D scene (called by EditorUI::Render3D)
