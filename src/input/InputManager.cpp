@@ -742,7 +742,7 @@ void InputManager::CreateInputActions()
          {
             if (m_player->m_liveUI->IsInGameUIOpened())
                return;
-            if (isPressed && m_player->IsPlaying())
+            if (isPressed && m_player->IsPlaying() && m_player->ShouldHideDesktopCursor())
                SDL_HideCursor();
          
             if (action.GetActionId() == m_leftFlipperActionId)
@@ -1001,6 +1001,14 @@ void InputManager::CreateInputActions()
                   : m_player->m_renderer->m_vrDesktop == VRDesktopMode::Right                                 ? "Desktop display switched to right eye"s
                                                                                                               : "Desktop display switched to both eyes"s,
                2000);
+         }
+         if (m_player->IsVR())
+         {
+            // The OS cursor is only hidden when the desktop display presents a game surface (scene render modes)
+            if (m_player->ShouldHideDesktopCursor())
+               SDL_HideCursor();
+            else
+               SDL_ShowCursor();
          }
          m_player->m_renderer->InitLayout();
          m_player->m_renderer->UpdateStereoShaderState();

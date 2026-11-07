@@ -291,6 +291,11 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
          // Disable VSync for VR (sync is performed by the VR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
          m_maxFramerate = 10000.f;
+
+         // In VR the desktop display is not the main output and may lose focus while the game keeps
+         // playing (e.g. another person using the computer): keep receiving joystick/gamepad input,
+         // which SDL otherwise suppresses for unfocused applications (reverted in the destructor)
+         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
       }
       else
       {
@@ -365,6 +370,11 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // Disable static prerendering for VR
    if (stereo3D == STEREO_VR)
       m_renderer->DisableStaticPrePass(true);
+
+   // Undo the cursor hidden at construction: in VR it must only be hidden when the desktop display
+   // presents a game surface, otherwise it belongs to whoever is using the computer
+   if (IsVR() && !ShouldHideDesktopCursor())
+      SDL_ShowCursor();
 
    m_renderer->m_renderDevice->m_vsyncCount = 1;
 
@@ -1471,7 +1481,11 @@ Player::~Player()
 
    // Save adjusted VR settings
    if (m_renderer->m_stereo3D == STEREO_VR)
+   {
       m_vrDevice->SaveVRSettings(g_settingsService.GetAppSettings());
+      // Restore SDL's default of suppressing joystick events while unfocused (enabled for VR in the constructor)
+      SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "0");
+   }
 
    // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_shutdown();
@@ -1566,6 +1580,8 @@ bool Player::ShowStats() const
    const InfoMode mode = GetInfoMode();
    return mode == IF_FPS || mode == IF_PROFILING;
 }
+
+bool Player::ShouldHideDesktopCursor() const { return !IsVR() || (m_renderer && m_renderer->NeedsDesktopSceneRender()); }
 
 void Player::OnFocusChanged()
 {
@@ -1930,9 +1946,14 @@ void Player::ProcessOSMessages(const bool isInitialized)
          if (m_playfieldWnd->GetCore() == wnd)
             m_playfieldWnd->OnResized();
          else
+         {
             for (VPX::RenderOutput* const output : { &m_backglassOutput, &m_scoreViewOutput, &m_topperOutput })
                if (output->GetMode() == VPX::RenderOutput::OM_WINDOW && output->GetWindow()->GetCore() == wnd)
                   output->GetWindow()->OnResized();
+            // The desktop display window presented in VR is owned by the render device
+            if (IsVR() && m_renderer && m_renderer->m_renderDevice->m_outputWnd.size() >= 2 && m_renderer->m_renderDevice->m_outputWnd[1]->GetCore() == wnd)
+               m_renderer->m_renderDevice->m_outputWnd[1]->OnResized();
+         }
          break;
       }
 

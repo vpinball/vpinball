@@ -205,7 +205,8 @@ void InGameUI::OnUIUpAction()
    m_useFlipperNav = true;
    m_flipperNavStart = msec();
    m_flipperNavRepeatCount = 0;
-   SDL_HideCursor();
+   if (m_player->ShouldHideDesktopCursor())
+      SDL_HideCursor();
    GetActivePage()->SelectPrevItem();
    if (!wasFlipperNav)
       GetActivePage()->SelectNextItem();
@@ -220,7 +221,8 @@ void InGameUI::OnUIDownAction()
    m_useFlipperNav = true;
    m_flipperNavStart = msec();
    m_flipperNavRepeatCount = 0;
-   SDL_HideCursor();
+   if (m_player->ShouldHideDesktopCursor())
+      SDL_HideCursor();
    GetActivePage()->SelectNextItem();
    if (!wasFlipperNav)
       GetActivePage()->SelectPrevItem();
