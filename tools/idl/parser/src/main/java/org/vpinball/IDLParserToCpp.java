@@ -127,6 +127,11 @@ public class IDLParserToCpp {
 		}
 
 		outputStream.write("\n".getBytes());
+		outputStream.write("static VARIANT* OptionalArg(DISPPARAMS* pDispParams, int& index, VARIANT* pDefault) {\n".getBytes());
+		outputStream.write("\tif (index <= 0)\n\t\treturn pDefault;\n".getBytes());
+		outputStream.write("\tVARIANT* pArg = &pDispParams->rgvarg[--index];\n".getBytes());
+		outputStream.write("\treturn (V_VT(pArg) == VT_ERROR && V_ERROR(pArg) == DISP_E_PARAMNOTFOUND) ? pDefault : pArg;\n".getBytes());
+		outputStream.write("}\n\n".getBytes());
 
 		for (String[] block : order) {
 			String kind = block[0];
@@ -639,7 +644,7 @@ public class IDLParserToCpp {
 				buffer.append("if (SUCCEEDED(hrConv)) hrConv = VariantChangeType(&var" + index + ", ");
 
 				if (param.hasDefaultValue() || param.isOptional()) {
-					buffer.append("(index > 0) ? &pDispParams->rgvarg[--index] : &var" + index);
+					buffer.append("OptionalArg(pDispParams, index, &var" + index + ")");
 				}
 				else {
 					buffer.append("&pDispParams->rgvarg[--index]");
