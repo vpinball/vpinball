@@ -170,9 +170,9 @@ PropEnum(Player, CabinetAutofitMode, "Cabinet Autofit Mode"s, "Select between ma
 PropFloat(Player, CabinetAutofitPos, "Cabinet Autofit Pos"s, "Relative lower flipper bat position when using automatic view fitting (0% for bottom of screen, 100% for top)"s, 0.f, 0.2f, 0.05f);
 
 // Aliasing & sharpening
-PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s,
+PropFloatStepped(Player, AAFactor, "Full Scene Anti Aliasing"s,
    "Enables brute-force Up/Downsampling (similar to DSR).\nThis delivers very good quality but has a significant impact on performance.\n200% means twice the resolution to be handled while rendering"s,
-   0.5f, 2.f, 1.f);
+   0.5f, 2.f, 0.25f, 1.f);
 PropEnum(Player, MSAASamples, "MSAA level"s,
    "Set the amount of MSAA samples.\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\nThis can improve image quality if not using supersampling"s, int,
    0, "Disabled"s, "4 Samples"s, "6 Samples"s, "8 Samples"s);

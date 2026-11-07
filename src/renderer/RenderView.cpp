@@ -1874,7 +1874,8 @@ RenderTarget* RenderView::ApplyStereo(RenderTarget* renderedRT, RenderTarget* ou
       RenderTarget* outputRT = outputBackBuffer;
       rd->SetRenderTarget("Stereo"s, outputRT, outputRT == GetOutput() && !IsFullOutputArea());
       rd->AddRenderTargetDependency(renderedRT);
-      rd->m_stereoShader->SetTexture(ShaderUniform::tex_stereo_fb, renderedRT->GetColorSampler());
+      rd->m_stereoShader->SetTexture(ShaderUniform::tex_stereo_fb, renderedRT->GetColorSampler(),
+         (renderedRT->GetWidth() == outputRT->GetWidth() && renderedRT->GetHeight() == outputRT->GetHeight()) ? SamplerFilter::SF_NONE : SamplerFilter::SF_BILINEAR);
       DrawOutputQuad(rd->m_stereoShader, outputRT);
       return outputRT;
    }

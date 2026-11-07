@@ -117,7 +117,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    }
    view->m_renderSourceWidth = wnd->GetPixelWidth();
    view->m_renderSourceHeight = wnd->GetPixelHeight();
-   const float AAfactor = m_table->GetSettings().GetPlayer_AAFactor();
+   const float AAfactor = Settings::GetPlayer_AAFactor_Property()->GetValid(m_table->GetSettings().GetPlayer_AAFactor());
    const int renderWidthAA = (int)((float)view->m_renderWidth * AAfactor);
    const int renderHeightAA = (int)((float)view->m_renderHeight * AAfactor);
 
