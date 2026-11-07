@@ -357,13 +357,61 @@ void ViewportPane::ApplyTransformOpDelta()
          for (int i = 0; i < 3; ++i)
             m_op.delta[i] = delta.Dot(OpAxisDir(i));
       }
-      if (io.KeyCtrl)
+      if (m_editor.IsSnapActive(EditorUI::SnapKind::Move))
       {
-         // Snap the translation to the editor grid (1 VPU when no grid is set)
-         const float grid = max(1.f, (float)g_settingsService.GetAppSettings().GetEditor_GridSize());
-         for (int i = 0; i < 3; ++i)
-            m_op.delta[i] = roundf(m_op.delta[i] / grid) * grid;
-         delta = OpAxisDir(0) * m_op.delta[0] + OpAxisDir(1) * m_op.delta[1] + OpAxisDir(2) * m_op.delta[2];
+         bool snappedToPoint = false;
+         if (m_editor.m_snapTarget == 1 && !m_op.constrained)
+         {
+            // Snap to the center / drag points of the unselected parts: the closest one to the moved pivot on screen (X / Y only, Z is kept)
+            if (!m_op.snapPointsBuilt)
+            {
+               m_op.snapPointsBuilt = true;
+               for (const auto& uiPart : m_editor.m_editables)
+               {
+                  IEditable* const editable = uiPart->GetEditable();
+                  if (editable == nullptr || editable->GetItemType() == eItemPartGroup || editable->GetItemType() == eItemBall || m_editor.IsPartSelected(uiPart)
+                     || !editable->IsUIVisible(false))
+                     continue;
+                  m_op.snapPoints.push_back(editable->GetCenter());
+                  if (DragPointCurve* const curve = uiPart->GetDragPointCurve())
+                     for (const auto& point : curve->GetPoints())
+                        m_op.snapPoints.emplace_back(point->GetX(), point->GetY());
+                  if (m_op.snapPoints.size() > 20000)
+                     break;
+               }
+            }
+            const Vertex3Ds moved = m_op.pivot + delta;
+            const ImVec2 movedPx = Project(moved);
+            const float maxDist = 14.f * m_editor.m_liveUI.GetDPI();
+            float best = maxDist;
+            Vertex2D snapped(0.f, 0.f);
+            for (const Vertex2D& candidate : m_op.snapPoints)
+            {
+               const ImVec2 screen = Project(Vertex3Ds(candidate.x, candidate.y, moved.z));
+               const float dist = hypotf(screen.x - movedPx.x, screen.y - movedPx.y);
+               if (dist < best)
+               {
+                  best = dist;
+                  snapped = candidate;
+                  snappedToPoint = true;
+               }
+            }
+            if (snappedToPoint)
+            {
+               delta.x = snapped.x - m_op.pivot.x;
+               delta.y = snapped.y - m_op.pivot.y;
+               for (int i = 0; i < 3; ++i)
+                  m_op.delta[i] = delta.Dot(OpAxisDir(i));
+               ImGui::GetForegroundDrawList()->AddCircle(Project(m_op.pivot + delta), 7.f * m_editor.m_liveUI.GetDPI(), EditorTheme::Accent, 16, 2.f);
+            }
+         }
+         if (!snappedToPoint && m_editor.m_snapMove > 0.f)
+         {
+            // Snap the translation to the move increment
+            for (int i = 0; i < 3; ++i)
+               m_op.delta[i] = roundf(m_op.delta[i] / m_editor.m_snapMove) * m_editor.m_snapMove;
+            delta = OpAxisDir(0) * m_op.delta[0] + OpAxisDir(1) * m_op.delta[1] + OpAxisDir(2) * m_op.delta[2];
+         }
       }
       newTransform = Matrix3D::MatrixTranslate(delta.x, delta.y, delta.z) * m_op.startTransform;
       m_op.changed |= delta.LengthSquared() > 1e-12f;
@@ -384,8 +432,8 @@ void ViewportPane::ApplyTransformOpDelta()
       }
       if (m_op.numUsed)
          angle = ANGTORAD(m_op.numText[0].empty() ? 0.f : strtof(m_op.numText[0].c_str(), nullptr));
-      else if (io.KeyCtrl)
-         angle = ANGTORAD(roundf(RADTOANG(angle) / 15.f) * 15.f);
+      else if (m_editor.IsSnapActive(EditorUI::SnapKind::Rotate) && m_editor.m_snapRotate > 0.f)
+         angle = ANGTORAD(roundf(RADTOANG(angle) / m_editor.m_snapRotate) * m_editor.m_snapRotate);
       newTransform = Matrix3D::MatrixTranslate(m_op.pivot) * Matrix3D::MatrixRotate(angle, axisDir) * Matrix3D::MatrixTranslate(-m_op.pivot) * m_op.startTransform;
       m_op.delta[0] = RADTOANG(angle);
       m_op.changed |= fabsf(angle) > 1e-8f;
@@ -407,8 +455,8 @@ void ViewportPane::ApplyTransformOpDelta()
          const float d0 = max(1.f, sqrtf((mouse.x - pivotPx.x) * (mouse.x - pivotPx.x) + (mouse.y - pivotPx.y) * (mouse.y - pivotPx.y)));
          const float d1 = max(1.f, sqrtf((m_op.startMouse.x - pivotPx.x) * (m_op.startMouse.x - pivotPx.x) + (m_op.startMouse.y - pivotPx.y) * (m_op.startMouse.y - pivotPx.y)));
          float s = 1.f + (d0 / d1 - 1.f) * precision;
-         if (io.KeyCtrl)
-            s = roundf(s / 0.1f) * 0.1f;
+         if (m_editor.IsSnapActive(EditorUI::SnapKind::Scale) && m_editor.m_snapScale > 0.f)
+            s = roundf(s / m_editor.m_snapScale) * m_editor.m_snapScale;
          for (int i = 0; i < 3; ++i)
             if (m_op.axisMask & (1u << i))
                factor[i] = s;
@@ -1620,7 +1668,30 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
       else
       {
-         ImGuizmo::Manipulate(camViewLH, (float*)(gizmoProj.m), gizmoOperation, m_gizmoMode, (float*)(transform.m));
+         float snapValues[3];
+         const float* snapPtr = nullptr;
+         if ((static_cast<int>(gizmoOperation) & ImGuizmo::ROTATE) != 0)
+         {
+            if (m_editor.IsSnapActive(EditorUI::SnapKind::Rotate) && m_editor.m_snapRotate > 0.f)
+            {
+               snapValues[0] = m_editor.m_snapRotate;
+               snapPtr = snapValues;
+            }
+         }
+         else if ((static_cast<int>(gizmoOperation) & ImGuizmo::SCALE) != 0)
+         {
+            if (m_editor.IsSnapActive(EditorUI::SnapKind::Scale) && m_editor.m_snapScale > 0.f)
+            {
+               snapValues[0] = m_editor.m_snapScale;
+               snapPtr = snapValues;
+            }
+         }
+         else if (m_editor.IsSnapActive(EditorUI::SnapKind::Move) && m_editor.m_snapMove > 0.f)
+         {
+            snapValues[0] = snapValues[1] = snapValues[2] = m_editor.m_snapMove;
+            snapPtr = snapValues;
+         }
+         ImGuizmo::Manipulate(camViewLH, (float*)(gizmoProj.m), gizmoOperation, m_gizmoMode, (float*)(transform.m), nullptr, snapPtr);
          if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
          {
             // Mark all selected parts for undo once per drag (m_editor.m_lastUndoId is reset when the gizmo is released)
@@ -2245,6 +2316,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          else if (m_editor.m_selection.GetType() != Selection::S_NONE)
             m_editor.ClearSelection(); // Cancel current selection
       }
+      else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && io.KeyShift && !io.KeyCtrl && !io.KeyAlt)
+         m_editor.ToggleSnapping(); // Shift+Tab toggles snapping (Blender)
       else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       {
          // Toggle drag point edit mode on the active selected part. For parts exposing an editable

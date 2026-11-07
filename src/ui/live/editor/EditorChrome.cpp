@@ -131,6 +131,47 @@ void EditorChrome::RenderMenuBar()
          if (ImGui::MenuItem("Invert Selection", "Ctrl+I", false, canSelect))
             editor.InvertSelection();
          ImGui::Separator();
+         if (ImGui::MenuItem("Snapping", "Shift+Tab", editor.m_snapEnabled))
+            editor.ToggleSnapping();
+         if (ImGui::BeginMenu("Snap Options"))
+         {
+            Settings &settings = g_settingsService.GetAppSettings();
+            if (ImGui::MenuItem("Target: Increment", nullptr, editor.m_snapTarget == 0))
+            {
+               editor.m_snapTarget = 0;
+               settings.SetEditor_SnapTarget(0, false);
+            }
+            if (ImGui::MenuItem("Target: Points", nullptr, editor.m_snapTarget == 1))
+            {
+               editor.m_snapTarget = 1;
+               settings.SetEditor_SnapTarget(1, false);
+            }
+            ImGui::Separator();
+            if (ImGui::DragFloat("Move Increment", &editor.m_snapMove, 0.1f, 0.01f, 1000.f, "%.2f vpu"))
+               settings.SetEditor_SnapMove(editor.m_snapMove, false);
+            if (ImGui::DragFloat("Rotate Increment", &editor.m_snapRotate, 0.5f, 0.1f, 180.f, "%.1f deg"))
+               settings.SetEditor_SnapRotate(editor.m_snapRotate, false);
+            if (ImGui::DragFloat("Scale Increment", &editor.m_snapScale, 0.005f, 0.001f, 10.f, "%.3f"))
+               settings.SetEditor_SnapScale(editor.m_snapScale, false);
+            ImGui::Separator();
+            if (ImGui::MenuItem("Affect Moves", nullptr, editor.m_snapAffectMove))
+            {
+               editor.m_snapAffectMove = !editor.m_snapAffectMove;
+               settings.SetEditor_SnapAffectMove(editor.m_snapAffectMove, false);
+            }
+            if (ImGui::MenuItem("Affect Rotations", nullptr, editor.m_snapAffectRotate))
+            {
+               editor.m_snapAffectRotate = !editor.m_snapAffectRotate;
+               settings.SetEditor_SnapAffectRotate(editor.m_snapAffectRotate, false);
+            }
+            if (ImGui::MenuItem("Affect Scales", nullptr, editor.m_snapAffectScale))
+            {
+               editor.m_snapAffectScale = !editor.m_snapAffectScale;
+               settings.SetEditor_SnapAffectScale(editor.m_snapAffectScale, false);
+            }
+            ImGui::EndMenu();
+         }
+         ImGui::Separator();
          if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
             editor.ExportPartSelection();
          ImGui::Separator();

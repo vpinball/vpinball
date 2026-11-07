@@ -1409,6 +1409,14 @@ PropBool(Editor, NavAltMiddleButton, "Alt Acts As Middle Button"s, "Alt + left d
 PropBool(Editor, NavTrackpad, "Trackpad Scrolling"s, "Two finger scroll pans the view, Ctrl / Cmd + scroll zooms (instead of scroll zooming)"s, VPX_NAV_ALT_DEFAULT);
 PropBool(Editor, NavEmulateNumpad, "Emulate Numpad"s, "Top row digits act as the numpad view keys (1 front, 3 side, 7 top, 5 perspective/orthographic, 2/4/6/8 orbit step); edit mode only, while the table is not playing"s, VPX_NAV_ALT_DEFAULT);
 PropBool(Editor, NavBlenderTransform, "Blender Transform Keys"s, "G / R / S start a Blender style modal transform driven by the mouse instead of showing the gizmo"s, true);
+PropBool(Editor, SnapEnabled, "Snapping"s, "Snap gizmo and G / R / S transforms to the increments below (Ctrl inverts the snapping while transforming)"s, false);
+PropInt(Editor, SnapTarget, "Snap Target"s, "0 = increment (grid), 1 = points (drag points and centers of other parts, G only)"s, 0, 1, 0);
+PropFloat(Editor, SnapMove, "Snap Move Increment"s, "Move snapping increment, in VP units"s, 0.01f, 1000.f, 10.f);
+PropFloat(Editor, SnapRotate, "Snap Rotate Increment"s, "Rotation snapping increment, in degrees"s, 0.1f, 180.f, 15.f);
+PropFloat(Editor, SnapScale, "Snap Scale Increment"s, "Scale snapping increment (scale factor)"s, 0.001f, 10.f, 0.1f);
+PropBool(Editor, SnapAffectMove, "Snap Moves"s, "Snapping applies to moves"s, true);
+PropBool(Editor, SnapAffectRotate, "Snap Rotations"s, "Snapping applies to rotations"s, true);
+PropBool(Editor, SnapAffectScale, "Snap Scales"s, "Snapping applies to scales"s, true);
 PropIntUnbounded(Editor, ImageMngPosX, "ImageMngPosX"s, "Image Manager window X position"s, 0);
 PropIntUnbounded(Editor, ImageMngPosY, "ImageMngPosY"s, "Image Manager window Y position"s, 0);
 PropIntUnbounded(Editor, ImageMngWidth, "ImageMngWidth"s, "Image Manager window width"s, 1000);

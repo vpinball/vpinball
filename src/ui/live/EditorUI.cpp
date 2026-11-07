@@ -99,6 +99,35 @@ EditorUI::EditorUI(LiveUI &liveUI)
    m_navTrackpad = settings.GetEditor_NavTrackpad();
    m_navEmulateNumpad = settings.GetEditor_NavEmulateNumpad();
    m_navBlenderTransform = settings.GetEditor_NavBlenderTransform();
+   m_snapEnabled = settings.GetEditor_SnapEnabled();
+   m_snapTarget = settings.GetEditor_SnapTarget();
+   m_snapMove = settings.GetEditor_SnapMove();
+   m_snapRotate = settings.GetEditor_SnapRotate();
+   m_snapScale = settings.GetEditor_SnapScale();
+   m_snapAffectMove = settings.GetEditor_SnapAffectMove();
+   m_snapAffectRotate = settings.GetEditor_SnapAffectRotate();
+   m_snapAffectScale = settings.GetEditor_SnapAffectScale();
+}
+
+bool EditorUI::IsSnapActive(const SnapKind kind) const
+{
+   // Ctrl inverts the snapping while it is held (Blender)
+   if (m_snapEnabled == ImGui::GetIO().KeyCtrl)
+      return false;
+   switch (kind)
+   {
+   case SnapKind::Move: return m_snapAffectMove;
+   case SnapKind::Rotate: return m_snapAffectRotate;
+   case SnapKind::Scale: return m_snapAffectScale;
+   }
+   return false;
+}
+
+void EditorUI::ToggleSnapping()
+{
+   m_snapEnabled = !m_snapEnabled;
+   g_settingsService.GetAppSettings().SetEditor_SnapEnabled(m_snapEnabled, false);
+   Report(m_snapEnabled ? "Snapping on" : "Snapping off");
 }
 
 EditorUI::~EditorUI()
