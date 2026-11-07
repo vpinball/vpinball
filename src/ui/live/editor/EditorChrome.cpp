@@ -121,6 +121,14 @@ void EditorChrome::RenderMenuBar()
             editor.RequestAddPartPopup(editor.GetViewportContentCenter());
          ImGui::EndDisabled();
          ImGui::Separator();
+         const bool canSelect = !editor.m_table->IsLocked() && editor.m_fileOp == nullptr;
+         if (ImGui::MenuItem("Select All", "A", false, canSelect))
+            editor.SelectAllParts();
+         if (ImGui::MenuItem("Deselect", "Alt+A", false, canSelect && editor.m_selection.GetType() != Selection::S_NONE))
+            editor.ClearSelection();
+         if (ImGui::MenuItem("Invert Selection", "Ctrl+I", false, canSelect))
+            editor.InvertSelection();
+         ImGui::Separator();
          if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
             editor.ExportPartSelection();
          ImGui::Separator();
