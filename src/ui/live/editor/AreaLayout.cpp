@@ -751,7 +751,7 @@ AreaLayout AreaLayout::Default(const int index)
       split(0, SplitAxis::Vertical, 5, 6, 1, kDefaultPropertiesWidth); // 2 (right = panel)
       leaf(1, AreaType::Outliner); // 3
       leaf(1, AreaType::ViewportPreview); // 4
-      leaf(2, index == 3 ? AreaType::ViewportBackdrop : AreaType::Viewport); // 5 center
+      leaf(2, index == 3 ? AreaType::ViewportBackdrop : index == 4 ? AreaType::Blueprint : AreaType::Viewport); // 5 center
       leaf(2, index == 1 ? AreaType::PartLibrary : AreaType::Properties); // 6 right
    }
    else
