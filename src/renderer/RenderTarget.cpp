@@ -726,7 +726,7 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
          if (m_nMSAASamples > 1)
             ResolveMSAADepth();
          shader->SetTechnique(ShaderTechnique::fb_copy_depth);
-         shader->SetTexture(ShaderUniform::tex_depth, GetDepthSampler());
+         shader->SetTexture(ShaderUniform::tex_depth, GetDepthSampler(), SamplerFilter::SF_NONE); // Should be bilinear, but this is unsupported
          shader->Begin();
          bgfx::setVertexBuffer(0, &tvb);
          bgfx::setInstanceCount(nInstances);
