@@ -4,6 +4,7 @@
 #include "OutlinerPanel.h"
 
 #include "fonts/IconsForkAwesome.h"
+#include "IconsLucide.h"
 #include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/PartGroup.h"
@@ -512,6 +513,7 @@ void OutlinerPanel::AppendStatusHints(vector<StatusHint> &hints) const
    if (ImGui::GetDragDropPayload() != nullptr)
       hints = { { "Drop", "Move to Group" } };
    else
-      hints = { { "LMB", "Select" }, { mod + "+LMB", "Toggle" }, { "Shift+LMB", "Range" }, { "RMB", "Menu" }, { "Drag", "Move to Group" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { mod + "+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Range" }, { ICON_LC_MOUSE_RIGHT, "Menu" },
+         { "Drag", "Move to Group" } };
 }
 }

@@ -8,6 +8,7 @@
 #include "core/player.h"
 #include "core/Settings.h"
 #include "EditorTheme.h"
+#include "IconsLucide.h"
 #include "LiveRenderContext.h"
 #include "fonts/IconsForkAwesome.h"
 #include "physics/PhysicsEngine.h"
@@ -710,7 +711,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    else // A render preview has no toolbar (no selection, shading, camera edits, ...)
    {
       ImGui::SameLine();
-      if (ImGui::Button(perspective ? ICON_FK_VIDEO_CAMERA "##Persp" : ICON_FK_TH "##Persp"))
+      if (ImGui::Button(perspective ? ICON_LC_VIDEO "##Persp" : ICON_LC_VIDEO_OFF "##Persp"))
          perspective = !perspective;
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip(perspective ? "Perspective camera" : "Orthographic camera");
@@ -722,9 +723,9 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          const char* icon;
          const char* tooltip;
       } shadeModes[] = {
-         { Renderer::ShadeMode::Default, ICON_FK_CUBE, "Solid" },
-         { Renderer::ShadeMode::Wireframe, ICON_FK_WIRE, "Wireframe" },
-         { Renderer::ShadeMode::NoDepthWireframe, ICON_FK_DASHCUBE, "Wireframe (no depth)" },
+         { Renderer::ShadeMode::NoDepthWireframe, ICON_LC_GLOBE, "Wireframe" },
+         { Renderer::ShadeMode::Wireframe, ICON_LC_CIRCLE, "Solid" },
+         { Renderer::ShadeMode::Default, ICON_LC_LENS, "Rendered" },
       };
       for (const auto& mode : shadeModes)
       {
@@ -2079,30 +2080,30 @@ void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
    if (m_op.op != ImGuizmo::OPERATION(0))
    {
       // Modal transform op: confirm / cancel, axis & plane constraints, numeric entry (Blender)
-      hints = { { "LMB / Enter", "Confirm" }, { "RMB / Esc", "Cancel" }, { "X Y Z", "Axis" }, { "Shift+X Y Z", "Plane" }, { "MMB Drag", "Constrain Axis" }, { "0-9", "Exact Value" },
-         { "Ctrl", "Snap" }, { "Shift", "Precision" } };
+      hints = { { ICON_LC_MOUSE_LEFT " / Enter", "Confirm" }, { ICON_LC_MOUSE_RIGHT " / Esc", "Cancel" }, { "X Y Z", "Axis" }, { "Shift+X Y Z", "Plane" },
+         { ICON_LC_MOUSE " Drag", "Constrain Axis" }, { "0-9", "Exact Value" }, { "Ctrl", "Snap" }, { "Shift", "Precision" } };
    }
    else if (m_gizmoDragActive)
-      hints = { { "Drag", "Transform" }, { "Release LMB", "Confirm" } };
+      hints = { { "Drag", "Transform" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
    else if (m_boxSelectActive)
-      hints = { { "Release LMB", "Select" }, { "Shift", "Add to Selection" }, { "Esc", "Cancel" } };
+      hints = { { "Release " ICON_LC_MOUSE_LEFT, "Select" }, { "Shift", "Add to Selection" }, { "Esc", "Cancel" } };
    else if (m_editor.m_pointDragPending || m_editor.m_pointDragActive)
-      hints = { { "Drag", "Move Point" }, { "Release LMB", "Confirm" } };
+      hints = { { "Drag", "Move Point" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
    else if (m_editor.m_addPartType != eItemInvalid || m_editor.m_partLibrary.IsPlacementArmed())
-      hints = { { "LMB", "Place Part" }, { "Esc", "Cancel" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Place Part" }, { "Esc", "Cancel" } };
    else if (m_editor.m_pointEditPart)
    {
       if (m_editor.m_pointEditCenter)
-         hints = { { "LMB", "Select Center" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
+         hints = { { ICON_LC_MOUSE_LEFT, "Select Center" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
       else
-         hints = { { "LMB", "Select Point" }, { "Shift+LMB", "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
+         hints = { { ICON_LC_MOUSE_LEFT, "Select Point" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
    }
    else if (m_viewType == ViewMode::PreviewCam)
-      hints = { { "LMB", "Select" }, { "Wheel", "Zoom" }, { "MMB", "Orbit" }, { "Shift+MMB", "Pan" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { "Wheel", "Zoom" }, { ICON_LC_MOUSE, "Orbit" }, { "Shift+" ICON_LC_MOUSE, "Pan" } };
    else
    {
       // Navigation hints of the edit viewports (EditorCam, Desktop Backdrop)
-      hints = { { "LMB", "Select" }, { "Drag", "Box Select" }, { "MMB", "Orbit" }, { "Shift+MMB", "Pan" }, { "Wheel", "Zoom" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { "Drag", "Box Select" }, { ICON_LC_MOUSE, "Orbit" }, { "Shift+" ICON_LC_MOUSE, "Pan" }, { "Wheel", "Zoom" } };
       if (!m_editor.m_table->IsLocked())
       {
          hints.push_back({ "G", "Move" });

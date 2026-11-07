@@ -4,6 +4,7 @@
 #include "EditorChrome.h"
 #include "BlueprintPane.h"
 #include "EditorTheme.h"
+#include "IconsLucide.h"
 #include "ViewportPane.h" // GetTargetViewport()->m_imageRect (status overlay anchor)
 
 #include "core/player.h"
@@ -11,12 +12,14 @@
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
 
+#include "imgui/imgui_internal.h" // ImTextCharFromUtf8 (status hint key chips ink bounds)
+
 namespace VPX::EditorUI
 {
 
 namespace
 {
-   constexpr float StatusBarHeight = 22.f; // Bottom status bar, in pixels at 100% DPI
+   constexpr float StatusBarHeight = 28.f; // Bottom status bar, in pixels at 100% DPI
 }
 
 void EditorChrome::Render(bool showFullUI)
@@ -124,7 +127,7 @@ void EditorChrome::RenderMenuBar()
          viewItem("Left", "Numpad 3", ViewportPane::PredefinedView::Left);
          viewItem("Right", "Ctrl+Numpad 3", ViewportPane::PredefinedView::Right);
          ImGui::Separator();
-         if (ImGui::MenuItem("Perspective / Orthographic", "Numpad 5", false, vp != nullptr))
+         if (ImGui::MenuItem(ICON_LC_VIDEO " Perspective / " ICON_LC_VIDEO_OFF " Orthographic", "Numpad 5", false, vp != nullptr))
          {
             vp->m_perspectiveCam = !vp->m_perspectiveCam;
          }
@@ -138,9 +141,9 @@ void EditorChrome::RenderMenuBar()
                if (ImGui::MenuItem(label, nullptr, vp != nullptr && vp->m_shadeMode == mode) && vp != nullptr)
                   vp->m_shadeMode = mode;
             };
-            shadeItem("Solid", Renderer::ShadeMode::Default);
-            shadeItem("Wireframe", Renderer::ShadeMode::Wireframe);
-            shadeItem("Wireframe (no depth)", Renderer::ShadeMode::NoDepthWireframe);
+            shadeItem(ICON_LC_GLOBE " Wireframe", Renderer::ShadeMode::NoDepthWireframe);
+            shadeItem(ICON_LC_CIRCLE " Solid", Renderer::ShadeMode::Wireframe);
+            shadeItem(ICON_LC_LENS " Rendered", Renderer::ShadeMode::Default);
             ImGui::EndMenu();
          }
          ImGui::Separator();
@@ -245,9 +248,10 @@ void EditorChrome::RenderStatusBar(const bool showFullUI)
    else if (editor.m_areaDrag.active)
       hints = { { "Drag inside the area", "Split" }, { "Drag into a neighbour", "Join" }, { "Esc", "Cancel" } };
    else if (editor.m_areaModal != EditorUI::AreaModalKind::None)
-      hints = { { "Move Mouse", editor.m_areaModal == EditorUI::AreaModalKind::Split ? "Place Split" : "Choose Area to Remove" }, { "LMB", "Confirm" }, { "RMB / Esc", "Cancel" } };
+      hints = { { "Move Mouse", editor.m_areaModal == EditorUI::AreaModalKind::Split ? "Place Split" : "Choose Area to Remove" }, { ICON_LC_MOUSE_LEFT, "Confirm" },
+         { ICON_LC_MOUSE_RIGHT " / Esc", "Cancel" } };
    else if (editor.m_splitDragNode >= 0)
-      hints = { { "Drag", "Resize Areas" }, { "Release LMB", "Confirm" } };
+      hints = { { "Drag", "Resize Areas" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
    else
    {
       // Context view: a modal transform op owns the input wherever the mouse is, then an in-flight
@@ -321,19 +325,58 @@ void EditorChrome::RenderStatusBar(const bool showFullUI)
 
    // Hints from the left, as many as fit before the report
    const float chipPadX = 4.f * dpi, chipPadY = 1.f * dpi, gap = 4.f * dpi, hintGap = 12.f * dpi;
+   ImFontBaked *const baked = ImGui::GetFontBaked();
+
+   // Key chips are sized on the glyphs' ink bounds: CalcTextSize only covers advances and the
+   // line height, but the merged icon glyphs are drawn a bit larger than the text and would
+   // overflow the chip. One height for the whole row (expands when a key contains icons).
+   const auto keyInkBounds = [baked, textH](const string &key, float &x0, float &x1, float &y0, float &y1)
+   {
+      x0 = y0 = 0.f;
+      x1 = y1 = 0.f;
+      float penX = 0.f;
+      const char *const keyEnd = key.c_str() + key.size();
+      for (const char *s = key.c_str(); s < keyEnd;)
+      {
+         unsigned int c = 0;
+         s += ImTextCharFromUtf8(&c, s, keyEnd);
+         const ImFontGlyph *const glyph = c != 0 ? baked->FindGlyph(static_cast<ImWchar>(c)) : nullptr;
+         if (glyph == nullptr)
+            continue;
+         if (glyph->Visible)
+         {
+            x0 = ImMin(x0, penX + glyph->X0);
+            x1 = ImMax(x1, penX + glyph->X1);
+            y0 = ImMin(y0, glyph->Y0);
+            y1 = ImMax(y1, glyph->Y1);
+         }
+         penX += glyph->AdvanceX;
+      }
+      x1 = ImMax(x1, penX); // union with the layout box
+      y1 = ImMax(y1, textH);
+   };
+   float chipTop = 0.f, chipBottom = textH;
+   for (const StatusHint &hint : hints)
+   {
+      float x0, x1, y0, y1;
+      keyInkBounds(hint.key, x0, x1, y0, y1);
+      chipTop = ImMin(chipTop, y0);
+      chipBottom = ImMax(chipBottom, y1);
+   }
    float x = barMin.x + pad;
    for (const StatusHint &hint : hints)
    {
-      const ImVec2 keySize = ImGui::CalcTextSize(hint.key.c_str());
+      float inkX0, inkX1, inkY0, inkY1;
+      keyInkBounds(hint.key, inkX0, inkX1, inkY0, inkY1);
       const ImVec2 labelSize = ImGui::CalcTextSize(hint.label.c_str());
-      const float width = keySize.x + 2.f * chipPadX + gap + labelSize.x;
+      const float width = (inkX1 - inkX0) + 2.f * chipPadX + gap + labelSize.x;
       if (x + width > rightLimit)
          break;
-      const ImVec2 chipMin(x, barMin.y + 0.5f * (height - (keySize.y + 2.f * chipPadY)));
-      const ImVec2 chipMax(x + keySize.x + 2.f * chipPadX, chipMin.y + keySize.y + 2.f * chipPadY);
+      const ImVec2 chipMin(x, textY + chipTop - chipPadY);
+      const ImVec2 chipMax(x + (inkX1 - inkX0) + 2.f * chipPadX, textY + chipBottom + chipPadY);
       draw->AddRectFilled(chipMin, chipMax, EditorTheme::Rgb(255, 255, 255, 20), 3.f * dpi);
       draw->AddRect(chipMin, chipMax, EditorTheme::Hover, 3.f * dpi);
-      draw->AddText(ImVec2(chipMin.x + chipPadX, chipMin.y + chipPadY), EditorTheme::TextDim, hint.key.c_str());
+      draw->AddText(ImVec2(chipMin.x + chipPadX - inkX0, chipMin.y + chipPadY - chipTop), EditorTheme::TextDim, hint.key.c_str());
       draw->AddText(ImVec2(chipMax.x + gap, textY), EditorTheme::TextDim, hint.label.c_str());
       x += width + hintGap;
    }
