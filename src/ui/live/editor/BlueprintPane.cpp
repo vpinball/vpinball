@@ -180,6 +180,7 @@ void BlueprintPane::RenderScene(ImDrawList* const drawList)
       if (it != m_editor.m_editableMap.end())
          RenderPart(ctx, it->second);
    }
+   RenderGhostParts(ctx);
 
    // 4. Grid (below the outlines, clipped to the playfield bounds)
    const float gridSize = settings.GetEditor_GridSize();
@@ -211,8 +212,24 @@ void BlueprintPane::RenderScene(ImDrawList* const drawList)
       if (it != m_editor.m_editableMap.end())
          RenderPart(ctx, it->second);
    }
+   RenderGhostParts(ctx);
 
    drawList->PopClipRect();
+}
+
+void BlueprintPane::RenderGhostParts(BlueprintRenderContext& ctx) const
+{
+   // Ghost preview of the armed part library placement (the part shapes in selection styling)
+   if (!m_editor.m_partLibrary.IsPreviewVisible())
+      return;
+   for (const std::shared_ptr<EditorUIPart>& uiPart : m_editor.m_partLibrary.GetPreviewParts())
+   {
+      ctx.m_partSelected = true;
+      ctx.m_partActive = false;
+      ctx.m_partLocked = false;
+      uiPart->RenderBlueprint(ctx);
+   }
+   ctx.SetObject(nullptr);
 }
 
 void BlueprintPane::HitTestParts(const ImVec2& pos, vector<BlueprintHitContext::Hit>& hits) const
@@ -240,12 +257,9 @@ void BlueprintPane::HitTestParts(const ImVec2& pos, vector<BlueprintHitContext::
 
 void BlueprintPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB, const bool add)
 {
-   // Parts whose drawn shapes are fully inside the box (win32 HitRectSur semantics)
-   if (!add)
-   {
-      m_editor.m_multiSel.clear();
-      m_editor.m_selection = Selection();
-   }
+   // Parts whose drawn shapes are fully inside the box (win32 HitRectSur semantics). The hit replay
+   // runs before the selection is cleared, so the drag point handles of selected parts are recorded
+   // too (the win32 band select picks the sub parts when the box holds no main part)
    BlueprintHitContext ctx;
    ctx.Setup(m_imageRect, m_zoom, m_offset, m_editor.m_liveUI.GetDPI());
    ctx.SetHitRect(AreaRect { min(cornerA.x, cornerB.x), min(cornerA.y, cornerB.y), max(cornerA.x, cornerB.x), max(cornerA.y, cornerB.y) });
@@ -261,7 +275,43 @@ void BlueprintPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB,
             RenderPart(ctx, it->second);
       }
    }
-   for (const EditorUIPart* const part : ctx.GetRectParts())
+   const vector<const EditorUIPart*>& parts = ctx.GetRectParts();
+   if (parts.empty())
+   {
+      // No main part in the box: when it holds the drag point handles of a single curve part, its drag
+      // point edit mode opens with the boxed points selected (the win32 sub part band select)
+      const vector<const DragPoint*>& points = ctx.GetRectPoints();
+      if (!points.empty() && !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked())
+      {
+         std::shared_ptr<EditorUIPart> owner;
+         bool singleOwner = true;
+         for (const DragPoint* point : points)
+         {
+            const auto it = m_editor.m_editableMap.find(point->GetIEditable());
+            if (it == m_editor.m_editableMap.end() || (owner != nullptr && owner != it->second))
+            {
+               singleOwner = false;
+               break;
+            }
+            owner = it->second;
+         }
+         if (singleOwner && owner != nullptr && owner->GetDragPointCurve() != nullptr)
+         {
+            m_editor.SetSelection(Selection(owner));
+            m_editor.EnterPointEditMode();
+            if (m_editor.m_pointEditPart == owner)
+               for (const DragPoint* point : points)
+                  m_editor.m_pointSel.push_back(const_cast<DragPoint*>(point));
+         }
+      }
+      return;
+   }
+   if (!add)
+   {
+      m_editor.m_multiSel.clear();
+      m_editor.m_selection = Selection();
+   }
+   for (const EditorUIPart* const part : parts)
    {
       const std::shared_ptr<EditorUIPart> uiPart = Resolve(part);
       if (uiPart != nullptr && !m_editor.IsPartSelected(uiPart))
@@ -464,6 +514,28 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::EndPopup();
    }
 
+   // Right mouse context menu & numeric transform / drawing order dialogs: opened one frame after the
+   // request recorded by RenderUI or a menu command (popups must live in this window's scope)
+   if (m_contextMenuPending)
+   {
+      m_contextMenuPending = false;
+      ImGui::SetNextWindowPos(m_menuPos, ImGuiCond_Appearing);
+      ImGui::OpenPopup("Blueprint Context");
+   }
+   RenderContextMenu();
+   if (m_dialogRequest)
+   {
+      m_dialogRequest = false;
+      m_dialogApplyCount = 0;
+      m_dialogInit = false;
+      const char* const popupName = m_dialog == DialogKind::Rotate ? "Rotate###BlueprintDialog"
+         : m_dialog == DialogKind::Scale                           ? "Scale###BlueprintDialog"
+         : m_dialog == DialogKind::Translate                       ? "Translate###BlueprintDialog"
+                                                                   : "Drawing Order###BlueprintDialog";
+      ImGui::OpenPopup(popupName);
+   }
+   RenderDialogs();
+
    // Canvas: the 2D schematic is drawn into the pane's window draw list
    const ImVec2 avail = ImGui::GetContentRegionAvail();
    const ImVec2 imgPos = ImGui::GetCursorScreenPos();
@@ -483,6 +555,12 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::SetNextWindowPos(overlayPos);
       ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
       ImGui::Text("Blueprint (x%.1f)", m_zoom);
+      if (m_hovered)
+      {
+         // Cursor position in table coordinates (the win32 status bar position readout)
+         const Vertex2D cur = Unproject(ImGui::GetMousePos());
+         ImGui::Text("%.1f, %.1f", cur.x, cur.y);
+      }
       if (m_gizmoOperation == ImGuizmo::TRANSLATE)
          ImGui::TextUnformatted(ICON_FK_ARROWS " Grab");
       else if (m_gizmoOperation == ImGuizmo::SCALE)
@@ -671,17 +749,55 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
                }
                else
                {
-                  // Parts: a drag on a selected (unlocked) part may start a move drag; the click
-                  // selection itself is applied on release (same semantics as the 3D viewport)
-                  const std::shared_ptr<EditorUIPart> part = Resolve(top.part);
-                  if (part != nullptr && editor.IsPartSelected(part) && !part->GetEditable()->IsUILocked())
-                  {
-                     m_moveDragPending = true;
-                     m_moveDragActive = false;
-                     m_moveDragPos = Unproject(m_boxSelectStart);
-                  }
-                  else
+                  // Parts: the click selection is applied on mouse down (win32 semantics), so a
+                  // press-drag on a part selects & moves it in one gesture. Repeated clicks cycle
+                  // through the stacked parts while the selection holds a single part of the stack.
+                  vector<std::shared_ptr<EditorUIPart>> hitParts; // Front to back
+                  for (auto it = hits.rbegin(); it != hits.rend(); ++it)
+                     if (it->point == nullptr)
+                        if (const std::shared_ptr<EditorUIPart> uiPart = Resolve(it->part); uiPart != nullptr && std::ranges::find(hitParts, uiPart) == hitParts.end())
+                           hitParts.push_back(uiPart);
+                  if (hitParts.empty())
                      m_boxSelectActive = true;
+                  else
+                  {
+                     const std::shared_ptr<EditorUIPart>& frontPart = hitParts.front();
+                     if (io.KeyShift)
+                     {
+                        editor.TogglePartSelection(frontPart);
+                        OutlinerPanel::m_anchor = frontPart;
+                     }
+                     else if (editor.m_multiSel.size() <= 1)
+                     {
+                        // Single selection: selects the topmost part, cycling to the parts behind it
+                        // on repeated clicks while the active part is in the stack (win32 behavior)
+                        size_t selectionIndex = 0;
+                        const auto selIt = std::ranges::find(hitParts, editor.m_selection.GetPart());
+                        if (selIt != hitParts.end())
+                           selectionIndex = (static_cast<size_t>(selIt - hitParts.begin()) + 1) % hitParts.size();
+                        editor.SetSelection(Selection(hitParts[selectionIndex]));
+                        OutlinerPanel::m_anchor = hitParts[selectionIndex];
+                     }
+                     else if (editor.IsPartSelected(frontPart))
+                     {
+                        // Multi selection: a press on a member promotes it to the active part
+                        editor.m_selection = Selection(frontPart);
+                        OutlinerPanel::m_anchor = frontPart;
+                     }
+                     else
+                     {
+                        editor.SetSelection(Selection(frontPart));
+                        OutlinerPanel::m_anchor = frontPart;
+                     }
+                     // The resulting selection may start a move drag (locked parts only select)
+                     const std::shared_ptr<EditorUIPart>& sel = editor.m_selection.GetPart();
+                     if (sel != nullptr && !sel->GetEditable()->IsUILocked())
+                     {
+                        m_moveDragPending = true;
+                        m_moveDragActive = false;
+                        m_moveDragPos = Unproject(m_boxSelectStart);
+                     }
+                  }
                }
             }
             else
@@ -809,49 +925,67 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
             }
             else if (fabsf(end.x - m_boxSelectStart.x) > 4.f || fabsf(end.y - m_boxSelectStart.y) > 4.f)
                BoxSelectParts(m_boxSelectStart, end, io.KeyShift);
-            else
+            else if (!io.KeyShift)
+               editor.ClearSelection(); // The click selection was applied on press (win32 semantics): an empty click clears
+         }
+      }
+
+      // Right mouse button: completes pending left drags (win32 unstick), applies the win32 right
+      // click selection, and records the context menu target (the popup is opened on release)
+      if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+      {
+         m_moveDragPending = m_moveDragActive = m_pointDragPending = m_pointDragActive = false;
+         m_dragPart.reset();
+         m_dragPoint = nullptr;
+         m_boxSelectActive = false;
+         editor.m_pointDragPending = false;
+         editor.m_pointDragActive = false;
+         m_menuArmed = true;
+         m_menuPos = ImGui::GetMousePos();
+         HitTestParts(m_menuPos, m_menuHits);
+         m_menuPoint = nullptr;
+         m_menuPointPart = nullptr;
+         if (!m_menuHits.empty() && m_menuHits.back().point != nullptr) // Topmost hit: drag point handle
+         {
+            m_menuPoint = m_menuHits.back().point;
+            m_menuPointPart = m_menuHits.back().part;
+         }
+         else
+         {
+            // Win32 right-down selection: a selected part under the cursor keeps the multi selection
+            // and becomes the active one, otherwise the topmost hit part is selected
+            const vector<std::shared_ptr<EditorUIPart>> hitParts = MenuHitParts();
+            bool promoted = false;
+            for (const std::shared_ptr<EditorUIPart>& part : hitParts)
+               if (editor.IsPartSelected(part))
+               {
+                  editor.m_selection = Selection(part);
+                  OutlinerPanel::m_anchor = part;
+                  promoted = true;
+                  break;
+               }
+            if (!promoted)
             {
-               vector<BlueprintHitContext::Hit> hits;
-               HitTestParts(end, hits);
-               vector<const EditorUIPart*> hitParts;
-               for (const auto& hit : hits)
-                  if (hit.point == nullptr && std::ranges::find(hitParts, hit.part) == hitParts.end())
-                     hitParts.push_back(hit.part);
-               if (io.KeyShift)
+               if (!hitParts.empty())
                {
-                  // Shift+click toggles the front-most hit part in the multi selection
-                  if (!hitParts.empty())
-                  {
-                     const std::shared_ptr<EditorUIPart> part = Resolve(hitParts.back());
-                     if (part != nullptr)
-                     {
-                        editor.TogglePartSelection(part);
-                        OutlinerPanel::m_anchor = part;
-                     }
-                  }
+                  editor.SetSelection(Selection(hitParts.front()));
+                  OutlinerPanel::m_anchor = hitParts.front();
                }
-               else if (hitParts.empty())
-                  editor.ClearSelection();
                else
-               {
-                  // Click selects the front-most hit part, subsequent clicks cycle to the parts behind it
-                  vector<std::shared_ptr<EditorUIPart>> uiParts;
-                  for (const EditorUIPart* const part : hitParts)
-                     if (const std::shared_ptr<EditorUIPart> uiPart = Resolve(part); uiPart != nullptr)
-                        uiParts.push_back(uiPart);
-                  size_t selectionIndex = 0;
-                  const auto selIt = std::ranges::find(uiParts, editor.m_selection.GetPart());
-                  if (selIt != uiParts.end())
-                     selectionIndex = static_cast<size_t>(selIt - uiParts.begin() + 1) % uiParts.size();
-                  editor.SetSelection(Selection(uiParts[selectionIndex]));
-                  OutlinerPanel::m_anchor = uiParts[selectionIndex];
-               }
+                  editor.ClearSelection();
             }
          }
+      }
+      if (m_menuArmed && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+      {
+         m_menuArmed = false;
+         m_contextMenuPending = true;
       }
    }
 
    // Released outside of the pane (drags would otherwise stay armed until the mouse comes back)
+   if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
+      m_menuArmed = false;
    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
    {
       m_boxSelectActive = false;
@@ -954,6 +1088,16 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
          FrameSelection();
       else if (ImGui::IsKeyPressed(ImGuiKey_Home))
          FitTable();
+      else if (!io.WantTextInput
+         && (ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true) || ImGui::IsKeyPressed(ImGuiKey_UpArrow, true)
+            || ImGui::IsKeyPressed(ImGuiKey_DownArrow, true)))
+      {
+         // Nudge the selection by 1 display px (10 with Shift), like the win32 arrow keys
+         const float distance = (io.KeyShift ? 10.f : 1.f) / m_zoom;
+         const Vertex2D delta(ImGui::IsKeyDown(ImGuiKey_RightArrow) ? distance : (ImGui::IsKeyDown(ImGuiKey_LeftArrow) ? -distance : 0.f),
+            ImGui::IsKeyDown(ImGuiKey_DownArrow) ? distance : (ImGui::IsKeyDown(ImGuiKey_UpArrow) ? -distance : 0.f));
+         editor.TranslateMultiSel(delta);
+      }
    }
 }
 
