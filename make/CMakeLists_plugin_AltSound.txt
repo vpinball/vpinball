@@ -12,6 +12,7 @@ set(ALTSOUND_PLUGIN_SOURCES
    plugins/altsound/AltSoundPlugin.cpp
    plugins/altsound/common.cpp
    plugins/altsound/common.h
+   plugins/altsound/AltSoundPlugin.h
 )
 
 if(BUILD_SHARED)

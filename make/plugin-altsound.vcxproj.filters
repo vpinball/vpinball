@@ -23,5 +23,8 @@
     <ClInclude Include="../../plugins/altsound/common.h">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="../../plugins/altsound/AltSoundPlugin.h">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

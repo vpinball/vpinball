@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Settings.h"
 #include "pinmame/PinMAMEPlugin.h"
+#include "altsound/AltSoundPlugin.h"
 
 #include "nlohmann/json.hpp"
 
@@ -294,6 +295,18 @@ void Controller::Run(long hParentWnd, int nMinVersion)
       }
    }
    PinmameSetGameDef(gameDef.data(), gameDef.size());
+
+   // AltSound packs made before PinMAME 3.7 are keyed on the older sound command stream of some machines (Bally MPU-17/MPU-35).
+   // The log is set up when the machine starts, so ask the AltSound plugin (if loaded and using a pack for this game) before
+   // running: its 'new_sound_commands' key tells which stream the pack was made for. The AltSound plugin itself only starts
+   // once the game runs. Without a pack, the clean stream is kept
+   {
+      AltSoundPackInfoMsg packInfo { 1, m_szGameName.c_str(), 0, 0 };
+      const unsigned int getPackInfoId = m_msgApi->GetMsgID(ALTSOUNDPI_NAMESPACE, ALTSOUNDPI_GET_PACK_INFO_MSG);
+      m_msgApi->BroadcastMsg(m_endpointId, getPackInfoId, &packInfo);
+      m_msgApi->ReleaseMsgID(getPackInfoId);
+      PinmameSetLegacySoundCommandLog((packInfo.found && !packInfo.newSoundCommands) ? 1 : 0);
+   }
 
    // Trigger startup, status will be either 2 (starting), 1 (running), 0 (stopped, likely after failure)
    PINMAME_STATUS status = PinmameRun(m_szGameName.c_str());
