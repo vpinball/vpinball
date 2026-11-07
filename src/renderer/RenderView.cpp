@@ -1478,7 +1478,7 @@ RenderTarget* RenderView::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Ren
 
             const Vertex3D_TexelOnly verts[4] = {
                { xMax, yMax, 0.0f, 0.5f + xMax * 0.5f, 0.5f - yMax * 0.5f }, //
-               { xMin, yMax, 0.0f, 0.5f + xMin * 0.5f, 0.5f - yMin * 0.5f }, //
+               { xMin, yMax, 0.0f, 0.5f + xMin * 0.5f, 0.5f - yMax * 0.5f }, //
                { xMax, yMin, 0.0f, 0.5f + xMax * 0.5f, 0.5f - yMin * 0.5f }, //
                { xMin, yMin, 0.0f, 0.5f + xMin * 0.5f, 0.5f - yMin * 0.5f } //
             };
