@@ -40,10 +40,32 @@ void ViewportPane::OnUnhosted()
       m_editor.m_captureVp = nullptr;
    if (m_editor.m_hoverVp == this)
       m_editor.m_hoverVp = nullptr;
+   CancelGizmoDrag();
    if (m_view != nullptr)
    {
       m_editor.m_renderer->ReleaseEditorView(m_view);
       m_view = nullptr;
+   }
+}
+
+void ViewportPane::CancelGizmoDrag()
+{
+   ImGuizmo::PushID(this);
+   if (ImGuizmo::IsUsing())
+   {
+      ImGuizmo::Enable(false);
+      ImGuizmo::Enable(true);
+   }
+   ImGuizmo::PopID();
+   if (m_gizmoDragActive)
+   {
+      m_gizmoDragActive = false;
+      m_gizmoDragSelection.clear();
+      if (m_editor.m_lastUndoId == 0x1000)
+      {
+         m_editor.m_lastUndoPart = nullptr;
+         m_editor.m_lastUndoId = 0;
+      }
    }
 }
 
@@ -274,11 +296,7 @@ void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
    m_boxSelectActive = false;
    m_editor.m_pointDragPending = false;
    m_editor.m_pointDragActive = false;
-   if (ImGuizmo::IsUsingAny())
-   {
-      ImGuizmo::Enable(false);
-      ImGuizmo::Enable(true);
-   }
+   m_editor.CancelGizmoDrags(); // The drag may be in another pane
    ReseedOpConstraint(); // Seed the rotate reference point (grab's free reference is set above)
 }
 
@@ -1585,7 +1603,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       return;
 
    const bool isSelectionTransformValid = m_editor.GetSelectionTransform(transform);
-   if (m_op.op != ImGuizmo::OPERATION(0))
+   const bool isModalOp = m_op.op != ImGuizmo::OPERATION(0);
+   if (isModalOp)
    {
       // A modal transform op owns the transform path (the gizmo is not drawn): it ends when the
       // selection can no longer be transformed or was changed under it (outliner click, undo, ...)
@@ -1594,13 +1613,12 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          EndTransformOp(false);
       else
          UpdateTransformOp();
-      if (ImGuizmo::IsUsingAny())
-      {
-         ImGuizmo::Enable(false);
-         ImGuizmo::Enable(true);
-      }
+      m_editor.CancelGizmoDrags(); // No gizmo drag, in any pane, while the op runs
    }
-   else if (isSelectionTransformValid && !m_editor.m_table->IsLocked())
+   // Each pane uses its own gizmo id: with a shared one, every pane's Manipulate would continue a drag started in
+   // another pane, through its own camera. Up to PopID, Enable and IsUsing only apply to this pane's gizmo
+   ImGuizmo::PushID(this);
+   if (!isModalOp && isSelectionTransformValid && !m_editor.m_table->IsLocked())
    {
       // The gizmo shares the render view's MVP (the same transform as the scene render), converted
       // back to its right handed convention
@@ -1748,10 +1766,11 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       ImGuizmo::Enable(false);
       ImGuizmo::Enable(true);
    }
-   // Reset gizmo undo deduplication once the gizmo is released (each drag should create a single undo entry)
-   if (m_editor.m_lastUndoId == 0x1000 && !ImGuizmo::IsUsing())
+   // Once this pane's gizmo is released, its drag ends with the undo deduplication (a single undo record per drag). The undo
+   // marker is shared: it is released by the pane owning the drag, or by any pane once no drag is left
+   if (m_gizmoDragActive && !ImGuizmo::IsUsing())
    {
-      if (m_gizmoDragActive && (m_gizmoOperation & ImGuizmo::TRANSLATE) != 0 && !m_editor.m_multiSel.empty())
+      if ((m_gizmoOperation & ImGuizmo::TRANSLATE) != 0 && !m_editor.m_multiSel.empty())
       {
          Matrix3D released;
          if (m_editor.GetSelectionTransform(released))
@@ -1762,9 +1781,18 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
       m_gizmoDragActive = false;
       m_gizmoDragSelection.clear();
+      if (m_editor.m_lastUndoId == 0x1000)
+      {
+         m_editor.m_lastUndoPart = nullptr;
+         m_editor.m_lastUndoId = 0;
+      }
+   }
+   else if (m_editor.m_lastUndoId == 0x1000 && !ImGuizmo::IsUsingAny())
+   {
       m_editor.m_lastUndoPart = nullptr;
       m_editor.m_lastUndoId = 0;
    }
+   ImGuizmo::PopID();
 
    m_editor.m_renderer->SetShadeMode(m_shadeMode);
 
@@ -2644,11 +2672,7 @@ void ViewportPane::RenderViewGizmo(ImDrawList* const drawList)
       m_viewGizmoDragging = true;
       m_viewGizmoPress = mouse;
       m_viewGizmoPressEnd = m_viewGizmoHoverEnd;
-      if (ImGuizmo::IsUsingAny())
-      {
-         ImGuizmo::Enable(false); // A selection gizmo handle under the corner must not drag along
-         ImGuizmo::Enable(true);
-      }
+      CancelGizmoDrag(); // A selection gizmo handle of this pane under the corner must not drag along
    }
 
    // Transparent grey backing disc while hovered or dragged

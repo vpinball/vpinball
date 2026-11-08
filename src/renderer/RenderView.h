@@ -59,6 +59,7 @@ public:
    vec4 GetOutputAreaClip() const; // Output area in clip space (left, bottom, right, top), matching RenderPass::m_areaOfInterest convention
    void GetOutputAreaSize(int& w, int& h) const; // Output area size in pixels
    int m_renderWidth = 0, m_renderHeight = 0; // Render size without supersampling (AAFactor) applied
+   float m_aaFactor = 1.f; // Supersampling factor of the render targets (kept through resizes)
    int m_renderSourceWidth = 0, m_renderSourceHeight = 0; // Output size the render size was computed from
 
    void GetRenderSize(int& w, int& h) const

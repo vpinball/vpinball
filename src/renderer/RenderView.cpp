@@ -173,11 +173,10 @@ void RenderView::ResizeRenderTargets()
       return; // While deferred (interactive resize), the render keeps its current targets and is stretched to the new output area
    m_renderSourceWidth = wndWidth;
    m_renderSourceHeight = wndHeight;
-   const float AAfactor = static_cast<float>(GetBackBufferTexture()->GetWidth()) / static_cast<float>(m_renderWidth);
    m_renderWidth = newRenderWidth;
    m_renderHeight = newRenderHeight;
-   const int renderWidthAA = max(1, static_cast<int>(static_cast<float>(m_renderWidth) * AAfactor));
-   const int renderHeightAA = max(1, static_cast<int>(static_cast<float>(m_renderHeight) * AAfactor));
+   const int renderWidthAA = max(1, static_cast<int>(static_cast<float>(m_renderWidth) * m_aaFactor));
+   const int renderHeightAA = max(1, static_cast<int>(static_cast<float>(m_renderHeight) * m_aaFactor));
    PLOGI << "View " << (IsMirror() ? "VR desktop display" : "playfield") << " resized to " << outWidth << 'x' << outHeight << ", rendering at " << renderWidthAA << 'x' << renderHeightAA;
 
    // Frames already submitted may still reference the previous targets: release them at the end of the frame being prepared

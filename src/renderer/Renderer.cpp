@@ -118,6 +118,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    view->m_renderSourceWidth = wnd->GetPixelWidth();
    view->m_renderSourceHeight = wnd->GetPixelHeight();
    const float AAfactor = Settings::GetPlayer_AAFactor_Property()->GetValid(m_table->GetSettings().GetPlayer_AAFactor());
+   view->m_aaFactor = AAfactor;
    const int renderWidthAA = (int)((float)view->m_renderWidth * AAfactor);
    const int renderHeightAA = (int)((float)view->m_renderHeight * AAfactor);
 
@@ -2166,13 +2167,18 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       // to the refresh rate of their own display: rendering them at the playfield rate would only spend
       // CPU and GPU on frames the display can never show. Skipping before binding the swapchain also
       // skips its present for this frame. A swapped backbuffer forces an immediate render.
+      // The render deadline advances by one display frame per render, and a render may come up to half a display frame early:
+      // the window keeps its display rate on average (e.g. 60 fps along a 144 Hz playfield) and timing jitter does not skip frames
+      // at equal rates. After a stall, the deadline restarts from now, and forced renders keep it at most 1.5 display frames ahead
       VPX::Window* const wnd = output.GetWindow();
       RenderTarget* const backBuffer = wnd != nullptr ? wnd->GetBackBuffer() : nullptr;
-      const uint64_t frameInterval = wnd != nullptr ? static_cast<uint64_t>(950000. / static_cast<double>(wnd->GetRefreshRate())) : 0;
-      const uint64_t now = usec();
-      if (!isAdjusted && !wasAdjusted && backBuffer != nullptr && backBuffer == m_ancillaryWndLastRT[window] && (now - m_ancillaryWndLastRenderTime[window]) < frameInterval)
+      const double refreshRate = wnd != nullptr ? wnd->GetRefreshRate() : 0.;
+      const int64_t frameInterval = refreshRate > 0. ? static_cast<int64_t>(1000000. / refreshRate) : 0; // Unknown display rate: no throttling
+      const int64_t now = static_cast<int64_t>(usec());
+      int64_t& nextRenderTime = m_ancillaryWndNextRenderTime[window];
+      if (!isAdjusted && !wasAdjusted && backBuffer != nullptr && backBuffer == m_ancillaryWndLastRT[window] && now + frameInterval / 2 < nextRenderTime)
          return;
-      m_ancillaryWndLastRenderTime[window] = now;
+      nextRenderTime = clamp(nextRenderTime + frameInterval, now + frameInterval / 2, now + frameInterval + frameInterval / 2);
       m_ancillaryWndLastRT[window] = backBuffer;
    }
 

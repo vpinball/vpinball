@@ -555,6 +555,7 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
    if (deviceId == m_keyboardDeviceId && ImGui::GetIO().WantCaptureKeyboard)
       return;
 
+   // Discard keyboard and mouse presses while editing the table (releases still flow so that no action stays pressed)
    if (isPressed && (deviceId == m_keyboardDeviceId || deviceId == m_mouseDeviceId) && m_player->m_liveUI->IsEditorUIOpened() && m_player->m_ptable->m_liveBaseTable == nullptr)
       return;
 
@@ -569,11 +570,12 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
    }
 
    // Special handling for keyboard events to trigger custom KeyDown/KeyUp events in the script based on Windows DirectInput key codes
-   if (deviceId == m_keyboardDeviceId && !m_player->m_liveUI->IsInGameUIOpened())
+   if (deviceId == m_keyboardDeviceId)
    {
       const unsigned char dik = GetDirectInputKeyFromSDLScancode(static_cast<SDL_Scancode>(buttonId));
-      if (dik != 0)
+      if (dik != 0 && (isPressed ? !m_player->m_liveUI->IsInGameUIOpened() : m_scriptKeysDown.test(dik)))
       {
+         m_scriptKeysDown.set(dik, isPressed);
          CComVariant rgvar[1] = { CComVariant(dik) };
          DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
          m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
@@ -1042,25 +1044,23 @@ void InputManager::CreateInputActions()
       auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, ""s,
          [this, sdlButton](const InputAction&, bool, bool isPressed)
          {
+            // Without an enumerated mouse (e.g. a cabinet or VR setup), the click is sent as coming from the global mouse (id 0)
             int nMice = 0;
             SDL_MouseID* mice = SDL_GetMice(&nMice);
-            if (mice == nullptr || nMice == 0)
-            {
-               if (mice)
-                  SDL_free(mice);
-               return;
-            }
+            const SDL_MouseID mouseId = (mice != nullptr && nMice > 0) ? mice[0] : 0;
+            if (mice)
+               SDL_free(mice);
             SDL_Event event;
+            SDL_zero(event);
             event.type = isPressed ? SDL_EVENT_MOUSE_BUTTON_DOWN : SDL_EVENT_MOUSE_BUTTON_UP;
             event.common.timestamp = SDL_GetTicksNS();
-            event.button.which = mice[0];
+            event.button.which = mouseId;
             event.button.button = sdlButton;
             event.button.down = isPressed;
             event.button.clicks = 1;
             event.button.windowID = m_player->m_playfieldWnd->GetCore() ? SDL_GetWindowID(m_player->m_playfieldWnd->GetCore()) : 0;
             SDL_GetMouseState(&event.button.x, &event.button.y);
             SDL_PushEvent(&event);
-            SDL_free(mice);
          }));
       return newAction->GetActionId();
    };

@@ -465,6 +465,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE void VPXAppFileFetchProgress(const unsigned int 
 
 bool FileLocator::FetchAppFile(const std::filesystem::path& path, VPXFileFeedback& feedback) const
 {
+   // TODO a fetch failing midway (e.g. network or zip error) leaves a partially extracted, non-empty folder, which is then taken as
+   // present by every later call of the session: extract to a temporary folder and rename it on success, or remove it on failure
+
    if (std::filesystem::exists(path) && (!std::filesystem::is_directory(path) || !std::filesystem::is_empty(path)))
       return true;
    s_fetchResult = -1;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <bitset>
 #include <mutex>
 
 #include "input/InputAction.h"
@@ -287,6 +288,7 @@ private:
    };
    vector<DeviceDef> m_inputDevices;
    const uint16_t m_keyboardDeviceId;
+   std::bitset<256> m_scriptKeysDown; // DirectInput keys for which a KeyDown was sent to the script, and no KeyUp yet
    const uint16_t m_mouseDeviceId;
    bool m_hasPendingLayoutApply = false;
    void LoadDevicesFromSettings();

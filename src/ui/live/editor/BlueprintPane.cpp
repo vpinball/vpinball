@@ -34,6 +34,28 @@ void BlueprintPane::OnUnhosted()
       m_editor.m_hoverBp = nullptr;
    if (m_editor.m_captureBp == this)
       m_editor.m_captureBp = nullptr;
+   CancelGizmoDrag();
+}
+
+void BlueprintPane::CancelGizmoDrag()
+{
+   ImGuizmo::PushID(this);
+   if (ImGuizmo::IsUsing())
+   {
+      ImGuizmo::Enable(false);
+      ImGuizmo::Enable(true);
+   }
+   ImGuizmo::PopID();
+   if (m_gizmoDragActive)
+   {
+      m_gizmoDragActive = false;
+      m_gizmoDragSelection.clear();
+      if (m_editor.m_lastUndoId == 0x1000)
+      {
+         m_editor.m_lastUndoPart = nullptr;
+         m_editor.m_lastUndoId = 0;
+      }
+   }
 }
 
 ImVec2 BlueprintPane::Project(const Vertex2D& v) const
@@ -594,6 +616,9 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
    ImGuizmo::SetOrthographic(true);
    ImGuizmo::SetRect(m_imageRect.x0, m_imageRect.y0, m_imageRect.Width(), m_imageRect.Height());
    ImGuizmo::SetAlternativeWindow(m_window);
+   // Each pane uses its own gizmo id: with a shared one, every pane's Manipulate would continue a drag started in
+   // another pane, through its own camera. Up to PopID, Enable and IsUsing only apply to this pane's gizmo
+   ImGuizmo::PushID(this);
 
    Matrix3D transform;
    const bool isSelectionTransformValid = editor.GetSelectionTransform(transform);
@@ -641,13 +666,24 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
       ImGuizmo::Enable(false);
       ImGuizmo::Enable(true);
    }
-   if (editor.m_lastUndoId == 0x1000 && !ImGuizmo::IsUsing())
+   // Once this pane's gizmo is released, its drag ends with the undo deduplication (a single undo record per drag). The undo
+   // marker is shared: it is released by the pane owning the drag, or by any pane once no drag is left
+   if (m_gizmoDragActive && !ImGuizmo::IsUsing())
    {
       m_gizmoDragActive = false;
       m_gizmoDragSelection.clear();
+      if (editor.m_lastUndoId == 0x1000)
+      {
+         editor.m_lastUndoPart = nullptr;
+         editor.m_lastUndoId = 0;
+      }
+   }
+   else if (editor.m_lastUndoId == 0x1000 && !ImGuizmo::IsUsingAny())
+   {
       editor.m_lastUndoPart = nullptr;
       editor.m_lastUndoId = 0;
    }
+   ImGuizmo::PopID();
 
    // Overlays: selection pivot dot + the box select rect (the rest is inside the blueprint passes)
    overlayDrawList->PushClipRect(ImVec2(m_imageRect.x0, m_imageRect.y0), ImVec2(m_imageRect.x1, m_imageRect.y1), true);

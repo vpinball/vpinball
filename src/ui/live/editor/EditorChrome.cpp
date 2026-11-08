@@ -711,7 +711,7 @@ void EditorChrome::RenderStatusBar(const bool showFullUI)
       ViewportPane *const targetVp = editor.GetTargetViewport();
       if (targetVp != nullptr && targetVp->m_op.op != ImGuizmo::OPERATION(0))
          contextView = targetVp;
-      else if (targetVp != nullptr && ImGuizmo::IsUsing())
+      else if (targetVp != nullptr && ImGuizmo::IsUsingAny()) // IsUsing() only matches inside a pane's gizmo id scope
          contextView = targetVp;
       else if (editor.m_captureVp != nullptr)
          contextView = editor.m_captureVp;
