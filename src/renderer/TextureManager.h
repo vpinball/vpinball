@@ -74,15 +74,15 @@ private:
 #if defined(ENABLE_BGFX)
 #pragma region GPU memory budget management (BGFX only)
 
-   // Vulkan does not provide a driver managed fallback to system memory: when device memory is
-   // exhausted, resource creation fails and the backend crashes. Other backends page GPU memory
-   // instead, which avoids the crash but degrades to unusable framerates. To address both, the
-   // resident texture set is kept inside a safety share of the budget reported through bgfx::Stats
-   // (VK_EXT_memory_budget, QueryVideoMemoryInfo or NvAPI, depending on the backend and GPU): least
-   // recently used samplers are evicted first (they are transparently re-uploaded on next use), then
-   // images are downsized, and only then degraded to the fallback texture, instead of crashing.
-   // On backends that do not report a budget (OpenGL, Metal, WebGPU, D3D11 on non NVIDIA GPUs),
-   // gpuMemoryMax stays <= 0 and uploads remain unmanaged as before.
+   // This is only enabled for the Vulkan backend, the only backend without a driver managed
+   // fallback to system memory: when device memory is exhausted, resource creation fails and the
+   // backend crashes. To address this, the resident texture set is kept inside a safety share of
+   // the budget reported through bgfx::Stats (VK_EXT_memory_budget): least recently used samplers
+   // are evicted first (they are transparently re-uploaded on next use), then images are
+   // downsized, and only then degraded to the fallback texture, instead of crashing.
+   // Other backends (D3D11, D3D12, OpenGL, Metal, WebGPU) page GPU memory to system RAM under
+   // pressure, which avoids the crash at the cost of framerates: the management is kept off for
+   // them (m_gpuMemBudget stays <= 0) and uploads remain unmanaged as before.
 
    size_t EstimateGpuBytes(const BaseTexture* tex) const;
    std::shared_ptr<Sampler> CreateSampler(MapEntry& entry, SamplerVariant variant, bool force_linear_rgb, std::shared_ptr<const BaseTexture> bitmap);

@@ -202,7 +202,13 @@ void TextureManager::RefreshBudget()
    if (gpuFrameNum == m_statsFrame)
       return;
    m_statsFrame = gpuFrameNum;
-   m_gpuMemBudget = m_statsGpuMemMax.load(std::memory_order_relaxed);
+   // The budget management is only enabled on the Vulkan backend: it is the only backend without a driver managed
+   // fallback to system memory, so resource creation fails (and the backend crashes) once device memory is
+   // exhausted. All the other backends (D3D11, D3D12, OpenGL, Metal, WebGPU) page GPU memory to system RAM under
+   // pressure instead of failing: they slow down but neither crash nor lose content, so keeping the management on
+   // for them would only evict/downsize textures needlessly (the reported usage is not even a per-process figure
+   // on some drivers, e.g. NvAPI reports adapter-wide usage on D3D11).
+   m_gpuMemBudget = bgfx::getRendererType() == bgfx::RendererType::Vulkan ? m_statsGpuMemMax.load(std::memory_order_relaxed) : -1;
    m_gpuMemUsed = m_statsGpuMemUsed.load(std::memory_order_relaxed);
    // Destroyed samplers take a few frames before their memory is actually freed by the driver
    while (!m_pendingFree.empty() && m_statsFrame - m_pendingFree.front().first >= kFreeLatencyFrames)
