@@ -1116,11 +1116,12 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          ImGui::EndPopup();
       }
       ImGui::SameLine();
+      const bool stylePushed = orbitLock;
       if (orbitLock)
          ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
       if (IconButtonInk(orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK, "##OrbitLock"))
          orbitLock = !orbitLock;
-      if (orbitLock)
+      if (stylePushed)
          ImGui::PopStyleColor();
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip("Lock camera orbit\n[Numpad /]");
