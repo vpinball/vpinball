@@ -500,7 +500,8 @@ void OutlinerPanel::SelectOutlinerRange(const std::shared_ptr<EditorUIPart> &par
    {
       if (edit->GetEditable()->GetItemType() == eItemPartGroup)
          continue;
-      if (pos >= anchorPos && pos <= partPos)
+      // The selection may not mix desktop backdrop and 3D scene parts: skip the out of domain ones
+      if (pos >= anchorPos && pos <= partPos && m_editor.IsPartInSelectionDomain(edit->GetEditable()))
          m_editor.m_multiSel.push_back(edit);
       pos++;
    }

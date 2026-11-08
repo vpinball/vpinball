@@ -19,6 +19,7 @@
 #include "editor/ScriptPanel.h"
 #include "editor/ViewportPane.h"
 #include "math/matrix.h"
+#include "parts/PartGroup.h"
 #include "renderer/Renderer.h"
 #include "unordered_dense.h"
 #include "ui/VPXFileFeedback.h"
@@ -138,7 +139,14 @@ private:
    void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
    void SelectPartsInGroup(const PartGroup *group);
    void MoveSelectionToPartGroup(PartGroup *group); // Move all selected parts/groups to the given group (nullptr = root, part groups only)
-   bool IsEditablePickable(const IEditable *editable) const;
+   // The selection may not mix parts of the desktop backdrop with parts of the 3D scene: its domain
+   // is the m_desktopBackdrop flag of its parts, seeded from the active pane mode while it is empty
+   bool SelectionDomain() const { return m_multiSel.empty() ? IsBackdropEditMode() : m_multiSel.front()->GetEditable()->m_desktopBackdrop; }
+   bool IsPartInSelectionDomain(const IEditable *editable) const; // Can the part be added to the selection under the domain rule
+   bool IsEditablePickable(const IEditable *editable, bool backdropDomain) const; // Pickable in the given domain (3D scene / backdrop) and passing the selection filters
+   static PartGroupData::SpaceReference GetPartSpace(
+      const IEditable *editable); // Reference space a part lives in (its own for groups, its parent group's otherwise, playfield for ungrouped parts)
+   std::optional<PartGroupData::SpaceReference> GetSelectionSpace() const; // Reference space shared by all the selected parts (none when empty, backdrop or mixed)
    void SelectAllParts();
    Vertex2D GetMultiSelCenter() const; // Center of the current selection (bounding box center of the part centers, or of the selected points in drag point edit mode)
    // Selection wide transforms (the win32 context menu Flip/Rotate/Scale/Translate commands): they apply

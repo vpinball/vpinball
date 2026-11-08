@@ -552,11 +552,11 @@ void PartLibraryPanel::ImportPack(const std::filesystem::path &path)
       SetupPlayerSide(part, true);
    m_editor.m_undo.EndUndo();
 
-   // Select the imported parts
+   // Select the imported parts (of the selection's domain: imported parts keep their authored backdrop flag)
    m_editor.UpdateEditableList();
    m_editor.m_multiSel.clear();
    for (IEditable *const part : imported)
-      if (const auto it = m_editor.m_editableMap.find(part); it != m_editor.m_editableMap.end())
+      if (const auto it = m_editor.m_editableMap.find(part); it != m_editor.m_editableMap.end() && m_editor.IsPartInSelectionDomain(part))
          m_editor.m_multiSel.push_back(it->second);
    if (!m_editor.m_multiSel.empty())
       m_editor.m_selection = Selection(m_editor.m_multiSel.back());
@@ -729,12 +729,12 @@ void PartLibraryPanel::CommitPlacement()
    m_previewTable->Release();
    m_previewTable = nullptr;
 
-   // Select the imported parts
+   // Select the imported parts (of the selection's domain: imported parts keep their authored backdrop flag)
    m_editor.UpdateEditableList();
    m_editor.m_multiSel.clear();
    for (IEditable *const part : imported)
       if (part->GetItemType() != eItemPartGroup)
-         if (const auto it = m_editor.m_editableMap.find(part); it != m_editor.m_editableMap.end())
+         if (const auto it = m_editor.m_editableMap.find(part); it != m_editor.m_editableMap.end() && m_editor.IsPartInSelectionDomain(part))
             m_editor.m_multiSel.push_back(it->second);
    if (!m_editor.m_multiSel.empty())
       m_editor.m_selection = Selection(m_editor.m_multiSel.back());

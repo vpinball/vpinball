@@ -268,7 +268,7 @@ void BlueprintPane::HitTestParts(const ImVec2& pos, vector<BlueprintHitContext::
       ctx.SetPass(pass);
       for (IEditable* const editable : m_editor.m_table->GetParts())
       {
-         if (editable->m_desktopBackdrop || !editable->IsUIVisible(false) || !m_editor.IsEditablePickable(editable))
+         if (editable->m_desktopBackdrop || !editable->IsUIVisible(false) || !m_editor.IsEditablePickable(editable, false))
             continue;
          const auto it = m_editor.m_editableMap.find(editable);
          if (it != m_editor.m_editableMap.end())
@@ -291,7 +291,7 @@ void BlueprintPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB,
       ctx.SetPass(pass);
       for (IEditable* const editable : m_editor.m_table->GetParts())
       {
-         if (editable->m_desktopBackdrop || !editable->IsUIVisible(false) || !m_editor.IsEditablePickable(editable))
+         if (editable->m_desktopBackdrop || !editable->IsUIVisible(false) || !m_editor.IsEditablePickable(editable, false))
             continue;
          const auto it = m_editor.m_editableMap.find(editable);
          if (it != m_editor.m_editableMap.end())
