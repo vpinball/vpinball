@@ -2,7 +2,7 @@ VP 10.8.1 Changelog
 ------------------------
 
 Main highlighted features, detailed below:
-- VPX is now also available as part of a standalone player, and for a large variety of platforms: Linux, macOS (incl. HiDPI), iOS, Android (13+), Raspberry Pi, Windows, ...
+- VPX is now also available as part of a standalone player, and for a large variety of platforms: Linux, macOS (incl. HiDPI), iOS, Android (13+), Raspberry Pi, Windows, Web browser (via WebAssembly/WebGPU), ...
   The standalone player package includes all components needed to play tables. As it also exists for Windows, it can help remove some sporadic slowdown/stutters (due to VBScript scanning done by the OS, which is non-existant in the standalone build due to libwinevbs usage).
 - Major internal technical update: The BGFX variant is now the default flavor, the DX9 and OpenGL versions are deprecated and should not be used anymore, as these do not feature all of the new improvements.
 - Deep work on gameplay stability and latency has been performed, leading to much improved overall game stability, less latency, better framerates, and nudging.
@@ -16,6 +16,7 @@ FEATURES:
 
 - add -v command line option to just output the version and quit
 - add -CaptureAttract command line option to automatically capture an attract video
+- add -Convert command line option to convert a table between the .vpx and .vpz pack file formats
 
 - Folder layout has been redesigned:
   . Folder layout now conforms to platform requirements, with the application stored in its read-only application folder (for example 'C:\Program Files' under Windows),
@@ -32,6 +33,11 @@ FEATURES:
   . The legacy behavior (everything in the application folder, so mixing all music, user, cache, scripts, ... -files between all tables) is still available by checking
     the corresponding option in the 'INI->Editor->UI Options' dialog. It requires the application to be installed in a folder with read/write access. It breaks
     the ability to have multiple versions of VPX installed on a single computer without their settings conflicting.
+
+- a new 'VPZ pack' file format has been added as an additional file format targeted at 2 uses cases: collaboration using vpz folder and a versioning tools like git, 
+  sharing parts (instead of complete tables) using vpz file. Note that this format is still preliminary and may change in backward incompatible ways
+
+- VPX can now also run inside a web browser, through a WebAssembly/WebGPU build, including the editor
 
 - table settings override will only save actual overrides, so only those settings that are different from application settings and default values
 - note that in general, the separation of table settings vs global settings (and overrides) has been dramatically revamped, also in the InGameUI
@@ -132,10 +138,15 @@ FEATURES:
   . VPX's TweakUI is now fully supported in VR, which allows to adjust all settings in-game using the usual pinball controls, also supporting continuous recentering.
   . (hacky) external window capture has been removed and replaced by the ability to use external plugin renderers in the 3D scene, using flashers. Tables using the
     legacy feature are automatically updated. This allows to use all plugins in 3D at full resolution (backglass, scoreview, PinUp player, dimmed segment, toppers,...).
+    The legacy flasher 'VideoCap' script API is deprecated, and its use is reported by the table audit.
   . New option to add a plugin rendered backglass flasher to handle non VR tables (there used to be a limited hacky fixed backglass image added on all tables, with some hacks to allow VR tables to overwrite it)
   . OpenXR controllers can be used as input, including thumbstick nudging and plunger.
   . OpenXR controllers can be used to position the virtual table in the room.
   . Spatialization of sounds
+  . VR is also supported on macOS, through OpenXR with a Metal backend
+  . Cabinet scaling modes and a seated play cabinet tilt option have been added
+  . The VR settings are now split between the real world setup and per-table tweaks
+  . The player no longer pauses when the desktop window loses focus while playing in VR
 
 - number of layers is not limited anymore. Layers can also be nested and they now feature properties:
   . a visibility mask, that allows to filter on which player mode layers are active (desktop, cabinet, virtual reality, mixed reality, ...)
@@ -156,6 +167,10 @@ FEATURES:
   . 'Additive Blend' was extended with a second sub-mode which darkens what is behind the flasher instead of brightening it (same added light, but with 'Modulate' steering how much is absorbed),
     to fake Fresnel-like reflections (i.e. the CRT reflected of a Pinball 2000 playfield glass).
 
+- parts can now link their state to a shared state source (plugin or external controller) through a 'state source' URI
+  property: this is supported by lights, flashers, primitives, triggers and textboxes (for example driving a flasher or
+  primitive's opacity from a shared state)
+
 - replace layers by hierarchical groups
   Allow groups to have properties (VR space reference, view visibility, ...)
   Prepare for nesting groups (import/export, combined transforms, ...)
@@ -164,6 +179,8 @@ FEATURES:
   This feature is still in early stage and should be considered as a 'feature preview' as it will most likely evolve more, and the programming interface is not yet fully stabilized, so breaking changes may still happen!
   The following plugins are included with VPX:
   . AlphaDMD: render alpahanumeric segment displays inside any DMD (physical or virtual)
+  . AltSound: provides alternate sounds for PinMAME emulated tables
+  . BAM: headtracking driven by BAM-Tracker for the cabinet 'window' view mode (Windows only)
   . B2S: a newer B2S renderer which supports light fading, better mech animation, but is still far from feature complete, expect more changes!
   . DMDUtil: supports rendering to physical DMDs (ZeDMD,...)
   . DOF: a preliminary port of the Direct Output Framework which allows to drive all kinds of physical feedback hardware (lights, shaker, fan,...)
@@ -172,11 +189,16 @@ FEATURES:
   . PinMAME: a direct interface to PinMAME with some exclusive bonus features like full alphanumeric segment fading
   . PinUp: a preliminary port of PinUp Player that renders and animates video backglass, topper and fullDMD display
   . Remote Control: a plugin that allows to control an instance of VPX from another running instance. For example running VPX on a little controller PC that communicates with a more powerful computer that runs VPX driving a VR headset
-  . Score View: a tool to provide default score rendering (for example DMD, but also supporting alphanumeric segment displays, including dimmed segments)
+  . Nixie: a tool to provide default score rendering (for example DMD, but also supporting alphanumeric segment displays, including dimmed segments)
   . Serum: a DMD colorizer
   . UpscaleDMD: upscale or anti-alias DMD content (modes: MMPX 2x, xBRZ 2x/3x/4x/5x/6x, ScaleFX AA 1x, ScaleFX 3x and Super-XBR 2x)
+  . VNI: a DMD colorizer, based on libvni
   . WMP: the window media player, but as a portable plugin, running on any of the supported platforms
   Note that due to this, some settings (e.g. DMD antialias/upscale) moved from VPX itself to the plugins
+  Plugins may also be installed per-user (in the preferences folder), and can contribute their own pages to the in-game UI.
+  On Windows, the PinMAME plugin falls back to the folders of a registered VPinMAME installation (ROMs, NVRAM, samples,
+  configuration, high scores) when no pinmame folder is found next to the table. The B2S plugin is now enabled by default
+  as the backglass renderer.
 
 - note that the old LiveUI/TweakUI is now split between a LiveEditor for editing, and the InGameUI to change all settings:
 
@@ -191,6 +213,13 @@ FEATURES:
   . Allow to display physics-collider-geometry as a red overlay
   . Fix invalid overlays (missing parts, incorrect position)
   . 3 render modes are available, switchable using the 'Z' key: render, wireframe, passthrough wireframe
+  . The UI is organized in dockable panes that can be freely arranged in a resizable split layout (default layouts are provided, and the layout is persisted per user)
+  . A menubar, tool shelf and status bar, following the Blender UX
+  . Full undo/redo support with a labeled history
+  . Move/rotate/scale gizmo with optional snapping, and modal keyboard editing of transforms
+  . A part library pane to browse and place parts, a blueprint view, and multi-editing of uniform part selections
+  . A script editor pane
+  . The table can be play tested directly from the editor, and tables are loaded/saved asynchronously
 
  - InGameUI (via default 'F12' ingame):
   . Supports all player modes (VR, XR, cabinet, desktop) and all screen orientations
@@ -198,6 +227,8 @@ FEATURES:
   . Add settings pages, moving lots of settings inside these pages
   . Add a system info page, displaying some details of the GPU,CPU,Display,etc, and the paths used to load the various components
   . Navigation using flipper input has been unified: per default, magna buttons allow to move, while flipper buttons allow to select
+
+ - a cross-platform script debugger is available in the LiveUI, replacing the previous Windows-only debugger dialog
 
 - for cabinet users, a new option in the graphics settings allows to enable an automatic window camera fitting at table startup, based on table or screen fitting
 
@@ -209,6 +240,8 @@ FEATURES:
 - texture compression is actually usable (=much faster) when using BGFX
 
 - backside lighting for normal-mapped parts
+
+- normal mapping can now also be used on parts without an albedo texture
 
 - debug builds have now been "replaced" by release builds with debug info, so that stack traces show more usable info by default, and there is less to generate/compile in the github actions
 
@@ -268,7 +301,7 @@ FIXES:
 
 - allow FreeImage to decode PNG with corrupted gamma chunks
 
-- BAM headtracking has been removed again. It could be re-added via the new plugin system though. Any volunteers?
+- BAM headtracking has been re-added as a plugin (Windows only): it is driven by BAM-Tracker and applies to the cabinet 'window' view mode
 
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer
