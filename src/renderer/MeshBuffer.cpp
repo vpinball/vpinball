@@ -289,6 +289,14 @@ void MeshBuffer::bind()
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 20, (void*)0);
             glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 20, (void*)12);
             break;
+         case VertexFormat::VF_IMGUI:
+            glEnableVertexAttribArray(0); // Position
+            glEnableVertexAttribArray(1); // Color
+            glEnableVertexAttribArray(2); // Texture Coordinate
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 20, (void*)0);
+            glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 20, (void*)16);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 20, (void*)8);
+            break;
          default: assert(false); // Unsupported FVF
          }
          if (isShared)

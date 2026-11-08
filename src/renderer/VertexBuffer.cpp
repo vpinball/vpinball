@@ -14,6 +14,19 @@ extern void release(const bgfx::Memory* _mem);
 #endif
 
 
+static constexpr unsigned int VertexFormatSize(const VertexFormat fmt)
+{
+   switch (fmt)
+   {
+   case VertexFormat::VF_POS_TEX: return sizeof(Vertex3D_TexelOnly);
+   case VertexFormat::VF_POS_NORMAL_TEX: return sizeof(Vertex3D_NoTex2);
+   case VertexFormat::VF_IMGUI: return sizeof(VertexUI);
+   }
+   assert(false);
+   return 0;
+}
+
+
 class SharedVertexBuffer final : public SharedBuffer<VertexFormat, VertexBuffer>
 {
 public:
@@ -40,11 +53,12 @@ public:
 };
 
 SharedVertexBuffer::SharedVertexBuffer(RenderDevice* const rd, VertexFormat fmt, bool stat)
-   : SharedBuffer(fmt, fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly), stat)
+   : SharedBuffer(fmt, VertexFormatSize(fmt), stat)
 #if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
-   , m_vertexDeclaration(
-      fmt == VertexFormat::VF_POS_NORMAL_TEX ? rd->m_pVertexNormalTexelDeclaration :
-      fmt == VertexFormat::VF_POS_TEX        ? rd->m_pVertexTexelDeclaration : nullptr)
+   , m_vertexDeclaration(fmt == VertexFormat::VF_POS_NORMAL_TEX ? rd->m_pVertexNormalTexelDeclaration
+           : fmt == VertexFormat::VF_POS_TEX                    ? rd->m_pVertexTexelDeclaration
+           : fmt == VertexFormat::VF_IMGUI                      ? rd->m_pVertexImGuiDeclaration
+                                                                : nullptr)
 #endif
 {
 }
@@ -179,14 +193,13 @@ void SharedVertexBuffer::Upload()
 }
 
 
-
 VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts, const bool isDynamic, const VertexFormat fmt)
    : m_rd(rd)
    , m_isStatic(!isDynamic)
    , m_vertexFormat(fmt)
    , m_count(vertexCount)
-   , m_sizePerVertex(fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly))
-   , m_size(vertexCount * (fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly)))
+   , m_sizePerVertex(VertexFormatSize(fmt))
+   , m_size(vertexCount * VertexFormatSize(fmt))
 {
    assert(m_count > 0);
    // Disabled since OpenGL ES does not support glDrawElementsBaseVertex, but now that we remap the indices when creating the index buffer it should be good
