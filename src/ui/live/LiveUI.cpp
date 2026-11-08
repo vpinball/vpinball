@@ -14,6 +14,7 @@
 #include "math/matrix.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
+#include "renderer/RenderCommand.h"
 #include "renderer/VRDevice.h"
 
 #include "imgui/imgui.h"
@@ -604,6 +605,29 @@ void LiveUI::RenderUI()
       const unsigned int numIndices = cmd_list->IdxBuffer.size();
       hasContent |= numIndices > 0;
 
+#if defined(ENABLE_BGFX)
+      // Snapshot this command list's geometry: it is uploaded on the render thread, into BGFX's
+      // per-frame transient arena when it has room (single copy, no persistent buffer traffic), or
+      // into the persistent dynamic MeshBuffer as a fallback
+      if (static_cast<int>(m_uiGeometry.size()) <= n)
+         m_uiGeometry.resize(n + 1);
+      if (m_uiGeometry[n] == nullptr)
+         m_uiGeometry[n] = std::make_shared<UIListGeometry>();
+      const std::shared_ptr<UIListGeometry> &geo = m_uiGeometry[n];
+      geo->numVertices = numVertices;
+      geo->numIndices = numIndices;
+      geo->uploaded = false;
+      geo->vtx.resize(numVertices * sizeof(ImDrawVert));
+      geo->idx.resize(numIndices * sizeof(ImDrawIdx));
+      memcpy(geo->vtx.data(), cmd_list->VtxBuffer.Data, geo->vtx.size());
+      memcpy(geo->idx.data(), cmd_list->IdxBuffer.Data, geo->idx.size());
+      if (((numVertices != 0) && (numIndices != 0)) && ((m_meshBuffers[n] == nullptr) || (m_meshBuffers[n]->m_ib->m_count < numIndices) || (m_meshBuffers[n]->m_vb->m_count < numVertices)))
+      { // Grow at 1.5x the needed size to amortize reallocation when the UI keeps growing
+         auto ib = std::make_shared<IndexBuffer>(m_rd, numIndices + (numIndices >> 1), true, IndexBuffer::Format::FMT_INDEX32);
+         auto vb = std::make_shared<VertexBuffer>(m_rd, numVertices + (numVertices >> 1), nullptr, true, VertexFormat::VF_IMGUI);
+         m_meshBuffers[n] = std::make_shared<MeshBuffer>(std::format("ImGui.{}", n), vb, ib, false);
+      }
+#else
       if ((numVertices != 0) && (numIndices != 0))
       {
          if ((m_meshBuffers[n] == nullptr) || (m_meshBuffers[n]->m_ib->m_count < numIndices) || (m_meshBuffers[n]->m_vb->m_count < numVertices))
@@ -623,6 +647,7 @@ void LiveUI::RenderUI()
          memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
          m_meshBuffers[n]->m_ib->Unlock();
       }
+#endif
 
       for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; cmd++)
       {
@@ -635,7 +660,12 @@ void LiveUI::RenderUI()
             uiParams.y = (cmd->GetTexID() != nullptr && cmd->GetTexID()->IsSRGB()) ? 1.f : 0.f;
             m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, &uiParams);
             #endif
+#if defined(ENABLE_BGFX)
+            if (m_meshBuffers[n] != nullptr)
+               m_rd->DrawTransientMesh(m_rd->m_uiShader, true, static_cast<float>(depthSort), geo, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+#else
             m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(0.f, 0.f, 0.f), static_cast<float>(depthSort), m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+#endif
             depthSort--;
          }
       }

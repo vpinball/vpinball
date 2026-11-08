@@ -118,6 +118,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    case RC_DRAW_QUAD_PT:
    case RC_DRAW_QUAD_PNT:
    case RC_DRAW_MESH:
+   case RC_DRAW_TRANSIENT:
    {
       m_renderState.Apply(m_rd);
       m_shaderState->SetInt(ShaderUniform::layer, RenderTarget::GetCurrentRenderLayer() < 0 ? 0 : RenderTarget::GetCurrentRenderLayer());
@@ -324,6 +325,50 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          }
          break;
       }
+
+#if defined(ENABLE_BGFX)
+      case RC_DRAW_TRANSIENT:
+      {
+         assert(m_primitiveType == RenderDevice::TRIANGLELIST); // LiveUI only emits triangle lists
+         m_rd->m_curDrawnTriangles += m_indicesCount / 3;
+         if (bgfx::getAvailTransientVertexBuffer(m_uiGeo->numVertices, *m_rd->m_pVertexImGuiDeclaration) >= m_uiGeo->numVertices
+            && bgfx::getAvailTransientIndexBuffer(m_uiGeo->numIndices, true) >= m_uiGeo->numIndices)
+         { // Fast path: copy the geometry snapshot straight into BGFX's per-frame transient arena
+            bgfx::TransientVertexBuffer tvb;
+            bgfx::allocTransientVertexBuffer(&tvb, m_uiGeo->numVertices, *m_rd->m_pVertexImGuiDeclaration);
+            memcpy(tvb.data, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
+            bgfx::TransientIndexBuffer tib;
+            bgfx::allocTransientIndexBuffer(&tib, m_uiGeo->numIndices, true);
+            memcpy(tib.data, m_uiGeo->idx.data(), m_uiGeo->idx.size());
+            bgfx::setVertexBuffer(0, &tvb);
+            bgfx::setIndexBuffer(&tib, m_startIndex, m_indicesCount);
+         }
+         else
+         { // Fallback: upload the snapshot to the persistent dynamic buffers, then draw from them
+            if (!m_uiGeo->uploaded)
+            {
+               m_uiGeo->uploaded = true;
+               uint8_t* vdata;
+               m_mb->m_vb->Lock(vdata, 0, static_cast<unsigned int>(m_uiGeo->vtx.size()));
+               memcpy(vdata, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
+               m_mb->m_vb->Unlock();
+               uint8_t* idata;
+               m_mb->m_ib->Lock(idata, 0, static_cast<unsigned int>(m_uiGeo->idx.size()));
+               memcpy(idata, m_uiGeo->idx.data(), m_uiGeo->idx.size());
+               m_mb->m_ib->Unlock();
+            }
+            m_mb->bind(); // Flushes the pending uploads
+            bgfx::setVertexBuffer(0, m_mb->m_vb->GetDynamicBuffer());
+            bgfx::setIndexBuffer(m_mb->m_ib->GetDynamicBuffer(), m_mb->m_ib->GetIndexOffset() + m_startIndex, m_indicesCount);
+         }
+         bgfx::setInstanceCount(nInstances);
+         bgfx::setState(m_rd->m_bgfxState);
+         m_rd->ApplyScissor();
+         bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
+         break;
+      }
+#endif
+
       default: break;
       }
       m_shader->End();
@@ -389,6 +434,28 @@ void RenderCommand::SetDrawMesh(
    m_shader->m_state->CopyTo(true, m_shaderState);
 }
 
+#if defined(ENABLE_BGFX)
+void RenderCommand::SetDrawTransientMesh(Shader* shader, std::shared_ptr<UIListGeometry> geo, std::shared_ptr<MeshBuffer> mb, const RenderDevice::PrimitiveTypes type,
+   const uint32_t startIndex, const uint32_t indexCount, const bool isTransparent, const float depth)
+{
+   m_command = Command::RC_DRAW_TRANSIENT;
+   m_uiGeo = std::move(geo);
+   m_mb = std::move(mb);
+   m_primitiveType = type;
+   m_startIndex = startIndex;
+   m_indicesCount = indexCount;
+   m_rd->CopyRenderStates(true, m_renderState);
+   m_depth = depth;
+   m_isTransparent = isTransparent;
+   m_shader = shader;
+   if (m_shaderState)
+      m_shaderState->SetShader(m_shader);
+   else
+      m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
+   m_shader->m_state->CopyTo(true, m_shaderState);
+}
+#endif
+
 void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent, const float depth)
 {
    m_command = Command::RC_DRAW_QUAD_PT;
@@ -431,12 +498,15 @@ string RenderCommand::ToString(bool detailled) const
    case RC_DRAW_QUAD_PT:
    case RC_DRAW_QUAD_PNT:
    case RC_DRAW_MESH:
+   case RC_DRAW_TRANSIENT:
       if (m_command == RC_DRAW_QUAD_PT)
          ss << "> Draw Quad PT  ";
       else if (m_command == RC_DRAW_QUAD_PNT)
          ss << "> Draw Quad PNT ";
       else if (m_command == RC_DRAW_MESH)
          ss << "> Draw Mesh     ";
+      else if (m_command == RC_DRAW_TRANSIENT)
+         ss << "> Draw Transient";
       ss << (m_isTransparent ? "T "s : "O "s);
       ss << std::setw(40) << Shader::GetTechniqueName(m_shaderState->GetTechnique()) << std::setw(0) << ' ' << m_renderState.GetLog();
       ss << " Depth: " << std::fixed << std::setw(8) << std::setprecision(2) << m_depth;
