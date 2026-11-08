@@ -30,6 +30,7 @@ public:
    AreaType GetType() const override { return AreaType::Blueprint; }
    void RenderPane(const AreaRect& rect, int leafId) override;
    void OnUnhosted() override;
+   void CancelGizmoDrag() override;
 
    nlohmann::json SaveSetup() const override;
    void LoadSetup(const nlohmann::json& j) override;

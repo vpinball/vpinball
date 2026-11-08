@@ -205,6 +205,7 @@ private:
    unsigned int m_lastUndoId = 0;
    // Undo and redo are off while a drag is in progress (its record is the top one: undoing it would leave the drag going unrecorded)
    bool IsDragInProgress() const;
+   void CancelGizmoDrags(); // Ends the selection gizmo drag in flight, whichever pane it is in
    bool CanUndo() const;
    bool CanRedo() const;
    void UndoSteps(size_t count); // Edit > Undo (Ctrl+Z), count > 1 for the undo history
@@ -233,6 +234,7 @@ private:
       Matrix3D initial; // Transform of the selection before (move, rotate, scale) or after (placements) the operation
       Vertex3Ds base { 0.f, 0.f, 0.f }; // Placements: position the offset is relative to (table coordinates)
       Vertex3Ds offset { 0.f, 0.f, 0.f }; // Move: delta, placements: offset from the base (table coordinates)
+      Vertex3Ds pivot { 0.f, 0.f, 0.f }; // Rotate / scale: the op's pivot, the part center (table coordinates)
       Vertex3Ds axisView { 0.f, 0.f, 1.f }; // Rotate: the op's axis in table space when axis < 0
       int axis = -1; // Rotate / scale: -1 view axis (rotate) or all axes (scale), 0..2 for X / Y / Z
       bool plane = false; // Scale: the axes perpendicular to the axis
@@ -334,6 +336,7 @@ private:
    };
    // Inspection session: live copies edited from the 'Live' tabs, copied back to the startup table by 'Save'
    // (the startup table is the one written to disk; live values are otherwise discarded when the session ends)
+   // FIXME Only cleared by 'Save': pointers of an ended session stay (harmless, they are only used as lookup keys)
    ankerl::unordered_dense::set<Material *> m_liveEditedMaterials;
    ankerl::unordered_dense::set<IEditable *> m_liveEditedParts;
    std::unique_ptr<AsyncFileOp> m_fileOp; // Running asynchronous file operation (all editor interaction is blocked while set)

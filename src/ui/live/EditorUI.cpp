@@ -259,6 +259,8 @@ void EditorUI::SaveTable()
          m_liveUI.PushNotification("Nothing saved: the table has no file yet, use Save As from the editor"s, 8000);
          return;
       }
+      // FIXME The whole live m_d is copied, with what the running script changed in it (Visible, X, RotZ,... write m_d directly):
+      // an animated or script hidden part is saved in its runtime state, not only with the fields edited in the 'Live' tab
       int skipped = 0;
       for (Material *const live : m_liveEditedMaterials)
          if (Material *const startup = m_table->GetStartupFromLive<Material>(live))
@@ -536,6 +538,7 @@ void EditorUI::FinishFileOp()
 
    case AsyncFileOp::Type::Save:
       // Saves must always report their result: a failed save was previously silent (and looked like a successful one)
+      // FIXME A failed write is reported twice: PinTable::WriteTableFile already shows IDS_SAVEERROR through ShowError
       if (FAILED(result))
          m_liveUI.PushNotification("SAVE FAILED: '" + op->displayPath + "'", 15000);
       else
@@ -1261,6 +1264,12 @@ bool EditorUI::IsDragInProgress() const
    return (vp != nullptr && (vp->m_op.op != ImGuizmo::OPERATION(0) || vp->m_gizmoDragActive)) || ImGuizmo::IsUsingAny() || m_pointDragActive || m_pointDragPending;
 }
 
+void EditorUI::CancelGizmoDrags()
+{
+   for (const auto &[id, view] : m_areaViews)
+      view->CancelGizmoDrag();
+}
+
 bool EditorUI::CanUndo() const { return m_table->m_liveBaseTable == nullptr && m_undo.HasUndo() && !IsDragInProgress() && m_fileOp == nullptr; }
 
 bool EditorUI::CanRedo() const { return m_table->m_liveBaseTable == nullptr && m_undo.HasRedo() && !IsDragInProgress() && m_fileOp == nullptr; }
@@ -1374,14 +1383,16 @@ void EditorUI::NoteTransformOp(const ViewportPane::TransformOp &op)
    case ImGuizmo::ROTATE:
    {
       SetLastOperation(LastOperation::Type::Rotate, op.startTransform);
+      m_lastOp.pivot = op.pivot;
       const int axis = axisIndex(op.axisMask);
-      if (op.space == ImGuizmo::WORLD && axis >= 0)
+      Vertex3Ds dir = axis >= 0 ? op.startTransform.MultiplyVectorNoTranslate(Vertex3Ds(axis == 0 ? 1.f : 0.f, axis == 1 ? 1.f : 0.f, axis == 2 ? 1.f : 0.f))
+                                : Vertex3Ds(op.viewDir.x, op.viewDir.y, op.viewDir.z);
+      // Like ViewportPane::OpAxisDir, a degenerate local axis falls back to the world axis
+      if (axis >= 0 && (op.space == ImGuizmo::WORLD || dir.LengthSquared() < 1e-12f))
          m_lastOp.axis = axis; // Re-evaluated along the matching world axis
       else
       {
          m_lastOp.axis = -1;
-         Vertex3Ds dir = axis >= 0 ? op.startTransform.MultiplyVectorNoTranslate(Vertex3Ds(axis == 0 ? 1.f : 0.f, axis == 1 ? 1.f : 0.f, axis == 2 ? 1.f : 0.f))
-                                   : Vertex3Ds(op.viewDir.x, op.viewDir.y, op.viewDir.z);
          dir.Normalize();
          m_lastOp.axisView = dir;
       }
@@ -1391,6 +1402,7 @@ void EditorUI::NoteTransformOp(const ViewportPane::TransformOp &op)
    case ImGuizmo::SCALE:
    {
       SetLastOperation(LastOperation::Type::Scale, op.startTransform);
+      m_lastOp.pivot = op.pivot;
       const int axis = axisIndex(op.axisMask);
       if (op.axisMask == 0x7)
       {
@@ -1417,11 +1429,12 @@ void EditorUI::NoteTransformOp(const ViewportPane::TransformOp &op)
    }
 }
 
-// Evaluates the operation again from the state it started from: the undo record holds the state before the operation, so it stays valid
+// Evaluates the operation again from the state it started from: the undo record holds the state before the operation, so it stays valid.
+// Rotate and scale use the same formulas as the modal transform op (ViewportPane::UpdateTransformOp), about the same pivot
 void EditorUI::ApplyLastOperation()
 {
    Matrix3D result(m_lastOp.initial);
-   const Vertex3Ds pivot = m_lastOp.initial.GetOrthoNormalPos();
+   const Vertex3Ds &pivot = m_lastOp.pivot;
    switch (m_lastOp.type)
    {
    case LastOperation::Type::Add:
@@ -1439,7 +1452,8 @@ void EditorUI::ApplyLastOperation()
    case LastOperation::Type::Rotate:
    {
       const Vertex3Ds axisDir = m_lastOp.axis < 0 ? m_lastOp.axisView : Vertex3Ds(m_lastOp.axis == 0 ? 1.f : 0.f, m_lastOp.axis == 1 ? 1.f : 0.f, m_lastOp.axis == 2 ? 1.f : 0.f);
-      result = Matrix3D::MatrixTranslate(pivot) * Matrix3D::MatrixRotate(ANGTORAD(m_lastOp.angle), axisDir) * Matrix3D::MatrixTranslate(-pivot) * m_lastOp.initial;
+      // Row-vector convention: the left factor applies first, and the rotation spins the opposite way, hence the negated angle
+      result = m_lastOp.initial * Matrix3D::MatrixTranslate(-pivot) * Matrix3D::MatrixRotate(-ANGTORAD(m_lastOp.angle), axisDir) * Matrix3D::MatrixTranslate(pivot);
       break;
    }
    case LastOperation::Type::Scale:
@@ -1453,6 +1467,8 @@ void EditorUI::ApplyLastOperation()
          for (int i = 0; i < 3; ++i)
          {
             Vertex3Ds dir = m_lastOp.initial.MultiplyVectorNoTranslate(Vertex3Ds(i == 0 ? 1.f : 0.f, i == 1 ? 1.f : 0.f, i == 2 ? 1.f : 0.f));
+            if (dir.LengthSquared() < 1e-12f) // Like ViewportPane::OpAxisDir, a degenerate local axis falls back to the world axis
+               dir = Vertex3Ds(i == 0 ? 1.f : 0.f, i == 1 ? 1.f : 0.f, i == 2 ? 1.f : 0.f);
             dir.Normalize();
             basis.m[i][0] = dir.x;
             basis.m[i][1] = dir.y;
@@ -1462,7 +1478,7 @@ void EditorUI::ApplyLastOperation()
       Matrix3D invBasis(basis);
       invBasis.Invert();
       const Matrix3D scale = invBasis * Matrix3D::MatrixScale(factor[0], factor[1], factor[2]) * basis;
-      result = Matrix3D::MatrixTranslate(pivot) * scale * Matrix3D::MatrixTranslate(-pivot) * m_lastOp.initial;
+      result = m_lastOp.initial * Matrix3D::MatrixTranslate(-pivot) * scale * Matrix3D::MatrixTranslate(pivot);
       break;
    }
    case LastOperation::Type::None: return;
@@ -2948,6 +2964,10 @@ void EditorUI::LoadAreaLayoutSettings()
 
 void EditorUI::SaveAreaLayoutSettings()
 {
+   // The persisted layout is only loaded once the editor areas are shown: until then, m_layout is a placeholder that
+   // must not overwrite it (e.g. at the end of a play session that never opened the editor)
+   if (!m_layoutSettingsLoaded)
+      return;
    // Persist each pane's view setup (3D camera, blueprint zoom/offset, ...) in its leaf's payload
    for (const auto &[id, view] : m_areaViews)
       if (nlohmann::json *const data = m_layout.LeafData(id); data != nullptr)
@@ -3216,6 +3236,9 @@ void EditorUI::RenderAreas()
    m_hoverVp = nullptr;
    m_hoverBp = nullptr;
    for (const auto &[id, view] : m_areaViews)
+   {
+      if (!shown[id])
+         view->CancelGizmoDrag(); // A pane that is not drawn could not release its gizmo drag
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
       {
          vp->SetRendering(shown[id]);
@@ -3224,6 +3247,7 @@ void EditorUI::RenderAreas()
       }
       else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()); bp != nullptr && bp->m_hovered)
          m_hoverBp = bp;
+   }
    for (const LeafRect &leaf : m_leafRects)
    {
       if (!leaf.visible)

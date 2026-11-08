@@ -45,6 +45,11 @@ public:
    // layout switch): the place to release GPU resources before the instance is dropped
    virtual void OnUnhosted() { }
 
+   // Ends this view's selection gizmo drag, if any (its undo record stands). Each view manipulates its gizmo under its
+   // own ImGuizmo id: a drag only ends through its own view (released in its Manipulate, or canceled here).
+   // Not to be called from inside the view's own ImGuizmo id scope
+   virtual void CancelGizmoDrag() { }
+
    // The view's persisted setup, saved into / restored from the hosting leaf's opaque data
    // payload (e.g. camera for the 3D panes, zoom & offset for the blueprint pane)
    virtual nlohmann::json SaveSetup() const { return nlohmann::json::object(); }

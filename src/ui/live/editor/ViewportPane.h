@@ -40,6 +40,7 @@ public:
    }
    void RenderPane(const AreaRect& rect, int leafId) override;
    void OnUnhosted() override;
+   void CancelGizmoDrag() override;
 
    // Renders the scene parts for this pane's render pass (called by the editor while this pane's
    // render view is being recorded): filtered by the pane's own camera mode and shading setup
