@@ -815,6 +815,9 @@ void EditorUI::RenderUI()
       ImGui::EndPopup();
    }
 
+   // Confirmation for layer reference space changes that can not re-express all of their children
+   m_layerSpaceChangeOp.RenderModal();
+
    // Progress feedback of the asynchronous file operation (load/save run on a worker thread): a modal popup
    // that blocks all interaction while the operation is running
    RenderFileOpModal();

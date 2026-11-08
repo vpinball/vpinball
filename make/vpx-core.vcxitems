@@ -970,6 +970,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/GateUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/HitTargetUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/KickerUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/LayerSpaceChangeOp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/LightUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/LightSeqUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/LiveRenderContext.cpp" />
@@ -1940,6 +1941,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/HitTargetUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/IconsLucide.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/KickerUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/LayerSpaceChangeOp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/LightUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/LightSeqUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/LucideFont.h" />

@@ -61,6 +61,9 @@
     <Filter Include="ui\live\editor\parts">
       <UniqueIdentifier>{D3F3319B-4D8E-43F3-95BA-EA27C3FC0967}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui\live\editor\ops">
+      <UniqueIdentifier>{7B4E9A21-3C5D-4E8F-A6B2-9D1F0C5E7A83}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ui\live\ingame">
       <UniqueIdentifier>{6DF89AE6-299E-4F7E-A729-9188AD1D98F1}</UniqueIdentifier>
     </Filter>
@@ -578,6 +581,9 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/KickerUIPart.cpp">
       <Filter>ui\live\editor\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/LayerSpaceChangeOp.cpp">
+      <Filter>ui\live\editor\ops</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/LightUIPart.cpp">
       <Filter>ui\live\editor\parts</Filter>
@@ -1741,6 +1747,9 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/LiveRenderContext.h">
       <Filter>ui\live\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/LayerSpaceChangeOp.h">
+      <Filter>ui\live\editor\ops</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/OutlinerPanel.h">
       <Filter>ui\live\editor</Filter>

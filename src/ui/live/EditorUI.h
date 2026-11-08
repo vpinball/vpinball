@@ -18,6 +18,7 @@
 #include "editor/RendererInspectionModal.h"
 #include "editor/ScriptPanel.h"
 #include "editor/ViewportPane.h"
+#include "editor/ops/LayerSpaceChangeOp.h"
 #include "math/matrix.h"
 #include "parts/PartGroup.h"
 #include "renderer/Renderer.h"
@@ -68,6 +69,7 @@ class EditorUI final
    friend class BlueprintPane;
    friend class ViewportPane;
    friend class SetOrigin;
+   friend class LayerSpaceChangeOp;
 
 public:
    EditorUI(LiveUI &liveUI);
@@ -355,6 +357,14 @@ private:
    // UI parts must not write into the parts' data which is being serialized (see EditorUI::Render3D)
    bool IsSaveInProgress() const { return m_fileOp != nullptr && m_fileOp->type == AsyncFileOp::Type::Save; }
 
+public:
+   // Part group (layer) reference space change (property pane): the children coordinates are
+   // re-expressed in the new reference space so that the parts do not move. Parts that can not be
+   // exactly converted (e.g. a surface can not be tilted out of its plane) are confirmed by a modal
+   // before doing anything.
+   LayerSpaceChangeOp m_layerSpaceChangeOp { *this };
+
+public:
    // Part library (import/export of parts through partial VPZ packs, handled by the PartLibraryPanel dialog)
    void OpenPartLibrary() { m_partLibrary.Show(); }
    bool CanExportPartSelection() const { return m_partLibrary.CanExportSelection(); }
