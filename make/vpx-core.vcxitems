@@ -1915,6 +1915,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/DebuggerUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ImGuiHelpers.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlotData.h" />

@@ -47,6 +47,7 @@
 
 #include "ui/EditorClipboard.h"
 #include "ui/VPXFileFeedback.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 
 #include "utils/BiffReader.h"
@@ -3243,9 +3244,10 @@ void EditorUI::RenderAreaTypeButton(const int leafId)
       return;
    const ImGuiStyle &style = ImGui::GetStyle();
    const char *const icon = AreaTypeIcon(node->type);
+   const ImVec4 iconInk = TextInkBounds(icon);
    const ImVec2 iconSize = ImGui::CalcTextSize(icon);
    const float chevronWidth = ImGui::GetFontSize() * 0.4f; // Small, drawn in TextDim
-   const ImVec2 buttonSize(style.FramePadding.x * 2.f + iconSize.x + style.ItemInnerSpacing.x + chevronWidth, ImGui::GetFrameHeight());
+   const ImVec2 buttonSize(style.FramePadding.x * 2.f + iconSize.x + style.ItemInnerSpacing.x + chevronWidth, ImMax(iconSize.y, iconInk.w - iconInk.y) + style.FramePadding.y * 2.f);
    char popup[40];
    snprintf(popup, sizeof(popup), "##EditorType%d", leafId); // Keyed by the leaf id: several areas may share a type
 
@@ -3255,7 +3257,7 @@ void EditorUI::RenderAreaTypeButton(const int leafId)
    {
       ImDrawList *const drawList = ImGui::GetWindowDrawList();
       const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-      drawList->AddText(ImVec2(itemMin.x + style.FramePadding.x, centerY - iconSize.y * 0.5f), EditorTheme::Text, icon);
+      drawList->AddText(ImVec2(itemMin.x + style.FramePadding.x - iconInk.x, itemMin.y + style.FramePadding.y - iconInk.y), EditorTheme::Text, icon);
       const float half = chevronWidth * 0.5f;
       const float centerX = itemMax.x - style.FramePadding.x - half;
       drawList->AddTriangleFilled(ImVec2(centerX - half, centerY - half * 0.5f), ImVec2(centerX + half, centerY - half * 0.5f), ImVec2(centerX, centerY + half * 0.5f), EditorTheme::TextDim);
