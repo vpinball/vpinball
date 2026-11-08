@@ -270,8 +270,16 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             {
             case RenderDevice::TRIANGLELIST: bgfx::setState(m_rd->m_bgfxState); break;
             case RenderDevice::TRIANGLESTRIP: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP); break;
-            case RenderDevice::LINELIST: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINES); break;
-            case RenderDevice::LINESTRIP: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINESTRIP); break;
+            case RenderDevice::LINELIST:
+               bgfx::setState((m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINES | BGFX_STATE_BLEND_EQUATION_ADD
+                                 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
+                  & ~BGFX_STATE_MSAA);
+               break;
+            case RenderDevice::LINESTRIP:
+               bgfx::setState((m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINESTRIP | BGFX_STATE_BLEND_EQUATION_ADD
+                                 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
+                  & ~BGFX_STATE_MSAA);
+               break;
             case RenderDevice::POINTLIST: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_POINTS); break;
             default: assert(false); break; // Unsupported primitive type
             }
