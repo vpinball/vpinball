@@ -84,6 +84,7 @@ void ViewportPane::AdoptCameraFrom(const ViewportPane* const src)
 
 void ViewportPane::SetGizmoOperation(ImGuizmo::OPERATION operation)
 {
+   m_measureMode = false; // Arming a mode moves away from measure mode (measure drops its line)
    if (operation == ImGuizmo::OPERATION(0))
    {
       m_gizmoOperation = operation;
@@ -169,6 +170,7 @@ Vertex3Ds ViewportPane::ClosestPointOnAxis(const ImVec2& pos, const Vertex3Ds& a
 
 void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
 {
+   m_measureMode = false; // Arming a transform op moves away from measure mode
    Matrix3D transform;
    if (!m_editor.GetSelectionTransform(transform) || m_editor.m_table->IsLocked())
       return;
@@ -1217,6 +1219,11 @@ void ViewportPane::RenderStatusOverlay()
       gizmoIcon = ICON_FK_REPEAT;
       gizmoLabel = "Rotate";
    }
+   if (m_measureMode)
+   {
+      gizmoIcon = ICON_LC_RULER;
+      gizmoLabel = "Measure";
+   }
    if (gizmoIcon != nullptr && shelfWidth <= 0.f) // The tool shelf already displays the active mode
    {
       ImGui::TextUnformatted(gizmoIcon);
@@ -1705,6 +1712,30 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       ctx.m_selectionDisplay = m_editor.m_navSelectionDisplay;
       const bool clipToPane = SetupOverlay(&ctx, overlayDrawList);
 
+      // Measure mode: the click-drag line, with its length in the selected units at its middle
+      if (m_measureMode && m_measureValid)
+      {
+         const ImVec2 p0 = ctx.Project(m_measureFrom), p1 = ctx.Project(m_measureTo);
+         if (p0.x != FLT_MAX && p1.x != FLT_MAX)
+         {
+            const float d = sqrtf((m_measureTo.x - m_measureFrom.x) * (m_measureTo.x - m_measureFrom.x) + (m_measureTo.y - m_measureFrom.y) * (m_measureTo.y - m_measureFrom.y));
+            char label[64];
+            switch (m_editor.m_units)
+            {
+            case EditorUI::Units::Metric: snprintf(label, sizeof(label), "%.1f mm", VPUTOMM(d)); break;
+            case EditorUI::Units::Imperial: snprintf(label, sizeof(label), "%.1f in", VPUTOINCHES(d)); break;
+            default: snprintf(label, sizeof(label), "%.1f units", d); break;
+            }
+            const ImU32 col = IM_COL32(255, 200, 40, 255);
+            const float dr = m_editor.m_liveUI.GetDPI();
+            overlayDrawList->AddLine(p0, p1, col, 1.5f * dr);
+            overlayDrawList->AddCircleFilled(p0, 2.5f * dr, col);
+            overlayDrawList->AddCircleFilled(p1, 2.5f * dr, col);
+            const ImVec2 ts = ImGui::CalcTextSize(label);
+            overlayDrawList->AddText(ImVec2(0.5f * (p0.x + p1.x) - 0.5f * ts.x, 0.5f * (p0.y + p1.y) - ts.y - 4.f * dr), col, label);
+         }
+      }
+
       if (isSelectionTransformValid)
       {
          const ImVec2 pos = ctx.Project(transform.GetOrthoNormalPos());
@@ -1968,7 +1999,35 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       // shift+click toggles a part in the multi selection, drag box selects parts (shift+drag adds to the selection)
       // In drag point edit mode, click selects a drag point of the edited curve (shift toggles), dragging a
       // selected point moves the selected points in the table XY plane, drag box selects points
-      if (!modalMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !(m_editor.m_navAltMiddleButton && io.KeyAlt) && !ImGuizmo::IsOver()
+      // Measure mode: click-drag on the playfield plane records a measurement, kept until a new drag or a mode change
+      if (m_measureMode && !modalMouse)
+      {
+         if (m_measureDragging)
+         {
+            // X / Y constrains the measurement to that axis (same key releases it)
+            if (ImGui::IsKeyPressed(ImGuiKey_X, false))
+               m_measureAxis = m_measureAxis == 0 ? -1 : 0;
+            if (ImGui::IsKeyPressed(ImGuiKey_Y, false))
+               m_measureAxis = m_measureAxis == 1 ? -1 : 1;
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            {
+               const Vertex2D p = UnprojectToPlane(ImGui::GetMousePos(), 0.f);
+               m_measureTo = Vertex3Ds(m_measureAxis == 1 ? m_measureFrom.x : p.x, m_measureAxis == 0 ? m_measureFrom.y : p.y, 0.f);
+               m_measureValid = true;
+            }
+            else
+               m_measureDragging = false;
+         }
+         else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !m_viewGizmoHover)
+         {
+            const Vertex2D p = UnprojectToPlane(ImGui::GetMousePos(), 0.f);
+            m_measureFrom = m_measureTo = Vertex3Ds(p.x, p.y, 0.f);
+            m_measureValid = false;
+            m_measureAxis = -1;
+            m_measureDragging = true;
+         }
+      }
+      if (!m_measureMode && !modalMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !(m_editor.m_navAltMiddleButton && io.KeyAlt) && !ImGuizmo::IsOver()
          && !m_viewGizmoHover) // Alt+click is orbit when Alt acts as the middle button
       {
          m_boxSelectStart = ImGui::GetMousePos();
@@ -2572,6 +2631,13 @@ void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
       // Modal transform op: confirm / cancel, axis & plane constraints, numeric entry (Blender)
       hints = { { ICON_LC_MOUSE_LEFT " / Enter", "Confirm" }, { ICON_LC_MOUSE_RIGHT " / Esc", "Cancel" }, { "X Y Z", "Axis" }, { "Shift+X Y Z", "Plane" },
          { ICON_LC_MOUSE " Drag", "Constrain Axis" }, { "0-9", "Exact Value" }, { "Ctrl", "Snap" }, { "Shift", "Precision" } };
+   }
+   else if (m_measureMode)
+   {
+      if (m_measureDragging)
+         hints = { { "Drag", "Measure" }, { "X / Y", "Constrain Axis" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
+      else
+         hints = { { ICON_LC_MOUSE_LEFT " Drag", "Measure" }, { "Esc", "Exit Mode" } };
    }
    else if (m_gizmoDragActive)
       hints = { { "Drag", "Transform" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };

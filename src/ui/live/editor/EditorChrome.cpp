@@ -117,10 +117,18 @@ void EditorChrome::RenderToolShelf(const AreaRect &viewportContent)
       // like the G / R / S keys, so the buttons stay enabled without any selection
       for (const auto &mode : editModes)
       {
-         const bool active = vp != nullptr && vp->m_gizmoOperation == mode.operation;
+         const bool active = vp != nullptr && vp->m_gizmoOperation == mode.operation && !vp->m_measureMode;
          if (ToolButton(mode.icon, active) && vp != nullptr)
             vp->SetGizmoOperation(mode.operation);
          Tip(mode.title, mode.shortcut);
+      }
+
+      // Measure mode: the last of the modes — click-drag on the playfield plane measures a distance
+      {
+         const bool active = vp != nullptr && vp->m_measureMode;
+         if (ToolButton(ICON_LC_RULER, active) && vp != nullptr)
+            vp->SetMeasureMode(!vp->m_measureMode);
+         Tip(active ? "Measure (drag on the playfield)" : "Measure");
       }
 
       // Separator
@@ -136,6 +144,13 @@ void EditorChrome::RenderToolShelf(const AreaRect &viewportContent)
          editor.RequestAddPartPopup(ImVec2(ImGui::GetItemRectMax().x + 2.f * dpi, ImGui::GetItemRectMax().y));
       Tip("Add Part", "Shift+A", editor.m_table->IsLocked() ? "The table is locked" : editor.m_pointEditPart != nullptr ? "Not available while editing points" : nullptr);
       ImGui::EndDisabled();
+
+      // Separator
+      {
+         const ImVec2 sp = ImGui::GetCursorScreenPos();
+         ImGui::GetWindowDrawList()->AddLine(ImVec2(sp.x + 3.f * dpi, sp.y + 0.5f * sepHeight), ImVec2(sp.x + button - 3.f * dpi, sp.y + 0.5f * sepHeight), EditorTheme::TabActive, 1.f);
+         ImGui::Dummy(ImVec2(button, sepHeight));
+      }
 
       // Orientation of the gizmo (Global / Local), only meaningful for Grab, Rotate and Scale
       if (vp != nullptr)
