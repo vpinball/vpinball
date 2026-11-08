@@ -216,9 +216,13 @@ void EditorChrome::RenderMenuBar()
    EditorUI &editor = m_editor;
    if (ImGui::BeginMainMenuBar())
    {
+      // Menu rows are only the text line height, and the icon glyphs slightly overshoot it: give the
+      // rows the extra room the icon ink needs (the pushed spacing applies to the spawned popup windows too)
+      const ImVec4 iconInk = TextInkBounds(ICON_LC_SAVE);
+      ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y + ImMax(0.f, iconInk.w - iconInk.y - ImGui::GetFontSize()) + 2.f * editor.m_liveUI.GetDPI());
       if (!editor.IsInspectMode() && ImGui::BeginMenu("File"))
       {
-         if (ImGui::BeginMenu("New"))
+         if (ImGui::BeginMenu(ICON_LC_FILE_PLUS " New"))
          {
             if (ImGui::MenuItem("New Table", "Ctrl+N"))
                editor.NewTable(EditorUI::NewTableTemplate::Blank);
@@ -230,24 +234,24 @@ void EditorChrome::RenderMenuBar()
                editor.NewTable(EditorUI::NewTableTemplate::LightSeq);
             ImGui::EndMenu();
          }
-         if (ImGui::MenuItem("Load..."))
+         if (ImGui::MenuItem(ICON_LC_FOLDER_OPEN " Load..."))
             editor.LoadTable();
-         if (ImGui::MenuItem("Load Pack Folder..."))
+         if (ImGui::MenuItem(ICON_LC_FOLDER " Load Pack Folder..."))
             editor.LoadTableFolder();
-         if (ImGui::MenuItem("Save", "Ctrl+S"))
+         if (ImGui::MenuItem(ICON_LC_SAVE " Save", "Ctrl+S"))
             editor.SaveTable();
-         if (ImGui::MenuItem("Save As..."))
+         if (ImGui::MenuItem(ICON_LC_DISC " Save As..."))
             editor.SaveTableAs();
-         if (ImGui::MenuItem("Save As Pack Folder..."))
+         if (ImGui::MenuItem(ICON_LC_FOLDER " Save As Pack Folder..."))
             editor.SaveTableAsPackFolder();
          ImGui::Separator();
-         if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
+         if (ImGui::MenuItem(ICON_LC_UPLOAD " Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
             editor.ExportPartSelection();
          ImGui::Separator();
-         if (ImGui::MenuItem("Play", "F5", false, !editor.m_table->IsLocked()))
+         if (ImGui::MenuItem(ICON_LC_PLAY " Play", "F5", false, !editor.m_table->IsLocked()))
             editor.PlayTest();
          ImGui::Separator();
-         if (ImGui::MenuItem("Quit"))
+         if (ImGui::MenuItem(ICON_LC_X " Quit"))
             editor.RequestClose(Player::CS_CLOSE_APP);
          ImGui::EndMenu();
       }
@@ -262,15 +266,16 @@ void EditorChrome::RenderMenuBar()
                   --n;
             return step.empty() ? string(verb) : string(verb) + ' ' + (step.size() > 40 ? step.substr(0, n) + "..." : step);
          };
-         if (ImGui::MenuItem(
-                (stepTitle("Undo", editor.CanUndo() && editor.m_undo.UndoCount() > 0 ? editor.m_undo.UndoLabel(0) : string()) + "###EditUndo").c_str(), "Ctrl+Z", false, editor.CanUndo()))
+         if (ImGui::MenuItem((ICON_LC_UNDO_2 " " + stepTitle("Undo", editor.CanUndo() && editor.m_undo.UndoCount() > 0 ? editor.m_undo.UndoLabel(0) : string()) + "###EditUndo").c_str(),
+                "Ctrl+Z", false, editor.CanUndo()))
             editor.UndoSteps(1);
-         if (ImGui::MenuItem((stepTitle("Redo", editor.CanRedo() && editor.m_undo.RedoCount() > 0 ? editor.m_undo.RedoLabel(0) : string()) + "###EditRedo").c_str(), "Ctrl+Shift+Z", false,
-                editor.CanRedo()))
+         if (ImGui::MenuItem(
+                (ICON_LC_SKIP_FORWARD " " + stepTitle("Redo", editor.CanRedo() && editor.m_undo.RedoCount() > 0 ? editor.m_undo.RedoLabel(0) : string()) + "###EditRedo").c_str(),
+                "Ctrl+Shift+Z", false, editor.CanRedo()))
             editor.RedoSteps(1);
-         if (ImGui::MenuItem("Undo History...", nullptr, false, editor.m_table->m_liveBaseTable == nullptr && (editor.m_undo.HasUndo() || editor.m_undo.HasRedo())))
+         if (ImGui::MenuItem(ICON_LC_LIST " Undo History...", nullptr, false, editor.m_table->m_liveBaseTable == nullptr && (editor.m_undo.HasUndo() || editor.m_undo.HasRedo())))
             OpenUndoHistory();
-         if (ImGui::MenuItem("Adjust Last Operation...", "F9", false, editor.m_lastOp.type != EditorUI::LastOperation::Type::None))
+         if (ImGui::MenuItem(ICON_LC_REFRESH_CW " Adjust Last Operation...", "F9", false, editor.m_lastOp.type != EditorUI::LastOperation::Type::None))
          {
             editor.m_adjustPopupOpen = true;
             editor.m_adjustPopupJustOpened = true;
@@ -281,33 +286,33 @@ void EditorChrome::RenderMenuBar()
          ImGui::BeginDisabled(editor.m_table->IsLocked());
          const bool canCopy
             = editor.m_pointEditPart ? (editor.m_pointEditCenter ? editor.m_centerSelected : editor.m_pointSel.size() == 1) : (editor.m_selection.GetType() == Selection::S_EDITABLE);
-         if (ImGui::MenuItem("Copy", "Ctrl+C", false, canCopy))
+         if (ImGui::MenuItem(ICON_LC_COPY " Copy", "Ctrl+C", false, canCopy))
             editor.CopySelection();
          const bool canPaste = editor.m_pointEditPart
             ? (editor.m_pointEditCenter ? editor.m_centerSelected && VPX::EditorClipboard::HasPoint() : editor.m_pointSel.size() == 1 && VPX::EditorClipboard::HasPoint())
             : VPX::EditorClipboard::HasParts();
-         if (ImGui::MenuItem("Paste", "Ctrl+V", false, canPaste))
+         if (ImGui::MenuItem(ICON_LC_CLIPBOARD_PASTE " Paste", "Ctrl+V", false, canPaste))
          {
             const ImVec2 center = editor.GetViewportContentCenter();
             editor.PasteSelection(&center);
          }
-         if (ImGui::MenuItem("Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
+         if (ImGui::MenuItem(ICON_LC_TRASH_2 " Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
             editor.DeleteSelection();
-         if (ImGui::MenuItem("Add Part...", "Shift+A", false, editor.m_pointEditPart == nullptr))
+         if (ImGui::MenuItem(ICON_LC_PLUS " Add Part...", "Shift+A", false, editor.m_pointEditPart == nullptr))
             editor.RequestAddPartPopup(editor.GetViewportContentCenter());
          ImGui::EndDisabled();
          ImGui::Separator();
          const bool canSelect = !editor.m_table->IsLocked() && editor.m_fileOp == nullptr;
-         if (ImGui::MenuItem("Select All", "A", false, canSelect))
+         if (ImGui::MenuItem(ICON_LC_MOUSE_POINTER_2 " Select All", "A", false, canSelect))
             editor.SelectAllParts();
-         if (ImGui::MenuItem("Deselect", "Alt+A", false, canSelect && editor.m_selection.GetType() != Selection::S_NONE))
+         if (ImGui::MenuItem(ICON_LC_X " Deselect", "Alt+A", false, canSelect && editor.m_selection.GetType() != Selection::S_NONE))
             editor.ClearSelection();
-         if (ImGui::MenuItem("Invert Selection", "Ctrl+I", false, canSelect))
+         if (ImGui::MenuItem(ICON_LC_LIST_FILTER " Invert Selection", "Ctrl+I", false, canSelect))
             editor.InvertSelection();
          ImGui::Separator();
-         if (ImGui::MenuItem("Snapping", "Shift+Tab", editor.m_snapEnabled))
+         if (ImGui::MenuItem(ICON_LC_MAGNET " Snapping", "Shift+Tab", editor.m_snapEnabled))
             editor.ToggleSnapping();
-         if (ImGui::BeginMenu("Snap Options"))
+         if (ImGui::BeginMenu(ICON_LC_MAGNET " Snap Options"))
          {
             Settings &settings = g_settingsService.GetAppSettings();
             if (ImGui::MenuItem("Target: Increment", nullptr, editor.m_snapTarget == 0))
@@ -346,7 +351,7 @@ void EditorChrome::RenderMenuBar()
             ImGui::EndMenu();
          }
          ImGui::Separator();
-         if (ImGui::BeginMenu("Units"))
+         if (ImGui::BeginMenu(ICON_LC_RULER " Units"))
          {
             if (ImGui::RadioButton("VP Units", editor.m_units == EditorUI::Units::VPX))
                editor.m_units = EditorUI::Units::VPX;
@@ -357,7 +362,7 @@ void EditorChrome::RenderMenuBar()
             ImGui::EndMenu();
          }
          ImGui::Separator();
-         if (ImGui::MenuItem("Preferences..."))
+         if (ImGui::MenuItem(ICON_LC_SLIDERS_HORIZONTAL " Preferences..."))
             OpenPreferences();
          ImGui::EndMenu();
       }
@@ -366,26 +371,26 @@ void EditorChrome::RenderMenuBar()
          // Object menu: actions on the selection (the G/R/S items arm the transform op of the pane under the mouse, like their keys)
          ViewportPane *const vp = editor.GetTargetViewport();
          const bool canTransform = vp != nullptr && editor.m_selection.GetType() == Selection::S_EDITABLE;
-         if (ImGui::MenuItem("Duplicate", "Shift+D", false, editor.CanDuplicate()))
+         if (ImGui::MenuItem(ICON_LC_COPY " Duplicate", "Shift+D", false, editor.CanDuplicate()))
             editor.DuplicateSelection();
-         if (ImGui::MenuItem("Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
+         if (ImGui::MenuItem(ICON_LC_TRASH_2 " Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
             editor.DeleteSelection();
-         if (ImGui::MenuItem("Add Part...", "Shift+A", false, !editor.m_table->IsLocked() && editor.m_pointEditPart == nullptr))
+         if (ImGui::MenuItem(ICON_LC_PLUS " Add Part...", "Shift+A", false, !editor.m_table->IsLocked() && editor.m_pointEditPart == nullptr))
             editor.RequestAddPartPopup(editor.GetViewportContentCenter());
          ImGui::Separator();
-         if (ImGui::MenuItem("Move", "G", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::TRANSLATE, canTransform))
+         if (ImGui::MenuItem(ICON_LC_MOVE_3D " Move", "G", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::TRANSLATE, canTransform))
             vp->BeginTransformOp(ImGuizmo::TRANSLATE);
-         if (ImGui::MenuItem("Rotate", "R", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::ROTATE, canTransform))
+         if (ImGui::MenuItem(ICON_LC_ROTATE_3D " Rotate", "R", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::ROTATE, canTransform))
             vp->BeginTransformOp(ImGuizmo::ROTATE);
-         if (ImGui::MenuItem("Scale", "S", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::SCALE, canTransform))
+         if (ImGui::MenuItem(ICON_LC_SCALE_3D " Scale", "S", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::SCALE, canTransform))
             vp->BeginTransformOp(ImGuizmo::SCALE);
          ImGui::Separator();
-         if (ImGui::MenuItem("New Collection from Selection", nullptr, false, editor.m_selection.GetType() == Selection::S_EDITABLE))
+         if (ImGui::MenuItem(ICON_LC_LAYERS " New Collection from Selection", nullptr, false, editor.m_selection.GetType() == Selection::S_EDITABLE))
             editor.CreateCollection(true);
-         if (ImGui::MenuItem("Edit Points", "Tab", false, editor.CanEnterPointEdit()))
+         if (ImGui::MenuItem(ICON_LC_MOUSE_POINTER_2 " Edit Points", "Tab", false, editor.CanEnterPointEdit()))
             editor.EnterPointEditMode();
          ImGui::Separator();
-         if (ImGui::BeginMenu("Set Origin"))
+         if (ImGui::BeginMenu(ICON_LC_CIRCLE_DOT " Set Origin"))
          {
             const bool canSetOrigin = SetOrigin::CanApply(editor);
             if (ImGui::MenuItem("Origin to Geometry", nullptr, false, canSetOrigin))
@@ -398,7 +403,7 @@ void EditorChrome::RenderMenuBar()
       }
       if (!editor.IsInspectMode() && ImGui::BeginMenu("Tools"))
       {
-         if (ImGui::BeginMenu("Light States"))
+         if (ImGui::BeginMenu(ICON_LC_LIGHTBULB " Light States"))
          {
             // The editor does not run the table script (which usually sets the lamp states): set the light state of the table or of a collection here
             // (same update as the State property: persisted value + emitted intensity + live play state)
@@ -459,10 +464,10 @@ void EditorChrome::RenderMenuBar()
          {
             vp->m_perspectiveCam = !vp->m_perspectiveCam;
          }
-         if (ImGui::MenuItem("Lock Orbit", "Numpad /", vp != nullptr && vp->m_orbitLock, vp != nullptr))
+         if (ImGui::MenuItem(ICON_LC_LOCK " Lock Orbit", "Numpad /", vp != nullptr && vp->m_orbitLock, vp != nullptr))
             vp->m_orbitLock = !vp->m_orbitLock;
          ImGui::Separator();
-         if (ImGui::BeginMenu("Shading"))
+         if (ImGui::BeginMenu(ICON_LC_LENS " Shading"))
          {
             const auto shadeItem = [vp](const char *label, const Renderer::ShadeMode mode)
             {
@@ -475,32 +480,32 @@ void EditorChrome::RenderMenuBar()
             ImGui::EndMenu();
          }
          ImGui::Separator();
-         if (ImGui::MenuItem("Frame Selected", "Numpad .", false, vp != nullptr && editor.CanFrameSelection()))
+         if (ImGui::MenuItem(ICON_LC_VIDEO " Frame Selected", "Numpad .", false, vp != nullptr && editor.CanFrameSelection()))
             vp->FrameSelection();
-         if (ImGui::MenuItem("Frame All", "Home", false, vp != nullptr))
+         if (ImGui::MenuItem(ICON_LC_GLOBE " Frame All", "Home", false, vp != nullptr))
             vp->FrameAll();
-         if (ImGui::MenuItem("Toggle Maximize Area", "Ctrl+Space"))
+         if (ImGui::MenuItem(ICON_LC_SQUARE " Toggle Maximize Area", "Ctrl+Space"))
             editor.ToggleMaximizeArea();
-         if (ImGui::MenuItem("Tool Shelf", "T", m_showToolShelf))
+         if (ImGui::MenuItem(ICON_LC_LAYERS " Tool Shelf", "T", m_showToolShelf))
             ToggleToolShelf();
          ImGui::Separator();
          ImGui::EndMenu();
       }
       if (editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
       {
-         if (ImGui::MenuItem("Open debugger"))
+         if (ImGui::MenuItem(ICON_LC_CODE_XML " Open debugger"))
             editor.m_player->m_showDebugger = true;
-         if (ImGui::MenuItem("Renderer Inspection"))
+         if (ImGui::MenuItem(ICON_LC_EYE " Renderer Inspection"))
             editor.m_inspectionModal.Show();
-         if (ImGui::MenuItem(editor.m_player->IsPlaying() ? "Pause" : "Play"))
+         if (ImGui::MenuItem(editor.m_player->IsPlaying() ? ICON_LC_PAUSE " Pause" : ICON_LC_PLAY " Play"))
             editor.m_player->SetPlayState(!editor.m_player->IsPlaying());
-         if (ImGui::MenuItem("Step", nullptr, false, !editor.m_player->IsPlaying()))
+         if (ImGui::MenuItem(ICON_LC_SKIP_FORWARD " Step", nullptr, false, !editor.m_player->IsPlaying()))
             editor.m_player->m_step = true;
          ImGui::EndMenu();
       }
       else if (!editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
       {
-         if (ImGui::MenuItem("Renderer Inspection"))
+         if (ImGui::MenuItem(ICON_LC_EYE " Renderer Inspection"))
             editor.m_inspectionModal.Show();
          ImGui::EndMenu();
       }
@@ -556,6 +561,7 @@ void EditorChrome::RenderMenuBar()
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip("Close editor");
       m_menuBarHeight = ImGui::GetWindowSize().y;
+      ImGui::PopStyleVar();
       ImGui::EndMainMenuBar();
    }
 }
