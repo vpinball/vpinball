@@ -101,26 +101,49 @@ void ViewportPane::SetGizmoOperation(ImGuizmo::OPERATION operation)
 // or RMB/Esc cancels. All the math is done in table space through the pane's LH view/proj.
 //
 
+unsigned ViewportPane::SelectionAxisMask(const ImGuizmo::OPERATION op) const
+{
+   // Intersection of the transform axes every selected part supports (a surface rotates only
+   // about the table Z axis and cannot scale Z, the gizmo / modal ops must only offer those)
+   unsigned mask = 0x7;
+   for (const auto& part : m_editor.m_multiSel)
+   {
+      Matrix3D t;
+      const EditorUIPart::TransformMask tm = part->GetTransform(t);
+      unsigned partMask = 0x7;
+      if (op == ImGuizmo::ROTATE)
+         partMask = ((tm & EditorUIPart::TM_RotX) ? 1 : 0) | ((tm & EditorUIPart::TM_RotY) ? 2 : 0) | ((tm & EditorUIPart::TM_RotZ) ? 4 : 0);
+      else if (op == ImGuizmo::SCALE)
+         partMask = ((tm & (EditorUIPart::TM_ScaleX | EditorUIPart::TM_ScaleAll)) ? 1 : 0) | ((tm & (EditorUIPart::TM_ScaleY | EditorUIPart::TM_ScaleAll)) ? 2 : 0)
+            | ((tm & (EditorUIPart::TM_ScaleZ | EditorUIPart::TM_ScaleAll)) ? 4 : 0);
+      else
+         partMask = ((tm & EditorUIPart::TM_TransX) ? 1 : 0) | ((tm & EditorUIPart::TM_TransY) ? 2 : 0) | ((tm & EditorUIPart::TM_TransZ) ? 4 : 0);
+      mask &= partMask;
+   }
+   return mask;
+}
+
 unsigned ViewportPane::ContextAxisMask() const
 {
    // Modal ops are restricted like the gizmo: point edit & desktop backdrop are 2D in their XY
-   // plane, predefined views are 2D in the view plane
+   // plane, predefined views are 2D in the view plane, and only the axes the parts support
+   unsigned mask = 0x7;
    if (m_editor.m_pointEditPart || m_viewType == ViewMode::DesktopBackdrop)
-      return 0x3; // XY
-   if (m_viewType == ViewMode::EditorCam)
+      mask = 0x3; // XY
+   else if (m_viewType == ViewMode::EditorCam)
    {
       switch (m_predefinedView)
       {
       case PredefinedView::Left:
-      case PredefinedView::Right: return 0x6; // YZ
+      case PredefinedView::Right: mask = 0x6; break; // YZ
       case PredefinedView::Top:
-      case PredefinedView::Bottom: return 0x3; // XY
+      case PredefinedView::Bottom: mask = 0x3; break; // XY
       case PredefinedView::Front:
-      case PredefinedView::Back: return 0x5; // XZ
+      case PredefinedView::Back: mask = 0x5; break; // XZ
       default: break;
       }
    }
-   return 0x7; // XYZ
+   return m_editor.m_pointEditPart ? mask : mask & SelectionAxisMask(m_op.op);
 }
 
 int ViewportPane::AxisIndex(const unsigned mask) const { return mask == 0x1 ? 0 : mask == 0x2 ? 1 : mask == 0x4 ? 2 : -1; }
@@ -199,6 +222,13 @@ void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
    m_op.angleOffset = 0.f;
    m_op.startTransform = transform;
    m_op.pivot = transform.GetOrthoNormalPos();
+   // Rotate & scale pivot about the part's authored center, not its transform origin (a surface's
+   // center is its curve center, not the curve transform pivot)
+   if (m_editor.m_selection.GetType() == Selection::S_EDITABLE && m_editor.m_selection.GetPart() != nullptr)
+   {
+      const Vertex2D center = m_editor.m_selection.GetPart()->GetEditable()->GetCenter();
+      m_op.pivot = Vertex3Ds(center.x, center.y, m_op.pivot.z);
+   }
    m_op.startMouse = ImGui::GetMousePos();
    // Table-space camera forward: a free grab moves in the pivot plane parallel to the view, a
    // free rotate spins around it. In restricted (2D) contexts both lock to the context's missing
@@ -416,7 +446,9 @@ void ViewportPane::ApplyTransformOpDelta()
             delta = OpAxisDir(0) * m_op.delta[0] + OpAxisDir(1) * m_op.delta[1] + OpAxisDir(2) * m_op.delta[2];
          }
       }
-      newTransform = Matrix3D::MatrixTranslate(delta.x, delta.y, delta.z) * m_op.startTransform;
+      // The delta is applied in table space: it must post-multiply the start transform (a pre-multiply
+      // would evaluate it inside the part's own basis, rotating/scaling the move along it)
+      newTransform = m_op.startTransform * Matrix3D::MatrixTranslate(delta.x, delta.y, delta.z);
       m_op.changed |= delta.LengthSquared() > 1e-12f;
    }
    else if (m_op.op == ImGuizmo::ROTATE)
@@ -437,7 +469,10 @@ void ViewportPane::ApplyTransformOpDelta()
          angle = ANGTORAD(m_op.numText[0].empty() ? 0.f : strtof(m_op.numText[0].c_str(), nullptr));
       else if (m_editor.IsSnapActive(EditorUI::SnapKind::Rotate) && m_editor.m_snapRotate > 0.f)
          angle = ANGTORAD(roundf(RADTOANG(angle) / m_editor.m_snapRotate) * m_editor.m_snapRotate);
-      newTransform = Matrix3D::MatrixTranslate(m_op.pivot) * Matrix3D::MatrixRotate(angle, axisDir) * Matrix3D::MatrixTranslate(-m_op.pivot) * m_op.startTransform;
+      // Rotation about the pivot in table space: T(-pivot)·R·T(pivot) post-multiplies the start
+      // transform (the row-vector convention applies the left factor first); the row-vector
+      // rotation spins the opposite way, hence the negated angle
+      newTransform = m_op.startTransform * Matrix3D::MatrixTranslate(-m_op.pivot) * Matrix3D::MatrixRotate(-angle, axisDir) * Matrix3D::MatrixTranslate(m_op.pivot);
       m_op.delta[0] = RADTOANG(angle);
       m_op.changed |= fabsf(angle) > 1e-8f;
    }
@@ -482,7 +517,7 @@ void ViewportPane::ApplyTransformOpDelta()
       Matrix3D invBasis(basis);
       invBasis.Invert();
       const Matrix3D scale = invBasis * Matrix3D::MatrixScale(factor[0], factor[1], factor[2]) * basis;
-      newTransform = Matrix3D::MatrixTranslate(m_op.pivot) * scale * Matrix3D::MatrixTranslate(-m_op.pivot) * m_op.startTransform;
+      newTransform = m_op.startTransform * Matrix3D::MatrixTranslate(-m_op.pivot) * scale * Matrix3D::MatrixTranslate(m_op.pivot);
       for (int i = 0; i < 3; ++i)
          m_op.changed |= fabsf(factor[i] - 1.f) > 1e-8f;
    }
@@ -1626,6 +1661,22 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
             break;
          }
       }
+      // The ops are restricted to the axes the selected parts support (a surface rotates only about
+      // the table Z axis and cannot scale along it): intersect the op with those axes
+      if (!m_editor.m_pointEditPart && m_viewType == ViewMode::EditorCam)
+      {
+         const unsigned mask = SelectionAxisMask((gizmoOperation & ImGuizmo::ROTATE) != 0 ? ImGuizmo::ROTATE
+               : (gizmoOperation & ImGuizmo::SCALE) != 0                                  ? ImGuizmo::SCALE
+                                                                                          : ImGuizmo::TRANSLATE);
+         unsigned allowed = 0;
+         if ((gizmoOperation & ImGuizmo::ROTATE) != 0)
+            allowed = (mask & 0x1 ? ImGuizmo::ROTATE_X : 0) | (mask & 0x2 ? ImGuizmo::ROTATE_Y : 0) | (mask & 0x4 ? ImGuizmo::ROTATE_Z : 0);
+         else if ((gizmoOperation & ImGuizmo::SCALE) != 0)
+            allowed = (mask & 0x1 ? ImGuizmo::SCALE_X : 0) | (mask & 0x2 ? ImGuizmo::SCALE_Y : 0) | (mask & 0x4 ? ImGuizmo::SCALE_Z : 0);
+         else
+            allowed = (mask & 0x1 ? ImGuizmo::TRANSLATE_X : 0) | (mask & 0x2 ? ImGuizmo::TRANSLATE_Y : 0) | (mask & 0x4 ? ImGuizmo::TRANSLATE_Z : 0);
+         gizmoOperation = static_cast<ImGuizmo::OPERATION>(gizmoOperation & allowed);
+      }
       // A gizmo drag whose selection changed under the mouse (outliner click, undo,...) is over: the new selection must not follow it without an undo record
       const bool gizmoLost = m_gizmoDragActive && m_editor.m_multiSel != m_gizmoDragSelection;
       if (gizmoLost)
@@ -1658,9 +1709,21 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
             snapValues[0] = snapValues[1] = snapValues[2] = m_editor.m_snapMove;
             snapPtr = snapValues;
          }
-         ImGuizmo::Manipulate(camViewLH, (float*)(gizmoProj.m), gizmoOperation, m_gizmoMode, (float*)(transform.m), nullptr, snapPtr);
-         if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
+         // Rotate & scale pivot about the part's authored center, not its transform origin: the gizmo
+         // matrix is shifted so its origin sits at the center, the result is moved back afterwards
+         const Vertex3Ds gizmoPos = transform.GetOrthoNormalPos();
+         Vertex3Ds gizmoCenter = gizmoPos;
+         if (m_editor.m_selection.GetType() == Selection::S_EDITABLE && m_editor.m_selection.GetPart() != nullptr)
          {
+            const Vertex2D partCenter = m_editor.m_selection.GetPart()->GetEditable()->GetCenter();
+            gizmoCenter = Vertex3Ds(partCenter.x, partCenter.y, gizmoPos.z);
+         }
+         Matrix3D gizmoTransform = Matrix3D::MatrixTranslate(gizmoCenter.x - gizmoPos.x, gizmoCenter.y - gizmoPos.y, gizmoCenter.z - gizmoPos.z) * transform;
+         const Matrix3D prevGizmoTransform(gizmoTransform);
+         ImGuizmo::Manipulate(camViewLH, (float*)(gizmoProj.m), gizmoOperation, m_gizmoMode, (float*)(gizmoTransform.m), nullptr, snapPtr);
+         if (memcmp(gizmoTransform.m, prevGizmoTransform.m, 16 * sizeof(float)) != 0)
+         {
+            transform = Matrix3D::MatrixTranslate(gizmoPos.x - gizmoCenter.x, gizmoPos.y - gizmoCenter.y, gizmoPos.z - gizmoCenter.z) * gizmoTransform;
             // Mark all selected parts for undo once per drag (m_editor.m_lastUndoId is reset when the gizmo is released)
             if (!m_gizmoDragActive && m_editor.m_table->m_liveBaseTable == nullptr)
             {
@@ -1757,7 +1820,9 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                const Vertex3Ds dir = OpAxisDir(i);
                overlayDrawList->AddLine(ctx.Project(m_op.pivot - dir * axisLen), ctx.Project(m_op.pivot + dir * axisLen), axisColors[i], 1.5f * m_editor.m_liveUI.GetDPI());
             }
-            overlayDrawList->AddLine(pivotPx, ImGui::GetMousePos(), IM_COL32(255, 255, 255, 160), 1.5f * m_editor.m_liveUI.GetDPI());
+            // The rubber band shows the live delta: from the start center to the center as moved so far
+            const Vertex3Ds moved = m_op.pivot + OpAxisDir(0) * m_op.delta[0] + OpAxisDir(1) * m_op.delta[1] + OpAxisDir(2) * m_op.delta[2];
+            overlayDrawList->AddLine(pivotPx, m_op.op == ImGuizmo::TRANSLATE ? ctx.Project(moved) : ImGui::GetMousePos(), IM_COL32(255, 255, 255, 160), 1.5f * m_editor.m_liveUI.GetDPI());
          }
       }
 

@@ -202,6 +202,7 @@ private:
 
    // Modal transform helpers
    unsigned ContextAxisMask() const; // Axes the modal ops may use in this pane's context (point edit, backdrop, predefined view)
+   unsigned SelectionAxisMask(ImGuizmo::OPERATION op) const; // Axes the op may use on the selected parts (surface: rotate Z only, no scale Z)
    int AxisIndex(unsigned mask) const; // First set axis index of a single-axis mask (-1 when not exactly one axis)
    Vertex3Ds OpAxisDir(int axis) const; // Constraint axis direction in table space (world axis or start transform's basis column)
    bool RayPlaneHit(const ImVec2& pos, const Vertex3Ds& planePt, const Vertex3Ds& normal, Vertex3Ds& hit) const; // Mouse ray / plane intersection
