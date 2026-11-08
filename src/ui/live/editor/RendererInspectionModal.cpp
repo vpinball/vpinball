@@ -5,6 +5,7 @@
 
 #include "ui/live/EditorUI.h"
 #include "ui/live/LiveUI.h"
+#include "ViewportPane.h"
 
 // Title (used as Id) of the modal dialog
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
@@ -29,7 +30,12 @@ void RendererInspectionModal::Close()
 void RendererInspectionModal::Render()
 {
    if (!m_visible)
+   {
+      // The inspected view is driven by the user camera while this dialog is open: release the
+      // override when it is not, so the primary view goes back to the table camera
+      m_editor.m_renderer->GetPrimaryView()->m_customViewProj = false;
       return;
+   }
 
    // FIXME m_editor.m_renderer->DisableStaticPrePass(false);
    // Keep the active camera mode so the view can be moved freely while inspecting
@@ -96,11 +102,63 @@ void RendererInspectionModal::Render()
    }
    ImGui::End();
 
+   // The inspected view is driven by the editor camera of the target viewport (the user camera):
+   // the usual viewport moves apply over the window, except while over this dialog
+   ViewportPane *const vp = m_editor.GetTargetViewport();
+   if (vp != nullptr && vp->m_cameraValid)
+   {
+      const ImGuiIO &io = ImGui::GetIO();
+      if (!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+      {
+         if (ImGui::IsMouseDown(ImGuiMouseButton_Middle) && !io.KeyShift)
+            vp->OrbitCamera(io.MouseDelta.x, io.MouseDelta.y);
+         else if (ImGui::IsMouseDown(ImGuiMouseButton_Middle) && io.KeyShift)
+         {
+            // Pan so that the point under the cursor follows it (same math as the viewports)
+            Matrix3D viewInverse(vp->m_camView);
+            viewInverse.Invert();
+            const vec3 up = viewInverse.GetOrthoNormalUp(), dir = viewInverse.GetOrthoNormalDir(), pos = viewInverse.GetOrthoNormalPos(), right = viewInverse.GetOrthoNormalRight();
+            const vec3 camTarget = pos - dir * vp->m_camDistance;
+            const float halfH = vp->m_perspectiveCam ? vp->m_camDistance * tanf(0.5f * ANGTORAD(m_editor.m_navFovY)) : vp->m_camDistance;
+            const ImVec2 drag = io.MouseDelta;
+            const vec3 offset = right * (drag.x * 2.f * halfH / io.DisplaySize.y) + up * (-drag.y * 2.f * halfH / io.DisplaySize.y);
+            vp->m_camView = Matrix3D::MatrixLookAtRH(pos + offset, camTarget + offset, up);
+         }
+         if (io.MouseWheel != 0.f)
+         {
+            // Zoom about the orbit pivot (same math as the viewports)
+            Matrix3D viewInverse(vp->m_camView);
+            viewInverse.Invert();
+            const vec3 up = viewInverse.GetOrthoNormalUp(), dir = viewInverse.GetOrthoNormalDir(), pos = viewInverse.GetOrthoNormalPos();
+            vec3 pivot = pos - dir * vp->m_camDistance;
+            vp->GetNavPivot(pivot);
+            const float zoomFactor = powf(1.1f, (m_editor.m_navInvertZoom ? 1.f : -1.f) * io.MouseWheel);
+            vp->m_camDistance *= zoomFactor;
+            const vec3 newEye = pivot + (pos - pivot) * zoomFactor;
+            vp->m_camView = Matrix3D::MatrixLookAtRH(newEye, newEye - dir * vp->m_camDistance, up);
+         }
+      }
+      // The inspected render is driven by this camera (SetViewProj survives the per frame layout reset)
+      const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
+      const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+      const float aspect = io.DisplaySize.x / io.DisplaySize.y;
+      Matrix3D proj;
+      if (vp->m_perspectiveCam)
+         proj = Matrix3D::MatrixPerspectiveFovRH(m_editor.m_navFovY, aspect, clamp(vp->m_camDistance * 0.05f, 5.f, 250.f), 50000.f);
+      else
+      {
+         const float halfW = vp->m_camDistance * aspect, halfH = vp->m_camDistance;
+         proj = Matrix3D::MatrixOrthoOffCenterRH(-halfW, halfW, -halfH, halfH, 0.5f, -50000.f);
+      }
+      m_editor.m_renderer->GetPrimaryView()->SetViewProj(RH2LH * vp->m_camView * YAxis, YAxis * proj);
+   }
+
    // Restore default rendering when the modal is closed (leaving the render pass override active would stick into gameplay)
    if (!m_visible)
    {
       m_passSelection = IF_FPS;
       m_editor.m_player->m_infoMode = IF_FPS;
+      m_editor.m_renderer->GetPrimaryView()->m_customViewProj = false;
    }
 }
 

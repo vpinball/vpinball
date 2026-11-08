@@ -77,6 +77,7 @@ public:
    void FrameBounds(const FRect3D& bounds); // Shared bounds fit of FrameSelection and FrameAll
    bool GetNavPivot(vec3& target) const; // Selection center when 'orbit around selection' is on and something is selected
    bool PickDepthPoint(const ImVec2& mousePos, vec3& point); // 3D point under the cursor (front-most hit, else the playfield plane)
+   void OrbitCamera(float dx, float dy); // Orbit the pane camera around its target (MMB & view gizmo & renderer inspection)
    void SetFov(float fovY); // Change the vertical FOV keeping the framing (Editor_NavFovY is updated)
 
    // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
@@ -206,7 +207,6 @@ private:
    vec3 m_viewAnimDir, m_viewAnimUp;
    PredefinedView m_viewAnimTarget = PredefinedView::None;
    void RenderViewGizmo(ImDrawList* drawList); // Draw and input, called from RenderUI (EditorCam only)
-   void OrbitCamera(float dx, float dy); // Orbit the pane camera around its target (MMB & view gizmo)
    void DragCamera(ImVec2 drag, bool pan);
    void ZoomCamera(float factor);
    void TwistCamera(float degrees);
