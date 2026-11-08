@@ -603,14 +603,14 @@ void LiveUI::RenderUI()
       if ((numVertices != 0) && (numIndices != 0))
       {
          if ((m_meshBuffers[n] == nullptr) || (m_meshBuffers[n]->m_ib->m_count < numIndices) || (m_meshBuffers[n]->m_vb->m_count < numVertices))
-         {
-            auto ib = std::make_shared<IndexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_ib->m_count : 0, numIndices), true, IndexBuffer::Format::FMT_INDEX32);
-            auto vb = std::make_shared<VertexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_vb->m_count : 0, numVertices), nullptr, true);
+         { // Grow at 1.5x the needed size to amortize reallocation when the UI keeps growing
+            auto ib = std::make_shared<IndexBuffer>(m_rd, numIndices + (numIndices >> 1), true, IndexBuffer::Format::FMT_INDEX32);
+            auto vb = std::make_shared<VertexBuffer>(m_rd, numVertices + (numVertices >> 1), nullptr, true);
             m_meshBuffers[n] = std::make_shared<MeshBuffer>(std::format("ImGui.{}", n), vb, ib, false);
          }
 
          Vertex3D_NoTex2 *vb;
-         m_meshBuffers[n]->m_vb->Lock(vb);
+         m_meshBuffers[n]->m_vb->Lock(vb, 0, numVertices * sizeof(Vertex3D_NoTex2));
          for (unsigned int i = 0; i < numVertices; i++)
          {
             const uint32_t rgba = cmd_list->VtxBuffer[i].col;
@@ -626,7 +626,7 @@ void LiveUI::RenderUI()
          m_meshBuffers[n]->m_vb->Unlock();
 
          uint32_t *ib;
-         m_meshBuffers[n]->m_ib->Lock(ib);
+         m_meshBuffers[n]->m_ib->Lock(ib, 0, numIndices * sizeof(ImDrawIdx));
          memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
          m_meshBuffers[n]->m_ib->Unlock();
       }
