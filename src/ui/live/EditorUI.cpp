@@ -1221,16 +1221,8 @@ bool EditorUI::IsEditablePickable(const IEditable *editable) const
    // In desktop backdrop mode, only backdrop parts can be picked, and conversely in the other view modes
    if (editable->m_desktopBackdrop != IsBackdropEditMode())
       return false;
-   const PartGroup *parent = editable->GetPartGroup();
-   bool visible = editable->IsUIVisible(false);
-   while (parent && visible)
-   {
-      if ((parent->GetPlayerModeVisibilityMask() & m_renderer->GetPlayerModeVisibilityMask()) == 0)
-         visible = false;
-      visible &= parent->IsUIVisible(false);
-      parent = parent->GetPartGroup();
-   }
-   if (!visible)
+   // The player mode visibility mask does not apply in the editor: UI visibility (including parent groups) decides
+   if (!editable->IsUIVisible(true))
       return false;
    const auto type = editable->GetItemType();
    if (!HasFlag(m_selectionFilter, SelectionFilter::Playfield) && type == ItemTypeEnum::eItemPrimitive && static_cast<const Primitive *>(editable)->IsPlayfield())
