@@ -2,7 +2,10 @@
 
 #include "PartGroupUIPart.h"
 
+#include "core/player.h"
 #include "math/matrix.h"
+#include "ui/live/EditorUI.h"
+#include "ui/live/LiveUI.h"
 
 namespace VPX::EditorUI
 {
@@ -87,7 +90,7 @@ void PartGroupUIPart::UpdatePropertyPane(PropertyPane& props)
       props.Combo<PartGroup>(
          m_part, "Space Reference"s, vector<string> { "Playfield"s, "Cabinet"s, "Cabinet Feet"s, "Room"s, "Inherit"s }, //
          [](const PartGroup* partGroup) { return static_cast<int>(partGroup->m_d.m_spaceReference); }, //
-         [](PartGroup* partGroup, int v) { partGroup->m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(v); },
+         [](PartGroup* partGroup, int v) { g_pplayer->m_liveUI->m_editorUI.m_layerSpaceChangeOp.Request(partGroup, static_cast<PartGroupData::SpaceReference>(v)); },
          "Space in which this group's transform is expressed (playfield, cabinet, room, or inherited from the parent group)");
       props.EndSection();
    }
