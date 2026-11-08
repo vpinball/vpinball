@@ -634,15 +634,17 @@ void EditorUI::RenderUI()
    const ImGuiIO &io = ImGui::GetIO();
    ImGuizmo::BeginFrame();
 
-   // In desktop backdrop mode, only backdrop parts can be selected and edited, and conversely
+   // The selection may not mix parts of the desktop backdrop with parts of the 3D scene: it keeps
+   // the domain of its first part (selection entry points already filter, this is the last resort)
+   if (!m_multiSel.empty())
    {
-      const bool backdropMode = IsBackdropEditMode();
-      std::erase_if(m_multiSel, [backdropMode](const std::shared_ptr<EditorUIPart> &part) { return part->GetEditable()->m_desktopBackdrop != backdropMode; });
-      if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
-         m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
-      if (OutlinerPanel::m_anchor && OutlinerPanel::m_anchor->GetEditable()->GetItemType() != eItemPartGroup && OutlinerPanel::m_anchor->GetEditable()->m_desktopBackdrop != backdropMode)
-         OutlinerPanel::m_anchor.reset();
+      const bool domain = m_multiSel.front()->GetEditable()->m_desktopBackdrop;
+      std::erase_if(m_multiSel, [domain](const std::shared_ptr<EditorUIPart> &part) { return part->GetEditable()->m_desktopBackdrop != domain; });
    }
+   if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
+      m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+   if (OutlinerPanel::m_anchor && OutlinerPanel::m_anchor->GetEditable()->GetItemType() != eItemPartGroup && OutlinerPanel::m_anchor->GetEditable()->m_desktopBackdrop != SelectionDomain())
+      OutlinerPanel::m_anchor.reset();
 
    // Add part mode housekeeping: it is only available in edit mode, when the table is not locked, and
    // while not in drag point edit mode, so cancel it if one of these conditions is no longer met
@@ -1107,6 +1109,12 @@ void EditorUI::RestoreUndoSelection(const UndoSelectionState &state)
    for (const auto &part : state.multiSel)
       if (std::shared_ptr<EditorUIPart> resolved = resolve(part))
          m_multiSel.push_back(resolved);
+   // The selection may not mix desktop backdrop and 3D scene parts (defensive: snapshots are uniform already)
+   if (!m_multiSel.empty())
+   {
+      const bool domain = m_multiSel.front()->GetEditable()->m_desktopBackdrop;
+      std::erase_if(m_multiSel, [domain](const auto &part) { return part->GetEditable()->m_desktopBackdrop != domain; });
+   }
    // Drop resources that no longer exist in the table
    std::erase_if(m_multiSelImages, [this](const Texture *image) { return std::ranges::find(m_table->m_vimage, image) == m_table->m_vimage.end(); });
    std::erase_if(m_multiSelSounds, [this](const VPX::Sound *sound) { return std::ranges::find(m_table->m_vsound, sound) == m_table->m_vsound.end(); });
@@ -1159,6 +1167,8 @@ void EditorUI::TogglePartSelection(const std::shared_ptr<EditorUIPart> &part)
    const auto it = std::ranges::find(m_multiSel, part);
    if (it == m_multiSel.end())
    {
+      if (!IsPartInSelectionDomain(part->GetEditable()))
+         return; // The selection may not mix desktop backdrop and 3D scene parts
       m_multiSel.push_back(part);
       m_selection = Selection(part);
    }
@@ -1180,7 +1190,7 @@ void EditorUI::SelectPartsInGroup(const PartGroup *group)
    for (const auto &uiPart : m_editables)
    {
       IEditable *const editable = uiPart->GetEditable();
-      if (editable->GetItemType() != eItemPartGroup && editable->IsChild(group))
+      if (editable->GetItemType() != eItemPartGroup && editable->IsChild(group) && IsPartInSelectionDomain(editable))
          m_multiSel.push_back(uiPart);
    }
    m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
@@ -1216,10 +1226,38 @@ void EditorUI::MoveSelectionToPartGroup(PartGroup *group)
    UpdateEditableList(); // Refresh the outliner paths and ordering
 }
 
-bool EditorUI::IsEditablePickable(const IEditable *editable) const
+bool EditorUI::IsPartInSelectionDomain(const IEditable *editable) const { return editable->m_desktopBackdrop == SelectionDomain(); }
+
+PartGroupData::SpaceReference EditorUI::GetPartSpace(const IEditable *editable)
 {
-   // In desktop backdrop mode, only backdrop parts can be picked, and conversely in the other view modes
-   if (editable->m_desktopBackdrop != IsBackdropEditMode())
+   if (editable->GetItemType() == eItemPartGroup)
+      return static_cast<const PartGroup *>(editable)->GetReferenceSpace();
+   const PartGroup *const group = editable->GetPartGroup();
+   return group != nullptr ? group->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+}
+
+std::optional<PartGroupData::SpaceReference> EditorUI::GetSelectionSpace() const
+{
+   // The selection defines a reference space only when all of its parts share the same one, and it
+   // has none when a desktop backdrop part is involved (they live on their own 2D plane)
+   std::optional<PartGroupData::SpaceReference> space;
+   for (const auto &part : m_multiSel)
+   {
+      IEditable *const editable = part->GetEditable();
+      if (editable == nullptr || editable->m_desktopBackdrop)
+         return std::nullopt;
+      const PartGroupData::SpaceReference partSpace = GetPartSpace(editable);
+      if (space.has_value() && *space != partSpace)
+         return std::nullopt;
+      space = partSpace;
+   }
+   return space;
+}
+
+bool EditorUI::IsEditablePickable(const IEditable *editable, const bool backdropDomain) const
+{
+   // Picking is per view domain: a view only picks the parts it renders (3D scene or desktop backdrop)
+   if (editable->m_desktopBackdrop != backdropDomain)
       return false;
    // The player mode visibility mask does not apply in the editor: UI visibility (including parent groups) decides
    if (!editable->IsUIVisible(true))
@@ -1243,7 +1281,7 @@ void EditorUI::SelectAllParts()
    for (const auto &uiPart : m_editables)
    {
       IEditable *const editable = uiPart->GetEditable();
-      if (editable != nullptr && editable->GetItemType() != eItemPartGroup && IsEditablePickable(editable))
+      if (editable != nullptr && editable->GetItemType() != eItemPartGroup && IsEditablePickable(editable, IsBackdropEditMode()))
          m_multiSel.push_back(uiPart);
    }
    m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());

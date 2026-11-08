@@ -12,9 +12,14 @@
 #include "LiveRenderContext.h"
 #include "fonts/IconsForkAwesome.h"
 #include "physics/PhysicsEngine.h"
+#include "renderer/IndexBuffer.h"
+#include "renderer/MeshBuffer.h"
+#include "renderer/RenderCommand.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Renderer.h"
+#include "renderer/RenderPass.h"
 #include "renderer/RenderView.h"
+#include "renderer/VertexBuffer.h"
 #include "renderer/Window.h"
 #include "imgui/imgui_internal.h"
 #include "ui/live/EditorUI.h"
@@ -820,6 +825,7 @@ nlohmann::json ViewportPane::SaveSetup() const
    j["shade"] = static_cast<int>(m_shadeMode);
    j["predef"] = static_cast<int>(m_predefinedView);
    j["orbitLock"] = m_orbitLock;
+   j["spaceAxes"] = m_showSpaceAxes;
    j["camDist"] = m_camDistance;
    j["camAspect"] = m_camAspect;
    j["camValid"] = m_cameraValid;
@@ -880,6 +886,7 @@ void ViewportPane::LoadSetup(const nlohmann::json& j)
    m_camProj = proj;
    m_perspectiveCam = j.value("persp", true);
    m_orbitLock = j.value("orbitLock", false);
+   m_showSpaceAxes = j.value("spaceAxes", false);
    m_cameraValid = j.value("camValid", true);
    m_viewAnimFrames = 0;
 }
@@ -1044,6 +1051,21 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          ImGui::SameLine();
       }
 
+      if (m_viewType == ViewMode::EditorCam)
+      {
+         // Reference space axes toggle (the axes reference of the space shared by the selection)
+         const bool pushed = m_showSpaceAxes;
+         if (m_showSpaceAxes)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+         if (IconButtonInk(ICON_LC_BOX, "##SpaceAxes"))
+            m_showSpaceAxes = !m_showSpaceAxes;
+         if (pushed)
+            ImGui::PopStyleColor();
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Show the selection's reference space axes");
+         ImGui::SameLine();
+      }
+
       // Right side of the header: viewport overlays, selection filter and camera orbit lock
       const ImGuiStyle& style = ImGui::GetStyle();
       const float rightW = //
@@ -1194,7 +1216,7 @@ void ViewportPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB, 
    for (const auto& uiPart : m_editor.m_editables)
    {
       IEditable* const editable = uiPart->GetEditable();
-      if (editable == nullptr || editable->GetItemType() == eItemPartGroup || !m_editor.IsEditablePickable(editable))
+      if (editable == nullptr || editable->GetItemType() == eItemPartGroup || !m_editor.IsEditablePickable(editable, m_viewType == ViewMode::DesktopBackdrop))
          continue;
       Matrix3D transform;
       if (uiPart->GetTransform(transform) == EditorUIPart::TM_None)
@@ -1305,6 +1327,16 @@ void ViewportPane::RenderStatusOverlay()
    }
    case ViewMode::DesktopBackdrop: ImGui::TextUnformatted("Desktop Backdrop"); break;
    }
+   if (m_viewType == ViewMode::EditorCam)
+   {
+      // Reference space shared by the selection (undefined when it mixes spaces or holds backdrop parts)
+      if (const std::optional<PartGroupData::SpaceReference> space = m_editor.GetSelectionSpace(); space.has_value())
+      {
+         const char* const spaceNames[] = { "Playfield", "Cabinet", "Cabinet Feet", "Room" };
+         const int spaceIndex = clamp(static_cast<int>(*space), 0, 3);
+         ImGui::Text("Space: %s", spaceNames[spaceIndex]);
+      }
+   }
    if (m_op.op != ImGuizmo::OPERATION(0))
    {
       // Modal transform op line: name, constraint axes (and local space) and the live delta
@@ -1392,6 +1424,73 @@ void ViewportPane::Render3D()
    LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_viewType == ViewMode::PreviewCam ? Renderer::ShadeMode::Default : m_shadeMode,
       (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
    const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
+
+   // Reference space axes: the origin axes (and playfield/glass bounds) of the space shared by the selection
+   const std::optional<PartGroupData::SpaceReference> space = (m_viewType == ViewMode::EditorCam && m_showSpaceAxes) ? m_editor.GetSelectionSpace() : std::nullopt;
+   if (space.has_value() && EnsureSpaceAxesMesh(*space))
+   {
+      RenderDevice* const rd = m_editor.m_renderer->m_renderDevice;
+      // Force the space reference update: m_mvpSpaceReference may already hold this space (set by a
+      // part rendered in it just before), which would leave the view AND the model transform stale
+      m_view->SetSpaceReference(*space, true);
+      rd->ResetRenderState();
+      // Non playfield space axes lay under the table (the space transform lowers them): they must be
+      // drawn without depth test to stay visible, as infinite lines through the whole viewport
+      const bool depthTest = *space == PartGroupData::SpaceReference::SR_PLAYFIELD;
+      rd->SetRenderState(RenderState::ZENABLE, depthTest ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+      rd->SetRenderState(RenderState::ZWRITEENABLE, depthTest ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+      rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+      rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      rd->EnableAlphaBlend(false); // ALPHABLENDENABLE alone leaves the blend factors at their defaults (zero src: nothing written)
+      rd->m_basicShader->SetTechnique(ShaderTechnique::unshaded_without_texture);
+      // Transparent like the selection wireframes so that the segments render in submission order
+      const size_t cmdBase = rd->GetCurrentPass()->m_commands.size();
+      static const vec4 segmentColors[7] = {
+         vec4(0.45f, 0.45f, 0.45f, 0.4f), // Playfield outline
+         vec4(0.9f, 0.25f, 0.25f, 1.f), // X axis (positive)
+         vec4(0.25f, 0.8f, 0.25f, 1.f), // Y axis (positive)
+         vec4(0.45f, 0.45f, 0.45f, 0.4f), // Glass box
+         vec4(0.3f, 0.5f, 1.f, 1.f), // Z axis
+         vec4(0.5f, 0.15f, 0.15f, 1.f), // X axis (negative)
+         vec4(0.15f, 0.45f, 0.15f, 1.f) // Y axis (negative)
+      };
+      // In the top orthographic view, the glass box and the Z axis would only clutter the view: skip
+      // them (the same "Top Orthographic" test as the status overlay's camera info line)
+      int segments[7];
+      int segmentCount;
+      if (*space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+      {
+         const bool fromAbove = !m_perspectiveCam && m_predefinedView == PredefinedView::Top;
+         segmentCount = fromAbove ? 3 : 5;
+         segments[0] = 0;
+         segments[1] = 1;
+         segments[2] = 2;
+         segments[3] = 3;
+         segments[4] = 4;
+      }
+      else
+      {
+         segmentCount = 4;
+         segments[0] = 1;
+         segments[1] = 2;
+         segments[2] = 5;
+         segments[3] = 6;
+      }
+      for (int i = 0; i < segmentCount; ++i)
+      {
+         const int seg = segments[i];
+         if (m_spaceAxesRanges[seg * 2 + 1] == 0)
+            continue;
+         rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, &segmentColors[seg]);
+         rd->m_basicShader->SetVector(ShaderUniform::cBase_Alpha, &segmentColors[seg]);
+         rd->DrawMesh(rd->m_basicShader, true, m_spaceAxesCenter, 0.f, m_spaceAxesMesh, RenderDevice::LINELIST, m_spaceAxesRanges[seg * 2], m_spaceAxesRanges[seg * 2 + 1]);
+      }
+      for (size_t i = cmdBase; i < rd->GetCurrentPass()->m_commands.size(); i++)
+         rd->GetCurrentPass()->m_commands[i]->SetTransparent(true);
+      rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+      m_view->SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, true);
+   }
+
    for (const auto& uiPart : m_editor.m_editables)
    {
       if (uiPart->GetEditable()->m_desktopBackdrop != backdrop)
@@ -1418,6 +1517,112 @@ void ViewportPane::Render3D()
    }
 }
 
+bool ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space)
+{
+   PinTable* const table = m_editor.m_table;
+   // The mesh is made of 7 segments (index ranges in m_spaceAxesRanges): the playfield outline, the
+   // X/Y/Z axes, the glass box, and the negative halves of the X/Y axes. The playfield space gets the
+   // outline, the X/Y axes bounded to it, the glass box and the Z axis; the other spaces get 'infinite'
+   // X/Y axes split at the origin so the negative side can be dimmed. The glass box and Z axis are drawn
+   // or not depending on the camera (see Render3D), they do not take part in the rebuild decision.
+   float bounds[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+   if (space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+   {
+      bounds[0] = table->m_left;
+      bounds[1] = table->m_top;
+      bounds[2] = table->m_right;
+      bounds[3] = table->m_bottom;
+      bounds[4] = table->m_glassBottomHeight;
+      bounds[5] = table->m_glassTopHeight;
+   }
+   if (m_spaceAxesMesh != nullptr && m_spaceAxesSpace == space && memcmp(m_spaceAxesBounds, bounds, sizeof(bounds)) == 0)
+      return true;
+
+   vector<Vertex3D_NoTex2> verts;
+   vector<unsigned int> indices;
+   const auto addLine = [&verts, &indices](const float x0, const float y0, const float z0, const float x1, const float y1, const float z1)
+   {
+      Vertex3D_NoTex2 v0 {}, v1 {};
+      v0.x = x0;
+      v0.y = y0;
+      v0.z = z0;
+      v0.nz = 1.f;
+      v1.x = x1;
+      v1.y = y1;
+      v1.z = z1;
+      v1.nz = 1.f;
+      indices.push_back((unsigned int)verts.size());
+      indices.push_back((unsigned int)verts.size() + 1);
+      verts.push_back(v0);
+      verts.push_back(v1);
+   };
+   const auto endSegment = [this, &indices](const int seg, const uint32_t start)
+   {
+      m_spaceAxesRanges[seg * 2] = start;
+      m_spaceAxesRanges[seg * 2 + 1] = (uint32_t)indices.size() - start;
+   };
+   if (space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+   {
+      const float l = bounds[0], t = bounds[1], r = bounds[2], b = bounds[3], gb = bounds[4], gt = bounds[5];
+      m_spaceAxesCenter = Vertex3Ds((l + r) * 0.5f, (t + b) * 0.5f, 0.f);
+      uint32_t start = (uint32_t)indices.size();
+      addLine(l, t, 0.f, r, t, 0.f);
+      addLine(r, t, 0.f, r, b, 0.f);
+      addLine(r, b, 0.f, l, b, 0.f);
+      addLine(l, b, 0.f, l, t, 0.f);
+      endSegment(0, start);
+      start = (uint32_t)indices.size();
+      addLine(l, 0.f, 0.f, r, 0.f, 0.f);
+      endSegment(1, start);
+      start = (uint32_t)indices.size();
+      addLine(0.f, t, 0.f, 0.f, b, 0.f);
+      endSegment(2, start);
+      start = (uint32_t)indices.size();
+      addLine(l, t, gt, r, t, gt);
+      addLine(r, t, gt, r, b, gb);
+      addLine(r, b, gb, l, b, gb);
+      addLine(l, b, gb, l, t, gt);
+      addLine(l, t, 0.f, l, t, gt);
+      addLine(r, t, 0.f, r, t, gt);
+      addLine(r, b, 0.f, r, b, gb);
+      addLine(l, b, 0.f, l, b, gb);
+      endSegment(3, start);
+      start = (uint32_t)indices.size();
+      addLine(0.f, 0.f, 0.f, 0.f, 0.f, max(gt, gb));
+      endSegment(4, start);
+      endSegment(5, (uint32_t)indices.size());
+      endSegment(6, (uint32_t)indices.size());
+   }
+   else
+   {
+      // The axis half length is way beyond the far plane so the axes span the whole viewport
+      constexpr float inf = 10000.f;
+      m_spaceAxesCenter = Vertex3Ds(0.f, 0.f, 0.f);
+      endSegment(0, (uint32_t)indices.size());
+      uint32_t start = (uint32_t)indices.size();
+      addLine(0.f, 0.f, 0.f, inf, 0.f, 0.f);
+      endSegment(1, start);
+      start = (uint32_t)indices.size();
+      addLine(0.f, 0.f, 0.f, 0.f, inf, 0.f);
+      endSegment(2, start);
+      endSegment(3, (uint32_t)indices.size());
+      endSegment(4, (uint32_t)indices.size());
+      start = (uint32_t)indices.size();
+      addLine(-inf, 0.f, 0.f, 0.f, 0.f, 0.f);
+      endSegment(5, start);
+      start = (uint32_t)indices.size();
+      addLine(0.f, -inf, 0.f, 0.f, 0.f, 0.f);
+      endSegment(6, start);
+   }
+   RenderDevice* const rd = m_editor.m_renderer->m_renderDevice;
+   std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(rd, (unsigned int)verts.size(), (const float*)verts.data(), false);
+   std::shared_ptr<IndexBuffer> ib = std::make_shared<IndexBuffer>(rd, indices);
+   m_spaceAxesMesh = std::make_shared<MeshBuffer>("SpaceAxes"s, vb, ib, true);
+   m_spaceAxesSpace = space;
+   memcpy(m_spaceAxesBounds, bounds, sizeof(bounds));
+   return true;
+}
+
 void ViewportPane::RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& vhoHit)
 {
    // Use the inverse of this pane's 3D transform to determine where in 3D space the clicked screen
@@ -1437,7 +1642,7 @@ void ViewportPane::RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& v
    for (const auto& hr : vhoUnfilteredHit)
    {
       const auto editable = hr.m_obj->m_editable;
-      if (editable && !m_editor.IsEditablePickable(editable))
+      if (editable && !m_editor.IsEditablePickable(editable, m_viewType == ViewMode::DesktopBackdrop))
          continue;
       vhoHit.push_back(hr);
    }

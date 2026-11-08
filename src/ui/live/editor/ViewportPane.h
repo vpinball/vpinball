@@ -9,6 +9,7 @@
 #include "renderer/Renderer.h" // Renderer::ShadeMode
 
 class DragPoint;
+class MeshBuffer;
 class RenderView;
 struct HitTestResult;
 struct ImDrawList;
@@ -139,6 +140,7 @@ public:
    // (m_camMode removed: m_viewType is the mode, fixed at creation)
    bool m_perspectiveCam = true;
    Renderer::ShadeMode m_shadeMode = Renderer::ShadeMode::Default;
+   bool m_showSpaceAxes = false; // Show the selection's reference space axes (EditorCam panes, persisted in the pane setup)
    float m_camAspect = 1.f; // Aspect ratio the stored projection was authored for, re-fitted on pane resize
    PredefinedView m_predefinedView = PredefinedView::None;
    bool m_orbitLock = false;
@@ -231,6 +233,14 @@ private:
    void ZoomCamera(float factor);
    void TwistCamera(float degrees);
    static void GetViewOrientation(PredefinedView view, vec3& dir, vec3& up); // Orbit dir/up of a predefined view
+
+   // Reference space axes (an axes/plane reference of the space shared by the selection)
+   bool EnsureSpaceAxesMesh(PartGroupData::SpaceReference space); // (Re)build the reference mesh when the space or the table bounds changed
+   std::shared_ptr<MeshBuffer> m_spaceAxesMesh;
+   PartGroupData::SpaceReference m_spaceAxesSpace = PartGroupData::SpaceReference::SR_PLAYFIELD;
+   float m_spaceAxesBounds[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f }; // Playfield bounds the mesh was built for (left, top, right, bottom, glass bottom/top)
+   uint32_t m_spaceAxesRanges[14] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // Index ranges of the 7 segments (square, X, Y, glass, Z, -X, -Y)
+   Vertex3Ds m_spaceAxesCenter { 0.f, 0.f, 0.f };
 
    // Box selection drag state (a left button drag that hit no part nor drag point)
    bool m_boxSelectActive = false;
