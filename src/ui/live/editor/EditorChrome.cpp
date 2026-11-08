@@ -442,6 +442,9 @@ void EditorChrome::RenderMenuBar()
             }
             ImGui::EndMenu();
          }
+         ImGui::Separator();
+         if (ImGui::MenuItem(ICON_LC_EYE " Inspect Renderer..."))
+            editor.m_inspectionModal.Show();
          ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("View"))
@@ -503,13 +506,6 @@ void EditorChrome::RenderMenuBar()
             editor.m_player->m_step = true;
          ImGui::EndMenu();
       }
-      else if (!editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))
-      {
-         if (ImGui::MenuItem(ICON_LC_EYE " Renderer Inspection"))
-            editor.m_inspectionModal.Show();
-         ImGui::EndMenu();
-      }
-
       ImGui::Separator();
 
       // Layout selection as buttons after the menus (Blender workspaces)
