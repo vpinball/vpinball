@@ -1389,13 +1389,14 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
    const bool isWireframe = m_activeView->m_shadeMode != ShadeMode::Default && (m_render_mask & (UI_FILL | UI_EDGES | LIGHT_BUFFER | REFLECTION_PASS)) == 0;
    if (editable->GetIRenderable() == nullptr // Not renderable
       || (editable->m_desktopBackdrop && isNoBackdrop) // Don't render backdrop items in reflections or VR & cabinet modes
-      || (editable->GetPartGroup() != nullptr && ((editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_activeView->m_visibilityMask) == 0))) // Apply player mode visibility mask
+      || (!m_activeView->m_editorView // Apply player mode visibility mask (superseded by the editor's UI visibility in editor views)
+         && editable->GetPartGroup() != nullptr && (editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_activeView->m_visibilityMask) == 0))
       return;
 
    const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
    SetSpaceReference(spaceReference, false);
 
-   // Parts flagged as "Show in Editor" are rendered shaded, even when the part group visibility mask would hide them
+   // Parts flagged as "Show in Editor" are rendered shaded, even in wireframe shade modes
    if (!isWireframe || editable->IsShownInEditor())
    {
       editable->GetIRenderable()->Render(m_render_mask);
