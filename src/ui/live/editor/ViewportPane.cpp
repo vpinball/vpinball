@@ -692,7 +692,7 @@ void ViewportPane::DragCamera(ImVec2 drag, const bool pan)
       const vec3 pos = viewInverse.GetOrthoNormalPos();
       const vec3 right = viewInverse.GetOrthoNormalRight();
       vec3 camTarget = pos - dir * m_camDistance;
-      const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(editorCamFovY)) : m_camDistance;
+      const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(m_editor.m_navFovY)) : m_camDistance;
       const float viewH = m_imageRect.Height() > 0.f ? m_imageRect.Height() : io.DisplaySize.y;
       drag.x *= 2.f * halfH / viewH;
       drag.y *= 2.f * halfH / viewH;
