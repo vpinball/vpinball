@@ -11,9 +11,10 @@
 #include "core/player.h"
 #include "ui/EditorClipboard.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 
-#include "imgui/imgui_internal.h" // ImTextCharFromUtf8 (status hint key chips ink bounds)
+#include "imgui/imgui_internal.h" // ImGui::FindWindowByName (tool shelf / adjust panel overlap checks)
 #include "parts/light.h" // Light States submenu (light state update)
 
 namespace
@@ -768,35 +769,17 @@ void EditorChrome::RenderStatusBar(const bool showFullUI)
 
    // Hints from the left, as many as fit before the report
    const float chipPadX = 4.f * dpi, chipPadY = 1.f * dpi, gap = 4.f * dpi, hintGap = 12.f * dpi;
-   ImFontBaked *const baked = ImGui::GetFontBaked();
 
    // Key chips are sized on the glyphs' ink bounds: CalcTextSize only covers advances and the
    // line height, but the merged icon glyphs are drawn a bit larger than the text and would
    // overflow the chip. One height for the whole row (expands when a key contains icons).
-   const auto keyInkBounds = [baked, textH](const string &key, float &x0, float &x1, float &y0, float &y1)
+   const auto keyInkBounds = [textH](const string &key, float &x0, float &x1, float &y0, float &y1)
    {
-      x0 = y0 = 0.f;
-      x1 = y1 = 0.f;
-      float penX = 0.f;
-      const char *const keyEnd = key.c_str() + key.size();
-      for (const char *s = key.c_str(); s < keyEnd;)
-      {
-         unsigned int c = 0;
-         s += ImTextCharFromUtf8(&c, s, keyEnd);
-         const ImFontGlyph *const glyph = c != 0 ? baked->FindGlyph(static_cast<ImWchar>(c)) : nullptr;
-         if (glyph == nullptr)
-            continue;
-         if (glyph->Visible)
-         {
-            x0 = ImMin(x0, penX + glyph->X0);
-            x1 = ImMax(x1, penX + glyph->X1);
-            y0 = ImMin(y0, glyph->Y0);
-            y1 = ImMax(y1, glyph->Y1);
-         }
-         penX += glyph->AdvanceX;
-      }
-      x1 = ImMax(x1, penX); // union with the layout box
-      y1 = ImMax(y1, textH);
+      const ImVec4 ink = TextInkBounds(key.c_str());
+      x0 = ink.x;
+      x1 = ImMax(ink.z, ImGui::CalcTextSize(key.c_str()).x); // union with the layout box
+      y0 = ink.y;
+      y1 = ImMax(ink.w, textH);
    };
    float chipTop = 0.f, chipBottom = textH;
    for (const StatusHint &hint : hints)

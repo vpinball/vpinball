@@ -297,6 +297,7 @@ set(VPX_SOURCES
    src/ui/live/EditorUI.h
    src/ui/live/FileDialog.cpp
    src/ui/live/FileDialog.h
+   src/ui/live/ImGuiHelpers.h
    src/ui/live/NotificationOverlay.cpp
    src/ui/live/NotificationOverlay.h
    src/ui/live/PerfUI.cpp

@@ -18,6 +18,7 @@
 #include "renderer/Window.h"
 #include "imgui/imgui_internal.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 
 namespace VPX::EditorUI
@@ -922,7 +923,8 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    ImDrawList* const drawList = ImGui::GetWindowDrawList();
    drawList->ChannelsSplit(2);
    drawList->ChannelsSetCurrent(1);
-   ImGui::SetCursorPos(ImVec2(pad, 3.f * pad)); // Slightly taller top padding so the buttons do not overlap the pane border
+   ImGui::SetCursorPos(ImVec2(pad, pad));
+   ImGui::BeginGroup(); // Item rect bounds all the header controls: the bar height is the tallest one's bottom
 
    editor.RenderAreaTypeButton(leafId);
    if (m_viewType == ViewMode::PreviewCam)
@@ -954,7 +956,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    else // A render preview has no toolbar (no selection, shading, camera edits, ...)
    {
       ImGui::SameLine();
-      if (ImGui::Button(perspective ? ICON_LC_VIDEO "##Persp" : ICON_LC_VIDEO_OFF "##Persp"))
+      if (IconButtonInk(perspective ? ICON_LC_VIDEO : ICON_LC_VIDEO_OFF, "##Persp"))
          perspective = !perspective;
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip(perspective ? "Perspective camera" : "Orthographic camera");
@@ -975,8 +977,10 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          const bool active = (shade == mode.mode);
          if (active)
             ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-         if (ImGui::Button(mode.icon))
+         ImGui::PushID(static_cast<int>(mode.mode));
+         if (IconButtonInk(mode.icon, "##Shade"))
             shade = mode.mode;
+         ImGui::PopID();
          if (active)
             ImGui::PopStyleColor();
          if (ImGui::IsItemHovered())
@@ -995,7 +999,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::SameLine();
       if (rightX > ImGui::GetCursorPosX())
          ImGui::SetCursorPosX(rightX);
-      if (ImGui::Button(ICON_FK_STICKY_NOTE)) // Overlay options popover
+      if (IconButtonInk(ICON_FK_STICKY_NOTE, "##Overlays")) // Overlay options popover
          ImGui::OpenPopup("Overlay Popup");
       if (ImGui::BeginPopup("Overlay Popup"))
       {
@@ -1013,7 +1017,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          ImGui::EndPopup();
       }
       ImGui::SameLine();
-      if (ImGui::Button(ICON_FK_FILTER)) // Selection filter popover
+      if (IconButtonInk(ICON_FK_FILTER, "##SelFilter")) // Selection filter popover
          ImGui::OpenPopup("Selection filter Popup");
       if (ImGui::BeginPopup("Selection filter Popup"))
       {
@@ -1036,13 +1040,14 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::SameLine();
       if (orbitLock)
          ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-      if (ImGui::Button(orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK))
+      if (IconButtonInk(orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK, "##OrbitLock"))
          orbitLock = !orbitLock;
       if (orbitLock)
          ImGui::PopStyleColor();
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip("Lock camera orbit\n[Numpad /]");
    }
+   ImGui::EndGroup();
 
    const float headerBottom = ImGui::GetItemRectMax().y + pad;
    drawList->ChannelsSetCurrent(0);
