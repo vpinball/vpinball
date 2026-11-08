@@ -148,8 +148,9 @@ void RenderView::ResizeRenderTargets()
       return;
 
    // The view renders inside a normalized sub area of its output (the full window for the main player view)
-   const int outWidth = max(1, static_cast<int>(static_cast<float>(wndWidth) * (m_outputArea.z - m_outputArea.x)));
-   const int outHeight = max(1, static_cast<int>(static_cast<float>(wndHeight) * (m_outputArea.w - m_outputArea.y)));
+   const float mirrorScale = IsMirror() ? g_settingsService.GetActiveSettings().GetPlayerVR_DesktopRenderScale() : 1.f;
+   const int outWidth = max(1, static_cast<int>(static_cast<float>(wndWidth) * mirrorScale * (m_outputArea.z - m_outputArea.x)));
+   const int outHeight = max(1, static_cast<int>(static_cast<float>(wndHeight) * mirrorScale * (m_outputArea.w - m_outputArea.y)));
 
    // Keep the current supersampling factor and stereo layout
    int newRenderWidth, newRenderHeight;
@@ -1921,6 +1922,12 @@ void RenderView::Render()
    {
       RenderView* const primary = r->GetPrimaryView();
       GetOutputAreaSize(m_renderWidth, m_renderHeight);
+      if (IsMirror())
+      {
+         const float mirrorScale = g_settingsService.GetActiveSettings().GetPlayerVR_DesktopRenderScale();
+         m_renderWidth = max(1, static_cast<int>(static_cast<float>(m_renderWidth) * mirrorScale));
+         m_renderHeight = max(1, static_cast<int>(static_cast<float>(m_renderHeight) * mirrorScale));
+      }
       if (m_outputWnd != nullptr)
       {
          m_renderSourceWidth = m_outputWnd->GetPixelWidth();

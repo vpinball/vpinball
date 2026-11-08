@@ -228,6 +228,11 @@ void VRSettingsPage::BuildPage()
          RequestRebuild(); // Rebuild the page to update the eye display related options
       }));
 
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_DesktopRenderScale, 100.f, "%3.0f %%"s, //
+      [this]() { return g_settingsService.GetActiveSettings().GetPlayerVR_DesktopRenderScale(); }, //
+      [](float, float v) { g_settingsService.GetActiveSettings().SetPlayerVR_DesktopRenderScale(v, false); }));
+
    // Shrinking only applies to the desktop displays which mirror a headset eye
    if (m_player->m_renderer->m_vrDesktop >= VRDesktopMode::Left)
       AddItem(std::make_unique<InGameUIItem>( //
