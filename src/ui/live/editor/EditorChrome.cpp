@@ -13,6 +13,7 @@
 #include "ui/live/EditorUI.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
+#include "utils/bulb.h"
 
 #include "imgui/imgui_internal.h" // ImGui::FindWindowByName (tool shelf / adjust panel overlap checks)
 #include "parts/light.h" // Light States submenu (light state update)
@@ -438,6 +439,7 @@ void EditorChrome::RenderMenuBar()
                      Light *const light = static_cast<Light *>(part);
                      light->m_d.m_state = state;
                      light->m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_d.m_state;
+                     light->m_currentFilamentTemperature = bulb_emission_to_filament_temperature(state);
                      light->setInPlayState(state > 1.f ? (float)LightStateBlinking : state);
                   }
             };
