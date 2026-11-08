@@ -529,6 +529,64 @@ void ViewportPane::OrbitCamera(const float dx, const float dy)
    m_camView = Matrix3D::MatrixLookAtRH(camTarget + dir * m_camDistance, camTarget, up);
 }
 
+void ViewportPane::DragCamera(ImVec2 drag, const bool pan)
+{
+   if (m_viewType == ViewMode::PreviewCam || (drag.x == 0.f && drag.y == 0.f))
+      return;
+   const ImGuiIO& io = ImGui::GetIO();
+   if (pan)
+   {
+      // Pan so that the point under the cursor follows it (the view height at the target depends on the projection;
+      // in perspective the raw pixel drag used to be applied as VPU, ignoring the zoom)
+      Matrix3D viewInverse(m_camView);
+      viewInverse.Invert();
+      const vec3 dir = viewInverse.GetOrthoNormalDir();
+      const vec3 up = viewInverse.GetOrthoNormalUp();
+      const vec3 pos = viewInverse.GetOrthoNormalPos();
+      const vec3 right = viewInverse.GetOrthoNormalRight();
+      vec3 camTarget = pos - dir * m_camDistance;
+      const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(editorCamFovY)) : m_camDistance;
+      const float viewH = m_imageRect.Height() > 0.f ? m_imageRect.Height() : io.DisplaySize.y;
+      drag.x *= 2.f * halfH / viewH;
+      drag.y *= 2.f * halfH / viewH;
+      camTarget = camTarget - right * drag.x + up * drag.y;
+      m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
+      m_viewAnimFrames = 0;
+   }
+   else
+      OrbitCamera(drag.x, drag.y);
+}
+
+void ViewportPane::ZoomCamera(const float factor)
+{
+   Matrix3D view(m_camView);
+   view.Invert();
+   const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
+   const vec3 camTarget = pos - dir * m_camDistance;
+   m_camDistance *= factor;
+   m_camView = Matrix3D::MatrixLookAtRH(camTarget + dir * m_camDistance, camTarget, up);
+   m_viewAnimFrames = 0;
+}
+
+void ViewportPane::TwistCamera(const float degrees)
+{
+   if (m_viewType == ViewMode::PreviewCam || m_viewType == ViewMode::DesktopBackdrop || m_orbitLock)
+      return;
+   Matrix3D viewInverse(m_camView);
+   viewInverse.Invert();
+   const vec3 dir = viewInverse.GetOrthoNormalDir();
+   const vec3 up = viewInverse.GetOrthoNormalUp();
+   const vec3 camTarget = viewInverse.GetOrthoNormalPos() - dir * m_camDistance;
+   const Matrix3D rot = Matrix3D::MatrixRotate(-ANGTORAD(degrees), vec3(0.f, 0.f, 1.f));
+   vec3 newDir = rot.MultiplyVectorNoPerspective(dir);
+   vec3 newUp = rot.MultiplyVectorNoPerspective(up);
+   newDir.Normalize();
+   newUp.Normalize();
+   m_predefinedView = PredefinedView::None;
+   m_viewAnimFrames = 0;
+   m_camView = Matrix3D::MatrixLookAtRH(camTarget + newDir * m_camDistance, camTarget, newUp);
+}
+
 void ViewportPane::FrameSelection()
 {
    // Camera centered on the whole selection, adjusting the zoom so that it fills the view
@@ -1626,18 +1684,30 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    const bool viewportInput = m_flyMode || m_op.op != ImGuizmo::OPERATION(0) || m_hovered || m_active || m_viewGizmoDragging;
    if (viewportInput && m_editor.m_fileOp == nullptr)
    {
-      // Zoom in/out with mouse wheel
-      if (io.MouseWheel != 0)
+      const LiveUI& liveUI = m_editor.m_liveUI;
+      if (!liveUI.IsTrackpadScroll())
       {
-         Matrix3D view(m_camView);
-         view.Invert();
-         const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
-         const vec3 camTarget = pos - dir * m_camDistance;
-         m_camDistance *= powf(1.1f, -ImGui::GetIO().MouseWheel);
-         const vec3 newEye = camTarget + dir * m_camDistance;
-         m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, up);
-         m_viewAnimFrames = 0;
+         if (io.MouseWheel != 0.f)
+            ZoomCamera(powf(1.1f, -io.MouseWheel));
       }
+      else if (io.MouseWheel != 0.f || io.MouseWheelH != 0.f)
+      {
+         if (io.KeyCtrl)
+            ZoomCamera(powf(1.1f, io.MouseWheelH - io.MouseWheel));
+         else
+         {
+            const float scale = liveUI.IsTrackpadScrollInverted() ? 10.f : -10.f;
+            DragCamera(ImVec2(io.MouseWheelH * scale, io.MouseWheel * scale), io.KeyShift || m_viewType == ViewMode::DesktopBackdrop || m_orbitLock);
+         }
+      }
+      if (liveUI.GetPinchScale() != 1.f && liveUI.GetPinchScale() > 0.f)
+      {
+         const float len = 5.f * io.DisplayFramebufferScale.y + max(0.f, ImGui::GetMousePos().y - m_imageRect.y0);
+         const float magnify = 125.f * (liveUI.GetPinchScale() - 1.f) / io.DisplayFramebufferScale.y;
+         ZoomCamera(max(0.1f, 1.f + 2.f * (len / max(1.f, len + magnify) - 1.f)));
+      }
+      if (liveUI.GetTwistDegrees() != 0.f)
+         TwistCamera(liveUI.GetTwistDegrees());
 
       // Modal transform op mouse input: while active it owns the pane's scene input (LMB confirms,
       // RMB cancels, MMB drag picks the dominant constraint axis, MMB click releases it); the wheel
@@ -1701,32 +1771,9 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       // Mouse pan
       if (!modalMouse && ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {
-         ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+         const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
          ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
-         if (m_viewType != ViewMode::PreviewCam && (drag.x != 0.f || drag.y != 0.f))
-         {
-            Matrix3D viewInverse(m_camView);
-            viewInverse.Invert();
-            vec3 dir = viewInverse.GetOrthoNormalDir();
-            const vec3 up = viewInverse.GetOrthoNormalUp();
-            const vec3 pos = viewInverse.GetOrthoNormalPos();
-            const vec3 right = viewInverse.GetOrthoNormalRight();
-            vec3 camTarget = pos - dir * m_camDistance;
-            if (io.KeyShift || m_viewType == ViewMode::DesktopBackdrop || m_orbitLock)
-            {
-               // Pan so that the point under the cursor follows it (the view height at the target depends on the projection;
-               // in perspective the raw pixel drag used to be applied as VPU, ignoring the zoom)
-               const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(editorCamFovY)) : m_camDistance;
-               const float viewH = m_imageRect.Height() > 0.f ? m_imageRect.Height() : io.DisplaySize.y;
-               drag.x *= 2.f * halfH / viewH;
-               drag.y *= 2.f * halfH / viewH;
-               camTarget = camTarget - right * drag.x + up * drag.y;
-               m_camView = Matrix3D::MatrixLookAtRH(pos - right * drag.x + up * drag.y, camTarget, up);
-               m_viewAnimFrames = 0;
-            }
-            else
-               OrbitCamera(drag.x, drag.y);
-         }
+         DragCamera(drag, io.KeyShift || m_viewType == ViewMode::DesktopBackdrop || m_orbitLock);
       }
 
       // Select: click selects the front-most part (click again to cycle through overlapping parts),

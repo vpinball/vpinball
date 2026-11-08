@@ -194,6 +194,9 @@ private:
    PredefinedView m_viewAnimTarget = PredefinedView::None;
    void RenderViewGizmo(ImDrawList* drawList); // Draw and input, called from RenderUI (EditorCam only)
    void OrbitCamera(float dx, float dy); // Orbit the pane camera around its target (MMB & view gizmo)
+   void DragCamera(ImVec2 drag, bool pan);
+   void ZoomCamera(float factor);
+   void TwistCamera(float degrees);
    static void GetViewOrientation(PredefinedView view, vec3& dir, vec3& up); // Orbit dir/up of a predefined view
 
    // Box selection drag state (a left button drag that hit no part nor drag point)

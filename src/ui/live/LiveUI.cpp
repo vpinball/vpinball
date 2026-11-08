@@ -288,15 +288,67 @@ void LiveUI::AddMousePosEvent(bool isTouch, float x, float y) const
    }
 }
 
-void LiveUI::HandleSDLEvent(SDL_Event &e) const
+void LiveUI::HandleTrackpadFingers(const SDL_TouchFingerEvent &e)
+{
+   if (SDL_GetTouchDeviceType(e.touchID) == SDL_TOUCH_DEVICE_DIRECT)
+      return;
+   m_trackpadTouchID = e.touchID;
+   int count = 0;
+   SDL_Finger **fingers = SDL_GetTouchFingers(e.touchID, &count);
+   if (fingers == nullptr || count != 2)
+   {
+      SDL_free(fingers);
+      m_twistActive = false;
+      return;
+   }
+   const float angle = atan2f(fingers[1]->y - fingers[0]->y, fingers[1]->x - fingers[0]->x);
+   SDL_free(fingers);
+   if (!m_twistActive)
+   {
+      m_twistActive = true;
+      m_twistStarted = false;
+      m_twistAngle = angle;
+      m_twistAccumulated = 0.f;
+      return;
+   }
+   float delta = angle - m_twistAngle;
+   if (delta > M_PIf)
+      delta -= 2.f * M_PIf;
+   else if (delta < -M_PIf)
+      delta += 2.f * M_PIf;
+   m_twistAngle = angle;
+   m_twistAccumulated -= RADTOANG(delta);
+   if (!m_twistStarted && fabsf(m_twistAccumulated) < 5.f)
+      return;
+   m_twistStarted = true;
+   m_pendingTwistDegrees += m_twistAccumulated;
+   m_twistAccumulated = 0.f;
+}
+
+void LiveUI::HandleSDLEvent(SDL_Event &e)
 {
    if (e.type == SDL_EVENT_MOUSE_MOTION)
    {
       // Custom implementation of ImGui_ImplSDL3_ProcessEvent supporting screen rotation and event filtering
       AddMousePosEvent(e.motion.which == SDL_TOUCH_MOUSEID, e.motion.x, e.motion.y);
    }
+   else if (e.type == SDL_EVENT_PINCH_UPDATE)
+   {
+      m_pendingPinchScale *= e.pinch.scale;
+   }
    else
    {
+      if (e.type == SDL_EVENT_FINGER_DOWN || e.type == SDL_EVENT_FINGER_UP || e.type == SDL_EVENT_FINGER_MOTION || e.type == SDL_EVENT_FINGER_CANCELED)
+         HandleTrackpadFingers(e.tfinger);
+      else if (e.type == SDL_EVENT_MOUSE_WHEEL)
+      {
+         int count = 0;
+         SDL_Finger **fingers = m_trackpadTouchID ? SDL_GetTouchFingers(m_trackpadTouchID, &count) : nullptr;
+         SDL_free(fingers);
+         m_pendingTrackpadScroll = count > 0 || (m_pendingTrackpadScroll && e.wheel.timestamp - m_lastWheelTimestamp < 100000000);
+         m_pendingTrackpadScrollInverted = e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED;
+         m_lastWheelTimestamp = e.wheel.timestamp;
+      }
       ImGui_ImplSDL3_ProcessEvent(&e);
    }
 }
@@ -328,6 +380,12 @@ void LiveUI::NewFrame()
       io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
    UpdateScale();
    ImGui_ImplSDL3_NewFrame();
+   m_pinchScale = m_pendingPinchScale;
+   m_pendingPinchScale = 1.f;
+   m_twistDegrees = m_pendingTwistDegrees;
+   m_pendingTwistDegrees = 0.f;
+   m_trackpadScroll = m_pendingTrackpadScroll;
+   m_trackpadScrollInverted = m_pendingTrackpadScrollInverted;
 
    // Adjust display size and scale eventually gathered in ImGui_ImplSDL3_NewFrame to our framebuffer rendering with rotation & stereo support
    {

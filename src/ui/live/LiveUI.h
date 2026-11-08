@@ -71,10 +71,14 @@ public:
    ImFont *GetOverlayFont() const { return m_overlayFont; }
    float GetDPI() const { return m_uiScale; }
    int GetUIOrientation() const { return m_rotate; }
+   float GetPinchScale() const { return m_pinchScale; }
+   float GetTwistDegrees() const { return m_twistDegrees; }
+   bool IsTrackpadScroll() const { return m_trackpadScroll; }
+   bool IsTrackpadScrollInverted() const { return m_trackpadScrollInverted; }
    static ImGuiKey GetImGuiKeyFromSDLScancode(const SDL_Scancode sdlk);
    static void CenteredText(const string &text);
 
-   void HandleSDLEvent(SDL_Event &e) const;
+   void HandleSDLEvent(SDL_Event &e);
 
 private:
    void SetupImGuiStyle(const bool isEditor) const;
@@ -112,6 +116,21 @@ private:
    // Rendering
    RenderDevice* const m_rd;
    int m_rotate = 0;
+   void HandleTrackpadFingers(const SDL_TouchFingerEvent &e);
+   float m_pendingPinchScale = 1.f;
+   float m_pinchScale = 1.f;
+   SDL_TouchID m_trackpadTouchID = 0;
+   bool m_twistActive = false;
+   bool m_twistStarted = false;
+   float m_twistAngle = 0.f;
+   float m_twistAccumulated = 0.f;
+   float m_pendingTwistDegrees = 0.f;
+   float m_twistDegrees = 0.f;
+   Uint64 m_lastWheelTimestamp = 0;
+   bool m_pendingTrackpadScroll = false;
+   bool m_pendingTrackpadScrollInverted = false;
+   bool m_trackpadScroll = false;
+   bool m_trackpadScrollInverted = false;
    float m_uiScale = 0.f;
    ImFont *m_baseFont = nullptr;
    ImFont *m_overlayBoldFont = nullptr;
