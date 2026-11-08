@@ -3,6 +3,7 @@
 
 #include "../BlueprintRenderContext.h"
 #include "math/matrix.h"
+#include "utils/bulb.h"
 #include "utils/color.h"
 
 
@@ -336,6 +337,7 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
             {
                light->m_d.m_state = v;
                light->m_currentIntensity = light->m_d.m_intensity * light->m_d.m_intensity_scale * light->m_d.m_state;
+               light->m_currentFilamentTemperature = bulb_emission_to_filament_temperature(v);
                light->setInPlayState(v > 1.f ? (float)LightStateBlinking : v);
             },
             PropertyPane::Unit::Percent, 1, "Current light state: 0 = off, 1 = on, fractional values dim the light");
