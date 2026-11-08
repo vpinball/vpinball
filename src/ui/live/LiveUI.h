@@ -17,6 +17,8 @@
 #include "BallControl.h"
 #include "DebuggerUI.h"
 
+struct UIListGeometry;
+
 class LiveUI final : public UserMessageSink
 {
 public:
@@ -90,6 +92,9 @@ private:
    bool m_playfieldWindowFramed = false;
 
    vector<std::shared_ptr<MeshBuffer>> m_meshBuffers;
+#if defined(ENABLE_BGFX)
+   vector<std::shared_ptr<UIListGeometry>> m_uiGeometry; // Per command list CPU snapshot of the frame's UI geometry
+#endif
 
    // Touch UI overlay
    void UpdateTouchUI();

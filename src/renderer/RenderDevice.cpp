@@ -1485,6 +1485,13 @@ RenderDevice::RenderDevice(
 
    init.callback = &m_bgfxCallback;
    init.fallback = true;
+   // Live editor sessions generate a lot of UI geometry each frame: raise the transient buffer arenas
+   // used for the LiveUI uploads (player sessions keep the BGFX defaults)
+   if ((g_pplayer->m_playMode == Player::PlayMode::LiveEdit) || (g_pplayer->m_playMode == Player::PlayMode::FullEdit))
+   {
+      init.limits.maxTransientVbSize = 32 * 1024 * 1024;
+      init.limits.maxTransientIbSize = 8 * 1024 * 1024;
+   }
    init.swapChain.width = swapchainWnd->GetPixelWidth();
    init.swapChain.height = swapchainWnd->GetPixelHeight();
    init.platformData.context = nullptr;
@@ -3023,6 +3030,18 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const V
    m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
 }
+
+#if defined(ENABLE_BGFX)
+void RenderDevice::DrawTransientMesh(Shader* shader, const bool isTransparentPass, const float depth, std::shared_ptr<UIListGeometry> geo, std::shared_ptr<MeshBuffer> mb,
+   const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount)
+{
+   RenderCommand* cmd = m_renderFrame->NewCommand();
+   cmd->SetDrawTransientMesh(shader, std::move(geo), std::move(mb), type, startIndex, indexCount, isTransparentPass, depth);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
+   m_currentPass->Submit(cmd);
+}
+#endif
 
 void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer)
 {
