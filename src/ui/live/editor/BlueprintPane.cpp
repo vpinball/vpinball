@@ -671,8 +671,16 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
    const bool input = m_hovered || m_active;
    if (input && editor.m_fileOp == nullptr)
    {
-      if (io.MouseWheel != 0)
+      const LiveUI& liveUI = editor.m_liveUI;
+      if (io.MouseWheel != 0.f && (!liveUI.IsTrackpadScroll() || io.KeyCtrl))
          ZoomAt(ImGui::GetMousePos(), powf(1.1f, io.MouseWheel));
+      else if (liveUI.IsTrackpadScroll())
+      {
+         m_offset.x -= io.MouseWheelH * 10.f / m_zoom;
+         m_offset.y -= io.MouseWheel * 10.f / m_zoom;
+      }
+      if (liveUI.GetPinchScale() != 1.f && liveUI.GetPinchScale() > 0.f)
+         ZoomAt(ImGui::GetMousePos(), liveUI.GetPinchScale());
 
       if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
       {

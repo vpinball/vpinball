@@ -130,6 +130,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // without a working video driver. It must happen before the window creation below, hence at
    // the very start of the Player. Released in the destructor.
    SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+   SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
    if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
    {
       PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
