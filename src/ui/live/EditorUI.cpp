@@ -703,6 +703,30 @@ void EditorUI::RenderUI()
 
    bool showFullUI = !m_inspectionModal.IsVisible() && !IsFlyMode();
    m_renderer->GetPrimaryView()->m_renderScene = !showFullUI; // While areas are drawn, the scene lives in the viewport panes
+   if (!showFullUI)
+   {
+      // While the scene covers the window, it is driven by the user camera of the target viewport:
+      // the flying pane's camera while flying (the renderer inspection dialog pushes its own override
+      // after this, so it wins when both states apply)
+      ViewportPane *const flyVp = GetTargetViewport();
+      if (flyVp != nullptr && flyVp->m_flyMode && flyVp->m_cameraValid)
+      {
+         const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
+         const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+         const float aspect = ImGui::GetIO().DisplaySize.x / ImGui::GetIO().DisplaySize.y;
+         Matrix3D proj;
+         if (flyVp->m_perspectiveCam)
+            proj = Matrix3D::MatrixPerspectiveFovRH(m_navFovY, aspect, clamp(flyVp->m_camDistance * 0.05f, 5.f, 250.f), 50000.f);
+         else
+         {
+            const float halfW = flyVp->m_camDistance * aspect, halfH = flyVp->m_camDistance;
+            proj = Matrix3D::MatrixOrthoOffCenterRH(-halfW, halfW, -halfH, halfH, 0.5f, -50000.f);
+         }
+         m_renderer->GetPrimaryView()->SetViewProj(RH2LH * flyVp->m_camView * YAxis, YAxis * proj);
+      }
+      else if (!m_inspectionModal.IsVisible())
+         m_renderer->GetPrimaryView()->m_customViewProj = false; // Back to the table camera once the fly/inspection ends
+   }
    UpdateAreaLayout(); // Area rects are computed before the chrome draws the status overlay into the viewport area
    m_chrome.Render(showFullUI);
    if (!m_isOpened)

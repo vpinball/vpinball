@@ -858,10 +858,11 @@ ImVec2 ViewportPane::Project(const Vertex3Ds& v) const
 bool ViewportPane::PickRay(const ImVec2& pos, Vertex3Ds& nearPt, Vertex3Ds& farPt) const
 {
    Matrix3D view, proj;
-   if (!GetViewProjLH(view, proj) || m_imageRect.Width() <= 0.f || m_imageRect.Height() <= 0.f)
+   const AreaRect& rect = m_flyMode ? m_editor.m_viewportRect : m_imageRect; // While flying, the view covers the whole window
+   if (!GetViewProjLH(view, proj) || rect.Width() <= 0.f || rect.Height() <= 0.f)
       return false;
-   const float x = 2.f * (pos.x - m_imageRect.x0) / m_imageRect.Width() - 1.f;
-   const float y = 1.f - 2.f * (pos.y - m_imageRect.y0) / m_imageRect.Height();
+   const float x = 2.f * (pos.x - rect.x0) / rect.Width() - 1.f;
+   const float y = 1.f - 2.f * (pos.y - rect.y0) / rect.Height();
    Matrix3D invMvp = view * proj;
    invMvp.Invert();
    nearPt = invMvp * Vertex3Ds { x, y, 0.f };
@@ -1499,7 +1500,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
 
    // Update this pane's camera and push it to its render view
    RenderView* const camOut = m_view;
-   const float camAspect = m_imageRect.Height() > 0.f ? m_imageRect.Width() / m_imageRect.Height() : io.DisplaySize.x / io.DisplaySize.y;
+   const float camAspect = m_flyMode || m_imageRect.Height() <= 0.f ? io.DisplaySize.x / io.DisplaySize.y : m_imageRect.Width() / m_imageRect.Height();
    const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
    const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
    if (m_viewType == ViewMode::PreviewCam)
@@ -1799,6 +1800,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    if (viewportInput && m_editor.m_fileOp == nullptr)
    {
       const LiveUI& liveUI = m_editor.m_liveUI;
+      const AreaRect& navRect = m_flyMode ? m_editor.m_viewportRect : m_imageRect; // While flying, the view covers the whole window
+
       // Trackpad: two finger scroll pans the view (Ctrl / Cmd + scroll zooms)
       if (m_editor.m_navTrackpad && (io.MouseWheel != 0 || io.MouseWheelH != 0) && !io.KeyCtrl && !io.KeySuper)
       {
@@ -1807,7 +1810,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), right = view.GetOrthoNormalRight(), pos = view.GetOrthoNormalPos();
          const vec3 camTarget = pos - dir * m_camDistance;
          const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(m_editor.m_navFovY)) : m_camDistance;
-         const float unitsPerPixel = m_imageRect.Height() > 0.f ? 2.f * halfH / m_imageRect.Height() : 0.f;
+         const float unitsPerPixel = navRect.Height() > 0.f ? 2.f * halfH / navRect.Height() : 0.f;
          const vec3 offset = (right * -io.MouseWheelH + up * io.MouseWheel) * (20.f * unitsPerPixel);
          m_camView = Matrix3D::MatrixLookAtRH(pos + offset, camTarget + offset, up);
          m_viewAnimFrames = 0;
@@ -1821,14 +1824,14 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          vec3 camTarget = pos - dir * m_camDistance;
          const float zoomFactor = powf(1.1f, (m_editor.m_navInvertZoom ? 1.f : -1.f) * ImGui::GetIO().MouseWheel);
          vec3 newEye;
-         if (m_editor.m_navZoomToMouse && m_viewType != ViewMode::PreviewCam && m_imageRect.Width() > 0.f)
+         if (m_editor.m_navZoomToMouse && m_viewType != ViewMode::PreviewCam && navRect.Width() > 0.f)
          {
             // Zoom toward the point under the cursor: keep the point of the focal plane under the mouse at the same screen position
             const vec3 right = view.GetOrthoNormalRight();
             const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(m_editor.m_navFovY)) : m_camDistance;
             const ImVec2 mouse = ImGui::GetMousePos();
-            const float ndcX = 2.f * (mouse.x - m_imageRect.x0) / m_imageRect.Width() - 1.f, ndcY = 1.f - 2.f * (mouse.y - m_imageRect.y0) / m_imageRect.Height();
-            const vec3 offset = right * (ndcX * halfH * m_imageRect.Width() / m_imageRect.Height()) + up * (ndcY * halfH);
+            const float ndcX = 2.f * (mouse.x - navRect.x0) / navRect.Width() - 1.f, ndcY = 1.f - 2.f * (mouse.y - navRect.y0) / navRect.Height();
+            const vec3 offset = right * (ndcX * halfH * navRect.Width() / navRect.Height()) + up * (ndcY * halfH);
             camTarget += offset * (1.f - zoomFactor);
             newEye = camTarget + dir * m_camDistance * zoomFactor;
          }
@@ -1949,7 +1952,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                // Pan so that the point under the cursor follows it (the view height at the target depends on the projection;
                // in perspective the raw pixel drag used to be applied as VPU, ignoring the zoom)
                const float halfH = m_perspectiveCam && m_viewType != ViewMode::DesktopBackdrop ? m_camDistance * tanf(0.5f * ANGTORAD(m_editor.m_navFovY)) : m_camDistance;
-               const float viewH = m_imageRect.Height() > 0.f ? m_imageRect.Height() : io.DisplaySize.y;
+               const float viewH = navRect.Height() > 0.f ? navRect.Height() : io.DisplaySize.y;
                drag.x *= 2.f * halfH / viewH;
                drag.y *= 2.f * halfH / viewH;
                camTarget = camTarget - right * drag.x + up * drag.y;
