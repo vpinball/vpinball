@@ -208,6 +208,7 @@ void EditorChrome::Render(bool showFullUI)
 
    RenderMenuBar();
    RenderUndoHistory();
+   RenderPreferences();
 }
 
 void EditorChrome::RenderMenuBar()
@@ -239,6 +240,9 @@ void EditorChrome::RenderMenuBar()
             editor.SaveTableAs();
          if (ImGui::MenuItem("Save As Pack Folder..."))
             editor.SaveTableAsPackFolder();
+         ImGui::Separator();
+         if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
+            editor.ExportPartSelection();
          ImGui::Separator();
          if (ImGui::MenuItem("Play", "F5", false, !editor.m_table->IsLocked()))
             editor.PlayTest();
@@ -342,9 +346,6 @@ void EditorChrome::RenderMenuBar()
             ImGui::EndMenu();
          }
          ImGui::Separator();
-         if (ImGui::MenuItem("Export Selection to a VPZ Pack...", nullptr, false, editor.CanExportPartSelection()))
-            editor.ExportPartSelection();
-         ImGui::Separator();
          if (ImGui::BeginMenu("Units"))
          {
             if (ImGui::RadioButton("VP Units", editor.m_units == EditorUI::Units::VPX))
@@ -355,6 +356,9 @@ void EditorChrome::RenderMenuBar()
                editor.m_units = EditorUI::Units::Imperial;
             ImGui::EndMenu();
          }
+         ImGui::Separator();
+         if (ImGui::MenuItem("Preferences..."))
+            OpenPreferences();
          ImGui::EndMenu();
       }
       if (!editor.IsInspectMode() && ImGui::BeginMenu("Object"))
@@ -431,50 +435,6 @@ void EditorChrome::RenderMenuBar()
                   ImGui::EndMenu();
                }
             }
-            ImGui::EndMenu();
-         }
-         if (ImGui::BeginMenu("Navigation"))
-         {
-            Settings &settings = g_settingsService.GetAppSettings();
-            if (ImGui::MenuItem("Orbit Around Selection", nullptr, &editor.m_navOrbitSelection))
-               settings.SetEditor_NavOrbitSelection(editor.m_navOrbitSelection, false);
-            if (ImGui::MenuItem("Zoom To Mouse Position", nullptr, &editor.m_navZoomToMouse))
-               settings.SetEditor_NavZoomToMouse(editor.m_navZoomToMouse, false);
-            if (ImGui::MenuItem("Auto Depth (Orbit Around Point Under Cursor)", nullptr, &editor.m_navAutoDepth))
-               settings.SetEditor_NavAutoDepth(editor.m_navAutoDepth, false);
-            if (ImGui::MenuItem("Invert Zoom", nullptr, &editor.m_navInvertZoom))
-               settings.SetEditor_NavInvertZoom(editor.m_navInvertZoom, false);
-            if (ImGui::MenuItem("Alt + Drag Acts As Middle Button", nullptr, &editor.m_navAltMiddleButton))
-               settings.SetEditor_NavAltMiddleButton(editor.m_navAltMiddleButton, false);
-            if (ImGui::MenuItem("Trackpad (Scroll Pans, Ctrl/Cmd+Scroll Zooms)", nullptr, &editor.m_navTrackpad))
-               settings.SetEditor_NavTrackpad(editor.m_navTrackpad, false);
-            if (ImGui::MenuItem("Emulate Numpad (Top Row Digits)", nullptr, &editor.m_navEmulateNumpad))
-               settings.SetEditor_NavEmulateNumpad(editor.m_navEmulateNumpad, false);
-            if (ImGui::MenuItem("Blender Transform Keys (G / R / S)", nullptr, &editor.m_navBlenderTransform))
-               settings.SetEditor_NavBlenderTransform(editor.m_navBlenderTransform, false);
-            ViewportPane *const vp = editor.GetTargetViewport();
-            float fov = editor.m_navFovY;
-            if (ImGui::SliderFloat("Field Of View", &fov, 15.f, 100.f, "%.1f deg"))
-            {
-               if (vp != nullptr)
-                  vp->SetFov(fov);
-               else
-                  editor.m_navFovY = clamp(fov, 15.f, 100.f);
-               settings.SetEditor_NavFovY(editor.m_navFovY, false);
-            }
-            const char *selectionModes[] = { "Selection: Edges", "Selection: Edges + Tint", "Selection: Hidden" };
-            if (ImGui::BeginMenu(selectionModes[editor.m_navSelectionDisplay]))
-            {
-               for (int i = 0; i < 3; i++)
-                  if (ImGui::MenuItem(selectionModes[i] + 11, nullptr, editor.m_navSelectionDisplay == i))
-                  {
-                     editor.m_navSelectionDisplay = i;
-                     settings.SetEditor_NavSelectionDisplay(i, false);
-                  }
-               ImGui::EndMenu();
-            }
-            if (ImGui::SliderFloat("Orbit Sensitivity", &editor.m_navOrbitSensitivity, 0.1f, 5.f, "%.1f"))
-               settings.SetEditor_NavOrbitSensitivity(editor.m_navOrbitSensitivity, false);
             ImGui::EndMenu();
          }
          ImGui::EndMenu();
@@ -670,6 +630,82 @@ void EditorChrome::RenderUndoHistory()
    }
    if (!open)
       m_undoHistoryOpen = false;
+}
+
+void EditorChrome::RenderPreferences()
+{
+   if (!m_preferencesOpen)
+      return;
+   EditorUI &editor = m_editor;
+   const float dpi = editor.m_liveUI.GetDPI();
+   ImGui::SetNextWindowSize(ImVec2(560.f * dpi, 420.f * dpi), ImGuiCond_Appearing);
+   if (ImGui::Begin("Preferences", &m_preferencesOpen, ImGuiWindowFlags_NoSavedSettings))
+   {
+      static const char *pageNames[] = { "Navigation" }; // Page rail entries, matching the content switch below
+      if (ImGui::BeginChild("##PrefRail", ImVec2(140.f * dpi, 0.f), ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX))
+      {
+         for (int i = 0; i < IM_ARRAYSIZE(pageNames); ++i)
+            if (ImGui::Selectable(pageNames[i], m_preferencesPage == i))
+               m_preferencesPage = i;
+      }
+      ImGui::EndChild();
+      ImGui::SameLine();
+      if (ImGui::BeginChild("##PrefContent"))
+      {
+         switch (m_preferencesPage)
+         {
+         case 0: // Navigation
+         {
+            Settings &settings = g_settingsService.GetAppSettings();
+            ImGui::SeparatorText("Orbit && Zoom");
+            if (ImGui::Checkbox("Orbit Around Selection", &editor.m_navOrbitSelection))
+               settings.SetEditor_NavOrbitSelection(editor.m_navOrbitSelection, false);
+            if (ImGui::Checkbox("Zoom To Mouse Position", &editor.m_navZoomToMouse))
+               settings.SetEditor_NavZoomToMouse(editor.m_navZoomToMouse, false);
+            if (ImGui::Checkbox("Auto Depth (Orbit Around Point Under Cursor)", &editor.m_navAutoDepth))
+               settings.SetEditor_NavAutoDepth(editor.m_navAutoDepth, false);
+            if (ImGui::Checkbox("Invert Zoom", &editor.m_navInvertZoom))
+               settings.SetEditor_NavInvertZoom(editor.m_navInvertZoom, false);
+            if (ImGui::SliderFloat("Orbit Sensitivity", &editor.m_navOrbitSensitivity, 0.1f, 5.f, "%.1f"))
+               settings.SetEditor_NavOrbitSensitivity(editor.m_navOrbitSensitivity, false);
+            ImGui::SeparatorText("Input");
+            if (ImGui::Checkbox("Alt + Drag Acts As Middle Button", &editor.m_navAltMiddleButton))
+               settings.SetEditor_NavAltMiddleButton(editor.m_navAltMiddleButton, false);
+            if (ImGui::Checkbox("Trackpad (Scroll Pans, Ctrl/Cmd+Scroll Zooms)", &editor.m_navTrackpad))
+               settings.SetEditor_NavTrackpad(editor.m_navTrackpad, false);
+            if (ImGui::Checkbox("Emulate Numpad (Top Row Digits)", &editor.m_navEmulateNumpad))
+               settings.SetEditor_NavEmulateNumpad(editor.m_navEmulateNumpad, false);
+            if (ImGui::Checkbox("Blender Transform Keys (G / R / S)", &editor.m_navBlenderTransform))
+               settings.SetEditor_NavBlenderTransform(editor.m_navBlenderTransform, false);
+            ImGui::SeparatorText("View");
+            ViewportPane *const vp = editor.GetTargetViewport();
+            float fov = editor.m_navFovY;
+            if (ImGui::SliderFloat("Field Of View", &fov, 15.f, 100.f, "%.1f deg"))
+            {
+               if (vp != nullptr)
+                  vp->SetFov(fov);
+               else
+                  editor.m_navFovY = clamp(fov, 15.f, 100.f);
+               settings.SetEditor_NavFovY(editor.m_navFovY, false);
+            }
+            static const char *selectionModes[] = { "Edges", "Edges + Tint", "Hidden" };
+            if (ImGui::BeginCombo("Selection Display", selectionModes[editor.m_navSelectionDisplay]))
+            {
+               for (int i = 0; i < 3; i++)
+                  if (ImGui::Selectable(selectionModes[i], editor.m_navSelectionDisplay == i))
+                  {
+                     editor.m_navSelectionDisplay = i;
+                     settings.SetEditor_NavSelectionDisplay(i, false);
+                  }
+               ImGui::EndCombo();
+            }
+            break;
+         }
+         }
+      }
+      ImGui::EndChild();
+   }
+   ImGui::End();
 }
 
 void EditorChrome::RenderStatusBar(const bool showFullUI)

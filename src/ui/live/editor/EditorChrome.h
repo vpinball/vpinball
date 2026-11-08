@@ -37,6 +37,9 @@ public:
       m_undoHistoryPos = ImGui::GetMousePos();
    }
    // Tool shelf: the T overlay of the viewport (edit modes, add part, gizmo orientation)
+   // Opens the Edit > Preferences window
+   void OpenPreferences() { m_preferencesOpen = true; }
+   // Tool shelf: the T overlay of the viewport (edit modes, add part, gizmo orientation)
    void RenderToolShelf(const AreaRect &viewportContent);
    bool IsToolShelfShown() const { return m_showToolShelf; }
    void ToggleToolShelf() { m_showToolShelf = !m_showToolShelf; }
@@ -47,6 +50,7 @@ public:
 private:
    void RenderMenuBar();
    void RenderUndoHistory();
+   void RenderPreferences(); // The Edit > Preferences window: a page rail on the left, the page content on the right
    bool ToolShelfVisible() const; // Shelf enabled and allowed in the current state (it may still not fit, see m_toolShelfDrawn)
 
    EditorUI &m_editor;
@@ -55,6 +59,8 @@ private:
    bool m_undoHistoryOpen = false;
    bool m_undoHistoryJustOpened = false;
    ImVec2 m_undoHistoryPos {};
+   bool m_preferencesOpen = false;
+   int m_preferencesPage = 0; // Selected page of the Preferences window's rail
    bool m_toolShelfDrawn = false; // The shelf was drawn last frame
    float m_toolShelfWidth = 0.f; // Drawn shelf width last frame, used to keep the viewport info text next to it (0 when hidden)
    bool m_showToolShelf = true; // View > Tool Shelf
