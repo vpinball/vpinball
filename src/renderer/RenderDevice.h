@@ -298,6 +298,7 @@ public:
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
+   bgfx::VertexLayout* m_pVertexImGuiDeclaration = nullptr;
    bgfx::ViewId m_activeViewId = 0;
    uint16_t m_activeViewClearFlags = BGFX_CLEAR_NONE; // Accumulated clear flags of the active view (BGFX applies a single clear per view, using the last defined state)
    uint32_t m_activeViewClearColor = 0;
@@ -401,6 +402,7 @@ public:
    IDirect3DVertexDeclaration9* m_currentVertexDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexTexelDeclaration = nullptr;
    IDirect3DVertexDeclaration9* m_pVertexNormalTexelDeclaration = nullptr;
+   IDirect3DVertexDeclaration9* m_pVertexImGuiDeclaration = nullptr;
 
    bool m_autogen_mipmap;
    bool m_useNvidiaApi;

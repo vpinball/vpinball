@@ -321,7 +321,8 @@ enum class SaveDirtyState
 enum VertexFormat
 {
    VF_POS_TEX,
-   VF_POS_NORMAL_TEX
+   VF_POS_NORMAL_TEX,
+   VF_IMGUI
 };
 
 // These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
@@ -356,6 +357,23 @@ public:
    // Texture coordinates (0)
    float tu;
    float tv;
+};
+
+// UI vertex format matching ImDrawVert (position.xy, uv, packed RGBA color): it allows
+// uploading ImGui draw lists to the GPU without any vertex conversion, uses VF_IMGUI
+class VertexUI final
+{
+public:
+   // Position
+   float x;
+   float y;
+
+   // Texture coordinates
+   float tu;
+   float tv;
+
+   // RGBA color, packed as 0xAABBGGRR (ImGui's IM_COL32 layout)
+   uint32_t color;
 };
 
 class LocalString final

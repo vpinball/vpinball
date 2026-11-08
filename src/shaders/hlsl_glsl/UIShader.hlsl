@@ -23,13 +23,13 @@ struct VS_OUTPUT_2D
 };
 
 VS_OUTPUT_2D vs_liveui_main (const in float4 vPosition : POSITION0,
-                             const in float3 vNormal   : NORMAL0,
+                             const in float4 vColor    : COLOR0,
                              const in float2 tc        : TEXCOORD0)
 {
    VS_OUTPUT_2D Out;
    Out.clipPos = vPosition.xy;
    Out.pos = mul(float4(vPosition.x, vPosition.y, 0.0, 1.0), matWorldView);
-   Out.color = float4(vNormal.rgb, vPosition.z); // No WCG (HDR) backbuffer on DX9, so no SDR white level conversion (see fs_imgui.sc)
+   Out.color = vColor; // No WCG (HDR) backbuffer on DX9, so no SDR white level conversion (see fs_imgui.sc)
    Out.tex0 = tc;
    return Out;
 }

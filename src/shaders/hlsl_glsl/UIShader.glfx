@@ -8,7 +8,7 @@
 
 ////VERTEX
 layout(location=0) in vec3 vPosition;
-layout(location=1) in vec3 vNormal;
+layout(location=1) in vec4 vColor;
 layout(location=2) in float2 tc;
 out float2 tex0;
 out float4 color0;
@@ -38,7 +38,7 @@ void main()
 {
    clipPos = vPosition.xy;
    gl_Position = matWorldView[0] * vec4(vPosition.x, vPosition.y, 0.0, 1.0);
-   color0 = float4(vNormal.rgb, vPosition.z); // No WCG (HDR) backbuffer on OpenGL, so no SDR white level conversion (see fs_imgui.sc)
+   color0 = vColor; // No WCG (HDR) backbuffer on OpenGL, so no SDR white level conversion (see fs_imgui.sc)
    tex0 = tc;
    //tex0 = float2(tc.x, 1.0-tc.y);
 }

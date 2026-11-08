@@ -24,6 +24,10 @@
 
 ImGui::MarkdownConfig LiveUI::markdown_config;
 
+// ImGui draw lists are uploaded to the GPU without any conversion (VF_IMGUI vertex format)
+static_assert(sizeof(ImDrawVert) == sizeof(VertexUI) && offsetof(ImDrawVert, pos) == offsetof(VertexUI, x) && offsetof(ImDrawVert, uv) == offsetof(VertexUI, tu)
+   && offsetof(ImDrawVert, col) == offsetof(VertexUI, color));
+
 // Implementation of supporting function for logging of all math objects
 namespace plog
 {
@@ -605,24 +609,13 @@ void LiveUI::RenderUI()
          if ((m_meshBuffers[n] == nullptr) || (m_meshBuffers[n]->m_ib->m_count < numIndices) || (m_meshBuffers[n]->m_vb->m_count < numVertices))
          { // Grow at 1.5x the needed size to amortize reallocation when the UI keeps growing
             auto ib = std::make_shared<IndexBuffer>(m_rd, numIndices + (numIndices >> 1), true, IndexBuffer::Format::FMT_INDEX32);
-            auto vb = std::make_shared<VertexBuffer>(m_rd, numVertices + (numVertices >> 1), nullptr, true);
+            auto vb = std::make_shared<VertexBuffer>(m_rd, numVertices + (numVertices >> 1), nullptr, true, VertexFormat::VF_IMGUI);
             m_meshBuffers[n] = std::make_shared<MeshBuffer>(std::format("ImGui.{}", n), vb, ib, false);
          }
 
-         Vertex3D_NoTex2 *vb;
-         m_meshBuffers[n]->m_vb->Lock(vb, 0, numVertices * sizeof(Vertex3D_NoTex2));
-         for (unsigned int i = 0; i < numVertices; i++)
-         {
-            const uint32_t rgba = cmd_list->VtxBuffer[i].col;
-            vb[i].x = cmd_list->VtxBuffer[i].pos.x;
-            vb[i].y = cmd_list->VtxBuffer[i].pos.y;
-            vb[i].z = (float)((rgba >> 24) & 0xFFu) * (float)(1.0 / 255.0); // alpha
-            vb[i].nx = (float)(rgba & 0x000000FFu) * (float)(1.0 / 255.0); // red
-            vb[i].ny = (float)(rgba & 0x0000FF00u) * (float)(1.0 / 65280.0); // green
-            vb[i].nz = (float)(rgba & 0x00FF0000u) * (float)(1.0 / 16711680.0); // blue
-            vb[i].tu = cmd_list->VtxBuffer[i].uv.x;
-            vb[i].tv = cmd_list->VtxBuffer[i].uv.y;
-         }
+         ImDrawVert *vb;
+         m_meshBuffers[n]->m_vb->Lock(vb, 0, numVertices * sizeof(ImDrawVert));
+         memcpy(vb, cmd_list->VtxBuffer.Data, numVertices * sizeof(ImDrawVert));
          m_meshBuffers[n]->m_vb->Unlock();
 
          uint32_t *ib;
