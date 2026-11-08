@@ -111,6 +111,24 @@ public:
    bool m_hovered = false;
    bool m_active = false;
    bool m_flyMode = false; // Fly mode: the pane's 3D view takes the whole window, hiding the editor UI (F shortcut)
+
+   // Measure mode: click-drag on the playfield plane measures a distance (the last measurement stays until a new drag or a mode change)
+   bool m_measureMode = false;
+   bool m_measureDragging = false;
+   bool m_measureValid = false;
+   int m_measureAxis = -1; // Axis constraint during a measure drag (0 = X, 1 = Y, -1 = free)
+   Vertex3Ds m_measureFrom, m_measureTo;
+   void SetMeasureMode(const bool on)
+   {
+      SetGizmoOperation(ImGuizmo::OPERATION(0)); // The gizmo is inactive while measuring
+      m_measureMode = on;
+      m_measureDragging = false;
+      if (on)
+      {
+         m_measureValid = false;
+         m_measureAxis = -1;
+      }
+   }
    ImGuiWindow* m_window = nullptr; // This pane's ImGui window (registered to ImGuizmo so it accepts its hover)
    ImGuiID m_viewItemId = 0; // ID of the pane's scene item (the corner zones ignore it as a widget)
    ViewSetupID m_viewMode = BG_DESKTOP; // Backdrop mode of a render preview (desktop / FSS / cabinet)
