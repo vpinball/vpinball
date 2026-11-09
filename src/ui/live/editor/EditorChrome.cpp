@@ -464,6 +464,8 @@ void EditorChrome::RenderMenuBar()
                SetOriginOp::Apply(editor, SetOriginOp::Mode::Geometry);
             if (ImGui::MenuItem("Origin to Geometry Bottom", nullptr, false, canSetOrigin))
                SetOriginOp::Apply(editor, SetOriginOp::Mode::GeometryBottom);
+            if (ImGui::MenuItem("Origin to Scene Origin", nullptr, false, canSetOrigin))
+               SetOriginOp::Apply(editor, SetOriginOp::Mode::Scene);
             ImGui::EndMenu();
          }
          ImGui::EndMenu();

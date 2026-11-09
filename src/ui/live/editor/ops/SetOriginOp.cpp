@@ -75,7 +75,7 @@ bool SetOriginOp::CanApply(const EditorUI &ed)
 
 void SetOriginOp::Apply(EditorUI &ed, const Mode mode)
 {
-   const char *const what = mode == Mode::Geometry ? "Set Origin to Geometry" : "Set Origin to Geometry Bottom";
+   const char *const what = mode == Mode::Geometry ? "Set Origin to Geometry" : mode == Mode::GeometryBottom ? "Set Origin to Geometry Bottom" : "Set Origin to Scene Origin";
    if (ed.m_table->IsLocked() || ed.IsInspectMode())
    {
       ed.Report(string(what) + ": not available (table locked or inspecting the game)");
@@ -105,19 +105,23 @@ void SetOriginOp::Apply(EditorUI &ed, const Mode mode)
          zeroScale++; // The geometry can not be shifted back through a flattened transform
          continue;
       }
-      const Matrix3D &m = prim->RecalculateMatrices();
-      Vertex3Ds lo(FLT_MAX, FLT_MAX, FLT_MAX), hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-      for (const Vertex3D_NoTex2 &v : prim->m_mesh.m_vertices)
+      Vertex3Ds target(0.f, 0.f, 0.f); // Scene origin: positions are stored in the part's reference space, so (0,0,0) is the origin of the space it belongs to
+      if (mode != Mode::Scene)
       {
-         const Vertex3Ds w = m * v;
-         lo.x = min(lo.x, w.x);
-         lo.y = min(lo.y, w.y);
-         lo.z = min(lo.z, w.z);
-         hi.x = max(hi.x, w.x);
-         hi.y = max(hi.y, w.y);
-         hi.z = max(hi.z, w.z);
+         const Matrix3D &m = prim->RecalculateMatrices();
+         Vertex3Ds lo(FLT_MAX, FLT_MAX, FLT_MAX), hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+         for (const Vertex3D_NoTex2 &v : prim->m_mesh.m_vertices)
+         {
+            const Vertex3Ds w = m * v;
+            lo.x = min(lo.x, w.x);
+            lo.y = min(lo.y, w.y);
+            lo.z = min(lo.z, w.z);
+            hi.x = max(hi.x, w.x);
+            hi.y = max(hi.y, w.y);
+            hi.z = max(hi.z, w.z);
+         }
+         target = Vertex3Ds(0.5f * (lo.x + hi.x), 0.5f * (lo.y + hi.y), mode == Mode::Geometry ? 0.5f * (lo.z + hi.z) : lo.z);
       }
-      const Vertex3Ds target(0.5f * (lo.x + hi.x), 0.5f * (lo.y + hi.y), mode == Mode::Geometry ? 0.5f * (lo.z + hi.z) : lo.z);
       const Vertex3Ds d = target - prim->m_d.m_vPosition;
       if (d.Dot(d) < 1e-8f)
       {

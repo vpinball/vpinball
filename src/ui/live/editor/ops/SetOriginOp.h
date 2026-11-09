@@ -19,7 +19,8 @@ public:
    enum class Mode
    {
       Geometry, // Centre of the bounding box (table space)
-      GeometryBottom // Centre of the bounding box, at its lowest Z (parts standing on the playfield)
+      GeometryBottom, // Centre of the bounding box, at its lowest Z (parts standing on the playfield)
+      Scene // Origin of the part's reference space (0, 0, 0 in the space its position is stored in)
    };
    static bool CanApply(const EditorUI &ed);
    static void Apply(EditorUI &ed, Mode mode);
