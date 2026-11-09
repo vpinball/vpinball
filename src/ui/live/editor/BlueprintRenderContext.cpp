@@ -111,6 +111,32 @@ void BlueprintDrawContext::Ellipse(const float centerX, const float centerY, con
       m_drawList->AddCircle(c, r, m_borderColor, 0, m_borderWidth);
 }
 
+// Solid fill of a part outline. The win32 view fills through GDI's even-odd rule, which
+// leaves the holes of self-overlapping outlines (donut shaped parts, walls with holes,
+// closed loop rubbers/ramps, ...) empty; ImGui's AddConcavePolyFilled only supports
+// simple contours and fills them. The triangulation of the part render meshes handles
+// these outlines, so fill with the triangles it produces.
+void BlueprintDrawContext::FillPolygon(const vector<RenderVertex>& rgv, const vector<ImVec2>& pts) const
+{
+   vector<unsigned int> poly(rgv.size()), tris;
+   for (size_t i = 0; i < rgv.size(); ++i)
+      poly[i] = (unsigned int)i;
+   PolygonToTriangles(rgv, poly, tris, true);
+   if (tris.empty())
+   {
+      // Outline too degenerate to triangulate: keep ImGui's fill rather than drawing nothing
+      m_drawList->AddConcavePolyFilled(pts.data(), (int)pts.size(), m_fillColor);
+      return;
+   }
+   const ImVec2 uv = ImGui::GetFontTexUvWhitePixel();
+   m_drawList->PrimReserve((int)tris.size(), (int)tris.size());
+   for (const unsigned int idx : tris)
+   {
+      m_drawList->PrimWriteIdx((ImDrawIdx)m_drawList->_VtxCurrentIdx);
+      m_drawList->PrimWriteVtx(pts[idx], uv, m_fillColor);
+   }
+}
+
 void BlueprintDrawContext::Polygon(const Vertex2D* const rgv, const int count) const
 {
    if (rgv == nullptr || count < 3)
@@ -119,7 +145,15 @@ void BlueprintDrawContext::Polygon(const Vertex2D* const rgv, const int count) c
    for (int i = 0; i < count; ++i)
       pts[i] = SurfaceToScreen(rgv[i]);
    if (m_hasFill)
-      m_drawList->AddConcavePolyFilled(pts.data(), count, m_fillColor);
+   {
+      vector<RenderVertex> rv(count);
+      for (int i = 0; i < count; ++i)
+      {
+         rv[i].x = rgv[i].x;
+         rv[i].y = rgv[i].y;
+      }
+      FillPolygon(rv, pts);
+   }
    if (m_borderWidth > 0.f)
    {
       m_drawList->AddPolyline(pts.data(), count, m_borderColor, m_borderWidth, ImDrawFlags_Closed);
@@ -139,7 +173,7 @@ void BlueprintDrawContext::Polygon(const vector<RenderVertex>& rgv) const
    for (size_t i = 0; i < rgv.size(); ++i)
       pts[i] = SurfaceToScreen(Vertex2D(rgv[i].x, rgv[i].y));
    if (m_hasFill)
-      m_drawList->AddConcavePolyFilled(pts.data(), (int)pts.size(), m_fillColor);
+      FillPolygon(rgv, pts);
    if (m_borderWidth > 0.f)
    {
       m_drawList->AddPolyline(pts.data(), (int)pts.size(), m_borderColor, m_borderWidth, ImDrawFlags_Closed);
