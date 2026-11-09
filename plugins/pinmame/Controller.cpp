@@ -167,7 +167,7 @@ void Controller::SetGameName(const string& name)
    }
 }
 
-void Controller::Run(long hParentWnd, int nMinVersion)
+void Controller::Run(int32_t hParentWnd, int nMinVersion)
 {
    if (m_szRomName.empty())
       return;
@@ -644,23 +644,25 @@ void Controller::SetDip(int nDipBank, int byteState)
       });
 }
 
-long Controller::GetSolMask(int nLow) const
+// Each mask half is a 32-bit integer for scripts, as in VPinMAME (bit 31 set reads as negative)
+int32_t Controller::GetSolMask(int nLow) const
 {
    switch (nLow)
    {
-   case 0: return m_solMask & 0x0FFFFFFFFULL;
-   case 1: return (m_solMask >> 32) & 0x0FFFFFFFFULL;
+   case 0: return static_cast<int32_t>(static_cast<uint32_t>(m_solMask));
+   case 1: return static_cast<int32_t>(static_cast<uint32_t>(m_solMask >> 32));
    case 2: return m_deviceMode;
    default: return -1;
    }
 }
 
-void Controller::SetSolMask(int nLow, long newVal)
+void Controller::SetSolMask(int nLow, int32_t newVal)
 {
    switch (nLow)
    {
-   case 0: m_solMask = (m_solMask & 0xFFFFFFFF00000000ULL) | newVal; break;
-   case 1: m_solMask = (m_solMask & 0x00000000FFFFFFFFULL) | (((uint64_t)newVal) << 32); break;
+   // Through uint32_t: a negative half (e.g. -1, all solenoids) must not sign extend into the other half
+   case 0: m_solMask = (m_solMask & 0xFFFFFFFF00000000ULL) | static_cast<uint32_t>(newVal); break;
+   case 1: m_solMask = (m_solMask & 0x00000000FFFFFFFFULL) | (static_cast<uint64_t>(static_cast<uint32_t>(newVal)) << 32); break;
    case 2:
       if (DM_BINARY <= newVal && newVal <= DM_PHYSOUT)
       {

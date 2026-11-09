@@ -49,7 +49,7 @@ public:
    bool GetHidden() const { return m_hidden; }
    void SetHidden(const bool hidden) { m_hidden = hidden; }
 
-   void Run(long hParentWnd = 0L, int nMinVersion = 100);
+   void Run(int32_t hParentWnd = 0, int nMinVersion = 100);
    bool GetRunning() const { return PinmameIsRunning(); }
    void SetPause(bool pause) { PinmamePause(pause); }
    bool GetPause() const { return PinmameIsPaused(); }
@@ -67,8 +67,8 @@ public:
    void SetDip(int nDipBank, int byteState);
 
    // Devices
-   long GetSolMask(int nLow) const;
-   void SetSolMask(int nLow, long newVal); // Define device emulation mode, or mask applied to GetChangedSolenoids
+   int32_t GetSolMask(int nLow) const;
+   void SetSolMask(int nLow, int32_t newVal); // Define device emulation mode, or mask applied to GetChangedSolenoids
    int GetModOutputType(int output, int no) const; // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
    void SetModOutputType(int output, int no, int newVal); // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
    bool GetSolenoid(int nSolenoid) const;
@@ -150,7 +150,7 @@ public:
    void SetCabinetMode(bool v) const { LOGW("CabinetMode is deprecated"s); }
    int GetSoundMode() const { LOGW("SoundMode is deprecated"s); return 0; }
    void SetSoundMode(int v) const { LOGW("SoundMode is deprecated"s); }
-   void ShowOptsDialog(long hParentWnd = 0L) const { LOGW("ShowOptsDialog is deprecated"s); }
+   void ShowOptsDialog(int32_t hParentWnd = 0) const { LOGW("ShowOptsDialog is deprecated"s); }
    //STDMETHOD(ShowPathesDialog)(/*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd);
    //STDMETHOD(SetDisplayPosition)(/*[in]*/ int x, /*[in]*/ int y, /*[in]*/ LONG_PTR hParentWindow);
    //STDMETHOD(CheckROMS)(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal);

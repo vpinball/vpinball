@@ -23,7 +23,7 @@ public:
    PSC_IMPLEMENT_REFCOUNT()
 
    string GetName() const { return m_name; }
-   long GetState() const { return m_rom.state; }
+   int32_t GetState() const { return m_rom.state; }
    string GetStateDescription() const
    {
       switch (m_rom.state)
@@ -40,11 +40,12 @@ public:
       }
    }
    void Audit(bool fStrict = false) { PinmameAuditGameRom(m_gameName.c_str(), m_name.c_str(), fStrict ? 1 : 0, &m_rom); }
-   long GetLength() const { return static_cast<long>(m_rom.length); }
-   long GetExpLength() const { return static_cast<long>(m_rom.expLength); }
-   long GetChecksum() const { return static_cast<long>(m_rom.checksum); }
-   long GetExpChecksum() const { return static_cast<long>(m_rom.expChecksum); }
-   long GetFlags() const { return static_cast<long>(m_rom.flags); }
+   // 32-bit integers for scripts, as in VPinMAME's IRom (a CRC32 above 0x7FFFFFFF reads as negative)
+   int32_t GetLength() const { return static_cast<int32_t>(m_rom.length); }
+   int32_t GetExpLength() const { return static_cast<int32_t>(m_rom.expLength); }
+   int32_t GetChecksum() const { return static_cast<int32_t>(m_rom.checksum); }
+   int32_t GetExpChecksum() const { return static_cast<int32_t>(m_rom.expChecksum); }
+   int32_t GetFlags() const { return static_cast<int32_t>(m_rom.flags); }
 
 private:
    PinmameRom m_rom;

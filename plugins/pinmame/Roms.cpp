@@ -30,7 +30,7 @@ int32_t Roms::GetState() const
    int32_t state = 1;
    for (const Rom* const rom : m_roms)
    {
-      const long subState = rom->GetState();
+      const int32_t subState = rom->GetState();
       if (subState == PINMAME_ROM_STATE_UNKNOWN)
          return 0;
       if (subState != PINMAME_ROM_STATE_OK)
