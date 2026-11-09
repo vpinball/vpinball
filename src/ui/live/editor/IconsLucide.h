@@ -25,6 +25,7 @@
 #define ICON_LC_EYE "\xee\x82\xba" // U+E0BA
 #define ICON_LC_EYE_OFF "\xee\x82\xbb" // U+E0BB
 #define ICON_LC_FILE_PLUS "\xee\x83\x89" // U+E0C9
+#define ICON_LC_FILTER "\xee\x83\x9c" // U+E0DC
 #define ICON_LC_FOLDER "\xee\x83\x97" // U+E0D7
 #define ICON_LC_FOLDER_OPEN "\xee\x89\x87" // U+E247
 #define ICON_LC_GLOBE "\xee\x83\xa8" // U+E0E8

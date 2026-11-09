@@ -36,6 +36,13 @@ public:
    bool IsToolShelfShown() const { return m_showToolShelf; }
    void ToggleToolShelf() { m_showToolShelf = !m_showToolShelf; }
    float GetToolShelfWidth() const { return m_toolShelfWidth; } // Drawn shelf width last frame (0 when hidden)
+   enum class ChevronDir
+   {
+      Down,
+      Right
+   };
+   // Line chevron (Lucide style, replaces ImGui's filled triangles), centered at c, half width 'size'
+   static void DrawChevron(ImDrawList *drawList, const ImVec2 &center, ChevronDir dir, float size, ImU32 color);
    // Tooltip with a title, an optional shortcut chip and an optional dim description (works on disabled items)
    static void Tip(const char *title, const char *shortcut = nullptr, const char *description = nullptr);
 

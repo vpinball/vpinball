@@ -845,6 +845,25 @@ void EditorUI::RenderUI()
    // Ctrl+Space maximizes / restores the area under the mouse (Blender)
    if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_Space, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       ToggleMaximizeArea();
+   // Ctrl+F focuses the search field of the outliner under the mouse (or the first hosted one)
+   if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_F, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+   {
+      OutlinerPanel *outliner = nullptr;
+      if (const int leaf = AreaLayout::LeafAt(m_leafRects, io.MousePos.x, io.MousePos.y); leaf >= 0)
+         if (const auto it = m_areaViews.find(leaf); it != m_areaViews.end())
+            outliner = dynamic_cast<OutlinerPanel *>(it->second.get());
+      for (const auto &[id, view] : m_areaViews)
+         if (outliner == nullptr)
+            outliner = dynamic_cast<OutlinerPanel *>(view.get());
+      if (outliner != nullptr)
+         outliner->FocusFilter();
+      else
+      {
+         // The outliner area is revealed (next frame) if a leaf of that type exists or can be created
+         ShowAreaEditor(AreaType::Outliner);
+         m_outlinerFocusPending = true;
+      }
+   }
    if (!io.WantCaptureKeyboard && m_fileOp == nullptr && !transformModal)
    {
       if (ImGui::IsKeyPressed(ImGuiKey_F5) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
@@ -1200,23 +1219,26 @@ void EditorUI::SelectPartsInGroup(const PartGroup *group)
    OutlinerPanel::m_anchor.reset();
 }
 
+bool EditorUI::CanMovePartToGroup(const IEditable *editable, const PartGroup *group)
+{
+   // A part can not be moved to itself, and a group can not be moved to itself or one of its descendants
+   // (this would create a cycle). Only part groups may be moved to the root of the hierarchy (group-less parts are live objects).
+   if (editable == nullptr || editable == group || editable->GetPartGroup() == group)
+      return false;
+   if (editable->GetItemType() == eItemPartGroup && group != nullptr && group->IsChild(static_cast<const PartGroup *>(editable)))
+      return false;
+   if (group == nullptr && editable->GetItemType() != eItemPartGroup)
+      return false;
+   return true;
+}
+
 void EditorUI::MoveSelectionToPartGroup(PartGroup *group)
 {
-   // Gather the parts that can be moved to the target group: a part can not be moved to itself, and a
-   // group can not be moved to itself or one of its descendants (this would create a cycle). Only part
-   // groups may be moved to the root of the hierarchy (group-less parts are live objects).
+   // Gather the parts that can be moved to the target group (see CanMovePartToGroup)
    vector<IEditable *> moved;
    for (const auto &uiPart : m_multiSel)
-   {
-      IEditable *const editable = uiPart->GetEditable();
-      if (editable == nullptr || editable == group || editable->GetPartGroup() == group)
-         continue;
-      if (editable->GetItemType() == eItemPartGroup && group != nullptr && group->IsChild(static_cast<PartGroup *>(editable)))
-         continue;
-      if (group == nullptr && editable->GetItemType() != eItemPartGroup)
-         continue;
-      moved.push_back(editable);
-   }
+      if (IEditable *const editable = uiPart->GetEditable(); CanMovePartToGroup(editable, group))
+         moved.push_back(editable);
    if (moved.empty())
       return;
    m_undo.BeginUndo();
@@ -2008,6 +2030,33 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
       m_lastOp.base = Vertex3Ds(0.f, 0.f, placed._43);
       m_lastOp.offset = Vertex3Ds(placed._41, placed._42, 0.f);
    }
+}
+
+PartGroup *EditorUI::CreatePartGroup()
+{
+   // Same initialization sequence as CreatePart; a new group is created at the root level (the
+   // user can drag it into another group in the outliner to nest it)
+   IEditable *const pie = EditableRegistry::CreateAndInit(eItemPartGroup, m_table, 0.f, 0.f);
+   if (pie == nullptr)
+      return nullptr;
+   if (auto *const scriptable = pie->GetIScriptable(); scriptable)
+      m_table->GetUniqueName(eItemPartGroup, scriptable->m_name);
+   pie->m_desktopBackdrop = IsBackdropEditMode();
+   m_table->AddPart(pie);
+   pie->SetPartGroup(nullptr);
+
+   m_undo.BeginUndo();
+   m_undo.MarkForCreate(pie);
+   m_undo.EndUndo();
+
+   // Create the UI part now (it would otherwise be lazily added on next frame) and select the new group
+   UpdateEditableList();
+   if (const auto it = m_editableMap.find(pie); it != m_editableMap.end())
+   {
+      SetSelection(Selection(it->second));
+      OutlinerPanel::m_anchor = it->second;
+   }
+   return static_cast<PartGroup *>(pie);
 }
 
 void EditorUI::CreateCollection(bool fromSelection)
@@ -3292,6 +3341,12 @@ void EditorUI::RenderAreas()
          // A leaf restored from the persisted layout may carry its view's setup (the 3D view's camera, shading, ...)
          if (const AreaNode *const node = m_layout.Find(leaf.id); node != nullptr)
             it->second->LoadSetup(node->data);
+         if (m_outlinerFocusPending)
+            if (auto *const op = dynamic_cast<OutlinerPanel *>(it->second.get()); op != nullptr)
+            {
+               op->FocusFilter();
+               m_outlinerFocusPending = false;
+            }
       }
       if (it->second != nullptr)
       {

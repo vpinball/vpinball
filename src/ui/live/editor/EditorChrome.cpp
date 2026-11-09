@@ -166,6 +166,23 @@ void EditorChrome::RenderToolShelf(const AreaRect &viewportContent)
    ImGui::End();
 }
 
+// Chevron pointing down (open) or right (closed), drawn with lines
+void EditorChrome::DrawChevron(ImDrawList *drawList, const ImVec2 &c, const ChevronDir dir, const float size, const ImU32 color)
+{
+   const float thickness = max(1.f, ImGui::GetFontSize() * 0.09f);
+   const float h = size * 0.5f;
+   if (dir == ChevronDir::Down)
+   {
+      drawList->AddLine(ImVec2(c.x - size, c.y - h), ImVec2(c.x, c.y + h), color, thickness);
+      drawList->AddLine(ImVec2(c.x, c.y + h), ImVec2(c.x + size, c.y - h), color, thickness);
+   }
+   else
+   {
+      drawList->AddLine(ImVec2(c.x - h, c.y - size), ImVec2(c.x + h, c.y), color, thickness);
+      drawList->AddLine(ImVec2(c.x + h, c.y), ImVec2(c.x - h, c.y + size), color, thickness);
+   }
+}
+
 void EditorChrome::Tip(const char *title, const char *shortcut, const char *description)
 {
    // Own hover delay: ImGui's delay timers do not run on disabled items, which made their tooltips appear much later than the enabled ones
