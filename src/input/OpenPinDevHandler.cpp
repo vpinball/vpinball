@@ -304,10 +304,32 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                         // with an associated usage string that matches the OPD signature string.
                         constexpr size_t nStrBuf = 128;
                         wchar_t strBuf[nStrBuf];
-                        if (f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0)
-                           && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()
-                           && hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0
-                           && std::wstring_view(strBuf).starts_with(L"OpenPinballDeviceStruct/"sv))
+                        if (!(f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0) && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()))
+                           continue;
+
+                        // Read the usage string and check it against the OPD signature string.
+                        // Some hidapi backends (Linux hidraw, macOS) don't implement
+                        // hid_get_indexed_string(), so the signature can't always be read.
+                        bool sigMatch;
+                        if (hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0)
+                        {
+                           sigMatch = std::wstring_view(strBuf).starts_with(L"OpenPinballDeviceStruct/"sv);
+                           if (!sigMatch)
+                              PLOGW << "Pinball Device found, but its usage string is not an Open Pinball Device signature";
+                        }
+                        else
+                        {
+                           // The signature string can't be read on this platform, so accept the
+                           // device based on the structural match alone, and assume the base
+                           // struct version 1.0.
+                           const wchar_t *err = hid_error(hDevice.get());
+                           PLOGW << "Pinball Device found, but its usage string could not be read (" << (err != nullptr ? MakeString(err) : "unknown error"s)
+                                 << "); assuming Open Pinball Device struct version 1.0";
+                           wcscpy(strBuf, L"OpenPinballDeviceStruct/1.0");
+                           sigMatch = true;
+                        }
+
+                        if (sigMatch)
                         {
                            // matched
                            found = true;
