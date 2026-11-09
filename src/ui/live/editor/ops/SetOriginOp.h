@@ -13,7 +13,7 @@ class EditorUI;
 // The mesh vertices are shifted by the inverse transformed origin offset, which is exact for any rotation and non zero (also non
 // uniform) scale, as the primitive transform is scale, rotation, translation applied to the object space vertices.
 // Not applicable: point based parts (ramps, rubbers, walls, flashers), builtin (non mesh) primitives, primitives with a zero scale.
-class SetOrigin final
+class SetOriginOp final
 {
 public:
    enum class Mode

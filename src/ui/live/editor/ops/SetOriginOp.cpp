@@ -1,9 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "SetOrigin.h"
+#include "SetOriginOp.h"
 #include "ui/live/editor/parts/EditorUIPart.h"
-#include "Selection.h"
+#include "ui/live/editor/Selection.h"
 #include "ui/live/EditorUI.h"
 #include "renderer/Renderer.h"
 #include "parts/primitive.h"
@@ -47,7 +47,7 @@ namespace
 
 }
 
-vector<Primitive *> SetOrigin::SelectedPrimitives(const EditorUI &ed, int &skipped)
+vector<Primitive *> SetOriginOp::SelectedPrimitives(const EditorUI &ed, int &skipped)
 {
    vector<std::shared_ptr<EditorUIPart>> parts = ed.m_multiSel;
    if (parts.empty() && ed.m_selection.GetType() == Selection::S_EDITABLE && ed.m_selection.GetPart())
@@ -65,7 +65,7 @@ vector<Primitive *> SetOrigin::SelectedPrimitives(const EditorUI &ed, int &skipp
    return prims;
 }
 
-bool SetOrigin::CanApply(const EditorUI &ed)
+bool SetOriginOp::CanApply(const EditorUI &ed)
 {
    if (ed.m_table->IsLocked() || ed.IsInspectMode())
       return false;
@@ -73,7 +73,7 @@ bool SetOrigin::CanApply(const EditorUI &ed)
    return !SelectedPrimitives(ed, skipped).empty();
 }
 
-void SetOrigin::Apply(EditorUI &ed, const Mode mode)
+void SetOriginOp::Apply(EditorUI &ed, const Mode mode)
 {
    const char *const what = mode == Mode::Geometry ? "Set Origin to Geometry" : "Set Origin to Geometry Bottom";
    if (ed.m_table->IsLocked() || ed.IsInspectMode())
