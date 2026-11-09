@@ -108,6 +108,13 @@ public:
    // Helper messages of the status bar while this pane is the context view (active op/drag or hovered)
    void AppendStatusHints(vector<StatusHint>& hints) const override;
 
+   // Tool shelf: the T overlay of this pane's image (edit modes, add part, gizmo orientation).
+   // Drawn once per frame for the target viewport pane only (see EditorUI::RenderUI)
+   void RenderToolShelf();
+   bool IsToolShelfShown() const { return m_showToolShelf; }
+   void ToggleToolShelf() { m_showToolShelf = !m_showToolShelf; }
+   float GetToolShelfWidth() const { return m_toolShelfWidth; } // Drawn shelf width last frame (0 when hidden)
+
    int m_leafId = -1; // Leaf hosting this pane, set in RenderPane
 
    // Image interaction state, set in RenderPane and read by the editor for input routing
@@ -219,7 +226,8 @@ private:
 
    // View orientation gizmo (Blender navball): an XYZ tripod at the top right of the pane's image.
    // A LMB drag orbits the camera (independently of the orbit lock, which only remaps MMB), a click
-   // on an axis end animates the camera to that axis aligned predefined view. EditorCam panes only.
+   // on an axis end animates the camera to that axis aligned predefined view. EditorCam panes only,
+   // and not while flying (the pane's image is off screen then)
    bool m_viewGizmoDragging = false; // LMB drag in progress (orbiting)
    ImVec2 m_viewGizmoPress; // Mouse position at drag start (click/drag disambiguation)
    int m_viewGizmoPressEnd = -1; // Axis end under the press (0..5 = +X,-X,+Y,-Y,+Z,-Z; -1 = none)
@@ -247,6 +255,14 @@ private:
    };
    const SpaceAxes* EnsureSpaceAxesMesh(PartGroupData::SpaceReference space); // (Re)build the reference mesh when the space or the table bounds changed
    SpaceAxes m_spaceAxes[2]; // [0] playfield space, [1] room space (also cabinet & cabinet feet)
+
+   // Tool shelf (T): the View menu / T toggle, and its drawn size which keeps the status info text next to it
+   bool ToolShelfVisible() const; // Shelf enabled and allowed in the current state (it may still not fit, see m_toolShelfDrawn)
+   bool m_showToolShelf = true; // View > Tool Shelf
+   bool m_toolShelfDrawn = false; // The shelf was drawn last frame
+   float m_toolShelfWidth = 0.f; // Drawn shelf width last frame (0 when hidden)
+   // Tooltip with a title, an optional shortcut chip and an optional dim description (works on disabled items)
+   static void Tip(const char* title, const char* shortcut = nullptr, const char* description = nullptr);
 
    // Box selection drag state (a left button drag that hit no part nor drag point)
    bool m_boxSelectActive = false;
