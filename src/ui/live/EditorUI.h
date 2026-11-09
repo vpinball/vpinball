@@ -308,15 +308,22 @@ private:
    void SaveTableAsPackFolder(); // Save as a VPZ folder pack
    void LoadTable();
    void LoadTableFolder(); // Load a VPZ folder pack
+   void LoadTable(const std::filesystem::path &path); // Load the given table file or pack folder (File > Open Recent)
    void NewTable(NewTableTemplate templateType);
    void ShowLoadTableDialog(bool folder = false);
    void LoadTableDialog(bool folder);
    void LoadTableTemplate(NewTableTemplate templateType);
+   // Recently opened table files and pack folders (File > Open Recent), most recent first. The list is shared with
+   // the Win32 editor's recent file list: it lives in the app's RecentDir.TableFileName settings, re-read on each use
+   const vector<std::filesystem::path> &GetRecentTables();
+   void NoteRecentTable(const std::filesystem::path &path);
+   vector<std::filesystem::path> m_recentTables; // Scratch copy of the shared list, refreshed by GetRecentTables()
    std::shared_ptr<string> m_pendingSaveAsPath;
    std::shared_ptr<string> m_pendingLoadPath;
    bool m_pendingSaveAsFolder = false; // Pending 'Save As' result is a folder pack, not a file
    bool m_pendingLoadFolder = false; // Pending 'Load' result is a folder pack, not a file
    std::optional<NewTableTemplate> m_pendingNewTable; // New table template awaiting the 'discard unsaved changes' confirmation
+   std::optional<std::filesystem::path> m_pendingRecentPath; // 'Open Recent' path awaiting the 'discard unsaved changes' confirmation
    bool m_confirmLoadTable = false; // Request the 'discard unsaved changes' confirmation popup in RenderUI
 
    // Asynchronous file operations: table loading and saving run on a worker thread while a modal progress

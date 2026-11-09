@@ -365,11 +365,58 @@ void EditorUI::LoadTableDialog(const bool folder)
    if (m_table->GetDirtyState() != SaveDirtyState::Clean)
    {
       m_pendingNewTable.reset();
+      m_pendingRecentPath.reset();
       m_pendingClose.reset();
       m_confirmLoadTable = true;
       return;
    }
    ShowLoadTableDialog(folder);
+}
+
+void EditorUI::LoadTable(const std::filesystem::path &path)
+{
+   if (IsInspectMode())
+      return;
+   // Same as LoadTableDialog: loading another table discards the edited table's unsaved changes, ask for confirmation first
+   if (m_table->GetDirtyState() != SaveDirtyState::Clean)
+   {
+      m_pendingRecentPath = path;
+      m_pendingNewTable.reset();
+      m_pendingClose.reset();
+      m_confirmLoadTable = true;
+      return;
+   }
+   // The deferred file op of RenderUI (shared with the file dialog's pick) starts the load
+   m_pendingLoadPath = std::make_shared<string>(PathToUTF8(path));
+}
+
+const vector<std::filesystem::path> &EditorUI::GetRecentTables()
+{
+   // The list is shared with the Win32 editor through the RecentDir.TableFileName settings: re-read it on
+   // each call, as it may have been updated by the other editor since the last read
+   m_recentTables.clear();
+   for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
+   {
+      const string &tableName = g_settingsService.GetAppSettings().GetRecentDir_TableFileName(i);
+      if (!tableName.empty())
+         m_recentTables.push_back(PathFromUTF8OrString(tableName)); // UTF-8, older versions stored native narrow paths
+   }
+   return m_recentTables;
+}
+
+void EditorUI::NoteRecentTable(const std::filesystem::path &path)
+{
+   if (path.empty())
+      return;
+   GetRecentTables();
+   // Most recently opened first, each path only once, capped at the setting slot count
+   vector<std::filesystem::path> recents { path };
+   for (const std::filesystem::path &recent : m_recentTables)
+      if (recent != path && recents.size() < LAST_OPENED_TABLE_COUNT)
+         recents.push_back(recent);
+   m_recentTables = std::move(recents);
+   for (size_t i = 0; i < m_recentTables.size(); i++)
+      g_settingsService.GetAppSettings().SetRecentDir_TableFileName(static_cast<int>(i), PathToUTF8(m_recentTables[i]), false);
 }
 
 void EditorUI::RequestClose(const int closeState)
@@ -378,6 +425,7 @@ void EditorUI::RequestClose(const int closeState)
    if (m_player->IsEditorMode() && !IsInspectMode() && m_table->GetDirtyState() != SaveDirtyState::Clean)
    {
       m_pendingNewTable.reset();
+      m_pendingRecentPath.reset();
       m_pendingClose = closeState;
       m_confirmLoadTable = true;
       return;
@@ -430,6 +478,7 @@ void EditorUI::NewTable(const NewTableTemplate templateType)
    if (m_table->GetDirtyState() != SaveDirtyState::Clean)
    {
       m_pendingNewTable = templateType;
+      m_pendingRecentPath.reset();
       m_pendingClose.reset();
       m_confirmLoadTable = true;
       return;
@@ -528,7 +577,10 @@ void EditorUI::FinishFileOp()
       if (op->table != nullptr)
       {
          if (op->type == AsyncFileOp::Type::Load)
+         {
             g_settingsService.GetAppSettings().SetRecentDir_LoadDir(PathToString(op->filename.parent_path()), false);
+            NoteRecentTable(op->filename);
+         }
          PinTable *const table = op->table;
          op->table = nullptr;
          m_player->SetTable(table, Player::TableTransition::Replace); // The loaded table reference is adopted by the player
@@ -780,7 +832,7 @@ void EditorUI::RenderUI()
    // Confirmation popup for discarding unsaved changes when loading another table or closing (OpenPopup must be
    // called in the same window scope as the matching BeginPopupModal)
    // All variants share one popup id, so that a request arriving while it is open retargets it
-   const char *const confirmTitle = m_pendingClose ? "Quit###ConfirmDiscard" : m_pendingNewTable ? "New Table###ConfirmDiscard" : "Load Table###ConfirmDiscard";
+   const char *const confirmTitle = m_pendingClose ? "Quit###ConfirmDiscard" : m_pendingNewTable ? "New Table###ConfirmDiscard" : "Open Table###ConfirmDiscard";
    if (m_confirmLoadTable)
    {
       m_confirmLoadTable = false;
@@ -803,6 +855,11 @@ void EditorUI::RenderUI()
             LoadTableTemplate(*m_pendingNewTable);
             m_pendingNewTable.reset();
          }
+         else if (m_pendingRecentPath)
+         {
+            m_pendingLoadPath = std::make_shared<string>(PathToUTF8(*m_pendingRecentPath));
+            m_pendingRecentPath.reset();
+         }
          else
             ShowLoadTableDialog(m_pendingLoadFolder);
       }
@@ -811,6 +868,7 @@ void EditorUI::RenderUI()
       if (ImGui::Button("Cancel"))
       {
          m_pendingNewTable.reset();
+         m_pendingRecentPath.reset();
          m_pendingClose.reset();
          ImGui::CloseCurrentPopup();
       }

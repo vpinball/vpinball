@@ -89,10 +89,22 @@ void EditorChrome::RenderMenuBar()
                editor.NewTable(EditorUI::NewTableTemplate::LightSeq);
             ImGui::EndMenu();
          }
-         if (ImGui::MenuItem(ICON_LC_FOLDER_OPEN " Load..."))
+         if (ImGui::MenuItem(ICON_LC_FOLDER_OPEN " Open...", "Ctrl+O"))
             editor.LoadTable();
-         if (ImGui::MenuItem(ICON_LC_FOLDER " Load Pack Folder..."))
+         if (ImGui::MenuItem(ICON_LC_FOLDER " Open Pack Folder...", "Ctrl+Shift+O"))
             editor.LoadTableFolder();
+         const auto &recentTables = editor.GetRecentTables();
+         if (ImGui::BeginMenu(ICON_LC_TIMER " Open Recent...", !recentTables.empty()))
+         {
+            for (size_t i = 0; i < recentTables.size(); i++)
+            {
+               ImGui::PushID(static_cast<int>(i));
+               if (ImGui::MenuItem(PathToUTF8(recentTables[i]).c_str()))
+                  editor.LoadTable(recentTables[i]);
+               ImGui::PopID();
+            }
+            ImGui::EndMenu();
+         }
          if (ImGui::MenuItem(ICON_LC_SAVE " Save", "Ctrl+S"))
             editor.SaveTable();
          if (ImGui::MenuItem(ICON_LC_DISC " Save As..."))
