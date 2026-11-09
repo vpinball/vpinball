@@ -38,7 +38,7 @@ public:
    void FocusFilter() { m_focusFilter = true; } // Ctrl+F: type a filter right away
 
    // Default width of a newly hosted panel in logical pixels (scaled by the UI DPI)
-   static constexpr float PaneWidth = 200.f;
+   static constexpr float PaneWidth = 240.f;
 
    // Anchor part for shift+click range selection (the last part clicked, here or in the 3D view):
    // shared by all outliner instances since the selection it ranges over is shared

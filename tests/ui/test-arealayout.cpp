@@ -152,8 +152,8 @@ TEST_CASE("AreaLayout compute")
       const LeafRect& vp = *c.Leaf(l, AreaType::Viewport);
       const LeafRect& props = *c.Leaf(l, AreaType::Properties);
       CHECK(out.rect.x0 == 0.f);
-      CHECK(out.rect.x1 == 200.f);
-      CHECK(vp.rect.x0 == 200.f);
+      CHECK(out.rect.x1 == 240.f);
+      CHECK(vp.rect.x0 == 240.f);
       CHECK(vp.rect.x1 == 1640.f);
       CHECK(props.rect.x0 == 1640.f);
       CHECK(props.rect.x1 == 1920.f);
@@ -164,7 +164,7 @@ TEST_CASE("AreaLayout compute")
          CHECK(r.rect.y1 == 1080.f);
       }
       REQUIRE(c.splitters.size() == 2);
-      CHECK(c.splitters[0].pos == 200.f);
+      CHECK(c.splitters[0].pos == 240.f);
       CHECK(c.splitters[1].pos == 1640.f);
       CHECK(c.splitters[1].axis == SplitAxis::Vertical);
       CHECK(c.splitters[1].grab.x0 == 1637.f);
@@ -173,14 +173,14 @@ TEST_CASE("AreaLayout compute")
       // Dragging the Properties splitter 100 px left gives a stored width of 380
       CHECK(c.splitters[1].SizeForPos(1540.f, 1.f) == 380.f);
       CHECK(c.splitters[0].SizeForPos(250.f, 1.f) == 250.f);
-      CHECK(c.splitters[1].minPos == 200.f + 240.f);
+      CHECK(c.splitters[1].minPos == 240.f + 240.f);
       CHECK(c.splitters[1].maxPos == 1920.f - 140.f);
    }
 
    SUBCASE("dpi scales sizes, positions are whole pixels")
    {
       const Computed c = Compute(l, 3840.f, 2160.f, 2.f);
-      CHECK(c.Leaf(l, AreaType::Outliner)->rect.x1 == 400.f);
+      CHECK(c.Leaf(l, AreaType::Outliner)->rect.x1 == 480.f);
       CHECK(c.Leaf(l, AreaType::Properties)->rect.x0 == 3840.f - 560.f);
       const Computed odd = Compute(l, 1001.f, 700.f, 1.25f);
       for (const SplitterRect& s : odd.splitters)
@@ -204,7 +204,7 @@ TEST_CASE("AreaLayout compute")
       REQUIRE(h.SetHidden(h.FindLeaf(AreaType::Properties), false));
       const Computed c3 = Compute(h);
       CHECK(c3.leaves.size() == Compute(l).leaves.size());
-      CHECK(c3.Leaf(h, AreaType::Viewport)->rect.x0 == 200.f);
+      CHECK(c3.Leaf(h, AreaType::Viewport)->rect.x0 == 240.f);
       CHECK(c3.Leaf(h, AreaType::Viewport)->rect.x1 == 1640.f);
    }
 
@@ -218,9 +218,9 @@ TEST_CASE("AreaLayout compute")
       CHECK(vp.rect.Width() >= AreaLayout::kViewportMinW);
       CHECK(props.rect.Width() >= AreaLayout::kPanelMinW);
       CHECK(out.rect.Width() + vp.rect.Width() + props.rect.Width() == 600.f);
-      CHECK(out.rect.x1 == 200.f);
-      CHECK(vp.rect.x1 == 440.f); // Properties squeezed to its minimum, Viewport keeps 240
-      CHECK(props.rect.Width() == 160.f);
+      CHECK(out.rect.x1 == 220.f); // Outliner clamped so the inner subtree keeps its minimum
+      CHECK(vp.rect.x1 == 460.f); // Properties squeezed to its minimum, Viewport keeps 240
+      CHECK(props.rect.Width() == 140.f);
       CHECK(vp.rect.Height() >= AreaLayout::kViewportMinH);
    }
 
@@ -271,7 +271,7 @@ TEST_CASE("AreaLayout compute")
    {
       const Computed c = Compute(l);
       CHECK(AreaLayout::LeafAt(c.leaves, 10.f, 10.f) == l.FindLeaf(AreaType::Outliner));
-      CHECK(AreaLayout::LeafAt(c.leaves, 200.f, 10.f) == l.FindLeaf(AreaType::Viewport)); // half open
+      CHECK(AreaLayout::LeafAt(c.leaves, 240.f, 10.f) == l.FindLeaf(AreaType::Viewport)); // half open
       CHECK(AreaLayout::LeafAt(c.leaves, 1700.f, 500.f) == l.FindLeaf(AreaType::Properties));
       CHECK(AreaLayout::LeafAt(c.leaves, 2000.f, 500.f) == -1);
       CHECK(AreaLayout::LeafAt(c.leaves, 10.f, -1.f) == -1);
@@ -319,7 +319,7 @@ TEST_CASE("AreaLayout split")
       const Computed c = Compute(l);
       CHECK(c.Leaf(l, AreaType::Outliner, 0)->rect.Height() == 780.f);
       CHECK(c.Leaf(l, AreaType::Outliner, 1)->rect.Height() == 300.f);
-      CHECK(c.Leaf(l, AreaType::Outliner, 1)->rect.Width() == 200.f);
+      CHECK(c.Leaf(l, AreaType::Outliner, 1)->rect.Width() == 240.f);
    }
 
    SUBCASE("refused at the leaf count limit")
@@ -452,7 +452,7 @@ TEST_CASE("AreaLayout swap")
       const int vp = l.FindLeaf(AreaType::Viewport);
       REQUIRE(l.Swap(l.ParentId(vp)));
       const Computed c = Compute(l);
-      CHECK(c.Leaf(l, AreaType::Properties)->rect.x0 == 200.f);
+      CHECK(c.Leaf(l, AreaType::Properties)->rect.x0 == 240.f);
       CHECK(c.Leaf(l, AreaType::Properties)->rect.Width() == 280.f);
       CHECK(c.Leaf(l, AreaType::Viewport)->rect.x1 == 1920.f);
    }
@@ -474,8 +474,8 @@ TEST_CASE("AreaLayout swap")
       REQUIRE(r.Swap(static_cast<int>(r.Nodes()[r.Root()].id)));
       CHECK(r.Validate());
       const Computed rc = Compute(r);
-      CHECK(rc.Leaf(r, AreaType::Outliner)->rect.x0 == 1720.f);
-      CHECK(rc.Leaf(r, AreaType::Outliner)->rect.Width() == 200.f);
+      CHECK(rc.Leaf(r, AreaType::Outliner)->rect.x0 == 1680.f);
+      CHECK(rc.Leaf(r, AreaType::Outliner)->rect.Width() == 240.f);
    }
 }
 

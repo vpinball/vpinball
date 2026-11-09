@@ -3081,6 +3081,18 @@ void EditorUI::SetAreaLayoutIndex(const int index)
    LoadAreaLayoutSettings(); // Loads the slot's saved layout, or its preset when empty/invalid
 }
 
+void EditorUI::ResetAreaLayouts()
+{
+   Settings &settings = g_settingsService.GetAppSettings();
+   settings.ResetLiveEditor_Layout1();
+   settings.ResetLiveEditor_Layout2();
+   settings.ResetLiveEditor_Layout3();
+   settings.ResetLiveEditor_Layout4();
+   settings.ResetLiveEditor_Layout5();
+   LoadAreaLayoutSettings(); // The empty slot falls back to its preset
+   Report("Layouts reset to their defaults");
+}
+
 void EditorUI::UpdateAreaLayout()
 {
    if (!m_layoutSettingsLoaded)
