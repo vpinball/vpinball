@@ -1150,6 +1150,7 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.cpp" />
     <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui.cpp" />
@@ -1192,6 +1193,7 @@
     <ClCompile Include="$(SolutionDir)/../../third-party/include/serial.cpp" />
     <ClCompile Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
