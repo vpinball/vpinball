@@ -81,6 +81,7 @@ public:
    bool PickDepthPoint(const ImVec2& mousePos, vec3& point); // 3D point under the cursor (front-most hit, else the playfield plane)
    void OrbitCamera(float dx, float dy); // Orbit the pane camera around its target (MMB & view gizmo & renderer inspection)
    void SetFov(float fovY); // Change the vertical FOV keeping the framing (Editor_NavFovY is updated)
+   void SetPerspectiveCam(bool perspective); // Switch between perspective and orthographic cameras, keeping the framing
 
    // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
    // hosting leaf's persisted payload so it is restored with the layout on the next session

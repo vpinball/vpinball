@@ -530,7 +530,7 @@ void EditorChrome::RenderMenuBar()
          ImGui::Separator();
          if (ImGui::MenuItem(ICON_LC_VIDEO " Perspective / " ICON_LC_VIDEO_OFF " Orthographic", "Numpad 5", false, vp != nullptr))
          {
-            vp->m_perspectiveCam = !vp->m_perspectiveCam;
+            vp->SetPerspectiveCam(!vp->m_perspectiveCam);
          }
          if (ImGui::MenuItem(ICON_LC_LOCK " Lock Orbit", "Numpad /", vp != nullptr && vp->m_orbitLock, vp != nullptr))
             vp->m_orbitLock = !vp->m_orbitLock;
