@@ -1097,9 +1097,13 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       {
          const string what = count == 1 ? firstName : std::to_string(count) + " parts";
          const string target = dropGroup != nullptr ? dropGroup->GetName() : "top level"s;
-         editor.MoveSelectionToPartGroup(dropGroup);
-         editor.m_undo.SetLabel("Move " + what + " to " + target);
-         editor.Report("Moved " + what + " to " + target);
+         // A move waiting for the confirmation of lossy space conversions is labelled and reported by
+         // LayerSpaceChangeOp when (and if) it is applied
+         if (editor.MoveSelectionToPartGroup(dropGroup))
+         {
+            editor.m_undo.SetLabel("Move " + what + " to " + target);
+            editor.Report("Moved " + what + " to " + target);
+         }
       }
    }
 

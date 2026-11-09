@@ -140,7 +140,10 @@ private:
    void InvertSelection(); // Edit > Invert Selection (Ctrl+I)
    void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
    void SelectPartsInGroup(const PartGroup *group);
-   void MoveSelectionToPartGroup(PartGroup *group); // Move all selected parts/groups to the given group (nullptr = root, part groups only)
+   // Move all selected parts/groups to the given group (nullptr = root, part groups only), re-expressing
+   // their transforms when the target's reference space differs (see LayerSpaceChangeOp::RequestMove).
+   // Returns false when the move waits for the user's confirmation of lossy space conversions.
+   bool MoveSelectionToPartGroup(PartGroup *group);
    // Whether the part may be moved to 'group' (nullptr = root): a part can not be moved to itself, a group
    // not to itself or a descendant (cycle), and only part groups may be moved to the root (group-less parts are live objects)
    static bool CanMovePartToGroup(const IEditable *editable, const PartGroup *group);

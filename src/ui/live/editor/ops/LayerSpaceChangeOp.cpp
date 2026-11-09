@@ -126,24 +126,37 @@ bool LayerSpaceChangeOp::TransformForSpace(EditorUIPart &uiPart, const Matrix3D 
 
 void LayerSpaceChangeOp::Apply(const Change &change)
 {
-   PartGroup *const group = change.group;
-   PinTable *const table = group->GetPTable();
+   PinTable *const table = change.group != nullptr ? change.group->GetPTable() : change.target != nullptr ? change.target->GetPTable() : change.moved.front()->GetPTable();
    const bool editedTable = table == m_editor.m_table;
    const bool useUndo = editedTable && !m_editor.IsInspectMode();
-   const Matrix3D delta = SpaceTransform(table, change.oldSpace) * Matrix3D::MatrixInverse(SpaceTransform(table, change.newSpace));
 
-   if (useUndo)
-      m_editor.m_undo.MarkForUndo(group);
-   else if (editedTable)
-      m_editor.m_liveEditedParts.insert(group);
-   group->m_d.m_spaceReference = change.space;
-
-   const auto convert = [&](IEditable *const editable)
+   const auto mark = [this, useUndo, editedTable](IEditable *const editable)
    {
       if (useUndo)
          m_editor.m_undo.MarkForUndo(editable);
       else if (editedTable)
          m_editor.m_liveEditedParts.insert(editable);
+   };
+
+   // The change itself: a layer's space reference write, or the reparenting to the target group
+   if (change.group != nullptr)
+   {
+      mark(change.group);
+      change.group->m_d.m_spaceReference = change.space;
+   }
+   for (IEditable *const editable : change.moved)
+   {
+      mark(editable);
+      editable->SetPartGroup(change.target);
+   }
+
+   // Re-expression of the transforms stored in a space different from the destination's
+   const Matrix3D toNew = Matrix3D::MatrixInverse(SpaceTransform(table, change.newSpace));
+   const auto convert = [&](const Conversion &conversion)
+   {
+      IEditable *const editable = conversion.editable;
+      mark(editable);
+      const Matrix3D delta = SpaceTransform(table, conversion.fromSpace) * toNew;
       if (editable->GetItemType() == eItemPartGroup)
       {
          PartGroup *const sub = static_cast<PartGroup *>(editable);
@@ -159,12 +172,12 @@ void LayerSpaceChangeOp::Apply(const Change &change)
          m_editor.m_player->m_physics->Update(editable);
       }
    };
-   for (PartGroup *const sub : change.groups)
-      convert(sub);
-   for (IEditable *const editable : change.parts)
-      convert(editable);
-   for (IEditable *const editable : change.approximated)
-      convert(editable);
+   for (const Conversion &conversion : change.groups)
+      convert(conversion);
+   for (const Conversion &conversion : change.parts)
+      convert(conversion);
+   for (const Conversion &conversion : change.approximated)
+      convert(conversion);
 }
 
 void LayerSpaceChangeOp::Request(PartGroup *const group, const PartGroupData::SpaceReference space)
@@ -182,18 +195,21 @@ void LayerSpaceChangeOp::Request(PartGroup *const group, const PartGroupData::Sp
    }
 
    const Matrix3D delta = SpaceTransform(group->GetPTable(), oldSpace) * Matrix3D::MatrixInverse(SpaceTransform(group->GetPTable(), newSpace));
-   Change change { group, space, oldSpace, newSpace };
+   Change change;
+   change.group = group;
+   change.space = space;
+   change.newSpace = newSpace;
    vector<std::shared_ptr<EditorUIPart>> tempParts; // Keeps the UI parts of the dry run alive
    for (IEditable *const editable : SpaceChildren(group))
    {
       if (editable->GetItemType() == eItemPartGroup)
-         change.groups.push_back(static_cast<PartGroup *>(editable)); // Center marker, in the parent's space
+         change.groups.push_back({ editable, oldSpace }); // Center marker, in the parent's space
       else if (!editable->m_desktopBackdrop) // Desktop backdrop parts are 2D, outside of the 3D reference spaces
       {
          if (const std::shared_ptr<EditorUIPart> &uiPart = FindUIPart(editable))
          {
             tempParts.push_back(uiPart);
-            (TransformForSpace(*uiPart, delta, false) ? change.parts : change.approximated).push_back(editable);
+            (TransformForSpace(*uiPart, delta, false) ? change.parts : change.approximated).push_back({ editable, oldSpace });
          }
       }
    }
@@ -211,13 +227,78 @@ void LayerSpaceChangeOp::Request(PartGroup *const group, const PartGroupData::Sp
       + std::to_string(change.parts.size() + change.groups.size()) + " children re-expressed"s);
 }
 
+// Reparenting parts to a group on another reference space re-expresses their transforms (the same
+// conversions as a layer space change): a part's transform is stored in its parent group's resolved
+// space, and a space-inheriting group's children follow its space.
+bool LayerSpaceChangeOp::RequestMove(const vector<IEditable *> &moved, PartGroup *const target)
+{
+   if (moved.empty())
+      return true;
+   Change change;
+   change.target = target;
+   change.moved = moved;
+   change.newSpace = target != nullptr ? target->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+
+   PinTable *const table = target != nullptr ? target->GetPTable() : moved.front()->GetPTable();
+   const Matrix3D toNew = Matrix3D::MatrixInverse(SpaceTransform(table, change.newSpace));
+   vector<std::shared_ptr<EditorUIPart>> tempParts; // Keeps the UI parts of the dry run alive
+   vector<IEditable *> converted; // Already queued for conversion (a moved part also lists its inheriting children)
+   const auto queue = [&](IEditable *const editable, const PartGroupData::SpaceReference from)
+   {
+      if (std::ranges::find(converted, editable) != converted.end())
+         return;
+      converted.push_back(editable);
+      if (editable->GetItemType() == eItemPartGroup)
+         change.groups.push_back({ editable, from }); // Center marker, in the parent's space
+      else if (!editable->m_desktopBackdrop) // Desktop backdrop parts are 2D, outside of the 3D reference spaces
+         if (const std::shared_ptr<EditorUIPart> &uiPart = FindUIPart(editable))
+         {
+            tempParts.push_back(uiPart);
+            const Matrix3D delta = SpaceTransform(table, from) * toNew;
+            (TransformForSpace(*uiPart, delta, false) ? change.parts : change.approximated).push_back({ editable, from });
+         }
+   };
+   for (IEditable *const editable : moved)
+   {
+      // The space a transform is expressed in is the resolved space of the part's parent group
+      const PartGroup *const parent = editable->GetPartGroup();
+      const PartGroupData::SpaceReference from = parent != nullptr ? parent->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+      if (from == change.newSpace)
+         continue;
+      queue(editable, from);
+      // The children of a space-inheriting group follow its space (an explicit one keeps its own);
+      // moved parts re-express themselves through their own entry
+      if (editable->GetItemType() == eItemPartGroup && static_cast<const PartGroup *>(editable)->m_d.m_spaceReference == PartGroupData::SpaceReference::SR_INHERIT)
+         for (IEditable *const child : SpaceChildren(static_cast<PartGroup *>(editable)))
+            if (std::ranges::find(moved, child) == moved.end())
+               queue(child, from);
+   }
+
+   if (!change.approximated.empty())
+   {
+      // Some children can not be exactly re-expressed in the new space: confirm before doing anything
+      m_pending.push_back(std::move(change));
+      m_openModal = true;
+      return false;
+   }
+
+   const bool useUndo = !m_editor.IsInspectMode();
+   if (useUndo)
+      m_editor.m_undo.BeginUndo();
+   Apply(change);
+   if (useUndo)
+      m_editor.m_undo.EndUndo();
+   return true;
+}
+
 void LayerSpaceChangeOp::ApplyAll()
 {
    if (m_pending.empty())
       return;
-   int partCount = 0, approximatedCount = 0;
+   int movedCount = 0, partCount = 0, approximatedCount = 0;
    for (const Change &change : m_pending)
    {
+      movedCount += (int)change.moved.size();
       partCount += (int)(change.parts.size() + change.approximated.size() + change.groups.size());
       approximatedCount += (int)change.approximated.size();
    }
@@ -228,12 +309,15 @@ void LayerSpaceChangeOp::ApplyAll()
       Apply(change);
    if (useUndo)
    {
-      m_editor.m_undo.SetLabel("Layer reference space"s);
+      m_editor.m_undo.SetLabel(movedCount > 0 ? "Move to layer"s : "Layer reference space"s);
       m_editor.m_undo.EndUndo();
    }
    m_pending.clear();
-   m_editor.Report(
-      std::to_string(partCount) + " children re-expressed in the new reference space"s + (approximatedCount > 0 ? ", "s + std::to_string(approximatedCount) + " approximated"s : ""s));
+   if (movedCount > 0)
+      m_editor.UpdateEditableList(); // Refresh the outliner paths and ordering after the reparenting
+   const string prefix = movedCount > 0 ? std::to_string(movedCount) + " part(s) moved: "s : ""s;
+   m_editor.Report(prefix + std::to_string(partCount) + " children re-expressed in the new reference space"s
+      + (approximatedCount > 0 ? ", "s + std::to_string(approximatedCount) + " approximated"s : ""s));
 }
 
 void LayerSpaceChangeOp::RenderModal()
@@ -243,14 +327,14 @@ void LayerSpaceChangeOp::RenderModal()
    if (m_openModal)
    {
       m_openModal = false;
-      ImGui::OpenPopup("Change Layer Space###ConfirmSpaceChange");
+      ImGui::OpenPopup("Reference Space Change###ConfirmSpaceChange");
    }
-   if (ImGui::BeginPopupModal("Change Layer Space###ConfirmSpaceChange", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   if (ImGui::BeginPopupModal("Reference Space Change###ConfirmSpaceChange", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
    {
       vector<string> names;
       for (const Change &change : m_pending)
-         for (IEditable *const part : change.approximated)
-            names.push_back(part->GetName());
+         for (const Conversion &conversion : change.approximated)
+            names.push_back(conversion.editable->GetName());
       ImGui::Text("%d part(s) can not be exactly re-expressed in the new reference space:", (int)names.size());
       for (size_t i = 0; i < names.size() && i < 10; i++)
          ImGui::BulletText("%s", names[i].c_str());
