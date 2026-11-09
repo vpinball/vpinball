@@ -574,9 +574,16 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::Text("Blueprint (x%.1f)", m_zoom);
       if (m_hovered)
       {
-         // Cursor position in table coordinates (the win32 status bar position readout)
+         // Cursor position in table coordinates (the win32 status bar position readout), shown in the selected units
          const Vertex2D cur = Unproject(ImGui::GetMousePos());
-         ImGui::Text("%.1f, %.1f", cur.x, cur.y);
+         char pos[64];
+         switch (editor.m_units)
+         {
+         case EditorUI::Units::Metric: snprintf(pos, sizeof(pos), "%.1f, %.1f mm", VPUTOMM(cur.x), VPUTOMM(cur.y)); break;
+         case EditorUI::Units::Imperial: snprintf(pos, sizeof(pos), "%.1f, %.1f in", VPUTOINCHES(cur.x), VPUTOINCHES(cur.y)); break;
+         default: snprintf(pos, sizeof(pos), "%.1f, %.1f", cur.x, cur.y); break;
+         }
+         ImGui::TextUnformatted(pos);
       }
       if (m_gizmoOperation == ImGuizmo::TRANSLATE)
          ImGui::TextUnformatted(ICON_LC_MOVE_3D " Grab");

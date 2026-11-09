@@ -1479,6 +1479,7 @@ PropString(LiveEditor, Layout3, "Layout3"s, "Editor area layout for layout slot 
 PropString(LiveEditor, Layout4, "Layout4"s, "Editor area layout for layout slot 4 (JSON)"s, ""s);
 PropString(LiveEditor, Layout5, "Layout5"s, "Editor area layout for layout slot 5 (JSON)"s, ""s);
 PropInt(LiveEditor, LayoutActive, "LayoutActive"s, "Active editor area layout slot (1-based)"s, 1, 5, 1);
+PropEnum(LiveEditor, Units, "Units"s, "Unit used to display lengths in the live editor"s, int, 0, "VP Units"s, "Metric"s, "Imperial"s);
 
 // Code View settings
 PropInt(CVEdit, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 255, 255));

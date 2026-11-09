@@ -417,12 +417,15 @@ void EditorChrome::RenderMenuBar()
          ImGui::Separator();
          if (ImGui::BeginMenu(ICON_LC_RULER " Units"))
          {
+            Settings &settings = g_settingsService.GetAppSettings();
             if (ImGui::RadioButton("VP Units", editor.m_units == EditorUI::Units::VPX))
                editor.m_units = EditorUI::Units::VPX;
             if (ImGui::RadioButton("Metric", editor.m_units == EditorUI::Units::Metric))
                editor.m_units = EditorUI::Units::Metric;
             if (ImGui::RadioButton("Imperial", editor.m_units == EditorUI::Units::Imperial))
                editor.m_units = EditorUI::Units::Imperial;
+            if (static_cast<int>(editor.m_units) != settings.GetLiveEditor_Units())
+               settings.SetLiveEditor_Units(static_cast<int>(editor.m_units), false);
             ImGui::EndMenu();
          }
          ImGui::Separator();
