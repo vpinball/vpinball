@@ -141,6 +141,9 @@ private:
    void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
    void SelectPartsInGroup(const PartGroup *group);
    void MoveSelectionToPartGroup(PartGroup *group); // Move all selected parts/groups to the given group (nullptr = root, part groups only)
+   // Whether the part may be moved to 'group' (nullptr = root): a part can not be moved to itself, a group
+   // not to itself or a descendant (cycle), and only part groups may be moved to the root (group-less parts are live objects)
+   static bool CanMovePartToGroup(const IEditable *editable, const PartGroup *group);
    // The selection may not mix parts of the desktop backdrop with parts of the 3D scene: its domain
    // is the m_desktopBackdrop flag of its parts, seeded from the active pane mode while it is empty
    bool SelectionDomain() const { return m_multiSel.empty() ? IsBackdropEditMode() : m_multiSel.front()->GetEditable()->m_desktopBackdrop; }
@@ -283,6 +286,7 @@ private:
    vector<AddPartButton> m_addPartButtons; // Lazily initialized part type picker buttons (shared by the viewport panes)
    void EnsureAddPartButtons();
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
+   PartGroup *CreatePartGroup(); // Create a new root-level part group (outliner / layer dialog 'New Group')
    void CreateCollection(bool fromSelection); // Create a collection, optionally populated with the selected parts
    PartGroup *GetPartGroupForNewPart();
    vector<PartGroup *> m_partGroupUseHistory; // Recently used insertion target part groups, most recent first
@@ -556,6 +560,7 @@ private:
    mutable bool m_viewportVisible = true;
    int m_maximizedLeafId = -1;
    int m_hoverLeaf = -1; // Leaf under the mouse (the maximize toggle target)
+   bool m_outlinerFocusPending = false; // Ctrl+F revealed an outliner leaf: focus its search field once its view exists
    AreaDrag m_areaDrag;
    AreaModalKind m_areaModal = AreaModalKind::None;
    int m_areaModalNode = -1;

@@ -10,7 +10,19 @@
 #include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/Sound.h"
+#include "parts/bumper.h"
+#include "parts/decal.h"
+#include "parts/flipper.h"
+#include "parts/gate.h"
+#include "parts/hittarget.h"
+#include "parts/kicker.h"
+#include "parts/plunger.h"
 #include "parts/primitive.h"
+#include "parts/ramp.h"
+#include "parts/rubber.h"
+#include "parts/spinner.h"
+#include "parts/surface.h"
+#include "parts/trigger.h"
 #include "physics/PhysicsEngine.h"
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
@@ -29,6 +41,27 @@ PropertiesPanel::PropertiesPanel(EditorUI &editor)
 }
 
 PropertiesPanel::~PropertiesPanel() = default;
+
+string PropertiesPanel::PartMaterial(const IEditable *part)
+{
+   switch (part->GetItemType())
+   {
+   case eItemPrimitive: return static_cast<const Primitive *>(part)->m_d.m_szMaterial;
+   case eItemRamp: return static_cast<const Ramp *>(part)->m_d.m_szMaterial;
+   case eItemSurface: return static_cast<const Surface *>(part)->m_d.m_szTopMaterial;
+   case eItemDecal: return static_cast<const Decal *>(part)->m_d.m_szMaterial;
+   case eItemFlipper: return static_cast<const Flipper *>(part)->m_d.m_szMaterial;
+   case eItemHitTarget: return static_cast<const HitTarget *>(part)->m_d.m_szMaterial;
+   case eItemPlunger: return static_cast<const Plunger *>(part)->m_d.m_szMaterial;
+   case eItemRubber: return static_cast<const Rubber *>(part)->m_d.m_szMaterial;
+   case eItemSpinner: return static_cast<const Spinner *>(part)->m_d.m_szMaterial;
+   case eItemKicker: return static_cast<const Kicker *>(part)->m_d.m_szMaterial;
+   case eItemTrigger: return static_cast<const Trigger *>(part)->m_d.m_szMaterial;
+   case eItemGate: return static_cast<const Gate *>(part)->m_d.m_szMaterial;
+   case eItemBumper: return static_cast<const Bumper *>(part)->m_d.m_szCapMaterial;
+   default: return string();
+   }
+}
 
 void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
 {

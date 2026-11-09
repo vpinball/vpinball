@@ -9,6 +9,7 @@
 #include "EditorAreaView.h"
 
 class Collection;
+class IEditable;
 class Material;
 class Texture;
 class RenderProbe;
@@ -39,6 +40,9 @@ public:
 
    // Default width of a newly hosted panel in logical pixels (scaled by the UI DPI)
    static constexpr float PaneWidth = 280.f;
+
+   // Name of the main material of a part (empty when the type has none), e.g. for the outliner's 'm:' filter token
+   static string PartMaterial(const IEditable *part);
 
 private:
    void TableProperties(PropertyPane &props);
