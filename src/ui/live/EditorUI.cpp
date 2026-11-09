@@ -108,6 +108,7 @@ EditorUI::EditorUI(LiveUI &liveUI)
    m_snapAffectMove = settings.GetEditor_SnapAffectMove();
    m_snapAffectRotate = settings.GetEditor_SnapAffectRotate();
    m_snapAffectScale = settings.GetEditor_SnapAffectScale();
+   m_units = static_cast<Units>(settings.GetLiveEditor_Units());
 }
 
 bool EditorUI::IsSnapActive(const SnapKind kind) const
