@@ -20,6 +20,9 @@ void TableMiscPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_staticPrepassDisabled = false;
+   // The stored value, which may differ from the running one if it was changed and saved during this game
+   Settings::SetTableOverride_Difficulty_Default(m_player->m_ptable->m_difficulty);
+   m_pendingDifficulty = g_settingsService.GetActiveSettings().GetTableOverride_Difficulty();
 }
 
 void TableMiscPage::Close(bool isBackwardAnimation)
@@ -128,15 +131,16 @@ void TableMiscPage::BuildPage()
             }));
       }
 
-      // Difficulty, always saved as a table override setting if different from table embedded value
+      // Difficulty, always saved as a table override setting if different from table embedded value.
+      // It is not applied to the running game: the slope (gravity, cabinet/room space placement) and
+      // flipper sizes are set up at start, so all its effects are applied together on the next start
       Settings::SetTableOverride_Difficulty_Default(m_player->m_ptable->m_difficulty);
       AddItem(std::make_unique<InGameUIItem>( //
          Settings::m_propTableOverride_Difficulty, 100.f, "%4.1f %%"s, //
-         [this]() { return m_player->m_ptable->m_globalDifficulty; }, //
+         [this]() { return m_pendingDifficulty; }, //
          [this](float, float v)
          {
-            m_player->m_ptable->m_globalDifficulty = v;
-            m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::Changed);
+            m_pendingDifficulty = v;
             m_difficultyNotification
                = m_player->m_liveUI->PushNotification("You have changed the difficulty level\nThis change will only be applied after restart."s, 5000, m_difficultyNotification);
          }));
