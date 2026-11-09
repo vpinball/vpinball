@@ -730,6 +730,16 @@ std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool 
       buffer = image->GetRawBitmap(resizeOnLowMem, m_maxTexDim);
    if (buffer && buffer->m_compressed == nullptr && IsSupported(*buffer) && (!isCompressionDiscarded || !isCompressionDiscarded()))
       buffer->m_compressed = LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile, isCompressionDiscarded);
+   // The texture manager holds a loaded texture until it is first drawn, which can be much later or never: once
+   // compressed, keep the compressed data alone, as for a texture read from the cache, so the decoded pixels are
+   // freed now (the image decodes them again if something needs them)
+   if (buffer && buffer->m_compressed && buffer->datac() != nullptr)
+   {
+      std::shared_ptr<BaseTexture> compressedOnly = BaseTexture::CreateCompressedOnly(buffer->m_compressed, buffer->m_format, buffer->IsOpaque());
+      compressedOnly->SetName(buffer->GetName());
+      compressedOnly->m_resizedOnLowMem = buffer->m_resizedOnLowMem;
+      buffer = std::move(compressedOnly);
+   }
    return buffer;
 }
 
