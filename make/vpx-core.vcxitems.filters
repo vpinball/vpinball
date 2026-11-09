@@ -627,8 +627,8 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ScriptPanel.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/SetOrigin.cpp">
-      <Filter>ui\live\editor</Filter>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/SetOriginOp.cpp">
+      <Filter>ui\live\editor\ops</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/SpinnerUIPart.cpp">
       <Filter>ui\live\editor\parts</Filter>
@@ -1787,8 +1787,8 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/Selection.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/SetOrigin.h">
-      <Filter>ui\live\editor</Filter>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/SetOriginOp.h">
+      <Filter>ui\live\editor\ops</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/SpinnerUIPart.h">
       <Filter>ui\live\editor\parts</Filter>

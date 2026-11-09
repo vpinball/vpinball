@@ -986,7 +986,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ResURIPicker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/RubberUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ScriptPanel.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/SetOrigin.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/SetOriginOp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/SpinnerUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/SurfaceUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/TextBoxUIPart.cpp" />
@@ -1959,7 +1959,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/RubberUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ScriptPanel.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/Selection.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/SetOrigin.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/SetOriginOp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/SpinnerUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/SurfaceUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/TextBoxUIPart.h" />

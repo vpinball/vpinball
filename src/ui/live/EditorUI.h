@@ -68,7 +68,7 @@ class EditorUI final
    friend class ScriptPane;
    friend class BlueprintPane;
    friend class ViewportPane;
-   friend class SetOrigin;
+   friend class SetOriginOp;
    friend class LayerSpaceChangeOp;
 
 public:

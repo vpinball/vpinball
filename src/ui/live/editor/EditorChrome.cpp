@@ -4,7 +4,7 @@
 #include "EditorChrome.h"
 #include "BlueprintPane.h"
 #include "EditorTheme.h"
-#include "SetOrigin.h"
+#include "ops/SetOriginOp.h"
 #include "IconsLucide.h"
 #include "ViewportPane.h" // GetTargetViewport()->m_imageRect (status overlay anchor)
 
@@ -431,11 +431,11 @@ void EditorChrome::RenderMenuBar()
          ImGui::Separator();
          if (ImGui::BeginMenu(ICON_LC_CIRCLE_DOT " Set Origin"))
          {
-            const bool canSetOrigin = SetOrigin::CanApply(editor);
+            const bool canSetOrigin = SetOriginOp::CanApply(editor);
             if (ImGui::MenuItem("Origin to Geometry", nullptr, false, canSetOrigin))
-               SetOrigin::Apply(editor, SetOrigin::Mode::Geometry);
+               SetOriginOp::Apply(editor, SetOriginOp::Mode::Geometry);
             if (ImGui::MenuItem("Origin to Geometry Bottom", nullptr, false, canSetOrigin))
-               SetOrigin::Apply(editor, SetOrigin::Mode::GeometryBottom);
+               SetOriginOp::Apply(editor, SetOriginOp::Mode::GeometryBottom);
             ImGui::EndMenu();
          }
          ImGui::EndMenu();
