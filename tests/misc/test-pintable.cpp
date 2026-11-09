@@ -10,6 +10,7 @@
 #include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/surface.h"
+#include "renderer/Texture.h"
 
 #include "doctest.h"
 
@@ -313,4 +314,35 @@ TEST_CASE("PinTable part")
 
       table->Release();
    }
+}
+
+TEST_CASE("PinTable image import and removal with the lookup table in use")
+{
+   // Once the lookup table is set up (play, live editor), GetImage only looks there: an imported image must be found right away, and a
+   // reimport under the same name must not leave the table pointing at the deleted image
+   PinTable* const table = CreateTestTable();
+   table->SetupLookUpTables(true);
+   const std::filesystem::path file = GetAssetPath() / "test000-default-table-Ref.webp";
+   Texture* const image = table->ImportImage(file, "imported"s);
+   REQUIRE(image != nullptr);
+   CHECK(table->GetImage("imported"s) == image);
+   Texture* const reimported = table->ImportImage(file, "imported"s); // Deletes 'image'
+   REQUIRE(reimported != nullptr);
+   CHECK(table->GetImage("imported"s) == reimported);
+   CHECK(table->GetImageList().size() == 1);
+   // An import without a name takes the file title, and a second one with the same title does not take over the lookup entry
+   Texture* const titled = table->ImportImage(file, ""s);
+   REQUIRE(titled != nullptr);
+   CHECK(table->GetImage(titled->m_name) == titled);
+   Texture* const duplicate = table->ImportImage(file, ""s);
+   REQUIRE(duplicate != nullptr);
+   CHECK(table->GetImage(titled->m_name) == titled);
+   // Removing an image hands its lookup entry to another image of the same name, or drops it: never a dangling pointer
+   const string title = titled->m_name;
+   table->RemoveImage(titled); // Deletes 'titled'
+   CHECK(table->GetImage(title) == duplicate);
+   table->RemoveImage(duplicate);
+   CHECK(table->GetImage(title) == nullptr);
+   CHECK(table->GetImage("imported"s) == reimported);
+   table->Release();
 }
