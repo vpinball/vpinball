@@ -52,10 +52,12 @@ void BlueprintDrawContext::SetObject(const EditorUIPart* part, const DragPoint* 
    }
    if (m_partLocked)
    {
+      // Locked parts use the locked color; a selected one gets the thicker pen (win32
+      // PaintSur: 4 for the active selection, 3 for multi-selected, 1 when unselected)
       const ImU32 color = ToImU32(SelectLockedColor());
       m_borderColor = color;
       m_lineColor = color;
-      m_borderWidth = m_lineWidth = m_dpi;
+      m_borderWidth = m_lineWidth = (m_partSelected ? (m_partActive ? 4.f : 3.f) : 1.f) * m_dpi;
       m_borderDashed = m_lineDashed = false;
    }
    else if (m_partSelected)
