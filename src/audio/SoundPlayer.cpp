@@ -31,6 +31,25 @@ static constexpr float kSpatialPlayfieldGain = 0.5f;
 namespace VPX
 {
 
+std::shared_ptr<progschj::ThreadPool> SoundPlayer::SharedCommandQueue()
+{
+   // Only weakly referenced: the pool is destroyed when the last player is
+   static std::weak_ptr<progschj::ThreadPool> weakQueue;
+   std::shared_ptr<progschj::ThreadPool> queue = weakQueue.lock();
+   if (queue == nullptr)
+   {
+      queue = std::make_shared<progschj::ThreadPool>(1);
+      queue->enqueue_block(
+         []()
+         {
+            SetThreadName("VPX.SoundPlayer");
+            set_denormals_flush_to_zero(); // FPU mode is per thread
+         });
+      weakQueue = queue;
+   }
+   return queue;
+}
+
 SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target)
 {
    // Decode and resample the sound on the ancillary thread as this is fairly heavy
@@ -46,15 +65,11 @@ SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const std::file
 SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::path& filename)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(SoundOutTypes::SNDOUT_BACKGLASS)
-   , m_commandQueue(1)
    , m_callbackId(""s) // Music: no callback information as there is at most one music playing
 {
-   m_commandQueue.enqueue(
+   m_commandQueue->enqueue(
       [this, filename]()
       {
-         SetThreadName("VPX.SoundPlayer ["s.append(PathToUTF8(filename.filename())).append(1, ']'));
-         set_denormals_flush_to_zero(); // FPU mode is per thread
-
          ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
          if (engine == nullptr)
             return;
@@ -141,15 +156,11 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
 SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(target)
-   , m_commandQueue(1)
    , m_callbackId(sound->GetName())
 {
-   m_commandQueue.enqueue(
+   m_commandQueue->enqueue(
       [this, sound]()
       {
-         SetThreadName("VPX.SoundPlayer ["s.append(sound->GetName()).append(1, ']'));
-         set_denormals_flush_to_zero(); // FPU mode is per thread
-
          ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
          if (engine == nullptr)
             return;
@@ -240,8 +251,8 @@ SoundPlayer::~SoundPlayer()
    m_alive->store(false);
    if (m_sound)
       m_sound->endCallback = nullptr;
-   m_commandQueue.wait_until_empty();
-   m_commandQueue.wait_until_nothing_in_flight();
+   // The queue is shared: wait for the commands this player sent, which its one thread runs in order
+   m_commandQueue->enqueue_block([] { }).wait();
    if (m_sound)
    {
       ma_sound_stop(m_sound.get());
@@ -257,12 +268,12 @@ SoundPlayer::~SoundPlayer()
 void SoundPlayer::SetMainVolume(float backglassVolume, float playfieldVolume, float hapticVolume)
 {
    m_mainVolume = m_outputTarget == SNDOUT_BACKGLASS ? backglassVolume : m_outputTarget == SNDOUT_HAPTIC ? hapticVolume : playfieldVolume;
-   m_commandQueue.enqueue([this]() { ApplyVolume(); });
+   m_commandQueue->enqueue([this]() { ApplyVolume(); });
 }
 
 void SoundPlayer::SetVolume(float volume) {
    m_soundVolume = volume;
-   m_commandQueue.enqueue([this]() { ApplyVolume(); });
+   m_commandQueue->enqueue([this]() { ApplyVolume(); });
 }
 
 void SoundPlayer::ApplyVolume()
@@ -287,7 +298,7 @@ void SoundPlayer::ApplyVolume()
 void SoundPlayer::Play(
    float volume, const float randompitch, const int pitch, float pan, float frontRearFade, const int loopcount, const bool hasPos, const float posX, const float posY, const float posZ)
 {
-   m_commandQueue.enqueue(
+   m_commandQueue->enqueue(
       [this, volume, randompitch, pitch, pan, frontRearFade, loopcount, hasPos, posX, posY, posZ]()
       {
          if (m_sound == nullptr)
@@ -388,32 +399,35 @@ void SoundPlayer::Play(
 
 void SoundPlayer::Pause()
 {
-   m_commandQueue.enqueue([this]()
-   {
-      if (m_sound)
-         ma_sound_stop(m_sound.get());
-   });
+   m_commandQueue->enqueue(
+      [this]()
+      {
+         if (m_sound)
+            ma_sound_stop(m_sound.get());
+      });
 }
 
 void SoundPlayer::Unpause()
 {
-   m_commandQueue.enqueue([this]()
-   {
-      if (m_sound)
-         ma_sound_start(m_sound.get());
-   });
+   m_commandQueue->enqueue(
+      [this]()
+      {
+         if (m_sound)
+            ma_sound_start(m_sound.get());
+      });
 }
 
 void SoundPlayer::Stop()
 {
-   m_commandQueue.enqueue([this]()
-   {
-      if (m_sound)
+   m_commandQueue->enqueue(
+      [this]()
       {
-         ma_sound_stop(m_sound.get());
-         ma_sound_seek_to_pcm_frame(m_sound.get(), 0);
-      }
-   });
+         if (m_sound)
+         {
+            ma_sound_stop(m_sound.get());
+            ma_sound_seek_to_pcm_frame(m_sound.get(), 0);
+         }
+      });
 }
 
 float SoundPlayer::GetPosition() const
@@ -426,11 +440,12 @@ float SoundPlayer::GetPosition() const
 
 void SoundPlayer::SetPosition(float pos)
 {
-   m_commandQueue.enqueue([this, pos]()
-   {
-      if (m_sound)
-         ma_sound_seek_to_second(m_sound.get(), pos);
-   });
+   m_commandQueue->enqueue(
+      [this, pos]()
+      {
+         if (m_sound)
+            ma_sound_seek_to_second(m_sound.get(), pos);
+      });
 }
 
 bool SoundPlayer::IsPlaying() const
@@ -470,7 +485,7 @@ void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
       me->m_loopCount--;
    // Dispatch through the command queue since we can not restart the sound from the callback as the sound is still playing and command would be discarded
    // The task may be dispatched while ~SoundPlayer is running, so it must not touch the sound once destruction started
-   me->m_commandQueue.enqueue(
+   me->m_commandQueue->enqueue(
       [pSound, alive = me->m_alive]()
       {
          if (alive->load())

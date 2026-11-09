@@ -76,7 +76,11 @@ private:
    // Shared with the loop-restart task enqueued by OnSoundEnd on the audio thread, so a task
    // dispatched around destruction never calls ma_sound_start on an uninitialized/freed sound
    const std::shared_ptr<std::atomic<bool>> m_alive = std::make_shared<std::atomic<bool>>(true);
-   mutable progschj::ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
+   // A table keeps a player for each of its sounds played (and for each copy playing at once) until it
+   // ends, so all players dispatch to one shared worker thread which runs their commands in order.
+   // Each player holds a reference so the pool outlives the destructor's command barrier
+   static std::shared_ptr<progschj::ThreadPool> SharedCommandQueue();
+   const std::shared_ptr<progschj::ThreadPool> m_commandQueue = SharedCommandQueue();
 
    const string m_callbackId;
    static void OnSoundEnd(void* pUserData, ma_sound* pSound);
