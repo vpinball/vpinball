@@ -54,8 +54,14 @@ Renderer::~Renderer()
 void Renderer::Render(VPXRenderContext2D* ctx, Display& display, VPXTexture artwork)
 {
    // The display is enabled by its sole presence in the document
-   PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(display.source.empty() ? PinballPlugin::ResURIResolver::DefaultDmdUri : display.source);
-   if (dmd.state.frame == nullptr)
+   PinballPlugin::ResURIResolver::DisplayState displayState = m_resURIResolver.GetDisplayState(display.source.empty() ? PinballPlugin::ResURIResolver::DefaultDmdUri : display.source);
+   // Without an explicit source, a game that has no dot matrix display but a CRT or LCD screen (Mr. Game,
+   // Bally Vidpin, Gottlieb Caveman) shows that screen in the display. The test is on the source, not
+   // the frame: a machine that has both (Pinball 2000) must not flash its video screen while its DMD
+   // has not pushed its first frame yet
+   if (displayState.source == nullptr && display.source.empty())
+      displayState = m_resURIResolver.GetDisplayState(PinballPlugin::ResURIResolver::DefaultCrtUri);
+   if (displayState.state.frame == nullptr)
       return;
 
    Doc* const doc = display.doc;
@@ -70,7 +76,7 @@ void Renderer::Render(VPXRenderContext2D* ctx, Display& display, VPXTexture artw
       {
          m_stopSearching = false;
          const float ar = display.options.sizeW > 0 && display.options.sizeH > 0 ? static_cast<float>(display.options.sizeW) / static_cast<float>(display.options.sizeH)
-                                                                                 : static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
+                                                                                 : static_cast<float>(displayState.source->width) / static_cast<float>(displayState.source->height);
          const LogFn log = doc != nullptr ? doc->log : nullptr;
          m_frameSearch = std::async(std::launch::async, [this, artwork, texInfo, ar, log]() { return SearchDmdSubFrame(artwork, texInfo, ar, log); });
       }
@@ -98,17 +104,23 @@ void Renderer::Render(VPXRenderContext2D* ctx, Display& display, VPXTexture artw
       return; // Fully clipped away or off the view
 
    // The texture is owned by the plugin, hence the null test: it may still have to be created here
-   if (!m_hasUploadedFrame || (m_dmdTex == nullptr) || (dmd.state.frameId != m_uploadedFrameId) || (*dmd.source != m_uploadedSrc))
+   if (!m_hasUploadedFrame || (m_dmdTex == nullptr) || (displayState.state.frameId != m_uploadedFrameId) || (*displayState.source != m_uploadedSrc))
    {
-      switch (dmd.source->frameFormat)
+      switch (displayState.source->frameFormat)
       {
-      case CTLPI_DISPLAY_FORMAT_LUM32F: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
-      case CTLPI_DISPLAY_FORMAT_SRGB888: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
-      case CTLPI_DISPLAY_FORMAT_SRGB565: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_LUM32F:
+         m_vpxApi->UpdateTexture(&m_dmdTex, displayState.source->width, displayState.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, displayState.state.frame);
+         break;
+      case CTLPI_DISPLAY_FORMAT_SRGB888:
+         m_vpxApi->UpdateTexture(&m_dmdTex, displayState.source->width, displayState.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, displayState.state.frame);
+         break;
+      case CTLPI_DISPLAY_FORMAT_SRGB565:
+         m_vpxApi->UpdateTexture(&m_dmdTex, displayState.source->width, displayState.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, displayState.state.frame);
+         break;
       default: return;
       }
-      m_uploadedSrc = *dmd.source;
-      m_uploadedFrameId = dmd.state.frameId;
+      m_uploadedSrc = *displayState.source;
+      m_uploadedFrameId = displayState.state.frameId;
       m_hasUploadedFrame = true;
    }
 
@@ -149,7 +161,7 @@ void Renderer::Render(VPXRenderContext2D* ctx, Display& display, VPXTexture artw
    if (!PinballPlugin::OverlayDisplayStyleToVPX(o.style, style))
    {
       style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma;
-      switch (dmd.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK)
+      switch (displayState.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK)
       {
       case CTLPI_DISPLAY_HARDWARE_NEON_PLASMA: style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma; break;
       case CTLPI_DISPLAY_HARDWARE_RED_LED: style = VPXDisplayRenderStyle::VPXDMDStyle_RedLED; break;
@@ -602,7 +614,8 @@ namespace
          it[n].type = PAGEDUI_ITEM_ENUM;
          it[n].context = &display.target;
          it[n++].enumProp = { 0, doc->targetCount, doc->targetNames, 0, &OverlayFieldGet, &OverlayFieldSet };
-         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.source", i)), "Source", "Controller resource URI of the DMD to render (ctrl://..., empty = default DMD)");
+         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.source", i)), "Source",
+            "Controller resource URI of the display to render (ctrl://..., empty = default DMD, or the CRT/LCD screen of a game without DMD)");
          it[n].type = PAGEDUI_ITEM_STRING;
          it[n].context = &display;
          it[n].stringProp.defVal = "";
