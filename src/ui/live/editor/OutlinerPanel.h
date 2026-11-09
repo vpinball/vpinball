@@ -74,7 +74,8 @@ private:
       bool empty() const { return names.empty() && types.empty() && materials.empty(); }
    };
    // Tree node with a line chevron instead of ImGui's filled triangle; while m_setAllOpen >= 0 every node is forced open/closed (expand/collapse all)
-   bool ChevronTreeNode(const char *label, ImGuiTreeNodeFlags flags = 0);
+   // icon: the label's leading icon glyph, drawn ink-centered on the row (its glyph ink overshoots the line box); iconBadge: a grey chip behind it
+   bool ChevronTreeNode(const char *label, ImGuiTreeNodeFlags flags = 0, const char *icon = nullptr, bool iconBadge = false);
    void ParseFilter();
    bool MatchesFilter(const string &name) const; // Name tokens only (non part lists)
    bool MatchesPartCached(size_t index) const; // All tokens, for m_editables[index] (needs RefreshFilterCache)

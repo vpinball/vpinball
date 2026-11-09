@@ -110,7 +110,7 @@ static void PushRowColors(const bool selected, const bool inactive)
 
 // Tree node with a line chevron instead of ImGui's filled triangle: the node is submitted with an invisible text (same ID, click, keyboard and
 // open state behaviour), then the chevron and the label are drawn over it
-bool OutlinerPanel::ChevronTreeNode(const char *label, const ImGuiTreeNodeFlags flags)
+bool OutlinerPanel::ChevronTreeNode(const char *label, const ImGuiTreeNodeFlags flags, const char *icon, const bool iconBadge)
 {
    const ImGuiStyle &style = ImGui::GetStyle();
    const ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -129,7 +129,21 @@ bool OutlinerPanel::ChevronTreeNode(const char *label, const ImGuiTreeNodeFlags 
    if ((flags & ImGuiTreeNodeFlags_Leaf) == 0)
       EditorChrome::DrawChevron(drawList, ImVec2(pos.x + style.FramePadding.x + fontSize * 0.5f, 0.5f * (itemMin.y + itemMax.y)),
          opened ? EditorChrome::ChevronDir::Down : EditorChrome::ChevronDir::Right, fontSize * 0.25f, EditorTheme::TextDim);
-   drawList->AddText(ImVec2(pos.x + ImGui::GetTreeNodeToLabelSpacing(), pos.y + textOffsetY), textColor, label, ImGui::FindRenderedTextEnd(label));
+   const ImVec2 labelPos(pos.x + ImGui::GetTreeNodeToLabelSpacing(), pos.y + textOffsetY);
+   const char *const labelEnd = ImGui::FindRenderedTextEnd(label);
+   if (icon == nullptr)
+   {
+      drawList->AddText(labelPos, textColor, label, labelEnd);
+      return opened;
+   }
+   // Leading icon drawn ink-centered on the row: the glyph ink overshoots the line box, sitting too high on the text origin
+   const ImVec4 ink = TextInkBounds(icon);
+   const ImVec2 inkMin(labelPos.x, 0.5f * (itemMin.y + itemMax.y - (ink.w - ink.y)));
+   if (iconBadge)
+      // Grey chip behind the icon: the group in which new and imported parts are added
+      drawList->AddRectFilled(ImVec2(inkMin.x - 4.f, inkMin.y - 3.f), ImVec2(inkMin.x + (ink.z - ink.x) + 4.f, inkMin.y + (ink.w - ink.y) + 3.f), EditorTheme::Hover, 4.f);
+   drawList->AddText(ImVec2(inkMin.x - ink.x, inkMin.y - ink.y), textColor, icon);
+   drawList->AddText(ImVec2(labelPos.x + ImGui::CalcTextSize(icon).x, labelPos.y), textColor, label + strlen(icon), labelEnd);
    return opened;
 }
 
@@ -694,10 +708,16 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       if (editor.m_table->m_liveBaseTable == nullptr)
       {
          ImGui::SameLine(eyeX);
+         const char *const eyeIcon = editable->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF;
+         // The small button is shorter than the row: center it vertically (SameLine restored the row height in CurrLineSize)
+         const ImVec4 eyeInk = TextInkBounds(eyeIcon);
+         const float eyeOffsetY = (ImGui::GetCurrentWindow()->DC.CurrLineSize.y - ImMax(ImGui::GetTextLineHeight(), eyeInk.w - eyeInk.y)) * 0.5f;
+         if (eyeOffsetY > 0.f)
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + eyeOffsetY);
          ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(editable->IsUIVisible(false) ? EditorTheme::TextDim : EditorTheme::TextFaint));
          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
          ImGui::PushID(editable);
-         if (SmallIconButtonInk(editable->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF, "##Eye"))
+         if (SmallIconButtonInk(eyeIcon, "##Eye"))
          {
             editable->SetUIVisible(!editable->IsUIVisible(false));
             editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
@@ -816,18 +836,18 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                   const string &groupName = edit->GetEditable()->GetName();
                   const string idPart = "###" + groupName;
                   const bool wasOpen = ImGui::GetStateStorage()->GetInt(ImGui::GetID(idPart.c_str()), 0) != 0;
-                  // Name shortened so that it ends before the count, the new part marker and the eye button
+                  // Name shortened so that it ends before the count and the eye button
                   const string countText = std::to_string(countIt != m_groupCounts.end() ? countIt->second : 0);
-                  const string iconPart = wasOpen ? ICON_LC_FOLDER_OPEN "  " : ICON_LC_FOLDER "  ";
-                  const float arrowWidth = ImGui::CalcTextSize(ICON_LC_CIRCLE_ARROW_LEFT).x;
+                  const char *const icon = wasOpen ? ICON_LC_FOLDER_OPEN : ICON_LC_FOLDER;
+                  const string iconPart = icon + "  "s;
                   const float labelStartX = ImGui::GetCursorScreenPos().x + ImGui::GetTreeNodeToLabelSpacing();
-                  const float labelEndX = ImGui::GetWindowPos().x - ImGui::GetScrollX() + eyeX - arrowWidth - style.ItemSpacing.x * 3.f - ImGui::CalcTextSize(countText.c_str()).x;
+                  const float labelEndX = ImGui::GetWindowPos().x - ImGui::GetScrollX() + eyeX - style.ItemSpacing.x * 2.f - ImGui::CalcTextSize(countText.c_str()).x;
                   const string groupLabel = iconPart + EllipsizeToWidth(groupName, labelEndX - labelStartX - ImGui::CalcTextSize(iconPart.c_str()).x) + idPart;
                   const bool groupHidden = !group->IsUIVisible(false);
                   if (groupHidden)
                      ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextFaint));
-                  opened = ChevronTreeNode(
-                     groupLabel.c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanFullWidth | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0));
+                  opened = ChevronTreeNode(groupLabel.c_str(),
+                     ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanFullWidth | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0), icon, isNewPartTarget);
                   if (groupHidden)
                      ImGui::PopStyleColor();
                   ImGui::PopStyleColor(3);
@@ -861,24 +881,25 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                      ImGui::EndPopup();
                   }
                   {
-                     // Part count (dim, right aligned before the eye column); the new part target marker is only shown on row hover
-                     ImGui::SameLine(eyeX - arrowWidth - style.ItemSpacing.x * 2.f - ImGui::CalcTextSize(countText.c_str()).x);
+                     // Part count (dim, right aligned before the eye column); the disc behind the icon marks the group new and imported parts are added to
+                     ImGui::SameLine(eyeX - style.ItemSpacing.x - ImGui::CalcTextSize(countText.c_str()).x);
                      ImGui::TextColored(EditorTheme::V(EditorTheme::TextDim), "%s", countText.c_str());
-                     if (isNewPartTarget && rowHovered)
-                     {
-                        ImGui::SameLine(eyeX - arrowWidth - style.ItemSpacing.x);
-                        ImGui::TextColored(EditorTheme::V(EditorTheme::TextDim), ICON_LC_CIRCLE_ARROW_LEFT);
-                        if (ImGui::IsItemHovered())
-                           ImGui::SetTooltip("New and imported parts are added to this group");
-                     }
+                     if (isNewPartTarget && rowHovered && ImGui::GetIO().MousePos.x >= labelStartX && ImGui::GetIO().MousePos.x <= labelStartX + TextInkBounds(icon).z)
+                        ImGui::SetTooltip("New and imported parts are added to this group");
                   }
                   if (editor.m_table->m_liveBaseTable == nullptr)
                   {
                      ImGui::SameLine(eyeX);
+                     const char *const eyeIcon = group->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF;
+                     // The small button is shorter than the row: center it vertically (SameLine restored the row height in CurrLineSize)
+                     const ImVec4 eyeInk = TextInkBounds(eyeIcon);
+                     const float eyeOffsetY = (ImGui::GetCurrentWindow()->DC.CurrLineSize.y - ImMax(ImGui::GetTextLineHeight(), eyeInk.w - eyeInk.y)) * 0.5f;
+                     if (eyeOffsetY > 0.f)
+                        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + eyeOffsetY);
                      ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(group->IsUIVisible(false) ? EditorTheme::TextDim : EditorTheme::TextFaint));
                      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
                      ImGui::PushID(group);
-                     if (SmallIconButtonInk(group->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF, "##Eye"))
+                     if (SmallIconButtonInk(eyeIcon, "##Eye"))
                      {
                         group->SetUIVisible(!group->IsUIVisible(false));
                         editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
