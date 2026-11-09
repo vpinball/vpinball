@@ -56,7 +56,7 @@ void ExtractTRS(Matrix3D transform, vec3 &pos, vec3 &scale, vec3 &rot)
    }
    else
    {
-      rot.x = -RADTOANG(atan2f(transform._23, transform._22));
+      rot.x = -RADTOANG(atan2f(-transform._23, transform._22)); // Gimbal lock (Y at +/-90 degrees): Z is 0, X takes the remaining rotation
       rot.y = -RADTOANG(atan2f(-transform._31, sy));
       rot.z = 0.f;
    }
@@ -79,20 +79,6 @@ void PartLibraryPanel::Show()
    m_rescanLibrary = true;
    if (!IsVisible())
       m_editor.ShowAreaEditor(AreaType::PartLibrary);
-}
-
-void PartLibraryPanel::Close()
-{
-   m_placementPack.clear();
-   ClearPreview();
-   const int leaf = m_editor.m_layout.FindLeaf(AreaType::PartLibrary);
-   if (leaf >= 0)
-   {
-      EditorUI::PendingAreaOp op {};
-      op.kind = EditorUI::PendingAreaOp::Kind::Close;
-      op.leaf = leaf;
-      m_editor.m_pendingAreaOps.push_back(op);
-   }
 }
 
 bool PartLibraryPanel::IsVisible() const { return m_editor.m_layout.IsHosted(AreaType::PartLibrary); }

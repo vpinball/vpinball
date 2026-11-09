@@ -18,13 +18,16 @@ namespace
    const char *const spaceNames[] = { "Playfield", "Cabinet", "Cabinet Feet", "Room", "Inherit" };
 
    // Decompose a transform into the position/scale/rotation components used by the parts'
-   // SetTransform (same decomposition as EditorUI::SetSelectionTransform)
+   // SetTransform, as EditorUI::SetSelectionTransform does but keeping mirroring: a mirrored
+   // transform (e.g. a primitive with a negative size) gets a negative X scale, not a rotation
    void ExtractTRS(Matrix3D transform, vec3 &pos, vec3 &scale, vec3 &rot)
    {
       const Vertex3Ds right(transform._11, transform._12, transform._13);
       const Vertex3Ds up(transform._21, transform._22, transform._23);
       const Vertex3Ds dir(transform._31, transform._32, transform._33);
       scale.Set(max(right.Length(), 1e-8f), max(up.Length(), 1e-8f), max(dir.Length(), 1e-8f)); // Clamp to avoid division by zero
+      if (right.Dot(CrossProduct(up, dir)) < 0.f)
+         scale.x = -scale.x;
 
       transform._11 /= scale.x; // Normalize transform to evaluate rotation
       transform._12 /= scale.x;
@@ -42,13 +45,13 @@ namespace
       const float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
       if (sy > 1e-6f)
       {
-         rot.x = -RADTOANG(atan2f(transform._32, transform._33));
+         rot.x = -RADTOANG(atan2f( transform._32, transform._33));
          rot.y = -RADTOANG(atan2f(-transform._31, sy));
-         rot.z = -RADTOANG(atan2f(transform._21, transform._11));
+         rot.z = -RADTOANG(atan2f( transform._21, transform._11));
       }
       else
       {
-         rot.x = -RADTOANG(atan2f(transform._23, transform._22));
+         rot.x = -RADTOANG(atan2f(-transform._23, transform._22)); // Gimbal lock (Y at +/-90 degrees): Z is 0, X takes the remaining rotation
          rot.y = -RADTOANG(atan2f(-transform._31, sy));
          rot.z = 0.f;
       }

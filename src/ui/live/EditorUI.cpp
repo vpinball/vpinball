@@ -188,8 +188,7 @@ void EditorUI::Close()
    ExitPointEditMode(false);
    RestorePartsVisibility();
    m_inspectionModal.Close();
-   m_partLibrary.Close();
-   m_scriptPanel.Close();
+   m_partLibrary.CancelPlacement(); // Drops a pending pack placement; the part library and script areas stay in the layout
    SaveAreaLayoutSettings(); // The layout and the view setups survive the session end
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
@@ -239,7 +238,7 @@ void EditorUI::PlayTest()
    m_player->SetTable(liveTable, Player::TableTransition::Stack);
    // The pane views must not draw over the play session (RenderPane re-arms them when the editor comes back)
    for (const auto &[id, view] : m_areaViews)
-      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->GetView() != nullptr) // A pane never rendered has no view
          vp->GetView()->m_renderScene = false; // The leaf is hidden while a playtest table is stacked
 }
 
@@ -2690,7 +2689,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
       }
       else
       {
-         rot.x = -RADTOANG(atan2f(transform._23, transform._22));
+         rot.x = -RADTOANG(atan2f(-transform._23, transform._22)); // Gimbal lock (Y at +/-90 degrees): Z is 0, X takes the remaining rotation
          rot.y = -RADTOANG(atan2f(-transform._31, sy));
          rot.z = 0.f;
       }

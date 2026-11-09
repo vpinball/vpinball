@@ -36,7 +36,6 @@ public:
    ~PartLibraryPanel();
 
    void Show(); // Hosts the panel in an area leaf (splitting the focused one)
-   void Close(); // Closes the leaf hosting the panel
    bool IsVisible() const;
 
    // Export of the current selection to a VPZ pack file, disabled when there is no exportable selection

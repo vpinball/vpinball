@@ -25,7 +25,6 @@ public:
    ~ScriptPanel();
 
    void Show(); // Hosts the panel in an area leaf (splitting the focused one)
-   void Close(); // Closes the leaf hosting the panel
    bool IsVisible() const;
 
    void Update(); // Per frame housekeeping (external editor session)

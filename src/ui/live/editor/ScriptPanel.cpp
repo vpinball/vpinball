@@ -34,18 +34,6 @@ void ScriptPanel::Show()
       m_editor.ShowAreaEditor(AreaType::Script);
 }
 
-void ScriptPanel::Close()
-{
-   const int leaf = m_editor.m_layout.FindLeaf(AreaType::Script);
-   if (leaf >= 0)
-   {
-      EditorUI::PendingAreaOp op {};
-      op.kind = EditorUI::PendingAreaOp::Kind::Close;
-      op.leaf = leaf;
-      m_editor.m_pendingAreaOps.push_back(op);
-   }
-}
-
 bool ScriptPanel::IsVisible() const { return m_editor.m_layout.IsHosted(AreaType::Script); }
 
 // Split a command line into arguments, honoring double quotes (e.g. "C:\My Editor\editor.exe" --wait)
