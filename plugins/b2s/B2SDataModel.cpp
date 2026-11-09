@@ -953,7 +953,8 @@ B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
    , m_dmdAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, true))
 {
    // Optional plugin-authored <Displays> element (ignored by other B2S tools): its <DMD> children
-   // declare DMD overlays; other display kinds (CRT/LCD) may be added as children later
+   // declare display overlays. Without a Source, the overlay shows the default dot matrix display, or
+   // the default CRT/LCD screen of games that have no dot matrix display (see DMDOverlay::Renderer::Render)
    if (const tinyxml2::XMLElement* displays = GetNode(root, "Displays"s))
    {
       for (const tinyxml2::XMLElement* dmd = displays->FirstChildElement("DMD"); dmd != nullptr; dmd = dmd->NextSiblingElement("DMD"))

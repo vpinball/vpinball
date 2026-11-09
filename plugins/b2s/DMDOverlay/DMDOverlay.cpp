@@ -55,6 +55,10 @@ void Renderer::Render(VPXRenderContext2D* ctx, Display& display, VPXTexture artw
 {
    // The display is enabled by its sole presence in the document
    PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(display.source.empty() ? PinballPlugin::ResURIResolver::DefaultDmdUri : display.source);
+   // Without an explicit source, a game that has no dot matrix display but a CRT or LCD screen (Mr. Game,
+   // Bally Vidpin, Gottlieb Caveman) shows that screen in the display
+   if (dmd.state.frame == nullptr && display.source.empty())
+      dmd = m_resURIResolver.GetDisplayState(PinballPlugin::ResURIResolver::DefaultCrtUri);
    if (dmd.state.frame == nullptr)
       return;
 
@@ -602,7 +606,7 @@ namespace
          it[n].type = PAGEDUI_ITEM_ENUM;
          it[n].context = &display.target;
          it[n++].enumProp = { 0, doc->targetCount, doc->targetNames, 0, &OverlayFieldGet, &OverlayFieldSet };
-         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.source", i)), "Source", "Controller resource URI of the DMD to render (ctrl://..., empty = default DMD)");
+         PinballPlugin::OverlayUI::FillItem(it[n], str(std::format("dmd{}.source", i)), "Source", "Controller resource URI of the display to render (ctrl://..., empty = default DMD, or the CRT/LCD screen of a game without DMD)");
          it[n].type = PAGEDUI_ITEM_STRING;
          it[n].context = &display;
          it[n].stringProp.defVal = "";
