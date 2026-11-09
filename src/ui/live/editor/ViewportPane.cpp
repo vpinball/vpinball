@@ -1437,9 +1437,8 @@ void ViewportPane::Render3D()
       rd->ResetRenderState();
       // Non playfield space axes lay under the table (the space transform lowers them): they must be
       // drawn without depth test to stay visible, as infinite lines through the whole viewport
-      const bool depthTest = *space == PartGroupData::SpaceReference::SR_PLAYFIELD;
-      rd->SetRenderState(RenderState::ZENABLE, depthTest ? RenderState::RS_TRUE : RenderState::RS_FALSE);
-      rd->SetRenderState(RenderState::ZWRITEENABLE, depthTest ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+      rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+      rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
       rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
       rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       rd->EnableAlphaBlend(false); // ALPHABLENDENABLE alone leaves the blend factors at their defaults (zero src: nothing written)
@@ -1483,7 +1482,6 @@ void ViewportPane::Render3D()
          if (m_spaceAxesRanges[seg * 2 + 1] == 0)
             continue;
          rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, &segmentColors[seg]);
-         rd->m_basicShader->SetVector(ShaderUniform::cBase_Alpha, &segmentColors[seg]);
          rd->DrawMesh(rd->m_basicShader, true, m_spaceAxesCenter, 0.f, m_spaceAxesMesh, RenderDevice::LINELIST, m_spaceAxesRanges[seg * 2], m_spaceAxesRanges[seg * 2 + 1]);
       }
       for (size_t i = cmdBase; i < rd->GetCurrentPass()->m_commands.size(); i++)
