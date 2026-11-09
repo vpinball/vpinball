@@ -165,6 +165,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    // These three assets are shipped with the application, so failing to load one means a broken install rather than
    // a table problem. So no fall back, rather fail/crash on startup
    std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BallEnv.exr")));
+#ifdef ENABLE_BGFX
+   // WebGPU can only filter 32 bit float textures with the optional 'float32-filterable' feature, so clamp
+   // extreme HDR environments to FP16 to keep envmap filtering working everywhere
+   if (bgfx::getRendererType() == bgfx::RendererType::Enum::WebGPU)
+   {
+      if (ballTex->m_format == BaseTexture::RGB_FP32)
+         ballTex = ballTex->Convert(BaseTexture::RGB_FP16);
+      else if (ballTex->m_format == BaseTexture::RGBA_FP32)
+         ballTex = ballTex->Convert(BaseTexture::RGBA_FP16);
+   }
+#endif
    m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, /*m_renderDevice->OrFallback(*/ ballTex /*)*/, false);
    ballTex = nullptr;
 
@@ -176,6 +187,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    std::shared_ptr<const BaseTexture> envTex = /*m_renderDevice->OrFallback(*/
       tableEnv ? tableEnv->GetRawBitmap(false, 0)
                : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "EnvMap.webp"))) /*)*/;
+#ifdef ENABLE_BGFX
+   // WebGPU can only filter 32 bit float textures with the optional 'float32-filterable' feature, so clamp
+   // extreme HDR environments to FP16 to keep envmap filtering working everywhere
+   if (bgfx::getRendererType() == bgfx::RendererType::Enum::WebGPU)
+   {
+      if (envTex->m_format == BaseTexture::RGB_FP32)
+         envTex = envTex->Convert(BaseTexture::RGB_FP16);
+      else if (envTex->m_format == BaseTexture::RGBA_FP32)
+         envTex = envTex->Convert(BaseTexture::RGBA_FP16);
+   }
+#endif
    m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
 
    PLOGI << "Computing environment map radiance"; // For profiling

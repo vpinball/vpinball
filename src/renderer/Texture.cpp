@@ -668,15 +668,46 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
    case RGB_FP32:
       switch (format)
       {
-         case RGBA_FP32:
-            {
-            tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
-            if (tex == nullptr)
-               return nullptr;
-            copy_rgb_rgba(reinterpret_cast<float*>(tex->data()), reinterpret_cast<const float*>(datac()), (size_t)width() * height());
-         }
+      case RGB_FP16:
+      {
+         tex = BaseTexture::Create(m_width, m_height, RGB_FP16);
+         if (tex == nullptr)
+            return nullptr;
+         const float* const __restrict src = static_cast<const float*>(datac());
+         uint16_t* const __restrict dst = static_cast<uint16_t*>(tex->data());
+         const size_t e = (size_t)width() * height() * 3;
+         for (size_t i = 0; i < e; ++i)
+            dst[i] = float2half_noLUT(clamp(src[i], -65504.f, 65504.f));
+      }
+      break;
+      case RGBA_FP32:
+      {
+         tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
+         if (tex == nullptr)
+            return nullptr;
+         copy_rgb_rgba(reinterpret_cast<float*>(tex->data()), reinterpret_cast<const float*>(datac()), (size_t)width() * height());
+      }
          break;
          default: break;
+      }
+      break;
+
+   case RGBA_FP32:
+      switch (format)
+      {
+      case RGBA_FP16:
+      {
+         tex = BaseTexture::Create(m_width, m_height, RGBA_FP16);
+         if (tex == nullptr)
+            return nullptr;
+         const float* const __restrict src = static_cast<const float*>(datac());
+         uint16_t* const __restrict dst = static_cast<uint16_t*>(tex->data());
+         const size_t e = (size_t)width() * height() * 4;
+         for (size_t i = 0; i < e; ++i)
+            dst[i] = float2half_noLUT(clamp(src[i], -65504.f, 65504.f));
+      }
+      break;
+      default: break;
       }
       break;
 
