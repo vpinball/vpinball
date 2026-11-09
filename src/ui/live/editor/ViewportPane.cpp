@@ -1044,7 +1044,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       if (IconButtonInk(perspective ? ICON_LC_VIDEO : ICON_LC_VIDEO_OFF, "##Persp"))
          SetPerspectiveCam(!perspective);
       if (ImGui::IsItemHovered())
-         ImGui::SetTooltip(perspective ? "Perspective camera" : "Orthographic camera");
+         ImGui::SetTooltip("%s", perspective ? "Perspective camera" : "Orthographic camera");
       ImGui::SameLine();
       // Shading mode radio buttons (icon group, same style as the edit modes)
       static const struct

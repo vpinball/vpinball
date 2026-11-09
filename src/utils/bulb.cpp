@@ -448,7 +448,7 @@ int main()
          bulbs[bulb].rating_T = ratedT;
          fit_bulb(bulb, 0);
 
-         printf(ratedT == prevT ? "*" : " ");
+         printf("%s", ratedT == prevT ? "*" : " ");
          printf("T=%dK", ratedT);
          for (int Tr = 293; Tr <= 303; Tr += 5)
          {

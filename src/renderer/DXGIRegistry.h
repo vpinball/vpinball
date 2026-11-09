@@ -91,7 +91,9 @@ public:
             if (hr == S_OK && out->m_OutputDesc.Monitor == monitor)
             {
                if (adapterIndex > 0)
+               {
                   PLOGI << "DXGI output was found on another adapter than the desktop's one";
+               }
                found = true;
             }
             else

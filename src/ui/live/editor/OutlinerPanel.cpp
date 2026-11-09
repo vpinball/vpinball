@@ -57,7 +57,7 @@ static string EllipsizeToWidth(const string &text, const float maxWidth)
    if (widthOf(begin, end) <= maxWidth)
       return text;
    // Cut at the last whole UTF-8 character leaving room for the ellipsis (binary search on character boundaries)
-   const float limit = maxWidth - widthOf("...", "..." + 3);
+   const float limit = maxWidth - widthOf("...", &"..."[3]);
    const auto isCont = [&text](const size_t i) { return (static_cast<unsigned char>(text[i]) & 0xC0) == 0x80; };
    size_t lo = 0, hi = text.size();
    while (lo < hi)
@@ -429,7 +429,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          drawList->AddText(ImVec2(itemMin.x + style.FramePadding.x - iconInk.x, itemMin.y + style.FramePadding.y - iconInk.y), EditorTheme::Text, icon);
          const float half = chevronWidth * 0.5f;
          EditorChrome::DrawChevron(drawList, ImVec2(itemMax.x - style.FramePadding.x - half, centerY), EditorChrome::ChevronDir::Down, half, EditorTheme::TextDim);
-         ImGui::SetItemTooltip(modeNames[m_displayMode]);
+         ImGui::SetItemTooltip("%s", modeNames[m_displayMode]);
          ImGui::SetNextWindowPos(ImVec2(itemMin.x, itemMax.y), ImGuiCond_Always);
          if (ImGui::BeginPopup("##OutlinerModePopup"))
          {
@@ -490,7 +490,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       const bool anyOpen = m_openNodeCount > 0;
       if (IconButtonInk(anyOpen ? ICON_LC_CHEVRON_UP : ICON_LC_CHEVRON_DOWN, "##ExpandAll"))
          m_setAllOpen = anyOpen ? 0 : 1;
-      ImGui::SetItemTooltip(anyOpen ? "Collapse All" : "Expand All");
+      ImGui::SetItemTooltip("%s", anyOpen ? "Collapse All" : "Expand All");
       ImGui::SameLine();
       ImGui::BeginDisabled(!canReparent);
       if (IconButtonInk(ICON_LC_FOLDER, "##NewPartGroup"))
