@@ -30,6 +30,7 @@ set(VPX_TEST_SOURCES
    tests/input/test-scancodes.cpp
    tests/input/test-sensormapping.cpp
    tests/misc/test-collection.cpp
+   tests/misc/test-envmap-precalc.cpp
    tests/misc/test-material.cpp
    tests/misc/test-pinbinary.cpp
    tests/misc/test-pintable.cpp

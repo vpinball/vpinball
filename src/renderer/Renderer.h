@@ -87,6 +87,10 @@ public:
    RenderView* GetActiveView() const { return m_activeView; }
    RenderView* GetPrimaryView() const { return m_primaryView.get(); }
    RenderView* GetVRMirrorView() const { return m_vrMirrorView.get(); }
+
+   // Computes the diffuse irradiance environment map used by platforms without GPU irradiance
+   // prefiltering (DX9, OpenGL ES, Apple, wasm, Android XR). Stateless, shared by all CPU paths.
+   static std::shared_ptr<BaseTexture> EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
    const vector<RenderView*>& GetViews() const { return m_renderViews; }
    RenderView* CreateEditorView(); // Registers a Kind::Editor view (an editor viewport drawing to its area of a shared output)
    void ReleaseEditorView(RenderView* view); // Unregisters a view made by CreateEditorView (destroyed at the next frame's record start)
@@ -391,7 +395,6 @@ public:
 private:
    void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force) { m_activeView->SetSpaceReference(spaceReference, force); }
    bool IsBloomEnabled() const;
-   std::shared_ptr<BaseTexture> EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
 
    // Per view render target accessors, delegated to the active view (used by ancillary and postprocess helpers)
    RenderTarget* GetMSAABackBufferTexture() const { return m_activeView->GetMSAABackBufferTexture(); }

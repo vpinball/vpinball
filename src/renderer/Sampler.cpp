@@ -267,8 +267,19 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
 
    if (withMipmaps && m_pendingMipMapGen)
    {
+      // BGFX does not implement mipmap generation for sRGB textures on Direct3D12 nor WebGPU (sRGB formats can
+      // not be bound as compute storage views on these backends, and BGFX's mipgen does not re-encode its output),
+      // and its WebGPU mipgen only supports 8 bit formats, leaving float textures without mipmaps. In both cases
+      // a custom compute implementation is used (with an explicit sRGB round trip for sRGB formats).
+      const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+      const bool hasAutoMipGen = 0 != (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN);
+      const bool useCustomMipGen = (renderer == bgfx::RendererType::Enum::Direct3D12 || renderer == bgfx::RendererType::Enum::WebGPU) && (!m_isTextureUpdateLinear || !hasAutoMipGen)
+         && (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8 || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F)
+         && ((bgfx::getCaps()->formats[m_bgfx_format] & (BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ | BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE))
+            == (BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ | BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE));
+
       // Hardware or BGFX internal implementation support ?
-      if ((bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN) == 0)
+      if (!hasAutoMipGen && !useCustomMipGen)
       {
          m_pendingMipMapGen = false; // Mipmaps will never be generated for this format, so don't keep the request pending
          return m_nomipsTexture;
@@ -280,25 +291,22 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
          || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
          return m_nomipsTexture;
 
-      // BGFX does not implement mipmap generation for sRGB textures on Direct3D12 nor WebGPU (sRGB formats can
-      // not be bound as compute storage views on these backends, and BGFX's mipgen does not re-encode its output),
-      // so these backends go through a custom implementation which performs the sRGB round-trip explicitly
-      const bool useCustomMipGen
-         = !m_isTextureUpdateLinear && (bgfx::getRendererType() == bgfx::RendererType::Enum::Direct3D12 || bgfx::getRendererType() == bgfx::RendererType::Enum::WebGPU);
       if (useCustomMipGen)
       {
-         assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
-         if (!bgfx::isValid(m_rd->m_srgbMipmapProgram))
+         // Select the cs_mipmap shader variant matching the texture format
+         const int variant = !m_isTextureUpdateLinear ? 0 : m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F ? 2 : m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F ? 3 : 1;
+         if (!bgfx::isValid(m_rd->m_mipmapPrograms[variant]))
          {
-            bgfx::RendererType::Enum type = bgfx::getRendererType();
-            static const bgfx::EmbeddedShader shaders[] = { BGFX_EMBEDDED_SHADER(cs_mipmap_srgba8), BGFX_EMBEDDED_SHADER_END() };
-            m_rd->m_srgbMipmapProgram = bgfx::createProgram(bgfx::createEmbeddedShader(shaders, type, "cs_mipmap_srgba8"), true);
+            static const bgfx::EmbeddedShader shaders[] = { BGFX_EMBEDDED_SHADER(cs_mipmap_srgba8), BGFX_EMBEDDED_SHADER(cs_mipmap_rgba8), BGFX_EMBEDDED_SHADER(cs_mipmap_rgba16f),
+               BGFX_EMBEDDED_SHADER(cs_mipmap_rgba32f), BGFX_EMBEDDED_SHADER_END() };
+            static const char* const names[] = { "cs_mipmap_srgba8", "cs_mipmap_rgba8", "cs_mipmap_rgba16f", "cs_mipmap_rgba32f" };
+            m_rd->m_mipmapPrograms[variant] = bgfx::createProgram(bgfx::createEmbeddedShader(shaders, renderer, names[variant]), true);
          }
-         const bgfx::ProgramHandle program = m_rd->m_srgbMipmapProgram;
+         const bgfx::ProgramHandle program = m_rd->m_mipmapPrograms[variant];
 
          if (!bgfx::isValid(m_mipsTexture))
          {
-            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, BGFX_TEXTURE_SRGB | BGFX_TEXTURE_BLIT_DST);
+            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_BLIT_DST);
             bgfx::setName(m_mipsTexture, m_name.c_str());
          }
 
@@ -320,7 +328,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
             bgfx::dispatch(m_rd->m_activeViewId, program, (std::max(1u, m_width >> mip) + 7) / 8, (std::max(1u, m_height >> mip) + 7) / 8);
          }
 
-         // Blit to an sRGB texture (require a new view as BGFX order is blit -> compute -> draw)
+         // Blit to the final texture (require a new view as BGFX order is blit -> compute -> draw)
          m_rd->NextView();
          for (uint8_t mip = 0; mip < numMipLevels; ++mip)
          {
