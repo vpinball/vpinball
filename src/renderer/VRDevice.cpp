@@ -244,7 +244,8 @@ VRDevice::VRDevice(const Settings& settings)
       #ifdef XR_USE_GRAPHICS_API_METAL
          case bgfx::RendererType::Enum::Metal: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_METAL_ENABLE_EXTENSION_NAME); break;
       #endif
-      }
+         default: break;
+         }
       assert(hasGraphicBackend);
       if (!hasGraphicBackend)
          return;
@@ -655,7 +656,9 @@ void VRDevice::ApplyDisplayRefreshRate()
    {
       const XrResult result = m_xrRequestDisplayRefreshRateFB(m_session, requested);
       if (result != XR_SUCCESS)
+      {
          PLOGW << "Headset refused refresh rate " << requested << " Hz (result: " << result << ')';
+      }
    }
 }
 

@@ -2654,7 +2654,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
             const string name = item.get<string>();
             const std::filesystem::path file = folder / (JSONSerializer::SanitizeFileName(name) + ".json"s);
             if (!pack->Exists(file))
+            {
                PLOGW << "No file found for " << folder << " entry \"" << name << '"';
+            }
             else if (std::ranges::find(claimed, file) == claimed.end())
             {
                items.emplace_back(file, name);
@@ -2918,7 +2920,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
             const nlohmann::json sidecar = pack->ReadTextFile(entry, sidecarContent) ? nlohmann::json::parse(sidecarContent) : nlohmann::json::object();
             const std::filesystem::path dataFile = PackSidecarDataFile(entry, imageEntries);
             if (dataFile.empty())
+            {
                PLOGE << "Missing data file for image sidecar \"" << PathToUTF8(entry) << '"';
+            }
             else
                loadImage(sidecar, dataFile, PathToUTF8(entry.stem()));
          }
@@ -2969,7 +2973,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
             const nlohmann::json sidecar = pack->ReadTextFile(entry, sidecarContent) ? nlohmann::json::parse(sidecarContent) : nlohmann::json::object();
             const std::filesystem::path dataFile = PackSidecarDataFile(entry, soundEntries);
             if (dataFile.empty())
+            {
                PLOGE << "Missing data file for sound sidecar \"" << PathToUTF8(entry) << '"';
+            }
             else
                loadSound(sidecar, dataFile, PathToUTF8(entry.stem()));
          }
@@ -3017,7 +3023,9 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
             const nlohmann::json sidecar = pack->ReadTextFile(entry, sidecarContent) ? nlohmann::json::parse(sidecarContent) : nlohmann::json::object();
             const std::filesystem::path dataFile = PackSidecarDataFile(entry, fontEntries);
             if (dataFile.empty())
+            {
                PLOGE << "Missing data file for font sidecar \"" << PathToUTF8(entry) << '"';
+            }
             else
                loadFont(sidecar, dataFile, PathToUTF8(entry.stem()));
          }

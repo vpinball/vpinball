@@ -764,7 +764,9 @@ void Player::InitTableSession(const bool isInitial)
             std::error_code ec;
             std::filesystem::create_directories(texCacheFolder, ec);
             if (ec)
+            {
                PLOGE << "Failed to create texture cache folder " << texCacheFolder << " (" << ec.message() << "), texture compression is disabled";
+            }
             else
                texCompressor = std::make_unique<TextureCompressor>(std::move(texCacheFolder), maxTexDim);
          }
