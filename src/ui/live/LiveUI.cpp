@@ -608,7 +608,7 @@ void LiveUI::RenderUI()
       const std::shared_ptr<UIListGeometry> &geo = m_uiGeometry[n];
       geo->numVertices = numVertices;
       geo->numIndices = numIndices;
-      geo->uploaded = false;
+      geo->upload = UIListGeometry::Upload::None;
       geo->vtx.resize(numVertices * sizeof(ImDrawVert));
       geo->idx.resize(numIndices * sizeof(ImDrawIdx));
       memcpy(geo->vtx.data(), cmd_list->VtxBuffer.Data, geo->vtx.size());

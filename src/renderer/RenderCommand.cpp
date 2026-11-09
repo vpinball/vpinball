@@ -271,15 +271,14 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             case RenderDevice::TRIANGLELIST: bgfx::setState(m_rd->m_bgfxState); break;
             case RenderDevice::TRIANGLESTRIP: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP); break;
             case RenderDevice::LINELIST:
-               bgfx::setState((m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINES | BGFX_STATE_BLEND_EQUATION_ADD
-                                 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
-                  & ~BGFX_STATE_MSAA);
-               break;
             case RenderDevice::LINESTRIP:
-               bgfx::setState((m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINESTRIP | BGFX_STATE_BLEND_EQUATION_ADD
-                                 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
-                  & ~BGFX_STATE_MSAA);
+            {
+               // Antialiased lines, without MSAA: alpha blended, replacing the current blend function and equation
+               constexpr uint64_t lineBlend = BGFX_STATE_BLEND_EQUATION_ADD | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+               const uint64_t state = m_rd->m_bgfxState & ~(BGFX_STATE_BLEND_MASK | BGFX_STATE_BLEND_EQUATION_MASK | BGFX_STATE_MSAA);
+               bgfx::setState(state | lineBlend | BGFX_STATE_LINEAA | (m_primitiveType == RenderDevice::LINELIST ? BGFX_STATE_PT_LINES : BGFX_STATE_PT_LINESTRIP));
                break;
+            }
             case RenderDevice::POINTLIST: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_POINTS); break;
             default: assert(false); break; // Unsupported primitive type
             }
@@ -339,23 +338,26 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       {
          assert(m_primitiveType == RenderDevice::TRIANGLELIST); // LiveUI only emits triangle lists
          m_rd->m_curDrawnTriangles += m_indicesCount / 3;
-         if (bgfx::getAvailTransientVertexBuffer(m_uiGeo->numVertices, *m_rd->m_pVertexImGuiDeclaration) >= m_uiGeo->numVertices
-            && bgfx::getAvailTransientIndexBuffer(m_uiGeo->numIndices, true) >= m_uiGeo->numIndices)
-         { // Fast path: copy the geometry snapshot straight into BGFX's per-frame transient arena
-            bgfx::TransientVertexBuffer tvb;
-            bgfx::allocTransientVertexBuffer(&tvb, m_uiGeo->numVertices, *m_rd->m_pVertexImGuiDeclaration);
-            memcpy(tvb.data, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
-            bgfx::TransientIndexBuffer tib;
-            bgfx::allocTransientIndexBuffer(&tib, m_uiGeo->numIndices, true);
-            memcpy(tib.data, m_uiGeo->idx.data(), m_uiGeo->idx.size());
-            bgfx::setVertexBuffer(0, &tvb);
-            bgfx::setIndexBuffer(&tib, m_startIndex, m_indicesCount);
-         }
-         else
-         { // Fallback: upload the snapshot to the persistent dynamic buffers, then draw from them
-            if (!m_uiGeo->uploaded)
-            {
-               m_uiGeo->uploaded = true;
+         if (m_uiGeo->upload == UIListGeometry::Upload::None)
+         {
+            // First draw command of the list this frame: upload the snapshot once for all its commands. The transient arena is only
+            // used if 64 KiB stay free (512 quads in the largest, PNT, format) for the textured quads (RC_DRAW_QUAD_*,
+            // RenderTarget::CopyTo), which allocate from it without checking for room
+            constexpr uint32_t reserveBytes = 64 * 1024;
+            const uint32_t reserveVertices = reserveBytes / m_rd->m_pVertexImGuiDeclaration->getStride();
+            const uint32_t numVerticesWithReserve = m_uiGeo->numVertices + reserveVertices;
+            if (bgfx::getAvailTransientVertexBuffer(numVerticesWithReserve, *m_rd->m_pVertexImGuiDeclaration) >= numVerticesWithReserve
+               && bgfx::getAvailTransientIndexBuffer(m_uiGeo->numIndices, true) >= m_uiGeo->numIndices)
+            { // Fast path: copy the geometry snapshot straight into BGFX's per-frame transient arena
+               m_uiGeo->upload = UIListGeometry::Upload::Transient;
+               bgfx::allocTransientVertexBuffer(&m_uiGeo->tvb, m_uiGeo->numVertices, *m_rd->m_pVertexImGuiDeclaration);
+               memcpy(m_uiGeo->tvb.data, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
+               bgfx::allocTransientIndexBuffer(&m_uiGeo->tib, m_uiGeo->numIndices, true);
+               memcpy(m_uiGeo->tib.data, m_uiGeo->idx.data(), m_uiGeo->idx.size());
+            }
+            else
+            { // Fallback: the list's persistent dynamic buffers
+               m_uiGeo->upload = UIListGeometry::Upload::Dynamic;
                uint8_t* vdata;
                m_mb->m_vb->Lock(vdata, 0, static_cast<unsigned int>(m_uiGeo->vtx.size()));
                memcpy(vdata, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
@@ -365,6 +367,14 @@ void RenderCommand::Execute(const int nInstances, const bool log)
                memcpy(idata, m_uiGeo->idx.data(), m_uiGeo->idx.size());
                m_mb->m_ib->Unlock();
             }
+         }
+         if (m_uiGeo->upload == UIListGeometry::Upload::Transient)
+         {
+            bgfx::setVertexBuffer(0, &m_uiGeo->tvb);
+            bgfx::setIndexBuffer(&m_uiGeo->tib, m_startIndex, m_indicesCount);
+         }
+         else
+         {
             m_mb->bind(); // Flushes the pending uploads
             bgfx::setVertexBuffer(0, m_mb->m_vb->GetDynamicBuffer());
             bgfx::setIndexBuffer(m_mb->m_ib->GetDynamicBuffer(), m_mb->m_ib->GetIndexOffset() + m_startIndex, m_indicesCount);
