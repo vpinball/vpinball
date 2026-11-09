@@ -50,7 +50,6 @@ public:
    // binding the sampler falls back to the null texture instead of a stale handle
    void Invalidate() { m_nomipsTexture = m_mipsTexture = BGFX_INVALID_HANDLE; }
    bool IsUploadPending() const { return (m_textureUpdate != nullptr) || m_pendingMipMapGen || m_compressedUploadPending; }
-   class RenderTarget* m_msaaDepthResolve = nullptr;
 
 #elif defined(ENABLE_OPENGL)
    Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTexture, bool ownTexture);

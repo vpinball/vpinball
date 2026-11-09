@@ -170,20 +170,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       if (g_pplayer->m_vrDevice)
          m_depthFormat = g_pplayer->m_vrDevice->GetDepthFormat();
       #endif
-      if (IsMSAA())
-      {
-         m_msaaResolveDepthTex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, m_depthFormat, texFlags | BGFX_TEXTURE_MSAA_SAMPLE);
-         m_msaa_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".MSAADepth", m_type, m_msaaResolveDepthTex, m_depthFormat, m_width, m_height, false);
-         // Create a non-MSAA texture to resolve the MSAA depth buffer into. Note that BGFX is inconsistent regarding depth buffer resolve: OpenGL will resolve it while other platforms don't.
-         m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, m_depthFormat, BGFX_TEXTURE_RT);
-         m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, m_depthFormat, m_width, m_height, false);
-         m_depth_sampler->m_msaaDepthResolve = this;
-      }
-      else
-      {
-         m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, m_depthFormat, texFlags);
-         m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, m_depthFormat, m_width, m_height, false);
-      }
+      // For MSAA, the depth attachment is a MSAA surface which BGFX automatically resolves into the texture when the framebuffer is unbound
+      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, m_depthFormat, texFlags);
+      m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, m_depthFormat, m_width, m_height, false);
    }
 
    {
@@ -192,21 +181,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       {
          bgfx::Attachment depthAttachment;
          colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
-         depthAttachment.init(IsMSAA() ? m_msaaResolveDepthTex : m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
+         depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
          const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
          m_framebuffer = bgfx::createFrameBuffer(2, attachments.data());
-         if (IsMSAA())
-         {
-            // A color attachment is needed alongside the depth attachment because bgfx skips binding the pixel shader for depth-only framebuffers (shadow map optimization).
-            // A dedicated non-MSAA color texture is used since m_color_tex is MSAA and all framebuffer attachments must have matching sample counts.
-            m_msaaDepthResolveColorTex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, bgfx::TextureFormat::R8, BGFX_TEXTURE_RT);
-            bgfx::Attachment resolveColorAttachment;
-            resolveColorAttachment.init(m_msaaDepthResolveColorTex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
-            bgfx::Attachment resolveDepthAttachment;
-            resolveDepthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
-            const std::array<bgfx::Attachment, 2> attachments { resolveColorAttachment, resolveDepthAttachment };
-            m_msaaDepthResolveFramebuffer = bgfx::createFrameBuffer(2, attachments.data());
-         }
       }
       else
       {
@@ -232,7 +209,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          {
             bgfx::Attachment depthAttachment;
             colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_ATTACHMENT_NONE);
-            depthAttachment.init(IsMSAA() ? m_msaaResolveDepthTex : m_depth_tex, bgfx::Access::Write, i, 1, 0, BGFX_ATTACHMENT_NONE);
+            depthAttachment.init(m_depth_tex, bgfx::Access::Write, i, 1, 0, BGFX_ATTACHMENT_NONE);
             const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
             m_framebuffer_layers[i] = bgfx::createFrameBuffer(2, attachments.data());
          }
@@ -551,8 +528,6 @@ RenderTarget::~RenderTarget()
       m_color_sampler->ReleaseCoreTexture();
    if (m_depth_sampler && !m_shared_depth)
       m_depth_sampler->ReleaseCoreTexture();
-   if (m_msaa_depth_sampler)
-      m_msaa_depth_sampler->ReleaseCoreTexture();
    if (bgfx::isValid(m_framebuffer))
       bgfx::destroy(m_framebuffer);
    for (uint16_t i = 0; i < static_cast<uint16_t>(m_nLayers); i++)
@@ -569,13 +544,6 @@ RenderTarget::~RenderTarget()
       m_depth_sampler->Invalidate();
       bgfx::destroy(m_depth_tex);
    }
-
-   if (bgfx::isValid(m_msaaDepthResolveFramebuffer))
-      bgfx::destroy(m_msaaDepthResolveFramebuffer);
-   if (bgfx::isValid(m_msaaDepthResolveColorTex))
-      bgfx::destroy(m_msaaDepthResolveColorTex);
-   if (bgfx::isValid(m_msaaResolveDepthTex))
-      bgfx::destroy(m_msaaResolveDepthTex);
 
 #elif defined(ENABLE_OPENGL)
    glDeleteTextures(1, &m_color_tex);
@@ -673,8 +641,6 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
          }
          if (m_has_depth && dest->m_has_depth && copyDepth)
          {
-            if (m_nMSAASamples > 1)
-               ResolveMSAADepth();
             src.init(m_depth_tex, px1, py1, pw1, ph1);
             src.mip = 0;
             src.z = pz1 + z;
@@ -725,8 +691,6 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
       }
       if (m_has_depth && dest->m_has_depth && copyDepth)
       {
-         if (m_nMSAASamples > 1)
-            ResolveMSAADepth();
          shader->SetTechnique(ShaderTechnique::fb_copy_depth);
          shader->SetTexture(ShaderUniform::tex_depth, GetDepthSampler(), SamplerFilter::SF_NONE); // Should be bilinear, but this is unsupported
          shader->Begin();
@@ -793,7 +757,6 @@ void RenderTarget::Activate(const int layer)
    // Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
    bgfx::setViewFrameBuffer(m_rd->m_activeViewId, (layer == -1 || m_nLayers == 1) ? m_framebuffer : m_framebuffer_layers[layer]);
    bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
-   m_needResolve = true;
 
    #elif defined(ENABLE_OPENGL)
    if (m_color_sampler)
@@ -820,39 +783,3 @@ void RenderTarget::Activate(const int layer)
    }
    #endif
 }
-
-#ifdef ENABLE_BGFX
-void RenderTarget::ResolveMSAADepth()
-{
-   if (!m_needResolve)
-      return;
-
-   // Activate this target, but on the resolved depth buffer, not the MSAA one
-   assert(current_render_target != this);
-   assert(bgfx::isValid(m_msaaDepthResolveFramebuffer));
-   RenderTarget* previousRenderTarget = current_render_target;
-   int previousRenderLayer = current_render_layer;
-   current_render_target = nullptr;
-   current_render_layer = -1;
-   m_rd->NextView();
-   bgfx::setViewName(m_rd->m_activeViewId, (m_name + ".Resolve").c_str());
-   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_msaaDepthResolveFramebuffer);
-   bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
-
-   auto quad = m_rd->GetQuadMeshBuffer();
-   vec4 layer(0.f, 0.f, 0.f, 0.f);
-   bgfx::setUniform(m_rd->m_FBShader->GetUniformHandle(ShaderUniform::layer), &layer.x);
-   bgfx::setTexture(0, m_rd->m_FBShader->GetUniformHandle(ShaderUniform::tex_depth), m_msaaResolveDepthTex, BGFX_SAMPLER_NONE);
-   quad->bind();
-   if (quad->m_vb->m_isStatic)
-      bgfx::setVertexBuffer(0, quad->m_vb->GetStaticBuffer(), quad->m_vb->GetVertexOffset(), 4);
-   else
-      bgfx::setVertexBuffer(0, quad->m_vb->GetDynamicBuffer(), quad->m_vb->GetVertexOffset(), 4);
-   bgfx::setInstanceCount(m_nLayers);
-   bgfx::setState(BGFX_STATE_PT_TRISTRIP | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_ALWAYS);
-   bgfx::submit(m_rd->m_activeViewId, m_rd->m_FBShader->GetProgramHandle(ShaderTechnique::fb_resolve_depth_msaa));
-
-   previousRenderTarget->Activate(previousRenderLayer);
-   m_needResolve = false;
-}
-#endif
