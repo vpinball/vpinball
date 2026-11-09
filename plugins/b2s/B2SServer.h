@@ -183,8 +183,9 @@ public:
    B2SOverlayDoc& GetOverlayDoc() { return m_overlayDoc; }
    const B2SOverlayDoc& GetOverlayDoc() const { return m_overlayDoc; }
 
-   // Worker thread saving the edited documents (see CommitOverlayDoc), started at plugin load. Stopping it at plugin
-   // unload waits for the pending saves and reports their errors
+   // Worker thread saving the edited documents (see CommitOverlayDoc): the API endpoints are bound at plugin load and
+   // the thread is only created on the first queued save. Stopping it at plugin unload waits for the pending saves and
+   // reports their errors
    static void StartFileWriter(const MsgPluginAPI* msgApi, unsigned int endpointId, const VPXPluginAPI* vpxApi);
    static void StopFileWriter();
 

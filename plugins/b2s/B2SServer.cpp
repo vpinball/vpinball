@@ -118,7 +118,7 @@ namespace
       const VPXPluginAPI* vpxApi = nullptr;
       std::mutex mutex;
       std::condition_variable cv;
-      std::thread thread;
+      std::thread thread; // Created on the first queued save: most sessions never edit the document
       bool stop = false;
       vector<std::pair<std::filesystem::path, vector<B2SDMDDisplay>>> jobs; // Pending saves, at most one per file
       vector<string> errors; // Failed saves, not yet reported
@@ -263,8 +263,10 @@ namespace
          return 1;
       {
          std::lock_guard lock(fileWriter.mutex);
-         if (!fileWriter.thread.joinable())
+         if (fileWriter.stop || fileWriter.msgApi == nullptr)
             return 1;
+         if (!fileWriter.thread.joinable())
+            fileWriter.thread = std::thread(FileWriterLoop);
          // A newer save of the same file replaces the pending one
          const auto job = std::ranges::find_if(fileWriter.jobs, [&doc](const auto& job) { return job.first == doc.path; });
          if (job != fileWriter.jobs.end())
@@ -284,20 +286,19 @@ void B2SServer::StartFileWriter(const MsgPluginAPI* msgApi, unsigned int endpoin
    fileWriter.endpointId = endpointId;
    fileWriter.vpxApi = vpxApi;
    fileWriter.stop = false;
-   fileWriter.thread = std::thread(FileWriterLoop);
 }
 
 void B2SServer::StopFileWriter()
 {
-   if (!fileWriter.thread.joinable())
-      return;
    {
       std::lock_guard lock(fileWriter.mutex);
       fileWriter.stop = true;
    }
    fileWriter.cv.notify_one();
-   fileWriter.thread.join(); // Pending saves are completed
-   fileWriter.msgApi->FlushPendingCallbacks(fileWriter.endpointId); // Reports their errors
+   if (fileWriter.thread.joinable())
+      fileWriter.thread.join(); // Pending saves are completed
+   if (fileWriter.msgApi != nullptr)
+      fileWriter.msgApi->FlushPendingCallbacks(fileWriter.endpointId); // Reports their errors
    fileWriter.msgApi = nullptr;
    fileWriter.vpxApi = nullptr;
 }
