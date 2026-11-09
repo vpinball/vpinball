@@ -1233,7 +1233,7 @@ bool EditorUI::CanMovePartToGroup(const IEditable *editable, const PartGroup *gr
    return true;
 }
 
-void EditorUI::MoveSelectionToPartGroup(PartGroup *group)
+bool EditorUI::MoveSelectionToPartGroup(PartGroup *group)
 {
    // Gather the parts that can be moved to the target group (see CanMovePartToGroup)
    vector<IEditable *> moved;
@@ -1241,15 +1241,13 @@ void EditorUI::MoveSelectionToPartGroup(PartGroup *group)
       if (IEditable *const editable = uiPart->GetEditable(); CanMovePartToGroup(editable, group))
          moved.push_back(editable);
    if (moved.empty())
-      return;
-   m_undo.BeginUndo();
-   for (IEditable *const editable : moved)
-   {
-      m_undo.MarkForUndo(editable);
-      editable->SetPartGroup(group);
-   }
-   m_undo.EndUndo();
+      return false;
+   // Parts moved to a group on another reference space have their transforms re-expressed so that
+   // they do not move (the move may be deferred for confirmation, see LayerSpaceChangeOp::RequestMove)
+   if (!m_layerSpaceChangeOp.RequestMove(moved, group))
+      return false;
    UpdateEditableList(); // Refresh the outliner paths and ordering
+   return true;
 }
 
 bool EditorUI::IsPartInSelectionDomain(const IEditable *editable) const { return editable->m_desktopBackdrop == SelectionDomain(); }
