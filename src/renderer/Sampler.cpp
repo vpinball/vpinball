@@ -271,12 +271,14 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
       // not be bound as compute storage views on these backends, and BGFX's mipgen does not re-encode its output),
       // and its WebGPU mipgen only supports 8 bit formats, leaving float textures without mipmaps. In both cases
       // a custom compute implementation is used (with an explicit sRGB round trip for sRGB formats).
+      // It only needs image write support: its source is declared IMAGE2D_RO, which is a plain texture load in
+      // HLSL and WGSL. IMAGE_READ means typed UAV loads on D3D12 and read-write storage on WebGPU (optional
+      // 'texture-formats-tier2' feature for these formats), so requiring it would disable this path for no reason
       const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
       const bool hasAutoMipGen = 0 != (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN);
       const bool useCustomMipGen = (renderer == bgfx::RendererType::Enum::Direct3D12 || renderer == bgfx::RendererType::Enum::WebGPU) && (!m_isTextureUpdateLinear || !hasAutoMipGen)
          && (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8 || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F)
-         && ((bgfx::getCaps()->formats[m_bgfx_format] & (BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ | BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE))
-            == (BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ | BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE));
+         && 0 != (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
 
       // Hardware or BGFX internal implementation support ?
       if (!hasAutoMipGen && !useCustomMipGen)
