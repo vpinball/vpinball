@@ -89,6 +89,9 @@
     <ClCompile Include="../../tests/misc/test-collection.cpp">
       <Filter>misc</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/misc/test-envmap-precalc.cpp">
+      <Filter>misc</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/misc/test-material.cpp">
       <Filter>misc</Filter>
     </ClCompile>

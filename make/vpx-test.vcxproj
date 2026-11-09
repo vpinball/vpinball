@@ -66,6 +66,7 @@
     <ClCompile Include="../../tests/input/test-scancodes.cpp" />
     <ClCompile Include="../../tests/input/test-sensormapping.cpp" />
     <ClCompile Include="../../tests/misc/test-collection.cpp" />
+    <ClCompile Include="../../tests/misc/test-envmap-precalc.cpp" />
     <ClCompile Include="../../tests/misc/test-material.cpp" />
     <ClCompile Include="../../tests/misc/test-pinbinary.cpp" />
     <ClCompile Include="../../tests/misc/test-pintable.cpp" />
