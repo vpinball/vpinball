@@ -1448,14 +1448,31 @@ void ViewportPane::Render3D()
       (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
    const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
 
-   // Reference space axes: the origin axes (and playfield/glass bounds) of the space shared by the selection
-   const std::optional<PartGroupData::SpaceReference> space = (m_viewType == ViewMode::EditorCam && m_showSpaceAxes) ? m_editor.GetSelectionSpace() : std::nullopt;
-   if (space.has_value() && EnsureSpaceAxesMesh(*space))
+   // Reference space axes: the origin axes (and playfield/glass bounds) of the space shared by the
+   // selection. When the selection does not define a single space (empty, mixed or holding backdrop
+   // parts), the playfield space is drawn, plus the room one when the table has a part group using
+   // it (in live edit the cabinet & cabinet feet spaces coincide with the room one, as they only
+   // differ by the user space settings which are not applied there)
+   PartGroupData::SpaceReference spaces[2];
+   int spaceCount = 0;
+   if (m_viewType == ViewMode::EditorCam && m_showSpaceAxes)
+   {
+      if (const std::optional<PartGroupData::SpaceReference> space = m_editor.GetSelectionSpace(); space.has_value())
+         spaces[spaceCount++] = *space;
+      else
+      {
+         spaces[spaceCount++] = PartGroupData::SpaceReference::SR_PLAYFIELD;
+         for (IEditable* const part : m_editor.m_table->GetParts())
+            if (part->GetItemType() == eItemPartGroup && static_cast<const PartGroup*>(part)->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+            {
+               spaces[spaceCount++] = PartGroupData::SpaceReference::SR_ROOM;
+               break;
+            }
+      }
+   }
+   if (spaceCount > 0)
    {
       RenderDevice* const rd = m_editor.m_renderer->m_renderDevice;
-      // Force the space reference update: m_mvpSpaceReference may already hold this space (set by a
-      // part rendered in it just before), which would leave the view AND the model transform stale
-      m_view->SetSpaceReference(*space, true);
       rd->ResetRenderState();
       // Non playfield space axes lay under the table (the space transform lowers them): they must be
       // drawn without depth test to stay visible, as infinite lines through the whole viewport
@@ -1476,35 +1493,45 @@ void ViewportPane::Render3D()
          vec4(0.5f, 0.15f, 0.15f, 1.f), // X axis (negative)
          vec4(0.15f, 0.45f, 0.15f, 1.f) // Y axis (negative)
       };
-      // In the top orthographic view, the glass box and the Z axis would only clutter the view: skip
-      // them (the same "Top Orthographic" test as the status overlay's camera info line)
-      int segments[7];
-      int segmentCount;
-      if (*space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+      for (int s = 0; s < spaceCount; ++s)
       {
-         const bool fromAbove = !m_perspectiveCam && m_predefinedView == PredefinedView::Top;
-         segmentCount = fromAbove ? 3 : 5;
-         segments[0] = 0;
-         segments[1] = 1;
-         segments[2] = 2;
-         segments[3] = 3;
-         segments[4] = 4;
-      }
-      else
-      {
-         segmentCount = 4;
-         segments[0] = 1;
-         segments[1] = 2;
-         segments[2] = 5;
-         segments[3] = 6;
-      }
-      for (int i = 0; i < segmentCount; ++i)
-      {
-         const int seg = segments[i];
-         if (m_spaceAxesRanges[seg * 2 + 1] == 0)
+         const PartGroupData::SpaceReference space = spaces[s];
+         const SpaceAxes* const axes = EnsureSpaceAxesMesh(space);
+         if (axes == nullptr)
             continue;
-         rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, &segmentColors[seg]);
-         rd->DrawMesh(rd->m_basicShader, true, m_spaceAxesCenter, 0.f, m_spaceAxesMesh, RenderDevice::LINELIST, m_spaceAxesRanges[seg * 2], m_spaceAxesRanges[seg * 2 + 1]);
+         // Force the space reference update: m_mvpSpaceReference may already hold this space (set by
+         // a part rendered in it just before), which would leave the view AND the model transform stale
+         m_view->SetSpaceReference(space, true);
+         // In the top orthographic view, the glass box and the Z axis would only clutter the view: skip
+         // them (the same "Top Orthographic" test as the status overlay's camera info line)
+         int segments[7];
+         int segmentCount;
+         if (space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+         {
+            const bool fromAbove = !m_perspectiveCam && m_predefinedView == PredefinedView::Top;
+            segmentCount = fromAbove ? 3 : 5;
+            segments[0] = 0;
+            segments[1] = 1;
+            segments[2] = 2;
+            segments[3] = 3;
+            segments[4] = 4;
+         }
+         else
+         {
+            segmentCount = 4;
+            segments[0] = 1;
+            segments[1] = 2;
+            segments[2] = 5;
+            segments[3] = 6;
+         }
+         for (int i = 0; i < segmentCount; ++i)
+         {
+            const int seg = segments[i];
+            if (axes->ranges[seg * 2 + 1] == 0)
+               continue;
+            rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, &segmentColors[seg]);
+            rd->DrawMesh(rd->m_basicShader, true, axes->center, 0.f, axes->mesh, RenderDevice::LINELIST, axes->ranges[seg * 2], axes->ranges[seg * 2 + 1]);
+         }
       }
       for (size_t i = cmdBase; i < rd->GetCurrentPass()->m_commands.size(); i++)
          rd->GetCurrentPass()->m_commands[i]->SetTransparent(true);
@@ -1538,10 +1565,13 @@ void ViewportPane::Render3D()
    }
 }
 
-bool ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space)
+const ViewportPane::SpaceAxes* ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space)
 {
    PinTable* const table = m_editor.m_table;
-   // The mesh is made of 7 segments (index ranges in m_spaceAxesRanges): the playfield outline, the
+   // One mesh per space variant (playfield bounds vs infinite room axes): the cabinet & cabinet feet
+   // spaces share the room mesh, just like they share its transform (see RenderView::SetSpaceReference)
+   SpaceAxes& axes = m_spaceAxes[space == PartGroupData::SpaceReference::SR_PLAYFIELD ? 0 : 1];
+   // The mesh is made of 7 segments (index ranges in ranges): the playfield outline, the
    // X/Y/Z axes, the glass box, and the negative halves of the X/Y axes. The playfield space gets the
    // outline, the X/Y axes bounded to it, the glass box and the Z axis; the other spaces get 'infinite'
    // X/Y axes split at the origin so the negative side can be dimmed. The glass box and Z axis are drawn
@@ -1556,8 +1586,8 @@ bool ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space
       bounds[4] = table->m_glassBottomHeight;
       bounds[5] = table->m_glassTopHeight;
    }
-   if (m_spaceAxesMesh != nullptr && m_spaceAxesSpace == space && memcmp(m_spaceAxesBounds, bounds, sizeof(bounds)) == 0)
-      return true;
+   if (axes.mesh != nullptr && memcmp(axes.bounds, bounds, sizeof(bounds)) == 0)
+      return &axes;
 
    vector<Vertex3D_NoTex2> verts;
    vector<unsigned int> indices;
@@ -1577,15 +1607,15 @@ bool ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space
       verts.push_back(v0);
       verts.push_back(v1);
    };
-   const auto endSegment = [this, &indices](const int seg, const uint32_t start)
+   const auto endSegment = [&axes, &indices](const int seg, const uint32_t start)
    {
-      m_spaceAxesRanges[seg * 2] = start;
-      m_spaceAxesRanges[seg * 2 + 1] = (uint32_t)indices.size() - start;
+      axes.ranges[seg * 2] = start;
+      axes.ranges[seg * 2 + 1] = (uint32_t)indices.size() - start;
    };
    if (space == PartGroupData::SpaceReference::SR_PLAYFIELD)
    {
       const float l = bounds[0], t = bounds[1], r = bounds[2], b = bounds[3], gb = bounds[4], gt = bounds[5];
-      m_spaceAxesCenter = Vertex3Ds((l + r) * 0.5f, (t + b) * 0.5f, 0.f);
+      axes.center = Vertex3Ds((l + r) * 0.5f, (t + b) * 0.5f, 0.f);
       uint32_t start = (uint32_t)indices.size();
       addLine(l, t, 0.f, r, t, 0.f);
       addLine(r, t, 0.f, r, b, 0.f);
@@ -1618,7 +1648,7 @@ bool ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space
    {
       // The axis half length is way beyond the far plane so the axes span the whole viewport
       constexpr float inf = 10000.f;
-      m_spaceAxesCenter = Vertex3Ds(0.f, 0.f, 0.f);
+      axes.center = Vertex3Ds(0.f, 0.f, 0.f);
       endSegment(0, (uint32_t)indices.size());
       uint32_t start = (uint32_t)indices.size();
       addLine(0.f, 0.f, 0.f, inf, 0.f, 0.f);
@@ -1638,10 +1668,9 @@ bool ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space
    RenderDevice* const rd = m_editor.m_renderer->m_renderDevice;
    std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(rd, (unsigned int)verts.size(), (const float*)verts.data(), false);
    std::shared_ptr<IndexBuffer> ib = std::make_shared<IndexBuffer>(rd, indices);
-   m_spaceAxesMesh = std::make_shared<MeshBuffer>("SpaceAxes"s, vb, ib, true);
-   m_spaceAxesSpace = space;
-   memcpy(m_spaceAxesBounds, bounds, sizeof(bounds));
-   return true;
+   axes.mesh = std::make_shared<MeshBuffer>("SpaceAxes"s, vb, ib, true);
+   memcpy(axes.bounds, bounds, sizeof(bounds));
+   return &axes;
 }
 
 void ViewportPane::RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& vhoHit)

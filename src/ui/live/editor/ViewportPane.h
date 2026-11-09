@@ -235,13 +235,18 @@ private:
    void TwistCamera(float degrees);
    static void GetViewOrientation(PredefinedView view, vec3& dir, vec3& up); // Orbit dir/up of a predefined view
 
-   // Reference space axes (an axes/plane reference of the space shared by the selection)
-   bool EnsureSpaceAxesMesh(PartGroupData::SpaceReference space); // (Re)build the reference mesh when the space or the table bounds changed
-   std::shared_ptr<MeshBuffer> m_spaceAxesMesh;
-   PartGroupData::SpaceReference m_spaceAxesSpace = PartGroupData::SpaceReference::SR_PLAYFIELD;
-   float m_spaceAxesBounds[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f }; // Playfield bounds the mesh was built for (left, top, right, bottom, glass bottom/top)
-   uint32_t m_spaceAxesRanges[14] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // Index ranges of the 7 segments (square, X, Y, glass, Z, -X, -Y)
-   Vertex3Ds m_spaceAxesCenter { 0.f, 0.f, 0.f };
+   // Reference space axes (an axes/plane reference of a reference space: playfield bounds & glass
+   // box, or infinite room axes — the cabinet & cabinet feet spaces share the room transform in
+   // live edit as they only differ by the user space settings which are not applied there)
+   struct SpaceAxes
+   {
+      std::shared_ptr<MeshBuffer> mesh;
+      float bounds[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f }; // Playfield bounds the mesh was built for (left, top, right, bottom, glass bottom/top)
+      uint32_t ranges[14] = { 0 }; // Index ranges of the 7 segments (square, X, Y, glass, Z, -X, -Y)
+      Vertex3Ds center { 0.f, 0.f, 0.f };
+   };
+   const SpaceAxes* EnsureSpaceAxesMesh(PartGroupData::SpaceReference space); // (Re)build the reference mesh when the space or the table bounds changed
+   SpaceAxes m_spaceAxes[2]; // [0] playfield space, [1] room space (also cabinet & cabinet feet)
 
    // Box selection drag state (a left button drag that hit no part nor drag point)
    bool m_boxSelectActive = false;
