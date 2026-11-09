@@ -73,6 +73,8 @@ private:
    // already be closed when returning false). Returns true if all of them are closed
    bool CloseWhatIsPossible();
    void UpdateRecentFileList(const std::filesystem::path& filename);
+   static vector<std::filesystem::path> ReadRecentTables();
+   static vector<std::filesystem::path> GetMenuRecentTables(const vector<std::filesystem::path>& recents);
 
 public:
    CMenu GetMainMenu(int id);

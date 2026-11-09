@@ -188,14 +188,7 @@ void WinEditor::LoadEditorSetupFromSettings()
    m_backgroundColor = g_settingsService.GetAppSettings().GetEditor_BackGroundColor();
    m_fillColor = g_settingsService.GetAppSettings().GetEditor_FillColor();
 
-   m_recentTableList.clear();
-   // get the list of the last n loaded tables
-   for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
-   {
-      const string& tableName = g_settingsService.GetAppSettings().GetRecentDir_TableFileName(i);
-      if (!tableName.empty())
-         m_recentTableList.push_back(PathFromUTF8OrString(tableName)); // UTF-8, older versions stored native narrow paths
-   }
+   m_recentTableList = GetMenuRecentTables(ReadRecentTables());
 
    m_convertToUnit = g_settingsService.GetAppSettings().GetEditor_Units();
 }
@@ -1256,47 +1249,66 @@ void WinEditor::SetEnableMenuItems()
    }
 }
 
+// The recent table list is shared with the live editor through the RecentDir.TableFileName settings, so it
+// is read from them on each update instead of being cached (the live editor may have updated it meanwhile)
+vector<std::filesystem::path> WinEditor::ReadRecentTables()
+{
+   vector<std::filesystem::path> recents;
+   for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
+   {
+      const string& tableName = g_settingsService.GetAppSettings().GetRecentDir_TableFileName(i);
+      if (!tableName.empty())
+         recents.push_back(PathFromUTF8OrString(tableName)); // UTF-8, older versions stored native narrow paths
+   }
+   return recents;
+}
+
+// The live editor also records folder packs, which this editor can not open: they stay in the shared
+// list but are not shown in the menu
+vector<std::filesystem::path> WinEditor::GetMenuRecentTables(const vector<std::filesystem::path> &recents)
+{
+   vector<std::filesystem::path> tables;
+   for (const std::filesystem::path &recent : recents)
+      if (!DirExists(recent))
+         tables.push_back(recent);
+   return tables;
+}
+
 void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
 {
-   const size_t old_count = m_recentTableList.size();
+   const size_t old_count = m_recentTableList.size(); // Recent file items currently in the menu
 
+   vector<std::filesystem::path> recents = ReadRecentTables();
    // if the loaded file name is a valid one then add it to the top of the list
    if (!filename.empty())
    {
       vector<std::filesystem::path> newList;
       newList.push_back(filename);
 
-      for (const std::filesystem::path &tableName : m_recentTableList)
+      for (const std::filesystem::path &tableName : recents)
       {
-         if (tableName != newList[0]) // does this file name already exist in the list?
+         if (tableName != newList[0] && newList.size() < LAST_OPENED_TABLE_COUNT) // does this file name already exist in the list?
             newList.push_back(tableName);
       }
 
-      m_recentTableList.clear();
-
-      int i = 0;
-      for (const std::filesystem::path &tableName : newList)
-      {
-         m_recentTableList.push_back(tableName);
-         // write entry to the settings, as UTF-8 so that any path can be stored
-         g_settingsService.GetAppSettings().SetRecentDir_TableFileName(i, PathToUTF8(tableName), false);
-
-         if (++i == LAST_OPENED_TABLE_COUNT)
-            break;
-      }
+      // write entries to the settings, as UTF-8 so that any path can be stored
+      for (size_t i = 0; i < newList.size(); i++)
+         g_settingsService.GetAppSettings().SetRecentDir_TableFileName(static_cast<int>(i), PathToUTF8(newList[i]), false);
+      recents = std::move(newList);
    }
+   m_recentTableList = GetMenuRecentTables(recents);
 
    // update the file menu to contain the last n recent loaded files
-   // must be at least 1 recent file in the list
-   if (!m_recentTableList.empty())
-   {
-      // update the file menu to contain the last n recent loaded files
-      const CMenu menuFile = GetMainMenu(FILEMENU);
+   const CMenu menuFile = GetMainMenu(FILEMENU);
 
-      // delete all the recent file IDM's and the separator from this menu
+   // delete all the recent file IDM's and the separator from this menu
+   if (old_count > 0)
       for (UINT i = RECENT_FIRST_MENU_IDM; i <= RECENT_FIRST_MENU_IDM+(UINT)old_count; i++)
          menuFile.DeleteMenu(i, MF_BYCOMMAND);
 
+   // must be at least 1 recent file in the list
+   if (!m_recentTableList.empty())
+   {
       // get the number of entries in the file menu
       // insert the items before the EXIT menu (assuming it is the last entry)
       int count = menuFile.GetMenuItemCount() - 1;
@@ -1548,6 +1560,12 @@ LRESULT WinEditor::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_ACTIVATE:
       if (LOWORD(wParam) != WA_INACTIVE)
          GetApp()->SetAccelerators(GetFrameAccel(), GetHwnd());
+      break;
+
+   case WM_INITMENUPOPUP:
+      // Refresh the recent files from the shared settings before showing them (the live editor may have updated them)
+      if (reinterpret_cast<HMENU>(wParam) == GetMainMenu(FILEMENU).GetHandle())
+         UpdateRecentFileList({});
       break;
 
    case WM_KEYUP:
