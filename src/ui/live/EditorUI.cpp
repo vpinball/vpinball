@@ -744,7 +744,8 @@ void EditorUI::RenderUI()
       RenderAreas();
       RenderSplitters();
       RenderAdjustPanel(); // Floating panel of the viewport area, and the F9 popup
-      m_chrome.RenderToolShelf(m_viewportRect); // Tool shelf (T) overlay of the viewport
+      if (ViewportPane *const vp = GetTargetViewport()) // Tool shelf (T) overlay of the target viewport pane
+         vp->RenderToolShelf();
       m_chrome.RenderStatusBar(showFullUI); // Above the areas (the overlay-window popups are created later and stay on top)
    }
    else
@@ -831,10 +832,16 @@ void EditorUI::RenderUI()
    // drag points, physic colliders): processed by the bound viewport pane through its camera
    // projection (no 3D viewport pane, no 3D interaction)
    for (const auto &[id, view] : m_areaViews)
+   {
+      // A pane whose leaf is not shown (hidden, or behind a maximized area) does not draw nor take
+      // input: its image rect and item state are stale from the last frame it was drawn
+      if (FindLeafRect(id) == nullptr)
+         continue;
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
          vp->RenderUI(overlayDrawList);
       else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()))
          bp->RenderUI(overlayDrawList);
+   }
 
    // While a viewport pane runs a modal transform op (Blender G/S/R), it owns the keyboard:
    // editor-level shortcuts must not fire (and the op's undo record stays the last one)
@@ -1657,7 +1664,9 @@ void EditorUI::RenderAdjustPanel()
       return;
    }
    bool changed = false;
-   if (m_viewportVisible && !m_adjustPopupOpen) // The floating panel belongs to the viewport area; the F9 popup below does not (and replaces the panel while open)
+   // The floating panel belongs to the target viewport's area: it is hidden with it (e.g. behind a
+   // maximized area); the F9 popup below does not (and replaces the panel while open)
+   if (m_viewportVisible && targetVp != nullptr && FindLeafRect(targetVp->m_leafId) != nullptr && !m_adjustPopupOpen)
    {
       const float dpi = m_liveUI.GetDPI();
       const char *const name = LastOperationName(m_lastOp.type);
@@ -3341,11 +3350,18 @@ void EditorUI::RenderAreas()
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
       {
          vp->SetRendering(shown[id]);
-         if (vp->m_hovered)
+         if (!shown[id])
+            vp->m_hovered = vp->m_active = false; // A pane that is not drawn must not keep stale item state
+         else if (vp->m_hovered)
             m_hoverVp = vp;
       }
-      else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()); bp != nullptr && bp->m_hovered)
-         m_hoverBp = bp;
+      else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()))
+      {
+         if (!shown[id])
+            bp->m_hovered = bp->m_active = false;
+         else if (bp->m_hovered)
+            m_hoverBp = bp;
+      }
    }
    for (const LeafRect &leaf : m_leafRects)
    {

@@ -4,8 +4,6 @@
 
 #include "imgui/imgui.h"
 
-struct AreaRect; // AreaLayout.h
-
 namespace VPX::EditorUI
 {
 
@@ -31,11 +29,6 @@ public:
    void RenderStatusBar(bool showFullUI);
    // Opens the Edit > Preferences window
    void OpenPreferences() { m_preferencesOpen = true; }
-   // Tool shelf: the T overlay of the viewport (edit modes, add part, gizmo orientation)
-   void RenderToolShelf(const AreaRect &viewportContent);
-   bool IsToolShelfShown() const { return m_showToolShelf; }
-   void ToggleToolShelf() { m_showToolShelf = !m_showToolShelf; }
-   float GetToolShelfWidth() const { return m_toolShelfWidth; } // Drawn shelf width last frame (0 when hidden)
    enum class ChevronDir
    {
       Down,
@@ -43,22 +36,16 @@ public:
    };
    // Line chevron (Lucide style, replaces ImGui's filled triangles), centered at c, half width 'size'
    static void DrawChevron(ImDrawList *drawList, const ImVec2 &center, ChevronDir dir, float size, ImU32 color);
-   // Tooltip with a title, an optional shortcut chip and an optional dim description (works on disabled items)
-   static void Tip(const char *title, const char *shortcut = nullptr, const char *description = nullptr);
 
 private:
    void RenderMenuBar();
    void RenderPreferences(); // The Edit > Preferences window: a page rail on the left, the page content on the right
-   bool ToolShelfVisible() const; // Shelf enabled and allowed in the current state (it may still not fit, see m_toolShelfDrawn)
 
    EditorUI &m_editor;
    float m_menuBarHeight = 0.0f;
    float m_statusBarHeight = 0.0f;
    bool m_preferencesOpen = false;
    int m_preferencesPage = 0; // Selected page of the Preferences window's rail
-   bool m_toolShelfDrawn = false; // The shelf was drawn last frame
-   float m_toolShelfWidth = 0.f; // Drawn shelf width last frame, used to keep the viewport info text next to it (0 when hidden)
-   bool m_showToolShelf = true; // View > Tool Shelf
 };
 
 }
