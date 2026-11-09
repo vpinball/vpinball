@@ -208,7 +208,6 @@ enum class ShaderTechnique : unsigned int
    SHADER_TECHNIQUE(fb_copy),
    SHADER_TECHNIQUE(SSReflection),
 #ifdef ENABLE_BGFX
-   SHADER_TECHNIQUE(fb_resolve_depth_msaa),
    SHADER_TECHNIQUE(fb_copy_depth),
 #endif
 

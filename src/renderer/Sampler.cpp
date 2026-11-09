@@ -207,15 +207,10 @@ void Sampler::ReleaseCoreTexture()
    assert(!m_ownTexture);
    m_nomipsTexture = BGFX_INVALID_HANDLE;
    m_mipsTexture = BGFX_INVALID_HANDLE;
-   m_msaaDepthResolve = nullptr; // The render target is being destroyed: GetCoreTexture must not resolve through it anymore
 }
 
 bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
 {
-   // If this sampler is the resolved view of a MSAA render target, then resolve it before use
-   if (m_msaaDepthResolve)
-      m_msaaDepthResolve->ResolveMSAADepth();
-
    // If this is an external render target texture, just return it (no update or mipmap generation allowed)
    if (!m_ownTexture)
       return m_nomipsTexture;
