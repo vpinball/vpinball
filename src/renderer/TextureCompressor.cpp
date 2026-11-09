@@ -106,7 +106,8 @@ namespace
       return static_cast<uint8_t>(clamp(c * 255.f + 0.5f, 0.f, 255.f));
    }
 
-   void Downsample(const uint8_t* src, unsigned int sw, unsigned int sh, uint8_t* dst, unsigned int dw, unsigned int dh, bool isSrgb)
+   // From an RGBA (or, with srcBpp 3, RGB) image to an RGBA one of half its size
+   void Downsample(const uint8_t* src, unsigned int sw, unsigned int sh, uint8_t* dst, unsigned int dw, unsigned int dh, bool isSrgb, unsigned int srcBpp = 4)
    {
       for (unsigned int y = 0; y < dh; y++)
       {
@@ -116,7 +117,7 @@ namespace
          {
             const unsigned int x0 = min(x * 2, sw - 1);
             const unsigned int x1 = min(x * 2 + 1, sw - 1);
-            const uint8_t* p[4] = { &src[(y0 * sw + x0) * 4], &src[(y0 * sw + x1) * 4], &src[(y1 * sw + x0) * 4], &src[(y1 * sw + x1) * 4] };
+            const uint8_t* p[4] = { &src[(y0 * sw + x0) * srcBpp], &src[(y0 * sw + x1) * srcBpp], &src[(y1 * sw + x0) * srcBpp], &src[(y1 * sw + x1) * srcBpp] };
             uint8_t* d = &dst[(y * dw + x) * 4];
             for (int c = 0; c < 3; c++)
             {
@@ -125,7 +126,7 @@ namespace
                else
                   d[c] = static_cast<uint8_t>((p[0][c] + p[1][c] + p[2][c] + p[3][c] + 2) >> 2);
             }
-            d[3] = static_cast<uint8_t>((p[0][3] + p[1][3] + p[2][3] + p[3][3] + 2) >> 2);
+            d[3] = srcBpp == 4 ? static_cast<uint8_t>((p[0][3] + p[1][3] + p[2][3] + p[3][3] + 2) >> 2) : 255;
          }
       }
    }
@@ -496,7 +497,9 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
 
    const bool isSrgb = !BaseTexture::IsLinearFormat(tex.m_format);
    std::shared_ptr<const BaseTexture> converted;
-   if (tex.m_format != BaseTexture::RGBA && tex.m_format != BaseTexture::SRGBA)
+   // The BC7 encoding below reads RGB directly, so it needs no RGBA copy of an RGB image (as large as the image)
+   const bool readRgb = format == bgfx::TextureFormat::BC7 && (tex.m_format == BaseTexture::RGB || tex.m_format == BaseTexture::SRGB);
+   if (!readRgb && tex.m_format != BaseTexture::RGBA && tex.m_format != BaseTexture::SRGBA)
    {
       converted = tex.Convert(isSrgb ? BaseTexture::SRGBA : BaseTexture::RGBA);
       if (converted == nullptr)
@@ -515,6 +518,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
    vector<uint8_t> mipA, mipB;
    const uint8_t* src = static_cast<const uint8_t*>(converted ? converted->datac() : tex.datac());
    unsigned int w = tex.width(), h = tex.height();
+   unsigned int bpp = readRgb ? 3 : 4; // Bytes a texel of src: mip levels after the first are RGBA
    size_t offset = 0;
    for (unsigned int mip = 0; mip < result->numMips; mip++)
    {
@@ -525,39 +529,40 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
          const unsigned int nw = max(1u, w >> 1), nh = max(1u, h >> 1);
          vector<uint8_t>& dst = (mip & 1) ? mipA : mipB;
          dst.resize(static_cast<size_t>(nw) * nh * 4);
-         Downsample(src, w, h, dst.data(), nw, nh, isSrgb);
+         Downsample(src, w, h, dst.data(), nw, nh, isSrgb, bpp);
          src = dst.data();
+         bpp = 4;
          w = nw;
          h = nh;
       }
       if (format == bgfx::TextureFormat::BC7)
       {
          // bc7f takes one 4x4 RGBA block per output block: extract with clamped edge pixels
-         // (NVTT's encoder is far slower and reads out of bounds on partial edge tiles)
+         // (NVTT's encoder is far slower and reads out of bounds on partial edge tiles).
+         // Encode one row of blocks at a time, to be able to abort an ongoing compression, and gather only that row's
+         // blocks, rather than a copy of the whole level (as large as the level itself)
          const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
-         vector<basist::color_rgba> blockPixels(static_cast<size_t>(bw) * bh * 16);
-         basist::color_rgba* bp = blockPixels.data();
-         for (unsigned int by = 0; by < bh; by++)
-            for (unsigned int bx = 0; bx < bw; bx++)
-               for (unsigned int py = 0; py < 4; py++)
-                  for (unsigned int px = 0; px < 4; px++)
-                  {
-                     const uint8_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 4];
-                     bp->r = s[0];
-                     bp->g = s[1];
-                     bp->b = s[2];
-                     bp->a = s[3];
-                     bp++;
-                  }
-         // Encode one row of blocks at a time to be able to abort an ongoing compression
+         vector<basist::color_rgba> blockPixels(static_cast<size_t>(bw) * 16);
          uint8_t* const dst = result->data.data() + offset;
          for (unsigned int by = 0; by < bh; by++)
          {
             if (isCompressionDiscarded && isCompressionDiscarded())
                return nullptr;
+            basist::color_rgba* bp = blockPixels.data();
             for (unsigned int bx = 0; bx < bw; bx++)
-               basist::bc7f::fast_pack_bc7_auto_rgba(
-                  dst + (static_cast<size_t>(by) * bw + bx) * 16, blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 16, basist::bc7f::cPackBC7FlagDefault & ~basist::bc7f::cPackBC7FlagPBitOptMode6);
+               for (unsigned int py = 0; py < 4; py++)
+                  for (unsigned int px = 0; px < 4; px++)
+                  {
+                     const uint8_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * bpp];
+                     bp->r = s[0];
+                     bp->g = s[1];
+                     bp->b = s[2];
+                     bp->a = bpp == 4 ? s[3] : 255;
+                     bp++;
+                  }
+            for (unsigned int bx = 0; bx < bw; bx++)
+               basist::bc7f::fast_pack_bc7_auto_rgba(dst + (static_cast<size_t>(by) * bw + bx) * 16, blockPixels.data() + static_cast<size_t>(bx) * 16,
+                  basist::bc7f::cPackBC7FlagDefault & ~basist::bc7f::cPackBC7FlagPBitOptMode6);
          }
       }
       else
