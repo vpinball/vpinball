@@ -196,7 +196,7 @@ void BlueprintPane::RenderScene(ImDrawList* const drawList)
    RenderGhostParts(ctx);
 
    // 4. Grid (below the outlines, clipped to the playfield bounds)
-   const float gridSize = settings.GetEditor_GridSize();
+   const float gridSize = static_cast<float>(settings.GetEditor_GridSize());
    if (table->m_winEditorGrid && gridSize > 0.f)
    {
       // Visible table rect clipped to the playfield bounds (same as the win32 view)

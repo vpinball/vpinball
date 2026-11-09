@@ -141,6 +141,7 @@ public:
 private:
    static ImU32 ToImU32(const int rgb) { return IM_COL32(rgb & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 16) & 0xFF, 255); }
    void AddLine(const ImVec2& a, const ImVec2& b) const; // line pen honoring the dash flag
+   void FillPolygon(const vector<RenderVertex>& rgv, const vector<ImVec2>& pts) const; // solid fill of a part outline (pts = screen-space rgv)
    ImTextureID TextureSampler(Texture* image) const;
 
    RenderDevice* const m_rd;
