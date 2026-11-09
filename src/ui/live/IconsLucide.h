@@ -12,6 +12,7 @@
 #define ICON_LC_CHEVRON_DOWN "\xee\x81\xad" // U+E06D
 #define ICON_LC_CHEVRON_RIGHT "\xee\x81\xaf" // U+E06F
 #define ICON_LC_CHEVRON_UP "\xee\x81\xb0" // U+E070
+#define ICON_LC_CHEVRONS_RIGHT "\xee\x80\xb3" // U+E073
 #define ICON_LC_CIRCLE "\xee\x81\xb6" // U+E076
 #define ICON_LC_CIRCLE_ARROW_LEFT "\xee\x81\xb9" // U+E079
 #define ICON_LC_CIRCLE_DOT "\xee\x8d\x85" // U+E345
@@ -24,11 +25,14 @@
 #define ICON_LC_DROPLET "\xee\x82\xb4" // U+E0B4
 #define ICON_LC_EYE "\xee\x82\xba" // U+E0BA
 #define ICON_LC_EYE_OFF "\xee\x82\xbb" // U+E0BB
+#define ICON_LC_EXTERNAL_LINK "\xee\x82\xb9" // U+E0B9
+#define ICON_LC_FILE "\xee\x83\x80" // U+E0C0
 #define ICON_LC_FILE_PLUS "\xee\x83\x89" // U+E0C9
 #define ICON_LC_FILTER "\xee\x83\x9c" // U+E0DC
 #define ICON_LC_FOLDER "\xee\x83\x97" // U+E0D7
 #define ICON_LC_FOLDER_OPEN "\xee\x89\x87" // U+E247
 #define ICON_LC_GLOBE "\xee\x83\xa8" // U+E0E8
+#define ICON_LC_HEART "\xee\x83\xb2" // U+E0F2
 #define ICON_LC_IMAGE "\xee\x83\xb6" // U+E0F6
 #define ICON_LC_LAYERS "\xee\x94\xa9" // U+E529
 #define ICON_LC_LENS "\xee\x9e\x9c" // U+E79C
@@ -47,12 +51,15 @@
 #define ICON_LC_MOVE "\xee\x84\xa1" // U+E121
 #define ICON_LC_MOVE_3D "\xee\x8b\xa5" // U+E2E5
 #define ICON_LC_MOVE_HORIZONTAL "\xee\x87\x86" // U+E1C6
+#define ICON_LC_MOVE_VERTICAL "\xee\x87\x87" // U+E1C7
 #define ICON_LC_PAUSE "\xee\x84\xae" // U+E12E
+#define ICON_LC_PENCIL "\xee\x87\xb9" // U+E1F9
 #define ICON_LC_PIN "\xee\x89\x99" // U+E259
 #define ICON_LC_PLAY "\xee\x84\xbc" // U+E13C
 #define ICON_LC_PLUS "\xee\x84\xbd" // U+E13D
 #define ICON_LC_POINTER "\xee\x87\xa8" // U+E1E8
 #define ICON_LC_REFRESH_CW "\xee\x85\x85" // U+E145
+#define ICON_LC_REPLY "\xee\x88\xaa" // U+E22A
 #define ICON_LC_ROTATE_3D "\xee\x8b\xaa" // U+E2EA
 #define ICON_LC_ROUTE "\xee\x94\xbe" // U+E53E
 #define ICON_LC_RULER "\xee\x85\x8b" // U+E14B
@@ -68,6 +75,7 @@
 #define ICON_LC_TAG "\xee\x85\xbf" // U+E17F
 #define ICON_LC_TIMER "\xee\x87\xa0" // U+E1E0
 #define ICON_LC_TRASH_2 "\xee\x86\x8e" // U+E18E
+#define ICON_LC_TRIANGLE "\xee\x86\x92" // U+E192
 #define ICON_LC_TRIANGLE_ALERT "\xee\x86\x93" // U+E193
 #define ICON_LC_TYPE "\xee\x86\x98" // U+E198
 #define ICON_LC_UNDO_2 "\xee\x8a\xa1" // U+E2A1

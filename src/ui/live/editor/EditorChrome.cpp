@@ -5,7 +5,7 @@
 #include "BlueprintPane.h"
 #include "EditorTheme.h"
 #include "ops/SetOriginOp.h"
-#include "IconsLucide.h"
+#include "ui/live/IconsLucide.h"
 #include "ViewportPane.h" // GetTargetViewport()->m_imageRect (status overlay anchor)
 
 #include "core/player.h"
@@ -246,8 +246,16 @@ void EditorChrome::Render(bool showFullUI)
 void EditorChrome::RenderMenuBar()
 {
    EditorUI &editor = m_editor;
-   if (ImGui::BeginMainMenuBar())
+   // Grow the bar beyond the line height so the icon glyphs (whose ink overshoots it) fit with
+   // a margin, then drop the item row so labels and icons sit vertically centered in the bar
+   const ImVec4 xInk = TextInkBounds(ICON_LC_X);
+   const float barExtraY = ImMax(0.f, (xInk.w - xInk.y - ImGui::GetFontSize()) * 0.5f) + ImGui::GetStyle().FramePadding.y;
+   ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, ImGui::GetStyle().FramePadding.y + barExtraY);
+   const bool barOpen = ImGui::BeginMainMenuBar();
+   ImGui::PopStyleVar();
+   if (barOpen)
    {
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + barExtraY);
       // Menu rows are only the text line height, and the icon glyphs slightly overshoot it: give the
       // rows the extra room the icon ink needs (the pushed spacing applies to the spawned popup windows too)
       const ImVec4 iconInk = TextInkBounds(ICON_LC_SAVE);
@@ -574,7 +582,7 @@ void EditorChrome::RenderMenuBar()
          const bool active = (editor.m_activeLayoutIndex == i);
          if (active)
             ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-         if (ImGui::SmallButton(label))
+         if (ImGui::Button(label))
             editor.SetAreaLayoutIndex(i);
          if (active)
             ImGui::PopStyleColor();
@@ -583,16 +591,16 @@ void EditorChrome::RenderMenuBar()
       ImGui::EndDisabled();
       float buttonWidth = 0.f;
       if (editor.IsInspectMode())
-         buttonWidth += ImGui::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
-      buttonWidth += ImGui::CalcTextSize(ICON_FK_WINDOW_CLOSE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+         buttonWidth += IconButtonInkSize(ICON_LC_REPLY).x;
+      buttonWidth += IconButtonInkSize(ICON_LC_X).x;
       // Play button, centered in the free space left between the layout buttons and the close buttons
-      const float playWidth = ImGui::CalcTextSize(ICON_FK_PLAY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+      const float playWidth = IconButtonInkSize(ICON_LC_PLAY).x;
       const float freeWidth = ImGui::GetContentRegionAvail().x - buttonWidth;
       if (freeWidth > playWidth)
       {
          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (freeWidth - playWidth) * 0.5f);
          ImGui::BeginDisabled(editor.m_table->IsLocked());
-         if (ImGui::Button(ICON_FK_PLAY))
+         if (BarIconButtonInk(ICON_LC_PLAY, "##PlayTest"))
             editor.PlayTest();
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Play test (F5)");
@@ -604,12 +612,12 @@ void EditorChrome::RenderMenuBar()
       ImGui::SetCursorScreenPos(padding);
       if (editor.IsInspectMode())
       {
-         if (ImGui::Button(ICON_FK_REPLY)) // ICON_FK_STOP
+         if (BarIconButtonInk(ICON_LC_REPLY, "##BackToPlayer")) // ICON_LC_SQUARE
             editor.Close();
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Get back to player");
       }
-      if (ImGui::Button(ICON_FK_WINDOW_CLOSE))
+      if (BarIconButtonInk(ICON_LC_X, "##CloseEditor"))
          editor.RequestClose(editor.IsInspectMode() ? Player::CS_STOP_PLAY : Player::CS_CLOSE_APP);
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip("Close editor");

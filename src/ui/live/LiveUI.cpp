@@ -5,12 +5,10 @@
 
 #include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
-#include "editor/IconsLucide.h"
-#include "editor/LucideFont.h"
+#include "IconsLucide.h"
+#include "LucideFont.h"
 #include "fonts/DroidSans.h"
 #include "fonts/DroidSansBold.h"
-#include "fonts/IconsForkAwesome.h"
-#include "fonts/ForkAwesome.h"
 #include "math/matrix.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
@@ -63,12 +61,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    // UI fonts
    m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_uiScale);
-   ImFontConfig icons_config;
-   icons_config.MergeMode = true;
-   icons_config.PixelSnapH = true;
-   icons_config.GlyphMinAdvanceX = 13.0f * m_uiScale;
-   static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
-   io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_uiScale, &icons_config, icons_ranges);
    // Lucide line icons for the live editor (24 px grid glyphs, drawn a bit larger than the text and centered on it)
    ImFontConfig lucide_config;
    lucide_config.MergeMode = true;
@@ -88,7 +80,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    markdown_config.linkCallback = MarkdownLinkCallback;
    markdown_config.tooltipCallback = nullptr;
    markdown_config.imageCallback = MarkdownImageCallback;
-   //markdown_config.linkIcon = ICON_FA_LINK;
+   //markdown_config.linkIcon = ICON_LC_LINK;
    markdown_config.headingFormats[0] = { H1, true };
    markdown_config.headingFormats[1] = { H2, true };
    markdown_config.headingFormats[2] = { H3, false };
@@ -489,7 +481,7 @@ void LiveUI::RenderUI()
       ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 24 * m_uiScale, 4 * m_uiScale));
       ImGui::Begin("PauseOverlay", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
             | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
-      ImGui::Text(ICON_FK_PAUSE);
+      ImGui::Text(ICON_LC_PAUSE);
       ImGui::End();
    }
 

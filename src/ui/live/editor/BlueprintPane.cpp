@@ -8,10 +8,10 @@
 #include "core/Settings.h"
 #include "core/player.h"
 #include "physics/PhysicsEngine.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 #include "EditorTheme.h"
-#include "IconsLucide.h"
-#include "fonts/IconsForkAwesome.h"
+#include "ui/live/IconsLucide.h"
 #include "OutlinerPanel.h"
 #include "Selection.h"
 #include "core/ieditable.h"
@@ -429,18 +429,20 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
          const char* icon;
          const char* tooltip;
       } editModes[] = {
-         { (ImGuizmo::OPERATION)0, ICON_FK_MOUSE_POINTER, "Select\n[Esc]" }, //
-         { ImGuizmo::TRANSLATE, ICON_FK_ARROWS, "Grab\n[G]" }, //
-         { ImGuizmo::SCALE, ICON_FK_EXPAND, "Scale\n[S]" }, //
-         { ImGuizmo::ROTATE, ICON_FK_REPEAT, "Rotate\n[R]" }, //
+         { (ImGuizmo::OPERATION)0, ICON_LC_MOUSE_POINTER_2, "Select\n[Esc]" }, //
+         { ImGuizmo::TRANSLATE, ICON_LC_MOVE_3D, "Grab\n[G]" }, //
+         { ImGuizmo::SCALE, ICON_LC_SCALE_3D, "Scale\n[S]" }, //
+         { ImGuizmo::ROTATE, ICON_LC_ROTATE_3D, "Rotate\n[R]" }, //
       };
       for (const auto& mode : editModes)
       {
          const bool active = (m_gizmoOperation == mode.operation);
          if (active)
             ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-         if (ImGui::Button(mode.icon))
+         ImGui::PushID(static_cast<int>(mode.operation));
+         if (IconButtonInk(mode.icon, "##EditMode"))
             SetGizmoOperation(mode.operation);
+         ImGui::PopID();
          if (active)
             ImGui::PopStyleColor();
          if (ImGui::IsItemHovered())
@@ -455,7 +457,7 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
       const bool addPartActive = (editor.m_addPartType != eItemInvalid);
       if (addPartActive)
          ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-      if (ImGui::Button(ICON_FK_PLUS))
+      if (IconButtonInk(ICON_LC_PLUS, "##AddPart"))
          editor.RequestAddPartPopup(ImGui::GetMousePos());
       if (addPartActive)
          ImGui::PopStyleColor();
@@ -467,14 +469,14 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
 
    // Right side of the header: view options popover and fit view button
    const ImGuiStyle& style = ImGui::GetStyle();
-   const float rightW = ImGui::CalcTextSize(ICON_FK_STICKY_NOTE, nullptr, true).x + style.FramePadding.x * 2.0f //
+   const float rightW = IconButtonInkSize(ICON_LC_STICKY_NOTE).x //
       + ImGui::CalcTextSize("Fit", nullptr, true).x + style.FramePadding.x * 2.0f //
       + style.ItemSpacing.x * 2.0f;
    const float rightX = rect.Width() - pad - rightW;
    ImGui::SameLine();
    if (rightX > ImGui::GetCursorPosX())
       ImGui::SetCursorPosX(rightX);
-   if (ImGui::Button(ICON_FK_STICKY_NOTE)) // View options popover (shared with the win32 editor view)
+   if (IconButtonInk(ICON_LC_STICKY_NOTE, "##ViewOptions")) // View options popover (shared with the win32 editor view)
       ImGui::OpenPopup("Overlay Popup");
    if (ImGui::BeginPopup("Overlay Popup"))
    {
@@ -585,11 +587,11 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
          ImGui::Text("%.1f, %.1f", cur.x, cur.y);
       }
       if (m_gizmoOperation == ImGuizmo::TRANSLATE)
-         ImGui::TextUnformatted(ICON_FK_ARROWS " Grab");
+         ImGui::TextUnformatted(ICON_LC_MOVE_3D " Grab");
       else if (m_gizmoOperation == ImGuizmo::SCALE)
-         ImGui::TextUnformatted(ICON_FK_EXPAND " Scale");
+         ImGui::TextUnformatted(ICON_LC_SCALE_3D " Scale");
       else if (m_gizmoOperation == ImGuizmo::ROTATE)
-         ImGui::TextUnformatted(ICON_FK_REPEAT " Rotate");
+         ImGui::TextUnformatted(ICON_LC_ROTATE_3D " Rotate");
       if (editor.GetTargetBlueprint() == this && editor.m_pointEditPart)
          ImGui::TextUnformatted(editor.m_pointEditCenter ? "Center Edit (Tab to exit)" : "Drag Point Edit (Tab to exit)");
       ImGui::End();

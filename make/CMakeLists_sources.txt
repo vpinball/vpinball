@@ -338,7 +338,7 @@ set(VPX_SOURCES
    src/ui/live/editor/parts/GateUIPart.cpp
    src/ui/live/editor/parts/HitTargetUIPart.h
    src/ui/live/editor/parts/HitTargetUIPart.cpp
-   src/ui/live/editor/IconsLucide.h
+   src/ui/live/IconsLucide.h
    src/ui/live/editor/parts/KickerUIPart.h
    src/ui/live/editor/parts/KickerUIPart.cpp
    src/ui/live/editor/ops/LayerSpaceChangeOp.h
@@ -347,7 +347,7 @@ set(VPX_SOURCES
    src/ui/live/editor/parts/LightUIPart.cpp
    src/ui/live/editor/parts/LightSeqUIPart.h
    src/ui/live/editor/parts/LightSeqUIPart.cpp
-   src/ui/live/editor/LucideFont.h
+   src/ui/live/LucideFont.h
    src/ui/live/editor/LiveRenderContext.h
    src/ui/live/editor/LiveRenderContext.cpp
    src/ui/live/editor/OutlinerPanel.h

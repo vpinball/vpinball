@@ -4,7 +4,8 @@
 #include "InGameUIPage.h"
 
 #include "core/VPApp.h"
-#include "fonts/IconsForkAwesome.h"
+#include "ui/live/IconsLucide.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 #include "ui/live/FileDialog.h"
 #include "ui/live/ingameui/SensorSetupPage.h"
@@ -527,14 +528,14 @@ void InGameUIPage::Render(float elapsedS)
    bool undoHovered = false;
    bool defaultHovered = false;
    bool saveHovered = false;
-   float buttonWidth = ImGui ::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + style.FramePadding.x * 2.0f + style.ItemSpacing.x;
+   float buttonWidth = IconButtonInkSize(ICON_LC_REPLY).x + style.ItemSpacing.x;
    if (isAdjustable)
    {
-      buttonWidth += ImGui::CalcTextSize(ICON_FK_HEART, nullptr, true).x + style.FramePadding.x * 2.0f;
+      buttonWidth += IconButtonInkSize(ICON_LC_HEART).x;
       buttonWidth += style.ItemSpacing.x;
-      buttonWidth += ImGui::CalcTextSize(ICON_FK_UNDO, nullptr, true).x + style.FramePadding.x * 2.0f;
+      buttonWidth += IconButtonInkSize(ICON_LC_UNDO_2).x;
       buttonWidth += style.ItemSpacing.x;
-      buttonWidth += ImGui::CalcTextSize(ICON_FK_FLOPPY_O, nullptr, true).x + style.FramePadding.x * 2.0f;
+      buttonWidth += IconButtonInkSize(ICON_LC_SAVE).x;
       buttonWidth += style.ItemSpacing.x;
    }
    ImGui::SameLine(ImGui::GetWindowSize().x - buttonWidth);
@@ -555,7 +556,7 @@ void InGameUIPage::Render(float elapsedS)
       }
       if (highlighted)
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-      if (ImGui::Button(ICON_FK_HEART))
+      if (IconButtonInk(ICON_LC_HEART, "##ResetDefaults"))
       {
          m_selectedItem = static_cast<int>(m_items.size()) - 1;
          AdjustItem(1.f, true);
@@ -580,7 +581,7 @@ void InGameUIPage::Render(float elapsedS)
       }
       if (highlighted)
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-      if (ImGui::Button(ICON_FK_UNDO))
+      if (IconButtonInk(ICON_LC_UNDO_2, "##UndoChanges"))
       {
          m_selectedItem = static_cast<int>(m_items.size()) - 1;
          AdjustItem(1.f, true);
@@ -594,7 +595,7 @@ void InGameUIPage::Render(float elapsedS)
       ImGui::SameLine();
       if (m_saveMode == SaveMode::None)
       {
-         ImGui::Dummy(ImGui::CalcTextSize(ICON_FK_FLOPPY_O, nullptr, true) + style.FramePadding * 2.0f);
+         ImGui::Dummy(IconButtonInkSize(ICON_LC_SAVE));
          ImGui::SameLine();
       }
       else
@@ -612,7 +613,7 @@ void InGameUIPage::Render(float elapsedS)
          }
          if (highlighted)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-         if (ImGui::Button(ICON_FK_FLOPPY_O))
+         if (IconButtonInk(ICON_LC_SAVE, "##SaveChanges"))
          {
             m_selectedItem = static_cast<int>(m_items.size()) - 1;
             AdjustItem(1.f, true);
@@ -634,7 +635,7 @@ void InGameUIPage::Render(float elapsedS)
       const bool highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
       if (highlighted)
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-      if (ImGui::Button(ICON_FK_REPLY))
+      if (IconButtonInk(ICON_LC_REPLY, "##Back"))
       {
          m_selectedItem = static_cast<int>(m_items.size()) - 1;
          AdjustItem(1.f, true);
@@ -709,8 +710,8 @@ void InGameUIPage::Render(float elapsedS)
    const float itemEndScreenX = rowStartScreenX + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("*", nullptr, true).x - itemPadding.x;
    const bool stackFields = (itemEndScreenX - labelEndScreenX) < 12.f * ImGui::GetFontSize();
    const float labelMaxWidth = stackFields ? itemEndScreenX - rowStartScreenX : maxLabelWidth;
-   const float closeButtonWidth = ImGui::CalcTextSize(ICON_FK_TIMES, nullptr, true).x + style.FramePadding.x * 2.0f;
-   const float circleTextWidth = ImGui::CalcTextSize(ICON_FK_CIRCLE, nullptr, true).x + style.FramePadding.x * 2.0f;
+   const float closeButtonWidth = IconButtonInkSize(ICON_LC_X).x;
+   const float circleTextWidth = IconButtonInkSize(ICON_LC_DISC).x;
    for (int i = 0; i < (int)m_items.size(); i++)
    {
       // A value change handled while rendering a previous item may have requested a page rebuild (e.g.
@@ -797,7 +798,7 @@ void InGameUIPage::Render(float elapsedS)
       case Navigation:
       case Runnable:
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
-         ImGui::Text(ICON_FK_ANGLE_DOUBLE_RIGHT);
+         ImGui::Text(ICON_LC_CHEVRONS_RIGHT);
          ImGui::SameLine(0.f, 10.f);
          ImGui::Text("%s", item->m_label.c_str());
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
@@ -826,7 +827,7 @@ void InGameUIPage::Render(float elapsedS)
          {
             if (!stackFields)
                ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-            if (ImGui::Button(std::format("{}##Item{:d}", ICON_FK_TIMES, i).c_str(), ImVec2(closeButtonWidth, 0)))
+            if (IconButtonInk(ICON_LC_X, std::format("##Item{:d}", i).c_str()))
             {
                item->m_inputAction->ClearMapping();
                if (item->m_inputAction->IsNavigationAction())
@@ -855,14 +856,14 @@ void InGameUIPage::Render(float elapsedS)
          if (ImGui::CalcTextSize(mappingLabel.c_str()).x >= mapButtonWidth - style.ItemSpacing.x * 2.f)
             ImGui::SetItemTooltip("%s", mappingLabel.c_str());
          {
-            string state = item->m_inputAction->IsPressed() ? ICON_FK_CIRCLE : ICON_FK_CIRCLE_O;
+            string state = item->m_inputAction->IsPressed() ? ICON_LC_DISC : ICON_LC_CIRCLE;
             ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x - circleTextWidth);
             ImGui::Text("%s", state.c_str());
          }
          if (item->IsModified())
          {
             ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::Text(ICON_FK_PENCIL);
+            ImGui::Text(ICON_LC_PENCIL);
          }
          break;
       }
@@ -885,12 +886,12 @@ void InGameUIPage::Render(float elapsedS)
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_PENCIL);
+               ImGui::Text(ICON_LC_PENCIL);
             }
             else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+               ImGui::Text(ICON_LC_CIRCLE_DOT);
             }
             m_deferRebuild = sliderActive;
             item->SetValue(v / item->m_floatValueDisplayScale);
@@ -909,11 +910,11 @@ void InGameUIPage::Render(float elapsedS)
             if (id.has_value() && (((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) || (Settings::m_propPlayer_PlayfieldHeight.index == id.value().index)) && !m_player->m_liveUI->m_inGameUI.IsFlipperNav()))
             {
                // Special handling for editing main window size as mouse interaction would break (since the control is moved/resized while interacted)
-               const float butWidth = ImGui::CalcTextSize(ICON_FK_ARROWS_H, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+               const float butWidth = IconButtonInkSize(ICON_LC_MOVE_HORIZONTAL).x;
                ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x - ImGui::GetStyle().ItemSpacing.x - butWidth);
                ImGui::InputInt(std::format("##Item{}", i).c_str(), &v, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank);
                ImGui::SameLine();
-               if (ImGui::Button((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) ? ICON_FK_ARROWS_H : ICON_FK_ARROWS_V))
+               if (IconButtonInk((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) ? ICON_LC_MOVE_HORIZONTAL : ICON_LC_MOVE_VERTICAL, std::format("##Item{}", i).c_str()))
                   v = prop->m_max;
             }
             else
@@ -925,12 +926,12 @@ void InGameUIPage::Render(float elapsedS)
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_PENCIL);
+               ImGui::Text(ICON_LC_PENCIL);
             }
             else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+               ImGui::Text(ICON_LC_CIRCLE_DOT);
             }
             m_deferRebuild = sliderActive;
             item->SetValue(v);
@@ -958,12 +959,12 @@ void InGameUIPage::Render(float elapsedS)
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_PENCIL);
+               ImGui::Text(ICON_LC_PENCIL);
             }
             else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+               ImGui::Text(ICON_LC_CIRCLE_DOT);
             }
             item->SetValue(prop->m_min + v);
             break;
@@ -982,12 +983,12 @@ void InGameUIPage::Render(float elapsedS)
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_PENCIL);
+               ImGui::Text(ICON_LC_PENCIL);
             }
             else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+               ImGui::Text(ICON_LC_CIRCLE_DOT);
             }
             item->SetValue(v);
             break;
@@ -1003,13 +1004,13 @@ void InGameUIPage::Render(float elapsedS)
             if (prop->m_pathType != VPX::Properties::StringPropertyDef::PathType::None)
             {
                const bool isFolder = prop->m_pathType == VPX::Properties::StringPropertyDef::PathType::Folder;
-               const char* browseIcon = isFolder ? ICON_FK_FOLDER_OPEN : ICON_FK_FILE_O;
+               const char* browseIcon = isFolder ? ICON_LC_FOLDER_OPEN : ICON_LC_FILE;
                const char* hint = isFolder ? "Select a folder..." : "Select a file...";
-               const float browseButtonWidth = ImGui::CalcTextSize(browseIcon, nullptr, true).x + style.FramePadding.x * 2.0f;
+               const float browseButtonWidth = IconButtonInkSize(browseIcon).x;
                ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x - browseButtonWidth - style.ItemSpacing.x);
                ImGui::InputTextWithHint(std::format("##Item{}", i).c_str(), hint, &v);
                ImGui::SameLine();
-               if (ImGui::Button(std::format("{}##Item{}", browseIcon, i).c_str(), ImVec2(browseButtonWidth, 0)))
+               if (IconButtonInk(browseIcon, std::format("##Item{}", i).c_str()))
                   BrowseForPath(*item);
                if (ImGui::IsItemHovered())
                   ImGui::SetTooltip("%s", hint);
@@ -1022,12 +1023,12 @@ void InGameUIPage::Render(float elapsedS)
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_PENCIL);
+               ImGui::Text(ICON_LC_PENCIL);
             }
             else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+               ImGui::Text(ICON_LC_CIRCLE_DOT);
             }
             item->SetValue(v);
             break;

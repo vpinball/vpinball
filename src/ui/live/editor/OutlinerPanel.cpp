@@ -2,11 +2,10 @@
 
 #include "core/stdafx.h"
 #include "OutlinerPanel.h"
-#include "IconsLucide.h"
+#include "ui/live/IconsLucide.h"
 #include "EditorTheme.h"
 #include "EditorChrome.h"
 
-#include "fonts/IconsForkAwesome.h"
 #include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/PartGroup.h"
@@ -698,7 +697,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(editable->IsUIVisible(false) ? EditorTheme::TextDim : EditorTheme::TextFaint));
          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
          ImGui::PushID(editable);
-         if (ImGui::SmallButton(editable->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF))
+         if (SmallIconButtonInk(editable->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF, "##Eye"))
          {
             editable->SetUIVisible(!editable->IsUIVisible(false));
             editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
@@ -774,7 +773,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          }
          vector<Node> stack;
          int outlinerItem = 0;
-         const float eyeX = columnWidth - (ImGui::CalcTextSize(ICON_LC_EYE).x + style.FramePadding.x * 2.0f); // Right edge of the eye buttons = right edge of the filter button
+         const float eyeX = columnWidth - IconButtonInkSize(ICON_LC_EYE).x; // Right edge of the eye buttons = right edge of the filter button
          // Highlight the group in which new and imported parts are added
          PartGroup *const newPartTarget = editor.GetPartGroupForNewPart();
          // When 'sync tree with selection' is enabled, reveal the newly selected part in the tree
@@ -879,7 +878,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                      ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(group->IsUIVisible(false) ? EditorTheme::TextDim : EditorTheme::TextFaint));
                      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
                      ImGui::PushID(group);
-                     if (ImGui::SmallButton(group->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF))
+                     if (SmallIconButtonInk(group->IsUIVisible(false) ? ICON_LC_EYE : ICON_LC_EYE_OFF, "##Eye"))
                      {
                         group->SetUIVisible(!group->IsUIVisible(false));
                         editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
