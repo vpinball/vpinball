@@ -129,8 +129,8 @@ void RenderPass::SortCommands()
 
          // Deferred light inserts (lightmap meshes) are opaque but are coplanar overlays that must be drawn after
          // the surface they sit on (e.g. the playfield). With a static prepass the surface is baked separately so
-         // ordering never mattered, but on the no-prepass path (which BGFX MSAA forces, since it cannot blit between
-         // MSAA textures) the opaque surface shares this pass with the inserts. Without this rule the inserts sort
+         // ordering never mattered, but on the no-prepass path (editor views, VR, dynamic-only inspection, ...) the
+         // opaque surface shares this pass with the inserts. Without this rule the inserts sort
          // ahead of the surface by technique and get overwritten by it. Keep them after other opaque parts and
          // before transparents (which are already ordered after all opaque items above).
          const auto isInsertLightmap = [](const RenderCommand* r) {

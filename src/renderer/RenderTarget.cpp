@@ -649,8 +649,10 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
 
 #if defined(ENABLE_BGFX)
-   assert(dest->m_nMSAASamples == 1);
-   if (pw1 == pw2 && ph1 == ph2)
+   // A MSAA destination can not be a blit target (BGFX does not allow blitting into a MSAA texture, and the resolved
+   // texture would be overwritten by the resolve on unbind anyway), so the copy is performed as quad draws writing
+   // the same value to all samples (same semantics as a non-MSAA to MSAA replicate blit)
+   if (pw1 == pw2 && ph1 == ph2 && !dest->IsMSAA())
    {
       // BGFX does not support blitting multiple layers at once on all target platform (supported on Vulkan, not supported on DX11, untested for the other backends)
       bgfx::TextureRegion src;
