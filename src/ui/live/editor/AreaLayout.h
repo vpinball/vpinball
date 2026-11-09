@@ -106,7 +106,7 @@ public:
    static constexpr float kViewportMinW = 240.f, kViewportMinH = 180.f;
    static constexpr float kGrabWidth = 6.f; // splitter grab strip
 
-   static constexpr float kDefaultOutlinerWidth = 200.f; // first-run default; saved layouts keep their stored width
+   static constexpr float kDefaultOutlinerWidth = 240.f; // == OutlinerPanel::PaneWidth; first-run default, saved layouts keep their stored width
    static constexpr float kDefaultPropertiesWidth = 280.f; // == PropertiesPanel::PaneWidth
 
    AreaLayout(); // default: the 'Layout' preset (index 0)

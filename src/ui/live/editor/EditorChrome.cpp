@@ -562,6 +562,8 @@ void EditorChrome::RenderMenuBar()
          if (ImGui::MenuItem(ICON_LC_LAYERS " Tool Shelf", "T", m_showToolShelf))
             ToggleToolShelf();
          ImGui::Separator();
+         if (ImGui::MenuItem(ICON_LC_REFRESH_CW " Reset Layouts", nullptr, false, !editor.m_table->IsLocked()))
+            editor.ResetAreaLayouts();
          ImGui::EndMenu();
       }
       if (editor.IsInspectMode() && !editor.m_table->IsLocked() && ImGui::BeginMenu("Debug"))

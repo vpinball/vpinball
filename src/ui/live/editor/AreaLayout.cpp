@@ -49,7 +49,7 @@ float SplitterRect::SizeForPos(const float p, const float dpi) const
 AreaLayout::AreaLayout()
    : AreaLayout(nullptr)
 {
-   // Default layout: Outliner 200 | Viewport | Properties 280
+   // Default layout: Outliner 240 | Viewport | Properties 280
    m_nodes.resize(5);
    AreaNode& root = m_nodes[0]; // V[first, outlinerW]
    root.isSplit = true;
