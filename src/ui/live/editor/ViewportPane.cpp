@@ -2643,6 +2643,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          else if (m_editor.ConsumedAreaEscape())
          {
          } // Consumed while cancelling an area split / join (not an editor Esc)
+         else if (m_measureMode)
+            SetMeasureMode(false); // Exit measure mode
          else if (m_gizmoOperation != ImGuizmo::OPERATION(0))
             m_gizmoOperation = ImGuizmo::OPERATION(0); // Cancel current operation
          else if (m_boxSelectActive)
@@ -2970,7 +2972,8 @@ void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
          hints = { { ICON_LC_MOUSE_LEFT, "Select Point" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
    }
    else if (m_viewType == ViewMode::PreviewCam)
-      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { "Wheel", "Zoom" }, { ICON_LC_MOUSE, "Orbit" }, { "Shift+" ICON_LC_MOUSE, "Pan" } };
+      // A render preview shows the game view: the camera is not editable, only part picking is
+      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { "Drag", "Box Select" } };
    else
    {
       // Navigation hints of the edit viewports (EditorCam, Desktop Backdrop)
@@ -2988,6 +2991,8 @@ void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
                hints.push_back({ "Tab", "Edit Points" });
          }
       }
+      hints.push_back({ "Numpad .", "Frame" });
+      hints.push_back({ "Home", "Fit" });
       hints.push_back({ "F", "Fly Mode" });
    }
 }

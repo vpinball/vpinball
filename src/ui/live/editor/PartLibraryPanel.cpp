@@ -574,7 +574,10 @@ void PartLibraryPanel::SetupPlayerSide(IEditable *part, const bool initRenderabl
    if (initRenderable)
    {
       if (auto *const renderable = part->GetIRenderable(); renderable)
+      {
          renderable->RenderSetup(m_editor.m_renderer.get());
+         m_editor.m_renderer->MarkStaticsDirty();
+      }
    }
    else
       m_editor.m_renderer->ReinitRenderable(part->GetIRenderable());
