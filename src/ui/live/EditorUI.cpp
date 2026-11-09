@@ -2008,7 +2008,10 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
       m_player->m_vball.push_back(static_cast<Ball *>(pie));
    m_player->TimerSetup(pie);
    if (auto *const renderable = pie->GetIRenderable(); renderable)
+   {
       renderable->RenderSetup(m_renderer.get());
+      m_renderer->MarkStaticsDirty();
+   }
    if (pie->GetIHitable())
       m_player->m_physics->Add(pie);
 
@@ -2233,7 +2236,10 @@ void EditorUI::PasteSelection(const ImVec2 *const pos)
          m_player->m_vball.push_back(static_cast<Ball *>(editable));
       m_player->TimerSetup(editable);
       if (auto *const renderable = editable->GetIRenderable(); renderable)
+      {
          renderable->RenderSetup(m_renderer.get());
+         m_renderer->MarkStaticsDirty();
+      }
       if (editable->GetIHitable())
          m_player->m_physics->Add(editable);
    }

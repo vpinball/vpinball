@@ -1420,6 +1420,14 @@ void Renderer::DisableStaticPrePass(const bool disable)
    }
 }
 
+void Renderer::MarkStaticsDirty()
+{
+   // The accumulated static part prerender (and the static render probes, which are dirtied with it) is
+   // stale: the views re-accumulate it on their next render. Views not using the prepass ignore the flag.
+   for (RenderView* view : m_renderViews)
+      view->m_isStaticPrepassDirty = true;
+}
+
 
 #pragma region PostProcess
 

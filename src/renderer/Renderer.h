@@ -130,13 +130,18 @@ public:
       return m_activeView->BackdropToClip(pos);
    } // Maps a point in desktop backdrop coordinates (0..EDITOR_BG_WIDTH, 0..EDITOR_BG_HEIGHT) to clip space, going through the editor's orthographic camera when editing the backdrop in the live editor, or to the full render target otherwise
 
-   void MarkShaderDirty() { m_shaderDirty = true; }
+   void MarkShaderDirty()
+   {
+      m_shaderDirty = true;
+      MarkStaticsDirty(); // The shader state (lighting, materials) is baked into the static part prerender
+   }
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity()) { m_activeView->UpdateBasicShaderMatrix(objectTrafo); }
    void UpdateBallShaderMatrix() { m_activeView->UpdateBallShaderMatrix(); }
    void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD) { m_activeView->UpdateDesktopBackdropShaderMatrix(basic, light, flasherDMD); }
    void UpdateStereoShaderState();
 
    void DisableStaticPrePass(const bool disable); // Disable static part prerendering on all views (reference counted)
+   void MarkStaticsDirty(); // The accumulated static part prerender of the views is stale (scene content or lighting changed): re-accumulate it on the next render
    bool IsUsingStaticPrepass() const { return m_activeView->IsUsingStaticPrepass(); }
    bool IsTemporalAccumulationInProgress() const
    {
@@ -209,20 +214,29 @@ public:
    void DrawWireframe(IEditable* const renderable, const vec4& fillColor, const vec4& edgeColor, bool withDepthMask);
    void RenderMesh(const unsigned int renderMask, RenderMeshDesc& draw, const VisualMaterial& mat);
 
+   // The queued renderable updates all invalidate the accumulated static part prerender of the views
    void ReinitRenderable(IRenderable* part)
    {
       if (part)
+      {
          m_renderableToInit.push_back(part);
+         MarkStaticsDirty();
+      }
    }
    void SetupRenderable(IRenderable* part)
    {
       if (part)
+      {
          m_renderableToSetup.push_back(part);
+         MarkStaticsDirty();
+      }
    }
    void DropRenderable(IRenderable* part)
    {
       std::erase(m_renderableToInit, part);
       std::erase(m_renderableToSetup, part);
+      if (part)
+         MarkStaticsDirty();
    }
 
    void SetTable(PinTable* table); // Rebind to a new table (currently limited to base table / live copy swaps)

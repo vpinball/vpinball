@@ -92,26 +92,16 @@ void BlueprintPane::FitTable()
 
 void BlueprintPane::FrameSelection()
 {
-   if (m_editor.m_multiSel.empty())
+   // Zoom & offset framing the selection bounds in the table XY plane (the top-down counterpart
+   // of the 3D view's FrameSelection: the part extents count, not only their centers)
+   FRect3D bounds;
+   if (!m_editor.GetSelectionBounds(bounds))
       return;
-   Vertex2D lo(FLT_MAX, FLT_MAX), hi(-FLT_MAX, -FLT_MAX);
-   for (const auto& part : m_editor.m_multiSel)
-   {
-      Matrix3D transform;
-      if (part->GetTransform(transform) == EditorUIPart::TM_None)
-         continue;
-      const Vertex3Ds pos = transform.GetOrthoNormalPos();
-      lo.x = min(lo.x, pos.x);
-      lo.y = min(lo.y, pos.y);
-      hi.x = max(hi.x, pos.x);
-      hi.y = max(hi.y, pos.y);
-   }
-   if (lo.x > hi.x)
-      return;
-   m_offset = Vertex2D(0.5f * (lo.x + hi.x), 0.5f * (lo.y + hi.y));
-   const float w = max(hi.x - lo.x, 50.f), h = max(hi.y - lo.y, 50.f);
+   m_offset = Vertex2D(0.5f * (bounds.left + bounds.right), 0.5f * (bounds.top + bounds.bottom));
+   const float w = max(bounds.right - bounds.left, 50.f), h = max(bounds.bottom - bounds.top, 50.f);
    if (m_imageRect.Width() > 0.f && m_imageRect.Height() > 0.f)
       m_zoom = clamp(0.8f * min(m_imageRect.Width() / w, m_imageRect.Height() / h), 0.1f, 64.f);
+   m_setupValid = true;
 }
 
 nlohmann::json BlueprintPane::SaveSetup() const
@@ -416,6 +406,7 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
    drawList->ChannelsSplit(2);
    drawList->ChannelsSetCurrent(1);
    ImGui::SetCursorPos(ImVec2(pad, pad));
+   ImGui::BeginGroup(); // Item rect bounds all the header controls: the bar height is the tallest one's bottom (same as ViewportPane)
 
    editor.RenderAreaTypeButton(leafId);
    ImGui::SameLine();
@@ -497,10 +488,11 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::EndPopup();
    }
    ImGui::SameLine();
-   if (ImGui::Button("Fit"))
+   if (ImGui::Button("Fit", ImVec2(0.f, IconButtonInkSize(ICON_LC_STICKY_NOTE).y))) // Same height as the icon buttons (IconButtonInkSize), as in ViewportPane's header
       FitTable();
    if (ImGui::IsItemHovered())
       ImGui::SetTooltip("Fit view on the playfield\n[Home]");
+   ImGui::EndGroup();
 
    const float headerBottom = ImGui::GetItemRectMax().y + pad;
    drawList->ChannelsSetCurrent(0);
@@ -1047,9 +1039,12 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
       editor.m_pointDragActive = false;
    }
 
-   // Pane keyboard actions: gizmo ops, drag point edit, mode cancels
+   // Pane keyboard actions: gizmo ops, drag point edit, view framing, mode cancels
    if (editor.GetTargetBlueprint() == this && !io.WantCaptureKeyboard && editor.m_fileOp == nullptr)
    {
+      // Emulate numpad (navigation preference, same as the 3D view): the top row keys act as the numpad view keys
+      const bool emulateNumpad = editor.m_navEmulateNumpad && !io.KeyAlt;
+      const auto padKey = [emulateNumpad](const ImGuiKey pad, const ImGuiKey digit) { return ImGui::IsKeyPressed(pad) || (emulateNumpad && ImGui::IsKeyPressed(digit)); };
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {
          if (editor.m_suppressNextEscape)
@@ -1131,10 +1126,10 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
          else if (!io.KeyCtrl)
             SetGizmoOperation(ImGuizmo::ROTATE);
       }
-      else if (ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))
-         FrameSelection();
-      else if (ImGui::IsKeyPressed(ImGuiKey_Home))
-         FitTable();
+      else if (padKey(ImGuiKey_KeypadDecimal, ImGuiKey_Period))
+         FrameSelection(); // Frame the selection (Blender's View Selected)
+      else if (ImGui::IsKeyPressed(ImGuiKey_Home) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+         FitTable(); // Fit the whole table (Blender's View All)
       else if (!io.WantTextInput
          && (ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true) || ImGui::IsKeyPressed(ImGuiKey_UpArrow, true)
             || ImGui::IsKeyPressed(ImGuiKey_DownArrow, true)))

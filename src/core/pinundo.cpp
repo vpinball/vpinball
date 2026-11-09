@@ -419,7 +419,10 @@ std::any PinUndo::ApplyRecord(UndoRecord &record, const bool buildInverse, std::
             if (editable->m_renderReleasePending)
                g_pplayer->m_renderer->SetupRenderable(renderable);
             else
+            {
                renderable->RenderSetup(g_pplayer->m_renderer.get());
+               g_pplayer->m_renderer->MarkStaticsDirty();
+            }
          }
          if (editable->GetIHitable())
             g_pplayer->m_physics->Add(editable);

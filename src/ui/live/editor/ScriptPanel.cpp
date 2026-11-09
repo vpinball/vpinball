@@ -285,5 +285,9 @@ void ScriptPane::RenderPane(const AreaRect &rect, const int leafId) { m_editor.m
 
 void ScriptPane::OnUnhosted() { }
 
-void ScriptPane::AppendStatusHints(vector<StatusHint> &hints) const { hints = { { "Esc", "Leave Editor Field" }, { StatusModKey + "+S"s, "Save Table" } }; }
+void ScriptPane::AppendStatusHints(vector<StatusHint> &hints) const
+{
+   // Same save label as the status bar fallback: a play test inspection saves the live changes back to the base table
+   hints = { { "Esc", "Leave Editor Field" }, { StatusModKey + "+S"s, m_editor.IsInspectMode() ? "Save Changes" : "Save Table" } };
+}
 }
