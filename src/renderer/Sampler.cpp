@@ -285,9 +285,13 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
          || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
          return m_nomipsTexture;
 
-      if (bgfx::getRendererType() == bgfx::RendererType::Enum::Direct3D12 && !m_isTextureUpdateLinear)
+      // BGFX does not implement mipmap generation for sRGB textures on Direct3D12 nor WebGPU (sRGB formats can
+      // not be bound as compute storage views on these backends, and BGFX's mipgen does not re-encode its output),
+      // so these backends go through a custom implementation which performs the sRGB round-trip explicitly
+      const bool useCustomMipGen
+         = !m_isTextureUpdateLinear && (bgfx::getRendererType() == bgfx::RendererType::Enum::Direct3D12 || bgfx::getRendererType() == bgfx::RendererType::Enum::WebGPU);
+      if (useCustomMipGen)
       {
-         // BGFX does not implement mipmap generation for Dirext3D12 sRGB texture (only linear formats), so we have to use a custom implementation
          assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
          if (!bgfx::isValid(m_rd->m_srgbMipmapProgram))
          {
