@@ -1450,8 +1450,8 @@ void ViewportPane::Render3D()
 
    // Reference space axes: the origin axes (and playfield/glass bounds) of the space shared by the
    // selection. When the selection does not define a single space (empty, mixed or holding backdrop
-   // parts), the playfield space is drawn, plus the room one when the table has a part group using
-   // it (in live edit the cabinet & cabinet feet spaces coincide with the room one, as they only
+   // parts), the playfield space is drawn, plus the room one when a visible part actually uses it
+   // (in live edit the cabinet & cabinet feet spaces coincide with the room one, as they only
    // differ by the user space settings which are not applied there)
    PartGroupData::SpaceReference spaces[2];
    int spaceCount = 0;
@@ -1462,8 +1462,9 @@ void ViewportPane::Render3D()
       else
       {
          spaces[spaceCount++] = PartGroupData::SpaceReference::SR_PLAYFIELD;
+         // The room axes are only relevant when a visible part actually uses a non playfield space
          for (IEditable* const part : m_editor.m_table->GetParts())
-            if (part->GetItemType() == eItemPartGroup && static_cast<const PartGroup*>(part)->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+            if (!part->m_desktopBackdrop && part->IsUIVisible(true) && EditorUI::GetPartSpace(part) != PartGroupData::SpaceReference::SR_PLAYFIELD)
             {
                spaces[spaceCount++] = PartGroupData::SpaceReference::SR_ROOM;
                break;
