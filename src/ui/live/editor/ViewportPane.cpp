@@ -98,6 +98,8 @@ void ViewportPane::AdoptCameraFrom(const ViewportPane* const src)
       // Default pose: the playfield seen from above (right handed system for easy ImGuizmo integration
       // while VPX renderer is left handed, so reverse X axis)
       m_camDistance = m_editor.m_table->m_bottom * 0.7f;
+      if (m_perspectiveCam)
+         m_camDistance /= tanf(0.5f * ANGTORAD(m_editor.m_navFovY)); // The half-height in perspective is distance * tan(FOV/2)
       const vec3 eye(m_editor.m_table->m_right * 0.5f, m_editor.m_table->m_bottom * 0.5f, -m_camDistance);
       const vec3 at(m_editor.m_table->m_right * 0.5f, m_editor.m_table->m_bottom * 0.5f, 0.f);
       constexpr vec3 up { 0.f, -1.f, 0.f };
@@ -634,6 +636,25 @@ void ViewportPane::SetFov(const float fovY)
    m_editor.m_navFovY = newFov;
 }
 
+// Switch between perspective and orthographic cameras keeping the framing of the orbit target: m_camDistance is
+// the view half-height in orthographic but the eye distance in perspective, so it is converted between the two
+void ViewportPane::SetPerspectiveCam(const bool perspective)
+{
+   if (m_perspectiveCam == perspective)
+      return;
+   m_perspectiveCam = perspective;
+   if (m_viewType == ViewMode::EditorCam)
+   {
+      Matrix3D inv(m_camView);
+      inv.Invert();
+      const vec3 dir = inv.GetOrthoNormalDir(), up = inv.GetOrthoNormalUp();
+      const vec3 camTarget = inv.GetOrthoNormalPos() - dir * m_camDistance;
+      const float tanHalfFovY = tanf(0.5f * ANGTORAD(m_editor.m_navFovY));
+      m_camDistance = perspective ? m_camDistance / tanHalfFovY : m_camDistance * tanHalfFovY;
+      m_camView = Matrix3D::MatrixLookAtRH(camTarget + dir * m_camDistance, camTarget, up);
+   }
+}
+
 void ViewportPane::SetView(const PredefinedView view)
 {
    // Editor Camera to an axis aligned view, keeping the orbit target and distance
@@ -809,6 +830,8 @@ void ViewportPane::SetPlayfieldCamera()
    const ImGuiIO& io = ImGui::GetIO();
    const float aspect = m_imageRect.Height() > 0.f ? m_imageRect.Width() / m_imageRect.Height() : io.DisplaySize.x / io.DisplaySize.y;
    m_camDistance = 0.5f * max(m_editor.m_table->m_bottom, m_editor.m_table->m_right / aspect);
+   if (m_perspectiveCam)
+      m_camDistance /= tanf(0.5f * ANGTORAD(m_editor.m_navFovY)); // The half-height in perspective is distance * tan(FOV/2)
    const vec3 eye(m_editor.m_table->m_right * 0.5f, m_editor.m_table->m_bottom * 0.5f, -m_camDistance);
    const vec3 at(m_editor.m_table->m_right * 0.5f, m_editor.m_table->m_bottom * 0.5f, 0.f);
    constexpr vec3 up { 0.f, -1.f, 0.f };
@@ -1019,7 +1042,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    {
       ImGui::SameLine();
       if (IconButtonInk(perspective ? ICON_LC_VIDEO : ICON_LC_VIDEO_OFF, "##Persp"))
-         perspective = !perspective;
+         SetPerspectiveCam(!perspective);
       if (ImGui::IsItemHovered())
          ImGui::SetTooltip(perspective ? "Perspective camera" : "Orthographic camera");
       ImGui::SameLine();
@@ -2744,7 +2767,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          }
       }
       else if (padKey(ImGuiKey_Keypad5, ImGuiKey_5))
-         m_perspectiveCam = !m_perspectiveCam;
+         SetPerspectiveCam(!m_perspectiveCam);
       else if (padKey(ImGuiKey_KeypadDecimal, ImGuiKey_Period))
       {
          FrameSelection();
