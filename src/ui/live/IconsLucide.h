@@ -12,7 +12,7 @@
 #define ICON_LC_CHEVRON_DOWN "\xee\x81\xad" // U+E06D
 #define ICON_LC_CHEVRON_RIGHT "\xee\x81\xaf" // U+E06F
 #define ICON_LC_CHEVRON_UP "\xee\x81\xb0" // U+E070
-#define ICON_LC_CHEVRONS_RIGHT "\xee\x80\xb3" // U+E073
+#define ICON_LC_CHEVRONS_RIGHT "\xee\x81\xb3" // U+E073
 #define ICON_LC_CIRCLE "\xee\x81\xb6" // U+E076
 #define ICON_LC_CIRCLE_ARROW_LEFT "\xee\x81\xb9" // U+E079
 #define ICON_LC_CIRCLE_DOT "\xee\x8d\x85" // U+E345

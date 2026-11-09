@@ -1421,13 +1421,21 @@ RenderTarget* RenderView::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Ren
    }
    rd->m_FBShader->SetMatrix(ShaderUniform::matProjInv, &matProjInv[0], nEyes);
    rd->m_FBShader->SetMatrix(ShaderUniform::matProj, &matProj[0], nEyes);
-   std::array<Vertex3D_TexelOnly, 4 * 16> quads;
-   std::array<Vertex3D_TexelOnly*, 16> updatedVertices;
    const float invX = static_cast<float>(1.0 / beforeTonemapRT->GetWidth());
    const float invY = static_cast<float>(1.0 / beforeTonemapRT->GetHeight());
-   const float padX = invX; // One pixel padding to account for filtering in the final copy which applies visual nudge with a non integral offset
+   const float padX = invX; // Padding (in clip space, half a pixel) to account for filtering in the final copy which applies visual nudge with a non integral offset
    const float padY = invY;
+   // Per ball blur draw, whose quad, sample count and ball positions are only known at the beginning of the frame (see below)
+   struct BlurDraw
+   {
+      Ball* ball;
+      ShaderState* shaderState;
+      Vertex3D_TexelOnly* vertices;
+      vec4 prevBall;
+   };
+   std::array<BlurDraw, 16> blurDraws;
    int nQuads = 0;
+   const Matrix3D view = GetMVP().GetView(0);
    for (size_t i = 0; i < g_pplayer->m_vball.size() && nQuads < 16; i++)
    {
       Ball* const pball = g_pplayer->m_vball[i];
@@ -1436,7 +1444,6 @@ RenderTarget* RenderView::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Ren
 
       // Discard stable balls or balls that have moved too much (which means the ball was likely created/moved)
       // We assume that velocity won't change before rendering (which is wrong) but extend it by a magic factor of 10
-      const Matrix3D view = GetMVP().GetView(0);
       const vec3 posl = pball->m_hitBall.m_d.m_pos + 0.5f * pball->m_hitBall.m_d.m_vel;
       const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
       const vec3 delta = newPos - pball->m_lastRenderedPos;
@@ -1446,99 +1453,134 @@ RenderTarget* RenderView::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Ren
          continue;
       }
 
-      const vec4 prevBall(pball->m_lastRenderedPos, pball->GetRadius());
-
       const Vertex3D_TexelOnly verts[4] = {};
       rd->m_FBShader->SetTechnique(ShaderTechnique::fb_motionblur);
       rd->DrawTexturedQuad(rd->m_FBShader, verts);
+      RenderCommand* const blurCmd = rd->GetCurrentPass()->m_commands.back();
+      blurDraws[nQuads] = { pball, blurCmd->GetShaderState(), static_cast<Vertex3D_TexelOnly*>(blurCmd->GetQuadVertices()), vec4(pball->m_lastRenderedPos, pball->GetRadius()) };
+      nQuads++;
+   }
+   if (nQuads == 0)
+      return afterTonemapRT;
 
-      // Update drawn rect bounds and ball position to account for late adjustment
-      ShaderState* ss = rd->GetCurrentPass()->m_commands.back()->GetShaderState();
-      updatedVertices[nQuads] = (Vertex3D_TexelOnly*)rd->GetCurrentPass()->m_commands.back()->GetQuadVertices();
+   // Then copy back from temporary buffer, applying tonemap since destination buffer is the tonemapped one
+   SetupTonemapping(tempRT, afterTonemapRT, false);
+   const bool mapToArea = afterTonemapRT == GetOutput() && !IsFullOutputArea();
+   const vec4 areaClip = GetOutputAreaClip();
+   for (int i = 0; i < nQuads; i++)
+   {
+      const Vertex3D_TexelOnly verts[4] = {};
+      rd->DrawTexturedQuad(rd->m_FBShader, verts);
+      Vertex3D_TexelOnly* const copyVertices = static_cast<Vertex3D_TexelOnly*>(rd->GetCurrentPass()->m_commands.back()->GetQuadVertices());
+
+      // Late adjustment, at the beginning of the frame: from the ball position predicted for display, set the blur and copy quads,
+      // the sample count and the ball positions of the blur
       rd->AddBeginOfFrameCmd(
-         [this, pball, view, ss, cmdVerts = updatedVertices[nQuads], prevBall, invX, invY, padX, padY]()
+         [this, blur = blurDraws[i], copyVertices, view, invX, invY, padX, padY, screenOffset = m_screenOffset, mapToArea, areaClip]()
          {
-            RenderTarget* tempRT = GetMotionBlurBufferTexture();
+            Ball* const pball = blur.ball;
+            RenderTarget* const tempRT = GetMotionBlurBufferTexture();
             const vec3 posl = pball->GetPosition() + m_renderer->m_renderDevice->GetPredictedDisplayDelay() * pball->GetVelocity();
             const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
             const int nEyes = m_renderer->m_renderDevice->m_nEyes;
 
-            // Compute a quad bound. This is fairly suboptimal and would benefit from a simple convex hull (at least from the 2 bounding rects)
-            float xMin = FLT_MAX;
-            float xMax = -FLT_MAX;
-            float yMin = FLT_MAX;
-            float yMax = -FLT_MAX;
-            for (int eye = 0; eye < nEyes; eye++)
-               Ball::m_ash.computeProjBounds(
-                  GetMVP().GetFlippedProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
-            const float prevLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length();
-            for (int eye = 0; eye < nEyes; eye++)
-               Ball::m_ash.computeProjBounds(GetMVP().GetFlippedProj(eye), newPos.x, newPos.y, newPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
-            const float fullLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length() - prevLen;
+            // Clip space bounds (xMin, xMax, yMin, yMax) of the ball at its previous and new positions
+            float bounds[2][4] = { { FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX }, { FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX } };
+            const vec3 ballPos[2] = { pball->m_lastRenderedPos, newPos };
+            bool behindCamera = false;
+            for (int k = 0; k < 2; k++)
+               for (int eye = 0; eye < nEyes; eye++)
+                  behindCamera |= Ball::m_ash.computeProjBounds(GetMVP().GetFlippedProj(eye), ballPos[k].x, ballPos[k].y, ballPos[k].z, pball->m_hitBall.m_d.m_radius,
+                     bounds[k][0], bounds[k][1], bounds[k][2], bounds[k][3]);
 
-            // Add a margin as the visual nudge may cause some filtering
-            xMin -= padX;
-            yMin -= padY;
-            xMax += padX;
-            yMax += padY;
-
-            const Vertex3D_TexelOnly verts[4] = {
-               { xMax, yMax, 0.0f, 0.5f + xMax * 0.5f, 0.5f - yMax * 0.5f }, //
-               { xMin, yMax, 0.0f, 0.5f + xMin * 0.5f, 0.5f - yMax * 0.5f }, //
-               { xMax, yMin, 0.0f, 0.5f + xMax * 0.5f, 0.5f - yMin * 0.5f }, //
-               { xMin, yMin, 0.0f, 0.5f + xMin * 0.5f, 0.5f - yMin * 0.5f } //
-            };
-            memcpy(cmdVerts, verts, sizeof(verts));
-
-            const int nSamples = clamp(static_cast<int>(0.5f * fullLen), 2, 32);
+            int nSamples = 2;
+            if (behindCamera)
+            {
+               // Ball (partly) behind the camera, unusable bounds: no blur (degenerate quads draw nothing)
+               std::fill_n(blur.vertices, 4, Vertex3D_TexelOnly {});
+               std::fill_n(copyVertices, 4, Vertex3D_TexelOnly {});
+            }
+            else
+            {
+               // Quad bound: the smaller of the rectangles enclosing both bounds along the screen motion and along the screen axes. The
+               // former follows their convex hull on long diagonal motions (where an axis aligned bound grows with the motion squared), the
+               // latter wins on short ones (a square bounded at 45 degrees doubles its area). In pixels, so the axes are perpendicular on
+               // screen whatever the aspect ratio
+               const float sx = 0.5f * static_cast<float>(tempRT->GetWidth()), sy = 0.5f * static_cast<float>(tempRT->GetHeight()); // Clip space to pixels
+               const Vertex2D prevCenter((bounds[0][0] + bounds[0][1]) * 0.5f * sx, (bounds[0][2] + bounds[0][3]) * 0.5f * sy);
+               const Vertex2D newCenter((bounds[1][0] + bounds[1][1]) * 0.5f * sx, (bounds[1][2] + bounds[1][3]) * 0.5f * sy);
+               const Vertex2D motion = newCenter - prevCenter;
+               const float motionLength = motion.Length();
+               // Rectangle along the axes (u, v), padded by the clip space padding box projected on each axis
+               struct Rect
+               {
+                  Vertex2D u, v;
+                  float aMin, aMax, bMin, bMax, padU, padV;
+                  float Area() const { return (aMax - aMin + 2.f * padU) * (bMax - bMin + 2.f * padV); }
+               };
+               const auto enclose = [&bounds, sx, sy, padX, padY](const Vertex2D& u)
+               {
+                  Rect r { u, Vertex2D(-u.y, u.x), FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, 0.f, 0.f };
+                  for (int k = 0; k < 2; k++)
+                     for (int c = 0; c < 4; c++)
+                     {
+                        const Vertex2D corner(bounds[k][c & 1] * sx, bounds[k][2 + (c >> 1)] * sy);
+                        const float a = corner.Dot(r.u), b = corner.Dot(r.v);
+                        r.aMin = min(r.aMin, a);
+                        r.aMax = max(r.aMax, a);
+                        r.bMin = min(r.bMin, b);
+                        r.bMax = max(r.bMax, b);
+                     }
+                  r.padU = padX * sx * fabsf(r.u.x) + padY * sy * fabsf(r.u.y);
+                  r.padV = padX * sx * fabsf(r.v.x) + padY * sy * fabsf(r.v.y);
+                  return r;
+               };
+               Rect rect = enclose(Vertex2D(1.f, 0.f));
+               if (motionLength >= 1.f)
+                  if (const Rect alongMotion = enclose(motion / motionLength); alongMotion.Area() < rect.Area())
+                     rect = alongMotion;
+               const Vertex2D& u = rect.u;
+               const Vertex2D& v = rect.v;
+               const float aMin = rect.aMin, aMax = rect.aMax, bMin = rect.bMin, bMax = rect.bMax, padU = rect.padU, padV = rect.padV;
+               // Same corner order as an axis aligned quad (u = X, v = Y): (max, max), (min, max), (max, min), (min, min)
+               static constexpr float signU[4] = { 1.f, -1.f, 1.f, -1.f };
+               static constexpr float signV[4] = { 1.f, 1.f, -1.f, -1.f };
+               for (int c = 0; c < 4; c++)
+               {
+                  const float a = signU[c] > 0.f ? aMax : aMin;
+                  const float b = signV[c] > 0.f ? bMax : bMin;
+                  // Blur, in the temporary buffer: padded
+                  const Vertex2D blurPx = u * (a + signU[c] * padU) + v * (b + signV[c] * padV);
+                  const float bx = blurPx.x / sx, by = blurPx.y / sy;
+                  blur.vertices[c] = { bx, by, 0.f, 0.5f + bx * 0.5f, 0.5f - by * 0.5f };
+                  // Copy, unpadded: from the temporary buffer (no screen offset) to the tonemapped buffer (screen offset applied)
+                  const Vertex2D copyPx = u * a + v * b;
+                  const float cx = copyPx.x / sx, cy = copyPx.y / sy;
+                  Vertex3D_TexelOnly& copy = copyVertices[c];
+                  copy.tu = 0.5f + cx * 0.5f;
+                  copy.tv = 0.5f - cy * 0.5f;
+                  copy.x = cx + screenOffset.x;
+                  copy.y = cy + screenOffset.y;
+                  copy.z = 0.f;
+                  // Map from view clip space to the view's area of a shared output
+                  if (mapToArea)
+                  {
+                     copy.x = areaClip.x + (copy.x + 1.f) * 0.5f * (areaClip.z - areaClip.x);
+                     copy.y = areaClip.y + (copy.y + 1.f) * 0.5f * (areaClip.w - areaClip.y);
+                  }
+               }
+               nSamples = clamp(static_cast<int>(motionLength), 2, 32); // About one sample per pixel of screen motion
+            }
             vec4 whHeightWithNSamples(invX, invY, 0.f, static_cast<float>(nSamples));
-            ss->SetVector(ShaderUniform::w_h_height, &whHeightWithNSamples);
+            blur.shaderState->SetVector(ShaderUniform::w_h_height, &whHeightWithNSamples);
 
             pball->m_lastRenderedPos = newPos;
             // Local, as a discarded frame drops this command without running it
             vec4 balls[MAX_BALL_SHADOW] = {};
             balls[0] = vec4(newPos, pball->GetRadius());
-            balls[1] = prevBall;
-            ss->SetVector(ShaderUniform::balls, balls, MAX_BALL_SHADOW);
+            balls[1] = blur.prevBall;
+            blur.shaderState->SetVector(ShaderUniform::balls, balls, MAX_BALL_SHADOW);
          });
-
-      nQuads++;
-   }
-
-   // Then copy back from temporary buffer, applying tonemap since destination buffer is the tonemapped one
-   // Then copy back from temporary buffer, applying tonemap since destination buffer is the tonemapped one
-   if (nQuads)
-   {
-      SetupTonemapping(tempRT, afterTonemapRT, false);
-      const bool mapToArea = afterTonemapRT == GetOutput() && !IsFullOutputArea();
-      const vec4 areaClip = GetOutputAreaClip();
-      for (int i = 0; i < nQuads; i++)
-      {
-         // Update quad bound after late ball position adjustment in first draw command
-         rd->DrawTexturedQuad(rd->m_FBShader, quads.data() + i * 4);
-         rd->AddBeginOfFrameCmd(
-            [vertices = static_cast<Vertex3D_TexelOnly*>(rd->GetCurrentPass()->m_commands.back()->GetQuadVertices()), cmdVerts = updatedVertices[i], screenOffset = m_screenOffset, padX,
-               padY, mapToArea, areaClip]()
-            {
-               const Vertex2D pad[4] = { { padX, padY }, { -padX, padY }, { padX, -padY }, { -padX, -padY } };
-               for (int i = 0; i < 4; i++)
-               {
-                  // Source in temp buffer: no screen offset, remove padding
-                  vertices[i].tu = 0.5f + (cmdVerts[i].x - pad[i].x) * 0.5f;
-                  vertices[i].tv = 0.5f - (cmdVerts[i].y - pad[i].y) * 0.5f;
-                  // Destination is the tonemapped back buffer, apply screen offset and remove padding
-                  vertices[i].x = cmdVerts[i].x + screenOffset.x - pad[i].x;
-                  vertices[i].y = cmdVerts[i].y + screenOffset.y - pad[i].y;
-                  vertices[i].z = 0.0f;
-                  // Map from view clip space to the view's area of a shared output
-                  if (mapToArea)
-                  {
-                     vertices[i].x = areaClip.x + (vertices[i].x + 1.f) * 0.5f * (areaClip.z - areaClip.x);
-                     vertices[i].y = areaClip.y + (vertices[i].y + 1.f) * 0.5f * (areaClip.w - areaClip.y);
-                  }
-               }
-            });
-      }
    }
 
    return afterTonemapRT;
@@ -1818,6 +1860,9 @@ RenderTarget* RenderView::ApplyStereo(RenderTarget* renderedRT, RenderTarget* ou
             const float tu2 = static_cast<float>(x + fw) / w, tv2 = static_cast<float>(y + fh) / h;
             const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, uiW, uiH, 0.f, 0.f, 1.f);
             const Matrix3D orthoEyes[2] = { ortho, ortho }; // One per eye
+            // TODO the UI shader takes its vertex color from the VF_IMGUI COLOR0 attribute, which these Vertex3D_NoTex2 quads (and the one
+            // in RenderView::Render) lack: BGFX D3D11 reads it as R8G8B8A8_UINT from the position bytes, so the UI is garbage or invisible
+            // (OpenGL only works by chance, through the (1,1,1) normal at location 1). Use a textured copy shader, or a white VF_IMGUI quad
             rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
             rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, orthoEyes, rd->m_nEyes);
             rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 0.f);
@@ -2161,6 +2206,7 @@ void RenderView::Render()
       if (RenderTarget* const uiLayer = g_pplayer->m_vrDevice->GetUIRenderTarget(); uiLayer != nullptr)
       {
          rd->AddRenderTargetDependency(uiLayer);
+         // TODO the UI shader gets no vertex color from this Vertex3D_NoTex2 quad (see the VR desktop composite in RenderView::ApplyStereo)
          rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
          const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, static_cast<float>(uiLayer->GetWidth()), static_cast<float>(uiLayer->GetHeight()), 0.f, 0.f, 1.f);
          const Matrix3D orthoEyes[2] = { ortho, ortho }; // One per eye
