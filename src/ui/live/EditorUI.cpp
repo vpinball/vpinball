@@ -3668,7 +3668,9 @@ void EditorUI::RenderAreaCorners()
          const auto viewIt = m_areaViews.find(leaf.id);
          const auto *const viewPane = viewIt != m_areaViews.end() ? dynamic_cast<const ViewportPane *>(viewIt->second.get()) : nullptr;
          const bool overViewItem = viewPane != nullptr && hoveredId == viewPane->m_viewItemId;
-         bool overWidget = hoveredId != 0 && !overViewItem && (cornerWindow == nullptr || hoveredId != cornerWindow->GetID("##corner"));
+         // The corner button's ID is hashed from the window ID: a corner window left unused while a popup stayed open has its ID stack released by
+         // ImGui's memory compaction (after ConfigMemoryCompactTimer), and ImGuiWindow::GetID would then read before its start
+         bool overWidget = hoveredId != 0 && !overViewItem && (cornerWindow == nullptr || hoveredId != ImGui::GetIDWithSeed("##corner", nullptr, cornerWindow->ID));
          const bool overStrip = strncmp(hwName, "##Split", 7) == 0;
          const bool overArea = hw == nullptr || strncmp(hwName, "##Pane", 6) == 0 || strcmp(hwName, "text overlay") == 0;
          // A floating window (popup, tooltip, overlay) keeps all its clicks: no corner acts through it
