@@ -700,8 +700,11 @@ bool RenderView::IsUsingStaticPrepass() const
       && !g_pplayer->IsVR() // VR disable prerender accumulation to avoid the perf impact as the view constantly moves
       && g_pplayer->GetInfoMode()
       != IF_DYNAMIC_ONLY // Dynamic inspection hides static parts (TODO remove embedded inspection as RenderDoc superseed this function and only DX9 still uses it)
-      && !GetMSAABackBufferTexture()
-             ->IsMSAA() // Static prepass is not compatible with BGFX's MSAA (BGFX does not allow to blit between MSAA textures). OpenGL backend is able to support it, but it is disabled as the resource to maintain it are too low and it is EOL
+#if !defined(ENABLE_BGFX)
+      // OpenGL is able to support MSAA + static prepass (glBlitFramebuffer allows non-MSAA to MSAA blits) but it is disabled
+      // as the resources to maintain it are too low and it is EOL. Under BGFX, the prepass compose is done with quad draws
+      && !GetMSAABackBufferTexture()->IsMSAA()
+#endif
       && m_shadeMode == ShadeMode::Default // TODO Wireframe rendering modes are not tested for prerendering optimization yet
       && m_disableStaticPrepass <= 0; // Something resuested to disable static part accumulation (for example headtracking,...)
 }
@@ -740,7 +743,11 @@ void RenderView::RenderStatics()
       // Defer deletion to the render thread end-of-frame: already submitted frames may still hold copy commands sourcing this RT
       if (m_staticPrepassRT)
          rd->AddEndOfFrameCmd([rt = m_staticPrepassRT]() { delete rt; });
-      m_staticPrepassRT = GetBackBufferTexture()->Duplicate("StaticPreRender"s);
+      // Always non-MSAA: the accumulated content is per-pixel (under BGFX MSAA the backbuffer itself is MSAA and
+      // duplicating it would needlessly allocate MSAA resolve machinery)
+      const RenderTarget* const backBuffer = GetBackBufferTexture();
+      m_staticPrepassRT = new RenderTarget(rd, backBuffer->m_type, "StaticPreRender"s, backBuffer->GetWidth(), backBuffer->GetHeight(), backBuffer->GetColorFormat(), backBuffer->HasDepth(),
+         1, "Failed to create static prerender target");
       for (RenderProbe* probe : r->m_table->m_vrenderprobe)
          probe->MarkDirtyStatics(this);
       m_staticPrepassAccumCount = 0;
