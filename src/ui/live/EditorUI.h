@@ -19,6 +19,7 @@
 #include "editor/ScriptPanel.h"
 #include "editor/ViewportPane.h"
 #include "editor/ops/LayerSpaceChangeOp.h"
+#include "editor/ops/ReferenceImageOp.h"
 #include "math/matrix.h"
 #include "parts/PartGroup.h"
 #include "renderer/Renderer.h"
@@ -70,6 +71,7 @@ class EditorUI final
    friend class ViewportPane;
    friend class SetOriginOp;
    friend class LayerSpaceChangeOp;
+   friend class ReferenceImageOp;
 
 public:
    EditorUI(LiveUI &liveUI);
@@ -377,6 +379,9 @@ public:
    // exactly converted (e.g. a surface can not be tilted out of its plane) are confirmed by a modal
    // before doing anything.
    LayerSpaceChangeOp m_layerSpaceChangeOp { *this };
+
+   // Reference images (flashers of the ReferenceImages part group, hidden in play): Add / Replace dialog and Fit to Image
+   ReferenceImageOp m_referenceImageOp { *this };
 
 public:
    // Part library (import/export of parts through partial VPZ packs, handled by the PartLibraryPanel dialog)

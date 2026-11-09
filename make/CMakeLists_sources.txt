@@ -367,6 +367,10 @@ set(VPX_SOURCES
    src/ui/live/editor/PropertyPane.cpp
    src/ui/live/editor/parts/RampUIPart.h
    src/ui/live/editor/parts/RampUIPart.cpp
+   src/ui/live/editor/ops/ReferenceImageMath.h
+   src/ui/live/editor/ops/ReferenceImageMath.cpp
+   src/ui/live/editor/ops/ReferenceImageOp.h
+   src/ui/live/editor/ops/ReferenceImageOp.cpp
    src/ui/live/editor/RendererInspectionModal.h
    src/ui/live/editor/RendererInspectionModal.cpp
    src/ui/live/editor/ResURIPicker.h

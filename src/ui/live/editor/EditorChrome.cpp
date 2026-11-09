@@ -271,6 +271,8 @@ void EditorChrome::RenderMenuBar()
             editor.DeleteSelection();
          if (ImGui::MenuItem(ICON_LC_PLUS " Add Part...", "Shift+A", false, !editor.m_table->IsLocked() && editor.m_pointEditPart == nullptr))
             editor.RequestAddPartPopup(editor.GetViewportContentCenter());
+         if (ImGui::MenuItem(ICON_LC_IMAGE " Add Reference Image...", nullptr, false, editor.m_referenceImageOp.CanAdd()))
+            editor.m_referenceImageOp.OpenAddDialog();
          ImGui::Separator();
          if (ImGui::MenuItem(ICON_LC_MOVE_3D " Move", "G", vp != nullptr && vp->m_gizmoOperation == ImGuizmo::TRANSLATE, canTransform))
             vp->BeginTransformOp(ImGuizmo::TRANSLATE);
@@ -293,6 +295,15 @@ void EditorChrome::RenderMenuBar()
                SetOriginOp::Apply(editor, SetOriginOp::Mode::GeometryBottom);
             if (ImGui::MenuItem("Origin to Scene Origin", nullptr, false, canSetOrigin))
                SetOriginOp::Apply(editor, SetOriginOp::Mode::Scene);
+            ImGui::EndMenu();
+         }
+         if (ImGui::BeginMenu(ICON_LC_IMAGE " Reference Image"))
+         {
+            const bool canApply = editor.m_referenceImageOp.CanApplyToSelection();
+            if (ImGui::MenuItem("Fit to Image", nullptr, false, canApply))
+               editor.m_referenceImageOp.FitSelection();
+            if (ImGui::MenuItem("Replace Image...", nullptr, false, canApply))
+               editor.m_referenceImageOp.OpenReplaceDialog();
             ImGui::EndMenu();
          }
          ImGui::EndMenu();

@@ -878,6 +878,9 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                         editor.SetSelection(Selection(edit));
                      if (ImGui::MenuItem("Select Contents"))
                         editor.SelectPartsInGroup(group);
+                     ImGui::Separator();
+                     if (ImGui::MenuItem("Add Reference Image...", nullptr, false, editor.m_referenceImageOp.CanAdd()))
+                        editor.m_referenceImageOp.OpenAddDialog();
                      ImGui::EndPopup();
                   }
                   {
