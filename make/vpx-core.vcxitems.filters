@@ -612,6 +612,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/RampUIPart.cpp">
       <Filter>ui\live\editor\parts</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/ReferenceImageMath.cpp">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/ReferenceImageOp.cpp">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
@@ -1762,6 +1768,12 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/RampUIPart.h">
       <Filter>ui\live\editor\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/ReferenceImageMath.h">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/ReferenceImageOp.h">
+      <Filter>ui\live\editor\ops</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/RendererInspectionModal.h">
       <Filter>ui\live\editor</Filter>

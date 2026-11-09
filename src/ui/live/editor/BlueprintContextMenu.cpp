@@ -187,7 +187,9 @@ void BlueprintPane::RenderContextMenu()
                ImGui::MenuItem("(no part group)", nullptr, false, false);
             ImGui::EndMenu();
          }
-         if (ImGui::MenuItem("Assign To Current Layer"))
+         // The current layer is never the reference images group: a reference image would leave it and show in play
+         const bool hasReferenceImage = std::ranges::any_of(editor.m_multiSel, [](const auto& part) { return ReferenceImageOp::IsReferenceImage(part->GetEditable()); });
+         if (ImGui::MenuItem("Assign To Current Layer", nullptr, false, !hasReferenceImage))
             editor.MoveSelectionToPartGroup(editor.GetPartGroupForNewPart());
          if (ImGui::BeginMenu("To Collection"))
          {

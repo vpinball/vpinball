@@ -709,7 +709,8 @@ void EditorUI::RenderUI()
    if (m_pointEditPart)
    {
       DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
-      if (IsInspectMode() || (curve == nullptr && !m_pointEditPart->HasEditCenter()) || m_selection.GetType() != Selection::S_EDITABLE || m_selection.GetPart() != m_pointEditPart)
+      if (IsInspectMode() || (curve == nullptr && !m_pointEditPart->HasEditCenter()) || m_selection.GetType() != Selection::S_EDITABLE || m_selection.GetPart() != m_pointEditPart
+         || ReferenceImageOp::IsReferenceImage(m_pointEditPart->GetEditable())) // Reference images have no point edit (e.g. undo back into the edit of a flasher since moved to their group)
          ExitPointEditMode(false);
       else if (curve != nullptr)
       {
@@ -876,6 +877,9 @@ void EditorUI::RenderUI()
 
    // Confirmation for layer reference space changes that can not re-express all of their children
    m_layerSpaceChangeOp.RenderModal();
+
+   // Add / Replace Reference Image dialog
+   m_referenceImageOp.RenderModal();
 
    // Progress feedback of the asynchronous file operation (load/save run on a worker thread): a modal popup
    // that blocks all interaction while the operation is running
@@ -1349,6 +1353,9 @@ bool EditorUI::IsEditablePickable(const IEditable *editable, const bool backdrop
       return false;
    // The player mode visibility mask does not apply in the editor: UI visibility (including parent groups) decides
    if (!editable->IsUIVisible(true))
+      return false;
+   // A locked reference image stays put under the parts traced over it
+   if (ReferenceImageOp::IsLocked(editable))
       return false;
    const auto type = editable->GetItemType();
    if (!HasFlag(m_selectionFilter, SelectionFilter::Playfield) && type == ItemTypeEnum::eItemPrimitive && static_cast<const Primitive *>(editable)->IsPlayfield())
@@ -1846,10 +1853,14 @@ void EditorUI::FlipSelection(const bool flipX)
       EndPointEdit();
       return;
    }
+   if (std::ranges::all_of(m_multiSel, [](const auto &part) { return ReferenceImageOp::IsReferenceImage(part->GetEditable()); }))
+      return; // Nothing to flip (no empty undo step)
    m_undo.BeginUndo();
    for (const auto &part : m_multiSel)
    {
       IEditable *const editable = part->GetEditable();
+      if (ReferenceImageOp::IsReferenceImage(editable))
+         continue; // Flipping a reference image would need a mirrored image, which a flasher can not show
       m_undo.MarkForUndo(editable);
       if (flipX)
          editable->FlipX(center);
@@ -1890,12 +1901,17 @@ void EditorUI::RotateMultiSel(const float ang, const Vertex2D &center, const boo
       EndPointEdit();
       return;
    }
+   if (std::ranges::all_of(m_multiSel, [](const auto &part) { return ReferenceImageOp::IsLocked(part->GetEditable()); }))
+      return; // Nothing to transform (no empty undo step)
    m_undo.BeginUndo();
    for (const auto &part : m_multiSel)
    {
       IEditable *const editable = part->GetEditable();
+      if (ReferenceImageOp::IsLocked(editable))
+         continue;
       m_undo.MarkForUndo(editable);
-      editable->Rotate(ang, center, useElementCenter);
+      if (!ReferenceImageOp::Rotate(editable, ang, center, useElementCenter)) // Reference images turn instead of rotating their points
+         editable->Rotate(ang, center, useElementCenter);
       m_renderer->ReinitRenderable(editable->GetIRenderable());
       m_player->m_physics->Update(editable);
    }
@@ -1921,12 +1937,17 @@ void EditorUI::ScaleMultiSel(const float scalex, const float scaley, const Verte
       EndPointEdit();
       return;
    }
+   if (std::ranges::all_of(m_multiSel, [](const auto &part) { return ReferenceImageOp::IsLocked(part->GetEditable()); }))
+      return; // Nothing to transform (no empty undo step)
    m_undo.BeginUndo();
    for (const auto &part : m_multiSel)
    {
       IEditable *const editable = part->GetEditable();
+      if (ReferenceImageOp::IsLocked(editable))
+         continue;
       m_undo.MarkForUndo(editable);
-      editable->Scale(scalex, scaley, center, useElementCenter);
+      if (!ReferenceImageOp::Scale(editable, scalex, scaley, center, useElementCenter)) // Uniform for reference images (not stretched)
+         editable->Scale(scalex, scaley, center, useElementCenter);
       m_renderer->ReinitRenderable(editable->GetIRenderable());
       m_player->m_physics->Update(editable);
    }
@@ -2156,12 +2177,14 @@ PartGroup *EditorUI::GetPartGroupForNewPart()
    PartGroup *partGroup = nullptr;
    if (const std::shared_ptr<EditorUIPart> &part = m_selection.GetPart())
       partGroup = part->GetEditable()->GetItemType() == eItemPartGroup ? static_cast<PartGroup *>(part->GetEditable()) : part->GetEditable()->GetPartGroup();
+   if (ReferenceImageOp::IsReferenceGroup(partGroup))
+      partGroup = nullptr; // Hidden in play: new and pasted parts never go there, even with a reference image selected
    if (partGroup == nullptr)
    {
       const vector<IEditable *> &parts = m_table->GetParts();
       std::erase_if(m_partGroupUseHistory, [&parts](const PartGroup *group) { return std::ranges::find(parts, group) == parts.end(); });
       for (PartGroup *const group : m_partGroupUseHistory)
-         if (group->IsUIVisible(true))
+         if (group->IsUIVisible(true) && !ReferenceImageOp::IsReferenceGroup(group))
          {
             partGroup = group;
             break;
@@ -2171,7 +2194,7 @@ PartGroup *EditorUI::GetPartGroupForNewPart()
    {
       for (IEditable *const part : m_table->GetParts())
       {
-         if (part->GetItemType() == eItemPartGroup && part->GetPartGroup() == nullptr)
+         if (part->GetItemType() == eItemPartGroup && part->GetPartGroup() == nullptr && !ReferenceImageOp::IsReferenceGroup(static_cast<PartGroup *>(part)))
          {
             if (part->IsUIVisible(false))
             {
@@ -2269,7 +2292,7 @@ void EditorUI::PasteSelection(const ImVec2 *const pos)
             --lastNonDigit;
          editable->SetName(m_table->GetUniqueName(input.substr(0, lastNonDigit)));
       }
-      editable->SetPartGroup(partGroup);
+      editable->SetPartGroup(ReferenceImageOp::PasteGroup(m_table, &m_undo, editable, partGroup)); // A copied reference image stays hidden in play
       m_table->AddPart(editable);
       m_undo.MarkForCreate(editable);
       pasted.push_back(editable);
@@ -2564,6 +2587,8 @@ bool EditorUI::GetSelectionTransform(Matrix3D &transform) const
    }
    if (m_selection.GetType() == Selection::S_EDITABLE)
    {
+      if (ReferenceImageOp::IsLocked(m_selection.GetPart()->GetEditable()))
+         return false; // No gizmo nor modal transform on a locked reference image (selected from the outliner)
       const EditorUIPart::TransformMask mask = m_selection.GetPart()->GetTransform(transform);
       return mask != EditorUIPart::TransformMask::TM_None;
    }
@@ -2716,7 +2741,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
       for (const auto &part : m_multiSel)
       {
          Matrix3D partTransform;
-         if (part->GetTransform(partTransform) == EditorUIPart::TM_None)
+         if (ReferenceImageOp::IsLocked(part->GetEditable()) || part->GetTransform(partTransform) == EditorUIPart::TM_None)
             continue;
          applyTransform(part, partTransform, clearPosition, clearScale, clearRotation);
       }
@@ -2731,8 +2756,8 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
    for (const auto &part : m_multiSel)
    {
       Matrix3D partTransform;
-      if (part->GetTransform(partTransform) == EditorUIPart::TM_None)
-         continue;
+      if (ReferenceImageOp::IsLocked(part->GetEditable()) || part->GetTransform(partTransform) == EditorUIPart::TM_None)
+         continue; // Like the nudge commands, the transform leaves the locked reference images of the selection in place
       applyTransform(part, partTransform * delta, false, false, false);
    }
 }

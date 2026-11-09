@@ -87,6 +87,7 @@ set(VPX_TEST_SOURCES
    tests/render/test-vr-spaces.cpp
    tests/render/test-window.cpp
    tests/ui/test-arealayout.cpp
+   tests/ui/test-referenceimage.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
 )
