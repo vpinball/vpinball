@@ -20,7 +20,7 @@
 #include "editor/EditorTheme.h"
 #include "editor/parts/EditorUIPart.h"
 #include "editor/parts/EditorUIPartRegistry.h"
-#include "editor/IconsLucide.h"
+#include "IconsLucide.h"
 #include "editor/LiveRenderContext.h"
 #include "editor/ViewportPane.h"
 

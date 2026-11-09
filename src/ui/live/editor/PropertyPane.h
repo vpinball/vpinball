@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fonts/IconsForkAwesome.h"
+#include "ui/live/IconsLucide.h"
 #include "utils/fileio.h"
 #include "parts/Sound.h"
 #include "parts/pintable.h"
@@ -146,7 +146,7 @@ public:
    }
 
 private:
-   static constexpr const char* ICON_SAVE = ICON_FK_FLOPPY_O;
+   static constexpr const char* ICON_SAVE = ICON_LC_SAVE;
 
    bool IsStartup() const { return m_table->m_liveBaseTable && m_showStartup; }
    template <class T> T* GetStartupObj(T* obj) const;

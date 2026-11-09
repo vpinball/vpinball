@@ -1939,12 +1939,12 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/FlipperUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/GateUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/HitTargetUIPart.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/IconsLucide.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/IconsLucide.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/KickerUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/LayerSpaceChangeOp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/LightUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/LightSeqUIPart.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/LucideFont.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/LucideFont.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/LiveRenderContext.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/OutlinerPanel.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/PartLibraryPanel.h" />

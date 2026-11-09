@@ -8,9 +8,8 @@
 #include "core/player.h"
 #include "core/Settings.h"
 #include "EditorTheme.h"
-#include "IconsLucide.h"
+#include "ui/live/IconsLucide.h"
 #include "LiveRenderContext.h"
-#include "fonts/IconsForkAwesome.h"
 #include "physics/PhysicsEngine.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/MeshBuffer.h"
@@ -1069,15 +1068,15 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       // Right side of the header: viewport overlays, selection filter and camera orbit lock
       const ImGuiStyle& style = ImGui::GetStyle();
       const float rightW = //
-         ImGui::CalcTextSize(ICON_FK_STICKY_NOTE, nullptr, true).x + style.FramePadding.x * 2.0f //
-         + ImGui::CalcTextSize(ICON_FK_FILTER, nullptr, true).x + style.FramePadding.x * 2.0f //
-         + ImGui::CalcTextSize(ICON_FK_LOCK, nullptr, true).x + style.FramePadding.x * 2.0f //
+         IconButtonInkSize(ICON_LC_STICKY_NOTE).x //
+         + IconButtonInkSize(ICON_LC_FILTER).x //
+         + IconButtonInkSize(ICON_LC_LOCK).x //
          + style.ItemSpacing.x * 2.0f;
       const float rightX = rect.Width() - pad - rightW;
       ImGui::SameLine();
       if (rightX > ImGui::GetCursorPosX())
          ImGui::SetCursorPosX(rightX);
-      if (IconButtonInk(ICON_FK_STICKY_NOTE, "##Overlays")) // Overlay options popover
+      if (IconButtonInk(ICON_LC_STICKY_NOTE, "##Overlays")) // Overlay options popover
          ImGui::OpenPopup("Overlay Popup");
       if (ImGui::BeginPopup("Overlay Popup"))
       {
@@ -1095,7 +1094,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          ImGui::EndPopup();
       }
       ImGui::SameLine();
-      if (IconButtonInk(ICON_FK_FILTER, "##SelFilter")) // Selection filter popover
+      if (IconButtonInk(ICON_LC_FILTER, "##SelFilter")) // Selection filter popover
          ImGui::OpenPopup("Selection filter Popup");
       if (ImGui::BeginPopup("Selection filter Popup"))
       {
@@ -1119,7 +1118,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       const bool stylePushed = orbitLock;
       if (orbitLock)
          ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-      if (IconButtonInk(orbitLock ? ICON_FK_LOCK : ICON_FK_UNLOCK, "##OrbitLock"))
+      if (IconButtonInk(orbitLock ? ICON_LC_LOCK : ICON_LC_LOCK_OPEN, "##OrbitLock"))
          orbitLock = !orbitLock;
       if (stylePushed)
          ImGui::PopStyleColor();
@@ -1277,22 +1276,22 @@ void ViewportPane::RenderStatusOverlay()
    const char* gizmoLabel = nullptr;
    if (m_gizmoOperation == ImGuizmo::OPERATION(0))
    {
-      gizmoIcon = ICON_FK_MOUSE_POINTER;
+      gizmoIcon = ICON_LC_MOUSE_POINTER_2;
       gizmoLabel = "Select";
    }
    else if (m_gizmoOperation == ImGuizmo::TRANSLATE)
    {
-      gizmoIcon = ICON_FK_ARROWS;
+      gizmoIcon = ICON_LC_MOVE_3D;
       gizmoLabel = "Grab";
    }
    else if (m_gizmoOperation == ImGuizmo::SCALE)
    {
-      gizmoIcon = ICON_FK_EXPAND;
+      gizmoIcon = ICON_LC_SCALE_3D;
       gizmoLabel = "Scale";
    }
    else if (m_gizmoOperation == ImGuizmo::ROTATE)
    {
-      gizmoIcon = ICON_FK_REPEAT;
+      gizmoIcon = ICON_LC_ROTATE_3D;
       gizmoLabel = "Rotate";
    }
    if (m_measureMode)

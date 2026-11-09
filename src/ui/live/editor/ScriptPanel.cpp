@@ -4,9 +4,10 @@
 #include "ScriptPanel.h"
 
 #include "core/SettingsService.h"
-#include "fonts/IconsForkAwesome.h"
+#include "ui/live/IconsLucide.h"
 #include "parts/pintable.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 
 #include <SDL3/SDL_error.h>
@@ -246,7 +247,7 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       ImGui::AlignTextToFramePadding();
       ImGui::TextUnformatted("External editor:");
       ImGui::SameLine();
-      const float buttonWidth = ImGui::CalcTextSize(ICON_FK_EXTERNAL_LINK, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+      const float buttonWidth = IconButtonInkSize(ICON_LC_EXTERNAL_LINK).x;
       ImGui::SetNextItemWidth(-buttonWidth - ImGui::GetStyle().ItemSpacing.x);
       ImGui::InputTextWithHint("##exteditor", "Editor command, e.g. notepad++ {file}", &m_extEditorCmd);
       if (ImGui::IsItemDeactivatedAfterEdit())
@@ -254,7 +255,7 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       ImGui::SameLine();
       const bool canOpenExternal = !readOnly && !m_extEditorCmd.empty();
       ImGui::BeginDisabled(!canOpenExternal);
-      if (ImGui::Button(ICON_FK_EXTERNAL_LINK))
+      if (IconButtonInk(ICON_LC_EXTERNAL_LINK, "##OpenExternal"))
          OpenInExternalEditor();
       ImGui::EndDisabled();
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))

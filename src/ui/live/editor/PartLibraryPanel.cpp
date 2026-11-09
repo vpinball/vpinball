@@ -6,15 +6,15 @@
 #include "core/Settings.h"
 #include "core/SettingsService.h"
 #include "core/VPApp.h"
-#include "fonts/IconsForkAwesome.h"
 #include "parts/ball.h"
 #include "parts/pintable.h"
 #include "physics/PhysicsEngine.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/FileDialog.h"
 #include "BlueprintPane.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/editor/parts/EditorUIPartRegistry.h"
-#include "IconsLucide.h"
+#include "ui/live/IconsLucide.h"
 #include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"
 #include "utils/JSONSerializer.h"
@@ -232,7 +232,7 @@ void PartLibraryPanel::RenderPane(const AreaRect &rect, const int leafId)
       }
 
       ImGui::SeparatorText("Import a pack file");
-      if (ImGui::Button(ICON_FK_FILE_O " Select VPZ file..."))
+      if (IconButtonInk(ICON_LC_FILE " Select VPZ file...", "##SelectVpz"))
       {
          if (m_editor.m_player->m_playfieldWnd != nullptr)
          {
@@ -254,7 +254,7 @@ void PartLibraryPanel::RenderPane(const AreaRect &rect, const int leafId)
       }
 
       ImGui::SeparatorText("Library folders");
-      if (ImGui::Button(ICON_FK_FOLDER_OPEN " Add library folder..."))
+      if (IconButtonInk(ICON_LC_FOLDER_OPEN " Add library folder...", "##AddLibFolder"))
       {
          if (m_editor.m_player->m_playfieldWnd != nullptr)
          {
@@ -274,7 +274,7 @@ void PartLibraryPanel::RenderPane(const AreaRect &rect, const int leafId)
          }
       }
       ImGui::SameLine();
-      if (ImGui::Button(ICON_FK_REFRESH " Refresh"))
+      if (IconButtonInk(ICON_LC_REFRESH_CW " Refresh", "##RefreshLibs"))
          m_rescanLibrary = true;
       if (m_library.empty())
          ImGui::TextDisabled("No library folder defined");
@@ -291,8 +291,8 @@ void PartLibraryPanel::RenderPane(const AreaRect &rect, const int leafId)
             if (ImGui::IsItemHovered())
                ImGui::SetTooltip("%s", PathToUTF8(root.path).c_str());
             ImGui::SameLine();
-            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - (ImGui::CalcTextSize(ICON_FK_TRASH_O).x + 2.f * ImGui::GetStyle().FramePadding.x));
-            if (ImGui::SmallButton(ICON_FK_TRASH_O))
+            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - IconButtonInkSize(ICON_LC_TRASH_2).x);
+            if (SmallIconButtonInk(ICON_LC_TRASH_2, "##RemoveLib"))
             {
                RemoveLibraryFolder(i);
                if (open)

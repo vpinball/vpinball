@@ -8,6 +8,7 @@
 #include "PlungerHandler.h" // PlungerSensor is constructed below: it must be a complete type wherever this header is included
 #include "physics/cabinet/CabinetNudgeSensor.h"
 #include "physics/cabinet/GamepadNudge.h"
+#include "ui/live/IconsLucide.h"
 
 
 class SDLInputHandler final : public InputManager::InputHandler
@@ -130,10 +131,10 @@ private:
       case SDL_GAMEPAD_BUTTON_LABEL_B: return "B"s;
       case SDL_GAMEPAD_BUTTON_LABEL_X: return "X"s;
       case SDL_GAMEPAD_BUTTON_LABEL_Y: return "Y"s;
-      case SDL_GAMEPAD_BUTTON_LABEL_CROSS: return "Cross"s; // ICON_FK_TIMES
-      case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE: return "Circle"s; // ICON_FK_CIRCLE_O
-      case SDL_GAMEPAD_BUTTON_LABEL_SQUARE: return "Square"s; // ICON_FK_SQUARE_O
-      case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE: return "Triangle"s; // Sadly, nothing for triangle
+      case SDL_GAMEPAD_BUTTON_LABEL_CROSS: return ICON_LC_X;
+      case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE: return ICON_LC_CIRCLE;
+      case SDL_GAMEPAD_BUTTON_LABEL_SQUARE: return ICON_LC_SQUARE;
+      case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE: return ICON_LC_TRIANGLE;
       default:
          switch (button)
          {

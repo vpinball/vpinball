@@ -30,7 +30,9 @@
 #include "ui/live/LiveUI.h"
 #include "utils/color.h"
 
+#include "ui/live/IconsLucide.h"
 #include "PropertyPane.h"
+#include "ui/live/ImGuiHelpers.h"
 
 namespace VPX::EditorUI
 {
@@ -882,7 +884,8 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
    ImGui::EndDisabled();
 
    ImGui::BeginDisabled(audioPlayer == nullptr);
-   if (ImGui::Button(isPlaying ? (ICON_FK_STOP " Stop"s).c_str() : (ICON_FK_PLAY " Play"s).c_str()))
+   const string playStopLabel = isPlaying ? ICON_LC_SQUARE " Stop"s : ICON_LC_PLAY " Play"s;
+   if (IconButtonInk(playStopLabel.c_str(), "##PlayStop"))
    {
       if (isPlaying)
       {
@@ -1104,7 +1107,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
       // Members, in the collection's order which is the order exposed to scripts
       if (members.empty())
          ImGui::TextDisabled("Empty collection");
-      const float buttonWidth = ImGui::CalcTextSize(ICON_FK_ARROW_UP).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+      const float buttonWidth = IconButtonInkSize(ICON_LC_ARROW_UP).x;
       const float buttonsX = ImGui::GetContentRegionAvail().x - 3.f * buttonWidth - 2.f * ImGui::GetStyle().ItemSpacing.x;
       int moveIndex = -1, removeIndex = -1;
       for (int i = 0; i < static_cast<int>(members.size()); i++)
@@ -1123,20 +1126,20 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
             ImGui::SetTooltip("%s", LocalString(EditableRegistry::GetTypeNameStringID(member->GetItemType())).m_szbuffer);
          ImGui::SameLine(buttonsX);
          ImGui::BeginDisabled(i == 0);
-         if (ImGui::SmallButton(ICON_FK_ARROW_UP))
+         if (SmallIconButtonInk(ICON_LC_ARROW_UP, "##MoveUp"))
             moveIndex = i - 1;
          ImGui::EndDisabled();
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Move up");
          ImGui::SameLine();
          ImGui::BeginDisabled(i == static_cast<int>(members.size()) - 1);
-         if (ImGui::SmallButton(ICON_FK_ARROW_DOWN))
+         if (SmallIconButtonInk(ICON_LC_ARROW_DOWN, "##MoveDown"))
             moveIndex = i;
          ImGui::EndDisabled();
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Move down");
          ImGui::SameLine();
-         if (ImGui::SmallButton(ICON_FK_TIMES))
+         if (SmallIconButtonInk(ICON_LC_X, "##RemoveMember"))
             removeIndex = i;
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Remove from collection");

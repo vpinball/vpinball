@@ -5,8 +5,9 @@
 
 #include "core/player.h"
 #include "core/Settings.h"
-#include "fonts/ForkAwesome.h"
+#include "ui/live/IconsLucide.h"
 #include "imgui/imgui_stdlib.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 
 
@@ -112,13 +113,13 @@ void DebuggerUI::Update()
       // Play controls (replicates the push-like play/pause/step buttons of the former dialog)
       const bool isPlaying = player->IsPlaying(false);
       const bool isStepping = player->m_pauseTimeTarget > 0;
-      if (ImGui::RadioButton(ICON_FK_PLAY " Play", isPlaying && !isStepping))
+      if (ImGui::RadioButton(ICON_LC_PLAY " Play", isPlaying && !isStepping))
          player->SetPlayState(true);
       ImGui::SameLine();
-      if (ImGui::RadioButton(ICON_FK_PAUSE " Pause", !isPlaying))
+      if (ImGui::RadioButton(ICON_LC_PAUSE " Pause", !isPlaying))
          player->SetPlayState(false);
       ImGui::SameLine();
-      if (ImGui::RadioButton(ICON_FK_STEP_FORWARD " Step", isStepping))
+      if (ImGui::RadioButton(ICON_LC_SKIP_FORWARD " Step", isStepping))
          player->SetPlayState(true, static_cast<uint32_t>(max(1, m_stepMs)));
       ImGui::SameLine();
       ImGui::SetNextItemWidth(60.f * uiScale);
@@ -153,7 +154,7 @@ void DebuggerUI::Update()
 
       // Console output
       ImGui::Separator();
-      if (ImGui::Button(ICON_FK_TRASH_O " Clear"))
+      if (IconButtonInk(ICON_LC_TRASH_2 " Clear", "##ClearLog"))
          m_log.clear();
       ImGui::SameLine();
       ImGui::Checkbox("Auto-scroll", &m_autoScroll);
