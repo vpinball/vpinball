@@ -15,16 +15,16 @@ public:
    Rom(const string& gameName, const PinmameRom& rom)
       : m_rom(rom)
       , m_gameName(gameName)
+      , m_name(rom.name)
    {
-      m_name = m_rom.name;
    }
    ~Rom() = default;
 
    PSC_IMPLEMENT_REFCOUNT()
 
-   string GetName() const { return m_name; }
+   const string& GetName() const { return m_name; }
    int32_t GetState() const { return m_rom.state; }
-   string GetStateDescription() const
+   const string& GetStateDescription() const
    {
       switch (m_rom.state)
       {
@@ -50,7 +50,7 @@ public:
 private:
    PinmameRom m_rom;
    const string m_gameName;
-   string m_name;
+   const string m_name;
 };
 
 }
