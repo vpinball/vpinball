@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <deque>
+
 #include "core/resourceid.h"
 #include "utils/fileio.h"
 
@@ -158,16 +160,17 @@ public:
    static inline constexpr ItemTypeEnum ItemType = ItTy;                                                                                                                                     \
    static inline constexpr int TypeNameID = IDS_TB_##ResName;
 
-#define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type) \
-   type *dst = type::COMCreate(); \
-   dst->Init(0.f, 0.f, false, true); \
-   dst->m_name = m_name; \
-   dst->m_desktopBackdrop = m_desktopBackdrop; \
-   dst->SetUILock(IsUILocked()); \
-   dst->SetUIVisible(IsUIVisible(false)); \
-   dst->m_d = m_d; \
-   dst->m_timerInterval = m_timerInterval; \
-   dst->m_timerEnabled = m_timerEnabled;
+#define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type)                                                                                                                                           \
+   type *dst = type::COMCreate();                                                                                                                                                            \
+   dst->Init(0.f, 0.f, false, true);                                                                                                                                                         \
+   dst->m_name = m_name;                                                                                                                                                                     \
+   dst->m_desktopBackdrop = m_desktopBackdrop;                                                                                                                                               \
+   dst->SetUILock(IsUILocked());                                                                                                                                                             \
+   dst->SetUIVisible(IsUIVisible(false));                                                                                                                                                    \
+   dst->m_d = m_d;                                                                                                                                                                           \
+   dst->m_timerInterval = m_timerInterval;                                                                                                                                                   \
+   dst->m_timerEnabled = m_timerEnabled;                                                                                                                                                     \
+   dst->m_extensions = m_extensions; // Copies carry the persisted strings only (live data is per-instance)
 
 #define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, curve)                                                                                                                     \
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type)                                                                                                                                                \
@@ -202,6 +205,69 @@ public:
    bool m_visible = true;
 };
 
+// Live (deserialized) form of a part extension, attached to the entry by the
+// consumer owning the key. The table only asks it for its persisted form, when
+// the entry is serialized (file save, undo snapshot, clipboard, CopyForPlay).
+class IPartExtensionData
+{
+public:
+   virtual ~IPartExtensionData() = default;
+   // UTF-8 payload persisted under the entry's key. Implementations should cache
+   // the result and rebuild it only when their data changed — this is called on
+   // every serialization of the part (undo records included).
+   virtual string Serialize() const = 0;
+};
+
+struct PartExtension
+{
+   string key; // owning feature's namespace
+
+   // The observable persisted form: the live data serializes into raw on
+   // demand, so raw is never stale when read. The only place serialize-back
+   // happens.
+   const string &Serialized() const
+   {
+      if (m_data)
+         m_raw = m_data->Serialize();
+      return m_raw;
+   }
+   IPartExtensionData *Data() const { return m_data.get(); }
+   // Raw write: the new persisted form, detaches any live data
+   void SetRaw(string value)
+   {
+      m_raw = std::move(value);
+      m_data = nullptr;
+   }
+   // Live data attach: authoritative until detached; raw stays as fallback
+   void SetData(std::shared_ptr<IPartExtensionData> data) { m_data = std::move(data); }
+
+   // Copies carry the synced string only — live data is per-instance state
+   // and must not be shared between a part and its live/copy/undo clones.
+   PartExtension(const PartExtension &o)
+      : key(o.key)
+      , m_raw(o.Serialized())
+   {
+   }
+   PartExtension &operator=(const PartExtension &o)
+   {
+      key = o.key;
+      m_raw = o.Serialized();
+      m_data = nullptr;
+      return *this;
+   }
+   PartExtension(PartExtension &&) = default;
+   PartExtension &operator=(PartExtension &&) = default;
+   PartExtension(string k, string v)
+      : key(std::move(k))
+      , m_raw(std::move(v))
+   {
+   }
+
+private:
+   mutable string m_raw; // persisted form; refreshed from data on demand
+   std::shared_ptr<IPartExtensionData> m_data; // live form; authoritative while present
+};
+
 // IEditable is the interface for self-contained table element.
 // Example: Bumper is an IEditable, but DragPoint is not (it is a sub element of a part's curve).
 class IEditable
@@ -234,7 +300,7 @@ public:
    virtual void WriteRegDefaults() = 0;
 
    virtual void Save(IObjectWriter &writer, const bool saveForUndo) = 0;
-   virtual void ClearForOverwrite() { }
+   virtual void ClearForOverwrite() { m_extensions.clear(); }
    virtual void Load(IObjectReader &partReader) = 0;
    // Called once the part has been added to its table, for the few load fix ups that need
    // the table itself: m_ptable is only set by PinTable::AddPart, so it is still null while Load runs (see Surface)
@@ -269,6 +335,19 @@ protected:
 
 public:
    string m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
+
+   // Part extensions: namespaced key -> persisted data entries, serialized with the part in both VPX
+   // and VPZ. The presence of a key is the "handled by feature X" marker; the payload is owned and
+   // interpreted solely by the consumer of the key. deque (not vector): element references stay
+   // valid across push_back, so a returned entry pointer can be held while other keys are created.
+   std::deque<PartExtension> m_extensions;
+
+   PartExtension *GetExtension(const string &key); // nullptr if absent
+   const PartExtension *GetExtension(const string &key) const;
+   PartExtension &GetOrCreateExtension(const string &key); // find or emplace
+   void ClearExtension(const string &key);
+   bool HasExtension(const string &key) const { return GetExtension(key) != nullptr; }
+
 
    const string& GetName() const; // Script name (UTF-8), empty if not scriptable
    void SetName(const string& name);

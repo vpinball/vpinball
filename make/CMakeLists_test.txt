@@ -33,6 +33,7 @@ set(VPX_TEST_SOURCES
    tests/misc/test-color.cpp
    tests/misc/test-envmap-precalc.cpp
    tests/misc/test-material.cpp
+   tests/misc/test-partextension.cpp
    tests/misc/test-pinbinary.cpp
    tests/misc/test-pintable.cpp
    tests/misc/test-plugin-arrays.cpp

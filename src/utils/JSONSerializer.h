@@ -27,6 +27,7 @@ public:
    static constexpr int kRenderProbeNode = 0x102;
    static constexpr int kPinBinaryNode = 0x103;
    static constexpr int kTextureNode = 0x104;
+   static constexpr int kExtensionNode = 0x105;
 
    // Version of the VPZ pack file format (preliminary, no backward compatibility across versions)
    static constexpr int kFormatVersion = 1;

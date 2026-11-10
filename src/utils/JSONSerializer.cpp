@@ -44,6 +44,7 @@ static const std::initializer_list<FieldDef> g_sharedPartFields = {
    { FID(GRUP), "part_group" },
    { FID(PNTS), "dragpoints" }, // Legacy empty tag written before drag points (not used anymore but kept for compatibility)
    { FID(DPNT), "dragpoints" },
+   { FID(EXTD), "extensions" },
 };
 
 static FieldMap MakePartMap(std::initializer_list<FieldDef> fields, std::initializer_list<int> repeatable = {}, std::initializer_list<int> ignored = {})
@@ -728,6 +729,11 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
          { FID(NAME), "name" }, { FID(PATH), "path" }, { FID(SIZE), "size" }, { FID(DATA), "data" }, // Pack-relative path of the binary file holding the data
       });
 
+      m[JSONSerializer::kExtensionNode] = MakeMap({
+         { FID(XKEY), "key" },
+         { FID(XVAL), "value" },
+      });
+
       m[JSONSerializer::kTextureNode] = MakeMap({
          { FID(NAME), "name" }, { FID(PATH), "path" }, { FID(WDTH), "width" }, { FID(HGHT), "height" },
          { FID(ALTV), "alpha_test" }, // Alpha test value on a 0..255 scale, negative when disabled
@@ -872,6 +878,7 @@ int JSONSerializer::GetSubObjectKind(const int parentKind, const int fieldId)
    case FID(MATR): return (parentKind == eItemTable) ? kMaterialNode : parentKind;
    case FID(RPRB): return kRenderProbeNode;
    case FID(JPEG): return kPinBinaryNode;
+   case FID(EXTD): return kExtensionNode;
    default: return parentKind;
    }
 }

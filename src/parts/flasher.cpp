@@ -239,6 +239,7 @@ void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
 
 void Flasher::ClearForOverwrite()
 {
+   IEditable::ClearForOverwrite();
    m_curve.ClearPoints();
 }
 

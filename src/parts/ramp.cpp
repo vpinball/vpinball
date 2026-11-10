@@ -1192,7 +1192,11 @@ void Ramp::PrepareHabitrail()
 #pragma endregion
 
 
-void Ramp::ClearForOverwrite() { m_curve.ClearPoints(); }
+void Ramp::ClearForOverwrite()
+{
+   IEditable::ClearForOverwrite();
+   m_curve.ClearPoints();
+}
 
 void Ramp::Save(IObjectWriter& writer, const bool saveForUndo)
 {
