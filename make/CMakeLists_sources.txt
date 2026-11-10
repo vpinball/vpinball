@@ -484,8 +484,6 @@ set(VPX_SOURCES
 
    third-party/include/bc6h/basisu_bc6h.cpp
    third-party/include/bc6h/basisu_bc6h.h
-   third-party/include/bc7e/basisu_bc7e_scalar.cpp
-   third-party/include/bc7e/basisu_bc7e_scalar.h
    third-party/include/bc7f/basisu_bc7f.cpp
    third-party/include/bc7f/basisu_bc7f.h
    third-party/include/forsyth.h

@@ -1177,9 +1177,6 @@
     <ClCompile Include="$(SolutionDir)/../../third-party/include/bc6h/basisu_bc6h.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/bc7e/basisu_bc7e_scalar.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/bc7f/basisu_bc7f.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -2186,7 +2183,6 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot_internal.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/bc6h/basisu_bc6h.h" />
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/bc7e/basisu_bc7e_scalar.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/bc7f/basisu_bc7f.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/forsyth.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/freeimage.h" />

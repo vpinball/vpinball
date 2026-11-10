@@ -538,7 +538,7 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}"
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_001"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -557,6 +557,7 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --disable-static \
       --disable-programs \
       --disable-doc \
+      --disable-debug \
       --disable-avdevice \
       --disable-avfilter \
       --arch="x86_64" \
@@ -853,6 +854,7 @@ cp libdof/libdof/build/dof64.dll ../../../third-party/runtime-libs/windows-mingw
 cp libdof/libdof/build/dof64.dll.a ../../../third-party/build-libs/windows-mingw-x64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
 cp libdof/libdof/third-party/runtime-libs/win-mingw/x64/libusb64-1.0.dll ../../../third-party/runtime-libs/windows-mingw-x64
+# hidapi is only used by libdof (DOF plugin)
 cp libdof/libdof/third-party/runtime-libs/win-mingw/x64/hidapi64.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp libdof/libdof/third-party/runtime-libs/win-mingw/x64/libftdi164.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp libdof/libdof/third-party/runtime-libs/win-mingw/x64/libserialport64-0.dll ../../../third-party/runtime-libs/windows-mingw-x64

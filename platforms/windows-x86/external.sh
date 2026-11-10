@@ -510,7 +510,7 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}"
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_001"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -532,6 +532,7 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
          --disable-static \
          --disable-programs \
          --disable-doc \
+         --disable-debug \
          --disable-avdevice \
          --disable-avfilter \
          --arch=\"x86\" \
@@ -817,7 +818,7 @@ cp libdof/libdof/build/${BUILD_TYPE}/dof.dll ../../../third-party/runtime-libs/w
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
 cp libdof/libdof/third-party/build-libs/win/x86/libusb-1.0.lib ../../../third-party/build-libs/windows-x86
 cp libdof/libdof/third-party/runtime-libs/win/x86/libusb-1.0.dll ../../../third-party/runtime-libs/windows-x86
-cp libdof/libdof/third-party/build-libs/win/x86/hidapi.lib ../../../third-party/build-libs/windows-x86
+# hidapi is only used by libdof (DOF plugin)
 cp libdof/libdof/third-party/runtime-libs/win/x86/hidapi.dll ../../../third-party/runtime-libs/windows-x86
 cp libdof/libdof/third-party/build-libs/win/x86/libftdi1.lib ../../../third-party/build-libs/windows-x86
 cp libdof/libdof/third-party/runtime-libs/win/x86/libftdi1.dll ../../../third-party/runtime-libs/windows-x86

@@ -486,7 +486,7 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}"
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_001"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -505,6 +505,7 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --disable-static \
       --disable-programs \
       --disable-doc \
+      --disable-debug \
       --disable-avdevice \
       --disable-avfilter
    make -j${NUM_PROCS}
@@ -779,6 +780,7 @@ cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 cp -a libdof/libdof/build/libdof.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
 cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libusb*.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
+# hidapi is only used by libdof (DOF plugin)
 cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libhidapi-hidraw.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libftdi1*.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 
