@@ -3,9 +3,11 @@
 #include "actors/Group.h"
 #include "AnimationType.h"
 
-#include "tweeny-3.2.1.h"
+#include "actors/Tween.h"
 
 namespace Flex {
+
+class FadeOverlay;
 
 class Scene : public Group
 {
@@ -22,9 +24,15 @@ public:
    void SetPause(float pauseS) { m_pause = pauseS; }
    float GetTime() const { return m_time; }
    void SetAnimateOut(AnimationType animateOut) { m_animateOut = animateOut; }
-   void AddTween(float from, float to, float duration, const std::function<bool (float)>& callback);
    void Update(float secondsElapsed) override;
    void OnStageStateChanged() override;
+
+protected:
+   // Linear animations, as the Glide tweens of the original C# FlexDMD
+   enum class TweenProperty { X, Y };
+   void AddTween(Actor *pActor, TweenProperty property, float to, float duration);
+   void AddTween(FadeOverlay *pFade, float to, float duration); // Alpha of a fade overlay
+   void AddTween(float *pValue, float to, float duration); // Plain value, e.g. a scroll offset
 
 private:
    float m_inAnimLength;
@@ -36,7 +44,18 @@ private:
    float m_time;
    float m_pause;
 
-   vector<tweeny::tween<float>> m_tweens;
+   enum class TweenTarget { X, Y, Alpha, Value };
+   struct TargetTween
+   {
+      Tween tween;
+      TweenTarget target;
+      Actor *pActor; // X, Y, Alpha (a FadeOverlay)
+      float *pValue; // Value
+      float from, to;
+   };
+   void AddTween(TweenTarget target, Actor *pActor, float *pValue, float from, float to, float duration);
+
+   vector<TargetTween> m_tweens;
 };
 
 }

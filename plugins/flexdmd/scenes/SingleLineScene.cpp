@@ -27,10 +27,7 @@ void SingleLineScene::Begin()
       // UltraDMD moves text by 1.2 pixel per frame (no delta time) and seems to render based on a frame rate at 60FPS.
       float offset = (float)-(GetWidth() - m_pText->GetWidth()) / 2.0f;
       m_scrollX = offset + (float)GetWidth();
-      AddTween(m_scrollX, offset - (float)m_pText->GetWidth(), (float)(GetWidth() + m_pText->GetWidth()) / (60.0f * 1.2f), ([this](float newValue) {
-         this->m_scrollX = newValue;
-         return false;
-      }));
+      AddTween(&m_scrollX, offset - (float)m_pText->GetWidth(), (float)(GetWidth() + m_pText->GetWidth()) / (60.0f * 1.2f));
    }
 }
 

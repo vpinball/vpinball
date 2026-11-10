@@ -5,7 +5,9 @@
 #include "Group.h"
 #include "plugins/ScriptablePlugin.h"
 
-#include "tweeny-3.2.1.h"
+#include "Tween.h"
+
+#include <optional>
 
 namespace Flex {
 
@@ -164,13 +166,15 @@ enum Interpolation
    Interpolation_BackInOut = 30
 };
 
-class TweenAction : public Action
+// Moves X and Y together with one tween, as in the original C# FlexDMD
+class MoveToAction final : public Action
 {
 public:
-   TweenAction(Actor *pTarget, float duration)
+   MoveToAction(Actor *pTarget, float x, float y, float duration)
       : m_pTarget(pTarget)
+      , m_x(x)
+      , m_y(y)
       , m_duration(duration)
-      , m_ease(Interpolation_Linear)
    {
    }
 
@@ -179,220 +183,44 @@ public:
 
    bool Update(float secondsElapsed) override
    {
-      if (m_tweens.empty())
+      if (!m_tween)
       {
-         Begin();
-         switch (m_ease)
-         {
-         case Interpolation_Linear:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::linear);
-            break;
-         case Interpolation_ElasticIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::elasticIn);
-            break;
-         case Interpolation_ElasticOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::elasticOut);
-            break;
-         case Interpolation_ElasticInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::elasticInOut);
-            break;
-         case Interpolation_QuadIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quadraticIn);
-            break;
-         case Interpolation_QuadOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quadraticOut);
-            break;
-         case Interpolation_QuadInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quadraticInOut);
-            break;
-         case Interpolation_CubeIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::cubicIn);
-            break;
-         case Interpolation_CubeOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::cubicOut);
-            break;
-         case Interpolation_CubeInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::cubicInOut);
-            break;
-         case Interpolation_QuartIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quarticIn);
-            break;
-         case Interpolation_QuartOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quarticOut);
-            break;
-         case Interpolation_QuartInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quarticInOut);
-            break;
-         case Interpolation_QuintIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quinticIn);
-            break;
-         case Interpolation_QuintOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quinticOut);
-            break;
-         case Interpolation_QuintInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::quinticInOut);
-            break;
-         case Interpolation_SineIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::sinusoidalIn);
-            break;
-         case Interpolation_SineOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::sinusoidalOut);
-            break;
-         case Interpolation_SineInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::sinusoidalInOut);
-            break;
-         case Interpolation_BounceIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::bounceIn);
-            break;
-         case Interpolation_BounceOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::bounceOut);
-            break;
-         case Interpolation_BounceInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::bounceInOut);
-            break;
-         case Interpolation_CircIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::circularIn);
-            break;
-         case Interpolation_CircOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::circularOut);
-            break;
-         case Interpolation_CircInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::circularInOut);
-            break;
-         case Interpolation_ExpoIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::exponentialIn);
-            break;
-         case Interpolation_ExpoOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::exponentialOut);
-            break;
-         case Interpolation_ExpoInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::exponentialInOut);
-            break;
-         case Interpolation_BackIn:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::backIn);
-            break;
-         case Interpolation_BackOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::backOut);
-            break;
-         case Interpolation_BackInOut:
-            for (auto &tween : m_tweens)
-               tween.via(tweeny::easing::backInOut);
-            break;
-         }
+         m_fromX = m_pTarget->GetX();
+         m_fromY = m_pTarget->GetY();
+         // Indexed by Interpolation. Unknown values stay linear, as in C# FlexDMD
+         static constexpr Ease::Func easings[] = { Ease::Linear, Ease::ElasticIn, Ease::ElasticOut, Ease::ElasticInOut, //
+            Ease::QuadIn, Ease::QuadOut, Ease::QuadInOut, Ease::CubeIn, Ease::CubeOut, Ease::CubeInOut, //
+            Ease::QuartIn, Ease::QuartOut, Ease::QuartInOut, Ease::QuintIn, Ease::QuintOut, Ease::QuintInOut, //
+            Ease::SineIn, Ease::SineOut, Ease::SineInOut, Ease::BounceIn, Ease::BounceOut, Ease::BounceInOut, //
+            Ease::CircIn, Ease::CircOut, Ease::CircInOut, Ease::ExpoIn, Ease::ExpoOut, Ease::ExpoInOut, //
+            Ease::BackIn, Ease::BackOut, Ease::BackInOut };
+         static_assert(std::size(easings) == Interpolation_BackInOut + 1, "Easing table must match the Interpolation enum");
+         m_tween.emplace(m_duration, (m_ease >= 0 && m_ease < static_cast<int>(std::size(easings))) ? easings[m_ease] : Ease::Linear);
       }
-      bool done = true;
-      for (auto &tween : m_tweens)
+      if (m_tween->Update(secondsElapsed))
       {
-         tween.step((int)(secondsElapsed * 1000.0f));
-         if (tween.progress() < 1.0f)
-         {
-            done = false;
-            break;
-         }
+         m_pTarget->SetX(m_tween->Lerp(m_fromX, m_x));
+         m_pTarget->SetY(m_tween->Lerp(m_fromY, m_y));
       }
-      if (done)
+      if (m_tween->IsDone())
       {
-         End();
          // Prepare for restart
-         m_tweens.clear();
+         m_tween.reset();
          return true;
       }
       return false;
    }
 
-   virtual void Begin() = 0;
-   virtual void End() {}
-
-   float GetDuration() const { return m_duration; }
-
-   void AddTween(float from, float to, float duration, const std::function<bool(float)>& callback)
-   {
-      m_tweens.emplace_back(tweeny::from(from).to(to).during(duration * 1000.0f).onStep(callback));
-   }
-
-protected:
-   Actor *GetTarget() const { return m_pTarget; } // protected to avoid messing up with the reference count
-
 private:
    Actor *m_pTarget; // Not reference counted to avoid circular references
-   float m_duration;
-   Interpolation m_ease;
-
-   vector<tweeny::tween<float>> m_tweens;
-};
-
-
-class MoveToAction final : public TweenAction
-{
-public:
-   MoveToAction(Actor *pTarget, float x, float y, float duration)
-      : TweenAction(pTarget, duration)
-      , m_x(x)
-      , m_y(y)
-   {
-   }
-
-   void Begin() override
-   {
-      Actor * const actor = GetTarget();
-      if (GetDuration() == 0.f)
-      {
-         actor->SetX(m_x);
-         actor->SetY(m_y);
-         return;
-      }
-      AddTween(actor->GetX(), m_x, GetDuration(),
-         [actor](float newValue)
-         {
-            actor->SetX(newValue);
-            return false;
-         });
-      AddTween(actor->GetY(), m_y, GetDuration(),
-         [actor](float newValue)
-         {
-            actor->SetY(newValue);
-            return false;
-         });
-   }
-
-   bool Update(float secondsElapsed) override
-   {
-      return TweenAction::Update(secondsElapsed);
-   }
-
-private:
    float m_x;
    float m_y;
+   float m_duration;
+   Interpolation m_ease = Interpolation_Linear;
+
+   std::optional<Tween> m_tween;
+   float m_fromX = 0.f;
+   float m_fromY = 0.f;
 };
 
 
