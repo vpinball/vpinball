@@ -24,6 +24,7 @@
 #include "utils/color.h"
 
 #include "ThreadPool.h"
+#include "utils/denormals.h"
 
 
 #ifdef __LIBVPINBALL__
@@ -608,6 +609,7 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
          pool.enqueue_block(
             [y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres]
             {
+               set_denormals_flush_to_zero_once(); // to avoid slowdown due to denormals
                for (unsigned int x = 0; x < rad_env_xres; ++x)
                {
                   // transfo from envmap to normal direction, at the texel center where the shaders look it up

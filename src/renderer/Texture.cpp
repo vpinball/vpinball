@@ -661,6 +661,14 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             copy_rgb_rgba(reinterpret_cast<uint16_t*>(tex->data()), reinterpret_cast<const uint16_t*>(datac()), (size_t)width() * height());
          }
          break;
+         case RGBA_FP32:
+         {
+            tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
+            if (tex == nullptr)
+               return nullptr;
+            half2float_rgb_rgba(reinterpret_cast<float*>(tex->data()), reinterpret_cast<const uint16_t*>(datac()), (size_t)width() * height());
+         }
+         break;
          default: break;
       }
       break;

@@ -784,6 +784,7 @@ void Player::InitTableSession(const bool isInitial)
 #endif
                           &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](Texture *image, bool resizeOnLowMem)
       {
+         set_denormals_flush_to_zero_once(); // Runs on the pool's threads below: HDR image conversion and texture compression are much slower on denormals
          bool readyToLoad = false;
          while (!readyToLoad)
          {

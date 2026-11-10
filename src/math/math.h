@@ -345,7 +345,12 @@ inline float half2float_noLUT(const uint16_t x) { // IEEE-754 16-bit floating-po
 #endif
 }
 
-// matches float2half() exactly
+// On ARM, as float2half() (both use the hardware conversion). On x86 (and Raspberry Pi/RK3588 for now):
+// - it rounds toward zero, where float2half() rounds to nearest: about 8% of all floats come out 1 half ulp smaller in magnitude,
+//   and 65520 to 65536 gives 0x7BFF instead of Inf
+// - |value| < 2^-14 (half denormals) makes the multiply produce a float denormal, about 30x slower unless the thread flushes
+//   denormals to zero (see utils/denormals.h), and with FTZ such values become 0
+// float2half() does no float math, so it has neither issue
 CONSTEXPR inline uint16_t float2half_noLUT(const float value)
 {
 #if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))

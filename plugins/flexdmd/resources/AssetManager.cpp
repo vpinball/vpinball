@@ -241,6 +241,8 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    return pAssetSrc;
 }
 
+// TODO: .webp images fail to load: SDL_image is built without WebP (SDLIMAGE_WEBP=OFF in platforms/*/external.sh). Tables made for
+// the C# FlexDMD do not use WebP (.NET could not load it either), but new content may
 void* AssetManager::Open(AssetSrc* pSrc)
 {
    void* pAsset = nullptr;

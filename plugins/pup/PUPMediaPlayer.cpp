@@ -494,6 +494,9 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
 
 void PUPMediaPlayer::Run()
 {
+   // TODO: set flush-to-zero (FTZ/DAZ) on this thread, as VPX's src/utils/denormals.h does for its own threads:
+   // FFmpeg's float audio decoders (AAC, MP3, Vorbis) and resampling may decay into denormals on fade-outs and silence.
+   // Plugins can not include VPX's headers, so the helper would first need to move to the shared plugin headers (plugins/plugins)
    AVPacket* pPacket = m_libAv._av_packet_alloc();
    if (!pPacket) {
       LOGE("Unable to allocate packet"s);

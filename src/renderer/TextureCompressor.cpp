@@ -6,6 +6,7 @@
 
 #include "TextureCompressor.h"
 #include "Texture.h"
+#include "utils/color.h"
 
 #include <bx/allocator.h>
 #include <bx/error.h>
@@ -16,12 +17,14 @@
 #include <miniz/miniz.h>
 
 #include <atomic>
+#include <bit>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
 #include <limits>
 #include <sstream>
 #include <thread>
+#include <type_traits>
 
 namespace
 {
@@ -89,115 +92,104 @@ namespace
       return true;
    }();
 
-   float s_srgbToLinear[256];
-   const bool s_lutInit = []()
+   // From an RGB or RGBA image to a RGBA one half-sized (rounded down, at least 1), averaging 2x2 texels
+   // (as 2x+1 < sw and 2y+1 < sh, the 4 texels are fixed offsets from the top left one (the same texel twice if sw or sh is 1))
+   template <bool isSrgb, unsigned int srcBpp>
+   void Downsample(const uint8_t* __restrict const src, unsigned int sw, unsigned int sh, uint8_t* __restrict const dst, unsigned int dw, unsigned int dh)
    {
-      for (int i = 0; i < 256; i++)
-      {
-         const float c = static_cast<float>(i) / 255.f;
-         s_srgbToLinear[i] = c <= 0.04045f ? c / 12.92f : powf((c + 0.055f) / 1.055f, 2.4f);
-      }
-      return true;
-   }();
-
-   uint8_t LinearToSrgb(float c)
-   {
-      c = c <= 0.0031308f ? c * 12.92f : 1.055f * powf(c, 1.f / 2.4f) - 0.055f;
-      return static_cast<uint8_t>(clamp(c * 255.f + 0.5f, 0.f, 255.f));
-   }
-
-   // From an RGBA (or, with srcBpp 3, RGB) image to an RGBA one of half its size
-   void Downsample(const uint8_t* src, unsigned int sw, unsigned int sh, uint8_t* dst, unsigned int dw, unsigned int dh, bool isSrgb, unsigned int srcBpp = 4)
-   {
+      assert(dw == max(1u, sw >> 1) && dh == max(1u, sh >> 1));
+      const size_t rowStride = static_cast<size_t>(sw) * srcBpp;
+      const size_t dy = sh > 1 ? rowStride : 0;
+      const unsigned int dx = sw > 1 ? srcBpp : 0;
+      uint8_t* __restrict d = dst;
       for (unsigned int y = 0; y < dh; y++)
       {
-         const unsigned int y0 = min(y * 2, sh - 1);
-         const unsigned int y1 = min(y * 2 + 1, sh - 1);
-         for (unsigned int x = 0; x < dw; x++)
+         const uint8_t* __restrict s = src + static_cast<size_t>(y) * 2 * rowStride;
+         for (unsigned int x = 0; x < dw; x++, s += 2 * srcBpp, d += 4)
          {
-            const unsigned int x0 = min(x * 2, sw - 1);
-            const unsigned int x1 = min(x * 2 + 1, sw - 1);
-            const uint8_t* p[4] = { &src[(y0 * sw + x0) * srcBpp], &src[(y0 * sw + x1) * srcBpp], &src[(y1 * sw + x0) * srcBpp], &src[(y1 * sw + x1) * srcBpp] };
-            uint8_t* d = &dst[(y * dw + x) * 4];
+            const uint8_t* const p0 = s;
+            const uint8_t* const p1 = s + dx;
+            const uint8_t* const p2 = s + dy;
+            const uint8_t* const p3 = s + dy + dx;
             for (int c = 0; c < 3; c++)
             {
-               if (isSrgb)
-                  d[c] = LinearToSrgb(0.25f * (s_srgbToLinear[p[0][c]] + s_srgbToLinear[p[1][c]] + s_srgbToLinear[p[2][c]] + s_srgbToLinear[p[3][c]]));
+               if constexpr (isSrgb)
+                  d[c] = sRGB8(0.25f * ((InvsRGB8(p0[c]) + InvsRGB8(p1[c])) + (InvsRGB8(p2[c]) + InvsRGB8(p3[c]))));
                else
-                  d[c] = static_cast<uint8_t>((p[0][c] + p[1][c] + p[2][c] + p[3][c] + 2) >> 2);
+                  d[c] = static_cast<uint8_t>((p0[c] + p1[c] + p2[c] + p3[c] + 2) >> 2);
             }
-            d[3] = srcBpp == 4 ? static_cast<uint8_t>((p[0][3] + p[1][3] + p[2][3] + p[3][3] + 2) >> 2) : 255;
+            if constexpr (srcBpp == 4)
+               d[3] = static_cast<uint8_t>((p0[3] + p1[3] + p2[3] + p3[3] + 2) >> 2);
+            else
+               d[3] = 255;
          }
       }
    }
 
-   void DownsampleFloat(const float* src, unsigned int sw, unsigned int sh, float* dst, unsigned int dw, unsigned int dh)
+   // Same as Downsample, but RGBA floats.
+   // Note: denormal fp32 inputs (only from float images) are slow on x86 without DAZ (see utils/denormals.h), so the texture loading and render threads set it
+   void DownsampleFloat(const float* __restrict const src, unsigned int sw, unsigned int sh, float* __restrict const dst, unsigned int dw, unsigned int dh)
    {
+      assert(dw == max(1u, sw >> 1) && dh == max(1u, sh >> 1));
+      const size_t rowStride = static_cast<size_t>(sw) * 4;
+      const size_t dy = sh > 1 ? rowStride : 0;
+      const unsigned int dx = sw > 1 ? 4 : 0;
+      float* __restrict d = dst;
       for (unsigned int y = 0; y < dh; y++)
       {
-         const unsigned int y0 = min(y * 2, sh - 1);
-         const unsigned int y1 = min(y * 2 + 1, sh - 1);
-         for (unsigned int x = 0; x < dw; x++)
+         const float* __restrict s = src + static_cast<size_t>(y) * 2 * rowStride;
+         for (unsigned int x = 0; x < dw; x++, s += 2 * 4, d += 4)
          {
-            const unsigned int x0 = min(x * 2, sw - 1);
-            const unsigned int x1 = min(x * 2 + 1, sw - 1);
-            const float* p[4] = { &src[(y0 * sw + x0) * 4], &src[(y0 * sw + x1) * 4], &src[(y1 * sw + x0) * 4], &src[(y1 * sw + x1) * 4] };
-            float* d = &dst[(y * dw + x) * 4];
+            const float* const p[4] = { s, s + dx, s + dy, s + dy + dx };
 #ifdef ENABLE_SSE_OPTIMIZATIONS
-            const __m128 sum = _mm_add_ps(_mm_add_ps(_mm_add_ps(_mm_loadu_ps(p[0]), _mm_loadu_ps(p[1])), _mm_loadu_ps(p[2])), _mm_loadu_ps(p[3]));
+            const __m128 sum = _mm_add_ps(_mm_add_ps(_mm_loadu_ps(p[0]), _mm_loadu_ps(p[1])), _mm_add_ps(_mm_loadu_ps(p[2]), _mm_loadu_ps(p[3])));
             _mm_storeu_ps(d, _mm_mul_ps(sum, _mm_set1_ps(0.25f)));
 #else
             for (int c = 0; c < 4; c++)
-               d[c] = 0.25f * (p[0][c] + p[1][c] + p[2][c] + p[3][c]);
+               d[c] = 0.25f * ((p[0][c] + p[1][c]) + (p[2][c] + p[3][c]));
 #endif
          }
       }
    }
 
-#ifdef ENABLE_SSE_OPTIMIZATIONS
-   // Expands a RGB half-float pixel to 4 float lanes (lane 3 is 0). Matches half2float exactly,
-   // including denormals, Inf and NaN.
-   inline __m128 Half3ToFloat(const uint16_t* s)
+   // Same as Downsample, but RGB halfs
+   void DownsampleHalf(const uint16_t* __restrict const src, unsigned int sw, unsigned int sh, uint16_t* __restrict const dst, unsigned int dw, unsigned int dh)
    {
-      int32_t lo; // 6 byte read: avoids reading past the end of the buffer on the last pixel
-      memcpy(&lo, s, sizeof(lo));
-      const __m128i d = _mm_unpacklo_epi16(_mm_insert_epi16(_mm_cvtsi32_si128(lo), s[2], 2), _mm_setzero_si128());
-      const __m128i shifted = _mm_slli_epi32(_mm_and_si128(d, _mm_set1_epi32(0x7FFF)), 13);
-      __m128 f = _mm_mul_ps(_mm_castsi128_ps(shifted), _mm_castsi128_ps(_mm_set1_epi32(0x77800000))); // * 2^112
-      const __m128i isInfNan = _mm_cmpeq_epi32(_mm_and_si128(d, _mm_set1_epi32(0x7C00)), _mm_set1_epi32(0x7C00));
-      const __m128 fInfNan = _mm_castsi128_ps(_mm_or_si128(_mm_and_si128(shifted, _mm_set1_epi32(0x007FFFFF)), _mm_set1_epi32(0x7F800000)));
-      f = _mm_or_ps(_mm_and_ps(_mm_castsi128_ps(isInfNan), fInfNan), _mm_andnot_ps(_mm_castsi128_ps(isInfNan), f));
-      return _mm_or_ps(f, _mm_castsi128_ps(_mm_slli_epi32(_mm_and_si128(d, _mm_set1_epi32(0x8000)), 16)));
-   }
-#endif
-
-   void DownsampleHalf(const uint16_t* src, unsigned int sw, unsigned int sh, uint16_t* dst, unsigned int dw, unsigned int dh)
-   {
+      assert(dw == max(1u, sw >> 1) && dh == max(1u, sh >> 1));
+      const size_t rowStride = static_cast<size_t>(sw) * 3;
+      const size_t dy = sh > 1 ? rowStride : 0;
+      const unsigned int dx = sw > 1 ? 3 : 0;
+      uint16_t* __restrict d = dst;
       for (unsigned int y = 0; y < dh; y++)
       {
-         const unsigned int y0 = min(y * 2, sh - 1);
-         const unsigned int y1 = min(y * 2 + 1, sh - 1);
-         for (unsigned int x = 0; x < dw; x++)
+         const uint16_t* __restrict s = src + static_cast<size_t>(y) * 2 * rowStride;
+         for (unsigned int x = 0; x < dw; x++, s += 2 * 3, d += 3)
          {
-            const unsigned int x0 = min(x * 2, sw - 1);
-            const unsigned int x1 = min(x * 2 + 1, sw - 1);
-            const uint16_t* p[4] = { &src[(y0 * sw + x0) * 3], &src[(y0 * sw + x1) * 3], &src[(y1 * sw + x0) * 3], &src[(y1 * sw + x1) * 3] };
-            uint16_t* d = &dst[(y * dw + x) * 3];
+            const uint16_t* const p[4] = { s, s + dx, s + dy, s + dy + dx };
 #ifdef ENABLE_SSE_OPTIMIZATIONS
+            const __m128 sum = _mm_add_ps(_mm_add_ps(half3_to_float4(p[0]), half3_to_float4(p[1])), _mm_add_ps(half3_to_float4(p[2]), half3_to_float4(p[3])));
+#ifdef HALF_SIMD_NATIVE_ARM64
+            // Native conversion back, rounding as float2half does on these CPUs
+            const uint16x4_t hv = vreinterpret_u16_f16(vcvt_f16_f32(_mm_mul_ps(sum, _mm_set1_ps(0.25f))));
+            d[0] = vget_lane_u16(hv, 0);
+            d[1] = vget_lane_u16(hv, 1);
+            d[2] = vget_lane_u16(hv, 2);
+#else
             float f[4];
-            const __m128 sum = _mm_add_ps(_mm_add_ps(_mm_add_ps(Half3ToFloat(p[0]), Half3ToFloat(p[1])), Half3ToFloat(p[2])), Half3ToFloat(p[3]));
             _mm_storeu_ps(f, _mm_mul_ps(sum, _mm_set1_ps(0.25f)));
             for (int c = 0; c < 3; c++)
                d[c] = float2half(f[c]);
+#endif
 #else
             for (int c = 0; c < 3; c++)
-               d[c] = float2half(0.25f * (half2float(p[0][c]) + half2float(p[1][c]) + half2float(p[2][c]) + half2float(p[3][c])));
+               d[c] = float2half(0.25f * ((half2float(p[0][c]) + half2float(p[1][c])) + (half2float(p[2][c]) + half2float(p[3][c]))));
 #endif
          }
       }
    }
 
-   uint32_t PackRgb9E5(const float* rgb)
+   // Note: A float denormal channel (only from float images) next to a larger one makes the scaling multiply slow on x86 without DAZ (see utils/denormals.h), so the texture loading and render threads set it
+   uint32_t PackRgb9E5(const float* const rgb)
    {
       constexpr float maxValue = 65408.f;
       const float r = clamp(rgb[0], 0.f, maxValue);
@@ -206,17 +198,111 @@ namespace
       const float maxc = max(r, max(g, b));
       if (maxc < 1e-10f)
          return 0;
-      int exponent = max(-16, static_cast<int>(floorf(log2f(maxc)))) + 16;
-      float scale = exp2f(static_cast<float>(exponent - 24));
-      if (static_cast<int>(floorf(maxc / scale + 0.5f)) == 512)
+      int exponent = max(-16, static_cast<int>((float_as_uint(maxc) >> 23) & 0xFF) - 127) + 16;
+      float invScale = uint_as_float(static_cast<uint32_t>(127 + 24 - exponent) << 23); // 2^(24 - exponent)
+      if (static_cast<uint32_t>(maxc * invScale + 0.5f) == 512)
       {
-         scale *= 2.f;
+         invScale *= 0.5f;
          exponent++;
       }
-      const uint32_t rm = static_cast<uint32_t>(floorf(r / scale + 0.5f));
-      const uint32_t gm = static_cast<uint32_t>(floorf(g / scale + 0.5f));
-      const uint32_t bm = static_cast<uint32_t>(floorf(b / scale + 0.5f));
+      const uint32_t rm = static_cast<uint32_t>(r * invScale + 0.5f);
+      const uint32_t gm = static_cast<uint32_t>(g * invScale + 0.5f);
+      const uint32_t bm = static_cast<uint32_t>(b * invScale + 0.5f);
       return rm | (gm << 9) | (bm << 18) | (static_cast<uint32_t>(exponent) << 27);
+   }
+
+   // Block row 'by' for bc7f: 16 RGBA texels per 4x4 block, row by row, repeating the edge texels past the right and bottom edges.
+   // Blocks fully inside the image copy whole texel rows: only a partial last block column clamps per texel
+   template <unsigned int srcBpp>
+   void GatherBC7BlockRow(const uint8_t* __restrict const src, unsigned int w, unsigned int h, unsigned int by, basist::color_rgba* __restrict bp)
+   {
+      static_assert(sizeof(basist::color_rgba) == 4 && std::is_trivially_copyable_v<basist::color_rgba>, "texels are copied as RGBA bytes");
+      static_assert(std::endian::native == std::endian::little, "RGB texels are re-split as little endian words");
+
+      const uint8_t* rows[4];
+      for (unsigned int py = 0; py < 4; py++)
+         rows[py] = src + static_cast<size_t>(min(by * 4 + py, h - 1)) * w * srcBpp;
+      const unsigned int bw = (w + 3) / 4, fullBw = w / 4;
+      for (unsigned int bx = 0; bx < fullBw; bx++)
+         for (unsigned int py = 0; py < 4; py++)
+         {
+            const uint8_t* __restrict const s = rows[py] + static_cast<size_t>(bx) * 4 * srcBpp;
+            if constexpr (srcBpp == 4)
+               memcpy(bp, s, 16);
+            else
+            {
+               //!! opt.?
+               // 4 RGB texels are exactly 12 bytes: 3 words R0G0B0R1 G1B1R2G2 B2R3G3B3, re-split into 4 RGBA words
+               uint32_t in[3];
+               memcpy(in, s, 12);
+               const uint32_t out[4] = { in[0] | 0xFF000000u, (in[0] >> 24) | (in[1] << 8) | 0xFF000000u, (in[1] >> 16) | (in[2] << 16) | 0xFF000000u, (in[2] >> 8) | 0xFF000000u };
+               memcpy(bp, out, 16);
+            }
+            bp += 4;
+         }
+      if (fullBw < bw)
+         for (unsigned int py = 0; py < 4; py++)
+            for (unsigned int px = 0; px < 4; px++, bp++)
+            {
+               const uint8_t* const s = rows[py] + static_cast<size_t>(min(fullBw * 4 + px, w - 1)) * srcBpp;
+               bp->r = s[0];
+               bp->g = s[1];
+               bp->b = s[2];
+               if constexpr (srcBpp == 4)
+                  bp->a = s[3];
+               else
+                  bp->a = 255;
+            }
+   }
+
+   // Block row 'by' for bc6hf: 16 RGB half texels per 4x4 block, as GatherBC7BlockRow. convert(texel, out) writes the 3 halfs of a texel
+   template <unsigned int srcStride, class T, class Convert>
+   void GatherBC6HBlockRow(const T* __restrict const src, unsigned int w, unsigned int h, unsigned int by, basist::half_float* __restrict bp, const Convert& convert)
+   {
+      const T* rows[4];
+      for (unsigned int py = 0; py < 4; py++)
+         rows[py] = src + static_cast<size_t>(min(by * 4 + py, h - 1)) * w * srcStride;
+      const unsigned int bw = (w + 3) / 4, fullBw = w / 4;
+      for (unsigned int bx = 0; bx < fullBw; bx++)
+         for (unsigned int py = 0; py < 4; py++)
+         {
+            const T* __restrict const s = rows[py] + static_cast<size_t>(bx) * 4 * srcStride;
+            for (unsigned int px = 0; px < 4; px++, bp += 3)
+               convert(s + px * srcStride, bp);
+         }
+      if (fullBw < bw)
+         for (unsigned int py = 0; py < 4; py++)
+            for (unsigned int px = 0; px < 4; px++, bp += 3)
+               convert(rows[py] + static_cast<size_t>(min(fullBw * 4 + px, w - 1)) * srcStride, bp);
+   }
+
+   // From RGB halfs. The encoder only accepts unsigned finite halfs: halfs >= 0x7C00 (Inf, NaN and all signed values, -0.0 too) become +0.0
+   void GatherBC6HBlockRowHalf(const uint16_t* __restrict const src, unsigned int w, unsigned int h, unsigned int by, basist::half_float* __restrict bp)
+   {
+      GatherBC6HBlockRow<3>(src, w, h, by, bp,
+         [](const uint16_t* __restrict const s, basist::half_float* __restrict const out)
+         {
+            for (int c = 0; c < 3; c++)
+               out[c] = s[c] < 0x7C00u ? s[c] : static_cast<basist::half_float>(0);
+         });
+   }
+
+   // From RGBA floats (alpha ignored): Inf, NaN and negative values become +0.0, values above the half range its maximum
+   void GatherBC6HBlockRowFloat(const float* __restrict const src, unsigned int w, unsigned int h, unsigned int by, basist::half_float* __restrict bp)
+   {
+      GatherBC6HBlockRow<4>(src, w, h, by, bp,
+         [](const float* __restrict const s, basist::half_float* __restrict const out)
+         {
+            for (int c = 0; c < 3; c++)
+            {
+               // Bit test for Inf/NaN on purpose: the GNU build uses -ffast-math which makes isfinite() unreliable
+               const float v = s[c];
+               uint32_t bits;
+               memcpy(&bits, &v, sizeof(bits));
+               const float clamped = (bits & 0x7F800000u) == 0x7F800000u ? 0.f : clamp(v, 0.f, static_cast<float>(basist::MAX_HALF_FLOAT));
+               out[c] = float2half(clamped == 0.f ? 0.f : clamped); // normalize -0.0f to +0.0f: half 0x8000 is signed and rejected by the encoder
+            }
+         });
    }
 
    bool IsHdr(BaseTexture::Format format) { return format == BaseTexture::RGB_FP16 || format == BaseTexture::RGB_FP32; }
@@ -334,33 +420,19 @@ static std::shared_ptr<const CompressedTexture> CompressRGB16FToBC6H(const BaseT
          w = nw;
          h = nh;
       }
-      // bc6hf takes one 4x4 RGB half-float block per output block: extract with clamped edge pixels
+      // Encode one row of blocks at a time, to be able to abort an ongoing compression, and gather only that row's blocks
+      // rather than the whole level (as large as the level itself)
       const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
-      vector<basist::half_float> blockPixels(static_cast<size_t>(bw) * bh * 48);
-      basist::half_float* bp = blockPixels.data();
-      for (unsigned int by = 0; by < bh; by++)
-         for (unsigned int bx = 0; bx < bw; bx++)
-            for (unsigned int py = 0; py < 4; py++)
-               for (unsigned int px = 0; px < 4; px++)
-               {
-                  const uint16_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 3];
-                  for (int c = 0; c < 3; c++)
-                  {
-                     // The encoder only accepts unsigned finite halfs: halfs >= 0x7C00 (Inf/NaN and all
-                     // signed values, also normalizing -0.0 to +0.0) map to +0.0
-                     const uint16_t v = s[c];
-                     *bp++ = v < 0x7C00u ? v : static_cast<basist::half_float>(0);
-                  }
-               }
-      // Encode one row of blocks at a time to be able to abort an ongoing compression
+      vector<basist::half_float> blockPixels(static_cast<size_t>(bw) * 48);
       const basist::astc_6x6_hdr::fast_bc6h_params params;
       basist::bc6h_block* const dst = reinterpret_cast<basist::bc6h_block*>(result->data.data() + offset);
       for (unsigned int by = 0; by < bh; by++)
       {
          if (isCompressionDiscarded && isCompressionDiscarded())
             return nullptr;
+         GatherBC6HBlockRowHalf(src, w, h, by, blockPixels.data());
          for (unsigned int bx = 0; bx < bw; bx++)
-            basist::astc_6x6_hdr::fast_encode_bc6h(blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 48, dst + static_cast<size_t>(by) * bw + bx, params);
+            basist::astc_6x6_hdr::fast_encode_bc6h(blockPixels.data() + static_cast<size_t>(bx) * 48, dst + static_cast<size_t>(by) * bw + bx, params);
       }
       offset += result->GetMipSize(mip);
    }
@@ -385,25 +457,11 @@ static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& t
    vector<float> mipA(nPixels * 4), mipB;
    if (tex.m_format == BaseTexture::RGB_FP16)
    {
-      const uint16_t* src = static_cast<const uint16_t*>(tex.datac());
-      for (size_t i = 0; i < nPixels; i++)
-      {
-         mipA[i * 4 + 0] = half2float(src[i * 3 + 0]);
-         mipA[i * 4 + 1] = half2float(src[i * 3 + 1]);
-         mipA[i * 4 + 2] = half2float(src[i * 3 + 2]);
-         mipA[i * 4 + 3] = 1.f;
-      }
+      half2float_rgb_rgba(mipA.data(), static_cast<const uint16_t*>(tex.datac()), nPixels);
    }
    else
    {
-      const float* src = static_cast<const float*>(tex.datac());
-      for (size_t i = 0; i < nPixels; i++)
-      {
-         mipA[i * 4 + 0] = src[i * 3 + 0];
-         mipA[i * 4 + 1] = src[i * 3 + 1];
-         mipA[i * 4 + 2] = src[i * 3 + 2];
-         mipA[i * 4 + 3] = 1.f;
-      }
+      copy_rgb_rgba(mipA.data(), static_cast<const float*>(tex.datac()), nPixels);
    }
 
    bx::DefaultAllocator allocator;
@@ -427,7 +485,7 @@ static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& t
       bool ok;
       if (format == bgfx::TextureFormat::RGB9E5F)
       {
-         uint32_t* dst = reinterpret_cast<uint32_t*>(result->data.data() + offset);
+         uint32_t* const __restrict dst = reinterpret_cast<uint32_t*>(result->data.data() + offset);
          for (size_t i = 0; i < static_cast<size_t>(w) * h; i++)
          {
             if ((i & 0xFFFF) == 0 && isCompressionDiscarded && isCompressionDiscarded())
@@ -438,35 +496,18 @@ static std::shared_ptr<const CompressedTexture> CompressHDR(const BaseTexture& t
       }
       else if (format == bgfx::TextureFormat::BC6HU)
       {
-         // bc6hf takes one 4x4 RGB half-float block per output block: extract with clamped edge pixels
+         // Encode one row of blocks at a time, to be able to abort an ongoing compression, and gather only that row's blocks
          const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
-         vector<basist::half_float> blockPixels(static_cast<size_t>(bw) * bh * 48);
-         basist::half_float* bp = blockPixels.data();
-         for (unsigned int by = 0; by < bh; by++)
-            for (unsigned int bx = 0; bx < bw; bx++)
-               for (unsigned int py = 0; py < 4; py++)
-                  for (unsigned int px = 0; px < 4; px++)
-                  {
-                     const float* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * 4];
-                     for (int c = 0; c < 3; c++)
-                     {
-                        // Bit test for Inf/NaN on purpose: the GNU build uses -ffast-math which makes isfinite() unreliable
-                        const float v = s[c];
-                        uint32_t bits;
-                        memcpy(&bits, &v, sizeof(bits));
-                        const float clamped = (bits & 0x7F800000u) == 0x7F800000u ? 0.f : clamp(v, 0.f, static_cast<float>(basist::MAX_HALF_FLOAT));
-                        *bp++ = float2half(clamped == 0.f ? 0.f : clamped); // normalize -0.0f to +0.0f: half 0x8000 is signed and rejected by the encoder
-                     }
-                  }
-         // Encode one row of blocks at a time to be able to abort an ongoing compression
+         vector<basist::half_float> blockPixels(static_cast<size_t>(bw) * 48);
          const basist::astc_6x6_hdr::fast_bc6h_params params;
          basist::bc6h_block* const dst = reinterpret_cast<basist::bc6h_block*>(result->data.data() + offset);
          for (unsigned int by = 0; by < bh; by++)
          {
             if (isCompressionDiscarded && isCompressionDiscarded())
                return nullptr;
+            GatherBC6HBlockRowFloat(src, w, h, by, blockPixels.data());
             for (unsigned int bx = 0; bx < bw; bx++)
-               basist::astc_6x6_hdr::fast_encode_bc6h(blockPixels.data() + (static_cast<size_t>(by) * bw + bx) * 48, dst + static_cast<size_t>(by) * bw + bx, params);
+               basist::astc_6x6_hdr::fast_encode_bc6h(blockPixels.data() + static_cast<size_t>(bx) * 48, dst + static_cast<size_t>(by) * bw + bx, params);
          }
          ok = true;
       }
@@ -529,7 +570,10 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
          const unsigned int nw = max(1u, w >> 1), nh = max(1u, h >> 1);
          vector<uint8_t>& dst = (mip & 1) ? mipA : mipB;
          dst.resize(static_cast<size_t>(nw) * nh * 4);
-         Downsample(src, w, h, dst.data(), nw, nh, isSrgb, bpp);
+         if (isSrgb)
+            (bpp == 3 ? Downsample<true, 3> : Downsample<true, 4>)(src, w, h, dst.data(), nw, nh);
+         else
+            (bpp == 3 ? Downsample<false, 3> : Downsample<false, 4>)(src, w, h, dst.data(), nw, nh);
          src = dst.data();
          bpp = 4;
          w = nw;
@@ -537,8 +581,8 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
       }
       if (format == bgfx::TextureFormat::BC7)
       {
-         // bc7f takes one 4x4 RGBA block per output block: extract with clamped edge pixels
-         // (NVTT's encoder is far slower and reads out of bounds on partial edge tiles).
+         // bc7f encodes 4x4 RGBA blocks, gathered with clamped edge texels (NVTT's encoder is far slower and reads out of
+         // bounds on partial edge tiles).
          // Encode one row of blocks at a time, to be able to abort an ongoing compression, and gather only that row's
          // blocks, rather than a copy of the whole level (as large as the level itself)
          const unsigned int bw = (w + 3) / 4, bh = (h + 3) / 4;
@@ -548,18 +592,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
          {
             if (isCompressionDiscarded && isCompressionDiscarded())
                return nullptr;
-            basist::color_rgba* bp = blockPixels.data();
-            for (unsigned int bx = 0; bx < bw; bx++)
-               for (unsigned int py = 0; py < 4; py++)
-                  for (unsigned int px = 0; px < 4; px++)
-                  {
-                     const uint8_t* s = &src[(min(by * 4 + py, h - 1) * w + min(bx * 4 + px, w - 1)) * bpp];
-                     bp->r = s[0];
-                     bp->g = s[1];
-                     bp->b = s[2];
-                     bp->a = bpp == 4 ? s[3] : 255;
-                     bp++;
-                  }
+            (bpp == 3 ? GatherBC7BlockRow<3> : GatherBC7BlockRow<4>)(src, w, h, by, blockPixels.data());
             for (unsigned int bx = 0; bx < bw; bx++)
                basist::bc7f::fast_pack_bc7_auto_rgba(dst + (static_cast<size_t>(by) * bw + bx) * 16, blockPixels.data() + static_cast<size_t>(bx) * 16,
                   basist::bc7f::cPackBC7FlagDefault & ~basist::bc7f::cPackBC7FlagPBitOptMode6);
