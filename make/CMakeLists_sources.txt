@@ -77,6 +77,7 @@ set(VPX_SOURCES
    src/input/InputAction.cpp
    src/input/InputManager.h
    src/input/InputManager.cpp
+   src/input/HIDEnumeration.h
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
    src/input/PhysicsSensor.h
@@ -489,7 +490,6 @@ set(VPX_SOURCES
    third-party/include/forsyth.h
    third-party/include/gpuprofiler.cpp
    third-party/include/gpuprofiler.h
-   third-party/include/hidapi/hidapi.h
    third-party/include/hid-report-parser/hid_report_parser.cpp
    third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/imgui/imconfig.h
@@ -786,7 +786,6 @@ set(VPX_WINDOWS_SOURCES
    third-party/include/scilexer.h
    third-party/include/scintilla.h
    third-party/include/Sci_Position.h
-   third-party/include/hidapi/windows/hid.cpp
    third-party/include/nvapi/nvapi.h
    third-party/include/nvapi/nvapi_lite_common.h
    third-party/include/nvapi/nvapi_lite_d3dext.h
@@ -846,9 +845,6 @@ set(VPX_WINDOWS_SOURCES
    third-party/include/win32xx/include/wxx_webbrowser.h
    third-party/include/win32xx/include/wxx_wincore.h
    third-party/include/win32xx/include/wxx_wincore0.h
-   third-party/include/winsdk/hidpi.h
-   third-party/include/winsdk/hidsdi.h
-   third-party/include/winsdk/hidusage.h
 )
 
 set(VPX_STANDALONE_SOURCES

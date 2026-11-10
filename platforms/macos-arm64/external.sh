@@ -815,6 +815,7 @@ cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevb
 cp -a libdof/libdof/build/libdof.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
 cp -a libdof/libdof/third-party/runtime-libs/macos/arm64/libusb-1*.dylib ../../../third-party/runtime-libs/macos-arm64
+# hidapi is only used by libdof (DOF plugin)
 cp -a libdof/libdof/third-party/runtime-libs/macos/arm64/libhidapi.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp -a libdof/libdof/third-party/runtime-libs/macos/arm64/libftdi1*.dylib ../../../third-party/runtime-libs/macos-arm64
 

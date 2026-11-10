@@ -19,7 +19,6 @@ if(PLATFORM STREQUAL "windows")
 
    set_source_files_properties(
       third-party/include/miniz/miniz.c
-      third-party/include/hidapi/windows/hid.cpp
       third-party/include/bc6h/basisu_bc6h.cpp
       third-party/include/bc7f/basisu_bc7f.cpp
       PROPERTIES SKIP_PRECOMPILE_HEADERS ON
@@ -210,8 +209,6 @@ if(PLATFORM STREQUAL "windows")
       dxguid.lib
       nvapi.lib
       winmm.lib
-      hid.lib
-      setupapi.lib
       dinput8.lib
       opusfile.lib
       opus.lib
@@ -383,7 +380,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       SDL364
       SDL3_ttf64
       freeimage64
-      hidapi64
       openxr_loader64
       winevbs64
       opusfile
@@ -421,7 +417,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/altsound64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/dmdutil64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/dof64.dll" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/hidapi64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/openxr_loader64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/winevbs64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "$<TARGET_FILE_DIR:vpinball>"
@@ -510,7 +505,6 @@ elseif(PLATFORM STREQUAL "macos")
       SDL3
       SDL3_ttf
       freeimage
-      hidapi
       winevbs
       opusfile
       opus
@@ -655,7 +649,6 @@ elseif(PLATFORM STREQUAL "linux")
       SDL3
       SDL3_ttf
       freeimage
-      hidapi-hidraw
       winevbs
       opusfile
       opus
@@ -706,8 +699,6 @@ elseif(PLATFORM STREQUAL "linux")
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_ttf.so.*" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libfreeimage.so" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libfreeimage.so.*" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libhidapi-hidraw.so" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libhidapi-hidraw.so.*" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libwinevbs.so" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libwinevbs.so.*" "$<TARGET_FILE_DIR:vpinball>"
       )

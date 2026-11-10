@@ -1098,9 +1098,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
-      <Filter>third-party</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
@@ -2279,9 +2276,6 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/stb_image.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/hidapi/hidapi.h">
-      <Filter>third-party\hid</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
@@ -2476,15 +2470,6 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wincore0.h">
       <Filter>third-party\Win32xx</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidpi.h">
-      <Filter>third-party\hid</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidsdi.h">
-      <Filter>third-party\hid</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidusage.h">
-      <Filter>third-party\hid</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/bc6h/basisu_bc6h.h">
       <Filter>third-party\bc6h</Filter>
@@ -2721,6 +2706,9 @@
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/InputManager.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/HIDEnumeration.h">
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h">

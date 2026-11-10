@@ -190,8 +190,6 @@ if(PLATFORM STREQUAL "windows")
       dxguid.lib
       nvapi.lib
       winmm.lib
-      hid.lib
-      setupapi.lib
       dinput8.lib
       opusfile.lib
       opus.lib
@@ -360,7 +358,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       SDL364
       SDL3_ttf64
       freeimage64
-      hidapi64
       openxr_loader64
       winevbs64
       opusfile
@@ -398,7 +395,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL364.dll" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_ttf64.dll" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/freeimage64.dll" "$<TARGET_FILE_DIR:vpx-test>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/hidapi64.dll" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/openxr_loader64.dll" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/winevbs64.dll" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "$<TARGET_FILE_DIR:vpx-test>"
@@ -476,7 +472,6 @@ elseif(PLATFORM STREQUAL "macos")
       SDL3
       SDL3_ttf
       freeimage
-      hidapi
       winevbs
       opusfile
       opus
@@ -589,7 +584,6 @@ elseif(PLATFORM STREQUAL "linux")
       SDL3
       SDL3_ttf
       freeimage
-      hidapi-hidraw
       winevbs
       opusfile
       opus
@@ -624,8 +618,6 @@ elseif(PLATFORM STREQUAL "linux")
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libSDL3_ttf.so.*" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libfreeimage.so" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libfreeimage.so.*" "$<TARGET_FILE_DIR:vpx-test>"
-         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libhidapi-hidraw.so" "$<TARGET_FILE_DIR:vpx-test>"
-         COMMAND cp -a "${RUNTIME_LIBS_DIR}/libhidapi-hidraw.so.*" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libwinevbs.so" "$<TARGET_FILE_DIR:vpx-test>"
          COMMAND cp -a "${RUNTIME_LIBS_DIR}/libwinevbs.so.*" "$<TARGET_FILE_DIR:vpx-test>"
       )

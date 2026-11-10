@@ -21,4 +21,7 @@ private:
    // by the OPD implementation module, so that the whole implementation
    // can be detached at the build script level.
    OpenPinDevContext* m_OpenPinDevContext = nullptr;
+
+   // SDL_hid_init() succeeded and must be balanced by SDL_hid_exit()
+   bool m_hidInitialized = false;
 };

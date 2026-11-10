@@ -272,6 +272,8 @@ FIXES:
 
 - improve flipper latency reporting in the performance UI
 
+- fix the Ultracade U-Shock knocker and plunger outputs only working in the first game after starting VPX, and (potentially) support them on Linux and macOS too
+
 - export of a sound from the sound manager will now export the sound file as-is (without adding a wave header in front of non-WAV files)
 - fix wrong/too-loud volume for the test play in the sound manager
 - improve looping sounds

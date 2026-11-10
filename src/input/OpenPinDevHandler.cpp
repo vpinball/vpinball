@@ -17,7 +17,7 @@
 #include "input/PlungerHandler.h"
 #include "physics/cabinet/GamepadNudge.h"
 #include <list>
-#include <hidapi/hidapi.h>
+#include "input/HIDEnumeration.h"
 #include <hid-report-parser/hid_report_parser.h>
 
 
@@ -86,12 +86,12 @@ struct OpenPinballDeviceReport
    }
 };
 
-// Open Pinball Device interface.  This wraps a hidapi device handle
+// Open Pinball Device interface.  This wraps an SDL HIDAPI device handle
 // that we have open for reading from an OPD unit.
 class OpenPinDev final
 {
 public:
-   OpenPinDev(hid_device *hDevice, uint8_t reportID, size_t reportSize, const wchar_t *deviceStructVersionString, uint16_t deviceId) :
+   OpenPinDev(SDL_hid_device *hDevice, uint8_t reportID, size_t reportSize, const wchar_t *deviceStructVersionString, uint16_t deviceId) :
        hDevice(hDevice), 
        reportID(reportID),
        reportSize(reportSize),
@@ -106,7 +106,7 @@ public:
       deviceStructVersion = (ParseUInt(deviceStructVersionString) << 16) | (dot != nullptr ? ParseUInt(dot + 1) : 0);
 
       // put the read handle in non-blocking mode
-      hid_set_nonblocking(hDevice, 1);
+      SDL_hid_set_nonblocking(hDevice, 1);
 
       // allocate space for the report
       buf.resize(reportSize);
@@ -118,7 +118,7 @@ public:
    ~OpenPinDev()
    {
       // close the device handle
-      hid_close(hDevice);
+      SDL_hid_close(hDevice);
    }
 
    // get a reference to the current report
@@ -148,7 +148,7 @@ public:
          // try reading - we're in non-blocking mode, so this will return
          // immediately with a length of zero if no reports are available
          buf[0] = reportID;
-         const int readResult = hid_read(hDevice, buf.data(), buf.size());
+         const int readResult = SDL_hid_read(hDevice, buf.data(), buf.size());
 
          // If we're out of data, or an error occurred, stop looping.  We
          // treat errors the same as no data available, since the error might
@@ -199,8 +199,8 @@ protected:
    // On new report handler
    std::function<void(const OpenPinDev * const pindev, const OpenPinballDeviceReport &prevReport, const OpenPinballDeviceReport &report)> onNewReport;
 
-   // device handle (hidapi library type)
-   hid_device *hDevice = nullptr;
+   // device handle (SDL HIDAPI type)
+   SDL_hid_device *hDevice = nullptr;
 
    // HID report ID for the device.  This is sent as a prefix byte in each
    // report the device sends through the interface, to identify the report
@@ -241,9 +241,16 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
 {
    PLOGI << "OpenPinDev input handler registered";
 
-   // Get a list of available HID devices.  (Passing VID/PID 0/0 
-   // to hid_enumerate() gives us all available HIDs.)
-   auto *hEnum = hid_enumerate(0, 0);
+   if (SDL_hid_init() != 0)
+   {
+      PLOGE << "OpenPinDev: Unable to initialize HID access";
+      return;
+   }
+   m_hidInitialized = true;
+
+   // Get a list of available HID devices.  (Passing VID/PID 0/0
+   // gives us all available HIDs, not only game controllers.)
+   auto *hEnum = EnumerateAllHIDDevices();
    if (hEnum == nullptr)
    {
       // enumeration failed - no Open Pinball Devices are available
@@ -273,13 +280,14 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
          // that no other device will ever duplicate by accident.
 
          // open the device so that we can read its report descriptor
-         std::unique_ptr<hid_device, decltype(&hid_close)> hDevice(hid_open_path(cur->path), &hid_close);
+         std::unique_ptr<SDL_hid_device, decltype(&SDL_hid_close)> hDevice(SDL_hid_open_path(cur->path), &SDL_hid_close);
          if (hDevice != nullptr)
          {
             // read the report descriptor
-            std::unique_ptr<unsigned char[]> reportDescBuf(new unsigned char[HID_API_MAX_REPORT_DESCRIPTOR_SIZE]);
+            constexpr size_t maxReportDescriptorSize = 4096; // HID_API_MAX_REPORT_DESCRIPTOR_SIZE, the most a HID report descriptor can hold
+            std::unique_ptr<unsigned char[]> reportDescBuf(new unsigned char[maxReportDescriptorSize]);
             unsigned char *rp = reportDescBuf.get();
-            const int rdSize = hid_get_report_descriptor(hDevice.get(), rp, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
+            const int rdSize = SDL_hid_get_report_descriptor(hDevice.get(), rp, maxReportDescriptorSize);
             if (rdSize > 0)
             {
                // parse the usages
@@ -308,10 +316,10 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            continue;
 
                         // Read the usage string and check it against the OPD signature string.
-                        // Some hidapi backends (Linux hidraw, macOS) don't implement
-                        // hid_get_indexed_string(), so the signature can't always be read.
+                        // Some HIDAPI backends (Linux hidraw, macOS) don't implement
+                        // SDL_hid_get_indexed_string(), so the signature can't always be read.
                         bool sigMatch;
-                        if (hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0)
+                        if (SDL_hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0)
                         {
                            sigMatch = std::wstring_view(strBuf).starts_with(L"OpenPinballDeviceStruct/"sv);
                            if (!sigMatch)
@@ -322,9 +330,8 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            // The signature string can't be read on this platform, so accept the
                            // device based on the structural match alone, and assume the base
                            // struct version 1.0.
-                           const wchar_t *err = hid_error(hDevice.get());
-                           PLOGW << "Pinball Device found, but its usage string could not be read (" << (err != nullptr ? MakeString(err) : "unknown error"s)
-                                 << "); assuming Open Pinball Device struct version 1.0";
+                           // (SDL does not report the backend's error text: on Linux and macOS, this is the unsupported case above)
+                           PLOGW << "Pinball Device found, but its usage string could not be read; assuming Open Pinball Device struct version 1.0";
                            wcscpy(strBuf, L"OpenPinballDeviceStruct/1.0");
                            sigMatch = true;
                         }
@@ -481,16 +488,18 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
    }
 
    // done with the device list dev
-   hid_free_enumeration(hEnum);
+   SDL_hid_free_enumeration(hEnum);
 }
 
 // Terminate the Open Pinball Device subsystem.  Closes all open
 // devices and discards associated memory structures.
 OpenPinDevHandler::~OpenPinDevHandler()
 {
-   // discard the context object
+   // discard the context object (closing the devices) before releasing HID access
    delete m_OpenPinDevContext;
    m_OpenPinDevContext = nullptr;
+   if (m_hidInitialized)
+      SDL_hid_exit();
 }
 
 // Read input from the Open Pinball Device inputs
