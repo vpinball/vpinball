@@ -482,6 +482,7 @@ public:
    void MovePartToBack(IEditable *part);
    void ReorderParts(const vector<IEditable *> &orderedParts); // Move the given parts to the end of m_vedit, preserving their relative order
    IEditable *GetElementByName(const char *const name) const;
+   vector<IEditable *> GetPartsWithExtension(const string &key) const; // Parts carrying an extension entry under 'key'
 
 private:
    vector<IEditable *> m_vedit;

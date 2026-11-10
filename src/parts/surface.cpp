@@ -1017,6 +1017,7 @@ void Surface::Save(IObjectWriter& writer, const bool saveForUndo)
 
 void Surface::ClearForOverwrite()
 {
+   IEditable::ClearForOverwrite();
    m_curve.ClearPoints();
 }
 

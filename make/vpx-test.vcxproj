@@ -69,6 +69,7 @@
     <ClCompile Include="../../tests/misc/test-color.cpp" />
     <ClCompile Include="../../tests/misc/test-envmap-precalc.cpp" />
     <ClCompile Include="../../tests/misc/test-material.cpp" />
+    <ClCompile Include="../../tests/misc/test-partextension.cpp" />
     <ClCompile Include="../../tests/misc/test-pinbinary.cpp" />
     <ClCompile Include="../../tests/misc/test-pintable.cpp" />
     <ClCompile Include="../../tests/misc/test-plugin-arrays.cpp" />

@@ -187,7 +187,11 @@ void Light::UpdateBounds()
    m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, m_initSurfaceHeight);
 }
 
-void Light::ClearForOverwrite() { m_curve.ClearPoints(); }
+void Light::ClearForOverwrite()
+{
+   IEditable::ClearForOverwrite();
+   m_curve.ClearPoints();
+}
 
 void Light::UpdateAnimation(const float diff_time_msec)
 {

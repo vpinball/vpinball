@@ -101,6 +101,35 @@ void IEditable::Scale(const float scalex, const float scaley, const Vertex2D& pv
    Translate(Vertex2D(pvCenter.x + dx * scalex - vCenter.x, pvCenter.y + dy * scaley - vCenter.y));
 }
 
+PartExtension *IEditable::GetExtension(const string &key)
+{
+   for (PartExtension &entry : m_extensions)
+      if (entry.key == key)
+         return &entry;
+   return nullptr;
+}
+
+const PartExtension *IEditable::GetExtension(const string &key) const
+{
+   for (const PartExtension &entry : m_extensions)
+      if (entry.key == key)
+         return &entry;
+   return nullptr;
+}
+
+PartExtension &IEditable::GetOrCreateExtension(const string &key)
+{
+   if (PartExtension *const entry = GetExtension(key))
+      return *entry;
+   m_extensions.emplace_back(key, string());
+   return m_extensions.back();
+}
+
+void IEditable::ClearExtension(const string &key)
+{
+   std::erase_if(m_extensions, [&key](const PartExtension &entry) { return entry.key == key; });
+}
+
 void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
 {
    switch (tag)
@@ -132,6 +161,30 @@ void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
    // shared member so the field is consumed (and the flag preserved) instead of reported as an
    // unhandled token.
    case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
+   // Part extension: a namespaced key -> persisted string entry, in a skippable sub object so
+   // that older versions drop it cleanly. Only strings are read here: deserializing the payload
+   // is the consumer's business, on first access.
+   case FID(EXTD):
+   {
+      string key, value;
+      reader.AsObject(
+         [&key, &value](const int subTag, IObjectReader &subReader)
+         {
+            switch (subTag)
+            {
+            case FID(XKEY): key = subReader.AsString(); break;
+            case FID(XVAL): value = subReader.AsString(); break;
+            }
+            return true;
+         },
+         /*isSkippable*/ true);
+      if (!key.empty())
+      {
+         std::erase_if(m_extensions, [&key](const PartExtension &entry) { return entry.key == key; }); // Duplicate keys: last wins
+         m_extensions.emplace_back(std::move(key), std::move(value));
+      }
+      break;
+   }
    default:
    {
       PLOGE << "Unhandled token: " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF);
@@ -160,6 +213,13 @@ void IEditable::SaveSharedEditableFields(IObjectWriter& writer)
       writer.WriteInt(FID(LAYR), min(index, 11));
       writer.WriteString(FID(LANR), layer->GetName());
       writer.WriteString(FID(GRUP), GetPartGroup()->GetName());
+   }
+   for (const PartExtension &entry : m_extensions)
+   {
+      writer.BeginObject(FID(EXTD), /*isArray*/ true, /*isSkippable*/ true);
+      writer.WriteString(FID(XKEY), entry.key);
+      writer.WriteString(FID(XVAL), entry.Serialized());
+      writer.EndObject();
    }
 }
 
