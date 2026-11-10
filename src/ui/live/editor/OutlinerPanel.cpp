@@ -13,6 +13,7 @@
 #include "PropertiesPanel.h"
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/editor/ops/ReferenceImageOp.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 #include "ViewportPane.h"
@@ -242,9 +243,11 @@ namespace
       }
    }
 
-   const char *TypeIcon(ItemTypeEnum type)
+   const char *TypeIcon(const IEditable *editable)
    {
-      switch (type)
+      if (ReferenceImageOp::IsReferenceImage(editable))
+         return ICON_LC_IMAGE;
+      switch (editable->GetItemType())
       {
       case eItemPrimitive: return ICON_LC_BOX;
       case eItemLight: return ICON_LC_LIGHTBULB;
@@ -598,9 +601,9 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       ImGui::SetDragDropPayload("VPX_PART", &editable, sizeof(editable));
       const size_t count = editor.m_multiSel.size();
       if (count > 1)
-         ImGui::Text("%s  Move %d parts", TypeIcon(editable->GetItemType()), (int)count);
+         ImGui::Text("%s  Move %d parts", TypeIcon(editable), (int)count);
       else
-         ImGui::Text("%s  %s", TypeIcon(editable->GetItemType()), editable->GetName().c_str());
+         ImGui::Text("%s  %s", TypeIcon(editable), editable->GetName().c_str());
       if (dragBlockedPrev)
          ImGui::TextColored(EditorTheme::V(EditorTheme::TextDim), "Not allowed here");
       ImGui::EndDragDropSource();
@@ -668,7 +671,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       }
       {
          // Type icon (dim) and name (normal text, faint when the part is hidden) drawn over the selectable, indented under the parent group's name
-         const char *const icon = TypeIcon(editable->GetItemType());
+         const char *const icon = TypeIcon(editable);
          const ImVec2 textPos = ImVec2(ImGui::GetItemRectMin().x + indentX, ImGui::GetItemRectMin().y);
          ImDrawList *const drawList = ImGui::GetWindowDrawList();
          // Lucide glyph ink sits higher than the text line box: center the ink vertically rather than aligning on the text origin

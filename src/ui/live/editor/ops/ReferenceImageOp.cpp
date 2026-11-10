@@ -29,14 +29,14 @@ using namespace ReferenceImageMath;
 bool ReferenceImageOp::IsReferenceGroup(const PartGroup *group)
 {
    for (; group != nullptr; group = group->GetPartGroup())
-      if (StrCompareNoCase(group->GetName(), GroupName))
+      if (group->HasExtension(Key))
          return true;
    return false;
 }
 
 bool ReferenceImageOp::IsReferenceImage(const IEditable *part)
 {
-   return part != nullptr && part->GetItemType() == eItemFlasher && IsReferenceGroup(part->GetPartGroup());
+   return part != nullptr && part->GetItemType() == eItemFlasher && (part->HasExtension(Key) || IsReferenceGroup(part->GetPartGroup()));
 }
 
 bool ReferenceImageOp::IsLocked(const IEditable *part) { return part != nullptr && part->IsUILocked() && IsReferenceImage(part); }
@@ -46,18 +46,17 @@ PartGroup *ReferenceImageOp::FindGroup(const PinTable *table)
    // A root level group is preferred (the one created by Add), a nested one is used as is
    PartGroup *found = nullptr;
    for (IEditable *const part : table->GetParts())
-      if (part->GetItemType() == eItemPartGroup && StrCompareNoCase(part->GetName(), GroupName) && (found == nullptr || part->GetPartGroup() == nullptr))
+      if (part->GetItemType() == eItemPartGroup && part->HasExtension(Key) && (found == nullptr || part->GetPartGroup() == nullptr))
          found = static_cast<PartGroup *>(part);
    return found;
 }
 
 PartGroup *ReferenceImageOp::CreateGroup(PinTable *table)
 {
-   if (!table->IsNameUnique(GroupName))
-      return nullptr;
    PartGroup *const group = PartGroup::COMCreate();
    group->Init(0.f, 0.f, false);
-   group->m_name = GroupName;
+   group->m_name = table->IsNameUnique("ReferenceImages") ? "ReferenceImages" : table->GetUniqueName("ReferenceImages");
+   group->GetOrCreateExtension(Key).SetRaw("{\"v\":1}");
    // No play mode renders the group (the editor views do not apply the mask). Playfield space, so that the parts are placed like the others.
    group->m_d.m_playerModeVisibilityMask = 0;
    group->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
@@ -88,6 +87,7 @@ Flasher *ReferenceImageOp::CreateFlasher(PinTable *table, PartGroup *group, cons
    d.m_height = Height;
    d.m_rotX = d.m_rotY = d.m_rotZ = 0.f;
    flasher->m_desktopBackdrop = false;
+   flasher->GetOrCreateExtension(Key).SetRaw("{\"v\":1}");
    SetRect(flasher, { center, width, height });
    table->AddPart(flasher);
    flasher->SetPartGroup(group);
@@ -136,14 +136,16 @@ bool ReferenceImageOp::ReplaceImage(Flasher *flasher, const string &image)
 
 PartGroup *ReferenceImageOp::PasteGroup(PinTable *table, PinUndo *undo, const IEditable *pasted, PartGroup *target)
 {
-   // The pasted data names the group of its source part (IEditable::m_onLoadExpectedPartGroup, filled by Load)
-   if (pasted->GetItemType() != eItemFlasher || pasted->m_onLoadExpectedPartGroup.empty())
+   // Only marked reference images are re-rooted: the marker travels with the part through the saved data. The pasted data
+   // also names the group of its source part (IEditable::m_onLoadExpectedPartGroup, filled by Load).
+   if (pasted->GetItemType() != eItemFlasher || !pasted->HasExtension(Key))
       return target;
-   for (IEditable *const part : table->GetParts())
-      if (part->GetItemType() == eItemPartGroup && StrCompareNoCase(part->GetName(), pasted->m_onLoadExpectedPartGroup))
-         return IsReferenceGroup(static_cast<PartGroup *>(part)) ? static_cast<PartGroup *>(part) : target;
-   if (!StrCompareNoCase(pasted->m_onLoadExpectedPartGroup, GroupName))
-      return target;
+   // Same table paste: back into the source group when it is still a reference group
+   if (!pasted->m_onLoadExpectedPartGroup.empty())
+      for (IEditable *const part : table->GetParts())
+         if (part->GetItemType() == eItemPartGroup && StrCompareNoCase(part->GetName(), pasted->m_onLoadExpectedPartGroup) && IsReferenceGroup(static_cast<PartGroup *>(part)))
+            return static_cast<PartGroup *>(part);
+   // Otherwise (pasted from another table, or the source group is gone): the table's reference group, created on demand
    PartGroup *group = FindGroup(table);
    if (group == nullptr && (group = CreateGroup(table)) != nullptr)
    {
@@ -208,8 +210,6 @@ vector<Flasher *> ReferenceImageOp::SelectedReferenceImages() const
    return flashers;
 }
 
-bool ReferenceImageOp::CanCreateIn(const PinTable *table) const { return FindGroup(table) != nullptr || table->IsNameUnique(GroupName); }
-
 bool ReferenceImageOp::CanApplyToSelection() const { return CanAdd() && !SelectedReferenceImages().empty(); }
 
 void ReferenceImageOp::OpenAddDialog()
@@ -241,11 +241,6 @@ void ReferenceImageOp::Add(const string &image, const float width, const float h
    const bool newGroup = group == nullptr;
    if (newGroup)
       group = CreateGroup(table);
-   if (group == nullptr)
-   {
-      ed.Report("Add Reference Image: the name '"s + GroupName + "' is used by a part that is not a part group");
-      return;
-   }
    const Vertex2D center(0.5f * (table->m_left + table->m_right), 0.5f * (table->m_top + table->m_bottom));
    Flasher *const flasher = CreateFlasher(table, group, image, center, width, height);
 
@@ -483,9 +478,7 @@ void ReferenceImageOp::RenderModal()
    if (ImGui::Button(dlg.replace ? "Replace" : "Add"))
    {
       string image;
-      if (!dlg.replace && !CanCreateIn(ed.m_table))
-         dlg.error = "The name '"s + GroupName + "' is used by a part that is not a part group";
-      else if (dlg.fromFile)
+      if (dlg.fromFile)
       {
          if (const Texture *const tex = ImportFile(dlg.file))
             image = tex->m_name;

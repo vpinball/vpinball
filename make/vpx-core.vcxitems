@@ -1640,6 +1640,9 @@
     <Image Include="$(SolutionDir)/../../src/assets/editor/reel.png">
       <FileType>Document</FileType>
     </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/refimage.png">
+      <FileType>Document</FileType>
+    </Image>
     <Image Include="$(SolutionDir)/../../src/assets/editor/rubber.png">
       <FileType>Document</FileType>
     </Image>

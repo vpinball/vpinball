@@ -2838,6 +2838,9 @@
     <Image Include="$(SolutionDir)/../../src/assets/editor/reel.png">
       <Filter>assets\editor</Filter>
     </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/editor/refimage.png">
+      <Filter>assets\editor</Filter>
+    </Image>
     <Image Include="$(SolutionDir)/../../src/assets/editor/rubber.png">
       <Filter>assets\editor</Filter>
     </Image>

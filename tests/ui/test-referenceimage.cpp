@@ -157,7 +157,7 @@ namespace
       REQUIRE(flasher != nullptr);
       CHECK(ReferenceImageOp::IsReferenceImage(flasher));
       REQUIRE(flasher->GetPartGroup() != nullptr);
-      CHECK(flasher->GetPartGroup()->GetName() == ReferenceImageOp::GroupName);
+      CHECK(flasher->GetPartGroup()->HasExtension(ReferenceImageOp::Key));
       CHECK(flasher->GetPartGroup()->m_d.m_playerModeVisibilityMask == 0);
       CHECK(flasher->GetPartGroup()->GetPlayerModeVisibilityMask() == 0);
       CHECK(ReferenceImageOp::FindGroup(table) == flasher->GetPartGroup());
@@ -197,12 +197,12 @@ TEST_CASE("Reference image flasher")
    PartGroup *const group = ReferenceImageOp::CreateGroup(table);
    REQUIRE(group != nullptr);
    group->Release(); // Creation reference (the editor hands it to the undo record)
-   CHECK(group->GetName() == ReferenceImageOp::GroupName);
+   CHECK(group->GetName() == "ReferenceImages"s);
    CHECK(group->GetPartGroup() == nullptr);
    CHECK(group->m_d.m_playerModeVisibilityMask == 0);
    CHECK(group->GetReferenceSpace() == PartGroupData::SpaceReference::SR_PLAYFIELD);
    CHECK(ReferenceImageOp::FindGroup(table) == group);
-   CHECK(ReferenceImageOp::CreateGroup(table) == nullptr); // The name is taken
+   CHECK(group->HasExtension(ReferenceImageOp::Key));
 
    // Flasher at the real size, centred on the playfield, flat on it
    const float width = ToVPU(40.f, Unit::Centimeters);
@@ -275,6 +275,47 @@ TEST_CASE("Reference image flasher")
       CHECK_FALSE(ReferenceImageOp::Rotate(nested, 90.f, Vertex2D(0.f, 0.f), false));
    }
 
+   SUBCASE("the extension marker survives a group rename")
+   {
+      // Feature created groups and flashers are marked: renames do not detach them from the feature
+      CHECK(group->HasExtension(ReferenceImageOp::Key));
+      CHECK(flasher->HasExtension(ReferenceImageOp::Key));
+      group->SetName("RenamedGroup");
+      CHECK(ReferenceImageOp::IsReferenceGroup(group));
+      CHECK(ReferenceImageOp::IsReferenceImage(flasher)); // Still a reference image: the marker does not depend on the group name
+      CHECK(ReferenceImageOp::FindGroup(table) == group); // The marker lookup finds it under its new name
+
+      // A group merely named like a reference images group is not one: only the marker counts
+      PartGroup *const named = PartGroup::COMCreate();
+      named->Init(0.f, 0.f, false);
+      named->SetName("ReferenceImages002");
+      table->AddPart(named);
+      named->Release();
+      CHECK_FALSE(named->HasExtension(ReferenceImageOp::Key));
+      CHECK_FALSE(ReferenceImageOp::IsReferenceGroup(named));
+      Flasher *const unmarked = Flasher::COMCreate();
+      unmarked->Init(10.f, 10.f, false);
+      unmarked->SetName("UnmarkedFlasher");
+      table->AddPart(unmarked);
+      unmarked->Release();
+      unmarked->SetPartGroup(named);
+      CHECK_FALSE(ReferenceImageOp::IsReferenceImage(unmarked));
+      // A marked flasher is a reference image whatever group it ends in
+      unmarked->SetPartGroup(nullptr);
+      unmarked->GetOrCreateExtension(ReferenceImageOp::Key).SetRaw("{\"v\":1}");
+      CHECK(ReferenceImageOp::IsReferenceImage(unmarked));
+   }
+
+   SUBCASE("a second group gets a deduplicated name")
+   {
+      // CreateGroup always succeeds: the name is just a label now that the marker carries the identity
+      PartGroup *const second = ReferenceImageOp::CreateGroup(table);
+      REQUIRE(second != nullptr);
+      second->Release();
+      CHECK(second->GetName() == "ReferenceImages001"s);
+      CHECK(ReferenceImageOp::IsReferenceGroup(second));
+   }
+
    SUBCASE("fit to image keeps the centre, rotation and width")
    {
       // Stretch it, move a corner away and place it upright, then fit
@@ -334,7 +375,8 @@ TEST_CASE("Reference image flasher")
       // Copy / paste and duplicate go through the part's saved data, which names its source group
       Flasher *const copy = Flasher::COMCreate();
       LoadPartFromStream(copy, SavePartToStream(flasher));
-      CHECK(copy->m_onLoadExpectedPartGroup == ReferenceImageOp::GroupName);
+      CHECK(copy->m_onLoadExpectedPartGroup == group->GetName());
+      CHECK(copy->HasExtension(ReferenceImageOp::Key)); // The marker travels with the part through the saved data
       CHECK(ReferenceImageOp::PasteGroup(table, nullptr, copy, other) == group);
       // Any other part goes to the target group, as before
       Flasher *const plain = Flasher::COMCreate();

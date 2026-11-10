@@ -187,53 +187,58 @@ void FlasherUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
 
 void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
 {
+   if (ReferenceImageOp::IsReferenceImage(m_part))
+   {
+      props.EditableHeader("Reference Image"s, m_part);
+      if (props.BeginSection("Reference Image"s))
+      {
+         props.SliderInt<Flasher>(
+            m_part, "Opacity"s, 0, 100, //
+            [](const Flasher* flasher) { return flasher->m_d.m_alpha; }, //
+            [](Flasher* flasher, int v) { flasher->m_d.m_alpha = v; });
+         props.ImageCombo<Flasher>(
+            m_part, "Image"s, //
+            [](const Flasher* flasher) { return flasher->m_d.m_szImageA; }, //
+            [](Flasher* flasher, const string& v)
+            {
+               if (ReferenceImageOp::IsReferenceImage(flasher)) // Co-edited flashers of a mixed selection are left alone
+                  ReferenceImageOp::ReplaceImage(flasher, v);
+            },
+            "Replaces the image, keeping the position, rotation and width (fitted to its aspect)");
+         props.InputFloat2<Flasher>(
+            m_part, "Size"s, //
+            [](const Flasher* flasher)
+            {
+               const ReferenceImageMath::Rect rect = ReferenceImageOp::GetRect(flasher);
+               return Vertex2D(rect.width, rect.height);
+            }, //
+            [](Flasher* flasher, const Vertex2D& v)
+            {
+               if (ReferenceImageOp::IsReferenceImage(flasher))
+                  ReferenceImageOp::SetSize(flasher, v);
+            },
+            PropertyPane::Unit::VPLength, 1, "Width and height. The gizmo and S scale both together; set them apart here (Fit to Image restores the image's aspect)");
+         props.Button<Flasher>(
+            m_part, "Fit to Image"s,
+            [](Flasher* flasher)
+            {
+               if (ReferenceImageOp::IsReferenceImage(flasher))
+                  ReferenceImageOp::FitToImage(flasher);
+            },
+            "Rebuilds a clean rectangle at the image's aspect, keeping the centre, rotation and width");
+         props.Checkbox<Flasher>(
+            m_part, "Locked"s, //
+            [](const Flasher* flasher) { return flasher->IsUILocked(); }, //
+            [](Flasher* flasher, bool v) { flasher->SetUILock(v); }, "A locked reference image is neither picked nor moved in the views (select it in the outliner to unlock it)");
+         props.EndSection();
+      }
+
+      return;
+   }
+
    props.EditableHeader("Flasher"s, m_part);
 
    UpdateCurveSection(props);
-
-   if (ReferenceImageOp::IsReferenceImage(m_part) && props.BeginSection("Reference Image"s))
-   {
-      props.SliderInt<Flasher>(
-         m_part, "Opacity"s, 0, 100, //
-         [](const Flasher* flasher) { return flasher->m_d.m_alpha; }, //
-         [](Flasher* flasher, int v) { flasher->m_d.m_alpha = v; });
-      props.ImageCombo<Flasher>(
-         m_part, "Image"s, //
-         [](const Flasher* flasher) { return flasher->m_d.m_szImageA; }, //
-         [](Flasher* flasher, const string& v)
-         {
-            if (ReferenceImageOp::IsReferenceImage(flasher)) // Co-edited flashers of a mixed selection are left alone
-               ReferenceImageOp::ReplaceImage(flasher, v);
-         },
-         "Replaces the image, keeping the position, rotation and width (fitted to its aspect)");
-      props.InputFloat2<Flasher>(
-         m_part, "Size"s, //
-         [](const Flasher* flasher)
-         {
-            const ReferenceImageMath::Rect rect = ReferenceImageOp::GetRect(flasher);
-            return Vertex2D(rect.width, rect.height);
-         }, //
-         [](Flasher* flasher, const Vertex2D& v)
-         {
-            if (ReferenceImageOp::IsReferenceImage(flasher))
-               ReferenceImageOp::SetSize(flasher, v);
-         },
-         PropertyPane::Unit::VPLength, 1,
-         "Width and height. The gizmo and S scale both together; set them apart here (Fit to Image restores the image's aspect)");
-      props.Button<Flasher>(
-         m_part, "Fit to Image"s,
-         [](Flasher* flasher)
-         {
-            if (ReferenceImageOp::IsReferenceImage(flasher))
-               ReferenceImageOp::FitToImage(flasher);
-         },
-         "Rebuilds a clean rectangle at the image's aspect, keeping the centre, rotation and width");
-      props.Checkbox<Flasher>(
-         m_part, "Locked"s, //
-         [](const Flasher* flasher) { return flasher->IsUILocked(); }, //
-         [](Flasher* flasher, bool v) { flasher->SetUILock(v); }, "A locked reference image is neither picked nor moved in the views (select it in the outliner to unlock it)");
-      props.EndSection();
-   }
 
    if (props.BeginSection("Visuals"s))
    {

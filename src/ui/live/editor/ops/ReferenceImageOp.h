@@ -18,9 +18,10 @@ namespace VPX::EditorUI
 
 class EditorUI;
 
-// Reference images: scans, blueprints or photos shown in the editor to trace the parts over them. Nothing new is saved in the table: a reference
-// image is an ordinary flasher (Flasher render mode, Wrap image mode, 4 corner points sized at the image's real size) inside the part group named
-// 'ReferenceImages', whose player mode visibility mask is cleared so that no play mode renders it (editor views do not apply that mask).
+// Reference images: scans, blueprints or photos shown in the editor to trace the parts over them. A reference image is an ordinary flasher
+// (Flasher render mode, Wrap image mode, 4 corner points sized at the image's real size) inside a part group carrying the 'refimg' part
+// extension, whose player mode visibility mask is cleared so that no play mode renders it (editor views do not apply that mask). Feature
+// created groups and flashers are marked with the same extension so that renames do not detach them from the feature.
 // The editor treats the flashers of this group as images: they scale uniformly by default, their points are not edited one by one (Fit to
 // Image rebuilds a clean rectangle at the image's aspect), and their UI lock also stops 3D picking and the transform gizmo.
 class ReferenceImageOp final
@@ -31,16 +32,16 @@ public:
    {
    }
 
-   static constexpr const char *GroupName = "ReferenceImages";
+   static constexpr const char *Key = "refimg"; // Part extension key marking feature created groups and images (survives renames)
    static constexpr float Height = 1.f; // Default height above the playfield (VPU), above it enough to avoid depth fighting
    static constexpr int Opacity = 60; // Default flasher opacity (%)
 
    // Table level helpers (no editor state: used by the editor ops below and by the tests)
-   static bool IsReferenceImage(const IEditable *part); // A flasher inside the ReferenceImages group (directly or through nested groups)
-   static bool IsReferenceGroup(const PartGroup *group); // The ReferenceImages group or a group nested in it (never a target for new parts)
+   static bool IsReferenceImage(const IEditable *part); // A flasher marked as a reference image, or inside a marked group (directly or nested)
+   static bool IsReferenceGroup(const PartGroup *group); // A marked reference images group or a group nested in one (never a target for new parts)
    static bool IsLocked(const IEditable *part); // A reference image with its UI lock set: neither picked nor transformed in the views
    static PartGroup *FindGroup(const PinTable *table);
-   // Creates the root level ReferenceImages group with a cleared player mode visibility mask, nullptr when the name is used by another part.
+   // Creates the root level ReferenceImages group with a cleared player mode visibility mask.
    // The caller owns the creation reference (handed to the undo record by PinUndo::MarkForCreate, or released).
    static PartGroup *CreateGroup(PinTable *table);
    // Creates the flasher of an image of the table, centred at 'center', of the given size (VPU), flat on the playfield. Same ownership as CreateGroup.
@@ -51,9 +52,9 @@ public:
    static void SetSize(Flasher *flasher, const Vertex2D &size); // Keeps the centre
    static bool FitToImage(Flasher *flasher); // Clean rectangle at the image's aspect, keeping the centre and width (false when the image is not found)
    static bool ReplaceImage(Flasher *flasher, const string &image); // Swaps the image, then fits to its aspect
-   // Group of a pasted or duplicated part: a reference image stays one (hidden in play), whatever the target of new parts. When it comes from
-   // a ReferenceImages group the table does not have (pasted from another table), the group is created and marked for creation in the undo
-   // record being built (when undo is given). Any other part goes to 'target'.
+   // Group of a pasted or duplicated part: a marked reference image stays in a reference group (hidden in play), whatever the target of
+   // new parts. When the group named by the pasted data is still a reference group it is reused (same table paste), otherwise the table's
+   // reference group is found or created (marked for creation in the undo record being built, when undo is given). Any other part goes to 'target'.
    static PartGroup *PasteGroup(PinTable *table, PinUndo *undo, const IEditable *pasted, PartGroup *target);
    // Rotation about the table Z axis (win32 style Rotate command): turns the part (its Z rotation) instead of its points, which would distort
    // the image mapped over their bounds. A tilted image (X or Y rotation) is left as it is: its Z rotation is not a turn about the table Z
@@ -75,7 +76,6 @@ private:
    EditorUI &m_editor;
 
    vector<Flasher *> SelectedReferenceImages() const;
-   bool CanCreateIn(const PinTable *table) const; // The group exists or can be created
    void Add(const string &image, float width, float height);
    void Replace(const string &image);
    Texture *ImportFile(const string &file); // Imports an image file into the table under a free name
