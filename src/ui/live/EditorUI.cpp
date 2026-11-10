@@ -2074,6 +2074,12 @@ void EditorUI::EnsureAddPartButtons()
       std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, def.file));
       m_addPartButtons.push_back({ def.type, def.name, tex ? std::make_shared<Sampler>(m_renderer->m_renderDevice, def.name, tex, false) : nullptr });
    }
+   // Add-ons that are not part types: picking them runs their action instead of arming add part mode
+   {
+      std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "editor/refimage.png"));
+      m_addPartButtons.push_back({ eItemInvalid, "Reference Image", tex ? std::make_shared<Sampler>(m_renderer->m_renderDevice, "Reference Image", tex, false) : nullptr,
+         [this]() { m_referenceImageOp.OpenAddDialog(); } });
+   }
 }
 
 void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)

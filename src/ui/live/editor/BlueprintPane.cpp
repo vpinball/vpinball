@@ -521,7 +521,10 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
             ImGui::SameLine();
          if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
          {
-            editor.m_addPartType = button.type;
+            if (button.action)
+               button.action();
+            else
+               editor.m_addPartType = button.type;
             ImGui::CloseCurrentPopup();
          }
          if (ImGui::IsItemHovered())

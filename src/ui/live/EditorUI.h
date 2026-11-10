@@ -287,6 +287,7 @@ private:
       ItemTypeEnum type;
       const char *name;
       std::shared_ptr<Sampler> icon;
+      std::function<void()> action; // When set, invoked on pick instead of arming add part mode (e.g. dialogs)
    };
    vector<AddPartButton> m_addPartButtons; // Lazily initialized part type picker buttons (shared by the viewport panes)
    void EnsureAddPartButtons();
