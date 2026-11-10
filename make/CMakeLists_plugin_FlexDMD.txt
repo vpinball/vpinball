@@ -50,6 +50,7 @@ set(FLEXDMD_PLUGIN_SOURCES
    plugins/flexdmd/UltraDMD.h
    plugins/flexdmd/actors/Actor.h
    plugins/flexdmd/actors/Actions.h
+   plugins/flexdmd/actors/Tween.h
    plugins/flexdmd/actors/AnimatedActor.h
    plugins/flexdmd/actors/FadeOverlay.h
    plugins/flexdmd/actors/Frame.h

@@ -19,12 +19,6 @@
     <ClCompile Include="../../plugins/vni/vni.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClInclude Include="../../plugins/vni/third-party/include/miniz/miniz.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClCompile Include="../../plugins/vni/third-party/include/miniz/miniz.c">
-      <Filter>third-party</Filter>
-    </ClCompile>
     <ClInclude Include="../../plugins/vni/third-party/include/libvni/vni.h">
       <Filter>third-party</Filter>
     </ClInclude>

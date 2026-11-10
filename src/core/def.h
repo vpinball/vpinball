@@ -1061,6 +1061,7 @@ inline void wcsncpy_s(WCHAR* const __restrict dest, const size_t dest_size, cons
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
+bool IsValidUTF8(const char* str, size_t length); // Also rejects a sequence cut at the end
 string string_from_utf8_or_cp1252(const char* src, size_t srcSize); // UTF-8 text is kept, anything else is taken as legacy Western ANSI
 string string_from_utf8_or_cp1252(string&& src); // Same, returning src itself when it is valid UTF-8
 bool utf8_to_cp1252(const string& utf8, string& cp1252); // For legacy files written back in their encoding: false if a character does not fit

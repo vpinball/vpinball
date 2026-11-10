@@ -194,6 +194,9 @@
     <ClInclude Include="../../plugins/flexdmd/actors/Actions.h">
       <Filter>source\Actors</Filter>
     </ClInclude>
+    <ClInclude Include="../../plugins/flexdmd/actors/Tween.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/flexdmd/actors/ImageSequence.h">
       <Filter>source\Actors</Filter>
     </ClInclude>
@@ -292,9 +295,6 @@
     </ClInclude>
     <ClInclude Include="../../third-party/include/sdl3_image/SDL_image.h">
       <Filter>third-party\SDL3_Image</Filter>
-    </ClInclude>
-    <ClInclude Include="../../third-party/include/tweeny-3.2.1.h">
-      <Filter>third-party</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

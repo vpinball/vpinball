@@ -822,7 +822,6 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
       swresample
       swscale
       winevbs
-      zip
       opusfile
       opus
       ogg
@@ -973,7 +972,6 @@ elseif(PLATFORM STREQUAL "wasm")
       harfbuzz
       freeimage
       winevbs
-      zip
       opusfile
       opus
       ogg

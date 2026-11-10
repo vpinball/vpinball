@@ -375,8 +375,6 @@ static bool HelperIsASCII(const WCHAR* const __restrict wzcstr, const int len)
 #endif
 
 #ifdef _WIN32
-static bool IsValidUTF8(const char* str, size_t length);
-
 std::filesystem::path PathFromUTF8OrString(const std::string& s)
 {
    return IsValidUTF8(s.data(), s.size()) ? PathFromUTF8(s) : PathFromString(s);
@@ -846,7 +844,7 @@ string TruncateToUTF16Length(const string& utf8, size_t maxUnits)
    return utf8.substr(0, pos);
 }
 
-static bool IsValidUTF8(const char* str, size_t length)
+bool IsValidUTF8(const char* str, size_t length)
 {
    uint32_t state = UTF8_ACCEPT;
    return validate_utf8(&state, str, length) == UTF8_ACCEPT; // Also rejects a sequence cut at the end

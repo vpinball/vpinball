@@ -19,12 +19,6 @@
     <ClCompile Include="../../plugins/serum/serum.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClInclude Include="../../plugins/serum/third-party/include/miniz/miniz.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
-    <ClCompile Include="../../plugins/serum/third-party/include/miniz/miniz.c">
-      <Filter>third-party</Filter>
-    </ClCompile>
     <ClInclude Include="../../plugins/serum/third-party/include/libserum/serum.h">
       <Filter>third-party</Filter>
     </ClInclude>

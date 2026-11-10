@@ -14,7 +14,6 @@
 #include "VPXProgress.h"
 #include "WebServer.h"
 
-#include <zip.h>
 #include <filesystem>
 #include <chrono>
 #include <thread>
