@@ -300,6 +300,11 @@ void Controller::Run(int32_t hParentWnd, int nMinVersion)
    while (PinmameIsRunning() == 2) // Wait until the machine is either running or stopped
       std::this_thread::sleep_for(std::chrono::milliseconds(75));
 
+   // libpinmame queues its game start notification (which registers all the state sources) to this
+   // thread through RunOnMainThread. Dispatch it now so that when Run returns, the state mappings
+   // are available and script access to switches/dips/lamps/... reads real emulation states
+   m_msgApi->FlushPendingCallbacks(m_endpointId);
+
    if ((PinmameIsRunning() == 1) && status == PINMAME_STATUS_OK)
    {
       if (m_onGameStartHandler)
