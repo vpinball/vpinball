@@ -87,6 +87,12 @@ The version used for these libraries is defined by the SHA of the head commit in
 - Version: ?
 - License: ?
 
+### basis_universal BC6H/BC7 encoders (bc6h, bc7f)
+
+- Upstream: https://github.com/BinomialLLC/basis_universal (self-contained extracts of its real-time bc6hf and bc7f encoders)
+- Version: commit 99f52d6 (bc7f), ? (bc6h)
+- License: Apache-2.0
+
 ### Fonts
 
 Droid Sans
@@ -126,11 +132,11 @@ Liberation Sans
 - Version: 2.0.1
 - License: Apache-2.0 license
 
-### HID
+### hid-report-parser
 
-- Upstream: ?
+- Upstream: https://github.com/pasztorpisti/hid-report-parser + VPX modifications
 - Version: ?
-- License: ?
+- License: MIT
 
 ### imgui
 
@@ -161,12 +167,6 @@ Liberation Sans
 - Upstream: https://github.com/nlohmann/json
 - Version: ?
 - License: MIT
-
-### libzip
-
-- Upstream: https://github.com/nih-at/libzip
-- Version: 1.11.4
-- License: ?
 
 ### mINI
 

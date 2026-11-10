@@ -5,6 +5,8 @@
 #include "common.h"
 #include "plugins/ScriptablePlugin.h"
 
+#include <bit>
+
 namespace PinMAME
 {
 
@@ -26,18 +28,14 @@ public:
    int32_t GetState() const { return m_rom.state; }
    const string& GetStateDescription() const
    {
-      switch (m_rom.state)
-      {
-      case PINMAME_ROM_STATE_OK: return "OK"s;
-      case PINMAME_ROM_STATE_NEED_REDUMP: return "Need redump"s;
-      case PINMAME_ROM_STATE_NOT_FOUND: return "Not found"s;
-      case PINMAME_ROM_STATE_NOT_AVAILABLE: return "Not available"s;
-      case PINMAME_ROM_STATE_BAD_CHECKSUM: return "Bad checksum"s;
-      case PINMAME_ROM_STATE_MEMORY_ERROR: return "Memory error"s;
-      case PINMAME_ROM_STATE_LENGTH_MISMATCH: return "Length mismatch"s;
-      case PINMAME_ROM_STATE_NEED_DUMP: return "Need dump"s;
-      default: return "Unknown"s;
-      }
+      // States are single bits (UNKNOWN = 0, OK = 0x01 ... NEED_DUMP = 0x80), so index by bit position + 1.
+      // PINMAME_ROM_STATE is defined in PinMAME's libpinmame.h: adapt this array if states change there
+      static_assert(PINMAME_ROM_STATE_UNKNOWN == 0 && PINMAME_ROM_STATE_OK == 0x01 && PINMAME_ROM_STATE_NEED_DUMP == 0x80, "PINMAME_ROM_STATE changed: adapt GetStateDescription");
+      static const string descriptions[] = { "Unknown"s, "OK"s, "Need redump"s, "Not found"s, "Not available"s, "Bad checksum"s, "Memory error"s, "Length mismatch"s, "Need dump"s };
+      const unsigned int state = static_cast<unsigned int>(m_rom.state);
+      if (!std::has_single_bit(state) || state > PINMAME_ROM_STATE_NEED_DUMP)
+         return descriptions[0];
+      return descriptions[std::countr_zero(state) + 1];
    }
    void Audit(bool fStrict = false) { PinmameAuditGameRom(m_gameName.c_str(), m_name.c_str(), fStrict ? 1 : 0, &m_rom); }
    // 32-bit integers for scripts, as in VPinMAME's IRom (a CRC32 above 0x7FFFFFFF reads as negative)

@@ -77,15 +77,15 @@ Thirdparty licenses:
 
 ===============================================================================
 
-This software uses the FreeImage open source image library. See http://freeimage.sourceforge.net for details.
-FreeImage is used under the (GNU GPL or FIPL), version (license version), see http://freeimage.sourceforge.net/freeimage-license.txt for details.
+This software uses the FreeImage open source image library (through the fork at https://github.com/toxieainc/freeimage). See https://freeimage.sourceforge.io for details.
+FreeImage is used under the FreeImage Public License (FIPL), version 1.0 (it is also available under the GNU GPL v2 or v3), see https://freeimage.sourceforge.io/freeimage-license.txt for details.
 The contents of this file are subject to the FreeImage Public License Version 1.0 (the "License"); you may not use this file except in compliance with the License.
 Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for the specific language governing rights and limitations under the License.
 
 ===============================================================================
 
-Simple DirectMedia Layer/SDL (used in the GL/VR version of VPX):
-Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+Simple DirectMedia Layer/SDL 3, with SDL_ttf and SDL_image (used by all builds of VPX and its plugins):
+Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -104,6 +104,8 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 ===============================================================================
+
+FreeType (used through SDL_ttf):
 
                     The FreeType Project LICENSE
                     ----------------------------
@@ -270,7 +272,7 @@ Legal Terms
 
 ===============================================================================
 
-OpenGL used in the GL/VR version of VPX
+OpenGL API headers (Khronos), used in the OpenGL version of VPX
 
 Copyright (c) 2008-2018 The Khronos Group Inc.
 
@@ -299,7 +301,7 @@ OpenGL glad headers are Public Domain/WTFPL/CC0 https://github.com/Dav1dde/glad/
 
 ===============================================================================
 
-OpenGL Stereo Rendering with less DrawCalls based on https://github.com/kondrak/oculusvr_samples used in the GL/VR version of VPX
+Stereo rendering with fewer draw calls (both eyes rendered at once through instancing), based on https://github.com/kondrak/oculusvr_samples, used for VR and stereo 3D rendering in VPX
 
 Copyright (c) 2016 Krzysztof Kondrak
 
