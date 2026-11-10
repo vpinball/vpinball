@@ -142,40 +142,55 @@ bool Group::HasChild(const string &name)
 Group* Group::GetGroup(const string& Name)
 {
    Actor* actor = Get(Name);
-   if ((actor != nullptr) && (actor->GetType() == Actor::AT_Group))
+   if (actor == nullptr)
+      return nullptr;
+   if (actor->GetType() == Actor::AT_Group)
       return static_cast<Group*>(actor);
+   actor->Release(); // Get() added a reference
    return nullptr;
 }
 
 Frame* Group::GetFrame(const string& Name)
 {
    Actor* actor = Get(Name);
-   if ((actor != nullptr) && (actor->GetType() == Actor::AT_Frame))
+   if (actor == nullptr)
+      return nullptr;
+   if (actor->GetType() == Actor::AT_Frame)
       return static_cast<Frame*>(actor);
+   actor->Release(); // Get() added a reference
    return nullptr;
 }
 
 Label* Group::GetLabel(const string& Name)
 {
    Actor* actor = Get(Name);
-   if ((actor != nullptr) && (actor->GetType() == Actor::AT_Label))
+   if (actor == nullptr)
+      return nullptr;
+   if (actor->GetType() == Actor::AT_Label)
       return static_cast<Label*>(actor);
+   actor->Release(); // Get() added a reference
    return nullptr;
 }
 
 AnimatedActor* Group::GetVideo(const string& Name)
 {
    Actor* actor = Get(Name);
-   if ((actor != nullptr) && (actor->GetType() == Actor::AT_AnimatedActor))
+   if (actor == nullptr)
+      return nullptr;
+   if (actor->GetType() == Actor::AT_AnimatedActor)
       return static_cast<AnimatedActor*>(actor);
+   actor->Release(); // Get() added a reference
    return nullptr;
 }
 
 Image* Group::GetImage(const string& Name)
 {
    Actor* actor = Get(Name);
-   if ((actor != nullptr) && (actor->GetType() == Actor::AT_Image))
+   if (actor == nullptr)
+      return nullptr;
+   if (actor->GetType() == Actor::AT_Image)
       return static_cast<Image*>(actor);
+   actor->Release(); // Get() added a reference
    return nullptr;
 }
 
