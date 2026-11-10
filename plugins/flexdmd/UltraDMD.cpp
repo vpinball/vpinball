@@ -11,6 +11,7 @@
 
 #include "resources/ResourceDef.h"
 
+#include <algorithm>
 #include <sstream>
 
 namespace Flex {
@@ -353,7 +354,7 @@ void UltraDMD::ModifyScene00Ex(const string& id, const string& toptext, const st
       SingleLineScene* const pScene1 = dynamic_cast<SingleLineScene*>(pScene);
       if (pScene1 != nullptr)
          pScene1->SetText(toptext);
-      pScene->SetPause((float)(pScene->GetTime() + pauseTime / 1000.0));
+      pScene->SetPause(pScene->GetTime() + (float)pauseTime / 1000.f);
    }
 }
 
