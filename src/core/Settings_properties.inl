@@ -260,7 +260,9 @@ PropBool(
 PropEnum(PlayerVR, DesktopDisplay, "Desktop display"s, "Select the content to show on the desktop display while playing in VR"s, int, 1, "Disabled"s,
    "Playfield and other displays"s, "Playfield only"s, "Left eye"s, "Right eye"s, "Both eyes"s);
 PropFloatStepped(PlayerVR, DesktopRenderScale, "Desktop render scale"s,
-   "Render resolution of the desktop playfield display relative to its window size (lower values improve VR performance, the image is upscaled to the window)"s, 0.1f, 1.f, 0.1f, 1.f);
+   "Render resolution of the desktop playfield display relative to its window size (lower values improve VR performance, the image is upscaled to the window). Only applies when the desktop display shows the playfield"s, 0.1f, 1.f, 0.1f, 1.f);
+PropBool(PlayerVR, DesktopLimitReflections, "Limit desktop reflections"s,
+   "Only render ball reflections on the desktop playfield display, skipping costly dynamic playfield reflections (improves VR performance). Only applies when the desktop display shows the playfield"s, false);
 PropBool(PlayerVR, ShrinkDesktopDisplay, "Shrink desktop display"s, "Shrink the mirrored eye view to fit inside the desktop display"s, false);
 PropBool(PlayerVR, AddBackglass, "Add Backglass"s, "Add a default backglass display to the scene"s, false);
 PropBool(PlayerVR, SpatialAudioBackglass, "Backglass Spatial Audio"s,

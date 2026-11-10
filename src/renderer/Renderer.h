@@ -465,6 +465,7 @@ private:
 public:
    bool m_vrApplyColorKey = false;
    bool m_vrDesktopShrink = false;
+   bool m_vrDesktopLimitReflections = false; // Restrict the VR desktop scene render to ball reflections
 
    float GetVisualNudgeStrength() const { return m_visualNudgeStrength; }
    void SetVisualNudgeStrength(float strength) { m_visualNudgeStrength = strength; }
