@@ -679,6 +679,8 @@ void ViewportPane::SetPerspectiveCam(const bool perspective)
    if (m_perspectiveCam == perspective)
       return;
    m_perspectiveCam = perspective;
+   if (perspective)
+      m_predefinedView = PredefinedView::None; // Predefined views are orthographic: a perspective axis view is a user view
    if (m_viewType == ViewMode::EditorCam)
    {
       Matrix3D inv(m_camView);
@@ -693,13 +695,15 @@ void ViewportPane::SetPerspectiveCam(const bool perspective)
 
 void ViewportPane::SetView(const PredefinedView view)
 {
-   // Editor Camera to an axis aligned view, keeping the orbit target and distance
+   // Editor Camera to an axis aligned view, keeping the orbit target and distance: predefined views
+   // are orthographic, so switching the projection comes first (it keeps the orbit target framing)
    m_predefinedView = view;
    m_viewAnimFrames = 0;
    vec3 newUp, newDir;
    GetViewOrientation(view, newDir, newUp);
    if (newDir.LengthSquared() < 1e-10f)
       return;
+   SetPerspectiveCam(false);
    Matrix3D inv(m_camView);
    inv.Invert();
    const vec3 camTarget = inv.GetOrthoNormalPos() - inv.GetOrthoNormalDir() * m_camDistance;
@@ -714,6 +718,7 @@ void ViewportPane::AnimateViewTo(const PredefinedView view)
    GetViewOrientation(view, dir, up);
    if (dir.LengthSquared() < 1e-10f)
       return;
+   SetPerspectiveCam(false); // Predefined views are orthographic: the projection snaps at once while the orientation lerps
    m_viewAnimTarget = view;
    m_viewAnimDir = dir;
    m_viewAnimUp = up;
@@ -723,7 +728,10 @@ void ViewportPane::AnimateViewTo(const PredefinedView view)
 
 void ViewportPane::OrbitCamera(const float dx, const float dy)
 {
-   // Orbit the camera around its target, keeping the orbit distance (MMB drag & view gizmo drag)
+   // Orbit the camera around its target, keeping the orbit distance (MMB drag & view gizmo drag):
+   // orbiting out of a predefined view leaves it for a free perspective user view (Blender UX)
+   if (m_predefinedView != PredefinedView::None)
+      SetPerspectiveCam(true);
    Matrix3D viewInverse(m_camView);
    viewInverse.Invert();
    vec3 dir = viewInverse.GetOrthoNormalDir();
@@ -798,6 +806,8 @@ void ViewportPane::TwistCamera(const float degrees)
 {
    if (m_viewType == ViewMode::PreviewCam || m_viewType == ViewMode::DesktopBackdrop || m_orbitLock)
       return;
+   if (m_predefinedView != PredefinedView::None)
+      SetPerspectiveCam(true); // Like orbiting, twisting out of a predefined view leaves it for a perspective user view
    Matrix3D viewInverse(m_camView);
    viewInverse.Invert();
    const vec3 dir = viewInverse.GetOrthoNormalDir();
@@ -937,12 +947,13 @@ void ViewportPane::LoadSetup(const nlohmann::json& j)
    if (!mat("camView", view) || !mat("camProj", proj))
       return;
    m_shadeMode = static_cast<Renderer::ShadeMode>(shade);
-   m_predefinedView = static_cast<PredefinedView>(predef);
+   m_perspectiveCam = j.value("persp", true);
+   // A predefined view is orthographic: a perspective axis view persisted before the refactor restores as a user view
+   m_predefinedView = m_perspectiveCam ? PredefinedView::None : static_cast<PredefinedView>(predef);
    m_camDistance = dist;
    m_camAspect = aspect;
    m_camView = view;
    m_camProj = proj;
-   m_perspectiveCam = j.value("persp", true);
    m_orbitLock = j.value("orbitLock", false);
    m_showSpaceAxes = j.value("spaceAxes", false);
    m_cameraValid = j.value("camValid", true);
