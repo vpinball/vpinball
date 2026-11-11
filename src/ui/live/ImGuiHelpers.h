@@ -61,6 +61,18 @@ inline bool IconButtonInk(const char *icon, const char *id)
    return pressed;
 }
 
+// Square icon button of a text frame's height (e.g. a widget trailing a field), with the
+// glyph ink centered inside the frame like IconButtonInk.
+inline bool SquareIconButtonInk(const char *icon, const char *id)
+{
+   const ImVec4 ink = TextInkBounds(icon);
+   const float side = ImGui::GetFrameHeight();
+   const bool pressed = ImGui::Button(id, ImVec2(side, side));
+   const ImVec2 min = ImGui::GetItemRectMin();
+   ImGui::GetWindowDrawList()->AddText(ImVec2(min.x + (side - (ink.z - ink.x)) * 0.5f - ink.x, min.y + (side - (ink.w - ink.y)) * 0.5f - ink.y), ImGui::GetColorU32(ImGuiCol_Text), icon);
+   return pressed;
+}
+
 // Compact variant of IconButtonInk matching ImGui::SmallButton (no vertical frame padding).
 inline bool SmallIconButtonInk(const char *icon, const char *id)
 {
