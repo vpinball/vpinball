@@ -91,7 +91,7 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 ├── music/                                   <= Folder from which music are loaded when script use the PlayMusic command
 │   ├── Multiball Theme.ogg
 │   └── ...
-├── pinmame/                                 <= PinMAME plugin will look here for rom, nvram, config, and alias files
+├── pinmame/                                 <= PinMAME plugin will look here for rom, nvram, config, alias files, memory maps and game definitions
 │   ├── roms/
 │   │   ├── xxx.zip
 │   │   └── yyy.zip
@@ -102,6 +102,10 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 │   │   ├── default.cfg
 │   │   ├── xxx.cfg
 │   │   └── yyy.cfg
+│   ├── memmaps/                             <= Optional memory maps, used instead of the ones bundled with the PinMAME plugin
+│   │   └── ...
+│   ├── gamedefs/                            <= Optional game definitions, used instead of the ones bundled with the PinMAME plugin
+│   │   └── ...
 │   └── alias.txt
 ├── pupvideos/                               <= PinUp Player plugin will look here for pinup videos
 │   └── xxx/
