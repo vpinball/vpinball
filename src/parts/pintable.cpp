@@ -1126,14 +1126,21 @@ std::filesystem::path PinTable::GetCompanionFileName(const string &extension, co
 // for its file layout). Only the 'VPX' section is modified, all the other fields belong to frontends
 static void UpdateTableInfoFile(const PinTable *const table, const std::function<void(nlohmann::ordered_json &)> &update)
 {
-   const std::filesystem::path infoPath = table->GetInfoFileName();
-   if (infoPath.empty())
+   const std::filesystem::path infoPath = table->GetCompanionFileName(".info"s);
+   if (!FileExists(infoPath))
       return;
 
-   // The file belongs to frontends: if it exists but can not be read or parsed, it is left untouched
+   // The file belongs to frontends: it is only updated, never created, and left untouched if it can not be read or parsed
    nlohmann::ordered_json doc = nlohmann::ordered_json::object();
    std::error_code ec;
-   if (std::filesystem::exists(infoPath, ec) && std::filesystem::file_size(infoPath, ec) > 0)
+   if (!std::filesystem::exists(infoPath, ec))
+   {
+      // The file was removed since GetInfoFileName located it: leave it be
+      if (ec)
+         PLOGE << "Failed to access table info file " << infoPath << " (" << ec.message() << "), leaving it unmodified";
+      return;
+   }
+   if (std::filesystem::file_size(infoPath, ec) > 0)
    {
       try
       {

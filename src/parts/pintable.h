@@ -617,9 +617,6 @@ public:
       return GetCompanionFileName(".ini"s, m_settings.GetGlobal_ProfileName());
    }
 
-   // Get the frontend information file name for this table (see docs/FileLayout.md)
-   std::filesystem::path GetInfoFileName() const { return GetCompanionFileName(".info"s); }
-
    // Update the play statistics stored in the '.info' companion file (see docs/FileLayout.md)
    void UpdateInfoFileOnGameStart();
    void UpdateInfoFileOnGameEnd(uint32_t playTimeSec);
