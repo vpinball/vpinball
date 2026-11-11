@@ -60,6 +60,13 @@ static uint32_t endpointId;
 
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<DOF::DOF> pDOF;
+static unsigned int onGameStartId = 0;
+static unsigned int onGameEndId = 0;
+static bool gameEnded = false;
+static std::string prefPath;
+static std::string basePath;
+
+MSGPI_FOLDER_VAL_SETTING(dofPathProp, "DOFPath", "DOF Path", "Folder that contains the directoutputconfig folder (empty = VPX preference folder)", true, "", 1024);
 
 LPI_USE_CPP();
 #define LOGD DOFPlugin::LPI_LOGD_CPP
@@ -136,6 +143,17 @@ static std::string ToUpper(const std::string_view& s)
 static std::unordered_set<std::string> cachedRomList;
 static std::filesystem::path cachedRomListTablePath;
 static bool cachedRomListValid = false;
+
+static void UpdateBasePath()
+{
+   const std::filesystem::path settingsPath = PluginStrings::PathFromUTF8OrNative(dofPathProp_Get());
+   const std::string path = settingsPath.empty() ? prefPath : PluginStrings::PathToNative(settingsPath);
+   if (path == basePath)
+      return;
+   basePath = path;
+   DOF::Config::GetInstance()->SetBasePath(basePath.c_str());
+   cachedRomListValid = false;
+}
 
 static const std::unordered_set<std::string>& LoadRomList(const std::filesystem::path& tablePath)
 {
@@ -253,6 +271,9 @@ static std::unique_ptr<DOFEventConsumer> dofThread;
 
 static void SetupDOF()
 {
+   if (gameEnded)
+      return;
+   UpdateBasePath();
    const ControllerDef controller = controllers->With([](const std::vector<ControllerDef>& items) { return items.empty() ? ControllerDef { } : items.front(); });
    if (controller.gameId == nullptr || controller.endpointId == 0)
       return;
@@ -274,12 +295,27 @@ static void SetupDOF()
 
 using namespace DOFPlugin;
 
+static void OnGameStart(const unsigned int, void*, void*)
+{
+   gameEnded = false;
+   if (dofThread == nullptr)
+      SetupDOF();
+}
+
+static void OnGameEnd(const unsigned int, void*, void*)
+{
+   gameEnded = true;
+   dofThread = nullptr;
+}
+
 MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
 
    LPISetup(endpointId, msgApi);
+
+   msgApi->RegisterSetting(endpointId, &dofPathProp);
 
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
@@ -290,7 +326,8 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
 
    DOF::Config* pConfig = DOF::Config::GetInstance();
    pConfig->SetLogCallback(OnDOFLog);
-   pConfig->SetBasePath(vpxInfo.prefPath ? vpxInfo.prefPath : ""); // Native narrow path, as libDOF expects
+   prefPath = vpxInfo.prefPath ? vpxInfo.prefPath : ""; // Native narrow path, as libDOF expects
+   UpdateBasePath();
 
    pDOF = std::make_unique<DOF::DOF>();
 
@@ -336,10 +373,18 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
       },
       []() { dofThread = nullptr; }, []() { SetupDOF(); });
    controllers->Subscribe();
+
+   msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START), OnGameStart, nullptr);
+   msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
 }
 
 MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
 {
+   msgApi->UnsubscribeMsg(onGameStartId, OnGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd, nullptr);
+   msgApi->ReleaseMsgID(onGameStartId);
+   msgApi->ReleaseMsgID(onGameEndId);
+   gameEnded = false;
    controllers->Unsubscribe();
    controllers = nullptr;
    pDOF = nullptr;
