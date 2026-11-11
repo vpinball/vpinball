@@ -132,7 +132,7 @@ When a table is added to an existing install, it may require a few steps to get 
 - Have a common information file distributed with the table file, following the same naming scheme with a `.info` extension. This file is meant to be used by frontends as a distributed database, allowing to avoid additional installation steps when a new table is added, also allowing multiple frontends to share the same datas (for example, setup with 2 frontends with one for VR and one for desktop). The json file is read and written by frontends with a set of predefined or custom frontends fields:
   - the 'Info' field contains main static informations relating to the file/folder they apply.
   - The 'User' field contains user related informations at user/frontend discretion.
-  - The 'VPX' field is written and maintained by Visual Pinball X when a table is played, and should be treated as read only by frontends.
+  - The 'VPX' field is written and maintained by Visual Pinball X when a table is played, and should be treated as read only by frontends. VPX only updates this field in an existing information file (named after the table file or its containing folder): it never creates the file.
 
 
 The following is an example of the proposed information file format (fields could be freely added/removed):
