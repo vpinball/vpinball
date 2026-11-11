@@ -284,8 +284,9 @@ void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
    m_op.startTransform = transform;
    m_op.pivot = transform.GetOrthoNormalPos();
    // Rotate & scale pivot about the part's authored center, not its transform origin (a surface's
-   // center is its curve center, not the curve transform pivot)
-   if (m_editor.m_selection.GetType() == Selection::S_EDITABLE && m_editor.m_selection.GetPart() != nullptr)
+   // center is its curve center, not the curve transform pivot). In point edit mode the transform
+   // pivot is already the edited anchor: the part's center point or the selected points' centroid
+   if (m_editor.m_pointEditPart == nullptr && m_editor.m_selection.GetType() == Selection::S_EDITABLE && m_editor.m_selection.GetPart() != nullptr)
    {
       const Vertex2D center = m_editor.m_selection.GetPart()->GetEditable()->GetCenter();
       m_op.pivot = Vertex3Ds(center.x, center.y, m_op.pivot.z);
