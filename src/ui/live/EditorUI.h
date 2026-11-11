@@ -608,6 +608,8 @@ private:
    BlueprintPane *m_captureBp = nullptr; // Blueprint pane holding an in-progress mouse interaction
    BlueprintPane *GetTargetBlueprint() const { return m_captureBp != nullptr ? m_captureBp : m_hoverBp; }
 
+   OutlinerPanel *GetHoveredOutliner() const; // Outliner pane under the mouse ('.' frames the selection in its tree)
+
    Vertex2D TablePosAt(const ImVec2 &pos) const; // Display px -> table XY through the view pane under pos
 };
 

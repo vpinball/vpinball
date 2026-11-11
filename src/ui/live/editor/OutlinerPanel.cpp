@@ -35,6 +35,22 @@ template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T> &l
    return sorted;
 }
 
+// Display mode listing the selection's kind: 0 the scene parts tree, 1 the table data (-1: not listed)
+static int SelectionDisplayMode(const Selection &selection)
+{
+   switch (selection.GetType())
+   {
+   case Selection::S_MATERIAL:
+   case Selection::S_IMAGE:
+   case Selection::S_SOUND:
+   case Selection::S_RENDERPROBE:
+   case Selection::S_COLLECTION:
+   case Selection::S_CAMERA: return 1;
+   case Selection::S_EDITABLE: return 0;
+   default: return -1;
+   }
+}
+
 // Push a dimmed selection color, used to highlight the non active elements of a multi selection
 // less than the active one (the element edited in the property pane keeps the normal selection color).
 // Pushes 3 colors (Header, HeaderHovered, HeaderActive): pop with PopStyleColor(3)
@@ -375,6 +391,21 @@ void OutlinerPanel::LoadSetup(const nlohmann::json &j)
    SetSelectedOnly(j.value("sel_only", false));
 }
 
+// '.' over the panel (routed by the viewport shortcut): frame the selection in the tree, the same
+// reveal the selection sync applies on selection change but on demand — an explicit request also
+// adopts the selection's display mode
+void OutlinerPanel::FrameSelection()
+{
+   const int kind = SelectionDisplayMode(m_editor.m_selection);
+   if (kind < 0)
+      return;
+   m_displayMode = kind;
+   if (kind == 0)
+      m_revealPart = m_editor.m_selection.GetPart();
+   else
+      m_revealResource = true;
+}
+
 void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
 {
    EditorUI &editor = m_editor;
@@ -401,18 +432,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
    if (editor.m_selection != m_lastSeenSelection)
    {
       m_lastSeenSelection = editor.m_selection;
-      int kind = -1;
-      switch (editor.m_selection.GetType())
-      {
-      case Selection::S_MATERIAL:
-      case Selection::S_IMAGE:
-      case Selection::S_SOUND:
-      case Selection::S_RENDERPROBE:
-      case Selection::S_COLLECTION:
-      case Selection::S_CAMERA: kind = 1; break;
-      case Selection::S_EDITABLE: kind = 0; break;
-      default: break;
-      }
+      const int kind = SelectionDisplayMode(editor.m_selection);
       if (kind >= 0 && (m_syncToSelection || kind == m_displayMode))
       {
          m_revealResource = kind == 1;
@@ -800,8 +820,11 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          const float eyeX = columnWidth - IconButtonInkSize(ICON_LC_EYE).x; // Right edge of the eye buttons = right edge of the filter button
          // Highlight the group in which new and imported parts are added
          PartGroup *const newPartTarget = editor.GetPartGroupForNewPart();
-         // When 'sync tree with selection' is enabled, reveal the newly selected part in the tree
-         const std::shared_ptr<EditorUIPart> revealPart = (m_syncToSelection && editor.m_selection.GetPart() != m_lastSyncedPart) ? editor.m_selection.GetPart() : nullptr;
+         // When 'sync tree with selection' is enabled, reveal the newly selected part in the tree ('.' frames it on demand)
+         const std::shared_ptr<EditorUIPart> revealPart = m_revealPart != nullptr     ? m_revealPart
+            : (m_syncToSelection && editor.m_selection.GetPart() != m_lastSyncedPart) ? editor.m_selection.GetPart()
+                                                                                      : nullptr;
+         m_revealPart.reset();
          m_lastSyncedPart = editor.m_selection.GetPart();
          for (size_t idx = 0; idx < editor.m_editables.size(); ++idx)
          {
