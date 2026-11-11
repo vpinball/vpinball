@@ -2240,6 +2240,31 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       ctx.m_selectionDisplay = m_editor.m_navSelectionDisplay;
       const bool clipToPane = SetupOverlay(&ctx, overlayDrawList);
 
+      // Part 2D markers (timer & light sequencer icons, light centers, invisible kicker and textbox
+      // shapes, ...): they only draw through the draw list ops of the render context, so the 3D record
+      // pass cannot show them. Suspended while a save runs, like in Render3D, as part renders write
+      // into the part data being serialized (visibility overrides)
+      if (clipToPane && !m_editor.IsSaveInProgress())
+      {
+         const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
+         for (const auto& uiPart : m_editor.m_editables)
+         {
+            if (uiPart->GetEditable()->m_desktopBackdrop != backdrop)
+               continue;
+            uiPart->Render(ctx);
+         }
+         ctx.m_isSelected = true;
+         for (const auto& part : m_editor.m_multiSel)
+         {
+            if (part->GetEditable()->m_desktopBackdrop != backdrop)
+               continue;
+            ctx.m_isActive = part == m_editor.m_selection.GetPart();
+            part->Render(ctx);
+         }
+         ctx.m_isActive = false;
+         ctx.m_isSelected = false;
+      }
+
       // Measure mode: the click-drag line, with its length in the selected units at its middle
       if (m_measureMode && m_measureValid)
       {

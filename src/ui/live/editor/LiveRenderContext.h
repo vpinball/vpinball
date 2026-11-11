@@ -46,7 +46,7 @@ private:
    const ViewMode m_viewMode;
    const Renderer::ShadeMode m_shadeMode;
    const bool m_needsLiveTableSync;
-   const bool m_canDrawSceneParts; // Whether this context may record scene parts into its view (DrawScenePart)
+   const bool m_canDrawSceneParts; // Whether a view recording is in progress for this context (DrawScenePart, DrawWireframe)
    Matrix3D m_paneMvp {}; // Pane projection override (see SetPaneProjection), used when m_hasPaneMvp
    bool m_hasPaneMvp = false;
    ImVec2 m_projOrigin { 0.f, 0.f };
