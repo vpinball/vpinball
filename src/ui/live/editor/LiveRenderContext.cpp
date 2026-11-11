@@ -60,7 +60,6 @@ void LiveRenderContext::DrawLine(const Vertex3Ds &a, const Vertex3Ds &b, ImU32 c
       const ImVec2 p2 = Project(b);
       m_drawlist->AddLine(p1, p2, color);
    }
-   // TODO also render when running in 3D (for logic parts like timers,...)
 }
 
 void LiveRenderContext::DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, const Vertex3Ds &y, float radius, ImU32 color) const
@@ -79,7 +78,6 @@ void LiveRenderContext::DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, 
          prev = p;
       }
    }
-   // TODO also render when running in 3D (for logic parts like timers,...)
 }
 
 void LiveRenderContext::DrawHitObjects(IEditable *editable) const
@@ -109,6 +107,8 @@ void LiveRenderContext::DrawScenePart(IEditable *editable) const
 
 void LiveRenderContext::DrawWireframe(IEditable *editable) const
 {
+   if (!m_canDrawSceneParts)
+      return; // Wireframes record into the view being rendered: no-op outside a view recording (2D overlay, picking contexts)
    if (IsSelected())
    {
       // Selection overlay: like Blender's object mode, only the edges are drawn by default (the active part lighter), leaving the surface shading visible;
