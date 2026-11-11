@@ -217,7 +217,7 @@ void BlueprintPane::RenderContextMenu()
             for (const std::shared_ptr<EditorUIPart>& part : hitParts)
             {
                IEditable* const editable = part->GetEditable();
-               if (!editable->IsUIVisible(false))
+               if (!editable->IsUIVisible(true))
                   continue;
                if (ImGui::MenuItem(editable->GetName().c_str(), nullptr, editor.IsPartSelected(part)))
                {
