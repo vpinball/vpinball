@@ -364,6 +364,14 @@ public:
    bool ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename);
    void RemoveSound(VPX::Sound *const pps);
    Texture* ImportImage(const std::filesystem::path &filename, const string &imageName);
+   // Takes ownership of an already loaded image, unless the table already holds an image with identical
+   // content, in which case 'image' is deleted and the existing image is returned instead
+   Texture *ImportImage(Texture *const image);
+   // Replaces 'oldImage' (which is deleted) by 'image', keeping 'image's caller-set name and inheriting the
+   // alpha test value. When both contents are identical, 'image' is deleted and 'oldImage' is kept and returned
+   Texture *ReImportImage(Texture *const oldImage, Texture *const image);
+   // The first table image with the same content hash as 'image', or nullptr
+   Texture *FindImageByHash(const Texture *image) const;
    void RemoveImage(Texture *const ppi);
 
    Texture *GetImage(const string &szName) const;

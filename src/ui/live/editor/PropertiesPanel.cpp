@@ -1221,6 +1221,22 @@ void PropertiesPanel::RenderPopups()
    }
 }
 
+// Replaces 'old' by the image loaded from 'path', keeping 'old's name. When the file holds the
+// very same content, 'old' is kept and returned; when it fails to load, nullptr is returned.
+// 'dup' is set to another table image with the same content, when there is one.
+static Texture *ReimportImageFile(PinTable *table, Texture *const old, const std::filesystem::path &path, Texture **dup = nullptr)
+{
+   if (dup != nullptr)
+      *dup = nullptr;
+   Texture *const image = Texture::CreateFromFile(path);
+   if (image == nullptr)
+      return nullptr;
+   if (dup != nullptr && memcmp(image->GetMD5Hash(), old->GetMD5Hash(), 16) != 0)
+      *dup = table->FindImageByHash(image);
+   image->m_name = old->m_name;
+   return table->ReImportImage(old, image);
+}
+
 void PropertiesPanel::ImageActions(PropertyPane &props)
 {
    EditorUI &editor = m_editor;
@@ -1241,17 +1257,25 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
    if (m_pendingImageImport && !m_pendingImageImport->empty())
    {
       vector<Texture *> imported;
+      int reused = 0;
       for (const string &file : *m_pendingImageImport)
-         if (Texture *const tex = table->ImportImage(PathFromUTF8(file), ""s))
+         if (Texture *const loaded = Texture::CreateFromFile(PathFromUTF8(file)))
+         {
+            Texture *const tex = table->ImportImage(loaded);
+            reused += (tex != loaded) ? 1 : 0; // A file identical to an existing image is not imported again: the existing image is used
             imported.push_back(tex);
+         }
       g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(PathFromUTF8(m_pendingImageImport->front()).parent_path()), false);
       m_pendingImageImport = nullptr;
+      if (reused > 0)
+         m_editor.m_liveUI.PushNotification(std::to_string(reused) + " file(s) were already in the table: the existing image(s) were used"s, 8000);
       if (!imported.empty())
       {
          sel = imported;
          editor.m_selection = Selection(imported.back());
          editor.m_outlinerImageAnchor = imported.back();
-         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+         if (reused < static_cast<int>(imported.size()))
+            table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       else
          m_actionStatus = "Failed to import the selected file(s)"s;
@@ -1264,14 +1288,23 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
       m_pendingImageReimportTarget = nullptr;
       if (old != nullptr)
       {
-         // ImportImage replaces and deletes the image that already uses this name
-         if (Texture *const tex = table->ImportImage(PathFromUTF8(file), old->m_name))
-         {
-            replaceImage(old, tex);
-            table->SetNonUndoableDirty(SaveDirtyState::Dirty);
-         }
-         else
+         // ReimportImageFile replaces and deletes the old image, unless the file content is unchanged
+         Texture *dup = nullptr;
+         Texture *const tex = ReimportImageFile(table, old, PathFromUTF8(file), &dup);
+         if (tex == nullptr)
             m_actionStatus = "Failed to reimport '"s + file + '\'';
+         else
+         {
+            if (tex != old)
+            {
+               replaceImage(old, tex);
+               table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+            }
+            else
+               m_editor.m_liveUI.PushNotification("'"s + old->m_name + "' is already up to date"s, 8000);
+            if (dup != nullptr)
+               m_editor.m_liveUI.PushNotification("'"s + tex->m_name + "' is now a duplicate of image '"s + dup->m_name + "'"s, 8000);
+         }
          g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(PathFromUTF8(file).parent_path()), false);
       }
    }
@@ -1368,17 +1401,36 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
             {
                EditorUI &editor = m_editor;
                const vector<Texture *> sel = editor.m_multiSelImages;
-               int missing = 0;
+               int missing = 0, unchanged = 0, replaced = 0, duplicated = 0;
                for (Texture *const old : sel)
                   if (!std::filesystem::exists(old->GetFilePath()))
                      missing++;
-                  else if (Texture *const tex = m_editor.m_table->ImportImage(old->GetFilePath(), old->m_name)) // On failure, the old image is kept
-                     replaceImage(old, tex);
                   else
-                     missing++;
+                  {
+                     Texture *dup = nullptr;
+                     if (Texture *const tex = ReimportImageFile(m_editor.m_table, old, old->GetFilePath(), &dup)) // On failure, the old image is kept
+                     {
+                        if (tex != old)
+                        {
+                           replaceImage(old, tex);
+                           replaced++;
+                           if (dup != nullptr)
+                              duplicated++;
+                        }
+                        else
+                           unchanged++;
+                     }
+                     else
+                        missing++;
+                  }
                if (missing > 0)
                   m_actionStatus = std::to_string(missing) + " file(s) not found or failed to load";
-               m_editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+               else if (unchanged > 0)
+                  m_actionStatus = std::to_string(unchanged) + " image(s) already up to date"s;
+               if (duplicated > 0)
+                  m_editor.m_liveUI.PushNotification(std::to_string(duplicated) + " image(s) are now duplicates of existing images"s, 8000);
+               if (replaced > 0)
+                  m_editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
             });
       }
 
@@ -1414,17 +1466,36 @@ void PropertiesPanel::ImageActions(PropertyPane &props)
       if (ImGui::Button("Reimport All"))
       {
          const vector<Texture *> all = table->m_vimage;
-         int missing = 0;
+         int missing = 0, unchanged = 0, replaced = 0, duplicated = 0;
          for (Texture *const old : all)
             if (!std::filesystem::exists(old->GetFilePath()))
                missing++;
-            else if (Texture *const tex = table->ImportImage(old->GetFilePath(), old->m_name)) // On failure, the old image is kept
-               replaceImage(old, tex);
             else
-               missing++;
+            {
+               Texture *dup = nullptr;
+               if (Texture *const tex = ReimportImageFile(table, old, old->GetFilePath(), &dup)) // On failure, the old image is kept
+               {
+                  if (tex != old)
+                  {
+                     replaceImage(old, tex);
+                     replaced++;
+                     if (dup != nullptr)
+                        duplicated++;
+                  }
+                  else
+                     unchanged++;
+               }
+               else
+                  missing++;
+            }
          if (missing > 0)
             m_actionStatus = std::to_string(missing) + " file(s) not found or failed to load";
-         table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+         else if (unchanged > 0)
+            m_actionStatus = std::to_string(unchanged) + " image(s) already up to date"s;
+         if (duplicated > 0)
+            m_editor.m_liveUI.PushNotification(std::to_string(duplicated) + " image(s) are now duplicates of existing images"s, 8000);
+         if (replaced > 0)
+            table->SetNonUndoableDirty(SaveDirtyState::Dirty);
       }
       ImGui::EndDisabled();
 
