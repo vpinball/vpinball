@@ -68,9 +68,6 @@ string PropertiesPanel::PartMaterial(const IEditable *part)
 void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
 {
    EditorUI &editor = m_editor;
-   if (editor.m_table->IsLocked())
-      return;
-
    char name[32];
    snprintf(name, sizeof(name), "##Pane%d", leafId);
    ImGui::SetNextWindowPos(ImVec2(rect.x0, rect.y0));
@@ -78,8 +75,10 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * editor.m_liveUI.GetDPI(), 4.0f * editor.m_liveUI.GetDPI()));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+   // The vertical scrollbar is always drawn so that its space is always reserved, keeping the pane's layout stable
    ImGui::Begin(name, nullptr,
-      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
+         | ImGuiWindowFlags_AlwaysVerticalScrollbar);
    ImGui::PushID(leafId);
    editor.RenderAreaTypeButton(leafId);
    ImGui::Separator();
@@ -105,6 +104,19 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
    case EditorUI::Units::Metric: props.SetLengthUnit(PropertyPane::Unit::Millimeters); break;
    case EditorUI::Units::Imperial: props.SetLengthUnit(PropertyPane::Unit::Inches); break;
    }
+   if (editor.m_table->IsLocked())
+   {
+      // A locked table is read-only: the pane still shows its (disabled) properties so that the header's lock toggle can unlock it
+      TableProperties(props);
+      props.EndEditScope();
+      if (props.GetModifiedField() > 0)
+         editor.m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+      RenderPopups();
+      ImGui::PopID();
+      ImGui::End();
+      ImGui::PopStyleVar(3);
+      return;
+   }
    if (uniformPartSel)
    {
       vector<IEditable *> coParts;
@@ -128,9 +140,13 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
                props.SetShowStartup(!is_live);
                switch (editor.m_selection.GetType())
                {
-               case Selection::S_NONE: TableProperties(props); break;
+               case Selection::S_NONE:
+                  TableProperties(props);
+                  props.EndEditScope();
+                  break;
                case Selection::S_EDITABLE:
                   editor.m_selection.GetPart()->UpdatePropertyPane(props);
+                  props.EndEditScope();
                   if (props.GetModifiedField() > 0)
                      RefreshEditedParts(props);
                   break;
@@ -159,7 +175,10 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
    {
       switch (editor.m_selection.GetType())
       {
-      case Selection::S_NONE: TableProperties(props); break;
+      case Selection::S_NONE:
+         TableProperties(props);
+         props.EndEditScope();
+         break;
       case Selection::S_EDITABLE:
       {
          IEditable *const editable = editor.m_selection.GetPart()->GetEditable();
@@ -186,6 +205,7 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
                });
          }
          editor.m_selection.GetPart()->UpdatePropertyPane(props);
+         props.EndEditScope();
          // A renamed surface or ramp retargets the parts placed on it, recorded in the same undo record
          editor.m_table->UpdateSurfaceReferences(editable, nameBefore, [&editor](IEditable *part) { editor.m_undo.MarkForUndo(part); });
          editor.m_undo.EndUndo();
@@ -270,7 +290,7 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
 {
    EditorUI &editor = m_editor;
    PinTable *table = props.GetEditedPart<PinTable>(editor.m_table);
-   props.Header("Table"s, [table]() { return table->GetName(); }, [table](const string &v) { table->SetName(v); });
+   props.TableHeader(table);
 
    if (props.BeginSection("Visuals"s))
    {

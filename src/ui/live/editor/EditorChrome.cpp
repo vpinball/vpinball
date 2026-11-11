@@ -264,7 +264,8 @@ void EditorChrome::RenderMenuBar()
       {
          // Object menu: actions on the selection (the G/R/S items arm the transform op of the pane under the mouse, like their keys)
          ViewportPane *const vp = editor.GetTargetViewport();
-         const bool canTransform = vp != nullptr && editor.m_selection.GetType() == Selection::S_EDITABLE;
+         const bool canTransform = vp != nullptr && editor.m_selection.GetType() == Selection::S_EDITABLE
+            && (editor.m_selection.GetPart() == nullptr || !editor.m_selection.GetPart()->GetEditable()->IsUILocked());
          if (ImGui::MenuItem(ICON_LC_COPY " Duplicate", "Shift+D", false, editor.CanDuplicate()))
             editor.DuplicateSelection();
          if (ImGui::MenuItem(ICON_LC_TRASH_2 " Delete", "Del", false, editor.m_selection.GetType() == Selection::S_EDITABLE))
@@ -306,7 +307,7 @@ void EditorChrome::RenderMenuBar()
             const auto setStates = [](const vector<IEditable *> &parts, const float state)
             {
                for (IEditable *const part : parts)
-                  if (part->GetItemType() == eItemLight)
+                  if (part->GetItemType() == eItemLight && !part->IsUILocked())
                   {
                      Light *const light = static_cast<Light *>(part);
                      light->m_d.m_state = state;

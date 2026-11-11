@@ -233,10 +233,6 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
                   ReferenceImageOp::FitToImage(flasher);
             },
             "Rebuilds a clean rectangle at the image's aspect, keeping the centre, rotation and width");
-         props.Checkbox<Flasher>(
-            m_part, "Locked"s, //
-            [](const Flasher* flasher) { return flasher->IsUILocked(); }, //
-            [](Flasher* flasher, bool v) { flasher->SetUILock(v); }, "A locked reference image is neither picked nor moved in the views (select it in the outliner to unlock it)");
          props.EndSection();
       }
    }

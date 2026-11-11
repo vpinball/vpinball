@@ -1214,27 +1214,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    ImGui::SetNextWindowPos(editor.m_addPartPopupPos, ImGuiCond_Appearing);
    if (ImGui::BeginPopup("Add Part"))
    {
-      editor.EnsureAddPartButtons();
-      const float iconSize = ImGui::GetFrameHeight();
-      int column = 0;
-      for (const auto& button : editor.m_addPartButtons)
-      {
-         if (button.icon == nullptr)
-            continue;
-         if (column > 0)
-            ImGui::SameLine();
-         if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
-         {
-            if (button.action)
-               button.action();
-            else
-               editor.m_addPartType = button.type;
-            ImGui::CloseCurrentPopup();
-         }
-         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Add %s", button.name);
-         column = (column + 1) % 5;
-      }
+      editor.RenderAddPartPicker();
       ImGui::EndPopup();
    }
 
@@ -2602,7 +2582,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                   m_editor.m_centerSelected = !m_editor.m_centerSelected;
                else
                   m_editor.m_centerSelected = true;
-               m_editor.m_pointDragPending = m_editor.m_centerSelected;
+               m_editor.m_pointDragPending = m_editor.m_centerSelected && !m_editor.m_pointEditPart->GetEditable()->IsUILocked();
                m_editor.m_pointDragZ = m_editor.m_pointEditPart->GetEditCenter().z;
                m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
             }
@@ -2621,7 +2601,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                   m_editor.m_pointSel.clear();
                   m_editor.m_pointSel.push_back(hitPoint);
                }
-               m_editor.m_pointDragPending = m_editor.IsPointSelected(hitPoint) && !hitPoint->m_uiLocked;
+               m_editor.m_pointDragPending = m_editor.IsPointSelected(hitPoint) && !hitPoint->m_uiLocked && !m_editor.m_pointEditPart->GetEditable()->IsUILocked();
                m_editor.m_pointDragZ = m_editor.m_pointEditPart->GetDragPointZ(hitPoint);
                m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
             }

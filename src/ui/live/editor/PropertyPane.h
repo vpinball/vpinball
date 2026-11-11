@@ -13,6 +13,9 @@
 #include "ui/live/ImGuiHelpers.h"
 #include "ResURIPicker.h"
 
+class Sampler;
+class PartGroup;
+
 namespace VPX::EditorUI
 {
 
@@ -62,6 +65,16 @@ public:
 
    void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName);
    void EditableHeader(const string& typeName, IEditable* editable);
+   void TableHeader(PinTable* table); // The table's own header (the same row as the parts': icon picker, name field, lock toggle)
+   // A locked part's pane is disabled by EditableHeader: close that scope after the pane's fields
+   void EndEditScope()
+   {
+      if (m_lockScope)
+      {
+         ImGui::EndDisabled();
+         m_lockScope = false;
+      }
+   }
    void Separator(const string& label) const;
    template <class T> void Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter, const char* tooltip = nullptr);
    template <class T> void InputInt(T* obj, const string& label, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter, const char* tooltip = nullptr);
@@ -161,6 +174,12 @@ private:
 
    bool IsStartup() const { return m_table->m_liveBaseTable && m_showStartup; }
    template <class T> T* GetStartupObj(T* obj) const;
+   void NameField(const std::function<string()>& getName, const std::function<void(const string&)>& setName);
+   // The parts' and the table's shared header row: a picker button (icon + chevron, popup listing the
+   // parts of `siblingParent` group — nullptr: the root level), a name field filling the remaining
+   // width, and a lock toggle; `currentSibling` is the part highlighted in the list (nullptr: none)
+   void HeaderRow(const std::shared_ptr<Sampler>& icon, const char* iconGlyph, PartGroup* siblingParent, IEditable* currentSibling, const std::function<string()>& getName,
+      const std::function<void(const string&)>& setName, bool locked, const std::function<void()>& toggleLock, bool nameDisabled);
 
    // Shared handling of fields that can be synchronized between a live table and its
    // startup version: BeginSyncField resolves the displayed instance and its counterpart
@@ -206,6 +225,7 @@ private:
    bool m_showStartup = false;
    PinTable* const m_table;
    vector<IEditable*> m_coEdited; // Other parts of a uniform-type selection, co-edited with the pane's object
+   bool m_lockScope = false; // The pane of a locked part is disabled (open scope, closed by EndEditScope)
    bool m_inSection = false;
    bool m_sectionHasSync = false;
    float m_syncWidth = 0.f;
@@ -255,6 +275,8 @@ template <class T> vector<PropertyPane::CoTarget<T>> PropertyPane::GetCoTargets(
    const bool editedSide = (sync.display == obj);
    for (IEditable* co : m_coEdited)
    {
+      if (co->IsUILocked())
+         continue; // Locked parts are not modified by the co-edited fields
       T* const edited = dynamic_cast<T*>(co);
       if (edited == nullptr)
          continue;

@@ -1,10 +1,12 @@
 #include "core/stdafx.h"
 #include "PropertyPane.h"
 
+#include "EditorTheme.h"
 #include "core/extern.h"
 #include "core/player.h"
 #include "core/SettingsService.h"
 #include "imgui/imgui_stdlib.h"
+#include "ui/live/EditorUI.h"
 #include "ui/live/FileDialog.h"
 #include "ui/live/LiveUI.h"
 
@@ -71,6 +73,12 @@ void PropertyPane::Header(const string& typeName, const std::function<string()>&
 {
    ImGui::NewLine();
    LiveUI::CenteredText(IsMultiEdit() ? typeName + " x" + std::to_string(GetEditCount()) : typeName);
+   NameField(getName, setName);
+   ImGui::Separator();
+}
+
+void PropertyPane::NameField(const std::function<string()>& getName, const std::function<void(const string&)>& setName)
+{
    m_modifyFieldId++;
    // Do not edit name of live objects as it would break the script, nor of multi selections (no bulk renaming)
    ImGui::BeginDisabled(m_table->m_liveBaseTable || IsMultiEdit());
@@ -85,12 +93,152 @@ void PropertyPane::Header(const string& typeName, const std::function<string()>&
          m_modified = m_modifyFieldId; // Makes the rename undoable and marks the table as modified
    }
    ImGui::EndDisabled();
-   ImGui::Separator();
 }
 
-void PropertyPane::EditableHeader(const string& typeName, IEditable* editable)
+void PropertyPane::EditableHeader(const string& /*typeName*/, IEditable* editable)
 {
-   Header(typeName, [editable]() { return editable->GetName(); }, [editable](const string& v) { editable->SetName(v); });
+   EditorUI& editor = g_pplayer->m_liveUI->m_editorUI;
+   IEditable* const displayed = GetEditedPart<IEditable>(editable);
+   const bool locked = displayed->IsUILocked();
+   HeaderRow(
+      editor.PartIcon(displayed), editable->GetItemType() == eItemPartGroup ? ICON_LC_FOLDER : ICON_LC_TAG, editable->GetPartGroup(), editable, [editable]() { return editable->GetName(); },
+      [editable](const string& v) { editable->SetName(v); }, locked,
+      [this, displayed, locked]()
+      {
+         // Same semantics as the context menu's Lock command (and the win32 editor): if any of the edited
+         // parts is locked, unlock them all, otherwise lock them all
+         bool anyLocked = locked;
+         for (IEditable* const part : m_coEdited)
+            if (IEditable* const target = GetEditedPart<IEditable>(part); target != nullptr && target->IsUILocked())
+               anyLocked = true;
+         displayed->SetUILock(!anyLocked);
+         for (IEditable* const part : m_coEdited)
+            if (IEditable* const target = GetEditedPart<IEditable>(part); target != nullptr)
+               target->SetUILock(!anyLocked);
+      },
+      // Do not edit name of live objects as it would break the script, nor of multi selections (no bulk renaming)
+      m_table->m_liveBaseTable || IsMultiEdit());
+}
+
+void PropertyPane::TableHeader(PinTable* const table)
+{
+   // Same header as the parts': the picker's icon is the application's one and its popup lists the root
+   // level parts (the table acts as the root group), the toggle locks the table itself
+   HeaderRow(
+      g_pplayer->m_liveUI->m_editorUI.PartIcon(table), ICON_LC_TAG, nullptr, nullptr, //
+      [table]() { return table->GetName(); }, //
+      [table](const string& v) { table->SetName(v); }, //
+      table->IsLocked(), [table]() { table->ToggleLock(); }, //
+      m_table->m_liveBaseTable);
+}
+
+void PropertyPane::HeaderRow(const std::shared_ptr<Sampler>& icon, const char* const iconGlyph, PartGroup* const siblingParent, IEditable* const currentSibling,
+   const std::function<string()>& getName, const std::function<void(const string&)>& setName, const bool locked, const std::function<void()>& toggleLock, const bool nameDisabled)
+{
+   EditorUI& editor = g_pplayer->m_liveUI->m_editorUI;
+   const ImVec2 linePos = ImGui::GetCursorScreenPos();
+   const float lineWidth = ImGui::GetContentRegionAvail().x;
+   const ImGuiStyle& style = ImGui::GetStyle();
+   const char* const lockIcon = locked ? ICON_LC_LOCK : ICON_LC_LOCK_OPEN;
+   const ImVec2 lockSize = IconButtonInkSize(lockIcon);
+   const float frameHeight = ImGui::GetFrameHeight();
+   // A part's asset icon (the same as the outliner's and the part picker's), a glyph when it has none
+   const auto drawIcon = [](ImDrawList* const drawList, const std::shared_ptr<Sampler>& icon, const char* const glyph, const ImVec2& min, const float side)
+   {
+      if (icon != nullptr)
+         drawList->AddImage(icon, min, ImVec2(min.x + side, min.y + side));
+      else
+         drawList->AddText(min, ImGui::GetColorU32(ImGuiCol_TextDisabled), glyph);
+   };
+
+   // Header line: the part picker styled like the panes' editor type selector (a button with the type icon
+   // and a small chevron, opening a popup that lists the parts, each with its type icon before its name),
+   // the name field filling the remaining width, and the lock toggle at the right end
+   const float iconSide = ImGui::GetTextLineHeight();
+   const float chevronWidth = ImGui::GetFontSize() * 0.4f; // Small, drawn in TextDim
+   const float comboWidth = style.FramePadding.x * 2.f + iconSide + style.ItemInnerSpacing.x + chevronWidth;
+   const float nameX = linePos.x + comboWidth + style.ItemSpacing.x;
+   const float nameWidth = max(60.f, linePos.x + lineWidth - lockSize.x - style.ItemSpacing.x - nameX);
+   ImGui::SetCursorScreenPos(linePos);
+   const bool pickerClicked = ImGui::Button("##Siblings", ImVec2(comboWidth, frameHeight));
+   const ImVec2 pickerMin = ImGui::GetItemRectMin();
+   const ImVec2 pickerMax = ImGui::GetItemRectMax();
+   {
+      ImDrawList* const drawList = ImGui::GetWindowDrawList();
+      drawIcon(drawList, icon, iconGlyph, ImVec2(pickerMin.x + style.FramePadding.x, pickerMin.y + (frameHeight - iconSide) * 0.5f), iconSide);
+      const float half = chevronWidth * 0.5f;
+      const float centerX = pickerMax.x - style.FramePadding.x - half;
+      const float centerY = (pickerMin.y + pickerMax.y) * 0.5f;
+      drawList->AddTriangleFilled(ImVec2(centerX - half, centerY - half * 0.5f), ImVec2(centerX + half, centerY - half * 0.5f), ImVec2(centerX, centerY + half * 0.5f), EditorTheme::TextDim);
+   }
+   ImGui::SetItemTooltip(currentSibling != nullptr ? "Select a part of the same group" : "Select a part");
+   if (pickerClicked)
+      ImGui::OpenPopup("##SiblingParts");
+   ImGui::SetNextWindowPos(ImVec2(pickerMin.x, pickerMax.y), ImGuiCond_Always);
+   if (ImGui::BeginPopup("##SiblingParts"))
+   {
+      // The popup auto sizes to its widest row: make the rows wide enough for the icon column and the widest name
+      float rowWidth = frameHeight;
+      for (IEditable* const sibling : m_table->GetParts())
+         if (sibling->GetPartGroup() == siblingParent && editor.m_editableMap.contains(sibling))
+            rowWidth = max(rowWidth, style.FramePadding.x * 2.f + frameHeight + ImGui::CalcTextSize(sibling->GetName().c_str()).x);
+      for (IEditable* const sibling : m_table->GetParts())
+      {
+         if (sibling->GetPartGroup() != siblingParent)
+            continue;
+         const auto it = editor.m_editableMap.find(sibling);
+         if (it == editor.m_editableMap.end())
+            continue;
+         ImGui::PushID(sibling);
+         if (ImGui::Selectable("##s", sibling == currentSibling, 0, ImVec2(rowWidth, frameHeight)))
+            editor.SetSelection(Selection(it->second));
+         const ImVec2 itemMin = ImGui::GetItemRectMin();
+         ImDrawList* const drawList = ImGui::GetWindowDrawList();
+         drawIcon(drawList, editor.PartIcon(sibling), sibling->GetItemType() == eItemPartGroup ? ICON_LC_FOLDER : ICON_LC_TAG,
+            ImVec2(itemMin.x + style.FramePadding.x, itemMin.y + style.FramePadding.y), frameHeight - style.FramePadding.y * 2.f);
+         drawList->AddText(ImVec2(itemMin.x + style.FramePadding.x + frameHeight, itemMin.y + style.FramePadding.y), ImGui::GetColorU32(ImGuiCol_Text), sibling->GetName().c_str());
+         ImGui::PopID();
+      }
+      ImGui::EndPopup();
+   }
+
+   // Lock toggle at the right end (pressed style like the viewport's orbit lock when locked)
+   ImGui::SetCursorScreenPos(ImVec2(linePos.x + lineWidth - lockSize.x, linePos.y));
+   m_modifyFieldId++;
+   if (locked)
+      ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+   if (IconButtonInk(lockIcon, "##PartLock"))
+   {
+      toggleLock();
+      m_modified = m_modifyFieldId;
+   }
+   if (locked)
+      ImGui::PopStyleColor();
+   ImGui::SetItemTooltip(locked ? "Unlock" : "Lock (protect from edition)");
+
+   // Name field filling the width between the picker and the lock toggle. A locked part can not be
+   // modified: disable it and the pane's fields, closed by EndEditScope (the picker and the lock
+   // toggle above stay enabled so that the part can be switched to or unlocked)
+   ImGui::SetCursorScreenPos(ImVec2(nameX, linePos.y));
+   if (locked)
+   {
+      ImGui::BeginDisabled();
+      m_lockScope = true;
+   }
+   m_modifyFieldId++;
+   ImGui::BeginDisabled(nameDisabled);
+   ImGui::SetNextItemWidth(nameWidth);
+   const string current = getName();
+   string name = current;
+   // Apply on Enter only: renaming on each keystroke would make each intermediate name unique, corrupting the name being typed
+   if (ImGui::InputText("##Name", &name, ImGuiInputTextFlags_EnterReturnsTrue) && name != current)
+   {
+      setName(name);
+      if (getName() != current) // The setter may reject or adjust the name
+         m_modified = m_modifyFieldId; // Makes the rename undoable and marks the table as modified
+   }
+   ImGui::EndDisabled();
+   ImGui::Separator();
 }
 
 void PropertyPane::Separator(const string& label) const
