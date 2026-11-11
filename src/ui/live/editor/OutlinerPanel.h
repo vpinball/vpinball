@@ -36,6 +36,7 @@ public:
    void LoadSetup(const nlohmann::json &j) override;
 
    void FocusFilter() { m_focusFilter = true; } // Ctrl+F: type a filter right away
+   void FrameSelection(); // '.' over the panel: reveal the selection in the tree (Blender's View Selected)
 
    // Default width of a newly hosted panel in logical pixels (scaled by the UI DPI)
    static constexpr float PaneWidth = 240.f;
@@ -97,6 +98,7 @@ private:
 
    Selection m_lastSeenSelection; // To detect selection changes made elsewhere
    bool m_revealResource = false; // The selection changed to a table data item: open its category and scroll to it
+   std::shared_ptr<EditorUIPart> m_revealPart; // FrameSelection: open the part's ancestor groups and scroll to it next draw
    bool m_dragBlocked = false; // The drop under the mouse is refused (cycle), set while drawing the drop targets
    ImGuiID m_dragHoverGroup = 0; // Collapsed group hovered while dragging parts (opens after a short delay)
    double m_dragHoverSince = 0.0;

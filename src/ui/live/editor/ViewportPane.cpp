@@ -2992,7 +2992,11 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          SetPerspectiveCam(!m_perspectiveCam);
       else if (padKey(ImGuiKey_KeypadDecimal, ImGuiKey_Period))
       {
-         FrameSelection();
+         // '.' applies to the view under the mouse: an outliner frames the selection in its tree
+         if (OutlinerPanel* const outliner = m_editor.GetHoveredOutliner(); outliner != nullptr)
+            outliner->FrameSelection();
+         else
+            FrameSelection();
       }
       else if (padKey(ImGuiKey_KeypadDivide, ImGuiKey_Slash))
       {

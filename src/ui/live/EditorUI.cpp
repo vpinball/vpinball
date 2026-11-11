@@ -4065,4 +4065,11 @@ ViewportPane *EditorUI::GetTargetViewport() const
          return vp;
    return nullptr;
 }
+
+OutlinerPanel *EditorUI::GetHoveredOutliner() const
+{
+   // Routed view keys apply to the pane under the mouse: an outliner leaf frames the selection in its tree
+   const auto it = m_areaViews.find(m_hoverLeaf);
+   return it != m_areaViews.end() ? dynamic_cast<OutlinerPanel *>(it->second.get()) : nullptr;
+}
 }
