@@ -2716,8 +2716,12 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
             const ImVec2 end = ImGui::GetMousePos();
             if (fabsf(end.x - m_boxSelectStart.x) > 2.f || fabsf(end.y - m_boxSelectStart.y) > 2.f)
             {
-               overlayDrawList->AddRectFilled(m_boxSelectStart, end, IM_COL32(255, 128, 0, 32));
-               overlayDrawList->AddRect(m_boxSelectStart, end, IM_COL32(255, 128, 0, 255));
+               // Normalize the corners: an inverted rect (dragging up or left) emits back-facing
+               // triangles which the renderer culls, leaving the frame invisible
+               const ImVec2 lo(min(m_boxSelectStart.x, end.x), min(m_boxSelectStart.y, end.y));
+               const ImVec2 hi(max(m_boxSelectStart.x, end.x), max(m_boxSelectStart.y, end.y));
+               overlayDrawList->AddRectFilled(lo, hi, IM_COL32(255, 128, 0, 32));
+               overlayDrawList->AddRect(lo, hi, IM_COL32(255, 128, 0, 255));
             }
          }
          else
