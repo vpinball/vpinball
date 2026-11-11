@@ -216,6 +216,7 @@ private:
    uint64_t m_startFrameTick;  // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onPrepareFrameMsgId;
    const std::thread::id m_osThreadId;
+   SDL_Window *GetInputEventWindow(SDL_WindowID &windowID) const;
 
 #ifdef ENABLE_BGFX
    bool CallbackSteppedGameLoop();
