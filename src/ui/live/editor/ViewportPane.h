@@ -71,7 +71,7 @@ public:
    void ResetCameraFromPlayer();
    void SetBackdropCamera();
    void SetPlayfieldCamera();
-   void SetView(PredefinedView view); // Axis aligned view, keeping the orbit target and distance
+   void SetView(PredefinedView view); // Axis aligned orthographic view, keeping the orbit target and distance
    void AnimateViewTo(PredefinedView view); // Same snap as SetView, animated (gizmo click, numpad 1/3/7, View menu)
    // The pane's view mode is fixed by its area type: there is no camera mode cycle anymore
    void FrameSelection(); // Camera centered on the selection, zoomed to fill the view
@@ -79,9 +79,9 @@ public:
    void FrameBounds(const FRect3D& bounds); // Shared bounds fit of FrameSelection and FrameAll
    bool GetNavPivot(vec3& target) const; // Selection center when 'orbit around selection' is on and something is selected
    bool PickDepthPoint(const ImVec2& mousePos, vec3& point); // 3D point under the cursor (front-most hit, else the playfield plane)
-   void OrbitCamera(float dx, float dy); // Orbit the pane camera around its target (MMB & view gizmo & renderer inspection)
+   void OrbitCamera(float dx, float dy); // Orbit the pane camera around its target (MMB & view gizmo & renderer inspection); leaving a predefined view switches to perspective
    void SetFov(float fovY); // Change the vertical FOV keeping the framing (Editor_NavFovY is updated)
-   void SetPerspectiveCam(bool perspective); // Switch between perspective and orthographic cameras, keeping the framing
+   void SetPerspectiveCam(bool perspective); // Switch between perspective and orthographic cameras, keeping the framing (perspective drops any predefined view: they are orthographic)
 
    // 3D view setup of the pane (camera mode and pose, shading, orbit lock), serialized into the
    // hosting leaf's persisted payload so it is restored with the layout on the next session
@@ -150,7 +150,7 @@ public:
    Renderer::ShadeMode m_shadeMode = Renderer::ShadeMode::Default;
    bool m_showSpaceAxes = false; // Show the selection's reference space axes (EditorCam panes, persisted in the pane setup)
    float m_camAspect = 1.f; // Aspect ratio the stored projection was authored for, re-fitted on pane resize
-   PredefinedView m_predefinedView = PredefinedView::None;
+   PredefinedView m_predefinedView = PredefinedView::None; // Axis aligned view the camera is snapped to (always orthographic: orbiting out of it restores perspective)
    bool m_orbitLock = false;
    bool m_orbitDragging = false; // A nav-button drag is orbiting the camera
    bool m_orbitPivotValid = false; // m_orbitPivot is set for the current drag
