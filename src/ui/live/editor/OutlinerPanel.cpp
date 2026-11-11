@@ -243,9 +243,10 @@ namespace
       }
    }
 
-   const char *TypeIcon(const IEditable *editable)
+   const char *TypeIcon(const EditorUIPart *uiPart)
    {
-      if (ReferenceImageOp::IsReferenceImage(editable))
+      const IEditable *const editable = uiPart->GetEditable();
+      if (ReferenceImageOp::IsReferenceImage(uiPart))
          return ICON_LC_IMAGE;
       switch (editable->GetItemType())
       {
@@ -601,9 +602,9 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       ImGui::SetDragDropPayload("VPX_PART", &editable, sizeof(editable));
       const size_t count = editor.m_multiSel.size();
       if (count > 1)
-         ImGui::Text("%s  Move %d parts", TypeIcon(editable), (int)count);
+         ImGui::Text("%s  Move %d parts", TypeIcon(uiPart.get()), (int)count);
       else
-         ImGui::Text("%s  %s", TypeIcon(editable), editable->GetName().c_str());
+         ImGui::Text("%s  %s", TypeIcon(uiPart.get()), editable->GetName().c_str());
       if (dragBlockedPrev)
          ImGui::TextColored(EditorTheme::V(EditorTheme::TextDim), "Not allowed here");
       ImGui::EndDragDropSource();
@@ -671,7 +672,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       }
       {
          // Type icon (dim) and name (normal text, faint when the part is hidden) drawn over the selectable, indented under the parent group's name
-         const char *const icon = TypeIcon(editable);
+         const char *const icon = TypeIcon(edit.get());
          const ImVec2 textPos = ImVec2(ImGui::GetItemRectMin().x + indentX, ImGui::GetItemRectMin().y);
          ImDrawList *const drawList = ImGui::GetWindowDrawList();
          // Lucide glyph ink sits higher than the text line box: center the ink vertically rather than aligning on the text origin

@@ -26,6 +26,7 @@ public:
 
 private:
    Vertex2D m_lastScaleRequest { 1.f, 1.f }; // Reference images: last X/Y scale asked by a transform tool (see ReferenceImageMath::UniformScale)
+   bool ForcedVisibleInEditor() const override;
    bool HasPointAutoTexture() const override { return true; }
    bool HasPointTextureCoord() const override { return true; }
 };

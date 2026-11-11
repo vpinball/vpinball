@@ -15,7 +15,7 @@ namespace VPX::EditorUI
 class LiveRenderContext final : public EditorRenderContext
 {
 public:
-   LiveRenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync);
+   LiveRenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync, bool canDrawSceneParts = false);
    ~LiveRenderContext() override = default;
 
    bool NeedsLiveTableSync() const override { return m_needsLiveTableSync; }
@@ -34,6 +34,7 @@ public:
    void DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, const Vertex3Ds &y, float radius, ImU32 color) const override;
    void DrawHitObjects(IEditable *editable) const override;
    void DrawWireframe(IEditable *editable) const override;
+   void DrawScenePart(IEditable *editable) const override;
 
    bool m_isSelected = false;
    bool m_isActive = false;
@@ -45,6 +46,7 @@ private:
    const ViewMode m_viewMode;
    const Renderer::ShadeMode m_shadeMode;
    const bool m_needsLiveTableSync;
+   const bool m_canDrawSceneParts; // Whether this context may record scene parts into its view (DrawScenePart)
    Matrix3D m_paneMvp {}; // Pane projection override (see SetPaneProjection), used when m_hasPaneMvp
    bool m_hasPaneMvp = false;
    ImVec2 m_projOrigin { 0.f, 0.f };

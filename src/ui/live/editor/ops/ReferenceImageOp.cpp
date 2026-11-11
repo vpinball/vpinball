@@ -27,46 +27,35 @@ using namespace ReferenceImageMath;
 // Table level helpers
 //
 
-bool ReferenceImageOp::IsReferenceGroup(const PartGroup *group)
+bool ReferenceImageOp::HasReferenceImageSetup(const Flasher *flasher)
 {
-   for (; group != nullptr; group = group->GetPartGroup())
-      if (group->HasExtension(Key))
-         return true;
-   return false;
+   // Editor only visual setup: a textured flasher, in its simple render mode, with a single image
+   // and no lightmap or controller state source modulating it
+   const FlasherData &d = flasher->m_d;
+   return d.m_displayTexture && d.m_renderMode == FlasherData::RenderMode::FLASHER && !d.m_szImageA.empty() && d.m_szImageB.empty() && d.m_szLightmap.empty() && d.m_stateSrcLink.empty();
 }
 
-bool ReferenceImageOp::IsReferenceImage(const IEditable *part)
+bool ReferenceImageOp::IsReferenceImage(const IEditable *part, const EditorUI *editor)
 {
-   return part != nullptr && part->GetItemType() == eItemFlasher && (part->HasExtension(Key) || IsReferenceGroup(part->GetPartGroup()));
+   if (editor != nullptr)
+      if (const auto it = editor->m_editableMap.find(part); it != editor->m_editableMap.end())
+         return IsReferenceImage(it->second.get());
+   const Flasher *const flasher = part != nullptr && part->GetItemType() == eItemFlasher ? static_cast<const Flasher *>(part) : nullptr;
+   return flasher != nullptr && !flasher->m_d.m_isVisible && HasReferenceImageSetup(flasher);
 }
 
-bool ReferenceImageOp::IsLocked(const IEditable *part) { return part != nullptr && part->IsUILocked() && IsReferenceImage(part); }
-
-PartGroup *ReferenceImageOp::FindGroup(const PinTable *table)
+bool ReferenceImageOp::IsReferenceImage(const EditorUIPart *uiPart)
 {
-   // A root level group is preferred (the one created by Add), a nested one is used as is
-   PartGroup *found = nullptr;
-   for (IEditable *const part : table->GetParts())
-      if (part->GetItemType() == eItemPartGroup && part->HasExtension(Key) && (found == nullptr || part->GetPartGroup() == nullptr))
-         found = static_cast<PartGroup *>(part);
-   return found;
+   // For a part driven by the editor, m_d carries a display value: the authored visibility is held by its UI part
+   return uiPart != nullptr && uiPart->GetEditable()->GetItemType() == eItemFlasher && !uiPart->IsAuthoredVisible()
+      && HasReferenceImageSetup(static_cast<const Flasher *>(uiPart->GetEditable()));
 }
 
-PartGroup *ReferenceImageOp::CreateGroup(PinTable *table)
-{
-   PartGroup *const group = PartGroup::COMCreate();
-   group->Init(0.f, 0.f, false);
-   group->m_name = table->IsNameUnique("ReferenceImages") ? "ReferenceImages" : table->GetUniqueName("ReferenceImages");
-   group->GetOrCreateExtension(Key).SetRaw("{\"v\":1}");
-   // No play mode renders the group (the editor views do not apply the mask). Playfield space, so that the parts are placed like the others.
-   group->m_d.m_playerModeVisibilityMask = 0;
-   group->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
-   table->AddPart(group);
-   group->SetPartGroup(nullptr);
-   return group;
-}
+bool ReferenceImageOp::IsLocked(const IEditable *part, const EditorUI *editor) { return part != nullptr && part->IsUILocked() && IsReferenceImage(part, editor); }
 
-Flasher *ReferenceImageOp::CreateFlasher(PinTable *table, PartGroup *group, const string &image, const Vertex2D &center, const float width, const float height)
+bool ReferenceImageOp::IsLocked(const EditorUIPart *uiPart) { return uiPart != nullptr && uiPart->GetEditable()->IsUILocked() && IsReferenceImage(uiPart); }
+
+Flasher *ReferenceImageOp::CreateFlasher(PinTable *table, const string &image, const Vertex2D &center, const float width, const float height)
 {
    Flasher *const flasher = Flasher::COMCreate();
    flasher->Init(center.x, center.y, false); // Built-in defaults, not the user's default flasher properties
@@ -83,15 +72,13 @@ Flasher *ReferenceImageOp::CreateFlasher(PinTable *table, PartGroup *group, cons
    d.m_intensity_scale = 1.f;
    d.m_addBlend = FlasherData::AB_NONE;
    d.m_displayTexture = true; // Also drawn in the Blueprint view and the solid / wireframe shadings
-   d.m_isVisible = true;
+   d.m_isVisible = false; // Never rendered in play: shown in the editor instead (this is what makes it a reference image)
    d.m_depthBias = 0.f;
    d.m_height = Height;
    d.m_rotX = d.m_rotY = d.m_rotZ = 0.f;
    flasher->m_desktopBackdrop = false;
-   flasher->GetOrCreateExtension(Key).SetRaw("{\"v\":1}");
    SetRect(flasher, { center, width, height });
    table->AddPart(flasher);
-   flasher->SetPartGroup(group);
    return flasher;
 }
 
@@ -135,34 +122,8 @@ bool ReferenceImageOp::ReplaceImage(Flasher *flasher, const string &image)
    return FitToImage(flasher);
 }
 
-PartGroup *ReferenceImageOp::PasteGroup(PinTable *table, PinUndo *undo, const IEditable *pasted, PartGroup *target)
+static bool RotateFlasher(Flasher *const flasher, const float angle, const Vertex2D &center, const bool useElementCenter)
 {
-   // Only marked reference images are re-rooted: the marker travels with the part through the saved data. The pasted data
-   // also names the group of its source part (IEditable::m_onLoadExpectedPartGroup, filled by Load).
-   if (pasted->GetItemType() != eItemFlasher || !pasted->HasExtension(Key))
-      return target;
-   // Same table paste: back into the source group when it is still a reference group
-   if (!pasted->m_onLoadExpectedPartGroup.empty())
-      for (IEditable *const part : table->GetParts())
-         if (part->GetItemType() == eItemPartGroup && StrCompareNoCase(part->GetName(), pasted->m_onLoadExpectedPartGroup) && IsReferenceGroup(static_cast<PartGroup *>(part)))
-            return static_cast<PartGroup *>(part);
-   // Otherwise (pasted from another table, or the source group is gone): the table's reference group, created on demand
-   PartGroup *group = FindGroup(table);
-   if (group == nullptr && (group = CreateGroup(table)) != nullptr)
-   {
-      if (undo != nullptr)
-         undo->MarkForCreate(group);
-      else
-         group->Release(); // The table holds it
-   }
-   return group != nullptr ? group : target;
-}
-
-bool ReferenceImageOp::Rotate(IEditable *part, const float angle, const Vertex2D &center, const bool useElementCenter)
-{
-   if (!IsReferenceImage(part))
-      return false;
-   Flasher *const flasher = static_cast<Flasher *>(part);
    if (flasher->m_d.m_rotX != 0.f || flasher->m_d.m_rotY != 0.f)
       return true; // Tilted: not supported (see the declaration)
    if (!useElementCenter)
@@ -177,13 +138,31 @@ bool ReferenceImageOp::Rotate(IEditable *part, const float angle, const Vertex2D
    return true;
 }
 
-bool ReferenceImageOp::Scale(IEditable *part, const float scaleX, const float scaleY, const Vertex2D &center, const bool useElementCenter)
+bool ReferenceImageOp::Rotate(IEditable *part, const float angle, const Vertex2D &center, const bool useElementCenter)
 {
-   if (!IsReferenceImage(part))
-      return false;
+   return IsReferenceImage(part) && RotateFlasher(static_cast<Flasher *>(part), angle, center, useElementCenter);
+}
+
+bool ReferenceImageOp::Rotate(const EditorUIPart *uiPart, const float angle, const Vertex2D &center, const bool useElementCenter)
+{
+   return IsReferenceImage(uiPart) && RotateFlasher(static_cast<Flasher *>(uiPart->GetEditable()), angle, center, useElementCenter);
+}
+
+static bool ScaleFlasher(IEditable *part, const float scaleX, const float scaleY, const Vertex2D &center, const bool useElementCenter)
+{
    const float s = fabsf(scaleX - 1.f) >= fabsf(scaleY - 1.f) ? scaleX : scaleY;
    part->Scale(s, s, center, useElementCenter);
    return true;
+}
+
+bool ReferenceImageOp::Scale(IEditable *part, const float scaleX, const float scaleY, const Vertex2D &center, const bool useElementCenter)
+{
+   return IsReferenceImage(part) && ScaleFlasher(part, scaleX, scaleY, center, useElementCenter);
+}
+
+bool ReferenceImageOp::Scale(const EditorUIPart *uiPart, const float scaleX, const float scaleY, const Vertex2D &center, const bool useElementCenter)
+{
+   return IsReferenceImage(uiPart) && ScaleFlasher(uiPart->GetEditable(), scaleX, scaleY, center, useElementCenter);
 }
 
 
@@ -198,21 +177,6 @@ bool ReferenceImageOp::CanAdd() const
    return !ed.m_table->IsLocked() && !ed.IsInspectMode() && ed.m_pointEditPart == nullptr && ed.m_fileOp == nullptr;
 }
 
-vector<Flasher *> ReferenceImageOp::SelectedReferenceImages() const
-{
-   const EditorUI &ed = m_editor;
-   vector<std::shared_ptr<EditorUIPart>> parts = ed.m_multiSel;
-   if (parts.empty() && ed.m_selection.GetType() == Selection::S_EDITABLE && ed.m_selection.GetPart())
-      parts.push_back(ed.m_selection.GetPart());
-   vector<Flasher *> flashers;
-   for (const auto &part : parts)
-      if (part && IsReferenceImage(part->GetEditable()))
-         flashers.push_back(static_cast<Flasher *>(part->GetEditable()));
-   return flashers;
-}
-
-bool ReferenceImageOp::CanApplyToSelection() const { return CanAdd() && !SelectedReferenceImages().empty(); }
-
 void ReferenceImageOp::OpenAddDialog()
 {
    if (!CanAdd())
@@ -222,28 +186,13 @@ void ReferenceImageOp::OpenAddDialog()
    m_openDialog = true;
 }
 
-void ReferenceImageOp::OpenReplaceDialog()
-{
-   const vector<Flasher *> flashers = SelectedReferenceImages();
-   if (!CanAdd() || flashers.empty())
-      return;
-   m_dialog = Dialog();
-   m_dialog.replace = true;
-   m_dialog.fromFile = false;
-   m_dialog.tableImage = flashers.back()->m_d.m_szImageA;
-   m_openDialog = true;
-}
-
 void ReferenceImageOp::Add(const string &image, const float width, const float height)
 {
    EditorUI &ed = m_editor;
    PinTable *const table = ed.m_table;
-   PartGroup *group = FindGroup(table);
-   const bool newGroup = group == nullptr;
-   if (newGroup)
-      group = CreateGroup(table);
    const Vertex2D center(0.5f * (table->m_left + table->m_right), 0.5f * (table->m_top + table->m_bottom));
-   Flasher *const flasher = CreateFlasher(table, group, image, center, width, height);
+   Flasher *const flasher = CreateFlasher(table, image, center, width, height);
+   flasher->SetPartGroup(ed.GetPartGroupForNewPart()); // Freely placed: the target of any new part
 
    // Same player side setup as EditorUI::CreatePart
    ed.m_player->TimerSetup(flasher);
@@ -252,8 +201,6 @@ void ReferenceImageOp::Add(const string &image, const float width, const float h
    ed.m_player->m_physics->Add(flasher);
 
    ed.m_undo.BeginUndo();
-   if (newGroup)
-      ed.m_undo.MarkForCreate(group);
    ed.m_undo.MarkForCreate(flasher);
    ed.m_undo.SetLabel("Add Reference Image: "s + image);
    ed.m_undo.EndUndo();
@@ -264,54 +211,7 @@ void ReferenceImageOp::Add(const string &image, const float width, const float h
       ed.SetSelection(Selection(it->second));
       OutlinerPanel::m_anchor = it->second;
    }
-   ed.Report("Added reference image "s + flasher->GetName() + " (" + image + ") to part group " + group->GetName() + ", hidden in play");
-}
-
-void ReferenceImageOp::Replace(const string &image)
-{
-   EditorUI &ed = m_editor;
-   const vector<Flasher *> flashers = SelectedReferenceImages();
-   const Texture *const tex = ed.m_table->GetImage(image);
-   if (flashers.empty() || tex == nullptr || tex->m_width == 0 || tex->m_height == 0)
-      return;
-   ed.m_undo.BeginUndo();
-   for (Flasher *const flasher : flashers)
-      ed.m_undo.MarkForUndo(flasher);
-   for (Flasher *const flasher : flashers)
-   {
-      ReplaceImage(flasher, image);
-      ed.m_renderer->ReinitRenderable(flasher);
-      ed.m_player->m_physics->Update(flasher);
-   }
-   ed.m_undo.SetLabel(flashers.size() == 1 ? "Replace Image: "s + flashers[0]->GetName() : "Replace Image: "s + std::to_string(flashers.size()) + " parts");
-   ed.m_undo.EndUndo();
-}
-
-void ReferenceImageOp::FitSelection()
-{
-   EditorUI &ed = m_editor;
-   if (!CanAdd())
-      return;
-   const vector<Flasher *> selected = SelectedReferenceImages();
-   vector<Flasher *> flashers; // The ones with a valid image (the others would make an empty undo step)
-   for (Flasher *const flasher : selected)
-      if (const Texture *const image = ed.m_table->GetImage(flasher->m_d.m_szImageA); image != nullptr && image->m_width > 0 && image->m_height > 0)
-         flashers.push_back(flasher);
-   if (flashers.size() < selected.size())
-      ed.Report("Fit to Image: " + std::to_string(selected.size() - flashers.size()) + " part(s) without a valid image");
-   if (flashers.empty())
-      return;
-   ed.m_undo.BeginUndo();
-   for (Flasher *const flasher : flashers)
-      ed.m_undo.MarkForUndo(flasher);
-   for (Flasher *const flasher : flashers)
-   {
-      FitToImage(flasher);
-      ed.m_renderer->ReinitRenderable(flasher);
-      ed.m_player->m_physics->Update(flasher);
-   }
-   ed.m_undo.SetLabel(flashers.size() == 1 ? "Fit to Image: "s + flashers[0]->GetName() : "Fit to Image: "s + std::to_string(flashers.size()) + " parts");
-   ed.m_undo.EndUndo();
+   ed.Report("Added reference image "s + flasher->GetName() + " (" + image + "), hidden in play");
 }
 
 Texture *ReferenceImageOp::ImportFile(const string &file)
@@ -375,7 +275,7 @@ void ReferenceImageOp::RenderModal()
          PickedFile(m_pendingFile->front());
       m_pendingFile = nullptr;
    }
-   const char *const popupId = dlg.replace ? "Replace Reference Image###ReferenceImageDialog" : "Add Reference Image###ReferenceImageDialog";
+   const char *const popupId = "Add Reference Image###ReferenceImageDialog";
    if (m_openDialog)
    {
       m_openDialog = false;
@@ -385,8 +285,7 @@ void ReferenceImageOp::RenderModal()
    if (!ImGui::BeginPopupModal(popupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
       return;
 
-   ImGui::TextUnformatted(dlg.replace ? "Replace the image of the selected reference images (they are fitted to its aspect)"
-                                      : "Add a scan, blueprint or photo to trace over (only shown in the editor, never in play)");
+   ImGui::TextUnformatted("Add a scan, blueprint or photo to trace over (only shown in the editor, never in play)");
    ImGui::Separator();
 
    // Image source
@@ -435,9 +334,8 @@ void ReferenceImageOp::RenderModal()
    if (!dlg.error.empty())
       ImGui::TextColored(EditorTheme::V(EditorTheme::Accent), "%s", dlg.error.c_str());
 
-   // Real size (Add only: Replace keeps the part's width)
+   // Real size
    const bool hasImage = pxWidth > 0 && pxHeight > 0;
-   if (!dlg.replace)
    {
       // A newly picked image starts at the playfield width, at the image's aspect
       const string imageKey = dlg.fromFile ? dlg.file : dlg.tableImage;
@@ -478,9 +376,8 @@ void ReferenceImageOp::RenderModal()
    }
 
    ImGui::Separator();
-   const bool sizeOk = dlg.replace || (dlg.width > 0.f && dlg.height > 0.f);
-   ImGui::BeginDisabled(!hasImage || !sizeOk || !CanAdd());
-   if (ImGui::Button(dlg.replace ? "Replace" : "Add"))
+   ImGui::BeginDisabled(!hasImage || dlg.width <= 0.f || dlg.height <= 0.f || !CanAdd());
+   if (ImGui::Button("Add"))
    {
       string image;
       if (dlg.fromFile)
@@ -494,10 +391,7 @@ void ReferenceImageOp::RenderModal()
          image = dlg.tableImage;
       if (!image.empty())
       {
-         if (dlg.replace)
-            Replace(image);
-         else
-            Add(image, ToVPU(dlg.width, dlg.unit), ToVPU(dlg.height, dlg.unit));
+         Add(image, ToVPU(dlg.width, dlg.unit), ToVPU(dlg.height, dlg.unit));
          ImGui::CloseCurrentPopup();
       }
    }

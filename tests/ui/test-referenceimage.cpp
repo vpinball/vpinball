@@ -156,11 +156,15 @@ namespace
       Flasher *const flasher = FindFlasher(table, original->GetName());
       REQUIRE(flasher != nullptr);
       CHECK(ReferenceImageOp::IsReferenceImage(flasher));
-      REQUIRE(flasher->GetPartGroup() != nullptr);
-      CHECK(flasher->GetPartGroup()->HasExtension(ReferenceImageOp::Key));
-      CHECK(flasher->GetPartGroup()->m_d.m_playerModeVisibilityMask == 0);
-      CHECK(flasher->GetPartGroup()->GetPlayerModeVisibilityMask() == 0);
-      CHECK(ReferenceImageOp::FindGroup(table) == flasher->GetPartGroup());
+      if (original->GetPartGroup() == nullptr)
+      {
+         CHECK(flasher->GetPartGroup() == nullptr);
+      }
+      else
+      {
+         REQUIRE(flasher->GetPartGroup() != nullptr);
+         CHECK(flasher->GetPartGroup()->GetName() == original->GetPartGroup()->GetName());
+      }
       CHECK(flasher->m_d.m_szImageA == imageName);
       CHECK(table->GetImage(imageName) != nullptr);
       CHECK(flasher->m_d.m_renderMode == FlasherData::RenderMode::FLASHER);
@@ -170,6 +174,7 @@ namespace
       CHECK(flasher->m_d.m_height == original->m_d.m_height);
       CHECK(flasher->m_d.m_rotX == original->m_d.m_rotX);
       CHECK(flasher->m_d.m_rotZ == original->m_d.m_rotZ);
+      CHECK_FALSE(flasher->m_d.m_isVisible);
       CHECK(flasher->IsUILocked() == original->IsUILocked());
       CheckRectangle(flasher, ReferenceImageOp::GetRect(original));
    }
@@ -192,24 +197,20 @@ TEST_CASE("Reference image flasher")
    Texture *const other = table->ImportImage(GetAssetPath() / "test000-stereo-sbs-Ref.webp", "refother_test");
    REQUIRE(other != nullptr);
 
-   // Group: created once, at the root, hidden in every play mode
-   CHECK(ReferenceImageOp::FindGroup(table) == nullptr);
-   PartGroup *const group = ReferenceImageOp::CreateGroup(table);
-   REQUIRE(group != nullptr);
-   group->Release(); // Creation reference (the editor hands it to the undo record)
-   CHECK(group->GetName() == "ReferenceImages"s);
-   CHECK(group->GetPartGroup() == nullptr);
-   CHECK(group->m_d.m_playerModeVisibilityMask == 0);
-   CHECK(group->GetReferenceSpace() == PartGroupData::SpaceReference::SR_PLAYFIELD);
-   CHECK(ReferenceImageOp::FindGroup(table) == group);
-   CHECK(group->HasExtension(ReferenceImageOp::Key));
+   // A reference image lands wherever a new part would: no dedicated group, no marker
+   PartGroup *const group = PartGroup::COMCreate();
+   group->Init(0.f, 0.f, false);
+   group->SetName("Sketches");
+   table->AddPart(group);
+   group->Release();
 
    // Flasher at the real size, centred on the playfield, flat on it
    const float width = ToVPU(40.f, Unit::Centimeters);
    const float height = HeightForWidth(width, scan->m_width, scan->m_height);
    const Vertex2D center(0.5f * (table->m_left + table->m_right), 0.5f * (table->m_top + table->m_bottom));
-   Flasher *const flasher = ReferenceImageOp::CreateFlasher(table, group, scan->m_name, center, width, height);
+   Flasher *const flasher = ReferenceImageOp::CreateFlasher(table, scan->m_name, center, width, height);
    REQUIRE(flasher != nullptr);
+   flasher->SetPartGroup(group);
    flasher->Release();
    CHECK(table->GetParts().size() == partCount + 2);
    CHECK(flasher->GetPartGroup() == group);
@@ -223,7 +224,7 @@ TEST_CASE("Reference image flasher")
    CHECK(flasher->m_d.m_alpha <= 100);
    CHECK(flasher->m_d.m_intensity_scale == 1.f);
    CHECK(flasher->m_d.m_addBlend == FlasherData::AB_NONE);
-   CHECK(flasher->m_d.m_isVisible);
+   CHECK_FALSE(flasher->m_d.m_isVisible); // Never rendered in play: what makes it a reference image
    CHECK(flasher->m_d.m_displayTexture);
    CHECK_FALSE(flasher->m_desktopBackdrop);
    CHECK(flasher->m_d.m_height > 0.f);
@@ -241,79 +242,108 @@ TEST_CASE("Reference image flasher")
    CHECK(ReferenceImageOp::IsLocked(flasher));
    flasher->SetUILock(false);
 
-   SUBCASE("nested groups and plain flashers")
+   SUBCASE("a flasher anywhere is detected by its own setup alone")
    {
-      PartGroup *const sub = PartGroup::COMCreate();
-      sub->Init(0.f, 0.f, false);
-      sub->SetName("RefSub");
-      table->AddPart(sub);
-      sub->Release();
-      sub->SetPartGroup(group);
-      Flasher *const nested = Flasher::COMCreate();
-      nested->Init(10.f, 10.f, false);
-      nested->SetName("NestedFlasher");
-      table->AddPart(nested);
-      nested->Release();
-      nested->SetPartGroup(sub);
-      CHECK(ReferenceImageOp::IsReferenceImage(nested));
-      // New and pasted parts never go to the reference images group or a group nested in it
-      CHECK(ReferenceImageOp::IsReferenceGroup(group));
-      CHECK(ReferenceImageOp::IsReferenceGroup(sub));
-      CHECK_FALSE(ReferenceImageOp::IsReferenceGroup(nullptr));
-      PartGroup *const other = PartGroup::COMCreate();
-      other->Init(0.f, 0.f, false);
-      other->SetName("OtherLayer");
-      table->AddPart(other);
-      other->Release();
-      CHECK_FALSE(ReferenceImageOp::IsReferenceGroup(other));
-      nested->SetPartGroup(other);
-      CHECK_FALSE(ReferenceImageOp::IsReferenceImage(nested));
-      nested->SetPartGroup(nullptr);
-      CHECK_FALSE(ReferenceImageOp::IsReferenceImage(nested));
-      nested->SetUILock(true);
-      CHECK_FALSE(ReferenceImageOp::IsLocked(nested));
-      CHECK_FALSE(ReferenceImageOp::Rotate(nested, 90.f, Vertex2D(0.f, 0.f), false));
+      // No dedicated group, no marker: placeable wherever, still a reference image
+      Flasher *const free = Flasher::COMCreate();
+      free->Init(10.f, 10.f, false);
+      free->SetName("FreeRef");
+      free->m_d.m_isVisible = false;
+      free->m_d.m_displayTexture = true;
+      free->m_d.m_renderMode = FlasherData::RenderMode::FLASHER;
+      free->m_d.m_szImageA = scan->m_name;
+      free->m_d.m_szImageB.clear();
+      free->m_d.m_szLightmap.clear();
+      free->m_d.m_stateSrcLink.clear();
+      table->AddPart(free);
+      free->Release();
+      CHECK(ReferenceImageOp::IsReferenceImage(free));
+      free->SetPartGroup(group);
+      CHECK(ReferenceImageOp::IsReferenceImage(free)); // Placement does not matter
+
+      // A flasher authored visible stays a plain flasher even when a group hidden in play would hide it:
+      // group masks steer player visibility, detection only looks at the part's own fields
+      PartGroup *const hidden = PartGroup::COMCreate();
+      hidden->Init(0.f, 0.f, false);
+      hidden->SetName("HiddenLayer");
+      hidden->m_d.m_playerModeVisibilityMask = 0;
+      table->AddPart(hidden);
+      hidden->Release();
+      Flasher *const groupHidden = Flasher::COMCreate();
+      groupHidden->Init(10.f, 10.f, false);
+      groupHidden->SetName("GroupHidden");
+      groupHidden->m_d.m_displayTexture = true;
+      groupHidden->m_d.m_renderMode = FlasherData::RenderMode::FLASHER;
+      groupHidden->m_d.m_szImageA = scan->m_name;
+      groupHidden->m_d.m_szImageB.clear();
+      groupHidden->m_d.m_szLightmap.clear();
+      groupHidden->m_d.m_stateSrcLink.clear();
+      table->AddPart(groupHidden);
+      groupHidden->Release();
+      groupHidden->SetPartGroup(hidden);
+      CHECK(hidden->GetPlayerModeVisibilityMask() == 0); // Hidden in play through its group...
+      CHECK_FALSE(ReferenceImageOp::IsReferenceImage(groupHidden)); // ...but authored visible: a plain flasher
+      // ...while an authored-invisible flasher inside it still is a reference image
+      groupHidden->m_d.m_isVisible = false;
+      CHECK(ReferenceImageOp::IsReferenceImage(groupHidden));
+      groupHidden->SetUILock(true);
+      CHECK(ReferenceImageOp::IsLocked(groupHidden));
    }
 
-   SUBCASE("the extension marker survives a group rename")
+   SUBCASE("each field of the setup takes part in detection")
    {
-      // Feature created groups and flashers are marked: renames do not detach them from the feature
-      CHECK(group->HasExtension(ReferenceImageOp::Key));
-      CHECK(flasher->HasExtension(ReferenceImageOp::Key));
-      group->SetName("RenamedGroup");
-      CHECK(ReferenceImageOp::IsReferenceGroup(group));
-      CHECK(ReferenceImageOp::IsReferenceImage(flasher)); // Still a reference image: the marker does not depend on the group name
-      CHECK(ReferenceImageOp::FindGroup(table) == group); // The marker lookup finds it under its new name
-
-      // A group merely named like a reference images group is not one: only the marker counts
-      PartGroup *const named = PartGroup::COMCreate();
-      named->Init(0.f, 0.f, false);
-      named->SetName("ReferenceImages002");
-      table->AddPart(named);
-      named->Release();
-      CHECK_FALSE(named->HasExtension(ReferenceImageOp::Key));
-      CHECK_FALSE(ReferenceImageOp::IsReferenceGroup(named));
-      Flasher *const unmarked = Flasher::COMCreate();
-      unmarked->Init(10.f, 10.f, false);
-      unmarked->SetName("UnmarkedFlasher");
-      table->AddPart(unmarked);
-      unmarked->Release();
-      unmarked->SetPartGroup(named);
-      CHECK_FALSE(ReferenceImageOp::IsReferenceImage(unmarked));
-      // A marked flasher is a reference image whatever group it ends in
-      unmarked->SetPartGroup(nullptr);
-      unmarked->GetOrCreateExtension(ReferenceImageOp::Key).SetRaw("{\"v\":1}");
-      CHECK(ReferenceImageOp::IsReferenceImage(unmarked));
-   }
-
-   SUBCASE("a second group gets a deduplicated name")
-   {
-      // CreateGroup always succeeds: the name is just a label now that the marker carries the identity
-      PartGroup *const second = ReferenceImageOp::CreateGroup(table);
-      REQUIRE(second != nullptr);
-      second->Release();
-      CHECK(second->GetName() == "ReferenceImages001"s);
-      CHECK(ReferenceImageOp::IsReferenceGroup(second));
+      const auto makeRefImage = [table, &scan]() -> Flasher *
+      {
+         Flasher *const f = Flasher::COMCreate();
+         f->Init(10.f, 10.f, false);
+         f->SetName(table->GetUniqueName("Ref"s));
+         f->m_d.m_isVisible = false;
+         f->m_d.m_displayTexture = true;
+         f->m_d.m_renderMode = FlasherData::RenderMode::FLASHER;
+         f->m_d.m_szImageA = scan->m_name;
+         f->m_d.m_szImageB.clear();
+         f->m_d.m_szLightmap.clear();
+         f->m_d.m_stateSrcLink.clear();
+         table->AddPart(f);
+         f->Release();
+         return f;
+      };
+      CHECK(ReferenceImageOp::IsReferenceImage(makeRefImage()));
+      {
+         Flasher *const f = makeRefImage();
+         f->m_d.m_isVisible = true; // Rendered in play
+         CHECK_FALSE(ReferenceImageOp::IsReferenceImage(f));
+      }
+      {
+         Flasher *const f = makeRefImage();
+         f->m_d.m_displayTexture = false; // Wireframe in the editor
+         CHECK_FALSE(ReferenceImageOp::IsReferenceImage(f));
+      }
+      {
+         Flasher *const f = makeRefImage();
+         f->m_d.m_renderMode = FlasherData::RenderMode::DMD;
+         CHECK_FALSE(ReferenceImageOp::IsReferenceImage(f));
+      }
+      {
+         Flasher *const f = makeRefImage();
+         f->m_d.m_szImageA.clear();
+         CHECK_FALSE(ReferenceImageOp::IsReferenceImage(f));
+      }
+      {
+         Flasher *const f = makeRefImage();
+         f->m_d.m_szImageB = scan->m_name; // Two images
+         CHECK_FALSE(ReferenceImageOp::IsReferenceImage(f));
+      }
+      {
+         Flasher *const f = makeRefImage();
+         f->m_d.m_szLightmap = "lm"s; // Driven by a lightmap
+         CHECK_FALSE(ReferenceImageOp::IsReferenceImage(f));
+      }
+      {
+         Flasher *const f = makeRefImage();
+         f->m_d.m_stateSrcLink = "state"s; // Driven by a plugin state source
+         CHECK_FALSE(ReferenceImageOp::IsReferenceImage(f));
+      }
    }
 
    SUBCASE("fit to image keeps the centre, rotation and width")
@@ -365,38 +395,21 @@ TEST_CASE("Reference image flasher")
       CHECK(after.height == doctest::Approx(before.height));
    }
 
-   SUBCASE("a copied reference image stays in the reference images group")
+   SUBCASE("a copied reference image goes to the paste target like any part, and stays one")
    {
       PartGroup *const other = PartGroup::COMCreate();
       other->Init(0.f, 0.f, false);
       other->SetName("OtherLayer");
       table->AddPart(other);
       other->Release();
-      // Copy / paste and duplicate go through the part's saved data, which names its source group
+      // Copy / paste and duplicate go through the part's saved data: the authored fields keep it detected
       Flasher *const copy = Flasher::COMCreate();
       LoadPartFromStream(copy, SavePartToStream(flasher));
-      CHECK(copy->m_onLoadExpectedPartGroup == group->GetName());
-      CHECK(copy->HasExtension(ReferenceImageOp::Key)); // The marker travels with the part through the saved data
-      CHECK(ReferenceImageOp::PasteGroup(table, nullptr, copy, other) == group);
-      // Any other part goes to the target group, as before
-      Flasher *const plain = Flasher::COMCreate();
-      plain->Init(0.f, 0.f, false);
-      plain->SetName("PlainFlasher");
-      table->AddPart(plain);
-      plain->Release();
-      plain->SetPartGroup(other);
-      Flasher *const plainCopy = Flasher::COMCreate();
-      LoadPartFromStream(plainCopy, SavePartToStream(plain));
-      CHECK(ReferenceImageOp::PasteGroup(table, nullptr, plainCopy, other) == other);
-      plainCopy->Release();
-      // Pasted into a table without reference images: the group is created, hidden in play
-      PinTable *const otherTable = CreateTestTable();
-      PartGroup *const created = ReferenceImageOp::PasteGroup(otherTable, nullptr, copy, nullptr);
-      REQUIRE(created != nullptr);
-      CHECK(created == ReferenceImageOp::FindGroup(otherTable));
-      CHECK(created->m_d.m_playerModeVisibilityMask == 0);
-      CHECK(ReferenceImageOp::PasteGroup(otherTable, nullptr, copy, nullptr) == created); // Found the second time
-      otherTable->Release();
+      CHECK(ReferenceImageOp::IsReferenceImage(copy));
+      CHECK_FALSE(copy->m_d.m_isVisible);
+      copy->SetPartGroup(other); // Lands in the paste target group like any copied part
+      CHECK(copy->GetPartGroup() == other);
+      CHECK(ReferenceImageOp::IsReferenceImage(copy));
       copy->Release();
    }
 

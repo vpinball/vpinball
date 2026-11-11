@@ -381,7 +381,7 @@ public:
    // before doing anything.
    LayerSpaceChangeOp m_layerSpaceChangeOp { *this };
 
-   // Reference images (flashers of the ReferenceImages part group, hidden in play): Add / Replace dialog and Fit to Image
+   // Reference images (flashers authored as invisible, drawn in the editor instead): the Add Reference Image dialog
    ReferenceImageOp m_referenceImageOp { *this };
 
 public:
