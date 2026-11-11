@@ -806,8 +806,8 @@ void LiveUI::SetupImGuiStyle(const bool isEditor) const
    style.Colors[ImGuiCol_Border] = ImVec4(0.306f, 0.306f, 0.306f, 1.0f);
    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.306f, 0.306f, 0.306f, 1.0f);
    style.Colors[ImGuiCol_FrameBg] = isEditor ? ImColor(0xFF545454) : ImColor(0.2f, 0.2f, 0.216f, 1.0f);
-   style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.114f, 0.592f, 0.925f, 1.0f);
-   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.0f, 0.467f, 0.784f, 1.0f);
+   style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.10f, 0.28f, 0.45f, 1.0f);
+   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.12f, 0.34f, 0.55f, 1.0f);
    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.145f, 0.145f, 0.149f, 1.0f);
    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.145f, 0.145f, 0.149f, 1.0f);
    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.145f, 0.145f, 0.149f, 1.0f);
@@ -817,8 +817,8 @@ void LiveUI::SetupImGuiStyle(const bool isEditor) const
    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.353f, 0.353f, 0.373f, 1.0f);
    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.353f, 0.353f, 0.373f, 1.0f);
    style.Colors[ImGuiCol_CheckMark] = isEditor ? ImColor(0xFFdddddd) : ImColor(0.0f, 0.467f, 0.784f, 1.0f);
-   style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.114f, 0.592f, 0.925f, 1.0f);
-   style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.0f, 0.467f, 0.784f, 1.0f);
+   style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.09f, 0.42f, 0.74f, 1.0f);
+   style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.11f, 0.46f, 0.78f, 1.0f);
    style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.216f, 1.0f);
    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.114f, 0.592f, 0.925f, 1.0f);
    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.114f, 0.592f, 0.925f, 1.0f);

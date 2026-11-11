@@ -23,7 +23,7 @@ constexpr ImU32 RowSelected = Rgb(51, 77, 110); // selected outliner row
 constexpr ImU32 Accent = Rgb(237, 145, 62); // orange: active icon, focus
 constexpr ImU32 Fill = Rgb(71, 114, 179); // slider fill / selected search row (Blender #4772B3)
 constexpr ImU32 FillHovered = Rgb(85, 130, 190);
-constexpr ImU32 FillActive = Rgb(96, 146, 205);
+constexpr ImU32 FillActive = Rgb(50, 110, 190);
 
 // Text
 constexpr ImU32 Text = Rgb(230, 230, 230);
