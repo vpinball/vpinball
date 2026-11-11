@@ -1893,24 +1893,64 @@ void ViewportPane::HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float
    const float maxDist = 14.f * m_editor.m_liveUI.GetDPI();
    const Vertex3Ds dir = farPt - nearPt;
    const float dirLenSq = dir.x * dir.x + dir.y * dir.y + dir.z * dir.z;
+   // Depth along the pick ray, in the same [0,1] parameter space as the collider hit times
+   const auto rayParam
+      = [&nearPt, &dir, dirLenSq](const Vertex3Ds& p) { return (dirLenSq > 1e-10f) ? ((p.x - nearPt.x) * dir.x + (p.y - nearPt.y) * dir.y + (p.z - nearPt.z) * dir.z) / dirLenSq : 0.5f; };
    for (const auto& uiPart : m_editor.m_editables)
    {
       IEditable* const editable = uiPart->GetEditable();
       // Only the parts the ray cast cannot hit: part groups are excluded from picking anyway
-      if (editable == nullptr || editable->GetItemType() == eItemPartGroup || editable->GetIHitable() != nullptr
-         || !m_editor.IsEditablePickable(editable, m_viewType == ViewMode::DesktopBackdrop))
+      if (editable == nullptr || editable->GetItemType() == eItemPartGroup || !m_editor.IsEditablePickable(editable, m_viewType == ViewMode::DesktopBackdrop))
          continue;
-      const Vertex2D center = editable->GetCenter();
-      const ImVec2 pos = ctx.Project(Vertex3Ds(center.x, center.y, 0.f));
-      if (pos.x == FLT_MAX)
+      const vector<HitObject*> hitObjects = (editable->GetIHitable() != nullptr) ? m_editor.m_player->m_physics->GetUIHitObjects(editable) : vector<HitObject*>();
+      if (hitObjects.empty())
+      {
+         // Collider-less parts (timer, light sequencer,...): pick by their projected center
+         const Vertex2D center = editable->GetCenter();
+         const ImVec2 pos = ctx.Project(Vertex3Ds(center.x, center.y, 0.f));
+         if (pos.x == FLT_MAX)
+            continue;
+         const float dx = pos.x - mousePos.x;
+         const float dy = pos.y - mousePos.y;
+         if (dx * dx + dy * dy <= maxDist * maxDist)
+            hits.emplace_back(rayParam(Vertex3Ds(center.x, center.y, 0.f)), uiPart);
          continue;
-      const float dx = pos.x - mousePos.x;
-      const float dy = pos.y - mousePos.y;
-      if (dx * dx + dy * dy > maxDist * maxDist)
-         continue;
-      // Depth along the pick ray, in the same [0,1] parameter space as the collider hit times
-      const float t = (dirLenSq > 1e-10f) ? ((center.x - nearPt.x) * dir.x + (center.y - nearPt.y) * dir.y - nearPt.z * dir.z) / dirLenSq : 0.5f;
-      hits.emplace_back(t, uiPart);
+      }
+      // Flat colliders seen edge-on (a perfectly vertical flasher in a side view,...) lie in a plane
+      // parallel to the pick ray so the ray cast can never hit them: they project to a thin sliver
+      // instead, so test the mouse against the projected bounds of each of the part's hit objects
+      float partT = FLT_MAX;
+      for (const HitObject* const hitObject : hitObjects)
+      {
+         const FRect3D& bb = hitObject->m_hitBBox;
+         if (bb.left > bb.right)
+            continue;
+         ImVec2 pMin(FLT_MAX, FLT_MAX), pMax(-FLT_MAX, -FLT_MAX);
+         float objT = FLT_MAX;
+         for (int i = 0; i < 8; ++i)
+         {
+            const Vertex3Ds c((i & 1) ? bb.right : bb.left, (i & 2) ? bb.bottom : bb.top, (i & 4) ? bb.zhigh : bb.zlow);
+            const ImVec2 p = ctx.Project(c);
+            if (p.x == FLT_MAX)
+            {
+               pMin.x = FLT_MAX;
+               break;
+            }
+            pMin.x = min(pMin.x, p.x);
+            pMin.y = min(pMin.y, p.y);
+            pMax.x = max(pMax.x, p.x);
+            pMax.y = max(pMax.y, p.y);
+            objT = min(objT, rayParam(c));
+         }
+         if (pMin.x == FLT_MAX || min(pMax.x - pMin.x, pMax.y - pMin.y) > maxDist)
+            continue;
+         const float dx = max(max(pMin.x - mousePos.x, 0.f), mousePos.x - pMax.x);
+         const float dy = max(max(pMin.y - mousePos.y, 0.f), mousePos.y - pMax.y);
+         if (dx * dx + dy * dy <= maxDist * maxDist)
+            partT = min(partT, objT);
+      }
+      if (partT != FLT_MAX)
+         hits.emplace_back(partT, uiPart);
    }
    std::ranges::sort(hits, [](const auto& a, const auto& b) { return a.first < b.first; });
 }
