@@ -463,7 +463,7 @@ void ViewportPane::ApplyTransformOpDelta()
                {
                   IEditable* const editable = uiPart->GetEditable();
                   if (editable == nullptr || editable->GetItemType() == eItemPartGroup || editable->GetItemType() == eItemBall || m_editor.IsPartSelected(uiPart)
-                     || !editable->IsUIVisible(false))
+                     || !editable->IsUIVisible(true))
                      continue;
                   m_op.snapPoints.push_back(editable->GetCenter());
                   if (DragPointCurve* const curve = uiPart->GetDragPointCurve())

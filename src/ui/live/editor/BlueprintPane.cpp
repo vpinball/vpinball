@@ -187,7 +187,7 @@ void BlueprintPane::RenderScene(ImDrawList* const drawList)
    ctx.SetPass(BlueprintRenderContext::Pass::Fill);
    for (IEditable* const editable : table->GetParts())
    {
-      if (editable->m_desktopBackdrop || !editable->IsUIVisible(false))
+      if (editable->m_desktopBackdrop || !editable->IsUIVisible(true))
          continue;
       const auto it = m_editor.m_editableMap.find(editable);
       if (it != m_editor.m_editableMap.end())
@@ -219,7 +219,7 @@ void BlueprintPane::RenderScene(ImDrawList* const drawList)
    ctx.SetPass(BlueprintRenderContext::Pass::Outline);
    for (IEditable* const editable : table->GetParts())
    {
-      if (editable->m_desktopBackdrop || !editable->IsUIVisible(false))
+      if (editable->m_desktopBackdrop || !editable->IsUIVisible(true))
          continue;
       const auto it = m_editor.m_editableMap.find(editable);
       if (it != m_editor.m_editableMap.end())
@@ -258,7 +258,7 @@ void BlueprintPane::HitTestParts(const ImVec2& pos, vector<BlueprintHitContext::
       ctx.SetPass(pass);
       for (IEditable* const editable : m_editor.m_table->GetParts())
       {
-         if (editable->m_desktopBackdrop || !editable->IsUIVisible(false) || !m_editor.IsEditablePickable(editable, false))
+         if (editable->m_desktopBackdrop || !editable->IsUIVisible(true) || !m_editor.IsEditablePickable(editable, false))
             continue;
          const auto it = m_editor.m_editableMap.find(editable);
          if (it != m_editor.m_editableMap.end())
@@ -281,7 +281,7 @@ void BlueprintPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB,
       ctx.SetPass(pass);
       for (IEditable* const editable : m_editor.m_table->GetParts())
       {
-         if (editable->m_desktopBackdrop || !editable->IsUIVisible(false) || !m_editor.IsEditablePickable(editable, false))
+         if (editable->m_desktopBackdrop || !editable->IsUIVisible(true) || !m_editor.IsEditablePickable(editable, false))
             continue;
          const auto it = m_editor.m_editableMap.find(editable);
          if (it != m_editor.m_editableMap.end())
