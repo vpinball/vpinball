@@ -71,7 +71,7 @@ void BlueprintPane::RenderContextMenu()
          editor.m_player->m_physics->Update(owner);
       };
 
-      ImGui::BeginDisabled(!canEdit);
+      ImGui::BeginDisabled(!canEdit || owner->IsUILocked());
       if (ImGui::MenuItem("Smooth", nullptr, clickedPoint->IsSmooth()))
          pointOp(
             [](DragPoint* point)
@@ -104,7 +104,7 @@ void BlueprintPane::RenderContextMenu()
       // Add Point: single selected drag point curve part (win32 IDR_SURFACEMENU)
       if (menuPart != nullptr && menuPart->GetDragPointCurve() != nullptr && editor.m_pointEditPart == nullptr)
       {
-         ImGui::BeginDisabled(!canEdit);
+         ImGui::BeginDisabled(!canEdit || menuEditable->IsUILocked());
          if (ImGui::MenuItem("Add Point"))
          {
             editor.m_undo.BeginUndo();
@@ -373,9 +373,10 @@ void BlueprintPane::RenderDialogs()
          m_orderList.clear();
          if (m_dialog == DialogKind::OrderHit)
          {
-            // The stacked parts under the menu position, front to back
+            // The stacked parts under the menu position, front to back (locked parts can not be modified)
             for (const std::shared_ptr<EditorUIPart>& part : MenuHitParts())
-               m_orderList.push_back(part->GetEditable());
+               if (!part->GetEditable()->IsUILocked())
+                  m_orderList.push_back(part->GetEditable());
          }
          else
          {
@@ -383,7 +384,7 @@ void BlueprintPane::RenderDialogs()
             const vector<IEditable*>& parts = editor.m_table->GetParts();
             for (SSIZE_T i = (SSIZE_T)parts.size() - 1; i >= 0; i--)
                for (const std::shared_ptr<EditorUIPart>& sel : editor.m_multiSel)
-                  if (sel->GetEditable() == parts[i])
+                  if (sel->GetEditable() == parts[i] && !parts[i]->IsUILocked())
                      m_orderList.push_back(parts[i]);
          }
       }

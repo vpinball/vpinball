@@ -510,27 +510,7 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
    ImGui::SetNextWindowPos(editor.m_addPartPopupPos, ImGuiCond_Appearing);
    if (ImGui::BeginPopup("Add Part"))
    {
-      editor.EnsureAddPartButtons();
-      const float iconSize = ImGui::GetFrameHeight();
-      int column = 0;
-      for (const auto& button : editor.m_addPartButtons)
-      {
-         if (button.icon == nullptr)
-            continue;
-         if (column > 0)
-            ImGui::SameLine();
-         if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
-         {
-            if (button.action)
-               button.action();
-            else
-               editor.m_addPartType = button.type;
-            ImGui::CloseCurrentPopup();
-         }
-         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Add %s", button.name);
-         column = (column + 1) % 5;
-      }
+      editor.RenderAddPartPicker();
       ImGui::EndPopup();
    }
 
@@ -749,7 +729,7 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
             if (dx * dx + dy * dy <= 100.f * dpi * dpi)
             {
                editor.m_centerSelected = io.KeyShift ? !editor.m_centerSelected : true;
-               editor.m_pointDragPending = editor.m_centerSelected;
+               editor.m_pointDragPending = editor.m_centerSelected && !editor.m_pointEditPart->GetEditable()->IsUILocked();
                editor.m_pointDragZ = editor.m_pointEditPart->GetEditCenter().z;
                editor.m_pointDragPos = Unproject(m_boxSelectStart);
             }
@@ -776,7 +756,7 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
                      editor.m_pointSel.clear();
                      editor.m_pointSel.push_back(hitPoint);
                   }
-                  editor.m_pointDragPending = editor.IsPointSelected(hitPoint) && !hitPoint->m_uiLocked;
+                  editor.m_pointDragPending = editor.IsPointSelected(hitPoint) && !hitPoint->m_uiLocked && !editor.m_pointEditPart->GetEditable()->IsUILocked();
                   editor.m_pointDragZ = editor.m_pointEditPart->GetDragPointZ(hitPoint);
                   editor.m_pointDragPos = Unproject(m_boxSelectStart);
                }
@@ -786,7 +766,7 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
             else if (!hits.empty())
             {
                const BlueprintHitContext::Hit& top = hits.back();
-               if (top.point != nullptr && !top.point->m_uiLocked)
+               if (top.point != nullptr && !top.point->m_uiLocked && !top.part->GetEditable()->IsUILocked())
                {
                   // Direct drag of a drag point handle of a selected part (win32 behavior)
                   m_dragPart = Resolve(top.part);

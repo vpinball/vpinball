@@ -57,7 +57,7 @@ vector<Primitive *> SetOriginOp::SelectedPrimitives(const EditorUI &ed, int &ski
    for (const auto &part : parts)
    {
       IEditable *const edit = part ? part->GetEditable() : nullptr;
-      if (edit && edit->GetItemType() == eItemPrimitive)
+      if (edit && !edit->IsUILocked() && edit->GetItemType() == eItemPrimitive)
          prims.push_back(static_cast<Primitive *>(edit));
       else
          skipped++;

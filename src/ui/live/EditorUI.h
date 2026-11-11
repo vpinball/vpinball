@@ -62,6 +62,7 @@ class EditorUI final
    friend class EditorChrome;
    friend class OutlinerPanel;
    friend class PropertiesPanel;
+   friend class PropertyPane;
    friend class RendererInspectionModal;
    friend class PartLibraryPanel;
    friend class PartLibraryPane;
@@ -291,6 +292,12 @@ private:
    };
    vector<AddPartButton> m_addPartButtons; // Lazily initialized part type picker buttons (shared by the viewport panes)
    void EnsureAddPartButtons();
+   void RenderAddPartPicker(); // Part type grid of the 'Add Part' picker popup (rendered inside the popup, in the host pane's window scope)
+   // Part type icons (the same as the win32 toolbar, src/assets/editor/*.png), lazily loaded and shared
+   // by the part picker, the outliner and the property pane. eItemInvalid maps to the reference image icon.
+   std::shared_ptr<Sampler> PartTypeIcon(ItemTypeEnum type); // Icon of a part type, null when it has none
+   std::shared_ptr<Sampler> PartIcon(const IEditable *editable); // Icon of a part: its type icon, the reference image icon
+   ankerl::unordered_dense::map<int, std::shared_ptr<Sampler>> m_partTypeIcons; // The lazily loaded icons, keyed by ItemTypeEnum
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
    PartGroup *CreatePartGroup(); // Create a new root-level part group (outliner / layer dialog 'New Group')
    void CreateCollection(bool fromSelection); // Create a collection, optionally populated with the selected parts

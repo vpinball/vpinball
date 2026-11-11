@@ -13,7 +13,6 @@
 #include "PropertiesPanel.h"
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
-#include "ui/live/editor/ops/ReferenceImageOp.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 #include "ViewportPane.h"
@@ -259,33 +258,6 @@ namespace
       }
    }
 
-   const char *TypeIcon(const EditorUIPart *uiPart)
-   {
-      const IEditable *const editable = uiPart->GetEditable();
-      if (ReferenceImageOp::IsReferenceImage(uiPart))
-         return ICON_LC_IMAGE;
-      switch (editable->GetItemType())
-      {
-      case eItemPrimitive: return ICON_LC_BOX;
-      case eItemLight: return ICON_LC_LIGHTBULB;
-      case eItemFlasher: return ICON_LC_ZAP;
-      case eItemRamp: return ICON_LC_ROUTE;
-      case eItemSurface: return ICON_LC_SQUARE;
-      case eItemRubber: return ICON_LC_CIRCLE;
-      case eItemFlipper: return ICON_LC_MOVE_3D; // Not a cursor
-      case eItemBumper: return ICON_LC_DISC;
-      case eItemHitTarget: return ICON_LC_CIRCLE_DOT;
-      case eItemGate: return ICON_LC_MOVE_HORIZONTAL;
-      case eItemSpinner: return ICON_LC_REFRESH_CW;
-      case eItemTrigger: return ICON_LC_MINUS;
-      case eItemKicker: return ICON_LC_CIRCLE;
-      case eItemPlunger: return ICON_LC_ARROW_UP;
-      case eItemTimer: return ICON_LC_TIMER;
-      case eItemTextbox: return ICON_LC_TYPE;
-      case eItemDecal: return ICON_LC_IMAGE;
-      default: return ICON_LC_TAG;
-      }
-   }
 }
 
 void OutlinerPanel::ParseFilter()
@@ -601,7 +573,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          const IEditable *const editable = uiPart->GetEditable();
          if (editable == nullptr || editable == group || editable->GetPartGroup() == group)
             continue;
-         if (!EditorUI::CanMovePartToGroup(editable, group))
+         if (editable->IsUILocked() || !EditorUI::CanMovePartToGroup(editable, group))
          {
             blocked = true;
             continue;
@@ -621,10 +593,15 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       const IEditable *editable = uiPart->GetEditable();
       ImGui::SetDragDropPayload("VPX_PART", &editable, sizeof(editable));
       const size_t count = editor.m_multiSel.size();
+      if (const std::shared_ptr<Sampler> &icon = editor.PartIcon(editable); icon != nullptr)
+      {
+         ImGui::Image(icon, ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()));
+         ImGui::SameLine(0.f, 6.f);
+      }
       if (count > 1)
-         ImGui::Text("%s  Move %d parts", TypeIcon(uiPart.get()), (int)count);
+         ImGui::Text("Move %d parts", (int)count);
       else
-         ImGui::Text("%s  %s", TypeIcon(uiPart.get()), editable->GetName().c_str());
+         ImGui::TextUnformatted(editable->GetName().c_str());
       if (dragBlockedPrev)
          ImGui::TextColored(EditorTheme::V(EditorTheme::TextDim), "Not allowed here");
       ImGui::EndDragDropSource();
@@ -692,13 +669,15 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       }
       {
          // Type icon (dim) and name (normal text, faint when the part is hidden) drawn over the selectable, indented under the parent group's name
-         const char *const icon = TypeIcon(edit.get());
+         const std::shared_ptr<Sampler> &icon = editor.PartIcon(editable);
          const ImVec2 textPos = ImVec2(ImGui::GetItemRectMin().x + indentX, ImGui::GetItemRectMin().y);
          ImDrawList *const drawList = ImGui::GetWindowDrawList();
-         // Lucide glyph ink sits higher than the text line box: center the ink vertically rather than aligning on the text origin
-         const ImVec4 iconInk = TextInkBounds(icon);
-         drawList->AddText(ImVec2(textPos.x - iconInk.x, textPos.y + (ImGui::GetTextLineHeight() - (iconInk.w - iconInk.y)) * 0.5f - iconInk.y), EditorTheme::TextDim, icon);
-         const float nameX = textPos.x + ImGui::CalcTextSize(icon).x + 6.f;
+         const float iconSide = ImGui::GetTextLineHeight();
+         if (icon != nullptr)
+            drawList->AddImage(icon, textPos, ImVec2(textPos.x + iconSide, textPos.y + iconSide));
+         else // Types without an asset icon fall back to a generic glyph
+            drawList->AddText(ImVec2(textPos.x, textPos.y), EditorTheme::TextDim, ICON_LC_TAG);
+         const float nameX = textPos.x + iconSide + 6.f;
          const float eyeScreenX = ImGui::GetWindowPos().x - ImGui::GetScrollX() + eyeX; // Where the eye button is placed by SameLine(eyeX)
          const bool hovered = ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlappedByItem);
          const string shown = EllipsizeToWidth(editable->GetName(), eyeScreenX - ImGui::GetStyle().ItemSpacing.x - nameX);
