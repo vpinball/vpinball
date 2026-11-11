@@ -14,6 +14,7 @@
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/FileDialog.h"
+#include "ui/live/LiveUI.h"
 #include "ui/live/editor/EditorTheme.h"
 
 namespace VPX::EditorUI
@@ -317,17 +318,21 @@ Texture *ReferenceImageOp::ImportFile(const string &file)
 {
    PinTable *const table = m_editor.m_table;
    const std::filesystem::path path = PathFromUTF8(file);
-   // ImportImage replaces an image of the same name: pick a free one
+   Texture *const loaded = Texture::CreateFromFile(path);
+   if (loaded == nullptr)
+      return nullptr;
+   // A same-name image would be replaced: pick a free one
    const string base = TitleFromFilename(path);
    string name = base;
    for (int i = 2; table->GetImage(name) != nullptr; i++)
       name = base + '_' + std::to_string(i);
-   Texture *const tex = table->ImportImage(path, name);
-   if (tex != nullptr)
-   {
+   loaded->m_name = name;
+   Texture *const tex = table->ImportImage(loaded); // A file identical to an existing image is not imported again: the existing image is used
+   if (tex != loaded)
+      m_editor.m_liveUI.PushNotification("'" + PathToUTF8(path.filename()) + "' is a duplicate of image '"s + tex->m_name + "': the existing image is used"s, 8000);
+   else
       table->SetNonUndoableDirty(SaveDirtyState::Dirty); // Images are not part of the undo history (Images panel import)
-      g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(path.parent_path()), false);
-   }
+   g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(path.parent_path()), false);
    return tex;
 }
 

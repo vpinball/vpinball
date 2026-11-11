@@ -5085,22 +5085,65 @@ Texture *PinTable::ImportImage(const std::filesystem::path &filename, const stri
       image->m_name = imagename;
 
    if (existing)
-   {
-      RemoveFromVectorSingle(m_vimage, existing);
-      if (m_liveBaseTable)
-         RemoveFromVectorSingle(m_vliveimage, existing);
-      image->m_alphaTestValue = existing->m_alphaTestValue;
-      delete existing;
-   }
+      return ReImportImage(existing, image);
 
    m_vimage.push_back(image);
    // GetImage looks images up in the texture map once it is set up (play, live editor): keep it in sync so that the parts can use the image right
-   // away, and so that it does not keep pointing at a replaced (deleted) image. An image added under a name already used keeps the existing entry.
-   if ((m_liveBaseTable || !m_textureMap.empty()) && (existing != nullptr || m_textureMap.find(image->m_name) == m_textureMap.end()))
+   // away. An image added under a name already used keeps the existing entry.
+   if ((m_liveBaseTable || !m_textureMap.empty()) && m_textureMap.find(image->m_name) == m_textureMap.end())
       m_textureMap[image->m_name] = image;
    if (m_liveBaseTable)
       m_vliveimage.push_back(image);
    return image;
+}
+
+Texture *PinTable::ImportImage(Texture *const image)
+{
+   // A file identical to an image the table already holds is not imported again: the existing image is used instead
+   if (Texture *const dup = FindImageByHash(image))
+   {
+      delete image;
+      return dup;
+   }
+
+   m_vimage.push_back(image);
+   // GetImage looks images up in the texture map once it is set up (play, live editor): keep it in sync so that the parts can use the image right
+   // away. An image added under a name already used keeps the existing entry.
+   if ((m_liveBaseTable || !m_textureMap.empty()) && m_textureMap.find(image->m_name) == m_textureMap.end())
+      m_textureMap[image->m_name] = image;
+   if (m_liveBaseTable)
+      m_vliveimage.push_back(image);
+   return image;
+}
+
+Texture *PinTable::ReImportImage(Texture *const oldImage, Texture *const image)
+{
+   if (memcmp(image->GetMD5Hash(), oldImage->GetMD5Hash(), 16) == 0)
+   {
+      // The content is unchanged: keep the existing image
+      delete image;
+      return oldImage;
+   }
+
+   image->m_alphaTestValue = oldImage->m_alphaTestValue;
+   RemoveFromVectorSingle(m_vimage, oldImage);
+   if (m_liveBaseTable)
+      RemoveFromVectorSingle(m_vliveimage, oldImage);
+   delete oldImage;
+
+   m_vimage.push_back(image);
+   // GetImage looks images up in the texture map once it is set up (play, live editor): a reimported image takes over the lookup entry
+   if (m_liveBaseTable || !m_textureMap.empty())
+      m_textureMap[image->m_name] = image;
+   if (m_liveBaseTable)
+      m_vliveimage.push_back(image);
+   return image;
+}
+
+Texture *PinTable::FindImageByHash(const Texture *const image) const
+{
+   const auto it = std::ranges::find_if(m_vimage, [image](const Texture *other) { return other != image && memcmp(other->GetMD5Hash(), image->GetMD5Hash(), 16) == 0; });
+   return it != m_vimage.end() ? *it : nullptr;
 }
 
 void PinTable::RemoveImage(Texture * const ppi)

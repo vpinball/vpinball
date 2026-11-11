@@ -166,13 +166,23 @@ void PropertyPane::PollImageFieldImport()
    s_imageFieldImportLink = nullptr;
    if (file.empty()) // Cancelled dialog
       return;
-   Texture* const tex = m_table->ImportImage(PathFromUTF8(file), ""s);
-   if (tex == nullptr)
+   const std::filesystem::path path = PathFromUTF8(file);
+
+   // A file identical to an image the table already holds is not imported again: the field links to the existing image
+   Texture* const loaded = Texture::CreateFromFile(path);
+   if (loaded == nullptr)
       return;
-   g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(PathFromUTF8(file).parent_path()), false);
+   Texture* const tex = m_table->ImportImage(loaded);
+   g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(path.parent_path()), false);
    if (link)
       link(*this, tex->m_name);
-   m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
+   if (tex != loaded)
+   {
+      if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr)
+         g_pplayer->m_liveUI->PushNotification("'" + PathToUTF8(path.filename()) + "' is a duplicate of image '"s + tex->m_name + "': linked to the existing image"s, 8000);
+   }
+   else
+      m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
 }
 
 void PropertyPane::ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust)
