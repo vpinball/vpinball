@@ -191,6 +191,14 @@ private:
    bool m_pointEditCenter = false; // Edit the part's center point instead of its drag point curve
    bool m_centerSelected = false; // Whether the part's center point is selected in center edit mode
    vector<DragPoint *> m_pointSel; // Selected drag points of the edited part's curve
+   // Drag point transform gesture: SetSelectionTransform replays the absolute target transform on
+   // the points' gesture-start positions (applying its delta to the current positions would stack
+   // the accumulated rotation & scale every frame). Re-armed when the selected points or their
+   // positions change outside a gesture (selection change, direct drag, undo,...)
+   mutable vector<DragPoint *> m_pointTransformSel;
+   mutable vector<Vertex3Ds> m_pointTransformStart;
+   mutable vector<Vertex3Ds> m_pointTransformCur;
+   mutable Matrix3D m_pointTransformBase;
    Selection m_savedSelection; // Selection state saved on mode entry, restored on exit
    vector<std::shared_ptr<EditorUIPart>> m_savedMultiSel;
    bool m_pointDragPending = false; // Left button is down on a selected point (drag not started yet)

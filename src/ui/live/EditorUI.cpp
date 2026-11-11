@@ -2749,16 +2749,34 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
       {
          if (m_pointSel.empty())
             return;
-         Matrix3D oldTransform;
-         GetSelectionTransform(oldTransform);
-         Matrix3D invOldTransform(oldTransform);
-         invOldTransform.Invert();
-         const Matrix3D delta = invOldTransform * newTransform;
-         for (DragPoint *point : m_pointSel)
+         // The incoming transform is absolute, built from the state the transform gesture started
+         // from (op snapshot or gizmo drag start), while only the points' current positions are
+         // known here: applying its delta to them would stack the accumulated rotation & scale on
+         // every call (a rotation about the points' centroid leaves the centroid, the only anchor
+         // recoverable from the points, unchanged). So the delta is evaluated against the gesture
+         // base and applied to the gesture-start positions; any change made outside this path
+         // (point drag, undo, selection change,...) re-arms the gesture
+         bool gestureValid = m_pointTransformSel == m_pointSel && m_pointTransformCur.size() == m_pointSel.size();
+         for (size_t i = 0; gestureValid && i < m_pointSel.size(); ++i)
+            gestureValid = m_pointSel[i]->GetVertex() == m_pointTransformCur[i];
+         if (!gestureValid)
          {
-            const Vertex3Ds v = delta * point->GetVertex();
-            point->SetX(v.x);
-            point->SetY(v.y);
+            m_pointTransformSel = m_pointSel;
+            m_pointTransformStart.resize(m_pointSel.size());
+            m_pointTransformCur.resize(m_pointSel.size());
+            for (size_t i = 0; i < m_pointSel.size(); ++i)
+               m_pointTransformStart[i] = m_pointTransformCur[i] = m_pointSel[i]->GetVertex();
+            GetSelectionTransform(m_pointTransformBase);
+         }
+         Matrix3D invBaseTransform(m_pointTransformBase);
+         invBaseTransform.Invert();
+         const Matrix3D delta = invBaseTransform * newTransform;
+         for (size_t i = 0; i < m_pointSel.size(); ++i)
+         {
+            const Vertex3Ds v = delta * m_pointTransformStart[i];
+            m_pointSel[i]->SetX(v.x);
+            m_pointSel[i]->SetY(v.y);
+            m_pointTransformCur[i] = m_pointSel[i]->GetVertex();
          }
          m_pointEditPart->GetDragPointCurve()->OnPointsModified();
       }
