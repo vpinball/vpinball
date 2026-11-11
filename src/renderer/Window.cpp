@@ -385,6 +385,16 @@ void Window::RaiseAndFocus()
 bool Window::IsFocused() const {
    if (m_isVR)
       return true;
+#if defined(_WIN32)
+   // A window may hold keyboard input without being the foreground window, for example when the
+   // application loses the foreground status during startup while the window keeps input focus.
+   // SDL only tracks foreground focus and reports the window as unfocused (its keyboard events are
+   // then emitted with a null windowID, see https://github.com/libsdl-org/SDL/issues/13777), so
+   // evaluate the actual input focus when called on the window's thread (GetFocus only reports the
+   // focus of the calling thread's input queue).
+   if (m_nwnd != nullptr && GetWindowThreadProcessId(GetNativeHWND(), nullptr) == GetCurrentThreadId())
+      return GetFocus() == GetNativeHWND();
+#endif
    return m_nwnd == SDL_GetKeyboardFocus();
 }
 

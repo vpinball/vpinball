@@ -1908,6 +1908,33 @@ void Player::LockForegroundWindow(const bool enable)
 #endif
 }
 
+// Keyboard and text input events are emitted with the windowID of the window holding keyboard focus.
+// A window may hold keyboard input without being the foreground window (for example when the
+// application loses the foreground status during startup): SDL then reports the events with a
+// windowID of 0 (see https://github.com/libsdl-org/SDL/issues/13777). Re-associate them to the
+// window actually holding keyboard input so they are not filtered out by the per window dispatch,
+// eventually defaulting to the playfield window since a key event necessarily targets one of our windows.
+SDL_Window *Player::GetInputEventWindow(SDL_WindowID &windowID) const
+{
+   if (SDL_Window *wnd = SDL_GetWindowFromID(windowID); wnd != nullptr)
+      return wnd;
+#if defined(_WIN32)
+   const HWND focus = GetFocus();
+   for (VPX::Window *const wnd : { m_playfieldWnd, m_backglassOutput.GetWindow(), m_scoreViewOutput.GetWindow(), m_topperOutput.GetWindow() })
+   {
+      if (wnd && wnd->GetNativeHWND() == focus)
+      {
+         windowID = SDL_GetWindowID(wnd->GetCore());
+         return wnd->GetCore();
+      }
+   }
+#endif
+   SDL_Window *const playfield = m_playfieldWnd ? m_playfieldWnd->GetCore() : nullptr;
+   if (playfield)
+      windowID = SDL_GetWindowID(playfield);
+   return playfield;
+}
+
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void Player::ProcessOSMessages(const bool isInitialized)
@@ -1963,13 +1990,9 @@ void Player::ProcessOSMessages(const bool isInitialized)
       }
 
       case SDL_EVENT_KEY_UP:
-      case SDL_EVENT_KEY_DOWN:
-         isPFWnd = (SDL_GetWindowFromID(e.key.windowID) == m_playfieldWnd->GetCore()) || IsVR();
-         break;
+      case SDL_EVENT_KEY_DOWN: isPFWnd = (GetInputEventWindow(e.key.windowID) == m_playfieldWnd->GetCore()) || IsVR(); break;
 
-      case SDL_EVENT_TEXT_INPUT:
-         isPFWnd = (SDL_GetWindowFromID(e.text.windowID) == m_playfieldWnd->GetCore()) || IsVR();
-         break;
+      case SDL_EVENT_TEXT_INPUT: isPFWnd = (GetInputEventWindow(e.text.windowID) == m_playfieldWnd->GetCore()) || IsVR(); break;
       case SDL_EVENT_MOUSE_WHEEL: isPFWnd = (SDL_GetWindowFromID(e.wheel.windowID) == m_playfieldWnd->GetCore()) || IsVR(); break;
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
       case SDL_EVENT_MOUSE_BUTTON_UP:
