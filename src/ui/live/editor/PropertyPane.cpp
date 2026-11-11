@@ -1,11 +1,21 @@
 #include "core/stdafx.h"
 #include "PropertyPane.h"
 
+#include "core/extern.h"
+#include "core/player.h"
+#include "core/SettingsService.h"
 #include "imgui/imgui_stdlib.h"
+#include "ui/live/FileDialog.h"
 #include "ui/live/LiveUI.h"
 
 namespace VPX::EditorUI
 {
+namespace
+{
+   // Result slot and field link of an asynchronous image import requested from an image field
+   std::shared_ptr<vector<string>> s_imageFieldImportFile;
+   std::function<void(PropertyPane&, const string&)> s_imageFieldImportLink;
+}
 
 PropertyPane::PropertyPane(PinTable* table)
    : m_table(table)
@@ -98,6 +108,7 @@ void PropertyPane::Separator(const string& label) const
 bool PropertyPane::BeginSection(const string& name)
 {
    assert(!m_inSection);
+   PollImageFieldImport();
    const bool opened = ImGui::CollapsingHeader(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
 
    // Add a white line above
@@ -123,6 +134,45 @@ void PropertyPane::EndSection()
 {
    assert(m_inSection);
    m_inSection = false;
+}
+
+bool PropertyPane::CanImportImageField() const { return s_imageFieldImportFile == nullptr && g_pplayer != nullptr && g_pplayer->m_playfieldWnd != nullptr; }
+
+void PropertyPane::RequestImageFieldImport(const std::function<void(PropertyPane&, const string&)>& link)
+{
+   if (!CanImportImageField())
+      return;
+   s_imageFieldImportLink = link;
+   s_imageFieldImportFile = std::make_shared<vector<string>>();
+   const SDL_DialogFileFilter filters[] = { { "Image Files", "bmp;jpg;jpeg;png;tga;webp;exr;hdr" } };
+   const string dir = PathToUTF8(PathFromString(g_settingsService.GetAppSettings().GetRecentDir_ImageDir())); // SDL expects UTF-8
+   ShowOpenFileDialog(
+      [](void* userdata, const char* const* filelist, int filter)
+      {
+         auto* res = static_cast<std::shared_ptr<vector<string>>*>(userdata);
+         (**res).push_back((filelist != nullptr && filelist[0] != nullptr) ? filelist[0] : ""); // Always answers, so that the dialog can be opened again
+         delete res;
+      },
+      new std::shared_ptr<vector<string>>(s_imageFieldImportFile), g_pplayer->m_playfieldWnd->GetCore(), filters, 1, dir.empty() ? nullptr : dir.c_str(), false);
+}
+
+void PropertyPane::PollImageFieldImport()
+{
+   if (s_imageFieldImportFile == nullptr || s_imageFieldImportFile->empty())
+      return;
+   const string file = std::move(s_imageFieldImportFile->front());
+   const std::function<void(PropertyPane&, const string&)> link = std::move(s_imageFieldImportLink);
+   s_imageFieldImportFile = nullptr;
+   s_imageFieldImportLink = nullptr;
+   if (file.empty()) // Cancelled dialog
+      return;
+   Texture* const tex = m_table->ImportImage(PathFromUTF8(file), ""s);
+   if (tex == nullptr)
+      return;
+   g_settingsService.GetAppSettings().SetRecentDir_ImageDir(PathToString(PathFromUTF8(file).parent_path()), false);
+   if (link)
+      link(*this, tex->m_name);
+   m_table->SetNonUndoableDirty(SaveDirtyState::Dirty);
 }
 
 void PropertyPane::ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust)
