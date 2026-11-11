@@ -1272,9 +1272,10 @@ void ViewportPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB, 
       if (editable == nullptr || editable->GetItemType() == eItemPartGroup || !m_editor.IsEditablePickable(editable, m_viewType == ViewMode::DesktopBackdrop))
          continue;
       Matrix3D transform;
-      if (uiPart->GetTransform(transform) == EditorUIPart::TM_None)
-         continue;
-      const ImVec2 pos = ctx.Project(transform.GetOrthoNormalPos());
+      const Vertex2D center = editable->GetCenter();
+      // Parts without a transform (timer,...) are still selectable: pick by their center instead
+      const Vertex3Ds pos3d = (uiPart->GetTransform(transform) != EditorUIPart::TM_None) ? transform.GetOrthoNormalPos() : Vertex3Ds(center.x, center.y, 0.f);
+      const ImVec2 pos = ctx.Project(pos3d);
       if (pos.x >= boxMin.x && pos.x <= boxMax.x && pos.y >= boxMin.y && pos.y <= boxMax.y && !m_editor.IsPartSelected(uiPart))
          m_editor.m_multiSel.push_back(uiPart);
    }
@@ -1878,6 +1879,39 @@ void ViewportPane::RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& v
          continue;
       vhoHit.push_back(hr);
    }
+}
+
+void ViewportPane::HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float, std::shared_ptr<EditorUIPart>>>& hits) const
+{
+   Vertex3Ds nearPt, farPt;
+   if (!PickRay(mousePos, nearPt, farPt))
+      return;
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_shadeMode, false);
+   if (!SetupOverlay(&ctx, nullptr))
+      return;
+   const float maxDist = 14.f * m_editor.m_liveUI.GetDPI();
+   const Vertex3Ds dir = farPt - nearPt;
+   const float dirLenSq = dir.x * dir.x + dir.y * dir.y + dir.z * dir.z;
+   for (const auto& uiPart : m_editor.m_editables)
+   {
+      IEditable* const editable = uiPart->GetEditable();
+      // Only the parts the ray cast cannot hit: part groups are excluded from picking anyway
+      if (editable == nullptr || editable->GetItemType() == eItemPartGroup || editable->GetIHitable() != nullptr
+         || !m_editor.IsEditablePickable(editable, m_viewType == ViewMode::DesktopBackdrop))
+         continue;
+      const Vertex2D center = editable->GetCenter();
+      const ImVec2 pos = ctx.Project(Vertex3Ds(center.x, center.y, 0.f));
+      if (pos.x == FLT_MAX)
+         continue;
+      const float dx = pos.x - mousePos.x;
+      const float dy = pos.y - mousePos.y;
+      if (dx * dx + dy * dy > maxDist * maxDist)
+         continue;
+      // Depth along the pick ray, in the same [0,1] parameter space as the collider hit times
+      const float t = (dirLenSq > 1e-10f) ? ((center.x - nearPt.x) * dir.x + (center.y - nearPt.y) * dir.y - nearPt.z * dir.z) / dirLenSq : 0.5f;
+      hits.emplace_back(t, uiPart);
+   }
+   std::ranges::sort(hits, [](const auto& a, const auto& b) { return a.first < b.first; });
 }
 
 Vertex2D ViewportPane::UnprojectToPlane(const ImVec2& mousePos, float z) const
@@ -2665,42 +2699,47 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
             {
                vector<HitTestResult> vhoHit;
                RayCastParts(end, vhoHit);
+               // Parts under the mouse, front to back: collider hits ordered by hit time, merged with
+               // the collider-less parts (timer, light sequencer,...) picked by their projected center
+               vector<std::shared_ptr<EditorUIPart>> hitParts;
+               vector<std::pair<float, std::shared_ptr<EditorUIPart>>> markerHits;
+               HitTestMarkers(end, markerHits);
+               auto addPart = [&hitParts](const std::shared_ptr<EditorUIPart>& part)
+               {
+                  if (std::ranges::find(hitParts, part) == hitParts.end())
+                     hitParts.push_back(part);
+               };
+               size_t markerIndex = 0;
+               for (const HitTestResult& hr : vhoHit)
+               {
+                  while (markerIndex < markerHits.size() && markerHits[markerIndex].first <= hr.m_time)
+                     addPart(markerHits[markerIndex++].second);
+                  const auto it = m_editor.m_editableMap.find(hr.m_obj->m_editable);
+                  if (it != m_editor.m_editableMap.end())
+                     addPart(it->second);
+               }
+               while (markerIndex < markerHits.size())
+                  addPart(markerHits[markerIndex++].second);
                if (io.KeyShift)
                {
                   // Shift+click toggles the front-most hit part in the multi selection
-                  if (!vhoHit.empty())
+                  if (!hitParts.empty())
                   {
-                     const auto it = m_editor.m_editableMap.find(vhoHit.front().m_obj->m_editable);
-                     if (it != m_editor.m_editableMap.end())
-                     {
-                        m_editor.TogglePartSelection(it->second);
-                        OutlinerPanel::m_anchor = it->second;
-                     }
+                     m_editor.TogglePartSelection(hitParts.front());
+                     OutlinerPanel::m_anchor = hitParts.front();
                   }
                }
-               else if (vhoHit.empty())
+               else if (hitParts.empty())
                   m_editor.ClearSelection();
                else
                {
                   // Click selects the nearest hit part, subsequent clicks cycle to the parts behind it
-                  vector<std::shared_ptr<EditorUIPart>> hitParts;
-                  for (const HitTestResult& hr : vhoHit)
-                  {
-                     const auto it = m_editor.m_editableMap.find(hr.m_obj->m_editable);
-                     if (it != m_editor.m_editableMap.end() && std::ranges::find(hitParts, it->second) == hitParts.end())
-                        hitParts.push_back(it->second);
-                  }
-                  if (hitParts.empty())
-                     m_editor.ClearSelection();
-                  else
-                  {
-                     size_t selectionIndex = 0;
-                     const auto selIt = std::ranges::find(hitParts, m_editor.m_selection.GetPart());
-                     if (selIt != hitParts.end())
-                        selectionIndex = static_cast<size_t>(selIt - hitParts.begin() + 1) % hitParts.size();
-                     m_editor.SetSelection(Selection(hitParts[selectionIndex]));
-                     OutlinerPanel::m_anchor = hitParts[selectionIndex];
-                  }
+                  size_t selectionIndex = 0;
+                  const auto selIt = std::ranges::find(hitParts, m_editor.m_selection.GetPart());
+                  if (selIt != hitParts.end())
+                     selectionIndex = static_cast<size_t>(selIt - hitParts.begin() + 1) % hitParts.size();
+                  m_editor.SetSelection(Selection(hitParts[selectionIndex]));
+                  OutlinerPanel::m_anchor = hitParts[selectionIndex];
                   // TODO add debug action to make ball active: m_editor.m_player->m_pactiveballDebug = m_editor.m_pBall;
                }
             }
