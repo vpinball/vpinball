@@ -11,12 +11,13 @@
 namespace VPX::EditorUI
 {
 
-LiveRenderContext::LiveRenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync)
+LiveRenderContext::LiveRenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync, bool canDrawSceneParts)
    : m_player(player)
    , m_drawlist(drawlist)
    , m_viewMode(viewMode)
    , m_shadeMode(shadeMode)
    , m_needsLiveTableSync(needsLiveTableSync)
+   , m_canDrawSceneParts(canDrawSceneParts)
 {
 }
 
@@ -98,6 +99,12 @@ void LiveRenderContext::DrawHitObjects(IEditable *editable) const
          pho->DrawUI(project, m_drawlist, true);
       ImGui::PopStyleColor(2);
    }
+}
+
+void LiveRenderContext::DrawScenePart(IEditable *editable) const
+{
+   if (m_canDrawSceneParts)
+      m_player->m_renderer->RenderItem(editable, false);
 }
 
 void LiveRenderContext::DrawWireframe(IEditable *editable) const

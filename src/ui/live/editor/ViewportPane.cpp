@@ -349,7 +349,10 @@ void ViewportPane::EndTransformOp(const bool confirm)
    if (!confirm)
    {
       if (oursOnTop && m_op.changed)
+      {
+         m_editor.RestorePartsVisibility(); // Parts removed/reinserted by the record must carry the authored visibility, not the editor display state
          m_editor.m_undo.Undo(); // Restore the pre-op part states (the only restore that survives a selection changed mid-op)
+      }
       else if (oursOnTop)
          m_editor.m_undo.Discard(); // Nothing was applied: drop the no-op record
       else if (m_op.changed)
@@ -1627,9 +1630,12 @@ void ViewportPane::Render3D()
       m_view->SetViewProj(RH2LH * m_camView * YAxis, YAxis * m_camProj);
    }
 
-   // Render the scene parts into the view being recorded, filtered by this pane's camera mode and shading
+   // Render the scene parts into the view being recorded, filtered by this pane's camera mode and shading.
+   // Only true editor views record the scene parts they force visible (the preview camera renders like the
+   // game does); suspended while a save runs, like the selection wireframes below, as part renders may
+   // write into the part data being serialized
    LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_viewType == ViewMode::PreviewCam ? Renderer::ShadeMode::Default : m_shadeMode,
-      (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
+      (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying(), m_viewType != ViewMode::PreviewCam && !m_editor.IsSaveInProgress());
    const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
 
    // Reference space axes: the origin axes (and playfield/glass bounds) of the space shared by the

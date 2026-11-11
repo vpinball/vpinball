@@ -3,8 +3,10 @@
 
 #include "../BlueprintRenderContext.h"
 #include "../ops/ReferenceImageOp.h"
+#include "core/player.h"
 #include "math/matrix.h"
 #include "plugins/VPXPlugin.h"
+#include "ui/live/LiveUI.h"
 #include "utils/color.h"
 
 
@@ -34,17 +36,21 @@ FlasherUIPart::TransformMask FlasherUIPart::GetTransform(Matrix3D& transform)
    return static_cast<TransformMask>(TM_TransAny | TM_RotAny | TM_ScaleX | TM_ScaleY | TM_ScaleAll);
 }
 
-DragPointCurve* FlasherUIPart::GetDragPointCurve() const
+bool FlasherUIPart::ForcedVisibleInEditor() const
 {
-   return (GetPointEditContext() == nullptr && ReferenceImageOp::IsReferenceImage(m_part)) ? nullptr : &m_part->m_curve;
+   // Reference images are flashers authored as invisible in play, shown in the editor instead.
+   // Never on the live copy: the inspected game keeps its own state (and its parts must not be written).
+   return m_part->GetPTable()->m_liveBaseTable == nullptr && ReferenceImageOp::IsReferenceImage(this);
 }
+
+DragPointCurve* FlasherUIPart::GetDragPointCurve() const { return (GetPointEditContext() == nullptr && ReferenceImageOp::IsReferenceImage(this)) ? nullptr : &m_part->m_curve; }
 
 void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
    const Vertex2D center = m_part->GetCenter();
    // In plane scaling is applied to the drag points (in the part local frame, before the render rotation)
    vec3 curveScale = scale;
-   if (ReferenceImageOp::IsReferenceImage(m_part))
+   if (ReferenceImageOp::IsReferenceImage(this))
    {
       // Reference images scale uniformly (gizmo axes, S and its axis constraints alike), so that the image is not stretched
       // (the Size field of the Reference Image section sets the axes apart)
@@ -187,9 +193,10 @@ void FlasherUIPart::RenderBlueprint(const BlueprintRenderContext& ctx)
 
 void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   if (ReferenceImageOp::IsReferenceImage(m_part))
+   props.EditableHeader("Flasher"s, m_part);
+
+   if (ReferenceImageOp::IsReferenceImage(this))
    {
-      props.EditableHeader("Reference Image"s, m_part);
       if (props.BeginSection("Reference Image"s))
       {
          props.SliderInt<Flasher>(
@@ -201,7 +208,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             [](const Flasher* flasher) { return flasher->m_d.m_szImageA; }, //
             [](Flasher* flasher, const string& v)
             {
-               if (ReferenceImageOp::IsReferenceImage(flasher)) // Co-edited flashers of a mixed selection are left alone
+               if (ReferenceImageOp::IsReferenceImage(flasher, &g_pplayer->m_liveUI->m_editorUI)) // Co-edited flashers of a mixed selection are left alone
                   ReferenceImageOp::ReplaceImage(flasher, v);
             },
             "Replaces the image, keeping the position, rotation and width (fitted to its aspect)");
@@ -214,7 +221,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             }, //
             [](Flasher* flasher, const Vertex2D& v)
             {
-               if (ReferenceImageOp::IsReferenceImage(flasher))
+               if (ReferenceImageOp::IsReferenceImage(flasher, &g_pplayer->m_liveUI->m_editorUI))
                   ReferenceImageOp::SetSize(flasher, v);
             },
             PropertyPane::Unit::VPLength, 1, "Width and height. The gizmo and S scale both together; set them apart here (Fit to Image restores the image's aspect)");
@@ -222,7 +229,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             m_part, "Fit to Image"s,
             [](Flasher* flasher)
             {
-               if (ReferenceImageOp::IsReferenceImage(flasher))
+               if (ReferenceImageOp::IsReferenceImage(flasher, &g_pplayer->m_liveUI->m_editorUI))
                   ReferenceImageOp::FitToImage(flasher);
             },
             "Rebuilds a clean rectangle at the image's aspect, keeping the centre, rotation and width");
@@ -232,11 +239,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             [](Flasher* flasher, bool v) { flasher->SetUILock(v); }, "A locked reference image is neither picked nor moved in the views (select it in the outliner to unlock it)");
          props.EndSection();
       }
-
-      return;
    }
-
-   props.EditableHeader("Flasher"s, m_part);
 
    UpdateCurveSection(props);
 

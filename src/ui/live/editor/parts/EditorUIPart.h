@@ -42,6 +42,9 @@ public:
    virtual void DrawCircle(const Vertex3Ds& center, const Vertex3Ds& x, const Vertex3Ds& y, float radius, ImU32 color) const = 0;
    virtual void DrawHitObjects(IEditable* editable) const = 0;
    virtual void DrawWireframe(IEditable* editable) const = 0;
+   // Records a scene part into the view being rendered (used for parts the scene record skips, like
+   // reference images): a no-op for contexts without a view recording in progress
+   virtual void DrawScenePart(IEditable* editable) const { }
 };
 
 
@@ -112,6 +115,10 @@ public:
    // Re-syncs the editor's visibility overrides from the part's data (m_d) after an external write
    // to the part (e.g. a multi-edit change applied to the other selected parts)
    virtual void SyncVisibilityOverrides() { }
+
+   // The authored value of the part's primary render-visibility field: the shadowed editor value
+   // for parts driven by the editor, unaffected by the per-frame display overrides written to m_d
+   virtual bool IsAuthoredVisible() const { return true; }
 
    // Returns the editable drag point curve of this part, nullptr if it does not have one
    virtual DragPointCurve* GetDragPointCurve() const { return nullptr; }
@@ -206,10 +213,14 @@ public:
          m_part->m_d.*visibilityField.field = visibilityField.visible;
    }
 
+   bool IsAuthoredVisible() const override { return m_visibilityFields.empty() || m_visibilityFields[0].visible; }
+
    void SyncVisibilityOverrides() override
    {
       if (!m_part->IsUIVisible(true))
          return; // A UI-hidden part carries display-state in m_d, not the authored value: do not resync it
+      if (ForcedVisibleInEditor())
+         return; // An editor-forced part's authored value is owned by the editor, not the model: do not resync it
       for (auto& visibilityField : m_visibilityFields)
          visibilityField.visible = m_part->m_d.*visibilityField.field;
    }
@@ -217,15 +228,17 @@ public:
    void Render(const EditorRenderContext& ctx) override
    {
       const bool isUIVisible = m_part->IsUIVisible(true);
+      const bool forced = ForcedVisibleInEditor();
 
       // If running against a playing live table, we need to update visibility from it as the script may have changed it.
-      // A UI-hidden part carries display-state in m_d, not live data: syncing it would corrupt the authored value
-      if (ctx.NeedsLiveTableSync() && isUIVisible)
+      // A UI-hidden part carries display-state in m_d, not live data: syncing it would corrupt the authored value.
+      // Same for an editor-forced part: its authored value is owned by the editor, not the live table
+      if (ctx.NeedsLiveTableSync() && isUIVisible && !forced)
          for (size_t i = 0; i < m_visibilityFields.size(); i++)
             m_visibilityFields[i].visible = m_part->m_d.*(m_visibilityFields[i].field);
 
       // Render the overlay wireframe for selection or if the part would be invisible and the user turned on forced overlay for invisible parts (not rendered by the main renderer)
-      if (isUIVisible && (ctx.IsSelected() || (ctx.IsShowInvisible() && IsShadowHidden())))
+      if (isUIVisible && (ctx.IsSelected() || (ctx.IsShowInvisible() && IsShadowHidden() && !forced)))
       {
          for (auto& visibilityField : m_visibilityFields)
             m_part->m_d.*visibilityField.field = true;
@@ -236,6 +249,18 @@ public:
       const bool extraHidden = IsExtraHidden();
       for (size_t i = 0; i < m_visibilityFields.size(); i++)
          m_part->m_d.*(m_visibilityFields[i].field) = isUIVisible && m_visibilityFields[i].visible && !extraHidden;
+
+      // An editor-forced part stays authored-hidden, so the scene record skips it in every view (the
+      // preview camera included): record it into this pane's view instead, transiently forcing the
+      // fields so the forced value cannot leak to another view, a save or play
+      if (forced && isUIVisible && !extraHidden)
+      {
+         for (auto& visibilityField : m_visibilityFields)
+            m_part->m_d.*visibilityField.field = true;
+         ctx.DrawScenePart(m_part);
+         for (auto& visibilityField : m_visibilityFields)
+            m_part->m_d.*visibilityField.field = visibilityField.visible;
+      }
    }
 
 protected:
@@ -261,6 +286,10 @@ protected:
 
    // Additional non-shadowed condition hiding the part (e.g. Trigger shape 'None')
    virtual bool IsExtraHidden() const { return false; }
+
+   // The part is authored-hidden but recorded into editor views anyway (reference images):
+   // the context's DrawScenePart decides which views actually draw it (editor views, not the preview camera)
+   virtual bool ForcedVisibleInEditor() const { return false; }
 
    // Editor-side value of a render-visibility field: the editor value for this part, or the model value for the other (startup/live) instance or for unshadowed fields.
    // The single-field overloads are only valid for parts that registered at least one visibility field (Kicker and LightSeq have none).
