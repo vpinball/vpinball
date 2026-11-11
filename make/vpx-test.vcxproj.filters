@@ -98,9 +98,6 @@
     <ClCompile Include="../../tests/misc/test-material.cpp">
       <Filter>misc</Filter>
     </ClCompile>
-    <ClCompile Include="../../tests/misc/test-partextension.cpp">
-      <Filter>misc</Filter>
-    </ClCompile>
     <ClCompile Include="../../tests/misc/test-pinbinary.cpp">
       <Filter>misc</Filter>
     </ClCompile>

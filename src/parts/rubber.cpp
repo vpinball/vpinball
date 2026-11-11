@@ -616,11 +616,7 @@ void Rubber::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-void Rubber::ClearForOverwrite()
-{
-   IEditable::ClearForOverwrite();
-   m_curve.ClearPoints();
-}
+void Rubber::ClearForOverwrite() { m_curve.ClearPoints(); }
 
 void Rubber::Save(IObjectWriter& writer, const bool saveForUndo)
 {

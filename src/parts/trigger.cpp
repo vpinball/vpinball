@@ -555,11 +555,7 @@ void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.EndObject();
 }
 
-void Trigger::ClearForOverwrite()
-{
-   IEditable::ClearForOverwrite();
-   m_curve.ClearPoints();
-}
+void Trigger::ClearForOverwrite() { m_curve.ClearPoints(); }
 
 void Trigger::Load(IObjectReader& reader)
 {

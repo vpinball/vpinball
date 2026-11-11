@@ -4294,15 +4294,6 @@ IEditable *PinTable::GetElementByName(const char * const name) const
    return nullptr;
 }
 
-vector<IEditable *> PinTable::GetPartsWithExtension(const string &key) const
-{
-   vector<IEditable *> parts;
-   for (IEditable *const part : m_vedit)
-      if (part->HasExtension(key))
-         parts.push_back(part);
-   return parts;
-}
-
 void PinTable::ToggleCollectionMembership(const int colIndex, const vector<IEditable *> &selection)
 {
    if (colIndex < 0 || (size_t)colIndex >= m_vcollection.size() || selection.empty())
