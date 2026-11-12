@@ -6,6 +6,7 @@
 
 
 #include "core/ScriptInterpreter.h"
+#include "physics/physconst.h"
 #include "math/bbox.h"
 #include "math/matrix.h"
 #include "parts/Collection.h"
@@ -262,7 +263,6 @@ public:
    STDMETHOD(put_OverridePhysics)(/*[in]*/ PhysicsSet newVal);
    STDMETHOD(get_OverridePhysicsFlippers)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_OverridePhysicsFlippers)(/*[in]*/ VARIANT_BOOL newVal);
-
    STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
    STDMETHOD(get_ZPD)(/*[out, retval]*/ float *pVal);
@@ -692,6 +692,7 @@ public:
    float m_angletiltMin = 4.5f;
 
    int m_overridePhysics = 0;
+   PhysicProfile m_physicProfile = PhysicProfile::V10_8; // physics behavior profile, see physconst.h
    float m_fOverrideGravityConstant;
    float m_fOverrideContactFriction;
    float m_fOverrideElasticity;

@@ -64,21 +64,26 @@
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
 
-// Experimental, on top of FIX_PHYSICS (constants not calibrated yet!):
+// Experimental, on top of the V10_9 physics profile (constants not calibrated yet!):
 // - drops the legacy embedding/spin workarounds (C_EMBEDDED/C_EMBEDSHOT, C_EMBEDSHOT_PLANE, C_DISP_GAIN, C_BALL_SPIN_HACK)
 // - replaces them: embedded balls in contact are pushed out by velocity (C_EMBEDVELLIMIT), overlapping balls are
 //   separated positionally (C_EMBEDDISPLIMIT), slow balls embedded deeper than PHYS_TOUCH become contacts
 //   (walls, Hit3DPolys, playfield), and contacts apply rolling resistance (C_ROLLING_RESISTANCE)
 // - contact friction (constants are initial guesses, to be calibrated with help of real tables):
 //   - spin friction about the contact normal (mu * C_CONTACT_PATCH_RADIUS): point contacts could not stop a ball spinning in place
-//   - ball/ball collisions apply Coulomb friction with C_BALL_BALL_FRICTION (as ball/ball contacts do, see FIX_PHYSICS)
+//   - ball/ball collisions apply Coulomb friction with C_BALL_BALL_FRICTION (as ball/ball contacts do, see PhysicProfile::V10_9)
 //   - spin friction between balls uses their relative spin
 //   - Collide3DWall bounds the friction cone by the post-restitution normal impulse (1+elasticity times the legacy one,
 //     like HitFlipper): elastic wall/ramp bounces and VUK/scoop ejects lose a lot more speed, tables need re-tuning
 //#define NEW_PHYSICS
 
-// Active behavioral fixes of the physics engine. Keep this list in
-// sync with the FIX_PHYSICS-guarded code: document each fix the flag enables.
+// Physics behavior profile, selected per table (PinTable::m_physicProfile).
+//
+// V10_9 enables all the behavioral fixes listed below; V10_8 reproduces the
+// VPX 10.8 physics. Ball/ball contacts did not exist in 10.8, so they always
+// use the improved model, whatever the profile.
+//
+// Fixes enabled by the V10_9 profile (10.8 keeps the legacy behavior):
 // - Slow shallow touches (bnd <= PHYS_TOUCH, |bnv| <= C_CONTACTVEL) reported a fake
 //   hittime of bnd*10+0.5 (a distance remapped into (0,1] T), systematically > dtime and therefore
 //   dropped before any contact was recorded: the wall/poly touch band was dead until actual
@@ -93,34 +98,36 @@
 //   walls, dead on the top glass). Contacts now clamp the friction impulse by
 //   mu*m*(the normal delta-v the contact applied this step). Collisions (Collide3DWall) keep
 //   their pre-restitution bound (see NEW_PHYSICS).
-// - The flipper moment of inertia uses the real flipper shape instead of a rod; coil torque is
-//   rescaled (m_backwards_compatibility) to keep the free swing, ball impacts do change.
+// - The flipper moment of inertia uses the real flipper shape instead of a rod; coil torque and the
+//   ball response now work on the shape inertia directly, changing the swing speed and the kick/bounce
+//   feel (the 10.8 profile keeps the rod model).
 // - A slow ball embedded deeper than PHYS_TOUCH in the playfield was ignored (and could sink through), now it collides.
 // - Sliding contact friction requests the full slip-removing impulse (Coulomb bound clamped)
 //   instead of dtime times it, which made it depend on the step length.
+// - Ball/ball contacts are resolved before the other contacts (PhysicsEngine), and static contacts
+//   also cancel the velocity change the contacts resolved before them in the same pass applied to
+//   the ball (the friction part only, see m_contactDeltaV): the friction stopping the spin of a
+//   ball pressed against another ball or a wall (spin its playfield friction gives it every step)
+//   pushed it up, and the ball climbed off the playfield until it dropped back.
+// - HitFlipper::Contact tests the gap acceleration with the ball's center acceleration instead of the one of its material
+//   contact point, whose centripetal term (>= 0 along the normal for any spin) made a spinning ball lose its support.
+//
+// Always enabled (new in 10.9 but not gated by the profile):
 // - Ball/ball contacts (HitBall::Contact): the contact friction uses the motion relative to the other ball, which was
 //   treated as a static surface, and C_BALL_BALL_FRICTION (was 0.3).
-// - Ball/ball contacts are resolved before the other contacts, and static contacts also cancel the velocity change the
-//   contacts resolved before them in the same pass applied to the ball (all of it for ball/ball contacts, the friction
-//   part for static ones), on top of the hit test velocity they otherwise work from: the friction stopping the spin of a
-//   ball pressed against another ball or a wall (spin its playfield friction gives it every step) pushes it up, and the
-//   ball climbed off the playfield until it dropped back (jitter of balls resting in a row). The normal impulses of the
-//   other static contacts stay out (two wires of a wire ramp).
+// - The plunger model (sensor position/velocity, auto-plunger release detection, fire normalization) and the cabinet
+//   nudge application (slope-projected acceleration) are input-side improvements kept under all profiles.
 // - A ball/ball contact cancels at most a contact-scale approach (C_CONTACTVEL plus a step of gravity): it cancelled all of
 //   it, so an impact a ball received in the same cycle (a ball hit into a resting pair) was absorbed instead of reaching
 //   the other ball (Newton's cradle).
-// - HitFlipper::Contact tests the gap acceleration with the ball's center acceleration instead of the one of its material
-//   contact point, whose centripetal term (>= 0 along the normal for any spin) made a spinning ball lose its support.
-#define FIX_PHYSICS
-
-#if defined(NEW_PHYSICS) && !defined(FIX_PHYSICS)
- #error NEW_PHYSICS builds on FIX_PHYSICS
-#endif
+enum class PhysicProfile : int
+{
+   V10_8 = 0,
+   V10_9 = 1,
+};
 
 // contact dissipation (initial guesses, to be calibrated with help of real tables)
-#ifdef FIX_PHYSICS
- #define C_BALL_BALL_FRICTION 0.1f   // Coulomb friction coefficient between two balls (steel on steel): contacts, with NEW_PHYSICS also collisions
-#endif
+#define C_BALL_BALL_FRICTION 0.1f // Coulomb friction coefficient between two balls (steel on steel): contacts, with NEW_PHYSICS also collisions
 #ifdef NEW_PHYSICS
  #define C_CONTACT_PATCH_RADIUS 1.0f // ball contact patch radius (VPU): spin friction about the normal = mu * radius * normal force
 #endif

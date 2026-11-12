@@ -614,6 +614,7 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
             { FID(WTZ2), "fullsinglescreen_view.window_top_z_ofs" },
             { FID(WBZ2), "fullsinglescreen_view.window_bot_z_ofs" },
             { FID(ORRP), "override_physics" },
+            { FID(PHPR), "physic_profile" },
             { FID(ORPF), "override_physics_flipper" },
             { FID(GAVT), "gravity" },
             { FID(FRCT), "friction" },

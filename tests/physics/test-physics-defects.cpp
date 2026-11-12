@@ -154,7 +154,7 @@ CollisionEvent MakeFloorContact(HitBall *ball)
 }
 }
 
-#ifdef FIX_PHYSICS // static contacts also cancel what the contacts resolved before them did to the ball
+// V10_9 profile: static contacts also cancel what the contacts resolved before them did to the ball
 namespace
 {
 // A ball pressed (+y) against something in front of it while rolling towards it: its front surface moves down
@@ -221,7 +221,6 @@ TEST_CASE("A static contact cancels the lift of a ball/ball contact")
    rear.HandleStaticContact(floorColl, 0.3f, (float)PHYS_FACTOR);
    CHECK(rear.m_d.m_vel.z == doctest::Approx(GRAVITYCONST * PHYS_FACTOR)); // just the gravity compensation, no lift
 }
-#endif
 
 TEST_CASE("A static contact does not absorb an impact gained after the hit test")
 {
@@ -615,7 +614,7 @@ TEST_CASE("A free ball in slow contact with a locked ball takes the whole respon
    CHECK(a.m_d.m_vel.x == doctest::Approx(0.f));
 }
 
-#ifdef FIX_PHYSICS // relative contact friction
+// relative contact friction (kept in all profiles: ball-ball only improvement)
 TEST_CASE("Two balls rolling side by side are not braked by their contact")
 {
    PhysicsTestHarness harness;
@@ -643,7 +642,6 @@ TEST_CASE("Two balls rolling side by side are not braked by their contact")
    CHECK(b.m_d.m_vel.y == doctest::Approx(speed).epsilon(1e-6));
    CHECK(a.m_angularmomentum.x == doctest::Approx(-speed / a.m_d.m_radius * a.Inertia()).epsilon(1e-6));
 }
-#endif
 
 // ---------------------------------------------------------------------------
 // Each collider type defines its own contact window and receding-velocity
@@ -936,6 +934,76 @@ TEST_CASE("The flipper end cap provides the same contact support" * doctest::sho
 }
 
 // ---------------------------------------------------------------------------
+// The V10_9 profile replaced the flipper's rod-approximation inertia (m * flipr^2 / 3)
+// with the real flipper shape, which is smaller for tapered flippers. Under V10_8
+// the ball meets the rod response; under V10_9 it meets the shape-accurate inertia,
+// changing both the kick impulse and the flipper's recoil (tables tuned for the
+// legacy response keep it by selecting the 10.8 profile, vpinball/vpinball#4413).
+// ---------------------------------------------------------------------------
+
+TEST_CASE("Flipper ball kick uses the profile's inertia")
+{
+   for (const PhysicProfile profile : { PhysicProfile::V10_8, PhysicProfile::V10_9 })
+   {
+      PhysicsTestHarness harness;
+      harness.GetTable()->m_physicProfile = profile;
+
+      Flipper *const flipperPart = Flipper::COMCreate();
+      flipperPart->Init(0.f, 0.f, false);
+      flipperPart->SetName("TestFlipperKick");
+      flipperPart->m_d.m_friction = 0.f; // keep the exchange purely normal
+      harness.GetTable()->AddPart(flipperPart);
+      flipperPart->Release(); // owned by the table
+      harness.Start();
+
+      // Tapered flipper (30 -> 15 over 80): its shape inertia is measurably
+      // below the rod model's, so the two give visibly different kicks
+      HitFlipper flipper(Vertex2D(500.f, 500.f), 30.f, 15.f, 80.f, 0.f, 0.f, 0.f, 100.f, flipperPart);
+      flipper.m_physics = harness.GetEngine();
+
+      const Vertex2D F(flipper.m_flipperMover.m_zeroAngNorm); // face2 normal at angle 0
+      const Vertex2D T(F.y, -F.x); // face tangent toward the tip
+      const Vertex2D facePoint = Vertex2D(500.f, 500.f) + F * 30.f + T * (80.f * F.x * 0.5f); // middle of the face segment
+      const Vertex3Ds normal(F.x, F.y, 0.f);
+      const Vertex3Ds rF(facePoint.x - 500.f, facePoint.y - 500.f, 0.f);
+      const float arm = CrossProduct(rF, normal).z; // moment arm of a normal impulse
+      REQUIRE(arm > 0.f);
+
+      HitBall ball;
+      ball.m_physics = harness.GetEngine();
+      ball.m_d.m_mass = 1.f;
+      ball.m_d.m_radius = DEFAULT_BALL_SIZE;
+      ball.m_d.m_pos = Vertex3Ds(facePoint.x + F.x * ball.m_d.m_radius, facePoint.y + F.y * ball.m_d.m_radius, DEFAULT_BALL_SIZE);
+      ball.m_d.m_vel.SetZero();
+
+      // Flipper already mid swing, driving into the resting ball
+      const float omega = 0.005f; // keeps |bnv| below the 0.25 hit-event gate
+      flipper.m_flipperMover.m_angleSpeed = omega;
+      flipper.m_flipperMover.m_angularMomentum = omega * flipper.m_flipperMover.m_inertia;
+
+      CollisionEvent coll;
+      coll.m_ball = &ball;
+      coll.m_hitnormal = normal;
+      coll.m_hitdistance = 0.f;
+      flipper.Collide(coll);
+
+      // The mover's inertia is the profile's model: rod under V10_8, shape under V10_9
+      const float rodInertia = flipper.m_flipperMover.GetMass() * 80.f * 80.f / 3.f;
+      const float inertia = flipper.m_flipperMover.m_inertia;
+      CHECK(inertia == doctest::Approx(profile == PhysicProfile::V10_9 ? flipper.m_flipperMover.GetMass() * flipper.m_flipperMover.m_inertiaShape : rodInertia));
+      REQUIRE((inertia < rodInertia) == (profile == PhysicProfile::V10_9)); // the two models must actually differ here
+
+      const float bnv = -arm * omega;
+      const float epsilon = ElasticityWithFalloff(flipper.m_elasticity, flipper.m_elasticityFalloff, bnv);
+      const float impulse = -(1.f + epsilon) * bnv / (1.f + arm * arm / inertia);
+
+      CHECK(ball.m_d.m_vel.Dot(normal) == doctest::Approx(impulse).epsilon(0.01f));
+      // and the flipper recoils at the rate its own inertia gives it
+      CHECK(flipper.m_flipperMover.m_angleSpeed == doctest::Approx(omega - impulse * arm / inertia).epsilon(0.01f));
+   }
+}
+
+// ---------------------------------------------------------------------------
 // Trigger/kicker volume-edge events teleport the ball by STATICTIME*vel —
 // a position change that no velocity ever integrated. The same hack
 // exists in the Hit3DPoly volume path, TriggerHitLine and the kicker.
@@ -1025,7 +1093,7 @@ TEST_CASE("A spinning ball keeps flipper contact support" * doctest::should_fail
    spinning.m_angularmomentum = Vertex3Ds(0.f, 0.f, 1000.f);
    makeContact(spinning);
    // The material surface point's centripetal acceleration is not gap
-   // acceleration: spin must not release the contact. Without FIX_PHYSICS normAcc >= 0
+   // acceleration: spin must not release the contact. Under V10_8 normAcc >= 0
    // early-outs before the approach-velocity cancellation, leaving the full
    // -0.05 approach velocity in place.
    CHECK(spinning.m_d.m_vel.Dot(normal) > -0.01f);

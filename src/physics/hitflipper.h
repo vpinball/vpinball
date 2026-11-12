@@ -22,15 +22,17 @@ public:
    void SetSolenoidState(const bool s);
    float GetStrokeRatio() const;
 
-#ifdef FIX_PHYSICS
-   // Recomputes m_zeroAngNorm, m_inertiaShape, m_torqueScale and m_inertia
+   // Recomputes m_zeroAngNorm, m_inertiaShape and m_inertia
    // from current geometry (m_hitcircleBase.radius, m_endradius, m_flipperradius)
    // and current mass (m_d.m_OverrideMass or m_d.m_mass).
    // Called from the constructor and from HitFlipper::UpdatePhysicsFromFlipper
    // so live edits to mass propagate. Geometry edits via the COM API today
    // do not propagate to the runtime mover, but this helper is ready for the wiring
    void UpdateInertia();
-#endif
+
+   // Physics profile of the owning table, read through the part: the engine pointer is not set yet
+   // at construction time, and a mover may be used without an engine at all (unit tests default to the latest)
+   PhysicProfile GetPhysicProfile() const;
 
    void SetStartAngle(const float r);
    void SetEndAngle(const float r);
@@ -65,11 +67,8 @@ public:
 
    float m_angleStart, m_angleEnd;
 
-   float m_inertia;         // moment of inertia
-#ifdef FIX_PHYSICS
-   float m_inertiaShape;    // shape-only factor k^2 (length^2), so m_inertia = mass * m_inertiaShape
-   float m_torqueScale;     // multiplier applied to coil torque; 1.0 unless m_backwards_compatibility is set
-#endif
+   float m_inertia; // moment of inertia: shape-accurate under the V10_9 profile, rod approximation (mass * flipr^2 / 3) under V10_8
+   float m_inertiaShape = 0.f; // shape-only factor k^2 (length^2), so m_inertia = mass * m_inertiaShape (V10_9 only)
 
    Vertex2D m_zeroAngNorm;  // base norms at zero degrees
 
@@ -82,15 +81,6 @@ public:
 
    bool m_enabled;
    bool m_lastHitFace;
-
-#ifdef FIX_PHYSICS
-   // When true (legacy model/default), coil torque is scaled by
-   // m_inertiaShape / (flipr^2 / 3) so that the per-Strength angular
-   // acceleration matches the old rod-approximation inertia and existing
-   // tables keep their feel. Set to false to drive the flipper with the
-   // raw Strength value against the more accurate inertia
-   bool m_backwards_compatibility;
-#endif
 
 #ifdef DEBUG_FLIPPERS
    uint32_t m_startTime;

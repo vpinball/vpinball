@@ -58,6 +58,7 @@
     "window_bot_z_ofs": 138.95321655273438
   },
   "override_physics": 0,
+  "physic_profile": 1,
   "override_physics_flipper": false,
   "gravity": 1.7629847526550293,
   "friction": 0.07500000298023224,

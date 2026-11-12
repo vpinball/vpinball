@@ -583,38 +583,43 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
    const bool inside = (bnd <= 0.f);                  // in ball inside object volume
 
    const bool rigid = (m_ObjType != eTrigger);
+   const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
    float hittime;
-#ifdef FIX_PHYSICS
    bool isContact = false;
-#endif
    if (rigid) //rigid polygon
    {
       if (bnd < -ball.m_radius/**2.0f*/) return -1.0f; // (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
 
       if (bnd <= (float)PHYS_TOUCH)
       {
-#ifdef FIX_PHYSICS
-          if (fabsf(bnv) <= C_CONTACTVEL
+         if (profile109)
+         {
+            if (fabsf(bnv) <= C_CONTACTVEL
 #ifndef NEW_PHYSICS
-              && bnd > (float)(-PHYS_TOUCH)         // deeper: collide, so the legacy embed corrections push it out
+               && bnd > (float)(-PHYS_TOUCH) // deeper: collide, so the legacy embed corrections push it out
 #endif
-             )
-          {
-              hittime = 0;
-              isContact = true;
-          }
-          else if (inside)
-              hittime = 0;                          // zero time for rigid fast bodies
-          else
-              hittime = bnd / -bnv;
-#else
-          if (inside || (fabsf(bnv) > C_CONTACTVEL) // fast velocity, return zero time
-                                                    //zero time for rigid fast bodies
-              || (bnd <= (float)(-PHYS_TOUCH)))     // slow moving but embedded
-              hittime = 0;
-          else
-              hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events //!! TODO: >= 0.5 never fits the 1 ms step of 0.1 VPT, i.e. no hit; kept for compatibility (like that since the physmod changes)
-#endif
+            )
+            {
+               hittime = 0;
+               isContact = true;
+            }
+            else if (inside)
+               hittime = 0; // zero time for rigid fast bodies
+            else
+               hittime = bnd / -bnv;
+         }
+         else
+         {
+            // V10_8: no contact band on poly colliders, slow shallow touches reported a fake hittime instead (see physconst.h)
+            if (inside
+               || (fabsf(bnv) > C_CONTACTVEL) // fast velocity, return zero time
+               //zero time for rigid fast bodies
+               || (bnd <= (float)(-PHYS_TOUCH))) // slow moving but embedded
+               hittime = 0;
+            else
+               hittime = bnd * (float)(1.0 / (2.0 * PHYS_TOUCH))
+                  + 0.5f; // don't compete for fast zero time events //!! TODO: >= 0.5 never fits the 1 ms step of 0.1 VPT, i.e. no hit; kept for compatibility (like that since the physmod changes)
+         }
       }
       else if (fabsf(bnv) > C_LOWNORMVEL)           // not velocity low?
           hittime = bnd / -bnv;                     // rate ok for safe divide 
@@ -695,14 +700,15 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
       if (!rigid)                 // non rigid body collision? return direction
          coll.m_hitflag = bUnHit; // UnHit signal -> is receding from outside target
 
-      coll.m_hitdistance = bnd;   // 3dhit actual contact distance ... 
+      coll.m_hitdistance = bnd; // 3dhit actual contact distance ...
       //coll.m_hitRigid = rigid;  // collision type
 
-#ifdef FIX_PHYSICS
-      coll.m_isContact = isContact;
-      if (isContact)
-         coll.m_hit_org_normalvelocity = bnv;
-#endif
+      if (profile109)
+      {
+         coll.m_isContact = isContact;
+         if (isContact)
+            coll.m_hit_org_normalvelocity = bnv;
+      }
 
       return hittime;
    }
@@ -832,12 +838,17 @@ HitTriangle::HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3])
    const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
    m_normal = CrossProduct(e0, e1);
    // FIXME We have a precision issue were thin triangle can lead to wrong hit so we mark as degenerate if precision is too low. This threshold highly depends on VPX unit system.
-   //m_normal.NormalizeSafe();
-   float ls = m_normal.LengthSquared();
-   if (ls < 0.01f)
-      m_normal.SetZero();
+   // m_physics is not set yet at construction time: read the profile from the editable's table (detached triangles use the latest behavior)
+   if (!m_editable || !m_editable->GetPTable() || m_editable->GetPTable()->m_physicProfile == PhysicProfile::V10_9)
+   {
+      float ls = m_normal.LengthSquared();
+      if (ls < 0.01f)
+         m_normal.SetZero();
+      else
+         m_normal /= sqrtf(ls);
+   }
    else
-      m_normal /= sqrtf(ls);
+      m_normal.NormalizeSafe(); // V10_8 kept thin triangles (degenerate only for exactly null normals)
 
    m_elasticity = 0.3f;
    SetFriction(0.3f);
@@ -998,48 +1009,52 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
       return -1.0f; // excessive penetration of plane ... no collision HACK
 
    float hittime;
-#ifdef FIX_PHYSICS
    bool isContact = false;
-   if (bnd <= (float)PHYS_TOUCH)
+   if (GetPhysicProfile() == PhysicProfile::V10_9)
    {
-       if (fabsf(bnv) <= C_CONTACTVEL
+      if (bnd <= (float)PHYS_TOUCH)
+      {
+         if (fabsf(bnv) <= C_CONTACTVEL
 #ifndef NEW_PHYSICS
-           && bnd >= (float)(-PHYS_TOUCH) // deeper: collide, so the legacy embed corrections push it out
+            && bnd >= (float)(-PHYS_TOUCH) // deeper: collide, so the legacy embed corrections push it out
 #endif
-          )
-       {
-           hittime = 0;
-           isContact = true;
-       }
-       else if (bnd <= 0.f)
-           hittime = 0;                // zero time for rigid fast bodies
-       else
-           hittime = bnd / -bnv;
+         )
+         {
+            hittime = 0;
+            isContact = true;
+         }
+         else if (bnd <= 0.f)
+            hittime = 0; // zero time for rigid fast bodies
+         else
+            hittime = bnd / -bnv;
+      }
+      else if (fabsf(bnv) > C_LOWNORMVEL) // not velocity low?
+         hittime = bnd / -bnv; // rate ok for safe divide
+      else
+         return -1.0f; // wait for touching
    }
-   else if (fabsf(bnv) > C_LOWNORMVEL) // not velocity low?
-       hittime = bnd / -bnv;           // rate ok for safe divide 
    else
-       return -1.0f;                   // wait for touching
-#else
-   if (fabsf(bnv) <= C_CONTACTVEL)
    {
-       if (fabsf(bnd) <= (float)PHYS_TOUCH)
-       {
-           coll.m_isContact = true;
-           coll.m_hitnormal = m_normal;
-           coll.m_hit_org_normalvelocity = bnv; // remember original normal velocity
-           coll.m_hitdistance = bnd;
-           //coll.m_hitRigid = true;
-           return 0.0f;    // hittime is ignored for contacts
-       }
-       else
-           return -1.0f;   // large distance, small velocity -> no hit
-   }
+      // V10_8: the contact band was |bnd| <= PHYS_TOUCH at |bnv| <= C_CONTACTVEL, deep embeds collided
+      if (fabsf(bnv) <= C_CONTACTVEL)
+      {
+         if (fabsf(bnd) <= (float)PHYS_TOUCH)
+         {
+            coll.m_isContact = true;
+            coll.m_hitnormal = m_normal;
+            coll.m_hit_org_normalvelocity = bnv; // remember original normal velocity
+            coll.m_hitdistance = bnd;
+            //coll.m_hitRigid = true;
+            return 0.0f; // hittime is ignored for contacts
+         }
+         else
+            return -1.0f; // large distance, small velocity -> no hit
+      }
 
-   hittime = bnd / -bnv;   // rate ok for safe divide
-   if (hittime < 0.f)
-       hittime = 0.0f;     // already penetrating? then collide immediately
-#endif
+      hittime = bnd / -bnv; // rate ok for safe divide
+      if (hittime < 0.f)
+         hittime = 0.0f; // already penetrating? then collide immediately
+   }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f;        // time is outside this frame ... no collision
@@ -1048,11 +1063,12 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
    coll.m_hitdistance = bnd; // actual contact distance
    //coll.m_hitRigid = true; // collision type
 
-#ifdef FIX_PHYSICS
-   coll.m_isContact = isContact;
-   if(isContact)
-      coll.m_hit_org_normalvelocity = bnv; // remember original normal velocity
-#endif
+   if (GetPhysicProfile() == PhysicProfile::V10_9)
+   {
+      coll.m_isContact = isContact;
+      if (isContact)
+         coll.m_hit_org_normalvelocity = bnv; // remember original normal velocity
+   }
 
    return hittime;
 }

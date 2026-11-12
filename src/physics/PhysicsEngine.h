@@ -7,6 +7,7 @@
 #include "physics/AsyncDynamicQuadTree.h"
 #include "physics/collideex.h"
 #include "physics/cabinet/PlumbHandler.h"
+#include "physics/physconst.h"
 
 class BallControl;
 class InputAction;
@@ -65,6 +66,10 @@ public:
 
    // Table being simulated
    PinTable *GetTable() const { return m_table; }
+
+   // Physics behavior profile of the simulated table (see physconst.h)
+   PhysicProfile GetPhysicProfile() const;
+   bool IsPhysicProfile(PhysicProfile profile) const { return GetPhysicProfile() == profile; }
 
    // Simulated time, updated by UpdatePhysics
    uint32_t GetTimeMsec() const { return m_time_msec; }

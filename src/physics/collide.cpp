@@ -17,6 +17,10 @@ static std::mutex mtx;
 float c_hardScatter = 0.0f;
 
 
+PhysicProfile MoverObject::GetPhysicProfile() const { return m_physics ? m_physics->GetPhysicProfile() : PhysicProfile::V10_9; }
+
+PhysicProfile HitObject::GetPhysicProfile() const { return m_physics ? m_physics->GetPhysicProfile() : PhysicProfile::V10_9; }
+
 void HitObject::Contact(CollisionEvent& coll, const float dtime) { coll.m_ball->HandleStaticContact(coll, m_friction, dtime); }
 
 void HitObject::FireHitEvent(HitBall* const pball)
@@ -93,11 +97,11 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
             || (bnd <= (float)(-PHYS_TOUCH)))
             hittime = 0;                                    // slow moving but embedded
          else {
-#ifdef FIX_PHYSICS
-            hittime = 0; // slow and within touch distance: contact (flagged below), not a collision in the future
-#else
-            hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events //!! TODO: >= 0.5 never fits the 1 ms step of 0.1 VPT, i.e. no hit; kept for compatibility (its like that since physmod days)
-#endif
+            if (GetPhysicProfile() == PhysicProfile::V10_9)
+               hittime = 0; // slow and within touch distance: contact (flagged below), not a collision in the future
+            else
+               hittime = bnd * (float)(1.0 / (2.0 * PHYS_TOUCH))
+                  + 0.5f; // don't compete for fast zero time events //!! TODO: >= 0.5 never fits the 1 ms step of 0.1 VPT, i.e. no hit; kept for compatibility (its like that since physmod days)
          }
       }
       else if (fabsf(bnv) > C_LOWNORMVEL)                   // not velocity low ????
