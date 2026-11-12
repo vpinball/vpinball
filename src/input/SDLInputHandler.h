@@ -479,16 +479,16 @@ private:
                   appSettings.SetPlayerVR_ControllerCabZOffset(-2.5f, false);
                   appSettings.SetPlayerVR_LockFeetToGround(true, false);
                   appSettings.SetPlayerVR_OverrideLockbarWidth(true, false);
-                  appSettings.SetPlayer_LockbarWidth(61.0f, false);
+                  appSettings.SetPlayerVR_ControllerCabWidthOffset(22.7f, false); // 61.0cm width, offset to the controller holes
                   //appSettings.SetPlayerVR_OverrideLockbarHeight(true, false); // commented out as this can be adjusted
                   //appSettings.SetPlayer_LockbarHeight(95.0f, false);
                   if (g_pplayer && g_pplayer->m_vrDevice)
                   {
                      g_pplayer->m_vrDevice->SetControllerCabYOffset(-22.5f);
                      g_pplayer->m_vrDevice->SetControllerCabZOffset(-2.5f);
+                     g_pplayer->m_vrDevice->SetControllerCabWidthOffset(22.7f);
                      g_pplayer->m_vrDevice->SetLockFeetToGround(true);
                      g_pplayer->m_vrDevice->SetOverrideLockbarWidth(true);
-                     g_pplayer->m_vrDevice->SetCustomLockbarWidth(61.0f);
                      //g_pplayer->m_vrDevice->SetOverrideLockbarHeight(true); // commented out as this can be adjusted
                      //g_pplayer->m_vrDevice->SetCustomLockbarHeight(95.0f);
                   }

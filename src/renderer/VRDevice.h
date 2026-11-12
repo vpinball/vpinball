@@ -174,6 +174,8 @@ public:
    void SetControllerCabYOffset(float offset) { m_controllerCabYOffset = offset; }
    float GetControllerCabZOffset() const { return m_controllerCabZOffset; }
    void SetControllerCabZOffset(float offset) { m_controllerCabZOffset = offset; }
+   float GetControllerCabWidthOffset() const { return m_controllerCabWidthOffset; }
+   void SetControllerCabWidthOffset(float offset) { m_controllerCabWidthOffset = offset; }
    bool IsLockFeetToGround() const { return m_lockFeetToGround; }
    void SetLockFeetToGround(bool lock)
    {
@@ -230,6 +232,7 @@ private:
    float m_customLockbarHeight = 85.0f; // User defined height (from ground) of the (real world cabinet) lockbar in cm
    float m_controllerCabYOffset = 0.0f; // Y offset applied when using controller view centering in cm
    float m_controllerCabZOffset = 0.0f; // Z offset applied when using controller view centering in cm
+   float m_controllerCabWidthOffset = 0.0f; // Width offset added to the measured controller distance when using controller view centering in cm
    bool m_lockFeetToGround = true;
    float m_seatedTilt = 0.0f; // Cabinet tilt toward the player for seated/reclined play, in degrees
    float m_roomYaw = 0.0f;

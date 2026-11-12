@@ -267,6 +267,9 @@ PropBool(PlayerVR, SpatialAudioPlayfield, "Playfield Spatial Audio"s,
    "Render playfield sounds as spatially positioned sources, binauralized for the VR headset, instead of the legacy static pan/fade channel mixing"s, true);
 PropFloatDyn(PlayerVR, ControllerCabYOffset, "Cabinet Y Offset"s, "Y offset to apply when using controller view centering"s, -150.f, 50.f, 0.f);
 PropFloatDyn(PlayerVR, ControllerCabZOffset, "Cabinet Z Offset"s, "Z offset to apply when using controller view centering"s, -50.f, 50.f, 0.f);
+PropFloatDyn(PlayerVR, ControllerCabWidthOffset, "Cabinet Width Offset"s,
+   "Width offset added to the distance between the controllers to define the lockbar width when using controller view centering (only applies when a custom lockbar width is defined)"s,
+   -50.f, 50.f, 0.f);
 PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
 PropBool(PlayerVR, OverrideLockbarWidth, "Custom Lockbar Width"s,
    "Scale the virtual cabinet so that its lockbar matches the user defined lockbar width. If disabled, the cabinet is rendered at its native (table defined) size."s, true);

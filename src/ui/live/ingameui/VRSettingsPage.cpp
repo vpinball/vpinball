@@ -31,6 +31,13 @@ void VRSettingsPage::BuildPage()
       added.m_excludeFromDefault = true;
    };
 
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Augmented Reality"s));
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_UsePassthroughColor, //
+      [this]() { return m_player->m_renderer->m_vrApplyColorKey; }, //
+      [this](bool v) { m_player->m_renderer->m_vrApplyColorKey = v; }));
+
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Table Geometry (adjust table-specific dimensions)"s));
 
    addTableOnlyItem(std::make_unique<InGameUIItem>( //
@@ -168,13 +175,6 @@ void VRSettingsPage::BuildPage()
          m_player->m_vrDevice->SetSeatedTilt(v);
       }));
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Augmented Reality"s));
-
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_UsePassthroughColor, //
-      [this]() { return m_player->m_renderer->m_vrApplyColorKey; }, //
-      [this](bool v) { m_player->m_renderer->m_vrApplyColorKey = v; }));
-
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Spatial Audio"s));
 
    // Recreate the audio player on spatial mode change, preserving the live listener setup
@@ -247,6 +247,13 @@ void VRSettingsPage::BuildPage()
       Settings::m_propPlayerVR_ControllerCabZOffset, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetControllerCabZOffset(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetControllerCabZOffset(v); }));
+
+   // The controller span is only used to measure the lockbar width when it is overridden
+   if (m_player->m_vrDevice->IsOverridingLockbarWidth())
+      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
+         Settings::m_propPlayerVR_ControllerCabWidthOffset, 1.f, "%4.1f cm"s, //
+         [this]() { return m_player->m_vrDevice->GetControllerCabWidthOffset(); }, //
+         [this](float, float v) { m_player->m_vrDevice->SetControllerCabWidthOffset(v); }));
 
    const auto& action = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetVRControllerViewCenteringActionId()];
    addGlobalOnlyItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
