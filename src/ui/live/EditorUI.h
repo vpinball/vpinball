@@ -154,6 +154,13 @@ private:
    // is the m_desktopBackdrop flag of its parts, seeded from the active pane mode while it is empty
    bool SelectionDomain() const { return m_multiSel.empty() ? IsBackdropEditMode() : m_multiSel.front()->GetEditable()->m_desktopBackdrop; }
    bool IsPartInSelectionDomain(const IEditable *editable) const; // Can the part be added to the selection under the domain rule
+   // Whether a view of the given domain (desktop backdrop / 3D scene) may transform the selection (gizmo, modal op, nudge):
+   // only one rendering its parts (or the point edited part)
+   bool IsSelectionInViewDomain(const bool backdropView) const
+   {
+      const EditorUIPart *const part = m_pointEditPart ? m_pointEditPart.get() : m_multiSel.empty() ? nullptr : m_multiSel.front().get();
+      return part == nullptr || part->GetEditable()->m_desktopBackdrop == backdropView;
+   }
    bool IsEditablePickable(const IEditable *editable, bool backdropDomain) const; // Pickable in the given domain (3D scene / backdrop) and passing the selection filters
    static PartGroupData::SpaceReference GetPartSpace(
       const IEditable *editable); // Reference space a part lives in (its own for groups, its parent group's otherwise, playfield for ungrouped parts)

@@ -98,6 +98,9 @@ public:
    };
    virtual TransformMask GetTransform(Matrix3D& transform) = 0;
    virtual void SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) = 0;
+   // Captures what SetTransform writes (part data, drag point positions, curve rotation & scale) and returns a function
+   // restoring it, to try a transform without changing the part. Parts deriving more state restore it too (see FlasherUIPart)
+   virtual std::function<void()> CaptureTransformState();
 
    virtual void Render(const EditorRenderContext& ctx) = 0;
 
@@ -205,6 +208,15 @@ public:
    {
       for (bool Data::* field : visibilityFields)
          m_visibilityFields.emplace_back(field, part->m_d.*field);
+   }
+
+   std::function<void()> CaptureTransformState() override
+   {
+      return [restoreBase = EditorUIPart::CaptureTransformState(), part = m_part, data = m_part->m_d]()
+      {
+         restoreBase();
+         part->m_d = data;
+      };
    }
 
    void RestorePartVisibility() override

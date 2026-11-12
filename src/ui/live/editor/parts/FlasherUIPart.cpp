@@ -59,7 +59,10 @@ void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
       m_lastScaleRequest = Vertex2D(scale.x, scale.y);
    }
    SetCurveScale(curveScale);
-   m_part->Translate(Vertex2D { pos.x - center.x, pos.y - center.y });
+   const Vertex2D offset { pos.x - center.x, pos.y - center.y };
+   m_part->Translate(offset);
+   m_translated.x += offset.x;
+   m_translated.y += offset.y;
    if (m_part->m_desktopBackdrop)
    {
       m_part->put_RotZ(rot.z);
@@ -69,6 +72,18 @@ void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
    m_part->put_RotX(rot.x);
    m_part->put_RotY(rot.y);
    m_part->put_RotZ(rot.z);
+}
+
+// Flasher::Translate also moves the render vertices, which the captured data does not hold: they are
+// translated back by the offset applied since the capture (the drag points are then restored over it)
+std::function<void()> FlasherUIPart::CaptureTransformState()
+{
+   return [this, restoreBase = EditableUIPart<Flasher>::CaptureTransformState(), translated = m_translated]()
+   {
+      m_part->Translate(Vertex2D { translated.x - m_translated.x, translated.y - m_translated.y });
+      m_translated = translated;
+      restoreBase();
+   };
 }
 
 void FlasherUIPart::RenderOverlay(const EditorRenderContext& ctx)

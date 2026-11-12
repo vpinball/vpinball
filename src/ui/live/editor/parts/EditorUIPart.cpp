@@ -13,6 +13,30 @@ namespace VPX::EditorUI
 // side effects through the DragPointEditContext interface.
 //
 
+std::function<void()> EditorUIPart::CaptureTransformState()
+{
+   vector<Vertex3Ds> points;
+   if (const DragPointCurve* const curve = GetDragPointCurve())
+      for (const auto& point : curve->GetPoints())
+         points.push_back(point->GetVertex());
+   return [this, points = std::move(points), curveRot = m_curveRot, curveScale = m_curveScale]()
+   {
+      if (const DragPointCurve* const curve = GetDragPointCurve())
+      {
+         const auto& curvePoints = curve->GetPoints();
+         for (size_t i = 0; i < curvePoints.size() && i < points.size(); i++)
+         {
+            // Through the setters, which invalidate the curve's cached bounds
+            curvePoints[i]->SetX(points[i].x);
+            curvePoints[i]->SetY(points[i].y);
+            curvePoints[i]->SetZ(points[i].z);
+         }
+      }
+      m_curveRot = curveRot;
+      m_curveScale = curveScale;
+   };
+}
+
 Vertex2D EditorUIPart::GetCurvePivot() const
 {
    const DragPointCurve* const curve = GetDragPointCurve();

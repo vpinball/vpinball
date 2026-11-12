@@ -104,8 +104,8 @@ std::shared_ptr<EditorUIPart> LayerSpaceChangeOp::FindUIPart(IEditable *const pa
 
 // Re-expresses a part's transform in the new reference space: its reported transform goes
 // through the space delta, and the part keeps the components it can express.
-// In check mode the transform is applied then reverted, returning whether the part can be
-// exactly re-expressed; in apply mode the best effort conversion is written for real.
+// In check mode the transform is tried, then the part state is restored, returning whether the part
+// can be exactly re-expressed; in apply mode the best effort conversion is written for real.
 bool LayerSpaceChangeOp::TransformForSpace(EditorUIPart &uiPart, const Matrix3D &delta, const bool apply)
 {
    Matrix3D initial;
@@ -119,11 +119,12 @@ bool LayerSpaceChangeOp::TransformForSpace(EditorUIPart &uiPart, const Matrix3D 
       uiPart.SetTransform(pos, scale, rot);
       return true;
    }
+   // Restored from a capture, not through SetTransform, which would rewrite the part's values from a decomposition
+   const std::function<void()> restore = uiPart.CaptureTransformState();
    uiPart.SetTransform(pos, scale, rot);
    Matrix3D achieved;
    uiPart.GetTransform(achieved);
-   ExtractTRS(initial, pos, scale, rot);
-   uiPart.SetTransform(pos, scale, rot); // Restore the part exactly as it was
+   restore();
    return SameTransform(achieved, target);
 }
 
