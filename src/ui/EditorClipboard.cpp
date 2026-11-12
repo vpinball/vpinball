@@ -40,14 +40,10 @@ namespace
    {
       if (!EnsureClipboardAvailable())
          return false;
-      vector<uint8_t> *const clipboardData = new vector<uint8_t>(std::move(data));
+      // SDL owns the data from here, even on failure: it already freed it through the cleanup callback, or keeps it and frees it later
+      // (e.g. when another application holds the OS clipboard). Never delete it here
       const char *const mimeTypes[] = { mimeType };
-      if (!SDL_SetClipboardData(ClipboardDataCallback, ClipboardCleanupCallback, clipboardData, mimeTypes, 1))
-      {
-         delete clipboardData;
-         return false;
-      }
-      return true;
+      return SDL_SetClipboardData(ClipboardDataCallback, ClipboardCleanupCallback, new vector<uint8_t>(std::move(data)), mimeTypes, 1);
    }
 
    vector<uint8_t> GetClipboardData(const char *mimeType)
