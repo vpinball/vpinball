@@ -388,6 +388,11 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
 
    if (props.BeginSection("Physics"s))
    {
+      props.Combo<PinTable>(
+         table, "Physics Profile"s, vector<string> { "10.8"s, "10.9"s }, //
+         [](const PinTable *table) { return (int)table->m_physicProfile; }, //
+         [](PinTable *table, int v) { table->m_physicProfile = (PhysicProfile)v; },
+         "Physics engine behavior: 10.8 reproduces VPX 10.8 physics, 10.9 enables the corrected physics (see physconst.h)");
       props.Separator("Physics Constants"s);
       props.InputFloat<PinTable>(
          table, "Gravity Constant"s, //
@@ -421,11 +426,6 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
          table, "including Flipper Physics"s, //
          [](const PinTable *table) { return table->m_overridePhysicsFlipper; }, //
          [](PinTable *table, bool v) { table->m_overridePhysicsFlipper = v; }, "Also apply the physics set to flippers, which use their own physics values");
-      props.Combo<PinTable>(
-         table, "Physics Profile"s, vector<string> { "10.8"s, "10.9"s }, //
-         [](const PinTable *table) { return (int)table->m_physicProfile; }, //
-         [](PinTable *table, int v) { table->m_physicProfile = (PhysicProfile)v; },
-         "Physics engine behavior: 10.8 reproduces VPX 10.8 physics, 10.9 enables the corrected physics (see physconst.h)");
       props.InputFloat<PinTable>(
          table, "Nudge Time"s, //
          [](const PinTable *table) { return table->m_nudgeTime; }, //
