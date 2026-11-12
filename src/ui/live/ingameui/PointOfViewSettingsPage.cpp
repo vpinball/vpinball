@@ -236,6 +236,7 @@ void PointOfViewSettingsPage::BuildPage()
       [this](const Settings&) { return m_lockScale; }, //
       [this](bool v) { m_lockScale = v; }, [](Settings&) { /* UI state, not persisted */ }, //
       [](bool, const Settings&, bool) { /* UI state, not persisted */ });
+   lockScale->m_excludeFromDefault = true;
 
    const float zoomDisplayScale = 100.f / viewSetup.GetRealToVirtualScale(table);
    auto xScale = std::make_unique<InGameUIItem>(
