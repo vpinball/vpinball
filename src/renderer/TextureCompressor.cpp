@@ -216,9 +216,8 @@ namespace
    template <unsigned int srcBpp>
    void GatherBC7BlockRow(const uint8_t* __restrict const src, unsigned int w, unsigned int h, unsigned int by, basist::color_rgba* __restrict bp)
    {
-      static_assert(sizeof(basist::color_rgba) == 4 && std::is_trivially_copyable_v<basist::color_rgba>, "texels are copied as RGBA bytes");
+      static_assert(sizeof(basist::color_rgba) == 4, "texels are written as RGBA words");
       static_assert(std::endian::native == std::endian::little, "RGB texels are re-split as little endian words");
-
       const uint8_t* rows[4];
       for (unsigned int py = 0; py < 4; py++)
          rows[py] = src + static_cast<size_t>(min(by * 4 + py, h - 1)) * w * srcBpp;
@@ -226,17 +225,24 @@ namespace
       for (unsigned int bx = 0; bx < fullBw; bx++)
          for (unsigned int py = 0; py < 4; py++)
          {
-            const uint8_t* __restrict const s = rows[py] + static_cast<size_t>(bx) * 4 * srcBpp;
+            // Word accesses: RGB rows are unaligned when the width is not a multiple of 4, which x86 and ARM64 allow
+            const uint32_t* __restrict const s = (const uint32_t*)(rows[py] + static_cast<size_t>(bx) * (4 * srcBpp));
+            uint32_t* __restrict const d = (uint32_t*)bp;
             if constexpr (srcBpp == 4)
-               memcpy(bp, s, 16);
+            {
+               d[0] = s[0];
+               d[1] = s[1];
+               d[2] = s[2];
+               d[3] = s[3];
+            }
             else
             {
                //!! opt.?
                // 4 RGB texels are exactly 12 bytes: 3 words R0G0B0R1 G1B1R2G2 B2R3G3B3, re-split into 4 RGBA words
-               uint32_t in[3];
-               memcpy(in, s, 12);
-               const uint32_t out[4] = { in[0] | 0xFF000000u, (in[0] >> 24) | (in[1] << 8) | 0xFF000000u, (in[1] >> 16) | (in[2] << 16) | 0xFF000000u, (in[2] >> 8) | 0xFF000000u };
-               memcpy(bp, out, 16);
+               d[0] = s[0] | 0xFF000000u;
+               d[1] = (s[0] >> 24) | (s[1] << 8) | 0xFF000000u;
+               d[2] = (s[1] >> 16) | (s[2] << 16) | 0xFF000000u;
+               d[3] = (s[2] >> 8) | 0xFF000000u;
             }
             bp += 4;
          }
@@ -297,9 +303,7 @@ namespace
             {
                // Bit test for Inf/NaN on purpose: the GNU build uses -ffast-math which makes isfinite() unreliable
                const float v = s[c];
-               uint32_t bits;
-               memcpy(&bits, &v, sizeof(bits));
-               const float clamped = (bits & 0x7F800000u) == 0x7F800000u ? 0.f : clamp(v, 0.f, static_cast<float>(basist::MAX_HALF_FLOAT));
+               const float clamped = (float_as_uint(v) & 0x7F800000u) == 0x7F800000u ? 0.f : clamp(v, 0.f, static_cast<float>(basist::MAX_HALF_FLOAT));
                out[c] = float2half(clamped == 0.f ? 0.f : clamped); // normalize -0.0f to +0.0f: half 0x8000 is signed and rejected by the encoder
             }
          });

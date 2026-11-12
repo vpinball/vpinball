@@ -305,9 +305,7 @@ void Ball::Render(const unsigned int renderMask)
       const float raw = Vertex3Ds(pLight->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight->m_d.m_meshRadius + pLight->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
       volatile float vd = raw; // barrier: one stable, identically-rounded value at every inlined compare site
       const float d = vd;
-      uint32_t bits;
-      memcpy(&bits, &d, sizeof(bits));
-      return ((bits & 0x7F800000u) == 0x7F800000u) ? FLT_MAX : d; // exponent all-ones => Inf/NaN -> sorts last
+      return ((float_as_uint(d) & 0x7F800000u) == 0x7F800000u) ? FLT_MAX : d; // exponent all-ones => Inf/NaN -> sorts last
    };
    std::ranges::sort(reflectedLights.begin(), reflectedLights.end(),
       [&sqDistToBall](const Light* const pLight1, const Light* const pLight2) { return sqDistToBall(pLight1) < sqDistToBall(pLight2); });
