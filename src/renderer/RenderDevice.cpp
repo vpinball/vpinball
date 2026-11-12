@@ -2888,6 +2888,9 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    const D3DXPLANE dxplane(-plane.x, -plane.y, -plane.z, -plane.w);
    D3DXPlaneTransform(&clipSpacePlane, &dxplane, &m);
    GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
+   // The ball impostor cannot rely on the hardware clip plane (which is evaluated at the impostor quad depth, not at the
+   // analytic surface depth), so it receives the plane and performs the clip test in its fragment shader
+   m_ballShader->SetVector(ShaderUniform::clip_plane, &plane);
 #endif
 }
 

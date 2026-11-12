@@ -26,6 +26,7 @@
     #define frac(x) fract(x)
     #define rsqrt(x) inversesqrt(x)
     #define rcp(x) (1.0/(x))
+    #define atan2(y,x) atan(y,x)
 
     #define mul(vecIn, MatIn) ((MatIn)*(vecIn))
 

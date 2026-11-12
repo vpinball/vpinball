@@ -3553,6 +3553,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_ball.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_ball_raycast.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_ball_trail.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
