@@ -122,14 +122,16 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const
    if (data == nullptr || size == 0)
       return nullptr;
 
-   // Try to load using fast JPG path via stbi if no texture resize must be triggered
-   if (maxTexDimension == 0 && !resizeOnLowMem)
+   // Fast JPEG path via stbi, when no resize is needed: within the max dimension (if any), and not tiny (FreeImage below upscales these)
+   if (!resizeOnLowMem)
    {
       int x, y, channels_in_file = 0;
-      const int ok = stbi_info_from_memory(static_cast<stbi_uc const *>(data), static_cast<int>(size), &x, &y, &channels_in_file); // Request stbi to convert image to BW, SRGB or SRGBA
+      const int ok = stbi_info_from_memory(static_cast<stbi_uc const *>(data), static_cast<int>(size), &x, &y, &channels_in_file);
       assert(channels_in_file != 2);
       assert(channels_in_file <= 4); // 2 or >4 should never happen for JPEGs (4 also not, but we handle it anyway)
-      unsigned char * const __restrict stbi_data = (ok && channels_in_file != 2 && channels_in_file <= 4) ?
+      const bool noResize = ok && x >= static_cast<int>(MIN_TEXTURE_SIZE) && y >= static_cast<int>(MIN_TEXTURE_SIZE)
+         && (maxTexDimension == 0 || (static_cast<unsigned int>(x) <= maxTexDimension && static_cast<unsigned int>(y) <= maxTexDimension));
+      unsigned char * const __restrict stbi_data = (noResize && channels_in_file != 2 && channels_in_file <= 4) ?
           stbi_load_from_memory(static_cast<stbi_uc const *>(data), static_cast<int>(size), &x, &y, &channels_in_file, channels_in_file) :
           nullptr;
       if (stbi_data) // will only enter this path for JPG files
@@ -1152,6 +1154,35 @@ bool Texture::IsHDR() const
    return (ext == ".exr") || (ext == ".hdr");
 }
 
+size_t BaseTexture::EstimateGPUSize(const Format format, const unsigned int width, const unsigned int height)
+{
+   // Bytes per texel of the GPU format (UncompressedBgfxFormat in Sampler.cpp), not of the bitmap: SRGB and SRGB565
+   // upload as RGBA8, RGB float as RGBA float, and RGB8 is padded to 4 bytes by most drivers
+   size_t texelBytes;
+   switch (format)
+   {
+   case BW: texelBytes = 1; break;
+   case RGB_FP16:
+   case RGBA_FP16: texelBytes = 8; break;
+   case RGB_FP32:
+   case RGBA_FP32: texelBytes = 16; break;
+   default: texelBytes = 4; break; // BW_FP32, RGB, SRGB, RGBA, SRGBA, SRGB565
+   }
+   // Base level plus ~1/3 for the mip chain, in 64 bits and clamped: a large float image overflows a 32-bit size_t
+   const uint64_t bytes = (static_cast<uint64_t>(texelBytes) * width * height * 4) / 3;
+   return static_cast<size_t>(std::min<uint64_t>(bytes, std::numeric_limits<size_t>::max()));
+}
+
+size_t BaseTexture::GetEstimatedGPUSize() const
+{
+#if defined(ENABLE_BGFX)
+   // Compressed data only exists with texture compression enabled, and is then what the sampler uploads
+   if (m_compressed)
+      return m_compressed->data.size() + m_compressed->GetMipSize(0); // Mip chain plus the no-mips alias
+#endif
+   return EstimateGPUSize(m_format, m_width, m_height);
+}
+
 size_t Texture::GetEstimatedGPUSize() const
 {
    std::shared_ptr<BaseTexture> buffer;
@@ -1159,27 +1190,37 @@ size_t Texture::GetEstimatedGPUSize() const
       const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
       buffer = m_imageBuffer.lock();
    }
-   size_t estimatedSize;
    if (buffer)
-      estimatedSize = static_cast<size_t>(buffer->height()) * static_cast<size_t>(buffer->pitch());
-   else
-      estimatedSize = static_cast<size_t>(m_width) * static_cast<size_t>(m_height) * (IsHDR() ? 8 : 4); // 8 bytes per pixel for HDR (RGBA_FP16) and 4 bytes per pixel for non-HDR (RGBA)
-   // Add mipmaps (+1/3).
-   return (4 * estimatedSize) / 3;
+      return buffer->GetEstimatedGPUSize();
+   // Not decoded: HDR images decode to RGB halfs, the others to 8 bits per channel
+   return BaseTexture::EstimateGPUSize(IsHDR() ? BaseTexture::RGB_FP16 : BaseTexture::SRGBA, m_width, m_height);
 }
 
 std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
+   // The decoded image is shared while alive, with the requests it fits: within the requested max dimension, and not smaller than
+   // needed (unless downsized on low memory, for a request allowing it). Otherwise a smaller request (f.e. on GPU memory pressure)
+   // would get the full size image back, and a full size request a downsized one
+   const auto isMatching = [resizeOnLowMem, maxTexDimension](const BaseTexture &buffer)
+   {
+      const unsigned int size = max(buffer.width(), buffer.height());
+      if (maxTexDimension > 0 && size > maxTexDimension)
+         return false;
+      if (buffer.m_resizedOnLowMem)
+         return resizeOnLowMem;
+      return (buffer.width() >= buffer.m_realWidth && buffer.height() >= buffer.m_realHeight) // Full size (upscaled if tiny)
+         || size == maxTexDimension; // Downsized to the requested max dimension (applied to the largest side)
+   };
    {
       const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
-      if (auto buffer = m_imageBuffer.lock())
+      if (auto buffer = m_imageBuffer.lock(); buffer && isMatching(*buffer))
          return buffer;
    }
    // Decode without holding m_imageBufferMutex, so that the other accessors do not wait for it
    const std::lock_guard<std::mutex> decodeLock(m_decodeMutex);
    {
       const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
-      if (auto buffer = m_imageBuffer.lock()) // Decoded meanwhile by another thread
+      if (auto buffer = m_imageBuffer.lock(); buffer && isMatching(*buffer)) // Decoded meanwhile by another thread
          return buffer;
    }
    //PLOGD << "Decoding image " << m_name;

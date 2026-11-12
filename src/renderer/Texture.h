@@ -124,6 +124,9 @@ public:
    bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    void SetIsOpaque(const bool v) const { const std::lock_guard<std::mutex> lock(m_lazyMutex); m_isOpaque = v; m_isOpaqueDirty = false; }
 
+   static size_t EstimateGPUSize(Format format, unsigned int width, unsigned int height); // Uncompressed, with mipmaps
+   size_t GetEstimatedGPUSize() const; // On the GPU: of the compressed data if any, with mipmaps
+
 private:
    BaseTexture(const unsigned int w, const unsigned int h, const Format format, const bool allocate = true);
    static std::shared_ptr<BaseTexture> CreateFromFreeImage(struct FIBITMAP *dib, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
@@ -171,7 +174,7 @@ public:
 
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override; // Lazily created view of the image, suitable for GPU sampling
 
-   size_t GetEstimatedGPUSize() const;
+   size_t GetEstimatedGPUSize() const; // Of the decoded image if alive, otherwise from the image's size
 
    size_t GetFileSize() const { return m_ppb->m_buffer.size(); }
    const uint8_t *GetFileRaw() const { return m_ppb->m_buffer.data(); }
