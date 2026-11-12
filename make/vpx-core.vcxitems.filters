@@ -651,6 +651,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.cpp">
+      <Filter>ui\live\editor</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -1809,6 +1812,9 @@
       <Filter>ui\live\editor\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.h">
+      <Filter>ui\live\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h">

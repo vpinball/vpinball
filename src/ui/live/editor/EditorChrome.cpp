@@ -389,6 +389,8 @@ void EditorChrome::RenderMenuBar()
             editor.ToggleMaximizeArea();
          if (ImGui::MenuItem(ICON_LC_LAYERS " Tool Shelf", "T", vp != nullptr && vp->IsToolShelfShown(), vp != nullptr))
             vp->ToggleToolShelf();
+         if (ImGui::MenuItem(ICON_LC_SLIDERS_HORIZONTAL " Sidebar", "N", vp != nullptr && vp->IsSidebarShown(), vp != nullptr))
+            vp->ToggleSidebar();
          ImGui::Separator();
          if (ImGui::MenuItem(ICON_LC_REFRESH_CW " Reset Layouts", nullptr, false, !editor.m_table->IsLocked()))
             editor.ResetAreaLayouts();

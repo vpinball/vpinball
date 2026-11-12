@@ -394,6 +394,8 @@ set(VPX_SOURCES
    src/ui/live/editor/parts/TriggerUIPart.cpp
    src/ui/live/editor/ViewportPane.h
    src/ui/live/editor/ViewportPane.cpp
+   src/ui/live/editor/ViewportSidebar.h
+   src/ui/live/editor/ViewportSidebar.cpp
    
    src/ui/live/ingameui/InGameUI.cpp
    src/ui/live/ingameui/InGameUI.h

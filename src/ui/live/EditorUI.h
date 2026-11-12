@@ -70,6 +70,7 @@ class EditorUI final
    friend class ScriptPane;
    friend class BlueprintPane;
    friend class ViewportPane;
+   friend class ViewportSidebar;
    friend class SetOriginOp;
    friend class LayerSpaceChangeOp;
    friend class ReferenceImageOp;
@@ -459,6 +460,8 @@ private:
    bool GetSelectionTransform(Matrix3D &transform) const;
    bool GetSelectionBounds(FRect3D &bounds) const;
    void SetSelectionTransform(const Matrix3D &transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
+   // Decompose a transform into the position/scale/rotation components the parts' SetTransform uses
+   static void ExtractTRS(Matrix3D transform, vec3 &pos, vec3 &scale, vec3 &rot);
 
    // The editor camera definition (mode, pose, shading) belongs to each viewport pane: it is
    // processed by ViewportPane (camera actions, gizmo, picking, shortcuts)
