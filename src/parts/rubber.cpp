@@ -428,7 +428,7 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 1]];
       rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
-      HitTriangle *ht = new HitTriangle(this, rgv3D);
+      HitTriangle *ht = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
       if (ht->IsDegenerate())
          delete ht;
       else

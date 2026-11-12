@@ -33,9 +33,10 @@
 // Ported at: VisualPinball.Engine/VPT/Flipper/FlipperMover.cs
 
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,
-   const float zlow, const float zhigh, Flipper* const pflipper)
+   const float zlow, const float zhigh, Flipper* const pflipper, const PhysicProfile profile)
    : m_hitcircleBase(pflipper, center, baser, zlow, zhigh) // base section
 {
+   m_physicProfile = profile;  // Before PhysicsEngine::AddCollider: the inertia model below depends on it
    m_pflipper = pflipper;
 
    m_endradius = endr;         // radius of flipper end
@@ -81,8 +82,6 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
       m_zeroAngNorm.y = -ratio; // F1 norm, change sign of x component, i.e -zeroAngNorm.x // = -cosf(faceNormOffset)
    }
 }
-
-PhysicProfile FlipperMoverObject::GetPhysicProfile() const { return m_pflipper->m_ptable ? m_pflipper->m_ptable->m_physicProfile : PhysicProfile::V10_9; }
 
 void FlipperMoverObject::UpdateInertia()
 {
@@ -156,13 +155,16 @@ void FlipperMoverObject::UpdateInertia()
    // tuned against -- typically smaller for tapered flippers, larger for
    // near-uniform-width ones: both the swing speed and the kick/bounce
    // response change. Tables needing the legacy response select the
-   // V10_8 physics profile, which keeps the rod model everywhere.
+   // V10_8 physics profile, which keeps the rod model everywhere. To keep
+   // only the legacy swing, a table scales the flipper Strength by
+   // 3 * m_inertiaShape / flipr^2 (see docs/PhysicsConstants.md)
 }
 
 HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
-   const float zlow, const float zhigh, Flipper* const pflipper)
-   : HitObject(pflipper), m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
+   const float zlow, const float zhigh, Flipper* const pflipper, const PhysicProfile profile)
+   : HitObject(pflipper), m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper, profile)
 {
+   m_physicProfile = profile;
    UpdatePhysicsFromFlipper();
 
    m_last_hittime = 0;

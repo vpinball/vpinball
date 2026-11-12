@@ -506,7 +506,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             // add joint for left edge
             AddJoint(physics, rgv3D[0], rgv3D[2], isUI);
 
-            HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
+            HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D, physics->GetPhysicProfile()); //!! this is not efficient at all, use native triangle-soup directly somehow
 
             if (ph3dpoly->IsDegenerate()) // degenerate triangles happen if width is 0 at some point
             {
@@ -530,7 +530,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             // add joint for right edge
             AddJoint(physics, rgv3D[1], rgv3D[2], isUI);
 
-            HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
+            HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
             if (ph3dpoly->IsDegenerate())
             {
                delete ph3dpoly;
@@ -572,7 +572,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          // left ramp triangle, order CW
          const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv1.x, pv1.y, rgheight1[i]), Vertex3Ds(pv2.x, pv2.y, rgheight1[i]), Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]) };
 
-         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
+         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ph3dpoly->IsDegenerate())
          {
             delete ph3dpoly;
@@ -586,7 +586,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          // right ramp triangle, order CW
          const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]), Vertex3Ds(pv4.x, pv4.y, rgheight1[i + 1]), Vertex3Ds(pv1.x, pv1.y, rgheight1[i]) };
 
-         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
+         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ph3dpoly->IsDegenerate())
          {
             delete ph3dpoly;

@@ -49,10 +49,12 @@ public:
    virtual void UpdateDisplacements(const float dtime) = 0;
    virtual void UpdateVelocities() = 0;
 
-   PhysicsEngine* m_physics = nullptr;
+   PhysicsEngine* m_physics = nullptr; // Set through SetPhysics
 
-   // Physics profile of the owning engine. Detached movers (unit tests) exercise the latest behavior.
-   PhysicProfile GetPhysicProfile() const;
+   // Profile of the owning engine (see PhysicsEngine::GetPhysicProfile), cached as hot paths read it. Detached movers (unit tests) run the latest
+   PhysicProfile GetPhysicProfile() const { return m_physicProfile; }
+   void SetPhysics(PhysicsEngine* physics); // Sets m_physics and caches its profile
+   PhysicProfile m_physicProfile = PhysicProfile::V10_9; // Also set by the constructor of a mover built for a profile (flipper)
 };
 
 // Ported at: VisualPinball.Engine/Math/Functions.cs
@@ -121,10 +123,12 @@ public:
    // An hitobject is only valid if this part is not null (so a new HitObject is not valid at creation until this is set...)
    IEditable* m_editable = nullptr;
 
-   PhysicsEngine* m_physics = nullptr;
+   PhysicsEngine* m_physics = nullptr; // Set through SetPhysics
 
-   // Physics profile of the owning engine. Detached colliders (unit tests, UI pickers) exercise the latest behavior.
-   PhysicProfile GetPhysicProfile() const;
+   // Profile of the owning engine (see PhysicsEngine::GetPhysicProfile), cached as the hit tests read it. Detached colliders (unit tests) run the latest
+   PhysicProfile GetPhysicProfile() const { return m_physicProfile; }
+   void SetPhysics(PhysicsEngine* physics); // Sets m_physics and caches its profile, for the collider's mover too
+   PhysicProfile m_physicProfile = PhysicProfile::V10_9; // Also set by the constructors of colliders built for a profile (flipper, triangle)
 
    // Collision events
    bool  m_fe = false;  // FireEvents for m_obj?

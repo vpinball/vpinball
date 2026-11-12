@@ -824,7 +824,7 @@ void Hit3DPoly::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
 // Ported at: VisualPinball.Engine/Physics/HitTriangle.cs
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/TriangleCollider.cs
 
-HitTriangle::HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3])
+HitTriangle::HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3], const PhysicProfile profile)
    : HitObject(editable)
 {
    m_rgv[0] = rgv[0];
@@ -838,8 +838,8 @@ HitTriangle::HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3])
    const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
    m_normal = CrossProduct(e0, e1);
    // FIXME We have a precision issue were thin triangle can lead to wrong hit so we mark as degenerate if precision is too low. This threshold highly depends on VPX unit system.
-   // m_physics is not set yet at construction time: read the profile from the editable's table (detached triangles use the latest behavior)
-   if (!m_editable || !m_editable->GetPTable() || m_editable->GetPTable()->m_physicProfile == PhysicProfile::V10_9)
+   m_physicProfile = profile; // Before PhysicsEngine::AddCollider: the normal below depends on it
+   if (profile == PhysicProfile::V10_9)
    {
       float ls = m_normal.LengthSquared();
       if (ls < 0.01f)

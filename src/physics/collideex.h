@@ -74,7 +74,8 @@ private:
 class HitTriangle final : public HitObject
 {
 public:
-   HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3]); // vertices in counterclockwise order
+   // Vertices in counterclockwise order. profile: of the engine the triangle is built for, it selects the thin triangle handling
+   HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3], PhysicProfile profile);
    ~HitTriangle() override {}
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;

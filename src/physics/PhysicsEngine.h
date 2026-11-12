@@ -67,9 +67,12 @@ public:
    // Table being simulated
    PinTable *GetTable() const { return m_table; }
 
-   // Physics behavior profile of the simulated table (see physconst.h)
-   PhysicProfile GetPhysicProfile() const;
-   bool IsPhysicProfile(PhysicProfile profile) const { return GetPhysicProfile() == profile; }
+   // Physics behavior profile (see physconst.h), fixed when the engine is created as the colliders and movers are built for it:
+   // a change of the table's profile applies the next time the table is played
+   PhysicProfile GetPhysicProfile() const { return m_physicProfile; }
+   bool IsPhysicProfile(PhysicProfile profile) const { return m_physicProfile == profile; }
+   // Profile of an engine created for the table: the table's, or V10_9 in NEW_PHYSICS builds (which build on it)
+   static PhysicProfile ResolvePhysicProfile(const PinTable *table);
 
    // Simulated time, updated by UpdatePhysics
    uint32_t GetTimeMsec() const { return m_time_msec; }
@@ -112,6 +115,7 @@ private:
    void FlushStaticQuadTree(); // Rebuild the static quadtree structure after its hit object list was modified (colliders are kept up to date)
 
    PinTable *const m_table;
+   const PhysicProfile m_physicProfile; // See GetPhysicProfile
 
    Vertex3Ds m_gravity;
 

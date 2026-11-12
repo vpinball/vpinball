@@ -23,6 +23,7 @@
 PhysicsEngine::PhysicsEngine(PinTable *const table)
    : m_plumbHandler(table->GetSettings())
    , m_table(table)
+   , m_physicProfile(ResolvePhysicProfile(table)) // Before the colliders are created (below), which are built for it
    , m_hitPlayfield(table)
    , m_hitTopGlass(table)
    , m_hitoctree(this)
@@ -70,12 +71,12 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
 #endif
 }
 
-PhysicProfile PhysicsEngine::GetPhysicProfile() const
+PhysicProfile PhysicsEngine::ResolvePhysicProfile(const PinTable *const table)
 {
 #ifdef NEW_PHYSICS
    return PhysicProfile::V10_9; // NEW_PHYSICS is experimental, on top of the V10_9 fixes (see physconst.h)
 #else
-   return m_table->m_physicProfile;
+   return table->m_physicProfile;
 #endif
 }
 
@@ -229,9 +230,7 @@ void PhysicsEngine::FlushStaticQuadTree()
 void PhysicsEngine::AddCollider(HitObject *collider, const bool isUI)
 {
    assert(collider->m_editable != nullptr);
-   collider->m_physics = this;
-   if (MoverObject *const mover = collider->GetMoverObject())
-      mover->m_physics = this;
+   collider->SetPhysics(this); // Also its mover
    collider->CalcHitBBox();
    if (!isUI && (collider->GetType() == eBall))
    {
@@ -303,7 +302,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
 
    // playfield:
    m_hitPlayfield = HitPlane(table, Vertex3Ds(0, 0, 1), 0.f);
-   m_hitPlayfield.m_physics = this; // copy assignment above does not preserve it
+   m_hitPlayfield.SetPhysics(this); // copy assignment above does not preserve it
    m_hitPlayfield.SetFriction(table->m_overridePhysics ? table->m_fOverrideContactFriction : table->m_friction);
    m_hitPlayfield.m_elasticity = table->m_overridePhysics ? table->m_fOverrideElasticity : table->m_elasticity;
    m_hitPlayfield.m_elasticityFalloff = table->m_overridePhysics ? table->m_fOverrideElasticityFalloff : table->m_elasticityFalloff;
@@ -313,7 +312,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    Vertex3Ds glassNormal(0, table->m_bottom - table->m_top, table->m_glassBottomHeight - table->m_glassTopHeight);
    glassNormal.Normalize();
    m_hitTopGlass = HitPlane(table, Vertex3Ds(0, glassNormal.z, -glassNormal.y), -table->m_glassTopHeight);
-   m_hitTopGlass.m_physics = this; // copy assignment above does not preserve it
+   m_hitTopGlass.SetPhysics(this); // copy assignment above does not preserve it
    m_hitTopGlass.m_elasticity = 0.2f;
 }
 

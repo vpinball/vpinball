@@ -17,9 +17,19 @@ static std::mutex mtx;
 float c_hardScatter = 0.0f;
 
 
-PhysicProfile MoverObject::GetPhysicProfile() const { return m_physics ? m_physics->GetPhysicProfile() : PhysicProfile::V10_9; }
+void MoverObject::SetPhysics(PhysicsEngine* const physics)
+{
+   m_physics = physics;
+   m_physicProfile = physics ? physics->GetPhysicProfile() : PhysicProfile::V10_9;
+}
 
-PhysicProfile HitObject::GetPhysicProfile() const { return m_physics ? m_physics->GetPhysicProfile() : PhysicProfile::V10_9; }
+void HitObject::SetPhysics(PhysicsEngine* const physics)
+{
+   m_physics = physics;
+   m_physicProfile = physics ? physics->GetPhysicProfile() : PhysicProfile::V10_9;
+   if (MoverObject* const mover = GetMoverObject())
+      mover->SetPhysics(physics);
+}
 
 void HitObject::Contact(CollisionEvent& coll, const float dtime) { coll.m_ball->HandleStaticContact(coll, m_friction, dtime); }
 

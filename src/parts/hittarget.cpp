@@ -246,7 +246,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
             Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
-         HitTriangle *ht = new HitTriangle(this, rgv3D);
+         HitTriangle *ht = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ht->IsDegenerate())
             delete ht;
          else
@@ -294,7 +294,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             const Vertex3Ds rgv3D2[3] = { // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
                rgv3D[i0], rgv3D[i2], rgv3D[i1]
             };
-            HitTriangle *ht = new HitTriangle(this, rgv3D2);
+            HitTriangle *ht = new HitTriangle(this, rgv3D2, physics->GetPhysicProfile());
             if (ht->IsDegenerate())
                delete ht;
             else
@@ -325,7 +325,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
             Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
-         HitTriangle *ht = new HitTriangle(this, rgv3D);
+         HitTriangle *ht = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ht->IsDegenerate())
             delete ht;
          else

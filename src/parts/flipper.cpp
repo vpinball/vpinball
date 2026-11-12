@@ -259,7 +259,7 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (fabsf(baseRadius - endRadius) >= m_d.m_FlipperRadius)
       m_d.m_FlipperRadius = fabsf(baseRadius - endRadius) + 0.05f;
    HitFlipper *const phf = new HitFlipper(m_d.m_Center, baseRadius, endRadius, max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle),
-      ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
+      ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this, physics->GetPhysicProfile());
    phf->m_flipperMover.m_enabled = m_d.m_enabled;
    physics->AddCollider(phf, isUI);
    if (!isUI)

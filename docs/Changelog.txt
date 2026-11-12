@@ -261,6 +261,7 @@ FIXES:
 
 - add a per-table 'Physics Profile' option (in the table's physics properties, defaults to 10.8): existing tables keep the
   VPX 10.8 physics they were tuned for, while selecting the 10.9 profile enables the corrected physics engine behavior.
+  New tables will use the 10.9 profile.
   The 10.9 profile fixes the following bugs (all also apply to ball vs ball interactions, which did not exist in 10.8 and
   always use the improved model whatever the selected profile):
   . slow shallow touches of walls and rigid polygons were dropped entirely (they reported a bogus hit time), so no contact
@@ -273,13 +274,18 @@ FIXES:
   . a spinning ball could lose its support on a flipper contact, the centripetal acceleration of its material contact point
     being misread as the ball accelerating away
   . flipper inertia now uses the real flipper shape instead of the rod approximation (swing speed and kick/bounce response
-    change with it; the 10.8 profile keeps the rod model)
+    change with it; the 10.8 profile keeps the rod model).
+    To keep the 10.8 swing speed under the 10.9 profile (the ball response then uses the real shape), multiply the flipper Strength,
+    including values set by the table script, by the ratio of the shape inertia to the rod one: about 0.90 for the default flipper
+    (base radius 21.5, end radius 13, length 130), 0.84 for 25/13/130, 0.75 for thin 15/6 flippers, 1.16 for 20/20/130 (as wide at the
+    end as at the base). Changing the Mass does not work, as it scales the swing and the ball response alike. See docs/PhysicsConstants.md
+  . contact forces handled the ball mass wrongly, so balls with a non-default mass rested/rolled differently on surfaces
+    (no change for the default mass of 1)
   . very thin playfield triangles (nearly degenerate normals) could produce wrong collision responses
 
 - physics behavior changes that may make existing tables play slightly differently, but are more physically correct:
   . ball-ball contacts are now handled as resting contacts (like ball vs. playfield/walls), and the ball-ball contact normal is now evaluated at the actual hit time.
     Balls resting against each other (e.g. lined up in a trough or lock, or stacked on a slope) are now stable, instead of jittering/creeping.
-  . contact forces now take the ball mass into account, so balls with a non-default mass rest/roll differently on surfaces (no change for the default mass of 1).
   . walls (surfaces) whose points are defined in reversed (clockwise) order used to collide only from the inside (balls passed through them from the outside and then got trapped).
     They now collide from both sides, so they are solid from the outside like walls with the regular point order.
   . nudge: the cabinet model was recalibrated against real cabinet recordings (lower oscillation frequencies, no more 'magic' displacement factors), and the peak acceleration of

@@ -11,8 +11,9 @@ class Flipper;
 class FlipperMoverObject : public MoverObject
 {
 public:
+   // profile: of the engine the flipper is built for, it selects the inertia model (see PhysicsEngine::GetPhysicProfile)
    FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,
-      const float zlow, const float zhigh, Flipper* const pflipper);
+      const float zlow, const float zhigh, Flipper* const pflipper, PhysicProfile profile);
 
    void UpdateDisplacements(const float dtime) override;
    void UpdateVelocities() override;
@@ -29,10 +30,6 @@ public:
    // so live edits to mass propagate. Geometry edits via the COM API today
    // do not propagate to the runtime mover, but this helper is ready for the wiring
    void UpdateInertia();
-
-   // Physics profile of the owning table, read through the part: the engine pointer is not set yet
-   // at construction time, and a mover may be used without an engine at all (unit tests default to the latest)
-   PhysicProfile GetPhysicProfile() const;
 
    void SetStartAngle(const float r);
    void SetEndAngle(const float r);
@@ -91,7 +88,7 @@ class HitFlipper : public HitObject
 {
 public:
    HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
-              const float zlow, const float zhigh, Flipper* const pflipper);
+              const float zlow, const float zhigh, Flipper* const pflipper, PhysicProfile profile); // profile: see FlipperMoverObject
    ~HitFlipper() override { /*m_pflipper->m_phitflipper = nullptr;*/ }
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
